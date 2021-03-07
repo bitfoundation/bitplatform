@@ -57,6 +57,18 @@
     border: none $Grey20;
     background: none $Grey20;
 }
+.bit-text-field.fluent .bit-button.fluent {
+    border: none !important;
+    color: $Primary;
+    background-color: transparent;
+    padding: em(4px);
+    position:relative;
+    &:hover {
+        background-color: $Grey20;
+    }
+    /*height: em(30px);
+    width: em(32px);*/
+}
 /*.bit-text-field.fluent .bit-text-field-button-password {
     height: em(30px);
     width: em(32px);

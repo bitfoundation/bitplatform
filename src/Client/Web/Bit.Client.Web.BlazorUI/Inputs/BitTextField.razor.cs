@@ -15,15 +15,17 @@ namespace Bit.Client.Web.BlazorUI.Inputs
         [Parameter] public bool IsReadonly { get; set; } = false;
         [Parameter] public TextFieldType Type { get; set; } = TextFieldType.Text;
         [Parameter] public RenderFragment ChildContent { get; set; }
-        [Parameter] public EventCallback<FocusEventArgs> OnFocusIn { get; set; }
-        [Parameter] public EventCallback<FocusEventArgs> OnFocusOut { get; set; }
-        [Parameter] public EventCallback<FocusEventArgs> OnFocus { get; set; }
-        [Parameter] public EventCallback<ChangeEventArgs> OnChange { get; set; }
+        [Parameter] public EventCallback<FocusEventArgs>   OnFocusIn  { get; set; }
+        [Parameter] public EventCallback<FocusEventArgs>    OnFocusOut { get; set; }
+        [Parameter] public EventCallback<FocusEventArgs>    OnFocus   { get; set; }
+        [Parameter] public EventCallback<ChangeEventArgs>   OnChange   { get; set; }
         [Parameter] public EventCallback<KeyboardEventArgs> OnKeyDown { get; set; }
-        [Parameter] public EventCallback<KeyboardEventArgs> OnKeyUp { get; set; }
+        [Parameter] public EventCallback<KeyboardEventArgs> OnKeyUp   { get; set; }
+        [Parameter] public EventCallback<MouseEventArgs>   OnClick    { get; set; }
+
         public string ReadonlyClass => IsReadonly ? "Readonly" : "";
         public string FocusClass { get; set; } = "";
-        
+
         protected virtual async Task HandleFocusIn(FocusEventArgs e)
         {
             if (IsEnabled)
@@ -69,6 +71,14 @@ namespace Bit.Client.Web.BlazorUI.Inputs
                 await OnKeyUp.InvokeAsync(e);
             }
         }
+        protected virtual async Task HandleClick(MouseEventArgs e)
+        {
+            if (IsEnabled)
+            {
+                await OnClick.InvokeAsync(e);
+            }
+        }
+
         public override Task SetParametersAsync(ParameterView parameters)
         {
             foreach (ParameterValue parameter in parameters)
@@ -90,12 +100,31 @@ namespace Bit.Client.Web.BlazorUI.Inputs
                     case nameof(ChildContent):
                         ChildContent = (RenderFragment)parameter.Value;
                         break;
+                    case nameof(OnFocusIn):
+                        OnFocusIn = (EventCallback<FocusEventArgs>)parameter.Value;
+                        break;
+                    case nameof(OnFocusOut):
+                        OnFocusOut = (EventCallback<FocusEventArgs>)parameter.Value;
+                        break;
+                    case nameof(OnFocus):
+                        OnFocus = (EventCallback<FocusEventArgs>)parameter.Value;
+                        break;
+                    case nameof(OnChange):
+                        OnChange = (EventCallback<ChangeEventArgs>)parameter.Value;
+                        break;
+                    case nameof(OnKeyDown):
+                        OnKeyDown = (EventCallback<KeyboardEventArgs>)parameter.Value;
+                        break;
+                    case nameof(OnKeyUp):
+                        OnKeyUp = (EventCallback<KeyboardEventArgs>)parameter.Value;
+                        break;
+                    case nameof(OnClick):
+                        OnClick = (EventCallback<MouseEventArgs>)parameter.Value;
+                        break;
                 }
             }
             return base.SetParametersAsync(parameters);
         }
-     
-     
 
     }
 

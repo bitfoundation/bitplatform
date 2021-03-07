@@ -1,12 +1,19 @@
-﻿@code {
+﻿@using InputType = Bit.Client.Web.BlazorUI.Inputs.TextFieldType
+@code {
     private bool _isMessageBarHidden = false;
+    private InputType _inputType = TextFieldType.Password;
+    private string _showPasswordText = "show";
     private void MessageBarButton(MouseEventArgs args)
     {
         _isMessageBarHidden = true;
     }
+    private void ChangeInputType(MouseEventArgs args)
+    {
+        _inputType = _inputType == TextFieldType.Text ? TextFieldType.Password : TextFieldType.Text;
+        _showPasswordText = _inputType == TextFieldType.Text ? "hide" : "show";
+    }
 }
 @page "/"
-@using InputType = Bit.Client.Web.BlazorUI.Inputs.TextFieldType
 <style>
     /* Temp Styles */
     .links-container, .checkboxes-container, .labels-container {
@@ -90,7 +97,7 @@
     </BitMessageBar>
     <br />
     <BitMessageBar Style="@MessageBarStyle.Default">
-       Visit repository <BitLink Text="here" Href="https://github.com/bitfoundation/bitframework"></BitLink>
+        Visit repository <BitLink Text="here" Href="https://github.com/bitfoundation/bitframework"></BitLink>
     </BitMessageBar>
 </div>
 <hr />
@@ -111,7 +118,7 @@
     <h3>Custom Label</h3>
     <BitCheckbox>
         <CustomLabel>
-            Custom-rendered label with a link go to 
+            Custom-rendered label with a link go to
             <a href='https://github.com/bitfoundation/bitframework'>
                 bit foundation repository page.
             </a>
@@ -134,5 +141,7 @@
     <br />
     <BitTextField Placeholder="Placeholder"></BitTextField>
     <br />
-    <BitTextField Type="@InputType.Password" Placeholder="Password input"></BitTextField>
+    <BitTextField Type="@_inputType" Placeholder="Password input">
+        <BitButton Style="@ButtonStyle.Standard" OnClick="ChangeInputType">@_showPasswordText</BitButton>
+    </BitTextField>
 </div>
