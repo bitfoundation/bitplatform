@@ -1,11 +1,12 @@
 ﻿using Microsoft.AspNetCore.Components;
 using System.Threading.Tasks;
 
-namespace Bit.Client.Web.BlazorUI.Notifications
+namespace Bit.Client.Web.BlazorUI
 {
     public partial class BitMessageBar
     {
         [Parameter] public RenderFragment ChildContent { get; set; }
+
         [Parameter] public MessageBarStyle Style { get; set; } = MessageBarStyle.Default;
 
         public string StyleClass => Style == MessageBarStyle.Warning ? "warning" : Style == MessageBarStyle.Severe ? "severe" : Style == MessageBarStyle.Error ? "error" : Style == MessageBarStyle.Success ? "success" : "default";
@@ -19,6 +20,7 @@ namespace Bit.Client.Web.BlazorUI.Notifications
                     case nameof(Style):
                         Style = (MessageBarStyle)parameter.Value;
                         break;
+
                     case nameof(ChildContent):
                         ChildContent = (RenderFragment)parameter.Value;
                         break;
