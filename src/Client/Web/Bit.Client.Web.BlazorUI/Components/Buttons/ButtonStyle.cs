@@ -1,4 +1,4 @@
-﻿namespace Bit.Client.Web.BlazorUI.Buttons
+﻿namespace Bit.Client.Web.BlazorUI
 {
     public enum ButtonStyle
     {

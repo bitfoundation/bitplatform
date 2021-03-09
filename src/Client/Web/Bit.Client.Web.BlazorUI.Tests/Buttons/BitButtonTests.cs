@@ -1,4 +1,4 @@
-﻿using Bit.Client.Web.BlazorUI.Buttons;
+﻿using Bit.Client.Web.BlazorUI;
 using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Threading.Tasks;
@@ -39,7 +39,6 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
                 {
                     parameters.Add(p => p.BitCompoundButtonIsEnabled, isEnabled);
                     parameters.Add(p => p.BitCompoundButtonStyle, style);
-
                 });
 
             var bitButton = com.Find(".bit-compound-button");
