@@ -1,7 +1,6 @@
-﻿@using InputType = Bit.Client.Web.BlazorUI.Inputs.TextFieldType
-@code {
+﻿@code {
     private bool _isMessageBarHidden = false;
-    private InputType _inputType = TextFieldType.Password;
+    private TextFieldType _inputType = TextFieldType.Password;
     private string _showPasswordText = "show";
     private void MessageBarButton(MouseEventArgs args)
     {

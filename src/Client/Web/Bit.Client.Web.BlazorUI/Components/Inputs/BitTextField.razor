@@ -1,4 +1,5 @@
-﻿@inherits BitComponentBase
+﻿@namespace Bit.Client.Web.BlazorUI
+@inherits BitComponentBase
 <div class="bit-text-field @(VisualClass) @(EnabledClass) @(FocusClass)">
     <input disabled=@(!IsEnabled) readonly=@IsReadonly class="bit-text-field-input @(EnabledClass) @(ReadonlyClass) @(FocusClass)" type="@Type.ToString()" value="@Value" placeholder="@Placeholder" @onclick="@HandleClick" @onfocusin="@HandleFocusIn" @onfocusout="@HandleFocusOut" @onfocus="@HandleFocus" @onchange="@HandleChange" @onkeydown="@HandleKeyDown" @onkeyup="@HandleKeyUp" />
     @ChildContent

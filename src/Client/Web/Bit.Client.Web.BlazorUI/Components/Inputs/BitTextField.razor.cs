@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Components.Web;
 using System.Threading.Tasks;
 
-namespace Bit.Client.Web.BlazorUI.Inputs
+namespace Bit.Client.Web.BlazorUI
 {
     public partial class BitTextField
     {
