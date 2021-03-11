@@ -1,0 +1,45 @@
+﻿<BitTextField Type="InputType" Placeholder="Placeholder" IsReadonly="IsReadOnly" IsEnabled="IsEnabled" Value="Value"
+              OnClick="ClickEvent" OnChange="ChangeEvent" OnFocus="FocusEvent" OnFocusIn="FocusEvent" OnFocusOut="FocusEvent"
+              OnKeyDown="KeyEvent" OnKeyUp="KeyEvent">
+    <BitButton Style="@ButtonStyle.Standard">
+    </BitButton>
+    <label>
+        @Value
+    </label>
+</BitTextField>
+@code {
+
+    [Parameter] public bool IsEnabled { get; set; }
+    [Parameter] public bool IsReadOnly { get; set; }
+    [Parameter] public string Placeholder { get; set; }
+    [Parameter] public string Value { get; set; }
+    [Parameter] public TextFieldType InputType { get; set; }
+
+    public void KeyEvent(KeyboardEventArgs e)
+    {
+        AddEvent("key");
+    }
+    public void FocusEvent(FocusEventArgs e)
+    {
+        AddEvent("focus");
+    }
+    public void ChangeEvent(ChangeEventArgs e)
+    {
+        AddEvent("change");
+    }
+    public void ClickEvent(MouseEventArgs e)
+    {
+        IncrementCount();
+    }
+    public int CurrentCount { get; set; }
+    public void IncrementCount()
+    {
+        CurrentCount++;
+        Value = CurrentCount.ToString();
+    }
+
+    public void AddEvent(string eventName)
+    {
+        Value = eventName;
+    }
+}

@@ -15,13 +15,13 @@ namespace Bit.Client.Web.BlazorUI.Inputs
         [Parameter] public bool IsReadonly { get; set; } = false;
         [Parameter] public TextFieldType Type { get; set; } = TextFieldType.Text;
         [Parameter] public RenderFragment ChildContent { get; set; }
-        [Parameter] public EventCallback<FocusEventArgs>   OnFocusIn  { get; set; }
-        [Parameter] public EventCallback<FocusEventArgs>    OnFocusOut { get; set; }
-        [Parameter] public EventCallback<FocusEventArgs>    OnFocus   { get; set; }
-        [Parameter] public EventCallback<ChangeEventArgs>   OnChange   { get; set; }
+        [Parameter] public EventCallback<FocusEventArgs> OnFocusIn { get; set; }
+        [Parameter] public EventCallback<FocusEventArgs> OnFocusOut { get; set; }
+        [Parameter] public EventCallback<FocusEventArgs> OnFocus { get; set; }
+        [Parameter] public EventCallback<ChangeEventArgs> OnChange { get; set; }
         [Parameter] public EventCallback<KeyboardEventArgs> OnKeyDown { get; set; }
-        [Parameter] public EventCallback<KeyboardEventArgs> OnKeyUp   { get; set; }
-        [Parameter] public EventCallback<MouseEventArgs>   OnClick    { get; set; }
+        [Parameter] public EventCallback<KeyboardEventArgs> OnKeyUp { get; set; }
+        [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
         public string ReadonlyClass => IsReadonly ? "Readonly" : "";
         public string FocusClass { get; set; } = "";
@@ -125,7 +125,6 @@ namespace Bit.Client.Web.BlazorUI.Inputs
             }
             return base.SetParametersAsync(parameters);
         }
-
     }
 
     public enum TextFieldType
@@ -133,5 +132,5 @@ namespace Bit.Client.Web.BlazorUI.Inputs
         Text,
         Password
     }
-  
+
 }

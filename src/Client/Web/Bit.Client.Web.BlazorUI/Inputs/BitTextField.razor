@@ -3,5 +3,3 @@
     <input disabled=@(!IsEnabled) readonly=@IsReadonly class="bit-text-field-input @(EnabledClass) @(ReadonlyClass) @(FocusClass)" type="@Type.ToString()" value="@Value" placeholder="@Placeholder" @onclick="@HandleClick" @onfocusin="@HandleFocusIn" @onfocusout="@HandleFocusOut" @onfocus="@HandleFocus" @onchange="@HandleChange" @onkeydown="@HandleKeyDown" @onkeyup="@HandleKeyUp" />
     @ChildContent
 </div>
-
-
