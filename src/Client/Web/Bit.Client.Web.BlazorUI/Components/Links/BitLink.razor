@@ -1,15 +1,16 @@
-﻿@inherits BitComponentBase
+﻿@namespace Bit.Client.Web.BlazorUI
+@inherits BitComponentBase
 
 @if (Href.HasValue() || !IsEnabled)
 {
     <a href="@Href" class="bit-link @VisualClass @EnabledClass" target="@Target">
-        @Text
+        @ChildContent
     </a>
 }
 else
 {
     <button type="button" class="bit-link @VisualClass @EnabledClass"
-        @onclick="HandleClick">
-        @Text
+            @onclick="HandleClick">
+        @ChildContent
     </button>
 }

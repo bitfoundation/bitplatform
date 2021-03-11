@@ -10,19 +10,19 @@
     display: flex;
     word-break: break-word;
 }
-.bit-message-bar.fluent.style-default {
+.bit-message-bar.fluent.default {
     background-color: $Grey20;
 }
-.bit-message-bar.fluent.style-error {
+.bit-message-bar.fluent.error {
     background-color: $Error;
 }
-.bit-message-bar.fluent.style-success {
+.bit-message-bar.fluent.success {
     background-color: $Success;
 }
-.bit-message-bar.fluent.style-warning {
+.bit-message-bar.fluent.warning {
     background-color: $Warning;
 }
-.bit-message-bar.fluent.style-severe {
+.bit-message-bar.fluent.severe {
     background-color: $Severe;
 } 
 .bit-message-bar.fluent .flexContainer {

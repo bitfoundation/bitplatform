@@ -1,90 +1,93 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
-using System.Threading.Tasks;
 using Microsoft.JSInterop;
 using System;
+using System.Threading.Tasks;
 
-namespace Bit.Client.Web.BlazorUI.Checkboxes
+namespace Bit.Client.Web.BlazorUI
 {
     public partial class BitCheckbox
     {
         [Inject] public IJSRuntime JSRuntime { get; set; }
 
+        [Parameter] public RenderFragment ChildContent { get; set; }
 
-        [Parameter] public string Label { get; set; }
-        [Parameter] public RenderFragment CustomLabel { get; set; }
         [Parameter] public bool IsIndeterminate { get; set; }
-        [Parameter] public bool IsChecked { get; set; }
-        [Parameter] public BoxSide BoxSide { get; set; }
-        [Parameter] public Action<bool> OnCheckboxChange { get; set; }
 
+        [Parameter] public bool IsChecked { get; set; }
+
+        [Parameter] public BoxSide BoxSide { get; set; }
+
+        [Parameter] public EventCallback<bool> OnCheckboxChange { get; set; }
 
         public ElementReference TargetCheckbox { get; set; }
-        public string IndeterminateClass => IsIndeterminate ? "indeterminate" : string.Empty;
-        public string CheckedClass => IsChecked ? "checked" : string.Empty;
-        public string BoxSideClass => BoxSide == BoxSide.End ? "box-side-end" : "box-side-start";
-        public bool HasCustomLabel => CustomLabel is not null ? true : false;
 
-        protected void HandleIndeterminate() {
-            if (IsIndeterminate) {
+        public string IndeterminateClass => IsIndeterminate ? "indeterminate" : string.Empty;
+
+        public string CheckedClass => IsChecked ? "checked" : string.Empty;
+
+        public string BoxSideClass => BoxSide == BoxSide.End ? "box-side-end" : "box-side-start";
+
+        protected async Task HandleIndeterminate()
+        {
+            if (IsIndeterminate)
+            {
                 IsIndeterminate = false;
-                _ = JSRuntime.SetElementProperty(TargetCheckbox, "indeterminate", IsIndeterminate);
+                await JSRuntime.SetElementProperty(TargetCheckbox, "indeterminate", IsIndeterminate);
             }
         }
-        protected void HandleCheckboxClick()
+
+        protected async Task HandleCheckboxClick(MouseEventArgs e)
         {
             if (IsEnabled)
             {
                 if (IsIndeterminate)
                 {
-                    HandleIndeterminate();
+                    await HandleIndeterminate();
                 }
                 else
                 {
-                    if (IsChecked)
-                    {
-                        IsChecked = false;
-                    }
-                    else
-                    {
-                        IsChecked = true;
-                    }
+                    IsChecked = !IsChecked;
                 }
+
+                await OnCheckboxChange.InvokeAsync(IsChecked);
             }
-            OnCheckboxChange?.Invoke(IsChecked);
         }
-        protected override Task OnAfterRenderAsync(bool firstRender)
+
+        protected override async Task OnAfterRenderAsync(bool firstRender)
         {
-            if (firstRender) 
+            if (firstRender)
             {
-                _ = JSRuntime.SetElementProperty(TargetCheckbox, "indeterminate", IsIndeterminate);
+                await JSRuntime.SetElementProperty(TargetCheckbox, "indeterminate", IsIndeterminate);
             }
-            
-            return base.OnAfterRenderAsync(firstRender);
+
+            await base.OnAfterRenderAsync(firstRender);
         }
+
         public override Task SetParametersAsync(ParameterView parameters)
         {
             foreach (ParameterValue parameter in parameters)
             {
                 switch (parameter.Name)
                 {
-                    case nameof(Label):
-                        Label = (string)parameter.Value;
+                    case nameof(ChildContent):
+                        ChildContent = (RenderFragment)parameter.Value;
                         break;
-                    case nameof(CustomLabel):
-                        CustomLabel = (RenderFragment)parameter.Value;
-                        break;
+
                     case nameof(IsChecked):
                         IsChecked = (bool)parameter.Value;
                         break;
+
                     case nameof(IsIndeterminate):
                         IsIndeterminate = (bool)parameter.Value;
                         break;
+
                     case nameof(BoxSide):
                         BoxSide = (BoxSide)parameter.Value;
                         break;
+
                     case nameof(OnCheckboxChange):
-                        OnCheckboxChange = (Action<bool>)parameter.Value;
+                        OnCheckboxChange = (EventCallback<bool>)parameter.Value;
                         break;
                 }
             }
@@ -93,7 +96,8 @@ namespace Bit.Client.Web.BlazorUI.Checkboxes
         }
     }
 
-    public enum BoxSide { 
+    public enum BoxSide
+    {
         Start,
         End
     }
