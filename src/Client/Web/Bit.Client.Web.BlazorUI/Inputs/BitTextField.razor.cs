@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
+﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using System.Threading.Tasks;
 
 namespace Bit.Client.Web.BlazorUI.Inputs
 {
@@ -30,7 +26,7 @@ namespace Bit.Client.Web.BlazorUI.Inputs
         {
             if (IsEnabled)
             {
-                FocusClass = "Focused";
+                FocusClass = "focused";
                 await OnFocusIn.InvokeAsync(e);
             }
         }

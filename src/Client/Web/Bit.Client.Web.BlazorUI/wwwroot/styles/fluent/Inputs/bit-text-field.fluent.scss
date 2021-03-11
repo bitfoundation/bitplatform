@@ -1,4 +1,5 @@
 ﻿@import "../_colors.fluent.scss", "../../_functions.scss";
+
 .bit-text-field.fluent {
     font-family: FluentFont;
     font-size: rem(14px);
@@ -23,6 +24,7 @@
         border-color: $Grey160;
     }
 }
+
 .bit-text-field.fluent .bit-text-field-input {
     background: none transparent;
     border: none;
@@ -31,8 +33,8 @@
     font-size: rem(14px);
     font-weight: 400;
     padding: em(0px) em(8px);
-    outline:none;
-        -webkit-font-smoothing: antialiased;
+    outline: none;
+    -webkit-font-smoothing: antialiased;
     box-shadow: none;
     padding: 0px 8px;
     box-sizing: border-box;
@@ -41,40 +43,35 @@
     min-width: 0px;
     text-overflow: ellipsis;
 }
-.bit-text-field.fluent.Focused {
+
+.bit-text-field.fluent.focused {
     border: em(3px) solid $Primary;
 }
-.bit-text-field.fluent .bit-text-field-input.Focused {
+
+.bit-text-field.fluent .bit-text-field-input.focused {
     padding: 0px 6.3px;
 }
+
 .bit-text-field.fluent.disabled {
     border: 1px solid $Grey20 !important;
-    background:$White;
+    background: $White;
 }
+
 .bit-text-field.fluent.disabled .bit-text-field-input.disabled {
     color: $Grey90;
     cursor: default;
     border: none $Grey20;
     background: none $Grey20;
 }
+
 .bit-text-field.fluent .bit-button.fluent {
     border: none !important;
     color: $Primary;
     background-color: transparent;
     padding: em(4px);
-    position:relative;
+    position: relative;
+
     &:hover {
         background-color: $Grey20;
     }
-    /*height: em(30px);
-    width: em(32px);*/
 }
-/*.bit-text-field.fluent .bit-text-field-button-password {
-    height: em(30px);
-    width: em(32px);
-    border: none;
-    padding: 0px em(4px);
-    background-color: transparent;
-    color: $Primary;
-    cursor: pointer;
-}*/

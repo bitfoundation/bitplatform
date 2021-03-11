@@ -30,7 +30,7 @@
 <hr />
 
 <div class="buttons-container">
-    <h3>BitButton</h3>
+    <h2>BitButton</h2>
     <BitButton IsEnabled="true">
         Primary
     </BitButton>
@@ -131,16 +131,18 @@
     <BitCheckbox BoxSide="@BoxSide.End" Label="Reversed -- Disable Checked Checkbox" IsEnabled="false" IsChecked="true"></BitCheckbox>
     <br />
 </div>
+<hr />
 
-<div>
+<div class="text-field-container">
+    <h2>BitTextField</h2>
     <BitTextField Value="Enabled"></BitTextField>
-    <br />
+    <br/>
     <BitTextField IsReadonly="true" Value="Readonly"></BitTextField>
-    <br />
+    <br/>
     <BitTextField IsEnabled="false" Value="Disabled"></BitTextField>
-    <br />
+    <br/>
     <BitTextField Placeholder="Placeholder"></BitTextField>
-    <br />
+    <br/>
     <BitTextField Type="@_inputType" Placeholder="Password input">
         <BitButton Style="@ButtonStyle.Standard" OnClick="ChangeInputType">@_showPasswordText</BitButton>
     </BitTextField>
