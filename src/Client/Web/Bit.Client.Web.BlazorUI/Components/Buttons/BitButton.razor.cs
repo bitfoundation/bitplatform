@@ -6,13 +6,17 @@ namespace Bit.Client.Web.BlazorUI
 {
     public partial class BitButton
     {
-        [Parameter] public ButtonStyle Style { get; set; } = ButtonStyle.Primary;
+        [Parameter] public RenderFragment ChildContent { get; set; }
 
         [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
-        [Parameter] public RenderFragment ChildContent { get; set; }
+        [Parameter] public ButtonStyle ButtonStyle { get; set; } = ButtonStyle.Primary;
 
-        public string StyleClass => !IsEnabled ? "" : Style == ButtonStyle.Primary ? "primary" : "standard";
+        public string StyleClass => !IsEnabled
+                                        ? ""
+                                        : ButtonStyle == ButtonStyle.Primary
+                                            ? "primary"
+                                            : "standard";
 
         protected virtual async Task HandleOnClick(MouseEventArgs e)
         {
@@ -28,8 +32,8 @@ namespace Bit.Client.Web.BlazorUI
             {
                 switch (parameter.Name)
                 {
-                    case nameof(Style):
-                        Style = (ButtonStyle)parameter.Value;
+                    case nameof(ButtonStyle):
+                        ButtonStyle = (ButtonStyle)parameter.Value;
                         break;
 
                     case nameof(OnClick):
