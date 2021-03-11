@@ -17,15 +17,15 @@
 
     public void KeyEvent(KeyboardEventArgs e)
     {
-        AddEvent("key");
+        IncrementCount();
     }
     public void FocusEvent(FocusEventArgs e)
     {
-        AddEvent("focus");
+        IncrementCount();
     }
     public void ChangeEvent(ChangeEventArgs e)
     {
-        AddEvent("change");
+        IncrementCount();
     }
     public void ClickEvent(MouseEventArgs e)
     {
@@ -38,8 +38,4 @@
         Value = CurrentCount.ToString();
     }
 
-    public void AddEvent(string eventName)
-    {
-        Value = eventName;
-    }
 }

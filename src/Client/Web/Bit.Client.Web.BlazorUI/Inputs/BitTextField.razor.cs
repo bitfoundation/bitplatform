@@ -19,7 +19,7 @@ namespace Bit.Client.Web.BlazorUI.Inputs
         [Parameter] public EventCallback<KeyboardEventArgs> OnKeyUp { get; set; }
         [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
-        public string ReadonlyClass => IsReadonly ? "Readonly" : "";
+        public string ReadonlyClass => IsReadonly ? "readonly" : "";
         public string FocusClass { get; set; } = "";
 
         protected virtual async Task HandleFocusIn(FocusEventArgs e)
@@ -42,7 +42,7 @@ namespace Bit.Client.Web.BlazorUI.Inputs
         {
             if (IsEnabled)
             {
-                FocusClass = "Focused";
+                FocusClass = "focused";
                 await OnFocus.InvokeAsync(e);
             }
         }
