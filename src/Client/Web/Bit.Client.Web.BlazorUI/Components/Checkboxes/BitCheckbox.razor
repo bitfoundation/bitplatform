@@ -1,6 +1,8 @@
-﻿@inherits BitComponentBase
+﻿@namespace Bit.Client.Web.BlazorUI
+@inherits BitComponentBase
 
-<div class="bit-checkbox-container @VisualClass @EnabledClass @CheckedClass @IndeterminateClass @BoxSideClass">
+<div style="@Style"
+     class="bit-checkbox-container @VisualClass @EnabledClass @CheckedClass @IndeterminateClass @BoxSideClass @Class">
     <input type="checkbox"
            @ref="TargetCheckbox"
            checked=@IsChecked

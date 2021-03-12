@@ -2,16 +2,23 @@
 using Microsoft.AspNetCore.Components.Web;
 using System.Threading.Tasks;
 
-namespace Bit.Client.Web.BlazorUI.Buttons
+namespace Bit.Client.Web.BlazorUI
 {
     public partial class BitCompoundButton
     {
         [Parameter] public string Text { get; set; }
+
         [Parameter] public string SecondaryText { get; set; }
-        [Parameter] public ButtonStyle Style { get; set; } = ButtonStyle.Primary;
+
+        [Parameter] public ButtonStyle ButtonStyle { get; set; } = ButtonStyle.Primary;
+
         [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
-        public string StyleClass => !IsEnabled ? "" : Style == ButtonStyle.Primary ? "primary" : "standard";
+        public string StyleClass => !IsEnabled
+                                        ? ""
+                                        : ButtonStyle == ButtonStyle.Primary
+                                            ? "primary"
+                                            : "standard";
 
         protected virtual async Task HandleOnClick(MouseEventArgs e)
         {
@@ -30,14 +37,17 @@ namespace Bit.Client.Web.BlazorUI.Buttons
                     case nameof(OnClick):
                         OnClick = (EventCallback<MouseEventArgs>)parameter.Value;
                         break;
+
                     case nameof(Text):
                         Text = (string)parameter.Value;
                         break;
+
                     case nameof(SecondaryText):
                         SecondaryText = (string)parameter.Value;
                         break;
-                    case nameof(Style):
-                        Style = (ButtonStyle)parameter.Value;
+
+                    case nameof(ButtonStyle):
+                        ButtonStyle = (ButtonStyle)parameter.Value;
                         break;
                 }
             }
