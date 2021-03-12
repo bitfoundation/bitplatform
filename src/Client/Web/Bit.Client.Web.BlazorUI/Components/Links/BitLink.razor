@@ -3,14 +3,20 @@
 
 @if (Href.HasValue() || !IsEnabled)
 {
-    <a href="@Href" class="bit-link @VisualClass @EnabledClass" target="@Target">
+    <a href="@Href"
+       style="@Style"
+       class="bit-link @VisualClass @EnabledClass @Class"
+       target="@Target">
         @ChildContent
     </a>
 }
 else
 {
-    <button type="button" class="bit-link @VisualClass @EnabledClass"
-            @onclick="HandleClick">
+    <button type="button"
+            style="@Style"
+            class="bit-link @VisualClass @EnabledClass @Class"
+            @onclick="HandleClick"
+            @onclick:preventDefault="true">
         @ChildContent
     </button>
 }
