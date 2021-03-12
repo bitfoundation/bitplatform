@@ -5,11 +5,11 @@ namespace Bit.Client.Web.BlazorUI
 {
     public class BitComponentBase : ComponentBase
     {
-        [Parameter] public bool IsEnabled { get; set; } = true;
+        [CascadingParameter] public Theme Theme { get; set; }
 
         [CascadingParameter] public Visual Visual { get; set; }
 
-        [CascadingParameter] public Theme Theme { get; set; }
+        [Parameter] public bool IsEnabled { get; set; } = true;
 
         [Parameter] public string Style { get; set; }
 
@@ -27,16 +27,16 @@ namespace Bit.Client.Web.BlazorUI
             {
                 switch (parameter.Name)
                 {
-                    case nameof(IsEnabled):
-                        IsEnabled = (bool)parameter.Value;
-                        break;
-
                     case nameof(Visual):
                         Visual = (Visual)parameter.Value;
                         break;
 
                     case nameof(Theme):
                         Theme = (Theme)parameter.Value;
+                        break;
+
+                    case nameof(IsEnabled):
+                        IsEnabled = (bool)parameter.Value;
                         break;
 
                     case nameof(Style):
