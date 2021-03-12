@@ -5,15 +5,17 @@ namespace Bit.Client.Web.BlazorUI
 {
     public class BitComponentBase : ComponentBase
     {
-        [CascadingParameter] public Theme Theme { get; set; }
+        [Parameter] public bool IsEnabled { get; set; } = true;
 
         [CascadingParameter] public Visual Visual { get; set; }
+
+        [CascadingParameter] public Theme Theme { get; set; }
 
         [Parameter] public string Style { get; set; }
 
         [Parameter] public string Class { get; set; }
 
-        [Parameter] public bool IsEnabled { get; set; } = true;
+        [Parameter] public ComponentVisibility Visibility { get; set; }
 
         public string EnabledClass => IsEnabled ? "enabled" : "disabled";
 
@@ -43,6 +45,18 @@ namespace Bit.Client.Web.BlazorUI
 
                     case nameof(Class):
                         Class = (string)parameter.Value;
+                        break;
+
+                    case nameof(Visibility):
+                        Visibility = (ComponentVisibility)parameter.Value;
+                        if (Visibility == ComponentVisibility.Hidden)
+                        {
+                            Style += ";visibility:hidden";
+                        }
+                        else if (Visibility == ComponentVisibility.Collapsed)
+                        {
+                            Style += ";display:none";
+                        }
                         break;
                 }
             }
