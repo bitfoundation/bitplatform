@@ -23,17 +23,42 @@
             width: 95%;
             margin: auto;
         }
+
+    .custom-button {
+        background-color: palevioletred !important;
+    }
 </style>
 
 <h1>Bit Components</h1>
 <hr />
 
 <div class="buttons-container">
-    <h2>BitButton</h2>
+
+    <h3>Visibility</h3>
+
+    <BitButton Visibility="ComponentVisibility.Visible">Visible Button</BitButton>
+    <br />
+    <span>Hidden Button: </span>[<BitButton Visibility="ComponentVisibility.Hidden">Hidden Button</BitButton>]
+    <br />
+    <span>Collapsed Button: </span>[<BitButton Visibility="ComponentVisibility.Collapsed">Collapsed Button</BitButton>]
+
+    <hr />
+
+    <h3>Style & Class</h3>
+    <BitButton Style="color:aqua">
+        Styled Button
+    </BitButton>
+    <BitButton Class="custom-button">
+        Classed Button
+    </BitButton>
+
+    <hr />
+
+    <h3>BitButton</h3>
     <BitButton IsEnabled="true">
         Primary
     </BitButton>
-    <BitButton Style="@ButtonStyle.Standard" IsEnabled="true">
+    <BitButton ButtonStyle="ButtonStyle.Standard" IsEnabled="true">
         Standard
     </BitButton>
     <BitButton IsEnabled="false">
@@ -42,12 +67,23 @@
     <BitButton IsEnabled="false">
         <label>This text is from a label element</label>
     </BitButton>
+
     <hr />
 
     <h3>BitCompoundButton</h3>
-    <BitCompoundButton IsEnabled="true" Text="Primary" SecondaryText="This Button is compound button"></BitCompoundButton>
-    <BitCompoundButton IsEnabled="true" Text="Standard" SecondaryText="This Button is compound button" Style="@ButtonStyle.Standard"></BitCompoundButton>
-    <BitCompoundButton IsEnabled="false" Text="Disabled" SecondaryText="This Button is a disabled compound button"></BitCompoundButton>
+    <BitCompoundButton IsEnabled="true"
+                       Text="Primary"
+                       SecondaryText="This Button is compound button">
+    </BitCompoundButton>
+    <BitCompoundButton IsEnabled="true"
+                       Text="Standard"
+                       SecondaryText="This Button is compound button"
+                       ButtonStyle="ButtonStyle.Standard">
+    </BitCompoundButton>
+    <BitCompoundButton IsEnabled="false"
+                       Text="Disabled"
+                       SecondaryText="This Button is a disabled compound button">
+    </BitCompoundButton>
     <hr />
 </div>
 
@@ -78,24 +114,24 @@
     <h2>BitMessageBar</h2>
     @if (!_isMessageBarHidden)
     {
-        <BitMessageBar Style="@MessageBarStyle.Success">
-            Action completed! <BitButton OnClick="MessageBarButton" Style="@ButtonStyle.Standard">OK</BitButton>
+        <BitMessageBar MessageBarStyle="@MessageBarStyle.Success">
+            Action completed! <BitButton OnClick="MessageBarButton" ButtonStyle="ButtonStyle.Standard">OK</BitButton>
         </BitMessageBar>
         <br />
     }
-    <BitMessageBar Style="@MessageBarStyle.Error">
+    <BitMessageBar MessageBarStyle="@MessageBarStyle.Error">
         Error! Cannot complete action
     </BitMessageBar>
     <br />
-    <BitMessageBar Style="@MessageBarStyle.Warning">
+    <BitMessageBar MessageBarStyle="@MessageBarStyle.Warning">
         Caution! Action may takes long time
     </BitMessageBar>
     <br />
-    <BitMessageBar Style="@MessageBarStyle.Severe">
+    <BitMessageBar MessageBarStyle="@MessageBarStyle.Severe">
         Cannot connect to server
     </BitMessageBar>
     <br />
-    <BitMessageBar Style="@MessageBarStyle.Default">
+    <BitMessageBar MessageBarStyle="@MessageBarStyle.Default">
         Visit repository <BitLink Href="https://github.com/bitfoundation/bitframework">here</BitLink>
     </BitMessageBar>
 </div>

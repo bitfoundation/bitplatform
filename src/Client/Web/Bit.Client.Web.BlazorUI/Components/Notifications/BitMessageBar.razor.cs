@@ -7,9 +7,17 @@ namespace Bit.Client.Web.BlazorUI
     {
         [Parameter] public RenderFragment ChildContent { get; set; }
 
-        [Parameter] public MessageBarStyle Style { get; set; } = MessageBarStyle.Default;
+        [Parameter] public MessageBarStyle MessageBarStyle { get; set; } = MessageBarStyle.Default;
 
-        public string StyleClass => Style == MessageBarStyle.Warning ? "warning" : Style == MessageBarStyle.Severe ? "severe" : Style == MessageBarStyle.Error ? "error" : Style == MessageBarStyle.Success ? "success" : "default";
+        public string StyleClass => MessageBarStyle == MessageBarStyle.Warning
+                                        ? "warning"
+                                        : MessageBarStyle == MessageBarStyle.Severe
+                                            ? "severe"
+                                            : MessageBarStyle == MessageBarStyle.Error
+                                                ? "error"
+                                                : MessageBarStyle == MessageBarStyle.Success
+                                                    ? "success"
+                                                    : "default";
 
         public override Task SetParametersAsync(ParameterView parameters)
         {
@@ -17,8 +25,8 @@ namespace Bit.Client.Web.BlazorUI
             {
                 switch (parameter.Name)
                 {
-                    case nameof(Style):
-                        Style = (MessageBarStyle)parameter.Value;
+                    case nameof(MessageBarStyle):
+                        MessageBarStyle = (MessageBarStyle)parameter.Value;
                         break;
 
                     case nameof(ChildContent):
