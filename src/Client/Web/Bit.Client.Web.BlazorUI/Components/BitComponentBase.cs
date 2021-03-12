@@ -11,7 +11,16 @@ namespace Bit.Client.Web.BlazorUI
 
         [Parameter] public bool IsEnabled { get; set; } = true;
 
-        [Parameter] public string Style { get; set; }
+        [Parameter]
+        public string Style
+        {
+            get
+            {
+                var prefix = string.IsNullOrEmpty(_style) ? "" : ";";
+                return $"{_style}{prefix}{GetVisibilityStyle()}";
+            }
+            set => _style = value;
+        }
 
         [Parameter] public string Class { get; set; }
 
@@ -49,19 +58,22 @@ namespace Bit.Client.Web.BlazorUI
 
                     case nameof(Visibility):
                         Visibility = (ComponentVisibility)parameter.Value;
-                        if (Visibility == ComponentVisibility.Hidden)
-                        {
-                            Style += ";visibility:hidden";
-                        }
-                        else if (Visibility == ComponentVisibility.Collapsed)
-                        {
-                            Style += ";display:none";
-                        }
                         break;
                 }
             }
 
             return base.SetParametersAsync(ParameterView.Empty);
+        }
+
+        private string _style;
+
+        private string GetVisibilityStyle()
+        {
+            return Visibility == ComponentVisibility.Hidden
+                    ? "visibility:hidden"
+                    : Visibility == ComponentVisibility.Collapsed
+                        ? "display:none"
+                        : "";
         }
     }
 }
