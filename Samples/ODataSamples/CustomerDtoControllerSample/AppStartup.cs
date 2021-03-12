@@ -22,6 +22,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 using System.Data.SqlClient;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -87,6 +88,7 @@ namespace CustomerDtoControllerSample
                     httpConfiguration.EnableSwagger(c =>
                     {
                         c.SingleApiVersion("v1", $"Swagger-Api");
+                        c.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, @"CustomerDtoControllerSample.xml"));
                         c.ApplyDefaultODataConfig(httpConfiguration);
                     }).EnableBitSwaggerUi();
                 });
@@ -223,6 +225,11 @@ namespace CustomerDtoControllerSample
 
     public class MathController : DtoController
     {
+        /// <summary>
+        /// Sum first number and second number!
+        /// </summary>
+        /// <param name="n1">first number!</param>
+        /// <param name="n2">second number!</param>
         [Function]
         public int Sum(int n1, int n2)
         {
