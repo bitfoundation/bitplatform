@@ -6,10 +6,20 @@ namespace Bit.Client.Web.BlazorUI
 {
     public partial class BitTextField
     {
+        private bool _isMultiLine = false;
         [Parameter] public string Value { get; set; }
         [Parameter] public string Placeholder { get; set; }
         [Parameter] public bool IsReadonly { get; set; } = false;
         [Parameter] public TextFieldType Type { get; set; } = TextFieldType.Text;
+        [Parameter] public bool IsMultiLine
+        {
+            get => _isMultiLine;
+            set
+            {
+                if (Type == TextFieldType.Text)
+                    _isMultiLine = value;
+            }
+        } 
         [Parameter] public RenderFragment ChildContent { get; set; }
         [Parameter] public EventCallback<FocusEventArgs> OnFocusIn { get; set; }
         [Parameter] public EventCallback<FocusEventArgs> OnFocusOut { get; set; }
@@ -20,6 +30,7 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
         public string ReadonlyClass => IsReadonly ? "readonly" : "";
+        public string MultiLineClass => IsMultiLine ? "multiline" : "";
         public string FocusClass { get; set; } = "";
 
         protected virtual async Task HandleFocusIn(FocusEventArgs e)
@@ -92,6 +103,9 @@ namespace Bit.Client.Web.BlazorUI
                         break;
                     case nameof(Type):
                         Type = (TextFieldType)parameter.Value;
+                        break;
+                    case nameof(IsMultiLine):
+                        IsMultiLine = (bool)parameter.Value;
                         break;
                     case nameof(ChildContent):
                         ChildContent = (RenderFragment)parameter.Value;
