@@ -7,6 +7,7 @@ namespace Bit.Client.Web.BlazorUI
     public partial class BitTextField
     {
         private bool _isMultiLine = false;
+
         [Parameter] public string Value { get; set; }
         [Parameter] public string Placeholder { get; set; }
         [Parameter] public bool IsReadonly { get; set; } = false;
@@ -19,7 +20,7 @@ namespace Bit.Client.Web.BlazorUI
                 if (Type == TextFieldType.Text)
                     _isMultiLine = value;
             }
-        } 
+        }
         [Parameter] public RenderFragment ChildContent { get; set; }
         [Parameter] public EventCallback<FocusEventArgs> OnFocusIn { get; set; }
         [Parameter] public EventCallback<FocusEventArgs> OnFocusOut { get; set; }

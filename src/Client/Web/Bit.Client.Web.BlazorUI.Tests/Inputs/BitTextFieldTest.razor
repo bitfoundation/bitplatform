@@ -1,4 +1,4 @@
-﻿<BitTextField Type="InputType" Placeholder="Placeholder" IsReadonly="IsReadOnly" IsEnabled="IsEnabled" Value="Value"
+﻿<BitTextField IsMultiLine="IsMultiLine" Type="InputType" Placeholder="Placeholder" IsReadonly="IsReadOnly" IsEnabled="IsEnabled" Value="Value"
               OnClick="ClickEvent" OnChange="ChangeEvent" OnFocus="FocusEvent" OnFocusIn="FocusEvent" OnFocusOut="FocusEvent"
               OnKeyDown="KeyEvent" OnKeyUp="KeyEvent">
     <BitButton ButtonStyle="@ButtonStyle.Standard">
@@ -9,6 +9,7 @@
 </BitTextField>
 @code {
 
+    [Parameter] public bool IsMultiLine { get; set; } = false;
     [Parameter] public bool IsEnabled { get; set; }
     [Parameter] public bool IsReadOnly { get; set; }
     [Parameter] public string Placeholder { get; set; }
