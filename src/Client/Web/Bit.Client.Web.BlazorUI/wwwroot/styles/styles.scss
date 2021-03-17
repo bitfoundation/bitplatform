@@ -1,6 +1,6 @@
 ﻿@import "styles.fluent.scss";
 
-html,body {
+html, body {
     font-family: FluentFont;
 }
 
@@ -11,9 +11,9 @@ button {
 
 // Prevent text selection by user
 .no-text-select {
-    user-select: none; 
-    -webkit-touch-callout: none; 
-    -webkit-user-select: none; 
-    -moz-user-select: none; 
-    -ms-user-select: none;            
+    user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
 }

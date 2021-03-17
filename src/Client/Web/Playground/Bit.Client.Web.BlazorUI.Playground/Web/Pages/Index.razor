@@ -26,6 +26,27 @@
 <hr />
 
 <div class="buttons-container">
+
+    <h3>Visibility</h3>
+
+    <BitButton Visibility="ComponentVisibility.Visible">Visible Button</BitButton>
+    <br />
+    <span>Hidden Button: </span>[<BitButton Visibility="ComponentVisibility.Hidden">Hidden Button</BitButton>]
+    <br />
+    <span>Collapsed Button: </span>[<BitButton Visibility="ComponentVisibility.Collapsed">Collapsed Button</BitButton>]
+
+    <hr />
+
+    <h3>Style & Class</h3>
+    <BitButton Style="color:aqua">
+        Styled Button
+    </BitButton>
+    <BitButton Class="custom-button">
+        Classed Button
+    </BitButton>
+
+    <hr />
+
     <h3>BitButton</h3>
     <BitButton IsEnabled="true">
         Primary
@@ -39,12 +60,7 @@
     <BitButton IsEnabled="false">
         <label>This text is from a label element</label>
     </BitButton>
-    <BitButton Style="color:aqua">
-        Custom Button 1
-    </BitButton>
-    <BitButton Class="custom-button">
-        Custom Button 2
-    </BitButton>
+
     <hr />
 
     <h3>BitCompoundButton</h3>
