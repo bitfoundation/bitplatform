@@ -46,7 +46,6 @@
     padding: 0px 8px;
     box-sizing: border-box;
     border-radius: 0px;
-    width: 100%;
     min-width: 0px;
     text-overflow: ellipsis;
 }
@@ -87,10 +86,14 @@
     border: none !important;
     color: $Primary;
     background-color: transparent;
-    padding: em(4px);
+    padding: em(0px) em(4px);
     position: relative;
 
     &:hover {
         background-color: $Grey20;
     }
+}
+
+.bit-text-field.fluent.focused .bit-button.fluent {
+    padding: em(0px) em(2px);
 }
