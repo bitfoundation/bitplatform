@@ -8,6 +8,7 @@ namespace Bit.Client.Web.BlazorUI
     {
         private bool _isMultiLine = false;
 
+        [Parameter] public int MaxLength { get; set; } = -1;
         [Parameter] public string Value { get; set; }
         [Parameter] public string Placeholder { get; set; }
         [Parameter] public bool IsReadonly { get; set; } = false;
@@ -93,6 +94,9 @@ namespace Bit.Client.Web.BlazorUI
             {
                 switch (parameter.Name)
                 {
+                    case nameof(MaxLength):
+                        MaxLength = (int)parameter.Value;
+                        break;
                     case nameof(Value):
                         Value = (string)parameter.Value;
                         break;

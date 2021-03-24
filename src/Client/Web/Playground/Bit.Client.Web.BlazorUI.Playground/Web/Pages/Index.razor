@@ -177,6 +177,8 @@
     <br />
     <BitTextField Placeholder="Placeholder"></BitTextField>
     <br />
+    <BitTextField MaxLength="10" Placeholder="Limited text field - 10 chars"></BitTextField>
+    <br />
     <BitTextField Type="@_inputType" Placeholder="Password input">
         <BitButton ButtonStyle="@ButtonStyle.Standard" OnClick="ChangeInputType">@_showPasswordText</BitButton>
     </BitTextField>
@@ -184,6 +186,8 @@
     <h3>Multi-line</h3>
     <BitTextField IsMultiLine="true" Value="Multi-line text field">
     </BitTextField>
+    <br />
+    <BitTextField IsMultiLine="true" MaxLength="10" Placeholder="Limited multi-line text field - 10 chars"></BitTextField>
     <br />
     <BitTextField IsMultiLine="true" IsEnabled="false" Value="Multi-line Disabled">
     </BitTextField>
