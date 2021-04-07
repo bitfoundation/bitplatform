@@ -49,7 +49,7 @@ namespace Bit.Client.Web.BlazorUI
             if (IsIndeterminate)
             {
                 IsIndeterminate = false;
-                await JSRuntime.SetElementProperty(CheckboxElement, "indeterminate", IsIndeterminate);
+                await JSRuntime.SetProperty(CheckboxElement, "indeterminate", IsIndeterminate);
             }
             else
             {
@@ -63,7 +63,7 @@ namespace Bit.Client.Web.BlazorUI
         {
             if (firstRender)
             {
-                await JSRuntime.SetElementProperty(CheckboxElement, "indeterminate", IsIndeterminate);
+                await JSRuntime.SetProperty(CheckboxElement, "indeterminate", IsIndeterminate);
             }
 
             await base.OnAfterRenderAsync(firstRender);
