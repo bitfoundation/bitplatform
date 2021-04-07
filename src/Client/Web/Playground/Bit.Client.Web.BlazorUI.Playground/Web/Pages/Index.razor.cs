@@ -2,5 +2,6 @@
 {
     public partial class Index
     {
+        private bool IsCheckBoxIndeterminate = true;
     }
 }
