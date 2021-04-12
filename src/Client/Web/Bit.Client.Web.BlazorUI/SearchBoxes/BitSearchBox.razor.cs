@@ -4,7 +4,7 @@ using Microsoft.JSInterop;
 using System;
 using System.Threading.Tasks;
 
-namespace Bit.Client.Web.BlazorUI.SearchBoxes
+namespace Bit.Client.Web.BlazorUI
 {
     public partial class BitSearchBox
     {
@@ -50,7 +50,7 @@ namespace Bit.Client.Web.BlazorUI.SearchBoxes
                 }
                 else
                 {
-                    Value = await JSRuntime.GetElementProperty(InputRef, "value");
+                    Value = await JSRuntime.GetProperty(InputRef, "value");
                     await OnSearch.InvokeAsync(Value);
                 }
             }
@@ -58,6 +58,19 @@ namespace Bit.Client.Web.BlazorUI.SearchBoxes
 
         public void HandleInputFocusIn() => InputFocusClass = "focused";
         public void HandleInputFocusOut() => InputFocusClass = string.Empty;
+
+        protected override string GetElementClass()
+        {    
+            ElementClassContainer.Clear();
+            ElementClassContainer.Add("bit-search-box");
+            ElementClassContainer.Add("bit-search-box-container");
+            ElementClassContainer.Add(InputValueClass);
+            ElementClassContainer.Add(InputFocusClass);
+            ElementClassContainer.Add(AnimationClass);
+            ElementClassContainer.Add(UnderlinedClass);
+            
+            return base.GetElementClass();
+        }
 
         public override Task SetParametersAsync(ParameterView parameters)
         {
