@@ -1,15 +1,28 @@
 ﻿using Microsoft.AspNetCore.Components;
 using System.Threading.Tasks;
 
-namespace Bit.Client.Web.BlazorUI.Labels
+namespace Bit.Client.Web.BlazorUI
 {
     public partial class BitLabel
     {
-        [Parameter] public string Text { get; set; }
-        [Parameter] public bool IsRequired { get; set; }
         [Parameter] public string For { get; set; }
 
-        public string RequiredClass => IsRequired ? "required" : string.Empty;
+        [Parameter] public bool IsRequired { get; set; }
+
+        [Parameter] public RenderFragment ChildContent { get; set; }
+
+        protected override string GetElementClass()
+        {
+            ElementClassContainer.Clear();
+            ElementClassContainer.Add("bit-label");
+
+            if (IsRequired)
+            {
+                ElementClassContainer.Add("required");
+            }
+
+            return base.GetElementClass();
+        }
 
         public override Task SetParametersAsync(ParameterView parameters)
         {
@@ -17,12 +30,14 @@ namespace Bit.Client.Web.BlazorUI.Labels
             {
                 switch (parameter.Name)
                 {
-                    case nameof(Text):
-                        Text = (string)parameter.Value;
+                    case nameof(ChildContent):
+                        ChildContent = (RenderFragment)parameter.Value;
                         break;
+
                     case nameof(IsRequired):
                         IsRequired = (bool)parameter.Value;
                         break;
+
                     case nameof(For):
                         For = (string)parameter.Value;
                         break;

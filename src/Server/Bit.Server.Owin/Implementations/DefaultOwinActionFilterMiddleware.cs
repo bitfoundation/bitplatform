@@ -23,18 +23,19 @@ namespace Bit.Owin.Implementations
         {
             try
             {
-                await OnActionExecutingAsync(context);
+                await OnActionExecutingAsync(context).ConfigureAwait(false);
+
                 if (Next != null)
                     await Next.Invoke(context);
             }
             catch (Exception ex)
             {
-                await OnExceptionAsync(context, ex);
+                await OnExceptionAsync(context, ex).ConfigureAwait(false);
                 throw;
             }
             finally
             {
-                await OnActionExecutedAsync(context);
+                await OnActionExecutedAsync(context).ConfigureAwait(false);
             }
         }
 

@@ -37,7 +37,7 @@ namespace BitCodeGeneratorTaskImpl
 
             Console.WriteLine($"{selectedVSInstance.Version} was selected from followings: {string.Join(",", MSBuildLocator.QueryVisualStudioInstances().Select(vs => vs.Version))}");
 
-            await GenerateCodes(bitConfig, bitConfigProvider);
+            await GenerateCodes(bitConfig, bitConfigProvider).ConfigureAwait(false);
         }
 
         static void Init(string[] args)
@@ -96,7 +96,7 @@ namespace BitCodeGeneratorTaskImpl
 
                         string sourceProjetctPath = proj.Name == BeingCompiledProjectName ? ProjectPath : (AllProjectsPaths ?? throw new InvalidOperationException($"There is no solution project and we're unable to find {proj.Name}")).ExtendedSingle($"Trying to find project {proj.Name}", projPath => Path.GetFileNameWithoutExtension(projPath) == proj.Name);
 
-                        await workspace.OpenProjectAsync(sourceProjetctPath);
+                        await workspace.OpenProjectAsync(sourceProjetctPath).ConfigureAwait(false);
                     }
                 }
 
@@ -109,17 +109,17 @@ namespace BitCodeGeneratorTaskImpl
                     bitConfigProvider, dtosProvider
                     , new TypeScriptJayDataClientProxyDtoGenerator(), new TypeScriptJayDataClientContextGenerator(), controllersProvider, projectEnumTypesProvider);
 
-                await typeScriptJayDataGeneratedCode.GenerateCodes(workspace);
+                await typeScriptJayDataGeneratedCode.GenerateCodes(workspace).ConfigureAwait(false);
 
                 CSharpSimpleODataClientProxyGenerator csharpSimpleODataClientGeneratedCode = new CSharpSimpleODataClientProxyGenerator(bitCodeGeneratorOrderedProjectsProvider,
                     bitConfigProvider, controllersProvider, new CSharpSimpleODataClientContextGenerator(), new CSharpSimpleODataClientMetadataGenerator(), dtosProvider, projectEnumTypesProvider);
 
-                await csharpSimpleODataClientGeneratedCode.GenerateCodes(workspace);
+                await csharpSimpleODataClientGeneratedCode.GenerateCodes(workspace).ConfigureAwait(false);
 
                 CSharpHttpClientProxyGenerator csharpHttpClientProxyGenerator = new CSharpHttpClientProxyGenerator(bitCodeGeneratorOrderedProjectsProvider,
                     bitConfigProvider, controllersProvider, new CSharpHttpClientContextGenerator(), dtosProvider, projectEnumTypesProvider);
 
-                await csharpHttpClientProxyGenerator.GenerateCodes(workspace);
+                await csharpHttpClientProxyGenerator.GenerateCodes(workspace).ConfigureAwait(false);
             }
         }
 

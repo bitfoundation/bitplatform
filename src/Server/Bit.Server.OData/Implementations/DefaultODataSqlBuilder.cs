@@ -94,15 +94,15 @@ namespace Bit.OData.Implementations
             };
         }
 
-        public virtual ODataSqlQuery BuildSqlQuery<TDto>(ODataQueryOptions<TDto> odataQuery, string tableName)
+        public virtual ODataSqlQuery BuildSqlQuery<TDto>(ODataQueryOptions<TDto> queryOptions, string tableName)
             where TDto : class
         {
-            if (odataQuery == null)
-                throw new ArgumentNullException(nameof(odataQuery));
+            if (queryOptions == null)
+                throw new ArgumentNullException(nameof(queryOptions));
 
             TypeInfo dtoType = typeof(TDto).GetTypeInfo();
 
-            ODataSqlQueryParts sqlQueryParts = BuildSqlQueryParts(odataQuery);
+            ODataSqlQueryParts sqlQueryParts = BuildSqlQueryParts(queryOptions);
 
             if (sqlQueryParts.Skip != null)
             {

@@ -19,11 +19,11 @@ namespace Bit.Signalr
 
                 Core.Contracts.IDependencyResolver dependencyResolver = context.GetDependencyResolver();
 
-                await dependencyResolver.Resolve<IMessagesHubEvents>().OnConnected(this);
+                await dependencyResolver.Resolve<IMessagesHubEvents>().OnConnected(this).ConfigureAwait(false);
             }
             finally
             {
-                await base.OnConnected();
+                await base.OnConnected().ConfigureAwait(false);
             }
         }
 
@@ -39,12 +39,12 @@ namespace Bit.Signalr
                 Core.Contracts.IDependencyResolver dependencyResolver = context.GetDependencyResolver();
 
                 if (dependencyResolver != null)
-                    await dependencyResolver.Resolve<IMessagesHubEvents>().OnDisconnected(this, stopCalled);
+                    await dependencyResolver.Resolve<IMessagesHubEvents>().OnDisconnected(this, stopCalled).ConfigureAwait(false);
             }
             catch (ObjectDisposedException) { /* https://github.com/SignalR/SignalR/issues/2972 */ }
             finally
             {
-                await base.OnDisconnected(stopCalled);
+                await base.OnDisconnected(stopCalled).ConfigureAwait(false);
             }
         }
 
@@ -59,11 +59,11 @@ namespace Bit.Signalr
 
                 Core.Contracts.IDependencyResolver dependencyResolver = context.GetDependencyResolver();
 
-                await dependencyResolver.Resolve<IMessagesHubEvents>().OnReconnected(this);
+                await dependencyResolver.Resolve<IMessagesHubEvents>().OnReconnected(this).ConfigureAwait(false);
             }
             finally
             {
-                await base.OnReconnected();
+                await base.OnReconnected().ConfigureAwait(false);
             }
         }
     }

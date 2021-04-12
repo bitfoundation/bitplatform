@@ -1,7 +1,7 @@
 ﻿using Bit.Core.Contracts;
 using Bit.Test;
 using FakeItEasy;
-using IdentityModel.Client;
+using Bit.Http.Contracts;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Net;
 using System.Net.Http;
@@ -44,7 +44,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
-                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
+                Token token = await testEnvironment.Server.LoginWithCredentials("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
                 HttpResponseMessage getIndexPageResponse = await testEnvironment.Server.BuildHttpClient(token)
                     .GetAsync("/");

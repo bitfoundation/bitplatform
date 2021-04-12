@@ -12,15 +12,15 @@ namespace Bit.CSharpClientSample.ViewModels
 {
     public class TestViewModel : BitViewModelBase
     {
-        public virtual BitDelegateCommand CloseCommand { get; set; }
+        public BitDelegateCommand CloseCommand { get; set; }
 
-        public virtual BitDelegateCommand IncreaseStepsCountCommand { get; set; }
-        public virtual BitDelegateCommand ThrowExceptionCommand { get; set; }
-        public virtual BitDelegateCommand TestSignalrCommand { get; set; }
+        public BitDelegateCommand IncreaseStepsCountCommand { get; set; }
+        public BitDelegateCommand ThrowExceptionCommand { get; set; }
+        public BitDelegateCommand TestSignalrCommand { get; set; }
 
-        public virtual IMessageReceiver MessageReceiver { get; set; }
+        public IMessageReceiver MessageReceiver { get; set; }
 
-        public virtual IEventAggregator EventAggregator { get; set; }
+        public IEventAggregator EventAggregator { get; set; }
 
         public int StepsCount { get; set; }
 

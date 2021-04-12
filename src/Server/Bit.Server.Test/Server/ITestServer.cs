@@ -1,4 +1,4 @@
-﻿using IdentityModel.Client;
+﻿using Bit.Http.Contracts;
 using Microsoft.AspNet.SignalR.Client;
 using OpenQA.Selenium.Remote;
 using Simple.OData.Client;
@@ -13,7 +13,7 @@ namespace Bit.Test.Server
     {
         public string Uri { get; set; } = default!;
 
-        public TokenResponse? Token { get; set; }
+        public Token? Token { get; set; }
 
         public bool ClientSideTest { get; set; } = true;
     }
@@ -22,19 +22,19 @@ namespace Bit.Test.Server
     {
         RemoteWebDriver BuildWebDriver(RemoteWebDriverOptions? options = null);
 
-        Task<TokenResponse> Login(string userName, string password, string clientId, string secret = "secret", IDictionary<string, string?>? acr_values = null);
+        Task<Token> LoginWithCredentials(string userName, string password, string clientId, string secret = "secret", string[]? scopes = null, IDictionary<string, string?>? acr_values = null);
 
         string GetLoginUrl(string? client_id = null, Uri? redirect_uri = null, object? state = null, IDictionary<string, string?>? acr_values = null);
 
-        IODataClient BuildODataClient(TokenResponse? token = null, string odataRouteName = "Test", ODataClientSettings? odataClientSettings = null);
+        IODataClient BuildODataClient(Token? token = null, string odataRouteName = "Test", ODataClientSettings? odataClientSettings = null);
 
-        ODataBatch BuildODataBatchClient(TokenResponse? token = null, string odataRouteName = "Test", ODataClientSettings? odataClientSettings = null);
+        ODataBatch BuildODataBatchClient(Token? token = null, string odataRouteName = "Test", ODataClientSettings? odataClientSettings = null);
 
-        HttpClient BuildHttpClient(TokenResponse? token = null);
+        HttpClient BuildHttpClient(Token? token = null);
 
-        Task<IHubProxy> BuildSignalRClient(TokenResponse? token = null, Action<string, dynamic>? onMessageReceived = null);
+        Task<IHubProxy> BuildSignalRClient(Token? token = null, Action<string, dynamic>? onMessageReceived = null);
 
-        TService BuildRefitClient<TService>(TokenResponse? token = null);
+        TService BuildRefitClient<TService>(Token? token = null);
 
         void Initialize(string uri);
 

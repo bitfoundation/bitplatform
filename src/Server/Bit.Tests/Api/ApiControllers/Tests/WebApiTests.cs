@@ -1,4 +1,4 @@
-﻿using IdentityModel.Client;
+﻿using Bit.Http.Contracts;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Net.Http;
@@ -16,7 +16,7 @@ namespace Bit.Tests.Api.ApiControllers.Tests
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
-                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
+                Token token = await testEnvironment.Server.LoginWithCredentials("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
                 HttpClient client = testEnvironment.Server.BuildHttpClient(token: token);
 
@@ -34,7 +34,7 @@ namespace Bit.Tests.Api.ApiControllers.Tests
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
-                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
+                Token token = await testEnvironment.Server.LoginWithCredentials("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
                 ICustomersService customersService = testEnvironment.Server.BuildRefitClient<ICustomersService>(token: token);
 
@@ -50,7 +50,7 @@ namespace Bit.Tests.Api.ApiControllers.Tests
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
-                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
+                Token token = await testEnvironment.Server.LoginWithCredentials("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
                 HttpClient httpClient = testEnvironment.Server.BuildHttpClient(token);
 
@@ -75,7 +75,7 @@ namespace Bit.Tests.Api.ApiControllers.Tests
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
-                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
+                Token token = await testEnvironment.Server.LoginWithCredentials("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
                 HttpClient httpClient = testEnvironment.Server.BuildHttpClient(token);
 
@@ -89,7 +89,7 @@ namespace Bit.Tests.Api.ApiControllers.Tests
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
-                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
+                Token token = await testEnvironment.Server.LoginWithCredentials("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
                 HttpClient client = testEnvironment.Server.BuildHttpClient(token: token);
 

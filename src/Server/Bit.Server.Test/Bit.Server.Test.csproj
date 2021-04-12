@@ -10,14 +10,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="FakeItEasy" Version="6.2.1" />
+    <PackageReference Include="FakeItEasy" Version="7.0.0" />
     <PackageReference Include="Microsoft.AspNet.SignalR.Client" Version="2.4.1" />
-    <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="5.0.3" />
-    <PackageReference Include="Refit" Version="6.0.1" />
+    <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="5.0.4" />
+    <PackageReference Include="Refit" Version="6.0.24" />
     <PackageReference Include="Selenium.Support" Version="3.141.0" />
     <PackageReference Include="Selenium.WebDriver" Version="3.141.0" />
-    <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="88.0.4324.9600" />
-    <PackageReference Include="Simple.OData.V4.Client" Version="5.18.2" />
+    <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="89.0.4389.2300" />
+    <PackageReference Include="Simple.OData.V4.Client" Version="5.19.0" />
   </ItemGroup>
 
   <ItemGroup>

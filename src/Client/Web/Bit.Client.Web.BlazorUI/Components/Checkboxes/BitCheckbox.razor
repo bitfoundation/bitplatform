@@ -1,10 +1,12 @@
-﻿@inherits BitComponentBase
+﻿@namespace Bit.Client.Web.BlazorUI
+@inherits BitComponentBase
 
-<div class="bit-checkbox-container @VisualClass @EnabledClass @CheckedClass @IndeterminateClass @BoxSideClass">
-    <input type="checkbox" 
-           @ref="TargetCheckbox"
-           class="bit-checkbox__input--hidden" 
-           checked=@IsChecked 
+<div @ref="Element"
+     style="@GetElementStyle()"
+     class="@GetElementClass()">
+    <input type="checkbox"
+           @ref="CheckboxElement"
+           checked=@IsChecked
            disabled="@(IsEnabled is false)"
            hidden>
 
@@ -15,14 +17,8 @@
     <div class="bit-checkbox-item bit-checkbox-item__label-container" @onclick="@HandleCheckboxClick">
         <label class="bit-checkbox-item__label no-text-select">
             <span class="bit-checkbox-item__label-text">
-                @if (HasCustomLabel)
-                {
-                    @(CustomLabel);
-                } else {
-                    @Label
-                }
+                @(ChildContent)
             </span>
-
         </label>
     </div>
 </div>

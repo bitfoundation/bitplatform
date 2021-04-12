@@ -3,7 +3,7 @@ using Bit.OData.ODataControllers;
 using Bit.Test;
 using Bit.Test.Server;
 using FakeItEasy;
-using IdentityModel.Client;
+using Bit.Http.Contracts;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Remote;
@@ -23,7 +23,7 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs { UseRealServer = true }))
             {
-                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
+                Token token = await testEnvironment.Server.LoginWithCredentials("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
                 try
                 {
@@ -54,7 +54,7 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
-                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
+                Token token = await testEnvironment.Server.LoginWithCredentials("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
                 HttpResponseMessage getIndexPageResponse = await testEnvironment.Server.BuildHttpClient(token)
                     .GetAsync("/");

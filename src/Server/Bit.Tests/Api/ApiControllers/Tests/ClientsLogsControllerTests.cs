@@ -1,7 +1,7 @@
 ﻿using Bit.Core.Contracts;
+using Bit.Http.Contracts;
 using Bit.Model.Dtos;
 using FakeItEasy;
-using IdentityModel.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Simple.OData.Client;
 using System.Collections.Generic;
@@ -19,7 +19,7 @@ namespace Bit.Tests.Api.ApiControllers.Tests
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
-                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
+                Token token = await testEnvironment.Server.LoginWithCredentials("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
                 IODataClient client = testEnvironment.BuildBitODataClient(token: token);
 

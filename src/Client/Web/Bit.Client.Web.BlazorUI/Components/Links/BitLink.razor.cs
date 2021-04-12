@@ -2,14 +2,25 @@
 using Microsoft.AspNetCore.Components.Web;
 using System.Threading.Tasks;
 
-namespace Bit.Client.Web.BlazorUI.Links
+namespace Bit.Client.Web.BlazorUI
 {
     public partial class BitLink
     {
-        [Parameter] public string Text { get; set; }
-        [Parameter] public string Href { get; set; } = string.Empty;
         [Parameter] public string Target { get; set; }
+
+        [Parameter] public string Href { get; set; } = string.Empty;
+
+        [Parameter] public RenderFragment ChildContent { get; set; }
+
         [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+
+        protected override string GetElementClass()
+        {
+            ElementClassContainer.Clear();
+            ElementClassContainer.Add("bit-link");
+
+            return base.GetElementClass();
+        }
 
         protected virtual async Task HandleClick(MouseEventArgs e)
         {
@@ -25,15 +36,18 @@ namespace Bit.Client.Web.BlazorUI.Links
             {
                 switch (parameter.Name)
                 {
-                    case nameof(Text):
-                        Text = (string)parameter.Value;
+                    case nameof(ChildContent):
+                        ChildContent = (RenderFragment)parameter.Value;
                         break;
+
                     case nameof(Href):
                         Href = (string)parameter.Value;
                         break;
+
                     case nameof(Target):
                         Target = (string)parameter.Value;
                         break;
+
                     case nameof(OnClick):
                         OnClick = (EventCallback<MouseEventArgs>)parameter.Value;
                         break;

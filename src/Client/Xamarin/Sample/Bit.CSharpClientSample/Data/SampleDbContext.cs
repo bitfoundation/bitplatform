@@ -33,8 +33,8 @@ namespace Bit.CSharpClientSample.Data
             base.OnModelCreating(modelBuilder);
         }
 
-        public virtual DbSet<TestCustomerDto> TestCustomers { get; set; }
+        public DbSet<TestCustomerDto> TestCustomers { get; set; }
 
-        public virtual IDeviceService DeviceService { get; }
+        public IDeviceService DeviceService { get; }
     }
 }

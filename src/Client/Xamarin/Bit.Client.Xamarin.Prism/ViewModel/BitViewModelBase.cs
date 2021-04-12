@@ -13,11 +13,11 @@ namespace Bit.ViewModel
 {
     public class BitViewModelBase : Bindable, INavigatedAware, IInitializeAsync, INavigationAware, IDestructible
     {
-        public virtual CancellationTokenSource CancellationTokenSource { get; set; }
+        public CancellationTokenSource CancellationTokenSource { get; set; }
 
-        public virtual CancellationToken CurrentCancellationToken { get; set; }
+        public CancellationToken CurrentCancellationToken { get; set; }
 
-        public virtual IExceptionHandler ExceptionHandler { get; set; } = default!;
+        public IExceptionHandler ExceptionHandler { get; set; } = default!;
 
         public BitViewModelBase()
         {
@@ -152,8 +152,8 @@ namespace Bit.ViewModel
             return Task.CompletedTask;
         }
 
-        public virtual INavService NavigationService { get; set; } = default!;
+        public INavService NavigationService { get; set; } = default!;
 
-        public virtual IEnumerable<ITelemetryService> TelemetryServices { get; set; } = default!;
+        public IEnumerable<ITelemetryService> TelemetryServices { get; set; } = default!;
     }
 }

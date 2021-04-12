@@ -1,7 +1,7 @@
 ﻿using Bit.Core;
 using Bit.Core.Contracts;
 using Bit.Test;
-using IdentityModel.Client;
+using Bit.Http.Contracts;
 using Simple.OData.Client;
 using System;
 using System.Collections.Generic;
@@ -45,7 +45,7 @@ namespace Bit.Tests
             return baseList;
         }
 
-        public IODataClient BuildBitODataClient(TokenResponse? token = null, ODataClientSettings? odataClientSettings = null)
+        public IODataClient BuildBitODataClient(Token? token = null, ODataClientSettings? odataClientSettings = null)
         {
             odataClientSettings = odataClientSettings ?? new ODataClientSettings { };
 
@@ -54,7 +54,7 @@ namespace Bit.Tests
             return Server.BuildODataClient(token, odataRouteName: "Bit", odataClientSettings);
         }
 
-        public IODataClient BuildTestODataClient(TokenResponse? token = null, ODataClientSettings? odataClientSettings = null)
+        public IODataClient BuildTestODataClient(Token? token = null, ODataClientSettings? odataClientSettings = null)
         {
             odataClientSettings = odataClientSettings ?? new ODataClientSettings { };
 

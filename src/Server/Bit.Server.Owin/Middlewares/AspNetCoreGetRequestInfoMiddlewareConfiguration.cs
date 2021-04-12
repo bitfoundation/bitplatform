@@ -20,7 +20,7 @@ namespace Bit.Owin.Middlewares
             if (context == null)
                 throw new ArgumentNullException(nameof(context));
 
-            await context.Response.WriteAsync(GetRequestInfo(context.RequestServices), context.RequestAborted);
+            await context.Response.WriteAsync(GetRequestInfo(context.RequestServices), context.RequestAborted).ConfigureAwait(false);
         }
 
         string GetRequestInfo(IServiceProvider serviceProvider)

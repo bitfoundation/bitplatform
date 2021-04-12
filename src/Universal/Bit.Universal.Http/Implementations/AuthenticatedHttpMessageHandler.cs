@@ -31,7 +31,7 @@ namespace Bit.Http.Implementations
                 Token? token = await _securityService.GetCurrentTokenAsync(cancellationToken).ConfigureAwait(false);
 
                 if (token != null)
-                    request.Headers.Authorization = new AuthenticationHeaderValue(token.token_type, token.access_token);
+                    request.Headers.Authorization = new AuthenticationHeaderValue(token.TokenType, token.AccessToken);
             }
 
             HttpResponseMessage response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);

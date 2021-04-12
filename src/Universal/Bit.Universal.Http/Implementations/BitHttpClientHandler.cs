@@ -156,14 +156,14 @@ namespace Bit.Http.Implementations
             }
         }
 
-        public virtual IEnumerable<ITelemetryService> TelemetryServices { get; set; } = default!;
+        public IEnumerable<ITelemetryService> TelemetryServices { get; set; } = default!;
 
-        public virtual IDateTimeProvider DateTimeProvider { get; set; } = default!;
+        public IDateTimeProvider DateTimeProvider { get; set; } = default!;
 
-        public virtual IDeviceInfo DeviceInfo { get; set; } = default!;
+        public IDeviceInfo DeviceInfo { get; set; } = default!;
 
-        public virtual IAppInfo AppInfo { get; set; } = default!;
+        public IAppInfo AppInfo { get; set; } = default!;
 
-        public virtual IMainThread MainThread { get; set; } = default!;
+        public IMainThread MainThread { get; set; } = default!;
     }
 }

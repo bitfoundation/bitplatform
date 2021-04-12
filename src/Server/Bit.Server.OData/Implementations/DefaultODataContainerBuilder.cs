@@ -53,7 +53,7 @@ namespace Bit.OData.Implementations
         public async ValueTask DisposeAsync()
         {
             if (_childDependencyResolver != null)
-                await _childDependencyResolver.DisposeAsync();
+                await _childDependencyResolver.DisposeAsync().ConfigureAwait(false);
         }
 
         public virtual IContainerBuilder AddService(Microsoft.OData.ServiceLifetime lifetime, Type serviceType, Type implementationType)

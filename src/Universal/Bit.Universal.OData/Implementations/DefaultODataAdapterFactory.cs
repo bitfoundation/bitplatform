@@ -44,7 +44,7 @@ namespace Bit.OData.Implementations
 
         public async override Task<ODataResponse> GetResponseAsync(HttpResponseMessage responseMessage)
         {
-            var result = await base.GetResponseAsync(responseMessage);
+            var result = await base.GetResponseAsync(responseMessage).ConfigureAwait(false);
 
             var exp = result.Batch?.Select(b => b.Exception).FirstOrDefault();
 

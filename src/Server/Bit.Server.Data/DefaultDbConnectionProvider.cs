@@ -135,8 +135,8 @@ namespace Bit.Data
                 finally
                 {
                     if (dbAndTran.Transaction != null)
-                        await dbAndTran.Transaction.DisposeAsync();
-                    await dbAndTran.Connection.DisposeAsync();
+                        await dbAndTran.Transaction.DisposeAsync().ConfigureAwait(false);
+                    await dbAndTran.Connection.DisposeAsync().ConfigureAwait(false);
                 }
             }
         }

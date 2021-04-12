@@ -4,8 +4,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Net.Http.Headers;
 #endif
 using Microsoft.Extensions.DependencyInjection;
 using System.IO.Compression;

@@ -36,8 +36,10 @@ namespace Bit.Http.Implementations
 
 #if DotNetStandard2_0 || UWP
             using Stream stream = await content.ReadAsStreamAsync().ConfigureAwait(false);
-#else
+#elif Android || iOS || DotNetStandard2_1
             await using Stream stream = await content.ReadAsStreamAsync().ConfigureAwait(false);
+#else
+            await using Stream stream = await content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
 #endif
             using StreamReader reader = new StreamReader(stream);
             using JsonTextReader jsonTextReader = new JsonTextReader(reader);

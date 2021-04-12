@@ -56,7 +56,7 @@ namespace Bit.Tooling.CodeGenerator.Implementations
                         ControllerSymbol = controllerSymbol,
                         Name = controllerSymbol.Name.Replace("Controller", string.Empty, StringComparison.InvariantCultureIgnoreCase),
                         Operations = new List<ODataOperation>(),
-                        ModelSymbol = controllerSymbol.BaseType.TypeArguments.ExtendedSingleOrDefault($"Looking for model of ${controllerSymbol.Name}", t => t.IsDto()) ?? await BuildAutoDto(controllerSymbol)
+                        ModelSymbol = controllerSymbol.BaseType.TypeArguments.ExtendedSingleOrDefault($"Looking for model of ${controllerSymbol.Name}", t => t.IsDto()) ?? await BuildAutoDto(controllerSymbol).ConfigureAwait(false)
                     };
 
                     if (dtoController.ModelSymbol is ITypeParameterSymbol symbol)
@@ -141,7 +141,8 @@ namespace Bit.Tooling.CodeGenerator.Implementations
             ProjectId projectId = ProjectId.CreateNewId(debugName: $"{className}Project");
             DocumentId classSrc = DocumentId.CreateNewId(projectId, debugName: $"{className}.cs");
 
-            Solution solution = new AdhocWorkspace()
+            using AdhocWorkspace workspace = new AdhocWorkspace();
+            Solution solution = workspace
                 .CurrentSolution
                 .AddProject(projectId, $"{className}Project", $"{className}_{Guid.NewGuid().ToString("N")}_Assembly", LanguageNames.CSharp)
                 .AddMetadataReference(projectId, MetadataReference.CreateFromFile(typeof(bool).Assembly.Location))
@@ -161,8 +162,8 @@ namespace Auto
                 ));
 
             Document classDoc = solution.Projects.Single().GetDocument(classSrc)!;
-            ClassDeclarationSyntax classClassDec = (await classDoc.GetSyntaxRootAsync()).DescendantNodes().OfType<ClassDeclarationSyntax>().Single();
-            ITypeSymbol classTypeSymbol = (ITypeSymbol)(await classDoc.GetSemanticModelAsync()!).GetDeclaredSymbol(classClassDec);
+            ClassDeclarationSyntax classClassDec = (await classDoc.GetSyntaxRootAsync().ConfigureAwait(false)).DescendantNodes().OfType<ClassDeclarationSyntax>().Single();
+            ITypeSymbol classTypeSymbol = (ITypeSymbol)(await classDoc.GetSemanticModelAsync()!.ConfigureAwait(false)).GetDeclaredSymbol(classClassDec);
             return classTypeSymbol;
         }
     }
