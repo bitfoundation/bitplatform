@@ -1,7 +1,7 @@
 ﻿@namespace Bit.Client.Web.BlazorUI
 @inherits BitComponentBase
 
-<div class="@GetElementClass()" style="@WidthStyle">
+<div class="@GetElementClass()" style="@GetElementStyle()">
     <div class="bit-search-box-item bit-search-box-item__search-icon-container">
         <i class="bit-icon bit-icon--@IconName"></i>
     </div>
@@ -14,7 +14,7 @@
            @onfocusout="HandleInputFocusOut"
            disabled="@(IsEnabled is false)" />
     <div class="bit-search-box-item bit-search-box-item__clear-button-container">
-        <button type="button" class="bit-search-box-item__clear-button" disabled="@(InputValueClass == string.Empty)" @onclick="HandleOnClear">
+        <button type="button" class="bit-search-box-item__clear-button" disabled="@(!Value.HasValue())" @onclick="HandleOnClear">
             <i class="bit-icon bit-icon--Clear"></i>
         </button>
     </div>

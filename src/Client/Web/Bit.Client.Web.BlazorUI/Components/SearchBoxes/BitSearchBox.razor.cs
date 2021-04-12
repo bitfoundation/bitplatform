@@ -23,11 +23,6 @@ namespace Bit.Client.Web.BlazorUI
 
         public ElementReference InputRef { get; set; }
 
-        public string InputValueClass => Value.HasValue() ? "has-value" : string.Empty;
-        public string AnimationClass => DisableAnimation ? "no-animation" : string.Empty;
-        public string UnderlinedClass => IsUnderlined ? "underlined" : string.Empty;
-        public string WidthStyle => Width.HasValue() ? $"width: {Width}" : string.Empty;
-
         protected virtual async Task HandleOnClear()
         {
             if (IsEnabled)
@@ -64,12 +59,18 @@ namespace Bit.Client.Web.BlazorUI
             ElementClassContainer.Clear();
             ElementClassContainer.Add("bit-search-box");
             ElementClassContainer.Add("bit-search-box-container");
-            ElementClassContainer.Add(InputValueClass);
+            ElementClassContainer.Add(Value.HasValue() ? "has-value" : string.Empty);
+            ElementClassContainer.Add(DisableAnimation ? "no-animation" : string.Empty);
+            ElementClassContainer.Add(IsUnderlined ? "underlined" : string.Empty);
             ElementClassContainer.Add(InputFocusClass);
-            ElementClassContainer.Add(AnimationClass);
-            ElementClassContainer.Add(UnderlinedClass);
             
             return base.GetElementClass();
+        }
+
+        protected override string GetElementStyle()
+        {
+            ElementStyleContainer.Add(Width.HasValue() ? $"width: {Width}" : string.Empty);
+            return base.GetElementStyle();
         }
 
         public override Task SetParametersAsync(ParameterView parameters)
