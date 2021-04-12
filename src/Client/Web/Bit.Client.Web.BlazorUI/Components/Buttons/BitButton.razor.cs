@@ -2,16 +2,26 @@
 using Microsoft.AspNetCore.Components.Web;
 using System.Threading.Tasks;
 
-namespace Bit.Client.Web.BlazorUI.Buttons
+namespace Bit.Client.Web.BlazorUI
 {
-    public partial class BitCompoundButton
+    public partial class BitButton
     {
-        [Parameter] public string Text { get; set; }
-        [Parameter] public string SecondaryText { get; set; }
-        [Parameter] public ButtonStyle Style { get; set; } = ButtonStyle.Primary;
+        [Parameter] public RenderFragment ChildContent { get; set; }
+
         [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
-        public string StyleClass => !IsEnabled ? "" : Style == ButtonStyle.Primary ? "primary" : "standard";
+        [Parameter] public ButtonStyle ButtonStyle { get; set; } = ButtonStyle.Primary;
+
+        protected override string GetElementClass()
+        {
+            ElementClassContainer.Clear();
+            ElementClassContainer.Add("bit-button");
+            if (IsEnabled)
+            {
+                ElementClassContainer.Add(ButtonStyle == ButtonStyle.Primary ? "primary" : "standard");
+            }
+            return base.GetElementClass();
+        }
 
         protected virtual async Task HandleOnClick(MouseEventArgs e)
         {
@@ -27,17 +37,16 @@ namespace Bit.Client.Web.BlazorUI.Buttons
             {
                 switch (parameter.Name)
                 {
+                    case nameof(ButtonStyle):
+                        ButtonStyle = (ButtonStyle)parameter.Value;
+                        break;
+
                     case nameof(OnClick):
                         OnClick = (EventCallback<MouseEventArgs>)parameter.Value;
                         break;
-                    case nameof(Text):
-                        Text = (string)parameter.Value;
-                        break;
-                    case nameof(SecondaryText):
-                        SecondaryText = (string)parameter.Value;
-                        break;
-                    case nameof(Style):
-                        Style = (ButtonStyle)parameter.Value;
+
+                    case nameof(ChildContent):
+                        ChildContent = (RenderFragment)parameter.Value;
                         break;
                 }
             }

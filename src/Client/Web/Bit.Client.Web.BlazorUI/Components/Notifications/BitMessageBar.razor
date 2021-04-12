@@ -1,0 +1,10 @@
+﻿@namespace Bit.Client.Web.BlazorUI
+@inherits BitComponentBase
+
+<div @ref="Element"
+     style="@GetElementStyle()"
+     class="@GetElementClass()">
+    <span class="flexContainer">
+        @ChildContent
+    </span>
+</div>

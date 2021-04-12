@@ -159,5 +159,26 @@
             }
             return encodeURI(url);
         }
+
+        @Log()
+        public getCurrentBitJwtToken(): Contracts.BitJwtToken {
+            const token = this.getCurrentToken();
+            return JSON.parse(this.parseJwt(token.access_token).primary_sid);
+        }
+
+        private b64DecodeUnicode(input: string): string {
+            return decodeURIComponent(
+                Array.prototype.map.call(atob(input), c =>
+                    '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+                ).join(''));
+        }
+
+        private parseJwt(input: string): { primary_sid: string } {
+            return JSON.parse(
+                this.b64DecodeUnicode(
+                    input.split('.')[1].replace('-', '+').replace('_', '/')
+                )
+            )
+        }
     }
 }
