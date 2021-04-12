@@ -14,12 +14,6 @@ namespace Bit.Client.Web.BlazorUI
 
         [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
-        public string StyleClass => !IsEnabled
-                                        ? ""
-                                        : ButtonStyle == ButtonStyle.Primary
-                                            ? "primary"
-                                            : "standard";
-
         protected virtual async Task HandleOnClick(MouseEventArgs e)
         {
             if (IsEnabled)

@@ -5,14 +5,14 @@ namespace Microsoft.JSInterop
 {
     public static class JsRuntimeExtension
     {
-        public static async Task SetElementProperty(this IJSRuntime jsRuntime, ElementReference element, string property, object value)
+        public static async Task SetProperty(this IJSRuntime jsRuntime, ElementReference element, string property, object value)
         {
-            await jsRuntime.InvokeVoidAsync("setElementProperty", element, property, value);
+            await jsRuntime.InvokeVoidAsync("Bit.setProperty", element, property, value);
         }
 
-        public static async Task<string> GetElementProperty(this IJSRuntime jsRuntime, ElementReference element, string property)
+        public static async Task<string> GetProperty(this IJSRuntime jsRuntime, ElementReference element, string property)
         {
-            return await jsRuntime.InvokeAsync<string>("getElementProperty", element, property);
+            return await jsRuntime.InvokeAsync<string>("Bit.getProperty", element, property);
         }
     }
 }
