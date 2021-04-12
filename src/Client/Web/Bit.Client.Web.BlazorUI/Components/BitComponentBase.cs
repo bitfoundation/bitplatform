@@ -1,34 +1,24 @@
-﻿using Microsoft.AspNetCore.Components;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 
 namespace Bit.Client.Web.BlazorUI
 {
     public class BitComponentBase : ComponentBase
     {
+        public ElementReference Element { get; internal set; }
+
         [CascadingParameter] public Theme Theme { get; set; }
 
         [CascadingParameter] public Visual Visual { get; set; }
 
-        [Parameter] public bool IsEnabled { get; set; } = true;
-
-        [Parameter]
-        public string Style
-        {
-            get
-            {
-                var prefix = string.IsNullOrEmpty(_style) ? "" : ";";
-                return $"{_style}{prefix}{GetVisibilityStyle()}";
-            }
-            set => _style = value;
-        }
+        [Parameter] public string Style { get; set; }
 
         [Parameter] public string Class { get; set; }
 
+        [Parameter] public bool IsEnabled { get; set; } = true;
+
         [Parameter] public ComponentVisibility Visibility { get; set; }
-
-        public string EnabledClass => IsEnabled ? "enabled" : "disabled";
-
-        public string VisualClass => Visual == Visual.Cupertino ? "cupertino" : Visual == Visual.Material ? "material" : "fluent";
 
         public override Task SetParametersAsync(ParameterView parameters)
         {
@@ -65,15 +55,32 @@ namespace Bit.Client.Web.BlazorUI
             return base.SetParametersAsync(ParameterView.Empty);
         }
 
-        private string _style;
+        protected ElementStyleContainer ElementStyleContainer { get; private set; } = new ElementStyleContainer();
 
-        private string GetVisibilityStyle()
+        protected ElementClassContainer ElementClassContainer { get; private set; } = new ElementClassContainer();
+
+        protected virtual string GetElementStyle()
         {
-            return Visibility == ComponentVisibility.Hidden
-                    ? "visibility:hidden"
-                    : Visibility == ComponentVisibility.Collapsed
-                        ? "display:none"
-                        : "";
+            var stylePostfix = string.IsNullOrEmpty(Style) ? "" : ";";
+            var elementStyle = ElementStyleContainer.Value;
+            var elementStylePostfix = string.IsNullOrEmpty(elementStyle) ? "" : ";";
+            var visibilityStyle = Visibility == ComponentVisibility.Hidden
+                                    ? "visibility:hidden"
+                                    : Visibility == ComponentVisibility.Collapsed
+                                        ? "display:none"
+                                        : string.Empty;
+            return $"{Style}{stylePostfix}{elementStyle}{elementStylePostfix}{visibilityStyle}";
+        }
+
+        protected virtual string GetElementClass()
+        {
+            var enabledClass = IsEnabled ? "enabled" : "disabled";
+            var visualClass = Visual == Visual.Cupertino
+                                ? "cupertino"
+                                : Visual == Visual.Material
+                                    ? "material"
+                                    : "fluent";
+            return $"{Class} {enabledClass} {visualClass} {ElementClassContainer.Value}";
         }
     }
 }

@@ -1,8 +1,9 @@
 ﻿@namespace Bit.Client.Web.BlazorUI
 @inherits BitComponentBase
 
-<button style="@Style"
-        class="bit-button @VisualClass @EnabledClass @StyleClass @Class"
+<button @ref="Element"
+        style="@GetElementStyle()"
+        class="@GetElementClass()"
         @onclick="HandleOnClick">
     @ChildContent
 </button>

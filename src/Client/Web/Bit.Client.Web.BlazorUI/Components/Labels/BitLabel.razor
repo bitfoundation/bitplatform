@@ -1,8 +1,9 @@
 ﻿@namespace Bit.Client.Web.BlazorUI
 @inherits BitComponentBase
 
-<label style="@Style"
-       class="bit-label @VisualClass @EnabledClass @RequiredClass @Class"
+<label @ref="Element"
+       style="@GetElementStyle()"
+       class="@GetElementClass()"
        for="@For">
     @ChildContent
 </label>
