@@ -13,7 +13,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.SearchBoxes
         {
             var component = RenderComponent<BitSearchBoxTest>(parameter =>
             parameter.Add(p => p.Placeholder, componentPlaceholder));
-            var input = component.Find("input.bit-search-box-item__input");
+            var input = component.Find("input.search-input");
 
             var inputPlaceholder = input.GetAttribute("placeholder");
 
@@ -25,7 +25,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.SearchBoxes
         {
             var component = RenderComponent<BitSearchBoxTest>(parameter =>
             parameter.Add(p => p.Value, value));
-            var input = component.Find("input.bit-search-box-item__input");
+            var input = component.Find("input.search-input");
 
             var inputValue = input.GetAttribute("value");
 

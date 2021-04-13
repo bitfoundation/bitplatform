@@ -2,10 +2,10 @@
 @inherits BitComponentBase
 
 <div class="@GetElementClass()" style="@GetElementStyle()">
-    <div class="bit-search-box-item bit-search-box-item__search-icon-container">
+    <div class="search-icon-container">
         <i class="bit-icon bit-icon--@IconName"></i>
     </div>
-    <input type="text" @ref="InputRef" class="bit-search-box-item bit-search-box-item__input"
+    <input type="text" @ref="InputRef" class="search-input"
            placeholder="@Placeholder"
            @bind-value="Value"
            @bind-value:event="oninput"
@@ -13,8 +13,8 @@
            @onfocusin="HandleInputFocusIn"
            @onfocusout="HandleInputFocusOut"
            disabled="@(IsEnabled is false)" />
-    <div class="bit-search-box-item bit-search-box-item__clear-button-container">
-        <button type="button" class="bit-search-box-item__clear-button" disabled="@(!Value.HasValue())" @onclick="HandleOnClear">
+    <div class="clear-button-container">
+        <button type="button" class="clear-button" disabled="@(!Value.HasValue())" @onclick="HandleOnClear">
             <i class="bit-icon bit-icon--Clear"></i>
         </button>
     </div>

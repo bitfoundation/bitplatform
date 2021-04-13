@@ -18,7 +18,7 @@
     height: 32px;
 
     &.has-value {
-        .bit-search-box-item__clear-button-container {
+        .clear-button-container {
             opacity:1;
             flex-basis: 0px;
 
@@ -29,7 +29,7 @@
     }
 
     &.has-value:hover {
-        .bit-search-box-item__search-icon-container {
+        .search-icon-container {
             width: 0px;
 
             & i.bit-icon {
@@ -41,7 +41,7 @@
     &.focused {
         border: 2px solid $Primary;
 
-        .bit-search-box-item__search-icon-container {
+        .search-icon-container {
             width: 0px;
 
             & i.bit-icon {
@@ -51,7 +51,7 @@
     }
 
     &.no-animation {
-        .bit-search-box-item__search-icon-container {
+        .search-icon-container {
             transition: none;
 
             & i.bit-icon {
@@ -59,7 +59,7 @@
             }
         }
 
-        .bit-search-box-item__clear-button-container {
+        .clear-button-container {
             transition: none;
 
             & i.bit-icon--Clear {
@@ -90,13 +90,13 @@
             background-color: transparent;
         }
 
-        & .bit-search-box-item__search-icon-container {
+        & .search-icon-container {
             color: $Grey90;
         }
     }
 }
 
-    .bit-search-box-item__input {
+    .search-input {
         box-shadow: none;
         margin: 0px;
         padding: 0px 0px 0.5px;
@@ -111,7 +111,7 @@
         text-overflow: ellipsis;
     }
 
-.bit-search-box-item__search-icon-container {
+.search-icon-container {
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -134,7 +134,7 @@
     }
 }
 
-    .bit-search-box-item__clear-button-container {
+    .clear-button-container {
         display: flex;
         flex-direction: row;
         align-items: stretch;
