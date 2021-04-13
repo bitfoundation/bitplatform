@@ -251,3 +251,5 @@ _book
 
 /src/Client/Web/Bit.Client.Web.BlazorUI/wwwroot/**/*.js
 /src/Client/Web/Bit.Client.Web.BlazorUI/wwwroot/**/*.css
+/src/Client/Web/Bit.Client.Web.BlazorUI/**/*.css
+
