@@ -1,46 +1,20 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
-	<PropertyGroup>
-		<TargetFramework>net5.0</TargetFramework>
-	</PropertyGroup>
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
 
-	<ItemGroup>
-	  <None Include="wwwroot\assets\fluent\fonts\segoeui.ttf" />
-	  <None Include="wwwroot\assets\fluent\fonts\segoeuib.ttf" />
-	  <None Include="wwwroot\assets\fluent\fonts\segoeuil.ttf" />
-	  <None Include="wwwroot\assets\fluent\fonts\segoeuisl.ttf" />
-	  <None Include="wwwroot\assets\fluent\fonts\seguisb.ttf" />
-	  <None Include="wwwroot\scripts\bit.client.web.js" />
-	  <None Include="wwwroot\styles\fluent\Buttons\bit-button.fluent.css" />
-	  <None Include="wwwroot\styles\fluent\Buttons\bit-button.fluent.scss" />
-	  <None Include="wwwroot\styles\fluent\Buttons\bit-compound-button.fluent.css" />
-	  <None Include="wwwroot\styles\fluent\Buttons\bit-compound-button.fluent.scss" />
-	  <None Include="wwwroot\styles\fluent\Checkboxes\bit-checkbox.fluent.css" />
-	  <None Include="wwwroot\styles\fluent\Checkboxes\bit-checkbox.fluent.scss" />
-	  <None Include="wwwroot\styles\fluent\Labels\bit-label.fluent.css" />
-	  <None Include="wwwroot\styles\fluent\Labels\bit-label.fluent.scss" />
-	  <None Include="wwwroot\styles\fluent\Links\bit-link.fluent.css" />
-	  <None Include="wwwroot\styles\fluent\Links\bit-link.fluent.scss" />
-	  <None Include="wwwroot\styles\fluent\Notifications\bit-message-bar.fluent.css" />
-	  <None Include="wwwroot\styles\fluent\Notifications\bit-message-bar.fluent.scss" />
-	  <None Include="wwwroot\styles\fluent\_colors.fluent.scss" />
-	  <None Include="wwwroot\styles\fluent\_fonts.fluent.scss" />
-	  <None Include="wwwroot\styles\styles.fluent.scss" />
-	  <None Include="wwwroot\styles\styles.scss" />
-	  <None Include="wwwroot\styles\_functions.scss" />
-	</ItemGroup>
+  <ItemGroup>
+    <SupportedPlatform Include="browser" />
+  </ItemGroup>
 
-	<ItemGroup>
-		<SupportedPlatform Include="browser" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="5.0.4" />
-		<PackageReference Include="Delegate.SassBuilder" Version="1.4.0" />
-		<PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.1.4">
-			<PrivateAssets>all</PrivateAssets>
-		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		</PackageReference>
-	</ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="5.0.3" />
+    <PackageReference Include="Delegate.SassBuilder" Version="1.4.0" />
+    <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.1.4">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
 
 </Project>
