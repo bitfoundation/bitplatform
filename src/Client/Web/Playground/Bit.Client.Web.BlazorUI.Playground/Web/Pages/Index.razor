@@ -172,7 +172,7 @@
 <div class="search-box-container">
     <h3>SearchBox</h3>
     <h5>Default SearchBox</h5>
-        <BitSearchBox Placeholder="Search" OnSearch="HandledSearch" OnClear="HandleClear"></BitSearchBox>
+        <BitSearchBox Placeholder="Search"></BitSearchBox>
         <br />
         <BitSearchBox Placeholder="Search with no animation" DisableAnimation=true></BitSearchBox>
         <br />
@@ -186,18 +186,6 @@
         <br />
     <BitSearchBox Placeholder="Search" IsEnabled=false IsUnderlined=true></BitSearchBox>
     <h5>SearchBox with fixed width</h5>
-    <BitSearchBox Placeholder="Search" OnSearch="HandledSearch" OnClear="HandleClear" Width="250px"></BitSearchBox>
-    @code{
-        void HandledSearch(string value)
-        {
-            Console.WriteLine("On Search ... --> " + value);
-        }
-
-        void HandleClear()
-        {
-            Console.WriteLine("Clear Button Clicked !");
-        }
-
-    }
+    <BitSearchBox Placeholder="Search" Width="250px"></BitSearchBox>
     <br />
 </div>

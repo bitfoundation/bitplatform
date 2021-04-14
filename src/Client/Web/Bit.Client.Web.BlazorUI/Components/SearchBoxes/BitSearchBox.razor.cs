@@ -10,7 +10,7 @@ namespace Bit.Client.Web.BlazorUI
     {
         [Inject] public IJSRuntime JSRuntime { get; set; }
 
-        public string InputFocusClass = string.Empty;
+        private bool _inputHasFocus = false;
 
         [Parameter] public string Value { get; set; }
         [Parameter] public string Placeholder { get; set; }
@@ -51,25 +51,40 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
-        public void HandleInputFocusIn() => InputFocusClass = "focused";
-        public void HandleInputFocusOut() => InputFocusClass = string.Empty;
+        public void HandleInputFocusIn() => _inputHasFocus = true;
+        public void HandleInputFocusOut() => _inputHasFocus = false;
 
         protected override string GetElementClass()
-        {    
+        {
             ElementClassContainer.Clear();
-            ElementClassContainer.Add("bit-search-box");
             ElementClassContainer.Add("bit-search-box-container");
-            ElementClassContainer.Add(Value.HasValue() ? "has-value" : string.Empty);
-            ElementClassContainer.Add(DisableAnimation ? "no-animation" : string.Empty);
-            ElementClassContainer.Add(IsUnderlined ? "underlined" : string.Empty);
-            ElementClassContainer.Add(InputFocusClass);
-            
+            if (Value.HasValue())
+            {
+                ElementClassContainer.Add("has-value");
+            }
+            if (DisableAnimation)
+            {
+                ElementClassContainer.Add("no-animation");
+            }
+            if (IsUnderlined)
+            {
+                ElementClassContainer.Add("underlined");
+            }
+            if (_inputHasFocus)
+            {
+                ElementClassContainer.Add("focused");
+            }
+
+
             return base.GetElementClass();
         }
 
         protected override string GetElementStyle()
         {
-            ElementStyleContainer.Add(Width.HasValue() ? $"width: {Width}" : string.Empty);
+            if (Width.HasValue())
+            {
+                ElementStyleContainer.Add($"width: {Width}");
+            }
             return base.GetElementStyle();
         }
 
