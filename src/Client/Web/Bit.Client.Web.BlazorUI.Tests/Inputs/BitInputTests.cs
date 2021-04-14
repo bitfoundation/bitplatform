@@ -24,7 +24,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                     parameters.Add(p => p.IsReadOnly, isReadonly);
                 });
 
-            var bitTextField = com.Find(".bit-text-field-input");
+            var bitTextField = com.Find("input");
             bitTextField.Click();
             bitTextField.Focus();
             bitTextField.FocusIn();
@@ -32,7 +32,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
             bitTextField.Change(count);
             bitTextField.KeyDown(Key.Delete);
             bitTextField.KeyUp(Key.Delete);
-            Assert.IsTrue(bitTextField.ClassList.Contains(className));
+            Assert.IsTrue(bitTextField.ParentElement.ClassList.Contains(className));
             Assert.IsTrue(bitTextField.Attributes.Any(p => p.Name.Equals("readonly")).Equals(isReadonly));
             Assert.AreEqual(count, com.Instance.CurrentCount);
         }
@@ -53,7 +53,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                     parameters.Add(p => p.InputType, type);
                     parameters.Add(p => p.IsReadOnly, isReadonly);
                 });
-            var bitTextField = com.Find(".bit-text-field-input.multiline");
+            var bitTextField = com.Find("textarea");
             bitTextField.Click();
             bitTextField.Focus();
             bitTextField.FocusIn();
@@ -61,7 +61,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
             bitTextField.Change(count);
             bitTextField.KeyDown(Key.Delete);
             bitTextField.KeyUp(Key.Delete);
-            Assert.IsTrue(bitTextField.ClassList.Contains(className));
+            Assert.IsTrue(bitTextField.ParentElement.ClassList.Contains(className));
             Assert.IsTrue(bitTextField.Attributes.Any(p => p.Name.Equals("readonly")).Equals(isReadonly));
             Assert.AreEqual(count, com.Instance.CurrentCount);
         }

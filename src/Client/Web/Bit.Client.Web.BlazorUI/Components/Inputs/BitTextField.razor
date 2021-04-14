@@ -1,15 +1,40 @@
 ﻿@namespace Bit.Client.Web.BlazorUI
 @inherits BitComponentBase
-<div style="@Style" class="bit-text-field @VisualClass @EnabledClass @FocusClass @MultiLineClass @Class">
+<div @ref="Element"
+     style="@GetElementStyle()"
+     class="@GetElementClass() @FocusClass">
     @if (IsMultiLine)
     {
-        <textarea rows="3" disabled=@(!IsEnabled) readonly=@IsReadonly class="bit-text-field-input @EnabledClass @ReadonlyClass @FocusClass @MultiLineClass" placeholder="@Placeholder" maxlength="@MaxLength" @onclick="@HandleClick" @onfocusin="@HandleFocusIn" @onfocusout="@HandleFocusOut" @onfocus="@HandleFocus" @onchange="@HandleChange" @onkeydown="@HandleKeyDown" @onkeyup="@HandleKeyUp">
+        <textarea rows="3"
+                  disabled=@(!IsEnabled)
+                  readonly=@IsReadonly
+                  placeholder="@Placeholder"
+                  maxlength="@MaxLength"
+                  @onclick="@HandleClick"
+                  @onfocusin="@HandleFocusIn"
+                  @onfocusout="@HandleFocusOut"
+                  @onfocus="@HandleFocus"
+                  @onchange="@HandleChange"
+                  @onkeydown="@HandleKeyDown"
+                  @onkeyup="@HandleKeyUp">
             @Value
         </textarea>
     }
     else
     {
-        <input disabled=@(!IsEnabled) readonly=@IsReadonly class="bit-text-field-input @EnabledClass @ReadonlyClass @FocusClass @MultiLineClass" type="@Type.ToString()" value="@Value" placeholder="@Placeholder" maxlength="@MaxLength" @onclick="@HandleClick" @onfocusin="@HandleFocusIn" @onfocusout="@HandleFocusOut" @onfocus="@HandleFocus" @onchange="@HandleChange" @onkeydown="@HandleKeyDown" @onkeyup="@HandleKeyUp" />
+        <input disabled=@(!IsEnabled)
+               readonly=@IsReadonly
+               type="@Type.ToString()"
+               value="@Value"
+               placeholder="@Placeholder"
+               maxlength="@MaxLength"
+               @onclick="@HandleClick"
+               @onfocusin="@HandleFocusIn"
+               @onfocusout="@HandleFocusOut"
+               @onfocus="@HandleFocus" 
+               @onchange="@HandleChange"
+               @onkeydown="@HandleKeyDown"
+               @onkeyup="@HandleKeyUp" />
     }
     @ChildContent
 </div>

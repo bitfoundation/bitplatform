@@ -13,7 +13,8 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public string Placeholder { get; set; }
         [Parameter] public bool IsReadonly { get; set; } = false;
         [Parameter] public TextFieldType Type { get; set; } = TextFieldType.Text;
-        [Parameter] public bool IsMultiLine
+        [Parameter]
+        public bool IsMultiLine
         {
             get => _isMultiLine;
             set
@@ -31,9 +32,29 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public EventCallback<KeyboardEventArgs> OnKeyUp { get; set; }
         [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
-        public string ReadonlyClass => IsReadonly ? "readonly" : "";
-        public string MultiLineClass => IsMultiLine ? "multiline" : "";
         public string FocusClass { get; set; } = "";
+
+        protected override string GetElementClass()
+        {
+            ElementClassContainer.Clear();
+            ElementClassContainer.Add("bit-text-field");
+            if (IsMultiLine)
+            {
+                ElementClassContainer.Add("multiline");
+            }
+            if (IsEnabled)
+            {
+                if (IsReadonly)
+                {
+                    ElementClassContainer.Add("readonly");
+                }
+            }
+            else
+            {
+                ElementClassContainer.Add("disabled");
+            }
+            return base.GetElementClass();
+        }
 
         protected virtual async Task HandleFocusIn(FocusEventArgs e)
         {
