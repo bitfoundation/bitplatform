@@ -2,8 +2,9 @@
 @inherits BitComponentBase
 <div @ref="Element"
      style="@GetElementStyle()"
-     class="@GetElementClass() @FocusClass">
-    @if (IsMultiLine)
+     class="@GetElementClass()
+     @FocusClass">
+    @if (IsMultiLine && Type == TextFieldType.Text)
     {
         <textarea rows="3"
                   disabled=@(!IsEnabled)
@@ -31,10 +32,9 @@
                @onclick="@HandleClick"
                @onfocusin="@HandleFocusIn"
                @onfocusout="@HandleFocusOut"
-               @onfocus="@HandleFocus" 
+               @onfocus="@HandleFocus"
                @onchange="@HandleChange"
                @onkeydown="@HandleKeyDown"
                @onkeyup="@HandleKeyUp" />
     }
-    @ChildContent
 </div>

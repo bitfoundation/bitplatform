@@ -13,17 +13,7 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public string Placeholder { get; set; }
         [Parameter] public bool IsReadonly { get; set; } = false;
         [Parameter] public TextFieldType Type { get; set; } = TextFieldType.Text;
-        [Parameter]
-        public bool IsMultiLine
-        {
-            get => _isMultiLine;
-            set
-            {
-                if (Type == TextFieldType.Text)
-                    _isMultiLine = value;
-            }
-        }
-        [Parameter] public RenderFragment ChildContent { get; set; }
+        [Parameter] public bool IsMultiLine { get; set; }
         [Parameter] public EventCallback<FocusEventArgs> OnFocusIn { get; set; }
         [Parameter] public EventCallback<FocusEventArgs> OnFocusOut { get; set; }
         [Parameter] public EventCallback<FocusEventArgs> OnFocus { get; set; }
@@ -38,7 +28,7 @@ namespace Bit.Client.Web.BlazorUI
         {
             ElementClassContainer.Clear();
             ElementClassContainer.Add("bit-text-field");
-            if (IsMultiLine)
+            if (IsMultiLine && Type == TextFieldType.Text)
             {
                 ElementClassContainer.Add("multiline");
             }
@@ -64,6 +54,7 @@ namespace Bit.Client.Web.BlazorUI
                 await OnFocusIn.InvokeAsync(e);
             }
         }
+
         protected virtual async Task HandleFocusOut(FocusEventArgs e)
         {
             if (IsEnabled)
@@ -72,6 +63,7 @@ namespace Bit.Client.Web.BlazorUI
                 await OnFocusOut.InvokeAsync(e);
             }
         }
+
         protected virtual async Task HandleFocus(FocusEventArgs e)
         {
             if (IsEnabled)
@@ -80,6 +72,7 @@ namespace Bit.Client.Web.BlazorUI
                 await OnFocus.InvokeAsync(e);
             }
         }
+
         protected virtual async Task HandleChange(ChangeEventArgs e)
         {
             if (IsEnabled)
@@ -87,6 +80,7 @@ namespace Bit.Client.Web.BlazorUI
                 await OnChange.InvokeAsync(e);
             }
         }
+
         protected virtual async Task HandleKeyDown(KeyboardEventArgs e)
         {
             if (IsEnabled)
@@ -94,6 +88,7 @@ namespace Bit.Client.Web.BlazorUI
                 await OnKeyDown.InvokeAsync(e);
             }
         }
+
         protected virtual async Task HandleKeyUp(KeyboardEventArgs e)
         {
             if (IsEnabled)
@@ -101,6 +96,7 @@ namespace Bit.Client.Web.BlazorUI
                 await OnKeyUp.InvokeAsync(e);
             }
         }
+
         protected virtual async Task HandleClick(MouseEventArgs e)
         {
             if (IsEnabled)
@@ -116,57 +112,47 @@ namespace Bit.Client.Web.BlazorUI
                 switch (parameter.Name)
                 {
                     case nameof(MaxLength):
-                        MaxLength = (int)parameter.Value;
+                        MaxLength = (int) parameter.Value;
                         break;
                     case nameof(Value):
-                        Value = (string)parameter.Value;
+                        Value = (string) parameter.Value;
                         break;
                     case nameof(Placeholder):
-                        Placeholder = (string)parameter.Value;
+                        Placeholder = (string) parameter.Value;
                         break;
                     case nameof(IsReadonly):
-                        IsReadonly = (bool)parameter.Value;
+                        IsReadonly = (bool) parameter.Value;
                         break;
                     case nameof(Type):
-                        Type = (TextFieldType)parameter.Value;
+                        Type = (TextFieldType) parameter.Value;
                         break;
                     case nameof(IsMultiLine):
-                        IsMultiLine = (bool)parameter.Value;
-                        break;
-                    case nameof(ChildContent):
-                        ChildContent = (RenderFragment)parameter.Value;
+                        IsMultiLine = (bool) parameter.Value;
                         break;
                     case nameof(OnFocusIn):
-                        OnFocusIn = (EventCallback<FocusEventArgs>)parameter.Value;
+                        OnFocusIn = (EventCallback<FocusEventArgs>) parameter.Value;
                         break;
                     case nameof(OnFocusOut):
-                        OnFocusOut = (EventCallback<FocusEventArgs>)parameter.Value;
+                        OnFocusOut = (EventCallback<FocusEventArgs>) parameter.Value;
                         break;
                     case nameof(OnFocus):
-                        OnFocus = (EventCallback<FocusEventArgs>)parameter.Value;
+                        OnFocus = (EventCallback<FocusEventArgs>) parameter.Value;
                         break;
                     case nameof(OnChange):
-                        OnChange = (EventCallback<ChangeEventArgs>)parameter.Value;
+                        OnChange = (EventCallback<ChangeEventArgs>) parameter.Value;
                         break;
                     case nameof(OnKeyDown):
-                        OnKeyDown = (EventCallback<KeyboardEventArgs>)parameter.Value;
+                        OnKeyDown = (EventCallback<KeyboardEventArgs>) parameter.Value;
                         break;
                     case nameof(OnKeyUp):
-                        OnKeyUp = (EventCallback<KeyboardEventArgs>)parameter.Value;
+                        OnKeyUp = (EventCallback<KeyboardEventArgs>) parameter.Value;
                         break;
                     case nameof(OnClick):
-                        OnClick = (EventCallback<MouseEventArgs>)parameter.Value;
+                        OnClick = (EventCallback<MouseEventArgs>) parameter.Value;
                         break;
                 }
             }
             return base.SetParametersAsync(parameters);
         }
     }
-
-    public enum TextFieldType
-    {
-        Text,
-        Password
-    }
-
 }

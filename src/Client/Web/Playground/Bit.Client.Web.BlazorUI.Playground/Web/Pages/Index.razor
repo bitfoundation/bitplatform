@@ -1,18 +1,4 @@
-﻿@code {
-    private bool _isMessageBarHidden = false;
-    private TextFieldType _inputType = TextFieldType.Password;
-    private string _showPasswordText = "show";
-    private void MessageBarButton(MouseEventArgs args)
-    {
-        _isMessageBarHidden = true;
-    }
-    private void ChangeInputType(MouseEventArgs args)
-    {
-        _inputType = _inputType == TextFieldType.Text ? TextFieldType.Password : TextFieldType.Text;
-        _showPasswordText = _inputType == TextFieldType.Text ? "hide" : "show";
-    }
-}
-@page "/"
+﻿@page "/"
 <style>
     /* Temp Styles */
     .links-container, .checkboxes-container, .labels-container {
@@ -181,16 +167,13 @@
     <br />
     <BitTextField MaxLength="10" Placeholder="Limited text field - 10 chars"></BitTextField>
     <br />
-    <BitTextField Type="@_inputType" Placeholder="Password input">
-        <BitButton ButtonStyle="@ButtonStyle.Standard" OnClick="ChangeInputType">@_showPasswordText</BitButton>
-    </BitTextField>
+    <BitTextField Type="@_inputType" Placeholder="Password input"></BitTextField>
+    <BitButton ButtonStyle="@ButtonStyle.Standard" OnClick="ChangeInputType">@_showPasswordText</BitButton>
     <br />
     <h3>Multi-line</h3>
-    <BitTextField IsMultiLine="true" Value="Multi-line text field">
-    </BitTextField>
+    <BitTextField IsMultiLine="true" Value="Multi-line text field"></BitTextField>
     <br />
     <BitTextField IsMultiLine="true" MaxLength="10" Placeholder="Limited multi-line text field - 10 chars"></BitTextField>
     <br />
-    <BitTextField IsMultiLine="true" IsEnabled="false" Value="Multi-line Disabled">
-    </BitTextField>
+    <BitTextField IsMultiLine="true" IsEnabled="false" Value="Multi-line Disabled"></BitTextField>
 </div>
