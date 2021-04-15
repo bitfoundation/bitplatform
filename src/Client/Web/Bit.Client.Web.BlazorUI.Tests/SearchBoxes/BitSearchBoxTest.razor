@@ -1,0 +1,16 @@
+﻿<BitSearchBox Placeholder="@Placeholder"
+              Value="@Value"
+              DisableAnimation="@DisableAnimation"
+              IsUnderlined="@IsUnderlined">
+</BitSearchBox>
+
+@code {
+    [Parameter] public string Value { get; set; }
+
+    [Parameter] public string Placeholder { get; set; }
+
+    [Parameter] public bool DisableAnimation { get; set; }
+
+    [Parameter] public bool IsUnderlined { get; set; }
+
+}

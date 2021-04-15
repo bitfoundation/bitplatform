@@ -8,7 +8,7 @@
 @page "/"
 <style>
     /* Temp Styles */
-    .links-container, .checkboxes-container, .labels-container {
+    .links-container, .checkboxes-container, .labels-container, .search-box-container {
         font-family: FluentFont;
     }
 
@@ -23,6 +23,7 @@
 </style>
 
 <h1>Bit Components</h1>
+
 <hr />
 
 <div class="buttons-container">
@@ -81,16 +82,18 @@
 </div>
 
 <div class="labels-container">
+
     <h2>Labels</h2>
     <BitLabel>I'm a Label</BitLabel>
     <BitLabel IsEnabled="false">I'm a disabled Label</BitLabel>
     <BitLabel IsRequired="true">I'm a required Label</BitLabel>
     <BitLabel For="labels-container__input">A Label for An Input</BitLabel>
+  
     <input type="text" name="labels-container__input" id="labels-container__input" />
     <hr />
 </div>
 <div class="links-container">
-    <h2>Links</h2>
+    <h3>Links</h3>
     <p>
         When a link has an href, <BitLink Href="https://github.com/bitfoundation/bitframework" Target="_blank">it renders as an anchor tag</BitLink>.
         Without an href, <BitLink>the link is rendered as a button</BitLink>.
@@ -129,9 +132,11 @@
     </BitMessageBar>
 </div>
 
+
 <hr />
 
 <div class="checkboxes-container">
+
     <h2>Checkboxes</h2>
     <h3>Basics</h3>
     <BitCheckbox>Basic Checkbox</BitCheckbox>
@@ -146,8 +151,9 @@
     <BitCheckbox IsIndeterminate="IsCheckBoxIndeterminate">Controlled indeterminated checkbox</BitCheckbox>
     <BitButton OnClick="() => IsCheckBoxIndeterminate = true">Make Checkbox Indeterminate</BitButton>
     <br />
-    <h3>Custom Label</h3>
+    <h5>Custom Label</h5>
     <BitCheckbox>
+
         Custom-rendered label with a link go to
         <a href='https://github.com/bitfoundation/bitframework'>
             bit foundation repository page.
@@ -158,5 +164,28 @@
     <BitCheckbox BoxSide="@BoxSide.End" IsChecked="true">Reversed -- Checked Checkbox</BitCheckbox>
     <BitCheckbox BoxSide="@BoxSide.End" IsEnabled="false">Reversed -- Disable Checkbox</BitCheckbox>
     <BitCheckbox BoxSide="@BoxSide.End" IsEnabled="false" IsChecked="true">Reversed -- Disable Checked Checkbox</BitCheckbox>
+
+    <br />
+</div>
+
+<hr />
+<div class="search-box-container">
+    <h3>SearchBox</h3>
+    <h5>Default SearchBox</h5>
+        <BitSearchBox Placeholder="Search"></BitSearchBox>
+        <br />
+        <BitSearchBox Placeholder="Search with no animation" DisableAnimation=true></BitSearchBox>
+        <br />
+        <h5>Underlined SearchBox</h5>
+        <BitSearchBox Placeholder="Search" IsUnderlined=true></BitSearchBox>
+        <br />
+        <h5>SearchBox with custom icon</h5>
+        <BitSearchBox Placeholder="Filter" IconName="Filter"></BitSearchBox>
+        <h5>Disabled SearchBox</h5>
+        <BitSearchBox Placeholder="Search" IsEnabled=false></BitSearchBox>
+        <br />
+    <BitSearchBox Placeholder="Search" IsEnabled=false IsUnderlined=true></BitSearchBox>
+    <h5>SearchBox with fixed width</h5>
+    <BitSearchBox Placeholder="Search" Width="250px"></BitSearchBox>
     <br />
 </div>
