@@ -6,8 +6,6 @@ namespace Bit.Client.Web.BlazorUI
 {
     public partial class BitTextField
     {
-        private bool _isMultiLine = false;
-
         [Parameter] public int MaxLength { get; set; } = -1;
         [Parameter] public string Value { get; set; }
         [Parameter] public string Placeholder { get; set; }
@@ -112,43 +110,43 @@ namespace Bit.Client.Web.BlazorUI
                 switch (parameter.Name)
                 {
                     case nameof(MaxLength):
-                        MaxLength = (int) parameter.Value;
+                        MaxLength = (int)parameter.Value;
                         break;
                     case nameof(Value):
-                        Value = (string) parameter.Value;
+                        Value = (string)parameter.Value;
                         break;
                     case nameof(Placeholder):
-                        Placeholder = (string) parameter.Value;
+                        Placeholder = (string)parameter.Value;
                         break;
                     case nameof(IsReadonly):
-                        IsReadonly = (bool) parameter.Value;
+                        IsReadonly = (bool)parameter.Value;
                         break;
                     case nameof(Type):
-                        Type = (TextFieldType) parameter.Value;
+                        Type = (TextFieldType)parameter.Value;
                         break;
                     case nameof(IsMultiLine):
-                        IsMultiLine = (bool) parameter.Value;
+                        IsMultiLine = (bool)parameter.Value;
                         break;
                     case nameof(OnFocusIn):
-                        OnFocusIn = (EventCallback<FocusEventArgs>) parameter.Value;
+                        OnFocusIn = (EventCallback<FocusEventArgs>)parameter.Value;
                         break;
                     case nameof(OnFocusOut):
-                        OnFocusOut = (EventCallback<FocusEventArgs>) parameter.Value;
+                        OnFocusOut = (EventCallback<FocusEventArgs>)parameter.Value;
                         break;
                     case nameof(OnFocus):
-                        OnFocus = (EventCallback<FocusEventArgs>) parameter.Value;
+                        OnFocus = (EventCallback<FocusEventArgs>)parameter.Value;
                         break;
                     case nameof(OnChange):
-                        OnChange = (EventCallback<ChangeEventArgs>) parameter.Value;
+                        OnChange = (EventCallback<ChangeEventArgs>)parameter.Value;
                         break;
                     case nameof(OnKeyDown):
-                        OnKeyDown = (EventCallback<KeyboardEventArgs>) parameter.Value;
+                        OnKeyDown = (EventCallback<KeyboardEventArgs>)parameter.Value;
                         break;
                     case nameof(OnKeyUp):
-                        OnKeyUp = (EventCallback<KeyboardEventArgs>) parameter.Value;
+                        OnKeyUp = (EventCallback<KeyboardEventArgs>)parameter.Value;
                         break;
                     case nameof(OnClick):
-                        OnClick = (EventCallback<MouseEventArgs>) parameter.Value;
+                        OnClick = (EventCallback<MouseEventArgs>)parameter.Value;
                         break;
                 }
             }
