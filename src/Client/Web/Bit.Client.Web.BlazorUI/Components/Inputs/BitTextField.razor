@@ -1,0 +1,40 @@
+﻿@namespace Bit.Client.Web.BlazorUI
+@inherits BitComponentBase
+<div @ref="Element"
+     style="@GetElementStyle()"
+     class="@GetElementClass()
+     @FocusClass">
+    @if (IsMultiLine && Type == TextFieldType.Text)
+    {
+        <textarea rows="3"
+                  disabled=@(!IsEnabled)
+                  readonly=@IsReadonly
+                  placeholder="@Placeholder"
+                  maxlength="@MaxLength"
+                  @onclick="@HandleClick"
+                  @onfocusin="@HandleFocusIn"
+                  @onfocusout="@HandleFocusOut"
+                  @onfocus="@HandleFocus"
+                  @onchange="@HandleChange"
+                  @onkeydown="@HandleKeyDown"
+                  @onkeyup="@HandleKeyUp">
+            @Value
+        </textarea>
+    }
+    else
+    {
+        <input disabled=@(!IsEnabled)
+               readonly=@IsReadonly
+               type="@Type.ToString()"
+               value="@Value"
+               placeholder="@Placeholder"
+               maxlength="@MaxLength"
+               @onclick="@HandleClick"
+               @onfocusin="@HandleFocusIn"
+               @onfocusout="@HandleFocusOut"
+               @onfocus="@HandleFocus"
+               @onchange="@HandleChange"
+               @onkeydown="@HandleKeyDown"
+               @onkeyup="@HandleKeyUp" />
+    }
+</div>
