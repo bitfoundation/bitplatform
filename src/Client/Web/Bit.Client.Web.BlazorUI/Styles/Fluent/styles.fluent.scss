@@ -1,8 +1,11 @@
-﻿@import "../general.scss";
+﻿@import "fonts.fluent.scss";
+@import "icons.fluent.scss";
+
+@import "../general.scss";
 @import "general.fluent.scss";
 
-@import "fonts.fluent.scss";
-
+@import "SearchBoxes/bit-search-box.fluent.scss";
+@import "Inputs/bit-text-field.fluent.scss";
 @import "Buttons/bit-button.fluent.scss";
 @import "Buttons/bit-compound-button.fluent.scss";
 @import "Notifications/bit-message-bar.fluent.scss";
