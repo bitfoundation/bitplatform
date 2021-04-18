@@ -28,7 +28,11 @@
     <Folder Include="wwwroot\styles\" />
   </ItemGroup>
 
-  <Target Name="ToolRestore">
+  <Target Name="DisplayMessages">
+    <Message Text="Restoring Tools..."  Importance="high"/>
+  </Target>
+  
+  <Target Name="ToolRestore" DependsOnTargets="DisplayMessages">
     <Exec Command="dotnet tool restore" StandardOutputImportance="high" />
   </Target>
 
