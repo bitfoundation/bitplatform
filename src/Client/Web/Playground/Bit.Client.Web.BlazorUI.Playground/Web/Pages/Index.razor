@@ -1,11 +1,4 @@
-﻿@code {
-    private bool _isMessageBarHidden = false;
-    private void MessageBarButton(MouseEventArgs args)
-    {
-        _isMessageBarHidden = true;
-    }
-}
-@page "/"
+﻿@page "/"
 <style>
     /* Temp Styles */
     .links-container, .checkboxes-container, .labels-container, .search-box-container {
@@ -27,7 +20,7 @@
 <hr />
 
 <div class="buttons-container">
-
+    <h2>BitButton</h2>
     <h3>Visibility</h3>
 
     <BitButton Visibility="ComponentVisibility.Visible">Visible Button</BitButton>
@@ -188,4 +181,28 @@
     <h5>SearchBox with fixed width</h5>
     <BitSearchBox Placeholder="Search" Width="250px"></BitSearchBox>
     <br />
+</div>
+<hr />
+
+<div class="text-field-container">
+    <h2>BitTextField</h2>
+    <BitTextField Value="Enabled"></BitTextField>
+    <br />
+    <BitTextField IsReadonly="true" Value="Readonly"></BitTextField>
+    <br />
+    <BitTextField IsEnabled="false" Value="Disabled"></BitTextField>
+    <br />
+    <BitTextField Placeholder="Placeholder"></BitTextField>
+    <br />
+    <BitTextField MaxLength="10" Placeholder="Limited text field - 10 chars"></BitTextField>
+    <br />
+    <BitTextField Type="@_inputType" Placeholder="Password input"></BitTextField>
+    <BitButton ButtonStyle="@ButtonStyle.Standard" OnClick="ChangeInputType">@_showPasswordText</BitButton>
+    <br />
+    <h3>Multi-line</h3>
+    <BitTextField IsMultiLine="true" Value="Multi-line text field"></BitTextField>
+    <br />
+    <BitTextField IsMultiLine="true" MaxLength="10" Placeholder="Limited multi-line text field - 10 chars"></BitTextField>
+    <br />
+    <BitTextField IsMultiLine="true" IsEnabled="false" Value="Multi-line Disabled"></BitTextField>
 </div>
