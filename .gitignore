@@ -252,6 +252,6 @@ _book
 /src/Client/Web/Bit.Client.Web.BlazorUI/wwwroot/**/*.js
 /src/Client/Web/Bit.Client.Web.BlazorUI/wwwroot/**/*.css
 
-/src/Client/Web/Playground/Bit.Client.Web.BlazorUI.Playground.Web/wwwroot/**/*.js
-/src/Client/Web/Playground/Bit.Client.Web.BlazorUI.Playground.Web/wwwroot/**/*.css
-/src/Client/Web/Playground/Bit.Client.Web.BlazorUI.Playground.Web/Pages/*.css
+/src/Client/Web/Playground/Bit.Client.Web.BlazorUI.Playground/Web/wwwroot/**/*.js
+/src/Client/Web/Playground/Bit.Client.Web.BlazorUI.Playground/Web/wwwroot/**/*.css
+/src/Client/Web/Playground/Bit.Client.Web.BlazorUI.Playground/Web/Pages/*.css
