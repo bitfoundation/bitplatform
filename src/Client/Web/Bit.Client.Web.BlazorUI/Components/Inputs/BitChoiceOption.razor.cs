@@ -7,19 +7,11 @@ namespace Bit.Client.Web.BlazorUI
 {
     public partial class BitChoiceOption
     {
-        private bool _isChecked = false;
 
         [Parameter] public string Text { get; set; }
         [Parameter] public string Value { get; set; }
         [Parameter] public string Name { get; set; }
-
-        [Parameter]
-        public bool IsChecked
-        {
-            get => _isChecked;
-            set => _isChecked = IsEnabled && value;
-        }
-
+        [Parameter] public bool IsChecked { get; set; }
         [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
         [Parameter] public EventCallback<ChangeEventArgs> OnChange { get; set; }
 
@@ -55,6 +47,18 @@ namespace Bit.Client.Web.BlazorUI
 
             return base.SetParametersAsync(parameters);
         }
+
+        protected override string GetElementClass()
+        {
+            ElementClassContainer.Clear();
+            ElementClassContainer.Add("bit-choice-option");
+            if (!IsEnabled)
+            {
+                ElementClassContainer.Add("disabled");
+            }
+            return base.GetElementClass();
+        }
+
 
         protected virtual async Task HandleClick(MouseEventArgs e)
         {
