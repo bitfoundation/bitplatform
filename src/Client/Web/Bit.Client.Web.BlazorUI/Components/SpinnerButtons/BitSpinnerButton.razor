@@ -1,0 +1,17 @@
+﻿@namespace Bit.Client.Web.BlazorUI
+@inherits BitComponentBase
+
+<div @ref="Element" style="@GetElementStyle()" class="@GetElementClass()">
+    <div class="label-wrapper">label</div>
+    <div class="input-wrapper">
+        <input />
+        <span class="arrow-button-container">
+            <button class="up-button">
+                <span><i class="bit-icon bit-icon--ChevronUp"></i></span>
+            </button>
+            <button class="down-button">
+                <span><i class="bit-icon bit-icon--ChevronDown"></i></span>
+            </button>
+        </span>
+    </div>
+</div>
