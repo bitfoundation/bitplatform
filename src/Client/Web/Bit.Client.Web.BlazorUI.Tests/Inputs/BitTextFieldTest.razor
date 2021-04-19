@@ -1,0 +1,42 @@
+﻿<BitTextField IsMultiLine="IsMultiLine" Type="InputType" Placeholder="Placeholder" IsReadonly="IsReadOnly" IsEnabled="IsEnabled" Value="Value"
+              OnClick="ClickEvent" OnChange="ChangeEvent" OnFocus="FocusEvent" OnFocusIn="FocusEvent" OnFocusOut="FocusEvent"
+              OnKeyDown="KeyEvent" OnKeyUp="KeyEvent">
+    <BitButton ButtonStyle="@ButtonStyle.Standard">
+    </BitButton>
+    <label>
+        @Value
+    </label>
+</BitTextField>
+@code {
+
+    [Parameter] public bool IsMultiLine { get; set; } = false;
+    [Parameter] public bool IsEnabled { get; set; }
+    [Parameter] public bool IsReadOnly { get; set; }
+    [Parameter] public string Placeholder { get; set; }
+    [Parameter] public string Value { get; set; }
+    [Parameter] public TextFieldType InputType { get; set; }
+
+    public void KeyEvent(KeyboardEventArgs e)
+    {
+        IncrementCount();
+    }
+    public void FocusEvent(FocusEventArgs e)
+    {
+        IncrementCount();
+    }
+    public void ChangeEvent(ChangeEventArgs e)
+    {
+        IncrementCount();
+    }
+    public void ClickEvent(MouseEventArgs e)
+    {
+        IncrementCount();
+    }
+    public int CurrentCount { get; set; }
+    public void IncrementCount()
+    {
+        CurrentCount++;
+        Value = CurrentCount.ToString();
+    }
+
+}

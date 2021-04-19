@@ -1,0 +1,21 @@
+﻿@namespace Bit.Client.Web.BlazorUI
+@inherits BitComponentBase
+
+<div @ref="Element" class="@GetElementClass()" style="@GetElementStyle()">
+    <div class="search-icon-container">
+        <i class="bit-icon bit-icon--@IconName"></i>
+    </div>
+    <input type="text" @ref="InputRef" class="search-input"
+           placeholder="@Placeholder"
+           @bind-value="Value"
+           @bind-value:event="oninput"
+           @onkeydown="@((k) => HandleOnKeyDown(k))"
+           @onfocusin="HandleInputFocusIn"
+           @onfocusout="HandleInputFocusOut"
+           disabled="@(IsEnabled is false)" />
+    <div class="clear-button-container">
+        <button type="button" class="clear-button" disabled="@(!Value.HasValue())" @onclick="HandleOnClear">
+            <i class="bit-icon bit-icon--Clear"></i>
+        </button>
+    </div>
+</div>
