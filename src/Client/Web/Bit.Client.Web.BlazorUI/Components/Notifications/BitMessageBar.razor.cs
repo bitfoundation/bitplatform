@@ -9,16 +9,6 @@ namespace Bit.Client.Web.BlazorUI
 
         [Parameter] public MessageBarStyle MessageBarStyle { get; set; } = MessageBarStyle.Default;
 
-        public string StyleClass => MessageBarStyle == MessageBarStyle.Warning
-                                        ? "warning"
-                                        : MessageBarStyle == MessageBarStyle.Severe
-                                            ? "severe"
-                                            : MessageBarStyle == MessageBarStyle.Error
-                                                ? "error"
-                                                : MessageBarStyle == MessageBarStyle.Success
-                                                    ? "success"
-                                                    : "default";
-
         protected override string GetElementClass()
         {
             ElementClassContainer.Clear();
