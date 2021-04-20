@@ -248,6 +248,6 @@ _book
 *.tsbuildinfo
 /src/Client/Xamarin/Sample/Bit.CSharpClientSample.Android/google-services.json
 /src/Server/Bit.Tests/Test.Model.HttpContext.cs
-
 /src/Client/Web/Bit.Client.Web.BlazorUI/wwwroot/**/*.js
-/src/Client/Web/Bit.Client.Web.BlazorUI/wwwroot/**/*.css
+/src/Client/Web/Bit.Client.Web.BlazorUI/**/*.css
+

@@ -1,14 +1,10 @@
 ﻿@page "/"
 <style>
     /* Temp Styles */
-    .links-container, .checkboxes-container, .labels-container, .search-box-container {
-        font-family: FluentFont;
+    .links-container p {
+        width: 95%;
+        margin: auto;
     }
-
-        .links-container p {
-            width: 95%;
-            margin: auto;
-        }
 
     .custom-button {
         background-color: palevioletred !important;
@@ -81,7 +77,7 @@
     <BitLabel IsEnabled="false">I'm a disabled Label</BitLabel>
     <BitLabel IsRequired="true">I'm a required Label</BitLabel>
     <BitLabel For="labels-container__input">A Label for An Input</BitLabel>
-  
+
     <input type="text" name="labels-container__input" id="labels-container__input" />
     <hr />
 </div>
@@ -165,18 +161,18 @@
 <div class="search-box-container">
     <h3>SearchBox</h3>
     <h5>Default SearchBox</h5>
-        <BitSearchBox Placeholder="Search"></BitSearchBox>
-        <br />
-        <BitSearchBox Placeholder="Search with no animation" DisableAnimation=true></BitSearchBox>
-        <br />
-        <h5>Underlined SearchBox</h5>
-        <BitSearchBox Placeholder="Search" IsUnderlined=true></BitSearchBox>
-        <br />
-        <h5>SearchBox with custom icon</h5>
-        <BitSearchBox Placeholder="Filter" IconName="Filter"></BitSearchBox>
-        <h5>Disabled SearchBox</h5>
-        <BitSearchBox Placeholder="Search" IsEnabled=false></BitSearchBox>
-        <br />
+    <BitSearchBox Placeholder="Search"></BitSearchBox>
+    <br />
+    <BitSearchBox Placeholder="Search with no animation" DisableAnimation=true></BitSearchBox>
+    <br />
+    <h5>Underlined SearchBox</h5>
+    <BitSearchBox Placeholder="Search" IsUnderlined=true></BitSearchBox>
+    <br />
+    <h5>SearchBox with custom icon</h5>
+    <BitSearchBox Placeholder="Filter" IconName="Filter"></BitSearchBox>
+    <h5>Disabled SearchBox</h5>
+    <BitSearchBox Placeholder="Search" IsEnabled=false></BitSearchBox>
+    <br />
     <BitSearchBox Placeholder="Search" IsEnabled=false IsUnderlined=true></BitSearchBox>
     <h5>SearchBox with fixed width</h5>
     <BitSearchBox Placeholder="Search" Width="250px"></BitSearchBox>
