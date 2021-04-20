@@ -1,4 +1,4 @@
-﻿@import "../_colors.fluent.scss", "../../_functions.scss";
+﻿@import "../colors.fluent.scss", "../../functions.scss";
 
 .bit-text-field.fluent {
     font-family: FluentFont;
@@ -24,7 +24,7 @@
         border-color: $Grey160;
     }
 
-    input:first-child {
+    input {
         background: none transparent;
         border: none;
         width: 100%;
@@ -43,7 +43,7 @@
         text-overflow: ellipsis;
     }
 
-    textarea:first-child {
+    textarea {
         background: none transparent;
         border: none;
         width: 100%;
@@ -68,7 +68,7 @@
     align-items: stretch;
     height: auto;
 
-    textarea:first-child {
+    textarea {
         padding: em(6px) em(8px);
         line-height: 17px;
         flex-grow: 1;
@@ -92,7 +92,7 @@
 
 .bit-text-field.fluent.focused.multiline {
     textarea:first-child {
-         padding: em(4.3px) em(6.2px);
+        padding: em(4.3px) em(6.2px);
     }
 }
 
