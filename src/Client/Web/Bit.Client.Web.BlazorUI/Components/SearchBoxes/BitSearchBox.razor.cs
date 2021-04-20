@@ -28,7 +28,7 @@ namespace Bit.Client.Web.BlazorUI
             if (IsEnabled)
             {
                 Value = string.Empty;
-                _ = InputRef.FocusAsync();
+                await InputRef.FocusAsync();
                 await OnClear.InvokeAsync();
             }
         }
