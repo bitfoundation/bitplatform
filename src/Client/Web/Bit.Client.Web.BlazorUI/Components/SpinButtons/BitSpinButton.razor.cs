@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Bit.Client.Web.BlazorUI
 {
-    public partial class BitSpinnerButton
+    public partial class BitSpinButton
     {
         public ElementReference InputElement { get; set; }
 
