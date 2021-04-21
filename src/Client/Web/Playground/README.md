@@ -1,5 +1,5 @@
 # Bit.Client.Web.BlazorUI.Playground
-Blazor dual mode with best practices in mind!
+Blazor dual mode with best practices in mind !
 
 In Directory.build.props, you can switch between blazor server and client by using either
 
