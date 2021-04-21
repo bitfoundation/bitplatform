@@ -15,12 +15,12 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Bit.Client.Xamarin.Controls" Version="7.1.0" />
-		<PackageReference Include="Fody" Version="6.3.0">
+		<PackageReference Include="Bit.Client.Xamarin.Controls" Version="7.3.0" />
+		<PackageReference Include="Fody" Version="6.5.1">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
-		<PackageReference Include="PropertyChanged.Fody" Version="3.3.1" />
+		<PackageReference Include="PropertyChanged.Fody" Version="3.3.3" />
 		<PackageReference Include="Xamarin.Forms" Version="5.0.0.1931" />
 	</ItemGroup>
 
