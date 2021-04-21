@@ -1,18 +1,26 @@
-﻿using Microsoft.AspNetCore.Components;
+﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
-using System.Threading.Tasks;
 
 namespace Bit.Client.Web.BlazorUI
 {
     public partial class BitLink
     {
-        [Parameter] public RenderFragment ChildContent { get; set; }
+        [Parameter] public string Target { get; set; }
 
         [Parameter] public string Href { get; set; } = string.Empty;
 
-        [Parameter] public string Target { get; set; }
+        [Parameter] public RenderFragment ChildContent { get; set; }
 
         [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+
+        protected override string GetElementClass()
+        {
+            ElementClassContainer.Clear();
+            ElementClassContainer.Add("bit-link");
+
+            return base.GetElementClass();
+        }
 
         protected virtual async Task HandleClick(MouseEventArgs e)
         {

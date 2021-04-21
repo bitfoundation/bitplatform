@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNetCore.Components;
+﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
-using System.Threading.Tasks;
 
 namespace Bit.Client.Web.BlazorUI
 {
@@ -12,11 +12,16 @@ namespace Bit.Client.Web.BlazorUI
 
         [Parameter] public ButtonStyle ButtonStyle { get; set; } = ButtonStyle.Primary;
 
-        public string StyleClass => !IsEnabled
-                                        ? ""
-                                        : ButtonStyle == ButtonStyle.Primary
-                                            ? "primary"
-                                            : "standard";
+        protected override string GetElementClass()
+        {
+            ElementClassContainer.Clear();
+            ElementClassContainer.Add("bit-button");
+            if (IsEnabled)
+            {
+                ElementClassContainer.Add(ButtonStyle == ButtonStyle.Primary ? "primary" : "standard");
+            }
+            return base.GetElementClass();
+        }
 
         protected virtual async Task HandleOnClick(MouseEventArgs e)
         {

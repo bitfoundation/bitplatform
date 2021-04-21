@@ -1,64 +1,68 @@
-﻿using Microsoft.AspNetCore.Components;
+﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
-using System;
-using System.Threading.Tasks;
 
 namespace Bit.Client.Web.BlazorUI
 {
     public partial class BitCheckbox
     {
+        public ElementReference CheckboxElement { get; set; }
+
         [Inject] public IJSRuntime JSRuntime { get; set; }
-
-        [Parameter] public RenderFragment ChildContent { get; set; }
-
-        [Parameter] public bool IsIndeterminate { get; set; }
 
         [Parameter] public bool IsChecked { get; set; }
 
         [Parameter] public BoxSide BoxSide { get; set; }
 
-        [Parameter] public EventCallback<bool> OnCheckboxChange { get; set; }
+        [Parameter] public bool IsIndeterminate { get; set; }
 
-        public ElementReference TargetCheckbox { get; set; }
+        [Parameter] public RenderFragment ChildContent { get; set; }
 
-        public string IndeterminateClass => IsIndeterminate ? "indeterminate" : string.Empty;
+        [Parameter] public EventCallback<bool> OnChange { get; set; }
 
-        public string CheckedClass => IsChecked ? "checked" : string.Empty;
-
-        public string BoxSideClass => BoxSide == BoxSide.End ? "box-side-end" : "box-side-start";
-
-        protected async Task HandleIndeterminate()
+        protected override string GetElementClass()
         {
+            ElementClassContainer.Clear();
+            ElementClassContainer.Add("bit-checkbox-container");
+
             if (IsIndeterminate)
             {
-                IsIndeterminate = false;
-                await JSRuntime.SetElementProperty(TargetCheckbox, "indeterminate", IsIndeterminate);
+                ElementClassContainer.Add("indeterminate");
             }
+
+            if (IsChecked)
+            {
+                ElementClassContainer.Add("checked");
+            }
+
+            ElementClassContainer.Add(BoxSide == BoxSide.End ? "box-side-end" : "box-side-start");
+
+            return base.GetElementClass();
         }
 
         protected async Task HandleCheckboxClick(MouseEventArgs e)
         {
-            if (IsEnabled)
-            {
-                if (IsIndeterminate)
-                {
-                    await HandleIndeterminate();
-                }
-                else
-                {
-                    IsChecked = !IsChecked;
-                }
+            if (!IsEnabled) return;
 
-                await OnCheckboxChange.InvokeAsync(IsChecked);
+            if (IsIndeterminate)
+            {
+                IsIndeterminate = false;
+                await JSRuntime.SetProperty(CheckboxElement, "indeterminate", IsIndeterminate);
             }
+            else
+            {
+                IsChecked = !IsChecked;
+            }
+
+            await OnChange.InvokeAsync(IsChecked);
         }
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
             if (firstRender)
             {
-                await JSRuntime.SetElementProperty(TargetCheckbox, "indeterminate", IsIndeterminate);
+                await JSRuntime.SetProperty(CheckboxElement, "indeterminate", IsIndeterminate);
             }
 
             await base.OnAfterRenderAsync(firstRender);
@@ -86,19 +90,13 @@ namespace Bit.Client.Web.BlazorUI
                         BoxSide = (BoxSide)parameter.Value;
                         break;
 
-                    case nameof(OnCheckboxChange):
-                        OnCheckboxChange = (EventCallback<bool>)parameter.Value;
+                    case nameof(OnChange):
+                        OnChange = (EventCallback<bool>)parameter.Value;
                         break;
                 }
             }
 
             return base.SetParametersAsync(parameters);
         }
-    }
-
-    public enum BoxSide
-    {
-        Start,
-        End
     }
 }
