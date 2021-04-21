@@ -1,5 +1,5 @@
-﻿using Microsoft.AspNetCore.Components;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components;
 
 namespace Bit.Client.Web.BlazorUI
 {
@@ -8,16 +8,6 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public RenderFragment ChildContent { get; set; }
 
         [Parameter] public MessageBarStyle MessageBarStyle { get; set; } = MessageBarStyle.Default;
-
-        public string StyleClass => MessageBarStyle == MessageBarStyle.Warning
-                                        ? "warning"
-                                        : MessageBarStyle == MessageBarStyle.Severe
-                                            ? "severe"
-                                            : MessageBarStyle == MessageBarStyle.Error
-                                                ? "error"
-                                                : MessageBarStyle == MessageBarStyle.Success
-                                                    ? "success"
-                                                    : "default";
 
         protected override string GetElementClass()
         {

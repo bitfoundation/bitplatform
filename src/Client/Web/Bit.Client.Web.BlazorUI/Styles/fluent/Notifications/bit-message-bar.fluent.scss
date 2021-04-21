@@ -1,0 +1,44 @@
+﻿@import "../colors.fluent.scss", "../../functions.scss";
+
+.bit-message-bar.fluent {
+    font-family: FluentFont;
+    font-size: rem(12px);
+    font-weight: 400;
+    line-height: inherit;
+    color: $Grey160;
+    align-items: center;
+    width: 100%;
+    display: flex;
+    word-break: break-word;
+}
+
+.bit-message-bar.fluent.default {
+    background-color: $Grey20;
+}
+
+.bit-message-bar.fluent.error {
+    background-color: $Error;
+}
+
+.bit-message-bar.fluent.success {
+    background-color: $Success;
+}
+
+.bit-message-bar.fluent.warning {
+    background-color: $Warning;
+}
+
+.bit-message-bar.fluent.severe {
+    background-color: $Severe;
+}
+
+.bit-message-bar.fluent .flexContainer {
+    margin: 8px 0px 8px 12px;
+    padding: 0;
+    text-align: left;
+}
+
+.bit-message-bar.fluent .bit-button.fluent {
+    padding: em(2) em(18);
+    min-width: em(80);
+}
