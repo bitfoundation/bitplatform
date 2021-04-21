@@ -250,4 +250,6 @@ _book
 /src/Server/Bit.Tests/Test.Model.HttpContext.cs
 /src/Client/Web/Bit.Client.Web.BlazorUI/wwwroot/**/*.js
 /src/Client/Web/Bit.Client.Web.BlazorUI/**/*.css
+/src/Client/Web/Playground/Bit.Client.Web.BlazorUI.Playground/Web/wwwroot/**/*.js
+/src/Client/Web/Playground/Bit.Client.Web.BlazorUI.Playground/Web/**/**/*.css
 

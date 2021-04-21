@@ -1,8 +1,8 @@
-﻿using Bunit;
+﻿using System;
+using Bunit;
 using Bunit.Rendering;
 using Microsoft.AspNetCore.Components;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
 
 namespace Bit.Client.Web.BlazorUI.Tests
 {
