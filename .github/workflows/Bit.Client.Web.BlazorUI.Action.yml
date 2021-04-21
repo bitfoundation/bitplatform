@@ -1,5 +1,6 @@
 name: BlazorUI
 on:
+  workflow_dispatch:
   push:
     paths:
     - 'src/Client/Web/**'
