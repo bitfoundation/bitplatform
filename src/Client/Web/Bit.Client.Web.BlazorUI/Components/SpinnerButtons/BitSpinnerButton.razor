@@ -4,12 +4,12 @@
 <div @ref="Element" style="@GetElementStyle()" class="@GetElementClass()">
     <div class="label-wrapper">label</div>
     <div class="input-wrapper">
-        <input />
+        <input @ref="InputElement" value="@($"{Value.ToString()} {Suffix}")" @onchange="@(e => HandleValueOnInputChange(e))"/>
         <span class="arrow-button-container">
-            <button class="up-button">
+            <button class="up-button" @onclick="@HandleUpClick">
                 <span><i class="bit-icon bit-icon--ChevronUp"></i></span>
             </button>
-            <button class="down-button">
+            <button class="down-button" @onclick="@HandleDownClick">
                 <span><i class="bit-icon bit-icon--ChevronDown"></i></span>
             </button>
         </span>

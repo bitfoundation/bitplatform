@@ -208,4 +208,11 @@
 </div>
 
 <hr />
-<BitSpinnerButton></BitSpinnerButton>
+<BitSpinnerButton Suffix="cm" Step="0.1" OnChange="@(e => HandleOnChange(e))"></BitSpinnerButton>
+
+@code{
+    public void HandleOnChange(string value)
+    {
+        Console.WriteLine(value);
+    }
+}
