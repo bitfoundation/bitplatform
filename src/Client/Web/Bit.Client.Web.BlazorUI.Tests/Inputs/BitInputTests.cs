@@ -1,7 +1,7 @@
-﻿using Bunit;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
+using Bunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.Client.Web.BlazorUI.Tests.Inputs
 {
@@ -43,7 +43,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
          DataRow(true, false, 7, "enabled", TextFieldType.Password),
          DataRow(false, false, 0, "disabled", TextFieldType.Password),
          DataRow(true, true, 7, "readonly", TextFieldType.Password)]
-        public async Task BitTextFieldShouldRespectMultiLine(bool isEnabled,bool isReadonly,int count,  string className, TextFieldType type)
+        public async Task BitTextFieldShouldRespectMultiLine(bool isEnabled, bool isReadonly, int count, string className, TextFieldType type)
         {
             var com = RenderComponent<BitTextFieldTest>(
                 parameters =>
