@@ -53,7 +53,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                     parameters.Add(p => p.InputType, type);
                     parameters.Add(p => p.IsReadOnly, isReadonly);
                 });
-            var bitTextField = com.Find("textarea");
+            var bitTextField = type == TextFieldType.Text ? com.Find("textarea") : com.Find("input");
             bitTextField.Click();
             bitTextField.Focus();
             bitTextField.FocusIn();
