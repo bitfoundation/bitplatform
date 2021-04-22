@@ -1,5 +1,4 @@
 ﻿using System.Threading.Tasks;
-using Bit.Client.Web.BlazorUI.Components.Inputs;
 using Microsoft.AspNetCore.Components;
 
 namespace Bit.Client.Web.BlazorUI
@@ -9,7 +8,23 @@ namespace Bit.Client.Web.BlazorUI
         private ChoiceGroupContext _context;
         [Parameter] public RenderFragment ChildContent { get; set; }
         [Parameter] public string Name { get; set; }
-        [Parameter] public string Value { get; set; }
+
+        [Parameter]
+        public string Value
+        {
+            get => Value;
+            set
+            {
+                Value = value;
+                ValueChange();
+            }
+        }
+
+        private void ValueChange()
+        {
+
+        }
+
         [CascadingParameter] private ChoiceGroupContext? CascadedContext { get; set; }
 
         public override Task SetParametersAsync(ParameterView parameters)
@@ -19,7 +34,7 @@ namespace Bit.Client.Web.BlazorUI
                 switch (parameter.Name)
                 {
                     case nameof(ChildContent):
-                        ChildContent = (RenderFragment) parameter.Value;
+                        ChildContent = (RenderFragment)parameter.Value;
                         break;
                     case nameof(Name):
                         Name = (string)parameter.Value;
@@ -34,7 +49,7 @@ namespace Bit.Client.Web.BlazorUI
 
         protected override void OnParametersSet()
         {
-            var changeEventCallback = EventCallback.Factory.CreateBinder<string>(this, __value => Value = __value, Value);
+            var changeEventCallback = EventCallback.Factory.CreateBinder<string>(this, value => Value = value, Value);
             _context = new ChoiceGroupContext(CascadedContext, Name, changeEventCallback);
         }
     }

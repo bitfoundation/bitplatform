@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Components.Web;
 using System;
 using System.Threading.Tasks;
-using Bit.Client.Web.BlazorUI.Components.Inputs;
 
 namespace Bit.Client.Web.BlazorUI
 {
