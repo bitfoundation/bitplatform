@@ -5,22 +5,30 @@ namespace Bit.Client.Web.BlazorUI
 {
     public partial class BitMessageBar
     {
+        private MessageBarStyle messageBarStyle = MessageBarStyle.Default;
+
         [Parameter] public RenderFragment ChildContent { get; set; }
 
-        [Parameter] public MessageBarStyle MessageBarStyle { get; set; } = MessageBarStyle.Default;
-
-        protected override string GetElementClass()
+        [Parameter]
+        public MessageBarStyle MessageBarStyle
         {
-            ElementClassContainer.Clear();
-            ElementClassContainer.Add("bit-message-bar");
+            get => messageBarStyle;
+            set
+            {
+                messageBarStyle = value;
+                ClassBuilder.Reset();
+            }
+        }
 
-            ElementClassContainer.Add(MessageBarStyle == MessageBarStyle.Warning ? "warning"
-                                    : MessageBarStyle == MessageBarStyle.Severe ? "severe"
-                                    : MessageBarStyle == MessageBarStyle.Error ? "error"
-                                    : MessageBarStyle == MessageBarStyle.Success ? "success"
-                                    : "default");
+        protected override string RootElementClass => "bit-message-bar";
 
-            return base.GetElementClass();
+        protected override void RegisterComponentClasses()
+        {
+            ClassBuilder.Register(() => MessageBarStyle == MessageBarStyle.Warning ? "warning"
+                                      : MessageBarStyle == MessageBarStyle.Severe ? "severe"
+                                      : MessageBarStyle == MessageBarStyle.Error ? "error"
+                                      : MessageBarStyle == MessageBarStyle.Success ? "success"
+                                      : "default");
         }
 
         public override Task SetParametersAsync(ParameterView parameters)
