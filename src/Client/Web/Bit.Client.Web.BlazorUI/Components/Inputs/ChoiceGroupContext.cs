@@ -15,7 +15,7 @@ namespace Bit.Client.Web.BlazorUI.Components.Inputs
 
             Name = name;
             ChangeEventCallback = changeEventCallback;
-        }
+        }   
         public ChoiceGroupContext? FindContextInAncestors(string name)
             => string.Equals(Name, name) ? this : _parentContext?.FindContextInAncestors(name);
     }

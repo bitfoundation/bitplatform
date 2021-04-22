@@ -86,7 +86,10 @@ namespace Bit.Client.Web.BlazorUI
         protected virtual async Task HandleChange(ChangeEventArgs e)
         {
             if (IsEnabled)
+            {
                 await OnChange.InvokeAsync(e);
+                await CascadedContext.ChangeEventCallback.InvokeAsync(e);
+            }
         }
     }
 }
