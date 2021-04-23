@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Components.Web;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.Web;
 
 namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
 {
@@ -8,6 +10,22 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
         private bool _isMessageBarHidden = false;
         private TextFieldType _inputType = TextFieldType.Password;
         private string _showPasswordText = "show";
+        private List<ChoiceItem> _choiceItems = new List<ChoiceItem>();
+       
+        protected override async Task OnInitializedAsync()
+        {
+            _choiceItems.Add(new ChoiceItem()
+            {
+                Text = "Option1",
+                Value = "1"
+            });
+            _choiceItems.Add(new ChoiceItem()
+            {
+                Text = "Option2",
+                Value = "2"
+            });
+        }
+
         private void MessageBarButton(MouseEventArgs args)
         {
             _isMessageBarHidden = true;

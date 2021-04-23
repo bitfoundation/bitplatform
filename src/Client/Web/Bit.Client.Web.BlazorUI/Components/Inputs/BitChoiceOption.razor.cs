@@ -7,8 +7,6 @@ namespace Bit.Client.Web.BlazorUI
 {
     public partial class BitChoiceOption
     {
-        internal ChoiceGroupContext? Context { get; private set; }
-
         [Parameter] public string Text { get; set; }
         [Parameter] public string Name { get; set; }
         [Parameter] public string Value { get; set; }
@@ -16,7 +14,7 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
         [Parameter] public EventCallback<ChangeEventArgs> OnChange { get; set; }
 
-        [CascadingParameter] private ChoiceGroupContext? CascadedContext { get; set; }
+        [CascadingParameter(Name = "CascadedContext")] protected ChoiceGroupContext CascadedContext { get; set; }
 
         public string CheckedClass => IsChecked ? "checked" : "";
         public string Id = Guid.NewGuid().ToString();
@@ -51,17 +49,6 @@ namespace Bit.Client.Web.BlazorUI
             return base.SetParametersAsync(parameters);
         }
 
-        protected override void OnParametersSet()
-        {
-            Context = string.IsNullOrEmpty(Name) ? CascadedContext : CascadedContext?.FindContextInAncestors(Name);
-
-            if (Context == null)
-            {
-                throw new InvalidOperationException($"{GetType()} must have an ancestor {typeof(BitChoiceGroup)} " +
-                                                    $"with a matching 'Name' property, if specified.");
-            }
-        }
-
         protected override string GetElementClass()
         {
             ElementClassContainer.Clear();
@@ -87,7 +74,7 @@ namespace Bit.Client.Web.BlazorUI
             if (IsEnabled)
             {
                 await OnChange.InvokeAsync(e);
-                await CascadedContext.ChangeEventCallback.InvokeAsync(e);
+                CascadedContext?.ChangeEventHandler.Invoke(this, e);
             }
         }
     }

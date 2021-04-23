@@ -1,5 +1,8 @@
 ﻿@namespace Bit.Client.Web.BlazorUI
 @inherits BitComponentBase
+@using Microsoft.AspNetCore.Components.Web.Virtualization
 <CascadingValue Value="_context">
-    @ChildContent
+    <Virtualize Items="@Items" Context="option">
+        <BitChoiceOption Text="@option.Text" Value="@option.Value" IsEnabled="!option.IsDisabled" Name="@Name"></BitChoiceOption>
+    </Virtualize>
 </CascadingValue>

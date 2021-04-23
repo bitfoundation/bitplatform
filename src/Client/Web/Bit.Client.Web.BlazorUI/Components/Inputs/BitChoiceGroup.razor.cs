@@ -1,31 +1,18 @@
-﻿using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
+﻿using Microsoft.AspNetCore.Components;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Bit.Client.Web.BlazorUI
 {
     public partial class BitChoiceGroup
     {
         private ChoiceGroupContext _context;
-        [Parameter] public RenderFragment ChildContent { get; set; }
+        private event EventHandler<ChangeEventArgs> ChangeEvent;
+
         [Parameter] public string Name { get; set; }
-
-        [Parameter]
-        public string Value
-        {
-            get => Value;
-            set
-            {
-                Value = value;
-                ValueChange();
-            }
-        }
-
-        private void ValueChange()
-        {
-
-        }
-
-        [CascadingParameter] private ChoiceGroupContext? CascadedContext { get; set; }
+        [Parameter] public string Value { get; set; }
+        [Parameter] public List<ChoiceItem> Items { get; set; }
 
         public override Task SetParametersAsync(ParameterView parameters)
         {
@@ -33,8 +20,8 @@ namespace Bit.Client.Web.BlazorUI
             {
                 switch (parameter.Name)
                 {
-                    case nameof(ChildContent):
-                        ChildContent = (RenderFragment)parameter.Value;
+                    case nameof(Items):
+                        Items = (List<ChoiceItem>)parameter.Value;
                         break;
                     case nameof(Name):
                         Name = (string)parameter.Value;
@@ -47,10 +34,16 @@ namespace Bit.Client.Web.BlazorUI
             return base.SetParametersAsync(parameters);
         }
 
-        protected override void OnParametersSet()
+        protected override async Task OnInitializedAsync()
         {
-            var changeEventCallback = EventCallback.Factory.CreateBinder<string>(this, value => Value = value, Value);
-            _context = new ChoiceGroupContext(CascadedContext, Name, changeEventCallback);
+            ChangeEvent += HandleChange;
+            _context = new ChoiceGroupContext(Name, ChangeEvent);
+        }
+        private void HandleChange(object? sender, ChangeEventArgs e)
+        {
+            var option = (BitChoiceOption)sender;
+            Items.ForEach(item => item.IsChecked = item.Value.Equals(option.Value));
+            StateHasChanged();
         }
     }
 }
