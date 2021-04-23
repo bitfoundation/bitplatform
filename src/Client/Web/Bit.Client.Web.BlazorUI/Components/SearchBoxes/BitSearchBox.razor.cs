@@ -8,20 +8,77 @@ namespace Bit.Client.Web.BlazorUI
 {
     public partial class BitSearchBox
     {
-        [Inject] public IJSRuntime JSRuntime { get; set; }
-
-        private bool _inputHasFocus = false;
-
-        [Parameter] public string Value { get; set; }
-        [Parameter] public string Placeholder { get; set; }
-        [Parameter] public bool DisableAnimation { get; set; }
-        [Parameter] public bool IsUnderlined { get; set; }
-        [Parameter] public string IconName { get; set; } = "Search";
-        [Parameter] public string Width { get; set; }
-        [Parameter] public EventCallback<string> OnSearch { get; set; }
-        [Parameter] public EventCallback OnClear { get; set; }
+        private string inputValue;
+        private bool disableAnimation;
+        private bool isUnderlined;
+        private bool inputHasFocus = false;
+        private string width;
 
         public ElementReference InputRef { get; set; }
+
+        [Inject] public IJSRuntime JSRuntime { get; set; }
+
+        [Parameter] public string Placeholder { get; set; }
+
+        [Parameter] public string IconName { get; set; } = "Search";
+
+        [Parameter] public EventCallback OnClear { get; set; }
+
+        [Parameter] public EventCallback<string> OnSearch { get; set; }
+
+        [Parameter]
+        public string Value
+        {
+            get => inputValue;
+            set
+            {
+                inputValue = value;
+                ClassBuilder.Reset();
+            }
+        }
+
+        [Parameter]
+        public bool DisableAnimation
+        {
+            get => disableAnimation;
+            set
+            {
+                disableAnimation = value;
+                ClassBuilder.Reset();
+            }
+        }
+
+        [Parameter]
+        public bool IsUnderlined
+        {
+            get => isUnderlined;
+            set
+            {
+                isUnderlined = value;
+                ClassBuilder.Reset();
+            }
+        }
+
+        [Parameter]
+        public string Width
+        {
+            get => width;
+            set
+            {
+                width = value;
+                StyleBuilder.Reset();
+            }
+        }
+
+        private bool InputHasFocus
+        {
+            get => inputHasFocus;
+            set
+            {
+                inputHasFocus = value;
+                ClassBuilder.Reset();
+            }
+        }
 
         protected virtual async Task HandleOnClear()
         {
@@ -51,41 +108,29 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
-        public void HandleInputFocusIn() => _inputHasFocus = true;
-        public void HandleInputFocusOut() => _inputHasFocus = false;
-
-        protected override string GetElementClass()
+        public void HandleInputFocusIn()
         {
-            ElementClassContainer.Clear();
-            ElementClassContainer.Add("bit-search-box-container");
-            if (Value.HasValue())
-            {
-                ElementClassContainer.Add("has-value");
-            }
-            if (DisableAnimation)
-            {
-                ElementClassContainer.Add("no-animation");
-            }
-            if (IsUnderlined)
-            {
-                ElementClassContainer.Add("underlined");
-            }
-            if (_inputHasFocus)
-            {
-                ElementClassContainer.Add("focused");
-            }
-
-
-            return base.GetElementClass();
+            InputHasFocus = true;
         }
 
-        protected override string GetElementStyle()
+        public void HandleInputFocusOut()
         {
-            if (Width.HasValue())
-            {
-                ElementStyleContainer.Add($"width: {Width}");
-            }
-            return base.GetElementStyle();
+            InputHasFocus = false;
+        }
+
+        protected override string RootElementClass => "bit-search-box-container";
+
+        protected override void RegisterComponentClasses()
+        {
+            ClassBuilder.Register(() => Value.HasValue() ? "has-value" : string.Empty);
+            ClassBuilder.Register(() => DisableAnimation ? "no-animation" : string.Empty);
+            ClassBuilder.Register(() => IsUnderlined ? "underlined" : string.Empty);
+            ClassBuilder.Register(() => InputHasFocus ? "focused" : string.Empty);
+        }
+
+        protected override void RegisterComponentStyles()
+        {
+            StyleBuilder.Register(() => Width.HasValue() ? $"width: {Width}" : string.Empty);
         }
 
         public override Task SetParametersAsync(ParameterView parameters)
@@ -97,24 +142,31 @@ namespace Bit.Client.Web.BlazorUI
                     case nameof(Value):
                         Value = (string)parameter.Value;
                         break;
+
                     case nameof(Placeholder):
                         Placeholder = (string)parameter.Value;
                         break;
+
                     case nameof(DisableAnimation):
                         DisableAnimation = (bool)parameter.Value;
                         break;
+
                     case nameof(IsUnderlined):
                         IsUnderlined = (bool)parameter.Value;
                         break;
+
                     case nameof(IconName):
                         IconName = (string)parameter.Value;
                         break;
+
                     case nameof(Width):
                         Width = (string)parameter.Value;
                         break;
+
                     case nameof(OnSearch):
                         OnSearch = (EventCallback<string>)parameter.Value;
                         break;
+
                     case nameof(OnClear):
                         OnClear = (EventCallback)parameter.Value;
                         break;
