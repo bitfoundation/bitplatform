@@ -7,12 +7,11 @@ namespace Bit.Client.Web.BlazorUI
 {
     public partial class BitChoiceGroup
     {
-        private ChoiceGroupContext _context;
-        private event EventHandler<ChangeEventArgs> ChangeEvent;
+        private List<BitChoiceOption> _options = new List<BitChoiceOption>();
 
-        [Parameter] public string Name { get; set; }
+        [Parameter] public string Name { get; set; } = Guid.NewGuid().ToString();
         [Parameter] public string Value { get; set; }
-        [Parameter] public List<ChoiceItem> Items { get; set; }
+        [Parameter] public RenderFragment ChildContent { get; set; }
 
         public override Task SetParametersAsync(ParameterView parameters)
         {
@@ -20,30 +19,39 @@ namespace Bit.Client.Web.BlazorUI
             {
                 switch (parameter.Name)
                 {
-                    case nameof(Items):
-                        Items = (List<ChoiceItem>)parameter.Value;
-                        break;
                     case nameof(Name):
                         Name = (string)parameter.Value;
                         break;
                     case nameof(Value):
                         Value = (string)parameter.Value;
                         break;
+                    case nameof(ChildContent):
+                        ChildContent = (RenderFragment)parameter.Value;
+                        break;
                 }
             }
             return base.SetParametersAsync(parameters);
         }
 
-        protected override async Task OnInitializedAsync()
+        internal void ChangeSelection(BitChoiceOption option)
         {
-            ChangeEvent += HandleChange;
-            _context = new ChoiceGroupContext(Name, ChangeEvent);
+            if (IsEnabled)
+            {
+                foreach (BitChoiceOption item in _options)
+                    item.SetOptionCheckedStatus(item == option);
+                Value = option.Value;
+            }
         }
-        private void HandleChange(object? sender, ChangeEventArgs e)
+
+        internal void RegisterOption(BitChoiceOption option)
         {
-            var option = (BitChoiceOption)sender;
-            Items.ForEach(item => item.IsChecked = item.Value.Equals(option.Value));
-            StateHasChanged();
+            _options.Add(option);
         }
+
+        internal void UnregisterRadio(BitChoiceOption option)
+        {
+            _options.Remove(option);
+        }
+
     }
 }

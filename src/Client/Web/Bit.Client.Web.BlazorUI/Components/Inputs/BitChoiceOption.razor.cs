@@ -5,16 +5,16 @@ using System.Threading.Tasks;
 
 namespace Bit.Client.Web.BlazorUI
 {
-    public partial class BitChoiceOption
+    public partial class BitChoiceOption : IDisposable
     {
         [Parameter] public string Text { get; set; }
-        [Parameter] public string Name { get; set; }
+        [Parameter] public string Name { get; set; } 
         [Parameter] public string Value { get; set; }
         [Parameter] public bool IsChecked { get; set; }
         [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
         [Parameter] public EventCallback<ChangeEventArgs> OnChange { get; set; }
 
-        [CascadingParameter(Name = "CascadedContext")] protected ChoiceGroupContext CascadedContext { get; set; }
+        [CascadingParameter] protected BitChoiceGroup? ChoiceGroup { get; set; }
 
         public string CheckedClass => IsChecked ? "checked" : "";
         public string Id = Guid.NewGuid().ToString();
@@ -49,6 +49,14 @@ namespace Bit.Client.Web.BlazorUI
             return base.SetParametersAsync(parameters);
         }
 
+        protected override Task OnInitializedAsync()
+        {
+            ChoiceGroup?.RegisterOption(this);
+            if (string.IsNullOrEmpty(Name))
+                Name = ChoiceGroup?.Name;
+            return base.OnInitializedAsync();
+        }
+
         protected override string GetElementClass()
         {
             ElementClassContainer.Clear();
@@ -64,7 +72,7 @@ namespace Bit.Client.Web.BlazorUI
         {
             if (IsEnabled)
             {
-                IsChecked = true;
+                ChoiceGroup?.ChangeSelection(this);
                 await OnClick.InvokeAsync(e);
             }
         }
@@ -74,8 +82,17 @@ namespace Bit.Client.Web.BlazorUI
             if (IsEnabled)
             {
                 await OnChange.InvokeAsync(e);
-                CascadedContext?.ChangeEventHandler.Invoke(this, e);
             }
+        }
+
+        internal void SetOptionCheckedStatus(bool status)
+        {
+            IsChecked = status;
+        }
+
+        public void Dispose()
+        {
+                ChoiceGroup?.UnregisterRadio(this);
         }
     }
 }
