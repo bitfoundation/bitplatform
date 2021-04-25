@@ -103,10 +103,10 @@
     <h2>BitMessageBar</h2>
     @if (!_isMessageBarHidden)
     {
-<BitMessageBar MessageBarStyle="@MessageBarStyle.Success">
-    Action completed! <BitButton OnClick="MessageBarButton" ButtonStyle="ButtonStyle.Standard">OK</BitButton>
-</BitMessageBar>
-                <br />}
+        <BitMessageBar MessageBarStyle="@MessageBarStyle.Success">
+            Action completed! <BitButton OnClick="MessageBarButton" ButtonStyle="ButtonStyle.Standard">OK</BitButton>
+        </BitMessageBar>
+        <br />}
     <BitMessageBar MessageBarStyle="@MessageBarStyle.Error">
         Error! Cannot complete action
     </BitMessageBar>
@@ -205,3 +205,15 @@
     <br />
     <BitTextField IsMultiLine="true" IsEnabled="false" Value="Multi-line Disabled"></BitTextField>
 </div>
+
+    <div class="spin-button-field-container">
+    <h2>BitSpinButton </h2>
+    <BitSpinButton Suffix="cm" Step="0.1" OnChange="@(e => HandleOnChange(e))"></BitSpinButton>
+    </div>
+
+    @code{
+        public void HandleOnChange(string value)
+        {
+            Console.WriteLine(value);
+        }
+    }
