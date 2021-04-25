@@ -1,8 +1,9 @@
 ﻿@namespace Bit.Client.Web.BlazorUI
 @inherits BitComponentBase
 
-<div style="@Style"
-     class="bit-message-bar @VisualClass @EnabledClass @StyleClass @Class">
+<div @ref="RootElement"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value">
     <span class="flexContainer">
         @ChildContent
     </span>

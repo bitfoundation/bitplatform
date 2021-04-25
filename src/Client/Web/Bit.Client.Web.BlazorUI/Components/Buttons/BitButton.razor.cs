@@ -1,22 +1,36 @@
-﻿using Microsoft.AspNetCore.Components;
+﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
-using System.Threading.Tasks;
 
 namespace Bit.Client.Web.BlazorUI
 {
     public partial class BitButton
     {
+        private ButtonStyle buttonStyle = ButtonStyle.Primary;
+
         [Parameter] public RenderFragment ChildContent { get; set; }
 
         [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
-        [Parameter] public ButtonStyle ButtonStyle { get; set; } = ButtonStyle.Primary;
+        [Parameter]
+        public ButtonStyle ButtonStyle
+        {
+            get => buttonStyle;
+            set
+            {
+                buttonStyle = value;
+                ClassBuilder.Reset();
+            }
+        }
 
-        public string StyleClass => !IsEnabled
-                                        ? ""
-                                        : ButtonStyle == ButtonStyle.Primary
-                                            ? "primary"
-                                            : "standard";
+        protected override string RootElementClass => "bit-button";
+
+        protected override void RegisterComponentClasses()
+        {
+            ClassBuilder.Register(() => IsEnabled is false ? string.Empty :
+                                        ButtonStyle == ButtonStyle.Primary ? "primary" :
+                                        "standard");
+        }
 
         protected virtual async Task HandleOnClick(MouseEventArgs e)
         {

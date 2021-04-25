@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
 	<PropertyGroup>
+		<ResolveStaticWebAssetsInputsDependsOn>WebCompiler</ResolveStaticWebAssetsInputsDependsOn>
 		<TargetFramework>net5.0</TargetFramework>
 	</PropertyGroup>
 
@@ -9,12 +10,31 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="5.0.4" />
-		<PackageReference Include="Delegate.SassBuilder" Version="1.4.0" />
-		<PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.1.4">
+		<PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="5.0.5" />
+		<PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.2.4">
 			<PrivateAssets>all</PrivateAssets>
-		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\..\..\Tooling\Bit.Tooling.SourceGenerators\Bit.Tooling.SourceGenerators.csproj" />
+	</ItemGroup>
+
+	<Target Name="DisplayMessages">
+		<Message Text="Restoring Tools..." Importance="high" />
+	</Target>
+
+	<Target Name="ToolRestore" DependsOnTargets="DisplayMessages">
+		<Exec Command="dotnet tool restore" StandardOutputImportance="high" />
+	</Target>
+
+	<Target Name="WebCompiler" DependsOnTargets="ToolRestore">
+		<!--compile and minify scss-->
+		<Exec Command="dotnet webcompiler ./Styles/styles.scss -c webcompiler.json" StandardOutputImportance="high" StandardErrorImportance="high" />
+		<Exec Command="dotnet webcompiler ./Styles/Cupertino/styles.cupertino.scss -c webcompiler.json" StandardOutputImportance="high" StandardErrorImportance="high" />
+		<Exec Command="dotnet webcompiler ./Styles/Fluent/styles.fluent.scss -c webcompiler.json" StandardOutputImportance="high" StandardErrorImportance="high" />
+		<Exec Command="dotnet webcompiler ./Styles/Material/styles.material.scss -c webcompiler.json" StandardOutputImportance="high" StandardErrorImportance="high" />
+	</Target>
 
 </Project>

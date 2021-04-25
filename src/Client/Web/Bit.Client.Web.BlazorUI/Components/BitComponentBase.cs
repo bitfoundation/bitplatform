@@ -1,34 +1,97 @@
-﻿using Microsoft.AspNetCore.Components;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using Bit.Client.Web.BlazorUI.Utils;
+using Microsoft.AspNetCore.Components;
 
 namespace Bit.Client.Web.BlazorUI
 {
-    public class BitComponentBase : ComponentBase
+    public abstract class BitComponentBase : ComponentBase
     {
+        private string style;
+        private Visual visual;
+        private string @class;
+        private bool isEnabled = true;
+        private ComponentVisibility visibility;
+
+        protected bool Rendered { get; private set; } = false;
+
+        private Guid _uniqueId = Guid.NewGuid();
+
+        public Guid UniqueId => _uniqueId;
+
+        public ElementReference RootElement { get; internal set; }
+
         [CascadingParameter] public Theme Theme { get; set; }
 
-        [CascadingParameter] public Visual Visual { get; set; }
+        [CascadingParameter]
+        public Visual Visual
+        {
+            get => visual; set
+            {
+                visual = value;
+                ClassBuilder.Reset();
+            }
+        }
 
-        [Parameter] public bool IsEnabled { get; set; } = true;
+        [Parameter]
+        public string Class
+        {
+            get => @class; set
+            {
+                @class = value;
+                ClassBuilder.Reset();
+            }
+        }
+
+        [Parameter]
+        public bool IsEnabled
+        {
+            get => isEnabled; set
+            {
+                isEnabled = value;
+                ClassBuilder.Reset();
+            }
+        }
 
         [Parameter]
         public string Style
         {
-            get
+            get => style; set
             {
-                var prefix = string.IsNullOrEmpty(_style) ? "" : ";";
-                return $"{_style}{prefix}{GetVisibilityStyle()}";
+                style = value;
+                StyleBuilder.Reset();
             }
-            set => _style = value;
         }
 
-        [Parameter] public string Class { get; set; }
+        [Parameter]
+        public ComponentVisibility Visibility
+        {
+            get => visibility; set
+            {
+                visibility = value;
+                StyleBuilder.Reset();
+            }
+        }
 
-        [Parameter] public ComponentVisibility Visibility { get; set; }
+        protected override void OnInitialized()
+        {
+            RegisterComponentStyles();
+            StyleBuilder
+                .Register(() => Style)
+                .Register(() => Visibility == ComponentVisibility.Hidden ? "visibility:hidden" :
+                                Visibility == ComponentVisibility.Collapsed ? "display:none" :
+                                string.Empty);
 
-        public string EnabledClass => IsEnabled ? "enabled" : "disabled";
+            ClassBuilder
+                .Register(() => Visual == Visual.Cupertino ? "cupertino" : Visual == Visual.Material ? "material" : "fluent")
+                .Register(() => IsEnabled ? "enabled" : "disabled")
+                .Register(() => RootElementClass);
+            RegisterComponentClasses();
+            ClassBuilder.Register(() => Class);
 
-        public string VisualClass => Visual == Visual.Cupertino ? "cupertino" : Visual == Visual.Material ? "material" : "fluent";
+            base.OnInitialized();
+        }
 
         public override Task SetParametersAsync(ParameterView parameters)
         {
@@ -65,15 +128,24 @@ namespace Bit.Client.Web.BlazorUI
             return base.SetParametersAsync(ParameterView.Empty);
         }
 
-        private string _style;
-
-        private string GetVisibilityStyle()
+        protected override void OnAfterRender(bool firstRender)
         {
-            return Visibility == ComponentVisibility.Hidden
-                    ? "visibility:hidden"
-                    : Visibility == ComponentVisibility.Collapsed
-                        ? "display:none"
-                        : "";
+            Rendered = true;
+            base.OnAfterRender(firstRender);
+        }
+
+        protected abstract string RootElementClass { get; }
+
+        protected ElementClassBuilder ClassBuilder { get; private set; } = new ElementClassBuilder();
+
+        protected ElementStyleBuilder StyleBuilder { get; private set; } = new ElementStyleBuilder();
+
+        protected virtual void RegisterComponentStyles()
+        {
+        }
+
+        protected virtual void RegisterComponentClasses()
+        {
         }
     }
 }
