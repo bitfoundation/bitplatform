@@ -5525,6 +5525,31 @@ button.bit-link {
     line-height: 16px;
     flex-shrink: 0; }
 
+.bit-spin-button.disabled .spin-button-label-wrapper {
+  color: #A19F9D; }
+
+.bit-spin-button.disabled .spin-button-label {
+  color: #A19F9D; }
+
+.bit-spin-button.disabled .spin-button {
+  background: #F3F2F1;
+  color: #A19F9D;
+  border: 1px solid #F3F2F1;
+  cursor: default;
+  pointer-events: none; }
+
+.bit-spin-button.disabled .spin-button-input {
+  color: #A19F9D;
+  cursor: default;
+  border: none #F3F2F1;
+  background: none #F3F2F1; }
+
+.bit-spin-button.disabled .spin-button-input-wrapper {
+  color: #A19F9D;
+  cursor: default;
+  border: none #F3F2F1;
+  background: none #F3F2F1; }
+
 button {
   border: none;
   outline: none; }

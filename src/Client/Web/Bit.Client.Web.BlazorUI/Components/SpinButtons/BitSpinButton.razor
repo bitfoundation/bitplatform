@@ -2,23 +2,36 @@
 @inherits BitComponentBase
 
 <div @ref="Element" style="@GetElementStyle()" class="@GetElementClass()">
+
     <div class="spin-button-label-wrapper">
         <i class="bit-icon bit-icon--@IconName bit-icon--l"></i>
         <label class="spin-button-label">@Label</label>
     </div>
+
     <div class="spin-button-input-wrapper">
-        <input class="spin-button-input" @ref="InputElement" value="@($"{Value.ToString()} {Suffix}")" @onchange="@(e => HandleValueOnInputChange(e))" />
+
+        <input class="spin-button-input"
+               @ref="InputElement"
+               disabled="@(IsEnabled is false)"
+               value="@($"{Value.ToString()} {Suffix}")"
+               @onchange="@(e => HandleValueOnInputChange(e))" />
+
         <span class="spin-button-buttons-wrapper">
+
             <button class="spin-button spin-button--up" @onclick="@HandleUpClick">
                 <span class="spin-button-icon-wrapper">
                     <i class="bit-icon bit-icon--ChevronUpSmall bit-icon--s"></i>
                 </span>
             </button>
+
             <button class="spin-button spin-button--down" @onclick="@HandleDownClick">
                 <span class="spin-button-icon-wrapper">
                     <i class="bit-icon bit-icon--ChevronDownSmall bit-icon--s"></i>
                 </span>
             </button>
+
         </span>
+
     </div>
+
 </div>

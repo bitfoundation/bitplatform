@@ -102,3 +102,35 @@
         flex-shrink: 0;
     }
 }
+
+.bit-spin-button.disabled {
+    & .spin-button-label-wrapper {
+        color: $Grey90;
+    }
+
+    & .spin-button-label {
+        color: $Grey90;
+    }
+
+    & .spin-button {
+        background: $Grey20;
+        color: $Grey90;
+        border: 1px solid $Grey20;
+        cursor: default;
+        pointer-events: none;
+    }
+
+    & .spin-button-input {
+        color: $Grey90;
+        cursor: default;
+        border: none $Grey20;
+        background: none $Grey20;
+    }
+
+    & .spin-button-input-wrapper {
+        color: $Grey90;
+        cursor: default;
+        border: none $Grey20;
+        background: none $Grey20;
+    }
+}
