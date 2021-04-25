@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <Import Project="../../Bit.Build.props" />
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <NoPackageAnalysis>true</NoPackageAnalysis>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <!-- Generates a package at build -->
+        <IncludeBuildOutput>false</IncludeBuildOutput>
+        <!-- Do not include the generator as a lib dependency -->
+        <LangVersion>9.0</LangVersion>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Update="NETStandard.Library" PrivateAssets="all" GeneratePathProperty="true" />
+        <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.2" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="3.9.0" PrivateAssets="all" />
+
+        <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+    </ItemGroup>
+
+</Project>

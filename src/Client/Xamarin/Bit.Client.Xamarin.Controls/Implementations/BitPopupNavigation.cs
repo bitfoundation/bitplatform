@@ -1,5 +1,6 @@
 ﻿using Rg.Plugins.Popup.Contracts;
 using Rg.Plugins.Popup.Events;
+using Rg.Plugins.Popup.Exceptions;
 using Rg.Plugins.Popup.Pages;
 using System;
 using System.Collections.Generic;
@@ -43,7 +44,7 @@ namespace Bit.Client.Xamarin.Controls.Implementations
             {
                 await OriginalImplementation.PopAllAsync(animate);
             }
-            catch (IndexOutOfRangeException exp) when (exp.Message == "No Page in PopupStack")
+            catch (RGPopupStackInvalidException exp) when (exp.Message == "No Page in PopupStack")
             {
 
             }
@@ -55,7 +56,7 @@ namespace Bit.Client.Xamarin.Controls.Implementations
             {
                 await OriginalImplementation.PopAsync(animate);
             }
-            catch (IndexOutOfRangeException exp) when (exp.Message == "No Page in PopupStack")
+            catch (RGPopupStackInvalidException exp) when (exp.Message == "No Page in PopupStack")
             {
 
             }

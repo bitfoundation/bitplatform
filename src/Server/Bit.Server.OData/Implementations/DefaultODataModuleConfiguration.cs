@@ -44,15 +44,12 @@ namespace Bit.OData.Implementations
     {
         private readonly MethodInfo _buildControllerOperations;
         private readonly MethodInfo _buildDto;
-        private readonly MethodInfo _collectionParameterMethodInfo;
 
         public DefaultODataModuleConfiguration()
         {
             _buildControllerOperations = GetType().GetTypeInfo().GetMethod(nameof(BuildControllerOperations), BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly)!;
 
             _buildDto = GetType().GetTypeInfo().GetMethod(nameof(BuildDto), BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly)!;
-
-            _collectionParameterMethodInfo = typeof(ActionConfiguration).GetTypeInfo().GetMethod(nameof(ActionConfiguration.CollectionParameter))!;
         }
 
         public virtual void ConfigureODataModule(string odataRouteName, Assembly odataAssembly, ODataModelBuilder odataModelBuilder)
@@ -320,9 +317,7 @@ namespace Bit.OData.Implementations
                             if (parameterType.IsGenericType)
                                 parameterType = parameterType.GetGenericArguments().ExtendedSingle($"Finding parameter type from generic arguments of {parameterType.Name}").GetTypeInfo();
 
-                            ParameterConfiguration parameter = (ParameterConfiguration)_collectionParameterMethodInfo
-                                                                                            .MakeGenericMethod(parameterType)
-                                                                                            .Invoke(operationConfiguration, new object[] { operationParameter.Name })!;
+                            ParameterConfiguration parameter = operationConfiguration.CollectionParameter(parameterType, operationParameter.Name);
                             parameter.Nullable = operationParameter.IsOptional;
                         }
                         else

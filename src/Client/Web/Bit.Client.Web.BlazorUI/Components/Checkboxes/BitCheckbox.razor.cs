@@ -1,54 +1,73 @@
-﻿using Microsoft.AspNetCore.Components;
+﻿using System;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
-using System.Threading.Tasks;
 
 namespace Bit.Client.Web.BlazorUI
 {
     public partial class BitCheckbox
     {
+        private bool isIndeterminate;
+        private BoxSide boxSide;
+        private bool isChecked;
+
         public ElementReference CheckboxElement { get; set; }
 
         [Inject] public IJSRuntime JSRuntime { get; set; }
 
-        [Parameter] public bool IsChecked { get; set; }
+        [Parameter]
+        public bool IsChecked
+        {
+            get => isChecked; set
+            {
+                isChecked = value;
+                ClassBuilder.Reset();
+            }
+        }
 
-        [Parameter] public BoxSide BoxSide { get; set; }
+        [Parameter]
+        public BoxSide BoxSide
+        {
+            get => boxSide; set
+            {
+                boxSide = value;
+                ClassBuilder.Reset();
+            }
+        }
 
-        [Parameter] public bool IsIndeterminate { get; set; }
+        [Parameter]
+        public bool IsIndeterminate
+        {
+            get => isIndeterminate;
+            set
+            {
+                isIndeterminate = value;
+                JSRuntime.SetProperty(CheckboxElement, "indeterminate", value);
+                ClassBuilder.Reset();
+            }
+        }
 
         [Parameter] public RenderFragment ChildContent { get; set; }
 
         [Parameter] public EventCallback<bool> OnChange { get; set; }
 
-        protected override string GetElementClass()
+        protected override string RootElementClass => "bit-checkbox-container";
+
+        protected override void RegisterComponentClasses()
         {
-            ElementClassContainer.Clear();
-            ElementClassContainer.Add("bit-checkbox-container");
-
-            if (IsIndeterminate)
-            {
-                ElementClassContainer.Add("indeterminate");
-            }
-
-            if (IsChecked)
-            {
-                ElementClassContainer.Add("checked");
-            }
-
-            ElementClassContainer.Add(BoxSide == BoxSide.End ? "box-side-end" : "box-side-start");
-
-            return base.GetElementClass();
+            ClassBuilder.Register(() => IsIndeterminate ? "indeterminate" : string.Empty);
+            ClassBuilder.Register(() => IsChecked ? "checked" : string.Empty);
+            ClassBuilder.Register(() => BoxSide == BoxSide.End ? "box-side-end" : "box-side-start");
         }
 
         protected async Task HandleCheckboxClick(MouseEventArgs e)
         {
-            if (!IsEnabled) return;
+            if (IsEnabled is false) return;
 
             if (IsIndeterminate)
             {
                 IsIndeterminate = false;
-                await JSRuntime.SetProperty(CheckboxElement, "indeterminate", IsIndeterminate);
             }
             else
             {
@@ -66,37 +85,6 @@ namespace Bit.Client.Web.BlazorUI
             }
 
             await base.OnAfterRenderAsync(firstRender);
-        }
-
-        public override Task SetParametersAsync(ParameterView parameters)
-        {
-            foreach (ParameterValue parameter in parameters)
-            {
-                switch (parameter.Name)
-                {
-                    case nameof(ChildContent):
-                        ChildContent = (RenderFragment)parameter.Value;
-                        break;
-
-                    case nameof(IsChecked):
-                        IsChecked = (bool)parameter.Value;
-                        break;
-
-                    case nameof(IsIndeterminate):
-                        IsIndeterminate = (bool)parameter.Value;
-                        break;
-
-                    case nameof(BoxSide):
-                        BoxSide = (BoxSide)parameter.Value;
-                        break;
-
-                    case nameof(OnChange):
-                        OnChange = (EventCallback<bool>)parameter.Value;
-                        break;
-                }
-            }
-
-            return base.SetParametersAsync(parameters);
         }
     }
 }

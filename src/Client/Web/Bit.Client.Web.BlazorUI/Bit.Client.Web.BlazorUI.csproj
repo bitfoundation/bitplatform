@@ -1,65 +1,37 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
-  <PropertyGroup>
-    <ResolveStaticWebAssetsInputsDependsOn>
-      IncludeGeneratedStaticFiles;
-      $(ResolveStaticWebAssetsInputsDependsOn)
-    </ResolveStaticWebAssetsInputsDependsOn>
-  </PropertyGroup>
+	<PropertyGroup>
+		<ResolveStaticWebAssetsInputsDependsOn>WebCompiler</ResolveStaticWebAssetsInputsDependsOn>
+		<TargetFramework>net5.0</TargetFramework>
+	</PropertyGroup>
 
-  <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
-  </PropertyGroup>
+	<ItemGroup>
+		<SupportedPlatform Include="browser" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <SupportedPlatform Include="browser" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Bit.Tooling.SourceGenerators" Version="7.3.0" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="5.0.5" />
+		<PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.2.4">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="5.0.4" />
-    <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.1.4">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-  </ItemGroup>
+	<Target Name="DisplayMessages">
+		<Message Text="Restoring Tools..." Importance="high" />
+	</Target>
 
-  <ItemGroup>
-    <Folder Include="Styles\Fluent\Notifications\" />
-    <Folder Include="wwwroot\styles\" />
-  </ItemGroup>
+	<Target Name="ToolRestore" DependsOnTargets="DisplayMessages">
+		<Exec Command="dotnet tool restore" StandardOutputImportance="high" />
+	</Target>
 
-  <Target Name="DisplayMessages">
-    <Message Text="Restoring Tools..." Importance="high" />
-  </Target>
-  
-  <Target Name="ToolRestore" DependsOnTargets="DisplayMessages">
-    <Exec Command="dotnet tool restore" StandardOutputImportance="high" />
-  </Target>
+	<Target Name="WebCompiler" DependsOnTargets="ToolRestore">
+		<!--compile and minify scss-->
+		<Exec Command="dotnet webcompiler ./Styles/styles.scss -c webcompiler.json" StandardOutputImportance="high" StandardErrorImportance="high" />
+		<Exec Command="dotnet webcompiler ./Styles/Cupertino/styles.cupertino.scss -c webcompiler.json" StandardOutputImportance="high" StandardErrorImportance="high" />
+		<Exec Command="dotnet webcompiler ./Styles/Fluent/styles.fluent.scss -c webcompiler.json" StandardOutputImportance="high" StandardErrorImportance="high" />
+		<Exec Command="dotnet webcompiler ./Styles/Material/styles.material.scss -c webcompiler.json" StandardOutputImportance="high" StandardErrorImportance="high" />
+	</Target>
 
-  <Target Name="WebCompiler" DependsOnTargets="ToolRestore">
-    <!--compile and minify scss-->
-    <Exec Command="dotnet webcompiler ./Styles/styles.scss -c excubowebcompiler.json" StandardOutputImportance="high" StandardErrorImportance="high" />
-    <Exec Command="dotnet webcompiler ./Styles/Cupertino/styles.cupertino.scss -c excubowebcompiler.json" StandardOutputImportance="high" StandardErrorImportance="high" />
-    <Exec Command="dotnet webcompiler ./Styles/Fluent/styles.fluent.scss -c excubowebcompiler.json" StandardOutputImportance="high" StandardErrorImportance="high" />
-    <Exec Command="dotnet webcompiler ./Styles/Material/styles.material.scss -c excubowebcompiler.json" StandardOutputImportance="high" StandardErrorImportance="high" />
-  </Target>
-
-  <Target Name="IncludeGeneratedStaticFiles" DependsOnTargets="WebCompiler">
-    <Error Condition="!Exists('wwwroot/styles/styles.min.css')" Text="Missing styles.min.css in wwwroot/styles" />
-    <Error Condition="!Exists('wwwroot/styles/styles.cupertino.min.css')" Text="Missing styles.cupertino.min.css in wwwroot/styles" />
-    <Error Condition="!Exists('wwwroot/styles/styles.fluent.min.css')" Text="Missing styles.fluent.min.css in wwwroot/styles" />
-    <Error Condition="!Exists('wwwroot/styles/styles.material.min.css')" Text="Missing styles.material.min.css in wwwroot/styles" />
-
-    <ItemGroup>
-      <Content Include="wwwroot/styles/styles.min.css" Condition="!Exists('wwwroot/styles/styles.min.css')" />
-      <Content Include="wwwroot/styles/styles.cupertino.min.css" Condition="!Exists('wwwroot/styles/styles.cupertino.min.css')" />
-      <Content Include="wwwroot/styles/styles.fluent.min.css" Condition="!Exists('wwwroot/styles/styles.fluent.min.css')" />
-      <Content Include="wwwroot/styles/styles.material.min.css" Condition="!Exists('wwwroot/styles/styles.material.min.css')" />
-    </ItemGroup>
-  </Target>
-
-  <ItemGroup>
-    <Content Remove="compilerconfig.json" />
-    <Content Remove="excubowebcompiler.json" />
-  </ItemGroup>
 </Project>

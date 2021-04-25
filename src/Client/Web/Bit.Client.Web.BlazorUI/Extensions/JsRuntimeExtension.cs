@@ -1,6 +1,5 @@
-﻿using Bit.Client.Web.BlazorUI;
+﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
-using System.Threading.Tasks;
 
 namespace Microsoft.JSInterop
 {
