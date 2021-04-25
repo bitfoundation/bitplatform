@@ -24,11 +24,27 @@ namespace Bit.Client.Web.BlazorUI
 
         [Parameter] public bool ShowIconCount { get; set; } = true;
 
-        [Parameter] public bool IsReadonly { get; set; } = false;
+        [Parameter] public bool IsReadonly
+        {
+            get => isReadOnly;
+            set
+            {
+                isReadOnly = value;
+                ClassBuilder.Reset();
+            }
+        }
 
+        private bool isReadOnly;
         public double IconSelectedCount { get; set; }
         public string[] FirstCurrentColor { get; set; } = new string[21];
         public string[] SecondCurrentColor { get; set; } = new string[21];
+
+        protected override string RootElementClass => "bit-rating";
+
+        protected override void RegisterComponentClasses()
+        {
+            ClassBuilder.Register(() => IsReadonly ? "readonly" : string.Empty);
+        }
 
         protected virtual void HandleClick(int index, IconSide side = IconSide.Right)
         {
@@ -58,19 +74,6 @@ namespace Bit.Client.Web.BlazorUI
             }
 
             await base.OnAfterRenderAsync(firstRender);
-        }
-
-        protected override string GetElementClass()
-        {
-            ElementClassContainer.Clear();
-            ElementClassContainer.Add("bit-rating");
-
-            if (IsReadonly)
-            {
-                ElementClassContainer.Add("read-only");
-            }
-
-            return base.GetElementClass();
         }
 
         public override Task SetParametersAsync(ParameterView parameters)

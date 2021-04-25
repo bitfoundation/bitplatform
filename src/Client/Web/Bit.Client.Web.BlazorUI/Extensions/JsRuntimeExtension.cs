@@ -14,10 +14,5 @@ namespace Microsoft.JSInterop
         {
             return await jsRuntime.InvokeAsync<string>("Bit.getProperty", element, property);
         }
-
-        public static async Task FillRatingComponentIcons(this IJSRuntime jsRuntime, ElementReference element, int index, IconSide side, string activeColor, string emptyColor)
-        {
-            await jsRuntime.InvokeVoidAsync("Bit.fillRatingComponentIcons", element, index, "left", activeColor, emptyColor);
-        }
     }
 }

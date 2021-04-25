@@ -1,8 +1,9 @@
 ﻿@namespace Bit.Client.Web.BlazorUI
 @inherits BitComponentBase
 
-<div @ref="Element" style="@GetElementStyle()"
-     class="@GetElementClass()">
+<div @ref="RootElement"
+       style="@StyleBuilder.Value"
+       class="@ClassBuilder.Value">
 
     @switch (IconType)
     {
