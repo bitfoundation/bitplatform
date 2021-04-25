@@ -40,16 +40,18 @@ namespace Bit.Client.Web.BlazorUI
         {
             if (IsEnabled) 
             {
-                var userEnteredValue = double.Parse(e.Value.ToString());
-
-                if (userEnteredValue >= Min && userEnteredValue <= Max)
+                var userInput = e.Value.ToString();
+                double numericValue;
+                var isNumber = double.TryParse(userInput, out numericValue);
+                if (isNumber && numericValue >= Min && numericValue <= Max)
                 {
-                    Value = userEnteredValue;
+                   Value = numericValue;
+                    await OnChange.InvokeAsync(ValueWithSuffix);
                 }
                 else {
                     await JSRuntime.SetProperty(InputElement, "value", ValueWithSuffix);
                 }
-                await OnChange.InvokeAsync(ValueWithSuffix);
+
             }
         } 
         
