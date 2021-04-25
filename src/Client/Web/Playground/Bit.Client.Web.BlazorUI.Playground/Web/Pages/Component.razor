@@ -1,4 +1,4 @@
-﻿@page "/component"
+﻿@page "/"
 <style>
     /* Temp Styles */
     .links-container, .checkboxes-container, .labels-container, .search-box-container {
@@ -103,10 +103,10 @@
     <h2>BitMessageBar</h2>
     @if (!_isMessageBarHidden)
     {
-<BitMessageBar MessageBarStyle="@MessageBarStyle.Success">
-    Action completed! <BitButton OnClick="MessageBarButton" ButtonStyle="ButtonStyle.Standard">OK</BitButton>
-</BitMessageBar>
-                <br />}
+        <BitMessageBar MessageBarStyle="@MessageBarStyle.Success">
+            Action completed! <BitButton OnClick="MessageBarButton" ButtonStyle="ButtonStyle.Standard">OK</BitButton>
+        </BitMessageBar>
+        <br />}
     <BitMessageBar MessageBarStyle="@MessageBarStyle.Error">
         Error! Cannot complete action
     </BitMessageBar>
@@ -205,3 +205,14 @@
     <br />
     <BitTextField IsMultiLine="true" IsEnabled="false" Value="Multi-line Disabled"></BitTextField>
 </div>
+<hr />
+<div>
+    <h2>Rating</h2>
+    <BitRating EmptyColor="#78c4d4" HoverColor="#23049d" ShowIconCount="false" IconHeight="40" IconWidth="40" IconCount="5" />
+    <br />
+    <BitRating IconType="IconType.Star" ActiveColor="#3a6351" EmptyColor="#bbbbbb" IntialValue="4.5" IconHeight="25" IconWidth="25" IconCount="7" />
+    <br />
+    <BitRating IconType="IconType.Heart" ActiveColor="#cf0000" HoverColor="#f05945" IntialValue="5.3" IconHeight="30" IconWidth="30" IconCount="10" />
+    <br />
+</div>
+

@@ -29,7 +29,7 @@
   </ItemGroup>
 
   <Target Name="DisplayMessages">
-    <Message Text="Restoring Tools..."  Importance="high"/>
+    <Message Text="Restoring Tools..." Importance="high" />
   </Target>
   
   <Target Name="ToolRestore" DependsOnTargets="DisplayMessages">

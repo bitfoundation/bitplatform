@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Components;
+﻿using Bit.Client.Web.BlazorUI;
+using Microsoft.AspNetCore.Components;
 using System.Threading.Tasks;
 
 namespace Microsoft.JSInterop
@@ -13,6 +14,11 @@ namespace Microsoft.JSInterop
         public static async Task<string> GetProperty(this IJSRuntime jsRuntime, ElementReference element, string property)
         {
             return await jsRuntime.InvokeAsync<string>("Bit.getProperty", element, property);
+        }
+
+        public static async Task FillRatingComponentIcons(this IJSRuntime jsRuntime, ElementReference element, int index, IconSide side, string activeColor, string emptyColor)
+        {
+            await jsRuntime.InvokeVoidAsync("Bit.fillRatingComponentIcons", element, index, "left", activeColor, emptyColor);
         }
     }
 }
