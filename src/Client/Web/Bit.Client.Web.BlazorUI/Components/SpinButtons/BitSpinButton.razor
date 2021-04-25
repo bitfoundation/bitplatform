@@ -13,7 +13,7 @@
         <input class="spin-button-input"
                @ref="InputElement"
                disabled="@(IsEnabled is false)"
-               value="@($"{Value.ToString()} {Suffix}")"
+               value="@($"{Value} {Suffix}")"
                @onchange="@(e => HandleValueOnInputChange(e))" />
 
         <span class="spin-button-buttons-wrapper">
