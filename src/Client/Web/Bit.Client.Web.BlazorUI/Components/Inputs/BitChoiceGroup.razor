@@ -1,5 +1,10 @@
 ﻿@namespace Bit.Client.Web.BlazorUI
 @inherits BitComponentBase
-<CascadingValue Value="this" IsFixed="true">
-    @ChildContent
-</CascadingValue>
+<div @ref="RootElement"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value">
+    <CascadingValue Value="this" 
+                    IsFixed="true">
+        @ChildContent
+    </CascadingValue>
+</div>

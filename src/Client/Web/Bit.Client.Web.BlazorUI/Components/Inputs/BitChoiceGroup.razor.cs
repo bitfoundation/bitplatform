@@ -33,6 +33,13 @@ namespace Bit.Client.Web.BlazorUI
             return base.SetParametersAsync(parameters);
         }
 
+        protected override string RootElementClass => "bit-choice-group";
+
+        protected override void RegisterComponentClasses()
+        {
+            ClassBuilder.Register(() => IsEnabled is false ? "disabled" : string.Empty);
+        }
+
         internal void ChangeSelection(BitChoiceOption option)
         {
             if (IsEnabled)
@@ -45,6 +52,7 @@ namespace Bit.Client.Web.BlazorUI
 
         internal void RegisterOption(BitChoiceOption option)
         {
+            option.IsEnabled = IsEnabled;
             _options.Add(option);
         }
 

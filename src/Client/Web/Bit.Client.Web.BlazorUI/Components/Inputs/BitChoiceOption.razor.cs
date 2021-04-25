@@ -7,16 +7,27 @@ namespace Bit.Client.Web.BlazorUI
 {
     public partial class BitChoiceOption : IDisposable
     {
+        private bool isChecked = false;
+
         [Parameter] public string Text { get; set; }
         [Parameter] public string Name { get; set; }
         [Parameter] public string Value { get; set; }
-        [Parameter] public bool IsChecked { get; set; }
+
+        [Parameter] 
+        public bool IsChecked {
+            get => isChecked;
+            set
+            {
+                isChecked = value;
+                ClassBuilder.Reset();
+            }
+        }
+
         [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
         [Parameter] public EventCallback<ChangeEventArgs> OnChange { get; set; }
 
         [CascadingParameter] protected BitChoiceGroup? ChoiceGroup { get; set; }
 
-        public string CheckedClass => IsChecked ? "checked" : "";
         public string Id = Guid.NewGuid().ToString();
 
         public override Task SetParametersAsync(ParameterView parameters)
@@ -60,15 +71,12 @@ namespace Bit.Client.Web.BlazorUI
             return base.OnInitializedAsync();
         }
 
-        protected override string GetElementClass()
+        protected override string RootElementClass => "bit-choice-option";
+
+        protected override void RegisterComponentClasses()
         {
-            ElementClassContainer.Clear();
-            ElementClassContainer.Add("bit-choice-option");
-            if (!IsEnabled)
-            {
-                ElementClassContainer.Add("disabled");
-            }
-            return base.GetElementClass();
+            ClassBuilder.Register(() => IsEnabled is false ? "disabled" : string.Empty);
+            ClassBuilder.Register(() => IsChecked is true ? "checked" : string.Empty);
         }
 
         protected virtual async Task HandleClick(MouseEventArgs e)
