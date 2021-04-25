@@ -7,6 +7,7 @@ namespace Bit.Client.Web.BlazorUI
 {
     public partial class BitChoiceOption : IDisposable
     {
+        private string _id = Guid.NewGuid().ToString();
         private bool isChecked = false;
 
         [Parameter] public string Text { get; set; }
@@ -28,7 +29,7 @@ namespace Bit.Client.Web.BlazorUI
 
         [CascadingParameter] protected BitChoiceGroup? ChoiceGroup { get; set; }
 
-        public string Id = Guid.NewGuid().ToString();
+        
 
         public override Task SetParametersAsync(ParameterView parameters)
         {

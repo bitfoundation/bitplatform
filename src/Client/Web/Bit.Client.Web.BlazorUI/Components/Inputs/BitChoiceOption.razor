@@ -4,7 +4,7 @@
 <div @ref="RootElement"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
-    <input id="@Id"
+    <input id="@_id"
            type="radio"
            checked=@IsChecked
            name="@Name"
@@ -12,7 +12,7 @@
            hidden
            @onclick="@HandleClick"
            @onchange="@HandleChange" />
-    <label for="@Id">
+    <label for="@_id">
         <span>
             @Text
         </span>
