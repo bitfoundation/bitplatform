@@ -1,7 +1,7 @@
-﻿using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
-using System;
+﻿using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 
 namespace Bit.Client.Web.BlazorUI
 {
@@ -14,8 +14,9 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public string Name { get; set; }
         [Parameter] public string Value { get; set; }
 
-        [Parameter] 
-        public bool IsChecked {
+        [Parameter]
+        public bool IsChecked
+        {
             get => isChecked;
             set
             {
@@ -28,8 +29,6 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public EventCallback<ChangeEventArgs> OnChange { get; set; }
 
         [CascadingParameter] protected BitChoiceGroup? ChoiceGroup { get; set; }
-
-        
 
         public override Task SetParametersAsync(ParameterView parameters)
         {

@@ -1,7 +1,7 @@
-﻿using Microsoft.AspNetCore.Components;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components;
 
 namespace Bit.Client.Web.BlazorUI
 {
@@ -60,6 +60,5 @@ namespace Bit.Client.Web.BlazorUI
         {
             _options.Remove(option);
         }
-
     }
 }
