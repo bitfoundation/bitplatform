@@ -2,20 +2,22 @@
 @inherits BitComponentBase
 
 <div @ref="Element" style="@GetElementStyle()" class="@GetElementClass()">
-    <div class="label-wrapper">
-        <i class="bit-icon bit-icon--@IconName"></i>
-        <label class="label">@Label</label>
+    <div class="spin-button-label-wrapper">
+        <i class="bit-icon bit-icon--@IconName bit-icon--l"></i>
+        <label class="spin-button-label">@Label</label>
     </div>
-    <div class="input-wrapper">
-        <input class="input" @ref="InputElement" value="@($"{Value.ToString()} {Suffix}")" @onchange="@(e => HandleValueOnInputChange(e))"/>
-        <span class="buttons-wrapper">
-            <button class="button button--up" @onclick="@HandleUpClick">
-                <span class="button-icon-wrapper">
-                <i class="bit-icon bit-icon--ChevronUp bit-icon--s"></i>
+    <div class="spin-button-input-wrapper">
+        <input class="spin-button-input" @ref="InputElement" value="@($"{Value.ToString()} {Suffix}")" @onchange="@(e => HandleValueOnInputChange(e))" />
+        <span class="spin-button-buttons-wrapper">
+            <button class="spin-button spin-button--up" @onclick="@HandleUpClick">
+                <span class="spin-button-icon-wrapper">
+                    <i class="bit-icon bit-icon--ChevronUpSmall bit-icon--s"></i>
                 </span>
             </button>
-            <button class="button button--down" @onclick="@HandleDownClick">
-                <span><i class="bit-icon bit-icon--ChevronDown bit-icon--s"></i></span>
+            <button class="spin-button spin-button--down" @onclick="@HandleDownClick">
+                <span class="spin-button-icon-wrapper">
+                    <i class="bit-icon bit-icon--ChevronDownSmall bit-icon--s"></i>
+                </span>
             </button>
         </span>
     </div>

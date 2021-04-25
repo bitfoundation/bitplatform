@@ -13,6 +13,10 @@
     .custom-button {
         background-color: palevioletred !important;
     }
+
+    .bit-spin-button {
+        margin-bottom: 15px;
+    }
 </style>
 
 <h1>Bit Components</h1>
@@ -23,6 +27,9 @@
     <h2>BitSpinButton </h2>
     <BitSpinButton Suffix="cm" Min="0" Max="100" Step="1" Label="Basic SpinButton" OnChange="@(e => HandleOnChange(e))"></BitSpinButton>
     <BitSpinButton Min="0" Max="10" Step="0.1" Label="Decimal SpinButton" OnChange="@(e => HandleOnChange(e))"></BitSpinButton>
+
+    <BitSpinButton IconName="IncreaseIndentLegacy" Suffix="cm" Min="0" Max="100" Step="1" Label="Basic SpinButton" OnChange="@(e => HandleOnChange(e))"></BitSpinButton>
+
 </div>
 
 @code{
