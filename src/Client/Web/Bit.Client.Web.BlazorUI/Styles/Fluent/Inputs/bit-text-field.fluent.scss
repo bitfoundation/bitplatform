@@ -1,6 +1,6 @@
 ﻿@import "../colors.fluent.scss", "../../functions.scss";
 
-.bit-text-field.fluent {
+.bit-text-field-fluent {
     font-family: FluentFont;
     font-size: rem(14px);
     font-weight: 400;
@@ -19,10 +19,6 @@
     margin: 0px;
     padding: 0px;
     box-sizing: border-box;
-
-    &:hover {
-        border-color: $Grey160;
-    }
 
     input {
         background: none transparent;
@@ -63,7 +59,7 @@
     }
 }
 
-.bit-text-field.fluent.multiline {
+.bit-text-field-multiline {
     min-height: 60px;
     align-items: stretch;
     height: auto;
@@ -78,37 +74,27 @@
 }
 
 
-.bit-text-field.fluent.focused {
-    border: em(3px) solid $Primary;
 
-    input:first-child {
-        padding: 0px em(7px);
-    }
 
-    textarea:first-child {
-        padding: 0px em(7px);
-    }
-}
 
-.bit-text-field.fluent.focused.multiline {
-    textarea:first-child {
-        padding: em(4.3px) em(6.2px);
+.bit-text-field-focused {
+    .bit-text-field-multiline {
+        textarea:first-child {
+            padding: em(4.3px) em(6.2px);
+        }
     }
 }
 
-.bit-text-field.fluent.disabled {
+.bit-text-field-disabled {
     border: 1px solid $Grey20 !important;
     background: $White;
-}
-
-.bit-text-field.fluent.disabled .bit-text-field-input.disabled {
     color: $Grey90;
     cursor: default;
     border: none $Grey20;
     background: none $Grey20;
 }
 
-.bit-text-field.fluent .bit-button.fluent {
+.bit-text-field .bit-button-fluent {
     border: none !important;
     color: $Primary;
     background-color: transparent;
@@ -120,6 +106,20 @@
     }
 }
 
-.bit-text-field.fluent.focused .bit-button.fluent {
-    padding: em(0px) em(2px);
+.bit-text-field-focused {
+    border: em(3px) solid $Primary;
+
+    input:first-child {
+        padding: 0px em(7px);
+    }
+
+    textarea:first-child {
+        padding: 0px em(7px);
+    }
+
+    .bit-button-fluent {
+        padding: em(0px) em(2px);
+    }
 }
+
+

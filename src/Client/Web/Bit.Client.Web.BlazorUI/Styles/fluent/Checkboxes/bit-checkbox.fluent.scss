@@ -1,6 +1,6 @@
 ﻿@import "../colors.fluent.scss", "../../functions.scss";
 
-.bit-checkbox-container {
+.bit-checkbox-container-fluent {
     position: relative;
     display: flex;
     margin: 5px;
@@ -9,144 +9,142 @@
     font-size: inherit;
     font-weight: inherit;
 
-    &:hover .bit-checkbox-item__checkmark {
-        opacity: 1;
-        border-color: $Grey120;
+
+    .bit-checkbox-item-checkbox {
+        position: relative;
+        display: flex;
+        flex-shrink: 0;
+        align-items: center;
+        justify-content: center;
+        height: 20px;
+        width: 20px;
+        border: 1px solid $Grey160;
+        border-radius: 2px;
+        box-sizing: border-box;
+        transition-property: background, border, border-color;
+        transition-duration: 200ms;
+        transition-timing-function: cubic-bezier(0.4, 0, 0.23, 1);
+        overflow: hidden;
+        margin-right: 4px;
+        cursor: pointer;
+
+
+        .bit-checkbox-item-checkmark {
+            color: $White;
+            font-size: 11px;
+            transition:0.1s;
+        }
+    }
+
+    &:hover .bit-checkbox-item-checkbox {
+        .bit-checkbox-item-checkmark {
+            opacity: 1;
+            color: $Grey120;
+        }
+    }
+
+    .bit-checkbox-item-label-container {
+        .bit-checkbox-item-label-text {
+            cursor: pointer;
+        }
     }
 }
 
-.bit-checkbox-container.box-side-end {
+.bit-checkbox-container-box-side-end {
     flex-direction: row-reverse;
     justify-content: flex-end;
 
-    & .bit-checkbox-item__checkbox {
+    & .bit-checkbox-item-checkbox {
         margin-left: 8px;
     }
 }
 
-.bit-checkbox-container.disabled {
-    pointer-events: none;
-    cursor: default;
 
-    & .bit-checkbox-item__checkmark {
+.bit-checkbox-container-checked {
+    & .bit-checkbox-item-checkmark {
         opacity: 1;
-        border-color: $White;
+        color: $White;
+        width: 20px;
+        height: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
 
-    & .bit-checkbox-item__checkbox {
-        border-color: $Grey90;
-        background-color: $White;
-    }
-
-    & .bit-checkbox-item__label-container {
-        color: $Grey90;
-    }
-}
-
-.bit-checkbox-container.disabled.checked {
-    pointer-events: none;
-    cursor: default;
-
-    & .bit-checkbox-item__checkbox {
-        border-color: $Grey90;
-        background-color: $Grey90;
-    }
-}
-
-.bit-checkbox-container.checked {
-    & .bit-checkbox-item__checkmark {
-        opacity: 1;
-        border-color: $White;
-    }
-
-    & .bit-checkbox-item__checkbox {
+    & .bit-checkbox-item-checkbox {
         border-color: $Primary;
         background-color: $Primary;
     }
 
-    &:hover .bit-checkbox-item__checkbox {
-        border-color: $Dark;
+    &:hover .bit-checkbox-item-checkbox {
+        .bit-checkbox-item-checkmark {
+            border-color: $Dark;
+            background-color: $Dark;
+            color: $White;
+        }
+    }
+}
+
+.bit-checkbox-container-indeterminate {
+    & .bit-checkbox-item-checkmark {
+        display: inline-block;
+        position: absolute;
+        top: 4px;
+        left: 4px;
+        opacity: 1;
+        width: 11px;
+        height: 11px;
+        color: $Primary;
+        background-color: $Primary;
+        border-radius: 2px;
+
+        &:before {
+            content: '';
+        }
+    }
+
+    &:hover .bit-checkbox-item-checkmark {
+        color: $Dark;
         background-color: $Dark;
     }
-}
 
-.bit-checkbox-item__checkbox {
-    position: relative;
-    display: flex;
-    flex-shrink: 0;
-    align-items: center;
-    justify-content: center;
-    height: 20px;
-    width: 20px;
-    border: 1px solid $Grey160;
-    border-radius: 2px;
-    box-sizing: border-box;
-    transition-property: background, border, border-color;
-    transition-duration: 200ms;
-    transition-timing-function: cubic-bezier(0.4, 0, 0.23, 1);
-    overflow: hidden;
-    margin-right: 4px;
-    cursor: pointer;
-}
-
-.bit-checkbox-item__checkmark {
-    display: inline-block;
-    position: absolute;
-    top: 1px;
-    opacity: 0;
-    width: 0.25em;
-    height: 0.70em;
-    border: 2px solid $White;
-    border-top: none;
-    border-left: none;
-    transform: rotate( 41deg );
-}
-
-.bit-checkbox-item__label-text {
-    cursor: pointer;
-}
-
-.bit-checkbox-container.indeterminate {
-    &, &.checked, &.disabled {
-        & .bit-checkbox-item__checkmark {
-            display: inline-block;
-            position: absolute;
-            top: 4px;
-            left: 4px;
-            opacity: 1;
-            width: 6px;
-            height: 6px;
-            border: 2px solid $Primary;
-            background-color: $Primary;
-            border-radius: 2px;
-            transform: rotate( 0deg );
-        }
-
-        &:hover .bit-checkbox-item__checkmark {
-            border: 2px solid $Dark;
-            background-color: $Dark;
-        }
-
-        & .bit-checkbox-item__checkbox {
-            border-color: $Primary;
-            background-color: $White;
-        }
-
-        &:hover .bit-checkbox-item__checkbox {
-            border-color: $Dark;
-            background-color: $White;
-        }
+    & .bit-checkbox-item-checkbox {
+        border-color: $Primary;
+        background-color: $White;
     }
 
-    &.disabled {
-        & .bit-checkbox-item__checkmark {
-            border: 2px solid $Grey90;
-            background-color: $Grey90;
-        }
+    &:hover .bit-checkbox-item-checkbox {
+        border-color: $Dark;
+        background-color: $White;
+    }
+}
 
-        & .bit-checkbox-item__checkbox {
-            border-color: $Grey90;
-            background-color: $White;
+.bit-checkbox-container-disabled {
+    pointer-events: none;
+    cursor: default;
+
+    & .bit-checkbox-item-checkmark {
+        opacity: 1;
+        color: $White;
+        background-color: $White;
+    }
+
+    & .bit-checkbox-item-checkbox {
+        border-color: $Grey90;
+        background-color: $White;
+    }
+
+    & .bit-checkbox-item-label-container {
+        color: $Grey90;
+    }
+}
+
+
+.bit-checkbox-container-checked-disabled,
+.bit-checkbox-container-indeterminate-disabled {
+    & .bit-checkbox-item-checkbox {
+        & .bit-checkbox-item-checkmark {
+            background-color: $Grey90;
         }
     }
 }

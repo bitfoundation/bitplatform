@@ -1,54 +1,53 @@
 ﻿@import "../colors.fluent.scss", "../../functions.scss";
 
-.bit-button {
-    &.fluent {
-        font-family: FluentFont;
-        display: inline-flex;
-        justify-content: center;
-        align-items: center;
-        text-align: center;
-        border-radius: em(2px);
-        padding: em(6px) em(20px);
-        font-size: rem(14px);
-        font-weight: 600;
-        line-height: em(20px);
-        cursor: pointer;
+.bit-button-fluent {
+    font-family: FluentFont;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    border-radius: em(2px);
+    padding: em(6px) em(20px);
+    font-size: rem(14px);
+    font-weight: 600;
+    line-height: em(20px);
+    cursor: pointer;
+}
 
-        &.disabled {
-            background: $Grey20;
-            color: $Grey90;
-            border: 1px solid $Grey20;
-            cursor: default;
-            pointer-events: none;
-        }
+.bit-button-standard {
+    color: $Grey160;
+    background: $White;
+    border: 1px solid $GreyInputBorder;
 
-        &.primary {
-            color: $White;
-            background: $Primary;
-            border: 1px solid $Primary;
-
-            &:hover {
-                background-color: $DarkAlt;
-            }
-
-            &:active {
-                background-color: $Dark;
-            }
-        }
-
-        &.standard {
-            color: $Grey160;
-            background: $White;
-            border: 1px solid $GreyInputBorder;
-
-            &:hover {
-                background-color: $Grey20;
-                border-color: $Grey160;
-            }
-
-            &:active {
-                background-color: $Grey30;
-            }
-        }
+    &:hover {
+        background-color: $Grey20;
+        border-color: $Grey160;
     }
+
+    &:active {
+        background-color: $Grey30;
+    }
+}
+
+.bit-button-primary {
+    color: $White;
+    background: $Primary;
+    border: 1px solid $Primary;
+
+    &:hover {
+        background-color: $DarkAlt;
+    }
+
+    &:active {
+        background-color: $Dark;
+    }
+}
+
+
+.bit-button-disabled {
+    background: $Grey20;
+    color: $Grey90;
+    border: 1px solid $Grey20;
+    cursor: default;
+    pointer-events: none;
 }

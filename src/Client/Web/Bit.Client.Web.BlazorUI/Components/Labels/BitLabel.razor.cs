@@ -26,7 +26,7 @@ namespace Bit.Client.Web.BlazorUI
 
         protected override void RegisterComponentClasses()
         {
-            ClassBuilder.Register(() => IsRequired ? "required" : string.Empty);
+            ClassBuilder.Register(() => IsRequired ? $"{RootElementClass}-required" : string.Empty);
         }
 
         public override Task SetParametersAsync(ParameterView parameters)

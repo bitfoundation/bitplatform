@@ -1,6 +1,6 @@
 ﻿@import "../colors.fluent.scss", "../../functions.scss";
 
-.bit-label.fluent {
+.bit-label-fluent {
     font-family: FluentFont;
     -webkit-font-smoothing: antialiased;
     font-size: rem(14px);
@@ -13,14 +13,14 @@
     display: block;
     padding: 5px 0px;
     overflow-wrap: break-word;
+}
 
-    &.disabled {
-        color: $Grey90;
-    }
+.bit-label-disabled {
+    color: $Grey90;
+}
 
-    &.required::after {
-        content: "*";
-        color: $Red20;
-        margin-left: 5px;
-    }
+.bit-label-required::after {
+    content: "*";
+    color: $Red20;
+    margin-left: 5px;
 }

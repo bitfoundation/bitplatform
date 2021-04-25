@@ -56,9 +56,13 @@ namespace Bit.Client.Web.BlazorUI
 
         protected override void RegisterComponentClasses()
         {
-            ClassBuilder.Register(() => IsIndeterminate ? "indeterminate" : string.Empty);
-            ClassBuilder.Register(() => IsChecked ? "checked" : string.Empty);
-            ClassBuilder.Register(() => BoxSide == BoxSide.End ? "box-side-end" : "box-side-start");
+            ClassBuilder.Register(() => IsIndeterminate ? $"{RootElementClass}-indeterminate" : string.Empty);
+            ClassBuilder.Register(() => IsChecked ? $"{RootElementClass}-checked" : string.Empty);
+            ClassBuilder.Register(() => BoxSide == BoxSide.End ? $"{RootElementClass}-box-side-end" : $"{RootElementClass}-box-side-start");
+
+            ClassBuilder.Register(() => IsEnabled is false && IsChecked ? $"{RootElementClass}-checked-disabled" : string.Empty);
+            ClassBuilder.Register(() => IsEnabled is false && IsIndeterminate ? $"{RootElementClass}-indeterminate-disabled" : string.Empty);
+
         }
 
         protected async Task HandleCheckboxClick(MouseEventArgs e)

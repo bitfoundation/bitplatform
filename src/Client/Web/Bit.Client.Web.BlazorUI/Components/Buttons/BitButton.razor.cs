@@ -28,8 +28,8 @@ namespace Bit.Client.Web.BlazorUI
         protected override void RegisterComponentClasses()
         {
             ClassBuilder.Register(() => IsEnabled is false ? string.Empty :
-                                        ButtonStyle == ButtonStyle.Primary ? "primary" :
-                                        "standard");
+                                        ButtonStyle == ButtonStyle.Primary ? $"{RootElementClass}-primary" :
+                                        $"{RootElementClass}-standard");
         }
 
         protected virtual async Task HandleOnClick(MouseEventArgs e)

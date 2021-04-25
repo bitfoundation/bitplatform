@@ -84,8 +84,8 @@ namespace Bit.Client.Web.BlazorUI
                                 string.Empty);
 
             ClassBuilder
-                .Register(() => Visual == Visual.Cupertino ? "cupertino" : Visual == Visual.Material ? "material" : "fluent")
-                .Register(() => IsEnabled ? "enabled" : "disabled")
+                .Register(() => Visual == Visual.Cupertino ? $"{RootElementClass}-cupertino" : Visual == Visual.Material ? $"{RootElementClass}-material" : $"{RootElementClass}-fluent")
+                .Register(() => IsEnabled ? $"{RootElementClass}-enabled" : $"{RootElementClass}-disabled")
                 .Register(() => RootElementClass);
             RegisterComponentClasses();
             ClassBuilder.Register(() => Class);

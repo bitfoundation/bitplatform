@@ -122,10 +122,10 @@ namespace Bit.Client.Web.BlazorUI
 
         protected override void RegisterComponentClasses()
         {
-            ClassBuilder.Register(() => Value.HasValue() ? "has-value" : string.Empty);
-            ClassBuilder.Register(() => DisableAnimation ? "no-animation" : string.Empty);
-            ClassBuilder.Register(() => IsUnderlined ? "underlined" : string.Empty);
-            ClassBuilder.Register(() => InputHasFocus ? "focused" : string.Empty);
+            ClassBuilder.Register(() => Value.HasValue() ? $"{RootElementClass}-has-value" : string.Empty);
+            ClassBuilder.Register(() => DisableAnimation ? $"{RootElementClass}-no-animation" : string.Empty);
+            ClassBuilder.Register(() => IsUnderlined ? $"{RootElementClass}-underlined" : string.Empty);
+            ClassBuilder.Register(() => InputHasFocus ? $"{RootElementClass}-focused" : string.Empty);
         }
 
         protected override void RegisterComponentStyles()
