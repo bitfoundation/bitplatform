@@ -17,6 +17,10 @@
 		</PackageReference>
 	</ItemGroup>
 
+	<ItemGroup>
+	  <ProjectReference Include="..\..\..\Tooling\Bit.Tooling.SourceGenerators\Bit.Tooling.SourceGenerators.csproj" />
+	</ItemGroup>
+
 	<Target Name="DisplayMessages">
 		<Message Text="Restoring Tools..." Importance="high" />
 	</Target>
