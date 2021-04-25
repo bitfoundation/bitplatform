@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
-	
+  
 	<PropertyGroup>
 		<TargetFramework>net5.0</TargetFramework>
-		<BlazorEnableTimeZoneSupport>false</BlazorEnableTimeZoneSupport>
+    <BlazorEnableTimeZoneSupport>false</BlazorEnableTimeZoneSupport>
 		<BlazorWebAssemblyPreserveCollationData>false</BlazorWebAssemblyPreserveCollationData>
 		<InvariantGlobalization>true</InvariantGlobalization>
 	</PropertyGroup>
@@ -12,15 +12,15 @@
 		<Content Condition=" '$(BlazorMode)' == 'Client' " Remove="Pages\_Host.cshtml" />
 	</ItemGroup>
 
-	<ItemGroup>
-		<PackageReference Include="Delegate.SassBuilder" Version="1.4.0" />
-		<PackageReference Condition=" '$(BlazorMode)' == 'Client' " Include="Microsoft.AspNetCore.Components.WebAssembly" Version="5.0.1" />
+  <ItemGroup>
+    <PackageReference Condition=" '$(BlazorMode)' == 'Client' " Include="Microsoft.AspNetCore.Components.WebAssembly" Version="5.0.1" />
 		<PackageReference Condition=" '$(BlazorMode)' == 'Client' " Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="5.0.1" PrivateAssets="all" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\..\Bit.Client.Web.BlazorUI\Bit.Client.Web.BlazorUI.csproj" />
 		<ProjectReference Include="..\Shared\Bit.Client.Web.BlazorUI.Playground.Shared.csproj" />
+    <PackageReference Include="Delegate.SassBuilder" Version="1.4.0" />
 	</ItemGroup>
-
+  
 </Project>

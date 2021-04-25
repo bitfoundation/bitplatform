@@ -1,218 +1,227 @@
 ﻿@page "/"
-<style>
-    /* Temp Styles */
-    .links-container, .checkboxes-container, .labels-container, .search-box-container {
-        font-family: FluentFont;
-    }
 
-        .links-container p {
-            width: 95%;
-            margin: auto;
-        }
-
-    .custom-button {
-        background-color: palevioletred !important;
-    }
-</style>
-
-<h1>Bit Components</h1>
-
-<hr />
-
-<div class="buttons-container">
-    <h2>BitButton</h2>
-    <h3>Visibility</h3>
-
-    <BitButton Visibility="ComponentVisibility.Visible">Visible Button</BitButton>
-    <br />
-    <span>Hidden Button: </span>[<BitButton Visibility="ComponentVisibility.Hidden">Hidden Button</BitButton>]
-    <br />
-    <span>Collapsed Button: </span>[<BitButton Visibility="ComponentVisibility.Collapsed">Collapsed Button</BitButton>]
-
-    <hr />
-
-    <h3>Style & Class</h3>
-    <BitButton Style="color:aqua">
-        Styled Button
-    </BitButton>
-    <BitButton Class="custom-button">
-        Classed Button
-    </BitButton>
-
-    <hr />
-
-    <h3>BitButton</h3>
-    <BitButton IsEnabled="true">
-        Primary
-    </BitButton>
-    <BitButton ButtonStyle="ButtonStyle.Standard" IsEnabled="true">
-        Standard
-    </BitButton>
-    <BitButton IsEnabled="false">
-        Disabled
-    </BitButton>
-    <BitButton IsEnabled="false">
-        <label>This text is from a label element</label>
-    </BitButton>
-
-    <hr />
-
-    <h3>BitCompoundButton</h3>
-    <BitCompoundButton IsEnabled="true"
-                       Text="Primary"
-                       SecondaryText="This Button is compound button">
-    </BitCompoundButton>
-    <BitCompoundButton IsEnabled="true"
-                       Text="Standard"
-                       SecondaryText="This Button is compound button"
-                       ButtonStyle="ButtonStyle.Standard">
-    </BitCompoundButton>
-    <BitCompoundButton IsEnabled="false"
-                       Text="Disabled"
-                       SecondaryText="This Button is a disabled compound button">
-    </BitCompoundButton>
-    <hr />
+<div id="main">
+    <div class="bg-orange">
+        <div class="header">
+            <nav>
+                <ul>
+                    <li><a class="active" href="#home">Home</a></li>
+                    <li><a href="#demo">Demo</a></li>
+                    <li><a href="#description">Description</a></li>
+                </ul>
+            </nav>
+            <div class="row logo">
+                <div></div>
+                <span>BIT Component</span>
+            </div>
+        </div>
+        <div class="container-part-one">
+            <img src="/images/main/orange-vertical-wave.png" />
+            <div>
+                <h1>BIT Blazor Component</h1>
+                <h4>For faster and easier web development</h4>
+            </div>
+        </div>
+    </div>
+    <div class="container-part-two">
+        <div class="companies">
+            <div class="line"></div>
+            <div class="row">
+                <img src="/images/main/airbnb-logo.png" />
+                <img src="/images/main/hubspot-logo.png" />
+                <img src="/images/main/google-logo.png" />
+                <img src="/images/main/microsoft-logo.png" />
+                <img src="/images/main/walmart-logo.png" />
+                <img src="/images/main/fedex-logo.png" />
+            </div>
+            <div class="line"></div>
+        </div>
+        <img src="/images/main/blue-wave.png" />
+    </div>
+    <div class="container-part-three">
+        <div class="description">
+            <h5>Chart</h5>
+            <p>Charts to give sense to data, enabling end-users to analyze volumes of complex information. Choose from a rich set of series including: Area, Bar, Column, Pie, Donut, Line.</p>
+            <a href="#">more about chart</a>
+        </div>
+        <div class="image">
+            <img src="/images/main/chart.png" />
+        </div>
+    </div>
+    <div class="container-part-four">
+        <div>
+            <div class="image">
+                <img src="/images/main/quota-sign.png" />
+            </div>
+            <div class="stories">
+                <div class="col-1">
+                    <div>
+                        <h3>Real Stories from Real Customers</h3>
+                        <span class="sub-title">Get inspired by these stories.</span>
+                    </div>
+                    <div class="card">
+                        <img src="/images/main/microsoft-logo-large.png" />
+                        <div class="quota">
+                            <img src="/images/main/quota-sign-small.png" />
+                            <div>
+                                <p>I'm excited to see partners like BIT creating custom UI controls for Blazor. The BIT UI controls make building beautiful web apps with lots of rich functionality sooooo easy!</p>
+                                <div class="author">
+                                    <span class="name">18 Roth</span>
+                                    <span class="position">PROGRAM MANAGER, MICROSOFT</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-2">
+                    <div class="card">
+                        <img src="/images/main/airbnb-logo-large.png" />
+                        <div class="quota">
+                            <img src="/images/main/quota-sign-small.png" />
+                            <div>
+                                <p>“An artisan-crafted product out of the box for a developer with less time to do with the UI and other details. Just focus on your logic, the rest is handled very well.”</p>
+                                <div class="author">
+                                    <span class="name">Evlv Digital</span>
+                                    <span class="position">DEV, AIRBNB</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <img src="/images/main/book-my-show-logo-large.png" />
+                        <div class="quota">
+                            <img src="/images/main/quota-sign-small.png" />
+                            <div>
+                                <p>Landify saved our time in designing my company page.</p>
+                                <div class="author">
+                                    <span class="name">Kristin Watson</span>
+                                    <span class="position">Co-Founder, BookMyShow</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="container-part-five bg-orange">
+        <img src="/images/main/orange-horizontal-wave.png" />
+        <div class="features">
+            <h3>Blazor UI Components Key Features</h3>
+            <div class="feature-list">
+                <div>
+                    <img src="/images/main/open-source.png" />
+                    <h5>Free and open source</h5>
+                    <p>Set of 60+ native Blazor UI controls.</p>
+                </div>
+                <div>
+                    <img src="/images/main/performance.png" />
+                    <h5>Performance</h5>
+                    <p>Every component is fine-tuned to work with a high volume of data.</p>
+                </div>
+                <div>
+                    <img src="/images/main/updates.png" />
+                    <h5>Frequent updates</h5>
+                    <p>Get minor improvements and bug fixes every week to stay up to date.</p>
+                </div>
+                <div>
+                    <img src="/images/main/usage.png" />
+                    <h5>Ease of use</h5>
+                    <p>Easy integration of tools to blend Syncfusion Blazor components with your project.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <footer>
+        <div class="header">
+            <img src="/images/main/component-list.png" />
+            <h2>Component List</h2>
+        </div>
+        <div class="container-part-six">
+            <nav>
+                <ul>
+                    <li>Buttons</li>
+                    <li><a href="#">Button</a></li>
+                    <li><a href="#">Button Group</a></li>
+                    <li>
+                        <a href="#">Dropdown Menu</a>
+                        <div class="btn-new"><span>New</span></div>
+                    </li>
+                    <li><a href="#">Split Button</a></li>
+                    <li>
+                        <a href="#">Chips</a>
+                        <div class="btn-update"><span>Update</span></div>
+                    </li>
+                </ul>
+                <ul>
+                    <li>DropDowns</li>
+                    <li><a href="#">AutoComplete</a></li>
+                    <li><a href="#">ListBox</a></li>
+                    <li><a href="#">ComboBox</a></li>
+                    <li><a href="#">Dropdown List</a></li>
+                    <li><a href="#">MultiSelect Dropdown</a></li>
+                </ul>
+                <ul>
+                    <li>Grids</li>
+                    <li><a href="#">DataGrid</a></li>
+                    <li><a href="#">Pivot Table</a></li>
+                    <li><a href="#">Tree Grid</a></li>
+                </ul>
+                <ul>
+                    <li>Buttons</li>
+                    <li><a href="#">Button</a></li>
+                    <li><a href="#">Button Group</a></li>
+                    <li><a href="#">Dropdown Menu</a></li>
+                    <li><a href="#">Split Button</a></li>
+                    <li><a href="#">Chips</a></li>
+                </ul>
+                <ul>
+                    <li>Calenders</li>
+                    <li><a href="#">Scheduler</a></li>
+                    <li><a href="#">Calendar</a></li>
+                    <li><a href="#">DatePicker</a></li>
+                    <li>
+                        <a href="#">DateRangePicker</a>
+                        <div class="btn-new"><span>New</span></div>
+                    </li>
+                    <li><a href="#">DateTime Picker</a></li>
+                </ul>
+                <ul>
+                    <li>Buttons</li>
+                    <li><a href="#">Button</a></li>
+                    <li><a href="#">Button Group</a></li>
+                    <li><a href="#">Dropdown Menu</a></li>
+                    <li><a href="#">Split Button</a></li>
+                    <li><a href="#">Chips</a></li>
+                </ul>  <ul>
+                    <li>Calenders</li>
+                    <li><a href="#">Scheduler</a></li>
+                    <li>
+                        <a href="#">Calendar</a>
+                        <div class="btn-update"><span>Update</span></div>
+                    </li>
+                    <li><a href="#">DatePicker</a></li>
+                    <li><a href="#">DateRangePicker</a></li>
+                    <li><a href="#">DateTime Picker</a></li>
+                </ul>
+                <ul>
+                    <li>Buttons</li>
+                    <li><a href="#">Button</a></li>
+                    <li><a href="#">Button Group</a></li>
+                    <li><a href="#">Dropdown Menu</a></li>
+                    <li><a href="#">Split Button</a></li>
+                    <li><a href="#">Chips</a></li>
+                </ul>
+                <ul>
+                    <li>Grids</li>
+                    <li><a href="#">DataGrid</a></li>
+                    <li>
+                        <a href="#">Pivot Table</a>
+                        <div class="btn-new"><span>New</span></div>
+                    </li>
+                    <li><a href="#">Tree Grid</a></li>
+                </ul>
+            </nav>
+        </div>
+    </footer>
 </div>
-
-<div class="labels-container">
-
-    <h2>Labels</h2>
-    <BitLabel>I'm a Label</BitLabel>
-    <BitLabel IsEnabled="false">I'm a disabled Label</BitLabel>
-    <BitLabel IsRequired="true">I'm a required Label</BitLabel>
-    <BitLabel For="labels-container__input">A Label for An Input</BitLabel>
-  
-    <input type="text" name="labels-container__input" id="labels-container__input" />
-    <hr />
-</div>
-<div class="links-container">
-    <h3>Links</h3>
-    <p>
-        When a link has an href, <BitLink Href="https://github.com/bitfoundation/bitframework" Target="_blank">it renders as an anchor tag</BitLink>.
-        Without an href, <BitLink>the link is rendered as a button</BitLink>.
-        You can also use the disabled attribute
-        to create a <BitLink IsEnabled="false">disabled link</BitLink>.It's not recommended to use Links with imgs because
-        Links are meant to render textual inline content. Buttons are inline-block or
-        in the case of imgs, block. However, it is possible to create a linked image
-        button by making a button with an unstyled variant and adding the img content
-        and href source to that.
-    </p>
-    <hr />
-</div>
-<div class="message-bar-container">
-    <h2>BitMessageBar</h2>
-    @if (!_isMessageBarHidden)
-    {
-        <BitMessageBar MessageBarStyle="@MessageBarStyle.Success">
-            Action completed! <BitButton OnClick="MessageBarButton" ButtonStyle="ButtonStyle.Standard">OK</BitButton>
-        </BitMessageBar>
-        <br />
-    }
-    <BitMessageBar MessageBarStyle="@MessageBarStyle.Error">
-        Error! Cannot complete action
-    </BitMessageBar>
-    <br />
-    <BitMessageBar MessageBarStyle="@MessageBarStyle.Warning">
-        Caution! Action may takes long time
-    </BitMessageBar>
-    <br />
-    <BitMessageBar MessageBarStyle="@MessageBarStyle.Severe">
-        Cannot connect to server
-    </BitMessageBar>
-    <br />
-    <BitMessageBar MessageBarStyle="@MessageBarStyle.Default">
-        Visit repository <BitLink Href="https://github.com/bitfoundation/bitframework">here</BitLink>
-    </BitMessageBar>
-</div>
-
-
-<hr />
-
-<div class="checkboxes-container">
-
-    <h2>Checkboxes</h2>
-    <h3>Basics</h3>
-    <BitCheckbox>Basic Checkbox</BitCheckbox>
-    <BitCheckbox IsChecked="true">Checked Checkbox</BitCheckbox>
-    <BitCheckbox IsEnabled="false">Disable Checkbox</BitCheckbox>
-    <BitCheckbox IsEnabled="false" IsChecked="true">Disable Checked Checkbox</BitCheckbox>
-    <br />
-    <h3>Indeterminate</h3>
-    <BitCheckbox IsIndeterminate="true">Indeterminated checkbox</BitCheckbox>
-    <BitCheckbox IsIndeterminate="true" IsChecked="true">Indeterminate checkbox which defaults to true when clicked</BitCheckbox>
-    <BitCheckbox IsIndeterminate="true" IsEnabled="false">Disabled indeterminated checkbox</BitCheckbox>
-    <BitCheckbox IsIndeterminate="IsCheckBoxIndeterminate">Controlled indeterminated checkbox</BitCheckbox>
-    <BitButton OnClick="() => IsCheckBoxIndeterminate = true">Make Checkbox Indeterminate</BitButton>
-    <br />
-    <h5>Custom Label</h5>
-    <BitCheckbox>
-
-        Custom-rendered label with a link go to
-        <a href='https://github.com/bitfoundation/bitframework'>
-            bit foundation repository page.
-        </a>
-    </BitCheckbox>
-    <h3>Reversed</h3>
-    <BitCheckbox BoxSide="@BoxSide.End">Reversed -- Basic Checkbox</BitCheckbox>
-    <BitCheckbox BoxSide="@BoxSide.End" IsChecked="true">Reversed -- Checked Checkbox</BitCheckbox>
-    <BitCheckbox BoxSide="@BoxSide.End" IsEnabled="false">Reversed -- Disable Checkbox</BitCheckbox>
-    <BitCheckbox BoxSide="@BoxSide.End" IsEnabled="false" IsChecked="true">Reversed -- Disable Checked Checkbox</BitCheckbox>
-
-    <br />
-</div>
-
-<hr />
-<div class="search-box-container">
-    <h3>SearchBox</h3>
-    <h5>Default SearchBox</h5>
-        <BitSearchBox Placeholder="Search"></BitSearchBox>
-        <br />
-        <BitSearchBox Placeholder="Search with no animation" DisableAnimation=true></BitSearchBox>
-        <br />
-        <h5>Underlined SearchBox</h5>
-        <BitSearchBox Placeholder="Search" IsUnderlined=true></BitSearchBox>
-        <br />
-        <h5>SearchBox with custom icon</h5>
-        <BitSearchBox Placeholder="Filter" IconName="Filter"></BitSearchBox>
-        <h5>Disabled SearchBox</h5>
-        <BitSearchBox Placeholder="Search" IsEnabled=false></BitSearchBox>
-        <br />
-    <BitSearchBox Placeholder="Search" IsEnabled=false IsUnderlined=true></BitSearchBox>
-    <h5>SearchBox with fixed width</h5>
-    <BitSearchBox Placeholder="Search" Width="250px"></BitSearchBox>
-    <br />
-</div>
-<hr />
-
-<div class="text-field-container">
-    <h2>BitTextField</h2>
-    <BitTextField Value="Enabled"></BitTextField>
-    <br />
-    <BitTextField IsReadonly="true" Value="Readonly"></BitTextField>
-    <br />
-    <BitTextField IsEnabled="false" Value="Disabled"></BitTextField>
-    <br />
-    <BitTextField Placeholder="Placeholder"></BitTextField>
-    <br />
-    <BitTextField MaxLength="10" Placeholder="Limited text field - 10 chars"></BitTextField>
-    <br />
-    <BitTextField Type="@_inputType" Placeholder="Password input"></BitTextField>
-    <BitButton ButtonStyle="@ButtonStyle.Standard" OnClick="ChangeInputType">@_showPasswordText</BitButton>
-    <br />
-    <h3>Multi-line</h3>
-    <BitTextField IsMultiLine="true" Value="Multi-line text field"></BitTextField>
-    <br />
-    <BitTextField IsMultiLine="true" MaxLength="10" Placeholder="Limited multi-line text field - 10 chars"></BitTextField>
-    <br />
-    <BitTextField IsMultiLine="true" IsEnabled="false" Value="Multi-line Disabled"></BitTextField>
-</div>
-
-<hr />
-<BitSpinButton Suffix="cm" Step="0.1" OnChange="@(e => HandleOnChange(e))"></BitSpinButton>
-
-@code{
-    public void HandleOnChange(string value)
-    {
-        Console.WriteLine(value);
-    }
-}

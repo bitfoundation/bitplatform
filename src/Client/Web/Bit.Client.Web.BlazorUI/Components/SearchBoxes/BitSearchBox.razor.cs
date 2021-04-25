@@ -1,8 +1,8 @@
-﻿using Microsoft.AspNetCore.Components;
+﻿using System;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
-using System;
-using System.Threading.Tasks;
 
 namespace Bit.Client.Web.BlazorUI
 {
@@ -28,7 +28,7 @@ namespace Bit.Client.Web.BlazorUI
             if (IsEnabled)
             {
                 Value = string.Empty;
-                _ = InputRef.FocusAsync();
+                await InputRef.FocusAsync();
                 await OnClear.InvokeAsync();
             }
         }
@@ -40,7 +40,7 @@ namespace Bit.Client.Web.BlazorUI
                 if (k.Code == "Escape")
                 {
                     Value = string.Empty;
-                    _ = InputRef.FocusAsync();
+                    await InputRef.FocusAsync();
                     await OnClear.InvokeAsync();
                 }
                 else
