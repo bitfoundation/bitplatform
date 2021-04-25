@@ -8,7 +8,7 @@ namespace Bit.Client.Web.BlazorUI
     public partial class BitChoiceOption : IDisposable
     {
         [Parameter] public string Text { get; set; }
-        [Parameter] public string Name { get; set; } 
+        [Parameter] public string Name { get; set; }
         [Parameter] public string Value { get; set; }
         [Parameter] public bool IsChecked { get; set; }
         [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
@@ -36,6 +36,9 @@ namespace Bit.Client.Web.BlazorUI
                         break;
                     case nameof(IsChecked):
                         IsChecked = (bool)parameter.Value;
+                        break;
+                    case nameof(ChoiceGroup):
+                        ChoiceGroup = (BitChoiceGroup)parameter.Value;
                         break;
                     case nameof(OnClick):
                         OnClick = (EventCallback<MouseEventArgs>)parameter.Value;
@@ -88,11 +91,12 @@ namespace Bit.Client.Web.BlazorUI
         internal void SetOptionCheckedStatus(bool status)
         {
             IsChecked = status;
+            StateHasChanged();
         }
 
         public void Dispose()
         {
-                ChoiceGroup?.UnregisterRadio(this);
+            ChoiceGroup?.UnregisterRadio(this);
         }
     }
 }
