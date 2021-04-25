@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Bit.Client.Web.BlazorUI.Utils;
 using Microsoft.AspNetCore.Components;
@@ -27,7 +26,8 @@ namespace Bit.Client.Web.BlazorUI
         [CascadingParameter]
         public Visual Visual
         {
-            get => visual; set
+            get => visual;
+            set
             {
                 visual = value;
                 ClassBuilder.Reset();
@@ -37,7 +37,8 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter]
         public string Class
         {
-            get => @class; set
+            get => @class;
+            set
             {
                 @class = value;
                 ClassBuilder.Reset();
@@ -47,7 +48,8 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter]
         public bool IsEnabled
         {
-            get => isEnabled; set
+            get => isEnabled;
+            set
             {
                 isEnabled = value;
                 ClassBuilder.Reset();
@@ -57,7 +59,8 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter]
         public string Style
         {
-            get => style; set
+            get => style;
+            set
             {
                 style = value;
                 StyleBuilder.Reset();
@@ -67,7 +70,8 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter]
         public ComponentVisibility Visibility
         {
-            get => visibility; set
+            get => visibility;
+            set
             {
                 visibility = value;
                 StyleBuilder.Reset();
