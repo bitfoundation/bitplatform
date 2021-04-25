@@ -22,9 +22,17 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public string IconName { get; set; }
         [Parameter] public LabelPosition LabelPosition { get; set; } = LabelPosition.left;
 
-        private string ValueToString => Value.ToString("N2");
-        private double NormalizeValue(double value) => double.Parse(value.ToString("N2"));
-        private string ValueWithSuffix => Suffix == string.Empty ? $"{ValueToString}" : $"{ValueToString} {Suffix}";
+        private bool IsStepDecimal => Step.ToString().Contains(".");
+
+        private double Normalize(double value)
+        {
+            var result = IsStepDecimal
+                ? Math.Round(value, 2)
+                : value;
+
+            return result;
+        }
+        private string ValueWithSuffix => Suffix == string.Empty ? $"{Normalize(Value)}" : $"{Normalize(Value)} {Suffix}";
 
         [Parameter] public EventCallback<string> OnChange { get; set; }
 
@@ -57,9 +65,10 @@ namespace Bit.Client.Web.BlazorUI
         {
             if (IsEnabled)
             {
-                if (Value + Step <= Max)
+                var result = Value + Step;
+                if (result <= Max)
                 {
-                    Value = NormalizeValue(Value + Step);
+                    Value = Normalize(result);
                     await OnChange.InvokeAsync(ValueWithSuffix);
                 }
                 Console.WriteLine("Up Clicked!");
@@ -70,9 +79,10 @@ namespace Bit.Client.Web.BlazorUI
         {
             if (IsEnabled)
             {
-                if (Value - Step >= Min)
+                var result = Value - Step;
+                if (result >= Min)
                 {
-                    Value = NormalizeValue(Value - Step);
+                    Value = Normalize(result);
                     await OnChange.InvokeAsync(ValueWithSuffix);
                 }
                 Console.WriteLine("Down Clicked!");
