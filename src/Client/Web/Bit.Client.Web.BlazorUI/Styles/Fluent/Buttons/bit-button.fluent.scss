@@ -1,6 +1,6 @@
 ﻿@import "../colors.fluent.scss", "../../functions.scss";
 
-.bit-button-fluent {
+.bit-btn-fluent {
     font-family: FluentFont;
     display: inline-flex;
     justify-content: center;
@@ -14,7 +14,7 @@
     cursor: pointer;
 }
 
-.bit-button-standard {
+.bit-btn-standard-fluent {
     color: $Grey160;
     background: $White;
     border: 1px solid $GreyInputBorder;
@@ -29,7 +29,7 @@
     }
 }
 
-.bit-button-primary {
+.bit-btn-primary-fluent {
     color: $White;
     background: $Primary;
     border: 1px solid $Primary;
@@ -44,7 +44,7 @@
 }
 
 
-.bit-button-disabled {
+.bit-btn-disabled-fluent {
     background: $Grey20;
     color: $Grey90;
     border: 1px solid $Grey20;

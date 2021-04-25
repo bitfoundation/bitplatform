@@ -23,13 +23,13 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
-        protected override string RootElementClass => "bit-button";
+        protected override string RootElementClass => "bit-btn";
 
         protected override void RegisterComponentClasses()
         {
             ClassBuilder.Register(() => IsEnabled is false ? string.Empty :
-                                        ButtonStyle == ButtonStyle.Primary ? $"{RootElementClass}-primary" :
-                                        $"{RootElementClass}-standard");
+                ButtonStyle == ButtonStyle.Primary ? $"{RootElementClass}-primary-{VisualClassRegistrar()}"
+                : $"{RootElementClass}-standard-{VisualClassRegistrar()}");
         }
 
         protected virtual async Task HandleOnClick(MouseEventArgs e)

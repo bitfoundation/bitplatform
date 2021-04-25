@@ -74,13 +74,13 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
-        protected override string RootElementClass => "bit-text-field";
+        protected override string RootElementClass => "bit-txt-fld";
 
         protected override void RegisterComponentClasses()
         {
-            ClassBuilder.Register(() => IsMultiLine && Type == TextFieldType.Text ? $"{RootElementClass}-multiline" : string.Empty);
-            ClassBuilder.Register(() => IsEnabled is false ? $"{RootElementClass}-disabled" : string.Empty);
-            ClassBuilder.Register(() => IsEnabled && IsReadonly ? $"{RootElementClass}-readonly" : string.Empty);
+            ClassBuilder.Register(() => IsMultiLine && Type == TextFieldType.Text ? $"{RootElementClass}-multiline-{VisualClassRegistrar()}" : string.Empty);
+            ClassBuilder.Register(() => IsEnabled is false ? $"{RootElementClass}-disabled-{VisualClassRegistrar()}" : string.Empty);
+            ClassBuilder.Register(() => IsEnabled && IsReadonly ? $"{RootElementClass}-readonly-{VisualClassRegistrar()}" : string.Empty);
             ClassBuilder.Register(() => FocusClass);
         }
 
@@ -88,7 +88,7 @@ namespace Bit.Client.Web.BlazorUI
         {
             if (IsEnabled)
             {
-                FocusClass = $"{RootElementClass}-focused";
+                FocusClass = $"{RootElementClass}-focused-{VisualClassRegistrar()}";
                 await OnFocusIn.InvokeAsync(e);
             }
         }
@@ -106,7 +106,7 @@ namespace Bit.Client.Web.BlazorUI
         {
             if (IsEnabled)
             {
-                FocusClass = $"{RootElementClass}-focused";
+                FocusClass = $"{RootElementClass}-focused-{VisualClassRegistrar()}";
                 await OnFocus.InvokeAsync(e);
             }
         }

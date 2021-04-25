@@ -20,15 +20,15 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
-        protected override string RootElementClass => "bit-message-bar";
+        protected override string RootElementClass => "bit-msg-bar";
 
         protected override void RegisterComponentClasses()
         {
-            ClassBuilder.Register(() => MessageBarStyle == MessageBarStyle.Warning ? $"{RootElementClass}-warning"
-                                      : MessageBarStyle == MessageBarStyle.Severe ? $"{RootElementClass}-severe"
-                                      : MessageBarStyle == MessageBarStyle.Error ? $"{RootElementClass}-error"
-                                      : MessageBarStyle == MessageBarStyle.Success ? $"{RootElementClass}-success"
-                                      : $"{RootElementClass}-default");
+            ClassBuilder.Register(() => MessageBarStyle == MessageBarStyle.Warning ? $"{RootElementClass}-warning-{VisualClassRegistrar()}"
+                                      : MessageBarStyle == MessageBarStyle.Severe ? $"{RootElementClass}-severe-{VisualClassRegistrar()}"
+                                      : MessageBarStyle == MessageBarStyle.Error ? $"{RootElementClass}-error-{VisualClassRegistrar()}"
+                                      : MessageBarStyle == MessageBarStyle.Success ? $"{RootElementClass}-success-{VisualClassRegistrar()}"
+                                      : $"{RootElementClass}-default-{VisualClassRegistrar()}");
         }
 
         public override Task SetParametersAsync(ParameterView parameters)

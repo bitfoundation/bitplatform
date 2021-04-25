@@ -1,6 +1,6 @@
 ﻿@import "../colors.fluent.scss", "../../functions.scss";
 
-.bit-link {
+.bit-lnk-fluent {
     font-family: FluentFont;
     -webkit-font-smoothing: antialiased;
     font-size: inherit;
@@ -15,7 +15,7 @@
     }
 }
 
-.bit-link-disabled {
+.bit-lnk-disabled {
     color: $Grey90;
     cursor: default;
 
@@ -25,7 +25,7 @@
     }
 }
 
-button.bit-link {
+.bit-lnk-btn-fluent {
     color: $Primary;
     background: none transparent;
     border-top: none;

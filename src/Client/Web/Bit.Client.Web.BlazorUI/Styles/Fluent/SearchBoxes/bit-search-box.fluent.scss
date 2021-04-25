@@ -1,6 +1,6 @@
 ﻿@import "../colors.fluent.scss", "../../functions.scss";
 
-.bit-search-box-container-fluent {
+.bit-srch-box-container-fluent {
     -webkit-font-smoothing: antialiased;
     font-size: 14px;
     font-weight: 400;
@@ -16,9 +16,76 @@
     border-radius: 2px;
     border: 1px solid $Grey130;
     height: 32px;
+
+    .search-icon-container {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        flex-shrink: 0;
+        font-size: 16px;
+        width: 32px;
+        text-align: center;
+        color: $CyanBlue10;
+        cursor: text;
+        transition: width 0.167s ease 0s;
+
+        & i.bit-icon {
+            display: inline-block;
+            -webkit-font-smoothing: antialiased;
+            font-style: normal;
+            font-weight: normal;
+            speak: none;
+            opacity: 1;
+            transition: opacity 0.167s ease 0s;
+        }
+    }
+
+    .clear-button-container {
+        display: flex;
+        flex-direction: row;
+        align-items: stretch;
+        cursor: pointer;
+        flex-basis: 0px;
+        flex-shrink: 0;
+        padding: 0px;
+        margin: -1px 0px;
+        width: 32px;
+        opacity: 0;
+        transition: opacity 0.167s ease 0s;
+
+        & i.bit-icon--Clear {
+            opacity: 0;
+            transition: opacity 0.167s ease 0s;
+        }
+
+        & button {
+            outline: transparent;
+            position: relative;
+            font-size: 14px;
+            font-weight: 400;
+            box-sizing: border-box;
+            border: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-decoration: none;
+            cursor: pointer;
+            padding: 0px 4px;
+            border-radius: 2px;
+            width: 32px;
+            height: auto;
+            background-color: transparent;
+            color: $Primary;
+            user-select: none;
+        }
+
+        &:hover {
+            background-color: $Grey20;
+        }
+    }
 }
 
-.bit-search-box-container-has-value {
+.bit-srch-box-container-has-value-fluent {
     .clear-button-container {
         opacity: 1;
         flex-basis: 0px;
@@ -39,7 +106,7 @@
     }
 }
 
-.bit-search-box-container-focused {
+.bit-srch-box-container-focused-fluent {
     border: 2px solid $Primary;
 
     .search-icon-container {
@@ -51,7 +118,7 @@
     }
 }
 
-.bit-search-box-container-no-animation {
+.bit-srch-box-container-no-animation-fluent {
     .search-icon-container {
         transition: none;
 
@@ -69,7 +136,7 @@
     }
 }
 
-.bit-search-box-container-underlined {
+.bit-srch-box-container-underlined-fluent {
     border: none;
     border-radius: 0;
     border-bottom: 1px solid $Grey130;
@@ -79,7 +146,7 @@
     }
 }
 
-.bit-search-box-container-disabled {
+.bit-srch-box-container-disabled-fluent {
     color: $Grey160;
     background-color: $Grey20;
     align-items: stretch;
@@ -109,71 +176,4 @@
     min-width: 0px;
     overflow: hidden;
     text-overflow: ellipsis;
-}
-
-.search-icon-container {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    flex-shrink: 0;
-    font-size: 16px;
-    width: 32px;
-    text-align: center;
-    color: $CyanBlue10;
-    cursor: text;
-    transition: width 0.167s ease 0s;
-
-    & i.bit-icon {
-        display: inline-block;
-        -webkit-font-smoothing: antialiased;
-        font-style: normal;
-        font-weight: normal;
-        speak: none;
-        opacity: 1;
-        transition: opacity 0.167s ease 0s;
-    }
-}
-
-.clear-button-container {
-    display: flex;
-    flex-direction: row;
-    align-items: stretch;
-    cursor: pointer;
-    flex-basis: 0px;
-    flex-shrink: 0;
-    padding: 0px;
-    margin: -1px 0px;
-    width: 32px;
-    opacity: 0;
-    transition: opacity 0.167s ease 0s;
-
-    & i.bit-icon--Clear {
-        opacity: 0;
-        transition: opacity 0.167s ease 0s;
-    }
-
-    & button {
-        outline: transparent;
-        position: relative;
-        font-size: 14px;
-        font-weight: 400;
-        box-sizing: border-box;
-        border: none;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        text-decoration: none;
-        cursor: pointer;
-        padding: 0px 4px;
-        border-radius: 2px;
-        width: 32px;
-        height: auto;
-        background-color: transparent;
-        color: $Primary;
-        user-select: none;
-    }
-
-    &:hover {
-        background-color: $Grey20;
-    }
 }
