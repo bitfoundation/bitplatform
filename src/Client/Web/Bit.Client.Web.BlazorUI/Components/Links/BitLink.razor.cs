@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNetCore.Components;
+﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
-using System.Threading.Tasks;
 
 namespace Bit.Client.Web.BlazorUI
 {
@@ -14,13 +14,7 @@ namespace Bit.Client.Web.BlazorUI
 
         [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
-        protected override string GetElementClass()
-        {
-            ElementClassContainer.Clear();
-            ElementClassContainer.Add("bit-link");
-
-            return base.GetElementClass();
-        }
+        protected override string RootElementClass => "bit-link";
 
         protected virtual async Task HandleClick(MouseEventArgs e)
         {

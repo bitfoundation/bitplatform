@@ -127,7 +127,9 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
             else if (itemToDelete is IArchivableDto archivableDto && !(itemToDelete is ISyncableDto /*SyncableDto items are being handled in DbContext's SaveChanges*/))
             {
                 archivableDto.IsArchived = true;
-                return await UpdateAsync(itemToDelete, cancellationToken).ConfigureAwait(false);
+                T updatedEntity = await UpdateAsync(itemToDelete, cancellationToken).ConfigureAwait(false);
+                DbContext.Entry(updatedEntity).State = EntityState.Detached;
+                return updatedEntity;
             }
             else
             {
@@ -236,7 +238,9 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
             else if (itemToDelete is IArchivableDto archivableDto && !(itemToDelete is ISyncableDto /*SyncableDto items are being handled in DbContext's SaveChanges*/))
             {
                 archivableDto.IsArchived = true;
-                return Update(itemToDelete);
+                T updatedEntity = Update(itemToDelete);
+                DbContext.Entry(updatedEntity).State = EntityState.Detached;
+                return updatedEntity;
             }
             else
             {
