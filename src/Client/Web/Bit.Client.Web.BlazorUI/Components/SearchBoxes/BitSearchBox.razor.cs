@@ -132,48 +132,5 @@ namespace Bit.Client.Web.BlazorUI
         {
             StyleBuilder.Register(() => Width.HasValue() ? $"width: {Width}" : string.Empty);
         }
-
-        public override Task SetParametersAsync(ParameterView parameters)
-        {
-            foreach (ParameterValue parameter in parameters)
-            {
-                switch (parameter.Name)
-                {
-                    case nameof(Value):
-                        Value = (string)parameter.Value;
-                        break;
-
-                    case nameof(Placeholder):
-                        Placeholder = (string)parameter.Value;
-                        break;
-
-                    case nameof(DisableAnimation):
-                        DisableAnimation = (bool)parameter.Value;
-                        break;
-
-                    case nameof(IsUnderlined):
-                        IsUnderlined = (bool)parameter.Value;
-                        break;
-
-                    case nameof(IconName):
-                        IconName = (string)parameter.Value;
-                        break;
-
-                    case nameof(Width):
-                        Width = (string)parameter.Value;
-                        break;
-
-                    case nameof(OnSearch):
-                        OnSearch = (EventCallback<string>)parameter.Value;
-                        break;
-
-                    case nameof(OnClear):
-                        OnClear = (EventCallback)parameter.Value;
-                        break;
-                }
-            }
-
-            return base.SetParametersAsync(parameters);
-        }
     }
 }

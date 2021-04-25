@@ -30,24 +30,5 @@ namespace Bit.Client.Web.BlazorUI
                                       : MessageBarStyle == MessageBarStyle.Success ? "success"
                                       : "default");
         }
-
-        public override Task SetParametersAsync(ParameterView parameters)
-        {
-            foreach (ParameterValue parameter in parameters)
-            {
-                switch (parameter.Name)
-                {
-                    case nameof(MessageBarStyle):
-                        MessageBarStyle = (MessageBarStyle)parameter.Value;
-                        break;
-
-                    case nameof(ChildContent):
-                        ChildContent = (RenderFragment)parameter.Value;
-                        break;
-                }
-            }
-
-            return base.SetParametersAsync(parameters);
-        }
     }
 }

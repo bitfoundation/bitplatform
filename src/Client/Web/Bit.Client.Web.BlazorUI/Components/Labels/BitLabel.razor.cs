@@ -28,28 +28,5 @@ namespace Bit.Client.Web.BlazorUI
         {
             ClassBuilder.Register(() => IsRequired ? "required" : string.Empty);
         }
-
-        public override Task SetParametersAsync(ParameterView parameters)
-        {
-            foreach (ParameterValue parameter in parameters)
-            {
-                switch (parameter.Name)
-                {
-                    case nameof(ChildContent):
-                        ChildContent = (RenderFragment)parameter.Value;
-                        break;
-
-                    case nameof(IsRequired):
-                        IsRequired = (bool)parameter.Value;
-                        break;
-
-                    case nameof(For):
-                        For = (string)parameter.Value;
-                        break;
-                }
-            }
-
-            return base.SetParametersAsync(parameters);
-        }
     }
 }
