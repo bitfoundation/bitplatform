@@ -2,15 +2,20 @@
 @inherits BitComponentBase
 
 <div @ref="Element" style="@GetElementStyle()" class="@GetElementClass()">
-    <div class="label-wrapper">label</div>
+    <div class="label-wrapper">
+        <i class="bit-icon bit-icon--@IconName"></i>
+        <label class="label">@Label</label>
+    </div>
     <div class="input-wrapper">
-        <input @ref="InputElement" value="@($"{Value.ToString()} {Suffix}")" @onchange="@(e => HandleValueOnInputChange(e))"/>
-        <span class="arrow-button-container">
-            <button class="up-button" @onclick="@HandleUpClick">
-                <span><i class="bit-icon bit-icon--ChevronUp"></i></span>
+        <input class="input" @ref="InputElement" value="@($"{Value.ToString()} {Suffix}")" @onchange="@(e => HandleValueOnInputChange(e))"/>
+        <span class="buttons-wrapper">
+            <button class="button button--up" @onclick="@HandleUpClick">
+                <span class="button-icon-wrapper">
+                <i class="bit-icon bit-icon--ChevronUp bit-icon--s"></i>
+                </span>
             </button>
-            <button class="down-button" @onclick="@HandleDownClick">
-                <span><i class="bit-icon bit-icon--ChevronDown"></i></span>
+            <button class="button button--down" @onclick="@HandleDownClick">
+                <span><i class="bit-icon bit-icon--ChevronDown bit-icon--s"></i></span>
             </button>
         </span>
     </div>

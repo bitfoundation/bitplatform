@@ -1,0 +1,64 @@
+﻿@import "../colors.fluent.scss", "../../functions.scss";
+
+.bit-spin-button {
+    display: flex;
+}
+
+.input-wrapper {
+    display: flex;
+    position: relative;
+    box-sizing: border-box;
+    height: 32px;
+    min-width: 86px;
+    width: 75px;
+    border: 1px solid rgb(96, 94, 92);
+}
+
+.input {
+    box-sizing: border-box;
+    box-shadow: none;
+    border-style: none;
+    flex: 1 1 0%;
+    margin: 0px;
+    font-size: 14px;
+    font-family: inherit;
+    color: rgb(50, 49, 48);
+    background-color: rgb(255, 255, 255);
+    height: 100%;
+    padding: 0px 8px 0px 9px;
+    outline: 0px;
+    display: block;
+    min-width: 61px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    cursor: text;
+    border-radius: 2px 0px 0px 2px;
+    user-select: text;
+}
+
+.buttons-wrapper {
+    display: flex;
+    flex-direction: column;
+}
+
+.button {
+    outline: none;
+    position: relative;
+    -webkit-font-smoothing: antialiased;
+    font-size: 14px;
+    font-weight: 400;
+    box-sizing: border-box;
+    border: none;
+    display: block;
+    text-decoration: none;
+    text-align: center;
+    cursor: default;
+    padding: 0px;
+    border-radius: 2px;
+    width: 23px;
+    height: 50%;
+    background-color: transparent;
+    color: rgb(96, 94, 92);
+    user-select: none;
+}

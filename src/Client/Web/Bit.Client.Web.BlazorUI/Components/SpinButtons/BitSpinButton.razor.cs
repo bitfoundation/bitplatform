@@ -12,16 +12,18 @@ namespace Bit.Client.Web.BlazorUI
 
         [Inject] public IJSRuntime JSRuntime { get; set; }
 
+        
         [Parameter] public double Min { get; set; } = 0;
         [Parameter] public double Max { get; set; } = double.MaxValue;
         [Parameter] public double Value { get; set; } = 0;
         [Parameter] public double Step { get; set; } = 1;
         [Parameter] public string Suffix { get; set; }
+        [Parameter] public string Label { get; set; }
+        [Parameter] public string IconName { get; set; }
 
         private string ValueToString => Value.ToString("N2");
         private double NormalizeValue(double value) => double.Parse(value.ToString("N2"));
         private string ValueWithSuffix => Suffix == string.Empty ? $"{ValueToString}" : $"{ValueToString} {Suffix}";
-        //[Parameter] public int DefaultValue { get; set; } = 0;
 
         [Parameter] public EventCallback<string> OnChange { get; set; }
 
@@ -38,7 +40,7 @@ namespace Bit.Client.Web.BlazorUI
                 else {
                     await JSRuntime.SetProperty(InputElement, "value", ValueWithSuffix);
                 }
-                    OnChange.InvokeAsync(ValueWithSuffix);
+                await OnChange.InvokeAsync(ValueWithSuffix);
             }
         } 
         
@@ -57,7 +59,7 @@ namespace Bit.Client.Web.BlazorUI
                 if (Value + Step <= Max)
                 {
                     Value = NormalizeValue(Value + Step);
-                    OnChange.InvokeAsync(ValueWithSuffix);
+                    await OnChange.InvokeAsync(ValueWithSuffix);
                 }
                 Console.WriteLine("Up Clicked!");
             }
@@ -70,7 +72,7 @@ namespace Bit.Client.Web.BlazorUI
                 if (Value - Step >= Min)
                 {
                     Value = NormalizeValue(Value - Step);
-                    OnChange.InvokeAsync(ValueWithSuffix);
+                    await OnChange.InvokeAsync(ValueWithSuffix);
                 }
                 Console.WriteLine("Down Clicked!");
             }
@@ -78,6 +80,8 @@ namespace Bit.Client.Web.BlazorUI
 
         protected override string GetElementClass()
         {
+            ElementClassContainer.Clear();
+            ElementClassContainer.Add("bit-spin-button");
             return base.GetElementClass();
         }
 
@@ -102,8 +106,14 @@ namespace Bit.Client.Web.BlazorUI
                     case nameof(Suffix):
                         Suffix = (string)parameter.Value;
                         break;
+                    case nameof(Label):
+                        Label = (string)parameter.Value;
+                        break;
                     case nameof(OnChange):
                         OnChange = (EventCallback<string>)parameter.Value;
+                        break; 
+                    case nameof(IconName):
+                        IconName = (string)parameter.Value;
                         break;
                 }
             }

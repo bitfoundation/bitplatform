@@ -19,6 +19,19 @@
 
 <hr />
 
+<div class="spin-button-field-container">
+    <h2>BitSpinButton </h2>
+    <BitSpinButton Suffix="cm" Min="0" Max="100" Step="1" Label="Basic SpinButton" OnChange="@(e => HandleOnChange(e))"></BitSpinButton>
+    <BitSpinButton Min="0" Max="10" Step="0.1" Label="Decimal SpinButton" OnChange="@(e => HandleOnChange(e))"></BitSpinButton>
+</div>
+
+@code{
+    public void HandleOnChange(string value)
+    {
+        Console.WriteLine(value);
+    }
+}
+
 <div class="buttons-container">
     <h2>BitButton</h2>
     <h3>Visibility</h3>
@@ -205,15 +218,3 @@
     <br />
     <BitTextField IsMultiLine="true" IsEnabled="false" Value="Multi-line Disabled"></BitTextField>
 </div>
-
-    <div class="spin-button-field-container">
-    <h2>BitSpinButton </h2>
-    <BitSpinButton Suffix="cm" Step="0.1" OnChange="@(e => HandleOnChange(e))"></BitSpinButton>
-    </div>
-
-    @code{
-        public void HandleOnChange(string value)
-        {
-            Console.WriteLine(value);
-        }
-    }
