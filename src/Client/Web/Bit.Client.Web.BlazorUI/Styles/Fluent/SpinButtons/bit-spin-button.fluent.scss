@@ -134,3 +134,21 @@
         background: none $Grey20;
     }
 }
+
+.bit-spin-button {
+    &.label-top {
+        flex-direction: column;
+    }
+
+    &.label-left {
+        flex-direction: row;
+    }
+
+    &.label-right {
+        flex-direction: row-reverse;
+    }
+
+    &.label-bottom {
+        flex-direction: column-reverse;
+    }
+}

@@ -5550,6 +5550,18 @@ button.bit-link {
   border: none #F3F2F1;
   background: none #F3F2F1; }
 
+.bit-spin-button.label-top {
+  flex-direction: column; }
+
+.bit-spin-button.label-left {
+  flex-direction: row; }
+
+.bit-spin-button.label-right {
+  flex-direction: row-reverse; }
+
+.bit-spin-button.label-bottom {
+  flex-direction: column-reverse; }
+
 button {
   border: none;
   outline: none; }

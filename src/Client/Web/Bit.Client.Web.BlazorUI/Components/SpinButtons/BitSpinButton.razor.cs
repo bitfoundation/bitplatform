@@ -20,6 +20,7 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public string Suffix { get; set; }
         [Parameter] public string Label { get; set; }
         [Parameter] public string IconName { get; set; }
+        [Parameter] public LabelPosition LabelPosition { get; set; } = LabelPosition.left;
 
         private string ValueToString => Value.ToString("N2");
         private double NormalizeValue(double value) => double.Parse(value.ToString("N2"));
@@ -81,7 +82,7 @@ namespace Bit.Client.Web.BlazorUI
         protected override string GetElementClass()
         {
             ElementClassContainer.Clear();
-            ElementClassContainer.Add("bit-spin-button");
+            ElementClassContainer.Add($"bit-spin-button label-{LabelPosition}");
             return base.GetElementClass();
         }
 
@@ -114,6 +115,9 @@ namespace Bit.Client.Web.BlazorUI
                         break; 
                     case nameof(IconName):
                         IconName = (string)parameter.Value;
+                        break;
+                    case nameof(LabelPosition):
+                        LabelPosition = (LabelPosition)parameter.Value;
                         break;
                 }
             }
