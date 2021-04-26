@@ -9,10 +9,9 @@ namespace Bit.Client.Web.BlazorUI
     public partial class BitSpinButton
     {
         public ElementReference InputElement { get; set; }
+        public double Value { get; set; }
 
         [Inject] public IJSRuntime JSRuntime { get; set; }
-
-        [Parameter] public double Value { get; set; }
         
         [Parameter] public double Min { get; set; } = 0;
         [Parameter] public double Max { get; set; } = double.MaxValue;
@@ -22,20 +21,8 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public string Label { get; set; }
         [Parameter] public string IconName { get; set; }
         [Parameter] public LabelPosition LabelPosition { get; set; } = LabelPosition.left;
-
-        private bool IsStepDecimal => Step.ToString().Contains(".");
-
-        private double Normalize(double value)
-        {
-            var result = IsStepDecimal
-                ? Math.Round(value, 2)
-                : value;
-
-            return result;
-        }
-        private string ValueWithSuffix => Suffix == string.Empty ? $"{Normalize(Value)}" : $"{Normalize(Value)} {Suffix}";
-
         [Parameter] public EventCallback<string> OnChange { get; set; }
+
 
         protected virtual async Task HandleValueOnInputChange(ChangeEventArgs e) 
         {
@@ -52,7 +39,6 @@ namespace Bit.Client.Web.BlazorUI
                 else {
                     await JSRuntime.SetProperty(InputElement, "value", ValueWithSuffix);
                 }
-
             }
         } 
         
@@ -74,7 +60,6 @@ namespace Bit.Client.Web.BlazorUI
                     Value = Normalize(result);
                     await OnChange.InvokeAsync(ValueWithSuffix);
                 }
-                Console.WriteLine("Up Clicked!");
             }
         }
 
@@ -88,7 +73,6 @@ namespace Bit.Client.Web.BlazorUI
                     Value = Normalize(result);
                     await OnChange.InvokeAsync(ValueWithSuffix);
                 }
-                Console.WriteLine("Down Clicked!");
             }
         }
 
@@ -149,5 +133,18 @@ namespace Bit.Client.Web.BlazorUI
             }
             return base.SetParametersAsync(parameters);
         }
+
+        private bool IsStepDecimal => Step.ToString().Contains(".");
+
+        private double Normalize(double value)
+        {
+            var result = IsStepDecimal
+                ? Math.Round(value, 2)
+                : value;
+
+            return result;
+        }
+
+        private string ValueWithSuffix => Suffix == string.Empty ? $"{Normalize(Value)}" : $"{Normalize(Value)} {Suffix}";
     }
 }
