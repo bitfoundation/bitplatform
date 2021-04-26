@@ -14,29 +14,6 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public RenderFragment ChildContent { get; set; }
         [Parameter] public EventCallback<string> OnValueChange { get; set; }
 
-        public override Task SetParametersAsync(ParameterView parameters)
-        {
-            foreach (ParameterValue parameter in parameters)
-            {
-                switch (parameter.Name)
-                {
-                    case nameof(Name):
-                        Name = (string)parameter.Value;
-                        break;
-                    case nameof(Value):
-                        Value = (string)parameter.Value;
-                        break;
-                    case nameof(ChildContent):
-                        ChildContent = (RenderFragment)parameter.Value;
-                        break;
-                    case nameof(OnValueChange):
-                        OnValueChange = (EventCallback<string>)parameter.Value;
-                        break;
-                }
-            }
-            return base.SetParametersAsync(parameters);
-        }
-
         protected override string RootElementClass => "bit-choice-group";
 
         protected override void RegisterComponentClasses()
