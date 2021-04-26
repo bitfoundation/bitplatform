@@ -12,10 +12,11 @@ namespace Bit.Client.Web.BlazorUI
 
         [Inject] public IJSRuntime JSRuntime { get; set; }
 
+        [Parameter] public double Value { get; set; }
         
         [Parameter] public double Min { get; set; } = 0;
         [Parameter] public double Max { get; set; } = double.MaxValue;
-        [Parameter] public double Value { get; set; } = 0;
+        [Parameter] public double DefaultValue { get; set; } = 0;
         [Parameter] public double Step { get; set; } = 1;
         [Parameter] public string Suffix { get; set; }
         [Parameter] public string Label { get; set; }
@@ -98,6 +99,16 @@ namespace Bit.Client.Web.BlazorUI
             return base.GetElementClass();
         }
 
+        protected override async Task OnAfterRenderAsync(bool firstRender)
+        {
+            if (firstRender)
+            {
+                Value = DefaultValue;
+                await JSRuntime.SetProperty(InputElement, "value", ValueWithSuffix);
+            }
+            await base.OnAfterRenderAsync(firstRender);
+        }
+
         public override Task SetParametersAsync(ParameterView parameters)
         {
             foreach (ParameterValue parameter in parameters)
@@ -112,6 +123,9 @@ namespace Bit.Client.Web.BlazorUI
                         break;
                     case nameof(Value):
                         Value = (double)parameter.Value;
+                        break;
+                    case nameof(DefaultValue):
+                        DefaultValue = (double)parameter.Value;
                         break;
                     case nameof(Step):
                         Step = (double)parameter.Value;
