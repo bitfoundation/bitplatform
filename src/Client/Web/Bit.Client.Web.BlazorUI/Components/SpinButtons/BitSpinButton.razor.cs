@@ -76,11 +76,11 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
-        protected override string GetElementClass()
+        protected override string RootElementClass => "bit-spin-button";
+
+        protected override void RegisterComponentClasses()
         {
-            ElementClassContainer.Clear();
-            ElementClassContainer.Add($"bit-spin-button label-{LabelPosition}");
-            return base.GetElementClass();
+            ClassBuilder.Register(() => $"label-{LabelPosition}");
         }
 
         protected override async Task OnAfterRenderAsync(bool firstRender)

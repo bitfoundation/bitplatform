@@ -1,7 +1,9 @@
 ﻿@namespace Bit.Client.Web.BlazorUI
 @inherits BitComponentBase
 
-<div @ref="Element" style="@GetElementStyle()" class="@GetElementClass()">
+<div @ref="RootElement"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value">
 
     <div class="spin-button-label-wrapper">
         <i class="bit-icon bit-icon--@IconName bit-icon--l"></i>
