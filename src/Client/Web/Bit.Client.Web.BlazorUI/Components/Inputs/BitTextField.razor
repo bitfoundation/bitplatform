@@ -1,9 +1,9 @@
 ﻿@namespace Bit.Client.Web.BlazorUI
 @inherits BitComponentBase
-<div @ref="Element"
-     style="@GetElementStyle()"
-     class="@GetElementClass()
-     @FocusClass">
+
+<div @ref="RootElement"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value">
     @if (IsMultiLine && Type == TextFieldType.Text)
     {
         <textarea rows="3"

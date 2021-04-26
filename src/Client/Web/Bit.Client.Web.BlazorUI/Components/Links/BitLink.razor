@@ -3,9 +3,9 @@
 
 @if (Href.HasValue() || !IsEnabled)
 {
-    <a @ref="Element"
-       style="@GetElementStyle()"
-       class="@GetElementClass()"
+    <a @ref="RootElement"
+       style="@StyleBuilder.Value"
+       class="@ClassBuilder.Value"
        href="@Href"
        target="@Target">
         @ChildContent
@@ -13,9 +13,9 @@
 }
 else
 {
-    <button @ref="Element"
-            style="@GetElementStyle()"
-            class="@GetElementClass()"
+    <button @ref="RootElement"
+            style="@StyleBuilder.Value"
+            class="@ClassBuilder.Value"
             type="button"
             @onclick="HandleClick"
             @onclick:preventDefault="true">

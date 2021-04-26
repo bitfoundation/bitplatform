@@ -10,6 +10,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<PackageReference Include="Bit.Tooling.SourceGenerators" Version="7.3.0" />
 		<PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="5.0.5" />
 		<PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.2.4">
 			<PrivateAssets>all</PrivateAssets>
