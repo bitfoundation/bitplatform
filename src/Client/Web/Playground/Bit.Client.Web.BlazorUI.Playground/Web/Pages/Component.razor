@@ -37,7 +37,7 @@
     <BitSpinButton Suffix="Inch" Min="0" Max="100" Step="1" Label="With suffix"></BitSpinButton>
 
     <h4># SpinButton with custom handler</h4>
-    <BitSpinButton DefaultValue="@defaultValue" Min="0" Max="100" Step="1" Label="With custom handler" OnChange="@(e => HandleOnChange(e))"></BitSpinButton>
+    <BitSpinButton DefaultValue="5" Min="0" Max="100" Step="1" Label="With custom handler" OnChange="@(e => HandleOnChange(e))"></BitSpinButton>
     <p>@Message</p>
 
     <h4># SpinButton with label above</h4>
@@ -45,11 +45,9 @@
 </div>
 
 @code{
-    private double defaultValue = 5;
     [Parameter] public string Message { get; set; } = $"value of spin button is: ";
     public void HandleOnChange(string value)
     {
-        defaultValue = double.Parse(value);
         Message = $"value of spin button is: {value}";
         Console.WriteLine(value);
     }
