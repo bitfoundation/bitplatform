@@ -41,32 +41,5 @@ namespace Bit.Client.Web.BlazorUI
                 await OnClick.InvokeAsync(e);
             }
         }
-
-        public override Task SetParametersAsync(ParameterView parameters)
-        {
-            foreach (ParameterValue parameter in parameters)
-            {
-                switch (parameter.Name)
-                {
-                    case nameof(OnClick):
-                        OnClick = (EventCallback<MouseEventArgs>)parameter.Value;
-                        break;
-
-                    case nameof(Text):
-                        Text = (string)parameter.Value;
-                        break;
-
-                    case nameof(SecondaryText):
-                        SecondaryText = (string)parameter.Value;
-                        break;
-
-                    case nameof(ButtonStyle):
-                        ButtonStyle = (ButtonStyle)parameter.Value;
-                        break;
-                }
-            }
-
-            return base.SetParametersAsync(parameters);
-        }
     }
 }

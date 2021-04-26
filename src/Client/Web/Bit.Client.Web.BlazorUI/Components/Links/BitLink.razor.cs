@@ -23,32 +23,5 @@ namespace Bit.Client.Web.BlazorUI
                 await OnClick.InvokeAsync(e);
             }
         }
-
-        public override Task SetParametersAsync(ParameterView parameters)
-        {
-            foreach (ParameterValue parameter in parameters)
-            {
-                switch (parameter.Name)
-                {
-                    case nameof(ChildContent):
-                        ChildContent = (RenderFragment)parameter.Value;
-                        break;
-
-                    case nameof(Href):
-                        Href = (string)parameter.Value;
-                        break;
-
-                    case nameof(Target):
-                        Target = (string)parameter.Value;
-                        break;
-
-                    case nameof(OnClick):
-                        OnClick = (EventCallback<MouseEventArgs>)parameter.Value;
-                        break;
-                }
-            }
-
-            return base.SetParametersAsync(parameters);
-        }
     }
 }

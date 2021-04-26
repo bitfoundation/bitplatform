@@ -86,36 +86,5 @@ namespace Bit.Client.Web.BlazorUI
 
             await base.OnAfterRenderAsync(firstRender);
         }
-
-        public override Task SetParametersAsync(ParameterView parameters)
-        {
-            foreach (ParameterValue parameter in parameters)
-            {
-                switch (parameter.Name)
-                {
-                    case nameof(ChildContent):
-                        ChildContent = (RenderFragment)parameter.Value;
-                        break;
-
-                    case nameof(IsChecked):
-                        IsChecked = (bool)parameter.Value;
-                        break;
-
-                    case nameof(IsIndeterminate):
-                        IsIndeterminate = (bool)parameter.Value;
-                        break;
-
-                    case nameof(BoxSide):
-                        BoxSide = (BoxSide)parameter.Value;
-                        break;
-
-                    case nameof(OnChange):
-                        OnChange = (EventCallback<bool>)parameter.Value;
-                        break;
-                }
-            }
-
-            return base.SetParametersAsync(parameters);
-        }
     }
 }
