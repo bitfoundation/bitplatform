@@ -5,29 +5,29 @@
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
 
-    <div class="spin-button-label-wrapper">
+    <div>
         <i class="bit-icon bit-icon--@IconName bit-icon--l"></i>
-        <label class="spin-button-label">@Label</label>
+        <label>@Label</label>
     </div>
 
-    <div class="spin-button-input-wrapper">
+    <div>
 
-        <input class="spin-button-input"
+        <input
                @ref="InputElement"
                disabled="@(IsEnabled is false)"
                value="@($"{Value} {Suffix}")"
                @onchange="@(e => HandleValueOnInputChange(e))" />
 
-        <span class="spin-button-buttons-wrapper">
+        <span>
 
-            <button class="spin-button spin-button--up" @onclick="@HandleUpClick">
-                <span class="spin-button-icon-wrapper">
+            <button @onclick="@HandleUpClick">
+                <span>
                     <i class="bit-icon bit-icon--ChevronUpSmall bit-icon--s"></i>
                 </span>
             </button>
 
-            <button class="spin-button spin-button--down" @onclick="@HandleDownClick">
-                <span class="spin-button-icon-wrapper">
+            <button @onclick="@HandleDownClick">
+                <span>
                     <i class="bit-icon bit-icon--ChevronDownSmall bit-icon--s"></i>
                 </span>
             </button>

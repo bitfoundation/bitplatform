@@ -2,140 +2,108 @@
 
 .bit-spin-button {
     display: flex;
-}
 
-.spin-button-label-wrapper {
-    display: inline-flex;
-    align-items: center;
-    height: 32px;
-    float: left;
-    margin-right: 10px;
-    flex-direction: row;
-    flex-wrap: nowrap;
+    & div:first-child {
+        display: inline-flex;
+        align-items: center;
+        height: 32px;
+        float: left;
+        margin-right: 10px;
+        flex-direction: row;
+        flex-wrap: nowrap;
 
-    & .bit-icon {
-        margin-right: 5px;
-    }
-}
-.spin-button-input-wrapper {
-    display: flex;
-    position: relative;
-    box-sizing: border-box;
-    height: 32px;
-    min-width: 86px;
-    width: 75px;
-    border: 1px solid $Grey130;
-    border-radius: 2px;
-}
-
-.spin-button-input {
-    box-sizing: border-box;
-    box-shadow: none;
-    border-style: none;
-    flex: 1 1 0%;
-    margin: 0px;
-    font-size: 14px;
-    font-family: inherit;
-    color: $Grey160;
-    background-color: $White;
-    height: 100%;
-    padding: 0px 8px 0px 9px;
-    outline: 0px;
-    display: block;
-    min-width: 61px;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    cursor: text;
-    border-radius: 2px 0px 0px 2px;
-    user-select: text;
-}
-
-.spin-button-buttons-wrapper {
-    display: flex;
-    flex-direction: column;
-}
-
-.spin-button {
-    outline: none;
-    position: relative;
-    -webkit-font-smoothing: antialiased;
-    box-sizing: border-box;
-    border: none;
-    display: block;
-    text-decoration: none;
-    text-align: center;
-    cursor: default;
-    padding: 0px;
-    border-radius: 2px;
-    width: 23px;
-    height: 50%;
-    background-color: transparent;
-    color: $Grey130;
-    user-select: none;
-
-    &:hover {
-        color: $Grey160;
-        background-color: $Grey20;
+        & .bit-icon {
+            margin-right: 5px;
+        }
     }
 
-    &.spin-button--up {
-        border-radius: 0 2px 0 0;
+    & div:nth-child(2) {
+        display: flex;
+        position: relative;
+        box-sizing: border-box;
+        height: 32px;
+        min-width: 86px;
+        width: 75px;
+        border: 1px solid $Grey130;
+        border-radius: 2px;
+
+        & input {
+            box-sizing: border-box;
+            box-shadow: none;
+            border-style: none;
+            flex: 1 1 0%;
+            margin: 0px;
+            font-size: 14px;
+            font-family: inherit;
+            color: $Grey160;
+            background-color: $White;
+            height: 100%;
+            padding: 0px 8px 0px 9px;
+            outline: 0px;
+            display: block;
+            min-width: 61px;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            cursor: text;
+            border-radius: 2px 0px 0px 2px;
+            user-select: text;
+        }
+
+        & span {
+            display: flex;
+            flex-direction: column;
+
+            & button {
+                outline: none;
+                position: relative;
+                -webkit-font-smoothing: antialiased;
+                box-sizing: border-box;
+                border: none;
+                display: block;
+                text-decoration: none;
+                text-align: center;
+                cursor: default;
+                padding: 0px;
+                border-radius: 2px;
+                width: 23px;
+                height: 50%;
+                background-color: transparent;
+                color: $Grey130;
+                user-select: none;
+
+                &:hover {
+                    color: $Grey160;
+                    background-color: $Grey20;
+                }
+
+                span {
+                    display: flex;
+                    height: 100%;
+                    flex-wrap: nowrap;
+                    justify-content: center;
+                    align-items: center;
+
+                    & .bit-icon {
+                        font-size: 8px;
+                        margin: 0px;
+                        height: 16px;
+                        line-height: 16px;
+                        flex-shrink: 0;
+                    }
+                }
+            }
+
+            & button:first-child {
+                border-radius: 0 2px 0 0;
+            }
+
+            & button:nth-child(2) {
+                border-radius: 0 0 2px 0;
+            }
+        }
     }
 
-    &.spin-button--down {
-        border-radius: 0 0 2px 0;
-    }
-}
-
-.spin-button-icon-wrapper {
-    display: flex;
-    height: 100%;
-    flex-wrap: nowrap;
-    justify-content: center;
-    align-items: center;
-    & .bit-icon {
-        font-size: 8px;
-        margin: 0px;
-        height: 16px;
-        line-height: 16px;
-        flex-shrink: 0;
-    }
-}
-
-.bit-spin-button.disabled {
-    & .spin-button-label-wrapper {
-        color: $Grey90;
-    }
-
-    & .spin-button-label {
-        color: $Grey90;
-    }
-
-    & .spin-button {
-        background: $Grey20;
-        color: $Grey90;
-        border: 1px solid $Grey20;
-        cursor: default;
-        pointer-events: none;
-    }
-
-    & .spin-button-input {
-        color: $Grey90;
-        cursor: default;
-        border: none $Grey20;
-        background: none $Grey20;
-    }
-
-    & .spin-button-input-wrapper {
-        color: $Grey90;
-        cursor: default;
-        border: none $Grey20;
-        background: none $Grey20;
-    }
-}
-
-.bit-spin-button {
     &.label-top {
         flex-direction: column;
     }
@@ -150,5 +118,139 @@
 
     &.label-bottom {
         flex-direction: column-reverse;
+    }
+}
+
+
+
+.bit-spin-button {
+    display: flex;
+
+    & div:first-child {
+        display: inline-flex;
+        align-items: center;
+        height: 32px;
+        float: left;
+        margin-right: 10px;
+        flex-direction: row;
+        flex-wrap: nowrap;
+
+        & .bit-icon {
+            margin-right: 5px;
+        }
+    }
+
+    & div:nth-child(2) {
+        display: flex;
+        position: relative;
+        box-sizing: border-box;
+        height: 32px;
+        min-width: 86px;
+        width: 75px;
+        border: 1px solid $Grey130;
+        border-radius: 2px;
+
+        & input {
+            box-sizing: border-box;
+            box-shadow: none;
+            border-style: none;
+            flex: 1 1 0%;
+            margin: 0px;
+            font-size: 14px;
+            font-family: inherit;
+            color: $Grey160;
+            background-color: $White;
+            height: 100%;
+            padding: 0px 8px 0px 9px;
+            outline: 0px;
+            display: block;
+            min-width: 61px;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            cursor: text;
+            border-radius: 2px 0px 0px 2px;
+            user-select: text;
+        }
+
+        & span {
+            display: flex;
+            flex-direction: column;
+
+            & button {
+                outline: none;
+                position: relative;
+                -webkit-font-smoothing: antialiased;
+                box-sizing: border-box;
+                border: none;
+                display: block;
+                text-decoration: none;
+                text-align: center;
+                cursor: default;
+                padding: 0px;
+                border-radius: 2px;
+                width: 23px;
+                height: 50%;
+                background-color: transparent;
+                color: $Grey130;
+                user-select: none;
+
+                &:hover {
+                    color: $Grey160;
+                    background-color: $Grey20;
+                }
+
+                span {
+                    display: flex;
+                    height: 100%;
+                    flex-wrap: nowrap;
+                    justify-content: center;
+                    align-items: center;
+
+                    & .bit-icon {
+                        font-size: 8px;
+                        margin: 0px;
+                        height: 16px;
+                        line-height: 16px;
+                        flex-shrink: 0;
+                    }
+                }
+            }
+
+        }
+    }
+}
+
+.bit-spin-button.disabled {
+    & div:first-child {
+        color: $Grey90;
+
+        label {
+            color: $Grey90;
+        }
+    }
+
+    & div:nth-child(2) {
+        color: $Grey90;
+        cursor: default;
+        border: none $Grey20;
+        background: none $Grey20;
+
+        & input {
+            color: $Grey90;
+            cursor: default;
+            border: none $Grey20;
+            background: none $Grey20;
+        }
+
+        & span {
+            & button {
+                background: $Grey20;
+                color: $Grey90;
+                border: 1px solid $Grey20;
+                cursor: default;
+                pointer-events: none;
+            }
+        }
     }
 }
