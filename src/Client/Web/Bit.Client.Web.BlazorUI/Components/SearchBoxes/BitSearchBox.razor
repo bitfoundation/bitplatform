@@ -1,7 +1,9 @@
 ﻿@namespace Bit.Client.Web.BlazorUI
 @inherits BitComponentBase
 
-<div @ref="Element" class="@GetElementClass()" style="@GetElementStyle()">
+<div @ref="RootElement"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value">
     <div class="search-icon-container">
         <i class="bit-icon bit-icon--@IconName"></i>
     </div>

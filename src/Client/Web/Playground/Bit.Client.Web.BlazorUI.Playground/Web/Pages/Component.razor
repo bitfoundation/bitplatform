@@ -135,7 +135,7 @@
 </div>
 <div class="message-bar-container">
     <h2>BitMessageBar</h2>
-    @if (!_isMessageBarHidden)
+    @if (IsMessageBarHidden is false)
     {
         <BitMessageBar MessageBarStyle="@MessageBarStyle.Success">
             Action completed! <BitButton OnClick="MessageBarButton" ButtonStyle="ButtonStyle.Standard">OK</BitButton>
@@ -157,7 +157,6 @@
         Visit repository <BitLink Href="https://github.com/bitfoundation/bitframework">here</BitLink>
     </BitMessageBar>
 </div>
-
 
 <hr />
 
@@ -229,8 +228,8 @@
     <br />
     <BitTextField MaxLength="10" Placeholder="Limited text field - 10 chars"></BitTextField>
     <br />
-    <BitTextField Type="@_inputType" Placeholder="Password input"></BitTextField>
-    <BitButton ButtonStyle="@ButtonStyle.Standard" OnClick="ChangeInputType">@_showPasswordText</BitButton>
+    <BitTextField Type="@InputType" Placeholder="Password input"></BitTextField>
+    <BitButton ButtonStyle="@ButtonStyle.Standard" OnClick="ChangeInputType">@ShowPasswordText</BitButton>
     <br />
     <h3>Multi-line</h3>
     <BitTextField IsMultiLine="true" Value="Multi-line text field"></BitTextField>
