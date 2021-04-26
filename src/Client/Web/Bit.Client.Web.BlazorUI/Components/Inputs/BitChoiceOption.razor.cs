@@ -28,7 +28,7 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
         [Parameter] public EventCallback<ChangeEventArgs> OnChange { get; set; }
 
-        [CascadingParameter] protected BitChoiceGroup? ChoiceGroup { get; set; }
+        [CascadingParameter] protected BitChoiceGroup ChoiceGroup { get; set; }
 
         public override Task SetParametersAsync(ParameterView parameters)
         {
@@ -48,14 +48,14 @@ namespace Bit.Client.Web.BlazorUI
                     case nameof(IsChecked):
                         IsChecked = (bool)parameter.Value;
                         break;
-                    case nameof(ChoiceGroup):
-                        ChoiceGroup = (BitChoiceGroup)parameter.Value;
-                        break;
                     case nameof(OnClick):
                         OnClick = (EventCallback<MouseEventArgs>)parameter.Value;
                         break;
                     case nameof(OnChange):
                         OnChange = (EventCallback<ChangeEventArgs>)parameter.Value;
+                        break;
+                    case nameof(ChoiceGroup):
+                        ChoiceGroup = (BitChoiceGroup)parameter.Value;
                         break;
                 }
             }
@@ -65,9 +65,12 @@ namespace Bit.Client.Web.BlazorUI
 
         protected override Task OnInitializedAsync()
         {
-            ChoiceGroup?.RegisterOption(this);
-            if (string.IsNullOrEmpty(Name))
-                Name = ChoiceGroup?.Name;
+            if (ChoiceGroup is not null)
+            {
+                ChoiceGroup.RegisterOption(this);
+                if (string.IsNullOrEmpty(Name))
+                    Name = ChoiceGroup.Name;
+            }
             return base.OnInitializedAsync();
         }
 
@@ -75,7 +78,6 @@ namespace Bit.Client.Web.BlazorUI
 
         protected override void RegisterComponentClasses()
         {
-            ClassBuilder.Register(() => IsEnabled is false ? "disabled" : string.Empty);
             ClassBuilder.Register(() => IsChecked is true ? "checked" : string.Empty);
         }
 
@@ -83,7 +85,8 @@ namespace Bit.Client.Web.BlazorUI
         {
             if (IsEnabled)
             {
-                await ChoiceGroup?.ChangeSelection(this);
+                if (ChoiceGroup is not null)
+                    await ChoiceGroup.ChangeSelection(this);
                 await OnClick.InvokeAsync(e);
             }
         }
@@ -104,7 +107,8 @@ namespace Bit.Client.Web.BlazorUI
 
         public void Dispose()
         {
-            ChoiceGroup?.UnregisterRadio(this);
+            if (ChoiceGroup is not null)
+                ChoiceGroup.UnregisterRadio(this);
         }
     }
 }

@@ -1,8 +1,6 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
 using Bunit;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.Client.Web.BlazorUI.Tests.Inputs
@@ -68,9 +66,9 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
             Assert.AreEqual(count, com.Instance.CurrentCount);
         }
 
-        [DataTestMethod, DataRow(true, 2, "enabled", "checked"),
-         DataRow(false, 0, "disabled", "checked")]
-        public async Task BitChoiceOptionShouldRespectIsEnabled(bool isEnabled, int count, string enabledClass, string checkedClass)
+        [DataTestMethod, DataRow(true, 2, "enabled"),
+         DataRow(false, 0, "disabled")]
+        public async Task BitChoiceOptionShouldRespectIsEnabled(bool isEnabled, int count, string enabledClass)
         {
             var com = RenderComponent<BitChoiceOptionTest>(
                 parameters =>
@@ -82,11 +80,10 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
             bitChoiceOptionInput.Change(count);
             bitChoiceOptionInput.Click();
             Assert.IsTrue(bitChoiceOptionInput.ParentElement.ClassList.Contains(enabledClass));
-            Assert.IsTrue(bitChoiceOptionInput.ParentElement.ClassList.Contains(checkedClass).Equals(isEnabled));
             Assert.AreEqual(count, com.Instance.CurrentCount);
         }
 
-        [DataTestMethod, DataRow(true, 1, "enabled"),
+        [DataTestMethod, DataRow(true, 2, "enabled"),
          DataRow(false, 0, "disabled")]
         public async Task BitChoiceGroupShouldRespectIsEnabled(bool isEnabled, int count, string className)
         {

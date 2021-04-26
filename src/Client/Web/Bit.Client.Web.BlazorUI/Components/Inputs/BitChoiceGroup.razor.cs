@@ -29,6 +29,9 @@ namespace Bit.Client.Web.BlazorUI
                     case nameof(ChildContent):
                         ChildContent = (RenderFragment)parameter.Value;
                         break;
+                    case nameof(OnValueChange):
+                        OnValueChange = (EventCallback<string>)parameter.Value;
+                        break;
                 }
             }
             return base.SetParametersAsync(parameters);
@@ -38,7 +41,6 @@ namespace Bit.Client.Web.BlazorUI
 
         protected override void RegisterComponentClasses()
         {
-            ClassBuilder.Register(() => IsEnabled is false ? "disabled" : string.Empty);
         }
 
         internal async Task ChangeSelection(BitChoiceOption option)
@@ -54,7 +56,8 @@ namespace Bit.Client.Web.BlazorUI
 
         internal void RegisterOption(BitChoiceOption option)
         {
-            option.IsEnabled = IsEnabled;
+            if (IsEnabled is false)
+                option.IsEnabled = false;
             _options.Add(option);
         }
 
