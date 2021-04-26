@@ -10,15 +10,15 @@
            disabled="@(IsEnabled is false)"
            hidden>
 
-    <div class="bit-chb-item bit-chb-item-checkbox" @onclick="@HandleCheckboxClick">
-        <i class="bit-icon bit-icon--Accept bit-chb-item-checkmark"></i>
-    </div>
+    <div class="bit-chb-check-wrapper-fluent">
+        <div @onclick="@HandleCheckboxClick">
+            <i class="bit-icon bit-icon--Accept"></i>
+        </div>
 
-    <div class="bit-chb-item bit-chb-item-label-container" @onclick="@HandleCheckboxClick">
-        <label class="no-text-select">
-            <span class="bit-chb-item-label-text">
+        <div @onclick="@HandleCheckboxClick">
+            <label class="no-text-select">
                 @(ChildContent)
-            </span>
-        </label>
+            </label>
+        </div>
     </div>
 </div>

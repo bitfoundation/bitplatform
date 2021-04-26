@@ -17,7 +17,7 @@
     border: 1px solid $Grey130;
     height: 32px;
 
-    .search-icon-container {
+    & > div:first-child {
         display: flex;
         flex-direction: column;
         justify-content: center;
@@ -29,7 +29,7 @@
         cursor: text;
         transition: width 0.167s ease 0s;
 
-        & i.bit-icon {
+        & i {
             display: inline-block;
             -webkit-font-smoothing: antialiased;
             font-style: normal;
@@ -40,7 +40,23 @@
         }
     }
 
-    .clear-button-container {
+    input {
+        box-shadow: none;
+        margin: 0px;
+        padding: 0px 0px 0.5px;
+        box-sizing: border-box;
+        background-color: transparent;
+        border: none;
+        outline: none;
+        color: $Grey160;
+        flex: 1 1 0px;
+        min-width: 0px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+
+    & > div:last-child {
         display: flex;
         flex-direction: row;
         align-items: stretch;
@@ -53,7 +69,7 @@
         opacity: 0;
         transition: opacity 0.167s ease 0s;
 
-        & i.bit-icon--Clear {
+        & i {
             opacity: 0;
             transition: opacity 0.167s ease 0s;
         }
@@ -86,22 +102,20 @@
 }
 
 .bit-srch-box-container-has-value-fluent {
-    .clear-button-container {
+    & > div:last-child {
         opacity: 1;
         flex-basis: 0px;
 
-        & i.bit-icon--Clear {
+        & i {
             opacity: 1;
         }
     }
 
-    &:hover {
-        .search-icon-container {
-            width: 0px;
+    &:hover > div:first-child {
+        width: 0px;
 
-            & i.bit-icon {
-                opacity: 0;
-            }
+        & i {
+            opacity: 0;
         }
     }
 }
@@ -109,7 +123,7 @@
 .bit-srch-box-container-focused-fluent {
     border: 2px solid $Primary;
 
-    .search-icon-container {
+    & > div:first-child {
         width: 0px;
 
         & i.bit-icon {
@@ -119,18 +133,18 @@
 }
 
 .bit-srch-box-container-no-animation-fluent {
-    .search-icon-container {
+    & > div:first-child {
         transition: none;
 
-        & i.bit-icon {
+        & i {
             transition: none;
         }
     }
 
-    .clear-button-container {
+    & > div:last-child {
         transition: none;
 
-        & i.bit-icon--Clear {
+        & i {
             transition: none;
         }
     }
@@ -158,22 +172,7 @@
         background-color: transparent;
     }
 
-    & .search-icon-container {
+    & > div:first-child {
         color: $Grey90;
     }
-}
-
-.search-input {
-    box-shadow: none;
-    margin: 0px;
-    padding: 0px 0px 0.5px;
-    box-sizing: border-box;
-    background-color: transparent;
-    border: none;
-    outline: none;
-    color: $Grey160;
-    flex: 1 1 0px;
-    min-width: 0px;
-    overflow: hidden;
-    text-overflow: ellipsis;
 }

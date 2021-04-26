@@ -2,9 +2,6 @@
 
 .bit-cmpnd-btn-fluent {
     font-family: FluentFont;
-    display: inline-flex;
-    justify-content: center;
-    align-items: center;
     text-align: left;
     border-radius: em(2px);
     padding: em(16px) em(12px);
@@ -16,36 +13,20 @@
     max-width: 280px;
     min-height: 72px;
 
-    & .primary-text {
-        margin: 0px 0px 5px;
-        display: block;
-        line-height: 100%;
-    }
-
-    & .secondary-text {
-        font-size: rem(12px);
-        font-weight: 400;
-        display: block;
-        line-height: 100%;
-        margin: 0;
-        padding: 0;
-        border: 0;
-        vertical-align: baseline;
-    }
-
-    & .textContainer {
-        flex-grow: 1;
-        display: block;
-        text-align: left;
-    }
-
-    & .flexContainer {
-        display: flex;
+    & .text-container {
         height: 100%;
-        flex-flow: row nowrap;
-        justify-content: center;
-        align-items: flex-start;
         min-width: 100%;
+
+        & span:first-child {
+            margin: 0px 0px 5px;
+            display: block;
+        }
+
+        & span:last-child {
+            font-size: rem(12px);
+            font-weight: 400;
+            line-height: 100%;
+        }
     }
 }
 

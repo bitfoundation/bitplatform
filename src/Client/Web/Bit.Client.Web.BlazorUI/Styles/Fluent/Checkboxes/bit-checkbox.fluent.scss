@@ -1,121 +1,128 @@
 ﻿@import "../colors.fluent.scss", "../../functions.scss";
 
 .bit-chb-container-fluent {
-    position: relative;
-    display: flex;
     margin: 5px;
     font-family: FluentFont;
     -webkit-font-smoothing: antialiased;
     font-size: inherit;
     font-weight: inherit;
 
-
-    .bit-chb-item-checkbox {
-        position: relative;
+    .bit-chb-check-wrapper-fluent {
         display: flex;
-        flex-shrink: 0;
-        align-items: center;
-        justify-content: center;
-        height: 20px;
-        width: 20px;
-        border: 1px solid $Grey160;
-        border-radius: 2px;
-        box-sizing: border-box;
-        transition-property: background, border, border-color;
-        transition-duration: 200ms;
-        transition-timing-function: cubic-bezier(0.4, 0, 0.23, 1);
-        overflow: hidden;
-        margin-right: 4px;
-        cursor: pointer;
 
-
-        .bit-chb-item-checkmark {
-            color: $White;
-            font-size: 11px;
-            transition:0.1s;
-        }
-    }
-
-    &:hover .bit-chb-item-checkbox {
-        .bit-chb-item-checkmark {
-            opacity: 1;
-            color: $Grey120;
-        }
-    }
-
-    .bit-chb-item-label-container {
-        .bit-chb-item-label-text {
+        & div:first-child {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 20px;
+            width: 20px;
+            border: 1px solid $Grey160;
+            border-radius: 2px;
+            box-sizing: border-box;
+            transition-property: background, border, border-color;
+            transition-duration: 200ms;
+            transition-timing-function: cubic-bezier(0.4, 0, 0.23, 1);
+            overflow: hidden;
+            margin-right: 4px;
             cursor: pointer;
+
+            .bit-icon--Accept {
+                color: $White;
+                font-size: 11px;
+                transition: 0.1s;
+            }
+        }
+
+        & div:last-child {
+            label {
+                cursor: pointer;
+            }
+        }
+    }
+
+    &:hover .bit-chb-check-wrapper-fluent {
+        & > div:first-child {
+            .bit-icon--Accept {
+                opacity: 1;
+                color: $Grey120;
+            }
         }
     }
 }
 
 .bit-chb-container-box-side-end-fluent {
-    flex-direction: row-reverse;
-    justify-content: flex-end;
+    .bit-chb-check-wrapper-fluent {
+        flex-direction: row-reverse;
+        justify-content: flex-end;
 
-    & .bit-chb-item-checkbox {
-        margin-left: 8px;
+        & > div:first-child {
+            margin-left: 8px;
+        }
     }
 }
 
 
 .bit-chb-container-checked-fluent {
-    & .bit-chb-item-checkmark {
-        opacity: 1;
-        color: $White;
-        width: 20px;
-        height: 20px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
+    .bit-chb-check-wrapper-fluent {
+        & > div:first-child {
+            border-color: $Primary;
+            background-color: $Primary;
+
+            .bit-icon--Accept {
+                opacity: 1;
+                color: $White;
+                width: 20px;
+                height: 20px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+        }
     }
 
-    & .bit-chb-item-checkbox {
-        border-color: $Primary;
-        background-color: $Primary;
-    }
-
-    &:hover .bit-chb-item-checkbox {
-        .bit-chb-item-checkmark {
-            border-color: $Dark;
-            background-color: $Dark;
-            color: $White;
+    &:hover .bit-chb-check-wrapper-fluent {
+        & > div:first-child {
+            .bit-icon--Accept {
+                border-color: $Dark;
+                background-color: $Dark;
+                color: $White;
+            }
         }
     }
 }
 
 .bit-chb-container-indeterminate-fluent {
-    & .bit-chb-item-checkmark {
-        display: inline-block;
-        position: absolute;
-        top: 4px;
-        left: 4px;
-        opacity: 1;
-        width: 11px;
-        height: 11px;
-        color: $Primary;
-        background-color: $Primary;
-        border-radius: 2px;
 
-        &:before {
-            content: '';
+    .bit-chb-check-wrapper-fluent {
+        & > div:first-child {
+            border-color: $Primary;
+            background-color: $White;
+
+            .bit-icon--Accept {
+                display: inline-block;
+                width: 11px;
+                height: 11px;
+                color: $Primary;
+                background-color: $Primary;
+                border-radius: 2px;
+
+                &:before {
+                    content: '';
+                }
+            }
         }
     }
 
-    &:hover .bit-chb-item-checkmark {
-        color: $Dark;
-        background-color: $Dark;
-    }
+    &:hover .bit-chb-check-wrapper-fluent {
+        & > div:first-child {
+            border-color: $Dark;
+            background-color: $White;
 
-    & .bit-chb-item-checkbox {
-        border-color: $Primary;
-        background-color: $White;
-    }
-
-    &:hover .bit-chb-item-checkbox {
-        border-color: $Dark;
-        background-color: $White;
+            .bit-icon--Accept {
+                color: $Dark;
+                background-color: $Dark;
+            }
+        }
     }
 }
 
@@ -123,27 +130,31 @@
     pointer-events: none;
     cursor: default;
 
-    & .bit-chb-item-checkmark {
-        opacity: 1;
-        color: $White;
-        background-color: $White;
-    }
+    .bit-chb-check-wrapper-fluent {
+        & > div:first-child {
+            border-color: $Grey90;
+            background-color: $White;
 
-    & .bit-chb-item-checkbox {
-        border-color: $Grey90;
-        background-color: $White;
-    }
+            .bit-icon--Accept {
+                opacity: 1;
+                color: $White;
+                background-color: $White;
+            }
+        }
 
-    & .bit-chb-item-label-container {
-        color: $Grey90;
+        & > div:last-child {
+            color: $Grey90;
+        }
     }
 }
 
 .bit-chb-container-checked-disabled-fluent,
 .bit-chb-container-indeterminate-disabled-fluent {
-    & .bit-chb-item-checkbox {
-        & .bit-chb-item-checkmark {
-            background-color: $Grey90;
+    .bit-chb-check-wrapper-fluent {
+        & > div:first-child {
+            .bit-icon--Accept {
+                background-color: $Grey90;
+            }
         }
     }
 }
