@@ -83,7 +83,7 @@ namespace Bit.Client.Web.BlazorUI
         {
             if (IsEnabled)
             {
-                ChoiceGroup?.ChangeSelection(this);
+                await ChoiceGroup?.ChangeSelection(this);
                 await OnClick.InvokeAsync(e);
             }
         }

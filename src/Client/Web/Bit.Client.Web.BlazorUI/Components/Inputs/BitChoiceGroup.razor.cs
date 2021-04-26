@@ -12,6 +12,7 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public string Name { get; set; } = Guid.NewGuid().ToString();
         [Parameter] public string Value { get; set; }
         [Parameter] public RenderFragment ChildContent { get; set; }
+        [Parameter] public EventCallback<string> OnValueChange { get; set; }
 
         public override Task SetParametersAsync(ParameterView parameters)
         {
@@ -40,13 +41,14 @@ namespace Bit.Client.Web.BlazorUI
             ClassBuilder.Register(() => IsEnabled is false ? "disabled" : string.Empty);
         }
 
-        internal void ChangeSelection(BitChoiceOption option)
+        internal async Task ChangeSelection(BitChoiceOption option)
         {
             if (IsEnabled)
             {
                 foreach (BitChoiceOption item in _options)
                     item.SetOptionCheckedStatus(item == option);
                 Value = option.Value;
+                await OnValueChange.InvokeAsync(option.Value);
             }
         }
 

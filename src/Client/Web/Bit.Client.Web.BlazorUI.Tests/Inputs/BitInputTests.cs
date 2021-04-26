@@ -68,9 +68,9 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
             Assert.AreEqual(count, com.Instance.CurrentCount);
         }
 
-        [DataTestMethod,DataRow(true,2,"enabled","checked"),
+        [DataTestMethod, DataRow(true, 2, "enabled", "checked"),
          DataRow(false, 0, "disabled", "checked")]
-        public async Task BitChoiceOptionShouldRespectIsEnabled(bool isEnabled,int count, string enabledClass,string checkedClass)
+        public async Task BitChoiceOptionShouldRespectIsEnabled(bool isEnabled, int count, string enabledClass, string checkedClass)
         {
             var com = RenderComponent<BitChoiceOptionTest>(
                 parameters =>
@@ -78,12 +78,29 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                     parameters.Add(p => p.IsEnabled, isEnabled);
                     parameters.Add(p => p.Value, count.ToString());
                 });
-            var bitChoiceOption = com.Find("input");
-            bitChoiceOption.Change(count);
-            bitChoiceOption.Click();
-            Assert.IsTrue(bitChoiceOption.ParentElement.ClassList.Contains(enabledClass));
-            Assert.IsTrue(bitChoiceOption.ParentElement.ClassList.Contains(checkedClass).Equals(isEnabled));
+            var bitChoiceOptionInput = com.Find("input");
+            bitChoiceOptionInput.Change(count);
+            bitChoiceOptionInput.Click();
+            Assert.IsTrue(bitChoiceOptionInput.ParentElement.ClassList.Contains(enabledClass));
+            Assert.IsTrue(bitChoiceOptionInput.ParentElement.ClassList.Contains(checkedClass).Equals(isEnabled));
             Assert.AreEqual(count, com.Instance.CurrentCount);
+        }
+
+        [DataTestMethod, DataRow(true, 1, "enabled"),
+         DataRow(false, 0, "disabled")]
+        public async Task BitChoiceGroupShouldRespectIsEnabled(bool isEnabled, int count, string className)
+        {
+            var com = RenderComponent<BitChoiceGroupTest>(
+                parameters =>
+                {
+                    parameters.Add(p => p.IsEnabled, isEnabled);
+                    parameters.Add(p => p.Value, count.ToString());
+                });
+            var bitChoiceGroup = com.Find(".bit-choice-group");
+            var bitChoiceOptionInput = com.Find("input");
+            bitChoiceOptionInput.Click();
+            Assert.AreEqual(count, com.Instance.CurrentCount);
+            Assert.IsTrue(bitChoiceGroup.ClassList.Contains(className));
         }
     }
 }
