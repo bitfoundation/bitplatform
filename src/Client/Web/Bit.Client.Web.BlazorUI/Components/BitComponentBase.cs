@@ -84,13 +84,18 @@ namespace Bit.Client.Web.BlazorUI
                                 string.Empty);
 
             ClassBuilder
-                .Register(() => Visual == Visual.Cupertino ? "cupertino" : Visual == Visual.Material ? "material" : "fluent")
-                .Register(() => IsEnabled ? "enabled" : "disabled")
+                .Register(() => $"{RootElementClass}-{VisualClassRegistrar()}")
+                .Register(() => IsEnabled ? $"{RootElementClass}-enabled-{VisualClassRegistrar()}" : $"{RootElementClass}-disabled-{VisualClassRegistrar()}")
                 .Register(() => RootElementClass);
             RegisterComponentClasses();
             ClassBuilder.Register(() => Class);
 
             base.OnInitialized();
+        }
+
+        protected virtual string VisualClassRegistrar()
+        {
+            return Visual == Visual.Cupertino ? "cupertino" : Visual == Visual.Material ? "material" : "fluent";
         }
 
         public override Task SetParametersAsync(ParameterView parameters)

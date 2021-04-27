@@ -22,11 +22,11 @@ namespace Bit.Client.Web.BlazorUI
 
         [Parameter] public RenderFragment ChildContent { get; set; }
 
-        protected override string RootElementClass => "bit-label";
+        protected override string RootElementClass => "bit-lbl";
 
         protected override void RegisterComponentClasses()
         {
-            ClassBuilder.Register(() => IsRequired ? "required" : string.Empty);
+            ClassBuilder.Register(() => IsRequired ? $"{RootElementClass}-required-{VisualClassRegistrar()}" : string.Empty);
         }
     }
 }
