@@ -3,9 +3,9 @@
 
 <button @ref="RootElement"
         style="@StyleBuilder.Value"
-        class="@ClassBuilder.Value"
+        class=@($"no-text-select {ClassBuilder.Value}")
         @onclick="HandleOnClick">
-    <span class="text-container">
+    <span class="no-text-select">
         <span>
             @Text
         </span>

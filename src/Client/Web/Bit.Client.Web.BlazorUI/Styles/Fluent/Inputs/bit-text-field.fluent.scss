@@ -1,6 +1,6 @@
 ﻿@import "../colors.fluent.scss", "../../functions.scss";
 
-.bit-txt-fld-fluent {
+.bit-txt-fluent {
     font-family: FluentFont;
     font-size: rem(14px);
     font-weight: 400;
@@ -59,7 +59,7 @@
     }
 }
 
-.bit-txt-fld-multiline-fluent {
+.bit-txt-multiline-fluent {
     min-height: 60px;
     align-items: stretch;
     height: auto;
@@ -73,15 +73,15 @@
     }
 }
 
-.bit-txt-fld-focused-fluent {
-    .bit-txt-fld-multiline {
+.bit-txt-focused-fluent {
+    .bit-txt-multiline {
         textarea:first-child {
             padding: em(4.3px) em(6.2px);
         }
     }
 }
 
-.bit-txt-fld-disabled-fluent {
+.bit-txt-disabled-fluent {
     border: 1px solid $Grey20;
     background: $White;
     color: $Grey90;
@@ -90,7 +90,7 @@
     background: none $Grey20;
 }
 
-.bit-txt-fld-fluent .bit-btn-fluent {
+.bit-txt-fluent .bit-btn-fluent {
     border: none;
     color: $Primary;
     background-color: transparent;
@@ -102,7 +102,7 @@
     }
 }
 
-.bit-txt-fld-focused-fluent {
+.bit-txt-focused-fluent {
     border: em(3px) solid $Primary;
 
     input:first-child {

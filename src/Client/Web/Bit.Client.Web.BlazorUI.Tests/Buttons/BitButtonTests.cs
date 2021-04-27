@@ -40,7 +40,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
                     parameters.Add(p => p.BitCompoundButtonStyle, style);
                 });
 
-            var bitButton = com.Find(".bit-cmpnd-btn");
+            var bitButton = com.Find(".bit-cmp-btn");
 
             bitButton.Click();
 

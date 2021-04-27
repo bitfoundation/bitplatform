@@ -1,6 +1,6 @@
 ﻿@import "../colors.fluent.scss", "../../functions.scss";
 
-.bit-srch-box-container-fluent {
+.bit-sch-box-container-fluent {
     -webkit-font-smoothing: antialiased;
     font-size: 14px;
     font-weight: 400;
@@ -101,7 +101,7 @@
     }
 }
 
-.bit-srch-box-container-has-value-fluent {
+.bit-sch-box-container-has-value-fluent {
     & > div:last-child {
         opacity: 1;
         flex-basis: 0px;
@@ -120,7 +120,7 @@
     }
 }
 
-.bit-srch-box-container-focused-fluent {
+.bit-sch-box-container-focused-fluent {
     border: 2px solid $Primary;
 
     & > div:first-child {
@@ -132,7 +132,7 @@
     }
 }
 
-.bit-srch-box-container-no-animation-fluent {
+.bit-sch-box-container-no-animation-fluent {
     & > div:first-child {
         transition: none;
 
@@ -150,17 +150,18 @@
     }
 }
 
-.bit-srch-box-container-underlined-fluent {
+.bit-sch-box-container-underlined-fluent {
     border: none;
     border-radius: 0;
     border-bottom: 1px solid $Grey130;
+    padding-left: 12px;
 
     &.focused {
         border-bottom: 2px solid $Primary;
     }
 }
 
-.bit-srch-box-container-disabled-fluent {
+.bit-sch-box-container-disabled-fluent {
     color: $Grey160;
     background-color: $Grey20;
     align-items: stretch;

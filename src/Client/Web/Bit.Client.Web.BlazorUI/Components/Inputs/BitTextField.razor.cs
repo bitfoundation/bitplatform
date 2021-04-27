@@ -74,13 +74,19 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
-        protected override string RootElementClass => "bit-txt-fld";
+        protected override string RootElementClass => "bit-txt";
 
         protected override void RegisterComponentClasses()
         {
-            ClassBuilder.Register(() => IsMultiLine && Type == TextFieldType.Text ? $"{RootElementClass}-multiline-{VisualClassRegistrar()}" : string.Empty);
-            ClassBuilder.Register(() => IsEnabled is false ? $"{RootElementClass}-disabled-{VisualClassRegistrar()}" : string.Empty);
-            ClassBuilder.Register(() => IsEnabled && IsReadonly ? $"{RootElementClass}-readonly-{VisualClassRegistrar()}" : string.Empty);
+            ClassBuilder.Register(() => IsMultiLine && Type == TextFieldType.Text 
+                                        ? $"{RootElementClass}-multiline-{VisualClassRegistrar()}" : string.Empty);
+
+            ClassBuilder.Register(() => IsEnabled is false 
+                                        ? $"{RootElementClass}-disabled-{VisualClassRegistrar()}" : string.Empty);
+
+            ClassBuilder.Register(() => IsEnabled && IsReadonly
+                                        ? $"{RootElementClass}-readonly-{VisualClassRegistrar()}" : string.Empty);
+
             ClassBuilder.Register(() => FocusClass);
         }
 

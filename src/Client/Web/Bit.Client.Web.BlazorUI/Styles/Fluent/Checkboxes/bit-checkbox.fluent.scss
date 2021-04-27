@@ -7,7 +7,7 @@
     font-size: inherit;
     font-weight: inherit;
 
-    .bit-chb-check-wrapper-fluent {
+    & > div {
         display: flex;
 
         & div:first-child {
@@ -40,7 +40,7 @@
         }
     }
 
-    &:hover .bit-chb-check-wrapper-fluent {
+    &:hover > div {
         & > div:first-child {
             .bit-icon--Accept {
                 opacity: 1;
@@ -51,7 +51,7 @@
 }
 
 .bit-chb-container-box-side-end-fluent {
-    .bit-chb-check-wrapper-fluent {
+    & > div {
         flex-direction: row-reverse;
         justify-content: flex-end;
 
@@ -63,7 +63,7 @@
 
 
 .bit-chb-container-checked-fluent {
-    .bit-chb-check-wrapper-fluent {
+    & > div {
         & > div:first-child {
             border-color: $Primary;
             background-color: $Primary;
@@ -80,7 +80,7 @@
         }
     }
 
-    &:hover .bit-chb-check-wrapper-fluent {
+    &:hover > div {
         & > div:first-child {
             .bit-icon--Accept {
                 border-color: $Dark;
@@ -93,7 +93,7 @@
 
 .bit-chb-container-indeterminate-fluent {
 
-    .bit-chb-check-wrapper-fluent {
+    & > div {
         & > div:first-child {
             border-color: $Primary;
             background-color: $White;
@@ -113,7 +113,7 @@
         }
     }
 
-    &:hover .bit-chb-check-wrapper-fluent {
+    &:hover > div {
         & > div:first-child {
             border-color: $Dark;
             background-color: $White;
@@ -130,9 +130,9 @@
     pointer-events: none;
     cursor: default;
 
-    .bit-chb-check-wrapper-fluent {
+    & > div {
         & > div:first-child {
-            border-color: $Grey90;
+            border-color: $Grey60;
             background-color: $White;
 
             .bit-icon--Accept {
@@ -143,17 +143,17 @@
         }
 
         & > div:last-child {
-            color: $Grey90;
+            color: $Grey60;
         }
     }
 }
 
 .bit-chb-container-checked-disabled-fluent,
 .bit-chb-container-indeterminate-disabled-fluent {
-    .bit-chb-check-wrapper-fluent {
+    & > div {
         & > div:first-child {
             .bit-icon--Accept {
-                background-color: $Grey90;
+                background-color: $Grey60;
             }
         }
     }

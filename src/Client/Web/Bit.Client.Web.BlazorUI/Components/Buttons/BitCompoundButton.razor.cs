@@ -25,13 +25,15 @@ namespace Bit.Client.Web.BlazorUI
 
         [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
-        protected override string RootElementClass => "bit-cmpnd-btn";
+        protected override string RootElementClass => "bit-cmp-btn";
 
         protected override void RegisterComponentClasses()
         {
-            ClassBuilder.Register(() => IsEnabled is false ? string.Empty :
-                ButtonStyle == ButtonStyle.Primary ? $"{RootElementClass}-primary-{VisualClassRegistrar()}"
-                : $"{RootElementClass}-standard-{VisualClassRegistrar()}");
+            ClassBuilder.Register(() => IsEnabled is false
+                                        ? string.Empty
+                                        : ButtonStyle == ButtonStyle.Primary
+                                            ? $"{RootElementClass}-primary-{VisualClassRegistrar()}"
+                                            : $"{RootElementClass}-standard-{VisualClassRegistrar()}");
         }
 
         protected virtual async Task HandleOnClick(MouseEventArgs e)

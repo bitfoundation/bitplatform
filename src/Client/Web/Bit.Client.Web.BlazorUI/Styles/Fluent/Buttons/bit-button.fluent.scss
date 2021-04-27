@@ -2,9 +2,6 @@
 
 .bit-btn-fluent {
     font-family: FluentFont;
-    display: inline-flex;
-    justify-content: center;
-    align-items: center;
     text-align: center;
     border-radius: em(2px);
     padding: em(6px) em(20px);
@@ -12,6 +9,7 @@
     font-weight: 600;
     line-height: em(20px);
     cursor: pointer;
+    min-height: 32px;
 }
 
 .bit-btn-standard-fluent {

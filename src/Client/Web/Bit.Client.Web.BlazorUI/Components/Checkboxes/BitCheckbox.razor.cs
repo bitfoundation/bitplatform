@@ -58,11 +58,16 @@ namespace Bit.Client.Web.BlazorUI
         {
             ClassBuilder.Register(() => IsIndeterminate ? $"{RootElementClass}-indeterminate-{VisualClassRegistrar()}" : string.Empty);
             ClassBuilder.Register(() => IsChecked ? $"{RootElementClass}-checked-{VisualClassRegistrar()}" : string.Empty);
-            ClassBuilder.Register(() => BoxSide == BoxSide.End ? $"{RootElementClass}-box-side-end-{VisualClassRegistrar()}"
-                : $"{RootElementClass}-box-side-start-{VisualClassRegistrar()}");
-            ClassBuilder.Register(() => IsEnabled is false && IsChecked ? $"{RootElementClass}-checked-disabled-{VisualClassRegistrar()}" : string.Empty);
-            ClassBuilder.Register(() => IsEnabled is false && IsIndeterminate ? $"{RootElementClass}-indeterminate-disabled-{VisualClassRegistrar()}"
-                : string.Empty);
+
+            ClassBuilder.Register(() => BoxSide == BoxSide.End
+                                        ? $"{RootElementClass}-box-side-end-{VisualClassRegistrar()}"
+                                        : $"{RootElementClass}-box-side-start-{VisualClassRegistrar()}");
+
+            ClassBuilder.Register(() => IsEnabled is false && IsChecked
+                                        ? $"{RootElementClass}-checked-disabled-{VisualClassRegistrar()}" : string.Empty);
+
+            ClassBuilder.Register(() => IsEnabled is false && IsIndeterminate
+                                        ? $"{RootElementClass}-indeterminate-disabled-{VisualClassRegistrar()}" : string.Empty);
         }
 
         protected async Task HandleCheckboxClick(MouseEventArgs e)

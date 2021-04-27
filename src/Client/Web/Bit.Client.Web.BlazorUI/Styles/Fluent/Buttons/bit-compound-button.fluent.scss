@@ -1,6 +1,6 @@
 ﻿@import "../colors.fluent.scss", "../../functions.scss";
 
-.bit-cmpnd-btn-fluent {
+.bit-cmp-btn-fluent {
     font-family: FluentFont;
     text-align: left;
     border-radius: em(2px);
@@ -13,7 +13,7 @@
     max-width: 280px;
     min-height: 72px;
 
-    & .text-container {
+    & > span {
         height: 100%;
         min-width: 100%;
 
@@ -30,7 +30,7 @@
     }
 }
 
-.bit-cmpnd-btn-primary-fluent {
+.bit-cmp-btn-primary-fluent {
     color: $White;
     background: $Primary;
     border: 1px solid $Primary;
@@ -44,7 +44,7 @@
     }
 }
 
-.bit-cmpnd-btn-standard-fluent {
+.bit-cmp-btn-standard-fluent {
     color: $Grey160;
     background: $White;
     border: 1px solid $GreyInputBorder;
@@ -59,7 +59,7 @@
     }
 }
 
-.bit-cmpnd-btn-disabled-fluent {
+.bit-cmp-btn-disabled-fluent {
     background: $Grey20;
     color: $Grey90;
     border: 1px solid $Grey20;
