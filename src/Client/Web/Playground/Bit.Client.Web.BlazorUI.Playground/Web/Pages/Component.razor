@@ -11,7 +11,7 @@
         }
 
     .custom-button {
-        background-color: palevioletred !important;
+        background-color: palevioletred;
     }
 </style>
 
@@ -101,12 +101,11 @@
 </div>
 <div class="message-bar-container">
     <h2>BitMessageBar</h2>
-    @if (!_isMessageBarHidden)
     {
-<BitMessageBar MessageBarStyle="@MessageBarStyle.Success">
-    Action completed! <BitButton OnClick="MessageBarButton" ButtonStyle="ButtonStyle.Standard">OK</BitButton>
-</BitMessageBar>
-                <br />}
+        <BitMessageBar MessageBarStyle="@MessageBarStyle.Success">
+            Action completed! <BitButton OnClick="MessageBarButton" ButtonStyle="ButtonStyle.Standard">OK</BitButton>
+        </BitMessageBar>
+        <br />}
     <BitMessageBar MessageBarStyle="@MessageBarStyle.Error">
         Error! Cannot complete action
     </BitMessageBar>
@@ -195,8 +194,6 @@
     <br />
     <BitTextField MaxLength="10" Placeholder="Limited text field - 10 chars"></BitTextField>
     <br />
-    <BitTextField Type="@_inputType" Placeholder="Password input"></BitTextField>
-    <BitButton ButtonStyle="@ButtonStyle.Standard" OnClick="ChangeInputType">@_showPasswordText</BitButton>
     <br />
     <h3>Multi-line</h3>
     <BitTextField IsMultiLine="true" Value="Multi-line text field"></BitTextField>

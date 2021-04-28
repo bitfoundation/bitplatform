@@ -1,7 +1,6 @@
-﻿using Bunit;
+﻿using System.Threading.Tasks;
+using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-
-using System.Threading.Tasks;
 
 namespace Bit.Client.Web.BlazorUI.Tests.Links
 {
@@ -13,7 +12,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Links
         {
             var component = RenderComponent<BitLinkTest>(parameters => parameters.Add(p => p.Href, href));
 
-            var bitLink = component.Find(".bit-link");
+            var bitLink = component.Find(".bit-lnk");
             var tagName = bitLink.TagName;
 
             Assert.AreEqual(expectedElement, tagName, ignoreCase: true);
@@ -24,7 +23,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Links
         {
             var component = RenderComponent<BitLinkButtonTest>();
 
-            var bitLinkButton = component.Find("button.bit-link");
+            var bitLinkButton = component.Find("button.bit-lnk");
             bitLinkButton.Click();
 
             Assert.AreEqual(1, component.Instance.CurrentCount);

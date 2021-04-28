@@ -1,6 +1,6 @@
-﻿@import "../_colors.fluent.scss", "../../_functions.scss";
+﻿@import "../colors.fluent.scss", "../../functions.scss";
 
-.bit-label.fluent {
+.bit-lbl-fluent {
     font-family: FluentFont;
     -webkit-font-smoothing: antialiased;
     font-size: rem(14px);
@@ -13,14 +13,14 @@
     display: block;
     padding: 5px 0px;
     overflow-wrap: break-word;
+}
 
-    &.disabled {
-        color: $Grey90;
-    }
+.bit-lbl-disabled-fluent {
+    color: $Grey90;
+}
 
-    &.required::after {
-        content: "*";
-        color: $Red20;
-        margin-left: 5px;
-    }
+.bit-lbl-required-fluent::after {
+    content: "*";
+    color: $Red20;
+    margin-left: 5px;
 }

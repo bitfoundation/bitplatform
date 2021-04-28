@@ -1,19 +1,16 @@
 ﻿@namespace Bit.Client.Web.BlazorUI
 @inherits BitComponentBase
 
-<BitButton Class="@("bit-compound-button " + Class)"
-           Style="@Style"
-           IsEnabled="IsEnabled"
-           ButtonStyle="ButtonStyle"
-           OnClick="HandleOnClick">
-    <span class="flexContainer">
-        <span class="textContainer">
-            <span class="primary-text">
-                @Text
-            </span>
-            <span class="secondary-text">
-                @SecondaryText
-            </span>
+<button @ref="RootElement"
+        style="@StyleBuilder.Value"
+        class="@ClassBuilder.Value"
+        @onclick="HandleOnClick">
+    <span class="no-text-select">
+        <span>
+            @Text
+        </span>
+        <span>
+            @SecondaryText
         </span>
     </span>
-</BitButton>
+</button>

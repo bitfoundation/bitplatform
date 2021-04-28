@@ -1,24 +1,106 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
+using Bit.Client.Web.BlazorUI.Utils;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
 
 namespace Bit.Client.Web.BlazorUI
 {
-    public class BitComponentBase : ComponentBase
+    public abstract class BitComponentBase : ComponentBase
     {
-        public ElementReference Element { get; internal set; }
+        private string style;
+        private Visual visual;
+        private string @class;
+        private bool isEnabled = true;
+        private ComponentVisibility visibility;
+
+        protected bool Rendered { get; private set; } = false;
+
+        private Guid _uniqueId = Guid.NewGuid();
+
+        public Guid UniqueId => _uniqueId;
+
+        public ElementReference RootElement { get; internal set; }
 
         [CascadingParameter] public Theme Theme { get; set; }
 
-        [CascadingParameter] public Visual Visual { get; set; }
+        [CascadingParameter]
+        public Visual Visual
+        {
+            get => visual;
+            set
+            {
+                visual = value;
+                ClassBuilder.Reset();
+            }
+        }
 
-        [Parameter] public string Style { get; set; }
+        [Parameter]
+        public string Class
+        {
+            get => @class;
+            set
+            {
+                @class = value;
+                ClassBuilder.Reset();
+            }
+        }
 
-        [Parameter] public string Class { get; set; }
+        [Parameter]
+        public bool IsEnabled
+        {
+            get => isEnabled;
+            set
+            {
+                isEnabled = value;
+                ClassBuilder.Reset();
+            }
+        }
 
-        [Parameter] public bool IsEnabled { get; set; } = true;
+        [Parameter]
+        public string Style
+        {
+            get => style;
+            set
+            {
+                style = value;
+                StyleBuilder.Reset();
+            }
+        }
 
-        [Parameter] public ComponentVisibility Visibility { get; set; }
+        [Parameter]
+        public ComponentVisibility Visibility
+        {
+            get => visibility;
+            set
+            {
+                visibility = value;
+                StyleBuilder.Reset();
+            }
+        }
+
+        protected override void OnInitialized()
+        {
+            RegisterComponentStyles();
+            StyleBuilder
+                .Register(() => Style)
+                .Register(() => Visibility == ComponentVisibility.Hidden ? "visibility:hidden" :
+                                Visibility == ComponentVisibility.Collapsed ? "display:none" :
+                                string.Empty);
+
+            ClassBuilder
+                .Register(() => $"{RootElementClass}-{VisualClassRegistrar()}")
+                .Register(() => IsEnabled ? $"{RootElementClass}-enabled-{VisualClassRegistrar()}" : $"{RootElementClass}-disabled-{VisualClassRegistrar()}")
+                .Register(() => RootElementClass);
+            RegisterComponentClasses();
+            ClassBuilder.Register(() => Class);
+
+            base.OnInitialized();
+        }
+
+        protected virtual string VisualClassRegistrar()
+        {
+            return Visual == Visual.Cupertino ? "cupertino" : Visual == Visual.Material ? "material" : "fluent";
+        }
 
         public override Task SetParametersAsync(ParameterView parameters)
         {
@@ -55,32 +137,24 @@ namespace Bit.Client.Web.BlazorUI
             return base.SetParametersAsync(ParameterView.Empty);
         }
 
-        protected ElementStyleContainer ElementStyleContainer { get; private set; } = new ElementStyleContainer();
-
-        protected ElementClassContainer ElementClassContainer { get; private set; } = new ElementClassContainer();
-
-        protected virtual string GetElementStyle()
+        protected override void OnAfterRender(bool firstRender)
         {
-            var stylePostfix = string.IsNullOrEmpty(Style) ? "" : ";";
-            var elementStyle = ElementStyleContainer.Value;
-            var elementStylePostfix = string.IsNullOrEmpty(elementStyle) ? "" : ";";
-            var visibilityStyle = Visibility == ComponentVisibility.Hidden
-                                    ? "visibility:hidden"
-                                    : Visibility == ComponentVisibility.Collapsed
-                                        ? "display:none"
-                                        : string.Empty;
-            return $"{Style}{stylePostfix}{elementStyle}{elementStylePostfix}{visibilityStyle}";
+            Rendered = true;
+            base.OnAfterRender(firstRender);
         }
 
-        protected virtual string GetElementClass()
+        protected abstract string RootElementClass { get; }
+
+        protected ElementClassBuilder ClassBuilder { get; private set; } = new ElementClassBuilder();
+
+        protected ElementStyleBuilder StyleBuilder { get; private set; } = new ElementStyleBuilder();
+
+        protected virtual void RegisterComponentStyles()
         {
-            var enabledClass = IsEnabled ? "enabled" : "disabled";
-            var visualClass = Visual == Visual.Cupertino
-                                ? "cupertino"
-                                : Visual == Visual.Material
-                                    ? "material"
-                                    : "fluent";
-            return $"{Class} {enabledClass} {visualClass} {ElementClassContainer.Value}";
+        }
+
+        protected virtual void RegisterComponentClasses()
+        {
         }
     }
 }
