@@ -1,6 +1,6 @@
 ﻿@import "../colors.fluent.scss", "../../functions.scss";
 
-.bit-search-box-container {
+.bit-sch-box-container-fluent {
     -webkit-font-smoothing: antialiased;
     font-size: 14px;
     font-weight: 400;
@@ -17,86 +17,30 @@
     border: 1px solid $Grey130;
     height: 32px;
 
-    &.has-value {
-        .clear-button-container {
-            opacity:1;
-            flex-basis: 0px;
+    & > div:first-child {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        flex-shrink: 0;
+        font-size: 16px;
+        width: 32px;
+        text-align: center;
+        color: $CyanBlue10;
+        cursor: text;
+        transition: width 0.167s ease 0s;
 
-            & i.bit-icon--Clear {
-                opacity: 1;
-            }
+        & i {
+            display: inline-block;
+            -webkit-font-smoothing: antialiased;
+            font-style: normal;
+            font-weight: normal;
+            speak: none;
+            opacity: 1;
+            transition: opacity 0.167s ease 0s;
         }
     }
 
-    &.has-value:hover {
-        .search-icon-container {
-            width: 0px;
-
-            & i.bit-icon {
-                opacity: 0;
-            }
-        }
-    }
-
-    &.focused {
-        border: 2px solid $Primary;
-
-        .search-icon-container {
-            width: 0px;
-
-            & i.bit-icon {
-                opacity: 0;
-            }
-        }
-    }
-
-    &.no-animation {
-        .search-icon-container {
-            transition: none;
-
-            & i.bit-icon {
-                transition: none;
-            }
-        }
-
-        .clear-button-container {
-            transition: none;
-
-            & i.bit-icon--Clear {
-                transition: none;
-            }
-        }
-    }
-
-    &.underlined {
-        border: none;
-        border-radius: 0;
-        border-bottom: 1px solid $Grey130;
-
-        &.focused {
-            border-bottom: 2px solid $Primary;
-        }
-    }
-
-    &.disabled {
-        color: $Grey160;
-        background-color: $Grey20;
-        align-items: stretch;
-        border-color: $Grey20;
-        pointer-events: none;
-        cursor: default;
-
-        &.underlined {
-            background-color: transparent;
-        }
-
-        & .search-icon-container {
-            color: $Grey90;
-        }
-    }
-}
-
-    .search-input {
+    input {
         box-shadow: none;
         margin: 0px;
         padding: 0px 0px 0.5px;
@@ -111,30 +55,8 @@
         text-overflow: ellipsis;
     }
 
-.search-icon-container {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    flex-shrink: 0;
-    font-size: 16px;
-    width: 32px;
-    text-align: center;
-    color: $CyanBlue10;
-    cursor: text;
-    transition: width 0.167s ease 0s;
 
-    & i.bit-icon {
-        display: inline-block;
-        -webkit-font-smoothing: antialiased;
-        font-style: normal;
-        font-weight: normal;
-        speak: none;
-        opacity: 1;
-        transition: opacity 0.167s ease 0s;
-    }
-}
-
-    .clear-button-container {
+    & > div:last-child {
         display: flex;
         flex-direction: row;
         align-items: stretch;
@@ -144,10 +66,10 @@
         padding: 0px;
         margin: -1px 0px;
         width: 32px;
-        opacity:0;
+        opacity: 0;
         transition: opacity 0.167s ease 0s;
 
-        & i.bit-icon--Clear {
+        & i {
             opacity: 0;
             transition: opacity 0.167s ease 0s;
         }
@@ -177,3 +99,81 @@
             background-color: $Grey20;
         }
     }
+}
+
+.bit-sch-box-container-has-value-fluent {
+    & > div:last-child {
+        opacity: 1;
+        flex-basis: 0px;
+
+        & i {
+            opacity: 1;
+        }
+    }
+
+    &:hover > div:first-child {
+        width: 0px;
+
+        & i {
+            opacity: 0;
+        }
+    }
+}
+
+.bit-sch-box-container-focused-fluent {
+    border: 2px solid $Primary;
+
+    & > div:first-child {
+        width: 0px;
+
+        & i.bit-icon {
+            opacity: 0;
+        }
+    }
+}
+
+.bit-sch-box-container-no-animation-fluent {
+    & > div:first-child {
+        transition: none;
+
+        & i {
+            transition: none;
+        }
+    }
+
+    & > div:last-child {
+        transition: none;
+
+        & i {
+            transition: none;
+        }
+    }
+}
+
+.bit-sch-box-container-underlined-fluent {
+    border: none;
+    border-radius: 0;
+    border-bottom: 1px solid $Grey130;
+    padding-left: 12px;
+
+    &.focused {
+        border-bottom: 2px solid $Primary;
+    }
+}
+
+.bit-sch-box-container-disabled-fluent {
+    color: $Grey160;
+    background-color: $Grey20;
+    align-items: stretch;
+    border-color: $Grey20;
+    pointer-events: none;
+    cursor: default;
+
+    &.underlined {
+        background-color: transparent;
+    }
+
+    & > div:first-child {
+        color: $Grey90;
+    }
+}

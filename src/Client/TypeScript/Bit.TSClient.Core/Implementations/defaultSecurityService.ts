@@ -87,7 +87,7 @@
             });
 
             const res = await fetch("core/connect/token", {
-                method: "POST", body: loginData, headers: loginHeaders
+                method: "POST", body: loginData, headers: loginHeaders, credentials: "include"
             });
 
             const json: Contracts.Token & { error_description: string } = await res.json();
