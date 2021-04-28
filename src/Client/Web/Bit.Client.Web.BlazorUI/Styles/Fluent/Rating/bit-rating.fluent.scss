@@ -1,27 +1,27 @@
 ﻿@import "../colors.fluent.scss", "../../functions.scss";
 
-.disabled {
+.bit-rating-disabled-fluent {
     pointer-events: none;
     cursor: not-allowed;
     opacity: 0.65;
 }
 
-.readonly {
+.bit-rating-readonly-fluent {
     cursor: not-allowed;
     pointer-events: none;
 }
 
-.rating-star-small {
+.bit-rating-small-fluent {
     font-size: rem(16px);
     line-height: 16px;
 }
 
-.rating-star-large {
+.bit-rating-large-fluent {
     font-size: rem(20px);
     line-height: 20px;
 }
 
-.rating-icon-container {
+.bit-rating-icon-container {
     display: flex;
     color: $ThemeLighter;
     cursor: pointer;

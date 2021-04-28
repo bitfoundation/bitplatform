@@ -32,12 +32,13 @@ namespace Bit.Client.Web.BlazorUI
 
         private bool isReadOnly;
 
-        protected override string RootElementClass => "";
+        protected override string RootElementClass => "bit-rating";
 
         protected override void RegisterComponentClasses()
         {
-            ClassBuilder.Register(() => Size == RatingSize.Large ? "rating-star-large" : "rating-star-small");
-            ClassBuilder.Register(() => IsReadonly ? "readonly" : string.Empty);
+            ClassBuilder.Register(() => IsReadonly ? $"{RootElementClass}-readonly-{VisualClassRegistrar()}" : string.Empty);
+            ClassBuilder.Register(() => Size == RatingSize.Large ? $"{RootElementClass}-large-{VisualClassRegistrar()}"
+            : $"{RootElementClass}-small-{VisualClassRegistrar()}");
         }
 
         protected override async Task OnInitializedAsync()
