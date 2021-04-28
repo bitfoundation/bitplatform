@@ -6,25 +6,15 @@ namespace Bit.Client.Web.BlazorUI
 {
     public partial class BitRating
     {
-        [Parameter] public short IconCount { get; set; } = 5;
+        [Parameter] public bool AllowZeroStars { get; set; }
+        [Parameter] public int DefaultRating { get; set; }
+        [Parameter] public int Max { get; set; } = 5;
+        [Parameter] public string Icon { get; set; } = "FavoriteStar";
+        [Parameter] public string FillIcon { get; set; } = "FavoriteStarFill";
+        [Parameter] public RatingSize Size { get; set; }
 
-        [Parameter] public IconType IconType { get; set; }
-
-        [Parameter] public short IconWidth { get; set; } = 20;
-
-        [Parameter] public short IconHeight { get; set; } = 20;
-
-        [Parameter] public string ActiveColor { get; set; } = "#fed049";
-
-        [Parameter] public string EmptyColor { get; set; } = "#dddddd";
-
-        [Parameter] public string HoverColor { get; set; } = "#ffefa1";
-
-        [Parameter] public double IntialValue { get; set; }
-
-        [Parameter] public bool ShowIconCount { get; set; } = true;
-
-        [Parameter] public bool IsReadonly
+        [Parameter]
+        public bool IsReadonly
         {
             get => isReadOnly;
             set
@@ -34,137 +24,56 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
-        private bool isReadOnly;
-        public double IconSelectedCount { get; set; }
-        public string[] FirstCurrentColor { get; set; } = new string[21];
-        public string[] SecondCurrentColor { get; set; } = new string[21];
+        public string[] RatingColor { get; set; }
+        public string[] RatingIcon { get; set; }
 
-        protected override string RootElementClass => "bit-rating";
+        private string color { get; set; } = "#1B1A19";
+        private int min { get; set; }
+
+        private bool isReadOnly;
+
+        protected override string RootElementClass => "";
 
         protected override void RegisterComponentClasses()
         {
+            ClassBuilder.Register(() => Size == RatingSize.Large ? "rating-star-large" : "rating-star-small");
             ClassBuilder.Register(() => IsReadonly ? "readonly" : string.Empty);
         }
 
-        protected virtual void HandleClick(int index, IconSide side = IconSide.Right)
+        protected override async Task OnInitializedAsync()
         {
-            SetIconSelectedCount(index, side);
-            FillRatingIcons(index, side, ActiveColor);
+            min = AllowZeroStars == true ? 0 : 1;
+            Max = Max > min ? Max : min;
+            DefaultRating = DefaultRating > 0 ? DefaultRating : min;
+
+            RatingColor = new string[Max + 1];
+            RatingIcon = new string[Max + 1];
+
+            FillRating(DefaultRating);
+
+            await base.OnInitializedAsync();
         }
 
-        protected virtual void HandleMouseMove(int selectedIndex, IconSide side = IconSide.Right)
+        protected virtual void HandleClick(int index)
         {
-            FillRatingIcons(selectedIndex, side, HoverColor);
+            FillRating(index);
         }
 
-        protected virtual void HandelMouseOut()
+        private void FillRating(int index)
         {
-            FillRatingIconWithDefaulValue(IconSelectedCount);
-        }
+            EmptyRating();
 
-        protected override async Task OnAfterRenderAsync(bool firstRender)
-        {
-            if (firstRender)
+            for (var item = 0; item < index; item++)
             {
-                EmptyRatingIcons();
-                FillRatingIconWithDefaulValue(IntialValue);
-                SetIconSelectedCount((int)Math.Round(IntialValue, MidpointRounding.AwayFromZero), GetIconSideByValue(IntialValue));
-
-                StateHasChanged();
-            }
-
-            await base.OnAfterRenderAsync(firstRender);
-        }
-
-        public override Task SetParametersAsync(ParameterView parameters)
-        {
-            foreach (ParameterValue parameter in parameters)
-            {
-                switch (parameter.Name)
-                {
-                    case nameof(IconType):
-                        IconType = (IconType)parameter.Value;
-                        break;
-
-                    case nameof(IconCount):
-                        IconCount = (short)parameter.Value > 20 ? (short)20 : (short)parameter.Value;
-                        break;
-
-                    case nameof(IconWidth):
-                        IconWidth = (short)parameter.Value;
-                        break;
-
-                    case nameof(IconHeight):
-                        IconHeight = (short)parameter.Value;
-                        break;
-
-                    case nameof(ActiveColor):
-                        ActiveColor = (string)parameter.Value;
-                        break;
-
-                    case nameof(EmptyColor):
-                        EmptyColor = (string)parameter.Value;
-                        break;
-
-                    case nameof(HoverColor):
-                        HoverColor = (string)parameter.Value;
-                        break;
-
-                    case nameof(IntialValue):
-                        IntialValue = (double)parameter.Value > IconCount ? IconCount : (double)parameter.Value;
-                        break;
-
-                    case nameof(ShowIconCount):
-                        ShowIconCount = (bool)parameter.Value;
-                        break;
-                }
-            }
-
-            return base.SetParametersAsync(parameters);
-        }
-
-        void FillRatingIconWithDefaulValue(double value)
-        {
-            IconSide side = GetIconSideByValue(value);
-            FillRatingIcons((int)Math.Round(value, MidpointRounding.AwayFromZero), side, ActiveColor);
-        }
-
-        void FillRatingIcons(int index, IconSide side, string color)
-        {
-            EmptyRatingIcons();
-
-            for (var item = 1; item <= index; item++)
-            {
-                FirstCurrentColor[item] = color;
-
-                if (IconType == IconType.Star)
-                {
-                    if (item == index && side == IconSide.Left)
-                        break;
-                    else
-                        SecondCurrentColor[item] = color;
-                }
+                RatingIcon[item] = FillIcon;
+                RatingColor[item] = color;
             }
         }
 
-        void EmptyRatingIcons()
+        private void EmptyRating()
         {
-            Array.Fill(FirstCurrentColor, EmptyColor);
-            Array.Fill(SecondCurrentColor, EmptyColor);
-        }
-
-        void SetIconSelectedCount(int index, IconSide side)
-        {
-            if (IconType == IconType.Star && side == IconSide.Left)
-                IconSelectedCount = (double)(index - 0.5);
-            else
-                IconSelectedCount = index;
-        }
-
-        IconSide GetIconSideByValue(double value)
-        {
-            if ((value % 1) == 0) return IconSide.Right;
-            else return IconSide.Left;
+            Array.Fill(RatingIcon, Icon);
+            Array.Fill(RatingColor, color);
         }
     }
 }

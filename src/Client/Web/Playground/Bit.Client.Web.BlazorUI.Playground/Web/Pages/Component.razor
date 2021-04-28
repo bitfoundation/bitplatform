@@ -1,4 +1,4 @@
-﻿@page "/"
+﻿@page "/component"
 <style>
     /* Temp Styles */
     .links-container, .checkboxes-container, .labels-container, .search-box-container {
@@ -106,7 +106,8 @@
         <BitMessageBar MessageBarStyle="@MessageBarStyle.Success">
             Action completed! <BitButton OnClick="MessageBarButton" ButtonStyle="ButtonStyle.Standard">OK</BitButton>
         </BitMessageBar>
-        <br />}
+        <br />
+    }
     <BitMessageBar MessageBarStyle="@MessageBarStyle.Error">
         Error! Cannot complete action
     </BitMessageBar>
@@ -206,13 +207,20 @@
     <BitTextField IsMultiLine="true" IsEnabled="false" Value="Multi-line Disabled"></BitTextField>
 </div>
 <hr />
-<div>
+
+<div class="rating-container">
     <h2>Rating</h2>
-    <BitRating EmptyColor="#78c4d4" HoverColor="#23049d" ShowIconCount="false" IconHeight="40" IconWidth="40" IconCount="5" />
-    <br />
-    <BitRating IconType="IconType.Star" ActiveColor="#3a6351" EmptyColor="#bbbbbb" IntialValue="4.5" IconHeight="25" IconWidth="25" IconCount="7" />
-    <br />
-    <BitRating IconType="IconType.Heart" ActiveColor="#cf0000" HoverColor="#f05945" IntialValue="5.3" IconHeight="30" IconWidth="30" IconCount="10" />
-    <br />
+    <h5>Large stars</h5>
+    <BitRating DefaultRating="5" Size="RatingSize.Large" />
+    <h5>Small stars, with 0 stars allowed</h5>
+    <BitRating AllowZeroStars="true" />
+    <h5>10 small stars</h5>
+    <BitRating Max="10" />
+    <h5>Disabled</h5>
+    <BitRating DefaultRating="5" IsEnabled="false" />
+    <h5>ReadOnly</h5>
+    <BitRating DefaultRating="5" IsReadonly="true" />
+    <h5>Custom icons</h5>
+    <BitRating Icon="Heart" FillIcon="HeartFill"/>
 </div>
 

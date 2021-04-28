@@ -1,0 +1,36 @@
+﻿@import "../colors.fluent.scss", "../../functions.scss";
+
+.disabled {
+    pointer-events: none;
+    cursor: not-allowed;
+    opacity: 0.65;
+}
+
+.readonly {
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.rating-star-small {
+    font-size: rem(16px);
+    line-height: 16px;
+}
+
+.rating-star-large {
+    font-size: rem(20px);
+    line-height: 20px;
+}
+
+.rating-icon-container {
+    display: flex;
+    color: $ThemeLighter;
+    cursor: pointer;
+
+    & i.bit-icon {
+        -webkit-font-smoothing: antialiased;
+
+        &:hover {
+            color: $Primary !important;
+        }
+    }
+}
