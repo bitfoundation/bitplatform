@@ -1,152 +1,160 @@
 ﻿@import "../colors.fluent.scss", "../../functions.scss";
 
-.bit-checkbox-container {
-    position: relative;
-    display: flex;
+.bit-chb-container-fluent {
     margin: 5px;
     font-family: FluentFont;
     -webkit-font-smoothing: antialiased;
     font-size: inherit;
     font-weight: inherit;
 
-    &:hover .bit-checkbox-item__checkmark {
-        opacity: 1;
-        border-color: $Grey120;
-    }
-}
+    & > div {
+        display: flex;
 
-.bit-checkbox-container.box-side-end {
-    flex-direction: row-reverse;
-    justify-content: flex-end;
-
-    & .bit-checkbox-item__checkbox {
-        margin-left: 8px;
-    }
-}
-
-.bit-checkbox-container.disabled {
-    pointer-events: none;
-    cursor: default;
-
-    & .bit-checkbox-item__checkmark {
-        opacity: 1;
-        border-color: $White;
-    }
-
-    & .bit-checkbox-item__checkbox {
-        border-color: $Grey90;
-        background-color: $White;
-    }
-
-    & .bit-checkbox-item__label-container {
-        color: $Grey90;
-    }
-}
-
-.bit-checkbox-container.disabled.checked {
-    pointer-events: none;
-    cursor: default;
-
-    & .bit-checkbox-item__checkbox {
-        border-color: $Grey90;
-        background-color: $Grey90;
-    }
-}
-
-.bit-checkbox-container.checked {
-    & .bit-checkbox-item__checkmark {
-        opacity: 1;
-        border-color: $White;
-    }
-
-    & .bit-checkbox-item__checkbox {
-        border-color: $Primary;
-        background-color: $Primary;
-    }
-
-    &:hover .bit-checkbox-item__checkbox {
-        border-color: $Dark;
-        background-color: $Dark;
-    }
-}
-
-.bit-checkbox-item__checkbox {
-    position: relative;
-    display: flex;
-    flex-shrink: 0;
-    align-items: center;
-    justify-content: center;
-    height: 20px;
-    width: 20px;
-    border: 1px solid $Grey160;
-    border-radius: 2px;
-    box-sizing: border-box;
-    transition-property: background, border, border-color;
-    transition-duration: 200ms;
-    transition-timing-function: cubic-bezier(0.4, 0, 0.23, 1);
-    overflow: hidden;
-    margin-right: 4px;
-    cursor: pointer;
-}
-
-.bit-checkbox-item__checkmark {
-    display: inline-block;
-    position: absolute;
-    top: 1px;
-    opacity: 0;
-    width: 0.25em;
-    height: 0.70em;
-    border: 2px solid $White;
-    border-top: none;
-    border-left: none;
-    transform: rotate( 41deg );
-}
-
-.bit-checkbox-item__label-text {
-    cursor: pointer;
-}
-
-.bit-checkbox-container.indeterminate {
-    &, &.checked, &.disabled {
-        & .bit-checkbox-item__checkmark {
-            display: inline-block;
-            position: absolute;
-            top: 4px;
-            left: 4px;
-            opacity: 1;
-            width: 6px;
-            height: 6px;
-            border: 2px solid $Primary;
-            background-color: $Primary;
+        & div:first-child {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 20px;
+            width: 20px;
+            border: 1px solid $Grey160;
             border-radius: 2px;
-            transform: rotate( 0deg );
+            box-sizing: border-box;
+            transition-property: background, border, border-color;
+            transition-duration: 200ms;
+            transition-timing-function: cubic-bezier(0.4, 0, 0.23, 1);
+            overflow: hidden;
+            margin-right: 4px;
+            cursor: pointer;
+
+            .bit-icon--Accept {
+                color: $White;
+                font-size: 11px;
+                transition: 0.1s;
+            }
         }
 
-        &:hover .bit-checkbox-item__checkmark {
-            border: 2px solid $Dark;
-            background-color: $Dark;
+        & div:last-child {
+            label {
+                cursor: pointer;
+            }
         }
+    }
 
-        & .bit-checkbox-item__checkbox {
+    &:hover > div {
+        & > div:first-child {
+            .bit-icon--Accept {
+                opacity: 1;
+                color: $Grey120;
+            }
+        }
+    }
+}
+
+.bit-chb-container-box-side-end-fluent {
+    & > div {
+        flex-direction: row-reverse;
+        justify-content: flex-end;
+
+        & > div:first-child {
+            margin-left: 8px;
+        }
+    }
+}
+
+
+.bit-chb-container-checked-fluent {
+    & > div {
+        & > div:first-child {
+            border-color: $Primary;
+            background-color: $Primary;
+
+            .bit-icon--Accept {
+                opacity: 1;
+                color: $White;
+                width: 20px;
+                height: 20px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+        }
+    }
+
+    &:hover > div {
+        & > div:first-child {
+            .bit-icon--Accept {
+                border-color: $Dark;
+                background-color: $Dark;
+                color: $White;
+            }
+        }
+    }
+}
+
+.bit-chb-container-indeterminate-fluent {
+
+    & > div {
+        & > div:first-child {
             border-color: $Primary;
             background-color: $White;
-        }
 
-        &:hover .bit-checkbox-item__checkbox {
-            border-color: $Dark;
-            background-color: $White;
+            .bit-icon--Accept {
+                display: inline-block;
+                width: 11px;
+                height: 11px;
+                color: $Primary;
+                background-color: $Primary;
+                border-radius: 2px;
+
+                &:before {
+                    content: '';
+                }
+            }
         }
     }
 
-    &.disabled {
-        & .bit-checkbox-item__checkmark {
-            border: 2px solid $Grey90;
-            background-color: $Grey90;
+    &:hover > div {
+        & > div:first-child {
+            border-color: $Dark;
+            background-color: $White;
+
+            .bit-icon--Accept {
+                color: $Dark;
+                background-color: $Dark;
+            }
+        }
+    }
+}
+
+.bit-chb-container-disabled-fluent {
+    pointer-events: none;
+    cursor: default;
+
+    & > div {
+        & > div:first-child {
+            border-color: $Grey60;
+            background-color: $White;
+
+            .bit-icon--Accept {
+                opacity: 1;
+                color: $White;
+                background-color: $White;
+            }
         }
 
-        & .bit-checkbox-item__checkbox {
-            border-color: $Grey90;
-            background-color: $White;
+        & > div:last-child {
+            color: $Grey60;
+        }
+    }
+}
+
+.bit-chb-container-checked-disabled-fluent,
+.bit-chb-container-indeterminate-disabled-fluent {
+    & > div {
+        & > div:first-child {
+            .bit-icon--Accept {
+                background-color: $Grey60;
+            }
         }
     }
 }
