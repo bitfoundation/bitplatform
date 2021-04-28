@@ -14,7 +14,7 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public RenderFragment ChildContent { get; set; }
         [Parameter] public EventCallback<string> OnValueChange { get; set; }
 
-        protected override string RootElementClass => "bit-choice-group";
+        protected override string RootElementClass => "bit-grp";
 
         protected override void RegisterComponentClasses()
         {

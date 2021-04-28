@@ -79,7 +79,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
             var bitChoiceOptionInput = com.Find("input");
             bitChoiceOptionInput.Change(count);
             bitChoiceOptionInput.Click();
-            Assert.IsTrue(bitChoiceOptionInput.ParentElement.ClassList.Contains(enabledClass));
+            Assert.IsTrue(bitChoiceOptionInput.ParentElement.ClassList.Contains($"bit-cho-{enabledClass}-fluent"));
             Assert.AreEqual(count, com.Instance.CurrentCount);
         }
 
@@ -93,11 +93,11 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                     parameters.Add(p => p.IsEnabled, isEnabled);
                     parameters.Add(p => p.Value, count.ToString());
                 });
-            var bitChoiceGroup = com.Find(".bit-choice-group");
+            var bitChoiceGroup = com.Find(".bit-grp");
             var bitChoiceOptionInput = com.Find("input");
             bitChoiceOptionInput.Click();
             Assert.AreEqual(count, com.Instance.CurrentCount);
-            Assert.IsTrue(bitChoiceGroup.ClassList.Contains(className));
+            Assert.IsTrue(bitChoiceGroup.ClassList.Contains($"bit-grp-{className}-fluent"));
         }
     }
 }

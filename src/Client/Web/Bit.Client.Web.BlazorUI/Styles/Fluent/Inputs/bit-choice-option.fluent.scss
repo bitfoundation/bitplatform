@@ -1,6 +1,6 @@
 ﻿@import "../colors.fluent.scss", "../../functions.scss";
 
-.bit-choice-option.fluent {
+.bit-cho-fluent {
     font-family: FluentFont;
     font-size: rem(14px);
     font-weight: 400;
@@ -73,7 +73,7 @@
     }
 }
 
-.bit-choice-option.fluent.checked {
+.bit-cho-checked-fluent {
     input:first-child {
         position: absolute;
         opacity: 0;
@@ -108,7 +108,7 @@
     }
 }
 
-.bit-choice-option.fluent.disabled {
+.bit-cho-disabled-fluent {
     label:nth-child(2) {
         cursor: default;
 
