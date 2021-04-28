@@ -1,90 +1,69 @@
 ﻿@import "../colors.fluent.scss", "../../functions.scss";
 
-.bit-compound-button {
-    &.fluent {
-        font-family: FluentFont;
-        display: inline-flex;
-        justify-content: center;
-        align-items: center;
-        text-align: left;
-        border-radius: em(2px);
-        padding: em(16px) em(12px);
-        font-size: rem(14px);
-        font-weight: 600;
-        line-height: em(20px);
-        cursor: pointer;
-        box-sizing: border-box;
-        max-width: 280px;
-        min-height: 72px;
+.bit-cmp-btn-fluent {
+    font-family: FluentFont;
+    text-align: left;
+    border-radius: em(2px);
+    padding: em(16px) em(12px);
+    font-size: rem(14px);
+    font-weight: 600;
+    line-height: em(20px);
+    cursor: pointer;
+    box-sizing: border-box;
+    max-width: 280px;
+    min-height: 72px;
 
-        &.disabled {
-            background: $Grey20;
-            color: $Grey90;
-            border: 1px solid $Grey20;
-            cursor: default;
-            pointer-events: none;
-            border: 1px solid $Grey20;
-        }
+    & > span {
+        height: 100%;
+        min-width: 100%;
 
-        &.primary {
-            color: $White;
-            background: $Primary;
-            border: 1px solid $Primary;
-
-            &:hover {
-                background-color: $DarkAlt;
-            }
-
-            &:active {
-                background-color: $Dark;
-            }
-        }
-
-        &.standard {
-            color: $Grey160;
-            background: $White;
-            border: 1px solid $GreyInputBorder;
-
-            &:hover {
-                background-color: $Grey20;
-                border-color: $Grey160;
-            }
-
-            &:active {
-                background-color: $Grey30;
-            }
-        }
-
-        & .primary-text {
+        & span:first-child {
             margin: 0px 0px 5px;
             display: block;
-            line-height: 100%;
         }
 
-        & .secondary-text {
+        & span:last-child {
             font-size: rem(12px);
             font-weight: 400;
-            display: block;
             line-height: 100%;
-            margin: 0;
-            padding: 0;
-            border: 0;
-            vertical-align: baseline;
-        }
-
-        & .textContainer {
-            flex-grow: 1;
-            display: block;
-            text-align: left;
-        }
-
-        & .flexContainer {
-            display: flex;
-            height: 100%;
-            flex-flow: row nowrap;
-            justify-content: center;
-            align-items: flex-start;
-            min-width: 100%;
         }
     }
+}
+
+.bit-cmp-btn-primary-fluent {
+    color: $White;
+    background: $Primary;
+    border: 1px solid $Primary;
+
+    &:hover {
+        background-color: $DarkAlt;
+    }
+
+    &:active {
+        background-color: $Dark;
+    }
+}
+
+.bit-cmp-btn-standard-fluent {
+    color: $Grey160;
+    background: $White;
+    border: 1px solid $GreyInputBorder;
+
+    &:hover {
+        background-color: $Grey20;
+        border-color: $Grey160;
+    }
+
+    &:active {
+        background-color: $Grey30;
+    }
+}
+
+.bit-cmp-btn-disabled-fluent {
+    background: $Grey20;
+    color: $Grey90;
+    border: 1px solid $Grey20;
+    cursor: default;
+    pointer-events: none;
+    border: 1px solid $Grey20;
 }
