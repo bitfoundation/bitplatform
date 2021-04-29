@@ -1,0 +1,13 @@
+﻿<BitRating AllowZeroStars="AllowZeroStars" DeafultRating="DeafultRating" Max="Max"
+           Icon="Icon" FillIcon="FillIcon" Size="Size" IsReadonly="IsReadonly" IsEnabled="IsEnabled" />
+
+@code {
+    [Parameter] public bool AllowZeroStars { get; set; }
+    [Parameter] public int DeafultRating { get; set; }
+    [Parameter] public int Max { get; set; }
+    [Parameter] public string Icon { get; set; }
+    [Parameter] public string FillIcon { get; set; }
+    [Parameter] public RatingSize Size { get; set; }
+    [Parameter] public bool IsReadonly { get; set; }
+    [Parameter] public bool IsEnabled { get; set; }
+}
