@@ -1,0 +1,75 @@
+﻿@import "../colors.fluent.scss", "../../functions.scss";
+
+@keyframes bit-spinner {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.bit-spinner {
+    display: flex;
+    justify-content: center;
+}
+
+.bit-spinner-bottom-fluent {
+    flex-direction: column-reverse;
+    align-items: center;
+}
+
+.bit-spinner-top-fluent {
+    flex-direction: column;
+    align-items: center;
+}
+
+.bit-spinner-left-fluent {
+    flex-direction: row;
+    align-items: flex-end;
+}
+
+.bit-spinner-right-fluent {
+    flex-direction: row-reverse;
+    align-items: flex-end;
+}
+
+.bit-spinner div:first-child {
+    box-sizing: border-box;
+    border-radius: 50%;
+    border-width: 1.5px;
+    border-style: solid;
+    border-color: $Primary $BlizzardBlue $BlizzardBlue;
+    border-image: initial;
+    animation-name: bit-spinner;
+    animation-duration: 1.3s;
+    animation-iteration-count: infinite;
+}
+
+.bit-spinner-large-fluent div:first-child {
+    width: 28px;
+    height: 28px;
+}
+
+.bit-spinner-medium-fluent div:first-child {
+    width: 20px;
+    height: 20px;
+}
+
+.bit-spinner-small-fluent div:first-child {
+    width: 16px;
+    height: 16px;
+}
+
+.bit-spinner-xSmall-fluent div:first-child {
+    width: 12px;
+    height: 12px;
+}
+
+.bit-spinner div:nth-child(2) {
+    font-size: rem(14px);
+    color: $Primary;
+    margin: 2px 8px;
+    text-align: center;
+}

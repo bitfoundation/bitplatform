@@ -13,6 +13,19 @@
     .custom-button {
         background-color: palevioletred;
     }
+
+    .spinner-container > div:not(.spinner-positioning) {
+        display: flex;
+    }
+
+    .spinner-container span {
+        margin: 0px 10px;
+    }
+
+    .spinner-positioning {
+        display: inline-block;
+    }
+
 </style>
 
 <h1>Bit Components</h1>
@@ -203,4 +216,44 @@
     <BitTextField IsMultiLine="true" MaxLength="10" Placeholder="Limited multi-line text field - 10 chars"></BitTextField>
     <br />
     <BitTextField IsMultiLine="true" IsEnabled="false" Value="Multi-line Disabled"></BitTextField>
+</div>
+
+<hr />
+
+<div class="spinner-container">
+    <h2>Spinner</h2>
+    <div>
+        <span>Extra small spinner:</span>
+        <BitSpinner Size="SpinnerSize.XSmall" />
+    </div>
+    <br />
+    <div>
+        <span>Small spinner:</span>
+        <BitSpinner Size="SpinnerSize.Small" />
+    </div>
+    <br />
+    <div>
+        <span>Medium spinner:</span>
+        <BitSpinner Size="SpinnerSize.Medium" />
+    </div>
+    <br />
+    <div>
+        <span>Large spinner:</span>
+        <BitSpinner Size="SpinnerSize.Large" />
+    </div>
+    <br />
+    <div class="spinner-positioning">
+        <h3>Spinner label positioning</h3>
+        <span>Spinner with label positioned below</span>
+        <BitSpinner LabelPosition="SpinnerLabelPosition.Bottom" Label="I am definitely loading..."/>
+        <br />
+        <span>Spinner with label positioned above</span>
+        <BitSpinner LabelPosition="SpinnerLabelPosition.Top" Label="Seriously, still loading..."/>
+        <br />
+        <span>Spinner with label positioned to right</span>
+        <BitSpinner LabelPosition="SpinnerLabelPosition.Right" Label="Wait, wait..."/>
+        <br />
+        <span>Spinner with label positioned to left</span>
+        <BitSpinner LabelPosition="SpinnerLabelPosition.Left" Label="Nope, still loading..."/>
+    </div>
 </div>
