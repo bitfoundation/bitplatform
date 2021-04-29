@@ -1,0 +1,60 @@
+﻿@import "../colors.fluent.scss", "../../functions.scss";
+
+.bit-drp-fluent {
+    box-shadow: none;
+    margin: em(0px);
+    padding: em(0px);
+    box-sizing: border-box;
+    font-family: FluentFont;
+    -webkit-font-smoothing: antialiased;
+    font-size: rem(14px);
+    font-weight: 400;
+    color: $Grey160;
+    border-color: $Grey130;
+    position: relative;
+    outline: em(0px);
+    width: rem(300px);
+    user-select: none;
+
+    span:first-child {
+        box-shadow: none;
+        margin: em(0px);
+        padding: em(0px) em(28px) em(0px) em(8px);
+        box-sizing: border-box;
+        background-color: $White;
+        border-width: em(1px);
+        border-style: solid;
+        border-color: $Grey130;
+        border-radius: em(2px);
+        cursor: pointer;
+        display: block;
+        height: em(32px);
+        line-height: em(30px);
+        position: relative;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        color: $Grey130;
+    }
+
+    span:nth-child(2) {
+        position: absolute;
+        top: em(1px);
+        right: em(8px);
+        height: em(32px);
+        line-height: em(30px);
+        cursor: pointer;
+
+        i:first-child {
+            display: inline-block;
+            -webkit-font-smoothing: antialiased;
+            font-style: normal;
+            font-weight: normal;
+            speak: none;
+          //  font-family: FabricMDL2Icons;
+            color: $Grey130;
+            font-size: em( 12px);
+            pointer-events: none;
+        }
+    }
+}
