@@ -14,18 +14,16 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public RenderFragment ChildContent { get; set; }
         [Parameter] public EventCallback<string> OnValueChange { get; set; }
 
-        protected override string RootElementClass => "bit-grp";
-
-        protected override void RegisterComponentClasses()
-        {
-        }
+        protected override string RootElementClass => "bit-chg";
 
         internal async Task ChangeSelection(BitChoiceOption option)
         {
             if (IsEnabled)
             {
                 foreach (BitChoiceOption item in _options)
+                {
                     item.SetOptionCheckedStatus(item == option);
+                }
                 Value = option.Value;
                 await OnValueChange.InvokeAsync(option.Value);
             }
@@ -34,11 +32,13 @@ namespace Bit.Client.Web.BlazorUI
         internal void RegisterOption(BitChoiceOption option)
         {
             if (IsEnabled is false)
+            {
                 option.IsEnabled = false;
+            }
             _options.Add(option);
         }
 
-        internal void UnregisterRadio(BitChoiceOption option)
+        internal void UnregisterOption(BitChoiceOption option)
         {
             _options.Remove(option);
         }
