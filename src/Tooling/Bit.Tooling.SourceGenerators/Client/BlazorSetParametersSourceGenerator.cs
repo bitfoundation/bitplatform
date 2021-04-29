@@ -7,11 +7,11 @@ using Microsoft.CodeAnalysis.Text;
 namespace Bit.Tooling.SourceGenerators
 {
     [Generator]
-    public class BitFrameworkGenerator : ISourceGenerator
+    public class BlazorSetParametersSourceGenerator : ISourceGenerator
     {
         public void Execute(GeneratorExecutionContext context)
         {
-            if (context.SyntaxContextReceiver is not BitSyntaxReceiver receiver)
+            if (context.SyntaxContextReceiver is not BlazorParameterPropertySyntaxReceiver receiver)
                 return;
 
             foreach (IGrouping<INamedTypeSymbol, IPropertySymbol> group in receiver.Properties.GroupBy(f => f.ContainingType))
@@ -23,7 +23,7 @@ namespace Bit.Tooling.SourceGenerators
 
         public void Initialize(GeneratorInitializationContext context)
         {
-            context.RegisterForSyntaxNotifications(() => new BitSyntaxReceiver());
+            context.RegisterForSyntaxNotifications(() => new BlazorParameterPropertySyntaxReceiver());
         }
 
         private string GeneratePartialClassToOverrideSetParameters(INamedTypeSymbol classSymbol, List<IPropertySymbol> properties)

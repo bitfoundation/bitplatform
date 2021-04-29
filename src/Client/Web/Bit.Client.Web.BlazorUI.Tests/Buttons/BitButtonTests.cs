@@ -7,7 +7,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
     [TestClass]
     public class BitButtonTests : BunitTestContext
     {
-        [DataTestMethod, DataRow(true, 1, "enabled", ButtonStyle.Standard), DataRow(false, 0, "disabled", ButtonStyle.Primary)]
+        [DataTestMethod, DataRow(true, 1, "bit-btn-enabled-fluent", ButtonStyle.Standard), DataRow(false, 0, "bit-btn-disabled-fluent", ButtonStyle.Primary)]
         public async Task BitButtonShouldRespectIsEnabled(bool isEnabled, int count, string className, ButtonStyle style)
         {
             var com = RenderComponent<BitButtonCounterTest>(
@@ -17,7 +17,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
                     parameters.Add(p => p.BitButtonStyle, style);
                 });
 
-            var bitButton = com.Find(".bit-button");
+            var bitButton = com.Find(".bit-btn-fluent");
 
             bitButton.Click();
 
@@ -30,7 +30,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
     [TestClass]
     public class BitCompoundButtonTests : BunitTestContext
     {
-        [DataTestMethod, DataRow(true, 1, "enabled", ButtonStyle.Primary), DataRow(false, 0, "disabled", ButtonStyle.Standard)]
+        [DataTestMethod, DataRow(true, 1, "bit-cmp-btn-enabled-fluent", ButtonStyle.Primary), DataRow(false, 0, "bit-cmp-btn-disabled-fluent", ButtonStyle.Standard)]
         public async Task BitCompoundButtonShouldRespectIsEnabled(bool isEnabled, int count, string className, ButtonStyle style)
         {
             var com = RenderComponent<BitCompoundButtonCounterTest>(
@@ -40,7 +40,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
                     parameters.Add(p => p.BitCompoundButtonStyle, style);
                 });
 
-            var bitButton = com.Find(".bit-compound-button");
+            var bitButton = com.Find(".bit-cmp-btn-fluent");
 
             bitButton.Click();
 

@@ -11,7 +11,7 @@
         }
 
     .custom-button {
-        background-color: palevioletred !important;
+        background-color: palevioletred;
     }
 </style>
 
@@ -203,4 +203,21 @@
     <BitTextField IsMultiLine="true" MaxLength="10" Placeholder="Limited multi-line text field - 10 chars"></BitTextField>
     <br />
     <BitTextField IsMultiLine="true" IsEnabled="false" Value="Multi-line Disabled"></BitTextField>
+</div>
+<hr />
+
+<div class="rating-container">
+    <h2>Rating</h2>
+    <h5>Large stars</h5>
+    <BitRating DefaultRating="5" Size="RatingSize.Large" />
+    <h5>Small stars, with 0 stars allowed</h5>
+    <BitRating AllowZeroStars="true" />
+    <h5>10 small stars</h5>
+    <BitRating Max="10" />
+    <h5>Disabled</h5>
+    <BitRating DefaultRating="5" IsEnabled="false" />
+    <h5>ReadOnly</h5>
+    <BitRating DefaultRating="5" IsReadonly="true" />
+    <h5>Custom icons</h5>
+    <BitRating Icon="HeartFill" UnselectedIcon="Heart" />
 </div>

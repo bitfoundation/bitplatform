@@ -23,13 +23,15 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
-        protected override string RootElementClass => "bit-button";
+        protected override string RootElementClass => "bit-btn";
 
         protected override void RegisterComponentClasses()
         {
-            ClassBuilder.Register(() => IsEnabled is false ? string.Empty :
-                                        ButtonStyle == ButtonStyle.Primary ? "primary" :
-                                        "standard");
+            ClassBuilder.Register(() => IsEnabled is false
+                                        ? string.Empty
+                                        : ButtonStyle == ButtonStyle.Primary
+                                            ? $"{RootElementClass}-primary-{VisualClassRegistrar()}"
+                                            : $"{RootElementClass}-standard-{VisualClassRegistrar()}");
         }
 
         protected virtual async Task HandleOnClick(MouseEventArgs e)
@@ -38,29 +40,6 @@ namespace Bit.Client.Web.BlazorUI
             {
                 await OnClick.InvokeAsync(e);
             }
-        }
-
-        public override Task SetParametersAsync(ParameterView parameters)
-        {
-            foreach (ParameterValue parameter in parameters)
-            {
-                switch (parameter.Name)
-                {
-                    case nameof(ButtonStyle):
-                        ButtonStyle = (ButtonStyle)parameter.Value;
-                        break;
-
-                    case nameof(OnClick):
-                        OnClick = (EventCallback<MouseEventArgs>)parameter.Value;
-                        break;
-
-                    case nameof(ChildContent):
-                        ChildContent = (RenderFragment)parameter.Value;
-                        break;
-                }
-            }
-
-            return base.SetParametersAsync(parameters);
         }
     }
 }
