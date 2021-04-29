@@ -1,0 +1,36 @@
+﻿@import "../colors.fluent.scss", "../../functions.scss";
+
+.bit-rating-disabled-fluent button {
+    pointer-events: none;
+    cursor: not-allowed;
+    opacity: 0.65;
+}
+
+.bit-rating-readonly-fluent button {
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.bit-rating-small-fluent button {
+    font-size: rem(16px);
+    line-height: 16px;
+}
+
+.bit-rating-large-fluent button {
+    font-size: rem(20px);
+    line-height: 20px;
+}
+
+.bit-rating button div {
+    display: flex;
+    color: $ThemeLighter;
+    cursor: pointer;
+
+    i:hover {
+        color: $Primary;
+    }
+}
+
+.bit-rating-dark-fluent {
+    color: $Grey180;
+}
