@@ -93,11 +93,11 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                     parameters.Add(p => p.IsEnabled, isEnabled);
                     parameters.Add(p => p.Value, count.ToString());
                 });
-            var bitChoiceGroup = com.Find(".bit-grp");
+            var bitChoiceGroup = com.Find(".bit-chg");
             var bitChoiceOptionInput = com.Find("input");
             bitChoiceOptionInput.Click();
             Assert.AreEqual(count, com.Instance.CurrentCount);
-            Assert.IsTrue(bitChoiceGroup.ClassList.Contains($"bit-grp-{className}-fluent"));
+            Assert.IsTrue(bitChoiceGroup.ClassList.Contains($"bit-chg-{className}-fluent"));
         }
     }
 }
