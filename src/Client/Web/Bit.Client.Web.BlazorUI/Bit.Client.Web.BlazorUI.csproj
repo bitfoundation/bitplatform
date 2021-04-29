@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
 	<PropertyGroup>
-		<ResolveStaticWebAssetsInputsDependsOn>WebCompiler</ResolveStaticWebAssetsInputsDependsOn>
 		<TargetFramework>net5.0</TargetFramework>
+		<ResolveStaticWebAssetsInputsDependsOn>WebCompiler</ResolveStaticWebAssetsInputsDependsOn>
 	</PropertyGroup>
 
 	<ItemGroup>

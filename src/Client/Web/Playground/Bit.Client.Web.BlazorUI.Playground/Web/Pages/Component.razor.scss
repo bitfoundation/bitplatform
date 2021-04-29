@@ -1,3 +1,16 @@
-﻿.text-field-container {
+﻿.links-container,
+.checkboxes-container,
+.labels-container,
+.search-box-container,
+.rating-container {
+    font-family: FluentFont;
+}
+
+.links-container p {
+    width: 95%;
+    margin: auto;
+}
+
+.text-field-container {
     width: 30%
 }

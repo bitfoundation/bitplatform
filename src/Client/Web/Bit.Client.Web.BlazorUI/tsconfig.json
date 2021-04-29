@@ -1,0 +1,7 @@
+{
+  "compileOnSave": true,
+  "compilerOptions": {
+    "strict": true,
+    "outFile": "wwwroot/scripts/bit.client.web.js"
+  }
+}
