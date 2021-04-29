@@ -58,3 +58,17 @@
         }
     }
 }
+.bit-drp-focused-fluent {
+    border: em(3px) solid $Primary;
+    /* input:first-child {
+        padding: 0px em(7px);
+    }
+
+    textarea:first-child {
+        padding: 0px em(7px);
+    }*/
+
+    .bit-drp-fluent {
+        padding: em(0px) em(2px);
+    }
+}

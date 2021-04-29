@@ -2,9 +2,15 @@
 @inherits BitComponentBase
 <div @ref="RootElement"
      style="@StyleBuilder.Value"
-     class="@ClassBuilder.Value">
+     class="@ClassBuilder.Value"
+     @onfocus="HandleFocus"
+     @onfocusin="HandleFocusIn"
+     @onfocusout="HandleFocusOut">
     <span>
-        @Placeholder
+        @if (string.IsNullOrEmpty(Value))
+        {
+            @Placeholder
+        }
     </span>
     <span>
         <i class="bit-icon"></i>
