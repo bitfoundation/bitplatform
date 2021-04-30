@@ -204,3 +204,21 @@
     <h5>Custom icons</h5>
     <BitRating Icon="HeartFill" UnselectedIcon="Heart" />
 </div>
+<hr />
+<div class="choice-container">
+    <h2>BitChoiceGroup & BitChoiceOption</h2>
+    <br />
+    <h3>Enabled</h3>
+    <BitChoiceGroup Name="Group1">
+        <BitChoiceOption Text="Option1" Value="1"></BitChoiceOption>
+        <BitChoiceOption Text="Option2" Value="2"></BitChoiceOption>
+        <BitChoiceOption Text="Disabled option" Value="3" IsEnabled="false"></BitChoiceOption>
+    </BitChoiceGroup>
+    <br />
+    <h3>Disabled</h3>
+    <BitChoiceGroup Name="Group2" IsEnabled="false">
+        <BitChoiceOption Text="Option1" Value="1"></BitChoiceOption>
+        <BitChoiceOption Text="Option2" Value="2"></BitChoiceOption>
+        <BitChoiceOption Text="Disabled option" Value="3" IsEnabled="false"></BitChoiceOption>
+    </BitChoiceGroup>
+</div>
