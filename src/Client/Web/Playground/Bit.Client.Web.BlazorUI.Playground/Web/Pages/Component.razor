@@ -1,272 +1,257 @@
 ﻿@page "/component"
-    <style>
-        .links-container p {
-            width: 95%;
-            margin: auto;
-        }
+<style>
+    .links-container p {
+        width: 95%;
+        margin: auto;
+    }
 
-        .custom-button {
-            background-color: palevioletred;
-        }
+    .custom-button {
+        background-color: palevioletred;
+    }
 
-        .spinner-container > div:not(.spinner-positioning) {
-            display: flex;
-        }
+    .spinner-container > div:not(.spinner-positioning) {
+        display: flex;
+    }
 
-        .spinner-container span {
-            margin: 0px 10px;
-        }
+    .spinner-container span {
+        margin: 0px 10px;
+    }
 
-        .spinner-positioning {
-            display: inline-block;
-        }
-    </style>
+    .spinner-positioning {
+        display: inline-block;
+    }
+</style>
 
-    <h1>Bit Components</h1>
+<h1>Bit Components</h1>
+
+<hr />
+
+<div class="buttons-container">
+    <h2>BitButton</h2>
+    <h3>Visibility</h3>
+
+    <BitButton Visibility="ComponentVisibility.Visible">Visible Button</BitButton>
+    <br />
+    <span>Hidden Button: </span>[<BitButton Visibility="ComponentVisibility.Hidden">Hidden Button</BitButton>]
+    <br />
+    <span>Collapsed Button: </span>[<BitButton Visibility="ComponentVisibility.Collapsed">Collapsed Button</BitButton>]
 
     <hr />
 
-    <div class="buttons-container">
-        <h2>BitButton</h2>
-        <h3>Visibility</h3>
+    <h3>Style & Class</h3>
+    <BitButton Style="color:aqua">
+        Styled Button
+    </BitButton>
+    <BitButton Class="custom-button">
+        Classed Button
+    </BitButton>
 
-        <BitButton Visibility="ComponentVisibility.Visible">Visible Button</BitButton>
-        <br />
-        <span>Hidden Button: </span>[<BitButton Visibility="ComponentVisibility.Hidden">Hidden Button</BitButton>]
-        <br />
-        <span>Collapsed Button: </span>[<BitButton Visibility="ComponentVisibility.Collapsed">Collapsed Button</BitButton>]
+    <hr />
 
-        <hr />
+    <h3>BitButton</h3>
+    <BitButton IsEnabled="true">
+        Primary
+    </BitButton>
+    <BitButton ButtonStyle="ButtonStyle.Standard" IsEnabled="true">
+        Standard
+    </BitButton>
+    <BitButton IsEnabled="false">
+        Disabled
+    </BitButton>
+    <BitButton IsEnabled="false">
+        <label>This text is from a label element</label>
+    </BitButton>
 
-        <h3>Style & Class</h3>
-        <BitButton Style="color:aqua">
-            Styled Button
-        </BitButton>
-        <BitButton Class="custom-button">
-            Classed Button
-        </BitButton>
+    <hr />
 
-        <hr />
+    <h3>BitCompoundButton</h3>
+    <BitCompoundButton IsEnabled="true"
+                       Text="Primary"
+                       SecondaryText="This Button is compound button">
+    </BitCompoundButton>
+    <BitCompoundButton IsEnabled="true"
+                       Text="Standard"
+                       SecondaryText="This Button is compound button"
+                       ButtonStyle="ButtonStyle.Standard">
+    </BitCompoundButton>
+    <BitCompoundButton IsEnabled="false"
+                       Text="Disabled"
+                       SecondaryText="This Button is a disabled compound button">
+    </BitCompoundButton>
+    <hr />
+</div>
 
-        <h3>BitButton</h3>
-        <BitButton IsEnabled="true">
-            Primary
-        </BitButton>
-        <BitButton ButtonStyle="ButtonStyle.Standard" IsEnabled="true">
-            Standard
-        </BitButton>
-        <BitButton IsEnabled="false">
-            Disabled
-        </BitButton>
-        <BitButton IsEnabled="false">
-            <label>This text is from a label element</label>
-        </BitButton>
+<div class="labels-container">
 
-        <hr />
+    <h2>Labels</h2>
+    <BitLabel>I'm a Label</BitLabel>
+    <BitLabel IsEnabled="false">I'm a disabled Label</BitLabel>
+    <BitLabel IsRequired="true">I'm a required Label</BitLabel>
+    <BitLabel For="labels-container__input">A Label for An Input</BitLabel>
 
-        <h3>BitCompoundButton</h3>
-        <BitCompoundButton IsEnabled="true"
-                           Text="Primary"
-                           SecondaryText="This Button is compound button">
-        </BitCompoundButton>
-        <BitCompoundButton IsEnabled="true"
-                           Text="Standard"
-                           SecondaryText="This Button is compound button"
-                           ButtonStyle="ButtonStyle.Standard">
-        </BitCompoundButton>
-        <BitCompoundButton IsEnabled="false"
-                           Text="Disabled"
-                           SecondaryText="This Button is a disabled compound button">
-        </BitCompoundButton>
-        <hr />
-    </div>
-
-    <div class="labels-container">
-
-        <h2>Labels</h2>
-        <BitLabel>I'm a Label</BitLabel>
-        <BitLabel IsEnabled="false">I'm a disabled Label</BitLabel>
-        <BitLabel IsRequired="true">I'm a required Label</BitLabel>
-        <BitLabel For="labels-container__input">A Label for An Input</BitLabel>
-
-        <input type="text" name="labels-container__input" id="labels-container__input" />
-        <hr />
-    </div>
-    <div class="links-container">
-        <h3>Links</h3>
-        <p>
-            When a link has an href, <BitLink Href="https://github.com/bitfoundation/bitframework" Target="_blank">it renders as an anchor tag</BitLink>.
-            Without an href, <BitLink>the link is rendered as a button</BitLink>.
-            You can also use the disabled attribute
-            to create a <BitLink IsEnabled="false">disabled link</BitLink>.It's not recommended to use Links with imgs because
-            Links are meant to render textual inline content. Buttons are inline-block or
-            in the case of imgs, block. However, it is possible to create a linked image
-            button by making a button with an unstyled variant and adding the img content
-            and href source to that.
-        </p>
-        <hr />
-    </div>
-    <div class="message-bar-container">
-        <h2>BitMessageBar</h2>
-        @if (IsMessageBarHidden is false)
-        {
-            <BitMessageBar MessageBarStyle="@MessageBarStyle.Success">
-                Action completed! <BitButton OnClick="MessageBarButton" ButtonStyle="ButtonStyle.Standard">OK</BitButton>
-            </BitMessageBar>
-            <br />}
-        <BitMessageBar MessageBarStyle="@MessageBarStyle.Error">
-            Error! Cannot complete action
+    <input type="text" name="labels-container__input" id="labels-container__input" />
+    <hr />
+</div>
+<div class="links-container">
+    <h3>Links</h3>
+    <p>
+        When a link has an href, <BitLink Href="https://github.com/bitfoundation/bitframework" Target="_blank">it renders as an anchor tag</BitLink>.
+        Without an href, <BitLink>the link is rendered as a button</BitLink>.
+        You can also use the disabled attribute
+        to create a <BitLink IsEnabled="false">disabled link</BitLink>.It's not recommended to use Links with imgs because
+        Links are meant to render textual inline content. Buttons are inline-block or
+        in the case of imgs, block. However, it is possible to create a linked image
+        button by making a button with an unstyled variant and adding the img content
+        and href source to that.
+    </p>
+    <hr />
+</div>
+<div class="message-bar-container">
+    <h2>BitMessageBar</h2>
+    @if (IsMessageBarHidden is false)
+    {
+        <BitMessageBar MessageBarStyle="@MessageBarStyle.Success">
+            Action completed! <BitButton OnClick="MessageBarButton" ButtonStyle="ButtonStyle.Standard">OK</BitButton>
         </BitMessageBar>
-        <br />
-        <BitMessageBar MessageBarStyle="@MessageBarStyle.Warning">
-            Caution! Action may takes long time
-        </BitMessageBar>
-        <br />
-        <BitMessageBar MessageBarStyle="@MessageBarStyle.Severe">
-            Cannot connect to server
-        </BitMessageBar>
-        <br />
-        <BitMessageBar MessageBarStyle="@MessageBarStyle.Default">
-            Visit repository <BitLink Href="https://github.com/bitfoundation/bitframework">here</BitLink>
-        </BitMessageBar>
+        <br />}
+    <BitMessageBar MessageBarStyle="@MessageBarStyle.Error">
+        Error! Cannot complete action
+    </BitMessageBar>
+    <br />
+    <BitMessageBar MessageBarStyle="@MessageBarStyle.Warning">
+        Caution! Action may takes long time
+    </BitMessageBar>
+    <br />
+    <BitMessageBar MessageBarStyle="@MessageBarStyle.Severe">
+        Cannot connect to server
+    </BitMessageBar>
+    <br />
+    <BitMessageBar MessageBarStyle="@MessageBarStyle.Default">
+        Visit repository <BitLink Href="https://github.com/bitfoundation/bitframework">here</BitLink>
+    </BitMessageBar>
+</div>
+
+<hr />
+
+<div class="checkboxes-container">
+
+    <h2>Checkboxes</h2>
+    <h3>Basics</h3>
+    <BitCheckbox>Basic Checkbox</BitCheckbox>
+    <BitCheckbox IsChecked="true">Checked Checkbox</BitCheckbox>
+    <BitCheckbox IsEnabled="false">Disable Checkbox</BitCheckbox>
+    <BitCheckbox IsEnabled="false" IsChecked="true">Disable Checked Checkbox</BitCheckbox>
+    <br />
+    <h3>Indeterminate</h3>
+    <BitCheckbox IsIndeterminate="true">Indeterminated checkbox</BitCheckbox>
+    <BitCheckbox IsIndeterminate="true" IsChecked="true">Indeterminate checkbox which defaults to true when clicked</BitCheckbox>
+    <BitCheckbox IsIndeterminate="true" IsEnabled="false">Disabled indeterminated checkbox</BitCheckbox>
+    <BitCheckbox IsIndeterminate="IsCheckBoxIndeterminate">Controlled indeterminated checkbox</BitCheckbox>
+    <BitButton OnClick="() => IsCheckBoxIndeterminate = true">Make Checkbox Indeterminate</BitButton>
+    <br />
+    <h5>Custom Label</h5>
+    <BitCheckbox>
+
+        Custom-rendered label with a link go to
+        <a href='https://github.com/bitfoundation/bitframework'>
+            bit foundation repository page.
+        </a>
+    </BitCheckbox>
+    <h3>Reversed</h3>
+    <BitCheckbox BoxSide="@BoxSide.End">Reversed -- Basic Checkbox</BitCheckbox>
+    <BitCheckbox BoxSide="@BoxSide.End" IsChecked="true">Reversed -- Checked Checkbox</BitCheckbox>
+    <BitCheckbox BoxSide="@BoxSide.End" IsEnabled="false">Reversed -- Disable Checkbox</BitCheckbox>
+    <BitCheckbox BoxSide="@BoxSide.End" IsEnabled="false" IsChecked="true">Reversed -- Disable Checked Checkbox</BitCheckbox>
+
+    <br />
+</div>
+
+<hr />
+<div class="search-box-container">
+    <h3>SearchBox</h3>
+    <h5>Default SearchBox</h5>
+    <BitSearchBox Placeholder="Search"></BitSearchBox>
+    <br />
+    <BitSearchBox Placeholder="Search with no animation" DisableAnimation=true></BitSearchBox>
+    <br />
+    <h5>Underlined SearchBox</h5>
+    <BitSearchBox Placeholder="Search" IsUnderlined=true></BitSearchBox>
+    <br />
+    <h5>SearchBox with custom icon</h5>
+    <BitSearchBox Placeholder="Filter" IconName="Filter"></BitSearchBox>
+    <h5>Disabled SearchBox</h5>
+    <BitSearchBox Placeholder="Search" IsEnabled=false></BitSearchBox>
+    <br />
+    <BitSearchBox Placeholder="Search" IsEnabled=false IsUnderlined=true></BitSearchBox>
+    <h5>SearchBox with fixed width</h5>
+    <BitSearchBox Placeholder="Search" Width="250px"></BitSearchBox>
+    <br />
+</div>
+<hr />
+
+<div class="text-field-container">
+    <h2>BitTextField</h2>
+    <BitTextField Value="Enabled"></BitTextField>
+    <br />
+    <BitTextField IsReadonly="true" Value="Readonly"></BitTextField>
+    <br />
+    <BitTextField IsEnabled="false" Value="Disabled"></BitTextField>
+    <br />
+    <BitTextField Placeholder="Placeholder"></BitTextField>
+    <br />
+    <BitTextField MaxLength="10" Placeholder="Limited text field - 10 chars"></BitTextField>
+    <br />
+    <BitTextField Type="@InputType" Placeholder="Password input"></BitTextField>
+    <BitButton ButtonStyle="@ButtonStyle.Standard" OnClick="ChangeInputType">@ShowPasswordText</BitButton>
+    <br />
+    <h3>Multi-line</h3>
+    <BitTextField IsMultiLine="true" Value="Multi-line text field"></BitTextField>
+    <br />
+    <BitTextField IsMultiLine="true" MaxLength="10" Placeholder="Limited multi-line text field - 10 chars"></BitTextField>
+    <br />
+    <BitTextField IsMultiLine="true" IsEnabled="false" Value="Multi-line Disabled"></BitTextField>
+</div>
+
+<hr />
+
+<div class="spinner-container">
+    <h2>Spinner</h2>
+    <div>
+        <span>Extra small spinner:</span>
+        <BitSpinner Size="SpinnerSize.XSmall" />
     </div>
-
-    <hr />
-
-    <div class="checkboxes-container">
-
-        <h2>Checkboxes</h2>
-        <h3>Basics</h3>
-        <BitCheckbox>Basic Checkbox</BitCheckbox>
-        <BitCheckbox IsChecked="true">Checked Checkbox</BitCheckbox>
-        <BitCheckbox IsEnabled="false">Disable Checkbox</BitCheckbox>
-        <BitCheckbox IsEnabled="false" IsChecked="true">Disable Checked Checkbox</BitCheckbox>
-        <br />
-        <h3>Indeterminate</h3>
-        <BitCheckbox IsIndeterminate="true">Indeterminated checkbox</BitCheckbox>
-        <BitCheckbox IsIndeterminate="true" IsChecked="true">Indeterminate checkbox which defaults to true when clicked</BitCheckbox>
-        <BitCheckbox IsIndeterminate="true" IsEnabled="false">Disabled indeterminated checkbox</BitCheckbox>
-        <BitCheckbox IsIndeterminate="IsCheckBoxIndeterminate">Controlled indeterminated checkbox</BitCheckbox>
-        <BitButton OnClick="() => IsCheckBoxIndeterminate = true">Make Checkbox Indeterminate</BitButton>
-        <br />
-        <h5>Custom Label</h5>
-        <BitCheckbox>
-
-            Custom-rendered label with a link go to
-            <a href='https://github.com/bitfoundation/bitframework'>
-                bit foundation repository page.
-            </a>
-        </BitCheckbox>
-        <h3>Reversed</h3>
-        <BitCheckbox BoxSide="@BoxSide.End">Reversed -- Basic Checkbox</BitCheckbox>
-        <BitCheckbox BoxSide="@BoxSide.End" IsChecked="true">Reversed -- Checked Checkbox</BitCheckbox>
-        <BitCheckbox BoxSide="@BoxSide.End" IsEnabled="false">Reversed -- Disable Checkbox</BitCheckbox>
-        <BitCheckbox BoxSide="@BoxSide.End" IsEnabled="false" IsChecked="true">Reversed -- Disable Checked Checkbox</BitCheckbox>
-
-        <br />
+    <br />
+    <div>
+        <span>Small spinner:</span>
+        <BitSpinner Size="SpinnerSize.Small" />
     </div>
-
-    <hr />
-    <div class="search-box-container">
-        <h3>SearchBox</h3>
-        <h5>Default SearchBox</h5>
-        <BitSearchBox Placeholder="Search"></BitSearchBox>
-        <br />
-        <BitSearchBox Placeholder="Search with no animation" DisableAnimation=true></BitSearchBox>
-        <br />
-        <h5>Underlined SearchBox</h5>
-        <BitSearchBox Placeholder="Search" IsUnderlined=true></BitSearchBox>
-        <br />
-        <h5>SearchBox with custom icon</h5>
-        <BitSearchBox Placeholder="Filter" IconName="Filter"></BitSearchBox>
-        <h5>Disabled SearchBox</h5>
-        <BitSearchBox Placeholder="Search" IsEnabled=false></BitSearchBox>
-        <br />
-        <BitSearchBox Placeholder="Search" IsEnabled=false IsUnderlined=true></BitSearchBox>
-        <h5>SearchBox with fixed width</h5>
-        <BitSearchBox Placeholder="Search" Width="250px"></BitSearchBox>
-        <br />
+    <br />
+    <div>
+        <span>Medium spinner:</span>
+        <BitSpinner Size="SpinnerSize.Medium" />
     </div>
-    <hr />
-
-    <div class="text-field-container">
-        <h2>BitTextField</h2>
-        <BitTextField Value="Enabled"></BitTextField>
-        <br />
-        <BitTextField IsReadonly="true" Value="Readonly"></BitTextField>
-        <br />
-        <BitTextField IsEnabled="false" Value="Disabled"></BitTextField>
-        <br />
-        <BitTextField Placeholder="Placeholder"></BitTextField>
-        <br />
-        <BitTextField MaxLength="10" Placeholder="Limited text field - 10 chars"></BitTextField>
-        <br />
-        <BitTextField Type="@InputType" Placeholder="Password input"></BitTextField>
-        <BitButton ButtonStyle="@ButtonStyle.Standard" OnClick="ChangeInputType">@ShowPasswordText</BitButton>
-        <br />
-        <h3>Multi-line</h3>
-        <BitTextField IsMultiLine="true" Value="Multi-line text field"></BitTextField>
-        <br />
-        <BitTextField IsMultiLine="true" MaxLength="10" Placeholder="Limited multi-line text field - 10 chars"></BitTextField>
-        <br />
-        <BitTextField IsMultiLine="true" IsEnabled="false" Value="Multi-line Disabled"></BitTextField>
+    <br />
+    <div>
+        <span>Large spinner:</span>
+        <BitSpinner Size="SpinnerSize.Large" />
     </div>
-
-    <hr />
-
-    <div class="spinner-container">
-        <h2>Spinner</h2>
-        <div>
-            <span>Extra small spinner:</span>
-            <BitSpinner Size="SpinnerSize.XSmall" />
-        </div>
+    <br />
+    <div class="spinner-positioning">
+        <h3>Spinner label positioning</h3>
+        <span>Spinner with label positioned below</span>
+        <BitSpinner LabelPosition="SpinnerLabelPosition.Bottom" Label="I am definitely loading..." />
         <br />
-        <div>
-            <span>Small spinner:</span>
-            <BitSpinner Size="SpinnerSize.Small" />
-        </div>
+        <span>Spinner with label positioned above</span>
+        <BitSpinner LabelPosition="SpinnerLabelPosition.Top" Label="Seriously, still loading..." />
         <br />
-        <div>
-            <span>Medium spinner:</span>
-            <BitSpinner Size="SpinnerSize.Medium" />
-        </div>
+        <span>Spinner with label positioned to right</span>
+        <BitSpinner LabelPosition="SpinnerLabelPosition.Right" Label="Wait, wait..." />
         <br />
-        <div>
-            <span>Large spinner:</span>
-            <BitSpinner Size="SpinnerSize.Large" />
-        </div>
-        <br />
-        <div class="spinner-positioning">
-            <h3>Spinner label positioning</h3>
-            <span>Spinner with label positioned below</span>
-            <BitSpinner LabelPosition="SpinnerLabelPosition.Bottom" Label="I am definitely loading..." />
-            <br />
-            <span>Spinner with label positioned above</span>
-            <BitSpinner LabelPosition="SpinnerLabelPosition.Top" Label="Seriously, still loading..." />
-            <br />
-            <span>Spinner with label positioned to right</span>
-            <BitSpinner LabelPosition="SpinnerLabelPosition.Right" Label="Wait, wait..." />
-            <br />
-            <span>Spinner with label positioned to left</span>
-            <BitSpinner LabelPosition="SpinnerLabelPosition.Left" Label="Nope, still loading..." />
-        </div>
+        <span>Spinner with label positioned to left</span>
+        <BitSpinner LabelPosition="SpinnerLabelPosition.Left" Label="Nope, still loading..." />
     </div>
-    <hr />
-    <div class="rating-container">
-        <h2>Rating</h2>
-        <h5>Large stars</h5>
-        <BitRating DefaultRating="5" Size="RatingSize.Large" />
-        <h5>Small stars, with 0 stars allowed</h5>
-        <BitRating AllowZeroStars="true" />
-        <h5>10 small stars</h5>
-        <BitRating Max="10" />
-        <h5>Disabled</h5>
-        <BitRating DefaultRating="5" IsEnabled="false" />
-        <h5>ReadOnly</h5>
-        <BitRating DefaultRating="5" IsReadonly="true" />
-        <h5>Custom icons</h5>
-        <BitRating Icon="HeartFill" UnselectedIcon="Heart" />
-    </div>
+</div>
+<hr />
 <div class="rating-container">
     <h2>Rating</h2>
     <h5>Large stars</h5>
