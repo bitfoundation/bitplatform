@@ -9,13 +9,23 @@ namespace Bit.Client.Web.BlazorUI
     {
         private string focusClass = "";
         private string expandClass = "";
+        private DropDownItem selectedItem ;
 
         [Parameter] public List<DropDownItem> Items { get; set; } = new List<DropDownItem>();
         [Parameter] public string Placeholder { get; set; }
-        [Parameter] public string Value { get; set; }
-        [Parameter] public EventCallback<FocusEventArgs> OnFocus { get; set; }
-        [Parameter] public EventCallback<FocusEventArgs> OnFocusIn { get; set; }
-        [Parameter] public EventCallback<FocusEventArgs> OnFocusOut { get; set; }
+        
+        [Parameter]
+        public DropDownItem SelectedItem
+        {
+            get => selectedItem;
+            set
+            {
+                selectedItem = value;
+                ClassBuilder.Reset();
+            }
+        }
+
+        [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
         public string FocusClass
         {
@@ -48,31 +58,20 @@ namespace Bit.Client.Web.BlazorUI
             ClassBuilder.Register(() => string.IsNullOrWhiteSpace(ExpandClass)
                 ? string.Empty
                 : $"{RootElementClass}-{ExpandClass}-{VisualClassRegistrar()}");
+
+            ClassBuilder.Register(() => SelectedItem is null
+                ? string.Empty
+                : $"{RootElementClass}-{"hasValue"}-{VisualClassRegistrar()}");
         }
 
-        protected virtual async Task HandleFocus(FocusEventArgs e)
+        protected virtual async Task HandleClick(MouseEventArgs e)
         {
             if (IsEnabled)
             {
                 FocusClass = "focused";
-                await OnFocus.InvokeAsync(e);
+                await OnClick.InvokeAsync(e);
             }
         }
-        protected virtual async Task HandleFocusIn(FocusEventArgs e)
-        {
-            if (IsEnabled)
-            {
-                FocusClass = "focused";
-                await OnFocus.InvokeAsync(e);
-            }
-        }
-        protected virtual async Task HandleFocusOut(FocusEventArgs e)
-        {
-            if (IsEnabled)
-            {
-                FocusClass = "";
-                await OnFocusOut.InvokeAsync(e);
-            }
-        }
+       
     }
 }

@@ -3,13 +3,15 @@
 <div @ref="RootElement"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
-     @onfocus="HandleFocus"
-     @onfocusin="HandleFocusIn"
-     @onfocusout="HandleFocusOut">
+     @onclick="HandleClick">
     <span>
-        @if (string.IsNullOrEmpty(Value))
+        @if (SelectedItem is null)
         {
             @Placeholder
+        }
+        else
+        {
+            @SelectedItem.Text
         }
     </span>
     <span>

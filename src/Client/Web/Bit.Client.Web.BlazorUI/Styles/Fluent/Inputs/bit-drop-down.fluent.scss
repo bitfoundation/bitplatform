@@ -10,11 +10,14 @@
     font-size: rem(14px);
     font-weight: 400;
     color: $Grey160;
-    border-color: $Grey130;
+ //   border-color: $Grey130;
     position: relative;
     outline: em(0px);
     width: rem(300px);
     user-select: none;
+    background: $White;
+    border-radius: em(2px);
+ //   border: em(1px) solid $Grey130;
 
     span:first-child {
         box-shadow: none;
@@ -22,14 +25,14 @@
         padding: em(0px) em(28px) em(0px) em(8px);
         box-sizing: border-box;
         background-color: $White;
-        border-width: em(1px);
+      /*  border-width: em(1px);
         border-style: solid;
         border-color: $Grey130;
-        border-radius: em(2px);
+        border-radius: em(2px);*/
         cursor: pointer;
         display: block;
         height: em(32px);
-        line-height: em(30px);
+        line-height: em(32px);
         position: relative;
         overflow: hidden;
         white-space: nowrap;
@@ -51,24 +54,24 @@
             font-style: normal;
             font-weight: normal;
             speak: none;
-          //  font-family: FabricMDL2Icons;
+            //  font-family: FabricMDL2Icons;
             color: $Grey130;
             font-size: em( 12px);
             pointer-events: none;
         }
     }
 }
-.bit-drp-focused-fluent {
-    border: em(3px) solid $Primary;
-    /* input:first-child {
-        padding: 0px em(7px);
+
+.bit-drp-hasValue-fluent {
+    span:first-child {
+        color: $Grey160 !important;
     }
+}
 
-    textarea:first-child {
-        padding: 0px em(7px);
-    }*/
+.bit-drp-focused-fluent {
+    border-color: $Primary;
 
-    .bit-drp-fluent {
-        padding: em(0px) em(2px);
+    span:first-child {
+        border: em(3px) solid $Primary;
     }
 }
