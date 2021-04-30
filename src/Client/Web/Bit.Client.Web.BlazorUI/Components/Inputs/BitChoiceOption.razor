@@ -1,0 +1,19 @@
+﻿@namespace Bit.Client.Web.BlazorUI
+@inherits BitComponentBase
+<div @ref="RootElement"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value">
+    <input id="@UniqueId"
+           type="radio"
+           checked=@IsChecked
+           name="@Name"
+           value="@Value"
+           hidden
+           @onclick="@HandleClick"
+           @onchange="@HandleChange" />
+    <label for="@UniqueId">
+        <span>
+            @Text
+        </span>
+    </label>
+</div>

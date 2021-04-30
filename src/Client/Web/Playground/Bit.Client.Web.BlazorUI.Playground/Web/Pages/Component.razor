@@ -252,7 +252,6 @@
         </div>
     </div>
     <hr />
-
     <div class="rating-container">
         <h2>Rating</h2>
         <h5>Large stars</h5>
@@ -268,3 +267,36 @@
         <h5>Custom icons</h5>
         <BitRating Icon="HeartFill" UnselectedIcon="Heart" />
     </div>
+<div class="rating-container">
+    <h2>Rating</h2>
+    <h5>Large stars</h5>
+    <BitRating DefaultRating="5" Size="RatingSize.Large" />
+    <h5>Small stars, with 0 stars allowed</h5>
+    <BitRating AllowZeroStars="true" />
+    <h5>10 small stars</h5>
+    <BitRating Max="10" />
+    <h5>Disabled</h5>
+    <BitRating DefaultRating="5" IsEnabled="false" />
+    <h5>ReadOnly</h5>
+    <BitRating DefaultRating="5" IsReadonly="true" />
+    <h5>Custom icons</h5>
+    <BitRating Icon="HeartFill" UnselectedIcon="Heart" />
+</div>
+<hr />
+<div class="choice-container">
+    <h2>BitChoiceGroup & BitChoiceOption</h2>
+    <br />
+    <h3>Enabled</h3>
+    <BitChoiceGroup Name="Group1">
+        <BitChoiceOption Text="Option1" Value="1"></BitChoiceOption>
+        <BitChoiceOption Text="Option2" Value="2"></BitChoiceOption>
+        <BitChoiceOption Text="Disabled option" Value="3" IsEnabled="false"></BitChoiceOption>
+    </BitChoiceGroup>
+    <br />
+    <h3>Disabled</h3>
+    <BitChoiceGroup Name="Group2" IsEnabled="false">
+        <BitChoiceOption Text="Option1" Value="1"></BitChoiceOption>
+        <BitChoiceOption Text="Option2" Value="2"></BitChoiceOption>
+        <BitChoiceOption Text="Disabled option" Value="3" IsEnabled="false"></BitChoiceOption>
+    </BitChoiceGroup>
+</div>
