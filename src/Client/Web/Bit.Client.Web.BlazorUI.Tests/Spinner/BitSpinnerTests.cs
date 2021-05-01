@@ -11,7 +11,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Spinner
         {
             var component = RenderComponent<BitSpinner>(parameters => parameters.Add(p => p.Size, size));
 
-            var bitLabel = component.Find(".bit-spn");
+            var bitLabel = component.Find(".bit-spn-fluent");
 
             Assert.AreEqual(expectedResult, bitLabel.ClassList.Contains("bit-spn-large-fluent"));
         }
@@ -21,7 +21,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Spinner
         {
             var component = RenderComponent<BitSpinner>(parameters => parameters.Add(p => p.Size, size));
 
-            var bitLabel = component.Find(".bit-spn");
+            var bitLabel = component.Find(".bit-spn-fluent");
 
             Assert.AreEqual(expectedResult, bitLabel.ClassList.Contains("bit-spn-medium-fluent"));
         }
@@ -31,7 +31,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Spinner
         {
             var component = RenderComponent<BitSpinner>(parameters => parameters.Add(p => p.Size, size));
 
-            var bitLabel = component.Find(".bit-spn");
+            var bitLabel = component.Find(".bit-spn-fluent");
 
             Assert.AreEqual(expectedResult, bitLabel.ClassList.Contains("bit-spn-small-fluent"));
         }
@@ -41,7 +41,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Spinner
         {
             var component = RenderComponent<BitSpinner>(parameters => parameters.Add(p => p.Size, size));
 
-            var bitLabel = component.Find(".bit-spn");
+            var bitLabel = component.Find(".bit-spn-fluent");
 
             Assert.AreEqual(expectedResult, bitLabel.ClassList.Contains("bit-spn-xSmall-fluent"));
         }
@@ -51,7 +51,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Spinner
         {
             var component = RenderComponent<BitSpinner>(parameters => parameters.Add(p => p.LabelPosition, position));
 
-            var bitLabel = component.Find(".bit-spn");
+            var bitLabel = component.Find(".bit-spn-fluent");
 
             Assert.AreEqual(expectedResult, bitLabel.ClassList.Contains("bit-spn-bottom-fluent"));
         }
@@ -61,7 +61,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Spinner
         {
             var component = RenderComponent<BitSpinner>(parameters => parameters.Add(p => p.LabelPosition, position));
 
-            var bitLabel = component.Find(".bit-spn");
+            var bitLabel = component.Find(".bit-spn-fluent");
 
             Assert.AreEqual(expectedResult, bitLabel.ClassList.Contains("bit-spn-top-fluent"));
         }
@@ -71,7 +71,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Spinner
         {
             var component = RenderComponent<BitSpinner>(parameters => parameters.Add(p => p.LabelPosition, position));
 
-            var bitLabel = component.Find(".bit-spn");
+            var bitLabel = component.Find(".bit-spn-fluent");
 
             Assert.AreEqual(expectedResult, bitLabel.ClassList.Contains("bit-spn-right-fluent"));
         }
@@ -81,7 +81,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Spinner
         {
             var component = RenderComponent<BitSpinner>(parameters => parameters.Add(p => p.LabelPosition, position));
 
-            var bitLabel = component.Find(".bit-spn");
+            var bitLabel = component.Find(".bit-spn-fluent");
 
             Assert.AreEqual(expectedResult, bitLabel.ClassList.Contains("bit-spn-left-fluent"));
         }
