@@ -48,6 +48,7 @@ namespace Bit.Client.Web.BlazorUI.Utils
         private void Build()
         {
             _value = string.Join(Separator, _registrars.Select(g => g()).Where(s => string.IsNullOrWhiteSpace(s) is false));
+            _dirty = false;
         }
     }
 }

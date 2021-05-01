@@ -118,14 +118,14 @@ namespace Bit.Client.Web.BlazorUI
             InputHasFocus = false;
         }
 
-        protected override string RootElementClass => "bit-search-box-container";
+        protected override string RootElementClass => "bit-sch-box-container";
 
         protected override void RegisterComponentClasses()
         {
-            ClassBuilder.Register(() => Value.HasValue() ? "has-value" : string.Empty);
-            ClassBuilder.Register(() => DisableAnimation ? "no-animation" : string.Empty);
-            ClassBuilder.Register(() => IsUnderlined ? "underlined" : string.Empty);
-            ClassBuilder.Register(() => InputHasFocus ? "focused" : string.Empty);
+            ClassBuilder.Register(() => Value.HasValue() ? $"{RootElementClass}-has-value-{VisualClassRegistrar()}" : string.Empty);
+            ClassBuilder.Register(() => DisableAnimation ? $"{RootElementClass}-no-animation-{VisualClassRegistrar()}" : string.Empty);
+            ClassBuilder.Register(() => IsUnderlined ? $"{RootElementClass}-underlined-{VisualClassRegistrar()}" : string.Empty);
+            ClassBuilder.Register(() => InputHasFocus ? $"{RootElementClass}-focused-{VisualClassRegistrar()}" : string.Empty);
         }
 
         protected override void RegisterComponentStyles()

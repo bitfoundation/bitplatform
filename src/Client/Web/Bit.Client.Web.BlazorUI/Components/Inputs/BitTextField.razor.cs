@@ -74,14 +74,22 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
-        protected override string RootElementClass => "bit-text-field";
+        protected override string RootElementClass => "bit-txt";
 
         protected override void RegisterComponentClasses()
         {
-            ClassBuilder.Register(() => IsMultiLine && Type == TextFieldType.Text ? "multiline" : string.Empty);
-            ClassBuilder.Register(() => IsEnabled is false ? "disabled" : string.Empty);
-            ClassBuilder.Register(() => IsEnabled && IsReadonly ? "readonly" : string.Empty);
-            ClassBuilder.Register(() => FocusClass);
+            ClassBuilder.Register(() => IsMultiLine && Type == TextFieldType.Text
+                                        ? $"{RootElementClass}-multiline-{VisualClassRegistrar()}" : string.Empty);
+
+            ClassBuilder.Register(() => IsEnabled is false
+                                        ? $"{RootElementClass}-disabled-{VisualClassRegistrar()}" : string.Empty);
+
+            ClassBuilder.Register(() => IsEnabled && IsReadonly
+                                        ? $"{RootElementClass}-readonly-{VisualClassRegistrar()}" : string.Empty);
+
+            ClassBuilder.Register(() => string.IsNullOrWhiteSpace(FocusClass)
+                                        ? string.Empty
+                                        : $"{RootElementClass}-{FocusClass}-{VisualClassRegistrar()}");
         }
 
         protected virtual async Task HandleFocusIn(FocusEventArgs e)
