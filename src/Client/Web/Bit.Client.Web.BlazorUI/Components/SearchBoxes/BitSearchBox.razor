@@ -4,7 +4,7 @@
 <div @ref="RootElement"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
-    <div class="search-icon-container">
+    <div>
         <i class="bit-icon bit-icon--@IconName"></i>
     </div>
     <input type="text" @ref="InputRef" class="search-input"
@@ -15,8 +15,8 @@
            @onfocusin="HandleInputFocusIn"
            @onfocusout="HandleInputFocusOut"
            disabled="@(IsEnabled is false)" />
-    <div class="clear-button-container">
-        <button type="button" class="clear-button" disabled="@(!Value.HasValue())" @onclick="HandleOnClear">
+    <div>
+        <button type="button" disabled="@(!Value.HasValue())" @onclick="HandleOnClear">
             <i class="bit-icon bit-icon--Clear"></i>
         </button>
     </div>

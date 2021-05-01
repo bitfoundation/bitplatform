@@ -8,12 +8,12 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
     [TestClass]
     public class BitInputTests : BunitTestContext
     {
-        [DataTestMethod, DataRow(true, false, 7, "enabled", TextFieldType.Text),
-         DataRow(false, false, 0, "disabled", TextFieldType.Text),
-         DataRow(true, true, 7, "readonly", TextFieldType.Text),
-         DataRow(true, false, 7, "enabled", TextFieldType.Password),
-         DataRow(false, false, 0, "disabled", TextFieldType.Password),
-         DataRow(true, true, 7, "readonly", TextFieldType.Password)]
+        [DataTestMethod, DataRow(true, false, 7, "bit-txt-enabled-fluent", TextFieldType.Text),
+         DataRow(false, false, 0, "bit-txt-disabled-fluent", TextFieldType.Text),
+         DataRow(true, true, 7, "bit-txt-readonly-fluent", TextFieldType.Text),
+         DataRow(true, false, 7, "bit-txt-enabled-fluent", TextFieldType.Password),
+         DataRow(false, false, 0, "bit-txt-disabled-fluent", TextFieldType.Password),
+         DataRow(true, true, 7, "bit-txt-readonly-fluent", TextFieldType.Password)]
         public async Task BitTextFieldShouldRespectIsEnabledAndReadonly(bool isEnabled, bool isReadonly, int count, string className, TextFieldType type)
         {
             var com = RenderComponent<BitTextFieldTest>(
@@ -37,12 +37,12 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
             Assert.AreEqual(count, com.Instance.CurrentCount);
         }
 
-        [DataTestMethod, DataRow(true, false, 7, "enabled", TextFieldType.Text),
-         DataRow(false, false, 0, "disabled", TextFieldType.Text),
-         DataRow(true, true, 7, "readonly", TextFieldType.Text),
-         DataRow(true, false, 7, "enabled", TextFieldType.Password),
-         DataRow(false, false, 0, "disabled", TextFieldType.Password),
-         DataRow(true, true, 7, "readonly", TextFieldType.Password)]
+        [DataTestMethod, DataRow(true, false, 7, "bit-txt-enabled-fluent", TextFieldType.Text),
+         DataRow(false, false, 0, "bit-txt-disabled-fluent", TextFieldType.Text),
+         DataRow(true, true, 7, "bit-txt-readonly-fluent", TextFieldType.Text),
+         DataRow(true, false, 7, "bit-txt-enabled-fluent", TextFieldType.Password),
+         DataRow(false, false, 0, "bit-txt-disabled-fluent", TextFieldType.Password),
+         DataRow(true, true, 7, "bit-txt-readonly-fluent", TextFieldType.Password)]
         public async Task BitTextFieldShouldRespectMultiLine(bool isEnabled, bool isReadonly, int count, string className, TextFieldType type)
         {
             var com = RenderComponent<BitTextFieldTest>(
@@ -66,5 +66,38 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
             Assert.AreEqual(count, com.Instance.CurrentCount);
         }
 
+        [DataTestMethod, DataRow(true, 2, "enabled"),
+         DataRow(false, 0, "disabled")]
+        public async Task BitChoiceOptionShouldRespectIsEnabled(bool isEnabled, int count, string enabledClass)
+        {
+            var com = RenderComponent<BitChoiceOptionTest>(
+                parameters =>
+                {
+                    parameters.Add(p => p.IsEnabled, isEnabled);
+                    parameters.Add(p => p.Value, count.ToString());
+                });
+            var bitChoiceOptionInput = com.Find("input");
+            bitChoiceOptionInput.Change(count);
+            bitChoiceOptionInput.Click();
+            Assert.IsTrue(bitChoiceOptionInput.ParentElement.ClassList.Contains($"bit-cho-{enabledClass}-fluent"));
+            Assert.AreEqual(count, com.Instance.CurrentCount);
+        }
+
+        [DataTestMethod, DataRow(true, 2, "enabled"),
+         DataRow(false, 0, "disabled")]
+        public async Task BitChoiceGroupShouldRespectIsEnabled(bool isEnabled, int count, string className)
+        {
+            var com = RenderComponent<BitChoiceGroupTest>(
+                parameters =>
+                {
+                    parameters.Add(p => p.IsEnabled, isEnabled);
+                    parameters.Add(p => p.Value, count.ToString());
+                });
+            var bitChoiceGroup = com.Find(".bit-chg");
+            var bitChoiceOptionInput = com.Find("input");
+            bitChoiceOptionInput.Click();
+            Assert.AreEqual(count, com.Instance.CurrentCount);
+            Assert.IsTrue(bitChoiceGroup.ClassList.Contains($"bit-chg-{className}-fluent"));
+        }
     }
 }

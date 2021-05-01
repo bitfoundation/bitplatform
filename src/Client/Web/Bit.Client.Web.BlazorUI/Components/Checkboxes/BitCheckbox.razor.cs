@@ -43,7 +43,7 @@ namespace Bit.Client.Web.BlazorUI
             set
             {
                 isIndeterminate = value;
-                JSRuntime.SetProperty(CheckboxElement, "indeterminate", value);
+                _ = JSRuntime.SetProperty(CheckboxElement, "indeterminate", value);
                 ClassBuilder.Reset();
             }
         }
@@ -52,13 +52,22 @@ namespace Bit.Client.Web.BlazorUI
 
         [Parameter] public EventCallback<bool> OnChange { get; set; }
 
-        protected override string RootElementClass => "bit-checkbox-container";
+        protected override string RootElementClass => "bit-chb-container";
 
         protected override void RegisterComponentClasses()
         {
-            ClassBuilder.Register(() => IsIndeterminate ? "indeterminate" : string.Empty);
-            ClassBuilder.Register(() => IsChecked ? "checked" : string.Empty);
-            ClassBuilder.Register(() => BoxSide == BoxSide.End ? "box-side-end" : "box-side-start");
+            ClassBuilder.Register(() => IsIndeterminate ? $"{RootElementClass}-indeterminate-{VisualClassRegistrar()}" : string.Empty);
+            ClassBuilder.Register(() => IsChecked ? $"{RootElementClass}-checked-{VisualClassRegistrar()}" : string.Empty);
+
+            ClassBuilder.Register(() => BoxSide == BoxSide.End
+                                        ? $"{RootElementClass}-box-side-end-{VisualClassRegistrar()}"
+                                        : $"{RootElementClass}-box-side-start-{VisualClassRegistrar()}");
+
+            ClassBuilder.Register(() => IsEnabled is false && IsChecked
+                                        ? $"{RootElementClass}-checked-disabled-{VisualClassRegistrar()}" : string.Empty);
+
+            ClassBuilder.Register(() => IsEnabled is false && IsIndeterminate
+                                        ? $"{RootElementClass}-indeterminate-disabled-{VisualClassRegistrar()}" : string.Empty);
         }
 
         protected async Task HandleCheckboxClick(MouseEventArgs e)

@@ -1,13 +1,13 @@
-﻿@import "../colors.fluent.scss", "../../functions.scss";
+﻿
+@import "../colors.fluent.scss", "../../functions.scss";
 
-.bit-link {
+.bit-lnk-fluent > a {
     font-family: FluentFont;
     -webkit-font-smoothing: antialiased;
     font-size: inherit;
     font-weight: inherit;
     color: $Primary;
     outline: none;
-    text-decoration: none;
 
     &:hover, &:active, &:focus {
         color: $ThemeDarker;
@@ -15,7 +15,7 @@
     }
 }
 
-.bit-link.disabled {
+.bit-lnk-disabled {
     color: $Grey90;
     cursor: default;
 
@@ -25,7 +25,7 @@
     }
 }
 
-button.bit-link {
+.bit-lnk-fluent > button {
     color: $Primary;
     background: none transparent;
     border-top: none;
@@ -41,6 +41,7 @@ button.bit-link {
     text-overflow: inherit;
     border-bottom: 1px solid transparent;
     user-select: text;
+    text-decoration: underline;
 
     &:hover, &:active, &:focus {
         color: $ThemeDarker;
