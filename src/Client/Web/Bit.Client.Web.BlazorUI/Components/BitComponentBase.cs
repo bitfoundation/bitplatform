@@ -88,9 +88,9 @@ namespace Bit.Client.Web.BlazorUI
                                 string.Empty);
 
             ClassBuilder
+                .Register(() => RootElementClass)
                 .Register(() => $"{RootElementClass}-{VisualClassRegistrar()}")
-                .Register(() => IsEnabled ? $"{RootElementClass}-enabled-{VisualClassRegistrar()}" : $"{RootElementClass}-disabled-{VisualClassRegistrar()}")
-                .Register(() => RootElementClass);
+                .Register(() => $"{RootElementClass}-{(IsEnabled ? "enabled" : "disabled")}-{VisualClassRegistrar()}");
             RegisterComponentClasses();
             ClassBuilder.Register(() => Class);
 
