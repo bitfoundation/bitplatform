@@ -8,52 +8,58 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public SpinnerSize Size { get; set; }
         [Parameter] public string Label { get; set; }
 
-        protected override string RootElementClass => "bit-spinner";
+        protected override string RootElementClass => "bit-spn";
 
         protected override void RegisterComponentClasses()
         {
-            ClassBuilder.Register(() => GetClassSize());
-            ClassBuilder.Register(() => GetClassLabelPosition());
+            ClassBuilder.Register(GetClassSize);
+            ClassBuilder.Register(GetClassLabelPosition);
         }
 
         private string GetClassSize()
         {
-            string classSize = $"{RootElementClass}-medium-{VisualClassRegistrar()}";
+            string classSize = string.Empty;
 
             switch (Size)
             {
                 case SpinnerSize.XSmall:
-                    classSize = $"{RootElementClass}-xSmall-{VisualClassRegistrar()}";
+                    classSize = "xSmall";
                     break;
                 case SpinnerSize.Small:
-                    classSize = $"{RootElementClass}-small-{VisualClassRegistrar()}";
+                    classSize = "small";
+                    break;
+                case SpinnerSize.Medium:
+                    classSize = "medium";
                     break;
                 case SpinnerSize.Large:
-                    classSize = $"{RootElementClass}-large-{VisualClassRegistrar()}";
+                    classSize = "large";
                     break;
             }
 
-            return classSize;
+            return $"{RootElementClass}-{classSize}-{VisualClassRegistrar()}";
         }
 
         private string GetClassLabelPosition()
         {
-            string classLabelPosition = $"{RootElementClass}-bottom-{VisualClassRegistrar()}";
+            string classLabelPosition = string.Empty;
 
             switch (LabelPosition)
             {
                 case SpinnerLabelPosition.Top:
-                    classLabelPosition = $"{RootElementClass}-top-{VisualClassRegistrar()}";
+                    classLabelPosition = "top";
                     break;
                 case SpinnerLabelPosition.Left:
-                    classLabelPosition = $"{RootElementClass}-left-{VisualClassRegistrar()}";
+                    classLabelPosition = "left";
                     break;
                 case SpinnerLabelPosition.Right:
-                    classLabelPosition = $"{RootElementClass}-right-{VisualClassRegistrar()}";
+                    classLabelPosition = "right";
+                    break;
+                case SpinnerLabelPosition.Bottom:
+                    classLabelPosition = "botton";
                     break;
             }
 
-            return classLabelPosition;
+            return $"{RootElementClass}-{classLabelPosition}-{VisualClassRegistrar()}";
         }
     }
 }
