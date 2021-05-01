@@ -1,0 +1,9 @@
+﻿<BitSpinner Size="@Size" Label="@Label" LabelPosition="@LabelPosition" />
+
+@code {
+    [Parameter] public SpinnerLabelPosition LabelPosition { get; set; }
+
+    [Parameter] public SpinnerSize Size { get; set; }
+
+    [Parameter] public string Label { get; set; }
+}
