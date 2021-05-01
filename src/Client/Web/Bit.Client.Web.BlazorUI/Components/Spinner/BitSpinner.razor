@@ -5,5 +5,8 @@
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
     <div></div>
-    <div>@Label</div>
+    @if (!string.IsNullOrEmpty(Label))
+    {
+        <div>@Label</div>
+    }
 </div>
