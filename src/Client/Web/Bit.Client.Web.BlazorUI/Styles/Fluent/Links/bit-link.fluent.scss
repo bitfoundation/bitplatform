@@ -1,6 +1,7 @@
-﻿@import "../colors.fluent.scss", "../../functions.scss";
+﻿
+@import "../colors.fluent.scss", "../../functions.scss";
 
-.bit-lnk-fluent {
+.bit-lnk-fluent > a {
     font-family: FluentFont;
     -webkit-font-smoothing: antialiased;
     font-size: inherit;
@@ -24,7 +25,7 @@
     }
 }
 
-.bit-lnk-btn-fluent {
+.bit-lnk-fluent > button {
     color: $Primary;
     background: none transparent;
     border-top: none;

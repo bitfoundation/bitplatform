@@ -1,0 +1,22 @@
+﻿<BitChoiceGroup Name="@Name" IsEnabled="@IsEnabled" OnValueChange="ValueChangeEvent">
+    <BitChoiceOption OnClick="ClickEvent" Value="@Value"></BitChoiceOption>
+</BitChoiceGroup>
+@code {
+    [Parameter] public bool IsEnabled { get; set; }
+    [Parameter] public string Name { get; set; }
+    [Parameter]public string Value { get; set; } = "0";
+    public void ClickEvent(MouseEventArgs e)
+    {
+        IncrementCount();
+    }
+    public void ValueChangeEvent(string value)
+    {
+        IncrementCount();
+    }
+    public int CurrentCount { get; set; }
+    public void IncrementCount()
+    {
+        CurrentCount++;
+        Value = CurrentCount.ToString();
+    }
+}
