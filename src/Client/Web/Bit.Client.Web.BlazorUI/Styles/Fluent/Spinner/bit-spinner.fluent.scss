@@ -1,6 +1,6 @@
 ﻿@import "../colors.fluent.scss", "../../functions.scss";
 
-@keyframes bit-spn {
+@keyframes bit-spn-fluent {
     0% {
         transform: rotate(0deg);
     }
@@ -8,11 +8,6 @@
     100% {
         transform: rotate(360deg);
     }
-}
-
-.bit-spn {
-    display: flex;
-    justify-content: center;
 }
 
 .bit-spn-bottom-fluent {
@@ -35,18 +30,28 @@
     align-items: flex-end;
 }
 
-.bit-spn {
+.bit-spn-fluent {
+    display: flex;
+    justify-content: center;
+
     & > div {
         &:first-child {
             box-sizing: border-box;
             border-radius: 50%;
             border-width: 1.5px;
             border-style: solid;
-            border-color: $Primary $BlizzardBlue $BlizzardBlue;
+            border-color: $BlizzardBlue;
             border-image: initial;
-            animation-name: bit-spn;
+            animation-name: bit-spn-fluent;
             animation-duration: 1.3s;
             animation-iteration-count: infinite;
+        }
+
+        &:nth-child(2) {
+            font-size: rem(14px);
+            color: $Primary;
+            margin: 2px 8px;
+            text-align: center;
         }
     }
 }
@@ -83,17 +88,6 @@
         &:first-child {
             width: 12px;
             height: 12px;
-        }
-    }
-}
-
-.bit-spn {
-    & > div {
-        &:nth-child(2) {
-            font-size: rem(14px);
-            color: $Primary;
-            margin: 2px 8px;
-            text-align: center;
         }
     }
 }
