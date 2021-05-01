@@ -43,7 +43,7 @@ namespace Bit.Client.Web.BlazorUI
             set
             {
                 isIndeterminate = value;
-                JSRuntime.SetProperty(CheckboxElement, "indeterminate", value);
+                _ = JSRuntime.SetProperty(CheckboxElement, "indeterminate", value);
                 ClassBuilder.Reset();
             }
         }
