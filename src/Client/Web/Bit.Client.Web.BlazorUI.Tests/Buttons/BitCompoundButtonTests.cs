@@ -5,7 +5,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Bit.Client.Web.BlazorUI.Tests.Buttons
 {
     [TestClass]
-    public class BitButtonTests : BunitTestContext
+    public class BitCompoundButtonTests : BunitTestContext
     {
         [DataTestMethod,
             DataRow(Visual.Fluent, true, ButtonStyle.Primary),
@@ -23,21 +23,20 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
             DataRow(Visual.Material, false, ButtonStyle.Primary),
             DataRow(Visual.Material, false, ButtonStyle.Standard),
         ]
-        public Task BitButtonTest(Visual visual, bool isEnabled, ButtonStyle style)
+        public Task BitCompoundButtonTest(Visual visual, bool isEnabled, ButtonStyle style)
         {
-            var com = RenderComponent<BitButtonTest>(parameters =>
-            {
-                parameters.Add(p => p.Visual, visual);
-                parameters.Add(p => p.IsEnabled, isEnabled);
-                parameters.Add(p => p.ButtonStyle, style);
-            });
+            var com = RenderComponent<BitCompoundButtonTest>(parameters =>
+                {
+                    parameters.Add(p => p.Visual, visual);
+                    parameters.Add(p => p.IsEnabled, isEnabled);
+                    parameters.Add(p => p.ButtonStyle, style);
+                });
 
-            var bitButton = com.Find(".bit-btn");
+            var bitButton = com.Find(".bit-cmp-btn");
 
             var isEnabledClass = isEnabled ? "enabled" : "disabled";
             var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
-
-            Assert.IsTrue(bitButton.ClassList.Contains($"bit-btn-{isEnabledClass}-{visualClass}"));
+            Assert.IsTrue(bitButton.ClassList.Contains($"bit-cmp-btn-{isEnabledClass}-{visualClass}"));
 
             bitButton.Click();
 
