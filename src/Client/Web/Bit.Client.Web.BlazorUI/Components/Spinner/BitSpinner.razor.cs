@@ -55,7 +55,7 @@ namespace Bit.Client.Web.BlazorUI
                     classLabelPosition = "right";
                     break;
                 case SpinnerLabelPosition.Bottom:
-                    classLabelPosition = "botton";
+                    classLabelPosition = "bottom";
                     break;
             }
 

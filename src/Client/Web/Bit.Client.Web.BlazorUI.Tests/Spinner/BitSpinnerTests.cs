@@ -11,9 +11,9 @@ namespace Bit.Client.Web.BlazorUI.Tests.Spinner
         {
             var component = RenderComponent<BitSpinner>(parameters => parameters.Add(p => p.Size, size));
 
-            var bitLabel = component.Find(".bit-spinner");
+            var bitLabel = component.Find(".bit-spn");
 
-            Assert.AreEqual(expectedResult, bitLabel.ClassList.Contains("bit-spinner-large-fluent"));
+            Assert.AreEqual(expectedResult, bitLabel.ClassList.Contains("bit-spn-large-fluent"));
         }
 
         [DataTestMethod, DataRow(null, true), DataRow(SpinnerSize.Medium, true)]
@@ -21,9 +21,9 @@ namespace Bit.Client.Web.BlazorUI.Tests.Spinner
         {
             var component = RenderComponent<BitSpinner>(parameters => parameters.Add(p => p.Size, size));
 
-            var bitLabel = component.Find(".bit-spinner");
+            var bitLabel = component.Find(".bit-spn");
 
-            Assert.AreEqual(expectedResult, bitLabel.ClassList.Contains("bit-spinner-medium-fluent"));
+            Assert.AreEqual(expectedResult, bitLabel.ClassList.Contains("bit-spn-medium-fluent"));
         }
 
         [DataTestMethod, DataRow(SpinnerSize.Small, true)]
@@ -31,9 +31,9 @@ namespace Bit.Client.Web.BlazorUI.Tests.Spinner
         {
             var component = RenderComponent<BitSpinner>(parameters => parameters.Add(p => p.Size, size));
 
-            var bitLabel = component.Find(".bit-spinner");
+            var bitLabel = component.Find(".bit-spn");
 
-            Assert.AreEqual(expectedResult, bitLabel.ClassList.Contains("bit-spinner-small-fluent"));
+            Assert.AreEqual(expectedResult, bitLabel.ClassList.Contains("bit-spn-small-fluent"));
         }
 
         [DataTestMethod, DataRow(SpinnerSize.XSmall, true)]
@@ -41,9 +41,9 @@ namespace Bit.Client.Web.BlazorUI.Tests.Spinner
         {
             var component = RenderComponent<BitSpinner>(parameters => parameters.Add(p => p.Size, size));
 
-            var bitLabel = component.Find(".bit-spinner");
+            var bitLabel = component.Find(".bit-spn");
 
-            Assert.AreEqual(expectedResult, bitLabel.ClassList.Contains("bit-spinner-xSmall-fluent"));
+            Assert.AreEqual(expectedResult, bitLabel.ClassList.Contains("bit-spn-xSmall-fluent"));
         }
 
         [DataTestMethod, DataRow(SpinnerLabelPosition.Bottom, true)]
@@ -51,9 +51,9 @@ namespace Bit.Client.Web.BlazorUI.Tests.Spinner
         {
             var component = RenderComponent<BitSpinner>(parameters => parameters.Add(p => p.LabelPosition, position));
 
-            var bitLabel = component.Find(".bit-spinner");
+            var bitLabel = component.Find(".bit-spn");
 
-            Assert.AreEqual(expectedResult, bitLabel.ClassList.Contains("bit-spinner-bottom-fluent"));
+            Assert.AreEqual(expectedResult, bitLabel.ClassList.Contains("bit-spn-bottom-fluent"));
         }
 
         [DataTestMethod, DataRow(SpinnerLabelPosition.Top, true)]
@@ -61,9 +61,9 @@ namespace Bit.Client.Web.BlazorUI.Tests.Spinner
         {
             var component = RenderComponent<BitSpinner>(parameters => parameters.Add(p => p.LabelPosition, position));
 
-            var bitLabel = component.Find(".bit-spinner");
+            var bitLabel = component.Find(".bit-spn");
 
-            Assert.AreEqual(expectedResult, bitLabel.ClassList.Contains("bit-spinner-top-fluent"));
+            Assert.AreEqual(expectedResult, bitLabel.ClassList.Contains("bit-spn-top-fluent"));
         }
 
         [DataTestMethod, DataRow(SpinnerLabelPosition.Right, true)]
@@ -71,9 +71,9 @@ namespace Bit.Client.Web.BlazorUI.Tests.Spinner
         {
             var component = RenderComponent<BitSpinner>(parameters => parameters.Add(p => p.LabelPosition, position));
 
-            var bitLabel = component.Find(".bit-spinner");
+            var bitLabel = component.Find(".bit-spn");
 
-            Assert.AreEqual(expectedResult, bitLabel.ClassList.Contains("bit-spinner-right-fluent"));
+            Assert.AreEqual(expectedResult, bitLabel.ClassList.Contains("bit-spn-right-fluent"));
         }
 
         [DataTestMethod, DataRow(SpinnerLabelPosition.Left, true)]
@@ -81,9 +81,9 @@ namespace Bit.Client.Web.BlazorUI.Tests.Spinner
         {
             var component = RenderComponent<BitSpinner>(parameters => parameters.Add(p => p.LabelPosition, position));
 
-            var bitLabel = component.Find(".bit-spinner");
+            var bitLabel = component.Find(".bit-spn");
 
-            Assert.AreEqual(expectedResult, bitLabel.ClassList.Contains("bit-spinner-left-fluent"));
+            Assert.AreEqual(expectedResult, bitLabel.ClassList.Contains("bit-spn-left-fluent"));
         }
     }
 }
