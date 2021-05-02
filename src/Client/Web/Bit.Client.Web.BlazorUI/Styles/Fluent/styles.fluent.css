@@ -5652,22 +5652,22 @@ html, body {
             line-height: 16px;
             flex-shrink: 0; }
 
-.bit-spin-button.disabled div:first-child {
+.bit-spin-button-disabled-fluent div:first-child {
   color: #a19f9d; }
-  .bit-spin-button.disabled div:first-child label {
+  .bit-spin-button-disabled-fluent div:first-child label {
     color: #a19f9d; }
 
-.bit-spin-button.disabled div:nth-child(2) {
+.bit-spin-button-disabled-fluent div:nth-child(2) {
   color: #a19f9d;
   cursor: default;
   border: none #f3f2f1;
   background: none #f3f2f1; }
-  .bit-spin-button.disabled div:nth-child(2) input {
+  .bit-spin-button-disabled-fluent div:nth-child(2) input {
     color: #a19f9d;
     cursor: default;
     border: none #f3f2f1;
     background: none #f3f2f1; }
-  .bit-spin-button.disabled div:nth-child(2) span button {
+  .bit-spin-button-disabled-fluent div:nth-child(2) span button {
     background: #f3f2f1;
     color: #a19f9d;
     border: 1px solid #f3f2f1;

@@ -8,6 +8,7 @@ namespace Bit.Client.Web.BlazorUI
 {
     public partial class BitSpinButton
     {
+        private LabelPosition labelPosition = LabelPosition.left;
         public ElementReference InputElement { get; set; }
         public double Value { get; set; }
 
@@ -20,7 +21,12 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public string Suffix { get; set; }
         [Parameter] public string Label { get; set; }
         [Parameter] public string IconName { get; set; }
-        [Parameter] public LabelPosition LabelPosition { get; set; } = LabelPosition.left;
+        [Parameter] public LabelPosition LabelPosition { 
+            get => labelPosition; 
+            set {
+                labelPosition = value;
+                ClassBuilder.Reset();
+            }}
         [Parameter] public EventCallback<string> OnChange { get; set; }
 
         protected virtual async Task HandleUpClick(MouseEventArgs e)
