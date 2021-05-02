@@ -23,33 +23,6 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public LabelPosition LabelPosition { get; set; } = LabelPosition.left;
         [Parameter] public EventCallback<string> OnChange { get; set; }
 
-
-        protected virtual async Task HandleValueOnInputChange(ChangeEventArgs e) 
-        {
-            if (IsEnabled) 
-            {
-                var userInput = e.Value.ToString();
-                double numericValue;
-                var isNumber = double.TryParse(userInput, out numericValue);
-                if (isNumber && numericValue >= Min && numericValue <= Max)
-                {
-                   Value = numericValue;
-                    await OnChange.InvokeAsync(ValueWithSuffix);
-                }
-                else {
-                    await JSRuntime.SetProperty(InputElement, "value", ValueWithSuffix);
-                }
-            }
-        } 
-        
-        protected virtual async Task HandleOnChange(string value) 
-        {
-            if (IsEnabled) 
-            {
-                await OnChange.InvokeAsync(value);
-            }
-        }
-
         protected virtual async Task HandleUpClick(MouseEventArgs e)
         {
             if (IsEnabled)
@@ -83,6 +56,24 @@ namespace Bit.Client.Web.BlazorUI
             ClassBuilder.Register(() => $"label-{LabelPosition}");
         }
 
+        protected virtual async Task HandleValueOnInputChange(ChangeEventArgs e)
+        {
+            if (IsEnabled)
+            {
+                var userInput = e.Value.ToString();
+                double numericValue;
+                var isNumber = double.TryParse(userInput, out numericValue);
+                if (isNumber && numericValue >= Min && numericValue <= Max)
+                {
+                    Value = numericValue;
+                    await OnChange.InvokeAsync(ValueWithSuffix);
+                }
+                else
+                {
+                    await JSRuntime.SetProperty(InputElement, "value", ValueWithSuffix);
+                }
+            }
+        }
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
             if (firstRender)

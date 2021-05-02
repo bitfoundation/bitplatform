@@ -4884,13 +4884,7 @@ button {
 html, body {
   font-family: FluentFont; }
 
-.links-container,
-.checkboxes-container,
-.labels-container,
-.search-box-container {
-  font-family: FluentFont; }
-
-.bit-search-box-container {
+.bit-sch-box-container-fluent {
   -webkit-font-smoothing: antialiased;
   font-size: 14px;
   font-weight: 400;
@@ -4899,133 +4893,138 @@ html, body {
   padding: 1px 0px 1px 4px;
   box-sizing: border-box;
   color: #323130;
-  background-color: #FFFFFF;
+  background-color: #ffffff;
   display: flex;
   flex-flow: row nowrap;
   align-items: stretch;
   border-radius: 2px;
-  border: 1px solid #605E5C;
+  border: 1px solid #605e5c;
   height: 32px; }
-  .bit-search-box-container.has-value .clear-button-container {
-    opacity: 1;
-    flex-basis: 0px; }
-    .bit-search-box-container.has-value .clear-button-container i.bit-icon--Clear {
-      opacity: 1; }
-  .bit-search-box-container.has-value:hover .search-icon-container {
-    width: 0px; }
-    .bit-search-box-container.has-value:hover .search-icon-container i.bit-icon {
-      opacity: 0; }
-  .bit-search-box-container.focused {
-    border: 2px solid #0078D4; }
-    .bit-search-box-container.focused .search-icon-container {
-      width: 0px; }
-      .bit-search-box-container.focused .search-icon-container i.bit-icon {
-        opacity: 0; }
-  .bit-search-box-container.no-animation .search-icon-container {
-    transition: none; }
-    .bit-search-box-container.no-animation .search-icon-container i.bit-icon {
-      transition: none; }
-  .bit-search-box-container.no-animation .clear-button-container {
-    transition: none; }
-    .bit-search-box-container.no-animation .clear-button-container i.bit-icon--Clear {
-      transition: none; }
-  .bit-search-box-container.underlined {
+  .bit-sch-box-container-fluent > div:first-child {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 16px;
+    width: 32px;
+    text-align: center;
+    color: #0078d4;
+    cursor: text;
+    transition: width 0.167s ease 0s; }
+    .bit-sch-box-container-fluent > div:first-child i {
+      display: inline-block;
+      -webkit-font-smoothing: antialiased;
+      font-style: normal;
+      font-weight: normal;
+      speak: none;
+      opacity: 1;
+      transition: opacity 0.167s ease 0s; }
+  .bit-sch-box-container-fluent input {
+    box-shadow: none;
+    margin: 0px;
+    padding: 0px 0px 0.5px;
+    box-sizing: border-box;
+    background-color: transparent;
     border: none;
-    border-radius: 0;
-    border-bottom: 1px solid #605E5C; }
-    .bit-search-box-container.underlined.focused {
-      border-bottom: 2px solid #0078D4; }
-  .bit-search-box-container.disabled {
+    outline: none;
     color: #323130;
-    background-color: #F3F2F1;
+    flex: 1 1 0px;
+    min-width: 0px;
+    overflow: hidden;
+    text-overflow: ellipsis; }
+  .bit-sch-box-container-fluent > div:last-child {
+    display: flex;
+    flex-direction: row;
     align-items: stretch;
-    border-color: #F3F2F1;
-    pointer-events: none;
-    cursor: default; }
-    .bit-search-box-container.disabled.underlined {
-      background-color: transparent; }
-    .bit-search-box-container.disabled .search-icon-container {
-      color: #A19F9D; }
-
-.search-input {
-  box-shadow: none;
-  margin: 0px;
-  padding: 0px 0px 0.5px;
-  box-sizing: border-box;
-  background-color: transparent;
-  border: none;
-  outline: none;
-  color: #323130;
-  flex: 1 1 0px;
-  min-width: 0px;
-  overflow: hidden;
-  text-overflow: ellipsis; }
-
-.search-icon-container {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  flex-shrink: 0;
-  font-size: 16px;
-  width: 32px;
-  text-align: center;
-  color: #0078D4;
-  cursor: text;
-  transition: width 0.167s ease 0s; }
-  .search-icon-container i.bit-icon {
-    display: inline-block;
-    -webkit-font-smoothing: antialiased;
-    font-style: normal;
-    font-weight: normal;
-    speak: none;
-    opacity: 1;
-    transition: opacity 0.167s ease 0s; }
-
-.clear-button-container {
-  display: flex;
-  flex-direction: row;
-  align-items: stretch;
-  cursor: pointer;
-  flex-basis: 0px;
-  flex-shrink: 0;
-  padding: 0px;
-  margin: -1px 0px;
-  width: 32px;
-  opacity: 0;
-  transition: opacity 0.167s ease 0s; }
-  .clear-button-container i.bit-icon--Clear {
+    cursor: pointer;
+    flex-basis: 0px;
+    flex-shrink: 0;
+    padding: 0px;
+    margin: -1px 0px;
+    width: 32px;
     opacity: 0;
     transition: opacity 0.167s ease 0s; }
-  .clear-button-container button {
-    outline: transparent;
-    position: relative;
-    font-size: 14px;
-    font-weight: 400;
-    box-sizing: border-box;
-    border: none;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    text-decoration: none;
-    cursor: pointer;
-    padding: 0px 4px;
-    border-radius: 2px;
-    width: 32px;
-    height: auto;
-    background-color: transparent;
-    color: #0078D4;
-    user-select: none; }
-  .clear-button-container:hover {
-    background-color: #F3F2F1; }
+    .bit-sch-box-container-fluent > div:last-child i {
+      opacity: 0;
+      transition: opacity 0.167s ease 0s; }
+    .bit-sch-box-container-fluent > div:last-child button {
+      outline: transparent;
+      position: relative;
+      font-size: 14px;
+      font-weight: 400;
+      box-sizing: border-box;
+      border: none;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-decoration: none;
+      cursor: pointer;
+      padding: 0px 4px;
+      border-radius: 2px;
+      width: 32px;
+      height: auto;
+      background-color: transparent;
+      color: #0078d4;
+      user-select: none; }
+    .bit-sch-box-container-fluent > div:last-child:hover {
+      background-color: #f3f2f1; }
 
-.bit-text-field.fluent {
+.bit-sch-box-container-has-value-fluent > div:last-child {
+  opacity: 1;
+  flex-basis: 0px; }
+  .bit-sch-box-container-has-value-fluent > div:last-child i {
+    opacity: 1; }
+
+.bit-sch-box-container-has-value-fluent:hover > div:first-child {
+  width: 0px; }
+  .bit-sch-box-container-has-value-fluent:hover > div:first-child i {
+    opacity: 0; }
+
+.bit-sch-box-container-focused-fluent {
+  border: 2px solid #0078d4; }
+  .bit-sch-box-container-focused-fluent > div:first-child {
+    width: 0px; }
+    .bit-sch-box-container-focused-fluent > div:first-child i.bit-icon {
+      opacity: 0; }
+
+.bit-sch-box-container-no-animation-fluent > div:first-child {
+  transition: none; }
+  .bit-sch-box-container-no-animation-fluent > div:first-child i {
+    transition: none; }
+
+.bit-sch-box-container-no-animation-fluent > div:last-child {
+  transition: none; }
+  .bit-sch-box-container-no-animation-fluent > div:last-child i {
+    transition: none; }
+
+.bit-sch-box-container-underlined-fluent {
+  border: none;
+  border-radius: 0;
+  border-bottom: 1px solid #605e5c;
+  padding-left: 12px; }
+  .bit-sch-box-container-underlined-fluent.focused {
+    border-bottom: 2px solid #0078d4; }
+
+.bit-sch-box-container-disabled-fluent {
+  color: #323130;
+  background-color: #f3f2f1;
+  align-items: stretch;
+  border-color: #f3f2f1;
+  pointer-events: none;
+  cursor: default; }
+  .bit-sch-box-container-disabled-fluent.underlined {
+    background-color: transparent; }
+  .bit-sch-box-container-disabled-fluent > div:first-child {
+    color: #a19f9d; }
+
+.bit-txt-fluent {
   font-family: FluentFont;
   font-size: 0.875rem;
   font-weight: 400;
   color: #323130;
-  background: #FFFFFF;
+  background: #ffffff;
   border-radius: 0.125em;
-  border: 0.0625em solid #605E5C;
+  border: 0.0625em solid #605e5c;
   width: 100%;
   cursor: text;
   height: 32px;
@@ -5037,9 +5036,7 @@ html, body {
   margin: 0px;
   padding: 0px;
   box-sizing: border-box; }
-  .bit-text-field.fluent:hover {
-    border-color: #323130; }
-  .bit-text-field.fluent input {
+  .bit-txt-fluent input {
     background: none transparent;
     border: none;
     width: 100%;
@@ -5056,7 +5053,7 @@ html, body {
     border-radius: 0px;
     min-width: 0px;
     text-overflow: ellipsis; }
-  .bit-text-field.fluent textarea {
+  .bit-txt-fluent textarea {
     background: none transparent;
     border: none;
     width: 100%;
@@ -5074,90 +5071,181 @@ html, body {
     min-width: 0px;
     text-overflow: ellipsis; }
 
-.bit-text-field.fluent.multiline {
+.bit-txt-multiline-fluent {
   min-height: 60px;
   align-items: stretch;
   height: auto; }
-  .bit-text-field.fluent.multiline textarea {
+  .bit-txt-multiline-fluent textarea {
     padding: 0.375em 0.5em;
     line-height: 17px;
     flex-grow: 1;
     overflow: auto;
     min-height: inherit; }
 
-.bit-text-field.fluent.focused {
-  border: 0.1875em solid #0078D4; }
-  .bit-text-field.fluent.focused input:first-child {
-    padding: 0px 0.4375em; }
-  .bit-text-field.fluent.focused textarea:first-child {
-    padding: 0px 0.4375em; }
-
-.bit-text-field.fluent.focused.multiline textarea:first-child {
+.bit-txt-focused-fluent .bit-txt-multiline textarea:first-child {
   padding: 0.26875em 0.3875em; }
 
-.bit-text-field.fluent.disabled {
-  border: 1px solid #F3F2F1 !important;
-  background: #FFFFFF; }
-
-.bit-text-field.fluent.disabled .bit-text-field-input.disabled {
-  color: #A19F9D;
+.bit-txt-disabled-fluent {
+  border: 1px solid #f3f2f1;
+  background: #ffffff;
+  color: #a19f9d;
   cursor: default;
-  border: none #F3F2F1;
-  background: none #F3F2F1; }
+  border: none #f3f2f1;
+  background: none #f3f2f1; }
 
-.bit-text-field.fluent .bit-button.fluent {
-  border: none !important;
-  color: #0078D4;
+.bit-txt-fluent .bit-btn-fluent {
+  border: none;
+  color: #0078d4;
   background-color: transparent;
   padding: 0em 0.25em;
   position: relative; }
-  .bit-text-field.fluent .bit-button.fluent:hover {
-    background-color: #F3F2F1; }
+  .bit-txt-fluent .bit-btn-fluent:hover {
+    background-color: #f3f2f1; }
 
-.bit-text-field.fluent.focused .bit-button.fluent {
-  padding: 0em 0.125em; }
+.bit-txt-focused-fluent {
+  border: 0.1875em solid #0078d4; }
+  .bit-txt-focused-fluent input:first-child {
+    padding: 0px 0.4375em; }
+  .bit-txt-focused-fluent textarea:first-child {
+    padding: 0px 0.4375em; }
+  .bit-txt-focused-fluent .bit-btn-fluent {
+    padding: 0em 0.125em; }
 
-.bit-button.fluent {
+.bit-cho-fluent {
   font-family: FluentFont;
-  display: inline-flex;
-  justify-content: center;
+  font-size: 0.875rem;
+  font-weight: 400;
+  display: flex;
   align-items: center;
+  box-sizing: border-box;
+  color: #323130;
+  min-height: 1.625em;
+  border: none;
+  position: relative;
+  margin-top: 0.5em; }
+  .bit-cho-fluent input:first-child {
+    position: absolute;
+    opacity: 0;
+    top: 0em;
+    right: 0em;
+    width: 100%;
+    height: 100%;
+    margin: 0em; }
+  .bit-cho-fluent label:nth-child(2) {
+    display: inline-block;
+    cursor: pointer;
+    margin-top: 0em;
+    position: relative;
+    vertical-align: top;
+    min-height: 1.25em;
+    user-select: none; }
+    .bit-cho-fluent label:nth-child(2):before {
+      content: "";
+      display: inline-block;
+      background-color: #ffffff;
+      border-width: 0.0625em;
+      border-style: solid;
+      border-color: #323130;
+      width: 1.25em;
+      height: 1.25em;
+      font-weight: normal;
+      position: absolute;
+      top: 0px;
+      left: 0px;
+      box-sizing: border-box;
+      transition-property: border-color;
+      transition-duration: 100ms;
+      transition-timing-function: cubic-bezier(0.4, 0, 0.23, 1);
+      border-radius: 50%; }
+    .bit-cho-fluent label:nth-child(2):after {
+      content: "";
+      width: 0em;
+      height: 0em;
+      border-radius: 50%;
+      position: absolute;
+      left: 0.625em;
+      right: 0em;
+      transition-property: border-width;
+      transition-duration: 100ms;
+      transition-timing-function: cubic-bezier(0.4, 0, 0.23, 1);
+      box-sizing: border-box; }
+    .bit-cho-fluent label:nth-child(2) span:first-child {
+      display: inline-block;
+      padding-left: 1.625em; }
+
+.bit-cho-checked-fluent input:first-child {
+  position: absolute;
+  opacity: 0;
+  top: 0em;
+  right: 0em;
+  width: 100%;
+  height: 100%;
+  margin: 0em; }
+
+.bit-cho-checked-fluent label:nth-child(2) {
+  border-color: #0078d4; }
+  .bit-cho-checked-fluent label:nth-child(2):before {
+    border-color: #0078d4; }
+  .bit-cho-checked-fluent label:nth-child(2):after {
+    width: 0.625em;
+    height: 0.625em;
+    left: 0.3125em;
+    right: 0em;
+    transition-property: border-width;
+    transition-duration: 100ms;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.23, 1);
+    box-sizing: border-box;
+    border-width: 0.3125em;
+    border-style: solid;
+    border-color: #0078d4;
+    top: 0.3125em; }
+
+.bit-cho-disabled-fluent label:nth-child(2) {
+  cursor: default; }
+  .bit-cho-disabled-fluent label:nth-child(2):before {
+    border-color: #c8c6c4; }
+  .bit-cho-disabled-fluent label:nth-child(2) span:first-child {
+    color: #a19f9d; }
+
+.bit-btn-fluent {
+  font-family: FluentFont;
   text-align: center;
   border-radius: 0.125em;
   padding: 0.375em 1.25em;
   font-size: 0.875rem;
   font-weight: 600;
   line-height: 1.25em;
-  cursor: pointer; }
-  .bit-button.fluent.disabled {
-    background: #F3F2F1;
-    color: #A19F9D;
-    border: 1px solid #F3F2F1;
-    cursor: default;
-    pointer-events: none; }
-  .bit-button.fluent.primary {
-    color: #FFFFFF;
-    background: #0078D4;
-    border: 1px solid #0078D4; }
-    .bit-button.fluent.primary:hover {
-      background-color: #106EBE; }
-    .bit-button.fluent.primary:active {
-      background-color: #005A9E; }
-  .bit-button.fluent.standard {
-    color: #323130;
-    background: #FFFFFF;
-    border: 1px solid #8A8886; }
-    .bit-button.fluent.standard:hover {
-      background-color: #F3F2F1;
-      border-color: #323130; }
-    .bit-button.fluent.standard:active {
-      background-color: #EDEBE9; }
+  cursor: pointer;
+  min-height: 32px; }
 
-.bit-compound-button.fluent {
+.bit-btn-standard-fluent {
+  color: #323130;
+  background: #ffffff;
+  border: 1px solid #8a8886; }
+  .bit-btn-standard-fluent:hover {
+    background-color: #f3f2f1;
+    border-color: #323130; }
+  .bit-btn-standard-fluent:active {
+    background-color: #edebe9; }
+
+.bit-btn-primary-fluent {
+  color: #ffffff;
+  background: #0078d4;
+  border: 1px solid #0078d4; }
+  .bit-btn-primary-fluent:hover {
+    background-color: #106ebe; }
+  .bit-btn-primary-fluent:active {
+    background-color: #005a9e; }
+
+.bit-btn-disabled-fluent {
+  background: #f3f2f1;
+  color: #a19f9d;
+  border: 1px solid #f3f2f1;
+  cursor: default;
+  pointer-events: none; }
+
+.bit-cmp-btn-fluent {
   font-family: FluentFont;
-  display: inline-flex;
-  justify-content: center;
-  align-items: center;
   text-align: left;
   border-radius: 0.125em;
   padding: 1em 0.75em;
@@ -5168,56 +5256,45 @@ html, body {
   box-sizing: border-box;
   max-width: 280px;
   min-height: 72px; }
-  .bit-compound-button.fluent.disabled {
-    background: #F3F2F1;
-    color: #A19F9D;
-    border: 1px solid #F3F2F1;
-    cursor: default;
-    pointer-events: none;
-    border: 1px solid #F3F2F1; }
-  .bit-compound-button.fluent.primary {
-    color: #FFFFFF;
-    background: #0078D4;
-    border: 1px solid #0078D4; }
-    .bit-compound-button.fluent.primary:hover {
-      background-color: #106EBE; }
-    .bit-compound-button.fluent.primary:active {
-      background-color: #005A9E; }
-  .bit-compound-button.fluent.standard {
-    color: #323130;
-    background: #FFFFFF;
-    border: 1px solid #8A8886; }
-    .bit-compound-button.fluent.standard:hover {
-      background-color: #F3F2F1;
-      border-color: #323130; }
-    .bit-compound-button.fluent.standard:active {
-      background-color: #EDEBE9; }
-  .bit-compound-button.fluent .primary-text {
-    margin: 0px 0px 5px;
-    display: block;
-    line-height: 100%; }
-  .bit-compound-button.fluent .secondary-text {
-    font-size: 0.75rem;
-    font-weight: 400;
-    display: block;
-    line-height: 100%;
-    margin: 0;
-    padding: 0;
-    border: 0;
-    vertical-align: baseline; }
-  .bit-compound-button.fluent .textContainer {
-    flex-grow: 1;
-    display: block;
-    text-align: left; }
-  .bit-compound-button.fluent .flexContainer {
-    display: flex;
+  .bit-cmp-btn-fluent > span {
     height: 100%;
-    flex-flow: row nowrap;
-    justify-content: center;
-    align-items: flex-start;
     min-width: 100%; }
+    .bit-cmp-btn-fluent > span span:first-child {
+      margin: 0px 0px 5px;
+      display: block; }
+    .bit-cmp-btn-fluent > span span:last-child {
+      font-size: 0.75rem;
+      font-weight: 400;
+      line-height: 100%; }
 
-.bit-message-bar.fluent {
+.bit-cmp-btn-primary-fluent {
+  color: #ffffff;
+  background: #0078d4;
+  border: 1px solid #0078d4; }
+  .bit-cmp-btn-primary-fluent:hover {
+    background-color: #106ebe; }
+  .bit-cmp-btn-primary-fluent:active {
+    background-color: #005a9e; }
+
+.bit-cmp-btn-standard-fluent {
+  color: #323130;
+  background: #ffffff;
+  border: 1px solid #8a8886; }
+  .bit-cmp-btn-standard-fluent:hover {
+    background-color: #f3f2f1;
+    border-color: #323130; }
+  .bit-cmp-btn-standard-fluent:active {
+    background-color: #edebe9; }
+
+.bit-cmp-btn-disabled-fluent {
+  background: #f3f2f1;
+  color: #a19f9d;
+  border: 1px solid #f3f2f1;
+  cursor: default;
+  pointer-events: none;
+  border: 1px solid #f3f2f1; }
+
+.bit-msg-bar-fluent {
   font-family: FluentFont;
   font-size: 0.75rem;
   font-weight: 400;
@@ -5226,33 +5303,34 @@ html, body {
   align-items: center;
   width: 100%;
   display: flex;
-  word-break: break-word; }
+  word-break: break-word;
+  min-height: 32px; }
 
-.bit-message-bar.fluent.default {
-  background-color: #F3F2F1; }
+.bit-msg-bar-default-fluent {
+  background-color: #f3f2f1; }
 
-.bit-message-bar.fluent.error {
-  background-color: #FDE7E9; }
+.bit-msg-bar-error-fluent {
+  background-color: #fde7e9; }
 
-.bit-message-bar.fluent.success {
-  background-color: #DFF6DD; }
+.bit-msg-bar-success-fluent {
+  background-color: #dff6dd; }
 
-.bit-message-bar.fluent.warning {
-  background-color: #FFF4CE; }
+.bit-msg-bar-warning-fluent {
+  background-color: #fff4ce; }
 
-.bit-message-bar.fluent.severe {
-  background-color: #FED9CC; }
+.bit-msg-bar-severe-fluent {
+  background-color: #fed9cc; }
 
-.bit-message-bar.fluent .flexContainer {
+.bit-msg-bar-fluent .flexContainer {
   margin: 8px 0px 8px 12px;
   padding: 0;
   text-align: left; }
 
-.bit-message-bar.fluent .bit-button.fluent {
+.bit-msg-bar-fluent .bit-btn-fluent {
   padding: 0.125em 1.125em;
   min-width: 5em; }
 
-.bit-label.fluent {
+.bit-lbl-fluent {
   font-family: FluentFont;
   -webkit-font-smoothing: antialiased;
   font-size: 0.875rem;
@@ -5265,34 +5343,35 @@ html, body {
   display: block;
   padding: 5px 0px;
   overflow-wrap: break-word; }
-  .bit-label.fluent.disabled {
-    color: #A19F9D; }
-  .bit-label.fluent.required::after {
-    content: "*";
-    color: #A4262C;
-    margin-left: 5px; }
 
-.bit-link {
+.bit-lbl-disabled-fluent {
+  color: #a19f9d; }
+
+.bit-lbl-required-fluent::after {
+  content: "*";
+  color: #a4262c;
+  margin-left: 5px; }
+
+.bit-lnk-fluent > a {
   font-family: FluentFont;
   -webkit-font-smoothing: antialiased;
   font-size: inherit;
   font-weight: inherit;
-  color: #0078D4;
-  outline: none;
-  text-decoration: none; }
-  .bit-link:hover, .bit-link:active, .bit-link:focus {
+  color: #0078d4;
+  outline: none; }
+  .bit-lnk-fluent > a:hover, .bit-lnk-fluent > a:active, .bit-lnk-fluent > a:focus {
     color: #004578;
     text-decoration: underline; }
 
-.bit-link.disabled {
-  color: #A19F9D;
+.bit-lnk-disabled {
+  color: #a19f9d;
   cursor: default; }
-  .bit-link.disabled:hover, .bit-link.disabled:active, .bit-link.disabled:focus {
+  .bit-lnk-disabled:hover, .bit-lnk-disabled:active, .bit-lnk-disabled:focus {
     color: inherit;
     text-decoration: underline; }
 
-button.bit-link {
-  color: #0078D4;
+.bit-lnk-fluent > button {
+  color: #0078d4;
   background: none transparent;
   border-top: none;
   border-right: none;
@@ -5306,125 +5385,104 @@ button.bit-link {
   text-align: left;
   text-overflow: inherit;
   border-bottom: 1px solid transparent;
-  user-select: text; }
-  button.bit-link:hover, button.bit-link:active, button.bit-link:focus {
+  user-select: text;
+  text-decoration: underline; }
+  .bit-lnk-fluent > button:hover, .bit-lnk-fluent > button:active, .bit-lnk-fluent > button:focus {
     color: #004578;
     text-decoration: underline; }
 
-.bit-checkbox-container {
-  position: relative;
-  display: flex;
+.bit-chb-container-fluent {
   margin: 5px;
   font-family: FluentFont;
   -webkit-font-smoothing: antialiased;
   font-size: inherit;
   font-weight: inherit; }
-  .bit-checkbox-container:hover .bit-checkbox-item__checkmark {
+  .bit-chb-container-fluent > div {
+    display: flex; }
+    .bit-chb-container-fluent > div div:first-child {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 20px;
+      width: 20px;
+      border: 1px solid #323130;
+      border-radius: 2px;
+      box-sizing: border-box;
+      transition-property: background, border, border-color;
+      transition-duration: 200ms;
+      transition-timing-function: cubic-bezier(0.4, 0, 0.23, 1);
+      overflow: hidden;
+      margin-right: 4px;
+      cursor: pointer; }
+      .bit-chb-container-fluent > div div:first-child .bit-icon--Accept {
+        color: #ffffff;
+        font-size: 11px;
+        transition: 0.1s; }
+    .bit-chb-container-fluent > div div:last-child label {
+      cursor: pointer; }
+  .bit-chb-container-fluent:hover > div > div:first-child .bit-icon--Accept {
     opacity: 1;
-    border-color: #797775; }
+    color: #797775; }
 
-.bit-checkbox-container.box-side-end {
+.bit-chb-container-box-side-end-fluent > div {
   flex-direction: row-reverse;
   justify-content: flex-end; }
-  .bit-checkbox-container.box-side-end .bit-checkbox-item__checkbox {
+  .bit-chb-container-box-side-end-fluent > div > div:first-child {
     margin-left: 8px; }
 
-.bit-checkbox-container.disabled {
-  pointer-events: none;
-  cursor: default; }
-  .bit-checkbox-container.disabled .bit-checkbox-item__checkmark {
+.bit-chb-container-checked-fluent > div > div:first-child {
+  border-color: #0078d4;
+  background-color: #0078d4; }
+  .bit-chb-container-checked-fluent > div > div:first-child .bit-icon--Accept {
     opacity: 1;
-    border-color: #FFFFFF; }
-  .bit-checkbox-container.disabled .bit-checkbox-item__checkbox {
-    border-color: #A19F9D;
-    background-color: #FFFFFF; }
-  .bit-checkbox-container.disabled .bit-checkbox-item__label-container {
-    color: #A19F9D; }
+    color: #ffffff;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center; }
 
-.bit-checkbox-container.disabled.checked {
+.bit-chb-container-checked-fluent:hover > div > div:first-child .bit-icon--Accept {
+  border-color: #005a9e;
+  background-color: #005a9e;
+  color: #ffffff; }
+
+.bit-chb-container-indeterminate-fluent > div > div:first-child {
+  border-color: #0078d4;
+  background-color: #ffffff; }
+  .bit-chb-container-indeterminate-fluent > div > div:first-child .bit-icon--Accept {
+    display: inline-block;
+    width: 11px;
+    height: 11px;
+    color: #0078d4;
+    background-color: #0078d4;
+    border-radius: 2px; }
+    .bit-chb-container-indeterminate-fluent > div > div:first-child .bit-icon--Accept:before {
+      content: ''; }
+
+.bit-chb-container-indeterminate-fluent:hover > div > div:first-child {
+  border-color: #005a9e;
+  background-color: #ffffff; }
+  .bit-chb-container-indeterminate-fluent:hover > div > div:first-child .bit-icon--Accept {
+    color: #005a9e;
+    background-color: #005a9e; }
+
+.bit-chb-container-disabled-fluent {
   pointer-events: none;
   cursor: default; }
-  .bit-checkbox-container.disabled.checked .bit-checkbox-item__checkbox {
-    border-color: #A19F9D;
-    background-color: #A19F9D; }
+  .bit-chb-container-disabled-fluent > div > div:first-child {
+    border-color: #c8c6c4;
+    background-color: #ffffff; }
+    .bit-chb-container-disabled-fluent > div > div:first-child .bit-icon--Accept {
+      opacity: 1;
+      color: #ffffff;
+      background-color: #ffffff; }
+  .bit-chb-container-disabled-fluent > div > div:last-child {
+    color: #c8c6c4; }
 
-.bit-checkbox-container.checked .bit-checkbox-item__checkmark {
-  opacity: 1;
-  border-color: #FFFFFF; }
-
-.bit-checkbox-container.checked .bit-checkbox-item__checkbox {
-  border-color: #0078D4;
-  background-color: #0078D4; }
-
-.bit-checkbox-container.checked:hover .bit-checkbox-item__checkbox {
-  border-color: #005A9E;
-  background-color: #005A9E; }
-
-.bit-checkbox-item__checkbox {
-  position: relative;
-  display: flex;
-  flex-shrink: 0;
-  align-items: center;
-  justify-content: center;
-  height: 20px;
-  width: 20px;
-  border: 1px solid #323130;
-  border-radius: 2px;
-  box-sizing: border-box;
-  transition-property: background, border, border-color;
-  transition-duration: 200ms;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.23, 1);
-  overflow: hidden;
-  margin-right: 4px;
-  cursor: pointer; }
-
-.bit-checkbox-item__checkmark {
-  display: inline-block;
-  position: absolute;
-  top: 1px;
-  opacity: 0;
-  width: 0.25em;
-  height: 0.70em;
-  border: 2px solid #FFFFFF;
-  border-top: none;
-  border-left: none;
-  transform: rotate(41deg); }
-
-.bit-checkbox-item__label-text {
-  cursor: pointer; }
-
-.bit-checkbox-container.indeterminate .bit-checkbox-item__checkmark, .bit-checkbox-container.indeterminate.checked .bit-checkbox-item__checkmark, .bit-checkbox-container.indeterminate.disabled .bit-checkbox-item__checkmark {
-  display: inline-block;
-  position: absolute;
-  top: 4px;
-  left: 4px;
-  opacity: 1;
-  width: 6px;
-  height: 6px;
-  border: 2px solid #0078D4;
-  background-color: #0078D4;
-  border-radius: 2px;
-  transform: rotate(0deg); }
-
-.bit-checkbox-container.indeterminate:hover .bit-checkbox-item__checkmark, .bit-checkbox-container.indeterminate.checked:hover .bit-checkbox-item__checkmark, .bit-checkbox-container.indeterminate.disabled:hover .bit-checkbox-item__checkmark {
-  border: 2px solid #005A9E;
-  background-color: #005A9E; }
-
-.bit-checkbox-container.indeterminate .bit-checkbox-item__checkbox, .bit-checkbox-container.indeterminate.checked .bit-checkbox-item__checkbox, .bit-checkbox-container.indeterminate.disabled .bit-checkbox-item__checkbox {
-  border-color: #0078D4;
-  background-color: #FFFFFF; }
-
-.bit-checkbox-container.indeterminate:hover .bit-checkbox-item__checkbox, .bit-checkbox-container.indeterminate.checked:hover .bit-checkbox-item__checkbox, .bit-checkbox-container.indeterminate.disabled:hover .bit-checkbox-item__checkbox {
-  border-color: #005A9E;
-  background-color: #FFFFFF; }
-
-.bit-checkbox-container.indeterminate.disabled .bit-checkbox-item__checkmark {
-  border: 2px solid #A19F9D;
-  background-color: #A19F9D; }
-
-.bit-checkbox-container.indeterminate.disabled .bit-checkbox-item__checkbox {
-  border-color: #A19F9D;
-  background-color: #FFFFFF; }
+.bit-chb-container-checked-disabled-fluent > div > div:first-child .bit-icon--Accept,
+.bit-chb-container-indeterminate-disabled-fluent > div > div:first-child .bit-icon--Accept {
+  background-color: #c8c6c4; }
 
 .bit-spin-button {
   display: flex; }
@@ -5445,7 +5503,7 @@ button.bit-link {
     height: 32px;
     min-width: 86px;
     width: 75px;
-    border: 1px solid #605E5C;
+    border: 1px solid #605e5c;
     border-radius: 2px; }
     .bit-spin-button div:nth-child(2) input {
       box-sizing: border-box;
@@ -5456,7 +5514,7 @@ button.bit-link {
       font-size: 14px;
       font-family: inherit;
       color: #323130;
-      background-color: #FFFFFF;
+      background-color: #ffffff;
       height: 100%;
       padding: 0px 8px 0px 9px;
       outline: 0px;
@@ -5486,11 +5544,11 @@ button.bit-link {
         width: 23px;
         height: 50%;
         background-color: transparent;
-        color: #605E5C;
+        color: #605e5c;
         user-select: none; }
         .bit-spin-button div:nth-child(2) span button:hover {
           color: #323130;
-          background-color: #F3F2F1; }
+          background-color: #f3f2f1; }
         .bit-spin-button div:nth-child(2) span button span {
           display: flex;
           height: 100%;
@@ -5535,7 +5593,7 @@ button.bit-link {
     height: 32px;
     min-width: 86px;
     width: 75px;
-    border: 1px solid #605E5C;
+    border: 1px solid #605e5c;
     border-radius: 2px; }
     .bit-spin-button div:nth-child(2) input {
       box-sizing: border-box;
@@ -5546,7 +5604,7 @@ button.bit-link {
       font-size: 14px;
       font-family: inherit;
       color: #323130;
-      background-color: #FFFFFF;
+      background-color: #ffffff;
       height: 100%;
       padding: 0px 8px 0px 9px;
       outline: 0px;
@@ -5576,11 +5634,11 @@ button.bit-link {
         width: 23px;
         height: 50%;
         background-color: transparent;
-        color: #605E5C;
+        color: #605e5c;
         user-select: none; }
         .bit-spin-button div:nth-child(2) span button:hover {
           color: #323130;
-          background-color: #F3F2F1; }
+          background-color: #f3f2f1; }
         .bit-spin-button div:nth-child(2) span button span {
           display: flex;
           height: 100%;
@@ -5595,25 +5653,52 @@ button.bit-link {
             flex-shrink: 0; }
 
 .bit-spin-button.disabled div:first-child {
-  color: #A19F9D; }
+  color: #a19f9d; }
   .bit-spin-button.disabled div:first-child label {
-    color: #A19F9D; }
+    color: #a19f9d; }
 
 .bit-spin-button.disabled div:nth-child(2) {
-  color: #A19F9D;
+  color: #a19f9d;
   cursor: default;
-  border: none #F3F2F1;
-  background: none #F3F2F1; }
+  border: none #f3f2f1;
+  background: none #f3f2f1; }
   .bit-spin-button.disabled div:nth-child(2) input {
-    color: #A19F9D;
+    color: #a19f9d;
     cursor: default;
-    border: none #F3F2F1;
-    background: none #F3F2F1; }
+    border: none #f3f2f1;
+    background: none #f3f2f1; }
   .bit-spin-button.disabled div:nth-child(2) span button {
-    background: #F3F2F1;
-    color: #A19F9D;
-    border: 1px solid #F3F2F1;
+    background: #f3f2f1;
+    color: #a19f9d;
+    border: 1px solid #f3f2f1;
     cursor: default;
     pointer-events: none; }
+
+.bit-rating-disabled-fluent button {
+  pointer-events: none;
+  cursor: not-allowed;
+  opacity: 0.65; }
+
+.bit-rating-readonly-fluent button {
+  cursor: not-allowed;
+  pointer-events: none; }
+
+.bit-rating-small-fluent button {
+  font-size: 1rem;
+  line-height: 16px; }
+
+.bit-rating-large-fluent button {
+  font-size: 1.25rem;
+  line-height: 20px; }
+
+.bit-rating button div {
+  display: flex;
+  color: #b7b3af;
+  cursor: pointer; }
+  .bit-rating button div i:hover {
+    color: #0078d4; }
+
+.bit-rating-dark-fluent {
+  color: #1b1a19; }
 
 /*# sourceMappingURL=styles.fluent.scss */

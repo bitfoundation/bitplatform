@@ -1,0 +1,8 @@
+﻿@using Microsoft.JSInterop;
+<BitSpinButton DefaultValue="@DefaultValue"></BitSpinButton>
+
+
+@code{
+    [Parameter] public double DefaultValue { get; set; }
+    [Inject] public IJSRuntime JSRuntime { get; set; }
+}
