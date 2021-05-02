@@ -1,0 +1,12 @@
+﻿@namespace Bit.Client.Web.BlazorUI
+@inherits BitComponentBase
+
+<div @ref="RootElement"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value">
+    <div></div>
+    @if(string.IsNullOrEmpty(Label) is false)
+    {
+        <div>@Label</div>
+    }
+</div>

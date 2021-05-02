@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNetCore.Components;
-using System;
+﻿using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components;
 
 namespace Bit.Client.Web.BlazorUI
 {
@@ -36,10 +36,10 @@ namespace Bit.Client.Web.BlazorUI
 
         protected override void RegisterComponentClasses()
         {
-            ClassBuilder.Register(() => IsReadonly 
-                                                ? $"{RootElementClass}-readonly-{VisualClassRegistrar()}" 
+            ClassBuilder.Register(() => IsReadonly
+                                                ? $"{RootElementClass}-readonly-{VisualClassRegistrar()}"
                                                 : string.Empty);
-            ClassBuilder.Register(() => Size == RatingSize.Large 
+            ClassBuilder.Register(() => Size == RatingSize.Large
                                                 ? $"{RootElementClass}-large-{VisualClassRegistrar()}"
                                                 : $"{RootElementClass}-small-{VisualClassRegistrar()}");
         }

@@ -2,7 +2,8 @@
 .checkboxes-container,
 .labels-container,
 .search-box-container,
-.rating-container {
+.rating-container,
+.spinner-positioning {
     font-family: FluentFont;
 }
 
@@ -13,7 +14,4 @@
 
 .text-field-container {
     width: 30%
-}
-.bit-spin-button {
-    margin-bottom: 15px;
 }
