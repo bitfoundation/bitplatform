@@ -12,10 +12,15 @@ namespace Bit.Client.Web.BlazorUI.Tests.SpinButtons
     [TestClass]
     public class BitSpinButtonTests : BunitTestContext
     {
+        [TestInitialize]
+        public void SetuoMode() 
+        {
+            Context.JSInterop.Mode = JSRuntimeMode.Loose;
+        } 
+
         [DataTestMethod, DataRow("cm"), DataRow("Inch"), DataRow("foot")]
         public void SpinButtonShouldHaveSuffixWhenItsPropertySet(string suffix)
         {
-            Context.JSInterop.Mode = JSRuntimeMode.Loose;
             var component = RenderComponent<BitSpinButtonTest>(parameters => parameters.Add(p=>p.Suffix , suffix));
             
             var input = component.Find("input");
@@ -27,7 +32,6 @@ namespace Bit.Client.Web.BlazorUI.Tests.SpinButtons
         [DataTestMethod, DataRow(2,4,2), DataRow(20, 22, 20)]
         public void SpinButtonShouldRespectMaxValue(double max,double countOfClick, double expectedResult)
         {
-            Context.JSInterop.Mode = JSRuntimeMode.Loose;
             var component = RenderComponent<BitSpinButtonTest>(parameters => parameters.Add(p => p.Max, max));
 
             var input = component.Find("input");
@@ -44,7 +48,6 @@ namespace Bit.Client.Web.BlazorUI.Tests.SpinButtons
         [DataTestMethod, DataRow(0, 4, 0), DataRow(-2, 22, -2)]
         public void SpinButtonShouldRespectMinValue(double min, double countOfClick, double expectedResult)
         {
-            Context.JSInterop.Mode = JSRuntimeMode.Loose;
             var component = RenderComponent<BitSpinButtonTest>(parameters => parameters.Add(p => p.Min, min));
 
             var input = component.Find("input");
@@ -56,6 +59,17 @@ namespace Bit.Client.Web.BlazorUI.Tests.SpinButtons
             var inputValue = double.Parse(input.GetAttribute("value"));
 
             Assert.AreEqual(inputValue, expectedResult);
+        }
+
+        [DataTestMethod, DataRow(LabelPosition.left), DataRow(LabelPosition.top)]
+        public void SpinButtonShouldHaveLabelPositionClassName(LabelPosition labelPosition)
+        {
+            var component = RenderComponent<BitSpinButtonTest>(parameters => parameters.Add(p => p.LabelPosition, labelPosition));
+
+            var container = component.Find(".bit-spin-button");
+            var classlist = container.ClassList;
+
+            Assert.IsTrue(classlist.Contains($"label-{labelPosition}"));
         }
     }
 }

@@ -1,7 +1,8 @@
-﻿<BitSpinButton Min="@Min" Max="@Max" Suffix="@Suffix"></BitSpinButton>
+﻿<BitSpinButton Min="@Min" Max="@Max" Suffix="@Suffix" LabelPosition="@LabelPosition"></BitSpinButton>
 
 @code{
     [Parameter] public double Min { get; set; }
     [Parameter] public double Max { get; set; }
     [Parameter] public string Suffix { get; set; }
+    [Parameter] public LabelPosition LabelPosition { get; set; } = LabelPosition.left;
 }
