@@ -15,3 +15,23 @@
 .text-field-container {
     width: 30%
 }
+
+.bit-spin-button {
+    margin-bottom: 15px;
+}
+
+.custom-button {
+    background-color: palevioletred;
+}
+
+.spinner-container > div:not(.spinner-positioning) {
+    display: flex;
+}
+
+.spinner-container span {
+    margin: 0px 10px;
+}
+
+.spinner-positioning {
+    display: inline-block;
+}}
