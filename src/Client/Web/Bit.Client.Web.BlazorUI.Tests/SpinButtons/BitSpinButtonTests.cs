@@ -12,18 +12,50 @@ namespace Bit.Client.Web.BlazorUI.Tests.SpinButtons
     [TestClass]
     public class BitSpinButtonTests : BunitTestContext
     {
-        [DataTestMethod, DataRow(1.5), DataRow(55)]
-        public void SpinButton_DefaultValue_MeetValue(double defaultValue)
+        [DataTestMethod, DataRow("cm"), DataRow("Inch"), DataRow("foot")]
+        public void SpinButtonShouldHaveSuffixWhenItsPropertySet(string suffix)
         {
-            //Context.JSInterop.SetupVoid("Bit.setProperty", refrence , "value", "1.5");
-            //Context.JSInterop.SetupVoid("Bit.setProperty");
-            var component = RenderComponent<BitSpinButtonTest>();
-            //Context.JSInterop.SetupVoid("Bit.setProperty", component.Instance.InputElement, "value", "1.5 ");
+            Context.JSInterop.Mode = JSRuntimeMode.Loose;
+            var component = RenderComponent<BitSpinButtonTest>(parameters => parameters.Add(p=>p.Suffix , suffix));
+            
             var input = component.Find("input");
+            var inputValue = input.GetAttribute("value");
 
-            var inputPlaceholder = input.GetAttribute("value");
+            Assert.IsTrue(inputValue.Contains(suffix));
+        }
 
-            Assert.AreEqual(defaultValue, inputPlaceholder);
+        [DataTestMethod, DataRow(2,4,2), DataRow(20, 22, 20)]
+        public void SpinButtonShouldRespectMaxValue(double max,double countOfClick, double expectedResult)
+        {
+            Context.JSInterop.Mode = JSRuntimeMode.Loose;
+            var component = RenderComponent<BitSpinButtonTest>(parameters => parameters.Add(p => p.Max, max));
+
+            var input = component.Find("input");
+            var upButton = component.FindAll("button").First();
+            for (int i = 0; i < countOfClick; i++)
+            {
+                upButton.Click();
+            }
+            var inputValue= double.Parse(input.GetAttribute("value"));
+
+            Assert.AreEqual(inputValue,expectedResult);
+        }
+
+        [DataTestMethod, DataRow(0, 4, 0), DataRow(-2, 22, -2)]
+        public void SpinButtonShouldRespectMinValue(double min, double countOfClick, double expectedResult)
+        {
+            Context.JSInterop.Mode = JSRuntimeMode.Loose;
+            var component = RenderComponent<BitSpinButtonTest>(parameters => parameters.Add(p => p.Min, min));
+
+            var input = component.Find("input");
+            var downButton = component.FindAll("button").Last();
+            for (int i = 0; i < countOfClick; i++)
+            {
+                downButton.Click();
+            }
+            var inputValue = double.Parse(input.GetAttribute("value"));
+
+            Assert.AreEqual(inputValue, expectedResult);
         }
     }
 }

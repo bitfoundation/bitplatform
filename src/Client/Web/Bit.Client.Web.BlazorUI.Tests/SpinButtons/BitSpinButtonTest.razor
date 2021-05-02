@@ -1,8 +1,7 @@
-﻿@using Microsoft.JSInterop;
-<BitSpinButton DefaultValue="@DefaultValue"></BitSpinButton>
-
+﻿<BitSpinButton Min="@Min" Max="@Max" Suffix="@Suffix"></BitSpinButton>
 
 @code{
-    [Parameter] public double DefaultValue { get; set; }
-    [Inject] public IJSRuntime JSRuntime { get; set; }
+    [Parameter] public double Min { get; set; }
+    [Parameter] public double Max { get; set; }
+    [Parameter] public string Suffix { get; set; }
 }
