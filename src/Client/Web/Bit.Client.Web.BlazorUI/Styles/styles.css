@@ -4919,7 +4919,7 @@ html, body {
     font-size: 16px;
     width: 32px;
     text-align: center;
-    color: #0078d4;
+    color: #0078D4;
     cursor: text;
     transition: width 0.167s ease 0s; }
     .bit-sch-box-container-fluent > div:first-child i {
@@ -5360,7 +5360,7 @@ html, body {
 
 .bit-lbl-required-fluent::after {
   content: "*";
-  color: #a4262c;
+  color: #A4262C;
   margin-left: 5px; }
 
 .bit-lnk-fluent > a {
@@ -5711,6 +5711,63 @@ html, body {
 
 .bit-rating-dark-fluent {
   color: #1b1a19; }
+
+@keyframes bit-spn-fluent {
+  0% {
+    transform: rotate(0deg); }
+  100% {
+    transform: rotate(360deg); } }
+
+.bit-spn-bottom-fluent {
+  flex-direction: column-reverse;
+  align-items: center; }
+
+.bit-spn-top-fluent {
+  flex-direction: column;
+  align-items: center; }
+
+.bit-spn-left-fluent {
+  flex-direction: row;
+  align-items: flex-end; }
+
+.bit-spn-right-fluent {
+  flex-direction: row-reverse;
+  align-items: flex-end; }
+
+.bit-spn-fluent {
+  display: flex;
+  justify-content: center; }
+  .bit-spn-fluent > div:first-child {
+    box-sizing: border-box;
+    border-radius: 50%;
+    border-width: 1.5px;
+    border-style: solid;
+    border-color: #c7e0f4;
+    border-image: initial;
+    animation-name: bit-spn-fluent;
+    animation-duration: 1.3s;
+    animation-iteration-count: infinite; }
+  .bit-spn-fluent > div:nth-child(2) {
+    font-size: 0.875rem;
+    color: #0078d4;
+    margin: 2px 8px;
+    text-align: center; }
+
+.bit-spn-large-fluent > div:first-child {
+  width: 28px;
+  height: 28px; }
+
+.bit-spn-medium-fluent > div:first-child {
+  width: 20px;
+  height: 20px; }
+
+.bit-spn-small-fluent > div:first-child {
+  width: 16px;
+  height: 16px; }
+
+.bit-spn-xSmall-fluent > div:first-child {
+  width: 12px;
+  height: 12px; }
 
 button {
   border: none;
