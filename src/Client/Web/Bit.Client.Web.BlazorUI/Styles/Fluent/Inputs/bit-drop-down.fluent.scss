@@ -10,11 +10,14 @@
     font-size: rem(14px);
     font-weight: 400;
     color: $Grey160;
-    border-color: $Grey130;
+  //  border-color: $Grey130;
     position: relative;
     outline: em(0px);
     width: em(300px);
     user-select: none;
+
+      border: em(1px) solid $Grey130;
+        border-radius: em(2px);
 
     span:first-child {
         box-shadow: none;
@@ -22,10 +25,10 @@
         padding: em(0px) em(28px) em(0px) em(8px);
         box-sizing: border-box;
         background-color: $White;
-        border-width: 1px;
+       /* border-width: 1px;
         border-style: solid;
         border-color: rgb(96, 94, 92);
-        border-radius: em(2px);
+        border-radius: em(2px);*/
         cursor: pointer;
         display: block;
         position: relative;
