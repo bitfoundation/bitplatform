@@ -1,5 +1,9 @@
 ﻿@import "../colors.fluent.scss", "../../functions.scss";
 
+.bit-rating-fluent {
+    font-family: FluentFont;
+}
+
 .bit-rating-disabled-fluent button {
     pointer-events: none;
     cursor: not-allowed;
