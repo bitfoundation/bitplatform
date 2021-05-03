@@ -36,15 +36,11 @@
 
     & > div {
         &:first-child {
-            box-sizing: border-box;
+            border: 16px solid $Grey60;
+            border-top: 16px solid $Primary;
             border-radius: 50%;
             border-width: 1.5px;
-            border-style: solid;
-            border-color: $BlizzardBlue;
-            border-image: initial;
-            animation-name: bit-spn-fluent;
-            animation-duration: 1.3s;
-            animation-iteration-count: infinite;
+            animation: bit-spn-fluent 1.3s linear infinite;
         }
 
         &:nth-child(2) {
