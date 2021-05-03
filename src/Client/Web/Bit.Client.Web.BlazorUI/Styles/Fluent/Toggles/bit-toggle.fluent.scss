@@ -116,11 +116,11 @@
     }
 }
 
-.bit-tgl-checked-fluent {
+.bit-tgl-enabled-checked-fluent {
     @include getStyle();
 }
 
-.bit-tgl-unchecked-fluent {
+.bit-tgl-enabled-unchecked-fluent {
     @include getStyle($enabled:true,$checked:false);
 }
 
