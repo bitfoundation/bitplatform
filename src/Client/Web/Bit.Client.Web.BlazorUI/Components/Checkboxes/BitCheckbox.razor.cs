@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
@@ -19,18 +18,25 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter]
         public bool IsChecked
         {
-            get => isChecked; set
+            get => isChecked;
+            set
             {
+                if (value == isChecked) return;
                 isChecked = value;
                 ClassBuilder.Reset();
+                _ = IsCheckedChanged.InvokeAsync(value);
             }
         }
+
+        [Parameter] public EventCallback<bool> IsCheckedChanged { get; set; }
 
         [Parameter]
         public BoxSide BoxSide
         {
-            get => boxSide; set
+            get => boxSide;
+            set
             {
+                if (value == boxSide) return;
                 boxSide = value;
                 ClassBuilder.Reset();
             }
@@ -42,11 +48,15 @@ namespace Bit.Client.Web.BlazorUI
             get => isIndeterminate;
             set
             {
+                if (value == isIndeterminate) return;
                 isIndeterminate = value;
                 _ = JSRuntime.SetProperty(CheckboxElement, "indeterminate", value);
                 ClassBuilder.Reset();
+                _ = IsIndeterminateChanged.InvokeAsync(value);
             }
         }
+
+        [Parameter] public EventCallback<bool> IsIndeterminateChanged { get; set; }
 
         [Parameter] public RenderFragment ChildContent { get; set; }
 
@@ -76,10 +86,12 @@ namespace Bit.Client.Web.BlazorUI
 
             if (IsIndeterminate)
             {
+                if (IsIndeterminateChanged.HasDelegate is false) return;
                 IsIndeterminate = false;
             }
             else
             {
+                if (IsCheckedChanged.HasDelegate is false) return;
                 IsChecked = !IsChecked;
             }
 
