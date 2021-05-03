@@ -28,7 +28,7 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public EventCallback<ChangeEventArgs> OnChange { get; set; }
 
         [CascadingParameter] protected BitChoiceGroup ChoiceGroup { get; set; }
-      
+
         public override Task SetParametersAsync(ParameterView parameters)
         {
             foreach (ParameterValue parameter in parameters)
@@ -61,7 +61,7 @@ namespace Bit.Client.Web.BlazorUI
 
             return base.SetParametersAsync(parameters);
         }
-       
+
         protected override Task OnInitializedAsync()
         {
             if (ChoiceGroup is not null)
@@ -81,7 +81,7 @@ namespace Bit.Client.Web.BlazorUI
         {
             ClassBuilder.Register(() => IsChecked is false
                 ? string.Empty
-                : $"{RootElementClass}-checked-{VisualClassRegistrar()}" );
+                : $"{RootElementClass}-checked-{VisualClassRegistrar()}");
         }
 
         protected virtual async Task HandleClick(MouseEventArgs e)
