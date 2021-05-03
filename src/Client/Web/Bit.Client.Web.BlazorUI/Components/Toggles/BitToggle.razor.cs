@@ -7,10 +7,10 @@ namespace Bit.Client.Web.BlazorUI
     public partial class BitToggle
     {
         private bool isChecked;
-        private bool isInlineLable;
 
         [Parameter] public string OnText { get; set; }
         [Parameter] public string OffText { get; set; }
+        [Parameter] public bool IsInlineLable { get; set; }
 
         [Parameter]
         public bool IsChecked
@@ -18,24 +18,19 @@ namespace Bit.Client.Web.BlazorUI
             get => isChecked;
             set
             {
+                if (value == isChecked) return;
                 isChecked = value;
                 ClassBuilder.Reset();
+                _ = IsCheckedChange.InvokeAsync();
             }
         }
 
-        [Parameter]
-        public bool IsInlineLable
-        {
-            get => isInlineLable;
-            set
-            {
-                isInlineLable = value;
-                ClassBuilder.Reset();
-            }
-        }
+        [Parameter] public EventCallback<bool> IsCheckedChange { get; set; }
+
 
         [Parameter] public RenderFragment ChildContent { get; set; }
         [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+
         protected override string RootElementClass => "bit-tgl";
 
         protected override void RegisterComponentClasses()
