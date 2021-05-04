@@ -14,14 +14,17 @@ namespace Bit.Client.Web.BlazorUI.Tests.Checkboxes
         {
             Context.JSInterop.Mode = JSRuntimeMode.Loose;
 
-            var component = RenderComponent<BitCheckboxTest>(parameters => parameters
-                .Add(p => p.IsEnabled, isEnabled).Add(p => p.IsChecked, isChecked));
+            var component = RenderComponent<BitCheckboxTest>(parameters =>
+            {
+                parameters.Add(p => p.IsEnabled, isEnabled);
+                parameters.Add(p => p.IsChecked, isChecked);
+            });
 
-            var bitCheckbox = component.Find(".bit-chb-container-fluent > div > div");
+            var bitCheckbox = component.Find(".bit-chb-fluent > div > div");
             bitCheckbox.Click();
 
-            var bitCheckboxContainer = component.Find(".bit-chb-container-fluent");
-            Assert.AreEqual(afterClickHasCheckedClass, bitCheckboxContainer.ClassList.Contains("bit-chb-container-checked-fluent"));
+            var bitCheckboxContainer = component.Find(".bit-chb-fluent");
+            Assert.AreEqual(afterClickHasCheckedClass, bitCheckboxContainer.ClassList.Contains("bit-chb-checked-fluent"));
         }
 
         [DataTestMethod, DataRow(true, true, false), DataRow(true, false, true)]
@@ -29,15 +32,17 @@ namespace Bit.Client.Web.BlazorUI.Tests.Checkboxes
         {
             Context.JSInterop.Mode = JSRuntimeMode.Loose;
 
-            var component = RenderComponent<BitCheckboxTest>(parameters => parameters
-                .Add(p => p.IsIndeterminate, isIndeterminate)
-                .Add(p => p.IsEnabled, isEnabled));
+            var component = RenderComponent<BitCheckboxTest>(parameters =>
+            {
+                parameters.Add(p => p.IsIndeterminate, isIndeterminate);
+                parameters.Add(p => p.IsEnabled, isEnabled);
+            });
 
-            var bitCheckbox = component.Find(".bit-chb-container-fluent > div > div");
+            var bitCheckbox = component.Find(".bit-chb-fluent > div > div");
             bitCheckbox.Click();
 
-            var bitCheckboxContainer = component.Find(".bit-chb-container-fluent");
-            Assert.AreEqual(afterClickHasIndeterminateClass, bitCheckboxContainer.ClassList.Contains("bit-chb-container-indeterminate-fluent"));
+            var bitCheckboxContainer = component.Find(".bit-chb-fluent");
+            Assert.AreEqual(afterClickHasIndeterminateClass, bitCheckboxContainer.ClassList.Contains("bit-chb-indeterminate-fluent"));
         }
 
         [DataTestMethod, DataRow(true, true, true, true), DataRow(true, false, true, false)]
@@ -45,15 +50,17 @@ namespace Bit.Client.Web.BlazorUI.Tests.Checkboxes
         {
             Context.JSInterop.Mode = JSRuntimeMode.Loose;
 
-            var component = RenderComponent<BitCheckboxTest>(parameters => parameters
-                .Add(p => p.IsIndeterminate, isIndeterminate)
-                .Add(p => p.IsChecked, isChecked));
+            var component = RenderComponent<BitCheckboxTest>(parameters =>
+            {
+                parameters.Add(p => p.IsIndeterminate, isIndeterminate);
+                parameters.Add(p => p.IsChecked, isChecked);
+            });
 
-            var bitCheckbox = component.Find(".bit-chb-container-fluent > div > div");
+            var bitCheckbox = component.Find(".bit-chb-fluent > div > div");
             bitCheckbox.Click();
 
-            var bitCheckboxContainer = component.Find(".bit-chb-container-fluent");
-            Assert.AreEqual(afterClickHasCheckedClass, bitCheckboxContainer.ClassList.Contains("bit-chb-container-checked-fluent"));
+            var bitCheckboxContainer = component.Find(".bit-chb-fluent");
+            Assert.AreEqual(afterClickHasCheckedClass, bitCheckboxContainer.ClassList.Contains("bit-chb-checked-fluent"));
         }
     }
 }
