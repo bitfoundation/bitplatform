@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
@@ -19,18 +18,25 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter]
         public bool IsChecked
         {
-            get => isChecked; set
+            get => isChecked;
+            set
             {
+                if (value == isChecked) return;
                 isChecked = value;
                 ClassBuilder.Reset();
+                _ = IsCheckedChanged.InvokeAsync(value);
             }
         }
+
+        [Parameter] public EventCallback<bool> IsCheckedChanged { get; set; }
 
         [Parameter]
         public BoxSide BoxSide
         {
-            get => boxSide; set
+            get => boxSide;
+            set
             {
+                if (value == boxSide) return;
                 boxSide = value;
                 ClassBuilder.Reset();
             }
@@ -42,23 +48,36 @@ namespace Bit.Client.Web.BlazorUI
             get => isIndeterminate;
             set
             {
+                if (value == isIndeterminate) return;
                 isIndeterminate = value;
-                JSRuntime.SetProperty(CheckboxElement, "indeterminate", value);
+                _ = JSRuntime.SetProperty(CheckboxElement, "indeterminate", value);
                 ClassBuilder.Reset();
+                _ = IsIndeterminateChanged.InvokeAsync(value);
             }
         }
+
+        [Parameter] public EventCallback<bool> IsIndeterminateChanged { get; set; }
 
         [Parameter] public RenderFragment ChildContent { get; set; }
 
         [Parameter] public EventCallback<bool> OnChange { get; set; }
 
-        protected override string RootElementClass => "bit-checkbox-container";
+        protected override string RootElementClass => "bit-chb-container";
 
         protected override void RegisterComponentClasses()
         {
-            ClassBuilder.Register(() => IsIndeterminate ? "indeterminate" : string.Empty);
-            ClassBuilder.Register(() => IsChecked ? "checked" : string.Empty);
-            ClassBuilder.Register(() => BoxSide == BoxSide.End ? "box-side-end" : "box-side-start");
+            ClassBuilder.Register(() => IsIndeterminate ? $"{RootElementClass}-indeterminate-{VisualClassRegistrar()}" : string.Empty);
+            ClassBuilder.Register(() => IsChecked ? $"{RootElementClass}-checked-{VisualClassRegistrar()}" : string.Empty);
+
+            ClassBuilder.Register(() => BoxSide == BoxSide.End
+                                        ? $"{RootElementClass}-box-side-end-{VisualClassRegistrar()}"
+                                        : $"{RootElementClass}-box-side-start-{VisualClassRegistrar()}");
+
+            ClassBuilder.Register(() => IsEnabled is false && IsChecked
+                                        ? $"{RootElementClass}-checked-disabled-{VisualClassRegistrar()}" : string.Empty);
+
+            ClassBuilder.Register(() => IsEnabled is false && IsIndeterminate
+                                        ? $"{RootElementClass}-indeterminate-disabled-{VisualClassRegistrar()}" : string.Empty);
         }
 
         protected async Task HandleCheckboxClick(MouseEventArgs e)
@@ -67,10 +86,12 @@ namespace Bit.Client.Web.BlazorUI
 
             if (IsIndeterminate)
             {
+                if (IsIndeterminateChanged.HasDelegate is false) return;
                 IsIndeterminate = false;
             }
             else
             {
+                if (IsCheckedChanged.HasDelegate is false) return;
                 IsChecked = !IsChecked;
             }
 
@@ -85,37 +106,6 @@ namespace Bit.Client.Web.BlazorUI
             }
 
             await base.OnAfterRenderAsync(firstRender);
-        }
-
-        public override Task SetParametersAsync(ParameterView parameters)
-        {
-            foreach (ParameterValue parameter in parameters)
-            {
-                switch (parameter.Name)
-                {
-                    case nameof(ChildContent):
-                        ChildContent = (RenderFragment)parameter.Value;
-                        break;
-
-                    case nameof(IsChecked):
-                        IsChecked = (bool)parameter.Value;
-                        break;
-
-                    case nameof(IsIndeterminate):
-                        IsIndeterminate = (bool)parameter.Value;
-                        break;
-
-                    case nameof(BoxSide):
-                        BoxSide = (BoxSide)parameter.Value;
-                        break;
-
-                    case nameof(OnChange):
-                        OnChange = (EventCallback<bool>)parameter.Value;
-                        break;
-                }
-            }
-
-            return base.SetParametersAsync(parameters);
         }
     }
 }

@@ -74,14 +74,22 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
-        protected override string RootElementClass => "bit-text-field";
+        protected override string RootElementClass => "bit-txt";
 
         protected override void RegisterComponentClasses()
         {
-            ClassBuilder.Register(() => IsMultiLine && Type == TextFieldType.Text ? "multiline" : string.Empty);
-            ClassBuilder.Register(() => IsEnabled is false ? "disabled" : string.Empty);
-            ClassBuilder.Register(() => IsEnabled && IsReadonly ? "readonly" : string.Empty);
-            ClassBuilder.Register(() => FocusClass);
+            ClassBuilder.Register(() => IsMultiLine && Type == TextFieldType.Text
+                                        ? $"{RootElementClass}-multiline-{VisualClassRegistrar()}" : string.Empty);
+
+            ClassBuilder.Register(() => IsEnabled is false
+                                        ? $"{RootElementClass}-disabled-{VisualClassRegistrar()}" : string.Empty);
+
+            ClassBuilder.Register(() => IsEnabled && IsReadonly
+                                        ? $"{RootElementClass}-readonly-{VisualClassRegistrar()}" : string.Empty);
+
+            ClassBuilder.Register(() => string.IsNullOrWhiteSpace(FocusClass)
+                                        ? string.Empty
+                                        : $"{RootElementClass}-{FocusClass}-{VisualClassRegistrar()}");
         }
 
         protected virtual async Task HandleFocusIn(FocusEventArgs e)
@@ -141,68 +149,6 @@ namespace Bit.Client.Web.BlazorUI
             {
                 await OnClick.InvokeAsync(e);
             }
-        }
-
-        public override Task SetParametersAsync(ParameterView parameters)
-        {
-            foreach (ParameterValue parameter in parameters)
-            {
-                switch (parameter.Name)
-                {
-                    case nameof(MaxLength):
-                        MaxLength = (int)parameter.Value;
-                        break;
-
-                    case nameof(Value):
-                        Value = (string)parameter.Value;
-                        break;
-
-                    case nameof(Placeholder):
-                        Placeholder = (string)parameter.Value;
-                        break;
-
-                    case nameof(IsReadonly):
-                        IsReadonly = (bool)parameter.Value;
-                        break;
-
-                    case nameof(Type):
-                        Type = (TextFieldType)parameter.Value;
-                        break;
-
-                    case nameof(IsMultiLine):
-                        IsMultiLine = (bool)parameter.Value;
-                        break;
-
-                    case nameof(OnFocusIn):
-                        OnFocusIn = (EventCallback<FocusEventArgs>)parameter.Value;
-                        break;
-
-                    case nameof(OnFocusOut):
-                        OnFocusOut = (EventCallback<FocusEventArgs>)parameter.Value;
-                        break;
-
-                    case nameof(OnFocus):
-                        OnFocus = (EventCallback<FocusEventArgs>)parameter.Value;
-                        break;
-
-                    case nameof(OnChange):
-                        OnChange = (EventCallback<ChangeEventArgs>)parameter.Value;
-                        break;
-
-                    case nameof(OnKeyDown):
-                        OnKeyDown = (EventCallback<KeyboardEventArgs>)parameter.Value;
-                        break;
-
-                    case nameof(OnKeyUp):
-                        OnKeyUp = (EventCallback<KeyboardEventArgs>)parameter.Value;
-                        break;
-
-                    case nameof(OnClick):
-                        OnClick = (EventCallback<MouseEventArgs>)parameter.Value;
-                        break;
-                }
-            }
-            return base.SetParametersAsync(parameters);
         }
     }
 }

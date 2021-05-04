@@ -118,62 +118,19 @@ namespace Bit.Client.Web.BlazorUI
             InputHasFocus = false;
         }
 
-        protected override string RootElementClass => "bit-search-box-container";
+        protected override string RootElementClass => "bit-sch-box-container";
 
         protected override void RegisterComponentClasses()
         {
-            ClassBuilder.Register(() => Value.HasValue() ? "has-value" : string.Empty);
-            ClassBuilder.Register(() => DisableAnimation ? "no-animation" : string.Empty);
-            ClassBuilder.Register(() => IsUnderlined ? "underlined" : string.Empty);
-            ClassBuilder.Register(() => InputHasFocus ? "focused" : string.Empty);
+            ClassBuilder.Register(() => Value.HasValue() ? $"{RootElementClass}-has-value-{VisualClassRegistrar()}" : string.Empty);
+            ClassBuilder.Register(() => DisableAnimation ? $"{RootElementClass}-no-animation-{VisualClassRegistrar()}" : string.Empty);
+            ClassBuilder.Register(() => IsUnderlined ? $"{RootElementClass}-underlined-{VisualClassRegistrar()}" : string.Empty);
+            ClassBuilder.Register(() => InputHasFocus ? $"{RootElementClass}-focused-{VisualClassRegistrar()}" : string.Empty);
         }
 
         protected override void RegisterComponentStyles()
         {
             StyleBuilder.Register(() => Width.HasValue() ? $"width: {Width}" : string.Empty);
-        }
-
-        public override Task SetParametersAsync(ParameterView parameters)
-        {
-            foreach (ParameterValue parameter in parameters)
-            {
-                switch (parameter.Name)
-                {
-                    case nameof(Value):
-                        Value = (string)parameter.Value;
-                        break;
-
-                    case nameof(Placeholder):
-                        Placeholder = (string)parameter.Value;
-                        break;
-
-                    case nameof(DisableAnimation):
-                        DisableAnimation = (bool)parameter.Value;
-                        break;
-
-                    case nameof(IsUnderlined):
-                        IsUnderlined = (bool)parameter.Value;
-                        break;
-
-                    case nameof(IconName):
-                        IconName = (string)parameter.Value;
-                        break;
-
-                    case nameof(Width):
-                        Width = (string)parameter.Value;
-                        break;
-
-                    case nameof(OnSearch):
-                        OnSearch = (EventCallback<string>)parameter.Value;
-                        break;
-
-                    case nameof(OnClear):
-                        OnClear = (EventCallback)parameter.Value;
-                        break;
-                }
-            }
-
-            return base.SetParametersAsync(parameters);
         }
     }
 }

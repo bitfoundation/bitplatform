@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
+﻿using Microsoft.AspNetCore.Components;
 
 namespace Bit.Client.Web.BlazorUI
 {
@@ -20,34 +19,15 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
-        protected override string RootElementClass => "bit-message-bar";
+        protected override string RootElementClass => "bit-msg-bar";
 
         protected override void RegisterComponentClasses()
         {
-            ClassBuilder.Register(() => MessageBarStyle == MessageBarStyle.Warning ? "warning"
-                                      : MessageBarStyle == MessageBarStyle.Severe ? "severe"
-                                      : MessageBarStyle == MessageBarStyle.Error ? "error"
-                                      : MessageBarStyle == MessageBarStyle.Success ? "success"
-                                      : "default");
-        }
-
-        public override Task SetParametersAsync(ParameterView parameters)
-        {
-            foreach (ParameterValue parameter in parameters)
-            {
-                switch (parameter.Name)
-                {
-                    case nameof(MessageBarStyle):
-                        MessageBarStyle = (MessageBarStyle)parameter.Value;
-                        break;
-
-                    case nameof(ChildContent):
-                        ChildContent = (RenderFragment)parameter.Value;
-                        break;
-                }
-            }
-
-            return base.SetParametersAsync(parameters);
+            ClassBuilder.Register(() => MessageBarStyle == MessageBarStyle.Warning ? $"{RootElementClass}-warning-{VisualClassRegistrar()}"
+                                      : MessageBarStyle == MessageBarStyle.Severe ? $"{RootElementClass}-severe-{VisualClassRegistrar()}"
+                                      : MessageBarStyle == MessageBarStyle.Error ? $"{RootElementClass}-error-{VisualClassRegistrar()}"
+                                      : MessageBarStyle == MessageBarStyle.Success ? $"{RootElementClass}-success-{VisualClassRegistrar()}"
+                                      : $"{RootElementClass}-default-{VisualClassRegistrar()}");
         }
     }
 }

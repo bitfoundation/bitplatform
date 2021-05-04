@@ -1,20 +1,4 @@
 ﻿@page "/component"
-<style>
-    /* Temp Styles */
-    .links-container, .checkboxes-container, .labels-container, .search-box-container {
-        font-family: FluentFont;
-    }
-
-        .links-container p {
-            width: 95%;
-            margin: auto;
-        }
-
-    .custom-button {
-        background-color: palevioletred !important;
-    }
-</style>
-
 <h1>Bit Components</h1>
 
 <hr />
@@ -74,6 +58,8 @@
     <hr />
 </div>
 
+<hr />
+
 <div class="labels-container">
 
     <h2>Labels</h2>
@@ -85,6 +71,9 @@
     <input type="text" name="labels-container__input" id="labels-container__input" />
     <hr />
 </div>
+
+<hr />
+
 <div class="links-container">
     <h3>Links</h3>
     <p>
@@ -99,6 +88,9 @@
     </p>
     <hr />
 </div>
+
+<hr />
+
 <div class="message-bar-container">
     <h2>BitMessageBar</h2>
     @if (IsMessageBarHidden is false)
@@ -130,17 +122,17 @@
 
     <h2>Checkboxes</h2>
     <h3>Basics</h3>
-    <BitCheckbox>Basic Checkbox</BitCheckbox>
+    <BitCheckbox @bind-IsChecked="IsCheckBoxChecked">Basic Checkbox</BitCheckbox>
     <BitCheckbox IsChecked="true">Checked Checkbox</BitCheckbox>
     <BitCheckbox IsEnabled="false">Disable Checkbox</BitCheckbox>
     <BitCheckbox IsEnabled="false" IsChecked="true">Disable Checked Checkbox</BitCheckbox>
     <br />
     <h3>Indeterminate</h3>
-    <BitCheckbox IsIndeterminate="true">Indeterminated checkbox</BitCheckbox>
-    <BitCheckbox IsIndeterminate="true" IsChecked="true">Indeterminate checkbox which defaults to true when clicked</BitCheckbox>
+    <BitCheckbox @bind-IsIndeterminate="IsCheckBoxIndeterminate" @bind-IsChecked="IsCheckBoxChecked">Indeterminated checkbox</BitCheckbox>
+    <BitCheckbox IsIndeterminate="true">Indeterminate checkbox</BitCheckbox>
     <BitCheckbox IsIndeterminate="true" IsEnabled="false">Disabled indeterminated checkbox</BitCheckbox>
-    <BitCheckbox IsIndeterminate="IsCheckBoxIndeterminate">Controlled indeterminated checkbox</BitCheckbox>
-    <BitButton OnClick="() => IsCheckBoxIndeterminate = true">Make Checkbox Indeterminate</BitButton>
+    <BitCheckbox @bind-IsIndeterminate="IsCheckBoxIndeterminateInCode" @bind-IsChecked="IsCheckBoxChecked">Controlled indeterminated checkbox</BitCheckbox>
+    <BitButton OnClick="() => IsCheckBoxIndeterminateInCode = true">Make Checkbox Indeterminate</BitButton>
     <br />
     <h5>Custom Label</h5>
     <BitCheckbox>
@@ -160,6 +152,7 @@
 </div>
 
 <hr />
+
 <div class="search-box-container">
     <h3>SearchBox</h3>
     <h5>Default SearchBox</h5>
@@ -180,6 +173,7 @@
     <BitSearchBox Placeholder="Search" Width="250px"></BitSearchBox>
     <br />
 </div>
+
 <hr />
 
 <div class="text-field-container">
@@ -203,4 +197,82 @@
     <BitTextField IsMultiLine="true" MaxLength="10" Placeholder="Limited multi-line text field - 10 chars"></BitTextField>
     <br />
     <BitTextField IsMultiLine="true" IsEnabled="false" Value="Multi-line Disabled"></BitTextField>
+</div>
+
+<hr />
+
+<div class="spinner-container">
+    <h2>Spinner</h2>
+    <div>
+        <span>Extra small spinner:</span>
+        <BitSpinner Size="SpinnerSize.XSmall" />
+    </div>
+    <br />
+    <div>
+        <span>Small spinner:</span>
+        <BitSpinner Size="SpinnerSize.Small" />
+    </div>
+    <br />
+    <div>
+        <span>Medium spinner:</span>
+        <BitSpinner Size="SpinnerSize.Medium" />
+    </div>
+    <br />
+    <div>
+        <span>Large spinner:</span>
+        <BitSpinner Size="SpinnerSize.Large" />
+    </div>
+    <br />
+    <div class="spinner-positioning">
+        <h3>Spinner label positioning</h3>
+        <span>Spinner with label positioned below</span>
+        <BitSpinner LabelPosition="SpinnerLabelPosition.Bottom" Label="I am definitely loading..." />
+        <br />
+        <span>Spinner with label positioned above</span>
+        <BitSpinner LabelPosition="SpinnerLabelPosition.Top" Label="Seriously, still loading..." />
+        <br />
+        <span>Spinner with label positioned to right</span>
+        <BitSpinner LabelPosition="SpinnerLabelPosition.Right" Label="Wait, wait..." />
+        <br />
+        <span>Spinner with label positioned to left</span>
+        <BitSpinner LabelPosition="SpinnerLabelPosition.Left" Label="Nope, still loading..." />
+    </div>
+</div>
+
+<hr />
+
+<div class="rating-container">
+    <h2>Rating</h2>
+    <h5>Large stars</h5>
+    <BitRating DefaultRating="5" Size="RatingSize.Large" />
+    <h5>Small stars, with 0 stars allowed</h5>
+    <BitRating AllowZeroStars="true" />
+    <h5>10 small stars</h5>
+    <BitRating Max="10" />
+    <h5>Disabled</h5>
+    <BitRating DefaultRating="5" IsEnabled="false" />
+    <h5>ReadOnly</h5>
+    <BitRating DefaultRating="5" IsReadonly="true" />
+    <h5>Custom icons</h5>
+    <BitRating Icon="HeartFill" UnselectedIcon="Heart" />
+</div>
+
+<hr />
+
+<div class="choice-container">
+    <h2>BitChoiceGroup & BitChoiceOption</h2>
+    <br />
+    <h3>Enabled</h3>
+    <BitChoiceGroup Name="Group1">
+        <BitChoiceOption Text="Option1" Value="1"></BitChoiceOption>
+        <BitChoiceOption Text="Option2" Value="2"></BitChoiceOption>
+        <BitChoiceOption Text="Disabled option" Value="3" IsEnabled="false"></BitChoiceOption>
+    </BitChoiceGroup>
+    <br />
+    <h3>Disabled</h3>
+    <BitChoiceGroup Name="Group2" IsEnabled="false">
+        <BitChoiceOption Text="Option1" Value="1"></BitChoiceOption>
+        <BitChoiceOption Text="Option2" Value="2"></BitChoiceOption>
+        <BitChoiceOption Text="Disabled option" Value="3" IsEnabled="false"></BitChoiceOption>
+    </BitChoiceGroup>
 </div>

@@ -1,0 +1,123 @@
+﻿@import "../colors.fluent.scss", "../../functions.scss";
+
+.bit-cho-fluent {
+    font-family: FluentFont;
+    font-size: rem(14px);
+    font-weight: 400;
+    display: flex;
+    align-items: center;
+    box-sizing: border-box;
+    color: $Grey160;
+    min-height: em(26px);
+    border: none;
+    position: relative;
+    margin-top: em(8px);
+
+    input:first-child {
+        position: absolute;
+        opacity: 0;
+        top: em(0px);
+        right: em(0px);
+        width: 100%;
+        height: 100%;
+        margin: em(0px);
+    }
+
+    label:nth-child(2) {
+        display: inline-block;
+        cursor: pointer;
+        margin-top: em(0px);
+        position: relative;
+        vertical-align: top;
+        min-height: em(20px);
+        user-select: none;
+
+        &:before {
+            content: "";
+            display: inline-block;
+            background-color: $White;
+            border-width: em(1px);
+            border-style: solid;
+            border-color: $Grey160;
+            width: em(20px);
+            height: em(20px);
+            font-weight: normal;
+            position: absolute;
+            top: 0px;
+            left: 0px;
+            box-sizing: border-box;
+            transition-property: border-color;
+            transition-duration: 100ms;
+            transition-timing-function: cubic-bezier(0.4, 0, 0.23, 1);
+            border-radius: 50%;
+        }
+
+        &:after {
+            content: "";
+            width: em(0px);
+            height: em(0px);
+            border-radius: 50%;
+            position: absolute;
+            left: em(10px);
+            right: em(0px);
+            transition-property: border-width;
+            transition-duration: 100ms;
+            transition-timing-function: cubic-bezier(0.4, 0, 0.23, 1);
+            box-sizing: border-box;
+        }
+
+        span:first-child {
+            display: inline-block;
+            padding-left: em(26px);
+        }
+    }
+}
+
+.bit-cho-checked-fluent {
+    input:first-child {
+        position: absolute;
+        opacity: 0;
+        top: em(0px);
+        right: em(0px);
+        width: 100%;
+        height: 100%;
+        margin: em(0px);
+    }
+
+    label:nth-child(2) {
+        border-color: rgb(0, 120, 212);
+
+        &:before {
+            border-color: $Primary;
+        }
+
+        &:after {
+            width: em(10px);
+            height: em(10px);
+            left: em(5px);
+            right: em(0px);
+            transition-property: border-width;
+            transition-duration: 100ms;
+            transition-timing-function: cubic-bezier(0.4, 0, 0.23, 1);
+            box-sizing: border-box;
+            border-width: em(5px);
+            border-style: solid;
+            border-color: $Primary;
+            top: em(5px);
+        }
+    }
+}
+
+.bit-cho-disabled-fluent {
+    label:nth-child(2) {
+        cursor: default;
+
+        &:before {
+            border-color: $Grey60;
+        }
+
+        span:first-child {
+            color: $Grey90;
+        }
+    }
+}
