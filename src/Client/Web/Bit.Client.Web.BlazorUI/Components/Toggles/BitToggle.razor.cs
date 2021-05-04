@@ -10,7 +10,7 @@ namespace Bit.Client.Web.BlazorUI
 
         [Parameter] public string OnText { get; set; }
         [Parameter] public string OffText { get; set; }
-        [Parameter] public bool IsInlineLable { get; set; }
+        [Parameter] public bool IsInlineLabel { get; set; }
 
         [Parameter]
         public bool IsChecked
@@ -37,26 +37,12 @@ namespace Bit.Client.Web.BlazorUI
         {
             ClassBuilder.Register(() =>
             {
-                string cssClass = string.Empty;
-                if (IsEnabled)
-                {
-                    if (isChecked)
-                        cssClass = $"{RootElementClass}-checked-{VisualClassRegistrar()}";
-                    else
-                        cssClass = $"{RootElementClass}-unchecked-{VisualClassRegistrar()}";
-                }
-                else
-                {
-                    if (isChecked)
-                        cssClass = $"{RootElementClass}-disabled-checked-{VisualClassRegistrar()}";
-                    else
-                        cssClass = $"{RootElementClass}-disabled-unchecked-{VisualClassRegistrar()}";
-                }
-
-                return cssClass;
+                var isCheckedClass = IsChecked ? "checked" : "unchecked";
+                var isEnabledClass = IsEnabled ? "enabled" : "disabled";
+                return $"{RootElementClass}-{isEnabledClass}-{isCheckedClass}-{VisualClassRegistrar()}";
             });
 
-            ClassBuilder.Register(() => IsInlineLable ? $"{RootElementClass}-inline-{VisualClassRegistrar()}" : string.Empty);
+            ClassBuilder.Register(() => IsInlineLabel ? $"{RootElementClass}-inline-{VisualClassRegistrar()}" : string.Empty);
             ClassBuilder.Register(() =>
             string.IsNullOrWhiteSpace(OnText) || string.IsNullOrWhiteSpace(OffText) ?
                 $"{RootElementClass}-without-onoff-{VisualClassRegistrar()}" :
