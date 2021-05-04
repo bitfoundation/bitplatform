@@ -9,15 +9,18 @@
     -webkit-font-smoothing: antialiased;
     font-size: rem(14px);
     font-weight: 400;
-    color: $Grey160;
-  //  border-color: $Grey130;
+    // color: $Grey160;
     position: relative;
     outline: em(0px);
     width: em(300px);
     user-select: none;
+    // height: em(32px);
+    border: em(1px) solid $Grey130;
+    border-radius: em(2px);
 
-      border: em(1px) solid $Grey130;
-        border-radius: em(2px);
+    &:hover {
+        color: $Grey160;
+    }
 
     span:first-child {
         box-shadow: none;
@@ -25,10 +28,6 @@
         padding: em(0px) em(28px) em(0px) em(8px);
         box-sizing: border-box;
         background-color: $White;
-       /* border-width: 1px;
-        border-style: solid;
-        border-color: rgb(96, 94, 92);
-        border-radius: em(2px);*/
         cursor: pointer;
         display: block;
         position: relative;
@@ -38,6 +37,10 @@
         height: em(32px);
         line-height: em(30px);
         color: $Grey130;
+
+        &:hover {
+            color: $Grey160;
+        }
     }
 
     span:nth-child(2) {
@@ -54,11 +57,9 @@
             font-style: normal;
             font-weight: normal;
             speak: none;
-            //  font-family: FabricMDL2Icons;
             color: $Grey130;
             font-size: em( 12px);
             pointer-events: none;
-
         }
     }
 }
@@ -71,6 +72,7 @@
 
 .bit-drp-focused-fluent {
     border: em(3px) solid $Primary;
+    color: $Grey160;
 
     span:first-child {
     }

@@ -3,6 +3,8 @@
 <div @ref="RootElement"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
+     @onfocusin="HandleFocusIn"
+     @onfocusout="HandleFocusOut"
      @onclick="HandleClick">
     <span>
         @if (SelectedItem is null)

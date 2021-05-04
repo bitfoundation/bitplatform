@@ -26,6 +26,8 @@ namespace Bit.Client.Web.BlazorUI
         }
 
         [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+        [Parameter] public EventCallback<FocusEventArgs> OnFocusIn { get; set; }
+        [Parameter] public EventCallback<FocusEventArgs> OnFocusOut { get; set; }
 
         public string FocusClass
         {
@@ -63,7 +65,6 @@ namespace Bit.Client.Web.BlazorUI
                 ? string.Empty
                 : $"{RootElementClass}-{"hasValue"}-{VisualClassRegistrar()}");
         }
-
         protected virtual async Task HandleClick(MouseEventArgs e)
         {
             if (IsEnabled)
@@ -72,6 +73,23 @@ namespace Bit.Client.Web.BlazorUI
                 await OnClick.InvokeAsync(e);
             }
         }
-       
+
+        protected virtual async Task HandleFocusIn(FocusEventArgs e)
+        {
+            if (IsEnabled)
+            {
+                FocusClass = "focused";
+                await OnFocusIn.InvokeAsync(e);
+            }
+        }
+        protected virtual async Task HandleFocusOut(FocusEventArgs e)
+        {
+            if (IsEnabled)
+            {
+                FocusClass = "";
+                await OnFocusOut.InvokeAsync(e);
+            }
+        }
+
     }
 }
