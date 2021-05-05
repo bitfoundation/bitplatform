@@ -30,15 +30,14 @@ namespace Bit.Tooling.SourceGenerators
         {
             string namespaceName = classSymbol.ContainingNamespace.ToDisplayString();
 
-            StringBuilder source = new StringBuilder($@"
-using Microsoft.AspNetCore.Components;
+            StringBuilder source = new StringBuilder($@"using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using System.Threading.Tasks;
 using System;
 
 namespace {namespaceName}
 {{
-    public partial class {classSymbol.Name}  
+    public{(classSymbol.IsAbstract ? " abstract" : null)} partial class {classSymbol.Name}  
     {{
         public override Task SetParametersAsync(ParameterView parameters) 
         {{
@@ -57,7 +56,15 @@ namespace {namespaceName}
             source.AppendLine("                }");
             source.AppendLine("            }");
 
-            source.AppendLine("            return base.SetParametersAsync(parameters);");
+            if (classSymbol.BaseType.ToDisplayString() == "Microsoft.AspNetCore.Components.ComponentBase")
+            {
+                source.AppendLine("            return base.SetParametersAsync(ParameterView.Empty);");
+            }
+            else
+            {
+                source.AppendLine("            return base.SetParametersAsync(parameters);");
+            }
+
             source.AppendLine("        }");
             source.AppendLine("    }");
             source.AppendLine("}");
