@@ -91,7 +91,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Toggles
 
             if (string.IsNullOrEmpty(onText) || string.IsNullOrEmpty(offText))
             {
-                Assert.IsTrue(bitToggle.ClassList.Contains($"bit-tgl-without-onoff-{visualClass}"));
+                Assert.IsTrue(bitToggle.ClassList.Contains($"bit-tgl-noonoff-{visualClass}"));
             }
 
             return Task.CompletedTask;

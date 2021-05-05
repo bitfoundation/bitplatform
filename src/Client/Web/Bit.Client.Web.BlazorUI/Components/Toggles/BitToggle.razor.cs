@@ -21,11 +21,11 @@ namespace Bit.Client.Web.BlazorUI
                 if (value == isChecked) return;
                 isChecked = value;
                 ClassBuilder.Reset();
-                _ = IsCheckedChange.InvokeAsync();
+                _ = IsCheckedChanged.InvokeAsync(value);
             }
         }
 
-        [Parameter] public EventCallback<bool> IsCheckedChange { get; set; }
+        [Parameter] public EventCallback<bool> IsCheckedChanged { get; set; }
 
 
         [Parameter] public RenderFragment ChildContent { get; set; }
@@ -45,17 +45,15 @@ namespace Bit.Client.Web.BlazorUI
             ClassBuilder.Register(() => IsInlineLabel ? $"{RootElementClass}-inline-{VisualClassRegistrar()}" : string.Empty);
             ClassBuilder.Register(() =>
             string.IsNullOrWhiteSpace(OnText) || string.IsNullOrWhiteSpace(OffText) ?
-                $"{RootElementClass}-without-onoff-{VisualClassRegistrar()}" :
+                $"{RootElementClass}-noonoff-{VisualClassRegistrar()}" :
                 string.Empty);
         }
 
         protected virtual async Task HandleOnClick(MouseEventArgs e)
         {
-            if (IsEnabled)
-            {
-                IsChecked = !IsChecked;
-                await OnClick.InvokeAsync(e);
-            }
+            if (IsEnabled is false || IsCheckedChanged.HasDelegate is false) return;
+            IsChecked = !IsChecked;
+            await OnClick.InvokeAsync(e);
         }
     }
 }

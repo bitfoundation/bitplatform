@@ -8,6 +8,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
         private bool IsCheckBoxIndeterminate = true;
         private bool IsCheckBoxIndeterminateInCode = true;
         private bool IsToggleChecked = true;
+        private bool IsToggleUnChecked = false;
 
         private bool IsMessageBarHidden = false;
         private TextFieldType InputType = TextFieldType.Password;
