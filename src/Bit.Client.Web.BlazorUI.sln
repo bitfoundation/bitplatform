@@ -1,4 +1,4 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30011.22
@@ -31,7 +31,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Client.Web.BlazorUI.Tes
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tooling", "Tooling", "{778B3D69-5A32-453B-9A76-167912F438DE}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Tooling.SourceGenerators", "Tooling\Bit.Tooling.SourceGenerators\Bit.Tooling.SourceGenerators.csproj", "{A09BBB64-CD8C-4993-BA06-427A4C091A32}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bit.Tooling.SourceGenerators", "Tooling\Bit.Tooling.SourceGenerators\Bit.Tooling.SourceGenerators.csproj", "{A09BBB64-CD8C-4993-BA06-427A4C091A32}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
