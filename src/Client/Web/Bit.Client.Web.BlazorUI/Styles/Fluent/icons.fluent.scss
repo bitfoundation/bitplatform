@@ -1,6454 +1,6454 @@
 ﻿
 .bit-icon {
-  display: inline-block;
-  font-family: 'Fabric MDL2 Assets';
-  font-style: normal;
-  font-weight: normal;
+    display: inline-block;
+    font-family: 'Fabric MDL2 Assets';
+    font-style: normal;
+    font-weight: normal;
 }
 
 .bit-icon--circle {
-  margin: 0 0.5em 0 0;
-  position: relative;
-  display: inline-block;
-  font-size: 1rem;
-  width: 1em;
-  height: 1em;
-  padding: 0;
-  text-align: left;
+    margin: 0 0.5em 0 0;
+    position: relative;
+    display: inline-block;
+    font-size: 1rem;
+    width: 1em;
+    height: 1em;
+    padding: 0;
+    text-align: left;
 }
 
 [dir='rtl'] .bit-icon--circle {
-  margin: 0 0 0 0.5em;
+    margin: 0 0 0 0.5em;
 }
 
 .bit-icon--circle::before,
 .bit-icon--circle::after {
-  line-height: 1;
-  font-size: inherit;
+    line-height: 1;
+    font-size: inherit;
 }
 
 .bit-icon--circle::before {
-  display: block;
-  width: 100%;
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  vertical-align: top;
-  position: absolute;
+    display: block;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    vertical-align: top;
+    position: absolute;
 }
 
 .bit-icon--circle::after {
-  content: '\e000';
-  position: absolute;
-  top: 0;
-  left: 0;
-  -ms-transform: scale(2);
-      transform: scale(2);
-  -ms-transform-origin: 50% 50%;
-      transform-origin: 50% 50%;
-  z-index: 0;
+    content: '\e000';
+    position: absolute;
+    top: 0;
+    left: 0;
+    -ms-transform: scale(2);
+    transform: scale(2);
+    -ms-transform-origin: 50% 50%;
+    transform-origin: 50% 50%;
+    z-index: 0;
 }
 
 .bit-icon--xs {
-  font-size: 10px;
+    font-size: 10px;
 }
 
 .bit-icon--s {
-  font-size: 12px;
+    font-size: 12px;
 }
 
 .bit-icon--m {
-  font-size: 16px;
+    font-size: 16px;
 }
 
 .bit-icon--l {
-  font-size: 20px;
+    font-size: 20px;
 }
 
 .bit-icon--12PointStar::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--6PointStar::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--AADLogo::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Accept::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--AccessLogo::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--AccessLogoFill::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--AccountManagement::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Accounts::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ActivateOrders::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ActivityFeed::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Add::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--AddBookmark::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--AddEvent::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--AddFavorite::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--AddFavoriteFill::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--AddFriend::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--AddGroup::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--AddNotes::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--AddOnlineMeeting::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--AddPhone::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--AddTo::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Admin::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--AdminALogo32::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--AdminALogoFill32::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--AdminALogoInverse32::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--AdminCLogoInverse32::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--AdminDLogoInverse32::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--AdminELogoInverse32::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--AdminLLogoInverse32::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--AdminMLogoInverse32::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--AdminOLogoInverse32::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--AdminPLogoInverse32::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--AdminSLogoInverse32::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--AdminYLogoInverse32::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Airplane::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--AirplaneSolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--AirTickets::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--AlarmClock::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Album::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--AlbumRemove::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--AlertSolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--AlignCenter::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--AlignHorizontalCenter::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--AlignHorizontalLeft::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--AlignHorizontalRight::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--AlignJustify::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--AlignLeft::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--AlignRight::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--AlignVerticalBottom::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--AlignVerticalCenter::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--AlignVerticalTop::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--AllApps::before {
-  content: '';
+.bit-icon--AllApps::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--AllApps::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--AllAppsMirrored::before {
-  content: '';
+.bit-icon--AllAppsMirrored::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--AllAppsMirrored::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--AnalyticsLogo::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--AnalyticsQuery::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--AnalyticsReport::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--AnalyticsView::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--AnchorLock::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Annotation::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--AppIconDefault::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Archive::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--AreaChart::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ArrangeBringForward::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ArrangeBringToFront::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ArrangeByFrom::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ArrangeSendBackward::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ArrangeSendToBack::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Arrivals::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--ArrowDownRight8::before {
-  content: '';
+.bit-icon--ArrowDownRight8::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--ArrowDownRight8::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--ArrowDownRightMirrored8::before {
-  content: '';
+.bit-icon--ArrowDownRightMirrored8::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--ArrowDownRightMirrored8::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ArrowTallDownLeft::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ArrowTallDownRight::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ArrowTallUpLeft::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ArrowTallUpRight::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ArrowUpRight::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--ArrowUpRight8::before {
-  content: '';
+.bit-icon--ArrowUpRight8::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--ArrowUpRight8::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--ArrowUpRightMirrored8::before {
-  content: '';
+.bit-icon--ArrowUpRightMirrored8::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--ArrowUpRightMirrored8::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Articles::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Ascending::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--AspectRatio::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--AssessmentGroup::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--AssessmentGroupTemplate::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--AssetLibrary::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Assign::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Asterisk::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--AsteriskSolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ATPLogo::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Attach::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--AustralianRules::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--AutoEnhanceOff::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--AutoEnhanceOn::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--AutoFillTemplate::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--AutoHeight::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--AutoRacing::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--AwayStatus::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--AzureAPIManagement::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--AzureKeyVault::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--AzureLogo::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--AzureServiceEndpoint::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Back::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--BackgroundColor::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Backlog::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--BacklogBoard::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--BackToWindow::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Badge::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Balloons::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--BankSolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--BarChart4::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--BarChartHorizontal::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--BarChartVertical::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Baseball::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--BeerMug::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--BIDashboard::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--BidiLtr::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--BidiRtl::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--BingLogo::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--BirthdayCake::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--BlockContact::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Blocked::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Blocked12::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Blocked2::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--BlockedSite::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--BlockedSolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--BlowingSnow::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Blur::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Boards::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Bold::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--BookingsLogo::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--Bookmarks::before {
-  content: '';
+.bit-icon--Bookmarks::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--Bookmarks::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--BookmarksMirrored::before {
-  content: '';
+.bit-icon--BookmarksMirrored::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--BookmarksMirrored::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--BorderDash::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--BorderDot::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--BoxAdditionSolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--BoxCheckmarkSolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--BoxMultiplySolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--BoxPlaySolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--BoxSubtractSolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--BranchCommit::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--BranchCompare::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--BranchFork::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--BranchFork2::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--BranchLocked::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--BranchMerge::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--BranchPullRequest::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--BranchSearch::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--BranchShelveset::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Breadcrumb::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Breakfast::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Brightness::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Broom::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--BrowserScreenShot::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--BrowserTab::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--BrowserTabScreenshot::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Brunch::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--BucketColor::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--BucketColorFill::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--BufferTimeAfter::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--BufferTimeBefore::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--BufferTimeBoth::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Bug::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--BugSolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Build::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--BuildIssue::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--BuildQueue::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--BuildQueueNew::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--BulkUpload::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--BulletedList2::before {
-  content: '';
+.bit-icon--BulletedList2::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--BulletedList2::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--BulletedList2Mirrored::before {
-  content: '';
+.bit-icon--BulletedList2Mirrored::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--BulletedList2Mirrored::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--BulletedList::before {
-  content: '';
+.bit-icon--BulletedList::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--BulletedList::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--BulletedListMirrored::before {
-  content: '';
+.bit-icon--BulletedListMirrored::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--BulletedListMirrored::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Bullseye::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Bus::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--BusinessCenterLogo::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--BusinessHoursSign::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--BusSolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Cafe::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Cake::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Calculator::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CalculatorAddition::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CalculatorEqualTo::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CalculatorMultiply::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CalculatorNotEqualTo::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CalculatorSubtract::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CalendarAgenda::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CalendarDay::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--Calendar::before {
-  content: '';
+.bit-icon--Calendar::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--Calendar::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--CalendarMirrored::before {
-  content: '';
+.bit-icon--CalendarMirrored::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--CalendarMirrored::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CalendarReply::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--CalendarSettings::before {
-  content: '';
+.bit-icon--CalendarSettings::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--CalendarSettings::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--CalendarSettingsMirrored::before {
-  content: '';
+.bit-icon--CalendarSettingsMirrored::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--CalendarSettingsMirrored::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CalendarWeek::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CalendarWorkWeek::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CaloriesAdd::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Camera::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Cancel::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CannedChat::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Car::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CaretBottomLeftCenter8::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CaretBottomLeftSolid8::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CaretBottomRightCenter8::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CaretBottomRightSolid8::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CaretDown8::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CaretDownSolid8::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--CaretHollow::before {
-  content: '';
+.bit-icon--CaretHollow::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--CaretHollow::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--CaretHollowMirrored::before {
-  content: '';
+.bit-icon--CaretHollowMirrored::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--CaretHollowMirrored::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CaretLeft8::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CaretLeftSolid8::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CaretRight::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CaretRight8::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CaretRightSolid8::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CaretSolid16::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CaretSolidDown::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CaretSolidLeft::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--CaretSolid::before {
-  content: '';
+.bit-icon--CaretSolid::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--CaretSolid::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--CaretSolidMirrored::before {
-  content: '';
+.bit-icon--CaretSolidMirrored::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--CaretSolidMirrored::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CaretSolidRight::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CaretSolidUp::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CaretTopLeftCenter8::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CaretTopLeftSolid8::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CaretTopRightCenter8::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CaretTopRightSolid8::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CaretUp8::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CaretUpSolid8::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Cat::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CellPhone::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Certificate::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CertifiedDatabase::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Chart::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ChartSeries::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ChartXAngle::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ChartYAngle::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Chat::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ChatInviteFriend::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ChatSolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Checkbox::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CheckboxComposite::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CheckboxCompositeReversed::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CheckboxIndeterminate::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CheckedOutByOther12::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CheckedOutByYou12::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CheckList::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CheckMark::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ChevronDown::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ChevronDownEnd6::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ChevronDownMed::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ChevronDownSmall::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ChevronFold10::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ChevronLeft::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ChevronLeftEnd6::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ChevronLeftMed::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ChevronLeftSmall::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ChevronRight::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ChevronRightEnd6::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ChevronRightMed::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ChevronRightSmall::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ChevronUnfold10::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ChevronUp::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ChevronUpEnd6::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ChevronUpMed::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ChevronUpSmall::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Chopsticks::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--ChromeBack::before {
-  content: '';
+.bit-icon--ChromeBack::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--ChromeBack::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--ChromeBackMirrored::before {
-  content: '';
+.bit-icon--ChromeBackMirrored::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--ChromeBackMirrored::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ChromeClose::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ChromeMinimize::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CircleAddition::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CircleAdditionSolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CircleFill::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CircleHalfFull::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CirclePause::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CirclePauseSolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CirclePlus::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CircleRing::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CircleShapeSolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CircleStop::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CircleStopSolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CityNext::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ClassNotebookLogo16::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ClassNotebookLogo32::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ClassNotebookLogoFill16::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ClassNotebookLogoFill32::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ClassNotebookLogoInverse::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ClassNotebookLogoInverse16::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ClassNotebookLogoInverse32::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ClassroomLogo::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Clear::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ClearFilter::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ClearFormatting::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ClearNight::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ClipboardSolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Clock::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CloneToDesktop::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ClosedCaption::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--ClosePane::before {
-  content: '';
+.bit-icon--ClosePane::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--ClosePane::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--ClosePaneMirrored::before {
-  content: '';
+.bit-icon--ClosePaneMirrored::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--ClosePaneMirrored::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Cloud::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CloudAdd::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CloudDownload::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CloudUpload::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CloudWeather::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Cloudy::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Cocktails::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Code::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CodeEdit::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Coffee::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CoffeeScript::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CollapseContent::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CollapseContentSingle::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CollapseMenu::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CollegeFootball::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CollegeHoops::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Color::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ColorSolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ColumnLeftTwoThirds::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ColumnLeftTwoThirdsEdit::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ColumnOptions::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ColumnRightTwoThirds::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ColumnRightTwoThirdsEdit::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Combine::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Combobox::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CommandPrompt::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Comment::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CommentAdd::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CommentNext::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CommentPrevious::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CommentUrgent::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Commitments::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Communications::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--CompanyDirectory::before {
-  content: '';
+.bit-icon--CompanyDirectory::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--CompanyDirectory::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--CompanyDirectoryMirrored::before {
-  content: '';
+.bit-icon--CompanyDirectoryMirrored::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--CompanyDirectoryMirrored::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CompassNW::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Completed::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CompletedSolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ConfigurationSolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ConnectContacts::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ConstructionCone::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ConstructionConeSolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Contact::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ContactCard::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--ContactCardSettings::before {
-  content: '';
+.bit-icon--ContactCardSettings::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--ContactCardSettings::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--ContactCardSettingsMirrored::before {
-  content: '';
+.bit-icon--ContactCardSettingsMirrored::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--ContactCardSettingsMirrored::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ContactInfo::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ContactLink::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ContextMenu::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Contrast::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Copy::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Cotton::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CPlusPlus::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CPlusPlusLanguage::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CreateMailRule::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Cricket::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CRMReport::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Crop::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Crown::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CrownSolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CSharp::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CSharpLanguage::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--CSS::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--CustomList::before {
-  content: '';
+.bit-icon--CustomList::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--CustomList::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--CustomListMirrored::before {
-  content: '';
+.bit-icon--CustomListMirrored::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--CustomListMirrored::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Cut::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Cycling::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--DashboardAdd::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Database::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--DataConnectionLibrary::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--DateTime2::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--DateTime::before {
-  content: '';
+.bit-icon--DateTime::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--DateTime::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--DateTimeMirrored::before {
-  content: '';
+.bit-icon--DateTimeMirrored::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--DateTimeMirrored::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--DeactivateOrders::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--DecisionSolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--DeclineCall::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--DecreaseIndentLegacy::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--DefaultRatio::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--DefectSolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Delete::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--DeleteColumns::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--DeleteRows::before {
-  content: '';
+.bit-icon--DeleteRows::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--DeleteRows::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--DeleteRowsMirrored::before {
-  content: '';
+.bit-icon--DeleteRowsMirrored::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--DeleteRowsMirrored::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--DeleteTable::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--DeliveryTruck::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--DelveAnalytics::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--DelveAnalyticsLogo::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--DelveLogo::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--DelveLogoFill::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--DelveLogoInverse::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Deploy::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Descending::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Design::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--DesktopScreenshot::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--DeveloperTools::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Devices3::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Devices4::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Diagnostic::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Dialpad::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--DiamondSolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Dictionary::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--DictionaryRemove::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--DietPlanNotebook::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--DiffInline::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--DiffSideBySide::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--DisableUpdates::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Dislike::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--DislikeSolid::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--DockLeft::before {
-  content: '';
+.bit-icon--DockLeft::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--DockLeft::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--DockLeftMirrored::before {
-  content: '';
+.bit-icon--DockLeftMirrored::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--DockLeftMirrored::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--DockRight::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--DocLibrary::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--DocsLogoInverse::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Document::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--DocumentApproval::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Documentation::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--DocumentManagement::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--DocumentReply::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--DocumentSearch::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--DocumentSet::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--DOM::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--DonutChart::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Door::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--DoubleBookmark::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--DoubleChevronDown::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--DoubleChevronDown12::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--DoubleChevronDown8::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--DoubleChevronLeft::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--DoubleChevronLeft12::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--DoubleChevronLeft8::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--DoubleChevronLeftMed::before {
-  content: '';
+.bit-icon--DoubleChevronLeftMed::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--DoubleChevronLeftMed::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--DoubleChevronLeftMedMirrored::before {
-  content: '';
+.bit-icon--DoubleChevronLeftMedMirrored::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--DoubleChevronLeftMedMirrored::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--DoubleChevronRight::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--DoubleChevronRight12::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--DoubleChevronRight8::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--DoubleChevronUp::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--DoubleChevronUp12::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--DoubleChevronUp8::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--DoubleColumn::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--DoubleColumnEdit::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Down::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Download::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--DownloadDocument::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--DragObject::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--DrillDown::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--DrillDownSolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--DrillExpand::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--DrillShow::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--DrillThrough::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--DRM::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Drop::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Dropdown::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--DropShapeSolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Duststorm::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Dynamics365Logo::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--DynamicSMBLogo::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--EatDrink::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--EdgeLogo::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--EditContact::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--EditMail::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--Edit::before {
-  content: '';
+.bit-icon--Edit::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--Edit::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--EditMirrored::before {
-  content: '';
+.bit-icon--EditMirrored::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--EditMirrored::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--EditNote::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--EditPhoto::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--EditSolid12::before {
-  content: '';
+.bit-icon--EditSolid12::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--EditSolid12::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--EditSolidMirrored12::before {
-  content: '';
+.bit-icon--EditSolidMirrored12::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--EditSolidMirrored12::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--EditStyle::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Education::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Ellipse::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Embed::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--EMI::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Emoji::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Emoji2::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--EmojiDisappointed::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--EmojiNeutral::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--EmojiTabSymbols::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--EmptyRecycleBin::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Encryption::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--EngineeringGroup::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--EntryDecline::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--EntryView::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Equalizer::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--EraseTool::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Error::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ErrorBadge::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Event::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--EventAccepted::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--EventDate::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--EventDeclined::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--EventInfo::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--EventTentative::before {
-  content: '';
+.bit-icon--EventTentative::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--EventTentative::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--EventTentativeMirrored::before {
-  content: '';
+.bit-icon--EventTentativeMirrored::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--EventTentativeMirrored::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ExcelDocument::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ExcelLogo::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ExcelLogo16::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ExcelLogoFill::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ExcelLogoFill16::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ExcelLogoInverse::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ExcelLogoInverse16::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ExchangeLogo::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ExchangeLogoFill::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ExchangeLogoInverse::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ExerciseTracker::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ExpandMenu::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ExploreContent::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ExploreContentSingle::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ExploreData::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--Export::before {
-  content: '';
+.bit-icon--Export::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--Export::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--ExportMirrored::before {
-  content: '';
+.bit-icon--ExportMirrored::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--ExportMirrored::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ExternalBuild::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ExternalGit::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ExternalTFVC::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ExternalXAML::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--F12DevTools::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--FabricAssetLibrary::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--FabricDataConnectionLibrary::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--FabricDocLibrary::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--FabricFolder::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--FabricFolderFill::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--FabricFolderSearch::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--FabricFormLibrary::before {
-  content: '';
+.bit-icon--FabricFormLibrary::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--FabricFormLibrary::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--FabricFormLibraryMirrored::before {
-  content: '';
+.bit-icon--FabricFormLibraryMirrored::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--FabricFormLibraryMirrored::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--FabricMovetoFolder::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--FabricNewFolder::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--FabricOpenFolderHorizontal::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--FabricPictureLibrary::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--FabricPublicFolder::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--FabricReportLibrary::before {
-  content: '';
+.bit-icon--FabricReportLibrary::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--FabricReportLibrary::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--FabricReportLibraryMirrored::before {
-  content: '';
+.bit-icon--FabricReportLibraryMirrored::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--FabricReportLibraryMirrored::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--FabricSyncFolder::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--FabricUnsyncFolder::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Family::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--FangBody::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--FastForward::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--FastMode::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Favicon::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--FavoriteList::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--FavoriteStar::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--FavoriteStarFill::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Fax::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Feedback::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--FeedbackRequestSolid::before {
-  content: '';
+.bit-icon--FeedbackRequestSolid::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--FeedbackRequestSolid::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--FeedbackRequestMirroredSolid::before {
-  content: '';
+.bit-icon--FeedbackRequestMirroredSolid::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--FeedbackRequestMirroredSolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--FeedbackResponseSolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Ferry::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--FerrySolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--FieldChanged::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--FieldEmpty::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--FieldFilled::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--FieldNotChanged::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--FieldReadOnly::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--FieldRequired::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--FileASPX::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--FileBug::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--FileCode::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--FileComment::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--FileCSS::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--FileHTML::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--FileImage::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--FileJAVA::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--FileLess::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--FilePDB::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--FileSass::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--FileSQL::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--FileSymlink::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--FileTemplate::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--FileTypeSolution::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--FileYML::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Filter::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Filters::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--FilterSolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--FiltersSolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Financial::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--FinancialSolid::before {
-  content: '';
+.bit-icon--FinancialSolid::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--FinancialSolid::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--FinancialMirroredSolid::before {
-  content: '';
+.bit-icon--FinancialMirroredSolid::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--FinancialMirroredSolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Fingerprint::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--FiveTileGrid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Flag::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--FlameSolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--FlickDown::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--FlickLeft::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--FlickRight::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--FlickUp::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Flow::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--FocalPoint::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Fog::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Folder::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--FolderFill::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--FolderHorizontal::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--FolderList::before {
-  content: '';
+.bit-icon--FolderList::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--FolderList::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--FolderListMirrored::before {
-  content: '';
+.bit-icon--FolderListMirrored::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--FolderListMirrored::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--FolderOpen::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--FolderQuery::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--FolderSearch::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--FollowUser::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Font::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--FontColor::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--FontColorA::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--FontColorSwatch::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--FontDecrease::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--FontIncrease::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--FontSize::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--FormLibrary::before {
-  content: '';
+.bit-icon--FormLibrary::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--FormLibrary::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--FormLibraryMirrored::before {
-  content: '';
+.bit-icon--FormLibraryMirrored::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--FormLibraryMirrored::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Forward::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ForwardEvent::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Freezing::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Frigid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--FSharp::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--FSharpLanguage::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--FullCircleMask::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--FullHistory::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--FullScreen::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--FullWidth::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--FullWidthEdit::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--FunctionalManagerDashboard::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--GallatinLogo::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Generate::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--GenericScan::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Giftbox::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--GiftboxOpen::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--GiftBoxSolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--GiftCard::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--GitFork::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--GitGraph::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Glasses::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Glimmer::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--GlobalNavButton::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Globe::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Globe2::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--GlobeFavorite::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Golf::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--GotoToday::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--GridViewLarge::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--GridViewMedium::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--GridViewSmall::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--GripperBarHorizontal::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--GripperBarVertical::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--GripperTool::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Group::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--GroupedAscending::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--GroupedDescending::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--GroupedList::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--GroupObject::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--GUID::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Guitar::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--HailDay::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--HailNight::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--HalfAlpha::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--HalfCircle::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--HandsFree::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Handwriting::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--HardDrive::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--HardDriveGroup::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--HardDriveLock::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--HardDriveUnlock::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Header1::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Header2::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Header3::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Header4::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Headset::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--HeadsetSolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Health::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--HealthSolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Heart::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--HeartBroken::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--HeartFill::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--Help::before {
-  content: '';
+.bit-icon--Help::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--Help::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--HelpMirrored::before {
-  content: '';
+.bit-icon--HelpMirrored::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--HelpMirrored::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Hexagon::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Hide::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Hide2::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Highlight::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--HighlightMappedShapes::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--HintText::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--History::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Home::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--HomeSolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--HorizontalDistributeCenter::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Hospital::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Hotel::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--HourGlass::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--IconSetsFlag::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--IDBadge::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ImageCrosshair::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ImageDiff::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ImagePixel::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ImageSearch::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Important::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--Import::before {
-  content: '';
+.bit-icon--Import::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--Import::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--ImportMirrored::before {
-  content: '';
+.bit-icon--ImportMirrored::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--ImportMirrored::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Inbox::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--InboxCheck::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--IncidentTriangle::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--IncreaseIndentLegacy::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Info::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Info2::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--InfoSolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--InsertColumnsLeft::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--InsertColumnsRight::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--InsertRowsAbove::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--InsertRowsBelow::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--InsertSignatureLine::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--InsertTextBox::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--InstallToDrive::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--InternetSharing::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--IRMForward::before {
-  content: '';
+.bit-icon--IRMForward::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--IRMForward::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--IRMForwardMirrored::before {
-  content: '';
+.bit-icon--IRMForwardMirrored::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--IRMForwardMirrored::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--IRMReply::before {
-  content: '';
+.bit-icon--IRMReply::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--IRMReply::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--IRMReplyMirrored::before {
-  content: '';
+.bit-icon--IRMReplyMirrored::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--IRMReplyMirrored::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--IssueSolid::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--IssueTracking::before {
-  content: '';
+.bit-icon--IssueTracking::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--IssueTracking::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--IssueTrackingMirrored::before {
-  content: '';
+.bit-icon--IssueTrackingMirrored::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--IssueTrackingMirrored::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Italic::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--JavaScriptLanguage::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--JoinOnlineMeeting::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--JS::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--KaizalaLogo::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Label::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--LadybugSolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Lamp::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--LandscapeOrientation::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--LaptopSecure::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--LaptopSelected::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--LargeGrid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Leave::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Library::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Lifesaver::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--LifesaverLock::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Light::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Lightbulb::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--LightningBolt::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--LightWeight::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Like::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--LikeSolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Line::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--LineChart::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--LineSpacing::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--LineStyle::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--LineThickness::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Link::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--LinkedInLogo::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--List::before {
-  content: '';
+.bit-icon--List::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--List::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--ListMirrored::before {
-  content: '';
+.bit-icon--ListMirrored::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--ListMirrored::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--LocaleLanguage::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Location::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--LocationCircle::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--LocationDot::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--LocationFill::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--LocationOutline::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Lock::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--LockSolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--LogRemove::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--LookupEntities::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--LowerBrightness::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--LyncLogo::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Mail::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--MailAlert::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--MailCheck::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--MailFill::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--MailForward::before {
-  content: '';
+.bit-icon--MailForward::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--MailForward::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--MailForwardMirrored::before {
-  content: '';
+.bit-icon--MailForwardMirrored::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--MailForwardMirrored::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--MailLowImportance::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--MailPause::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--MailReminder::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--MailRepeat::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--MailReplyAll::before {
-  content: '';
+.bit-icon--MailReplyAll::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--MailReplyAll::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--MailReplyAllMirrored::before {
-  content: '';
+.bit-icon--MailReplyAllMirrored::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--MailReplyAllMirrored::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--MailReply::before {
-  content: '';
+.bit-icon--MailReply::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--MailReply::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--MailReplyMirrored::before {
-  content: '';
+.bit-icon--MailReplyMirrored::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--MailReplyMirrored::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--MailSolid::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--MailTentative::before {
-  content: '';
+.bit-icon--MailTentative::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--MailTentative::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--MailTentativeMirrored::before {
-  content: '';
+.bit-icon--MailTentativeMirrored::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--MailTentativeMirrored::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--MailUndelivered::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ManagerSelfService::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--MapDirections::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--MapPin::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--MapPinSolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--MarkDownLanguage::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Market::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--MarketDown::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--MasterDatabase::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--MaximumValue::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Medal::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--MediaAdd::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Medical::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Megaphone::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--MegaphoneSolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Memo::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Merge::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--MergeDuplicate::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Message::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--MessageFill::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--MicOff::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Microphone::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--MicrosoftFlowLogo::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--MicrosoftStaffhubLogo::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--MiniContract::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--MiniExpand::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--MiniLink::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--MinimumValue::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--MobileReport::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--MobileSelected::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Money::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--More::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--MoreSports::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--MoreVertical::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Move::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Movers::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--MoveToFolder::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--MSNLogo::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--MSNVideos::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--MSNVideosSolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--MTMLogo::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--MultiSelect::before {
-  content: '';
+.bit-icon--MultiSelect::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--MultiSelect::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--MultiSelectMirrored::before {
-  content: '';
+.bit-icon--MultiSelectMirrored::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--MultiSelectMirrored::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--MusicInCollection::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--MusicInCollectionFill::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--MusicNote::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--MyMoviesTV::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Nav2DMapView::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--NavigateBack::before {
-  content: '';
+.bit-icon--NavigateBack::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--NavigateBack::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--NavigateBackMirrored::before {
-  content: '';
+.bit-icon--NavigateBackMirrored::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--NavigateBackMirrored::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--NavigateExternalInline::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--NavigateForward::before {
-  content: '';
+.bit-icon--NavigateForward::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--NavigateForward::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--NavigateForwardMirrored::before {
-  content: '';
+.bit-icon--NavigateForwardMirrored::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--NavigateForwardMirrored::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--NavigationFlipper::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--NetworkTower::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--NewAnalyticsQuery::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--NewFolder::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--News::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--NewsSearch::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--NewTeamProject::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Next::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--NonprofitLogo32::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--NormalWeight::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--NoteForward::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--NotePinned::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--NoteReply::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--NotExecuted::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--NotImpactedSolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--NugetLogo::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--NumberedList::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--NumberField::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--NumberSequence::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Octagon::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--OEM::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--OfficeAddinsLogo::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--OfficeAssistantLogo::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--OfficeFormsLogo::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--OfficeFormsLogo16::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--OfficeFormsLogo24::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--OfficeFormsLogoFill::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--OfficeFormsLogoFill16::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--OfficeFormsLogoFill24::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--OfficeFormsLogoInverse::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--OfficeFormsLogoInverse16::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--OfficeFormsLogoInverse24::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--OfficeLogo::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--OfficeStoreLogo::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--OfficeVideoLogo::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--OfficeVideoLogoFill::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--OfficeVideoLogoInverse::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--OfflineOneDriveParachute::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--OfflineOneDriveParachuteDisabled::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--OfflineStorageSolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--OneDrive::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--OneDriveAdd::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--OneDriveFolder16::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--OneNoteEduLogoInverse::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--OneNoteLogo::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--OneNoteLogo16::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--OneNoteLogoFill::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--OneNoteLogoFill16::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--OneNoteLogoInverse::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--OneNoteLogoInverse16::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--OpenFile::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--OpenFolderHorizontal::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--OpenInNewWindow::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--OpenPane::before {
-  content: '';
+.bit-icon--OpenPane::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--OpenPane::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--OpenPaneMirrored::before {
-  content: '';
+.bit-icon--OpenPaneMirrored::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--OpenPaneMirrored::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--OpenSource::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Org::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Orientation::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--OutlookLogo::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--OutlookLogo16::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--OutlookLogoFill::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--OutlookLogoFill16::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--OutlookLogoInverse::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--OutlookLogoInverse16::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--OutOfOffice::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Package::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Packages::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Padding::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--PaddingBottom::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--PaddingLeft::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--PaddingRight::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--PaddingTop::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Page::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--PageAdd::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--PageCheckedin::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--PageCheckedOut::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--PageEdit::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--PageLeft::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--PageListSolid::before {
-  content: '';
+.bit-icon--PageListSolid::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--PageListSolid::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--PageListMirroredSolid::before {
-  content: '';
+.bit-icon--PageListMirroredSolid::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--PageListMirroredSolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--PageLock::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--PageRemove::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--PageRight::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--PageSolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--PanoIndicator::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Parachute::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ParachuteSolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Parameter::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--ParkingLocation::before {
-  content: '';
+.bit-icon--ParkingLocation::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--ParkingLocation::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--ParkingLocationMirrored::before {
-  content: '';
+.bit-icon--ParkingLocationMirrored::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--ParkingLocationMirrored::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--ParkingSolid::before {
-  content: '';
+.bit-icon--ParkingSolid::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--ParkingSolid::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--ParkingMirroredSolid::before {
-  content: '';
+.bit-icon--ParkingMirroredSolid::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--ParkingMirroredSolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--PartlyCloudyDay::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--PartlyCloudyNight::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--PartyLeader::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Paste::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--PasteAsCode::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--PasteAsText::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Pause::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--PaymentCard::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--PC1::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--PDF::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--PencilReply::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Pentagon::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--People::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--PeopleAdd::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--PeopleAlert::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--PeopleBlock::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--PeoplePause::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--PeopleRepeat::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Permissions::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--PermissionsSolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Personalize::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Phishing::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Phone::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Photo2::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Photo2Add::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Photo2Remove::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--PhotoCollection::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Picture::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--PictureCenter::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--PictureFill::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--PictureLibrary::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--PicturePosition::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--PictureStretch::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--PictureTile::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--PieDouble::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--PieSingle::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--PieSingleSolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Pill::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Pin::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Pinned::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--PinnedFill::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--PivotChart::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--PlannerLogo::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--PlanView::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Play::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--PlayerSettings::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--PlayResume::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Plug::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--PlugConnected::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--PlugDisconnected::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--PlugSolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--POI::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--POISolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--PostUpdate::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--PowerApps::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--PowerApps2Logo::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--PowerAppsLogo::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--PowerBILogo::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--PowerButton::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--PowerPointDocument::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--PowerPointLogo::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--PowerPointLogo16::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--PowerPointLogoFill::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--PowerPointLogoFill16::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--PowerPointLogoInverse::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--PowerPointLogoInverse16::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Precipitation::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--PresenceChickletVideo::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Preview::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--PreviewLink::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Previous::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--PrimaryCalendar::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Print::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--PrintfaxPrinterFile::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Processing::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ProcessMetaTask::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Product::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ProfileSearch::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ProFootball::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ProgressLoopInner::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ProgressLoopOuter::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ProgressRingDots::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ProHockey::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ProjectCollection::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ProjectLogo16::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ProjectLogo32::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ProjectLogoFill16::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ProjectLogoFill32::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ProjectLogoInverse::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ProtectedDocument::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ProtectionCenterLogo32::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ProtectRestrict::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--PublicCalendar::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--PublicContactCard::before {
-  content: '';
+.bit-icon--PublicContactCard::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--PublicContactCard::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--PublicContactCardMirrored::before {
-  content: '';
+.bit-icon--PublicContactCardMirrored::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--PublicContactCardMirrored::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--PublicEmail::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--PublicFolder::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--PublishCourse::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--PublisherLogo::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--PublisherLogo16::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--PublisherLogoFill::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--PublisherLogoFill16::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--PublisherLogoInverse16::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Puzzle::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--PY::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--PythonLanguage::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--QuarterCircle::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--QueryList::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--Questionnaire::before {
-  content: '';
+.bit-icon--Questionnaire::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--Questionnaire::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--QuestionnaireMirrored::before {
-  content: '';
+.bit-icon--QuestionnaireMirrored::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--QuestionnaireMirrored::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--QuickNote::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--QuickNoteSolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--R::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--RadioBtnOff::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--RadioBtnOn::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--RadioBullet::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Rain::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--RainShowersDay::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--RainShowersNight::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--RainSnow::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--RawSource::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Read::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ReadingMode::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ReadingModeSolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ReadOutLoud::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ReceiptCheck::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ReceiptForward::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ReceiptReply::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--ReceiptTentative::before {
-  content: '';
+.bit-icon--ReceiptTentative::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--ReceiptTentative::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--ReceiptTentativeMirrored::before {
-  content: '';
+.bit-icon--ReceiptTentativeMirrored::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--ReceiptTentativeMirrored::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ReceiptUndelivered::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Recent::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Record2::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--RectangleShapeSolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--RectangularClipping::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--RecurringEvent::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--RecurringTask::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--RecycleBin::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Redeploy::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--RedEye::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Redo::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Refresh::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ReminderGroup::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ReminderPerson::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Remote::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Remove::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--RemoveEvent::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--RemoveFilter::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--RemoveLink::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--RemoveOccurrence::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Rename::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--RenewalCurrent::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--RenewalFuture::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ReopenPages::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Repair::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ReplyAllAlt::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--ReplyAll::before {
-  content: '';
+.bit-icon--ReplyAll::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--ReplyAll::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--ReplyAllMirrored::before {
-  content: '';
+.bit-icon--ReplyAllMirrored::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--ReplyAllMirrored::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ReplyAlt::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--Reply::before {
-  content: '';
+.bit-icon--Reply::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--Reply::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--ReplyMirrored::before {
-  content: '';
+.bit-icon--ReplyMirrored::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--ReplyMirrored::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Repo::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ReportAdd::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ReportHacked::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--ReportLibrary::before {
-  content: '';
+.bit-icon--ReportLibrary::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--ReportLibrary::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--ReportLibraryMirrored::before {
-  content: '';
+.bit-icon--ReportLibraryMirrored::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--ReportLibraryMirrored::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--RepoSolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ReturnToSession::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--ReviewRequestSolid::before {
-  content: '';
+.bit-icon--ReviewRequestSolid::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--ReviewRequestSolid::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--ReviewRequestMirroredSolid::before {
-  content: '';
+.bit-icon--ReviewRequestMirroredSolid::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--ReviewRequestMirroredSolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ReviewResponseSolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ReviewSolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--RevToggleKey::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Rewind::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Ribbon::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--RibbonSolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--RightDoubleQuote::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--RightTriangle::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Ringer::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--RingerOff::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--RingerRemove::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Robot::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Rocket::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Room::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Rotate::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--RowsChild::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--RowsGroup::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Rugby::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Running::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Sad::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--SadSolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Save::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--SaveAll::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--SaveAndClose::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--SaveAs::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Savings::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ScaleUp::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ScheduleEventAction::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ScopeTemplate::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Script::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ScrollUpDown::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Search::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--SearchAndApps::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--SearchBookmark::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--SearchCalendar::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--SearchIssue::before {
-  content: '';
+.bit-icon--SearchIssue::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--SearchIssue::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--SearchIssueMirrored::before {
-  content: '';
+.bit-icon--SearchIssueMirrored::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--SearchIssueMirrored::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Section::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Sections::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--SecurityGroup::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--SelectAll::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Sell::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--SemiboldWeight::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--Send::before {
-  content: '';
+.bit-icon--Send::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--Send::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--SendMirrored::before {
-  content: '';
+.bit-icon--SendMirrored::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--SendMirrored::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Separator::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Server::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ServerEnviroment::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ServerProcesses::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--SetAction::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Settings::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Share::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ShareiOS::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--SharepointLogo::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--SharepointLogoFill::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--SharepointLogoInverse::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Shield::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ShieldSolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Shop::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ShoppingCart::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ShoppingCartSolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ShopServer::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--ShowResults::before {
-  content: '';
+.bit-icon--ShowResults::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--ShowResults::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--ShowResultsMirrored::before {
-  content: '';
+.bit-icon--ShowResultsMirrored::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--ShowResultsMirrored::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--SidePanel::before {
-  content: '';
+.bit-icon--SidePanel::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--SidePanel::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--SidePanelMirrored::before {
-  content: '';
+.bit-icon--SidePanelMirrored::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--SidePanelMirrored::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--SignOut::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--SingleBookmark::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--SingleBookmarkSolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--SingleColumn::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--SingleColumnEdit::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--SIPMove::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--SiteScan::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--SizeLegacy::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--SkiResorts::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--SkypeCheck::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--SkypeCircleCheck::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--SkypeCircleClock::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--SkypeCircleMinus::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--SkypeClock::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--SkypeForBusinessLogo::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--SkypeForBusinessLogo16::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--SkypeForBusinessLogoFill::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--SkypeForBusinessLogoFill16::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--SkypeLogo::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--SkypeLogo16::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--SkypeMessage::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--SkypeMinus::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Slider::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--SliderHandleSize::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--SliderThumb::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Snooze::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Snow::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Snowflake::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--SnowShowerDay::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--SnowShowerNight::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Soccer::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--SocialListeningLogo::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Sort::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--SortDown::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--SortLines::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--SortUp::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Source::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Spacer::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Speakers::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--SpeedHigh::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Split::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--SplitObject::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Sprint::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Squalls::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--SquareShapeSolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Stack::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--StackedBarChart::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--StackedLineChart::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--StackIndicator::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--StaffNotebookLogo16::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--StaffNotebookLogo32::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--StaffNotebookLogoFill16::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--StaffNotebookLogoFill32::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--StaffNotebookLogoInverted16::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--StaffNotebookLogoInverted32::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Starburst::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--StarburstSolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--StatusCircleBlock2::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--StatusCircleCheckmark::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--StatusCircleErrorX::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--StatusCircleExclamation::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--StatusCircleInfo::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--StatusCircleInner::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--StatusCircleOuter::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--StatusCircleQuestionMark::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--StatusCircleRing::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--StatusErrorFull::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--StatusTriangle::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--StatusTriangleExclamation::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--StatusTriangleInner::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--StatusTriangleOuter::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Step::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--StepInsert::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--StepShared::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--StepSharedAdd::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--StepSharedInsert::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--StockDown::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--StockUp::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Stop::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--StopSolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Stopwatch::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--StoreLogo16::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--StoreLogoMed20::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Storyboard::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Streaming::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--StreamingOff::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--StreamLogo::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Strikethrough::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Subscribe::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Subscript::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--SubstitutionsIn::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Suitcase::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--SunAdd::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Sunny::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--SunQuestionMark::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Superscript::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--SurveyQuestions::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--SwayLogo16::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--SwayLogo32::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--SwayLogoFill16::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--SwayLogoFill32::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--SwayLogoInverse::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Switch::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--SwitcherStartEnd::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Sync::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--SyncFolder::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--SyncOccurence::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--SyncToPC::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--System::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Tab::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Table::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Tablet::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--TabletMode::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--TabletSelected::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Tag::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Taskboard::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--TaskGroup::before {
-  content: '';
+.bit-icon--TaskGroup::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--TaskGroup::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--TaskGroupMirrored::before {
-  content: '';
+.bit-icon--TaskGroupMirrored::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--TaskGroupMirrored::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--TaskLogo::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--TaskManager::before {
-  content: '';
+.bit-icon--TaskManager::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--TaskManager::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--TaskManagerMirrored::before {
-  content: '';
+.bit-icon--TaskManagerMirrored::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--TaskManagerMirrored::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--TaskSolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Taxi::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--TeamFavorite::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--TeamsLogo::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--TeamsLogoFill::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--TeamsLogoInverse::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Teamwork::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Teeth::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--TemporaryUser::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Tennis::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--TestAutoSolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--TestBeaker::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--TestBeakerSolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--TestCase::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--TestExploreSolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--TestImpactSolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--TestParameter::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--TestPlan::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--TestStep::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--TestSuite::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--TestUserSolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--TextBox::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--TextCallout::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--TextDocument::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--TextDocumentShared::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--TextField::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--TextOverflow::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--TFVCLogo::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ThisPC::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ThreeQuarterCircle::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--ThumbnailView::before {
-  content: '';
+.bit-icon--ThumbnailView::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--ThumbnailView::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--ThumbnailViewMirrored::before {
-  content: '';
+.bit-icon--ThumbnailViewMirrored::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--ThumbnailViewMirrored::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Thunderstorms::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Ticket::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Tiles::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Tiles2::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--TimeEntry::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Timeline::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--TimelineDelivery::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--TimelineMatrixView::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--TimelineProgress::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Timer::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--TimeSheet::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ToDoLogoBottom::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ToDoLogoInverse::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ToDoLogoTop::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ToggleBorder::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ToggleFilled::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ToggleOff::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ToggleThumb::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Toll::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Touch::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--TouchPointer::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--Trackers::before {
-  content: '';
+.bit-icon--Trackers::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--Trackers::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--TrackersMirrored::before {
-  content: '';
+.bit-icon--TrackersMirrored::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--TrackersMirrored::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Train::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--TrainSolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--TransferCall::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Transition::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--TransitionEffect::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--TransitionPop::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--TransitionPush::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Trending12::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--TriangleDown12::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--TriangleLeft12::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--TriangleRight12::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--TriangleShapeSolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--TriangleSolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--TriangleSolidDown12::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--TriangleSolidLeft12::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--TriangleSolidRight12::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--TriangleSolidUp12::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--TriangleUp12::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--TriggerApproval::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--TriggerAuto::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--TriggerUser::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--TripleColumn::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--TripleColumnEdit::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Trophy::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Trophy2::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Trophy2Solid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--TurnRight::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--TVMonitor::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--TVMonitorSelected::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--TypeScriptLanguage::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Umbrella::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Underline::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Undo::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--Uneditable::before {
-  content: '';
+.bit-icon--Uneditable::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--Uneditable::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--UneditableMirrored::before {
-  content: '';
+.bit-icon--UneditableMirrored::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--UneditableMirrored::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--UneditableSolid12::before {
-  content: '';
+.bit-icon--UneditableSolid12::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--UneditableSolid12::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--UneditableSolidMirrored12::before {
-  content: '';
+.bit-icon--UneditableSolidMirrored12::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--UneditableSolidMirrored12::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Unfavorite::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--UngroupObject::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--UnknownCall::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--Unknown::before {
-  content: '';
+.bit-icon--Unknown::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--Unknown::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--UnknownMirrored::before {
-  content: '';
+.bit-icon--UnknownMirrored::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--UnknownMirrored::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--UnknownSolid::before {
-  content: '';
+.bit-icon--UnknownSolid::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--UnknownSolid::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--UnknownMirroredSolid::before {
-  content: '';
+.bit-icon--UnknownMirroredSolid::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--UnknownMirroredSolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Unlock::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--UnlockSolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Unpin::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Unsubscribe::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--UnsyncFolder::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--UnsyncOccurence::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Up::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Upload::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--UserEvent::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--UserFollowed::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--UserPause::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--UserRemove::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--UserSync::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Vacation::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Variable::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--VariableGroup::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--VB::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--VennDiagram::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--VersionControlPush::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--VerticalDistributeCenter::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Video::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--VideoOff::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--VideoSearch::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--VideoSolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--View::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ViewAll::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ViewAll2::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ViewDashboard::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ViewList::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ViewListGroup::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ViewListTree::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--VisioDiagram::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--VisioDocument::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--VisioLogo::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--VisioLogo16::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--VisioLogoFill::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--VisioLogoFill16::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--VisioLogoInverse::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--VisioLogoInverse16::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--VisualBasicLanguage::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--VisualsFolder::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--VisualsStore::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--VisualStudioIDELogo32::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--VisualStudioLogo::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--VoicemailForward::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--VoicemailIRM::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--VoicemailReply::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Volume0::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Volume1::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Volume2::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Volume3::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--VolumeDisabled::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--VSTSAltLogo1::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--VSTSAltLogo2::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--VSTSLogo::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Waffle::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--WaffleOffice365::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--WaitlistConfirm::before {
-  content: '';
+.bit-icon--WaitlistConfirm::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--WaitlistConfirm::before {
-  content: '';
+    content: '';
 }
 
-[dir='ltr'] .bit-icon--WaitlistConfirmMirrored::before {
-  content: '';
+.bit-icon--WaitlistConfirmMirrored::before {
+    content: '';
 }
 
 [dir='rtl'] .bit-icon--WaitlistConfirmMirrored::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Warning::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Warning12::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--WebPublish::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Website::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Weights::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--WhiteBoardApp16::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--WhiteBoardApp32::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--WifiEthernet::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--WindDirection::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--WindowEdit::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--WindowsLogo::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Wines::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--WipePhone::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--WordDocument::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--WordLogo::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--WordLogo16::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--WordLogoFill::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--WordLogoFill16::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--WordLogoInverse::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--WordLogoInverse16::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Work::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--WorkFlow::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--WorkforceManagement::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--WorkItem::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--WorkItemBar::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--WorkItemBarSolid::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--WorkItemBug::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--World::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--WorldClock::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--YammerLogo::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ZipFolder::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--Zoom::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ZoomIn::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--ZoomOut::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--HumanResources::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--StoreLogo::before {
-  content: '';
+    content: '';
 }
 
 .bit-icon--StoreLogoMed::before {
-  content: '';
+    content: '';
 }
