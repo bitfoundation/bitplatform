@@ -10,7 +10,6 @@ namespace Bit.Client.Web.BlazorUI
         private bool isReadonly = false;
         private string focusClass = "";
         private TextFieldType type = TextFieldType.Text;
-        private bool canRevealPassword = false;
 
         [Parameter] public int MaxLength { get; set; } = -1;
 
@@ -21,19 +20,8 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public string Placeholder { get; set; }
 
         [Parameter]
-        public bool CanRevealPassword
-        {
-            get => canRevealPassword;
-            set
-            {
-                canRevealPassword = value;
+        public bool CanRevealPassword { get; set; }
 
-                if (value)
-                {
-                    HandlePasswordElementRevealIcon();
-                }
-            }
-        }
         [Parameter]
         public bool IsReadonly
         {
@@ -52,9 +40,12 @@ namespace Bit.Client.Web.BlazorUI
             set
             {
                 type = value;
+                ElementType = value;
                 ClassBuilder.Reset();
             }
         }
+
+        public TextFieldType ElementType { get; set; }
 
         [Parameter]
         public bool IsMultiLine
@@ -109,6 +100,16 @@ namespace Bit.Client.Web.BlazorUI
             ClassBuilder.Register(() => string.IsNullOrWhiteSpace(FocusClass)
                                         ? string.Empty
                                         : $"{RootElementClass}-{FocusClass}-{VisualClassRegistrar()}");
+        }
+
+        protected override void OnInitialized()
+        {
+            if (Type == TextFieldType.Password)
+            {
+                revealPasswordIconName = "RedEye";
+            }
+
+            base.OnInitialized();
         }
 
         protected virtual async Task HandleFocusIn(FocusEventArgs e)
@@ -170,18 +171,10 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
-        public void HandlePasswordElementRevealIcon()
+        public void TogglePasswordRevealIcon()
         {
-            if (Type == TextFieldType.Password)
-            {
-                revealPasswordIconName = "RedEye";
-                Type = TextFieldType.Text;
-            }
-            else if (Type == TextFieldType.Text)
-            {
-                revealPasswordIconName = "Hide";
-                Type = TextFieldType.Password;
-            }
+            revealPasswordIconName = revealPasswordIconName == "RedEye" ? "Hide" : "RedEye";
+            ElementType = ElementType == TextFieldType.Text ? TextFieldType.Password : TextFieldType.Text;
         }
     }
 }

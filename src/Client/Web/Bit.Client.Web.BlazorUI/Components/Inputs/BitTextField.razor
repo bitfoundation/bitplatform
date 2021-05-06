@@ -25,7 +25,7 @@
     {
         <input disabled=@(!IsEnabled)
                readonly=@IsReadonly
-               type="@Type.ToString()"
+               type="@ElementType"
                value="@Value"
                placeholder="@Placeholder"
                maxlength="@MaxLength"
@@ -38,9 +38,9 @@
                @onkeyup="@HandleKeyUp" />
     }
 
-    @if (CanRevealPassword)
+    @if (CanRevealPassword && Type == TextFieldType.Password)
     {
-        <span class="clickable" @onclick="HandlePasswordElementRevealIcon">
+        <span class="clickable" @onclick="TogglePasswordRevealIcon">
             <i class="bit-icon bit-icon--@revealPasswordIconName"></i>
         </span>
     }
