@@ -188,8 +188,9 @@
     <br />
     <BitTextField MaxLength="10" Placeholder="Limited text field - 10 chars"></BitTextField>
     <br />
-    <BitTextField Type="@InputType" Placeholder="Password input"></BitTextField>
-    <BitButton ButtonStyle="@ButtonStyle.Standard" OnClick="ChangeInputType">@ShowPasswordText</BitButton>
+    <BitTextField Placeholder="With an icon" IconName="CalendarMirrored"></BitTextField>
+    <br />
+    <BitTextField Type="@InputType" Placeholder="Password input" CanRevealPassword="true"></BitTextField>
     <br />
     <h3>Multi-line</h3>
     <BitTextField IsMultiLine="true" Value="Multi-line text field"></BitTextField>

@@ -62,7 +62,7 @@ namespace Bit.Client.Web.BlazorUI
 
         [Parameter] public EventCallback<bool> OnChange { get; set; }
 
-        protected override string RootElementClass => "bit-chb-container";
+        protected override string RootElementClass => "bit-chb";
 
         protected override void RegisterComponentClasses()
         {
@@ -70,14 +70,16 @@ namespace Bit.Client.Web.BlazorUI
             ClassBuilder.Register(() => IsChecked ? $"{RootElementClass}-checked-{VisualClassRegistrar()}" : string.Empty);
 
             ClassBuilder.Register(() => BoxSide == BoxSide.End
-                                        ? $"{RootElementClass}-box-side-end-{VisualClassRegistrar()}"
-                                        : $"{RootElementClass}-box-side-start-{VisualClassRegistrar()}");
+                                        ? $"{RootElementClass}-end-{VisualClassRegistrar()}"
+                                        : string.Empty);
 
             ClassBuilder.Register(() => IsEnabled is false && IsChecked
-                                        ? $"{RootElementClass}-checked-disabled-{VisualClassRegistrar()}" : string.Empty);
+                                        ? $"{RootElementClass}-checked-disabled-{VisualClassRegistrar()}"
+                                        : string.Empty);
 
             ClassBuilder.Register(() => IsEnabled is false && IsIndeterminate
-                                        ? $"{RootElementClass}-indeterminate-disabled-{VisualClassRegistrar()}" : string.Empty);
+                                        ? $"{RootElementClass}-indeterminate-disabled-{VisualClassRegistrar()}"
+                                        : string.Empty);
         }
 
         protected async Task HandleCheckboxClick(MouseEventArgs e)
