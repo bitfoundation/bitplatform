@@ -29,7 +29,7 @@ namespace Bit.Client.Web.BlazorUI
 
 
         [Parameter] public RenderFragment ChildContent { get; set; }
-        [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+        [Parameter] public EventCallback<MouseEventArgs> OnChange { get; set; }
 
         protected override string RootElementClass => "bit-tgl";
 
@@ -53,7 +53,7 @@ namespace Bit.Client.Web.BlazorUI
         {
             if (IsEnabled is false || IsCheckedChanged.HasDelegate is false) return;
             IsChecked = !IsChecked;
-            await OnClick.InvokeAsync(e);
+            await OnChange.InvokeAsync(e);
         }
     }
 }
