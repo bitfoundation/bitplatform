@@ -12,7 +12,7 @@
     color: $Grey130;
     position: relative;
     outline: em(0px);
-    width: em(300px);
+    width: 300px;
     user-select: none;
     border: em(1px) solid $Grey130;
     border-radius: em(2px);
@@ -20,16 +20,12 @@
     &:hover {
         color: $Grey160;
         border: em(1px) solid $Grey160;
-
-        span {
-            color: $Grey160;
-        }
     }
 
     span:first-child {
         box-shadow: none;
         margin: em(0px);
-        padding: em(0px) em(28px) em(0px) em(8px);
+        padding: em(2px) em(28px) em(0px) em(8px);
         box-sizing: border-box;
         background-color: $White;
         cursor: pointer;
@@ -38,7 +34,7 @@
         overflow: hidden;
         white-space: nowrap;
         text-overflow: ellipsis;
-        height: em(32px);
+        height: 32px;
         line-height: em(30px);
     }
 
@@ -70,4 +66,14 @@
 .bit-drp-focused-fluent {
     border: em(3px) solid $Primary;
     color: $Grey160;
+
+    &:hover {
+        border: em(3px) solid $Primary;
+    }
+
+    span:first-child {
+        padding-top: em(0.45px);
+        padding-left: em(6px);
+        height: 31px;
+    }
 }
