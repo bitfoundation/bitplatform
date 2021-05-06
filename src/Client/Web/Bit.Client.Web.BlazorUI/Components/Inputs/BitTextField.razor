@@ -37,4 +37,19 @@
                @onkeydown="@HandleKeyDown"
                @onkeyup="@HandleKeyUp" />
     }
+
+    @if (CanRevealPassword)
+    {
+        <span class="clickable" @onclick="HandlePasswordElementRevealIcon">
+            <i class="bit-icon bit-icon--@revealPasswordIconName"></i>
+        </span>
+    }
+
+    @if (IconName is not null)
+    {
+        <span>
+            <i class="bit-icon bit-icon--@IconName"></i>
+        </span>
+    }
+
 </div>

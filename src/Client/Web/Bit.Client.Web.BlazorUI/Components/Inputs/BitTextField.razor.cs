@@ -10,13 +10,30 @@ namespace Bit.Client.Web.BlazorUI
         private bool isReadonly = false;
         private string focusClass = "";
         private TextFieldType type = TextFieldType.Text;
+        private bool canRevealPassword = false;
 
         [Parameter] public int MaxLength { get; set; } = -1;
+
+        [Parameter] public string IconName { get; set; }
 
         [Parameter] public string Value { get; set; }
 
         [Parameter] public string Placeholder { get; set; }
 
+        [Parameter]
+        public bool CanRevealPassword
+        {
+            get => canRevealPassword;
+            set
+            {
+                canRevealPassword = value;
+
+                if (value)
+                {
+                    HandlePasswordElementRevealIcon();
+                }
+            }
+        }
         [Parameter]
         public bool IsReadonly
         {
@@ -63,6 +80,8 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public EventCallback<KeyboardEventArgs> OnKeyUp { get; set; }
 
         [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+
+        public string revealPasswordIconName { get; set; }
 
         public string FocusClass
         {
@@ -148,6 +167,20 @@ namespace Bit.Client.Web.BlazorUI
             if (IsEnabled)
             {
                 await OnClick.InvokeAsync(e);
+            }
+        }
+
+        public void HandlePasswordElementRevealIcon()
+        {
+            if (Type == TextFieldType.Password)
+            {
+                revealPasswordIconName = "RedEye";
+                Type = TextFieldType.Text;
+            }
+            else if (Type == TextFieldType.Text)
+            {
+                revealPasswordIconName = "Hide";
+                Type = TextFieldType.Password;
             }
         }
     }
