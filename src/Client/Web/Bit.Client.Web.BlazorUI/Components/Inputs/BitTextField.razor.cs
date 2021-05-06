@@ -72,8 +72,6 @@ namespace Bit.Client.Web.BlazorUI
 
         [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
-        public string revealPasswordIconName { get; set; } = "RedEye";
-
         public string FocusClass
         {
             get => focusClass;
@@ -163,7 +161,6 @@ namespace Bit.Client.Web.BlazorUI
 
         public void TogglePasswordRevealIcon()
         {
-            revealPasswordIconName = revealPasswordIconName == "RedEye" ? "Hide" : "RedEye";
             ElementType = ElementType == TextFieldType.Text ? TextFieldType.Password : TextFieldType.Text;
         }
     }

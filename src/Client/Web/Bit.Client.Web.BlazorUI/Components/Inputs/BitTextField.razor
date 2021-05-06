@@ -41,7 +41,7 @@
     @if (CanRevealPassword && Type == TextFieldType.Password)
     {
         <span class="clickable" @onclick="TogglePasswordRevealIcon">
-            <i class="bit-icon bit-icon--@revealPasswordIconName"></i>
+            <i class="bit-icon bit-icon--@(ElementType == TextFieldType.Text ? "Hide" : "RedEye")"></i>
         </span>
     }
 
