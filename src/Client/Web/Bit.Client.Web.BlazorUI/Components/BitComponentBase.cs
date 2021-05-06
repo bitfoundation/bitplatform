@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Components;
 
 namespace Bit.Client.Web.BlazorUI
 {
-    public abstract class BitComponentBase : ComponentBase
+    public abstract partial class BitComponentBase : ComponentBase
     {
         private string style;
         private Visual visual;
@@ -100,41 +100,6 @@ namespace Bit.Client.Web.BlazorUI
         protected virtual string VisualClassRegistrar()
         {
             return Visual == Visual.Cupertino ? "cupertino" : Visual == Visual.Material ? "material" : "fluent";
-        }
-
-        public override Task SetParametersAsync(ParameterView parameters)
-        {
-            foreach (ParameterValue parameter in parameters)
-            {
-                switch (parameter.Name)
-                {
-                    case nameof(Visual):
-                        Visual = (Visual)parameter.Value;
-                        break;
-
-                    case nameof(Theme):
-                        Theme = (Theme)parameter.Value;
-                        break;
-
-                    case nameof(IsEnabled):
-                        IsEnabled = (bool)parameter.Value;
-                        break;
-
-                    case nameof(Style):
-                        Style = (string)parameter.Value;
-                        break;
-
-                    case nameof(Class):
-                        Class = (string)parameter.Value;
-                        break;
-
-                    case nameof(Visibility):
-                        Visibility = (ComponentVisibility)parameter.Value;
-                        break;
-                }
-            }
-
-            return base.SetParametersAsync(ParameterView.Empty);
         }
 
         protected override void OnAfterRender(bool firstRender)

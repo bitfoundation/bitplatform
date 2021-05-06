@@ -1,3 +1,9 @@
-﻿.custom-button {
+﻿* {
+    //todo this code is added because due to latest changes our index page has no font right now
+    //after finding a cool font for our websites this will be redundant
+    font-family: FluentFont;
+}
+
+.custom-button {
     background-color: palevioletred;
 }

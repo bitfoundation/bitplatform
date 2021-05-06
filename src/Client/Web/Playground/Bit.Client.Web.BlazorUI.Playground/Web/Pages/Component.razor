@@ -93,6 +93,7 @@
 
 <div class="message-bar-container">
     <h2>BitMessageBar</h2>
+    @if (IsMessageBarHidden is false)
     {
         <BitMessageBar MessageBarStyle="@MessageBarStyle.Success">
             Action completed! <BitButton OnClick="MessageBarButton" ButtonStyle="ButtonStyle.Standard">OK</BitButton>
@@ -114,7 +115,6 @@
         Visit repository <BitLink Href="https://github.com/bitfoundation/bitframework">here</BitLink>
     </BitMessageBar>
 </div>
-
 
 <hr />
 
@@ -188,6 +188,9 @@
     <br />
     <BitTextField MaxLength="10" Placeholder="Limited text field - 10 chars"></BitTextField>
     <br />
+    <BitTextField Placeholder="With an icon" IconName="CalendarMirrored"></BitTextField>
+    <br />
+    <BitTextField Type="@InputType" Placeholder="Password input" CanRevealPassword="true"></BitTextField>
     <br />
     <h3>Multi-line</h3>
     <BitTextField IsMultiLine="true" Value="Multi-line text field"></BitTextField>
