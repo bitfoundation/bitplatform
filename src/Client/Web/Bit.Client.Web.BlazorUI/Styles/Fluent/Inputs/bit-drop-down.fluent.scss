@@ -9,17 +9,21 @@
     -webkit-font-smoothing: antialiased;
     font-size: rem(14px);
     font-weight: 400;
-    // color: $Grey160;
+    color: $Grey130;
     position: relative;
     outline: em(0px);
     width: em(300px);
     user-select: none;
-    // height: em(32px);
     border: em(1px) solid $Grey130;
     border-radius: em(2px);
 
     &:hover {
         color: $Grey160;
+        border: em(1px) solid $Grey160;
+
+        span {
+            color: $Grey160;
+        }
     }
 
     span:first-child {
@@ -36,11 +40,6 @@
         text-overflow: ellipsis;
         height: em(32px);
         line-height: em(30px);
-        color: $Grey130;
-
-        &:hover {
-            color: $Grey160;
-        }
     }
 
     span:nth-child(2) {
@@ -57,8 +56,7 @@
             font-style: normal;
             font-weight: normal;
             speak: none;
-            color: $Grey130;
-            font-size: em( 12px);
+            font-size: em(12px);
             pointer-events: none;
         }
     }
@@ -66,14 +64,10 @@
 
 .bit-drp-hasValue-fluent {
     span:first-child {
-        color: $Grey160 !important;
     }
 }
 
 .bit-drp-focused-fluent {
     border: em(3px) solid $Primary;
     color: $Grey160;
-
-    span:first-child {
-    }
 }
