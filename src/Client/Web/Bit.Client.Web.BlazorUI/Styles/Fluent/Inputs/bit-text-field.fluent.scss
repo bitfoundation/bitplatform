@@ -57,6 +57,24 @@
         min-width: 0px;
         text-overflow: ellipsis;
     }
+
+    span {
+        height: 100%;
+        width: 32px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 16px;
+    }
+
+    .clickable {
+        color: $CyanBlue10;
+        cursor: pointer;
+
+        &:hover {
+            background: $Grey30;
+        }
+    }
 }
 
 .bit-txt-multiline-fluent {
