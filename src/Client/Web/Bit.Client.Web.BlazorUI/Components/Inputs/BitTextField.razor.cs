@@ -72,7 +72,7 @@ namespace Bit.Client.Web.BlazorUI
 
         [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
-        public string revealPasswordIconName { get; set; }
+        public string revealPasswordIconName { get; set; } = "RedEye";
 
         public string FocusClass
         {
@@ -100,16 +100,6 @@ namespace Bit.Client.Web.BlazorUI
             ClassBuilder.Register(() => string.IsNullOrWhiteSpace(FocusClass)
                                         ? string.Empty
                                         : $"{RootElementClass}-{FocusClass}-{VisualClassRegistrar()}");
-        }
-
-        protected override void OnInitialized()
-        {
-            if (Type == TextFieldType.Password)
-            {
-                revealPasswordIconName = "RedEye";
-            }
-
-            base.OnInitialized();
         }
 
         protected virtual async Task HandleFocusIn(FocusEventArgs e)
