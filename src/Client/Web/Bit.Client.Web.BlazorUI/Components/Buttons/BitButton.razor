@@ -4,6 +4,9 @@
 <button @ref="RootElement"
         style="@StyleBuilder.Value"
         class="@ClassBuilder.Value"
+        aria-label="@AriaLabel"
+        aria-describedby="@AriaDescription"
+        aria-hidden="@AriaHidden"
         @onclick="HandleOnClick">
     @ChildContent
 </button>
