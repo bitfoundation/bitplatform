@@ -28,7 +28,7 @@ namespace Bit.Tooling.SourceGenerators
                 if (@class.GetMembers().Any(m => m.Name == "SetParametersAsync"))
                     return;
 
-                if (propertySymbol.GetAttributes().Any(ad => ad.AttributeClass.ToDisplayString() == "Microsoft.AspNetCore.Components.ParameterAttribute"))
+                if (propertySymbol.GetAttributes().Any(ad => ad.AttributeClass.ToDisplayString() == "Microsoft.AspNetCore.Components.ParameterAttribute" || ad.AttributeClass.ToDisplayString() == "Microsoft.AspNetCore.Components.CascadingParameterAttribute"))
                 {
                     Properties.Add(propertySymbol);
                 }
