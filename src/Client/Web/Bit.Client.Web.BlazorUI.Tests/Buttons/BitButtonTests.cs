@@ -45,5 +45,50 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
 
             return Task.CompletedTask;
         }
+
+        [DataTestMethod, DataRow("Detailed description")]
+        public Task BitButtonAriaDescriptionTest(string ariaDescription)
+        {
+            var com = RenderComponent<BitButtonTest>(parameters =>
+            {
+                parameters.Add(p => p.AriaDescription, ariaDescription);
+            });
+
+            var bitButton = com.Find(".bit-btn");
+
+            Assert.IsTrue(bitButton.HasAttribute("aria-describedby"));
+
+            return Task.CompletedTask;
+        }
+
+        [DataTestMethod, DataRow("Detailed label")]
+        public Task BitButtonAriaLabelTest(string ariaLabel)
+        {
+            var com = RenderComponent<BitButtonTest>(parameters =>
+            {
+                parameters.Add(p => p.AriaLabel, ariaLabel);
+            });
+
+            var bitButton = com.Find(".bit-btn");
+
+            Assert.IsTrue(bitButton.HasAttribute("aria-label"));
+
+            return Task.CompletedTask;
+        }
+
+        [DataTestMethod, DataRow(true, true), DataRow(false, false), DataRow(null, false)]
+        public Task BitButtonAriaHiddenTest(bool ariaHidden, bool expectedResult)
+        {
+            var com = RenderComponent<BitButtonTest>(parameters =>
+            {
+                parameters.Add(p => p.AriaHidden, ariaHidden);
+            });
+
+            var bitButton = com.Find(".bit-btn");
+
+            Assert.AreEqual(bitButton.HasAttribute("aria-hidden"), expectedResult);
+
+            return Task.CompletedTask;
+        }
     }
 }
