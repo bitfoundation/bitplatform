@@ -1,7 +1,10 @@
 ﻿<CascadingValue Value="Visual">
     <BitButton OnClick="IncrementCount"
                IsEnabled="IsEnabled"
-               ButtonStyle="ButtonStyle">
+               ButtonStyle="ButtonStyle"
+               AriaDescription="AriaDescription"
+               AriaLabel="AriaLabel"
+               AriaHidden="AriaHidden">
         <label>Other test label</label>
     </BitButton>
 </CascadingValue>
@@ -10,6 +13,9 @@
     [Parameter] public Visual Visual { get; set; }
     [Parameter] public bool IsEnabled { get; set; }
     [Parameter] public ButtonStyle ButtonStyle { get; set; }
+    [Parameter] public string AriaDescription { get; set; }
+    [Parameter] public string AriaLabel { get; set; }
+    [Parameter] public bool AriaHidden { get; set; }
 
     public int CurrentCount { get; set; }
 
