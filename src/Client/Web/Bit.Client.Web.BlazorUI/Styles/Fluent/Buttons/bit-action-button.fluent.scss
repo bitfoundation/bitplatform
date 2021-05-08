@@ -1,0 +1,44 @@
+﻿@import "../colors.fluent.scss", "../../functions.scss";
+
+.bit-act-btn-fluent {
+    font-family: FluentFont;
+    display: flex;
+    cursor: pointer;
+
+    & > span {
+        &:first-child {
+            display: flex;
+            height: 100%;
+            flex-wrap: nowrap;
+            justify-content: center;
+            align-items: center;
+
+            & i {
+                font-size: rem(16px);
+                margin: 0px 4px;
+                height: 16px;
+                line-height: 16px;
+                text-align: center;
+                flex-shrink: 0;
+                color: $Primary;
+            }
+        }
+    }
+}
+
+.bit-act-btn-default-fluent {
+    background-color: transparent;
+    border: none;
+
+    &:active {
+        color: $Primary;
+    }
+}
+
+.bit-act-btn-disabled-fluent {
+    background: $Grey20;
+    color: $Grey90;
+    border: 1px solid $Grey20;
+    cursor: default;
+    pointer-events: none;
+}
