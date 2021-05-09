@@ -55,7 +55,7 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
-        protected override string RootElementClass => "bit-spin-button";
+        protected override string RootElementClass => "bit-spb";
 
         protected override void RegisterComponentClasses()
         {
@@ -67,8 +67,7 @@ namespace Bit.Client.Web.BlazorUI
             if (IsEnabled)
             {
                 var userInput = e.Value.ToString();
-                double numericValue;
-                var isNumber = double.TryParse(userInput, out numericValue);
+                var isNumber = double.TryParse(userInput, out var numericValue);
                 if (isNumber && numericValue >= Min && numericValue <= Max)
                 {
                     Value = numericValue;

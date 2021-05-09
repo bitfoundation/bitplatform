@@ -19,7 +19,7 @@
 
 @font-face {
   font-family: 'Fabric MDL2 Assets';
-  src: url("../assets/fluent/fonts/Fabric MDL2 Assets.ttf") format("truetype");
+  src: url("../assets/fluent/fonts/FabExMDL2.3.36.ttf") format("truetype");
   font-weight: normal;
   font-style: normal; }
 
@@ -232,13 +232,13 @@
 .bit-icon--AlignVerticalTop::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--AllApps::before {
+.bit-icon--AllApps::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--AllApps::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--AllAppsMirrored::before {
+.bit-icon--AllAppsMirrored::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--AllAppsMirrored::before {
@@ -289,13 +289,13 @@
 .bit-icon--Arrivals::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--ArrowDownRight8::before {
+.bit-icon--ArrowDownRight8::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--ArrowDownRight8::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--ArrowDownRightMirrored8::before {
+.bit-icon--ArrowDownRightMirrored8::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--ArrowDownRightMirrored8::before {
@@ -316,13 +316,13 @@
 .bit-icon--ArrowUpRight::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--ArrowUpRight8::before {
+.bit-icon--ArrowUpRight8::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--ArrowUpRight8::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--ArrowUpRightMirrored8::before {
+.bit-icon--ArrowUpRightMirrored8::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--ArrowUpRightMirrored8::before {
@@ -481,13 +481,13 @@
 .bit-icon--BookingsLogo::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--Bookmarks::before {
+.bit-icon--Bookmarks::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--Bookmarks::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--BookmarksMirrored::before {
+.bit-icon--BookmarksMirrored::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--BookmarksMirrored::before {
@@ -601,25 +601,25 @@
 .bit-icon--BulkUpload::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--BulletedList2::before {
+.bit-icon--BulletedList2::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--BulletedList2::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--BulletedList2Mirrored::before {
+.bit-icon--BulletedList2Mirrored::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--BulletedList2Mirrored::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--BulletedList::before {
+.bit-icon--BulletedList::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--BulletedList::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--BulletedListMirrored::before {
+.bit-icon--BulletedListMirrored::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--BulletedListMirrored::before {
@@ -670,13 +670,13 @@
 .bit-icon--CalendarDay::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--Calendar::before {
+.bit-icon--Calendar::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--Calendar::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--CalendarMirrored::before {
+.bit-icon--CalendarMirrored::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--CalendarMirrored::before {
@@ -685,13 +685,13 @@
 .bit-icon--CalendarReply::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--CalendarSettings::before {
+.bit-icon--CalendarSettings::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--CalendarSettings::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--CalendarSettingsMirrored::before {
+.bit-icon--CalendarSettingsMirrored::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--CalendarSettingsMirrored::before {
@@ -736,13 +736,13 @@
 .bit-icon--CaretDownSolid8::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--CaretHollow::before {
+.bit-icon--CaretHollow::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--CaretHollow::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--CaretHollowMirrored::before {
+.bit-icon--CaretHollowMirrored::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--CaretHollowMirrored::before {
@@ -772,13 +772,13 @@
 .bit-icon--CaretSolidLeft::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--CaretSolid::before {
+.bit-icon--CaretSolid::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--CaretSolid::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--CaretSolidMirrored::before {
+.bit-icon--CaretSolidMirrored::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--CaretSolidMirrored::before {
@@ -922,13 +922,13 @@
 .bit-icon--Chopsticks::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--ChromeBack::before {
+.bit-icon--ChromeBack::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--ChromeBack::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--ChromeBackMirrored::before {
+.bit-icon--ChromeBackMirrored::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--ChromeBackMirrored::before {
@@ -1024,13 +1024,13 @@
 .bit-icon--ClosedCaption::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--ClosePane::before {
+.bit-icon--ClosePane::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--ClosePane::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--ClosePaneMirrored::before {
+.bit-icon--ClosePaneMirrored::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--ClosePaneMirrored::before {
@@ -1135,13 +1135,13 @@
 .bit-icon--Communications::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--CompanyDirectory::before {
+.bit-icon--CompanyDirectory::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--CompanyDirectory::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--CompanyDirectoryMirrored::before {
+.bit-icon--CompanyDirectoryMirrored::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--CompanyDirectoryMirrored::before {
@@ -1174,13 +1174,13 @@
 .bit-icon--ContactCard::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--ContactCardSettings::before {
+.bit-icon--ContactCardSettings::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--ContactCardSettings::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--ContactCardSettingsMirrored::before {
+.bit-icon--ContactCardSettingsMirrored::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--ContactCardSettingsMirrored::before {
@@ -1237,13 +1237,13 @@
 .bit-icon--CSS::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--CustomList::before {
+.bit-icon--CustomList::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--CustomList::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--CustomListMirrored::before {
+.bit-icon--CustomListMirrored::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--CustomListMirrored::before {
@@ -1267,13 +1267,13 @@
 .bit-icon--DateTime2::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--DateTime::before {
+.bit-icon--DateTime::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--DateTime::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--DateTimeMirrored::before {
+.bit-icon--DateTimeMirrored::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--DateTimeMirrored::before {
@@ -1303,13 +1303,13 @@
 .bit-icon--DeleteColumns::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--DeleteRows::before {
+.bit-icon--DeleteRows::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--DeleteRows::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--DeleteRowsMirrored::before {
+.bit-icon--DeleteRowsMirrored::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--DeleteRowsMirrored::before {
@@ -1390,13 +1390,13 @@
 .bit-icon--DislikeSolid::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--DockLeft::before {
+.bit-icon--DockLeft::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--DockLeft::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--DockLeftMirrored::before {
+.bit-icon--DockLeftMirrored::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--DockLeftMirrored::before {
@@ -1462,13 +1462,13 @@
 .bit-icon--DoubleChevronLeft8::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--DoubleChevronLeftMed::before {
+.bit-icon--DoubleChevronLeftMed::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--DoubleChevronLeftMed::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--DoubleChevronLeftMedMirrored::before {
+.bit-icon--DoubleChevronLeftMedMirrored::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--DoubleChevronLeftMedMirrored::before {
@@ -1558,13 +1558,13 @@
 .bit-icon--EditMail::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--Edit::before {
+.bit-icon--Edit::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--Edit::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--EditMirrored::before {
+.bit-icon--EditMirrored::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--EditMirrored::before {
@@ -1576,13 +1576,13 @@
 .bit-icon--EditPhoto::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--EditSolid12::before {
+.bit-icon--EditSolid12::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--EditSolid12::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--EditSolidMirrored12::before {
+.bit-icon--EditSolidMirrored12::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--EditSolidMirrored12::before {
@@ -1660,13 +1660,13 @@
 .bit-icon--EventInfo::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--EventTentative::before {
+.bit-icon--EventTentative::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--EventTentative::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--EventTentativeMirrored::before {
+.bit-icon--EventTentativeMirrored::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--EventTentativeMirrored::before {
@@ -1717,13 +1717,13 @@
 .bit-icon--ExploreData::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--Export::before {
+.bit-icon--Export::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--Export::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--ExportMirrored::before {
+.bit-icon--ExportMirrored::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--ExportMirrored::before {
@@ -1762,13 +1762,13 @@
 .bit-icon--FabricFolderSearch::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--FabricFormLibrary::before {
+.bit-icon--FabricFormLibrary::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--FabricFormLibrary::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--FabricFormLibraryMirrored::before {
+.bit-icon--FabricFormLibraryMirrored::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--FabricFormLibraryMirrored::before {
@@ -1789,13 +1789,13 @@
 .bit-icon--FabricPublicFolder::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--FabricReportLibrary::before {
+.bit-icon--FabricReportLibrary::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--FabricReportLibrary::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--FabricReportLibraryMirrored::before {
+.bit-icon--FabricReportLibraryMirrored::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--FabricReportLibraryMirrored::before {
@@ -1837,13 +1837,13 @@
 .bit-icon--Feedback::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--FeedbackRequestSolid::before {
+.bit-icon--FeedbackRequestSolid::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--FeedbackRequestSolid::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--FeedbackRequestMirroredSolid::before {
+.bit-icon--FeedbackRequestMirroredSolid::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--FeedbackRequestMirroredSolid::before {
@@ -1939,13 +1939,13 @@
 .bit-icon--Financial::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--FinancialSolid::before {
+.bit-icon--FinancialSolid::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--FinancialSolid::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--FinancialMirroredSolid::before {
+.bit-icon--FinancialMirroredSolid::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--FinancialMirroredSolid::before {
@@ -1993,13 +1993,13 @@
 .bit-icon--FolderHorizontal::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--FolderList::before {
+.bit-icon--FolderList::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--FolderList::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--FolderListMirrored::before {
+.bit-icon--FolderListMirrored::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--FolderListMirrored::before {
@@ -2038,13 +2038,13 @@
 .bit-icon--FontSize::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--FormLibrary::before {
+.bit-icon--FormLibrary::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--FormLibrary::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--FormLibraryMirrored::before {
+.bit-icon--FormLibraryMirrored::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--FormLibraryMirrored::before {
@@ -2239,13 +2239,13 @@
 .bit-icon--HeartFill::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--Help::before {
+.bit-icon--Help::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--Help::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--HelpMirrored::before {
+.bit-icon--HelpMirrored::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--HelpMirrored::before {
@@ -2311,13 +2311,13 @@
 .bit-icon--Important::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--Import::before {
+.bit-icon--Import::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--Import::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--ImportMirrored::before {
+.bit-icon--ImportMirrored::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--ImportMirrored::before {
@@ -2368,25 +2368,25 @@
 .bit-icon--InternetSharing::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--IRMForward::before {
+.bit-icon--IRMForward::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--IRMForward::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--IRMForwardMirrored::before {
+.bit-icon--IRMForwardMirrored::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--IRMForwardMirrored::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--IRMReply::before {
+.bit-icon--IRMReply::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--IRMReply::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--IRMReplyMirrored::before {
+.bit-icon--IRMReplyMirrored::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--IRMReplyMirrored::before {
@@ -2395,13 +2395,13 @@
 .bit-icon--IssueSolid::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--IssueTracking::before {
+.bit-icon--IssueTracking::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--IssueTracking::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--IssueTrackingMirrored::before {
+.bit-icon--IssueTrackingMirrored::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--IssueTrackingMirrored::before {
@@ -2494,13 +2494,13 @@
 .bit-icon--LinkedInLogo::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--List::before {
+.bit-icon--List::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--List::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--ListMirrored::before {
+.bit-icon--ListMirrored::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--ListMirrored::before {
@@ -2554,13 +2554,13 @@
 .bit-icon--MailFill::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--MailForward::before {
+.bit-icon--MailForward::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--MailForward::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--MailForwardMirrored::before {
+.bit-icon--MailForwardMirrored::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--MailForwardMirrored::before {
@@ -2578,25 +2578,25 @@
 .bit-icon--MailRepeat::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--MailReplyAll::before {
+.bit-icon--MailReplyAll::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--MailReplyAll::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--MailReplyAllMirrored::before {
+.bit-icon--MailReplyAllMirrored::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--MailReplyAllMirrored::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--MailReply::before {
+.bit-icon--MailReply::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--MailReply::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--MailReplyMirrored::before {
+.bit-icon--MailReplyMirrored::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--MailReplyMirrored::before {
@@ -2605,13 +2605,13 @@
 .bit-icon--MailSolid::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--MailTentative::before {
+.bit-icon--MailTentative::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--MailTentative::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--MailTentativeMirrored::before {
+.bit-icon--MailTentativeMirrored::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--MailTentativeMirrored::before {
@@ -2740,13 +2740,13 @@
 .bit-icon--MTMLogo::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--MultiSelect::before {
+.bit-icon--MultiSelect::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--MultiSelect::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--MultiSelectMirrored::before {
+.bit-icon--MultiSelectMirrored::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--MultiSelectMirrored::before {
@@ -2767,13 +2767,13 @@
 .bit-icon--Nav2DMapView::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--NavigateBack::before {
+.bit-icon--NavigateBack::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--NavigateBack::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--NavigateBackMirrored::before {
+.bit-icon--NavigateBackMirrored::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--NavigateBackMirrored::before {
@@ -2782,13 +2782,13 @@
 .bit-icon--NavigateExternalInline::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--NavigateForward::before {
+.bit-icon--NavigateForward::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--NavigateForward::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--NavigateForwardMirrored::before {
+.bit-icon--NavigateForwardMirrored::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--NavigateForwardMirrored::before {
@@ -2953,13 +2953,13 @@
 .bit-icon--OpenInNewWindow::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--OpenPane::before {
+.bit-icon--OpenPane::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--OpenPane::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--OpenPaneMirrored::before {
+.bit-icon--OpenPaneMirrored::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--OpenPaneMirrored::before {
@@ -3034,13 +3034,13 @@
 .bit-icon--PageLeft::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--PageListSolid::before {
+.bit-icon--PageListSolid::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--PageListSolid::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--PageListMirroredSolid::before {
+.bit-icon--PageListMirroredSolid::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--PageListMirroredSolid::before {
@@ -3070,25 +3070,25 @@
 .bit-icon--Parameter::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--ParkingLocation::before {
+.bit-icon--ParkingLocation::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--ParkingLocation::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--ParkingLocationMirrored::before {
+.bit-icon--ParkingLocationMirrored::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--ParkingLocationMirrored::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--ParkingSolid::before {
+.bit-icon--ParkingSolid::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--ParkingSolid::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--ParkingMirroredSolid::before {
+.bit-icon--ParkingMirroredSolid::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--ParkingMirroredSolid::before {
@@ -3373,13 +3373,13 @@
 .bit-icon--PublicCalendar::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--PublicContactCard::before {
+.bit-icon--PublicContactCard::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--PublicContactCard::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--PublicContactCardMirrored::before {
+.bit-icon--PublicContactCardMirrored::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--PublicContactCardMirrored::before {
@@ -3424,13 +3424,13 @@
 .bit-icon--QueryList::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--Questionnaire::before {
+.bit-icon--Questionnaire::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--Questionnaire::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--QuestionnaireMirrored::before {
+.bit-icon--QuestionnaireMirrored::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--QuestionnaireMirrored::before {
@@ -3490,13 +3490,13 @@
 .bit-icon--ReceiptReply::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--ReceiptTentative::before {
+.bit-icon--ReceiptTentative::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--ReceiptTentative::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--ReceiptTentativeMirrored::before {
+.bit-icon--ReceiptTentativeMirrored::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--ReceiptTentativeMirrored::before {
@@ -3580,13 +3580,13 @@
 .bit-icon--ReplyAllAlt::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--ReplyAll::before {
+.bit-icon--ReplyAll::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--ReplyAll::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--ReplyAllMirrored::before {
+.bit-icon--ReplyAllMirrored::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--ReplyAllMirrored::before {
@@ -3595,13 +3595,13 @@
 .bit-icon--ReplyAlt::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--Reply::before {
+.bit-icon--Reply::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--Reply::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--ReplyMirrored::before {
+.bit-icon--ReplyMirrored::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--ReplyMirrored::before {
@@ -3616,13 +3616,13 @@
 .bit-icon--ReportHacked::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--ReportLibrary::before {
+.bit-icon--ReportLibrary::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--ReportLibrary::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--ReportLibraryMirrored::before {
+.bit-icon--ReportLibraryMirrored::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--ReportLibraryMirrored::before {
@@ -3634,13 +3634,13 @@
 .bit-icon--ReturnToSession::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--ReviewRequestSolid::before {
+.bit-icon--ReviewRequestSolid::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--ReviewRequestSolid::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--ReviewRequestMirroredSolid::before {
+.bit-icon--ReviewRequestMirroredSolid::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--ReviewRequestMirroredSolid::before {
@@ -3751,13 +3751,13 @@
 .bit-icon--SearchCalendar::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--SearchIssue::before {
+.bit-icon--SearchIssue::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--SearchIssue::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--SearchIssueMirrored::before {
+.bit-icon--SearchIssueMirrored::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--SearchIssueMirrored::before {
@@ -3781,13 +3781,13 @@
 .bit-icon--SemiboldWeight::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--Send::before {
+.bit-icon--Send::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--Send::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--SendMirrored::before {
+.bit-icon--SendMirrored::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--SendMirrored::before {
@@ -3844,25 +3844,25 @@
 .bit-icon--ShopServer::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--ShowResults::before {
+.bit-icon--ShowResults::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--ShowResults::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--ShowResultsMirrored::before {
+.bit-icon--ShowResultsMirrored::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--ShowResultsMirrored::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--SidePanel::before {
+.bit-icon--SidePanel::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--SidePanel::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--SidePanelMirrored::before {
+.bit-icon--SidePanelMirrored::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--SidePanelMirrored::before {
@@ -4216,13 +4216,13 @@
 .bit-icon--Taskboard::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--TaskGroup::before {
+.bit-icon--TaskGroup::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--TaskGroup::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--TaskGroupMirrored::before {
+.bit-icon--TaskGroupMirrored::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--TaskGroupMirrored::before {
@@ -4231,13 +4231,13 @@
 .bit-icon--TaskLogo::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--TaskManager::before {
+.bit-icon--TaskManager::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--TaskManager::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--TaskManagerMirrored::before {
+.bit-icon--TaskManagerMirrored::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--TaskManagerMirrored::before {
@@ -4333,13 +4333,13 @@
 .bit-icon--ThreeQuarterCircle::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--ThumbnailView::before {
+.bit-icon--ThumbnailView::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--ThumbnailView::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--ThumbnailViewMirrored::before {
+.bit-icon--ThumbnailViewMirrored::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--ThumbnailViewMirrored::before {
@@ -4408,13 +4408,13 @@
 .bit-icon--TouchPointer::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--Trackers::before {
+.bit-icon--Trackers::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--Trackers::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--TrackersMirrored::before {
+.bit-icon--TrackersMirrored::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--TrackersMirrored::before {
@@ -4519,25 +4519,25 @@
 .bit-icon--Undo::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--Uneditable::before {
+.bit-icon--Uneditable::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--Uneditable::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--UneditableMirrored::before {
+.bit-icon--UneditableMirrored::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--UneditableMirrored::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--UneditableSolid12::before {
+.bit-icon--UneditableSolid12::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--UneditableSolid12::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--UneditableSolidMirrored12::before {
+.bit-icon--UneditableSolidMirrored12::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--UneditableSolidMirrored12::before {
@@ -4552,25 +4552,25 @@
 .bit-icon--UnknownCall::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--Unknown::before {
+.bit-icon--Unknown::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--Unknown::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--UnknownMirrored::before {
+.bit-icon--UnknownMirrored::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--UnknownMirrored::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--UnknownSolid::before {
+.bit-icon--UnknownSolid::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--UnknownSolid::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--UnknownMirroredSolid::before {
+.bit-icon--UnknownMirroredSolid::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--UnknownMirroredSolid::before {
@@ -4747,13 +4747,13 @@
 .bit-icon--WaffleOffice365::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--WaitlistConfirm::before {
+.bit-icon--WaitlistConfirm::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--WaitlistConfirm::before {
   content: ''; }
 
-[dir='ltr'] .bit-icon--WaitlistConfirmMirrored::before {
+.bit-icon--WaitlistConfirmMirrored::before {
   content: ''; }
 
 [dir='rtl'] .bit-icon--WaitlistConfirmMirrored::before {
@@ -4881,10 +4881,8 @@ button {
   -moz-user-select: none;
   -ms-user-select: none; }
 
-html, body {
-  font-family: FluentFont; }
-
 .bit-sch-box-container-fluent {
+  font-family: FluentFont;
   -webkit-font-smoothing: antialiased;
   font-size: 14px;
   font-weight: 400;
@@ -4893,12 +4891,12 @@ html, body {
   padding: 1px 0px 1px 4px;
   box-sizing: border-box;
   color: #323130;
-  background-color: #ffffff;
+  background-color: #FFFFFF;
   display: flex;
   flex-flow: row nowrap;
   align-items: stretch;
   border-radius: 2px;
-  border: 1px solid #605e5c;
+  border: 1px solid #605E5C;
   height: 32px; }
   .bit-sch-box-container-fluent > div:first-child {
     display: flex;
@@ -4964,10 +4962,10 @@ html, body {
       width: 32px;
       height: auto;
       background-color: transparent;
-      color: #0078d4;
+      color: #0078D4;
       user-select: none; }
     .bit-sch-box-container-fluent > div:last-child:hover {
-      background-color: #f3f2f1; }
+      background-color: #F3F2F1; }
 
 .bit-sch-box-container-has-value-fluent > div:last-child {
   opacity: 1;
@@ -4981,7 +4979,7 @@ html, body {
     opacity: 0; }
 
 .bit-sch-box-container-focused-fluent {
-  border: 2px solid #0078d4; }
+  border: 2px solid #0078D4; }
   .bit-sch-box-container-focused-fluent > div:first-child {
     width: 0px; }
     .bit-sch-box-container-focused-fluent > div:first-child i.bit-icon {
@@ -5000,31 +4998,31 @@ html, body {
 .bit-sch-box-container-underlined-fluent {
   border: none;
   border-radius: 0;
-  border-bottom: 1px solid #605e5c;
+  border-bottom: 1px solid #605E5C;
   padding-left: 12px; }
   .bit-sch-box-container-underlined-fluent.focused {
-    border-bottom: 2px solid #0078d4; }
+    border-bottom: 2px solid #0078D4; }
 
 .bit-sch-box-container-disabled-fluent {
   color: #323130;
-  background-color: #f3f2f1;
+  background-color: #F3F2F1;
   align-items: stretch;
-  border-color: #f3f2f1;
+  border-color: #F3F2F1;
   pointer-events: none;
   cursor: default; }
   .bit-sch-box-container-disabled-fluent.underlined {
     background-color: transparent; }
   .bit-sch-box-container-disabled-fluent > div:first-child {
-    color: #a19f9d; }
+    color: #A19F9D; }
 
 .bit-txt-fluent {
   font-family: FluentFont;
   font-size: 0.875rem;
   font-weight: 400;
   color: #323130;
-  background: #ffffff;
+  background: #FFFFFF;
   border-radius: 0.125em;
-  border: 0.0625em solid #605e5c;
+  border: 0.0625em solid #605E5C;
   width: 100%;
   cursor: text;
   height: 32px;
@@ -5070,6 +5068,18 @@ html, body {
     border-radius: 0px;
     min-width: 0px;
     text-overflow: ellipsis; }
+  .bit-txt-fluent span {
+    height: 100%;
+    width: 32px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 16px; }
+  .bit-txt-fluent .clickable {
+    color: #0078D4;
+    cursor: pointer; }
+    .bit-txt-fluent .clickable:hover {
+      background: #EDEBE9; }
 
 .bit-txt-multiline-fluent {
   min-height: 60px;
@@ -5086,24 +5096,24 @@ html, body {
   padding: 0.26875em 0.3875em; }
 
 .bit-txt-disabled-fluent {
-  border: 1px solid #f3f2f1;
-  background: #ffffff;
-  color: #a19f9d;
+  border: 1px solid #F3F2F1;
+  background: #FFFFFF;
+  color: #A19F9D;
   cursor: default;
-  border: none #f3f2f1;
-  background: none #f3f2f1; }
+  border: none #F3F2F1;
+  background: none #F3F2F1; }
 
 .bit-txt-fluent .bit-btn-fluent {
   border: none;
-  color: #0078d4;
+  color: #0078D4;
   background-color: transparent;
   padding: 0em 0.25em;
   position: relative; }
   .bit-txt-fluent .bit-btn-fluent:hover {
-    background-color: #f3f2f1; }
+    background-color: #F3F2F1; }
 
 .bit-txt-focused-fluent {
-  border: 0.1875em solid #0078d4; }
+  border: 0.1875em solid #0078D4; }
   .bit-txt-focused-fluent input:first-child {
     padding: 0px 0.4375em; }
   .bit-txt-focused-fluent textarea:first-child {
@@ -5142,7 +5152,7 @@ html, body {
     .bit-cho-fluent label:nth-child(2):before {
       content: "";
       display: inline-block;
-      background-color: #ffffff;
+      background-color: #FFFFFF;
       border-width: 0.0625em;
       border-style: solid;
       border-color: #323130;
@@ -5185,7 +5195,7 @@ html, body {
 .bit-cho-checked-fluent label:nth-child(2) {
   border-color: #0078d4; }
   .bit-cho-checked-fluent label:nth-child(2):before {
-    border-color: #0078d4; }
+    border-color: #0078D4; }
   .bit-cho-checked-fluent label:nth-child(2):after {
     width: 0.625em;
     height: 0.625em;
@@ -5197,15 +5207,15 @@ html, body {
     box-sizing: border-box;
     border-width: 0.3125em;
     border-style: solid;
-    border-color: #0078d4;
+    border-color: #0078D4;
     top: 0.3125em; }
 
 .bit-cho-disabled-fluent label:nth-child(2) {
   cursor: default; }
   .bit-cho-disabled-fluent label:nth-child(2):before {
-    border-color: #c8c6c4; }
+    border-color: #C8C6C4; }
   .bit-cho-disabled-fluent label:nth-child(2) span:first-child {
-    color: #a19f9d; }
+    color: #A19F9D; }
 
 .bit-btn-fluent {
   font-family: FluentFont;
@@ -5220,27 +5230,27 @@ html, body {
 
 .bit-btn-standard-fluent {
   color: #323130;
-  background: #ffffff;
-  border: 1px solid #8a8886; }
+  background: #FFFFFF;
+  border: 1px solid #8A8886; }
   .bit-btn-standard-fluent:hover {
-    background-color: #f3f2f1;
+    background-color: #F3F2F1;
     border-color: #323130; }
   .bit-btn-standard-fluent:active {
-    background-color: #edebe9; }
+    background-color: #EDEBE9; }
 
 .bit-btn-primary-fluent {
-  color: #ffffff;
-  background: #0078d4;
-  border: 1px solid #0078d4; }
+  color: #FFFFFF;
+  background: #0078D4;
+  border: 1px solid #0078D4; }
   .bit-btn-primary-fluent:hover {
-    background-color: #106ebe; }
+    background-color: #106EBE; }
   .bit-btn-primary-fluent:active {
-    background-color: #005a9e; }
+    background-color: #005A9E; }
 
 .bit-btn-disabled-fluent {
-  background: #f3f2f1;
-  color: #a19f9d;
-  border: 1px solid #f3f2f1;
+  background: #F3F2F1;
+  color: #A19F9D;
+  border: 1px solid #F3F2F1;
   cursor: default;
   pointer-events: none; }
 
@@ -5268,31 +5278,31 @@ html, body {
       line-height: 100%; }
 
 .bit-cmp-btn-primary-fluent {
-  color: #ffffff;
-  background: #0078d4;
-  border: 1px solid #0078d4; }
+  color: #FFFFFF;
+  background: #0078D4;
+  border: 1px solid #0078D4; }
   .bit-cmp-btn-primary-fluent:hover {
-    background-color: #106ebe; }
+    background-color: #106EBE; }
   .bit-cmp-btn-primary-fluent:active {
-    background-color: #005a9e; }
+    background-color: #005A9E; }
 
 .bit-cmp-btn-standard-fluent {
   color: #323130;
-  background: #ffffff;
-  border: 1px solid #8a8886; }
+  background: #FFFFFF;
+  border: 1px solid #8A8886; }
   .bit-cmp-btn-standard-fluent:hover {
-    background-color: #f3f2f1;
+    background-color: #F3F2F1;
     border-color: #323130; }
   .bit-cmp-btn-standard-fluent:active {
-    background-color: #edebe9; }
+    background-color: #EDEBE9; }
 
 .bit-cmp-btn-disabled-fluent {
-  background: #f3f2f1;
-  color: #a19f9d;
-  border: 1px solid #f3f2f1;
+  background: #F3F2F1;
+  color: #A19F9D;
+  border: 1px solid #F3F2F1;
   cursor: default;
   pointer-events: none;
-  border: 1px solid #f3f2f1; }
+  border: 1px solid #F3F2F1; }
 
 .bit-msg-bar-fluent {
   font-family: FluentFont;
@@ -5307,19 +5317,19 @@ html, body {
   min-height: 32px; }
 
 .bit-msg-bar-default-fluent {
-  background-color: #f3f2f1; }
+  background-color: #F3F2F1; }
 
 .bit-msg-bar-error-fluent {
-  background-color: #fde7e9; }
+  background-color: #FDE7E9; }
 
 .bit-msg-bar-success-fluent {
-  background-color: #dff6dd; }
+  background-color: #DFF6DD; }
 
 .bit-msg-bar-warning-fluent {
-  background-color: #fff4ce; }
+  background-color: #FFF4CE; }
 
 .bit-msg-bar-severe-fluent {
-  background-color: #fed9cc; }
+  background-color: #FED9CC; }
 
 .bit-msg-bar-fluent .flexContainer {
   margin: 8px 0px 8px 12px;
@@ -5345,7 +5355,7 @@ html, body {
   overflow-wrap: break-word; }
 
 .bit-lbl-disabled-fluent {
-  color: #a19f9d; }
+  color: #A19F9D; }
 
 .bit-lbl-required-fluent::after {
   content: "*";
@@ -5357,21 +5367,21 @@ html, body {
   -webkit-font-smoothing: antialiased;
   font-size: inherit;
   font-weight: inherit;
-  color: #0078d4;
+  color: #0078D4;
   outline: none; }
   .bit-lnk-fluent > a:hover, .bit-lnk-fluent > a:active, .bit-lnk-fluent > a:focus {
     color: #004578;
     text-decoration: underline; }
 
 .bit-lnk-disabled {
-  color: #a19f9d;
+  color: #A19F9D;
   cursor: default; }
   .bit-lnk-disabled:hover, .bit-lnk-disabled:active, .bit-lnk-disabled:focus {
     color: inherit;
     text-decoration: underline; }
 
 .bit-lnk-fluent > button {
-  color: #0078d4;
+  color: #0078D4;
   background: none transparent;
   border-top: none;
   border-right: none;
@@ -5391,15 +5401,15 @@ html, body {
     color: #004578;
     text-decoration: underline; }
 
-.bit-chb-container-fluent {
+.bit-chb-fluent {
   margin: 5px;
   font-family: FluentFont;
   -webkit-font-smoothing: antialiased;
   font-size: inherit;
   font-weight: inherit; }
-  .bit-chb-container-fluent > div {
+  .bit-chb-fluent > div {
     display: flex; }
-    .bit-chb-container-fluent > div div:first-child {
+    .bit-chb-fluent > div div:first-child {
       display: flex;
       align-items: center;
       justify-content: center;
@@ -5414,79 +5424,79 @@ html, body {
       overflow: hidden;
       margin-right: 4px;
       cursor: pointer; }
-      .bit-chb-container-fluent > div div:first-child .bit-icon--Accept {
-        color: #ffffff;
+      .bit-chb-fluent > div div:first-child .bit-icon--Accept {
+        color: #FFFFFF;
         font-size: 11px;
         transition: 0.1s; }
-    .bit-chb-container-fluent > div div:last-child label {
+    .bit-chb-fluent > div div:last-child label {
       cursor: pointer; }
-  .bit-chb-container-fluent:hover > div > div:first-child .bit-icon--Accept {
+  .bit-chb-fluent:hover > div > div:first-child .bit-icon--Accept {
     opacity: 1;
     color: #797775; }
 
-.bit-chb-container-box-side-end-fluent > div {
+.bit-chb-end-fluent > div {
   flex-direction: row-reverse;
   justify-content: flex-end; }
-  .bit-chb-container-box-side-end-fluent > div > div:first-child {
+  .bit-chb-end-fluent > div > div:first-child {
     margin-left: 8px; }
 
-.bit-chb-container-checked-fluent > div > div:first-child {
-  border-color: #0078d4;
-  background-color: #0078d4; }
-  .bit-chb-container-checked-fluent > div > div:first-child .bit-icon--Accept {
+.bit-chb-checked-fluent > div > div:first-child {
+  border-color: #0078D4;
+  background-color: #0078D4; }
+  .bit-chb-checked-fluent > div > div:first-child .bit-icon--Accept {
     opacity: 1;
-    color: #ffffff;
+    color: #FFFFFF;
     width: 20px;
     height: 20px;
     display: flex;
     justify-content: center;
     align-items: center; }
 
-.bit-chb-container-checked-fluent:hover > div > div:first-child .bit-icon--Accept {
-  border-color: #005a9e;
-  background-color: #005a9e;
-  color: #ffffff; }
+.bit-chb-checked-fluent:hover > div > div:first-child .bit-icon--Accept {
+  border-color: #005A9E;
+  background-color: #005A9E;
+  color: #FFFFFF; }
 
-.bit-chb-container-indeterminate-fluent > div > div:first-child {
-  border-color: #0078d4;
-  background-color: #ffffff; }
-  .bit-chb-container-indeterminate-fluent > div > div:first-child .bit-icon--Accept {
+.bit-chb-indeterminate-fluent > div > div:first-child {
+  border-color: #0078D4;
+  background-color: #FFFFFF; }
+  .bit-chb-indeterminate-fluent > div > div:first-child .bit-icon--Accept {
     display: inline-block;
     width: 11px;
     height: 11px;
-    color: #0078d4;
-    background-color: #0078d4;
+    color: #0078D4;
+    background-color: #0078D4;
     border-radius: 2px; }
-    .bit-chb-container-indeterminate-fluent > div > div:first-child .bit-icon--Accept:before {
+    .bit-chb-indeterminate-fluent > div > div:first-child .bit-icon--Accept:before {
       content: ''; }
 
-.bit-chb-container-indeterminate-fluent:hover > div > div:first-child {
-  border-color: #005a9e;
-  background-color: #ffffff; }
-  .bit-chb-container-indeterminate-fluent:hover > div > div:first-child .bit-icon--Accept {
-    color: #005a9e;
-    background-color: #005a9e; }
+.bit-chb-indeterminate-fluent:hover > div > div:first-child {
+  border-color: #005A9E;
+  background-color: #FFFFFF; }
+  .bit-chb-indeterminate-fluent:hover > div > div:first-child .bit-icon--Accept {
+    color: #005A9E;
+    background-color: #005A9E; }
 
-.bit-chb-container-disabled-fluent {
+.bit-chb-disabled-fluent {
   pointer-events: none;
   cursor: default; }
-  .bit-chb-container-disabled-fluent > div > div:first-child {
-    border-color: #c8c6c4;
-    background-color: #ffffff; }
-    .bit-chb-container-disabled-fluent > div > div:first-child .bit-icon--Accept {
+  .bit-chb-disabled-fluent > div > div:first-child {
+    border-color: #C8C6C4;
+    background-color: #FFFFFF; }
+    .bit-chb-disabled-fluent > div > div:first-child .bit-icon--Accept {
       opacity: 1;
-      color: #ffffff;
-      background-color: #ffffff; }
-  .bit-chb-container-disabled-fluent > div > div:last-child {
-    color: #c8c6c4; }
+      color: #FFFFFF;
+      background-color: #FFFFFF; }
+  .bit-chb-disabled-fluent > div > div:last-child {
+    color: #C8C6C4; }
 
-.bit-chb-container-checked-disabled-fluent > div > div:first-child .bit-icon--Accept,
-.bit-chb-container-indeterminate-disabled-fluent > div > div:first-child .bit-icon--Accept {
-  background-color: #c8c6c4; }
+.bit-chb-checked-disabled-fluent > div > div:first-child .bit-icon--Accept,
+.bit-chb-indeterminate-disabled-fluent > div > div:first-child .bit-icon--Accept {
+  background-color: #C8C6C4; }
 
-.bit-spin-button {
+.bit-spb {
   display: flex; }
-  .bit-spin-button div:first-child {
+  .bit-spb div:first-child {
     display: inline-flex;
     align-items: center;
     height: 32px;
@@ -5494,18 +5504,18 @@ html, body {
     margin-right: 10px;
     flex-direction: row;
     flex-wrap: nowrap; }
-    .bit-spin-button div:first-child .bit-icon {
+    .bit-spb div:first-child .bit-icon {
       margin-right: 5px; }
-  .bit-spin-button div:nth-child(2) {
+  .bit-spb div:nth-child(2) {
     display: flex;
     position: relative;
     box-sizing: border-box;
     height: 32px;
     min-width: 86px;
     width: 75px;
-    border: 1px solid #605e5c;
+    border: 1px solid #605E5C;
     border-radius: 2px; }
-    .bit-spin-button div:nth-child(2) input {
+    .bit-spb div:nth-child(2) input {
       box-sizing: border-box;
       box-shadow: none;
       border-style: none;
@@ -5514,7 +5524,7 @@ html, body {
       font-size: 14px;
       font-family: inherit;
       color: #323130;
-      background-color: #ffffff;
+      background-color: #FFFFFF;
       height: 100%;
       padding: 0px 8px 0px 9px;
       outline: 0px;
@@ -5526,10 +5536,10 @@ html, body {
       cursor: text;
       border-radius: 2px 0px 0px 2px;
       user-select: text; }
-    .bit-spin-button div:nth-child(2) span {
+    .bit-spb div:nth-child(2) span {
       display: flex;
       flex-direction: column; }
-      .bit-spin-button div:nth-child(2) span button {
+      .bit-spb div:nth-child(2) span button {
         outline: none;
         position: relative;
         -webkit-font-smoothing: antialiased;
@@ -5544,39 +5554,39 @@ html, body {
         width: 23px;
         height: 50%;
         background-color: transparent;
-        color: #605e5c;
+        color: #605E5C;
         user-select: none; }
-        .bit-spin-button div:nth-child(2) span button:hover {
+        .bit-spb div:nth-child(2) span button:hover {
           color: #323130;
-          background-color: #f3f2f1; }
-        .bit-spin-button div:nth-child(2) span button span {
+          background-color: #F3F2F1; }
+        .bit-spb div:nth-child(2) span button span {
           display: flex;
           height: 100%;
           flex-wrap: nowrap;
           justify-content: center;
           align-items: center; }
-          .bit-spin-button div:nth-child(2) span button span .bit-icon {
+          .bit-spb div:nth-child(2) span button span .bit-icon {
             font-size: 8px;
             margin: 0px;
             height: 16px;
             line-height: 16px;
             flex-shrink: 0; }
-      .bit-spin-button div:nth-child(2) span button:first-child {
+      .bit-spb div:nth-child(2) span button:first-child {
         border-radius: 0 2px 0 0; }
-      .bit-spin-button div:nth-child(2) span button:nth-child(2) {
+      .bit-spb div:nth-child(2) span button:nth-child(2) {
         border-radius: 0 0 2px 0; }
-  .bit-spin-button.label-top {
+  .bit-spb.label-top {
     flex-direction: column; }
-  .bit-spin-button.label-left {
+  .bit-spb.label-left {
     flex-direction: row; }
-  .bit-spin-button.label-right {
+  .bit-spb.label-right {
     flex-direction: row-reverse; }
-  .bit-spin-button.label-bottom {
+  .bit-spb.label-bottom {
     flex-direction: column-reverse; }
 
-.bit-spin-button {
+.bit-spb {
   display: flex; }
-  .bit-spin-button div:first-child {
+  .bit-spb div:first-child {
     display: inline-flex;
     align-items: center;
     height: 32px;
@@ -5584,18 +5594,18 @@ html, body {
     margin-right: 10px;
     flex-direction: row;
     flex-wrap: nowrap; }
-    .bit-spin-button div:first-child .bit-icon {
+    .bit-spb div:first-child .bit-icon {
       margin-right: 5px; }
-  .bit-spin-button div:nth-child(2) {
+  .bit-spb div:nth-child(2) {
     display: flex;
     position: relative;
     box-sizing: border-box;
     height: 32px;
     min-width: 86px;
     width: 75px;
-    border: 1px solid #605e5c;
+    border: 1px solid #605E5C;
     border-radius: 2px; }
-    .bit-spin-button div:nth-child(2) input {
+    .bit-spb div:nth-child(2) input {
       box-sizing: border-box;
       box-shadow: none;
       border-style: none;
@@ -5604,7 +5614,7 @@ html, body {
       font-size: 14px;
       font-family: inherit;
       color: #323130;
-      background-color: #ffffff;
+      background-color: #FFFFFF;
       height: 100%;
       padding: 0px 8px 0px 9px;
       outline: 0px;
@@ -5616,10 +5626,10 @@ html, body {
       cursor: text;
       border-radius: 2px 0px 0px 2px;
       user-select: text; }
-    .bit-spin-button div:nth-child(2) span {
+    .bit-spb div:nth-child(2) span {
       display: flex;
       flex-direction: column; }
-      .bit-spin-button div:nth-child(2) span button {
+      .bit-spb div:nth-child(2) span button {
         outline: none;
         position: relative;
         -webkit-font-smoothing: antialiased;
@@ -5634,45 +5644,48 @@ html, body {
         width: 23px;
         height: 50%;
         background-color: transparent;
-        color: #605e5c;
+        color: #605E5C;
         user-select: none; }
-        .bit-spin-button div:nth-child(2) span button:hover {
+        .bit-spb div:nth-child(2) span button:hover {
           color: #323130;
-          background-color: #f3f2f1; }
-        .bit-spin-button div:nth-child(2) span button span {
+          background-color: #F3F2F1; }
+        .bit-spb div:nth-child(2) span button span {
           display: flex;
           height: 100%;
           flex-wrap: nowrap;
           justify-content: center;
           align-items: center; }
-          .bit-spin-button div:nth-child(2) span button span .bit-icon {
+          .bit-spb div:nth-child(2) span button span .bit-icon {
             font-size: 8px;
             margin: 0px;
             height: 16px;
             line-height: 16px;
             flex-shrink: 0; }
 
-.bit-spin-button-disabled-fluent div:first-child {
-  color: #a19f9d; }
-  .bit-spin-button-disabled-fluent div:first-child label {
-    color: #a19f9d; }
+.bit-spb-disabled-fluent div:first-child {
+  color: #A19F9D; }
+  .bit-spb-disabled-fluent div:first-child label {
+    color: #A19F9D; }
 
-.bit-spin-button-disabled-fluent div:nth-child(2) {
-  color: #a19f9d;
+.bit-spb-disabled-fluent div:nth-child(2) {
+  color: #A19F9D;
   cursor: default;
-  border: none #f3f2f1;
-  background: none #f3f2f1; }
-  .bit-spin-button-disabled-fluent div:nth-child(2) input {
-    color: #a19f9d;
+  border: none #F3F2F1;
+  background: none #F3F2F1; }
+  .bit-spb-disabled-fluent div:nth-child(2) input {
+    color: #A19F9D;
     cursor: default;
-    border: none #f3f2f1;
-    background: none #f3f2f1; }
-  .bit-spin-button-disabled-fluent div:nth-child(2) span button {
-    background: #f3f2f1;
-    color: #a19f9d;
-    border: 1px solid #f3f2f1;
+    border: none #F3F2F1;
+    background: none #F3F2F1; }
+  .bit-spb-disabled-fluent div:nth-child(2) span button {
+    background: #F3F2F1;
+    color: #A19F9D;
+    border: 1px solid #F3F2F1;
     cursor: default;
     pointer-events: none; }
+
+.bit-rating-fluent {
+  font-family: FluentFont; }
 
 .bit-rating-disabled-fluent button {
   pointer-events: none;
@@ -5693,13 +5706,13 @@ html, body {
 
 .bit-rating button div {
   display: flex;
-  color: #b7b3af;
+  color: #B7B3AF;
   cursor: pointer; }
   .bit-rating button div i:hover {
-    color: #0078d4; }
+    color: #0078D4; }
 
 .bit-rating-dark-fluent {
-  color: #1b1a19; }
+  color: #1B1A19; }
 
 @keyframes bit-spn-fluent {
   0% {
@@ -5727,18 +5740,14 @@ html, body {
   display: flex;
   justify-content: center; }
   .bit-spn-fluent > div:first-child {
-    box-sizing: border-box;
+    border: 16px solid #C8C6C4;
+    border-top: 16px solid #0078D4;
     border-radius: 50%;
     border-width: 1.5px;
-    border-style: solid;
-    border-color: #c7e0f4;
-    border-image: initial;
-    animation-name: bit-spn-fluent;
-    animation-duration: 1.3s;
-    animation-iteration-count: infinite; }
+    animation: bit-spn-fluent 1.3s linear infinite; }
   .bit-spn-fluent > div:nth-child(2) {
     font-size: 0.875rem;
-    color: #0078d4;
+    color: #0078D4;
     margin: 2px 8px;
     text-align: center; }
 
@@ -5757,5 +5766,101 @@ html, body {
 .bit-spn-xSmall-fluent > div:first-child {
   width: 12px;
   height: 12px; }
+
+.bit-tgl-fluent {
+  font-family: FluentFont;
+  -webkit-font-smoothing: antialiased;
+  font-size: inherit;
+  font-weight: inherit; }
+  .bit-tgl-fluent div {
+    display: flex;
+    position: relative; }
+    .bit-tgl-fluent div label {
+      padding: 0px;
+      margin: 0px 8px;
+      font-weight: 400;
+      user-select: none; }
+    .bit-tgl-fluent div button {
+      outline: transparent;
+      position: relative;
+      font-size: 20px;
+      box-sizing: border-box;
+      width: 40px;
+      height: 20px;
+      border-radius: 10px;
+      transition: all 0.1s ease 0s;
+      display: flex;
+      align-items: center;
+      padding: 0px 3px; }
+      .bit-tgl-fluent div button span {
+        display: block;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        transition: all 0.1s ease 0s;
+        border-width: 6px;
+        border-style: solid;
+        box-sizing: border-box;
+        border-color: transparent; }
+
+.bit-tgl-enabled-checked-fluent label:first-child {
+  color: #323130; }
+
+.bit-tgl-enabled-checked-fluent div button {
+  border: 1px solid transparent;
+  cursor: pointer;
+  background: #0078D4;
+  justify-content: flex-end; }
+  .bit-tgl-enabled-checked-fluent div button span {
+    background-color: #FFFFFF; }
+  .bit-tgl-enabled-checked-fluent div button:hover {
+    background-color: #005A9E;
+    border-color: transparent; }
+
+.bit-tgl-enabled-unchecked-fluent label:first-child {
+  color: #323130; }
+
+.bit-tgl-enabled-unchecked-fluent div button {
+  border: 1px solid #605E5C;
+  cursor: pointer;
+  background: #FFFFFF; }
+  .bit-tgl-enabled-unchecked-fluent div button span {
+    background-color: #605E5C; }
+  .bit-tgl-enabled-unchecked-fluent div button:hover {
+    border-color: #323130; }
+    .bit-tgl-enabled-unchecked-fluent div button:hover span {
+      background-color: #323130; }
+
+.bit-tgl-disabled-checked-fluent label:first-child {
+  color: #A19F9D; }
+
+.bit-tgl-disabled-checked-fluent div button {
+  border: 1px solid transparent;
+  cursor: default;
+  background: #C8C6C4;
+  justify-content: flex-end; }
+  .bit-tgl-disabled-checked-fluent div button span {
+    background-color: #F3F2F1; }
+
+.bit-tgl-disabled-unchecked-fluent label:first-child {
+  color: #A19F9D; }
+
+.bit-tgl-disabled-unchecked-fluent div button {
+  border: 1px solid #C8C6C4;
+  cursor: default;
+  background: #FFFFFF; }
+  .bit-tgl-disabled-unchecked-fluent div button span {
+    background-color: #C8C6C4; }
+
+.bit-tgl-inline-fluent {
+  display: flex;
+  align-items: center; }
+  .bit-tgl-inline-fluent label:first-child {
+    margin: 0px 16px 0px 0px; }
+
+.bit-tgl-noonoff-fluent label:first-child {
+  display: inline-block;
+  margin: 0px 0px 0px 16px;
+  order: 1; }
 
 /*# sourceMappingURL=styles.fluent.scss */

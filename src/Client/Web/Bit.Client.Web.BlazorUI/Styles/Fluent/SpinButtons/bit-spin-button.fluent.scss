@@ -1,6 +1,6 @@
 ﻿@import "../colors.fluent.scss", "../../functions.scss";
 
-.bit-spin-button {
+.bit-spb {
     display: flex;
 
     & div:first-child {
@@ -123,7 +123,7 @@
 
 
 
-.bit-spin-button {
+.bit-spb {
     display: flex;
 
     & div:first-child {
@@ -221,7 +221,7 @@
     }
 }
 
-.bit-spin-button-disabled-fluent {
+.bit-spb-disabled-fluent {
     & div:first-child {
         color: $Grey90;
 
