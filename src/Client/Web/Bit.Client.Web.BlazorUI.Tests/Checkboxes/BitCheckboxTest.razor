@@ -1,4 +1,6 @@
-﻿<BitCheckbox IsEnabled="@IsEnabled" IsChecked="@IsChecked" IsIndeterminate="@IsIndeterminate" ></BitCheckbox>
+﻿<BitCheckbox IsEnabled="@IsEnabled"
+             @bind-IsChecked="@IsChecked"
+             @bind-IsIndeterminate="@IsIndeterminate"></BitCheckbox>
 
 @code {
 

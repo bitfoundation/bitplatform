@@ -1,37 +1,40 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
-	<PropertyGroup>
-		<TargetFramework>net5.0</TargetFramework>
-		<ResolveStaticWebAssetsInputsDependsOn>WebCompiler</ResolveStaticWebAssetsInputsDependsOn>
-	</PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>net5.0</TargetFramework>
+        <ResolveStaticWebAssetsInputsDependsOn>WebCompiler</ResolveStaticWebAssetsInputsDependsOn>
+    </PropertyGroup>
 
-	<ItemGroup>
-		<SupportedPlatform Include="browser" />
-	</ItemGroup>
+    <ItemGroup>
+        <SupportedPlatform Include="browser" />
+    </ItemGroup>
 
-	<ItemGroup>
-		<PackageReference Include="Bit.Tooling.SourceGenerators" Version="7.3.0" />
-		<PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="5.0.5" />
-		<PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.2.4">
-			<PrivateAssets>all</PrivateAssets>
-			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		</PackageReference>
-	</ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="5.0.5" />
+        <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.2.4">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+    </ItemGroup>
 
-	<Target Name="DisplayMessages">
-		<Message Text="Restoring Tools..." Importance="high" />
-	</Target>
+    <ItemGroup>
+        <ProjectReference Include="..\..\..\Tooling\Bit.Tooling.SourceGenerators\Bit.Tooling.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    </ItemGroup>
 
-	<Target Name="ToolRestore" DependsOnTargets="DisplayMessages">
-		<Exec Command="dotnet tool restore" StandardOutputImportance="high" />
-	</Target>
+    <Target Name="DisplayMessages">
+        <Message Text="Restoring Tools..." Importance="high" />
+    </Target>
 
-	<Target Name="WebCompiler" DependsOnTargets="ToolRestore">
-		<!--compile and minify scss-->
-		<Exec Command="dotnet webcompiler ./Styles/styles.scss -c webcompiler.json" StandardOutputImportance="high" StandardErrorImportance="high" />
-		<Exec Command="dotnet webcompiler ./Styles/Cupertino/styles.cupertino.scss -c webcompiler.json" StandardOutputImportance="high" StandardErrorImportance="high" />
-		<Exec Command="dotnet webcompiler ./Styles/Fluent/styles.fluent.scss -c webcompiler.json" StandardOutputImportance="high" StandardErrorImportance="high" />
-		<Exec Command="dotnet webcompiler ./Styles/Material/styles.material.scss -c webcompiler.json" StandardOutputImportance="high" StandardErrorImportance="high" />
-	</Target>
+    <Target Name="ToolRestore" DependsOnTargets="DisplayMessages">
+        <Exec Command="dotnet tool restore" StandardOutputImportance="high" />
+    </Target>
+
+    <Target Name="WebCompiler" DependsOnTargets="ToolRestore">
+        <!--compile and minify scss-->
+        <Exec Command="dotnet webcompiler ./Styles/styles.scss -c webcompiler.json" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Command="dotnet webcompiler ./Styles/Cupertino/styles.cupertino.scss -c webcompiler.json" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Command="dotnet webcompiler ./Styles/Fluent/styles.fluent.scss -c webcompiler.json" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Command="dotnet webcompiler ./Styles/Material/styles.material.scss -c webcompiler.json" StandardOutputImportance="high" StandardErrorImportance="high" />
+    </Target>
 
 </Project>
