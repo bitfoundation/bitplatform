@@ -10,6 +10,7 @@
     line-height: em(20px);
     cursor: pointer;
     min-height: 32px;
+    text-decoration: none;
 }
 
 .bit-btn-standard-fluent {
@@ -40,7 +41,6 @@
         background-color: $Dark;
     }
 }
-
 
 .bit-btn-disabled-fluent {
     background: $Grey20;
