@@ -19,7 +19,7 @@ namespace Bit.Client.Web.BlazorUI
         {
             ClassBuilder.Register(() => IsEnabled is false
                                         ? string.Empty
-                                        : $"{RootElementClass}-default-{VisualClassRegistrar()}");
+                                        : $"{RootElementClass}-{VisualClassRegistrar()}");
         }
 
         protected virtual async Task HandleOnClick(MouseEventArgs e)

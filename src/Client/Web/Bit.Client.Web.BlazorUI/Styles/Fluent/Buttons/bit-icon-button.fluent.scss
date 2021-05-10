@@ -6,6 +6,9 @@
     font-size: rem(16px);
     padding: 5px;
     cursor: pointer;
+    color: $Primary;
+    border: none;
+    background-color: transparent;
 
     & > span {
         display: flex;
@@ -14,12 +17,6 @@
         justify-content: center;
         align-items: center;
     }
-}
-
-.bit-ico-btn-default-fluent {
-    color: $Primary;
-    background-color: transparent;
-    border: none;
 
     &:active {
         color: $Primary;
