@@ -44,15 +44,18 @@
     <h3>BitCompoundButton</h3>
     <BitCompoundButton IsEnabled="true"
                        Text="Primary"
+                       AriaLabel="Detailed label used for screen reader."
                        SecondaryText="This Button is compound button">
     </BitCompoundButton>
     <BitCompoundButton IsEnabled="true"
                        Text="Standard"
+                       AriaHidden="true"
                        SecondaryText="This Button is compound button"
                        ButtonStyle="ButtonStyle.Standard">
     </BitCompoundButton>
     <BitCompoundButton IsEnabled="false"
                        Text="Disabled"
+                       AriaDescription="Detailed description used for screen reader."
                        SecondaryText="This Button is a disabled compound button">
     </BitCompoundButton>
 
@@ -68,6 +71,25 @@
     <BitButton AriaHidden="true">
         Button with Aria Hidden
     </BitButton>
+
+     <hr />
+
+    <h3>Icon Button</h3>
+    <BitIconButton IconName="Emoji2" />
+    <BitIconButton IconName="Emoji2" IsEnabled="false" />
+    
+    <hr />
+
+    <h3>Icon Button with Tooltip</h3>
+    <BitIconButton IconName="Emoji2" ToolTip="I'm Happy" />
+
+    <hr />
+
+    <h3>Action Button</h3>
+    <div class="action-btn-container">
+        <BitActionButton IconName="AddFriend">Create account</BitActionButton>
+        <BitActionButton IsEnabled="false" IconName="UserRemove">Remove user</BitActionButton>
+    </div>
     
     <hr />
 
