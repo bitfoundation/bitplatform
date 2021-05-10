@@ -15,13 +15,6 @@ namespace Bit.Client.Web.BlazorUI
 
         protected override string RootElementClass => "bit-act-btn";
 
-        protected override void RegisterComponentClasses()
-        {
-            ClassBuilder.Register(() => IsEnabled is false
-                                        ? string.Empty
-                                        : $"{RootElementClass}-{VisualClassRegistrar()}");
-        }
-
         protected virtual async Task HandleOnClick(MouseEventArgs e)
         {
             if (IsEnabled)
