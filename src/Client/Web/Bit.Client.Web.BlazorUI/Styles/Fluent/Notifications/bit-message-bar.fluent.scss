@@ -11,26 +11,82 @@
     display: flex;
     word-break: break-word;
     min-height: 32px;
+    align-items: flex-start;
+
+    .text-container {
+        flex-grow: 1;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        -webkit-line-clamp: 1;
+    }
+
+    .not-truncate {
+        -webkit-line-clamp: unset;
+    }
+
+    & > span:first-child {
+        display: inline-block;
+        margin: 8px 0 8px 12px;
+        font-size: 16px;
+    }
+
+    & > span:last-child {
+        display: flex;
+        margin-right: 12px;
+        font-size: 11px;
+
+        & > span {
+            margin: 8px 0 8px 12px;
+        }
+    }
 }
 
 .bit-msg-bar-default-fluent {
     background-color: $Grey20;
+
+    & > span:first-child {
+    }
 }
 
 .bit-msg-bar-error-fluent {
-    background-color: $Error;
+    background-color: $red20;
+
+    & > span:first-child {
+        color: $red180;
+    }
 }
 
 .bit-msg-bar-success-fluent {
-    background-color: $Success;
+    background-color: $green60;
+
+    & > span:first-child {
+        color: $green120;
+    }
 }
 
 .bit-msg-bar-warning-fluent {
-    background-color: $Warning;
+    background-color: $yellow20;
+
+    & > span:first-child {
+        color: $Grey160;
+    }
 }
 
 .bit-msg-bar-severe-fluent {
-    background-color: $Severe;
+    background-color: $orange20;
+
+    & > span:first-child {
+        color: $orange180;
+    }
+}
+
+.bit-msg-bar-blocked-fluent {
+    background-color: $red20;
+
+    & > span:first-child {
+        color: $red180;
+    }
 }
 
 .bit-msg-bar-fluent .flexContainer {
