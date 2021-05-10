@@ -4,6 +4,12 @@
     font-family: FluentFont;
     display: flex;
     cursor: pointer;
+    border: none;
+    background-color: transparent;
+
+    &:active {
+        color: $Primary;
+    }
 
     & > span {
         &:first-child {
@@ -23,15 +29,6 @@
                 color: $Primary;
             }
         }
-    }
-}
-
-.bit-act-btn-default-fluent {
-    background-color: transparent;
-    border: none;
-
-    &:active {
-        color: $Primary;
     }
 }
 
