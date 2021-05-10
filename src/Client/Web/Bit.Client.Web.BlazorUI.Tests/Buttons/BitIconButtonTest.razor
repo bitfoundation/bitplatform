@@ -1,21 +1,22 @@
 ﻿<CascadingValue Value="Visual">
-    <BitButton OnClick="IncrementCount"
-               IsEnabled="IsEnabled"
-               ButtonStyle="ButtonStyle"
-               AriaDescription="AriaDescription"
-               AriaLabel="AriaLabel"
-               AriaHidden="AriaHidden">
-        <label>Other test label</label>
-    </BitButton>
+    <BitIconButton OnClick="IncrementCount"
+                   IsEnabled="IsEnabled"
+                   AriaDescription="AriaDescription"
+                   AriaLabel="AriaLabel"
+                   AriaHidden="AriaHidden"
+                   IconName="IconName"
+                   ToolTip="ToolTip">
+    </BitIconButton>
 </CascadingValue>
 
 @code {
     [Parameter] public Visual Visual { get; set; }
     [Parameter] public bool IsEnabled { get; set; }
-    [Parameter] public ButtonStyle ButtonStyle { get; set; }
     [Parameter] public string AriaDescription { get; set; }
     [Parameter] public string AriaLabel { get; set; }
     [Parameter] public bool AriaHidden { get; set; }
+    [Parameter] public string IconName { get; set; }
+    [Parameter] public string ToolTip { get; set; }
 
     public int CurrentCount { get; set; }
 
