@@ -19,6 +19,9 @@
         -webkit-box-orient: vertical;
         overflow: hidden;
         -webkit-line-clamp: 1;
+        margin: 8px 0px 8px 12px;
+        padding: 0;
+        text-align: left;
     }
 
     .not-truncate {
@@ -89,11 +92,6 @@
     }
 }
 
-.bit-msg-bar-fluent .flexContainer {
-    margin: 8px 0px 8px 12px;
-    padding: 0;
-    text-align: left;
-}
 
 .bit-msg-bar-fluent .bit-btn-fluent {
     padding: em(2) em(18);
