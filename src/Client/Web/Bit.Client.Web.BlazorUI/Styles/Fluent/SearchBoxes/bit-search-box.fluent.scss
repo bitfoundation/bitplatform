@@ -1,6 +1,6 @@
 ﻿@import "../colors.fluent.scss", "../../functions.scss";
 
-.bit-sch-box-container-fluent {
+.bit-sch-box-fluent {
     font-family: FluentFont;
     -webkit-font-smoothing: antialiased;
     font-size: 14px;
@@ -56,7 +56,6 @@
         text-overflow: ellipsis;
     }
 
-
     & > div:last-child {
         display: flex;
         flex-direction: row;
@@ -102,7 +101,7 @@
     }
 }
 
-.bit-sch-box-container-has-value-fluent {
+.bit-sch-box-has-value-fluent {
     & > div:last-child {
         opacity: 1;
         flex-basis: 0px;
@@ -121,7 +120,7 @@
     }
 }
 
-.bit-sch-box-container-focused-fluent {
+.bit-sch-box-focused-fluent {
     border: 2px solid $Primary;
 
     & > div:first-child {
@@ -133,7 +132,7 @@
     }
 }
 
-.bit-sch-box-container-no-animation-fluent {
+.bit-sch-box-no-animation-fluent {
     & > div:first-child {
         transition: none;
 
@@ -151,7 +150,7 @@
     }
 }
 
-.bit-sch-box-container-underlined-fluent {
+.bit-sch-box-underlined-fluent {
     border: none;
     border-radius: 0;
     border-bottom: 1px solid $Grey130;
@@ -162,7 +161,7 @@
     }
 }
 
-.bit-sch-box-container-disabled-fluent {
+.bit-sch-box-disabled-fluent {
     color: $Grey160;
     background-color: $Grey20;
     align-items: stretch;
