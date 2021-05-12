@@ -1,0 +1,11 @@
+﻿@namespace Bit.Client.Web.BlazorUI
+@inherits BitComponentBase
+
+<div @ref="RootElement" class="@ClassBuilder.Value" style="@StyleBuilder.Value">
+    @if (!string.IsNullOrEmpty(Label))
+    {
+        <label class="description">@Label</label>
+    }
+    <input type="range" min="@Min" max="@Max" step="@Step" value="@Value" @onchange="@HandleChange" @oninput="@HandleInput" style="@styleProgress" />
+    <label class="valueLabel">@Value</label>
+</div>
