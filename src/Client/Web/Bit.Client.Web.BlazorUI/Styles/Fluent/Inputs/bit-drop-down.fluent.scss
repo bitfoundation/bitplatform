@@ -34,7 +34,7 @@
         overflow: hidden;
         white-space: nowrap;
         text-overflow: ellipsis;
-        height: 32px;
+        height: 30px;
         line-height: em(30px);
     }
 
@@ -80,10 +80,11 @@
     span:first-child {
         padding-top: em(0.45px);
         padding-left: em(6px);
-        height: 31px;
+        height: 27px;
     }
 
     span:nth-child(2) {
         padding-top: em(1.2px);
+        right: em(6px);
     }
 }

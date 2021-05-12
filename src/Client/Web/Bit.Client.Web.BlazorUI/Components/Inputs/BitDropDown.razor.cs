@@ -9,7 +9,19 @@ namespace Bit.Client.Web.BlazorUI
     {
         private string focusClass = "";
         private string expandClass = "";
+        private bool isOpen = false;
         private DropDownItem selectedItem ;
+
+        [Parameter]
+        public bool IsOpen
+        {
+            get => isOpen;
+            set
+            {
+                isOpen = value;
+                ClassBuilder.Reset();
+            }
+        }
 
         [Parameter] public List<DropDownItem> Items { get; set; } = new List<DropDownItem>();
         [Parameter] public string Placeholder { get; set; }
@@ -26,8 +38,6 @@ namespace Bit.Client.Web.BlazorUI
         }
 
         [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
-        [Parameter] public EventCallback<FocusEventArgs> OnFocusIn { get; set; }
-        [Parameter] public EventCallback<FocusEventArgs> OnFocusOut { get; set; }
 
         public string FocusClass
         {
@@ -51,8 +61,6 @@ namespace Bit.Client.Web.BlazorUI
         protected override string RootElementClass => "bit-drp";
         protected override void RegisterComponentClasses()
         {
-            //ClassBuilder.Register(() => IsChecked is true ?
-            //    $"{RootElementClass}-checked-{VisualClassRegistrar()}" : string.Empty);
             ClassBuilder.Register(() => string.IsNullOrWhiteSpace(FocusClass)
                 ? string.Empty
                 : $"{RootElementClass}-{FocusClass}-{VisualClassRegistrar()}");
@@ -64,32 +72,27 @@ namespace Bit.Client.Web.BlazorUI
             ClassBuilder.Register(() => SelectedItem is null
                 ? string.Empty
                 : $"{RootElementClass}-{"hasValue"}-{VisualClassRegistrar()}");
+
+            ClassBuilder.Register(() => IsOpen is false
+                ? string.Empty
+                : $"{RootElementClass}-{"opened"}-{VisualClassRegistrar()}");
         }
         protected virtual async Task HandleClick(MouseEventArgs e)
         {
             if (IsEnabled)
             {
-                FocusClass = "focused";
+                if (isOpen is false)
+                {
+                    isOpen = true;
+                    FocusClass = "focused";
+                }
+                else
+                {
+                    isOpen = false;
+                    FocusClass = "";
+                }
                 await OnClick.InvokeAsync(e);
             }
         }
-
-        protected virtual async Task HandleFocusIn(FocusEventArgs e)
-        {
-            if (IsEnabled)
-            {
-                FocusClass = "focused";
-                await OnFocusIn.InvokeAsync(e);
-            }
-        }
-        protected virtual async Task HandleFocusOut(FocusEventArgs e)
-        {
-            if (IsEnabled)
-            {
-                FocusClass = "";
-                await OnFocusOut.InvokeAsync(e);
-            }
-        }
-
     }
 }
