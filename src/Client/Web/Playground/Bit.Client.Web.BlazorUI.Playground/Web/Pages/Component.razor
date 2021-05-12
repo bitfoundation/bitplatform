@@ -44,18 +44,65 @@
     <h3>BitCompoundButton</h3>
     <BitCompoundButton IsEnabled="true"
                        Text="Primary"
+                       AriaLabel="Detailed label used for screen reader."
                        SecondaryText="This Button is compound button">
     </BitCompoundButton>
     <BitCompoundButton IsEnabled="true"
                        Text="Standard"
+                       AriaHidden="true"
                        SecondaryText="This Button is compound button"
                        ButtonStyle="ButtonStyle.Standard">
     </BitCompoundButton>
     <BitCompoundButton IsEnabled="false"
                        Text="Disabled"
+                       AriaDescription="Detailed description used for screen reader."
                        SecondaryText="This Button is a disabled compound button">
     </BitCompoundButton>
+
     <hr />
+
+    <h3>Button with Aria for Screen Reader</h3>
+    <BitButton AriaDescription="Detailed description used for screen reader.">
+        Button with Aria Description
+    </BitButton>
+    <BitButton AriaLabel="Detailed label used for screen reader.">
+        Button with Aria Label
+    </BitButton>
+    <BitButton AriaHidden="true">
+        Button with Aria Hidden
+    </BitButton>
+
+     <hr />
+
+    <h3>Icon Button</h3>
+    <BitIconButton IconName="Emoji2" />
+    <BitIconButton IconName="Emoji2" IsEnabled="false" />
+    
+    <hr />
+
+    <h3>Icon Button with Tooltip</h3>
+    <BitIconButton IconName="Emoji2" ToolTip="I'm Happy" />
+
+    <hr />
+
+    <h3>Action Button</h3>
+    <div class="action-btn-container">
+        <BitActionButton IconName="AddFriend">Create account</BitActionButton>
+        <BitActionButton IsEnabled="false" IconName="UserRemove">Remove user</BitActionButton>
+    </div>
+    
+    <hr />
+
+    <h3>Button-like Anchor</h3>
+    <BitButton Title="Primary" Target="_blank" Href="https://github.com/bitfoundation/bitframework">
+        Open Bit Foundation In New Tab
+    </BitButton>
+    <BitButton Title="Standard" Href="https://github.com/bitfoundation/bitframework" ButtonStyle="ButtonStyle.Standard">
+        Go To Bit Foundation
+    </BitButton>
+    <BitButton Target="_self" Href="https://github.com/bitfoundation/bitframework" IsEnabled="false">
+        <span>Bit Foundation From Span</span>
+    </BitButton>
 </div>
 
 <hr />
@@ -98,7 +145,8 @@
         <BitMessageBar MessageBarStyle="@MessageBarStyle.Success">
             Action completed! <BitButton OnClick="MessageBarButton" ButtonStyle="ButtonStyle.Standard">OK</BitButton>
         </BitMessageBar>
-        <br />}
+        <br />
+    }
     <BitMessageBar MessageBarStyle="@MessageBarStyle.Error">
         Error! Cannot complete action
     </BitMessageBar>
@@ -188,8 +236,9 @@
     <br />
     <BitTextField MaxLength="10" Placeholder="Limited text field - 10 chars"></BitTextField>
     <br />
-    <BitTextField Type="@InputType" Placeholder="Password input"></BitTextField>
-    <BitButton ButtonStyle="@ButtonStyle.Standard" OnClick="ChangeInputType">@ShowPasswordText</BitButton>
+    <BitTextField Placeholder="With an icon" IconName="CalendarMirrored"></BitTextField>
+    <br />
+    <BitTextField Type="@InputType" Placeholder="Password input" CanRevealPassword="true"></BitTextField>
     <br />
     <h3>Multi-line</h3>
     <BitTextField IsMultiLine="true" Value="Multi-line text field"></BitTextField>
@@ -275,4 +324,39 @@
         <BitChoiceOption Text="Option2" Value="2"></BitChoiceOption>
         <BitChoiceOption Text="Disabled option" Value="3" IsEnabled="false"></BitChoiceOption>
     </BitChoiceGroup>
+</div>
+
+<hr />
+
+<div class="toggle-container">
+    <h2>BitToggle</h2>
+    <h3>Basics</h3>
+
+    <BitToggle @bind-IsChecked="IsToggleChecked" IsEnabled="true" OnText="On" OffText="Off">Enabled and checked</BitToggle>
+    <br />
+    <BitToggle @bind-IsChecked="IsToggleUnChecked" IsEnabled="true" OnText="On" OffText="Off">Enabled and unchecked</BitToggle>
+    <br />
+    <BitToggle IsChecked="true" IsEnabled="false" OnText="On" OffText="Off">Disabled and checked</BitToggle>
+    <br />
+    <BitToggle IsChecked="false" IsEnabled="false" OnText="On" OffText="Off">Disabled and unchecked</BitToggle>
+    <br />
+    <BitToggle @bind-IsChecked="IsToggleUnChecked" IsEnabled="true" IsInlineLabel="true" OnText="On" OffText="Off">With inline label</BitToggle>
+    <br />
+    <BitToggle IsChecked="false" IsEnabled="false" IsInlineLabel="true" OnText="On" OffText="Off">Disabled with inline label</BitToggle>
+    <br />
+    <BitToggle @bind-IsChecked="IsToggleUnChecked" IsEnabled="true" IsInlineLabel="true">With inline label and without onText and offText</BitToggle>
+    <br />
+    <BitToggle IsChecked="false" IsEnabled="false" IsInlineLabel="true">Disabled With inline label and without onText and offText</BitToggle>
+    <br />
+    <h3>Toggles with Custom Labels</h3>
+    <br />
+    <BitToggle @bind-IsChecked="IsToggleUnChecked" IsEnabled="true" OnText="On" OffText="Off">Custom label <i class="bit-icon bit-icon--Info"></i></BitToggle>
+    <br />
+    <BitToggle @bind-IsChecked="IsToggleUnChecked" IsEnabled="true" OnText="On" OffText="Off" IsInlineLabel="true">Custom inline label <i class="bit-icon bit-icon--Info"></i></BitToggle>
+    <br />
+    <BitToggle @bind-IsChecked="IsToggleChecked" IsEnabled="true" OnText="On" OffText="Off">Enabled and checked</BitToggle>
+    <br />
+    <BitButton OnClick="() => IsToggleChecked = true">Make Toggle Check</BitButton>
+    <br />
+    <br />
 </div>

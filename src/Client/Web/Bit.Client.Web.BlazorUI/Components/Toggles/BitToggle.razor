@@ -1,0 +1,24 @@
+﻿@namespace Bit.Client.Web.BlazorUI
+@inherits BitComponentBase
+
+<div @ref="RootElement"
+	 style="@StyleBuilder.Value"
+	 class="@ClassBuilder.Value">
+
+	<label>@ChildContent</label>
+
+	<div>
+		<button @onclick="HandleOnClick"><span></span></button>
+		@if (!string.IsNullOrWhiteSpace(OnText) && !string.IsNullOrWhiteSpace(OffText))
+		{
+			@if (isChecked)
+			{
+				<label>@OnText</label>
+			}
+			else
+			{
+				 <label>@OffText</label>
+			}
+		}
+	</div>
+</div>

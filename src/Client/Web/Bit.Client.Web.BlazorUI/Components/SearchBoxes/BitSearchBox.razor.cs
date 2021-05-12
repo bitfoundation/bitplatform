@@ -118,7 +118,7 @@ namespace Bit.Client.Web.BlazorUI
             InputHasFocus = false;
         }
 
-        protected override string RootElementClass => "bit-sch-box-container";
+        protected override string RootElementClass => "bit-sch-box";
 
         protected override void RegisterComponentClasses()
         {

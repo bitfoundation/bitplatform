@@ -13,9 +13,14 @@ namespace Bit.Client.Web.BlazorUI
 
         [Parameter] public int MaxLength { get; set; } = -1;
 
+        [Parameter] public string IconName { get; set; }
+
         [Parameter] public string Value { get; set; }
 
         [Parameter] public string Placeholder { get; set; }
+
+        [Parameter]
+        public bool CanRevealPassword { get; set; }
 
         [Parameter]
         public bool IsReadonly
@@ -35,9 +40,12 @@ namespace Bit.Client.Web.BlazorUI
             set
             {
                 type = value;
+                ElementType = value;
                 ClassBuilder.Reset();
             }
         }
+
+        public TextFieldType ElementType { get; set; }
 
         [Parameter]
         public bool IsMultiLine
@@ -149,6 +157,11 @@ namespace Bit.Client.Web.BlazorUI
             {
                 await OnClick.InvokeAsync(e);
             }
+        }
+
+        public void TogglePasswordRevealIcon()
+        {
+            ElementType = ElementType == TextFieldType.Text ? TextFieldType.Password : TextFieldType.Text;
         }
     }
 }

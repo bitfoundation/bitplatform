@@ -1,6 +1,6 @@
 ﻿@import "../colors.fluent.scss", "../../functions.scss";
 
-.bit-chb-container-fluent {
+.bit-chb-fluent {
     margin: 5px;
     font-family: FluentFont;
     -webkit-font-smoothing: antialiased;
@@ -50,7 +50,7 @@
     }
 }
 
-.bit-chb-container-box-side-end-fluent {
+.bit-chb-end-fluent {
     & > div {
         flex-direction: row-reverse;
         justify-content: flex-end;
@@ -61,8 +61,7 @@
     }
 }
 
-
-.bit-chb-container-checked-fluent {
+.bit-chb-checked-fluent {
     & > div {
         & > div:first-child {
             border-color: $Primary;
@@ -91,8 +90,7 @@
     }
 }
 
-.bit-chb-container-indeterminate-fluent {
-
+.bit-chb-indeterminate-fluent {
     & > div {
         & > div:first-child {
             border-color: $Primary;
@@ -126,7 +124,7 @@
     }
 }
 
-.bit-chb-container-disabled-fluent {
+.bit-chb-disabled-fluent {
     pointer-events: none;
     cursor: default;
 
@@ -148,8 +146,8 @@
     }
 }
 
-.bit-chb-container-checked-disabled-fluent,
-.bit-chb-container-indeterminate-disabled-fluent {
+.bit-chb-checked-disabled-fluent,
+.bit-chb-indeterminate-disabled-fluent {
     & > div {
         & > div:first-child {
             .bit-icon--Accept {

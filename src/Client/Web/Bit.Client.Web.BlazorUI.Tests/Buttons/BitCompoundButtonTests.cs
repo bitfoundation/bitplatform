@@ -44,5 +44,50 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
 
             return Task.CompletedTask;
         }
+
+        [DataTestMethod, DataRow("Detailed description")]
+        public Task BitCompoundButtonAriaDescriptionTest(string ariaDescription)
+        {
+            var com = RenderComponent<BitCompoundButtonTest>(parameters =>
+            {
+                parameters.Add(p => p.AriaDescription, ariaDescription);
+            });
+
+            var bitCompoundButton = com.Find(".bit-cmp-btn");
+
+            Assert.IsTrue(bitCompoundButton.HasAttribute("aria-describedby"));
+
+            return Task.CompletedTask;
+        }
+
+        [DataTestMethod, DataRow("Detailed label")]
+        public Task BitCompoundButtonAriaLabelTest(string ariaLabel)
+        {
+            var com = RenderComponent<BitCompoundButtonTest>(parameters =>
+            {
+                parameters.Add(p => p.AriaLabel, ariaLabel);
+            });
+
+            var bitCompoundButton = com.Find(".bit-cmp-btn");
+
+            Assert.IsTrue(bitCompoundButton.HasAttribute("aria-label"));
+
+            return Task.CompletedTask;
+        }
+
+        [DataTestMethod, DataRow(true, true), DataRow(false, false), DataRow(null, false)]
+        public Task BitCompoundButtonAriaHiddenTest(bool ariaHidden, bool expectedResult)
+        {
+            var com = RenderComponent<BitCompoundButtonTest>(parameters =>
+            {
+                parameters.Add(p => p.AriaHidden, ariaHidden);
+            });
+
+            var bitCompoundButton = com.Find(".bit-cmp-btn");
+
+            Assert.AreEqual(bitCompoundButton.HasAttribute("aria-hidden"), expectedResult);
+
+            return Task.CompletedTask;
+        }
     }
 }
