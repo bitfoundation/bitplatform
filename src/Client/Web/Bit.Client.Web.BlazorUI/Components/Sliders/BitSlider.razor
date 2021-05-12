@@ -6,6 +6,11 @@
     {
         <label class="description">@Label</label>
     }
+<div class="bit-slider-container">
     <input type="range" min="@Min" max="@Max" step="@Step" value="@Value" @onchange="@HandleChange" @oninput="@HandleInput" style="@styleProgress" />
-    <label class="valueLabel">@Value</label>
+    @if (ShowValue)
+    {
+        <label class="valueLabel">@GetValueDisplay()</label>
+    }
+</div>
 </div>

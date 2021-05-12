@@ -8,16 +8,16 @@ namespace Bit.Client.Web.BlazorUI
 {
     public partial class BitSlider
     {
-        [Parameter] public string AriaLabel { get; set; }
-        [Parameter] public int DefaultLowerValue { get; set; }
+        //[Parameter] public string AriaLabel { get; set; }
+        //[Parameter] public int DefaultLowerValue { get; set; }
         [Parameter] public int DefaultValue { get; set; }
         [Parameter] public int Min { get; set; } = 1;
         [Parameter] public int Max { get; set; } = 10;
-        [Parameter] public int LowerValue { get; set; }
+        //[Parameter] public int LowerValue { get; set; }
         [Parameter] public bool OriginFromZero { get; set; }
         [Parameter] public string Label { get; set; }
         [Parameter] public bool Ranged { get; set; }
-        [Parameter] public bool ShowValue { get; set; }
+        [Parameter] public bool ShowValue { get; set; } = true;
         [Parameter] public int Step { get; set; } = 1;
         [Parameter] public int Value { get; set; }
         [Parameter] public bool Vertical { get; set; }
@@ -58,11 +58,6 @@ namespace Bit.Client.Web.BlazorUI
             await base.OnInitializedAsync();
         }
 
-        private void FillSlider()
-        {
-            styleProgress = $"--value: {Value}; --min: {Min}; --max: {Max};";
-        }
-
         protected virtual async Task HandleChange(ChangeEventArgs e)
         {
             if (IsEnabled)
@@ -71,7 +66,7 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
-        protected virtual async Task HandleInput (ChangeEventArgs e)
+        protected virtual async Task HandleInput(ChangeEventArgs e)
         {
             if (!Ranged)
             {
@@ -82,6 +77,28 @@ namespace Bit.Client.Web.BlazorUI
             if (IsEnabled)
             {
                 await OnInput.InvokeAsync(e);
+            }
+        }
+
+        private void FillSlider()
+        {
+            styleProgress = $"--value: {Value}; --min: {Min}; --max: {Max};";
+        }
+
+        private string GetValueDisplay()
+        {
+            if (string.IsNullOrEmpty(ValueFormat))
+            {
+                return Value.ToString();
+            }
+            else if (ValueFormat.Contains("p", StringComparison.CurrentCultureIgnoreCase))
+            {
+                int digitCount = (Max - 1).ToString().Length;
+                return (Value / Math.Pow(10, digitCount)).ToString(ValueFormat);
+            }
+            else
+            {
+                return Value.ToString(ValueFormat);
             }
         }
     }
