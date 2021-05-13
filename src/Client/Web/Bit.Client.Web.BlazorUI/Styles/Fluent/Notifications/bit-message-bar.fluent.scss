@@ -13,7 +13,7 @@
     min-height: 32px;
     align-items: flex-start;
 
-    .text-container {
+    & > span:nth-child(2) {
         flex-grow: 1;
         margin: 8px 0px 8px 12px;
         padding: 0;
@@ -23,7 +23,7 @@
         text-overflow: ellipsis;
     }
 
-    .not-truncate {
+    & > .not-truncate:nth-child(2) {
         overflow: visible;
         white-space: normal;
     }
