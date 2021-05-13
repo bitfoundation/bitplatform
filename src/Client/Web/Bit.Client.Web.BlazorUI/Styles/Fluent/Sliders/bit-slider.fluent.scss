@@ -1,5 +1,10 @@
 ﻿@import "../colors.fluent.scss", "../../functions.scss";
 
+$BgDefult: $Grey90;
+$BgTrack: $Grey130;
+$BgHover: $BlizzardBlue;
+$BgTrackHover: $DarkAlt;
+
 .bit-slider {
     width: 100%;
 }
@@ -9,20 +14,22 @@
     line-height: 28px;
     display: flex;
     align-items: center;
+    padding: 0 8px;
+}
+
+.bit-slider .zeroTick {
+    position: absolute;
+    background: $BgTrack;
+    width: 1px;
+    height: 14px;
 }
 
 .bit-slider input[type=range] {
     width: auto;
     height: 4px;
     flex-grow: 1;
-    padding: 0 8px;
     -webkit-appearance: none;
 }
-
-$BgDefult: $Grey90;
-$BgTrack: $Grey130;
-$BgHover: $BlizzardBlue;
-$BgTrackHover: $DarkAlt;
 
 /*progress support*/
 .bit-slider input[type=range] {
