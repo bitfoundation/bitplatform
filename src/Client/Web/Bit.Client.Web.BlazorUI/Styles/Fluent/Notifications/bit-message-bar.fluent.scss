@@ -15,17 +15,17 @@
 
     .text-container {
         flex-grow: 1;
-        display: -webkit-box;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-        -webkit-line-clamp: 1;
         margin: 8px 0px 8px 12px;
         padding: 0;
         text-align: left;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
     }
 
     .not-truncate {
-        -webkit-line-clamp: unset;
+        overflow: visible;
+        white-space: normal;
     }
 
     & > span:first-child {
