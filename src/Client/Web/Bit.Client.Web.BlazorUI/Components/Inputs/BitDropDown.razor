@@ -5,17 +5,45 @@
      class="@ClassBuilder.Value"
      @onclick="HandleClick">
     <span>
-        @if (SelectedItem is null)
+        @if (SelectedItem is not null)
         {
-            @Placeholder
+            @SelectedItem.Text
         }
         else
         {
-            @SelectedItem.Text
+            @Placeholder
         }
     </span>
     <span>
         <i class="bit-icon"></i>
     </span>
-    <div></div>
+    @if (isOpen)
+    {
+<div class="bit-cal">
+    @for (int index = 0; index < Items.Count; index++)
+    {
+        DropDownItem item = Items[index];
+        if (item.ItemType == DropDownItemType.Header)
+        {
+            <div class="item-header">
+                @item.Text
+            </div>
+        }
+        else if (item.ItemType == DropDownItemType.Normal)
+        {
+            <button class="@(SelectedItem == item?"selected":"")"
+                    type="button"
+                    title="@item.Text"
+                    disabled=@(item.IsDisabled)
+                    @onclick="()=>HandleItemSelect(item)">
+                @item.Text
+            </button>
+        }
+        else if (item.ItemType == DropDownItemType.Divider)
+        {
+            <div class="divider"></div>
+        }
+    }
+</div>
+    }
 </div>

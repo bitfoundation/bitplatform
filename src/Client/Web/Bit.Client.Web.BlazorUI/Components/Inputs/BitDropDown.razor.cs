@@ -38,6 +38,7 @@ namespace Bit.Client.Web.BlazorUI
         }
 
         [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+        [Parameter] public EventCallback<DropDownItem> OnSelectItem { get; set; }
 
         public string FocusClass
         {
@@ -93,6 +94,12 @@ namespace Bit.Client.Web.BlazorUI
                 }
                 await OnClick.InvokeAsync(e);
             }
+        }
+
+        protected virtual async Task HandleItemSelect(DropDownItem item)
+        {
+            SelectedItem = item;
+            await OnSelectItem.InvokeAsync(item);
         }
     }
 }
