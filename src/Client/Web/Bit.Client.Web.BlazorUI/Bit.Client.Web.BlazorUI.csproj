@@ -4,6 +4,18 @@
         <TargetFramework>net5.0</TargetFramework>
         <ResolveStaticWebAssetsInputsDependsOn>WebCompiler</ResolveStaticWebAssetsInputsDependsOn>
         <DisableFastUpToDateCheck>true</DisableFastUpToDateCheck>
+        <PackageId>Bit.Client.Web.BlazorUI</PackageId>
+        <PackageVersion>$([System.DateTime]::Now.ToString(&quot;yyyy.MM.dd.HHmmss&quot;))</PackageVersion>
+        <Authors>Bit Foundation</Authors>
+        <Product>Bit Foundation</Product>
+        <PackageDescription>Bit.Client.Web.BlazorUI</PackageDescription>
+        <Copyright>Copyright © Bit Foundation 2021</Copyright>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageProjectUrl>https://github.com/bitfoundation/bitframework</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/bitfoundation/bitframework</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <PackageTags>Bit</PackageTags>
+        <NeutralLanguage>English</NeutralLanguage>
     </PropertyGroup>
 
     <ItemGroup>
