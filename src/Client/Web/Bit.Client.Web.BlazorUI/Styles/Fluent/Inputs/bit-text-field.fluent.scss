@@ -6,8 +6,8 @@
     font-weight: 400;
     color: $Grey160;
     background: $White;
-    border-radius: em(2px);
-    border: em(1px) solid $Grey130;
+    border-radius: 2px;
+    border: 1px solid $Grey130;
     width: 100%;
     cursor: text;
     height: 32px;
@@ -91,12 +91,13 @@
     }
 }
 
-.bit-txt-focused-fluent {
-    .bit-txt-multiline {
-        textarea:first-child {
-            padding: em(4.3px) em(6.2px);
-        }
-    }
+.bit-txt-focused-fluent::after {
+    border: 2px solid $Primary;
+    position: absolute;
+    inset: -1px;
+    border-radius: 2px;
+    content: "";
+    pointer-events: none;
 }
 
 .bit-txt-disabled-fluent {
@@ -106,32 +107,4 @@
     cursor: default;
     border: none $Grey20;
     background: none $Grey20;
-}
-
-.bit-txt-fluent .bit-btn-fluent {
-    border: none;
-    color: $Primary;
-    background-color: transparent;
-    padding: em(0px) em(4px);
-    position: relative;
-
-    &:hover {
-        background-color: $Grey20;
-    }
-}
-
-.bit-txt-focused-fluent {
-    border: em(3px) solid $Primary;
-
-    input:first-child {
-        padding: 0px em(7px);
-    }
-
-    textarea:first-child {
-        padding: 0px em(7px);
-    }
-
-    .bit-btn-fluent {
-        padding: em(0px) em(2px);
-    }
 }

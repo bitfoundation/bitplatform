@@ -3,6 +3,7 @@
     <PropertyGroup>
         <TargetFramework>net5.0</TargetFramework>
         <ResolveStaticWebAssetsInputsDependsOn>WebCompiler</ResolveStaticWebAssetsInputsDependsOn>
+        <DisableFastUpToDateCheck>true</DisableFastUpToDateCheck>
         <PackageId>Bit.Client.Web.BlazorUI</PackageId>
         <PackageVersion>$([System.DateTime]::Now.ToString(&quot;yyyy.MM.dd.HHmmss&quot;))</PackageVersion>
         <Authors>Bit Foundation</Authors>
