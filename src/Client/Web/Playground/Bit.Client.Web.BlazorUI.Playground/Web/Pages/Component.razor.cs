@@ -55,7 +55,13 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
                 ItemType = DropDownItemType.Header,
                 Text = "Vegetables"
             });
-            
+            items.Add(new DropDownItem()
+            {
+                ItemType = DropDownItemType.Normal,
+                Text = "Broccoli",
+                Value = "v-bro",
+            });
+
             return items;
         }
     }

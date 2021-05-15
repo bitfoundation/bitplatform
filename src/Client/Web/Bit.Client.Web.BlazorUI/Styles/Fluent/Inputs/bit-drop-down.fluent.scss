@@ -89,12 +89,12 @@
 .bit-cal {
     font-family: FluentFont;
     -webkit-font-smoothing: antialiased;
-    font-size: rem(14px);
+    font-size: rem(15px);
     font-weight: 400;
     position: absolute;
     box-sizing: border-box;
     border-radius: em(2px) em(2px) em(0px) em(0px);
-    box-shadow: #000000DE em(0px) em(3.2px) em(7.2px) em(0px),#000000E3 em(0px) em(0.6px) em(1.8px) em(0px);
+    box-shadow: #00000021 em(0px) em(3.2px) em(7.2px) em(0px),#0000001C em(0px) em(0.6px) em(1.8px) em(0px);
     outline: transparent;
     width: 300px;
     animation-name: opacity, trans;
@@ -105,7 +105,7 @@
     div[class=item-header] {
         font-family: FluentFont;
         -webkit-font-smoothing: antialiased;
-        font-size: rem(14px);
+        font-size: rem(15px);
         font-weight: 600;
         color: $Primary;
         background: none transparent;
@@ -123,7 +123,7 @@
         position: relative;
         font-family: FluentFont;
         -webkit-font-smoothing: antialiased;
-        font-size: rem(14px);
+        font-size: rem(15px);
         font-weight: 400;
         box-sizing: border-box;
         border: em(1px) solid transparent;
@@ -153,7 +153,7 @@
         position: relative;
         font-family: FluentFont;
         -webkit-font-smoothing: antialiased;
-        font-size: rem(14px);
+        font-size: rem(15px);
         font-weight: 400;
         box-sizing: border-box;
         border: em(1px) solid transparent;
