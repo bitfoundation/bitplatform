@@ -34,14 +34,14 @@
             <button class="@(SelectedItem == item?"selected":"")"
                     type="button"
                     title="@item.Text"
-                    disabled=@(item.IsDisabled)
+                    disabled=@item.IsDisabled
                     @onclick="()=>HandleItemSelect(item)">
                 @item.Text
             </button>
         }
         else if (item.ItemType == DropDownItemType.Divider)
         {
-            <div class="divider"></div>
+            <div class="item-divider"></div>
         }
     }
 </div>

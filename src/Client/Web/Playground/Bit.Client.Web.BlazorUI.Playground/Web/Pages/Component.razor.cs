@@ -36,6 +36,13 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
             items.Add(new DropDownItem()
             {
                 ItemType = DropDownItemType.Normal,
+                Text = "Orange",
+                Value = "f-ora",
+                IsDisabled = true
+            });
+            items.Add(new DropDownItem()
+            {
+                ItemType = DropDownItemType.Normal,
                 Text = "Banana",
                 Value = "f-ban",
             });
@@ -45,11 +52,10 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
             });
             items.Add(new DropDownItem()
             {
-                ItemType = DropDownItemType.Normal,
-                Text = "Orange",
-                Value = "f-ora",
-                IsDisabled = true
+                ItemType = DropDownItemType.Header,
+                Text = "Vegetables"
             });
+            
             return items;
         }
     }

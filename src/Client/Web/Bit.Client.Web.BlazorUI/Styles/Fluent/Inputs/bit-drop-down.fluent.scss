@@ -16,10 +16,6 @@
     user-select: none;
     border: em(1px) solid $Grey130;
     border-radius: em(2px);
-    animation-name: opacity, trans;
-    animation-duration: 0.367s;
-    animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
-    animation-fill-mode: both;
 
     &:hover {
         color: $Grey160;
@@ -98,9 +94,13 @@
     position: absolute;
     box-sizing: border-box;
     border-radius: em(2px) em(2px) em(0px) em(0px);
-    box-shadow: $Grey190 em(0px) em(3.2px) em(7.2px) em(0px),$Grey190 em(0px) em(0.6px) em(1.8px) em(0px);
+    box-shadow: #000000DE em(0px) em(3.2px) em(7.2px) em(0px),#000000E3 em(0px) em(0.6px) em(1.8px) em(0px);
     outline: transparent;
     width: 300px;
+    animation-name: opacity, trans;
+    animation-duration: 0.367s;
+    animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
+    animation-fill-mode: both;
 
     div[class=item-header] {
         font-family: FluentFont;
@@ -178,8 +178,9 @@
         background-color: $Grey30;
     }
 
-    div [class=divider] {
+    div[class=item-divider] {
         height: 1px;
+        width:100%;
         background-color: $Grey30;
     }
 }
