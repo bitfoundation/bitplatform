@@ -11,6 +11,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
 		Bit.Build.props = Bit.Build.props
+		..\.github\workflows\Bit.Client.Web.BlazorUI.ci.yml = ..\.github\workflows\Bit.Client.Web.BlazorUI.ci.yml
+		..\.github\workflows\Bit.Client.Web.BlazorUI.nupkg.yml = ..\.github\workflows\Bit.Client.Web.BlazorUI.nupkg.yml
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Client.Web.BlazorUI", "Client\Web\Bit.Client.Web.BlazorUI\Bit.Client.Web.BlazorUI.csproj", "{1DEF8AD9-9FA7-4FB7-9161-639C82FA0732}"
