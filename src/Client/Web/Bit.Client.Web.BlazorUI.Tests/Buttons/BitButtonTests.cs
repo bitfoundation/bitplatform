@@ -64,7 +64,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
         ]
         public Task BitAnchorButtonTest(Visual visual, bool isEnabled, ButtonStyle style, string href, string title, string target)
         {
-            var com = RenderComponent<BitButtonTest>(parameters =>
+            var com = RenderComponent<BitButtonLinkTest>(parameters =>
             {
                 parameters.Add(p => p.Visual, visual);
                 parameters.Add(p => p.IsEnabled, isEnabled);

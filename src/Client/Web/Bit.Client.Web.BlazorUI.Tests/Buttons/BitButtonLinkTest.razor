@@ -1,10 +1,12 @@
 ﻿<CascadingValue Value="Visual">
-    <BitButton OnClick="IncrementCount"
-               IsEnabled="IsEnabled"
+    <BitButton IsEnabled="IsEnabled"
                ButtonStyle="ButtonStyle"
                AriaDescription="AriaDescription"
                AriaLabel="AriaLabel"
-               AriaHidden="AriaHidden">
+               AriaHidden="AriaHidden"
+               Href="Href"
+               Title="Title"
+               Target="Target">
         <label>Other test label</label>
     </BitButton>
 </CascadingValue>
@@ -19,11 +21,4 @@
     [Parameter] public string Href { get; set; }
     [Parameter] public string Title { get; set; }
     [Parameter] public string Target { get; set; }
-
-    public int CurrentCount { get; set; }
-
-    public void IncrementCount(MouseEventArgs e)
-    {
-        CurrentCount++;
-    }
 }
