@@ -10,7 +10,7 @@ namespace Bit.Client.Web.BlazorUI
         private string focusClass = "";
         private string expandClass = "";
         private bool isOpen = false;
-        private DropDownItem selectedItem ;
+        private DropDownItem selectedItem;
 
         [Parameter]
         public bool IsOpen
@@ -25,7 +25,7 @@ namespace Bit.Client.Web.BlazorUI
 
         [Parameter] public List<DropDownItem> Items { get; set; } = new List<DropDownItem>();
         [Parameter] public string Placeholder { get; set; }
-        
+
         [Parameter]
         public DropDownItem SelectedItem
         {
@@ -78,6 +78,7 @@ namespace Bit.Client.Web.BlazorUI
                 ? string.Empty
                 : $"{RootElementClass}-{"opened"}-{VisualClassRegistrar()}");
         }
+
         protected virtual async Task HandleClick(MouseEventArgs e)
         {
             if (IsEnabled)

@@ -19,31 +19,34 @@
     </span>
     @if (isOpen)
     {
-<div class="bit-cal">
-    @for (int index = 0; index < Items.Count; index++)
-    {
-        DropDownItem item = Items[index];
-        if (item.ItemType == DropDownItemType.Header)
-        {
-            <div class="item-header">
-                @item.Text
-            </div>
-        }
-        else if (item.ItemType == DropDownItemType.Normal)
-        {
-            <button class="@(SelectedItem == item?"selected":"")"
-                    type="button"
-                    title="@item.Text"
-                    disabled=@item.IsDisabled
-                    @onclick="()=>HandleItemSelect(item)">
-                @item.Text
-            </button>
-        }
-        else if (item.ItemType == DropDownItemType.Divider)
-        {
-            <div class="item-divider"></div>
-        }
-    }
-</div>
+        <div>
+            @for (int index = 0; index < Items.Count; index++)
+            {
+                DropDownItem item = Items[index];
+                if (item.ItemType == DropDownItemType.Header)
+                {
+                    <div class="@RootElementClass-head-@VisualClassRegistrar()">
+                        @item.Text
+                    </div>
+                }
+                else if (item.ItemType == DropDownItemType.Normal)
+                {
+                    <button class="@(SelectedItem == item
+                                       ?$"{RootElementClass}-slc-{VisualClassRegistrar()}"
+                                       :"")"
+                            type="button"
+                            title="@item.Text"
+                            disabled=@item.IsDisabled
+                            @onclick="()=>HandleItemSelect(item)">
+                        @item.Text
+                    </button>
+                }
+                else if (item.ItemType == DropDownItemType.Divider)
+                {
+                    <div class="@RootElementClass-div-@VisualClassRegistrar()">
+                    </div>
+                }
+            }
+        </div>
     }
 </div>

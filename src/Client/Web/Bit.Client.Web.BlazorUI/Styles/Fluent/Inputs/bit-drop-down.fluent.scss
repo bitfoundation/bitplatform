@@ -57,6 +57,106 @@
             pointer-events: none;
         }
     }
+
+    div:nth-child(3) {
+        font-family: FluentFont;
+        -webkit-font-smoothing: antialiased;
+        font-size: rem(15px);
+        font-weight: 400;
+        position: absolute;
+        box-sizing: border-box;
+        border-radius: em(2px) em(2px) em(0px) em(0px);
+        box-shadow: #00000021 em(0px) em(3.2px) em(7.2px) em(0px),#0000001C em(0px) em(0.6px) em(1.8px) em(0px);
+        outline: transparent;
+        width: 300px;
+        margin-top: em(3px);
+        animation-name: opacity, trans;
+        animation-duration: 0.367s;
+        animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
+        animation-fill-mode: both;
+
+        div[class=bit-drp-head-fluent] {
+            font-family: FluentFont;
+            -webkit-font-smoothing: antialiased;
+            font-size: rem(15px);
+            font-weight: 600;
+            color: $Primary;
+            background: none transparent;
+            border: none;
+            height: 36px;
+            line-height: 36px;
+            cursor: default;
+            padding: em(0px) em(8px);
+            text-align: left;
+            user-select: none;
+        }
+
+        button {
+            outline: transparent;
+            position: relative;
+            font-family: FluentFont;
+            -webkit-font-smoothing: antialiased;
+            font-size: rem(15px);
+            font-weight: 400;
+            box-sizing: border-box;
+            border: em(1px) solid transparent;
+            display: flex;
+            text-decoration: none;
+            text-align: left;
+            cursor: pointer;
+            padding: em(0px) em(8px);
+            border-radius: em(0px);
+            height: em(0px);
+            color: $Grey160;
+            background-color: transparent;
+            align-items: center;
+            width: 100%;
+            min-height: em(36px);
+            line-height: em(20px);
+            overflow-wrap: break-word;
+            user-select: none;
+
+            &:hover {
+                background-color: $Grey20;
+            }
+        }
+
+        button[disabled] {
+            outline: transparent;
+            position: relative;
+            font-family: FluentFont;
+            -webkit-font-smoothing: antialiased;
+            font-size: rem(15px);
+            font-weight: 400;
+            box-sizing: border-box;
+            border: em(1px) solid transparent;
+            display: flex;
+            text-decoration: none;
+            text-align: left;
+            cursor: default;
+            padding: em(0px) em(8px);
+            border-radius: em(0px);
+            height: em(0px);
+            color: $Grey90;
+            background-color: transparent;
+            align-items: center;
+            width: 100%;
+            min-height: em(36px);
+            line-height: em(20px);
+            overflow-wrap: break-word;
+            user-select: none;
+        }
+
+        button[class=bit-drp-slc-fluent] {
+            background-color: $Grey30;
+        }
+
+        div[class=bit-drp-div-fluent] {
+            height: 1px;
+            width: 100%;
+            background-color: $Grey30;
+        }
+    }
 }
 
 .bit-drp-hasValue-fluent {
@@ -74,7 +174,7 @@
     }
 
     span:first-child {
-        bottom: em(1.39px);
+        bottom: em(1.2px);
         padding-top: em(1px);
         padding-left: em(6px);
         height: 27px;
@@ -83,105 +183,6 @@
     span:nth-child(2) {
         padding-top: em(1.55px);
         right: em(6px);
-    }
-}
-
-.bit-cal {
-    font-family: FluentFont;
-    -webkit-font-smoothing: antialiased;
-    font-size: rem(15px);
-    font-weight: 400;
-    position: absolute;
-    box-sizing: border-box;
-    border-radius: em(2px) em(2px) em(0px) em(0px);
-    box-shadow: #00000021 em(0px) em(3.2px) em(7.2px) em(0px),#0000001C em(0px) em(0.6px) em(1.8px) em(0px);
-    outline: transparent;
-    width: 300px;
-    animation-name: opacity, trans;
-    animation-duration: 0.367s;
-    animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
-    animation-fill-mode: both;
-
-    div[class=item-header] {
-        font-family: FluentFont;
-        -webkit-font-smoothing: antialiased;
-        font-size: rem(15px);
-        font-weight: 600;
-        color: $Primary;
-        background: none transparent;
-        border: none;
-        height: 36px;
-        line-height: 36px;
-        cursor: default;
-        padding: em(0px) em(8px);
-        text-align: left;
-        user-select: none;
-    }
-
-    button {
-        outline: transparent;
-        position: relative;
-        font-family: FluentFont;
-        -webkit-font-smoothing: antialiased;
-        font-size: rem(15px);
-        font-weight: 400;
-        box-sizing: border-box;
-        border: em(1px) solid transparent;
-        display: flex;
-        text-decoration: none;
-        text-align: left;
-        cursor: pointer;
-        padding: em(0px) em(8px);
-        border-radius: em(0px);
-        height: em(0px);
-        color: $Grey160;
-        background-color: transparent;
-        align-items: center;
-        width: 100%;
-        min-height: em(36px);
-        line-height: em(20px);
-        overflow-wrap: break-word;
-        user-select: none;
-
-        &:hover {
-            background-color: $Grey20;
-        }
-    }
-
-    button[disabled] {
-        outline: transparent;
-        position: relative;
-        font-family: FluentFont;
-        -webkit-font-smoothing: antialiased;
-        font-size: rem(15px);
-        font-weight: 400;
-        box-sizing: border-box;
-        border: em(1px) solid transparent;
-        display: flex;
-        text-decoration: none;
-        text-align: left;
-        cursor: default;
-        padding: em(0px) em(8px);
-        border-radius: em(0px);
-        height: em(0px);
-        color: $Grey90;
-        background-color: transparent;
-        align-items: center;
-        width: 100%;
-        min-height: em(36px);
-        line-height: em(20px);
-        overflow-wrap: break-word;
-        user-select: none;
-    }
-
-    button[class=selected] {
-        background-color: $Grey30;
-    }
-
-    div[class=item-divider] {
-        height: 1px;
-        width:100%;
-        background-color: $Grey30;
     }
 }
 
