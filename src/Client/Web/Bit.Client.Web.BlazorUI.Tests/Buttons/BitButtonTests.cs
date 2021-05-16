@@ -64,7 +64,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
         ]
         public Task BitAnchorButtonTest(Visual visual, bool isEnabled, ButtonStyle style, string href, string title, string target)
         {
-            var com = RenderComponent<BitButtonLinkTest>(parameters =>
+            var com = RenderComponent<BitButtonTest>(parameters =>
             {
                 parameters.Add(p => p.Visual, visual);
                 parameters.Add(p => p.IsEnabled, isEnabled);
@@ -83,9 +83,9 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
 
             Assert.IsTrue(bitButton.HasAttribute("href"));
 
-            Assert.IsTrue(bitButton.HasAttribute("title"));
+            Assert.AreEqual(bitButton.GetAttribute("title"), title);
 
-            Assert.IsTrue(bitButton.HasAttribute("target"));
+            Assert.AreEqual(bitButton.GetAttribute("target") , target);
 
             return Task.CompletedTask;
         }
