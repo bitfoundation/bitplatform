@@ -5,9 +5,9 @@
      class="@ClassBuilder.Value"
      @onclick="HandleClick">
     <span>
-        @if (SelectedItem is not null)
+        @if (Text.HasValue())
         {
-            @SelectedItem.Text
+            @Text
         }
         else
         {
@@ -31,7 +31,7 @@
                 }
                 else if (item.ItemType == DropDownItemType.Normal)
                 {
-                    <button class="@(SelectedItem == item
+                    <button class="@(SelectedItems.Contains(item)
                                        ?$"{RootElementClass}-slc-{VisualClassRegistrar()}"
                                        :"")"
                             type="button"

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -10,8 +11,9 @@ namespace Bit.Client.Web.BlazorUI
         private string focusClass = "";
         private string expandClass = "";
         private bool isOpen = false;
-        private DropDownItem selectedItem;
+        private List<DropDownItem> selectedItems = new List<DropDownItem>();
 
+        [Parameter] public bool IsMultiSelect { get; set; } = false;
         [Parameter]
         public bool IsOpen
         {
@@ -26,19 +28,19 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public List<DropDownItem> Items { get; set; } = new List<DropDownItem>();
         [Parameter] public string Placeholder { get; set; }
 
-        [Parameter]
-        public DropDownItem SelectedItem
+        [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+        [Parameter] public EventCallback<DropDownItem> OnSelectItem { get; set; }
+
+        public List<DropDownItem> SelectedItems
         {
-            get => selectedItem;
+            get => selectedItems;
             set
             {
-                selectedItem = value;
+                selectedItems = value;
                 ClassBuilder.Reset();
             }
         }
-
-        [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
-        [Parameter] public EventCallback<DropDownItem> OnSelectItem { get; set; }
+        public string Text { get; set; }
 
         public string FocusClass
         {
@@ -70,7 +72,7 @@ namespace Bit.Client.Web.BlazorUI
                 ? string.Empty
                 : $"{RootElementClass}-{ExpandClass}-{VisualClassRegistrar()}");
 
-            ClassBuilder.Register(() => SelectedItem is null
+            ClassBuilder.Register(() => SelectedItems.Count is not 0
                 ? string.Empty
                 : $"{RootElementClass}-{"hasValue"}-{VisualClassRegistrar()}");
 
@@ -99,8 +101,20 @@ namespace Bit.Client.Web.BlazorUI
 
         protected virtual async Task HandleItemSelect(DropDownItem item)
         {
-            SelectedItem = item;
+            SelectedItems.Add(item);
+            if (IsMultiSelect)
+            {
+                if (Text.HasValue())
+                {
+                    Text += ", ";
+                }
+                Text += item.Text;
+            }
+            Text = item.Text;
             await OnSelectItem.InvokeAsync(item);
+        }
+        protected virtual async Task HandleItemUnSelect(DropDownItem item)
+        {
         }
     }
 }
