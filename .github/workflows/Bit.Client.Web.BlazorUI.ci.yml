@@ -1,4 +1,4 @@
-name: BlazorUI
+name: BlazorUI CI
 on:
   workflow_dispatch:
   pull_request:
