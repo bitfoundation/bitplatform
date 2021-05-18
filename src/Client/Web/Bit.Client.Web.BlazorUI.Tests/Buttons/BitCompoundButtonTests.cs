@@ -45,6 +45,28 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
             return Task.CompletedTask;
         }
 
+        [DataTestMethod,
+           DataRow(true, ButtonStyle.Primary, false),
+           DataRow(true, ButtonStyle.Standard, true),
+           DataRow(false, ButtonStyle.Primary, false),
+           DataRow(false, ButtonStyle.Standard, true),
+       ]
+        public Task BitCompoundButtonDisabledFocusTest(bool isEnabled, ButtonStyle style, bool allowDisabledFocus)
+        {
+            var com = RenderComponent<BitCompoundButtonTest>(parameters =>
+            {
+                parameters.Add(p => p.IsEnabled, isEnabled);
+                parameters.Add(p => p.ButtonStyle, style);
+                parameters.Add(p => p.AllowDisabledFocus, allowDisabledFocus);
+            });
+
+            var bitCompoundButton = com.Find(".bit-cmp-btn");
+
+            Assert.AreEqual(bitCompoundButton.HasAttribute("tabindex"), !isEnabled && !allowDisabledFocus);
+
+            return Task.CompletedTask;
+        }
+
         [DataTestMethod, DataRow("Detailed description")]
         public Task BitCompoundButtonAriaDescriptionTest(string ariaDescription)
         {

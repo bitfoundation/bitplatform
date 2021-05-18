@@ -47,6 +47,28 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
         }
 
         [DataTestMethod,
+            DataRow(true, ButtonStyle.Primary, false),
+            DataRow(true, ButtonStyle.Standard, true),
+            DataRow(false, ButtonStyle.Primary , false),
+            DataRow(false, ButtonStyle.Standard, true),
+        ]
+        public Task BitButtonDisabledFocusTest(bool isEnabled, ButtonStyle style, bool allowDisabledFocus)
+        {
+            var com = RenderComponent<BitButtonTest>(parameters =>
+            {
+                parameters.Add(p => p.IsEnabled, isEnabled);
+                parameters.Add(p => p.ButtonStyle, style);
+                parameters.Add(p => p.AllowDisabledFocus, allowDisabledFocus);
+            });
+
+            var bitButton = com.Find(".bit-btn");
+
+            Assert.AreEqual(bitButton.HasAttribute("tabindex"), !isEnabled && !allowDisabledFocus);
+
+            return Task.CompletedTask;
+        }
+
+        [DataTestMethod,
              DataRow(Visual.Fluent, true, ButtonStyle.Primary, "https://github.com/bitfoundation", "bit", "_blank"),
              DataRow(Visual.Fluent, true, ButtonStyle.Standard, "https://github.com/bitfoundation", "bit", "_blank"),
              DataRow(Visual.Fluent, false, ButtonStyle.Primary, "https://github.com/bitfoundation", "bit", "_blank"),

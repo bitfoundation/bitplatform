@@ -4,15 +4,16 @@
 @if (string.IsNullOrEmpty(Href) is false)
 {
     <a @ref="RootElement"
-       style="@StyleBuilder.Value"
-       class="@ClassBuilder.Value"
-       aria-label="@AriaLabel"
-       aria-describedby="@AriaDescription"
-       aria-hidden="@AriaHidden"
-       title="@Title"
-       target="@Target"
-       href="@Href">
-       @ChildContent
+   style="@StyleBuilder.Value"
+   class="@ClassBuilder.Value"
+   aria-label="@AriaLabel"
+   aria-describedby="@AriaDescription"
+   aria-hidden="@AriaHidden"
+   title="@Title"
+   target="@Target"
+   href="@Href"
+   @attributes="SetNewAttributes()">
+        @ChildContent
     </a>
 }
 else
@@ -23,6 +24,7 @@ else
         aria-label="@AriaLabel"
         aria-describedby="@AriaDescription"
         aria-hidden="@AriaHidden"
+        @attributes="SetNewAttributes()"
         @onclick="HandleOnClick">
         @ChildContent
     </button>
