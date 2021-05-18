@@ -1,0 +1,37 @@
+﻿<BitDropDown IsEnabled="IsEnabled"
+             Items="GetDropDownItems()">
+
+</BitDropDown>
+
+@code {
+    [Parameter] public string Value { get; set; }
+    [Parameter] public bool IsEnabled { get; set; }
+    public void ChangeEvent(ChangeEventArgs e)
+    {
+        IncrementCount();
+    }
+    public void ClickEvent(MouseEventArgs e)
+    {
+        IncrementCount();
+    }
+    public int CurrentCount { get; set; }
+    public void IncrementCount()
+    {
+        CurrentCount++;
+        Value = CurrentCount.ToString();
+    }
+
+    public List<DropDownItem> GetDropDownItems()
+    {
+        List<DropDownItem> items = new();
+        items.Add(new ()
+        {
+            ItemType = DropDownItemType.Normal
+        });
+        items.Add(new()
+        {
+            ItemType = DropDownItemType.Normal
+        });
+        return items;
+    }
+}

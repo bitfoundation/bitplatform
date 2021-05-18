@@ -99,5 +99,15 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
             Assert.AreEqual(count, com.Instance.CurrentCount);
             Assert.IsTrue(bitChoiceGroup.ClassList.Contains($"bit-chg-{className}-fluent"));
         }
+
+        public async Task BitDropDownShouldRespectIsEnabled(bool isEnabled, int count, string className)
+        {
+            var com = RenderComponent<BitDropDownTest>(
+                parameters =>
+                {
+                    parameters.Add(p => p.IsEnabled, isEnabled);
+                    parameters.Add(p => p.Value, count.ToString());
+                });
+        }
     }
 }

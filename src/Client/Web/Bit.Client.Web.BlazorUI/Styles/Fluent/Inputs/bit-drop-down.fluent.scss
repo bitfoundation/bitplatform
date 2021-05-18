@@ -177,6 +177,37 @@
     }
 }
 
+.bit-drp-disabled-fluent {
+    color: $Grey90;
+    border-color: $Grey20;
+    background-color: $Grey20;
+
+    &:hover {
+        color: $Grey90;
+        border: em(1px) solid $Grey20;
+    }
+
+    span:first-child {
+        border: none;
+        color: $Grey90;
+        background-color: $Grey20;
+        cursor: default;
+    }
+
+    span:nth-child(2) {
+
+        i:first-child {
+            color: $Grey90;
+        }
+    }
+}
+
+.bit-drp-disabled-fluent.bit-drp-hasValue-fluent {
+    span:first-child {
+        color: $Grey90;
+    }
+}
+
 .bit-drp-hasValue-fluent {
     span:first-child {
         color: $Grey190;
