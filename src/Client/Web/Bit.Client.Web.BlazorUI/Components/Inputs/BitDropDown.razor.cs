@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -11,7 +12,6 @@ namespace Bit.Client.Web.BlazorUI
         private string focusClass = "";
         private string expandClass = "";
         private bool isOpen = false;
-        private List<DropDownItem> selectedItems = new List<DropDownItem>();
 
         [Parameter] public bool IsMultiSelect { get; set; } = false;
         [Parameter]
@@ -31,15 +31,6 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
         [Parameter] public EventCallback<DropDownItem> OnSelectItem { get; set; }
 
-        public List<DropDownItem> SelectedItems
-        {
-            get => selectedItems;
-            set
-            {
-                selectedItems = value;
-                ClassBuilder.Reset();
-            }
-        }
         public string Text { get; set; }
 
         public string FocusClass
@@ -72,7 +63,7 @@ namespace Bit.Client.Web.BlazorUI
                 ? string.Empty
                 : $"{RootElementClass}-{ExpandClass}-{VisualClassRegistrar()}");
 
-            ClassBuilder.Register(() => SelectedItems.Count is not 0
+            ClassBuilder.Register(() => Items.Any(prop=>prop.IsSelected)
                 ? string.Empty
                 : $"{RootElementClass}-{"hasValue"}-{VisualClassRegistrar()}");
 
@@ -99,22 +90,42 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
-        protected virtual async Task HandleItemSelect(DropDownItem item)
+        protected virtual async Task HandleItemSelect(DropDownItem? selectedItem)
         {
-            SelectedItems.Add(item);
-            if (IsMultiSelect)
+            isOpen = false;
+            if (selectedItem is not null)
             {
-                if (Text.HasValue())
+                if (IsMultiSelect)
                 {
-                    Text += ", ";
+                    if (Text.HasValue())
+                    {
+                        Text += ", ";
+                    }
+                    Text += selectedItem.Text;
                 }
-                Text += item.Text;
+                else
+                    Text = selectedItem.Text;
+                await OnSelectItem.InvokeAsync(selectedItem);
             }
-            Text = item.Text;
-            await OnSelectItem.InvokeAsync(item);
-        }
-        protected virtual async Task HandleItemUnSelect(DropDownItem item)
-        {
+            else
+            {
+                if (IsMultiSelect)
+                {
+                    Text = string.Empty;
+                    for (int index = 0; index < Items.Count; index++)
+                    {
+                        DropDownItem item = Items[index];
+                        if (item.IsSelected)
+                        {
+                            if (Text.HasValue())
+                            {
+                                Text += ", ";
+                            }
+                            Text += item.Text;
+                        }
+                    }
+                }
+            }
         }
     }
 }

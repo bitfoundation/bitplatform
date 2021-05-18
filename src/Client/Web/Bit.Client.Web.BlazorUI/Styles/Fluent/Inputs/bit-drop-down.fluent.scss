@@ -156,6 +156,24 @@
             width: 100%;
             background-color: $Grey30;
         }
+
+        .bit-chb-fluent {
+            position: relative;
+            display: flex;
+            box-sizing: border-box;
+            cursor: pointer;
+            align-items: center;
+            padding: em(0px);
+            width: 100%;
+            min-height: em(36px);
+            line-height: em(20px);
+            height: em(0px);
+            border: em(1px) solid transparent;
+            border-radius: em(0px);
+            overflow-wrap: break-word;
+            text-align: left;
+            color: $Grey190;
+        }
     }
 }
 

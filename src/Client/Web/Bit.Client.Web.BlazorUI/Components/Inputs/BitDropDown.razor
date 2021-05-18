@@ -2,9 +2,8 @@
 @inherits BitComponentBase
 <div @ref="RootElement"
      style="@StyleBuilder.Value"
-     class="@ClassBuilder.Value"
-     @onclick="HandleClick">
-    <span>
+     class="@ClassBuilder.Value">
+    <span @onclick="HandleClick">
         @if (Text.HasValue())
         {
             @Text
@@ -14,7 +13,7 @@
             @Placeholder
         }
     </span>
-    <span>
+    <span @onclick="HandleClick">
         <i class="bit-icon"></i>
     </span>
     @if (isOpen)
@@ -31,15 +30,25 @@
                 }
                 else if (item.ItemType == DropDownItemType.Normal)
                 {
-                    <button class="@(SelectedItems.Contains(item)
-                                       ?$"{RootElementClass}-slc-{VisualClassRegistrar()}"
-                                       :"")"
-                            type="button"
-                            title="@item.Text"
-                            disabled=@item.IsDisabled
-                            @onclick="()=>HandleItemSelect(item)">
-                        @item.Text
-                    </button>
+                    @if (IsMultiSelect)
+                    {
+                        <BitCheckbox @bind-IsChecked="@item.IsSelected"
+                                     OnChange="(isChecked) => HandleItemSelect(isChecked?item:null)">
+                            @item.Text
+                        </BitCheckbox>
+                    }
+                    else
+                    {
+                        <button class="@(Items.Any(prop=>prop.IsSelected && prop.Value.Equals(item.Value))
+                                           ?$"{RootElementClass}-slc-{VisualClassRegistrar()}"
+                                           :"")"
+                                type="button"
+                                title="@item.Text"
+                                disabled=@item.IsDisabled
+                                @onclick="()=>HandleItemSelect(item)">
+                            @item.Text
+                        </button>
+                    }
                 }
                 else if (item.ItemType == DropDownItemType.Divider)
                 {
