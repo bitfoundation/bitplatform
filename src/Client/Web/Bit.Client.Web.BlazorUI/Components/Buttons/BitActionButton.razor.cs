@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 
@@ -7,7 +6,6 @@ namespace Bit.Client.Web.BlazorUI
 {
     public partial class BitActionButton
     {
-        [Parameter] public bool AllowDisabledFocus { get; set; } = true;
         [Parameter] public string AriaDescription { get; set; }
         [Parameter] public bool AriaHidden { get; set; }
         [Parameter] public string AriaLabel { get; set; }
@@ -23,18 +21,6 @@ namespace Bit.Client.Web.BlazorUI
             {
                 await OnClick.InvokeAsync(e);
             }
-        }
-
-        private Dictionary<string, object> SetNewAttributes()
-        {
-            var attributes = new Dictionary<string, object>();
-
-            if (IsEnabled is false && AllowDisabledFocus is false)
-            {
-                attributes.Add("tabindex", -1);
-            }
-
-            return attributes;
         }
     }
 }
