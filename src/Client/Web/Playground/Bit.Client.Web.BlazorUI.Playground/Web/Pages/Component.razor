@@ -72,12 +72,12 @@
         Button with Aria Hidden
     </BitButton>
 
-     <hr />
+    <hr />
 
     <h3>Icon Button</h3>
     <BitIconButton IconName="Emoji2" />
     <BitIconButton IconName="Emoji2" IsEnabled="false" />
-    
+
     <hr />
 
     <h3>Icon Button with Tooltip</h3>
@@ -90,7 +90,7 @@
         <BitActionButton IconName="AddFriend">Create account</BitActionButton>
         <BitActionButton IsEnabled="false" IconName="UserRemove">Remove user</BitActionButton>
     </div>
-    
+
     <hr />
 
     <h3>Button-like Anchor</h3>
@@ -139,33 +139,96 @@
 <hr />
 
 <div class="message-bar-container">
-    <h2>BitMessageBar</h2>
-    @if (IsMessageBarHidden is false)
-    {
-        <BitMessageBar MessageBarStyle="@MessageBarStyle.Success" OnDismiss="HideMessageBar">
-            Action completed! This is a sample of message bar with dismiss ability
-        </BitMessageBar>
-        <br />
-    }
-    <BitMessageBar MessageBarStyle="@MessageBarStyle.Error" Truncated="true">
-        This is an error message bar with the ability to truncate your text Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+    <h2>BitBitMessageBar</h2>
+    <BitMessageBar>
+        Info/Default BitMessageBar.
+        <BitLink Href="https://github.com/BlazorFluentUI/BlazorFluentUI"
+                 Target="_blank">
+            Visit us on GitHub.
+        </BitLink>
     </BitMessageBar>
     <br />
-    <BitMessageBar MessageBarStyle="@MessageBarStyle.Warning" IsMultiline="true">
-        Caution! Action may takes long and also this message bar shown multiline messages time Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+    <BitMessageBar MessageBarType=BitMessageBarType.Error
+                   IsMultiline="false"
+                   OnDismiss=@ShowAert>
+        Error BitMessageBar with single line, with dismiss button.
+        <BitLink Href="https://github.com/BlazorFluentUI/BlazorFluentUI" Target="_blank">Visit us on GitHub.</BitLink>
     </BitMessageBar>
     <br />
-    <BitMessageBar MessageBarStyle="@MessageBarStyle.Blocked">
-        Blocked MessageBar - single line Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+    <BitMessageBar MessageBarType=BitMessageBarType.Blocked
+                   IsMultiline=false
+                   OnDismiss=@ShowAert
+                   DismissButtonAriaLabel="Close"
+                   Truncated=true
+                   OverflowButtonAriaLabel="See more">
+        <b>Blocked BitMessageBar - single line, with dismiss button and truncated text.</b> Truncation is not available if you use action buttons
+        or multiline and should be used sparingly. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi luctus, purus a lobortis
+        tristique, odio augue pharetra metus, ac placerat nunc mi nec dui. Vestibulum aliquam et nunc semper scelerisque. Curabitur vitae orci
+        nec quam condimentum porttitor et sed lacus. Vivamus ac efficitur leo. Cras faucibus mauris libero, ac placerat erat euismod et. Donec
+        pulvinar commodo odio sit amet faucibus. In hac habitasse platea dictumst. Duis eu ante commodo, condimentum nibh pellentesque, laoreet
+        enim. Fusce massa lorem, ultrices eu mi a, fermentum suscipit magna. Integer porta purus pulvinar, hendrerit felis eget, condimentum
+        mauris.
     </BitMessageBar>
     <br />
-    <BitMessageBar MessageBarStyle="@MessageBarStyle.Severe">
-        Cannot connect to server
+    <BitMessageBar MessageBarType=BitMessageBarType.SevereWarning>
+        <Actions>
+            <div>
+                <BitButton ButtonStyle="ButtonStyle.Standard">Yes</BitButton>
+                <BitButton ButtonStyle="ButtonStyle.Standard">No</BitButton>
+            </div>
+        </Actions>
+        <ChildContent>
+            SevereWarning BitMessageBar with action buttons which defaults to multiline.
+            <BitLink Href="https://github.com/BlazorFluentUI/BlazorFluentUI" Target="_blank">Visit us on GitHub.</BitLink>
+        </ChildContent>
     </BitMessageBar>
     <br />
-    <BitMessageBar MessageBarStyle="@MessageBarStyle.Default">
-        Visit repository <BitLink Href="https://github.com/bitfoundation/bitframework">here</BitLink>
+    <BitMessageBar BitMessageBarType=BitMessageBarType.Success
+                   IsMultiline=false>
+        <Actions>
+            <div>
+                <BitButton ButtonStyle="ButtonStyle.Standard">Yes</BitButton>
+                <BitButton ButtonStyle="ButtonStyle.Standard">No</BitButton>
+            </div>
+        </Actions>
+        <ChildContent>
+            Success BitMessageBar with single line and action buttons.
+            <BitLink Href="https://github.com/BlazorFluentUI/BlazorFluentUI" Target="_blank">Visit us on GitHub.</BitLink>
+        </ChildContent>
     </BitMessageBar>
+    <br />
+    <BitMessageBar MessageBarType=BitMessageBarType.Warning
+                   IsMultiline=false
+                   OnDismiss=@ShowAert
+                   DismissButtonAriaLabel="Close">
+        <Actions>
+            <BitButton ButtonStyle="ButtonStyle.Standard">Action</BitButton>
+        </Actions>
+        <ChildContent>
+            Warning BitMessageBar content.
+            <BitLink Href="https://github.com/BlazorFluentUI/BlazorFluentUI" Target="_blank">Visit us on GitHub.</BitLink>
+        </ChildContent>
+    </BitMessageBar>
+    <br />
+    <BitMessageBar OnDismiss=@ShowAert
+                   DismissButtonAriaLabel="Close"
+                   MessageBarType=BitMessageBarType.Warning>
+        <Actions>
+            <div>
+                <BitButton ButtonStyle="ButtonStyle.Standard">Yes</BitButton>
+                <BitButton ButtonStyle="ButtonStyle.Standard">No</BitButton>
+            </div>
+        </Actions>
+        <ChildContent>
+            <b>Warning defaults to multiline</b>. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi luctus, purus a lobortis tristique,
+            odio augue pharetra metus, ac placerat nunc mi nec dui. Vestibulum aliquam et nunc semper scelerisque. Curabitur vitae orci nec quam
+            condimentum porttitor et sed lacus. Vivamus ac efficitur leo. Cras faucibus mauris libero, ac placerat erat euismod et. Donec pulvinar
+            commodo odio sit amet faucibus. In hac habitasse platea dictumst. Duis eu ante commodo, condimentum nibh pellentesque, laoreet enim.
+            Fusce massa lorem, ultrices eu mi a, fermentum suscipit magna. Integer porta purus pulvinar, hendrerit felis eget, condimentum mauris.
+            <BitLink Href="https://github.com/BlazorFluentUI/BlazorFluentUI" Target="_blank">Visit us on GitHub.</BitLink>
+        </ChildContent>
+    </BitMessageBar>
+
 </div>
 
 <hr />

@@ -1,28 +1,91 @@
 ﻿@namespace Bit.Client.Web.BlazorUI
 @inherits BitComponentBase
 
-<div @ref="RootElement"
-     style="@StyleBuilder.Value"
-     class="@ClassBuilder.Value">
-    <span>
-        <i class="bit-icon bit-icon--@MessageBarIconName"></i>
-    </span>
-    <span class="@((Truncated && !ElementTruncateState) || IsMultiline ? "not-truncate" : "")">
-        @ChildContent
-    </span>
-    <span>
-        @if (Truncated)
-        {
-            <span @onclick="ToggleElementTruncate">
-                <i class="bit-icon bit-icon--@(ElementTruncateState ? "DoubleChevronDown" : "DoubleChevronUp" )"></i>
-            </span>
-        }
+@if (IsMultiline)
+{
+    <div class=@($"{RootElementClass}--root")
+         style=@StyleBuilder.Value>
+        <div class=@($"{ClassBuilder.Value} {RootElementClass}-multiline {GetTypeCss()}")>
+            <div class=@($"{RootElementClass}-content")>
 
-        @if (OnDismiss.HasDelegate)
-        {
-            <span @onclick="Dismiss">
-                <i class="bit-icon bit-icon--@DismissIconName"></i>
-            </span>
-        }
-    </span>
-</div>
+                <div class=@($"{RootElementClass}-icon") aria-hidden="true">
+                    <i class=@($"bit-icon bit-icon--{MessageBarIcon.IconMap[MessageBarType]}")></i>
+                </div>
+
+                <div class=@($"{RootElementClass}-text") role="status" aria-live=@(MessageBarType == BitMessageBarType.Blocked || MessageBarType == BitMessageBarType.Error || MessageBarType == BitMessageBarType.SevereWarning ? "assertive" : "polite")>
+                    <span class=@($"{RootElementClass}-innerText {RootElementClass}-multiline")>
+                        <span>
+                            @ChildContent
+                        </span>
+                    </span>
+                </div>
+
+                @*DismissSingleLine*@
+                @if (HasDismiss)
+                {
+                    <button onclick=@OnDismiss
+                            Class=@($"{RootElementClass}-expand")>
+                        <i class="bit-icon bit-icon--Clear"></i>
+                    </button>
+                }
+            </div>
+            @*Action*@
+            @if (Actions != null)
+            {
+                <div class=@($"{RootElementClass}-actions")>@Actions</div>
+            }
+        </div>
+    </div>
+}
+else
+{
+    <div class=@($"{RootElementClass}--root ")
+         style=@StyleBuilder.Value>
+        <div class=@($"{ClassBuilder.Value} {RootElementClass}-singleline {GetTypeCss()} {(Truncated ? $"{RootElementClass}-expandingSingleLine" : "")} {(HasDismiss ? $"{RootElementClass}-dismissalSingleLine" : "")}")>
+            <div class=@($"{RootElementClass}-content")>
+
+                @*Icon*@
+                <div class=@($"{RootElementClass}-icon") aria-hidden="true">
+                    <i class=@($"bit-icon bit-icon--{MessageBarIcon.IconMap[MessageBarType]}")></i>
+                </div>
+
+                @*ChildContent*@
+                <div class=@($"{RootElementClass}-text  {(HasDismiss ? $"{RootElementClass}-dismissSingleLine" : "")}") role="status" aria-live=@(MessageBarType == BitMessageBarType.Blocked || MessageBarType == BitMessageBarType.Error || MessageBarType == BitMessageBarType.SevereWarning ? "assertive" : "polite")>
+                    <span class=@($"{RootElementClass}-innerText {(ExpandSingelLine ? $"{RootElementClass}-expandSingleLine" : "")}")>
+                        <span>
+                            @ChildContent
+                        </span>
+                    </span>
+                </div>
+
+                @*ExpandSingleLine*@
+                @if (HasExpand)
+                {
+                    <div class=@($"{RootElementClass}-expandSingleLine")>
+                        <button @onclick=@Truncate
+                                Class=@($"{RootElementClass}-dismissal ")>
+                            <i class=@($"bit-icon bit-icon--{(ExpandSingelLine ? "DoubleChevronUp" : "DoubleChevronDown")}")></i>
+                        </button>
+                    </div>
+                }
+
+                @*Action*@
+                @if (Actions != null)
+                {
+                    <div class=@($"{RootElementClass}-actions singleLine {(HasDismiss ? $"{RootElementClass}-dismissSingleLine" : "")}")>@Actions</div>
+                }
+
+                @*DismissSingleLine*@
+                @if (HasDismiss)
+                {
+                    <div class=@($"{RootElementClass}-dismissSingleLine")>
+                        <button onclick=@OnDismiss
+                                Class=@($"{RootElementClass}-dismissal")>
+                            <i class="bit-icon bit-icon--Clear"></i>
+                        </button>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+}

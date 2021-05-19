@@ -1,99 +1,213 @@
 ﻿@import "../colors.fluent.scss", "../../functions.scss";
 
 .bit-msg-bar-fluent {
+    background-color: $Grey20;
+    color: $Grey160;
     font-family: FluentFont;
     font-size: rem(12px);
     font-weight: 400;
-    line-height: inherit;
-    color: $Grey160;
-    align-items: center;
+    min-height: 32px;
     width: 100%;
     display: flex;
     word-break: break-word;
-    min-height: 32px;
-    align-items: flex-start;
 
-    & > span:nth-child(2) {
-        flex-grow: 1;
-        margin: 8px 0px 8px 12px;
-        padding: 0;
-        text-align: left;
-        overflow: hidden;
-        white-space: nowrap;
-        text-overflow: ellipsis;
+    &.bit-msg-bar--error, &.bit-msg-bar--blocked {
+        background-color: $red20;
     }
 
-    & > .not-truncate:nth-child(2) {
+    &.bit-msg-bar--severeWarning {
+        background-color: $orange20;
+    }
+
+    &.bit-msg-bar--success {
+        background-color: $green60;
+    }
+
+    &.bit-msg-bar--warning {
+        background-color: $yellow20;
+    }
+
+    &.bit-msg-bar-multiline {
+        flex-direction: column;
+    }
+
+    .bit-msg-bar-content {
+        display: flex;
+        width: 100%;
+        line-height: normal;
+    }
+
+    .bit-msg-bar-icon {
+        font-size: 16px;
+        min-width: 16px;
+        min-height: 16px;
+        display: flex;
+        flex-shrink: 0;
+        margin: 8px 0 8px 12px;
+    }
+
+    .bit-msg-bar-icon .bit-icon {
+        color: $ThemeLighter;
+    }
+
+    &.bit-msg-bar--error .bit-msg-bar-icon .bit-icon,
+    &.bit-msg-bar--blocked .bit-msg-bar-icon .bit-icon,
+    &.bit-msg-bar--severeWarning .bit-msg-bar-icon .bit-icon {
+        color: $red180;
+    }
+
+    &.bit-msg-bar--success .bit-msg-bar-icon .bit-icon {
+        color: $green120;
+    }
+
+    &.bit-msg-bar--warning .bit-msg-bar-icon .bit-icon {
+        color: $Grey160;
+    }
+
+    @media screen and (-ms-high-contrast: active) {
+        .bit-msg-bar-icon {
+            -ms-high-contrast-adjust: none;
+            color: WindowText;
+        }
+    }
+
+    .bit-msg-bar-text {
+        min-width: 0;
+        display: flex;
+        flex-grow: 1;
+        margin: 8px;
+        font-family: FluentFont;
+        font-size: rem(12px);
+        font-weight: 400;
+    }
+
+    .bit-msg-bar-text:not(.bit-msg-bar-dismissSingleLine) {
+        margin-right: 12px;
+    }
+
+    @media screen and (-ms-high-contrast: active) {
+        .bit-msg-bar-text {
+            -ms-high-contrast-adjust: none;
+        }
+    }
+
+    .bit-msg-bar-innerText {
+        line-height: 16px;
+    }
+
+    .bit-msg-bar-innerText span,
+    .bit-msg-bar-innerText a {
+        padding-left: 4px;
+    }
+
+    .bit-msg-bar-innerText.bit-msg-bar-expandSingleLine {
         overflow: visible;
         white-space: normal;
     }
 
-    & > span:first-child {
-        display: inline-block;
-        margin: 8px 0 8px 12px;
-        font-size: 16px;
+    .bit-msg-bar-innerText:not(.bit-msg-bar-multiline):not(.bit-msg-bar-expandSingleLine) {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 
-    & > span:last-child {
-        display: flex;
-        margin-right: 12px;
-        font-size: 11px;
+    .bit-msg-bar-dismissal {
+        flex-shrink: 0;
+        width: 32px;
+        height: 32px;
+        padding: 8px 12px;
+        background-color: transparent;
+    }
 
-        & > span {
-            margin: 8px 0 8px 12px;
+    .bit-msg-bar-dismissal.ms-Button-icon {
+        font-size: 16px;
+        color: $Primary;
+        height: 10px;
+        line-height: 10px;
+    }
+
+    .bit-msg-bar-dismissal.ms-Button--icon:hover {
+        background-color: transparent;
+    }
+
+    .bit-msg-bar-dismissal.bit-button--icon:active {
+        background-color: transparent;
+    }
+
+    @media screen and (-ms-high-contrast: active) {
+        .bit-msg-bar-dismissal.ms-Button-icon {
+            -ms-high-contrast-adjust: none;
+            color: WindowText;
         }
     }
-}
 
-.bit-msg-bar-default-fluent {
-    background-color: $Grey20;
-
-    & > span:first-child {
+    .bit-msg-bar-expand {
+        flex-shrink: 0;
+        width: 32px;
+        height: 32px;
+        padding: 8px 12px;
+        background-color: transparent;
     }
-}
 
-.bit-msg-bar-error-fluent {
-    background-color: $red20;
-
-    & > span:first-child {
-        color: $red180;
+    .bit-msg-bar-expand.ms-Button-icon {
+        font-size: 16px;
+        height: 10px;
+        line-height: 10px;
+        color: $Primary;
     }
-}
 
-.bit-msg-bar-success-fluent {
-    background-color: $green60;
-
-    & > span:first-child {
-        color: $green120;
+    .bit-msg-bar-expand.ms-Button--icon:hover {
+        background-color: transparent;
     }
-}
 
-.bit-msg-bar-warning-fluent {
-    background-color: $yellow20;
-
-    & > span:first-child {
-        color: $Grey160;
+    .bit-msg-bar-expand.ms-Button--icon:active {
+        background-color: transparent;
     }
-}
 
-.bit-msg-bar-severe-fluent {
-    background-color: $orange20;
-
-    & > span:first-child {
-        color: $orange180;
+    @media screen and (-ms-high-contrast: active) {
+        .bit-msg-bar-expand.ms-Button-icon {
+            -ms-high-contrast-adjust: none;
+            color: WindowText;
+        }
     }
-}
 
-.bit-msg-bar-blocked-fluent {
-    background-color: $red20;
+    .bit-msg-bar-actions {
+        display: flex;
+        flex-grow: 0;
+        flex-shrink: 0;
+        flex-basis: auto;
+        flex-Direction: row-reverse;
+        align-items: center;
+        margin: 0 12px 8px 8px;
 
-    & > span:first-child {
-        color: $red180;
+        button {
+            padding: 0 1.25em;
+            min-height: 22px;
+            margin-bottom: 0px;
+            margin-top: 0px;
+            height: 24px;
+        }
     }
-}
 
+    .bit-msg-bar-actions button:nth-child(n+2) {
+        margin-left: 8px;
+    }
 
-.bit-msg-bar-fluent .bit-btn-fluent {
-    padding: em(2) em(18);
-    min-width: em(80);
+    .bit-msg-bar-actions.singleLine {
+        display: flex;
+        flex-grow: 0;
+        flex-shrink: 0;
+        flex-basis: auto;
+        flex-Direction: row-reverse;
+        align-items: center;
+        margin: 0 12px 0 8px;
+    }
+
+    .bit-msg-bar-actions.singleLine button:nth-child(n+2) {
+        margin-left: 8px;
+    }
+
+    .bit-msg-bar-actions.singleLine .bit-msg-bar-dismissSingleLine {
+        margin-right: 0;
+    }
 }

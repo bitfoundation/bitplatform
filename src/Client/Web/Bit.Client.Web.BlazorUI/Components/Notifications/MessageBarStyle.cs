@@ -1,12 +1,27 @@
-﻿namespace Bit.Client.Web.BlazorUI
+﻿using System.Collections.Generic;
+
+namespace Bit.Client.Web.BlazorUI
 {
-    public enum MessageBarStyle
+    public enum BitMessageBarType
     {
-        Default,
+        Info,
+        Warning,
         Error,
         Blocked,
-        Success,
-        Warning,
-        Severe
+        SevereWarning,
+        Success
+    }
+
+    public static class MessageBarIcon
+    {
+        public static Dictionary<BitMessageBarType, string> IconMap = new()
+        {
+            [BitMessageBarType.Info] = "Info",
+            [BitMessageBarType.Warning] = "Info",
+            [BitMessageBarType.Error] = "ErrorBadge",
+            [BitMessageBarType.Blocked] = "Blocked2",
+            [BitMessageBarType.SevereWarning] = "Warning",
+            [BitMessageBarType.Success] = "Completed"
+        };
     }
 }
