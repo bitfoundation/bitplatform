@@ -46,6 +46,50 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
             return Task.CompletedTask;
         }
 
+        [DataTestMethod,
+             DataRow(Visual.Fluent, true, ButtonStyle.Primary, "https://github.com/bitfoundation", "bit", "_blank"),
+             DataRow(Visual.Fluent, true, ButtonStyle.Standard, "https://github.com/bitfoundation", "bit", "_blank"),
+             DataRow(Visual.Fluent, false, ButtonStyle.Primary, "https://github.com/bitfoundation", "bit", "_blank"),
+             DataRow(Visual.Fluent, false, ButtonStyle.Standard, "https://github.com/bitfoundation", "bit", "_blank"),
+
+             DataRow(Visual.Cupertino, true, ButtonStyle.Primary, "https://github.com/bitfoundation", "bit", "_blank"),
+             DataRow(Visual.Cupertino, true, ButtonStyle.Standard, "https://github.com/bitfoundation", "bit", "_blank"),
+             DataRow(Visual.Cupertino, false, ButtonStyle.Primary, "https://github.com/bitfoundation", "bit", "_blank"),
+             DataRow(Visual.Cupertino, false, ButtonStyle.Standard, "https://github.com/bitfoundation", "bit", "_blank"),
+
+             DataRow(Visual.Material, true, ButtonStyle.Primary, "https://github.com/bitfoundation", "bit", "_blank"),
+             DataRow(Visual.Material, true, ButtonStyle.Standard, "https://github.com/bitfoundation", "bit", "_blank"),
+             DataRow(Visual.Material, false, ButtonStyle.Primary, "https://github.com/bitfoundation", "bit", "_blank"),
+             DataRow(Visual.Material, false, ButtonStyle.Standard, "https://github.com/bitfoundation", "bit", "_blank"),
+        ]
+        public Task BitAnchorButtonTest(Visual visual, bool isEnabled, ButtonStyle style, string href, string title, string target)
+        {
+            var com = RenderComponent<BitButtonTest>(parameters =>
+            {
+                parameters.Add(p => p.Visual, visual);
+                parameters.Add(p => p.IsEnabled, isEnabled);
+                parameters.Add(p => p.ButtonStyle, style);
+                parameters.Add(p => p.Href, href);
+                parameters.Add(p => p.Title, title);
+                parameters.Add(p => p.Target, target);
+            });
+
+            var bitButton = com.Find(".bit-btn");
+
+            var isEnabledClass = isEnabled ? "enabled" : "disabled";
+            var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
+
+            Assert.IsTrue(bitButton.ClassList.Contains($"bit-btn-{isEnabledClass}-{visualClass}"));
+
+            Assert.IsTrue(bitButton.HasAttribute("href"));
+
+            Assert.AreEqual(bitButton.GetAttribute("title"), title);
+
+            Assert.AreEqual(bitButton.GetAttribute("target") , target);
+
+            return Task.CompletedTask;
+        }
+
         [DataTestMethod, DataRow("Detailed description")]
         public Task BitButtonAriaDescriptionTest(string ariaDescription)
         {

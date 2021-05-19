@@ -1,0 +1,33 @@
+﻿@import "../colors.fluent.scss", "../../functions.scss";
+
+.bit-ico-btn-fluent {
+    font-family: FluentFont;
+    text-align: center;
+    font-size: rem(16px);
+    padding: 5px;
+    cursor: pointer;
+    color: $Primary;
+    border: none;
+    background-color: transparent;
+
+    & > span {
+        display: flex;
+        height: 100%;
+        flex-wrap: nowrap;
+        justify-content: center;
+        align-items: center;
+    }
+
+    &:active {
+        color: $Primary;
+        background-color: $Grey30;
+    }
+}
+
+.bit-ico-btn-disabled-fluent {
+    background: $Grey20;
+    color: $Grey90;
+    border: 1px solid $Grey20;
+    cursor: default;
+    pointer-events: none;
+}
