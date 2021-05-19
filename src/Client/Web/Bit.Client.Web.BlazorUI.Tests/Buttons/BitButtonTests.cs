@@ -47,12 +47,12 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
         }
 
         [DataTestMethod,
-            DataRow(true, ButtonStyle.Primary, false),
-            DataRow(true, ButtonStyle.Standard, true),
-            DataRow(false, ButtonStyle.Primary , false),
-            DataRow(false, ButtonStyle.Standard, true),
+            DataRow(true, ButtonStyle.Primary, false, false),
+            DataRow(true, ButtonStyle.Standard, true, false),
+            DataRow(false, ButtonStyle.Primary, false, true),
+            DataRow(false, ButtonStyle.Standard, true, false),
         ]
-        public Task BitButtonDisabledFocusTest(bool isEnabled, ButtonStyle style, bool allowDisabledFocus)
+        public Task BitButtonDisabledFocusTest(bool isEnabled, ButtonStyle style, bool allowDisabledFocus, bool expectedResult)
         {
             var com = RenderComponent<BitButtonTest>(parameters =>
             {
@@ -63,7 +63,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
 
             var bitButton = com.Find(".bit-btn");
 
-            Assert.AreEqual(bitButton.HasAttribute("tabindex"), !isEnabled && !allowDisabledFocus);
+            Assert.AreEqual(bitButton.HasAttribute("tabindex"), expectedResult);
 
             return Task.CompletedTask;
         }

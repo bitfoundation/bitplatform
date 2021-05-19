@@ -12,7 +12,7 @@
    title="@Title"
    target="@Target"
    href="@Href"
-   @attributes="SetNewAttributes()">
+   tabindex="@tabIndex">
         @ChildContent
     </a>
 }
@@ -24,7 +24,7 @@ else
         aria-label="@AriaLabel"
         aria-describedby="@AriaDescription"
         aria-hidden="@AriaHidden"
-        @attributes="SetNewAttributes()"
+        tabindex="@tabIndex"
         @onclick="HandleOnClick">
         @ChildContent
     </button>

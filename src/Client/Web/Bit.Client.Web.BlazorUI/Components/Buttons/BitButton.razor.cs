@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 
@@ -8,6 +7,8 @@ namespace Bit.Client.Web.BlazorUI
     public partial class BitButton
     {
         private ButtonStyle buttonStyle = ButtonStyle.Primary;
+
+        private int? tabIndex;
 
         [Parameter] public bool AllowDisabledFocus { get; set; } = true;
         [Parameter] public string AriaDescription { get; set; }
@@ -41,24 +42,22 @@ namespace Bit.Client.Web.BlazorUI
                                                : $"{RootElementClass}-standard-{VisualClassRegistrar()}");
         }
 
+        protected override async Task OnInitializedAsync()
+        {
+            if (!IsEnabled)
+            {
+                tabIndex = AllowDisabledFocus ? null : -1;
+            }
+
+            await base.OnInitializedAsync();
+        }
+
         protected virtual async Task HandleOnClick(MouseEventArgs e)
         {
             if (IsEnabled)
             {
                 await OnClick.InvokeAsync(e);
             }
-        }
-
-        private Dictionary<string, object> SetNewAttributes()
-        {
-            var attributes = new Dictionary<string, object>();
-
-            if (IsEnabled is false && AllowDisabledFocus is false)
-            {
-                attributes.Add("tabindex", -1);
-            }
-
-            return attributes;
         }
     }
 }
