@@ -105,9 +105,9 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
 
             Assert.IsTrue(bitButton.HasAttribute("href"));
 
-            Assert.IsTrue(bitButton.HasAttribute("title"));
+            Assert.AreEqual(bitButton.GetAttribute("title"), title);
 
-            Assert.IsTrue(bitButton.HasAttribute("target"));
+            Assert.AreEqual(bitButton.GetAttribute("target") , target);
 
             return Task.CompletedTask;
         }
