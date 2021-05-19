@@ -1,5 +1,6 @@
 ﻿<CascadingValue Value="Visual">
     <BitIconButton OnClick="IncrementCount"
+                   AllowDisabledFocus="AllowDisabledFocus"
                    IsEnabled="IsEnabled"
                    AriaDescription="AriaDescription"
                    AriaLabel="AriaLabel"
@@ -11,6 +12,7 @@
 
 @code {
     [Parameter] public Visual Visual { get; set; }
+    [Parameter] public bool AllowDisabledFocus { get; set; }
     [Parameter] public bool IsEnabled { get; set; }
     [Parameter] public string AriaDescription { get; set; }
     [Parameter] public string AriaLabel { get; set; }

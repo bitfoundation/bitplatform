@@ -53,6 +53,27 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
             return Task.CompletedTask;
         }
 
+        [DataTestMethod,
+          DataRow(true, false, false),
+          DataRow(true, true, false),
+          DataRow(false, false, true),
+          DataRow(false, true, false),
+      ]
+        public Task BitIconButtonDisabledFocusTest(bool isEnabled, bool allowDisabledFocus, bool expectedResult)
+        {
+            var com = RenderComponent<BitIconButtonTest>(parameters =>
+            {
+                parameters.Add(p => p.IsEnabled, isEnabled);
+                parameters.Add(p => p.AllowDisabledFocus, allowDisabledFocus);
+            });
+
+            var bitButton = com.Find(".bit-ico-btn");
+
+            Assert.AreEqual(bitButton.HasAttribute("tabindex"), expectedResult);
+
+            return Task.CompletedTask;
+        }
+
         [DataTestMethod, DataRow("Detailed description")]
         public Task BitIconButtonAriaDescriptionTest(string ariaDescription)
         {
