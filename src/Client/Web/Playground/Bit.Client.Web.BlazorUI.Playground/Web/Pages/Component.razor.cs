@@ -13,9 +13,16 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
         private bool IsMessageBarHidden = false;
         private TextFieldType InputType = TextFieldType.Password;
 
+        private int RatingValue = 1;
+
         private void HideMessageBar(MouseEventArgs args)
         {
             IsMessageBarHidden = true;
+        }
+
+        private void OnRatingChange(int value)
+        {
+            RatingValue = value;
         }
     }
 }

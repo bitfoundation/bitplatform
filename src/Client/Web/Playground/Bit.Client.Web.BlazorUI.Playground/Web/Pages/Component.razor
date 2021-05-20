@@ -72,12 +72,12 @@
         Button with Aria Hidden
     </BitButton>
 
-     <hr />
+    <hr />
 
     <h3>Icon Button</h3>
     <BitIconButton IconName="Emoji2" />
     <BitIconButton IconName="Emoji2" IsEnabled="false" />
-    
+
     <hr />
 
     <h3>Icon Button with Tooltip</h3>
@@ -90,7 +90,7 @@
         <BitActionButton IconName="AddFriend">Create account</BitActionButton>
         <BitActionButton IsEnabled="false" IconName="UserRemove">Remove user</BitActionButton>
     </div>
-    
+
     <hr />
 
     <h3>Button-like Anchor</h3>
@@ -301,7 +301,10 @@
     <h5>Small stars, with 0 stars allowed</h5>
     <BitRating AllowZeroStars="true" />
     <h5>10 small stars</h5>
-    <BitRating Max="10" />
+    <div>
+        <BitRating Max="10" OnChange="@(arg => OnRatingChange(arg))" />
+        <span>@RatingValue stars selected</span>
+    </div>
     <h5>Disabled</h5>
     <BitRating DefaultRating="5" IsEnabled="false" />
     <h5>ReadOnly</h5>

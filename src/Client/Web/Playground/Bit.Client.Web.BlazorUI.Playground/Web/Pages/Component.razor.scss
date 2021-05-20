@@ -31,3 +31,13 @@
 .spinner-positioning {
     display: inline-block;
 }
+
+.rating-container {
+    > div {
+        display: inline-flex;
+
+        > span {
+            margin-left: 10px;
+        }
+    }
+}

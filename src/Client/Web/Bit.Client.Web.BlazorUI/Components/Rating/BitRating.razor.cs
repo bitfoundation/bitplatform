@@ -12,6 +12,8 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public string Icon { get; set; } = "FavoriteStarFill";
         [Parameter] public string UnselectedIcon { get; set; } = "FavoriteStar";
         [Parameter] public RatingSize Size { get; set; }
+        [Parameter] public EventCallback<int> ValueChanged { get; set; }
+        [Parameter] public EventCallback<int> OnChange { get; set; }
 
         [Parameter]
         public bool IsReadonly
@@ -24,6 +26,19 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
+        [Parameter]
+        public int Value
+        {
+            get => ratingValue;
+            set
+            {
+                ratingValue = value;
+                ClassBuilder.Reset();
+
+                _ = ValueChanged.InvokeAsync(value);
+            }
+        }
+
         public string[] RatingColorClass { get; set; }
         public string[] RatingIcon { get; set; }
 
@@ -31,6 +46,7 @@ namespace Bit.Client.Web.BlazorUI
         private int min { get; set; }
 
         private bool isReadOnly;
+        private int ratingValue;
 
         protected override string RootElementClass => "bit-rating";
 
@@ -49,6 +65,7 @@ namespace Bit.Client.Web.BlazorUI
             min = AllowZeroStars == true ? 0 : 1;
             Max = Max > min ? Max : min;
             DefaultRating = DefaultRating > 0 ? DefaultRating : min;
+            ratingValue = DefaultRating > 0 ? DefaultRating : ratingValue;
 
             RatingColorClass = new string[Max + 1];
             RatingIcon = new string[Max + 1];
@@ -58,9 +75,14 @@ namespace Bit.Client.Web.BlazorUI
             await base.OnInitializedAsync();
         }
 
-        protected virtual void HandleClick(int index)
+        protected virtual async Task HandleClick(int index)
         {
             FillRating(index);
+
+            if (IsEnabled is false) return;
+            Value = index;
+
+            await OnChange.InvokeAsync(index);
         }
 
         private void FillRating(int index)
