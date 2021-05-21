@@ -6452,3 +6452,11 @@
 .bit-icon--StoreLogoMed::before {
     content: '';
 }
+
+.bit-icon--ChevronDown::before {
+    content: '';
+}
+
+[dir='rtl'] .bit-icon--ChevronDown::before {
+    content: '';
+}

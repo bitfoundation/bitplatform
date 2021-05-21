@@ -1,0 +1,68 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components;
+
+namespace Bit.Client.Web.BlazorUI
+{
+    public partial class BitNav
+    {
+        [Parameter] public string SelectedKey { get; set; }
+        [Parameter] public string AriaLabel { get; set; }
+        [Parameter] public bool IsOnTop { get; set; }
+        [Parameter] public List<NavLink> NavLinks { get; set; }
+        [Parameter] public EventCallback<NavLink> OnClick { get; set; }
+        [Parameter] public Func<NavLink, RenderFragment> OnRenderHeader { get; set; }
+        protected override string RootElementClass => "bit-nav";
+
+        protected virtual async Task Toggle(NavLink navLink)
+        {
+            if (IsEnabled is false) return;
+
+            if (navLink.Disabled) return;
+
+            if (navLink.Links?.Any() ?? false)
+            {
+                navLink.IsExpanded = !navLink.IsExpanded;
+                StateHasChanged();
+            }
+
+            await OnClick.InvokeAsync(navLink);
+        }
+
+        protected override void RegisterComponentClasses()
+        {
+            ClassBuilder.Register(() => IsOnTop ? $"{RootElementClass}-top-{VisualClassRegistrar()}" : $"{RootElementClass}-no-top-{VisualClassRegistrar()}");
+        }
+
+        private RenderFragment GenerateHeader(NavLink navLink)
+        {
+            return OnRenderHeader.Invoke(navLink);
+        }
+
+        private static string MapNavLinkTargetTypeToString(NavLinkTargetType navLinkTargetType)
+        {
+            return navLinkTargetType switch
+            {
+                NavLinkTargetType.Blank => "_blank",
+                NavLinkTargetType.Parent => "_parent",
+                NavLinkTargetType.Self => "_self",
+                NavLinkTargetType.Top => "_top",
+                _ => throw new System.Exception($"NavLinkTargetType not supported: {navLinkTargetType}")
+            };
+        }
+
+        private static string GetLinkClass(NavLink navLink, string selectedKey)
+        {
+            var enabledClass = navLink.Disabled ? "disabled" : "enabled";
+            var hasUrlClass = string.IsNullOrWhiteSpace(navLink.Url) ? "nourl" : "hasurl";
+
+            var mainStyle = $"bit-nav-link-{enabledClass}-{hasUrlClass}-fluent";
+            var selected = navLink.Key == selectedKey ? "bit-nav-selected-fluent" : "";
+            var hasIcon = string.IsNullOrWhiteSpace(navLink.Icon) ? "bit-nav-has-not-icon-fluent" : "bit-nav-has-icon-fluent";
+
+            return $"{mainStyle} {selected} {hasIcon}";
+        }
+    }
+}

@@ -1,0 +1,96 @@
+﻿@namespace Bit.Client.Web.BlazorUI
+@inherits BitComponentBase
+
+<nav @ref="RootElement"
+     role="navigation" 
+     style="@StyleBuilder.Value"
+	 class="@ClassBuilder.Value"
+     aria-label="@AriaLabel">
+	@if (OnRenderHeader?.Target is null)
+    {
+        <div>
+		    <div>
+                <ul role="list">
+				    @foreach (var navLink in NavLinks)
+                         @template(navLink)
+                </ul>
+	        </div>
+        </div>
+    }
+    else
+    {
+         @foreach (var navLink in NavLinks)
+		 {
+           <div>
+                @GenerateHeader(navLink)
+                @if (navLink.Links.Any())
+                {
+                     <div>
+                        <ul role="list">
+				            @foreach (var child in navLink.Links)
+                                 @template(child)
+                        </ul>
+	                </div>
+                }
+           </div>
+		 }
+    }
+</nav>
+
+@code{
+
+    public RenderFragment<NavLink> template{ get; set; }
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+
+        template = (navLink) =>
+        ( 
+    @<li role="listitem" @key="navLink.Key">
+        <div name="@navLink.Name">
+            @if (navLink.Links?.Any() != null)
+            {
+                <button tabindex="0" 
+                        @onclick="(() => Toggle(navLink))"
+                        aria-label="@navLink.CollapseAriaLabel"
+                        aria-expanded="@navLink.IsExpanded">
+                 <i class="bit-icon bit-icon--ChevronDown @(navLink.IsExpanded ? "bit-nav-expand-fluent" : "")"></i>
+                </button>
+            }
+
+            <a  href="@(navLink.Disabled ? "/" : navLink.Url)" 
+                title="@navLink.Title" 
+                tabindex="-1" 
+                onclick="@(navLink.Disabled ? "return false;" : "")"
+                target="@(MapNavLinkTargetTypeToString(navLink.TargetType))"
+                style="padding: 0px 20px 0px @(((navLink.Depth * 14)+(string.IsNullOrWhiteSpace(navLink.Icon) ? 27 : 3)).ToString())px;"
+                class="@GetLinkClass(navLink,SelectedKey)">
+
+                <span>
+                    @if(!string.IsNullOrWhiteSpace(navLink.Icon))
+                    {
+                        <i class=@($"bit-icon bit-icon--{navLink.Icon}")></i>
+                    }
+                    <div>@navLink.Name</div>
+
+                </span>
+            </a> 
+            @if (@navLink.Links?.Any() != null && navLink.IsExpanded)
+            {
+                <ul role="list">
+                @foreach (var childLink in navLink.Links)
+                {
+                    childLink.Depth = navLink.Depth + 1;
+                    @template(childLink)
+                }
+                </ul>
+            }
+        </div>
+
+    </li>
+    );
+    }
+
+   
+}
