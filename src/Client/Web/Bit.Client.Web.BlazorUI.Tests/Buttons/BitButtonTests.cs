@@ -63,7 +63,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
 
             var bitButton = com.Find(".bit-btn");
 
-            Assert.AreEqual(bitButton.HasAttribute("tabindex"), expectedResult);
+            Assert.AreEqual(bitButton.HasAttribute("tabindex") ? bitButton.GetAttribute("tabindex").Equals("-1") : expectedResult, expectedResult);
 
             return Task.CompletedTask;
         }
@@ -107,7 +107,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
 
             Assert.AreEqual(bitButton.GetAttribute("title"), title);
 
-            Assert.AreEqual(bitButton.GetAttribute("target") , target);
+            Assert.AreEqual(bitButton.GetAttribute("target"), target);
 
             return Task.CompletedTask;
         }
