@@ -63,7 +63,7 @@ namespace Bit.Client.Web.BlazorUI
                 ? string.Empty
                 : $"{RootElementClass}-{ExpandClass}-{VisualClassRegistrar()}");
 
-            ClassBuilder.Register(() => Items.Any(prop=>prop.IsSelected)
+            ClassBuilder.Register(() => Items.Any(prop => prop.IsSelected)
                 ? string.Empty
                 : $"{RootElementClass}-{"hasValue"}-{VisualClassRegistrar()}");
 
@@ -95,17 +95,24 @@ namespace Bit.Client.Web.BlazorUI
             isOpen = false;
             if (selectedItem is not null)
             {
-                if (IsMultiSelect)
+                if (!selectedItem.IsDisabled)
                 {
-                    if (Text.HasValue())
+                    if (IsMultiSelect)
                     {
-                        Text += ", ";
+                        if (Text.HasValue())
+                        {
+                            Text += ", ";
+                        }
+                        Text += selectedItem.Text;
                     }
-                    Text += selectedItem.Text;
+                    else
+                    {
+                        ChangeAllItemsIsSelect(false);
+                        Text = selectedItem.Text;
+                        selectedItem.IsSelected = true;
+                    }
+                    await OnSelectItem.InvokeAsync(selectedItem);
                 }
-                else
-                    Text = selectedItem.Text;
-                await OnSelectItem.InvokeAsync(selectedItem);
             }
             else
             {
@@ -125,6 +132,15 @@ namespace Bit.Client.Web.BlazorUI
                         }
                     }
                 }
+            }
+        }
+
+        internal void ChangeAllItemsIsSelect(bool value)
+        {
+            for (int index = 0; index < Items.Count; index++)
+            {
+                DropDownItem item = Items[index];
+                item.IsSelected = value;
             }
         }
     }

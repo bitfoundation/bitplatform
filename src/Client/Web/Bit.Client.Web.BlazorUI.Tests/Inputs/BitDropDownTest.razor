@@ -1,12 +1,18 @@
 ﻿<BitDropDown IsEnabled="IsEnabled"
-             Items="GetDropDownItems()">
+             IsMultiSelect="IsMultiSelect"
+             Items="GetDropDownItems()"
+             OnClick="ClickEvent"
+             OnSelectItem="ChangeEvent">
 
 </BitDropDown>
 
 @code {
     [Parameter] public string Value { get; set; }
-    [Parameter] public bool IsEnabled { get; set; }
-    public void ChangeEvent(ChangeEventArgs e)
+    [Parameter]public bool IsEnabled { get; set; } = true;
+    [Parameter]public bool ItemIsEnabled { get; set; } = true;
+    [Parameter] public bool IsMultiSelect { get; set; } = false;
+
+    public void ChangeEvent(DropDownItem e)
     {
         IncrementCount();
     }
@@ -26,11 +32,18 @@
         List<DropDownItem> items = new();
         items.Add(new ()
         {
-            ItemType = DropDownItemType.Normal
+            ItemType = DropDownItemType.Header,
+            IsDisabled = !ItemIsEnabled
         });
         items.Add(new()
         {
-            ItemType = DropDownItemType.Normal
+            ItemType = DropDownItemType.Normal,
+            IsDisabled = !ItemIsEnabled
+        });
+        items.Add(new()
+        {
+            ItemType = DropDownItemType.Divider,
+            IsDisabled = !ItemIsEnabled
         });
         return items;
     }
