@@ -11,20 +11,49 @@ namespace Bit.Client.Web.BlazorUI
     {
         protected override string RootElementClass => "bit-pvt-itm";
 
-        [CascadingParameter] protected BitPivot Pivot { get; set; }
+        [CascadingParameter] protected internal BitPivot Pivot { get; set; }
+
+        [Parameter]
+        public RenderFragment HeaderContent { get; set; }
+
+        [Parameter]
+        public RenderFragment ChildContent { get; set; }
+
+        [Parameter]
+        public RenderFragment BodyContent { get; set; }
+
+        [Parameter]
+        public string HeaderText { get; set; }
+
+        [Parameter]
+        public string IconName { get; set; }
+
+        [Parameter]
+        public int? ItemCount { get; set; }
+
+        [Parameter]
+        public string ItemKey { get; set; }
 
         protected override Task OnInitializedAsync()
         {
             if (Pivot is not null)
             {
-                //Pivot.RegisterOption(this);
-                //if (string.IsNullOrEmpty(Name))
-                //{
-                //    Name = ChoiceGroup.Name;
-                //}
+                Pivot.RegisterOption(this);
             }
 
             return base.OnInitializedAsync();
+        }
+
+        protected override void OnComponentVisibilityChanged(ComponentVisibility visibility)
+        {
+            Pivot.NotifyStateChanged();
+
+            if (Pivot.Items[Pivot.SelectedKey] == this)
+            {
+                Pivot.SelectedKey = Pivot.Items.First().Key;
+            }
+
+            base.OnComponentVisibilityChanged(visibility);
         }
 
         public void Dispose()

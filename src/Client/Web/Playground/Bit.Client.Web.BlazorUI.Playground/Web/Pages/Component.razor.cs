@@ -13,6 +13,26 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
         private bool IsMessageBarHidden = false;
         private TextFieldType InputType = TextFieldType.Password;
 
+        #region PivotSamples
+
+        public string OverridePivotSelectedKey { get; set; } = "1";
+        public string SelectedPivotItemKey { get; set; } = "1";
+        public BitPivotItem BitPivotItem { get; set; }
+        public ComponentVisibility PivotItemVisibility { get; set; }
+        public BitPivotItem SelectedPivotItem { get; set; }
+        public void PivotSelectedKeyChanged(string key)
+        {
+            SelectedPivotItemKey = key;
+        }
+
+        public void TogglePivotItemVisobility()
+        {
+            PivotItemVisibility = PivotItemVisibility == ComponentVisibility.Visible ? ComponentVisibility.Collapsed : ComponentVisibility.Visible;
+
+        }
+
+        #endregion 
+
         private void HideMessageBar(MouseEventArgs args)
         {
             IsMessageBarHidden = true;

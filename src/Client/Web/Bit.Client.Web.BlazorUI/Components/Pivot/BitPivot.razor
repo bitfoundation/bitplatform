@@ -6,6 +6,31 @@
      class="@ClassBuilder.Value">
     <CascadingValue Value="this"
                     IsFixed="true">
-        @ChildContent
+        <div>
+            @foreach (var item in Items)
+            {
+                @if (item.Value.Visibility == ComponentVisibility.Visible)
+                {
+                    <div @onclick="() => ItemClicked(item)" class="@(Items[SelectedKey] == item.Value ? "selected-item" : string.Empty)">
+                        @if (item.Value.IconName is not null)
+                        {
+                            <i class="bit-icon bit-icon--@(item.Value.IconName)"></i>
+                        }
+
+                        @item.Value.HeaderText
+
+                        @if (item.Value.ItemCount is not null)
+                        {
+                            @($" ({item.Value.ItemCount}) ")
+                        }
+
+                        @item.Value.HeaderContent
+                    </div>
+                }
+            }
+        </div>
+        <div>
+            @ChildContent
+        </div>
     </CascadingValue>
 </div>

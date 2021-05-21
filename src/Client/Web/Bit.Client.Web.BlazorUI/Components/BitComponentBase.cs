@@ -72,7 +72,9 @@ namespace Bit.Client.Web.BlazorUI
             get => visibility;
             set
             {
+                if (visibility == value) return;
                 visibility = value;
+                OnComponentVisibilityChanged(value);
                 StyleBuilder.Reset();
             }
         }
@@ -119,6 +121,11 @@ namespace Bit.Client.Web.BlazorUI
 
         protected virtual void RegisterComponentClasses()
         {
+        }
+
+        protected virtual void OnComponentVisibilityChanged(ComponentVisibility visibility)
+        {
+
         }
     }
 }

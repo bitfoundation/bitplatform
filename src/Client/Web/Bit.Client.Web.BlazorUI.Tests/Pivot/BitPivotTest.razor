@@ -1,0 +1,16 @@
+﻿<BitPivot HeadersOnly="@HeadersOnly"
+          DefaultSelectedKey="@DefaultSelectedKey"
+          LinkFormat="@LinkFormat"
+          LinkSize="@LinkSize" >
+    <BitPivotItem ItemKey="Foo">item1</BitPivotItem>
+    <BitPivotItem>item2</BitPivotItem>
+    <BitPivotItem>item3</BitPivotItem>
+</BitPivot>
+
+@code{
+    [Parameter] public bool HeadersOnly { get; set; }
+    [Parameter] public string DefaultSelectedKey { get; set; }
+    [Parameter] public string SelectedKey { get; set; }
+    [Parameter] public LinkFormat LinkFormat { get; set; }
+    [Parameter] public LinkSize LinkSize { get; set; }
+}
