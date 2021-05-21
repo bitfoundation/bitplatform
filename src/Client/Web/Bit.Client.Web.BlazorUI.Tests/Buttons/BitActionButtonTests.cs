@@ -38,7 +38,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
             Assert.IsTrue(bitButton.ClassList.Contains($"bit-act-btn-{isEnabledClass}-{visualClass}"));
 
             if (string.IsNullOrEmpty(iconName) is false)
-                Assert.AreEqual(bitIconITag.ClassList.Contains($"bit-icon"), expectedResult);
+                Assert.AreEqual(bitIconITag.ClassList.Contains($"bit-icon--{iconName}"), expectedResult);
 
             bitButton.Click();
 
@@ -57,7 +57,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
 
             var bitButton = com.Find(".bit-act-btn");
 
-            Assert.IsTrue(bitButton.HasAttribute("aria-describedby"));
+            Assert.IsTrue(bitButton.GetAttribute("aria-describedby").Contains(ariaDescription));
 
             return Task.CompletedTask;
         }
@@ -72,7 +72,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
 
             var bitButton = com.Find(".bit-act-btn");
 
-            Assert.IsTrue(bitButton.HasAttribute("aria-label"));
+            Assert.IsTrue(bitButton.GetAttribute("aria-label").Contains(ariaLabel));
 
             return Task.CompletedTask;
         }
