@@ -41,10 +41,10 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
 
             Assert.IsTrue(bitIconButton.ClassList.Contains($"bit-ico-btn-{isEnabledClass}-{visualClass}"));
 
-            Assert.IsTrue(bitIconITag.ClassList.Contains($"bit-icon"));
+            Assert.IsTrue(bitIconITag.ClassList.Contains($"bit-icon--{iconName}"));
 
             if (string.IsNullOrEmpty(toolTip) is false)
-                Assert.AreEqual(isEnabled && bitIconButton.HasAttribute("title"), expectedResult);
+                Assert.IsTrue(bitIconButton.GetAttribute("title").Contains(toolTip));
 
             bitIconButton.Click();
 
@@ -84,7 +84,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
 
             var bitIconButton = com.Find(".bit-ico-btn");
 
-            Assert.IsTrue(bitIconButton.HasAttribute("aria-describedby"));
+            Assert.IsTrue(bitIconButton.GetAttribute("aria-describedby").Contains(ariaDescription));
 
             return Task.CompletedTask;
         }
@@ -99,7 +99,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
 
             var bitIconButton = com.Find(".bit-ico-btn");
 
-            Assert.IsTrue(bitIconButton.HasAttribute("aria-label"));
+            Assert.IsTrue(bitIconButton.GetAttribute("aria-label").Contains(ariaLabel));
 
             return Task.CompletedTask;
         }
