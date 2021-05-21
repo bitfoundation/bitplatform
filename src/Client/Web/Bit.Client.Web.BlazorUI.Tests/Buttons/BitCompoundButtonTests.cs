@@ -62,7 +62,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
 
             var bitButton = com.Find(".bit-cmp-btn");
 
-            Assert.AreEqual(bitButton.HasAttribute("tabindex"), expectedResult);
+            Assert.AreEqual(bitButton.HasAttribute("tabindex") ? bitButton.GetAttribute("tabindex").Equals("-1") : expectedResult, expectedResult);
 
             return Task.CompletedTask;
         }
