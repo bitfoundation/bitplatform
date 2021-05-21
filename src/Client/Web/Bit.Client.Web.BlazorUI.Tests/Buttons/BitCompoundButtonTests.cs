@@ -77,7 +77,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
 
             var bitCompoundButton = com.Find(".bit-cmp-btn");
 
-            Assert.IsTrue(bitCompoundButton.HasAttribute("aria-describedby"));
+            Assert.IsTrue(bitCompoundButton.GetAttribute("aria-describedby").Contains(ariaDescription));
 
             return Task.CompletedTask;
         }
@@ -92,7 +92,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
 
             var bitCompoundButton = com.Find(".bit-cmp-btn");
 
-            Assert.IsTrue(bitCompoundButton.HasAttribute("aria-label"));
+            Assert.IsTrue(bitCompoundButton.GetAttribute("aria-label").Contains(ariaLabel));
 
             return Task.CompletedTask;
         }

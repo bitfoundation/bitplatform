@@ -1,9 +1,10 @@
-﻿<BitSpinner Size="@Size" Label="@Label" LabelPosition="@LabelPosition" />
+﻿<CascadingValue Value="Visual">
+    <BitSpinner Size="@Size" Label="@Label" LabelPosition="@LabelPosition" />
+</CascadingValue>
 
 @code {
+    [Parameter] public Visual Visual { get; set; }
     [Parameter] public SpinnerLabelPosition LabelPosition { get; set; }
-
     [Parameter] public SpinnerSize Size { get; set; }
-
     [Parameter] public string Label { get; set; }
 }
