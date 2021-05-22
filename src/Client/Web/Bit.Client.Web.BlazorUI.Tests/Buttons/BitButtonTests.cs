@@ -85,7 +85,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
 
             Assert.AreEqual(bitButton.GetAttribute("title"), title);
 
-            Assert.AreEqual(bitButton.GetAttribute("target") , target);
+            Assert.AreEqual(bitButton.GetAttribute("target"), target);
 
             return Task.CompletedTask;
         }

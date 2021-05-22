@@ -8,13 +8,20 @@ namespace Bit.Client.Web.BlazorUI
     {
         private ButtonStyle buttonStyle = ButtonStyle.Primary;
 
-        [Parameter] public string AriaDescription { get; set; }
+        [Parameter] public string? AriaDescription { get; set; }
+
         [Parameter] public bool AriaHidden { get; set; }
-        [Parameter] public string AriaLabel { get; set; }
-        [Parameter] public string Href { get; set; }
-        [Parameter] public string Target { get; set; }
-        [Parameter] public string Title { get; set; }
-        [Parameter] public RenderFragment ChildContent { get; set; }
+
+        [Parameter] public string? AriaLabel { get; set; }
+
+        [Parameter] public string? Href { get; set; }
+
+        [Parameter] public string? Target { get; set; }
+
+        [Parameter] public string? Title { get; set; }
+
+        [Parameter] public RenderFragment? ChildContent { get; set; }
+
         [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
         [Parameter]

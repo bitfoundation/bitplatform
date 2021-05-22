@@ -83,7 +83,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Rating
 
         [DataTestMethod,
             DataRow("HeartFill", "Heart", 10, 7, false),
-            DataRow("HeartFill", "Heart", 10, 0 , true),
+            DataRow("HeartFill", "Heart", 10, 0, true),
             DataRow("HeartFill", "Heart", 10, 0, false)]
         public void BitRatingShouldRespectCustomIcon(string icon, string unselectedIcon, int max, int defaultRating, bool allowZeroStars)
         {

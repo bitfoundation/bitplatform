@@ -6,11 +6,18 @@ namespace Bit.Client.Web.BlazorUI
 {
     public partial class BitRating
     {
+        private bool isReadOnly;
+
         [Parameter] public bool AllowZeroStars { get; set; }
+
         [Parameter] public int DefaultRating { get; set; }
+
         [Parameter] public int Max { get; set; } = 5;
+
         [Parameter] public string Icon { get; set; } = "FavoriteStarFill";
+
         [Parameter] public string UnselectedIcon { get; set; } = "FavoriteStar";
+
         [Parameter] public RatingSize Size { get; set; }
 
         [Parameter]
@@ -24,13 +31,11 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
-        public string[] RatingColorClass { get; set; }
-        public string[] RatingIcon { get; set; }
+        private string[] RatingColorClasses = Array.Empty<string>();
 
-        private string colorClass { get; set; } = "bit-rating-dark-fluent";
-        private int min { get; set; }
+        private string[] RatingIcons = Array.Empty<string>();
 
-        private bool isReadOnly;
+        private const string COLOR_CLASS = "bit-rating-dark-fluent";
 
         protected override string RootElementClass => "bit-rating";
 
@@ -46,12 +51,12 @@ namespace Bit.Client.Web.BlazorUI
 
         protected override async Task OnInitializedAsync()
         {
-            min = AllowZeroStars == true ? 0 : 1;
+            int min = AllowZeroStars == true ? 0 : 1;
             Max = Max > min ? Max : min;
             DefaultRating = DefaultRating > 0 ? DefaultRating : min;
 
-            RatingColorClass = new string[Max + 1];
-            RatingIcon = new string[Max + 1];
+            RatingColorClasses = new string[Max + 1];
+            RatingIcons = new string[Max + 1];
 
             FillRating(DefaultRating);
 
@@ -69,15 +74,15 @@ namespace Bit.Client.Web.BlazorUI
 
             for (var item = 0; item < index; item++)
             {
-                RatingIcon[item] = Icon;
-                RatingColorClass[item] = colorClass;
+                RatingIcons[item] = Icon;
+                RatingColorClasses[item] = COLOR_CLASS;
             }
         }
 
         private void EmptyRating()
         {
-            Array.Fill(RatingIcon, UnselectedIcon);
-            Array.Fill(RatingColorClass, colorClass);
+            Array.Fill(RatingIcons, UnselectedIcon);
+            Array.Fill(RatingColorClasses, COLOR_CLASS);
         }
     }
 }

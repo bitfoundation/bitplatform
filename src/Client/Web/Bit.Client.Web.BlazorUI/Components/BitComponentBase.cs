@@ -6,13 +6,13 @@ namespace Bit.Client.Web.BlazorUI
 {
     public abstract partial class BitComponentBase : ComponentBase
     {
-        private string style;
         private Visual visual;
-        private string @class;
+        private string? style;
+        private string? @class;
         private bool isEnabled = true;
         private ComponentVisibility visibility;
 
-        protected bool Rendered { get; private set; } = false;
+        protected bool Rendered { get; private set; }
 
         private Guid _uniqueId = Guid.NewGuid();
 
@@ -34,7 +34,18 @@ namespace Bit.Client.Web.BlazorUI
         }
 
         [Parameter]
-        public string Class
+        public string? Style
+        {
+            get => style;
+            set
+            {
+                style = value;
+                StyleBuilder.Reset();
+            }
+        }
+
+        [Parameter]
+        public string? Class
         {
             get => @class;
             set
@@ -52,17 +63,6 @@ namespace Bit.Client.Web.BlazorUI
             {
                 isEnabled = value;
                 ClassBuilder.Reset();
-            }
-        }
-
-        [Parameter]
-        public string Style
-        {
-            get => style;
-            set
-            {
-                style = value;
-                StyleBuilder.Reset();
             }
         }
 

@@ -7,11 +7,14 @@ namespace Bit.Client.Web.BlazorUI
 {
     public partial class BitChoiceGroup
     {
-        private List<BitChoiceOption> _options = new List<BitChoiceOption>();
+        private readonly List<BitChoiceOption> _options = new();
 
         [Parameter] public string Name { get; set; } = Guid.NewGuid().ToString();
-        [Parameter] public string Value { get; set; }
-        [Parameter] public RenderFragment ChildContent { get; set; }
+
+        [Parameter] public string? Value { get; set; }
+
+        [Parameter] public RenderFragment? ChildContent { get; set; }
+
         [Parameter] public EventCallback<string> OnValueChange { get; set; }
 
         protected override string RootElementClass => "bit-chg";
