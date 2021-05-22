@@ -46,7 +46,6 @@
 		<DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
 		<EmbedAllSources>True</EmbedAllSources>
 		<DebugType>portable</DebugType>
-		<RestoreAdditionalProjectSources>$(RestoreAdditionalProjectSources);https://dotnet.myget.org/F/nuget-build/api/v3/index.json</RestoreAdditionalProjectSources>
 		<AnalysisLevel>latest</AnalysisLevel>
 		<AnalysisMode>AllEnabledByDefault</AnalysisMode>
 		<CodeAnalysisTreatWarningsAsErrors>true</CodeAnalysisTreatWarningsAsErrors>
