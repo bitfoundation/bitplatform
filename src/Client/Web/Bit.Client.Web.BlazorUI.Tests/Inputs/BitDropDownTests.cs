@@ -44,8 +44,9 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
 
         [DataTestMethod, DataRow(true, 2),
          DataRow(false, 1)]
-        public async Task BitDropDownShouldRespectIsMultiSelect(bool isEnabled,  int count)
+        public async Task BitDropDownMultiSelectShouldRespectIsEnabled(bool isEnabled,  int count)
         {
+            Context.JSInterop.Mode = JSRuntimeMode.Loose;
             var com = RenderComponent<BitDropDownTest>(
                 parameters =>
                 {
@@ -55,7 +56,11 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                 });
             var bitChoiceGroup = com.Find(".bit-drp");
             bitChoiceGroup.Children.First().Click();
-            bitChoiceGroup.Children[2].Children[1].Click();
+            var checkboxItems = com.FindAll(".bit-chb-fluent > div > div");
+            for (int index = 0; index < checkboxItems.Count; index++)
+            {
+                checkboxItems[index].Click();
+            }
             Assert.AreEqual(count, com.Instance.CurrentCount);
         }
     }

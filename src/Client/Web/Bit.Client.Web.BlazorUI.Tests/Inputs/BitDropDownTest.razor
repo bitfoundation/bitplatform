@@ -42,6 +42,11 @@
         });
         items.Add(new()
         {
+            ItemType = DropDownItemType.Normal,
+            IsDisabled = !ItemIsEnabled
+        });
+        items.Add(new()
+        {
             ItemType = DropDownItemType.Divider,
             IsDisabled = !ItemIsEnabled
         });
