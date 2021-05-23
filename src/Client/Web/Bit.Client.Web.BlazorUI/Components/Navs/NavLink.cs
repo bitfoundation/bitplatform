@@ -43,5 +43,10 @@ namespace Bit.Client.Web.BlazorUI
         public NavLinkTargetType TargetType { get; set; }
         public IEnumerable<NavLink> Links { get; set; }
         internal int Depth { get; set; }
+
+        public static implicit operator NavLink(string name)
+        {
+            return new NavLink(name: name, key: name);
+        }
     }
 }
