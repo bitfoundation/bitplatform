@@ -44,7 +44,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
 
         [DataTestMethod, DataRow(true, 2),
          DataRow(false, 1)]
-        public async Task BitDropDownMultiSelectShouldRespectIsEnabled(bool isEnabled,  int count)
+        public async Task BitDropDownMultiSelectShouldRespectIsEnabled(bool isEnabled, int count)
         {
             Context.JSInterop.Mode = JSRuntimeMode.Loose;
             var com = RenderComponent<BitDropDownTest>(

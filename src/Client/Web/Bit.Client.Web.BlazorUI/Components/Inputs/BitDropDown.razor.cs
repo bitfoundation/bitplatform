@@ -24,7 +24,6 @@ namespace Bit.Client.Web.BlazorUI
                 ClassBuilder.Reset();
             }
         }
-
         [Parameter]
         public bool IsOpen
         {
