@@ -28,7 +28,6 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
         public void TogglePivotItemVisobility()
         {
             PivotItemVisibility = PivotItemVisibility == ComponentVisibility.Visible ? ComponentVisibility.Collapsed : ComponentVisibility.Visible;
-
         }
 
         #endregion 

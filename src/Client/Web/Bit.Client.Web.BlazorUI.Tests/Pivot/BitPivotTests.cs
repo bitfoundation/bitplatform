@@ -8,57 +8,56 @@ namespace Bit.Client.Web.BlazorUI.Tests.Pivot
     public class BitPivotTests : BunitTestContext
     {
         [DataTestMethod,
-         DataRow(Visual.Fluent, LinkFormat.Links),
-         DataRow(Visual.Fluent, LinkFormat.Tabs),
+         DataRow(Visual.Fluent, LinkFormat.Links, LinkSize.Large, OverflowBehavior.None),
+         DataRow(Visual.Fluent, LinkFormat.Tabs, LinkSize.Normal, OverflowBehavior.Scroll),
+         DataRow(Visual.Fluent, LinkFormat.Tabs, LinkSize.Normal, OverflowBehavior.Menu),
 
-         DataRow(Visual.Cupertino, LinkFormat.Links),
-         DataRow(Visual.Cupertino, LinkFormat.Tabs),
+         DataRow(Visual.Cupertino, LinkFormat.Links, LinkSize.Large, OverflowBehavior.None),
+         DataRow(Visual.Cupertino, LinkFormat.Tabs, LinkSize.Normal, OverflowBehavior.Scroll),
+         DataRow(Visual.Cupertino, LinkFormat.Tabs, LinkSize.Normal, OverflowBehavior.Menu),
 
-         DataRow(Visual.Material, LinkFormat.Links),
-         DataRow(Visual.Material, LinkFormat.Tabs)]
-
-        public Task BitPivotShouldRepectLinkFormatClasses(Visual visual, LinkFormat linkFormat)
+         DataRow(Visual.Material, LinkFormat.Links, LinkSize.Large, OverflowBehavior.None),
+         DataRow(Visual.Material, LinkFormat.Tabs, LinkSize.Normal, OverflowBehavior.Scroll),
+         DataRow(Visual.Material, LinkFormat.Tabs, LinkSize.Normal, OverflowBehavior.Menu)]
+        public void BitPivotShouldRepectLinkFormatClasses(Visual visual, LinkFormat linkFormat, LinkSize linkSize, OverflowBehavior overflowBehavior)
         {
             var component = RenderComponent<BitPivot>(parameters =>
             {
                 parameters.Add(p => p.Visual, visual);
                 parameters.Add(p => p.LinkFormat, linkFormat);
+                parameters.Add(p => p.LinkSize, linkSize);
+                parameters.Add(p => p.OverflowBehavior, overflowBehavior);
             });
 
             var visualClass = visual.ToString().ToLower();
-            var LinkFormatClass = $"bit-pvt-{linkFormat.ToString().ToLower()}-{visualClass}";
+
+            var linkFormatClass = $"bit-pvt-{linkFormat.ToString().ToLower()}-{visualClass}";
+            var linkSizeClass = $"bit-pvt-{linkSize.ToString().ToLower()}-{visualClass}";
+            var overflowBehaviorClass = $"bit-pvt-{overflowBehavior.ToString().ToLower()}-{visualClass}";
 
             var bitPivot = component.Find($".bit-pvt");
 
-            Assert.IsTrue(bitPivot.ClassList.Contains(LinkFormatClass));
-
-            return Task.CompletedTask;
+            Assert.IsTrue(bitPivot.ClassList.Contains(linkFormatClass));
+            Assert.IsTrue(bitPivot.ClassList.Contains(linkSizeClass));
+            Assert.IsTrue(bitPivot.ClassList.Contains(overflowBehaviorClass));
         }
 
+
         [DataTestMethod,
-         DataRow(Visual.Fluent, LinkSize.Large),
-         DataRow(Visual.Fluent, LinkSize.Normal),
-
-         DataRow(Visual.Cupertino, LinkSize.Large),
-         DataRow(Visual.Cupertino, LinkSize.Normal),
-
-         DataRow(Visual.Material, LinkSize.Large),
-         DataRow(Visual.Material, LinkSize.Normal)]
-        public Task BitPivotShouldRepectLinkSizeClasses(Visual visual, LinkSize linkSize)
+         DataRow(false, false),
+         DataRow(true, true)]
+        public Task BitPivotShouldRespectSelectKey(bool isEnabled, bool expectedResult)
         {
             var component = RenderComponent<BitPivot>(parameters =>
             {
-                parameters.Add(p => p.Visual, visual);
-                parameters.Add(p => p.LinkSize, linkSize);
+                parameters.AddCascadingValue(this);
+                parameters.AddChildContent<BitPivotItem>();
+                parameters.AddChildContent<BitPivotItem>(parameters => parameters.Add(p => p.IsEnabled, isEnabled));
             });
 
-            var visualClass = visual.ToString().ToLower();
-            var linkSizeClass = $"bit-pvt-{linkSize.ToString().ToLower()}-{visualClass}";
+            component.FindAll(".bit-pvt > div:first-child > div")[1].Click();
 
-            var bitPivot = component.Find($".bit-pvt");
-
-            Assert.IsTrue(bitPivot.ClassList.Contains(linkSizeClass));
-
+            Assert.AreEqual(component.FindAll(".bit-pvt > div:first-child > div")[1].ClassList.Contains("selected-item"), expectedResult);
             return Task.CompletedTask;
         }
     }

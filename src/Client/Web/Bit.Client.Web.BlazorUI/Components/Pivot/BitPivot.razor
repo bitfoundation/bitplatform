@@ -9,24 +9,23 @@
         <div>
             @foreach (var item in Items)
             {
-                @if (item.Value.Visibility == ComponentVisibility.Visible)
-                {
-                    <div @onclick="() => ItemClicked(item)" class="@(Items[SelectedKey] == item.Value ? "selected-item" : string.Empty)">
-                        @if (item.Value.IconName is not null)
-                        {
-                            <i class="bit-icon bit-icon--@(item.Value.IconName)"></i>
-                        }
+                <div @onclick="() => ItemClicked(item)"
+                     class="@(Items[SelectedKey] == item.Value ? "selected-item" : string.Empty)"
+                     style="@(item.Value.Visibility == ComponentVisibility.Collapsed ? "display:none" : item.Value.Visibility == ComponentVisibility.Hidden ? "visibility:hidden" : string.Empty)">
+                    @if (item.Value.IconName is not null)
+                    {
+                        <i class="bit-icon bit-icon--@(item.Value.IconName)"></i>
+                    }
 
-                        @item.Value.HeaderText
+                    @item.Value.HeaderText
 
-                        @if (item.Value.ItemCount is not null)
-                        {
-                            @($" ({item.Value.ItemCount}) ")
-                        }
+                    @if (item.Value.ItemCount is not null)
+                    {
+                        @($" ({item.Value.ItemCount}) ")
+                    }
 
-                        @item.Value.HeaderContent
-                    </div>
-                }
+                    @item.Value.HeaderContent
+                </div>
             }
         </div>
         <div>
