@@ -69,8 +69,12 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
 
             var bitButton = com.Find(".bit-ico-btn");
 
-            if (bitButton.HasAttribute("tabindex"))
-                Assert.AreEqual(bitButton.GetAttribute("tabindex").Equals("-1"), expectedResult);
+            var hasTabindexAttr = bitButton.HasAttribute("tabindex");
+
+            Assert.AreEqual(hasTabindexAttr, expectedResult);
+
+            if (hasTabindexAttr)
+                Assert.IsTrue(bitButton.GetAttribute("tabindex").Equals("-1"));
 
             return Task.CompletedTask;
         }
