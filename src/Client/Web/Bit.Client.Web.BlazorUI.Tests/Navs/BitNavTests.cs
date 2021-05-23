@@ -172,7 +172,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Navs
           DataRow(Visual.Material, true),
           DataRow(Visual.Material, false),
         ]
-        public Task BitNavChildren_IsOnTopTest(Visual visual, bool hasIcon)
+        public Task BitNavChildren_HasIconTest(Visual visual, bool hasIcon)
         {
             var com = RenderComponent<BitNavTest>(parameters =>
             {
