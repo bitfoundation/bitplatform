@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Threading.Tasks;
 using Bit.Client.Web.BlazorUI.Utils;
 using Microsoft.AspNetCore.Components;
 

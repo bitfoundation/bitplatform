@@ -153,7 +153,8 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
                        })
         };
 
-        private void MessageBarButton(MouseEventArgs args)
+        private void HideMessageBar(MouseEventArgs args)
+
         {
             IsMessageBarHidden = true;
         }
