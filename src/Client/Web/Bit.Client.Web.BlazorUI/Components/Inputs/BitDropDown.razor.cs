@@ -12,8 +12,19 @@ namespace Bit.Client.Web.BlazorUI
         private string focusClass = "";
         private string expandClass = "";
         private bool isOpen = false;
+        private bool isMultiSelect = false;
 
-        [Parameter] public bool IsMultiSelect { get; set; } = false;
+        [Parameter]
+        public bool IsMultiSelect
+        {
+            get => isMultiSelect;
+            set
+            {
+                isMultiSelect = value;
+                ClassBuilder.Reset();
+            }
+        }
+
         [Parameter]
         public bool IsOpen
         {
@@ -70,6 +81,10 @@ namespace Bit.Client.Web.BlazorUI
             ClassBuilder.Register(() => IsOpen is false
                 ? string.Empty
                 : $"{RootElementClass}-{"opened"}-{VisualClassRegistrar()}");
+
+            ClassBuilder.Register(() => IsMultiSelect is false
+                ? string.Empty
+                : $"{RootElementClass}-{"multi"}-{VisualClassRegistrar()}");
         }
 
         protected virtual async Task HandleClick(MouseEventArgs e)

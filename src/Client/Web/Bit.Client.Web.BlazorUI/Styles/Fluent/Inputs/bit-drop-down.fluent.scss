@@ -74,7 +74,8 @@
         animation-duration: 0.367s;
         animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
         animation-fill-mode: both;
-
+        background-color:$White;
+        z-index:2;
         div[class=bit-drp-head-fluent] {
             font-family: FluentFont;
             -webkit-font-smoothing: antialiased;
@@ -174,6 +175,7 @@
             text-align: left;
             color: $Grey190;
             box-shadow: none;
+            background-color:transparent;
         }
     }
 }
@@ -233,6 +235,12 @@
     span:nth-child(2) {
         padding-top: em(1.55px);
         right: em(6px);
+    }
+}
+
+.bit-drp-multi-fluent.bit-drp-focused-fluent {
+    span:first-child {
+        bottom: em(0.8px);
     }
 }
 
