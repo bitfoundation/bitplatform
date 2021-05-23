@@ -12,7 +12,7 @@
 		    <div>
                 <ul role="list">
 				    @foreach (var navLink in NavLinks)
-                         @template(navLink)
+                         @childTemplate(navLink)
                 </ul>
 	        </div>
         </div>
@@ -28,7 +28,7 @@
                      <div>
                         <ul role="list">
 				            @foreach (var child in navLink.Links)
-                                 @template(child)
+                                 @childTemplate(child)
                         </ul>
 	                </div>
                 }
@@ -39,13 +39,16 @@
 
 @code{
 
-    public RenderFragment<NavLink> template{ get; set; }
+    public RenderFragment<NavLink> childTemplate{ get; set; }
 
     protected override void OnParametersSet()
     {
         base.OnParametersSet();
 
-        template = (navLink) =>
+        if (!NavLinks?.Any() ?? true)
+            throw new NullReferenceException(nameof(NavLinks));
+
+        childTemplate = (navLink) =>
         ( 
     @<li role="listitem" @key="navLink.Key">
         <div name="@navLink.Name">
@@ -82,7 +85,7 @@
                 @foreach (var childLink in navLink.Links)
                 {
                     childLink.Depth = navLink.Depth + 1;
-                    @template(childLink)
+                    @childTemplate(childLink)
                 }
                 </ul>
             }
