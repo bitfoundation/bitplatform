@@ -9,7 +9,11 @@
 
     @if (Virtualize)
     {
-        <Virtualize Items="@Items" Context="item">
+        <Virtualize Items="@Items"
+                    Context="item" 
+                    ItemSize="@ItemSize" 
+                    OverscanCount="@OverscanCount" >
+
             <ItemContent>
                 @RowTemplate(item)
             </ItemContent>

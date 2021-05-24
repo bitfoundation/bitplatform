@@ -29,7 +29,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
             {
                 people.Add(new Person
                 {
-                    Id = 1,
+                    Id = i,
                     FirstName = $"Person {i.ToString()}",
                     LastName =$"Person Family {i.ToString()}",
                     Job = $"Programmer {i.ToString()}"

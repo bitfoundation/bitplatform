@@ -10,9 +10,9 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public int? ItemPerPage { get; set; }        
         [Parameter] public string Role { get; set; } = "list";
         [Parameter] public bool Virtualize { get; set; } = true;
-        [Parameter] public string LoadingText { get; set; }
-        [Parameter] public int OverscanCount { get; set; }
-        [Parameter] public int ItemSize { get; set; }
+        [Parameter] public string? LoadingText { get; set; }
+        [Parameter] public int OverscanCount { get; set; } = 3;
+        [Parameter] public int ItemSize { get; set; } = 50;
         [Parameter] public RenderFragment<TItem> RowTemplate { get; set; }
 
         protected override string RootElementClass => "bit-basic-list";
