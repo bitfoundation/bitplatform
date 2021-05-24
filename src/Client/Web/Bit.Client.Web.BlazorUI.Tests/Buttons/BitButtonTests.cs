@@ -47,6 +47,33 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
         }
 
         [DataTestMethod,
+            DataRow(true, ButtonStyle.Primary, false, false),
+            DataRow(true, ButtonStyle.Standard, true, false),
+            DataRow(false, ButtonStyle.Primary, false, true),
+            DataRow(false, ButtonStyle.Standard, true, false),
+        ]
+        public Task BitButtonDisabledFocusTest(bool isEnabled, ButtonStyle style, bool allowDisabledFocus, bool expectedResult)
+        {
+            var com = RenderComponent<BitButtonTest>(parameters =>
+            {
+                parameters.Add(p => p.IsEnabled, isEnabled);
+                parameters.Add(p => p.ButtonStyle, style);
+                parameters.Add(p => p.AllowDisabledFocus, allowDisabledFocus);
+            });
+
+            var bitButton = com.Find(".bit-btn");
+
+            var hasTabindexAttr = bitButton.HasAttribute("tabindex");
+
+            Assert.AreEqual(hasTabindexAttr, expectedResult);
+
+            if (hasTabindexAttr)
+                Assert.IsTrue(bitButton.GetAttribute("tabindex").Equals("-1"));
+
+            return Task.CompletedTask;
+        }
+
+        [DataTestMethod,
              DataRow(Visual.Fluent, true, ButtonStyle.Primary, "https://github.com/bitfoundation", "bit", "_blank"),
              DataRow(Visual.Fluent, true, ButtonStyle.Standard, "https://github.com/bitfoundation", "bit", "_blank"),
              DataRow(Visual.Fluent, false, ButtonStyle.Primary, "https://github.com/bitfoundation", "bit", "_blank"),
@@ -85,7 +112,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
 
             Assert.AreEqual(bitButton.GetAttribute("title"), title);
 
-            Assert.AreEqual(bitButton.GetAttribute("target") , target);
+            Assert.AreEqual(bitButton.GetAttribute("target"), target);
 
             return Task.CompletedTask;
         }
