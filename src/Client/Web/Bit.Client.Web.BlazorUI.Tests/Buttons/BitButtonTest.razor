@@ -1,19 +1,21 @@
 ﻿<CascadingValue Value="Visual">
     <BitButton OnClick="IncrementCount"
+               AllowDisabledFocus="AllowDisabledFocus"
                IsEnabled="IsEnabled"
                ButtonStyle="ButtonStyle"
-               AriaDescription="AriaDescription"
-               AriaLabel="AriaLabel"
+               AriaDescription="@AriaDescription"
+               AriaLabel="@AriaLabel"
                AriaHidden="AriaHidden"
-               Href="Href"
-               Title="Title"
-               Target="Target">
+               Href="@Href"
+               Title="@Title"
+               Target="@Target">
         <label>Other test label</label>
     </BitButton>
 </CascadingValue>
 
 @code {
     [Parameter] public Visual Visual { get; set; }
+    [Parameter] public bool AllowDisabledFocus { get; set; }
     [Parameter] public bool IsEnabled { get; set; }
     [Parameter] public ButtonStyle ButtonStyle { get; set; }
     [Parameter] public string AriaDescription { get; set; }
