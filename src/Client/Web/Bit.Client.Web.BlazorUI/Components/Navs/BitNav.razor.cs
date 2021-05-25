@@ -17,9 +17,15 @@ namespace Bit.Client.Web.BlazorUI
 
         protected virtual async Task Toggle(NavLink navLink)
         {
-            if (IsEnabled is false) return;
+            if (IsEnabled is false)
+            {
+                return;
+            }
 
-            if (navLink.Disabled) return;
+            if (navLink.Disabled)
+            {
+                return;
+            }
 
             if (navLink.Links?.Any() ?? false)
                 navLink.IsExpanded = !navLink.IsExpanded;
