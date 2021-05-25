@@ -7,14 +7,19 @@ $BgTrackHover: $DarkAlt;
 
 .bit-slider {
     width: 100%;
+    height: 100%;
 }
 
 .bit-slider .bit-slider-container {
     height: 28px;
-    line-height: 28px;
     display: flex;
     align-items: center;
     padding: 0 8px;
+}
+
+.bit-slider .bit-slider-box {
+    display: flex;
+    flex-grow: 1;
 }
 
 .bit-slider .zeroTick {
@@ -22,6 +27,7 @@ $BgTrackHover: $DarkAlt;
     background: $BgTrack;
     width: 1px;
     height: 14px;
+    margin-top: -3px;
 }
 
 .bit-slider input[type=range] {
@@ -173,7 +179,7 @@ $BgTrackHover: $DarkAlt;
 }
 
 
-.bit-slider label.description {
+.bit-slider label.title {
     font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
     -webkit-font-smoothing: antialiased;
     font-size: 14px;
@@ -201,6 +207,40 @@ $BgTrackHover: $DarkAlt;
     overflow-wrap: break-word;
     flex-shrink: 1;
     width: 40px;
-    line-height: 1;
     white-space: nowrap;
+}
+
+
+/*Vertical*/
+
+.bit-slider.bit-slider-column .bit-slider-container {
+    width: auto;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    padding: 0 8px;
+    flex-flow: column nowrap;
+}
+
+.bit-slider.bit-slider-column .bit-slider-box {
+    width: auto;
+    height: 4px;
+    transform: rotate(270deg);
+    /*transform-origin: top right;*/
+}
+
+/*.bit-slider.bit-slider-column .zeroTick {
+    transform: rotate(270deg);
+}
+*/
+
+/*Ranged*/
+
+.bit-slider.bit-slider-ranged input {
+    /*pointer-events: none;*/
+    position: absolute;
+    /*overflow: hidden;*/
+    left: 0;
+    /*top: 15px;*/
+    /*outline: none;*/
 }

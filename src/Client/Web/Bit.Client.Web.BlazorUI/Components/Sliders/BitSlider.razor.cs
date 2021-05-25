@@ -44,7 +44,14 @@ namespace Bit.Client.Web.BlazorUI
             ClassBuilder.Register(() => IsReadonly
                                                 ? $"{RootElementClass}-readonly-{VisualClassRegistrar()}"
                                                 : string.Empty);
-            ClassBuilder.Register(() => $"{RootElementClass}-large-{VisualClassRegistrar()}");
+
+            ClassBuilder.Register(() => Vertical
+                                                ? $"{RootElementClass}-column"
+                                                : $"{RootElementClass}-row");
+
+            ClassBuilder.Register(() => Ranged
+                                                ? $"{RootElementClass}-ranged"
+                                                : string.Empty);
         }
 
         protected override async Task OnInitializedAsync()

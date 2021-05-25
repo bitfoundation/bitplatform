@@ -4,14 +4,19 @@
 <div @ref="RootElement" class="@ClassBuilder.Value" style="@StyleBuilder.Value">
     @if (!string.IsNullOrEmpty(Label))
     {
-        <label class="description">@Label</label>
+        <label class="title">@Label</label>
     }
+
     <div class="bit-slider-container">
-        @if (OriginFromZero)
-        {
-            <span class="zeroTick" style="left: calc(50% - 29px);"></span>
-        }
-        <input type="range" min="@Min" max="@Max" step="@Step" value="@Value" @onchange="@HandleChange" @oninput="@HandleInput" style="@styleProgress" />
+        <div class="bit-slider-box">
+            @if (OriginFromZero)
+            {
+                <span class="zeroTick" style="left: @(Vertical ? "50%" : "calc(50% - 29px);")"></span>
+            }
+
+            <input type="range" min="@Min" max="@Max" step="@Step" value="@Value" @onchange="@HandleChange" @oninput="@HandleInput" style="@styleProgress" />
+        </div>
+
         @if (ShowValue)
         {
             <label class="valueLabel">@GetValueDisplay()</label>
