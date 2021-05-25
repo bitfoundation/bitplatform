@@ -4,6 +4,7 @@
     {
         Default,
         Error,
+        Blocked,
         Success,
         Warning,
         Severe

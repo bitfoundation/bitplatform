@@ -20,7 +20,7 @@
     background-color: palevioletred;
 }
 
-.spinner-container > div:not(.spinner-positioning) {
+.spinner-container > div:not(.spinner-positioning), .action-btn-container {
     display: flex;
 }
 

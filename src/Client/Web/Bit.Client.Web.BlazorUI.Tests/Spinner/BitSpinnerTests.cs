@@ -6,84 +6,68 @@ namespace Bit.Client.Web.BlazorUI.Tests.Spinner
     [TestClass]
     public class BitSpinnerTests : BunitTestContext
     {
-        [DataTestMethod, DataRow(SpinnerSize.Large, true)]
-        public void BitSpinnerShouldRespectLargeSize(SpinnerSize size, bool expectedResult)
+        [DataTestMethod,
+            DataRow(Visual.Fluent, SpinnerSize.Large),
+            DataRow(Visual.Cupertino, SpinnerSize.Large),
+            DataRow(Visual.Material, SpinnerSize.Large),
+
+            DataRow(Visual.Fluent, SpinnerSize.Medium),
+            DataRow(Visual.Cupertino, SpinnerSize.Medium),
+            DataRow(Visual.Material, SpinnerSize.Medium),
+
+            DataRow(Visual.Fluent, SpinnerSize.Small),
+            DataRow(Visual.Cupertino, SpinnerSize.Small),
+            DataRow(Visual.Material, SpinnerSize.Small),
+
+            DataRow(Visual.Fluent, SpinnerSize.XSmall),
+            DataRow(Visual.Cupertino, SpinnerSize.XSmall),
+            DataRow(Visual.Material, SpinnerSize.XSmall)]
+        public void BitSpinnerShouldRespectSize(Visual visual, SpinnerSize size)
         {
-            var component = RenderComponent<BitSpinner>(parameters => parameters.Add(p => p.Size, size));
+            var component = RenderComponent<BitSpinnerTest>(parameters =>
+            {
+                parameters.Add(p => p.Visual, visual);
+                parameters.Add(p => p.Size, size);
+            });
 
-            var bitLabel = component.Find(".bit-spn-fluent");
+            var sizeClass = size == SpinnerSize.Large ? "large" : size == SpinnerSize.Medium ? "medium" : size == SpinnerSize.Small ? "small" : "xSmall";
+            var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
 
-            Assert.AreEqual(expectedResult, bitLabel.ClassList.Contains("bit-spn-large-fluent"));
+            var bitSpinner = component.Find($".bit-spn-{visualClass}");
+
+            Assert.IsTrue(bitSpinner.ClassList.Contains($"bit-spn-{sizeClass}-{visualClass}"));
         }
 
-        [DataTestMethod, DataRow(null, true), DataRow(SpinnerSize.Medium, true)]
-        public void BitSpinnerShouldRespectMediumSize(SpinnerSize size, bool expectedResult)
+        [DataTestMethod,
+            DataRow(Visual.Fluent, SpinnerLabelPosition.Top),
+            DataRow(Visual.Cupertino, SpinnerLabelPosition.Top),
+            DataRow(Visual.Material, SpinnerLabelPosition.Top),
+
+            DataRow(Visual.Fluent, SpinnerLabelPosition.Right),
+            DataRow(Visual.Cupertino, SpinnerLabelPosition.Right),
+            DataRow(Visual.Material, SpinnerLabelPosition.Right),
+
+            DataRow(Visual.Fluent, SpinnerLabelPosition.Left),
+            DataRow(Visual.Cupertino, SpinnerLabelPosition.Left),
+            DataRow(Visual.Material, SpinnerLabelPosition.Left),
+
+            DataRow(Visual.Fluent, SpinnerLabelPosition.Bottom),
+            DataRow(Visual.Cupertino, SpinnerLabelPosition.Bottom),
+            DataRow(Visual.Material, SpinnerLabelPosition.Bottom)]
+        public void BitSpinnerShouldRespectPosition(Visual visual, SpinnerLabelPosition position)
         {
-            var component = RenderComponent<BitSpinner>(parameters => parameters.Add(p => p.Size, size));
+            var component = RenderComponent<BitSpinnerTest>(parameters =>
+            {
+                parameters.Add(p => p.Visual, visual);
+                parameters.Add(p => p.LabelPosition, position);
+            });
 
-            var bitLabel = component.Find(".bit-spn-fluent");
+            var positionClass = position == SpinnerLabelPosition.Top ? "top" : position == SpinnerLabelPosition.Right ? "right" : position == SpinnerLabelPosition.Left ? "left" : "bottom";
+            var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
 
-            Assert.AreEqual(expectedResult, bitLabel.ClassList.Contains("bit-spn-medium-fluent"));
-        }
+            var bitSpinner = component.Find($".bit-spn-{visualClass}");
 
-        [DataTestMethod, DataRow(SpinnerSize.Small, true)]
-        public void BitSpinnerShouldRespectSmallSize(SpinnerSize size, bool expectedResult)
-        {
-            var component = RenderComponent<BitSpinner>(parameters => parameters.Add(p => p.Size, size));
-
-            var bitLabel = component.Find(".bit-spn-fluent");
-
-            Assert.AreEqual(expectedResult, bitLabel.ClassList.Contains("bit-spn-small-fluent"));
-        }
-
-        [DataTestMethod, DataRow(SpinnerSize.XSmall, true)]
-        public void BitSpinnerShouldRespectXSmallSize(SpinnerSize size, bool expectedResult)
-        {
-            var component = RenderComponent<BitSpinner>(parameters => parameters.Add(p => p.Size, size));
-
-            var bitLabel = component.Find(".bit-spn-fluent");
-
-            Assert.AreEqual(expectedResult, bitLabel.ClassList.Contains("bit-spn-xSmall-fluent"));
-        }
-
-        [DataTestMethod, DataRow(SpinnerLabelPosition.Bottom, true)]
-        public void BitSpinnerShouldRespectBottomPosition(SpinnerLabelPosition position, bool expectedResult)
-        {
-            var component = RenderComponent<BitSpinner>(parameters => parameters.Add(p => p.LabelPosition, position));
-
-            var bitLabel = component.Find(".bit-spn-fluent");
-
-            Assert.AreEqual(expectedResult, bitLabel.ClassList.Contains("bit-spn-bottom-fluent"));
-        }
-
-        [DataTestMethod, DataRow(SpinnerLabelPosition.Top, true)]
-        public void BitSpinnerShouldRespectTopPosition(SpinnerLabelPosition position, bool expectedResult)
-        {
-            var component = RenderComponent<BitSpinner>(parameters => parameters.Add(p => p.LabelPosition, position));
-
-            var bitLabel = component.Find(".bit-spn-fluent");
-
-            Assert.AreEqual(expectedResult, bitLabel.ClassList.Contains("bit-spn-top-fluent"));
-        }
-
-        [DataTestMethod, DataRow(SpinnerLabelPosition.Right, true)]
-        public void BitSpinnerShouldRespectRightPosition(SpinnerLabelPosition position, bool expectedResult)
-        {
-            var component = RenderComponent<BitSpinner>(parameters => parameters.Add(p => p.LabelPosition, position));
-
-            var bitLabel = component.Find(".bit-spn-fluent");
-
-            Assert.AreEqual(expectedResult, bitLabel.ClassList.Contains("bit-spn-right-fluent"));
-        }
-
-        [DataTestMethod, DataRow(SpinnerLabelPosition.Left, true)]
-        public void BitSpinnerShouldRespectLeftPosition(SpinnerLabelPosition position, bool expectedResult)
-        {
-            var component = RenderComponent<BitSpinner>(parameters => parameters.Add(p => p.LabelPosition, position));
-
-            var bitLabel = component.Find(".bit-spn-fluent");
-
-            Assert.AreEqual(expectedResult, bitLabel.ClassList.Contains("bit-spn-left-fluent"));
+            Assert.IsTrue(bitSpinner.ClassList.Contains($"bit-spn-{positionClass}-{visualClass}"));
         }
     }
 }
