@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
@@ -8,12 +7,12 @@ namespace Bit.Client.Web.BlazorUI
 {
     public partial class BitNav
     {
-        [Parameter] public string SelectedKey { get; set; }
-        [Parameter] public string AriaLabel { get; set; }
+        [Parameter] public string? SelectedKey { get; set; }
+        [Parameter] public string? AriaLabel { get; set; }
         [Parameter] public bool IsOnTop { get; set; }
-        [Parameter] public List<NavLink> NavLinks { get; set; }
+        [Parameter] public List<NavLink> NavLinks { get; set; } = new List<NavLink>();
         [Parameter] public EventCallback<NavLink> OnClick { get; set; }
-        [Parameter] public Func<NavLink, RenderFragment> OnRenderHeader { get; set; }
+        [Parameter] public RenderFragment<NavLink>? HeaderTemplate { get; set; }
         protected override string RootElementClass => "bit-nav";
 
         protected virtual async Task Toggle(NavLink navLink)
@@ -23,22 +22,16 @@ namespace Bit.Client.Web.BlazorUI
             if (navLink.Disabled) return;
 
             if (navLink.Links?.Any() ?? false)
-            {
                 navLink.IsExpanded = !navLink.IsExpanded;
-                StateHasChanged();
-            }
 
             await OnClick.InvokeAsync(navLink);
         }
 
         protected override void RegisterComponentClasses()
         {
-            ClassBuilder.Register(() => IsOnTop ? $"{RootElementClass}-top-{VisualClassRegistrar()}" : $"{RootElementClass}-no-top-{VisualClassRegistrar()}");
-        }
-
-        private RenderFragment GenerateHeader(NavLink navLink)
-        {
-            return OnRenderHeader.Invoke(navLink);
+            ClassBuilder.Register(() => IsOnTop
+                                            ? $"{RootElementClass}-top"
+                                            : $"{RootElementClass}-no-top");
         }
 
         private static string MapNavLinkTargetTypeToString(NavLinkTargetType navLinkTargetType)
@@ -53,13 +46,13 @@ namespace Bit.Client.Web.BlazorUI
             };
         }
 
-        private string GetLinkClass(NavLink navLink, string selectedKey)
+        private string GetLinkClass(NavLink navLink)
         {
             var enabledClass = navLink.Disabled ? "disabled" : "enabled";
             var hasUrlClass = string.IsNullOrWhiteSpace(navLink.Url) ? "nourl" : "hasurl";
 
             var mainStyle = $"bit-nav-link-{enabledClass}-{hasUrlClass}-{VisualClassRegistrar()}";
-            var selected = navLink.Key == selectedKey ? $"bit-nav-selected-{VisualClassRegistrar()}" : "";
+            var selected = navLink.Key == SelectedKey ? $"bit-nav-selected-{VisualClassRegistrar()}" : "";
             var hasIcon = string.IsNullOrWhiteSpace(navLink.Icon) ? $"bit-nav-has-not-icon-{VisualClassRegistrar()}" : $"bit-nav-has-icon-{VisualClassRegistrar()}";
 
             return $"{mainStyle} {selected} {hasIcon}";

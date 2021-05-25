@@ -37,7 +37,7 @@
     }
 }
 
-@mixin getBaesNavStyle($isOnTop: false) {
+@mixin getBaseNavStyle($isOnTop: false) {
     font-family: FluentFont;
     -webkit-font-smoothing: antialiased;
     font-size: inherit;
@@ -53,12 +53,12 @@
     }
 }
 
-.bit-nav-top-fluent {
-    @include getBaesNavStyle($isOnTop:true);
+.bit-nav-top {
+    @include getBaseNavStyle($isOnTop:true);
 }
 
-.bit-nav-no-top-fluent {
-    @include getBaesNavStyle();
+.bit-nav-no-top {
+    @include getBaseNavStyle();
 }
 
 .bit-nav-fluent > div {
