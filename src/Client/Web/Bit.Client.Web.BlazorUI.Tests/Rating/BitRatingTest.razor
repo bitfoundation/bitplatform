@@ -1,12 +1,11 @@
 ﻿<CascadingValue Value="Visual">
-    <BitRating AllowZeroStars="AllowZeroStars" DefaultRating="DefaultRating" Max="Max"
-               Icon="@Icon" UnselectedIcon="@UnselectedIcon" Size="Size" IsReadonly="IsReadonly" IsEnabled="IsEnabled" />
+    <BitRating AllowZeroStars="AllowZeroStars" Max="Max" Icon="@Icon" UnselectedIcon="@UnselectedIcon" 
+    Size="Size" IsReadonly="IsReadonly" IsEnabled="IsEnabled" />
 </CascadingValue>
 
 @code {
     [Parameter] public Visual Visual { get; set; }
     [Parameter] public bool AllowZeroStars { get; set; }
-    [Parameter] public int DefaultRating { get; set; }
     [Parameter] public int Max { get; set; }
     [Parameter] public string Icon { get; set; } = "FavoriteStarFill";
     [Parameter] public string UnselectedIcon { get; set; } = "FavoriteStar";

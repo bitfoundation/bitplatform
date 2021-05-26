@@ -82,28 +82,20 @@ namespace Bit.Client.Web.BlazorUI.Tests.Rating
         }
 
         [DataTestMethod,
-            DataRow("HeartFill", "Heart", 10, 7, false),
-            DataRow("HeartFill", "Heart", 10, 0 , true),
-            DataRow("HeartFill", "Heart", 10, 0, false)]
-        public void BitRatingShouldRespectCustomIcon(string icon, string unselectedIcon, int max, int defaultRating, bool allowZeroStars)
+            DataRow("HeartFill", "Heart", 10, false),
+            DataRow("HeartFill", "Heart", 10, true),
+            DataRow("HeartFill", "Heart", 10, false)]
+        public void BitRatingShouldRespectCustomIcon(string icon, string unselectedIcon, int max, bool allowZeroStars)
         {
             var component = RenderComponent<BitRatingTest>(parameters =>
             {
                 parameters.Add(p => p.Icon, icon);
                 parameters.Add(p => p.UnselectedIcon, unselectedIcon);
                 parameters.Add(p => p.Max, max);
-                parameters.Add(p => p.DefaultRating, defaultRating);
                 parameters.Add(p => p.AllowZeroStars, allowZeroStars);
             });
 
-            if (allowZeroStars)
-            {
-                defaultRating = defaultRating > 0 ? defaultRating : 0;
-            }
-            else
-            {
-                defaultRating = defaultRating > 0 ? defaultRating : 1;
-            }
+            int defaultRating = allowZeroStars ? 0 : 1;
 
             var bitRating = component.FindAll("button");
             var bitRatingIcon = component.FindAll("i");
@@ -117,10 +109,10 @@ namespace Bit.Client.Web.BlazorUI.Tests.Rating
         }
 
         [DataTestMethod,
-            DataRow(10, 7, false),
-            DataRow(10, 0, true),
-            DataRow(10, 0, false)]
-        public void BitRatingShouldRespectIcon(int max, int defaultRating, bool allowZeroStars)
+            DataRow(10, 3, false, 3),
+            DataRow(10, 0, true, 0),
+            DataRow(10, 0, false, 1)]
+        public void BitRatingShouldRespectIconAndValue(int max, int clickedIndex, bool allowZeroStars, int expectedResult)
         {
             var icon = "FavoriteStarFill";
             var unselectedIcon = "FavoriteStar";
@@ -128,28 +120,28 @@ namespace Bit.Client.Web.BlazorUI.Tests.Rating
             var component = RenderComponent<BitRatingTest>(parameters =>
             {
                 parameters.Add(p => p.Max, max);
-                parameters.Add(p => p.DefaultRating, defaultRating);
                 parameters.Add(p => p.AllowZeroStars, allowZeroStars);
             });
 
-            if (allowZeroStars)
+            var bitRating = component.FindAll("button");
+
+            if (clickedIndex == 0)
             {
-                defaultRating = defaultRating > 0 ? defaultRating : 0;
-            }
-            else
-            {
-                defaultRating = defaultRating > 0 ? defaultRating : 1;
+                clickedIndex = 1;
             }
 
-            var bitRating = component.FindAll("button");
+            if (clickedIndex > 0 && allowZeroStars is false)
+                bitRating[clickedIndex - 1].Click();
+
             var bitRatingIcon = component.FindAll("i");
 
             var filledBitRatingIconCount = bitRatingIcon.Where(r => r.ClassList.Contains($"bit-icon--{icon}")).Count();
             var unselectedBitRatingIconCount = bitRatingIcon.Where(r => r.ClassList.Contains($"bit-icon--{unselectedIcon}")).Count();
 
             Assert.AreEqual(bitRating.Count(), max);
-            Assert.AreEqual(filledBitRatingIconCount, defaultRating);
-            Assert.AreEqual(unselectedBitRatingIconCount, (max - defaultRating));
+
+            Assert.AreEqual(filledBitRatingIconCount, expectedResult);
+            Assert.AreEqual(unselectedBitRatingIconCount, (max - expectedResult));
         }
     }
 }

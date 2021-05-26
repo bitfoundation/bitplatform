@@ -7,7 +7,6 @@ namespace Bit.Client.Web.BlazorUI
     public partial class BitRating
     {
         [Parameter] public bool AllowZeroStars { get; set; }
-        [Parameter] public int DefaultRating { get; set; }
         [Parameter] public int Max { get; set; } = 5;
         [Parameter] public string Icon { get; set; } = "FavoriteStarFill";
         [Parameter] public string UnselectedIcon { get; set; } = "FavoriteStar";
@@ -64,13 +63,11 @@ namespace Bit.Client.Web.BlazorUI
         {
             min = AllowZeroStars == true ? 0 : 1;
             Max = Max > min ? Max : min;
-            DefaultRating = DefaultRating > 0 ? DefaultRating : min;
-            ratingValue = DefaultRating > 0 ? DefaultRating : ratingValue;
 
             RatingColorClass = new string[Max + 1];
             RatingIcon = new string[Max + 1];
 
-            FillRating(DefaultRating);
+            FillRating(min);
 
             await base.OnInitializedAsync();
         }
