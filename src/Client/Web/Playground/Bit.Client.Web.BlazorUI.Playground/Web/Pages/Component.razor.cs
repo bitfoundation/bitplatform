@@ -14,6 +14,10 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
         private bool IsMessageBarHidden = false;
         private TextFieldType InputType = TextFieldType.Password;
 
+        private int RatingValue = 2;
+        private int RatingBoundValue = 2;
+        private int RatingDefaultValue = 0;
+
         private readonly List<NavLink> BasicNavLinks = new()
         {
             new NavLink
