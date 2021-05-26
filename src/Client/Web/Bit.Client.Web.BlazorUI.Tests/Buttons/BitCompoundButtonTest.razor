@@ -1,16 +1,24 @@
 ﻿<CascadingValue Value="Visual">
     <BitCompoundButton OnClick="IncrementCount"
+                       AllowDisabledFocus="AllowDisabledFocus"
                        IsEnabled="IsEnabled"
                        Text="Test"
                        SecondaryText="Second Text"
-                       ButtonStyle="ButtonStyle">
+                       ButtonStyle="ButtonStyle"
+                       AriaDescription="@AriaDescription"
+                       AriaLabel="@AriaLabel"
+                       AriaHidden="AriaHidden">
     </BitCompoundButton>
 </CascadingValue>
 
 @code {
     [Parameter] public Visual Visual { get; set; }
+    [Parameter] public bool AllowDisabledFocus { get; set; }
     [Parameter] public bool IsEnabled { get; set; }
     [Parameter] public ButtonStyle ButtonStyle { get; set; }
+    [Parameter] public string AriaDescription { get; set; }
+    [Parameter] public string AriaLabel { get; set; }
+    [Parameter] public bool AriaHidden { get; set; }
 
     public int CurrentCount { get; set; }
 

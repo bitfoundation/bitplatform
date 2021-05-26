@@ -9,12 +9,8 @@
         aria-hidden="@AriaHidden"
         tabindex="@tabIndex"
         @onclick="HandleOnClick">
-    <span class="no-text-select">
-        <span>
-            @Text
-        </span>
-        <span>
-            @SecondaryText
-        </span>
+    <span>
+        <i class="bit-icon bit-icon--@IconName"></i>
     </span>
+    @ChildContent
 </button>

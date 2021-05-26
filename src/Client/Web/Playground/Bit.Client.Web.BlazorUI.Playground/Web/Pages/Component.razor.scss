@@ -20,7 +20,7 @@
     background-color: palevioletred;
 }
 
-.spinner-container > div:not(.spinner-positioning) {
+.spinner-container > div:not(.spinner-positioning), .action-btn-container {
     display: flex;
 }
 
@@ -30,4 +30,14 @@
 
 .spinner-positioning {
     display: inline-block;
+}
+
+.bit-nav-wrapped-link a {
+    white-space: normal;
+    line-height: inherit;
+}
+
+.bit-nav-simple-link a {
+    white-space: nowrap;
+    line-height: 44px;
 }

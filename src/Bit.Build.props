@@ -53,7 +53,6 @@
 		<AndroidResgenFile>False</AndroidResgenFile>
 		<AndroidUseIntermediateDesignerFile>False</AndroidUseIntermediateDesignerFile>
 		<TargetFrameworkVersion Condition=" '$(TargetFramework)' == 'monoandroid10.0' ">v10.0</TargetFrameworkVersion>
-		<RestoreAdditionalProjectSources>$(RestoreAdditionalProjectSources);https://dotnet.myget.org/F/nuget-build/api/v3/index.json</RestoreAdditionalProjectSources>
 
 		<AnalysisLevel>latest</AnalysisLevel>
 		<AnalysisMode>AllEnabledByDefault</AnalysisMode>
