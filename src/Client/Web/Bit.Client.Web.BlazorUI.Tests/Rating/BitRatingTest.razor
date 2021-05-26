@@ -1,6 +1,6 @@
 ﻿<CascadingValue Value="Visual">
-    <BitRating AllowZeroStars="AllowZeroStars" Max="Max" Icon="@Icon" UnselectedIcon="@UnselectedIcon" 
-    Size="Size" IsReadonly="IsReadonly" IsEnabled="IsEnabled" />
+    <BitRating AllowZeroStars="AllowZeroStars" Max="Max" Icon="@Icon" UnselectedIcon="@UnselectedIcon"
+               Size="Size" IsReadonly="IsReadonly" IsEnabled="IsEnabled" @bind-Value="CurrentValue" />
 </CascadingValue>
 
 @code {
@@ -12,4 +12,6 @@
     [Parameter] public RatingSize Size { get; set; }
     [Parameter] public bool IsReadonly { get; set; }
     [Parameter] public bool IsEnabled { get; set; }
+
+    private int CurrentValue;
 }
