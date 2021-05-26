@@ -35,7 +35,7 @@
     <BitButton IsEnabled="false">
         Disabled
     </BitButton>
-    <BitButton IsEnabled="false">
+    <BitButton IsEnabled="false" AllowDisabledFocus="false">
         <label>This text is from a label element</label>
     </BitButton>
 
@@ -54,6 +54,7 @@
                        ButtonStyle="ButtonStyle.Standard">
     </BitCompoundButton>
     <BitCompoundButton IsEnabled="false"
+                       AllowDisabledFocus="false"
                        Text="Disabled"
                        AriaDescription="Detailed description used for screen reader."
                        SecondaryText="This Button is a disabled compound button">
@@ -88,7 +89,7 @@
     <h3>Action Button</h3>
     <div class="action-btn-container">
         <BitActionButton IconName="AddFriend">Create account</BitActionButton>
-        <BitActionButton IsEnabled="false" IconName="UserRemove">Remove user</BitActionButton>
+        <BitActionButton AllowDisabledFocus="false" IsEnabled="false" IconName="UserRemove">Remove user</BitActionButton>
     </div>
 
     <hr />
