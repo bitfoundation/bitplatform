@@ -1,4 +1,5 @@
 ﻿@page "/component"
+
 <h1>Bit Components</h1>
 
 <hr />
@@ -35,7 +36,7 @@
     <BitButton IsEnabled="false">
         Disabled
     </BitButton>
-    <BitButton IsEnabled="false">
+    <BitButton IsEnabled="false" AllowDisabledFocus="false">
         <label>This text is from a label element</label>
     </BitButton>
 
@@ -54,6 +55,7 @@
                        ButtonStyle="ButtonStyle.Standard">
     </BitCompoundButton>
     <BitCompoundButton IsEnabled="false"
+                       AllowDisabledFocus="false"
                        Text="Disabled"
                        AriaDescription="Detailed description used for screen reader."
                        SecondaryText="This Button is a disabled compound button">
@@ -72,11 +74,11 @@
         Button with Aria Hidden
     </BitButton>
 
-     <hr />
+    <hr />
 
     <h3>Icon Button</h3>
     <BitIconButton IconName="Emoji2" />
-    <BitIconButton IconName="Emoji2" IsEnabled="false" />
+    <BitIconButton IconName="Emoji2" AllowDisabledFocus="false" IsEnabled="false" />
     
     <hr />
 
@@ -88,9 +90,9 @@
     <h3>Action Button</h3>
     <div class="action-btn-container">
         <BitActionButton IconName="AddFriend">Create account</BitActionButton>
-        <BitActionButton IsEnabled="false" IconName="UserRemove">Remove user</BitActionButton>
+        <BitActionButton AllowDisabledFocus="false" IsEnabled="false" IconName="UserRemove">Remove user</BitActionButton>
     </div>
-    
+
     <hr />
 
     <h3>Button-like Anchor</h3>
@@ -363,6 +365,57 @@
     <BitButton OnClick="() => IsToggleChecked = true">Make Toggle Check</BitButton>
     <br />
     <br />
+</div>
+
+<hr />
+<div class="nav-container">
+    <h1>Bit Navs</h1>
+    <h2>Basic nav with sample links</h2>
+    <BitNav Style="width: 208px;
+                   height: 350px;
+                   box-sizing: border-box;
+                   border: 1px solid #eee;
+                   overflow-y: auto;"
+            Class="bit-nav-simple-link"
+            NavLinks="BasicNavLinks"
+            AriaLabel="Nav basic example"
+            SelectedKey="key3">
+    </BitNav>
+
+    <br />
+    <h2>Nav with wrapped link text and no tooltips</h2>
+    <BitNav Style="width: 208px;
+                   height: 350px;
+                   box-sizing: border-box;
+                   border: 1px solid #eee;
+                   overflow-y: auto;"
+            Class="bit-nav-wrapped-link"
+            SelectedKey="key5"
+            AriaLabel="Nav example with wrapped link text"
+            NavLinks="BasicNoToolTipNavLinks">
+    </BitNav>
+
+    <br />
+    <h2>Nav similar to the one in this demo app</h2>
+    <BitNav Style="width: 300px;"
+            NavLinks="BasicNoUrlNavLinks"
+            AriaLabel="Nav example similar to one found in this demo page">
+    </BitNav>
+
+    <br />
+    <h2>Nav with nested links</h2>
+    <BitNav NavLinks="NestedLinks"
+            AriaLabel="Nav example with nested links">
+    </BitNav>
+
+    <br />
+    <h2>Nav with custom group header</h2>
+    <BitNav NavLinks="CustomHeaderLinks"
+            AriaLabel="Nav with custom group header">
+        <HeaderTemplate Context="link">
+            <h3> @link.Name </h3>
+        </HeaderTemplate>
+    </BitNav>
 </div>
 <div class="basic-list">
     <h2>BitList</h2>
