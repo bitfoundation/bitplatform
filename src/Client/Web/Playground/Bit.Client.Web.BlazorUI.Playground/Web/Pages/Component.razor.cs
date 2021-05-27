@@ -16,7 +16,10 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
 
         private int RatingValue = 2;
         private int RatingBoundValue = 2;
-        private int RatingDefaultValue = 0;
+        private int RatingLargeValue = 3;
+        private int RatingSmallValue = 4;
+        private int RatingReadOnlyValue = 5;
+        private int RatingOutsideValue = 5;
 
         private readonly List<NavLink> BasicNavLinks = new()
         {

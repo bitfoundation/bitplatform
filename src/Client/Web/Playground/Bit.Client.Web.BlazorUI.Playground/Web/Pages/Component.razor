@@ -79,7 +79,7 @@
     <h3>Icon Button</h3>
     <BitIconButton IconName="Emoji2" />
     <BitIconButton IconName="Emoji2" AllowDisabledFocus="false" IsEnabled="false" />
-    
+
     <hr />
 
     <h3>Icon Button with Tooltip</h3>
@@ -299,20 +299,22 @@
 <div class="rating-container">
     <h2>Rating</h2>
     <h5>Large stars</h5>
-    <BitRating Size="RatingSize.Large" @bind-Value="RatingDefaultValue" />
+    <BitRating Size="RatingSize.Large" @bind-Value="RatingLargeValue" />
     <h5>Small stars, with 0 stars allowed</h5>
-    <BitRating AllowZeroStars="true" @bind-Value="RatingDefaultValue" />
+    <BitRating AllowZeroStars="true" @bind-Value="RatingSmallValue" />
     <h5>10 small stars</h5>
     <div>
         <BitRating Max="10" OnChange="@(arg => OnRatingChange(arg))" @bind-Value="RatingBoundValue" />
         <span>@RatingValue stars selected</span>
     </div>
     <h5>Disabled</h5>
-    <BitRating IsEnabled="false" @bind-Value="RatingDefaultValue" />
+    <BitRating IsEnabled="false" @bind-Value="RatingReadOnlyValue" />
     <h5>ReadOnly</h5>
-    <BitRating IsReadonly="true" @bind-Value="RatingDefaultValue" />
+    <BitRating IsReadonly="true" @bind-Value="RatingReadOnlyValue" />
     <h5>Custom icons</h5>
-    <BitRating Icon="HeartFill" UnselectedIcon="Heart" @bind-Value="RatingDefaultValue" />
+    <BitRating Icon="HeartFill" AllowZeroStars="true" UnselectedIcon="Heart" @bind-Value="RatingOutsideValue" />
+    <br />
+    <BitButton OnClick="() => RatingOutsideValue = 0">Make Rating Empty</BitButton>
 </div>
 
 <hr />
