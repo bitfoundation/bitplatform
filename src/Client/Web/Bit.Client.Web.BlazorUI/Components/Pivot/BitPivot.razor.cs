@@ -12,9 +12,9 @@ namespace Bit.Client.Web.BlazorUI
         protected override string RootElementClass => "bit-pvt";
 
         private string selectedKey;
-        private OverflowBehavior _overflowBehavior = OverflowBehavior.None;
-        private LinkFormat _linkFormat = LinkFormat.Links;
-        private LinkSize _linkSize = LinkSize.Normal;
+        private OverflowBehavior overflowBehavior = OverflowBehavior.None;
+        private LinkFormat linkFormat = LinkFormat.Links;
+        private LinkSize linkSize = LinkSize.Normal;
 
         [Parameter]
         public string DefaultSelectedKey { get; set; } = "0";
@@ -25,10 +25,10 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter]
         public OverflowBehavior OverflowBehavior
         {
-            get => _overflowBehavior;
+            get => overflowBehavior;
             set
             {
-                _overflowBehavior = value;
+                overflowBehavior = value;
                 ClassBuilder.Reset();
             }
         }
@@ -36,10 +36,10 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter]
         public LinkFormat LinkFormat
         {
-            get => _linkFormat;
+            get => linkFormat;
             set
             {
-                _linkFormat = value;
+                linkFormat = value;
                 ClassBuilder.Reset();
             }
         }
@@ -47,10 +47,10 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter]
         public LinkSize LinkSize
         {
-            get => _linkSize;
+            get => linkSize;
             set
             {
-                _linkSize = value;
+                linkSize = value;
                 ClassBuilder.Reset();
             }
         }
@@ -77,7 +77,7 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter]
         public EventCallback<string> SelectedKeyChanged { get; set; }
 
-        public IDictionary<string, BitPivotItem> Items = new Dictionary<string, BitPivotItem>();
+        internal IDictionary<string, BitPivotItem> Items = new Dictionary<string, BitPivotItem>();
 
         protected override void OnInitialized()
         {
@@ -147,6 +147,15 @@ namespace Bit.Client.Web.BlazorUI
                 key++;
             }
             return key.ToString();
+        }
+
+        private string CheckItemSelection(BitPivotItem item)
+        {
+            return Items[SelectedKey] == item ? "selected-item" : string.Empty;
+        }
+        private string CheckItemVisibility(BitPivotItem item)
+        {
+            return item.Visibility == ComponentVisibility.Collapsed ? "display:none" : item.Visibility == ComponentVisibility.Hidden ? "visibility:hidden" : string.Empty;
         }
 
         internal void NotifyStateChanged() => StateHasChanged();

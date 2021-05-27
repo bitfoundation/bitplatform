@@ -101,19 +101,19 @@
 
             &:hover {
                 background-color: $CyanBlue10;
-                color: $white;
+                color: $White;
             }
         }
 
         .selected-item {
             background-color: $CyanBlue10;
-            color: $white;
+            color: $White;
             font-weight: 400;
             cursor: pointer;
 
             &:hover {
                 background-color: $DarkAlt;
-                color: $white;
+                color: $White;
             }
         }
     }

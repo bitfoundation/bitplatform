@@ -5,7 +5,7 @@
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
 
-    @if (Pivot.HeadersOnly is false && Pivot?.Items[Pivot.SelectedKey] == this && this.Visibility != ComponentVisibility.Hidden)
+    @if (Pivot?.HeadersOnly is false && Pivot?.Items[Pivot.SelectedKey] == this && this.Visibility != ComponentVisibility.Hidden)
     {
         @(ChildContent ?? BodyContent)
     }

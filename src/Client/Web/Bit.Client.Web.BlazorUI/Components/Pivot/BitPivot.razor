@@ -10,8 +10,8 @@
             @foreach (var item in Items)
             {
                 <div @onclick="() => ItemClicked(item)"
-                     class="@(Items[SelectedKey] == item.Value ? "selected-item" : string.Empty)"
-                     style="@(item.Value.Visibility == ComponentVisibility.Collapsed ? "display:none" : item.Value.Visibility == ComponentVisibility.Hidden ? "visibility:hidden" : string.Empty)">
+                     class="@(CheckItemSelection(item.Value))"
+                     style="@(CheckItemVisibility(item.Value))">
                     @if (item.Value.IconName is not null)
                     {
                         <i class="bit-icon bit-icon--@(item.Value.IconName)"></i>

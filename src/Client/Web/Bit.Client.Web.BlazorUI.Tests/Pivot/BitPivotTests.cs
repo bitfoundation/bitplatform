@@ -21,7 +21,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Pivot
          DataRow(Visual.Material, LinkFormat.Tabs, LinkSize.Normal, OverflowBehavior.Menu)]
         public void BitPivotShouldRepectLinkFormatClasses(Visual visual, LinkFormat linkFormat, LinkSize linkSize, OverflowBehavior overflowBehavior)
         {
-            var component = RenderComponent<BitPivot>(parameters =>
+            var component = RenderComponent<BitPivotTest>(parameters =>
             {
                 parameters.Add(p => p.Visual, visual);
                 parameters.Add(p => p.LinkFormat, linkFormat);
@@ -48,7 +48,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Pivot
          DataRow(true, true)]
         public Task BitPivotShouldRespectSelectKey(bool isEnabled, bool expectedResult)
         {
-            var component = RenderComponent<BitPivot>(parameters =>
+            var component = RenderComponent<BitPivotTest>(parameters =>
             {
                 parameters.AddCascadingValue(this);
                 parameters.AddChildContent<BitPivotItem>();
