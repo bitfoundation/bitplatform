@@ -6,4 +6,8 @@
     static getProperty(element: { [key: string]: any }, property: string): string | null {
         return element[property];
     }
+
+    static getHeight(element: { [key: string]: any }): string {
+        return element.clientHeight;
+    }
 }

@@ -7,11 +7,12 @@
         <label class="title">@Label</label>
     }
 
-    <div class="bit-slider-container">
-        <div class="bit-slider-box">
+    @if (Vertical)
+    {
+        <div class="bit-slider-container" @ref="ContainerRef">
             @if (OriginFromZero)
             {
-                <span class="zeroTick" style="left: @(Vertical ? "50%" : "calc(50% - 29px);")"></span>
+                <span class="zeroTick" style="top: calc(50% - -2px);"></span>
             }
 
             <input type="range" min="@Min" max="@Max" step="@Step" value="@Value" @onchange="@HandleChange" @oninput="@HandleInput" style="@styleProgress" />
@@ -21,5 +22,21 @@
         {
             <label class="valueLabel">@GetValueDisplay()</label>
         }
-    </div>
+    }
+    else
+    {
+        <div class="bit-slider-container" @ref="ContainerRef">
+            @if (OriginFromZero)
+            {
+                <span class="zeroTick" style="left: calc(50% - 29px);"></span>
+            }
+
+            <input type="range" min="@Min" max="@Max" step="@Step" value="@Value" @onchange="@HandleChange" @oninput="@HandleInput" style="@styleProgress" />
+
+            @if (ShowValue)
+            {
+                <label class="valueLabel">@GetValueDisplay()</label>
+            }
+        </div>
+    }
 </div>

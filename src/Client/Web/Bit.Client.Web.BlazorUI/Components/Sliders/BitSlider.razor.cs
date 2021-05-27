@@ -8,6 +8,9 @@ namespace Bit.Client.Web.BlazorUI
 {
     public partial class BitSlider
     {
+        //public ElementReference InputRef { get; set; }
+        public ElementReference ContainerRef { get; set; }
+        [Inject] public IJSRuntime JSRuntime { get; set; }
         //[Parameter] public string AriaLabel { get; set; }
         //[Parameter] public int DefaultLowerValue { get; set; }
         [Parameter] public int DefaultValue { get; set; }
@@ -38,6 +41,7 @@ namespace Bit.Client.Web.BlazorUI
         }
         private bool isReadOnly;
         private string styleProgress;
+        private int inputHeight;
 
         protected override void RegisterComponentClasses()
         {
@@ -60,9 +64,23 @@ namespace Bit.Client.Web.BlazorUI
             {
                 Value = DefaultValue;
             }
-            FillSlider();
+
+            if (!Vertical)
+            {
+                FillSlider();
+            }
 
             await base.OnInitializedAsync();
+        }
+
+        protected override async Task OnAfterRenderAsync(bool firstRender)
+        {
+            if (firstRender && Vertical)
+            {
+                inputHeight = await JSRuntime.GetHeight(ContainerRef);
+                FillSlider();
+            }
+            await base.OnAfterRenderAsync(firstRender);
         }
 
         protected virtual async Task HandleChange(ChangeEventArgs e)
@@ -89,7 +107,15 @@ namespace Bit.Client.Web.BlazorUI
 
         private void FillSlider()
         {
-            styleProgress = $"--value: {Value}; --min: {Min}; --max: {Max};";
+            if (Vertical)
+            {
+                styleProgress = $"--value: {Value}; --min: {Min}; --max: {Max}; width: {inputHeight}px; transform: rotate(270deg) translateX(-{(inputHeight - 12)}px);";
+                StateHasChanged();
+            }
+            else
+            {
+                styleProgress = $"--value: {Value}; --min: {Min}; --max: {Max};";
+            }
         }
 
         private string GetValueDisplay()
