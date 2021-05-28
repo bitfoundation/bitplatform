@@ -22,7 +22,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
         public BitPivotItem SelectedPivotItem { get; set; }
         public void PivotSelectedKeyChanged(string key)
         {
-            SelectedPivotItemKey = key;
+            OverridePivotSelectedKey = key;
         }
 
         public void TogglePivotItemVisobility()

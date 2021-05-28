@@ -107,14 +107,8 @@ namespace Bit.Client.Web.BlazorUI
 
             await OnLinkClick.InvokeAsync(item.Value);
 
-            if (SelectedKeyChanged.HasDelegate)
-            {
-                await SelectedKeyChanged.InvokeAsync(item.Key);
-            }
-            else
-            {
-                SelectedKey = item.Key;
-            }
+            if (SelectedKeyChanged.HasDelegate is false) return;
+            SelectedKey = item.Key;
         }
 
         internal void RegisterOption(BitPivotItem item)
