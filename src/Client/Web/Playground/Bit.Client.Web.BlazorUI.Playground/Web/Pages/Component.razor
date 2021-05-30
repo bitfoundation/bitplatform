@@ -1,4 +1,5 @@
 ﻿@page "/component"
+
 <h1>Bit Components</h1>
 
 <hr />
@@ -35,7 +36,7 @@
     <BitButton IsEnabled="false">
         Disabled
     </BitButton>
-    <BitButton IsEnabled="false">
+    <BitButton IsEnabled="false" AllowDisabledFocus="false">
         <label>This text is from a label element</label>
     </BitButton>
 
@@ -54,6 +55,7 @@
                        ButtonStyle="ButtonStyle.Standard">
     </BitCompoundButton>
     <BitCompoundButton IsEnabled="false"
+                       AllowDisabledFocus="false"
                        Text="Disabled"
                        AriaDescription="Detailed description used for screen reader."
                        SecondaryText="This Button is a disabled compound button">
@@ -76,7 +78,7 @@
 
     <h3>Icon Button</h3>
     <BitIconButton IconName="Emoji2" />
-    <BitIconButton IconName="Emoji2" IsEnabled="false" />
+    <BitIconButton IconName="Emoji2" AllowDisabledFocus="false" IsEnabled="false" />
 
     <hr />
 
@@ -88,7 +90,7 @@
     <h3>Action Button</h3>
     <div class="action-btn-container">
         <BitActionButton IconName="AddFriend">Create account</BitActionButton>
-        <BitActionButton IsEnabled="false" IconName="UserRemove">Remove user</BitActionButton>
+        <BitActionButton AllowDisabledFocus="false" IsEnabled="false" IconName="UserRemove">Remove user</BitActionButton>
     </div>
 
     <hr />
@@ -297,17 +299,22 @@
 <div class="rating-container">
     <h2>Rating</h2>
     <h5>Large stars</h5>
-    <BitRating DefaultRating="5" Size="RatingSize.Large" />
+    <BitRating Size="RatingSize.Large" @bind-Value="RatingLargeValue" />
     <h5>Small stars, with 0 stars allowed</h5>
-    <BitRating AllowZeroStars="true" />
+    <BitRating AllowZeroStars="true" @bind-Value="RatingSmallValue" />
     <h5>10 small stars</h5>
-    <BitRating Max="10" />
+    <div>
+        <BitRating Max="10" OnChange="@(arg => OnRatingChange(arg))" @bind-Value="RatingBoundValue" />
+        <span>@RatingValue stars selected</span>
+    </div>
     <h5>Disabled</h5>
-    <BitRating DefaultRating="5" IsEnabled="false" />
+    <BitRating IsEnabled="false" @bind-Value="RatingReadOnlyValue" />
     <h5>ReadOnly</h5>
-    <BitRating DefaultRating="5" IsReadonly="true" />
+    <BitRating IsReadonly="true" @bind-Value="RatingReadOnlyValue" />
     <h5>Custom icons</h5>
-    <BitRating Icon="HeartFill" UnselectedIcon="Heart" />
+    <BitRating Icon="HeartFill" AllowZeroStars="true" UnselectedIcon="Heart" @bind-Value="RatingOutsideValue" />
+    <br />
+    <BitButton OnClick="() => RatingOutsideValue = 0">Make Rating Empty</BitButton>
 </div>
 
 
