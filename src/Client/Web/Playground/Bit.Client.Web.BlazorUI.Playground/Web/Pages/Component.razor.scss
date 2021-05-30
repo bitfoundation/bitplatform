@@ -41,3 +41,13 @@
     white-space: nowrap;
     line-height: 44px;
 }
+
+.rating-container {
+    > div {
+        display: inline-flex;
+
+        > span {
+            margin-left: 10px;
+        }
+    }
+}
