@@ -7,7 +7,7 @@ namespace Bit.Client.Web.BlazorUI
     public partial class BitBasicList<TItem>
     {
         [Parameter] public ICollection<TItem> Items { get; set; }
-        [Parameter] public int? ItemPerPage { get; set; }        
+        [Parameter] public int? ItemPerPage { get; set; }
         [Parameter] public string Role { get; set; } = "list";
         [Parameter] public bool Virtualize { get; set; } = true;
         [Parameter] public string? LoadingText { get; set; }
@@ -28,7 +28,7 @@ namespace Bit.Client.Web.BlazorUI
                         break;
                     case nameof(ItemPerPage):
                         ItemPerPage = (int?)parameter.Value;
-                        break;                   
+                        break;
                     case nameof(Role):
                         Role = (string)parameter.Value;
                         break;
