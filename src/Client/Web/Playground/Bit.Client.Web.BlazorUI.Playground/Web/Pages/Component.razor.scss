@@ -31,3 +31,23 @@
 .spinner-positioning {
     display: inline-block;
 }
+
+.bit-nav-wrapped-link a {
+    white-space: normal;
+    line-height: inherit;
+}
+
+.bit-nav-simple-link a {
+    white-space: nowrap;
+    line-height: 44px;
+}
+
+.rating-container {
+    > div {
+        display: inline-flex;
+
+        > span {
+            margin-left: 10px;
+        }
+    }
+}
