@@ -79,7 +79,7 @@
     <h3>Icon Button</h3>
     <BitIconButton IconName="Emoji2" />
     <BitIconButton IconName="Emoji2" AllowDisabledFocus="false" IsEnabled="false" />
-    
+
     <hr />
 
     <h3>Icon Button with Tooltip</h3>
@@ -419,16 +419,47 @@
 </div>
 <div class="basic-list">
     <h2>BitList</h2>
-    <h3>Basic List</h3>
-    <div style="height:500px;overflow:auto">
-        <BitBasicList Items="people" LoadingText="please wait data is loading..." Virtualize="true" ItemPerPage="20">
-            <RowTemplate Context="person">
-                <div style=" border: 2px #8a8886 solid; border-radius: 10px; padding: 5px 20px; margin: 10px;">
-                    <p>Id : <strong >@person.Id</strong></p>
-                    <p>Full Name :<strong>@person.FirstName @person.LastName</strong>  </p>
-                    <p>Job: <strong>@person.Job</strong></p>
-                </div>                    
-            </RowTemplate>
-        </BitBasicList>
-    </div>
+    <h3>Basic List use virtualization</h3>
+    <BitBasicList Items="people" LoadingText="please wait data is loading..." Virtualize="true">
+        <RowTemplate Context="person">
+            <div style=" border: 2px #8a8886 solid; border-radius: 10px; padding: 5px 20px; margin: 10px;">
+                <p>Id : <strong>@person.Id</strong></p>
+                <p>Full Name :<strong>@person.FirstName @person.LastName</strong>  </p>
+                <p>Job: <strong>@person.Job</strong></p>
+            </div>
+        </RowTemplate>
+    </BitBasicList>
+    <br />
+    <h3>Basic List without virtualization</h3>
+    <BitBasicList Items="people" Virtualize="false">
+        <RowTemplate Context="person">
+            <div style=" border: 2px #8a8886 solid; border-radius: 10px; padding: 5px 20px; margin: 10px;">
+                <p>Id : <strong>@person.Id</strong></p>
+                <p>Full Name :<strong>@person.FirstName @person.LastName</strong>  </p>
+                <p>Job: <strong>@person.Job</strong></p>
+            </div>
+        </RowTemplate>
+    </BitBasicList>
+    <br />
+    <h3>Basic List with custom role and class</h3>
+    <BitBasicList Items="people" Virtualize="true" Role="list" Class="lst-custom-style">
+        <RowTemplate Context="person">
+            <div style=" border: 2px #8a8886 solid; border-radius: 10px; padding: 5px 20px; margin: 10px;">
+                <p>Id : <strong>@person.Id</strong></p>
+                <p>Full Name :<strong>@person.FirstName @person.LastName</strong>  </p>
+                <p>Job: <strong>@person.Job</strong></p>
+            </div>
+        </RowTemplate>
+    </BitBasicList>
+    <br />
+    <h3>Basic List with overscan count</h3>
+    <BitBasicList Items="people" Virtualize="true" OverscanCount="5" >
+        <RowTemplate Context="person">
+            <div style=" border: 2px #8a8886 solid; border-radius: 10px; padding: 5px 20px; margin: 10px;">
+                <p>Id : <strong>@person.Id</strong></p>
+                <p>Full Name :<strong>@person.FirstName @person.LastName</strong>  </p>
+                <p>Job: <strong>@person.Job</strong></p>
+            </div>
+        </RowTemplate>
+    </BitBasicList>
 </div>

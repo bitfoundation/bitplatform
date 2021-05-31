@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 
@@ -6,16 +7,16 @@ namespace Bit.Client.Web.BlazorUI
 {
     public partial class BitBasicList<TItem>
     {
-        [Parameter] public ICollection<TItem> Items { get; set; }
+        [Parameter] public ICollection<TItem> Items { get; set; } = Array.Empty<TItem>();
         [Parameter] public int? ItemPerPage { get; set; }
         [Parameter] public string Role { get; set; } = "list";
         [Parameter] public bool Virtualize { get; set; } = true;
         [Parameter] public string? LoadingText { get; set; }
         [Parameter] public int OverscanCount { get; set; } = 3;
         [Parameter] public int ItemSize { get; set; } = 50;
-        [Parameter] public RenderFragment<TItem> RowTemplate { get; set; }
+        [Parameter] public RenderFragment<TItem>? RowTemplate { get; set; }
 
-        protected override string RootElementClass => "bit-basic-list";
+        protected override string RootElementClass => "bit-bsc-lst";
 
         public override Task SetParametersAsync(ParameterView parameters)
         {

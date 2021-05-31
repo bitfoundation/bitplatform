@@ -3,7 +3,7 @@
 @typeparam TItem
 
 <div @ref="RootElement"
-     style="@StyleBuilder.Value"
+     style="@StyleBuilder.Value height:400px"
      class="@ClassBuilder.Value"
      role="@Role">
 
@@ -15,7 +15,7 @@
                     OverscanCount="@OverscanCount">
 
             <ItemContent>
-                @RowTemplate(item)
+                @RowTemplate!(item)
             </ItemContent>
 
             <Placeholder>
@@ -39,7 +39,7 @@
     {
         @foreach (var item in Items)
         {
-            <div>@RowTemplate(item)</div>
+            <div>@RowTemplate!(item)</div>
         }
     }
 
