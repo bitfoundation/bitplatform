@@ -55,11 +55,13 @@ namespace Bit.Client.Web.BlazorUI
         private string GetLinkClass(NavLink navLink)
         {
             var enabledClass = navLink.Disabled ? "disabled" : "enabled";
-            var hasUrlClass = string.IsNullOrWhiteSpace(navLink.Url) ? "nourl" : "hasurl";
+            var hasUrlClass = navLink.Url.HasNoValue() ? "nourl" : "hasurl";
 
             var mainStyle = $"bit-nav-link-{enabledClass}-{hasUrlClass}-{VisualClassRegistrar()}";
             var selected = navLink.Key == SelectedKey ? $"bit-nav-selected-{VisualClassRegistrar()}" : "";
-            var hasIcon = string.IsNullOrWhiteSpace(navLink.Icon) ? $"bit-nav-has-not-icon-{VisualClassRegistrar()}" : $"bit-nav-has-icon-{VisualClassRegistrar()}";
+            var hasIcon = navLink.Icon.HasNoValue()
+                            ? $"bit-nav-has-not-icon-{VisualClassRegistrar()}"
+                            : $"bit-nav-has-icon-{VisualClassRegistrar()}";
 
             return $"{mainStyle} {selected} {hasIcon}";
         }

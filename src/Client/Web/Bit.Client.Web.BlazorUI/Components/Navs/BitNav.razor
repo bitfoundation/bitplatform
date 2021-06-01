@@ -66,16 +66,15 @@
                tabindex="-1"
                onclick="@(navLink.Disabled ? "return false;" : "")"
                target="@(MapNavLinkTargetTypeToString(navLink.TargetType))"
-               style="padding: 0px 20px 0px @(((navLink.Depth * 14)+(string.IsNullOrWhiteSpace(navLink.Icon) ? 27 : 3)).ToString())px;"
+               style="padding: 0px 20px 0px @(((navLink.Depth * 14)+(navLink.Icon.HasNoValue() ? 27 : 3)).ToString())px;"
                class="@GetLinkClass(navLink)">
 
                 <span>
-                    @if (!string.IsNullOrWhiteSpace(navLink.Icon))
+                    @if (navLink.Icon.HasValue())
                     {
                         <i class=@($"bit-icon bit-icon--{navLink.Icon}")></i>
                     }
                     <div>@navLink.Name</div>
-
                 </span>
             </a>
             @if (@navLink.Links?.Any() != null && navLink.IsExpanded)
@@ -86,14 +85,12 @@
                         childLink.Depth = navLink.Depth + 1;
                         if (childTemplate is not null)
                             @childTemplate(childLink)
-                    }
+                        }
                 </ul>
             }
         </div>
-
     </li>
     );
     }
-
 
 }
