@@ -3,7 +3,8 @@
 .labels-container,
 .search-box-container,
 .rating-container,
-.spinner-positioning {
+.spinner-positioning,
+.pivot-container {
     font-family: FluentFont;
 }
 
@@ -30,4 +31,8 @@
 
 .spinner-positioning {
     display: inline-block;
+}
+
+.pivot-container {
+    margin: 20px 10px;
 }

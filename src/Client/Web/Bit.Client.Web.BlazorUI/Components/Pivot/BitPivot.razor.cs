@@ -15,6 +15,7 @@ namespace Bit.Client.Web.BlazorUI
         private OverflowBehavior overflowBehavior = OverflowBehavior.None;
         private LinkFormat linkFormat = LinkFormat.Links;
         private LinkSize linkSize = LinkSize.Normal;
+        private bool hasSetSelectedKey;
 
         [Parameter]
         public string DefaultSelectedKey { get; set; } = "0";
@@ -70,6 +71,7 @@ namespace Bit.Client.Web.BlazorUI
             {
                 if (value == selectedKey) return;
                 selectedKey = value;
+                _ = SelectedKeyChanged.InvokeAsync(value);
             }
         }
 
@@ -82,6 +84,50 @@ namespace Bit.Client.Web.BlazorUI
         {
             selectedKey = selectedKey ?? DefaultSelectedKey;
             base.OnInitialized();
+        }
+
+        protected override Task OnParametersSetAsync()
+        {
+            return base.OnParametersSetAsync();
+        }
+
+        public override Task SetParametersAsync(ParameterView parameters)
+        {
+            foreach (ParameterValue parameter in parameters)
+            {
+                switch (parameter.Name)
+                {
+                    case nameof(DefaultSelectedKey):
+                        DefaultSelectedKey = (string)parameter.Value;
+                        break;
+
+                    case nameof(ChildContent):
+                        ChildContent = (RenderFragment)parameter.Value;
+                        break;
+
+                    case nameof(OverflowBehavior):
+                        OverflowBehavior = (OverflowBehavior)parameter.Value;
+                        break;
+
+                    case nameof(LinkFormat):
+                        LinkFormat = (LinkFormat)parameter.Value;
+                        break;
+                    case nameof(LinkSize):
+                        LinkSize = (LinkSize)parameter.Value;
+                        break;
+                    case nameof(HeadersOnly):
+                        HeadersOnly = (bool)parameter.Value;
+                        break;
+                    case nameof(OnLinkClick):
+                        OnLinkClick = (EventCallback<BitPivotItem>)parameter.Value;
+                        break;
+                    case nameof(SelectedKey):
+                        SelectedKey = (string)parameter.Value;
+                        hasSetSelectedKey = true;
+                        break;
+                }
+            }
+            return base.SetParametersAsync(parameters);
         }
 
         protected override void RegisterComponentClasses()
@@ -106,14 +152,9 @@ namespace Bit.Client.Web.BlazorUI
 
             await OnLinkClick.InvokeAsync(item.Value);
 
-            if (SelectedKeyChanged.HasDelegate)
-            {
-                await SelectedKeyChanged.InvokeAsync(item.Key);
-            }
-            else
-            {
-                SelectedKey = item.Key;
-            }
+            if (hasSetSelectedKey && SelectedKeyChanged.HasDelegate is false) return;
+            SelectedKey = item.Key;
+
         }
 
         internal void RegisterOption(BitPivotItem item)
