@@ -74,7 +74,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Navs
         {
             var com = RenderComponent<BitNavTest>(parameters =>
             {
-                parameters.Add(p => p.NavLinks, new List<NavLink> { "key" });
+                parameters.Add(p => p.NavLinks, new List<NavLink> { new NavLink { Name = "Test", Key = "key" } });
                 parameters.Add(p => p.Visual, visual);
                 parameters.Add(p => p.SelectedKey, selectedKey);
             });
@@ -103,7 +103,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Navs
       ]
         public void BitNavChildrenTest(Visual visual, bool disabled, bool hasUrl)
         {
-            string? url = hasUrl ? "https://www.google.com/" : null;
+            string url = hasUrl ? "https://www.google.com/" : null;
             var navLink = new List<NavLink> { new NavLink { Name = "test", Key = "key", Disabled = disabled, Url = url } };
             var com = RenderComponent<BitNavTest>(parameters =>
             {
@@ -129,7 +129,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Navs
         ]
         public void BitNavChildren_HasIconTest(Visual visual, bool hasIcon)
         {
-            string? icon = hasIcon ? "News" : null;
+            string icon = hasIcon ? "News" : null;
             var navLink = new List<NavLink> { new NavLink { Name = "test", Key = "key", Icon = icon } };
             var com = RenderComponent<BitNavTest>(parameters =>
             {

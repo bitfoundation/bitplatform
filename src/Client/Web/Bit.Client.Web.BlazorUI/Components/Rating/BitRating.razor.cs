@@ -9,13 +9,18 @@ namespace Bit.Client.Web.BlazorUI
         private bool isReadOnly;
         private int ratingValue;
 
-        public string[]? RatingColorClass { get; set; }
-        public string[]? RatingIcon { get; set; }
+        private string[] RatingColorClasses { get; set; } = Array.Empty<string>();
+
+        public string[] RatingIcons { get; set; } = Array.Empty<string>();
 
         [Parameter] public bool AllowZeroStars { get; set; }
+
         [Parameter] public int Max { get; set; } = 5;
+
         [Parameter] public string Icon { get; set; } = "FavoriteStarFill";
+
         [Parameter] public string UnselectedIcon { get; set; } = "FavoriteStar";
+
         [Parameter] public RatingSize Size { get; set; }
 
         [Parameter]
@@ -46,6 +51,7 @@ namespace Bit.Client.Web.BlazorUI
         }
 
         [Parameter] public EventCallback<int> ValueChanged { get; set; }
+
         [Parameter] public EventCallback<int> OnChange { get; set; }
 
         private string? _colorClass;
@@ -70,15 +76,15 @@ namespace Bit.Client.Web.BlazorUI
             _min = AllowZeroStars == true ? 0 : 1;
             Max = Max > _min ? Max : _min;
 
-            RatingColorClass = new string[Max + 1];
-            RatingIcon = new string[Max + 1];
+            RatingColorClasses = new string[Max + 1];
+            RatingIcons = new string[Max + 1];
 
             FillRating(Value > 0 ? Value : _min);
 
             await base.OnInitializedAsync();
         }
 
-        protected virtual async Task HandleClick(int index)
+        private async Task HandleClick(int index)
         {
             if ((_min == 1 && index == 0) || IsReadonly is true || IsEnabled is false || ValueChanged.HasDelegate is false) return;
 
@@ -89,7 +95,7 @@ namespace Bit.Client.Web.BlazorUI
 
         private void FillRating(int index)
         {
-            if (RatingIcon != null && RatingColorClass != null)
+            if (RatingIcons != null && RatingColorClasses != null)
             {
                 if (AllowZeroStars is false && index == 0)
                 {
@@ -100,16 +106,16 @@ namespace Bit.Client.Web.BlazorUI
 
                 for (var item = 0; item < index; item++)
                 {
-                    RatingIcon![item] = Icon;
-                    RatingColorClass![item] = _colorClass!;
+                    RatingIcons![item] = Icon;
+                    RatingColorClasses![item] = _colorClass!;
                 }
             }
         }
 
         private void EmptyRating()
         {
-            Array.Fill(RatingIcon!, UnselectedIcon);
-            Array.Fill(RatingColorClass!, _colorClass);
+            Array.Fill(RatingIcons!, UnselectedIcon);
+            Array.Fill(RatingColorClasses!, _colorClass);
         }
     }
 }

@@ -43,8 +43,10 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
 
             Assert.IsTrue(bitIconITag.ClassList.Contains($"bit-icon--{iconName}"));
 
-            if (string.IsNullOrEmpty(toolTip) is false)
+            if (toolTip.HasValue())
+            {
                 Assert.IsTrue(bitIconButton.GetAttribute("title").Contains(toolTip));
+            }
 
             bitIconButton.Click();
 

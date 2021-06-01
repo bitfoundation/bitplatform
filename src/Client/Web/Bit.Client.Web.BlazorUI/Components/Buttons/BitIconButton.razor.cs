@@ -6,14 +6,19 @@ namespace Bit.Client.Web.BlazorUI
 {
     public partial class BitIconButton
     {
+
         private int? tabIndex;
 
         [Parameter] public bool AllowDisabledFocus { get; set; } = true;
-        [Parameter] public string AriaDescription { get; set; }
+        [Parameter] public string? AriaDescription { get; set; }
         [Parameter] public bool AriaHidden { get; set; }
-        [Parameter] public string AriaLabel { get; set; }
-        [Parameter] public string IconName { get; set; }
-        [Parameter] public string ToolTip { get; set; }
+
+        [Parameter] public string? AriaLabel { get; set; }
+
+        [Parameter] public string? IconName { get; set; }
+
+        [Parameter] public string? ToolTip { get; set; }
+
         [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
         protected override string RootElementClass => "bit-ico-btn";

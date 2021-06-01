@@ -14,7 +14,6 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
         private bool IsMessageBarHidden = false;
         private TextFieldType InputType = TextFieldType.Password;
 
-        private int RatingValue = 2;
         private int RatingBoundValue = 2;
         private int RatingLargeValue = 3;
         private int RatingSmallValue = 4;
@@ -198,9 +197,6 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
             IsMessageBarHidden = true;
         }
 
-        private void OnRatingChange(int value)
-        {
-            RatingValue = value;
-        }
+        private string RatingChangedText = "";
     }
 }

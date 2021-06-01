@@ -304,8 +304,9 @@
     <BitRating AllowZeroStars="true" @bind-Value="RatingSmallValue" />
     <h5>10 small stars</h5>
     <div>
-        <BitRating Max="10" OnChange="@(arg => OnRatingChange(arg))" @bind-Value="RatingBoundValue" />
-        <span>@RatingValue stars selected</span>
+        <BitRating Max="10" OnChange="@(v => RatingChangedText = $"Rating value changed to {v}")" @bind-Value="RatingBoundValue" />
+        <div>@RatingChangedText</div>
+        <div>RatingBoundValue: @RatingBoundValue</div>
     </div>
     <h5>Disabled</h5>
     <BitRating IsEnabled="false" @bind-Value="RatingReadOnlyValue" />
@@ -313,8 +314,10 @@
     <BitRating IsReadonly="true" @bind-Value="RatingReadOnlyValue" />
     <h5>Custom icons</h5>
     <BitRating Icon="HeartFill" AllowZeroStars="true" UnselectedIcon="Heart" @bind-Value="RatingOutsideValue" />
+    <span>RatingOutsideValue: @RatingOutsideValue</span>
     <br />
     <BitButton OnClick="() => RatingOutsideValue = 0">Make Rating Empty</BitButton>
+    <BitButton OnClick="() => RatingOutsideValue = 5">Make Rating Full</BitButton>
 </div>
 
 <hr />
@@ -422,4 +425,3 @@
         </HeaderTemplate>
     </BitNav>
 </div>
-
