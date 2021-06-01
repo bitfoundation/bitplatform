@@ -93,11 +93,11 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
-        protected virtual async Task HandleOnKeyDown(KeyboardEventArgs k)
+        private async Task HandleOnKeyDown(KeyboardEventArgs eventArgs)
         {
             if (IsEnabled)
             {
-                if (k.Code == "Escape")
+                if (eventArgs.Code == "Escape")
                 {
                     Value = string.Empty;
                     await InputRef.FocusAsync();

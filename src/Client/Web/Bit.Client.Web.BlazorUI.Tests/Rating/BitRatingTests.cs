@@ -82,28 +82,20 @@ namespace Bit.Client.Web.BlazorUI.Tests.Rating
         }
 
         [DataTestMethod,
-            DataRow("HeartFill", "Heart", 10, 7, false),
-            DataRow("HeartFill", "Heart", 10, 0, true),
-            DataRow("HeartFill", "Heart", 10, 0, false)]
-        public void BitRatingShouldRespectCustomIcon(string icon, string unselectedIcon, int max, int defaultRating, bool allowZeroStars)
+            DataRow("HeartFill", "Heart", 10, false),
+            DataRow("HeartFill", "Heart", 10, true),
+            DataRow("HeartFill", "Heart", 10, false)]
+        public void BitRatingShouldRespectCustomIcon(string icon, string unselectedIcon, int max, bool allowZeroStars)
         {
             var component = RenderComponent<BitRatingTest>(parameters =>
             {
                 parameters.Add(p => p.Icon, icon);
                 parameters.Add(p => p.UnselectedIcon, unselectedIcon);
                 parameters.Add(p => p.Max, max);
-                parameters.Add(p => p.DefaultRating, defaultRating);
                 parameters.Add(p => p.AllowZeroStars, allowZeroStars);
             });
 
-            if (allowZeroStars)
-            {
-                defaultRating = defaultRating > 0 ? defaultRating : 0;
-            }
-            else
-            {
-                defaultRating = defaultRating > 0 ? defaultRating : 1;
-            }
+            int defaultRating = allowZeroStars ? 0 : 1;
 
             var bitRating = component.FindAll("button");
             var bitRatingIcon = component.FindAll("i");
@@ -117,39 +109,38 @@ namespace Bit.Client.Web.BlazorUI.Tests.Rating
         }
 
         [DataTestMethod,
-            DataRow(10, 7, false),
-            DataRow(10, 0, true),
-            DataRow(10, 0, false)]
-        public void BitRatingShouldRespectIcon(int max, int defaultRating, bool allowZeroStars)
+            DataRow(10, 3, true, false, 3),
+            DataRow(10, 2, false, false, 1),
+            DataRow(10, 0, true, true, 1),
+            DataRow(10, 4, false, true, 1),
+            DataRow(10, 0, true, false, 1)]
+        public void BitRatingShouldRespectClickIndex(int max, int clickedIndex, bool isEnabled, bool isReadonly, int expectedResult)
         {
-            var icon = "FavoriteStarFill";
-            var unselectedIcon = "FavoriteStar";
-
             var component = RenderComponent<BitRatingTest>(parameters =>
             {
                 parameters.Add(p => p.Max, max);
-                parameters.Add(p => p.DefaultRating, defaultRating);
-                parameters.Add(p => p.AllowZeroStars, allowZeroStars);
+                parameters.Add(p => p.IsEnabled, isEnabled);
+                parameters.Add(p => p.IsReadonly, isReadonly);
             });
 
-            if (allowZeroStars)
+            var bitRatingButtons = component.FindAll("button");
+
+            if (clickedIndex <= 0)
             {
-                defaultRating = defaultRating > 0 ? defaultRating : 0;
-            }
-            else
-            {
-                defaultRating = defaultRating > 0 ? defaultRating : 1;
+                clickedIndex = 1;
             }
 
-            var bitRating = component.FindAll("button");
-            var bitRatingIcon = component.FindAll("i");
+            bitRatingButtons[clickedIndex - 1].Click();
 
-            var filledBitRatingIconCount = bitRatingIcon.Where(r => r.ClassList.Contains($"bit-icon--{icon}")).Count();
-            var unselectedBitRatingIconCount = bitRatingIcon.Where(r => r.ClassList.Contains($"bit-icon--{unselectedIcon}")).Count();
+            var bitRatingIcons = component.FindAll("i");
 
-            Assert.AreEqual(bitRating.Count(), max);
-            Assert.AreEqual(filledBitRatingIconCount, defaultRating);
-            Assert.AreEqual(unselectedBitRatingIconCount, (max - defaultRating));
+            var filledBitRatingIconCount = bitRatingIcons.Where(r => r.ClassList.Contains("bit-icon--FavoriteStarFill")).Count();
+            var unselectedBitRatingIconCount = bitRatingIcons.Where(r => r.ClassList.Contains("bit-icon--FavoriteStar")).Count();
+
+            Assert.AreEqual(bitRatingButtons.Count(), max);
+
+            Assert.AreEqual(filledBitRatingIconCount, expectedResult);
+            Assert.AreEqual(unselectedBitRatingIconCount, (max - expectedResult));
         }
     }
 }

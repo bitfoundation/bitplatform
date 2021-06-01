@@ -11,7 +11,8 @@
        aria-hidden="@AriaHidden"
        title="@Title"
        target="@Target"
-       href="@Href">
+       href="@Href"
+       tabindex="@tabIndex">
         @ChildContent
     </a>
 }
@@ -23,6 +24,7 @@ else
             aria-label="@AriaLabel"
             aria-describedby="@AriaDescription"
             aria-hidden="@AriaHidden"
+            tabindex="@tabIndex"
             @onclick="HandleOnClick">
         @ChildContent
     </button>
