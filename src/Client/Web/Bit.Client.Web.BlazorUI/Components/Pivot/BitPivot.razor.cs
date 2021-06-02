@@ -11,7 +11,7 @@ namespace Bit.Client.Web.BlazorUI
     {
         protected override string RootElementClass => "bit-pvt";
 
-        private string selectedKey;
+        private string? selectedKey;
         private OverflowBehavior overflowBehavior = OverflowBehavior.None;
         private LinkFormat linkFormat = LinkFormat.Links;
         private LinkSize linkSize = LinkSize.Normal;

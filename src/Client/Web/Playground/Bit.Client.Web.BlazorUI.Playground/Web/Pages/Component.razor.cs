@@ -19,7 +19,8 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
         public string SelectedPivotItemKey { get; set; } = "1";
         public BitPivotItem BitPivotItem { get; set; }
         public ComponentVisibility PivotItemVisibility { get; set; }
-        public BitPivotItem SelectedPivotItem { get; set; }
+        public BitPivotItem SelectedPivotKey { get; set; } = new BitPivotItem { ItemKey = "Foo" };
+
         public void PivotSelectedKeyChanged(string key)
         {
             OverridePivotSelectedKey = key;
