@@ -18,7 +18,7 @@ namespace Bit.Client.Web.BlazorUI.Utils
     {
         private bool _dirty = true;
         private string _value = string.Empty;
-        private List<Func<string>> _registrars = new List<Func<string>>();
+        private List<Func<string?>> _registrars = new();
 
         protected abstract char Separator { get; }
 
@@ -34,7 +34,7 @@ namespace Bit.Client.Web.BlazorUI.Utils
             }
         }
 
-        public ElementAttributeBuilder Register(Func<string> registrar)
+        public ElementAttributeBuilder Register(Func<string?> registrar)
         {
             _registrars.Add(registrar);
             return this;
@@ -47,7 +47,7 @@ namespace Bit.Client.Web.BlazorUI.Utils
 
         private void Build()
         {
-            _value = string.Join(Separator, _registrars.Select(g => g()).Where(s => string.IsNullOrWhiteSpace(s) is false));
+            _value = string.Join(Separator, _registrars.Select(g => g()).Where(s => s.HasValue()));
             _dirty = false;
         }
     }
