@@ -189,11 +189,11 @@ namespace Bit.Client.Web.BlazorUI
             return key.ToString();
         }
 
-        private string CheckItemSelection(BitPivotItem item)
+        private string GetItemClass(BitPivotItem item)
         {
             return Items[SelectedKey] == item ? "selected-item" : string.Empty;
         }
-        private string CheckItemVisibility(BitPivotItem item)
+        private string GetItemStyle(BitPivotItem item)
         {
             return item.Visibility == ComponentVisibility.Collapsed ? "display:none" : item.Visibility == ComponentVisibility.Hidden ? "visibility:hidden" : string.Empty;
         }
