@@ -95,20 +95,19 @@ namespace Bit.Client.Web.BlazorUI
 
         private void FillRating(int index)
         {
-            if (RatingIcons != null && RatingColorClasses != null)
+            if (RatingIcons.Length == 0 || RatingColorClasses.Length == 0) return;
+
+            if (AllowZeroStars is false && index == 0)
             {
-                if (AllowZeroStars is false && index == 0)
-                {
-                    index = 1;
-                }
+                index = 1;
+            }
 
-                EmptyRating();
+            EmptyRating();
 
-                for (var item = 0; item < index; item++)
-                {
-                    RatingIcons![item] = Icon;
-                    RatingColorClasses![item] = _colorClass!;
-                }
+            for (var item = 0; item < index; item++)
+            {
+                RatingIcons![item] = Icon;
+                RatingColorClasses![item] = _colorClass!;
             }
         }
 
