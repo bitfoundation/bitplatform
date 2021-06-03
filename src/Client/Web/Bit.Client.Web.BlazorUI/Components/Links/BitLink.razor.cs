@@ -6,11 +6,11 @@ namespace Bit.Client.Web.BlazorUI
 {
     public partial class BitLink
     {
-        [Parameter] public string Target { get; set; }
+        [Parameter] public string? Target { get; set; }
 
-        [Parameter] public string Href { get; set; } = string.Empty;
+        [Parameter] public string? Href { get; set; } = string.Empty;
 
-        [Parameter] public RenderFragment ChildContent { get; set; }
+        [Parameter] public RenderFragment? ChildContent { get; set; }
 
         [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 

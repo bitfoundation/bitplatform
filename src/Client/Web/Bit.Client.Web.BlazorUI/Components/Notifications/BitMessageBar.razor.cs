@@ -7,9 +7,9 @@ namespace Bit.Client.Web.BlazorUI
     {
         private MessageBarStyle messageBarStyle = MessageBarStyle.Default;
 
-        [Parameter] public RenderFragment ChildContent { get; set; }
+        [Parameter] public RenderFragment? ChildContent { get; set; }
 
-        [Parameter] public string MessageBarIconName { get; set; }
+        [Parameter] public string? MessageBarIconName { get; set; }
 
         [Parameter] public string DismissIconName { get; set; } = "Clear";
 
@@ -20,7 +20,6 @@ namespace Bit.Client.Web.BlazorUI
         public bool ElementTruncateState { get; set; } = true;
 
         [Parameter] public bool IsMultiline { get; set; } = false;
-
 
         [Parameter]
         public MessageBarStyle MessageBarStyle
@@ -58,18 +57,23 @@ namespace Bit.Client.Web.BlazorUI
                 case MessageBarStyle.Default:
                     MessageBarIconName = "Info";
                     break;
+
                 case MessageBarStyle.Error:
                     MessageBarIconName = "ErrorBadge";
                     break;
+
                 case MessageBarStyle.Blocked:
                     MessageBarIconName = "Blocked2";
                     break;
+
                 case MessageBarStyle.Success:
                     MessageBarIconName = "Completed";
                     break;
+
                 case MessageBarStyle.Warning:
                     MessageBarIconName = "ErrorBadge";
                     break;
+
                 case MessageBarStyle.Severe:
                     MessageBarIconName = "Warning";
                     break;
