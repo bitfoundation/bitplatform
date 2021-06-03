@@ -44,7 +44,25 @@ namespace Bit.Client.Web.BlazorUI.Tests.Lists
         }
 
 
+        //[DataTestMethod]
+        //[DynamicData(nameof(GetTestData), DynamicDataSourceType.Method)]
+        //public void MyTest(IEnumerable<string> myStrings,int itemCount)
+        //{
+        //    var component = RenderComponent<BitBasicListTest>();
+        //    var bitList = component.Find(".bit-basic-list");
+        //    int comItemCount = bitList.ChildElementCount;
 
+        //    Assert.AreEqual(comItemCount + 2, itemCount + 2);
+        //}
+
+        //public static IEnumerable<object[]> GetTestData()
+        //{
+        //    yield return new object[] {
+        //        new List<Person>() {
+        //            new Person{ FirstName="1",LastName="1",Job="1",Id=1}
+        //        }
+        //    };
+        //}
 
 
     }

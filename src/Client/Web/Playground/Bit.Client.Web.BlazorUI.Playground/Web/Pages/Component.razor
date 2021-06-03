@@ -420,7 +420,7 @@
 <div class="basic-list">
     <h2>BitList</h2>
     <h3>Basic List use virtualization</h3>
-    <BitBasicList Items="people" LoadingText="please wait data is loading..." Virtualize="true">
+    <BitBasicList Items="people" LoadingText="please wait data is loading..." Virtualize="false"  PageHeight="400" ItemPerPage="15">
         <RowTemplate Context="person">
             <div style=" border: 2px #8a8886 solid; border-radius: 10px; padding: 5px 20px; margin: 10px;">
                 <p>Id : <strong>@person.Id</strong></p>
@@ -429,7 +429,7 @@
             </div>
         </RowTemplate>
     </BitBasicList>
-    <br />
+    @*<br />
     <h3>Basic List without virtualization</h3>
     <BitBasicList Items="people" Virtualize="false">
         <RowTemplate Context="person">
@@ -461,5 +461,5 @@
                 <p>Job: <strong>@person.Job</strong></p>
             </div>
         </RowTemplate>
-    </BitBasicList>
+    </BitBasicList>*@
 </div>

@@ -9,19 +9,23 @@ class Bit {
     }
 
     static getHeight(selector: string): number | null {
+        console.log("start get ");
         const element = document.querySelector(selector);
-        let height = null;
+        console.log("element:", element);
+        let height = 0;
         if (element) {
-            height = element.clientHeight;
+            height = element?.clientHeight;
+            console.log("height :", height );
             return height;
         }
         else {
-            return null;
+            return 0;
         }
     }
     static addClass(selector: string, className: string ) {
 
         const element = document.querySelector(selector);
+        console.log("element for add:", element);
         const childElements = element?.children;
         if (childElements) {
             for (let i = 0; i < childElements.length; i++) {

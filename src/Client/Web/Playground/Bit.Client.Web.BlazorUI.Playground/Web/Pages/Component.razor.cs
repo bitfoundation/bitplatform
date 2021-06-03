@@ -197,7 +197,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
         protected override void OnInitialized()
         {
             base.OnInitialized();
-            for (int i = 1; i < 8001; i++)
+            for (int i = 1; i < 201; i++)
             {
                 people.Add(new Person
                 {

@@ -19,10 +19,10 @@ namespace Microsoft.JSInterop
         {
             return await jsRuntime.InvokeAsync<decimal>("Bit.getHeight", selector);
         }
-        
-        public static async Task<decimal> AddClass(this IJSRuntime jsRuntime, string selector,string className)
+
+        public static async Task AddClass(this IJSRuntime jsRuntime, string selector, string className)
         {
-            return await jsRuntime.InvokeAsync<decimal>("Bit.addClass", selector,className);
+            await jsRuntime.InvokeVoidAsync("Bit.addClass", selector, className);
         }
     }
 }
