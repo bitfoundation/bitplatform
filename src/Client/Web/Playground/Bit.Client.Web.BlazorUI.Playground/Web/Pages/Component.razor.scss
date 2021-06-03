@@ -3,7 +3,8 @@
 .labels-container,
 .search-box-container,
 .rating-container,
-.spinner-positioning {
+.spinner-positioning,
+.pivot-container {
     font-family: FluentFont;
 }
 
@@ -49,4 +50,9 @@
             margin-left: 10px;
         }
     }
+}
+
+
+.pivot-container {
+    margin: 20px 10px;
 }
