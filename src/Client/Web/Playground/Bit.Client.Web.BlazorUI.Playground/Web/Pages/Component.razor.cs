@@ -14,6 +14,12 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
         private bool IsMessageBarHidden = false;
         private TextFieldType InputType = TextFieldType.Password;
 
+        private int RatingBoundValue = 2;
+        private int RatingLargeValue = 3;
+        private int RatingSmallValue = 4;
+        private int RatingReadOnlyValue = 5;
+        private int RatingOutsideValue = 5;
+
         private readonly List<NavLink> BasicNavLinks = new()
         {
             new NavLink
@@ -185,10 +191,32 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
             }
         };
 
+        #region PivotSamples
+
+        public string OverridePivotSelectedKey { get; set; } = "1";
+        public string SelectedPivotItemKey { get; set; } = "1";
+        public BitPivotItem BitPivotItem { get; set; }
+        public ComponentVisibility PivotItemVisibility { get; set; }
+        public BitPivotItem SelectedPivotKey { get; set; } = new BitPivotItem { ItemKey = "Foo" };
+
+        public void PivotSelectedKeyChanged(string key)
+        {
+            OverridePivotSelectedKey = key;
+        }
+
+        public void TogglePivotItemVisobility()
+        {
+            PivotItemVisibility = PivotItemVisibility == ComponentVisibility.Visible ? ComponentVisibility.Collapsed : ComponentVisibility.Visible;
+        }
+
+        #endregion 
+
         private void HideMessageBar(MouseEventArgs args)
 
         {
             IsMessageBarHidden = true;
         }
+
+        private string RatingChangedText = "";
     }
 }
