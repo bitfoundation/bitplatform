@@ -1,0 +1,412 @@
+﻿@layout ComponentLayout
+
+@page "/component/button"
+
+<h2>Button</h2>
+
+<div class="card">
+    <p>Fluent UI's robust, up-to-date web controls are built with the blazor. Look through the control list to see the building blocks that are available using Fluent UI.</p>
+</div>
+
+<h2>Usage</h2>
+<div class="warpper card">
+    <div class="container">
+        <div class="box-left">
+            <h3>Visibility</h3>
+            <hr />
+            <BitButton Visibility="ComponentVisibility.Visible">Visible Button</BitButton>
+            <br />
+            <span>Hidden Button: </span>[<BitButton Visibility="ComponentVisibility.Hidden">Hidden Button</BitButton>]
+            <br />
+            <span>Collapsed Button: </span>[<BitButton Visibility="ComponentVisibility.Collapsed">Collapsed Button</BitButton>]
+        </div>
+        <div class="box-right">
+            <h4>Code</h4>
+            <hr />
+            <p>
+                &lt<span class="dark-green">BitButton Visibility="</span><span class="light-green">ComponentVisibility</span>.Visible"<span>></span><span>Visible Button</span><span>&lt/</span><span class="dark-green">BitButton</span><span>&gt;</span>
+            </p>
+            <p>
+                &lt<span class="dark-green">BitButton Hidden="</span><span class="light-green">ComponentHidden</span>.Hidden"<span>></span><span>Hidden Button</span><span>&lt/</span><span class="dark-green">BitButton</span><span>&gt;</span>
+            </p>
+            <p>
+                &lt<span class="dark-green">BitButton Visibility="</span><span class="light-green">ComponentVisibility</span>.Collapsed"<span>></span><span>Collapsed Button</span><span>&lt/</span><span class="dark-green">BitButton</span><span>&gt;</span>
+            </p>
+        </div>
+    </div>
+    <div class="container">
+        <div class="box-left">
+            <h3>Style & Class</h3>
+            <hr />
+            <BitButton Style="color:aqua">
+                Styled Button
+            </BitButton>
+            <BitButton Class="custom-button">
+                Classed Button
+            </BitButton>
+        </div>
+        <div class="box-right">
+            <h4>Code</h4>
+            <hr />
+            <p>
+                &lt<span class="dark-green">BitButton Style="</span><span>color:aqua"</span><span>></span>Styled Button<span>&lt/</span><span class="dark-green">BitButton</span><span>&gt;</span>
+            </p>
+            <p>
+                &lt<span class="dark-green">BitButton Class="</span><span>custom-button"</span><span>></span>Classed Button<span>&lt/</span><span class="dark-green">BitButton</span><span>&gt;</span>
+            </p>
+        </div>
+    </div>
+    <div class="container">
+        <div class="box-left">
+            <h3>BitButton</h3>
+            <hr />
+            <BitButton IsEnabled="true">
+                Primary
+            </BitButton>
+            <BitButton ButtonStyle="ButtonStyle.Standard" IsEnabled="true">
+                Standard
+            </BitButton>
+            <BitButton IsEnabled="false">
+                Disabled
+            </BitButton>
+            <BitButton IsEnabled="false" AllowDisabledFocus="false">
+                <label>This text is from a label element</label>
+            </BitButton>
+        </div>
+        <div class="box-right">
+            <h4>Code</h4>
+            <hr />
+            <p>
+                &lt<span class="dark-green">BitButton IsEnabled="</span><span class="light-blue">true"</span><span>></span>Primary<span>&lt/</span><span class="dark-green">BitButton</span><span>&gt;</span>
+            </p>
+            <p>
+                &lt<span class="dark-green">BitButton ButtonStyle="</span><span class="light-green">ButtonStyle</span><span>.Standard"<span class="dark-green"> IsEnabled="</span></span><span class="light-blue">true"</span><span>></span>Standard<span>&lt/</span><span class="dark-green">BitButton</span><span>&gt;</span>
+            </p>
+            <p>
+                &lt<span class="dark-green">BitButton IsEnabled="</span><span class="light-blue">false"</span><span>></span>Disabled<span>&lt/</span><span class="dark-green">BitButton</span><span>&gt;</span>
+            </p>
+            <p>
+                &lt<span class="dark-green">BitButton IsEnabled="</span><span class="light-blue">false"</span><span class="dark-green"> AllowDisabledFocus="</span><span class="light-blue">false"</span><span>></span>&lt<span class="light-blue">label</span><span>></span>This text is from a label element<span>&lt<span class="light-blue">label</span><span>/></span><span>&lt/</span>BitButton</span><span>&gt;</span>
+            </p>
+        </div>
+    </div>
+    <div class="container">
+        <div class="box-left">
+            <h3>BitCompoundButton</h3>
+            <hr />
+            <BitCompoundButton IsEnabled="true"
+                               Text="Primary"
+                               AriaLabel="Detailed label used for screen reader."
+                               SecondaryText="This Button is compound button">
+            </BitCompoundButton>
+            <BitCompoundButton IsEnabled="true"
+                               Text="Standard"
+                               AriaHidden="true"
+                               SecondaryText="This Button is compound button"
+                               ButtonStyle="ButtonStyle.Standard">
+            </BitCompoundButton>
+            <BitCompoundButton IsEnabled="false"
+                               AllowDisabledFocus="false"
+                               Text="Disabled"
+                               AriaDescription="Detailed description used for screen reader."
+                               SecondaryText="This Button is a disabled compound button">
+            </BitCompoundButton>
+        </div>
+        <div class="box-right">
+            <h4>Code</h4>
+            <hr />
+            <p>
+                &lt<span class="dark-green">BitCompoundButton IsEnabled="</span><span class="light-blue">true"</span><span class="dark-green"> Text="</span><span>Primary"</span><span class="dark-green"> AriaLabel=</span><span>"Detailed label used for screen reader."</span><span class="dark-green"> SecondaryText</span>="This Button is compound button"><span>&lt/</span><span class="dark-green">BitCompoundButton</span><span>&gt;</span>
+            </p>
+            <p>
+                &lt<span class="dark-green">BitCompoundButton IsEnabled="</span><span class="light-blue">true"</span><span class="dark-green"> Text="</span><span>Primary"</span><span class="dark-green"> AriaHidden=</span><span class="light-blue">true</span><span class="dark-green"> SecondaryText</span>="This Button is compound button"<span class="dark-green"> ButtonStyle="</span><span class="light-green">ButtonStyle</span>
+                .Standard"<span>&lt/</span><span class="dark-green">BitCompoundButton</span><span>&gt;</span>
+            </p>
+            <p>
+                &lt<span class="dark-green">BitCompoundButton IsEnabled="</span><span class="light-blue">false"</span><span class="dark-green"> Text="</span><span>Disabled"</span><span class="dark-green"> AriaDescription=</span><span>"Detailed description used for screen reader."</span><span class="dark-green"> SecondaryText</span>="This Button is a disabled compound button"<span class="light-green"> ButtonStyle</span>
+                .Standard"<span>&lt/</span><span class="dark-green">BitCompoundButton</span><span>&gt;</span>
+            </p>
+        </div>
+    </div>
+    <div class="container">
+        <div class="box-left">
+            <h3>Button with Aria for Screen Reader</h3>
+            <hr />
+            <BitButton AriaDescription="Detailed description used for screen reader.">
+                Button with Aria Description
+            </BitButton>
+            <BitButton AriaLabel="Detailed label used for screen reader.">
+                Button with Aria Label
+            </BitButton>
+            <BitButton AriaHidden="true">
+                Button with Aria Hidden
+            </BitButton>
+        </div>
+        <div class="box-right">
+            <h4>Code</h4>
+            <hr />
+            <p>
+                &lt<span class="dark-green">BitButton AriaDescription="</span><span>Detailed description used for screen reader.">Button with Aria Description</span><span>&lt/</span><span class="dark-green">BitButton</span><span>&gt;</span>
+            </p>
+            <p>
+                &lt<span class="dark-green">BitButton AriaLabel="</span><span>Detailed label used for screen reader.">Button with Aria Label</span><span>&lt/</span><span class="dark-green">BitButton</span><span>&gt;</span>
+            </p>
+            <p>
+                &lt<span class="dark-green">BitButton AriaHidden="</span><span class="light-blue">true"</span>>Button with Aria Hidden<span>&lt/</span><span class="dark-green">BitButton</span><span>&gt;</span>
+            </p>
+        </div>
+    </div>
+    <div class="container">
+        <div class="box-left">
+            <h3>Icon Button</h3>
+            <hr />
+            <BitIconButton IconName="Emoji2" />
+            <BitIconButton IconName="Emoji2" AllowDisabledFocus="false" IsEnabled="false" />
+        </div>
+        <div class="box-right">
+            <h4>Code</h4>
+            <hr />
+            <p>
+                &lt<span class="dark-green">BitIconButton IconName="</span>Emoji2"><span>&lt/</span><span class="dark-green">BitButton</span><span>&gt;</span>
+            </p>
+            <p>
+                &lt<span class="dark-green">BitIconButton IconName="</span>Emoji2" <span class="dark-green">AllowDisabledFocus="</span><span class="light-blue">false"</span><span class="dark-green"> IsEnabled="</span><span class="light-blue">false"></span><span>&lt/</span><span class="dark-green">BitButton</span><span>&gt;</span>
+            </p>
+        </div>
+    </div>
+    <div class="container">
+        <div class="box-left">
+            <h3>Icon Button with Tooltip</h3>
+            <hr />
+            <BitIconButton IconName="Emoji2" ToolTip="I'm Happy" />
+        </div>
+        <div class="box-right">
+            <h4>Code</h4>
+            <hr />
+            <p>
+                &lt<span class="dark-green">BitIconButton IconName="</span>Emoji2"<span class="dark-green"> ToolTip=</span><span>"I'm Happy"><span>&lt/</span></span><span class="dark-green">BitButton</span><span>&gt;</span>
+            </p>
+        </div>
+    </div>
+    <div class="container">
+        <div class="box-left">
+            <h3>Action Button</h3>
+            <hr />
+            <div class="action-btn-container">
+                <BitActionButton IconName="AddFriend">Create account</BitActionButton>
+                <BitActionButton AllowDisabledFocus="false" IsEnabled="false" IconName="UserRemove">Remove user</BitActionButton>
+            </div>
+        </div>
+        <div class="box-right">
+            <h4>Code</h4>
+            <hr />
+            <p>
+                &lt<span class="dark-green">BitActionButton IconName="</span>AddFriend">Create account<span>&lt/</span><span class="dark-green">BitButton</span><span>&gt;</span>
+            </p>
+            <p>
+                &lt<span class="dark-green">BitActionButton IconName="</span>UserRemove" <span class="dark-green">AllowDisabledFocus="</span><span class="light-blue">false"</span><span class="dark-green"> IsEnabled="</span><span class="light-blue">false"></span>Remove user<span>&lt/</span><span class="dark-green">BitButton</span><span>&gt;</span>
+            </p>
+        </div>
+    </div>
+    <hr />
+    <div class="container">
+        <div class="box-left">
+            <h3>Button-like Anchor</h3>
+            <hr />
+            <div class="m-t-15">
+                <BitButton Title="Primary" Target="_blank" Href="https://github.com/bitfoundation/bitframework">
+                    Open Bit Foundation In New Tab
+                </BitButton>
+                <BitButton Title="Standard" Href="https://github.com/bitfoundation/bitframework" ButtonStyle="ButtonStyle.Standard">
+                    Go To Bit Foundation
+                </BitButton>
+                <BitButton Target="_self" Href="https://github.com/bitfoundation/bitframework" IsEnabled="false">
+                    <span>Bit Foundation From Span</span>
+                </BitButton>
+            </div>
+        </div>
+        <div class="box-right">
+            <h4>Code</h4>
+            <hr />
+            <p>
+                &lt<span class="dark-green">BitButton Title="</span><span>Primary"</span><span class="dark-green"> Target="</span><span>_blank"</span><span class="dark-green"> Href=</span><span>"https://github.com/bitfoundation/bitframework"></span>Open Bit Foundation In New Tab<span>&lt/</span><span class="dark-green">BitCompoundButton</span><span>&gt;</span>
+            </p>
+            <p>
+                &lt<span class="dark-green">BitButton Title="</span><span>Standard"</span><span class="dark-green"> ButtonStyle="</span><span class="light-green">ButtonStyle</span><span>.Standard"</span><span class="dark-green"> Href=</span><span>"https://github.com/bitfoundation/bitframework"></span>Go To Bit Foundation<span>&lt/</span><span class="dark-green">BitCompoundButton</span><span>&gt;</span>
+            </p>
+            <p>
+                &lt<span class="dark-green">BitButton Target="</span><span>_self"</span><span class="dark-green"> Href=</span><span>"https://github.com/bitfoundation/bitframework"</span><span class="dark-green"> IsEnabled="</span><span class="light-blue">false"&lt</span><span class="light-blue">span></span>Bit Foundation From Span<span class="light-blue">&ltspan></span><span>&lt/</span><span class="dark-green">BitCompoundButton</span><span>&gt;</span>
+            </p>
+        </div>
+    </div>
+</div>
+<h2>Implementation</h2>
+<div class="card">
+    <table>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Default value</th>
+            <th>Description</th>
+        </tr>
+        <tr>
+            <td>allowDisabledFocus</td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>Whether the button can have focus in disabled mode.</td>
+        </tr>
+        <tr>
+            <td>ariaDescription</td>
+            <td>string</td>
+            <td></td>
+            <td>Detailed description of the button for the benefit of screen readers. Besides the compound button, other button types will need more information provided to screen reader.</td>
+        </tr>
+        <tr>
+            <td>ariaHidden</td>
+            <td>boolean</td>
+            <td></td>
+            <td>If true, add an aria-hidden attribute instructing screen readers to ignore the element.</td>
+        </tr>
+        <tr>
+            <td>ariaLabel</td>
+            <td>string</td>
+            <td></td>
+            <td>The aria label of the button for the benefit of screen readers.</td>
+        </tr>
+        <tr>
+            <td>buttonStyle</td>
+            <td>buttonstyle</td>
+            <td>primary</td>
+            <td>The style of button.</td>
+        </tr>
+        <tr>
+            <td>className</td>
+            <td>string</td>
+            <td></td>
+            <td>If provided, additional class name to provide on the root element.</td>
+        </tr>
+        <tr>
+            <td>childContent</td>
+            <td>renderfragment</td>
+            <td></td>
+            <td>Any custom tag or text the developer wishes to associate with the button.</td>
+        </tr>
+        <tr>
+            <td>ref</td>
+            <td>elementreference</td>
+            <td></td>
+            <td>Access the public methods and properties of the component.</td>
+        </tr>
+        <tr>
+            <td>href</td>
+            <td>string</td>
+            <td></td>
+            <td>If provided, this component will be rendered as an anchor.</td>
+        </tr>
+        <tr>
+            <td>iconName</td>
+            <td>string</td>
+            <td></td>
+            <td>The attribute for the icon shown in the button.</td>
+        </tr>
+        <tr>
+            <td>isEnabled</td>
+            <td>boolean</td>
+            <td>true</td>
+            <td>Whether the button is enabled.</td>
+        </tr>
+        <tr>
+            <td>target</td>
+            <td>string</td>
+            <td></td>
+            <td>target of an anchor.</td>
+        </tr>
+        <tr>
+            <td>text</td>
+            <td>string</td>
+            <td></td>
+            <td>button text for compound button.</td>
+        </tr>
+        <tr>
+            <td>title</td>
+            <td>string</td>
+            <td></td>
+            <td>Optional title for this button.</td>
+        </tr>
+        <tr>
+            <td>toolTip</td>
+            <td>string</td>
+            <td></td>
+            <td>Optional tooltip for icon button.</td>
+        </tr>
+        <tr>
+            <td>secondaryText</td>
+            <td>string</td>
+            <td></td>
+            <td>Description of the action this button takes. Only used for compound buttons.</td>
+        </tr>
+        <tr>
+            <td>styles</td>
+            <td>string</td>
+            <td></td>
+            <td>Custom styling for individual elements within the button DOM.</td>
+        </tr>
+        <tr>
+            <td>uniqueId</td>
+            <td>guid</td>
+            <td></td>
+            <td>Unique ID to identify the item. Typically a duplicate of key value.</td>
+        </tr>
+        <tr>
+            <td>visibility</td>
+            <td>componentVisibility</td>
+            <td>visible</td>
+            <td>Whether the button is visible, hidden ,collapsed.</td>
+        </tr>
+    </table>
+    <div id="button-style">
+        <h4>ButtonStyle</h4>
+        <hr />
+        <table>
+            <tr>
+                <th>Name</th>
+                <th>Value</th>
+                <th>Description</th>
+            </tr>
+            <tr>
+                <td>primary</td>
+                <td>0</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>standard</td>
+                <td>1</td>
+                <td></td>
+            </tr>
+        </table>
+    </div>
+    <h4 id="component-visibility">ComponentVisibility</h4>
+    <hr />
+    <table>
+        <tr>
+            <th>Name</th>
+            <th>Value</th>
+            <th>Description</th>
+        </tr>
+        <tr>
+            <td>visible</td>
+            <td>0</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>hidden</td>
+            <td>1</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>collapsed</td>
+            <td>2</td>
+            <td></td>
+        </tr>
+    </table>
+</div>
