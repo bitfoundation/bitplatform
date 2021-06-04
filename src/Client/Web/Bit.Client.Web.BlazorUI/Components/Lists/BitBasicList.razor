@@ -20,17 +20,17 @@
 
             <Placeholder>
                 @if (!string.IsNullOrEmpty(LoadingText))
-                    {
+                {
                     <p class="text-secondary">
                         @LoadingText
                     </p>
-                    }
-                    else
-                    {
-                    <p>
+                }
+                else
+                {
+                <p>
                         Loading&hellip;
                     </p>
-                    }
+                }
 
             </Placeholder>
         </Virtualize>
@@ -41,7 +41,6 @@
         {
             <div>@RowTemplate!(item)</div>
         }
-        <p>@PageHeight : page height</p>
     }
 
 </div>

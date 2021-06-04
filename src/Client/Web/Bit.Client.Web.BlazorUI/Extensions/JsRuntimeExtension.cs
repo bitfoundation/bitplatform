@@ -15,14 +15,14 @@ namespace Microsoft.JSInterop
             return await jsRuntime.InvokeAsync<string>("Bit.getProperty", element, property);
         }
 
-        public static async Task<decimal> GetHeight(this IJSRuntime jsRuntime, string selector)
-        {
-            return await jsRuntime.InvokeAsync<decimal>("Bit.getHeight", selector);
-        }
+        //public static async Task<decimal> GetHeight(this IJSRuntime jsRuntime, string selector)
+        //{
+        //    return await jsRuntime.InvokeAsync<decimal>("Bit.getHeight", selector);
+        //}
 
-        public static async Task AddClass(this IJSRuntime jsRuntime, string selector, string className)
-        {
-            await jsRuntime.InvokeVoidAsync("Bit.addClass", selector, className);
-        }
+        //public static async Task AddClass(this IJSRuntime jsRuntime, string selector, string className)
+        //{
+        //    await jsRuntime.InvokeVoidAsync("Bit.addClass", selector, className);
+        //}
     }
 }

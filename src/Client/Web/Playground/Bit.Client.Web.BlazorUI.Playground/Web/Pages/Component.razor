@@ -420,7 +420,7 @@
 <div class="basic-list">
     <h2>BitList</h2>
     <h3>Basic List use virtualization</h3>
-    <BitBasicList Items="people" LoadingText="please wait data is loading..." Virtualize="false"  PageHeight="400" ItemPerPage="15">
+    <BitBasicList Items="people[0]" Virtualize="false"  >
         <RowTemplate Context="person">
             <div style=" border: 2px #8a8886 solid; border-radius: 10px; padding: 5px 20px; margin: 10px;">
                 <p>Id : <strong>@person.Id</strong></p>
@@ -429,9 +429,9 @@
             </div>
         </RowTemplate>
     </BitBasicList>
-    @*<br />
+    <br />
     <h3>Basic List without virtualization</h3>
-    <BitBasicList Items="people" Virtualize="false">
+    <BitBasicList Items="people[1]" Virtualize="false">
         <RowTemplate Context="person">
             <div style=" border: 2px #8a8886 solid; border-radius: 10px; padding: 5px 20px; margin: 10px;">
                 <p>Id : <strong>@person.Id</strong></p>
@@ -442,7 +442,7 @@
     </BitBasicList>
     <br />
     <h3>Basic List with custom role and class</h3>
-    <BitBasicList Items="people" Virtualize="true" Role="list" Class="lst-custom-style">
+    <BitBasicList Items="people[0]" Virtualize="true" Role="list" Class="lst-custom-style">
         <RowTemplate Context="person">
             <div style=" border: 2px #8a8886 solid; border-radius: 10px; padding: 5px 20px; margin: 10px;">
                 <p>Id : <strong>@person.Id</strong></p>
@@ -452,8 +452,8 @@
         </RowTemplate>
     </BitBasicList>
     <br />
-    <h3>Basic List with overscan count</h3>
-    <BitBasicList Items="people" Virtualize="true" OverscanCount="5" >
+    <h3>Basic List with overscan count 30 </h3>
+    <BitBasicList Items="people[0]" Virtualize="true" OverscanCount="30" >
         <RowTemplate Context="person">
             <div style=" border: 2px #8a8886 solid; border-radius: 10px; padding: 5px 20px; margin: 10px;">
                 <p>Id : <strong>@person.Id</strong></p>
@@ -461,5 +461,5 @@
                 <p>Job: <strong>@person.Job</strong></p>
             </div>
         </RowTemplate>
-    </BitBasicList>*@
+    </BitBasicList>
 </div>

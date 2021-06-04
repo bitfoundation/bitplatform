@@ -1,4 +1,4 @@
-﻿<BitBasicList Items="people" LoadingText="@LoadingText" Virtualize="Virtualize" ItemPerPage="ItemPerPage" Role="@Role">
+﻿<BitBasicList Items="Items" LoadingText="@LoadingText" Virtualize="Virtualize" ItemPerPage="ItemPerPage" Role="@Role">
     <RowTemplate Context="person">
         <div style=" border: 2px #8a8886 solid; border-radius: 10px; padding: 5px 20px; margin: 10px;" class="testItem">
             <p>Id : <strong>@person.Id</strong></p>
@@ -20,21 +20,7 @@
     [Parameter] public int ItemSize { get; set; }
     [Parameter] public RenderFragment<Person> RowTemplate { get; set; }
 
-    private List<Person> people = new List<Person>();
-    protected override void OnInitialized()
-    {
-        base.OnInitialized();
-        for (int i = 0; i < 10; i++)
-        {
-            people.Add(new Person
-            {
-                Id = i,
-                FirstName = $"Person {i.ToString()}",
-                LastName = $"Person Family {i.ToString()}",
-                Job = $"Programmer {i.ToString()}"
-            });
-        }
-    }
+
     public class Person
     {
         public int Id { get; set; }
