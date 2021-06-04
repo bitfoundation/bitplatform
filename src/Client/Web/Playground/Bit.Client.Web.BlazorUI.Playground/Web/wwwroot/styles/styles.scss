@@ -40,7 +40,7 @@ p {
     position: sticky;
     top: 0;
 
-    .active {
+    .active > a {
         background-color: $DarkRed;
     }
 }
@@ -56,6 +56,7 @@ p {
 
     &:hover {
         text-decoration: none;
+        color: $White;
     }
 }
 
@@ -75,6 +76,10 @@ p {
     border: 1px solid $VeryLightPink;
     background-color: $White;
     box-shadow: 10px 10px 5px $White;
+
+    .desc {
+        font-size: 16px;
+    }
 }
 
 .main {
@@ -99,7 +104,7 @@ p {
     }
 }
 
-.warpper {
+.wrapper {
     margin-top: 20px;
 }
 
