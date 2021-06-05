@@ -242,7 +242,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
                 ItemType = DropDownItemType.Normal,
                 Text = "Orange",
                 Value = "f-ora",
-                IsDisabled = true
+                IsEnabled = false
             });
             items.Add(new DropDownItem()
             {

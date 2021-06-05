@@ -69,7 +69,7 @@ namespace Bit.Client.Web.BlazorUI
                 ? string.Empty
                 : $"{RootElementClass}-{FocusClass}-{VisualClassRegistrar()}");
 
-            ClassBuilder.Register(() => string.IsNullOrWhiteSpace(ExpandClass)
+            ClassBuilder.Register(() => ExpandClass.HasNoValue()
                 ? string.Empty
                 : $"{RootElementClass}-{ExpandClass}-{VisualClassRegistrar()}");
 
@@ -104,12 +104,12 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
-        protected virtual async Task HandleItemSelect(DropDownItem? selectedItem)
+        protected virtual async Task HandleItemClick(DropDownItem? selectedItem)
         {
             isOpen = false;
             if (selectedItem is not null)
             {
-                if (!selectedItem.IsDisabled)
+                if (!selectedItem.IsEnabled)
                 {
                     if (IsMultiSelect)
                     {
@@ -121,7 +121,7 @@ namespace Bit.Client.Web.BlazorUI
                     }
                     else
                     {
-                        ChangeAllItemsIsSelect(false);
+                        ChangeAllItemsIsSelected(false);
                         Text = selectedItem.Text;
                         selectedItem.IsSelected = true;
                     }
@@ -133,9 +133,8 @@ namespace Bit.Client.Web.BlazorUI
                 if (IsMultiSelect)
                 {
                     Text = string.Empty;
-                    for (int index = 0; index < Items.Count; index++)
+                    foreach (var item in Items)
                     {
-                        DropDownItem item = Items[index];
                         if (item.IsSelected)
                         {
                             if (Text.HasValue())
@@ -149,11 +148,10 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
-        internal void ChangeAllItemsIsSelect(bool value)
+        internal void ChangeAllItemsIsSelected(bool value)
         {
-            for (int index = 0; index < Items.Count; index++)
+            foreach (var item in Items)
             {
-                DropDownItem item = Items[index];
                 item.IsSelected = value;
             }
         }

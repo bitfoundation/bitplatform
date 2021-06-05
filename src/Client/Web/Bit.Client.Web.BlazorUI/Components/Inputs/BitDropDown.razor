@@ -19,9 +19,8 @@
     @if (isOpen)
     {
         <div>
-            @for (int index = 0; index < Items.Count; index++)
+            @foreach (DropDownItem item in Items)
             {
-                DropDownItem item = Items[index];
                 if (item.ItemType == DropDownItemType.Header)
                 {
                     <div class="@RootElementClass-head-@VisualClassRegistrar()">
@@ -33,8 +32,8 @@
                     @if (IsMultiSelect)
                     {
                         <BitCheckbox @bind-IsChecked="@item.IsSelected"
-                                     IsEnabled="@(!item.IsDisabled)"
-                                     OnChange="(isChecked) => HandleItemSelect(isChecked?item:null)">
+                                     IsEnabled="@(!item.IsEnabled)"
+                                     OnChange="(isChecked) => HandleItemClick(isChecked?item:null)">
                             @item.Text
                         </BitCheckbox>
                     }
@@ -45,8 +44,8 @@
                                            :"")"
                                 type="button"
                                 title="@item.Text"
-                                disabled=@item.IsDisabled
-                                @onclick="()=>HandleItemSelect(item)">
+                                disabled=@(!item.IsEnabled)
+                                @onclick="()=> HandleItemClick(item)">
                             @item.Text
                         </button>
                     }

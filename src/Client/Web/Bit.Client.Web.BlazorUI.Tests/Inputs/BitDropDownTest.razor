@@ -33,22 +33,22 @@
         items.Add(new ()
         {
             ItemType = DropDownItemType.Header,
-            IsDisabled = !ItemIsEnabled
+            IsEnabled = !ItemIsEnabled
         });
         items.Add(new()
         {
             ItemType = DropDownItemType.Normal,
-            IsDisabled = !ItemIsEnabled
+            IsEnabled = !ItemIsEnabled
         });
         items.Add(new()
         {
             ItemType = DropDownItemType.Normal,
-            IsDisabled = !ItemIsEnabled
+            IsEnabled = !ItemIsEnabled
         });
         items.Add(new()
         {
             ItemType = DropDownItemType.Divider,
-            IsDisabled = !ItemIsEnabled
+            IsEnabled = !ItemIsEnabled
         });
         return items;
     }
