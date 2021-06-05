@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
@@ -8,17 +7,21 @@ namespace Bit.Client.Web.BlazorUI
 {
     public partial class BitSearchBox
     {
-        private string inputValue;
+        private string? inputValue;
         private bool disableAnimation;
         private bool isUnderlined;
-        private bool inputHasFocus = false;
-        private string width;
+        private bool inputHasFocus;
+        private string? width;
 
         public ElementReference InputRef { get; set; }
 
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+
         [Inject] public IJSRuntime JSRuntime { get; set; }
 
-        [Parameter] public string Placeholder { get; set; }
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+
+        [Parameter] public string? Placeholder { get; set; }
 
         [Parameter] public string IconName { get; set; } = "Search";
 
@@ -27,7 +30,7 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public EventCallback<string> OnSearch { get; set; }
 
         [Parameter]
-        public string Value
+        public string? Value
         {
             get => inputValue;
             set
@@ -60,7 +63,7 @@ namespace Bit.Client.Web.BlazorUI
         }
 
         [Parameter]
-        public string Width
+        public string? Width
         {
             get => width;
             set
@@ -90,11 +93,11 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
-        protected virtual async Task HandleOnKeyDown(KeyboardEventArgs k)
+        private async Task HandleOnKeyDown(KeyboardEventArgs eventArgs)
         {
             if (IsEnabled)
             {
-                if (k.Code == "Escape")
+                if (eventArgs.Code == "Escape")
                 {
                     Value = string.Empty;
                     await InputRef.FocusAsync();
