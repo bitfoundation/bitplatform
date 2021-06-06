@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Bit.Client.Web.BlazorUI.Utils;
 using Microsoft.AspNetCore.Components;
 
@@ -11,6 +12,7 @@ namespace Bit.Client.Web.BlazorUI
         private string? @class;
         private bool isEnabled = true;
         private ComponentVisibility visibility;
+        private Dictionary<string, object>? arbitraryAttributes;
 
         protected bool Rendered { get; private set; }
 
@@ -76,6 +78,16 @@ namespace Bit.Client.Web.BlazorUI
                 visibility = value;
                 OnComponentVisibilityChanged(value);
                 StyleBuilder.Reset();
+            }
+        }
+
+        [Parameter(CaptureUnmatchedValues = true)]
+        public Dictionary<string, object>? ArbitraryAttributes
+        {
+            get => arbitraryAttributes;
+            set
+            {
+                arbitraryAttributes = value;
             }
         }
 
