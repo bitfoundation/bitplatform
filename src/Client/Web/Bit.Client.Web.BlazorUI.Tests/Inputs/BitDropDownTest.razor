@@ -1,9 +1,8 @@
 ﻿<BitDropDown IsEnabled="IsEnabled"
              IsMultiSelect="IsMultiSelect"
-             Items="GetDropDownItems()"
+             Items="Items"
              OnClick="ClickEvent"
              OnSelectItem="ChangeEvent">
-
 </BitDropDown>
 
 @code {
@@ -11,6 +10,7 @@
     [Parameter] public bool IsEnabled { get; set; } = true;
     [Parameter] public bool ItemIsEnabled { get; set; } = true;
     [Parameter] public bool IsMultiSelect { get; set; } = false;
+    [Parameter] public List<DropDownItem> Items { get; set; } = new List<DropDownItem>();
 
     public void ChangeEvent(DropDownItem e)
     {
@@ -25,31 +25,5 @@
     {
         CurrentCount++;
         Value = CurrentCount.ToString();
-    }
-
-    public List<DropDownItem> GetDropDownItems()
-    {
-        List<DropDownItem> items = new();
-        items.Add(new()
-        {
-            ItemType = DropDownItemType.Header,
-            IsEnabled = !ItemIsEnabled
-        });
-        items.Add(new()
-        {
-            ItemType = DropDownItemType.Normal,
-            IsEnabled = !ItemIsEnabled
-        });
-        items.Add(new()
-        {
-            ItemType = DropDownItemType.Normal,
-            IsEnabled = !ItemIsEnabled
-        });
-        items.Add(new()
-        {
-            ItemType = DropDownItemType.Divider,
-            IsEnabled = !ItemIsEnabled
-        });
-        return items;
     }
 }
