@@ -1,11 +1,13 @@
-﻿<BitDropDown IsEnabled="IsEnabled"
-             IsMultiSelect="IsMultiSelect"
-             Items="Items"
-             OnClick="ClickEvent"
-             OnSelectItem="ChangeEvent">
-</BitDropDown>
-
+﻿<CascadingValue Value="Visual">
+    <BitDropDown IsEnabled="IsEnabled"
+                 IsMultiSelect="IsMultiSelect"
+                 Items="Items"
+                 OnClick="ClickEvent"
+                 OnSelectItem="ChangeEvent">
+    </BitDropDown>
+</CascadingValue>
 @code {
+    [Parameter] public Visual Visual { get; set; }
     [Parameter] public string Value { get; set; }
     [Parameter] public bool IsEnabled { get; set; } = true;
     [Parameter] public bool ItemIsEnabled { get; set; } = true;
@@ -26,4 +28,4 @@
         CurrentCount++;
         Value = CurrentCount.ToString();
     }
-}
+    }
