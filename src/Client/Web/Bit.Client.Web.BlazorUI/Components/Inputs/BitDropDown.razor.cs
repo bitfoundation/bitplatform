@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
@@ -109,7 +108,7 @@ namespace Bit.Client.Web.BlazorUI
             isOpen = false;
             if (selectedItem is not null)
             {
-                if (!selectedItem.IsEnabled)
+                if (selectedItem.IsEnabled)
                 {
                     if (IsMultiSelect)
                     {
