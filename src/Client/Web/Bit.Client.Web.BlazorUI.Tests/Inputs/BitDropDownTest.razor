@@ -8,8 +8,8 @@
 
 @code {
     [Parameter] public string Value { get; set; }
-    [Parameter]public bool IsEnabled { get; set; } = true;
-    [Parameter]public bool ItemIsEnabled { get; set; } = true;
+    [Parameter] public bool IsEnabled { get; set; } = true;
+    [Parameter] public bool ItemIsEnabled { get; set; } = true;
     [Parameter] public bool IsMultiSelect { get; set; } = false;
 
     public void ChangeEvent(DropDownItem e)
@@ -30,7 +30,7 @@
     public List<DropDownItem> GetDropDownItems()
     {
         List<DropDownItem> items = new();
-        items.Add(new ()
+        items.Add(new()
         {
             ItemType = DropDownItemType.Header,
             IsEnabled = !ItemIsEnabled
