@@ -10,14 +10,14 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
     public class BitDropDownTests : BunitTestContext
     {
         [DataTestMethod,
-         DataRow(Visual.Fluent,true,1,true,"enabled"),
-         DataRow(Visual.Fluent,false,0,false,"disabled"),
+           DataRow(Visual.Fluent, true, 1, true, "enabled"),
+           DataRow(Visual.Fluent, false, 0, false, "disabled"),
 
-         DataRow(Visual.Cupertino,true,1,true,"enabled"),
-         DataRow(Visual.Cupertino,false,0,false,"disabled"),
+           DataRow(Visual.Cupertino, true, 1, true, "enabled"),
+           DataRow(Visual.Cupertino, false, 0, false, "disabled"),
 
-         DataRow(Visual.Material,true,1,true,"enabled"),
-         DataRow(Visual.Material,false,0,false,"disabled")
+           DataRow(Visual.Material, true, 1, true, "enabled"),
+           DataRow(Visual.Material, false, 0, false, "disabled")
         ]
         public async Task BitDropDownShouldRespectIsEnabled(Visual visual, bool isEnabled, int count, bool isCalloutOpen, string className)
         {
@@ -45,14 +45,14 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
         }
 
         [DataTestMethod,
-         DataRow(Visual.Fluent,true,2),
-         DataRow(Visual.Fluent,false,1),
+           DataRow(Visual.Fluent, true, 2),
+           DataRow(Visual.Fluent, false, 1),
 
-         DataRow(Visual.Cupertino,true,2),
-         DataRow(Visual.Cupertino,false,1),
-         
-         DataRow(Visual.Material,true,2),
-         DataRow(Visual.Material,false,1)
+           DataRow(Visual.Cupertino, true, 2),
+           DataRow(Visual.Cupertino, false, 1),
+
+           DataRow(Visual.Material, true, 2),
+           DataRow(Visual.Material, false, 1)
         ]
         public async Task BitDropDownItemsShouldRespectIsEnabled(Visual visual, bool isEnabled, int count)
         {
@@ -78,16 +78,16 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
         }
 
         [DataTestMethod,
-         DataRow(Visual.Fluent,true,2),
-         DataRow(Visual.Fluent,false,1),
+           DataRow(Visual.Fluent, true, 2),
+           DataRow(Visual.Fluent, false, 1),
 
-         DataRow(Visual.Cupertino,true,2),
-         DataRow(Visual.Cupertino,false,1),
+           DataRow(Visual.Cupertino, true, 2),
+           DataRow(Visual.Cupertino, false, 1),
 
-         DataRow(Visual.Material,true,2),
-         DataRow(Visual.Material,false,1)
+           DataRow(Visual.Material, true, 2),
+           DataRow(Visual.Material, false, 1)
         ]
-        public async Task BitDropDownMultiSelectShouldRespectIsEnabled(Visual visual,bool isEnabled, int count)
+        public async Task BitDropDownMultiSelectShouldRespectIsEnabled(Visual visual, bool isEnabled, int count)
         {
             Context.JSInterop.Mode = JSRuntimeMode.Loose;
             var items = new List<DropDownItem>

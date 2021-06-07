@@ -64,7 +64,7 @@ namespace Bit.Client.Web.BlazorUI
         protected override string RootElementClass => "bit-drp";
         protected override void RegisterComponentClasses()
         {
-            ClassBuilder.Register(() => string.IsNullOrWhiteSpace(FocusClass)
+            ClassBuilder.Register(() => FocusClass.HasNoValue()
                 ? string.Empty
                 : $"{RootElementClass}-{FocusClass}-{VisualClassRegistrar()}");
 
