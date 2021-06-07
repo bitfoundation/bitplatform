@@ -5,6 +5,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
 {
     public partial class Component
     {
+        private bool CheckBoxOnChangedValue= false;
         private bool IsCheckBoxChecked = false;
         private bool IsCheckBoxIndeterminate = true;
         private bool IsCheckBoxIndeterminateInCode = true;

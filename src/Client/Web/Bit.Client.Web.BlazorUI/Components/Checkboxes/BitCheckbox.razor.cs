@@ -61,6 +61,8 @@ namespace Bit.Client.Web.BlazorUI
 
         [Parameter] public EventCallback<bool> OnChange { get; set; }
 
+        private bool hasSetIsChecked { get; set; }
+
         protected override string RootElementClass => "bit-chb";
 
         protected override void RegisterComponentClasses()
@@ -87,12 +89,12 @@ namespace Bit.Client.Web.BlazorUI
 
             if (IsIndeterminate)
             {
-                if (IsIndeterminateChanged.HasDelegate is false) return;
+                if (hasSetIsChecked && IsIndeterminateChanged.HasDelegate is false) return;
                 IsIndeterminate = false;
             }
             else
             {
-                if (IsCheckedChanged.HasDelegate is false) return;
+                if (hasSetIsChecked && IsCheckedChanged.HasDelegate is false) return;
                 IsChecked = !IsChecked;
             }
 
@@ -107,6 +109,39 @@ namespace Bit.Client.Web.BlazorUI
             }
 
             await base.OnAfterRenderAsync(firstRender);
+        }
+
+        public override Task SetParametersAsync(ParameterView parameters)
+        {
+            foreach (ParameterValue parameter in parameters)
+            {
+                switch (parameter.Name)
+                {
+                    case nameof(IsChecked):
+                        hasSetIsChecked = true;
+                        IsChecked = (bool)parameter.Value;
+                        break;
+                    case nameof(IsCheckedChanged):
+                        IsCheckedChanged = (EventCallback<bool>)parameter.Value;
+                        break;
+                    case nameof(BoxSide):
+                        BoxSide = (BoxSide)parameter.Value;
+                        break;
+                    case nameof(IsIndeterminate):
+                        IsIndeterminate = (bool)parameter.Value;
+                        break;
+                    case nameof(IsIndeterminateChanged):
+                        IsIndeterminateChanged = (EventCallback<bool>)parameter.Value;
+                        break;
+                    case nameof(ChildContent):
+                        ChildContent = (RenderFragment?)parameter.Value;
+                        break;
+                    case nameof(OnChange):
+                        OnChange = (EventCallback<bool>)parameter.Value;
+                        break;
+                }
+            }
+            return base.SetParametersAsync(parameters);
         }
     }
 }
