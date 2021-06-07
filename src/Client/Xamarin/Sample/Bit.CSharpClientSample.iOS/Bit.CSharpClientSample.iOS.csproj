@@ -126,7 +126,7 @@
     <Reference Include="Xamarin.iOS" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Xamarin.Forms" Version="5.0.0.1931" />
+    <PackageReference Include="Xamarin.Forms" Version="5.0.0.2012" />
     <PackageReference Include="System.Reflection.Emit" Version="4.3.0" ExcludeAssets="All">
       <IncludeAssets>none</IncludeAssets>
     </PackageReference>

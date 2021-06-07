@@ -31,11 +31,11 @@
 		<PackageProjectUrl>https://github.com/bitfoundation/bitframework</PackageProjectUrl>
 		<PackageIconUrl>https://avatars.githubusercontent.com/u/22663390</PackageIconUrl>
 		<PackageReleaseNotes>https://github.com/bitfoundation/bitframework/releases/</PackageReleaseNotes>
-        <PackageVersion>$([System.DateTime]::Now.ToString(&quot;yyyy.MMdd.HHmm&quot;))</PackageVersion>
+        <PackageVersion>$([System.DateTime]::Now.ToString("yyyy.MMdd.HHmm"))</PackageVersion>
 
 		<!-- Version -->
-		<Version>$([System.DateTime]::Now.ToString(&quot;yyyy.MMdd.HHmm&quot;))</Version>
-		<AssemblyVersion>$([System.DateTime]::Now.ToString(&quot;yyyy.MMdd.HHmm&quot;))</AssemblyVersion>
+		<Version>$([System.DateTime]::Now.ToString("yyyy.MMdd.HHmm"))</Version>
+		<AssemblyVersion>$([System.DateTime]::Now.ToString("yyyy.MMdd.HHmm"))</AssemblyVersion>
 
 		<!-- Compile -->
 		<NeutralLanguage>en</NeutralLanguage>
@@ -67,8 +67,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="5.0.5" />
-        <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.2.4">
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="5.0.6" />
+        <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.3.2">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
