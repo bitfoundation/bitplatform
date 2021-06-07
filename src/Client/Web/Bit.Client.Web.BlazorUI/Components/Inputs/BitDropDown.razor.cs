@@ -35,12 +35,12 @@ namespace Bit.Client.Web.BlazorUI
         }
 
         [Parameter] public List<DropDownItem> Items { get; set; } = new List<DropDownItem>();
-        [Parameter] public string Placeholder { get; set; }
+        [Parameter] public string? Placeholder { get; set; }
 
         [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
         [Parameter] public EventCallback<DropDownItem> OnSelectItem { get; set; }
 
-        public string Text { get; set; }
+        public string? Text { get; set; }
 
         public string FocusClass
         {
