@@ -1,0 +1,12 @@
+﻿@namespace Bit.Client.Web.BlazorUI
+@inherits BitComponentBase
+
+<div @ref="RootElement"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value">
+
+    @if (Pivot?.HeadersOnly is false && Pivot?.Items[Pivot.SelectedKey] == this && this.Visibility != ComponentVisibility.Hidden)
+    {
+        @(ChildContent ?? BodyContent)
+    }
+</div>
