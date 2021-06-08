@@ -1,0 +1,63 @@
+﻿@namespace Bit.Client.Web.BlazorUI
+@inherits BitComponentBase
+
+<div @ref="RootElement"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value">
+    <div @ref="SaturationPickerRef"
+         @onmousedown="OnSaturationPickerMouseDown"
+         @onmouseup="() => SaturationPickerMouseDown = false"
+         @onmousemove="OnSaturationPickerMouseMove">
+        <div></div>
+        <div style=@($"background-color: {SaturationPickerBackground.ToRGB().ToCss()}")></div>
+        <div style=@($"top: {SaturationPickerThumbPosition?.Top}px; left: {SaturationPickerThumbPosition?.Left}px; background: {Color.ToCss(Alpha)};")>
+        </div>
+    </div>
+
+    <div>
+        <div>
+            <div @ref="HuePickerRef"
+                 @onmousedown="OnHuePickerMouseDown"
+                 @onmouseup="() => HuePickerMouseDown = false"
+                 @onmousemove="OnHuePickerMouseMove">
+                <div class="thumb" style=@($" left: {HuePickerThumbPosition?.Left}px;")></div>
+
+            </div>
+            <div>
+                <div @ref="AlphaPickerRef" style=@($"background:linear-gradient(to left,{Color.ToCss()} 0%,transparent 100%)")
+                     @onmousedown="OnAlphaPickerMouseDown"
+                     @onmouseup="() => AlphaPickerMouseDown = false"
+                     @onmousemove="OnAlphaPickerMouseMove">
+                    <div class="thumb" style=@($"left: {AlphaPickerThumbPosition?.Left}px;")></div>
+                </div>
+            </div>
+        </div>
+        <div style=@($"background: {Color.ToCss(Alpha)}")>
+        </div>
+    </div>
+
+    <div>
+        <div>
+            <label>Hex</label>
+            <input type="text" maxlength="6" value="@Color.ToHex().ColorCode" @onchange="HexCHanged" />
+        </div>
+
+        <div>
+            <label>Red</label>
+            <input type="number" min="0" max="255" value="@Color.Red" @onchange="(e) => UpdateColor(e.Value as double? ?? Color.Red)" />
+        </div>
+        <div>
+            <label>Green</label>
+            <input type="number" min="0" max="255" value="@Color.Green" @onchange="(e) => UpdateColor(null, Convert.ToDouble(e.Value.ToString()))" />
+        </div>
+        <div>
+            <label>Blue</label>
+
+            <input type="number" min="0" max="255" value="@Color.Blue" @onchange="(e) => UpdateColor(null, null, Convert.ToDouble(e.Value.ToString()))" />
+        </div>
+        <div>
+            <label>Alpha</label>
+            <input type="number" min="0" max="100" @bind-value="@Alpha" />
+        </div>
+    </div>
+</div>
