@@ -1,16 +1,18 @@
-﻿<BitBasicList Items="Items" LoadingText="@LoadingText" Virtualize="Virtualize" ItemPerPage="ItemPerPage" Role="@Role">
-    <RowTemplate Context="person">
-        <div style=" border: 2px #8a8886 solid; border-radius: 10px; padding: 5px 20px; margin: 10px;" class="testItem">
-            <p>Id : <strong>@person.Id</strong></p>
-            <p>Full Name :<strong>@person.FirstName @person.LastName</strong>  </p>
-            <p>Job: <strong>@person.Job</strong></p>
-        </div>
-    </RowTemplate>
-</BitBasicList>
-
+﻿<CascadingValue Value="Visual">
+    <BitBasicList Items="Items" LoadingText="@LoadingText" Virtualize="Virtualize" ItemPerPage="ItemPerPage" Role="@Role">
+        <RowTemplate Context="person">
+            <div style=" border:2px #8a8886 solid;border-radius:10px; padding:5px 20px; margin:10px;" class="testItem">
+                <p>Id: <strong>@person.Id</strong></p>
+                <p>Full Name:<strong>@person.FirstName @person.LastName</strong>  </p>
+                <p>Job: <strong>@person.Job</strong></p>
+            </div>
+        </RowTemplate>
+    </BitBasicList>
+</CascadingValue>
 
 
 @code {
+    [Parameter] public Visual Visual { get; set; }
     [Parameter] public ICollection<Person> Items { get; set; }
     [Parameter] public int? ItemPerPage { get; set; }
     [Parameter] public string Role { get; set; }

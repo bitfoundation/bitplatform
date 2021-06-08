@@ -11,41 +11,32 @@ namespace Bit.Client.Web.BlazorUI.Tests.Lists
     public class BitBasicListTests : BunitTestContext
     {
 
-        [DataTestMethod, DataRow(1000)]
+        [DataTestMethod, DataRow(Visual.Fluent, true, 1000), DataRow(Visual.Fluent, true, 1000)]
         //When we use virtualization, two additional parts are created,
         //that's why this method use itemCount +2
-        public void BitBasicListShoudRenderExpectedChildElements(int itemCount)
+        public void BitBasicListShoudRenderExpectedChildElements(Visual visual, int itemCount)
         {
-            var component = RenderComponent<BitBasicListTest>(parameters => parameters
-                .Add(p => p.Items, GetTestData(itemCount)));
+            var component = RenderComponent<BitBasicListTest>(parameters =>
+            {
+                parameters.Add(p => p.Visual, visual);
+                parameters.Add(p => p.Items, GetTestData(itemCount));
+            });
             var bitList = component.Find(".bit-bsc-lst");
             int comItemCount = bitList.ChildElementCount;
 
             Assert.AreEqual(comItemCount + 2, itemCount + 2);
         }
 
-
-        [DataTestMethod, DataRow(10)]
-        //When we use virtualization, two additional parts are created,
-        //that's why this method use itemCount +2
-        public void BitBasicListShoudRenderExpectedChildElementsInNotVirtulization(int itemCount)
+        [DataTestMethod, DataRow(Visual.Fluent, 1000, "RoleItem", true)]
+        public void BitBasicListCheckForCorrectRole(Visual visual, int itemCount, string role, bool virtualize)
         {
-            var component = RenderComponent<BitBasicListTest>(parameters => parameters
-                .Add(p => p.Items, GetTestData(itemCount)));
-            var bitList = component.Find(".bit-bsc-lst");
-            int comItemCount = bitList.ChildElementCount;
-
-            Assert.AreEqual(comItemCount + 2, itemCount + 2);
-        }
-
-        [DataTestMethod, DataRow(1000, "RoleItem", true)]
-        public void BitBasicListCheckForCorrectRole(int itemCount, string role, bool virtualize)
-        {
-            var component = RenderComponent<BitBasicListTest>(parameters => parameters
-                .Add(p => p.Items, GetTestData(itemCount))
-                .Add(p => p.Role, role)
-                .Add(p => p.Virtualize, virtualize)
-            );
+            var component = RenderComponent<BitBasicListTest>(parameters =>
+            {
+                parameters.Add(p => p.Visual, visual);
+                parameters.Add(p => p.Items, GetTestData(itemCount));
+                parameters.Add(p => p.Role, role);
+                parameters.Add(p => p.Virtualize, virtualize);
+            });
             var bitList = component.Find(".bit-bsc-lst");
             var itemRole = bitList.GetAttribute("role");
 
