@@ -191,6 +191,10 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
             }
         };
 
+        private bool IsTogleButtonChecked = true;
+        private void ToggleButtonClick() {
+            IsTogleButtonChecked = !IsTogleButtonChecked;
+        }
         #region PivotSamples
 
         public string OverridePivotSelectedKey { get; set; } = "1";
@@ -227,6 +231,8 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
             people[0] = persons.GetPeople(8000);
             people[1] = persons.GetPeople(100);
         }
+
+         
     }
 
     public class Person

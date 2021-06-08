@@ -1,0 +1,17 @@
+﻿@namespace Bit.Client.Web.BlazorUI
+@inherits BitComponentBase
+
+<button @ref="RootElement"
+        style="@StyleBuilder.Value"
+        class="@ClassBuilder.Value"
+        aria-label="@AriaLabel"
+        aria-describedby="@AriaDescription"
+        aria-hidden="@AriaHidden"
+        tabindex="@tabIndex"
+        disabled="@IsDisabled"
+        @onclick="HandleOnClick">
+    <span class="bit-tgl-btn-elemens-container">
+        <i class="bit-icon bit-icon--@IconName bit-tgl-icon"></i>
+        <span>@Text</span>
+    </span>
+</button>

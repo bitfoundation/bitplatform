@@ -105,6 +105,9 @@
     <BitButton Target="_self" Href="https://github.com/bitfoundation/bitframework" IsEnabled="false">
         <span>Bit Foundation From Span</span>
     </BitButton>
+    <hr />
+    <h3>Toggle Button</h3>
+    <BitToggleButton Text="@(IsTogleButtonChecked?"Button checked":"Button unchecked")" IconName="@(IsTogleButtonChecked?"Emoji2":"EmojiNeutral")" OnClick="ToggleButtonClick"></BitToggleButton>
 </div>
 
 <hr />
@@ -304,9 +307,9 @@
     <BitRating AllowZeroStars="true" @bind-Value="RatingSmallValue" />
     <h5>10 small stars</h5>
     <div>
-        <BitRating Max="10" OnChange="@(v => RatingChangedText = $"Rating value changed to {v}")" @bind-Value="RatingBoundValue" />
-        <div>@RatingChangedText</div>
-        <div>RatingBoundValue: @RatingBoundValue</div>
+        @*<BitRating Max="10" OnChange="@(v => RatingChangedText = $"Rating value changed to {v}")" @bind-Value="RatingBoundValue" />
+            <div>@RatingChangedText</div>
+            <div>RatingBoundValue: @RatingBoundValue</div>*@
     </div>
     <h5>Disabled</h5>
     <BitRating IsEnabled="false" @bind-Value="RatingReadOnlyValue" />
@@ -536,7 +539,7 @@
 <div class="basic-list">
     <h2>BitList</h2>
     <h3>Basic List use virtualization</h3>
-    <BitBasicList Items="people[0]" Virtualize="false"  >
+    <BitBasicList Items="people[0]" Virtualize="false">
         <RowTemplate Context="person">
             <div style=" border: 2px #8a8886 solid; border-radius: 10px; padding: 5px 20px; margin: 10px;">
                 <p>Id : <strong>@person.Id</strong></p>
@@ -569,7 +572,7 @@
     </BitBasicList>
     <br />
     <h3>Basic List with overscan count 30 </h3>
-    <BitBasicList Items="people[0]" Virtualize="true" OverscanCount="30" >
+    <BitBasicList Items="people[0]" Virtualize="true" OverscanCount="30">
         <RowTemplate Context="person">
             <div style=" border: 2px #8a8886 solid; border-radius: 10px; padding: 5px 20px; margin: 10px;">
                 <p>Id : <strong>@person.Id</strong></p>
