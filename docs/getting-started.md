@@ -16,3 +16,8 @@ For Desktop/Mobile =&gt; ASP.NET Core + Xamarin Forms + Universal Windows Platfo
 <div dir="ltr">
   سلام به معنی Hello است
 </div>
+
+
+```cs
+DateTimeOffset date = DateTimeOffset.UtcNow;
+```
