@@ -8,3 +8,11 @@ For SPA/PWA =&gt; ASP.NET Core
 
 For Desktop/Mobile =&gt; ASP.NET Core + Xamarin Forms + Universal Windows Platform
 
+<div dir="rtl">
+  سلام به معنی Hello است
+</div>
+
+
+<div dir="ltr">
+  سلام به معنی Hello است
+</div>
