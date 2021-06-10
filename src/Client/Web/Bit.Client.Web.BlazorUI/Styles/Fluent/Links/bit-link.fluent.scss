@@ -15,12 +15,11 @@
     }
 }
 
-.bit-lnk-disabled {
-    color: $Grey90;
+.bit-lnk-disabled-fluent > a {
+    color: $Grey90 !important;
     cursor: default;
 
     &:hover, &:active, &:focus {
-        color: inherit;
         text-decoration: underline;
     }
 }
@@ -48,3 +47,4 @@
         text-decoration: underline;
     }
 }
+
