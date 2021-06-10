@@ -244,9 +244,9 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
                 people.Add(new Person
                 {
                     Id = i + 1,
-                    FirstName = $"Person {i + 1.ToString()}",
-                    LastName = $"Person Family {i + 1.ToString()}",
-                    Job = $"Programmer {i + 1.ToString()}"
+                    FirstName = $"Person {(i + 1).ToString()}",
+                    LastName = $"Person Family {(i + 1).ToString()}",
+                    Job = $"Programmer {(i + 1).ToString()}"
                 });
             }
             return people;

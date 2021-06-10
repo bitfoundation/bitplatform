@@ -14,8 +14,10 @@ namespace Bit.Client.Web.BlazorUI.Tests.Lists
         [DataTestMethod,
             DataRow(Visual.Fluent, true, 1000),
             DataRow(Visual.Fluent, false, 100),
+
             DataRow(Visual.Cupertino, true, 1000),
             DataRow(Visual.Cupertino, false, 100),
+
             DataRow(Visual.Material, true, 1000),
             DataRow(Visual.Material, false, 100),
             ]
@@ -31,8 +33,11 @@ namespace Bit.Client.Web.BlazorUI.Tests.Lists
             });
 
             var bitList = component.Find(".bit-bsc-lst");
-            int comItemCount = bitList.ChildElementCount;
 
+            var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
+            Assert.IsTrue(bitList.ClassList.Contains($"bit-bsc-lst-{visualClass}"));
+
+            int comItemCount = bitList.ChildElementCount;
             if (virtualize)
             {
                 Assert.AreEqual(comItemCount, itemCount + 2);
@@ -41,14 +46,17 @@ namespace Bit.Client.Web.BlazorUI.Tests.Lists
             {
                 Assert.AreEqual(comItemCount, itemCount);
             }
-
-            var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
-            Assert.IsTrue(bitList.ClassList.Contains($"bit-bsc-lst-{visualClass}"));
         }
 
         [DataTestMethod,
             DataRow(Visual.Fluent, 1000, true, 1),
             DataRow(Visual.Fluent, 100, false, 1),
+            
+            DataRow(Visual.Cupertino, 1000, true, 1),
+            DataRow(Visual.Cupertino, 100, false, 1),
+            
+            DataRow(Visual.Material, 1000, true, 1),
+            DataRow(Visual.Material, 100, false, 1),
             ]
         public void BitBasicListRenderExtraItemsUsingOverScanCount(Visual visual,
              int itemCount, bool virtualize, int overScanCount)
@@ -62,8 +70,11 @@ namespace Bit.Client.Web.BlazorUI.Tests.Lists
             });
 
             var bitList = component.Find(".bit-bsc-lst");
-            int comItemCount = bitList.ChildElementCount;
 
+            var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
+            Assert.IsTrue(bitList.ClassList.Contains($"bit-bsc-lst-{visualClass}"));
+
+            int comItemCount = bitList.ChildElementCount;
             if (virtualize)
             {
                 Assert.AreEqual(comItemCount, itemCount + (overScanCount + 2));
@@ -74,7 +85,16 @@ namespace Bit.Client.Web.BlazorUI.Tests.Lists
             }
         }
 
-        [DataTestMethod, DataRow(Visual.Fluent, 1000, "RoleItem", true)]
+        [DataTestMethod,
+            DataRow(Visual.Fluent, 1000, "RoleItem", true),
+            DataRow(Visual.Fluent, 1000, "RoleItem", true),
+
+            DataRow(Visual.Cupertino, 1000, "RoleItem", true),
+            DataRow(Visual.Cupertino, 1000, "RoleItem", true),
+
+            DataRow(Visual.Material, 1000, "RoleItem", true),
+            DataRow(Visual.Material, 1000, "RoleItem", true),
+            ]
         public void BitBasicListCheckForCorrectRole(Visual visual, int itemCount, string role, bool virtualize)
         {
             var component = RenderComponent<BitBasicListTest>(parameters =>
@@ -85,6 +105,10 @@ namespace Bit.Client.Web.BlazorUI.Tests.Lists
                 parameters.Add(p => p.Virtualize, virtualize);
             });
             var bitList = component.Find(".bit-bsc-lst");
+
+            var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
+            Assert.IsTrue(bitList.ClassList.Contains($"bit-bsc-lst-{visualClass}"));
+
             var itemRole = bitList.GetAttribute("role");
 
             Assert.AreEqual(role, itemRole);

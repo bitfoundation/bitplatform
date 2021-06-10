@@ -304,9 +304,9 @@
     <BitRating AllowZeroStars="true" @bind-Value="RatingSmallValue" />
     <h5>10 small stars</h5>
     <div>
-        @*<BitRating Max="10" OnChange="@(v => RatingChangedText = $"Rating value changed to {v}")" @bind-Value="RatingBoundValue" />
-            <div>@RatingChangedText</div>
-            <div>RatingBoundValue: @RatingBoundValue</div>*@
+        <BitRating Max="10" OnChange="@(v => RatingChangedText = $"Rating value changed to {v}")" @bind-Value="RatingBoundValue" />
+        <div>@RatingChangedText</div>
+        <div>RatingBoundValue: @RatingBoundValue</div>
     </div>
     <h5>Disabled</h5>
     <BitRating IsEnabled="false" @bind-Value="RatingReadOnlyValue" />
@@ -536,20 +536,23 @@
 <div class="basic-list">
     <h2>BitList</h2>
     <h3>Basic List use virtualization</h3>
-    <BitBasicList Items="people[0]" Virtualize="true" Class="bsc-lst-1">
+    <BitBasicList Items="people[0]" Virtualize="true" Style="border: 1px #a19f9d solid; border-radius: 3px; width: 90%; margin: auto;">
         <RowTemplate Context="person">
-            <div style=" border: 2px #8a8886 solid; border-radius: 10px; padding: 5px 20px; margin: 10px;">                
-                <p>Id : <strong>@person.Id</strong></p>
-                <p>Full Name :<strong>@person.FirstName @person.LastName</strong>  </p>
-                <p>Job: <strong>@person.Job</strong></p>
+            <div style="border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;">
+                <img src="https://picsum.photos/100/100?random=@(@person.Id)">
+                <div style="margin-left:3%; display: inline-block;">
+                    <p>Id : <strong>@person.Id</strong></p>
+                    <p>Full Name :<strong>@person.FirstName @person.LastName</strong>  </p>
+                    <p>Job: <strong>@person.Job</strong></p>
+                </div>
             </div>
         </RowTemplate>
     </BitBasicList>
     <br />
     <h3>Basic List without virtualization</h3>
-    <BitBasicList Items="people[1]" Virtualize="false" Class="bsc-lst-2">
+    <BitBasicList Items="people[1]" Virtualize="false" Style="border: 1px #a19f9d solid; border-radius: 3px; width: 90%; margin: auto;">
         <RowTemplate Context="person">
-            <div style=" border: 2px #8a8886 solid; border-radius: 10px; padding: 5px 20px; margin: 10px;">
+            <div style="border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;">
                 <p>Id : <strong>@person.Id</strong></p>
                 <p>Full Name :<strong>@person.FirstName @person.LastName</strong>  </p>
                 <p>Job: <strong>@person.Job</strong></p>
@@ -558,7 +561,7 @@
     </BitBasicList>
     <br />
     <h3>Basic List with custom role and class</h3>
-    <BitBasicList Items="people[0]" Virtualize="true" Role="list" Class="lst-custom-style bsc-lst-3">
+    <BitBasicList Items="people[0]" Virtualize="true" Role="list" Class="lst-custom-style" Style="border: 1px #a19f9d solid; border-radius: 3px; width: 90%; margin: auto;">
         <RowTemplate Context="person">
             <div class="lst3-list-item">
                 <span>Id : <strong>@person.Id</strong></span>
@@ -569,9 +572,9 @@
     </BitBasicList>
     <br />
     <h3>Basic List with overscan count 1 </h3>
-    <BitBasicList Items="people[0]" Virtualize="true" OverscanCount="1" ItemSize="141" Class="bsc-lst-4">
+    <BitBasicList Items="people[0]" Virtualize="true" OverscanCount="1" ItemSize="141" Style="border: 1px #a19f9d solid; border-radius: 3px; width: 90%; margin: auto;">
         <RowTemplate Context="person">
-            <div style=" border: 2px #8a8886 solid; border-radius: 10px; padding: 5px 20px; margin: 10px;">
+            <div style="border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;">
                 <p>Id : <strong>@person.Id</strong></p>
                 <p>Full Name :<strong>@person.FirstName @person.LastName</strong>  </p>
                 <p>Job: <strong>@person.Job</strong></p>
