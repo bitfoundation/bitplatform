@@ -56,3 +56,16 @@
 .pivot-container {
     margin: 20px 10px;
 }
+
+
+.bsc-lst-3 {
+    .lst3-list-item {
+        padding: 16px 20px;
+        margin: auto 10px;
+        background-color: white;
+
+        &:nth-child(odd) {
+            background-color: #f2f2f2;
+        }
+    }
+}
