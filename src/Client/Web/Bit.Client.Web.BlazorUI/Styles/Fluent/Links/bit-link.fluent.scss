@@ -1,50 +1,53 @@
 ﻿
 @import "../colors.fluent.scss", "../../functions.scss";
 
-.bit-lnk-fluent > a {
-    font-family: FluentFont;
-    -webkit-font-smoothing: antialiased;
-    font-size: inherit;
-    font-weight: inherit;
-    color: $Primary;
-    outline: none;
+.bit-lnk-fluent {
+    > a {
+        font-family: FluentFont;
+        -webkit-font-smoothing: antialiased;
+        font-size: inherit;
+        font-weight: inherit;
+        color: $Primary;
+        outline: none;
 
-    &:hover, &:active, &:focus {
-        color: $ThemeDarker;
+        &:hover, &:active, &:focus {
+            color: $ThemeDarker;
+            text-decoration: underline;
+        }
+    }
+
+    > button {
+        color: $Primary;
+        background: none transparent;
+        border-top: none;
+        border-right: none;
+        border-left: none;
+        border-image: initial;
+        cursor: pointer;
+        display: inline;
+        margin: 0px;
+        overflow: inherit;
+        padding: 0px;
+        text-align: left;
+        text-overflow: inherit;
+        border-bottom: 1px solid transparent;
+        user-select: text;
         text-decoration: underline;
+
+        &:hover, &:active, &:focus {
+            color: $ThemeDarker;
+            text-decoration: underline;
+        }
     }
 }
 
-.bit-lnk-disabled-fluent > a {
-    color: $Grey90 !important;
-    cursor: default;
+.bit-lnk-disabled-fluent {
+    > a {
+        color: $Grey90;
+        cursor: default;
 
-    &:hover, &:active, &:focus {
-        text-decoration: underline;
+        &:hover, &:active, &:focus {
+            color: $Grey90;
+        }
     }
 }
-
-.bit-lnk-fluent > button {
-    color: $Primary;
-    background: none transparent;
-    border-top: none;
-    border-right: none;
-    border-left: none;
-    border-image: initial;
-    cursor: pointer;
-    display: inline;
-    margin: 0px;
-    overflow: inherit;
-    padding: 0px;
-    text-align: left;
-    text-overflow: inherit;
-    border-bottom: 1px solid transparent;
-    user-select: text;
-    text-decoration: underline;
-
-    &:hover, &:active, &:focus {
-        color: $ThemeDarker;
-        text-decoration: underline;
-    }
-}
-
