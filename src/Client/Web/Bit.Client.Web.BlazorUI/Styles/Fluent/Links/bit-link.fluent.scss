@@ -18,6 +18,7 @@
 
     > button {
         color: $Primary;
+        font-size: inherit;
         background: none transparent;
         border-top: none;
         border-right: none;
@@ -42,9 +43,10 @@
 }
 
 .bit-lnk-disabled-fluent {
-    > a {
+    > a, > button {
         color: $Grey90;
         cursor: default;
+        text-decoration: underline;
 
         &:hover, &:active, &:focus {
             color: $Grey90;

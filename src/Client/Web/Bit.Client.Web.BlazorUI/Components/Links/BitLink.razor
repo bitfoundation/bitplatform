@@ -5,19 +5,39 @@
       style="@StyleBuilder.Value"
       class="@ClassBuilder.Value">
 
-    @if (Href.HasValue() || !IsEnabled)
+    @if (Href.HasValue())
     {
-        <a href="@Href"
-           target="@Target">
-            @ChildContent
-        </a>
+        @if (IsEnabled)
+        {
+            <a href="@Href"
+               target="@Target">
+                @ChildContent
+            </a>
+        }
+        else
+        {
+            <a aria-disabled="true">
+                @ChildContent
+            </a>
+        }
     }
     else
     {
-        <button type="button"
-                @onclick="HandleClick"
-                @onclick:preventDefault="true">
-            @ChildContent
-        </button>
+        @if (IsEnabled)
+        {
+            <button type="button"
+                    @onclick="HandleClick"
+                    @onclick:preventDefault="true">
+                @ChildContent
+            </button>
+        }
+        else
+        {
+            <button type="button"
+                    aria-disabled="true"
+                    disabled>
+                @ChildContent
+            </button>
+        }
     }
 </span>
