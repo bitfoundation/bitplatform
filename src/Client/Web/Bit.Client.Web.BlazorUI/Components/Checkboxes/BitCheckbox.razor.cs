@@ -9,6 +9,7 @@ namespace Bit.Client.Web.BlazorUI
         private bool isIndeterminate;
         private BoxSide boxSide;
         private bool isChecked;
+        private bool isCheckedHasValue;
 
         public ElementReference CheckboxElement { get; set; }
 
@@ -61,7 +62,7 @@ namespace Bit.Client.Web.BlazorUI
 
         [Parameter] public EventCallback<bool> OnChange { get; set; }
 
-        private bool IsCheckedHasValue { get; set; }
+
 
         protected override string RootElementClass => "bit-chb";
 
@@ -89,12 +90,12 @@ namespace Bit.Client.Web.BlazorUI
 
             if (IsIndeterminate)
             {
-                if (IsCheckedHasValue && IsIndeterminateChanged.HasDelegate is false) return;
+                if (isCheckedHasValue && IsIndeterminateChanged.HasDelegate is false) return;
                 IsIndeterminate = false;
             }
             else
             {
-                if (IsCheckedHasValue && IsCheckedChanged.HasDelegate is false) return;
+                if (isCheckedHasValue && IsCheckedChanged.HasDelegate is false) return;
                 IsChecked = !IsChecked;
             }
 
@@ -113,12 +114,14 @@ namespace Bit.Client.Web.BlazorUI
 
         public override Task SetParametersAsync(ParameterView parameters)
         {
+            isCheckedHasValue = false;
+
             foreach (ParameterValue parameter in parameters)
             {
                 switch (parameter.Name)
                 {
                     case nameof(IsChecked):
-                        IsCheckedHasValue = true;
+                        isCheckedHasValue = true;
                         IsChecked = (bool)parameter.Value;
                         break;
                     case nameof(IsCheckedChanged):
