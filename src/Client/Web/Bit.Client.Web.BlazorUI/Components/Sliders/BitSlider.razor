@@ -4,39 +4,87 @@
 <div @ref="RootElement" class="@ClassBuilder.Value" style="@StyleBuilder.Value">
     @if (!string.IsNullOrEmpty(Label))
     {
-        <label class="title">@Label</label>
+        <label class="title" @ref="TitleRef">@Label</label>
     }
 
-    @if (Vertical)
+    @if (Ranged)
     {
-        <div class="bit-slider-container" @ref="ContainerRef">
-            @if (OriginFromZero)
-            {
-                <span class="zeroTick" style="top: calc(50% - -2px);"></span>
-            }
-
-            <input type="range" min="@Min" max="@Max" step="@Step" value="@Value" @onchange="@HandleChange" @oninput="@HandleInput" style="@styleProgress" />
-        </div>
-
-        @if (ShowValue)
+        @if (Vertical)
         {
-            <label class="valueLabel">@GetValueDisplay()</label>
+            @if (ShowValue)
+            {
+                <label class="valueLabel" @ref="ValueLabelRef">@GetValueDisplay(Range[0])</label>
+            }
+            <div class="bit-slider-container" @ref="ContainerRef" style="@styleContainer">
+                <div class="bit-slider-box" role="group" aria-labelledby="multi-lbl" style="@styleProgress">
+                    @if (OriginFromZero)
+                    {
+                        <span class="zeroTick" style="left: calc(50% - 1px);"></span>
+                    }
+                    <input id="a" type="range" min="@Min" max="@Max" step="@Step" value="@Range[0]" @onchange="@HandleChange" @oninput="@(args => HandleInput(args, 0))" />
+                    <input id="b" type="range" min="@Min" max="@Max" step="@Step" value="@Range[1]" @onchange="@HandleChange" @oninput="@(args => HandleInput(args, 1))" />
+                </div>
+            </div>
+            @if (ShowValue)
+            {
+                <label class="valueLabel">@GetValueDisplay(Range[1])</label>
+            }
+        }
+        else
+        {
+            <div class="bit-slider-container" @ref="ContainerRef">
+                @if (ShowValue)
+                {
+                    <label class="valueLabel">@GetValueDisplay(Range[0])</label>
+                }
+                <div class="bit-slider-box" role="group" aria-labelledby="multi-lbl" style="@styleProgress">
+                    @if (OriginFromZero)
+                    {
+                        <span class="zeroTick" style="left: calc(50% - 1px);"></span>
+                    }
+                    <input id="a" type="range" min="@Min" max="@Max" step="@Step" value="@Range[0]" @onchange="@HandleChange" @oninput="@(args => HandleInput(args, 0))" />
+                    <input id="b" type="range" min="@Min" max="@Max" step="@Step" value="@Range[1]" @onchange="@HandleChange" @oninput="@(args => HandleInput(args, 1))" />
+                </div>
+                @if (ShowValue)
+                {
+                    <label class="valueLabel">@GetValueDisplay(Range[1])</label>
+                }
+            </div>
         }
     }
     else
     {
-        <div class="bit-slider-container" @ref="ContainerRef">
-            @if (OriginFromZero)
-            {
-                <span class="zeroTick" style="left: calc(50% - 29px);"></span>
-            }
+        @if (Vertical)
+        {
+            <div class="bit-slider-container" @ref="ContainerRef">
+                @if (OriginFromZero)
+                {
+                    <span class="zeroTick" style="top: calc(50% - -2px);"></span>
+                }
 
-            <input type="range" min="@Min" max="@Max" step="@Step" value="@Value" @onchange="@HandleChange" @oninput="@HandleInput" style="@styleProgress" />
+                <input type="range" min="@Min" max="@Max" step="@Step" value="@Value" @onchange="@HandleChange" @oninput="@HandleInput" style="@styleProgress" />
+            </div>
 
             @if (ShowValue)
             {
-                <label class="valueLabel">@GetValueDisplay()</label>
+                <label class="valueLabel">@GetValueDisplay(Value)</label>
             }
-        </div>
+        }
+        else
+        {
+            <div class="bit-slider-container" @ref="ContainerRef">
+                @if (OriginFromZero)
+                {
+                    <span class="zeroTick" style="left: calc(50% - 29px);"></span>
+                }
+
+                <input type="range" min="@Min" max="@Max" step="@Step" value="@Value" @onchange="@HandleChange" @oninput="@HandleInput" style="@styleProgress" />
+
+                @if (ShowValue)
+                {
+                    <label class="valueLabel">@GetValueDisplay(Value)</label>
+                }
+            </div>
+        }
     }
 </div>
