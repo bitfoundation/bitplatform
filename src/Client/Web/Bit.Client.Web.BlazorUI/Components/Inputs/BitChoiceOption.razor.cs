@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -34,41 +35,49 @@ namespace Bit.Client.Web.BlazorUI
 
         public override Task SetParametersAsync(ParameterView parameters)
         {
-            foreach (ParameterValue parameter in parameters)
+            var parametersDictionary = parameters.ToDictionary() as Dictionary<string, object>;
+
+            foreach (var parameter in parametersDictionary!)
             {
-                switch (parameter.Name)
+                switch (parameter.Key)
                 {
                     case nameof(Text):
                         Text = (string)parameter.Value;
+                        parametersDictionary.Remove(parameter.Key);
                         break;
 
                     case nameof(Name):
                         Name = (string)parameter.Value;
+                        parametersDictionary.Remove(parameter.Key);
                         break;
 
                     case nameof(Value):
                         Value = (string)parameter.Value;
+                        parametersDictionary.Remove(parameter.Key);
                         break;
 
                     case nameof(IsChecked):
                         IsChecked = (bool)parameter.Value;
+                        parametersDictionary.Remove(parameter.Key);
                         break;
 
                     case nameof(OnClick):
                         OnClick = (EventCallback<MouseEventArgs>)parameter.Value;
+                        parametersDictionary.Remove(parameter.Key);
                         break;
 
                     case nameof(OnChange):
                         OnChange = (EventCallback<ChangeEventArgs>)parameter.Value;
+                        parametersDictionary.Remove(parameter.Key);
                         break;
 
                     case nameof(ChoiceGroup):
                         ChoiceGroup = (BitChoiceGroup)parameter.Value;
+                        parametersDictionary.Remove(parameter.Key);
                         break;
                 }
             }
-
-            return base.SetParametersAsync(parameters);
+            return base.SetParametersAsync(ParameterView.FromDictionary(parametersDictionary));
         }
 
         protected override Task OnInitializedAsync()

@@ -4,7 +4,7 @@
 @if (Href.HasValue())
 {
     <a @ref="RootElement"
-       @attributes="ArbitraryAttributes"
+       @attributes="HtmlAttributes"
        style="@StyleBuilder.Value"
        class="@ClassBuilder.Value"
        aria-label="@AriaLabel"
@@ -20,7 +20,7 @@
 else
 {
     <button @ref="RootElement"
-            @attributes="ArbitraryAttributes"
+            @attributes="HtmlAttributes"
             style="@StyleBuilder.Value"
             class="@ClassBuilder.Value"
             aria-label="@AriaLabel"

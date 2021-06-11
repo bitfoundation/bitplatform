@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Bit.Client.Web.BlazorUI.Utils;
 using Microsoft.AspNetCore.Components;
 
@@ -12,7 +13,6 @@ namespace Bit.Client.Web.BlazorUI
         private string? @class;
         private bool isEnabled = true;
         private ComponentVisibility visibility;
-        private Dictionary<string, object>? arbitraryAttributes;
 
         protected bool Rendered { get; private set; }
 
@@ -82,13 +82,51 @@ namespace Bit.Client.Web.BlazorUI
         }
 
         [Parameter(CaptureUnmatchedValues = true)]
-        public Dictionary<string, object>? ArbitraryAttributes
+        public Dictionary<string, object> HtmlAttributes { get; set; } = new Dictionary<string, object>();
+
+        public override Task SetParametersAsync(ParameterView parameters)
         {
-            get => arbitraryAttributes;
-            set
+            var parametersDictionary = parameters.ToDictionary() as Dictionary<string, object>;
+            foreach (var parameter in parametersDictionary!)
             {
-                arbitraryAttributes = value;
+                switch (parameter.Key)
+                {
+                    case nameof(Theme):
+                        Theme = (Theme)parameter.Value;
+                        parametersDictionary.Remove(parameter.Key);
+                        break;
+
+                    case nameof(Visual):
+                        Visual = (Visual)parameter.Value;
+                        parametersDictionary.Remove(parameter.Key);
+                        break;
+
+                    case nameof(Style):
+                        Style = (string?)parameter.Value;
+                        parametersDictionary.Remove(parameter.Key);
+                        break;
+
+                    case nameof(Class):
+                        Class = (string?)parameter.Value;
+                        parametersDictionary.Remove(parameter.Key);
+                        break;
+
+                    case nameof(IsEnabled):
+                        IsEnabled = (bool)parameter.Value;
+                        parametersDictionary.Remove(parameter.Key);
+                        break;
+
+                    case nameof(Visibility):
+                        Visibility = (ComponentVisibility)parameter.Value;
+                        parametersDictionary.Remove(parameter.Key);
+                        break;
+
+                    default:
+                        HtmlAttributes.Add(parameter.Key, parameter.Value);
+                        break;
+                }
             }
+            return base.SetParametersAsync(ParameterView.Empty);
         }
 
         protected override void OnInitialized()
@@ -137,7 +175,6 @@ namespace Bit.Client.Web.BlazorUI
 
         protected virtual void OnComponentVisibilityChanged(ComponentVisibility visibility)
         {
-
         }
     }
 }
