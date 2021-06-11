@@ -105,6 +105,14 @@
     <BitButton Target="_self" Href="https://github.com/bitfoundation/bitframework" IsEnabled="false">
         <span>Bit Foundation From Span</span>
     </BitButton>
+
+    <hr />
+
+    <div>
+        <h3>Toggle Button</h3>
+        <BitToggleButton Text="@(IsTogleButtonChecked?"Button checked":"Button unchecked")" IconName="@(IsTogleButtonChecked?"Emoji2":"EmojiNeutral")" OnClick="ToggleButtonClick"></BitToggleButton>
+    </div>
+
 </div>
 
 <hr />

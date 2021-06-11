@@ -211,6 +211,12 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
 
         #endregion 
 
+        private bool IsTogleButtonChecked = true;
+        private void ToggleButtonClick()
+        {
+            IsTogleButtonChecked = !IsTogleButtonChecked;
+        }
+
         private void HideMessageBar(MouseEventArgs args)
 
         {

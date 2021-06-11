@@ -6,6 +6,8 @@ namespace Bit.Client.Web.BlazorUI
 {
     public partial class BitToggleButton
     {
+        private ButtonStyle buttonStyle = ButtonStyle.Primary;
+
         private int? tabIndex;
 
         [Parameter] public bool AllowDisabledFocus { get; set; } = true;
@@ -16,6 +18,16 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public bool IsDisabled { get; set; } = false;
         [Parameter] public string? Text { get; set; }
         [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+        [Parameter]
+        public ButtonStyle ButtonStyle
+        {
+            get => buttonStyle;
+            set
+            {
+                buttonStyle = value;
+                ClassBuilder.Reset();
+            }
+        }
 
         protected virtual async Task HandleOnClick(MouseEventArgs e)
         {
@@ -26,6 +38,15 @@ namespace Bit.Client.Web.BlazorUI
         }
 
         protected override string RootElementClass => "bit-tgl-btn";
+
+        protected override void RegisterComponentClasses()
+        {
+            ClassBuilder.Register(() => IsEnabled is false
+                                           ? string.Empty
+                                           : ButtonStyle == ButtonStyle.Primary
+                                               ? $"{RootElementClass}-primary-{VisualClassRegistrar()}"
+                                               : $"{RootElementClass}-standard-{VisualClassRegistrar()}");
+        }
 
         protected override async Task OnInitializedAsync()
         {
