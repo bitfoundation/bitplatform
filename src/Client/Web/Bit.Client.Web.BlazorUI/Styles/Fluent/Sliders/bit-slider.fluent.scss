@@ -299,14 +299,14 @@ $BgTrackHover: $DarkAlt;
 
 .bit-slider-ranged-row .bit-slider-box::before,
 .bit-slider-ranged-column .bit-slider-box::before {
-    margin-left: calc((var(--a) - var(--min))/var(--dif)*100%);
-    width: calc((var(--b) - var(--a))/var(--dif)*100%);
+    margin-left: calc((var(--l) - var(--min))/var(--dif)*100%);
+    width: calc((var(--h) - var(--l))/var(--dif)*100%);
 }
 
 .bit-slider-ranged-row .bit-slider-box::after,
 .bit-slider-ranged-column .bit-slider-box::after {
-    margin-left: calc((var(--b) - var(--min))/var(--dif)*100%);
-    width: calc((var(--a) - var(--b))/var(--dif)*100%);
+    margin-left: calc((var(--h) - var(--min))/var(--dif)*100%);
+    width: calc((var(--l) - var(--h))/var(--dif)*100%);
 }
 
 .bit-slider.bit-slider-ranged-row .zeroTick {

@@ -13,19 +13,20 @@ namespace Bit.Client.Web.BlazorUI
         private ElementReference ValueLabelRef { get; set; }
 
         [Inject] public IJSRuntime JSRuntime { get; set; }
-        //[Parameter] public string AriaLabel { get; set; }
-        [Parameter] public int DefaultLowerValue { get; set; }
-        [Parameter] public int DefaultValue { get; set; }
+        [Parameter] public int? DefaultHigherValue { get; set; }
+        [Parameter] public int? DefaultLowerValue { get; set; }
+        [Parameter] public int? DefaultValue { get; set; }
         [Parameter] public int Min { get; set; } = 1;
         [Parameter] public int Max { get; set; } = 10;
-        [Parameter] public int LowerValue { get; set; }
+        [Parameter] public int? HigherValue { get; set; }
+        [Parameter] public int? LowerValue { get; set; }
+        [Parameter] public int? Value { get; set; }
+        [Parameter] public (int Lower, int Higher) RangeValue { get; set; }
         [Parameter] public bool OriginFromZero { get; set; }
         [Parameter] public string Label { get; set; }
         [Parameter] public bool Ranged { get; set; }
         [Parameter] public bool ShowValue { get; set; } = true;
         [Parameter] public int Step { get; set; } = 1;
-        [Parameter] public int Value { get; set; }
-        [Parameter] public int[] Range { get; set; }
         [Parameter] public bool Vertical { get; set; }
         [Parameter] public string ValueFormat { get; set; }
         [Parameter] public EventCallback<ChangeEventArgs> OnChange { get; set; }
@@ -59,23 +60,34 @@ namespace Bit.Client.Web.BlazorUI
 
         protected override async Task OnInitializedAsync()
         {
-            if (DefaultValue != default)
+            if (DefaultValue.HasValue)
             {
-                Value = DefaultValue;
+                Value = DefaultValue.Value;
             }
 
-            if (DefaultLowerValue != default)
+            if (DefaultHigherValue.HasValue)
             {
-                LowerValue = DefaultLowerValue;
+                HigherValue = DefaultHigherValue.Value;
+            }
+
+            if (DefaultLowerValue.HasValue)
+            {
+                LowerValue = DefaultLowerValue.Value;
             }
 
             if (Ranged)
             {
-                Range = new[]
+                RangeValue = (LowerValue.GetValueOrDefault(RangeValue.Lower), HigherValue.GetValueOrDefault(RangeValue.Higher));
+
+                if (!LowerValue.HasValue)
                 {
-                    LowerValue,
-                    Value
-                };
+                    LowerValue = RangeValue.Lower;
+                }
+
+                if (!HigherValue.HasValue)
+                {
+                    HigherValue = RangeValue.Higher;
+                }
             }
 
             if (!Vertical)
@@ -132,16 +144,30 @@ namespace Bit.Client.Web.BlazorUI
             }
             else
             {
-                Range[0] = Convert.ToInt32(e.Value);
+                HigherValue = null;
+                LowerValue = null;
             }
         }
 
-        private void HandleInput(ChangeEventArgs e, int index)
+        private void HandleInput(ChangeEventArgs e, bool isLower)
         {
             if (Ranged)
             {
-                Range[index] = Convert.ToInt32(e.Value);
+                if (isLower)
+                {
+                    LowerValue = Convert.ToInt32(e.Value);
+                }
+                else
+                {
+                    HigherValue = Convert.ToInt32(e.Value);
+                }
+
+                RangeValue = (LowerValue.GetValueOrDefault(RangeValue.Lower), HigherValue.GetValueOrDefault(RangeValue.Higher));
                 FillSlider();
+            }
+            else
+            {
+                Value = null;
             }
         }
 
@@ -149,7 +175,7 @@ namespace Bit.Client.Web.BlazorUI
         {
             if (Ranged)
             {
-                styleProgress = $"--a: {Range[0]}; --b: {Range[1]}; --min: {Min}; --max: {Max}";
+                styleProgress = $"--l: {RangeValue.Lower}; --h: {RangeValue.Higher}; --min: {Min}; --max: {Max}";
                 if (Vertical)
                 {
                     styleContainer = $"width: {inputHeight}px; height: {inputHeight}px;";
@@ -170,7 +196,7 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
-        private string GetValueDisplay(int val)
+        private string GetValueDisplay(int? val)
         {
             if (string.IsNullOrEmpty(ValueFormat))
             {
@@ -179,11 +205,11 @@ namespace Bit.Client.Web.BlazorUI
             else if (ValueFormat.Contains("p", StringComparison.CurrentCultureIgnoreCase))
             {
                 int digitCount = (Max - 1).ToString().Length;
-                return (val / Math.Pow(10, digitCount)).ToString(ValueFormat);
+                return (val.GetValueOrDefault() / Math.Pow(10, digitCount)).ToString(ValueFormat);
             }
             else
             {
-                return val.ToString(ValueFormat);
+                return val.GetValueOrDefault().ToString(ValueFormat);
             }
         }
     }
