@@ -14,11 +14,26 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public string? AriaDescription { get; set; }
         [Parameter] public bool AriaHidden { get; set; }
         [Parameter] public string? AriaLabel { get; set; }
+        /// <summary>
+        /// determine if the button is checked state, default is true
+        /// </summary>
         [Parameter] public bool Checked { get; set; } = true;
+        /// <summary>
+        /// the icon that shows in checked state
+        /// </summary>
         [Parameter] public string? CheckedIconName { get; set; }
+        /// <summary>
+        /// the icon that shows in unChecked state
+        /// </summary>
         [Parameter] public string? UnCheckedIconName { get; set; }
+        /// <summary>
+        /// the text that shows in Checked state
+        /// </summary>
         [Parameter] public string? ChekedLabel { get; set; }
-        [Parameter] public string? UnChekedLabel { get; set; }        
+        /// <summary>
+        /// the text that shows in unChecked state
+        /// </summary>
+        [Parameter] public string? UnChekedLabel { get; set; }
         [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
         [Parameter]
         public ButtonStyle ButtonStyle
