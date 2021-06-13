@@ -9,9 +9,13 @@
         font-weight: inherit;
         color: $Primary;
         outline: none;
+        text-decoration: none;
 
         &:hover, &:active, &:focus {
             color: $ThemeDarker;
+        }
+
+        &:active, &:hover {
             text-decoration: underline;
         }
     }
@@ -33,10 +37,13 @@
         text-overflow: inherit;
         border-bottom: 1px solid transparent;
         user-select: text;
-        text-decoration: underline;
+        text-decoration: none;
 
         &:hover, &:active, &:focus {
             color: $ThemeDarker;
+        }
+
+        &:active, &:hover {
             text-decoration: underline;
         }
     }
@@ -46,10 +53,21 @@
     > a, > button {
         color: $Grey90;
         cursor: default;
-        text-decoration: underline;
 
         &:hover, &:active, &:focus {
             color: $Grey90;
         }
+
+        &:hover, &:active {
+            text-decoration: none;
+        }
+    }
+}
+
+a.underlined, button.underlined {
+    text-decoration: underline;
+
+    &:hover, &:active, &:focus {
+        text-decoration: underline;
     }
 }

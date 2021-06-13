@@ -9,14 +9,16 @@
     {
         @if (IsEnabled)
         {
-            <a href="@Href"
+            <a class="@(HasUnderline ? "underlined" : "")"
+               href="@Href"
                target="@Target">
                 @ChildContent
             </a>
         }
         else
         {
-            <a aria-disabled="true">
+            <a class="@(HasUnderline ? "underlined" : "")"
+               aria-disabled="true">
                 @ChildContent
             </a>
         }
@@ -25,7 +27,8 @@
     {
         @if (IsEnabled)
         {
-            <button type="button"
+            <button class="@(HasUnderline ? "underlined" : "")"
+                    type="button"
                     @onclick="HandleClick"
                     @onclick:preventDefault="true">
                 @ChildContent
@@ -33,7 +36,8 @@
         }
         else
         {
-            <button type="button"
+            <button class="@(HasUnderline ? "underlined" : "")"
+                    type="button"
                     aria-disabled="true"
                     disabled>
                 @ChildContent
