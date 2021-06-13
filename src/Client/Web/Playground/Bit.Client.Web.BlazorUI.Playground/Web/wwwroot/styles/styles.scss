@@ -69,6 +69,8 @@ p {
     flex: 5%;
     background-color: $LightGray;
     padding: 20px;
+    position: fixed;
+    width: 255px;
 }
 
 .card {
@@ -83,9 +85,10 @@ p {
 }
 
 .main {
-    flex: 70%;
     background-color: $White;
     padding: 20px;
+    width: calc(100% - 325px);
+    margin-left: auto;
 }
 
 .container {

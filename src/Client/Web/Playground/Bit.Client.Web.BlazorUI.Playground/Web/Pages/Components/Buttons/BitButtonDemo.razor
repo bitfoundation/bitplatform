@@ -13,12 +13,7 @@
         <div class="desc">
             <p>
                 To create a button you can use a BitButton component. You can set ButtonStyle attribute and change button style, you can also enable and disable the button by changing the IsEnabled attribute and also there is an attribute
-                can allow you to focus on button when it is disabled.
-            </p>
-            <p>
-                In addition to text for the button, you can insert an element with a special style, BitButton can directly get css class or inline style.
-                By setting Visibility attribute, button can be Visible, Hidden or Collapsed.
-                Aria attribues can also set for BitButton. It can act as a link by setting Href attribute and by Target attribute you define how to open your link.
+                can allow you to focus on button when it is disabled. In addition to text for the button, you can insert an element with a special style.
             </p>
         </div>
         <BitPivot>
@@ -37,43 +32,6 @@
                         <label>This text is from a label element</label>
                     </BitButton>
                 </div>
-                <div class="m-t-10">
-                    <BitButton Style="color:aqua">
-                        Styled Button
-                    </BitButton>
-                    <BitButton Class="custom-button">
-                        Classed Button
-                    </BitButton>
-                </div>
-                <div class="m-t-10">
-                    <BitButton Visibility="ComponentVisibility.Visible">Visible Button</BitButton>
-                    <br />
-                    <span>Hidden Button: </span>[<BitButton Visibility="ComponentVisibility.Hidden">Hidden Button</BitButton>]
-                    <br />
-                    <span>Collapsed Button: </span>[<BitButton Visibility="ComponentVisibility.Collapsed">Collapsed Button</BitButton>]
-                </div>
-                <div class="m-t-10">
-                    <BitButton AriaDescription="Detailed description used for screen reader.">
-                        Button with Aria Description
-                    </BitButton>
-                    <BitButton AriaLabel="Detailed label used for screen reader.">
-                        Button with Aria Label
-                    </BitButton>
-                    <BitButton AriaHidden="true">
-                        Button with Aria Hidden
-                    </BitButton>
-                </div>
-                <div class="m-t-10">
-                    <BitButton Title="Primary" Target="_blank" Href="https://github.com/bitfoundation/bitframework">
-                        Open Bit Foundation In New Tab
-                    </BitButton>
-                    <BitButton Title="Standard" Href="https://github.com/bitfoundation/bitframework" ButtonStyle="ButtonStyle.Standard">
-                        Go To Bit Foundation
-                    </BitButton>
-                    <BitButton Target="_self" Href="https://github.com/bitfoundation/bitframework" IsEnabled="false">
-                        <span>Bit Foundation From Span</span>
-                    </BitButton>
-                </div>
             </BitPivotItem>
             <BitPivotItem HeaderText="Code" IconName="Source">
                 <p>
@@ -88,130 +46,226 @@
                 <p>
                     &lt<span class="dark-green">BitButton IsEnabled="</span><span class="light-blue">false"</span><span class="dark-green"> AllowDisabledFocus="</span><span class="light-blue">false"</span><span>></span>&lt<span class="light-blue">label</span><span>></span>This text is from a label element<span>&lt<span class="light-blue">label</span><span>/></span><span>&lt/</span><span class="dark-green">BitButton</span></span><span>&gt;</span>
                 </p>
-                <p>
-                    &lt<span class="dark-green">BitButton Style="</span><span>color:aqua"</span><span>></span>Styled Button<span>&lt/</span><span class="dark-green">BitButton</span><span>&gt;</span>
-                </p>
-                <p>
-                    &lt<span class="dark-green">BitButton Class="</span><span>custom-button"</span><span>></span>Classed Button<span>&lt/</span><span class="dark-green">BitButton</span><span>&gt;</span>
-                </p>
-                <p>
-                    &lt<span class="dark-green">BitButton Visibility="</span><span class="light-green">ComponentVisibility</span>.Visible"<span>></span><span>Visible Button</span><span>&lt/</span><span class="dark-green">BitButton</span><span>&gt;</span>
-                </p>
-                <p>
-                    &lt<span class="dark-green">BitButton Hidden="</span><span class="light-green">ComponentHidden</span>.Hidden"<span>></span><span>Hidden Button</span><span>&lt/</span><span class="dark-green">BitButton</span><span>&gt;</span>
-                </p>
-                <p>
-                    &lt<span class="dark-green">BitButton Visibility="</span><span class="light-green">ComponentVisibility</span>.Collapsed"<span>></span><span>Collapsed Button</span><span>&lt/</span><span class="dark-green">BitButton</span><span>&gt;</span>
-                </p>
-                <p>
-                    &lt<span class="dark-green">BitButton AriaDescription="</span><span>Detailed description used for screen reader.">Button with Aria Description</span><span>&lt/</span><span class="dark-green">BitButton</span><span>&gt;</span>
-                </p>
-                <p>
-                    &lt<span class="dark-green">BitButton AriaLabel="</span><span>Detailed label used for screen reader.">Button with Aria Label</span><span>&lt/</span><span class="dark-green">BitButton</span><span>&gt;</span>
-                </p>
-                <p>
-                    &lt<span class="dark-green">BitButton AriaHidden="</span><span class="light-blue">true"</span>>Button with Aria Hidden<span>&lt/</span><span class="dark-green">BitButton</span><span>&gt;</span>
-                </p>
-                <p>
-                    &lt<span class="dark-green">BitButton Title="</span><span>Primary"</span><span class="dark-green"> Target="</span><span>_blank"</span><span class="dark-green"> Href=</span><span>"https://github.com/bitfoundation/bitframework"></span>Open Bit Foundation In New Tab<span>&lt/</span><span class="dark-green">BitCompoundButton</span><span>&gt;</span>
-                </p>
-                <p>
-                    &lt<span class="dark-green">BitButton Title="</span><span>Standard"</span><span class="dark-green"> ButtonStyle="</span><span class="light-green">ButtonStyle</span><span>.Standard"</span><span class="dark-green"> Href=</span><span>"https://github.com/bitfoundation/bitframework"></span>Go To Bit Foundation<span>&lt/</span><span class="dark-green">BitCompoundButton</span><span>&gt;</span>
-                </p>
-                <p>
-                    &lt<span class="dark-green">BitButton Target="</span><span>_self"</span><span class="dark-green"> Href=</span><span>"https://github.com/bitfoundation/bitframework"</span><span class="dark-green"> IsEnabled="</span><span class="light-blue">false"&lt</span><span class="light-blue">span></span>Bit Foundation From Span<span class="light-blue">&ltspan></span><span>&lt/</span><span class="dark-green">BitCompoundButton</span><span>&gt;</span>
-                </p>
-            </BitPivotItem>
-        </BitPivot>
-    </div>
-    <div class="card">
-        <h3>BitCompoundButton</h3>
-        <div class="desc">
-            <p>
-                A compound button with SecondaryText attribute.
-            </p>
-        </div>
-        <BitPivot>
-            <BitPivotItem HeaderText="Example" IconName="ViewList">
-                <BitCompoundButton IsEnabled="true"
-                                   Text="Primary"
-                                   AriaLabel="Detailed label used for screen reader."
-                                   SecondaryText="This Button is compound button">
-                </BitCompoundButton>
-                <BitCompoundButton IsEnabled="true"
-                                   Text="Standard"
-                                   AriaHidden="true"
-                                   SecondaryText="This Button is compound button"
-                                   ButtonStyle="ButtonStyle.Standard">
-                </BitCompoundButton>
-                <BitCompoundButton IsEnabled="false"
-                                   AllowDisabledFocus="false"
-                                   Text="Disabled"
-                                   AriaDescription="Detailed description used for screen reader."
-                                   SecondaryText="This Button is a disabled compound button">
-                </BitCompoundButton>
-            </BitPivotItem>
-            <BitPivotItem HeaderText="Code" IconName="Source">
-                <p>
-                    &lt<span class="dark-green">BitCompoundButton IsEnabled="</span><span class="light-blue">true"</span><span class="dark-green"> Text="</span><span>Primary"</span><span class="dark-green"> AriaLabel=</span><span>"Detailed label used for screen reader."</span><span class="dark-green"> SecondaryText</span>="This Button is compound button"><span>&lt/</span><span class="dark-green">BitCompoundButton</span><span>&gt;</span>
-                </p>
-                <p>
-                    &lt<span class="dark-green">BitCompoundButton IsEnabled="</span><span class="light-blue">true"</span><span class="dark-green"> Text="</span><span>Primary"</span><span class="dark-green"> AriaHidden=</span><span class="light-blue">true</span><span class="dark-green"> SecondaryText</span>="This Button is compound button"<span class="dark-green"> ButtonStyle="</span><span class="light-green">ButtonStyle</span>
-                    .Standard"<span>&lt/</span><span class="dark-green">BitCompoundButton</span><span>&gt;</span>
-                </p>
-                <p>
-                    &lt<span class="dark-green">BitCompoundButton IsEnabled="</span><span class="light-blue">false"</span><span class="dark-green"> Text="</span><span>Disabled"</span><span class="dark-green"> AriaDescription=</span><span>"Detailed description used for screen reader."</span><span class="dark-green"> SecondaryText</span>="This Button is a disabled compound button"<span class="light-green"> ButtonStyle</span>
-                    .Standard"<span>&lt/</span><span class="dark-green">BitCompoundButton</span><span>&gt;</span>
-                </p>
             </BitPivotItem>
         </BitPivot>
         <div class="card">
-            <h3>BitIconButton</h3>
+            <h3>Style & Class</h3>
             <div class="desc">
                 <p>
-                    BitIconButtons are just like BitButtons, the only difference is setting icon in BitIconButton component. It has Tooltip attribute, you can use it for showing button tooltip.
+                    BitButton can directly get css class or inline style.
                 </p>
             </div>
             <BitPivot>
                 <BitPivotItem HeaderText="Example" IconName="ViewList">
-                    <BitIconButton IconName="Emoji" />
-                    <BitIconButton IconName="EmojiDisappointed" AllowDisabledFocus="false" IsEnabled="false" />
-                    <BitIconButton IconName="Emoji2" ToolTip="I'm Happy" />
+                    <div>
+                        <BitButton Style="color:aqua">
+                            Styled Button
+                        </BitButton>
+                        <BitButton Class="custom-button">
+                            Classed Button
+                        </BitButton>
+                    </div>
                 </BitPivotItem>
                 <BitPivotItem HeaderText="Code" IconName="Source">
                     <p>
-                        &lt<span class="dark-green">BitIconButton IconName="</span>Emoji2"><span>&lt/</span><span class="dark-green">BitButton</span><span>&gt;</span>
+                        &lt<span class="dark-green">BitButton Style="</span><span>color:aqua"</span><span>></span>Styled Button<span>&lt/</span><span class="dark-green">BitButton</span><span>&gt;</span>
                     </p>
                     <p>
-                        &lt<span class="dark-green">BitIconButton IconName="</span>Emoji2" <span class="dark-green">AllowDisabledFocus="</span><span class="light-blue">false"</span><span class="dark-green"> IsEnabled="</span><span class="light-blue">false"></span><span>&lt/</span><span class="dark-green">BitButton</span><span>&gt;</span>
-                    </p>
-                    <p>
-                        &lt<span class="dark-green">BitIconButton IconName="</span>Emoji2"<span class="dark-green"> ToolTip=</span><span>"I'm Happy"><span>&lt/</span></span><span class="dark-green">BitButton</span><span>&gt;</span>
+                        &lt<span class="dark-green">BitButton Class="</span><span>custom-button"</span><span>></span>Classed Button<span>&lt/</span><span class="dark-green">BitButton</span><span>&gt;</span>
                     </p>
                 </BitPivotItem>
             </BitPivot>
         </div>
         <div class="card">
-            <h3>BitActionButton</h3>
+            <h3>Visibility</h3>
             <div class="desc">
                 <p>
-                    You can have button like link and also set icon on BitActionButton component.
+                    By setting Visibility attribute, BitButton can be Visible, Hidden or Collapsed.
                 </p>
             </div>
             <BitPivot>
                 <BitPivotItem HeaderText="Example" IconName="ViewList">
-                    <BitActionButton IconName="AddFriend">Create account</BitActionButton>
-                    <BitActionButton AllowDisabledFocus="false" IsEnabled="false" IconName="UserRemove">Remove user</BitActionButton>
+                    <div>
+                        <BitButton Visibility="ComponentVisibility.Visible">Visible Button</BitButton>
+                        <br />
+                        <span>Hidden Button: </span>[<BitButton Visibility="ComponentVisibility.Hidden">Hidden Button</BitButton>]
+                        <br />
+                        <span>Collapsed Button: </span>[<BitButton Visibility="ComponentVisibility.Collapsed">Collapsed Button</BitButton>]
+                    </div>
                 </BitPivotItem>
                 <BitPivotItem HeaderText="Code" IconName="Source">
                     <p>
-                        &lt<span class="dark-green">BitActionButton IconName="</span>AddFriend">Create account<span>&lt/</span><span class="dark-green">BitButton</span><span>&gt;</span>
+                        &lt<span class="dark-green">BitButton Visibility="</span><span class="light-green">ComponentVisibility</span>.Visible"<span>></span><span>Visible Button</span><span>&lt/</span><span class="dark-green">BitButton</span><span>&gt;</span>
                     </p>
                     <p>
-                        &lt<span class="dark-green">BitActionButton IconName="</span>UserRemove" <span class="dark-green">AllowDisabledFocus="</span><span class="light-blue">false"</span><span class="dark-green"> IsEnabled="</span><span class="light-blue">false"></span>Remove user<span>&lt/</span><span class="dark-green">BitButton</span><span>&gt;</span>
+                        &lt<span class="dark-green">BitButton Hidden="</span><span class="light-green">ComponentHidden</span>.Hidden"<span>></span><span>Hidden Button</span><span>&lt/</span><span class="dark-green">BitButton</span><span>&gt;</span>
+                    </p>
+                    <p>
+                        &lt<span class="dark-green">BitButton Visibility="</span><span class="light-green">ComponentVisibility</span>.Collapsed"<span>></span><span>Collapsed Button</span><span>&lt/</span><span class="dark-green">BitButton</span><span>&gt;</span>
                     </p>
                 </BitPivotItem>
             </BitPivot>
+        </div>
+        <div class="card">
+            <h3>Button with Aria for Screen Reader</h3>
+            <div class="desc">
+                <p>
+                    Aria attribues can also set for a BitButton.
+                </p>
+            </div>
+            <BitPivot>
+                <BitPivotItem HeaderText="Example" IconName="ViewList">
+                    <div>
+                        <BitButton AriaDescription="Detailed description used for screen reader.">
+                            Button with Aria Description
+                        </BitButton>
+                        <BitButton AriaLabel="Detailed label used for screen reader.">
+                            Button with Aria Label
+                        </BitButton>
+                        <BitButton AriaHidden="true">
+                            Button with Aria Hidden
+                        </BitButton>
+                    </div>
+                </BitPivotItem>
+                <BitPivotItem HeaderText="Code" IconName="Source">
+                    <p>
+                        &lt<span class="dark-green">BitButton AriaDescription="</span><span>Detailed description used for screen reader.">Button with Aria Description</span><span>&lt/</span><span class="dark-green">BitButton</span><span>&gt;</span>
+                    </p>
+                    <p>
+                        &lt<span class="dark-green">BitButton AriaLabel="</span><span>Detailed label used for screen reader.">Button with Aria Label</span><span>&lt/</span><span class="dark-green">BitButton</span><span>&gt;</span>
+                    </p>
+                    <p>
+                        &lt<span class="dark-green">BitButton AriaHidden="</span><span class="light-blue">true"</span>>Button with Aria Hidden<span>&lt/</span><span class="dark-green">BitButton</span><span>&gt;</span>
+                    </p>
+                </BitPivotItem>
+            </BitPivot>
+        </div>
+        <div class="card">
+            <h3>Button-like Anchor</h3>
+            <div class="desc">
+                <p>
+                    BitButton can act as a link by setting Href attribute and Target attribute you define how to open your link.
+                </p>
+            </div>
+            <BitPivot>
+                <BitPivotItem HeaderText="Example" IconName="ViewList">
+                    <div class="m-t-10">
+                        <BitButton Title="Primary" Target="_blank" Href="https://github.com/bitfoundation/bitframework">
+                            Open Bit Foundation In New Tab
+                        </BitButton>
+                        <BitButton Title="Standard" Href="https://github.com/bitfoundation/bitframework" ButtonStyle="ButtonStyle.Standard">
+                            Go To Bit Foundation
+                        </BitButton>
+                        <BitButton Target="_self" Href="https://github.com/bitfoundation/bitframework" IsEnabled="false">
+                            <span>Bit Foundation From Span</span>
+                        </BitButton>
+                    </div>
+                </BitPivotItem>
+                <BitPivotItem HeaderText="Code" IconName="Source">
+                    <p>
+                        &lt<span class="dark-green">BitButton Title="</span><span>Primary"</span><span class="dark-green"> Target="</span><span>_blank"</span><span class="dark-green"> Href=</span><span>"https://github.com/bitfoundation/bitframework"></span>Open Bit Foundation In New Tab<span>&lt/</span><span class="dark-green">BitCompoundButton</span><span>&gt;</span>
+                    </p>
+                    <p>
+                        &lt<span class="dark-green">BitButton Title="</span><span>Standard"</span><span class="dark-green"> ButtonStyle="</span><span class="light-green">ButtonStyle</span><span>.Standard"</span><span class="dark-green"> Href=</span><span>"https://github.com/bitfoundation/bitframework"></span>Go To Bit Foundation<span>&lt/</span><span class="dark-green">BitCompoundButton</span><span>&gt;</span>
+                    </p>
+                    <p>
+                        &lt<span class="dark-green">BitButton Target="</span><span>_self"</span><span class="dark-green"> Href=</span><span>"https://github.com/bitfoundation/bitframework"</span><span class="dark-green"> IsEnabled="</span><span class="light-blue">false"&lt</span><span class="light-blue">span></span>Bit Foundation From Span<span class="light-blue">&ltspan></span><span>&lt/</span><span class="dark-green">BitCompoundButton</span><span>&gt;</span>
+                    </p>
+                </BitPivotItem>
+            </BitPivot>
+        </div>
+        <div class="card">
+            <h3>BitCompoundButton</h3>
+            <div class="desc">
+                <p>
+                    A compound button with SecondaryText attribute.
+                </p>
+            </div>
+            <BitPivot>
+                <BitPivotItem HeaderText="Example" IconName="ViewList">
+                    <BitCompoundButton IsEnabled="true"
+                                       Text="Primary"
+                                       AriaLabel="Detailed label used for screen reader."
+                                       SecondaryText="This Button is compound button">
+                    </BitCompoundButton>
+                    <BitCompoundButton IsEnabled="true"
+                                       Text="Standard"
+                                       AriaHidden="true"
+                                       SecondaryText="This Button is compound button"
+                                       ButtonStyle="ButtonStyle.Standard">
+                    </BitCompoundButton>
+                    <BitCompoundButton IsEnabled="false"
+                                       AllowDisabledFocus="false"
+                                       Text="Disabled"
+                                       AriaDescription="Detailed description used for screen reader."
+                                       SecondaryText="This Button is a disabled compound button">
+                    </BitCompoundButton>
+                </BitPivotItem>
+                <BitPivotItem HeaderText="Code" IconName="Source">
+                    <p>
+                        &lt<span class="dark-green">BitCompoundButton IsEnabled="</span><span class="light-blue">true"</span><span class="dark-green"> Text="</span><span>Primary"</span><span class="dark-green"> AriaLabel=</span><span>"Detailed label used for screen reader."</span><span class="dark-green"> SecondaryText</span>="This Button is compound button"><span>&lt/</span><span class="dark-green">BitCompoundButton</span><span>&gt;</span>
+                    </p>
+                    <p>
+                        &lt<span class="dark-green">BitCompoundButton IsEnabled="</span><span class="light-blue">true"</span><span class="dark-green"> Text="</span><span>Primary"</span><span class="dark-green"> AriaHidden=</span><span class="light-blue">true</span><span class="dark-green"> SecondaryText</span>="This Button is compound button"<span class="dark-green"> ButtonStyle="</span><span class="light-green">ButtonStyle</span>
+                        .Standard"<span>&lt/</span><span class="dark-green">BitCompoundButton</span><span>&gt;</span>
+                    </p>
+                    <p>
+                        &lt<span class="dark-green">BitCompoundButton IsEnabled="</span><span class="light-blue">false"</span><span class="dark-green"> Text="</span><span>Disabled"</span><span class="dark-green"> AriaDescription=</span><span>"Detailed description used for screen reader."</span><span class="dark-green"> SecondaryText</span>="This Button is a disabled compound button"<span class="light-green"> ButtonStyle</span>
+                        .Standard"<span>&lt/</span><span class="dark-green">BitCompoundButton</span><span>&gt;</span>
+                    </p>
+                </BitPivotItem>
+            </BitPivot>
+            <div class="card">
+                <h3>BitIconButton</h3>
+                <div class="desc">
+                    <p>
+                        BitIconButtons are just like BitButtons, the only difference is setting icon in BitIconButton component. It has Tooltip attribute, you can use it for showing button tooltip.
+                    </p>
+                </div>
+                <BitPivot>
+                    <BitPivotItem HeaderText="Example" IconName="ViewList">
+                        <BitIconButton IconName="Emoji" />
+                        <BitIconButton IconName="EmojiDisappointed" AllowDisabledFocus="false" IsEnabled="false" />
+                        <BitIconButton IconName="Emoji2" ToolTip="I'm Happy" />
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Code" IconName="Source">
+                        <p>
+                            &lt<span class="dark-green">BitIconButton IconName="</span>Emoji2"><span>&lt/</span><span class="dark-green">BitButton</span><span>&gt;</span>
+                        </p>
+                        <p>
+                            &lt<span class="dark-green">BitIconButton IconName="</span>Emoji2" <span class="dark-green">AllowDisabledFocus="</span><span class="light-blue">false"</span><span class="dark-green"> IsEnabled="</span><span class="light-blue">false"></span><span>&lt/</span><span class="dark-green">BitButton</span><span>&gt;</span>
+                        </p>
+                        <p>
+                            &lt<span class="dark-green">BitIconButton IconName="</span>Emoji2"<span class="dark-green"> ToolTip=</span><span>"I'm Happy"><span>&lt/</span></span><span class="dark-green">BitButton</span><span>&gt;</span>
+                        </p>
+                    </BitPivotItem>
+                </BitPivot>
+            </div>
+            <div class="card">
+                <h3>BitActionButton</h3>
+                <div class="desc">
+                    <p>
+                        You can have button like link and also set icon on BitActionButton component.
+                    </p>
+                </div>
+                <BitPivot>
+                    <BitPivotItem HeaderText="Example" IconName="ViewList">
+                        <div>
+                            <BitActionButton IconName="AddFriend">Create account</BitActionButton>
+                        </div><div class="m-t-10">
+                            <BitActionButton AllowDisabledFocus="false" IsEnabled="false" IconName="UserRemove">Remove user</BitActionButton>
+                        </div>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Code" IconName="Source">
+                        <p>
+                            &lt<span class="dark-green">BitActionButton IconName="</span>AddFriend">Create account<span>&lt/</span><span class="dark-green">BitButton</span><span>&gt;</span>
+                        </p>
+                        <p>
+                            &lt<span class="dark-green">BitActionButton IconName="</span>UserRemove" <span class="dark-green">AllowDisabledFocus="</span><span class="light-blue">false"</span><span class="dark-green"> IsEnabled="</span><span class="light-blue">false"></span>Remove user<span>&lt/</span><span class="dark-green">BitButton</span><span>&gt;</span>
+                        </p>
+                    </BitPivotItem>
+                </BitPivot>
+            </div>
         </div>
     </div>
 </div>
