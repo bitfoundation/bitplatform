@@ -6,9 +6,12 @@ $BgHover: $BlizzardBlue;
 $BgTrackHover: $DarkAlt;
 
 
-/*Ranged*/
+.bit-slider-disabled-fluent {
+    pointer-events: none;
+    cursor: not-allowed;
+    opacity: 0.65;
+}
 
-/*=======================================*/
 .bit-slider .bit-slider-container {
     display: flex;
     align-items: center;
@@ -87,9 +90,9 @@ $BgTrackHover: $DarkAlt;
     box-shadow: none;
 }
 
-.bit-slider input[type=range]::-webkit-slider-thumb:hover, 
-.bit-slider input[type=range]::-webkit-slider-thumb:active, 
-.bit-slider input[type=range]:hover::-webkit-slider-thumb, 
+.bit-slider input[type=range]::-webkit-slider-thumb:hover,
+.bit-slider input[type=range]::-webkit-slider-thumb:active,
+.bit-slider input[type=range]:hover::-webkit-slider-thumb,
 .bit-slider input[type=range]:active::-webkit-slider-thumb {
     border-color: $BgTrackHover;
 }
@@ -106,7 +109,7 @@ $BgTrackHover: $DarkAlt;
     background: linear-gradient($BgTrack,$BgTrack) 0/var(--sx) 100% no-repeat,$BgDefult;
 }
 
-.bit-slider input[type=range]:hover::-webkit-slider-runnable-track, 
+.bit-slider input[type=range]:hover::-webkit-slider-runnable-track,
 .bit-slider input[type=range]:active::-webkit-slider-runnable-track {
     background: linear-gradient($BgTrackHover,$BgTrackHover) 0/var(--sx) 100% no-repeat,$BgHover;
 }
@@ -131,9 +134,9 @@ $BgTrackHover: $DarkAlt;
     box-shadow: none;
 }
 
-.bit-slider input[type=range]::-moz-range-thumb:hover, 
-.bit-slider input[type=range]:hover::-moz-range-track, 
-.bit-slider input[type=range]::-moz-range-thumb:active, 
+.bit-slider input[type=range]::-moz-range-thumb:hover,
+.bit-slider input[type=range]:hover::-moz-range-track,
+.bit-slider input[type=range]::-moz-range-thumb:active,
 .bit-slider input[type=range]:active::-moz-range-track {
     border-color: $BgTrackHover;
 }
@@ -142,7 +145,7 @@ $BgTrackHover: $DarkAlt;
     background: linear-gradient($BgTrack,$BgTrack) 0/var(--sx) 100% no-repeat,$BgDefult;
 }
 
-.bit-slider input[type=range]:hover::-moz-range-track, 
+.bit-slider input[type=range]:hover::-moz-range-track,
 .bit-slider input[type=range]:active::-moz-range-track {
     background: linear-gradient($BgTrackHover,$BgTrackHover) 0/var(--sx) 100% no-repeat,$BgHover;
 }
@@ -177,9 +180,9 @@ $BgTrackHover: $DarkAlt;
     box-shadow: none;
 }
 
-.bit-slider input[type=range]::-ms-thumb:hover, 
-.bit-slider input[type=range]:hover::-ms-thumb, 
-.bit-slider input[type=range]::-ms-thumb:active, 
+.bit-slider input[type=range]::-ms-thumb:hover,
+.bit-slider input[type=range]:hover::-ms-thumb,
+.bit-slider input[type=range]::-ms-thumb:active,
 .bit-slider input[type=range]:active::-ms-thumb {
     border-color: $BgTrackHover;
 }
@@ -191,7 +194,7 @@ $BgTrackHover: $DarkAlt;
     box-shadow: none;
 }
 
-.bit-slider input[type=range]:hover::-ms-fill-lower, 
+.bit-slider input[type=range]:hover::-ms-fill-lower,
 .bit-slider input[type=range]:active::-ms-fill-lower {
     background: $BgTrackHover;
 }

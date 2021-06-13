@@ -21,8 +21,8 @@
                     {
                         <span class="zeroTick" style="left: calc(50% - 1px);"></span>
                     }
-                    <input type="range" min="@Min" max="@Max" step="@Step" value="@RangeValue.Lower" @onchange="@HandleChange" @oninput="@(args => HandleInput(args, true))" />
-                    <input type="range" min="@Min" max="@Max" step="@Step" value="@RangeValue.Higher" @onchange="@HandleChange" @oninput="@(args => HandleInput(args, false))" />
+                    <input type="range" min="@Min" max="@Max" step="@Step" value="@RangeValue.Lower" @onchange="@HandleChange" @oninput="@(args => HandleInput(args, true))" disabled=@(!IsEnabled) />
+                    <input type="range" min="@Min" max="@Max" step="@Step" value="@RangeValue.Higher" @onchange="@HandleChange" @oninput="@(args => HandleInput(args, false))" disabled=@(!IsEnabled) />
                 </div>
             </div>
             @if (ShowValue)
@@ -42,8 +42,8 @@
                     {
                         <span class="zeroTick" style="left: calc(50% - 1px);"></span>
                     }
-                    <input type="range" min="@Min" max="@Max" step="@Step" value="@RangeValue.Lower" @onchange="@HandleChange" @oninput="@(args => HandleInput(args, true))" />
-                    <input type="range" min="@Min" max="@Max" step="@Step" value="@RangeValue.Higher" @onchange="@HandleChange" @oninput="@(args => HandleInput(args, false))" />
+                    <input type="range" min="@Min" max="@Max" step="@Step" value="@RangeValue.Lower" @onchange="@HandleChange" @oninput="@(args => HandleInput(args, true))" disabled=@(!IsEnabled) />
+                    <input type="range" min="@Min" max="@Max" step="@Step" value="@RangeValue.Higher" @onchange="@HandleChange" @oninput="@(args => HandleInput(args, false))" disabled=@(!IsEnabled) />
                 </div>
                 @if (ShowValue)
                 {
@@ -62,7 +62,7 @@
                     <span class="zeroTick" style="top: calc(50% - -2px);"></span>
                 }
 
-                <input type="range" min="@Min" max="@Max" step="@Step" value="@Value" @onchange="@HandleChange" @oninput="@HandleInput" style="@styleProgress" />
+                <input type="range" min="@Min" max="@Max" step="@Step" value="@Value" @onchange="@HandleChange" @oninput="@HandleInput" style="@styleProgress" disabled=@(!IsEnabled) />
             </div>
 
             @if (ShowValue)
@@ -78,7 +78,7 @@
                     <span class="zeroTick" style="left: calc(50% - 29px);"></span>
                 }
 
-                <input type="range" min="@Min" max="@Max" step="@Step" value="@Value" @onchange="@HandleChange" @oninput="@HandleInput" style="@styleProgress" />
+                <input type="range" min="@Min" max="@Max" step="@Step" value="@Value" @onchange="@HandleChange" @oninput="@HandleInput" style="@styleProgress" disabled=@(!IsEnabled) />
 
                 @if (ShowValue)
                 {
