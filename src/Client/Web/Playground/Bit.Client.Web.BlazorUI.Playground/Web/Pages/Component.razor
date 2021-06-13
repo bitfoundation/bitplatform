@@ -129,7 +129,7 @@
         When a link has an href, <BitLink Href="https://github.com/bitfoundation/bitframework" Target="_blank">it renders as an anchor tag</BitLink>.
         Without an href, <BitLink>the link is rendered as a button</BitLink>.
         You can also use the disabled attribute
-        to create a <BitLink IsEnabled="false">disabled link</BitLink>.It's not recommended to use Links with imgs because
+        to create a <BitLink Href="https://github.com/bitfoundation/bitframework" IsEnabled="false">disabled link</BitLink>.It's not recommended to use Links with imgs because
         Links are meant to render textual inline content. Buttons are inline-block or
         in the case of imgs, block. However, it is possible to create a linked image
         button by making a button with an unstyled variant and adding the img content
@@ -320,25 +320,6 @@
     <BitButton OnClick="() => RatingOutsideValue = 5">Make Rating Full</BitButton>
 </div>
 
-<hr />
-
-<div class="choice-container">
-    <h2>BitChoiceGroup & BitChoiceOption</h2>
-    <br />
-    <h3>Enabled</h3>
-    <BitChoiceGroup Name="Group1">
-        <BitChoiceOption Text="Option1" Value="1"></BitChoiceOption>
-        <BitChoiceOption Text="Option2" Value="2"></BitChoiceOption>
-        <BitChoiceOption Text="Disabled option" Value="3" IsEnabled="false"></BitChoiceOption>
-    </BitChoiceGroup>
-    <br />
-    <h3>Disabled</h3>
-    <BitChoiceGroup Name="Group2" IsEnabled="false">
-        <BitChoiceOption Text="Option1" Value="1"></BitChoiceOption>
-        <BitChoiceOption Text="Option2" Value="2"></BitChoiceOption>
-        <BitChoiceOption Text="Disabled option" Value="3" IsEnabled="false"></BitChoiceOption>
-    </BitChoiceGroup>
-</div>
 
 <hr />
 
@@ -532,4 +513,39 @@
             <h3> @link.Name </h3>
         </HeaderTemplate>
     </BitNav>
+</div>
+
+<hr />
+<div class="choice-container">
+    <h2>BitChoiceGroup & BitChoiceOption</h2>
+    <br />
+    <h3>Enabled</h3>
+    <BitChoiceGroup Name="Group1">
+        <BitChoiceOption Text="Option1" Value="1"></BitChoiceOption>
+        <BitChoiceOption Text="Option2" Value="2"></BitChoiceOption>
+        <BitChoiceOption Text="Disabled option" Value="3" IsEnabled="false"></BitChoiceOption>
+    </BitChoiceGroup>
+    <br />
+    <h3>Disabled</h3>
+    <BitChoiceGroup Name="Group2" IsEnabled="false">
+        <BitChoiceOption Text="Option1" Value="1"></BitChoiceOption>
+        <BitChoiceOption Text="Option2" Value="2"></BitChoiceOption>
+        <BitChoiceOption Text="Disabled option" Value="3" IsEnabled="false"></BitChoiceOption>
+    </BitChoiceGroup>
+</div>
+<hr />
+<div class="drop-container">
+    <h2>BitDropDown</h2>
+    <br />
+    <h3>Single select</h3>
+        <BitDropDown Items="GetDropdownItems()" Placeholder="Select an option">
+        </BitDropDown>
+        <br />
+     <h3>Disabled</h3>
+        <BitDropDown IsEnabled="false" Items="GetDropdownItems()" Placeholder="Select an option">
+        </BitDropDown>
+        <br />
+    <h3>Multi select</h3>
+    <BitDropDown IsMultiSelect="true" Items="GetDropdownItems()" Placeholder="Select options">
+    </BitDropDown>
 </div>
