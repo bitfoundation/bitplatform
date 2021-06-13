@@ -216,6 +216,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
         {
             IsMessageBarHidden = true;
         }
+        private string RatingChangedText = "";
 
         private List<Person>[] people = new List<Person>[2];
 
