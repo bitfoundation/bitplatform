@@ -110,7 +110,11 @@
 
     <div>
         <h3>Toggle Button</h3>
-        <BitToggleButton Text="@(IsTogleButtonChecked?"Button checked":"Button unchecked")" IconName="@(IsTogleButtonChecked?"Emoji2":"EmojiNeutral")" OnClick="ToggleButtonClick"></BitToggleButton>
+        <BitToggleButton ChekedLabel="Button checked" UnChekedLabel="Button unchecked"
+                         CheckedIconName="Emoji2" UnCheckedIconName="EmojiNeutral"></BitToggleButton>
+
+        <BitToggleButton ChekedLabel="Button checked" UnChekedLabel="Button unchecked" Checked="false"
+                         CheckedIconName="Emoji2" UnCheckedIconName="EmojiNeutral"></BitToggleButton>
     </div>
 
 </div>

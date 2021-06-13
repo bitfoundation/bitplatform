@@ -14,9 +14,11 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public string? AriaDescription { get; set; }
         [Parameter] public bool AriaHidden { get; set; }
         [Parameter] public string? AriaLabel { get; set; }
-        [Parameter] public string? IconName { get; set; }
-        [Parameter] public bool IsDisabled { get; set; } = false;
-        [Parameter] public string? Text { get; set; }
+        [Parameter] public bool Checked { get; set; } = true;
+        [Parameter] public string? CheckedIconName { get; set; }
+        [Parameter] public string? UnCheckedIconName { get; set; }
+        [Parameter] public string? ChekedLabel { get; set; }
+        [Parameter] public string? UnChekedLabel { get; set; }        
         [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
         [Parameter]
         public ButtonStyle ButtonStyle
@@ -33,6 +35,8 @@ namespace Bit.Client.Web.BlazorUI
         {
             if (IsEnabled)
             {
+                Checked = !Checked;
+                StateHasChanged();
                 await OnClick.InvokeAsync(e);
             }
         }
