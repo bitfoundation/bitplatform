@@ -2,6 +2,7 @@
 @inherits BitComponentBase
 
 <nav @ref="RootElement"
+     @attributes="HtmlAttributes"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      role="navigation"
@@ -40,7 +41,6 @@
 </nav>
 
 @code{
-
     public RenderFragment<NavLink>? childTemplate { get; set; }
 
     protected override void OnParametersSet()
@@ -88,9 +88,9 @@
                         }
                 </ul>
             }
+
         </div>
     </li>
     );
     }
-
 }
