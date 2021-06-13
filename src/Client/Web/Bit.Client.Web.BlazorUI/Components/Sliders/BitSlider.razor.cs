@@ -1,13 +1,17 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 
 namespace Bit.Client.Web.BlazorUI
 {
     public partial class BitSlider
     {
+        private bool isReadOnly;
+        private string styleProgress;
+        private string styleContainer;
+        private int inputHeight;
+
         private ElementReference ContainerRef { get; set; }
         private ElementReference TitleRef { get; set; }
         private ElementReference ValueLabelRef { get; set; }
@@ -18,6 +22,7 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public int? DefaultValue { get; set; }
         [Parameter] public int Min { get; set; } = 1;
         [Parameter] public int Max { get; set; } = 10;
+        [Parameter] public int Step { get; set; } = 1;
         [Parameter] public int? HigherValue { get; set; }
         [Parameter] public int? LowerValue { get; set; }
         [Parameter] public int? Value { get; set; }
@@ -26,7 +31,6 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public string Label { get; set; }
         [Parameter] public bool Ranged { get; set; }
         [Parameter] public bool ShowValue { get; set; } = true;
-        [Parameter] public int Step { get; set; } = 1;
         [Parameter] public bool Vertical { get; set; }
         [Parameter] public string ValueFormat { get; set; }
         [Parameter] public EventCallback<ChangeEventArgs> OnChange { get; set; }
@@ -42,10 +46,6 @@ namespace Bit.Client.Web.BlazorUI
                 ClassBuilder.Reset();
             }
         }
-        private bool isReadOnly;
-        private string styleProgress;
-        private string styleContainer;
-        private int inputHeight;
 
         protected override void RegisterComponentClasses()
         {
@@ -60,11 +60,6 @@ namespace Bit.Client.Web.BlazorUI
 
         protected override async Task OnInitializedAsync()
         {
-            if (DefaultValue.HasValue)
-            {
-                Value = DefaultValue.Value;
-            }
-
             if (DefaultHigherValue.HasValue)
             {
                 HigherValue = DefaultHigherValue.Value;
@@ -88,6 +83,10 @@ namespace Bit.Client.Web.BlazorUI
                 {
                     HigherValue = RangeValue.Higher;
                 }
+            }
+            else
+            {
+                Value = DefaultValue.GetValueOrDefault(Min);
             }
 
             if (!Vertical)
