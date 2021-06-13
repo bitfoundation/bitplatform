@@ -81,7 +81,7 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
-        [Parameter(CaptureUnmatchedValues = true)]
+        [Parameter]
         public Dictionary<string, object> HtmlAttributes { get; set; } = new Dictionary<string, object>();
 
         public override Task SetParametersAsync(ParameterView parameters)
