@@ -32,45 +32,6 @@ namespace Bit.Client.Web.BlazorUI
 
         [CascadingParameter] protected BitChoiceGroup? ChoiceGroup { get; set; }
 
-        public override Task SetParametersAsync(ParameterView parameters)
-        {
-            foreach (ParameterValue parameter in parameters)
-            {
-                switch (parameter.Name)
-                {
-                    case nameof(Text):
-                        Text = (string)parameter.Value;
-                        break;
-
-                    case nameof(Name):
-                        Name = (string)parameter.Value;
-                        break;
-
-                    case nameof(Value):
-                        Value = (string)parameter.Value;
-                        break;
-
-                    case nameof(IsChecked):
-                        IsChecked = (bool)parameter.Value;
-                        break;
-
-                    case nameof(OnClick):
-                        OnClick = (EventCallback<MouseEventArgs>)parameter.Value;
-                        break;
-
-                    case nameof(OnChange):
-                        OnChange = (EventCallback<ChangeEventArgs>)parameter.Value;
-                        break;
-
-                    case nameof(ChoiceGroup):
-                        ChoiceGroup = (BitChoiceGroup)parameter.Value;
-                        break;
-                }
-            }
-
-            return base.SetParametersAsync(parameters);
-        }
-
         protected override Task OnInitializedAsync()
         {
             if (ChoiceGroup is not null)
