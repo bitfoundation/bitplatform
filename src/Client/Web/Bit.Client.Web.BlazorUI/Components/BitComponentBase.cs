@@ -86,6 +86,7 @@ namespace Bit.Client.Web.BlazorUI
 
         public override Task SetParametersAsync(ParameterView parameters)
         {
+            HtmlAttributes.Clear();
             var parametersDictionary = parameters.ToDictionary() as Dictionary<string, object>;
             foreach (var parameter in parametersDictionary!)
             {
