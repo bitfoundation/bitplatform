@@ -8,8 +8,10 @@ namespace Bit.Client.Web.BlazorUI
     {
         private bool isChecked;
 
-        [Parameter] public string OnText { get; set; }
-        [Parameter] public string OffText { get; set; }
+        [Parameter] public string? OnText { get; set; }
+
+        [Parameter] public string? OffText { get; set; }
+
         [Parameter] public bool IsInlineLabel { get; set; }
 
         [Parameter]
@@ -27,7 +29,8 @@ namespace Bit.Client.Web.BlazorUI
 
         [Parameter] public EventCallback<bool> IsCheckedChanged { get; set; }
 
-        [Parameter] public RenderFragment ChildContent { get; set; }
+        [Parameter] public RenderFragment? ChildContent { get; set; }
+
         [Parameter] public EventCallback<bool> OnChange { get; set; }
 
         protected override string RootElementClass => "bit-tgl";
@@ -42,10 +45,8 @@ namespace Bit.Client.Web.BlazorUI
             });
 
             ClassBuilder.Register(() => IsInlineLabel ? $"{RootElementClass}-inline-{VisualClassRegistrar()}" : string.Empty);
-            ClassBuilder.Register(() =>
-            string.IsNullOrWhiteSpace(OnText) || string.IsNullOrWhiteSpace(OffText) ?
-                $"{RootElementClass}-noonoff-{VisualClassRegistrar()}" :
-                string.Empty);
+            ClassBuilder.Register(() => OnText.HasNoValue() || OffText.HasNoValue()
+                                            ? $"{RootElementClass}-noonoff-{VisualClassRegistrar()}" : string.Empty);
         }
 
         protected virtual async Task HandleOnClick(MouseEventArgs e)

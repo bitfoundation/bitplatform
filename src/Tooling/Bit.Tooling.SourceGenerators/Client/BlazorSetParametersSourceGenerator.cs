@@ -29,40 +29,46 @@ namespace Bit.Tooling.SourceGenerators
         private string GeneratePartialClassToOverrideSetParameters(INamedTypeSymbol classSymbol, List<IPropertySymbol> properties)
         {
             string namespaceName = classSymbol.ContainingNamespace.ToDisplayString();
+            bool isBase = classSymbol.BaseType.ToDisplayString() == "Microsoft.AspNetCore.Components.ComponentBase";
 
-            StringBuilder source = new StringBuilder($@"using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
+            StringBuilder source = new StringBuilder($@"using System;
 using System.Threading.Tasks;
-using System;
+using System.Collections.Generic;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 
 namespace {namespaceName}
 {{
-    public partial class {classSymbol.Name}  
+    public partial class {classSymbol.Name}
     {{
-        public override Task SetParametersAsync(ParameterView parameters) 
+        public override Task SetParametersAsync(ParameterView parameters)
         {{
-            foreach (ParameterValue parameter in parameters)
-            {{
-                switch (parameter.Name)
-                {{
 ");
+            source.AppendLine("            var parametersDictionary = parameters.ToDictionary() as Dictionary<string, object>;");
+            source.AppendLine("            foreach (var parameter in parametersDictionary!)");
+            source.AppendLine("            {");
+            source.AppendLine("                switch (parameter.Key)");
+            source.AppendLine("                {");
 
-            // create cases for each property 
+            // create cases for each property
             foreach (IPropertySymbol propertySymbol in properties)
             {
-                GenerateParameterReaderCode(source, propertySymbol);
+                source.AppendLine($"                    case nameof({propertySymbol.Name}):");
+                source.AppendLine($"                       {propertySymbol.Name} = ({propertySymbol.Type.ToDisplayString()})parameter.Value;");
+                source.AppendLine("                       parametersDictionary.Remove(parameter.Key);");
+                source.AppendLine("                       break;");
             }
 
             source.AppendLine("                }");
             source.AppendLine("            }");
 
-            if (classSymbol.BaseType.ToDisplayString() == "Microsoft.AspNetCore.Components.ComponentBase")
+            if (isBase)
             {
                 source.AppendLine("            return base.SetParametersAsync(ParameterView.Empty);");
             }
             else
             {
-                source.AppendLine("            return base.SetParametersAsync(parameters);");
+                source.AppendLine("            return base.SetParametersAsync(ParameterView.FromDictionary(parametersDictionary));");
             }
 
             source.AppendLine("        }");
@@ -70,13 +76,6 @@ namespace {namespaceName}
             source.AppendLine("}");
 
             return source.ToString();
-        }
-
-        private void GenerateParameterReaderCode(StringBuilder source, IPropertySymbol propertySymbol)
-        {
-            source.AppendLine($"                    case nameof({propertySymbol.Name}):");
-            source.AppendLine($"                       {propertySymbol.Name} = ({propertySymbol.Type.ToDisplayString()})parameter.Value;");
-            source.AppendLine("                       break;");
         }
     }
 }

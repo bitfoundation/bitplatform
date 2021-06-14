@@ -2,9 +2,28 @@
 @inherits BitComponentBase
 
 <div @ref="RootElement"
+     @attributes="HtmlAttributes"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
-    <span class="flexContainer">
+    <span>
+        <i class="bit-icon bit-icon--@MessageBarIconName"></i>
+    </span>
+    <span class="@((Truncated && !ElementTruncateState) || IsMultiline ? "not-truncate" : "")">
         @ChildContent
+    </span>
+    <span>
+        @if (Truncated)
+        {
+            <span @onclick="ToggleElementTruncate">
+                <i class="bit-icon bit-icon--@(ElementTruncateState ? "DoubleChevronDown" : "DoubleChevronUp" )"></i>
+            </span>
+        }
+
+        @if (OnDismiss.HasDelegate)
+        {
+            <span @onclick="Dismiss">
+                <i class="bit-icon bit-icon--@DismissIconName"></i>
+            </span>
+        }
     </span>
 </div>
