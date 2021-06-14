@@ -1,6 +1,5 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 
 namespace Bit.Client.Web.BlazorUI
@@ -13,7 +12,7 @@ namespace Bit.Client.Web.BlazorUI
 
         public ElementReference CheckboxElement { get; set; }
 
-        [Inject] public IJSRuntime JSRuntime { get; set; }
+        [Inject] public IJSRuntime? JSRuntime { get; set; }
 
         [Parameter]
         public bool IsChecked
@@ -50,7 +49,7 @@ namespace Bit.Client.Web.BlazorUI
             {
                 if (value == isIndeterminate) return;
                 isIndeterminate = value;
-                _ = JSRuntime.SetProperty(CheckboxElement, "indeterminate", value);
+                _ = JSRuntime?.SetProperty(CheckboxElement, "indeterminate", value);
                 ClassBuilder.Reset();
                 _ = IsIndeterminateChanged.InvokeAsync(value);
             }
@@ -58,7 +57,7 @@ namespace Bit.Client.Web.BlazorUI
 
         [Parameter] public EventCallback<bool> IsIndeterminateChanged { get; set; }
 
-        [Parameter] public RenderFragment ChildContent { get; set; }
+        [Parameter] public RenderFragment? ChildContent { get; set; }
 
         [Parameter] public EventCallback<bool> OnChange { get; set; }
 
@@ -82,7 +81,7 @@ namespace Bit.Client.Web.BlazorUI
                                         : string.Empty);
         }
 
-        protected async Task HandleCheckboxClick(MouseEventArgs e)
+        protected async Task HandleCheckboxClick()
         {
             if (IsEnabled is false) return;
 
@@ -104,7 +103,7 @@ namespace Bit.Client.Web.BlazorUI
         {
             if (firstRender)
             {
-                await JSRuntime.SetProperty(CheckboxElement, "indeterminate", IsIndeterminate);
+                _ = JSRuntime?.SetProperty(CheckboxElement, "indeterminate", IsIndeterminate);
             }
 
             await base.OnAfterRenderAsync(firstRender);

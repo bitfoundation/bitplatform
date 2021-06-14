@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Bit.Client.Web.BlazorUI.Utils;
 using Microsoft.AspNetCore.Components;
@@ -7,13 +8,13 @@ namespace Bit.Client.Web.BlazorUI
 {
     public abstract partial class BitComponentBase : ComponentBase
     {
-        private string style;
         private Visual visual;
-        private string @class;
+        private string? style;
+        private string? @class;
         private bool isEnabled = true;
         private ComponentVisibility visibility;
 
-        protected bool Rendered { get; private set; } = false;
+        protected bool Rendered { get; private set; }
 
         private Guid _uniqueId = Guid.NewGuid();
 
@@ -35,7 +36,18 @@ namespace Bit.Client.Web.BlazorUI
         }
 
         [Parameter]
-        public string Class
+        public string? Style
+        {
+            get => style;
+            set
+            {
+                style = value;
+                StyleBuilder.Reset();
+            }
+        }
+
+        [Parameter]
+        public string? Class
         {
             get => @class;
             set
@@ -57,25 +69,64 @@ namespace Bit.Client.Web.BlazorUI
         }
 
         [Parameter]
-        public string Style
-        {
-            get => style;
-            set
-            {
-                style = value;
-                StyleBuilder.Reset();
-            }
-        }
-
-        [Parameter]
         public ComponentVisibility Visibility
         {
             get => visibility;
             set
             {
+                if (visibility == value) return;
                 visibility = value;
+                OnComponentVisibilityChanged(value);
                 StyleBuilder.Reset();
             }
+        }
+
+        [Parameter]
+        public Dictionary<string, object> HtmlAttributes { get; set; } = new Dictionary<string, object>();
+
+        public override Task SetParametersAsync(ParameterView parameters)
+        {
+            var parametersDictionary = parameters.ToDictionary() as Dictionary<string, object>;
+            foreach (var parameter in parametersDictionary!)
+            {
+                switch (parameter.Key)
+                {
+                    case nameof(Theme):
+                        Theme = (Theme)parameter.Value;
+                        parametersDictionary.Remove(parameter.Key);
+                        break;
+
+                    case nameof(Visual):
+                        Visual = (Visual)parameter.Value;
+                        parametersDictionary.Remove(parameter.Key);
+                        break;
+
+                    case nameof(Style):
+                        Style = (string?)parameter.Value;
+                        parametersDictionary.Remove(parameter.Key);
+                        break;
+
+                    case nameof(Class):
+                        Class = (string?)parameter.Value;
+                        parametersDictionary.Remove(parameter.Key);
+                        break;
+
+                    case nameof(IsEnabled):
+                        IsEnabled = (bool)parameter.Value;
+                        parametersDictionary.Remove(parameter.Key);
+                        break;
+
+                    case nameof(Visibility):
+                        Visibility = (ComponentVisibility)parameter.Value;
+                        parametersDictionary.Remove(parameter.Key);
+                        break;
+
+                    default:
+                        HtmlAttributes.Add(parameter.Key, parameter.Value);
+                        break;
+                }
+            }
+            return base.SetParametersAsync(ParameterView.Empty);
         }
 
         protected override void OnInitialized()
@@ -119,6 +170,10 @@ namespace Bit.Client.Web.BlazorUI
         }
 
         protected virtual void RegisterComponentClasses()
+        {
+        }
+
+        protected virtual void OnComponentVisibilityChanged(ComponentVisibility visibility)
         {
         }
     }

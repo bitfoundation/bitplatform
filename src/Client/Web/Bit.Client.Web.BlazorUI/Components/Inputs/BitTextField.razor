@@ -2,6 +2,7 @@
 @inherits BitComponentBase
 
 <div @ref="RootElement"
+     @attributes="HtmlAttributes"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
     @if (IsMultiLine && Type == TextFieldType.Text)
@@ -51,5 +52,4 @@
             <i class="bit-icon bit-icon--@IconName"></i>
         </span>
     }
-
 </div>
