@@ -17,5 +17,11 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
         {
             IsMessageBarHidden = true;
         }
+
+        private string SpinButtunValue;
+        public void HandleSpinButtonValueChange(string value)
+        {
+            SpinButtunValue = value;
+        }
     }
 }

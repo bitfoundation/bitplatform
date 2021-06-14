@@ -13,7 +13,7 @@ namespace Bit.Client.Web.BlazorUI
         public double Value { get; set; }
 
         [Inject] public IJSRuntime JSRuntime { get; set; }
-        
+
         [Parameter] public double Min { get; set; } = 0;
         [Parameter] public double Max { get; set; } = double.MaxValue;
         [Parameter] public double DefaultValue { get; set; } = 0;
@@ -21,15 +21,20 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public string Suffix { get; set; }
         [Parameter] public string Label { get; set; }
         [Parameter] public string IconName { get; set; }
-        [Parameter] public LabelPosition LabelPosition { 
-            get => labelPosition; 
-            set {
+
+        [Parameter]
+        public LabelPosition LabelPosition
+        {
+            get => labelPosition;
+            set
+            {
                 labelPosition = value;
                 ClassBuilder.Reset();
-            }}
+            }
+        }
         [Parameter] public EventCallback<string> OnChange { get; set; }
 
-        protected virtual async Task HandleUpClick(MouseEventArgs e)
+        private async Task HandleUpClick(MouseEventArgs e)
         {
             if (IsEnabled)
             {
@@ -42,7 +47,7 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
-        protected virtual async Task HandleDownClick(MouseEventArgs e)
+        private async Task HandleDownClick(MouseEventArgs e)
         {
             if (IsEnabled)
             {
@@ -59,10 +64,10 @@ namespace Bit.Client.Web.BlazorUI
 
         protected override void RegisterComponentClasses()
         {
-            ClassBuilder.Register(() => $"label-{LabelPosition}");
+            ClassBuilder.Register(() => $"{RootElementClass}-label-{LabelPosition}-{VisualClassRegistrar()}");
         }
 
-        protected virtual async Task HandleValueOnInputChange(ChangeEventArgs e)
+        private async Task HandleValueOnInputChange(ChangeEventArgs e)
         {
             if (IsEnabled)
             {
@@ -118,7 +123,7 @@ namespace Bit.Client.Web.BlazorUI
                         break;
                     case nameof(OnChange):
                         OnChange = (EventCallback<string>)parameter.Value;
-                        break; 
+                        break;
                     case nameof(IconName):
                         IconName = (string)parameter.Value;
                         break;
