@@ -9,7 +9,7 @@ namespace Bit.Client.Web.BlazorUI
         private bool isIndeterminate;
         private BoxSide boxSide;
         private bool isChecked;
-        private bool isCheckedHasValue;
+        private bool IsCheckedHasBeenSet;
 
         public ElementReference CheckboxElement { get; set; }
 
@@ -90,12 +90,12 @@ namespace Bit.Client.Web.BlazorUI
 
             if (IsIndeterminate)
             {
-                if (isCheckedHasValue && IsIndeterminateChanged.HasDelegate is false) return;
+                if (IsCheckedHasBeenSet && IsIndeterminateChanged.HasDelegate is false) return;
                 IsIndeterminate = false;
             }
             else
             {
-                if (isCheckedHasValue && IsCheckedChanged.HasDelegate is false) return;
+                if (IsCheckedHasBeenSet && IsCheckedChanged.HasDelegate is false) return;
                 IsChecked = !IsChecked;
             }
 
@@ -114,14 +114,14 @@ namespace Bit.Client.Web.BlazorUI
 
         public override Task SetParametersAsync(ParameterView parameters)
         {
-            isCheckedHasValue = false;
+            IsCheckedHasBeenSet = false;
 
             foreach (ParameterValue parameter in parameters)
             {
                 switch (parameter.Name)
                 {
                     case nameof(IsChecked):
-                        isCheckedHasValue = true;
+                        IsCheckedHasBeenSet = true;
                         IsChecked = (bool)parameter.Value;
                         break;
                     case nameof(IsCheckedChanged):
