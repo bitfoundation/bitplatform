@@ -20,6 +20,8 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
         private int RatingReadOnlyValue = 5;
         private int RatingOutsideValue = 5;
 
+        private string SpinButtunValue = string.Empty;
+
         private readonly List<NavLink> BasicNavLinks = new()
         {
             new NavLink
@@ -212,12 +214,16 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
         #endregion 
 
         private void HideMessageBar(MouseEventArgs args)
-
         {
             IsMessageBarHidden = true;
         }
 
         private string RatingChangedText = "";
+
+        private void HandleSpinButtonValueChange(string value)
+        {
+            SpinButtunValue =  value;
+        }
 
         private List<DropDownItem> GetDropdownItems()
         {

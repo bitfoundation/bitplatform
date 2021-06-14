@@ -94,47 +94,6 @@ namespace Bit.Client.Web.BlazorUI
             await base.OnAfterRenderAsync(firstRender);
         }
 
-        public override Task SetParametersAsync(ParameterView parameters)
-        {
-            foreach (ParameterValue parameter in parameters)
-            {
-                switch (parameter.Name)
-                {
-                    case nameof(Min):
-                        Min = (double)parameter.Value;
-                        break;
-                    case nameof(Max):
-                        Max = (double)parameter.Value;
-                        break;
-                    case nameof(Value):
-                        Value = (double)parameter.Value;
-                        break;
-                    case nameof(DefaultValue):
-                        DefaultValue = (double)parameter.Value;
-                        break;
-                    case nameof(Step):
-                        Step = (double)parameter.Value;
-                        break;
-                    case nameof(Suffix):
-                        Suffix = (string)parameter.Value;
-                        break;
-                    case nameof(Label):
-                        Label = (string)parameter.Value;
-                        break;
-                    case nameof(OnChange):
-                        OnChange = (EventCallback<string>)parameter.Value;
-                        break;
-                    case nameof(IconName):
-                        IconName = (string)parameter.Value;
-                        break;
-                    case nameof(LabelPosition):
-                        LabelPosition = (LabelPosition)parameter.Value;
-                        break;
-                }
-            }
-            return base.SetParametersAsync(parameters);
-        }
-
         private bool IsStepDecimal => Step.ToString().Contains(".");
 
         private double Normalize(double value)
