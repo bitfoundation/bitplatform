@@ -33,53 +33,6 @@ namespace Bit.Client.Web.BlazorUI
 
         [CascadingParameter] protected BitChoiceGroup? ChoiceGroup { get; set; }
 
-        public override Task SetParametersAsync(ParameterView parameters)
-        {
-            var parametersDictionary = parameters.ToDictionary() as Dictionary<string, object>;
-
-            foreach (var parameter in parametersDictionary!)
-            {
-                switch (parameter.Key)
-                {
-                    case nameof(Text):
-                        Text = (string)parameter.Value;
-                        parametersDictionary.Remove(parameter.Key);
-                        break;
-
-                    case nameof(Name):
-                        Name = (string)parameter.Value;
-                        parametersDictionary.Remove(parameter.Key);
-                        break;
-
-                    case nameof(Value):
-                        Value = (string)parameter.Value;
-                        parametersDictionary.Remove(parameter.Key);
-                        break;
-
-                    case nameof(IsChecked):
-                        IsChecked = (bool)parameter.Value;
-                        parametersDictionary.Remove(parameter.Key);
-                        break;
-
-                    case nameof(OnClick):
-                        OnClick = (EventCallback<MouseEventArgs>)parameter.Value;
-                        parametersDictionary.Remove(parameter.Key);
-                        break;
-
-                    case nameof(OnChange):
-                        OnChange = (EventCallback<ChangeEventArgs>)parameter.Value;
-                        parametersDictionary.Remove(parameter.Key);
-                        break;
-
-                    case nameof(ChoiceGroup):
-                        ChoiceGroup = (BitChoiceGroup)parameter.Value;
-                        parametersDictionary.Remove(parameter.Key);
-                        break;
-                }
-            }
-            return base.SetParametersAsync(ParameterView.FromDictionary(parametersDictionary));
-        }
-
         protected override Task OnInitializedAsync()
         {
             if (ChoiceGroup is not null)
