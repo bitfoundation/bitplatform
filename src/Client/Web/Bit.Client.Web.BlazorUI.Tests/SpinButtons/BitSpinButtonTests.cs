@@ -13,24 +13,24 @@ namespace Bit.Client.Web.BlazorUI.Tests.SpinButtons
     public class BitSpinButtonTests : BunitTestContext
     {
         [TestInitialize]
-        public void SetuoMode() 
+        public void SetuoMode()
         {
             Context.JSInterop.Mode = JSRuntimeMode.Loose;
-        } 
+        }
 
         [DataTestMethod, DataRow("cm"), DataRow("Inch"), DataRow("foot")]
         public void SpinButtonShouldHaveSuffixWhenItsPropertySet(string suffix)
         {
-            var component = RenderComponent<BitSpinButtonTest>(parameters => parameters.Add(p=>p.Suffix , suffix));
-            
+            var component = RenderComponent<BitSpinButtonTest>(parameters => parameters.Add(p => p.Suffix, suffix));
+
             var input = component.Find("input");
             var inputValue = input.GetAttribute("value");
 
             Assert.IsTrue(inputValue.Contains(suffix));
         }
 
-        [DataTestMethod, DataRow(2,4,2), DataRow(20, 22, 20)]
-        public void SpinButtonShouldRespectMaxValue(double max,double countOfClick, double expectedResult)
+        [DataTestMethod, DataRow(2, 4, 2), DataRow(20, 22, 20)]
+        public void SpinButtonShouldRespectMaxValue(double max, double countOfClick, double expectedResult)
         {
             var component = RenderComponent<BitSpinButtonTest>(parameters => parameters.Add(p => p.Max, max));
 
@@ -40,9 +40,9 @@ namespace Bit.Client.Web.BlazorUI.Tests.SpinButtons
             {
                 upButton.Click();
             }
-            var inputValue= double.Parse(input.GetAttribute("value"));
+            var inputValue = double.Parse(input.GetAttribute("value"));
 
-            Assert.AreEqual(inputValue,expectedResult);
+            Assert.AreEqual(inputValue, expectedResult);
         }
 
         [DataTestMethod, DataRow(0, 4, 0), DataRow(-2, 22, -2)]

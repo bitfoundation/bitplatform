@@ -1,8 +1,8 @@
-﻿using Microsoft.AspNetCore.Components;
+﻿using System;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
-using System;
-using System.Threading.Tasks;
 
 namespace Bit.Client.Web.BlazorUI
 {
@@ -32,6 +32,7 @@ namespace Bit.Client.Web.BlazorUI
                 ClassBuilder.Reset();
             }
         }
+
         [Parameter] public EventCallback<string> OnChange { get; set; }
 
         private async Task HandleUpClick(MouseEventArgs e)
@@ -71,7 +72,7 @@ namespace Bit.Client.Web.BlazorUI
         {
             if (IsEnabled)
             {
-                var userInput = e.Value.ToString();
+                var userInput = e.Value?.ToString();
                 var isNumber = double.TryParse(userInput, out var numericValue);
                 if (isNumber && numericValue >= Min && numericValue <= Max)
                 {
@@ -84,6 +85,7 @@ namespace Bit.Client.Web.BlazorUI
                 }
             }
         }
+
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
             if (firstRender)
@@ -105,6 +107,6 @@ namespace Bit.Client.Web.BlazorUI
             return result;
         }
 
-        private string ValueWithSuffix => Suffix == string.Empty ? $"{Normalize(Value)}" : $"{Normalize(Value)} {Suffix}";
+        private string ValueWithSuffix => string.IsNullOrEmpty(Suffix) ? $"{Normalize(Value)}" : $"{Normalize(Value)} {Suffix}";
     }
 }
