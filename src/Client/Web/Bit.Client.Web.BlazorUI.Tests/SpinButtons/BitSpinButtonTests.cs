@@ -67,7 +67,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.SpinButtons
             var component = RenderComponent<BitSpinButtonTest>(parameters => parameters.Add(p => p.LabelPosition, labelPosition));
 
             var container = component.Find(".bit-spb");
-            var classlist = container.ClassList;
+            var classlist = container.ClassList.ToString();
 
             Assert.IsTrue(classlist.Contains($"label-{labelPosition}"));
         }
