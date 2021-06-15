@@ -12,10 +12,6 @@ namespace Bit.Client.Web.BlazorUI
         private int? tabIndex;
 
         [Parameter] public bool AllowDisabledFocus { get; set; } = true;
-        [Parameter] public string? AriaDescription { get; set; }
-        [Parameter] public bool AriaHidden { get; set; }
-
-        [Parameter] public string? AriaLabel { get; set; }
 
         [Parameter] public string? Text { get; set; }
 

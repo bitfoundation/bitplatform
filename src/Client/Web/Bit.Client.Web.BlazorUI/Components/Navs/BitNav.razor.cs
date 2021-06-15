@@ -9,8 +9,6 @@ namespace Bit.Client.Web.BlazorUI
     {
         [Parameter] public string? SelectedKey { get; set; }
 
-        [Parameter] public string? AriaLabel { get; set; }
-
         [Parameter] public bool IsOnTop { get; set; }
 
         [Parameter] public ICollection<NavLink> NavLinks { get; set; } = new List<NavLink>();
