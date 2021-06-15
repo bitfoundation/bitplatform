@@ -65,7 +65,7 @@
                title="@navLink.Title"
                tabindex="-1"
                onclick="@(navLink.Disabled ? "return false;" : "")"
-               target="@(MapNavLinkTargetTypeToString(navLink.TargetType))"
+               target="@navLink.Target"
                style="padding: 0px 20px 0px @(((navLink.Depth * 14)+(navLink.Icon.HasNoValue() ? 27 : 3)).ToString())px;"
                class="@GetLinkClass(navLink)">
 
