@@ -520,6 +520,55 @@
         </HeaderTemplate>
     </BitNav>
 </div>
+<div class="basic-list">
+    <h2>BitList</h2>
+    <h3>Basic List use virtualization</h3>
+    <BitBasicList Items="people[0]" Virtualize="true" Style="border: 1px #a19f9d solid; border-radius: 3px; width: 90%; margin: auto;">
+        <RowTemplate Context="person">
+            <div style="border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;">
+                <img src="https://picsum.photos/100/100?random=@(@person.Id)">
+                <div style="margin-left:3%; display: inline-block;">
+                    <p>Id : <strong>@person.Id</strong></p>
+                    <p>Full Name :<strong>@person.FirstName @person.LastName</strong>  </p>
+                    <p>Job: <strong>@person.Job</strong></p>
+                </div>
+            </div>
+        </RowTemplate>
+    </BitBasicList>
+    <br />
+    <h3>Basic List without virtualization</h3>
+    <BitBasicList Items="people[1]" Virtualize="false" Style="border: 1px #a19f9d solid; border-radius: 3px; width: 90%; margin: auto;">
+        <RowTemplate Context="person">
+            <div style="border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;">
+                <p>Id : <strong>@person.Id</strong></p>
+                <p>Full Name :<strong>@person.FirstName @person.LastName</strong>  </p>
+                <p>Job: <strong>@person.Job</strong></p>
+            </div>
+        </RowTemplate>
+    </BitBasicList>
+    <br />
+    <h3>Basic List with custom role and class</h3>
+    <BitBasicList Items="people[0]" Virtualize="true" Role="list" Class="lst-custom-style" Style="border: 1px #a19f9d solid; border-radius: 3px; width: 90%; margin: auto;">
+        <RowTemplate Context="person">
+            <div class="lst3-list-item">
+                <span>Id : <strong>@person.Id</strong></span>
+                <span>Full Name :<strong>@person.FirstName</strong></span>
+                <span>Job: <strong>@person.Job</strong></span>
+            </div>
+        </RowTemplate>
+    </BitBasicList>
+    <br />
+    <h3>Basic List with overscan count 1 </h3>
+    <BitBasicList Items="people[0]" Virtualize="true" OverscanCount="1" ItemSize="100" Style="border: 1px #a19f9d solid; border-radius: 3px; width: 90%; margin: auto;">
+        <RowTemplate Context="person">
+            <div style="border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;">
+                <p>Id : <strong>@person.Id</strong></p>
+                <p>Full Name :<strong>@person.FirstName @person.LastName</strong>  </p>
+                <p>Job: <strong>@person.Job</strong></p>
+            </div>
+        </RowTemplate>
+    </BitBasicList>
+</div>
 
 <hr />
 <div class="choice-container">

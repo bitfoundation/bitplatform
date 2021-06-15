@@ -217,6 +217,26 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
         {
             IsMessageBarHidden = true;
         }
+        private string RatingChangedText = "";
+
+        private List<Person>[] people = new List<Person>[2];
+
+        protected override void OnInitialized()
+        {
+            base.OnInitialized();
+            //initialize people list
+            Person persons= new Person();
+            people[0] = persons.GetPeople(8000);
+            people[1] = persons.GetPeople(100);
+        }
+    }
+
+    public class Person
+    {
+        public int Id { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public string Job { get; set; }
 
         private string RatingChangedText = "";
 
@@ -264,6 +284,21 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
             });
 
             return items;
+        }
+        public List<Person> GetPeople(int itemCount)
+        {
+            List<Person> people = new();
+            for (int i = 0; i < itemCount; i++)
+            {
+                people.Add(new Person
+                {
+                    Id = i + 1,
+                    FirstName = $"Person {(i + 1).ToString()}",
+                    LastName = $"Person Family {(i + 1).ToString()}",
+                    Job = $"Programmer {(i + 1).ToString()}"
+                });
+            }
+            return people;
         }
     }
 }
