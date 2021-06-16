@@ -7,6 +7,11 @@ namespace Bit.Client.Web.BlazorUI
 {
     public partial class BitSlider
     {
+        private int? higherValue;
+        private int? lowerValue;
+        private int? value;
+        private (int Lower, int Higher) rangeValue;
+
         private bool isReadOnly;
         private string styleProgress;
         private string styleContainer;
@@ -23,10 +28,63 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public int Min { get; set; } = 1;
         [Parameter] public int Max { get; set; } = 10;
         [Parameter] public int Step { get; set; } = 1;
-        [Parameter] public int? HigherValue { get; set; }
-        [Parameter] public int? LowerValue { get; set; }
-        [Parameter] public int? Value { get; set; }
-        [Parameter] public (int Lower, int Higher) RangeValue { get; set; }
+
+        [Parameter]
+        public int? HigherValue
+        {
+            get => higherValue;
+            set
+            {
+                if (value == higherValue) return;
+                higherValue = value;
+                ClassBuilder.Reset();
+                _ = HigherValueChanged.InvokeAsync(value);
+            }
+        }
+        [Parameter] public EventCallback<int?> HigherValueChanged { get; set; }
+
+        [Parameter]
+        public int? LowerValue
+        {
+            get => lowerValue;
+            set
+            {
+                if (value == lowerValue) return;
+                lowerValue = value;
+                ClassBuilder.Reset();
+                _ = LowerValueChanged.InvokeAsync(value);
+            }
+        }
+        [Parameter] public EventCallback<int?> LowerValueChanged { get; set; }
+
+        [Parameter]
+        public int? Value
+        {
+            get => value;
+            set
+            {
+                if (value == this.value) return;
+                this.value = value;
+                ClassBuilder.Reset();
+                _ = ValueChanged.InvokeAsync(value);
+            }
+        }
+        [Parameter] public EventCallback<int?> ValueChanged { get; set; }
+
+        [Parameter]
+        public (int Lower, int Higher) RangeValue
+        {
+            get => rangeValue;
+            set
+            {
+                if (value == this.rangeValue) return;
+                this.rangeValue = value;
+                ClassBuilder.Reset();
+                _ = RangeValueChanged.InvokeAsync(value);
+            }
+        }
+        [Parameter] public EventCallback<(int Lower, int Higher)> RangeValueChanged { get; set; }
+
         [Parameter] public bool OriginFromZero { get; set; }
         [Parameter] public string Label { get; set; }
         [Parameter] public bool Ranged { get; set; }
@@ -58,7 +116,7 @@ namespace Bit.Client.Web.BlazorUI
                                                 : $"{RootElementClass}{(Ranged ? "-ranged" : null)}-row");
         }
 
-        protected override async Task OnInitializedAsync()
+        protected override void OnInitialized()
         {
             if (DefaultHigherValue.HasValue)
             {
@@ -94,7 +152,7 @@ namespace Bit.Client.Web.BlazorUI
                 FillSlider();
             }
 
-            await base.OnInitializedAsync();
+            base.OnInitialized();
         }
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
