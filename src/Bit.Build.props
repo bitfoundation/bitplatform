@@ -24,12 +24,12 @@
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageProjectUrl>https://github.com/bitfoundation/bitframework</PackageProjectUrl>
 		<PackageIconUrl>https://avatars.githubusercontent.com/u/22663390</PackageIconUrl>
-		<PackageReleaseNotes>https://github.com/bitfoundation/bitframework/releases/tag/v7.3.0</PackageReleaseNotes>
-		<PackageVersion>7.3.0</PackageVersion>
+		<PackageReleaseNotes>https://github.com/bitfoundation/bitframework/releases/tag/v7.4.0</PackageReleaseNotes>
+		<PackageVersion>7.4.0</PackageVersion>
 
 		<!-- Version -->
-		<Version>7.3.0</Version>
-		<AssemblyVersion>7.3.0</AssemblyVersion>
+		<Version>7.4.0</Version>
+		<AssemblyVersion>7.4.0</AssemblyVersion>
 
 		<!-- Compile -->
 		<NeutralLanguage>en</NeutralLanguage>
