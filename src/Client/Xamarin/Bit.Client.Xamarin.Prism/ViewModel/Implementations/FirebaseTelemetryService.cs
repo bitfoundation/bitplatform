@@ -5,13 +5,16 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace Bit.ViewModel.Implementations
 {
 #if Android
     delegate void LogEventDelegate(string eventName, global::Android.OS.Bundle bundle);
     delegate void CrashlyticsSetUserIdDelegate(string? userId);
+    delegate void RecordExceptionDelegate(Java.Lang.Throwable throwable);
     delegate void AnalyticsSetUserIdDelegate(string? userId);
+    delegate bool DidCrashOnPreviousExecutionDelegate();
 #elif iOS
     delegate void LogEventDelegate(string name, Foundation.NSDictionary<Foundation.NSString, Foundation.NSObject> nsParameters);
     delegate void SetUserIdentifierDelegate(string? identifier);
@@ -22,12 +25,14 @@ namespace Bit.ViewModel.Implementations
         private bool _isInited = false;
 
 #if Android
-        private LogEventDelegate LogEvent;
-        private CrashlyticsSetUserIdDelegate CrashlyticsSetUserId;
-        private AnalyticsSetUserIdDelegate AnalyticsSetUserId;
+        private LogEventDelegate _LogEvent;
+        private CrashlyticsSetUserIdDelegate _CrashlyticsSetUserId;
+        private RecordExceptionDelegate _RecordException;
+        private AnalyticsSetUserIdDelegate _AnalyticsSetUserId;
+        private DidCrashOnPreviousExecutionDelegate _DidCrashOnPreviousExecution;
 #elif iOS
-        private LogEventDelegate LogEvent;
-        private SetUserIdentifierDelegate SetUserIdentifier;
+        private LogEventDelegate _LogEvent;
+        private SetUserIdentifierDelegate _SetUserIdentifier;
 #endif
 
         private static FirebaseTelemetryService? _current;
@@ -45,12 +50,14 @@ namespace Bit.ViewModel.Implementations
 
             var analyticsType = Assembly.Load("Xamarin.GooglePlayServices.Measurement.Api").GetType("Firebase.Analytics.FirebaseAnalytics");
             var analyticsInstance = analyticsType.GetMethod("GetInstance").Invoke(null, new object[] { context });
-            AnalyticsSetUserId = (AnalyticsSetUserIdDelegate)Delegate.CreateDelegate(typeof(AnalyticsSetUserIdDelegate), target: analyticsInstance, method: "SetUserId", ignoreCase: false);
-            LogEvent = (LogEventDelegate)Delegate.CreateDelegate(typeof(LogEventDelegate), target: analyticsInstance, method: "LogEvent", ignoreCase: false);
+            _AnalyticsSetUserId = (AnalyticsSetUserIdDelegate)Delegate.CreateDelegate(typeof(AnalyticsSetUserIdDelegate), target: analyticsInstance, method: "SetUserId", ignoreCase: false);
+            _LogEvent = (LogEventDelegate)Delegate.CreateDelegate(typeof(LogEventDelegate), target: analyticsInstance, method: "LogEvent", ignoreCase: false);
 
             var crashlyticsType = Assembly.Load("Xamarin.Firebase.Crashlytics").GetType("Firebase.Crashlytics.FirebaseCrashlytics");
             var crashlyticsInstace = crashlyticsType.GetProperty("Instance").GetValue(null);
-            CrashlyticsSetUserId = (CrashlyticsSetUserIdDelegate)Delegate.CreateDelegate(typeof(CrashlyticsSetUserIdDelegate), target: crashlyticsInstace, method: "SetUserId", ignoreCase: false);
+            _CrashlyticsSetUserId = (CrashlyticsSetUserIdDelegate)Delegate.CreateDelegate(typeof(CrashlyticsSetUserIdDelegate), target: crashlyticsInstace, method: "SetUserId", ignoreCase: false);
+            _RecordException = (RecordExceptionDelegate)Delegate.CreateDelegate(typeof(RecordExceptionDelegate), target: crashlyticsInstace, method: "RecordException", ignoreCase: false);
+            _DidCrashOnPreviousExecution = (DidCrashOnPreviousExecutionDelegate)Delegate.CreateDelegate(typeof(DidCrashOnPreviousExecutionDelegate), target: crashlyticsInstace, method: "DidCrashOnPreviousExecution", ignoreCase: false);
 
             _isInited = true;
         }
@@ -67,7 +74,7 @@ namespace Bit.ViewModel.Implementations
                 .GetMethod("Configure")
                 .Invoke(null, Array.Empty<object>());
 
-            LogEvent = (LogEventDelegate)Delegate.CreateDelegate(typeof(LogEventDelegate), Assembly.Load("Firebase.Analytics")
+            _LogEvent = (LogEventDelegate)Delegate.CreateDelegate(typeof(LogEventDelegate), Assembly.Load("Firebase.Analytics")
                 .GetType("Firebase.Analytics.Analytics")
                 .GetMethod("LogEvent"));
 
@@ -76,7 +83,7 @@ namespace Bit.ViewModel.Implementations
                 .GetProperty("SharedInstance")
                 .GetValue(null);
 
-            SetUserIdentifier = (SetUserIdentifierDelegate)Delegate.CreateDelegate(typeof(SetUserIdentifierDelegate), target: sharedInstance, "SetUserIdentifier");
+            _SetUserIdentifier = (SetUserIdentifierDelegate)Delegate.CreateDelegate(typeof(SetUserIdentifierDelegate), target: sharedInstance, "SetUserIdentifier");
 
             _isInited = true;
         }
@@ -98,11 +105,11 @@ namespace Bit.ViewModel.Implementations
                 {
                     foreach (var param in properties)
                     {
-                        bundle.PutString(param.Key, param.Value);
+                        bundle.PutString(param.Key.Length > 40 ? param.Key.Substring(0, 40) : param.Key, param.Value?.Length > 100 ? param.Value.Substring(0, 100) : param.Value);
                     }
                 }
 
-                LogEvent(eventName, bundle);
+                _LogEvent(eventName, bundle);
 #endif
 
 #if iOS
@@ -120,7 +127,7 @@ namespace Bit.ViewModel.Implementations
 
                 var parametersDictionary = Foundation.NSDictionary<Foundation.NSString, Foundation.NSObject>.FromObjectsAndKeys(values.ToArray(), keys.ToArray(), keys.Count);
 
-                LogEvent(eventName, parametersDictionary);
+                _LogEvent(eventName, parametersDictionary);
 #endif
             }
         }
@@ -132,12 +139,16 @@ namespace Bit.ViewModel.Implementations
                 if (exception == null)
                     throw new ArgumentNullException(nameof(exception));
 
+#if Android
+                _RecordException(Java.Lang.Throwable.FromException(exception));
+#else
                 properties ??= new Dictionary<string, string?>();
 
                 if (!properties.ContainsKey("Message"))
                     properties.Add("Message", exception.ToString());
 
                 TrackEvent(exception.GetType().Name, properties);
+#endif
             }
         }
 
@@ -208,12 +219,19 @@ namespace Bit.ViewModel.Implementations
             if (IsConfigured())
             {
 #if Android
-                CrashlyticsSetUserId.Invoke(userId);
-                AnalyticsSetUserId(userId);
+                _CrashlyticsSetUserId.Invoke(userId);
+                _AnalyticsSetUserId(userId);
 #elif iOS
-                SetUserIdentifier(userId);
+                _SetUserIdentifier(userId);
 #endif
             }
         }
+
+#if Android
+        public async override Task<bool> DidCrashOnPreviousExecution()
+        {
+            return _DidCrashOnPreviousExecution();
+        }
+#endif
     }
 }
