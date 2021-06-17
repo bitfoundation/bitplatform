@@ -20,7 +20,7 @@ namespace Bit.Client.Web.BlazorUI
 
         public bool Disabled { get; set; }
 
-        public NavLinkTargetType TargetType { get; set; }
+        public string? Target { get; set; }
 
         public IEnumerable<NavLink>? Links { get; set; }
 

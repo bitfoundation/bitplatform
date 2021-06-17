@@ -5,6 +5,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
 {
     public partial class Component
     {
+        private bool CheckBoxOnChangedValue= false;
         private bool IsCheckBoxChecked = false;
         private bool IsCheckBoxIndeterminate = true;
         private bool IsCheckBoxIndeterminateInCode = true;
@@ -28,7 +29,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
                 Url = "http://example.com",
                 Key = "key1",
                 Title = "Home",
-                TargetType = NavLinkTargetType.Blank,
+                Target = "_blank",
                 IsExpanded = true,
                 CollapseAriaLabel = "Collapse Home section",
                 Links = new List<NavLink>
@@ -47,11 +48,11 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
                             new NavLink{Name= "MSN",Title="MSN", Url= "http://msn.com", Key= "key1-2",Disabled=true },
                         }
             },
-            new NavLink { Name = "Documents", Title = "Documents", Url = "http://example.com", Key = "key2", TargetType = NavLinkTargetType.Blank, IsExpanded = true },
-            new NavLink { Name = "Pages", Title = "Pages", Url = "http://msn.com", Key = "key3", TargetType = NavLinkTargetType.Parent },
+            new NavLink { Name = "Documents", Title = "Documents", Url = "http://example.com", Key = "key2", Target = "_blank", IsExpanded = true },
+            new NavLink { Name = "Pages", Title = "Pages", Url = "http://msn.com", Key = "key3", Target = "_parent" },
             new NavLink { Name = "Notebook", Title = "Notebook", Url = "http://msn.com", Key = "key4", Disabled = true },
-            new NavLink { Name = "Communication and Media", Title = "Communication and Media", Url = "http://msn.com", Key = "key5", TargetType = NavLinkTargetType.Top },
-            new NavLink { Name = "News", Title = "News", Url = "http://msn.com", Key = "key6", Icon = "News", TargetType = NavLinkTargetType.Self },
+            new NavLink { Name = "Communication and Media", Title = "Communication and Media", Url = "http://msn.com", Key = "key5", Target = "_top" },
+            new NavLink { Name = "News", Title = "News", Url = "http://msn.com", Key = "key6", Icon = "News", Target = "_self" },
         };
 
         private readonly List<NavLink> BasicNoToolTipNavLinks = new()
@@ -61,7 +62,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
                 Name = "Home",
                 Url = "http://example.com",
                 Key = "key1",
-                TargetType = NavLinkTargetType.Blank,
+                Target = "_blank",
                 IsExpanded = true,
                 CollapseAriaLabel = "Collapse Home section",
                 Links = new List<NavLink>
@@ -78,11 +79,11 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
                             new NavLink{Name= "MSN", Url= "http://msn.com", Key= "key1-2",Disabled=true },
                         }
             },
-            new NavLink { Name = "Shared Documents and Files", Url = "http://example.com", Key = "key2", TargetType = NavLinkTargetType.Blank, IsExpanded = true },
-            new NavLink { Name = "Pages", Url = "http://msn.com", Key = "key3", TargetType = NavLinkTargetType.Parent },
+            new NavLink { Name = "Shared Documents and Files", Url = "http://example.com", Key = "key2", Target = "_blank", IsExpanded = true },
+            new NavLink { Name = "Pages", Url = "http://msn.com", Key = "key3", Target = "_parent" },
             new NavLink { Name = "Notebook", Url = "http://msn.com", Key = "key4", Disabled = true },
-            new NavLink { Name = "Communication and Media", Url = "http://msn.com", Key = "key5", TargetType = NavLinkTargetType.Top },
-            new NavLink { Name = "News", Url = "http://msn.com", Key = "key6", Icon = "News", TargetType = NavLinkTargetType.Self },
+            new NavLink { Name = "Communication and Media", Url = "http://msn.com", Key = "key5", Target = "_top" },
+            new NavLink { Name = "News", Url = "http://msn.com", Key = "key6", Icon = "News", Target = "_self" },
         };
 
         private readonly List<NavLink> BasicNoUrlNavLinks = new()
@@ -218,5 +219,51 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
         }
 
         private string RatingChangedText = "";
+
+        private List<DropDownItem> GetDropdownItems()
+        {
+            List<DropDownItem> items = new();
+            items.Add(new DropDownItem()
+            {
+                ItemType = DropDownItemType.Header,
+                Text = "Fruits"
+            });
+            items.Add(new DropDownItem()
+            {
+                ItemType = DropDownItemType.Normal,
+                Text = "Apple",
+                Value = "f-app"
+            });
+            items.Add(new DropDownItem()
+            {
+                ItemType = DropDownItemType.Normal,
+                Text = "Orange",
+                Value = "f-ora",
+                IsEnabled = false
+            });
+            items.Add(new DropDownItem()
+            {
+                ItemType = DropDownItemType.Normal,
+                Text = "Banana",
+                Value = "f-ban",
+            });
+            items.Add(new DropDownItem()
+            {
+                ItemType = DropDownItemType.Divider,
+            });
+            items.Add(new DropDownItem()
+            {
+                ItemType = DropDownItemType.Header,
+                Text = "Vegetables"
+            });
+            items.Add(new DropDownItem()
+            {
+                ItemType = DropDownItemType.Normal,
+                Text = "Broccoli",
+                Value = "v-bro",
+            });
+
+            return items;
+        }
     }
 }
