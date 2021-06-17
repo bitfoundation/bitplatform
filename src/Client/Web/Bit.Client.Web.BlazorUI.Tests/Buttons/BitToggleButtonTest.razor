@@ -1,18 +1,16 @@
 ﻿<CascadingValue Value="Visual">
-    <div>
-        <BitToggleButton ChekedLabel="@ChekedLabel"
-                         UnChekedLabel="@UnChekedLabel"
-                         CheckedIconName="@CheckedIconName"
-                         UnCheckedIconName="@UnCheckedIconName"
-                         AllowDisabledFocus="AllowDisabledFocus"
-                         IsEnabled="IsEnabled"
-                         ButtonStyle="ButtonStyle"
-                         AriaDescription="@AriaDescription"
-                         AriaLabel="@AriaLabel"
-                         AriaHidden="AriaHidden">
-            >
-        </BitToggleButton>
-    </div>
+    <BitToggleButton @bind-IsChecked="@IsChecked"
+                     ChekedLabel="@ChekedLabel"
+                     UnChekedLabel="@UnChekedLabel"
+                     CheckedIconName="@CheckedIconName"
+                     UnCheckedIconName="@UnCheckedIconName"
+                     AllowDisabledFocus="AllowDisabledFocus"
+                     IsEnabled="IsEnabled"
+                     ButtonStyle="ButtonStyle"
+                     AriaDescription="@AriaDescription"
+                     AriaLabel="@AriaLabel"
+                     AriaHidden="AriaHidden">
+    </BitToggleButton>
 </CascadingValue>
 
 @code {
@@ -21,13 +19,19 @@
     [Parameter] public string? AriaDescription { get; set; }
     [Parameter] public bool AriaHidden { get; set; }
     [Parameter] public string? AriaLabel { get; set; }
-    [Parameter] public bool IsDisabled { get; set; }
     [Parameter] public bool IsEnabled { get; set; }
-    [Parameter] public bool Checked { get; set; } = true;
+    [Parameter] public bool IsChecked { get; set; }
     [Parameter] public string? CheckedIconName { get; set; }
     [Parameter] public string? UnCheckedIconName { get; set; }
     [Parameter] public string? ChekedLabel { get; set; }
     [Parameter] public string? UnChekedLabel { get; set; }
-//    [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
-    [Parameter] public ButtonStyle ButtonStyle { get; set; }        
+    [Parameter] public ButtonStyle ButtonStyle { get; set; }
+
+
+    public int CurrentCount { get; set; }
+
+    public void IncrementCount(MouseEventArgs e)
+    {
+        CurrentCount++;
+    }
 }

@@ -3,14 +3,14 @@
 
 <button @ref="RootElement"
         style="@StyleBuilder.Value"
-        class="@ClassBuilder.Value @((Checked)?"bit-tgl-btn-checked":"")"
+        class="@ClassBuilder.Value"
         aria-label="@AriaLabel"
         aria-describedby="@AriaDescription"
         aria-hidden="@AriaHidden"
         tabindex="@tabIndex"
         @onclick="HandleOnClick">
-    <span class="bit-tgl-btn-elemens-container">
-        <i class="bit-icon bit-icon--@((Checked)?CheckedIconName:UnCheckedIconName) bit-tgl-icon"></i>
-        <span class="bit-tgl-lbl">@((Checked)?ChekedLabel:UnChekedLabel)</span>
+    <span>
+        <i class="bit-icon bit-icon--@((IsChecked)?CheckedIconName:UnCheckedIconName)"></i>
+        <span>@((IsChecked) ?ChekedLabel:UnChekedLabel)</span>
     </span>
 </button>

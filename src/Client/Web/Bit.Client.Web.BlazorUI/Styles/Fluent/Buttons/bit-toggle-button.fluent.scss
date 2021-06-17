@@ -14,21 +14,21 @@
     text-decoration: none;
     margin: 2px;
 
-    .bit-tgl-lbl {
-        margin: 0px 4px;
-        line-height: 100%;
-        display: block;
-        font-weight: 600;
-    }
-
-    .bit-tgl-btn-elemens-container {
+    > span {
         display: flex;
         height: 100%;
         flex-wrap: nowrap;
         justify-content: center;
         align-items: center;
 
-        .bit-tgl-icon {
+        > span {
+            margin: 0px 4px;
+            line-height: 100%;
+            display: block;
+            font-weight: 600;
+        }
+
+        > i {
             font-size: 16px;
             margin: 0px 4px;
             height: 16px;
@@ -53,7 +53,7 @@
         background-color: $Grey30;
     }
 
-    .bit-tgl-btn-elemens-container {
+    > span {
         display: flex;
         height: 100%;
         flex-wrap: nowrap;
