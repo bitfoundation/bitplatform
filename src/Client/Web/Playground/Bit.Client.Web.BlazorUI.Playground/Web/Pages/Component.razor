@@ -42,6 +42,11 @@
 
     <hr />
 
+    <h3>Button with Html Attributes</h3>
+    <BitButton Visibility="ComponentVisibility.Visible" style="background-color: red;" dir="rtl" class="text-btn" type="button">Button</BitButton>
+
+    <hr />
+
     <h3>BitCompoundButton</h3>
     <BitCompoundButton IsEnabled="true"
                        Text="Primary"
@@ -126,10 +131,10 @@
 <div class="links-container">
     <h3>Links</h3>
     <p>
-        When a link has an href, <BitLink Href="https://github.com/bitfoundation/bitframework" Target="_blank">it renders as an anchor tag</BitLink>.
-        Without an href, <BitLink>the link is rendered as a button</BitLink>.
+        When a link has an href, <BitLink Href="https://github.com/bitfoundation/bitframework" Target="_blank" HasUnderline="true">it renders as an anchor tag</BitLink>.
+        Without an href, <BitLink HasUnderline="true">the link is rendered as a button</BitLink>.
         You can also use the disabled attribute
-        to create a <BitLink IsEnabled="false">disabled link</BitLink>.It's not recommended to use Links with imgs because
+        to create a <BitLink Href="https://github.com/bitfoundation/bitframework" IsEnabled="false" HasUnderline="true">disabled link</BitLink>. It's not recommended to use Links with imgs because
         Links are meant to render textual inline content. Buttons are inline-block or
         in the case of imgs, block. However, it is possible to create a linked image
         button by making a button with an unstyled variant and adding the img content
@@ -177,8 +182,9 @@
     <h2>Checkboxes</h2>
     <h3>Basics</h3>
     <BitCheckbox @bind-IsChecked="IsCheckBoxChecked">Basic Checkbox</BitCheckbox>
-    <BitCheckbox IsChecked="true">Checked Checkbox</BitCheckbox>
+    <BitCheckbox IsChecked="true">Checked Checkbox (my value wont changed because im not provided with IsCheckedChanged)</BitCheckbox>
     <BitCheckbox IsEnabled="false">Disable Checkbox</BitCheckbox>
+    <BitCheckbox IsEnabled="true" OnChange="e => CheckBoxOnChangedValue = e">checkbox with only onchange </BitCheckbox> @(CheckBoxOnChangedValue ? "im checked" : "im not checked")
     <BitCheckbox IsEnabled="false" IsChecked="true">Disable Checked Checkbox</BitCheckbox>
     <br />
     <h3>Indeterminate</h3>
