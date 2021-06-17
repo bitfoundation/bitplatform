@@ -2,7 +2,6 @@
 using Prism.Ioc;
 #if Android
 using Autofac.Core;
-using Prism.Logging;
 using System;
 using System.Collections.Generic;
 using Xamarin.Forms.Internals;

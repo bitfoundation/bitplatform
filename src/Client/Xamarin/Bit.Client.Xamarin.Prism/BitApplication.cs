@@ -6,15 +6,14 @@ using Bit.Core.Models.Events;
 using Bit.View;
 using Bit.ViewModel;
 using Bit.ViewModel.Contracts;
-using Bit.ViewModel.Implementations;
 using Microsoft.Extensions.DependencyInjection;
 using Prism;
 using Prism.Autofac;
 using Prism.Events;
 using Prism.Ioc;
-using Prism.Logging;
 using Prism.Navigation;
 using Prism.Plugin.Popups;
+using Prism.Regions;
 using Prism.Regions.Adapters;
 using Prism.Regions.Behaviors;
 using Prism.Services;
@@ -152,7 +151,6 @@ namespace Bit
 
         protected virtual void RegisterTypes(IDependencyManager dependencyManager, IContainerRegistry containerRegistry, ContainerBuilder containerBuilder, IServiceCollection services)
         {
-            dependencyManager.Register<ILogger, BitPrismLogger>();
             dependencyManager.RegisterUsing(resolver => Container, lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
             dependencyManager.RegisterUsing(resolver => Container.GetContainer(), lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
             BitCSharpClientControls.UseBitPopupNavigation();
@@ -165,6 +163,8 @@ namespace Bit
             containerRegistry.Register<LayoutViewRegionAdapter>();
             containerRegistry.Register<ScrollViewRegionAdapter>();
             containerRegistry.Register<ContentViewRegionAdapter>();
+
+            containerRegistry.Register<SingleActiveRegion, BitSingleActiveRegion>();
 
             containerRegistry.Register<DelayedRegionCreationBehavior>();
             containerRegistry.Register<RegionBehaviorFactory>();
@@ -180,6 +180,21 @@ namespace Bit
             // workaround end
 
             //containerRegistry.RegisterPopupDialogService();
+        }
+    }
+
+    public class BitSingleActiveRegion : SingleActiveRegion
+    {
+        public override void Activate(VisualElement view)
+        {
+            var currentActiveView = ActiveViews.FirstOrDefault();
+
+            if (currentActiveView != null && currentActiveView != view && Views.Contains(currentActiveView))
+            {
+                Remove(currentActiveView);
+            }
+
+            base.Activate(view);
         }
     }
 }

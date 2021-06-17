@@ -1,4 +1,5 @@
-﻿using Prism.Navigation;
+﻿using Prism.Common;
+using Prism.Navigation;
 
 namespace Prism.Regions
 {
@@ -19,6 +20,20 @@ namespace Prism.Regions
             };
 
             return navigationParameters;
+        }
+
+        public static IRegionManager DestroyRegion(this IRegionManager regionManager, string regionName)
+        {
+            IRegion region = regionManager.Regions[regionName];
+
+            foreach (var view in region.Views)
+            {
+                PageUtilities.InvokeViewAndViewModelAction<IDestructible>(view, destructible => destructible.Destroy());
+            }
+
+            regionManager.Regions.Remove(regionName);
+
+            return regionManager;
         }
     }
 }

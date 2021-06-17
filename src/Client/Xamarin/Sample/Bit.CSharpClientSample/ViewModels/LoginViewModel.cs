@@ -1,5 +1,6 @@
 ﻿using Bit.Http.Contracts;
 using Bit.ViewModel;
+using Prism.Navigation;
 using Prism.Services;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -34,7 +35,7 @@ namespace Bit.CSharpClientSample.ViewModels
             try
             {
                 await SecurityService.LoginWithCredentials(UserName, Password, client_id: "TestResOwner", client_secret: "secret", acr_values: new Dictionary<string, string> { { "x", "1" } });
-                await NavigationService.NavigateAsync("Main");
+                await NavigationService.NavigateAsync("/Nav/Main");
             }
             catch
             {
@@ -48,7 +49,7 @@ namespace Bit.CSharpClientSample.ViewModels
             try
             {
                 await SecurityService.Login(acr_values: new Dictionary<string, string> { { "x", "1" } });
-                await NavigationService.NavigateAsync("Main");
+                await NavigationService.NavigateAsync("/Nav/Main");
             }
             catch
             {
@@ -62,7 +63,7 @@ namespace Bit.CSharpClientSample.ViewModels
             try
             {
                 await SecurityService.Login(new { SignInType = "Google" }, acr_values: new Dictionary<string, string> { { "x", "1" } });
-                await NavigationService.NavigateAsync("Main");
+                await NavigationService.NavigateAsync("/Nav/Main");
             }
             catch
             {
@@ -73,7 +74,7 @@ namespace Bit.CSharpClientSample.ViewModels
 
         async Task Skip()
         {
-            await NavigationService.NavigateAsync("Main");
+            await NavigationService.NavigateAsync("/Nav/Main");
         }
     }
 }
