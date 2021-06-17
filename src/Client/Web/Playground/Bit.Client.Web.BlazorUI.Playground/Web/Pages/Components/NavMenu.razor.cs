@@ -14,7 +14,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components
                 Links = new List<NavLink>
                 {
                      new NavLink { Name= "Button", Key = "Button", Url = "/components/buttons", TargetType = NavLinkTargetType.Self },
-                     new NavLink { Name= "Checkbox", Key = "Checkbox", Url = "#" },
+                     new NavLink { Name= "Checkbox", Key = "Checkbox", Url = "/components/checkboxes" , Target = "_Self" },
                      new NavLink { Name= "Choice", Key = "Choice", Url = "#" },
                      new NavLink { Name= "Label", Key = "Label", Url = "#" },
                      new NavLink { Name= "Link", Key = "Link", Url = "#" },
