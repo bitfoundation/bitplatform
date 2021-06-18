@@ -34,6 +34,7 @@ p {
 }
 
 .navbar {
+    z-index: 9999;
     height: 80px;
     overflow: hidden;
     background-color: $DarkBlue;
@@ -138,6 +139,10 @@ p {
 
 .m-t-10 {
     margin-top: 10px;
+}
+
+.p-l-20 {
+    padding-left: 20px;
 }
 
 .custom-button {
