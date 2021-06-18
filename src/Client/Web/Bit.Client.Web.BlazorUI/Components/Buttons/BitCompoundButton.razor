@@ -2,8 +2,13 @@
 @inherits BitComponentBase
 
 <button @ref="RootElement"
+        @attributes="HtmlAttributes"
         style="@StyleBuilder.Value"
         class="@ClassBuilder.Value"
+        aria-label="@AriaLabel"
+        aria-describedby="@AriaDescription"
+        aria-hidden="@AriaHidden"
+        tabindex="@tabIndex"
         @onclick="HandleOnClick">
     <span class="no-text-select">
         <span>

@@ -3,7 +3,8 @@
 .labels-container,
 .search-box-container,
 .rating-container,
-.spinner-positioning {
+.spinner-positioning,
+.pivot-container {
     font-family: FluentFont;
 }
 
@@ -20,7 +21,7 @@
     background-color: palevioletred;
 }
 
-.spinner-container > div:not(.spinner-positioning) {
+.spinner-container > div:not(.spinner-positioning), .action-btn-container {
     display: flex;
 }
 
@@ -30,4 +31,28 @@
 
 .spinner-positioning {
     display: inline-block;
+}
+
+.bit-nav-wrapped-link a {
+    white-space: normal;
+    line-height: inherit;
+}
+
+.bit-nav-simple-link a {
+    white-space: nowrap;
+    line-height: 44px;
+}
+
+.rating-container {
+    > div {
+
+        > span {
+            margin-left: 10px;
+        }
+    }
+}
+
+
+.pivot-container {
+    margin: 20px 10px;
 }
