@@ -38,39 +38,46 @@
                 <p>
                     &lt<span class="dark-green">BitCheckbox IsEnabled="</span><span>false"</span><span class="dark-green"> IsChecked="</span><span>true"></span><span>Disable Checked Checkbox</span><span>&lt/</span><span class="dark-green">BitCheckbox</span><span>&gt;</span>
                 </p>
+                <div class="m-t-10">
+                    <span class="light-yellow-bg">&#64;code {</span>
+                    <p>
+                        private bool IsCheckBoxChecked = false;
+                    </p>
+                    <span class="light-yellow-bg">}</span>
+                </div>
             </BitPivotItem>
         </BitPivot>
     </div>
-        <div class="card">
-            <h3>Reversed</h3>
-            <div class="desc">
-                <p>
-                   In BitCheckbox component you can change the position of your checkbox by using BoxSide attribute, it can set before or after your label, By default it is in start.
-                </p>
-            </div>
-            <BitPivot>
-                <BitPivotItem HeaderText="Example" IconName="ViewList">
-                    <BitCheckbox BoxSide="@BoxSide.End">Reversed -- Basic Checkbox</BitCheckbox>
-                    <BitCheckbox BoxSide="@BoxSide.End" IsChecked="true">Reversed -- Checked Checkbox</BitCheckbox>
-                    <BitCheckbox BoxSide="@BoxSide.End" IsEnabled="false">Reversed -- Disable Checkbox</BitCheckbox>
-                    <BitCheckbox BoxSide="@BoxSide.End" IsEnabled="false" IsChecked="true">Reversed -- Disable Checked Checkbox</BitCheckbox>
-                </BitPivotItem>
-                <BitPivotItem HeaderText="Code" IconName="Source">
-                    <p>
-                        &lt<span class="dark-green">BitCheckbox BoxSide="</span><span class="light-yellow-bg">&#64;</span>BoxSide.End">Reversed -- Basic Checkbox<span>&lt/</span><span class="dark-green">BitCheckbox</span><span>&gt;</span>
-                    </p>
-                    <p>
-                        &lt<span class="dark-green">BitCheckbox BoxSide="</span><span class="light-yellow-bg">&#64;</span><span>BoxSide.End"</span><span class="dark-green"> IsChecked="</span><span>true"></span>Reversed -- Checked Checkbox<span>&lt/</span><span class="dark-green">BitCheckbox</span><span>&gt;</span>
-                    </p>
-                    <p>
-                        &lt<span class="dark-green">BitCheckbox BoxSide="</span><span class="light-yellow-bg">&#64;</span><span>BoxSide.End"</span><span class="dark-green"> IsEnabled="</span><span>true"></span>Reversed -- Disable Checkbox<span>&lt/</span><span class="dark-green">BitCheckbox</span><span>&gt;</span>
-                    </p>
-                    <p>
-                        &lt<span class="dark-green">BitCheckbox BoxSide="</span><span class="light-yellow-bg">&#64;</span>BoxSide.End"<span class="dark-green"> IsEnabled="</span>false<span class="dark-green"> IsChecked="</span><span>true"></span><span>Reversed -- Disable Checked Checkbox</span><span>&lt/</span><span class="dark-green">BitCheckbox</span><span>&gt;</span>
-                    </p>
-                </BitPivotItem>
-            </BitPivot>
+    <div class="card">
+        <h3>Reversed</h3>
+        <div class="desc">
+            <p>
+                In BitCheckbox component you can change the position of your checkbox by using BoxSide attribute, it can set before or after your label, By default it is in start.
+            </p>
         </div>
+        <BitPivot>
+            <BitPivotItem HeaderText="Example" IconName="ViewList">
+                <BitCheckbox BoxSide="@BoxSide.End">Reversed -- Basic Checkbox</BitCheckbox>
+                <BitCheckbox BoxSide="@BoxSide.End" IsChecked="true">Reversed -- Checked Checkbox</BitCheckbox>
+                <BitCheckbox BoxSide="@BoxSide.End" IsEnabled="false">Reversed -- Disable Checkbox</BitCheckbox>
+                <BitCheckbox BoxSide="@BoxSide.End" IsEnabled="false" IsChecked="true">Reversed -- Disable Checked Checkbox</BitCheckbox>
+            </BitPivotItem>
+            <BitPivotItem HeaderText="Code" IconName="Source">
+                <p>
+                    &lt<span class="dark-green">BitCheckbox BoxSide="</span><span class="light-yellow-bg">&#64;</span>BoxSide.End">Reversed -- Basic Checkbox<span>&lt/</span><span class="dark-green">BitCheckbox</span><span>&gt;</span>
+                </p>
+                <p>
+                    &lt<span class="dark-green">BitCheckbox BoxSide="</span><span class="light-yellow-bg">&#64;</span><span>BoxSide.End"</span><span class="dark-green"> IsChecked="</span><span>true"></span>Reversed -- Checked Checkbox<span>&lt/</span><span class="dark-green">BitCheckbox</span><span>&gt;</span>
+                </p>
+                <p>
+                    &lt<span class="dark-green">BitCheckbox BoxSide="</span><span class="light-yellow-bg">&#64;</span><span>BoxSide.End"</span><span class="dark-green"> IsEnabled="</span><span>true"></span>Reversed -- Disable Checkbox<span>&lt/</span><span class="dark-green">BitCheckbox</span><span>&gt;</span>
+                </p>
+                <p>
+                    &lt<span class="dark-green">BitCheckbox BoxSide="</span><span class="light-yellow-bg">&#64;</span>BoxSide.End"<span class="dark-green"> IsEnabled="</span>false<span class="dark-green"> IsChecked="</span><span>true"></span><span>Reversed -- Disable Checked Checkbox</span><span>&lt/</span><span class="dark-green">BitCheckbox</span><span>&gt;</span>
+                </p>
+            </BitPivotItem>
+        </BitPivot>
+    </div>
     <div class="card">
         <h3>Indeterminate</h3>
         <div class="desc">
@@ -104,6 +111,16 @@
                 <p>
                     &lt<span class="dark-green">BitCheckbox OnClick="</span><span>() => IsCheckBoxIndeterminateInCode = true"></span><span>Make Checkbox Indeterminate></span><span>&lt/</span><span class="dark-green">BitCheckbox</span><span>&gt;</span>
                 </p>
+                <div class="m-t-10">
+                    <span class="light-yellow-bg">&#64;code {</span>
+                    <p>
+                        private bool IsCheckBoxIndeterminate = true;
+                    </p>
+                    <p>
+                        private bool IsCheckBoxIndeterminateInCode = true;
+                    </p>
+                    <span class="light-yellow-bg">}</span>
+                </div>
             </BitPivotItem>
         </BitPivot>
         <div class="card">
@@ -146,7 +163,7 @@
             <td>start</td>
             <td>Determines whether the checkbox should be shown before the label (start) or after (end).</td>
         </tr>
-         <tr>
+        <tr>
             <td>className</td>
             <td>string</td>
             <td></td>
