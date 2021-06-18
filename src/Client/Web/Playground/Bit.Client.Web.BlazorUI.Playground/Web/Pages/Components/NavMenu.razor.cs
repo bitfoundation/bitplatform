@@ -19,7 +19,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components
                      new NavLink { Name= "Label", Key = "Label", Url = "#" },
                      new NavLink { Name= "Link", Key = "Link", Url = "#" },
                      new NavLink { Name= "Rating", Key = "Rating", Url = "#" },
-                     new NavLink { Name= "SearchBox", Key = "SearchBox", Url = "#" },
+                     new NavLink { Name= "SearchBox", Key = "SearchBox", Url = "/components/searchboxes" , Target = "_Self"},
                      new NavLink { Name= "TextField", Key = "TextField", Url = "#" },
                      new NavLink { Name= "Toggle", Key = "Toggle", Url = "#" }
                 }
