@@ -85,7 +85,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Toggles
 
             var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
 
-            if (string.IsNullOrEmpty(onText) || string.IsNullOrEmpty(offText))
+            if (onText.HasNoValue() || offText.HasNoValue())
             {
                 Assert.IsTrue(bitToggle.ClassList.Contains($"bit-tgl-noonoff-{visualClass}"));
             }

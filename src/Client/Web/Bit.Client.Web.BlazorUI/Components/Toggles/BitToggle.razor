@@ -2,23 +2,24 @@
 @inherits BitComponentBase
 
 <div @ref="RootElement"
-	 style="@StyleBuilder.Value"
-	 class="@ClassBuilder.Value">
+     @attributes="HtmlAttributes"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value">
 
-	<label>@ChildContent</label>
+    <label>@ChildContent</label>
 
-	<div>
-		<button @onclick="HandleOnClick"><span></span></button>
-		@if (!string.IsNullOrWhiteSpace(OnText) && !string.IsNullOrWhiteSpace(OffText))
-		{
-			@if (isChecked)
-			{
-				<label>@OnText</label>
-			}
-			else
-			{
-				 <label>@OffText</label>
-			}
-		}
-	</div>
+    <div>
+        <button @onclick="HandleOnClick"><span></span></button>
+        @if (OnText.HasValue() && OffText.HasValue())
+        {
+            @if (isChecked)
+            {
+                <label>@OnText</label>
+            }
+            else
+            {
+                <label>@OffText</label>
+            }
+        }
+    </div>
 </div>
