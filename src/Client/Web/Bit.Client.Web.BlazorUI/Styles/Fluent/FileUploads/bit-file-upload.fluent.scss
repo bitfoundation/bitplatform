@@ -1,0 +1,174 @@
+﻿@import "../colors.fluent.scss", "../../functions.scss";
+
+@mixin getBaseli($class) {
+    $color: $Grey120;
+
+    @if $class=="uploaded" {
+        $color: $green120;
+    }
+    @else if $class=="paused" {
+        $color: $Primary;
+    }
+    @else if $class=="failed" {
+        $color: $red180;
+    }
+
+    border: 1px solid $color;
+
+    &:hover {
+        color: $color;
+    }
+
+    .status {
+        color: $color;
+        padding-left: rem(5px);
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        overflow: hidden;
+    }
+}
+
+.bit-fu-fluent {
+    font-family: FluentFont;
+    -webkit-font-smoothing: antialiased;
+    font-size: inherit;
+    font-weight: inherit;
+    width: rem(300px);
+
+    > div:first-child {
+        padding: rem(3px);
+        position: relative;
+        justify-content: center;
+        align-items: center;
+
+        > input[type='file'] {
+            display: none
+        }
+
+        > label {
+            font-size: 1rem;
+            font-weight: 300;
+            cursor: pointer;
+            outline: 0;
+            user-select: none;
+            border-color: $Grey60;
+            border-style: solid;
+            border-radius: rem(4px);
+            border-width: rem(1px);
+            background-color: $White;
+            color: $Grey160;
+            padding: rem(16px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            &:hover {
+                border-color: $Grey180;
+            }
+
+            &:active {
+                background-color: $Grey20;
+            }
+
+            > i {
+                padding-right: rem(5px);
+            }
+        }
+    }
+
+    ul {
+        padding: rem(0px);
+        margin: rem(0px);
+
+        .inprogress {
+            @include getBaseli($class:"inprogress");
+        }
+
+        .uploaded {
+            @include getBaseli($class:"uploaded");
+        }
+
+        .faild {
+            @include getBaseli($class:"failed");
+        }
+
+        .paused {
+            @include getBaseli($class:"paused");
+        }
+
+        li {
+            overflow: hidden;
+            border-radius: rem(5px);
+            margin: rem(3px);
+            font-size: rem(14px);
+            font-weight: 100;
+
+            > div {
+                height: rem(80px);
+            }
+
+            > div:nth-child(1) {
+                > div:nth-child(1) {
+                    padding: rem(4px);
+                    overflow: hidden;
+                    white-space: nowrap;
+                    text-overflow: ellipsis;
+                }
+
+                > div:nth-child(2) {
+                    padding: rem(4px);
+                    overflow: hidden;
+                    white-space: nowrap;
+                    text-overflow: ellipsis;
+
+                    > span:last-child {
+                        text-align: right;
+                        float: right;
+                    }
+                }
+
+                > .progress {
+                    position: relative;
+                    overflow: hidden;
+                    height: rem(2px);
+                    padding-top: rem(8px);
+                    padding-bottom: rem(8px);
+                    padding-left: rem(2px);
+
+                    > div:first-child {
+                        position: absolute;
+                        width: 100%;
+                        height: rem(2px);
+                        background-color: $Grey30;
+                    }
+
+                    > div:last-child {
+                        background-color: $Primary;
+                        height: rem(2px);
+                        position: absolute;
+                        transition: width 0.15s linear 0s;
+                    }
+                }
+
+                width: 60%;
+                float: left;
+            }
+
+            > div:nth-child(2) {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                float: right;
+
+                span {
+                    margin-right: rem(20px);
+
+                    &:hover {
+                        cursor: pointer;
+                        color: $Primary;
+                    }
+                }
+            }
+        }
+    }
+}

@@ -3,7 +3,29 @@
 <h1>Bit Components</h1>
 
 <hr />
+<div class="bit-file-upload-container">
+    <h3>Auto</h3>
+    <BitFileUpload BrowseButtonLabel="Select or drag and drop files"
+                   UploadUrl="@UploadUrl"
+                   RemoveUrl="@RemoveUrl">
+    </BitFileUpload>
 
+    <h3>Auto & Multiple</h3>
+    <BitFileUpload IsMultiFile="true"
+                   BrowseButtonLabel="Select or drag and drop files"
+                   UploadUrl="@UploadUrl"
+                   RemoveUrl="@RemoveUrl">
+    </BitFileUpload>
+
+    <h3>individual & Multiple (limit by extensions format)</h3>
+    <BitFileUpload IsMultiFile="true"
+                   AutoUploadEnabled="false"
+                   AcceptedExtensions="@(new List<string> { ".gif",".jpg",".mp4" })"
+                   BrowseButtonLabel="Select or drag and drop files"
+                   UploadUrl="@UploadUrl"
+                   RemoveUrl="@RemoveUrl">
+    </BitFileUpload>
+</div>
 <div class="buttons-container">
     <h2>BitButton</h2>
     <h3>Visibility</h3>
@@ -79,7 +101,7 @@
     <h3>Icon Button</h3>
     <BitIconButton IconName="Emoji2" />
     <BitIconButton IconName="Emoji2" AllowDisabledFocus="false" IsEnabled="false" />
-    
+
     <hr />
 
     <h3>Icon Button with Tooltip</h3>
@@ -417,4 +439,3 @@
         </HeaderTemplate>
     </BitNav>
 </div>
-

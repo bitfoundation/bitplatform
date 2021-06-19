@@ -1,0 +1,115 @@
+﻿@namespace Bit.Client.Web.BlazorUI
+@inherits BitComponentBase
+
+<div @ref="RootElement"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value">
+    <div>
+        <label for='@UniqueId'>
+            <i class="bit-icon bit-icon--CloudUpload"></i>@BrowseButtonLabel
+        </label>
+
+        <input @ref=inputFileElement
+               type="file"
+               multiple="@IsMultiFile"
+               id="@UniqueId"
+               accept="@(string.Join(",",AcceptedExtensions))"
+               @onchange="@(() => HandleOnChange())" />
+    </div>
+
+    @if (Files is not null)
+    {
+        var fileCount = -1;
+        <ul>
+            @for (int i = 0; i < Files.Count; i++)
+            {
+                fileCount++;
+                var index = i;
+                var file = Files[index];
+                int uploadedPercent;
+                long uploadedSize;
+                if (file.ChunkesUpLoadedSize.Sum() >= file.Size)
+                {
+                    uploadedPercent = 100;
+                    uploadedSize = file.Size;
+                }
+                else
+                {
+                    uploadedPercent = (int)(file.ChunkesUpLoadedSize.Sum() / (float)file.Size * 100);
+                    uploadedSize = file.ChunkesUpLoadedSize.Sum();
+                }
+                if (file.UploadStatus != UploadStatus.Removed)
+                {
+                    var statusClass = "inprogress";
+                    var message = "";
+                    if (file.UploadStatus == UploadStatus.Completed)
+                    {
+                        statusClass = "uploaded";
+                        message = SuccessfulUploadedResultMessage;
+                    }
+                    else if (file.UploadStatus == UploadStatus.Failed)
+                    {
+
+                        statusClass = "failed";
+                        message = FailedUploadedResultMessage;
+                    }
+                    else if (file.UploadStatus == UploadStatus.Paused)
+                    {
+                        statusClass = "paused";
+                    }
+                    <li class="@statusClass">
+                        <div>
+                            <div title="@file.Name">@file.Name</div>
+                            <div>
+                                <span>@($"{uploadedSize.Humanize()}/{file.Size.Humanize()}")</span>
+                                <span>@uploadedPercent%</span>
+                            </div>
+                            @if (file.UploadStatus == UploadStatus.InProgress || file.UploadStatus == UploadStatus.Paused)
+                            {
+                                <div class="progress">
+                                    <div></div>
+                                    <div role="progressbar" style="width:@uploadedPercent%;" aria-valuemin="0" aria-valuemax="100" aria-valuenow="@uploadedPercent"></div>
+                                </div>
+                            }
+                            else
+                            {
+
+                                <div class="status">@message</div>
+                            }
+                        </div>
+
+                        <div>
+
+                            @if (file.UploadStatus == UploadStatus.Pending || file.UploadStatus == UploadStatus.Paused)
+                            {
+                                <span title="upload" class="bit-icon bit-icon--Play"
+                                      @onclick="@(() =>Upload(index))">
+                                </span>
+                            }
+                            @if (file.UploadStatus == UploadStatus.InProgress)
+                            {
+                                <span title="pause" class="bit-icon bit-icon--Pause"
+                                      @onclick="@(() =>RequestToPause(index))">
+                                </span>
+                            }
+                            @if (file.UploadStatus == UploadStatus.InProgress || file.UploadStatus == UploadStatus.Paused)
+                            {
+                                <span title="cancel" class="bit-icon bit-icon--Cancel"
+                                      @onclick="@(() =>RequestToCancel(index))">
+                                </span>
+                            }
+                            else
+                            {
+                                <span title="remove" class="bit-icon bit-icon--Delete"
+                                      @onclick="@(() =>Remove(index))">
+                                </span>
+                            }
+                        </div>
+                    </li>
+
+                }
+            }
+        </ul>
+
+    }
+</div>
