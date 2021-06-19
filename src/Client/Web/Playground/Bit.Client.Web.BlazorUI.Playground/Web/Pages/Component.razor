@@ -3,29 +3,7 @@
 <h1>Bit Components</h1>
 
 <hr />
-<div class="bit-file-upload-container">
-    <h3>Auto</h3>
-    <BitFileUpload BrowseButtonLabel="Select or drag and drop files"
-                   UploadUrl="@UploadUrl"
-                   RemoveUrl="@RemoveUrl">
-    </BitFileUpload>
 
-    <h3>Auto & Multiple</h3>
-    <BitFileUpload IsMultiFile="true"
-                   BrowseButtonLabel="Select or drag and drop files"
-                   UploadUrl="@UploadUrl"
-                   RemoveUrl="@RemoveUrl">
-    </BitFileUpload>
-
-    <h3>individual & Multiple (limit by extensions format)</h3>
-    <BitFileUpload IsMultiFile="true"
-                   AutoUploadEnabled="false"
-                   AcceptedExtensions="@(new List<string> { ".gif",".jpg",".mp4" })"
-                   BrowseButtonLabel="Select or drag and drop files"
-                   UploadUrl="@UploadUrl"
-                   RemoveUrl="@RemoveUrl">
-    </BitFileUpload>
-</div>
 <div class="buttons-container">
     <h2>BitButton</h2>
     <h3>Visibility</h3>
@@ -348,7 +326,6 @@
     <BitButton OnClick="() => RatingOutsideValue = 5">Make Rating Full</BitButton>
 </div>
 
-
 <hr />
 
 <div class="toggle-container">
@@ -382,7 +359,6 @@
     <BitButton OnClick="() => IsToggleChecked = true">Make Toggle Check</BitButton>
     <br />
     <br />
-
 
     <h3>Link Pivot</h3>
     <div class="pivot-container">
@@ -457,7 +433,6 @@
             <BitPivotItem HeaderText="Bas" ItemKey="Bas"></BitPivotItem>
             <BitPivotItem HeaderText="Biz" ItemKey="Biz"></BitPivotItem>
         </BitPivot>
-
 
         @if (SelectedPivotKey?.ItemKey == "Foo")
         {
@@ -566,14 +541,38 @@
     <h2>BitDropDown</h2>
     <br />
     <h3>Single select</h3>
-        <BitDropDown Items="GetDropdownItems()" Placeholder="Select an option">
-        </BitDropDown>
-        <br />
-     <h3>Disabled</h3>
-        <BitDropDown IsEnabled="false" Items="GetDropdownItems()" Placeholder="Select an option">
-        </BitDropDown>
-        <br />
+    <BitDropDown Items="GetDropdownItems()" Placeholder="Select an option">
+    </BitDropDown>
+    <br />
+    <h3>Disabled</h3>
+    <BitDropDown IsEnabled="false" Items="GetDropdownItems()" Placeholder="Select an option">
+    </BitDropDown>
+    <br />
     <h3>Multi select</h3>
     <BitDropDown IsMultiSelect="true" Items="GetDropdownItems()" Placeholder="Select options">
     </BitDropDown>
+</div>
+<hr />
+<div class="bit-file-upload-container">
+    <h3>Auto</h3>
+    <BitFileUpload BrowseButtonLabel="Select or drag and drop files"
+                   UploadUrl="@UploadUrl"
+                   RemoveUrl="@RemoveUrl">
+    </BitFileUpload>
+
+    <h3>Auto & Multiple</h3>
+    <BitFileUpload IsMultiFile="true"
+                   BrowseButtonLabel="Select or drag and drop files"
+                   UploadUrl="@UploadUrl"
+                   RemoveUrl="@RemoveUrl">
+    </BitFileUpload>
+
+    <h3>individual & Multiple (limit by extensions format)</h3>
+    <BitFileUpload IsMultiFile="true"
+                   AutoUploadEnabled="false"
+                   AcceptedExtensions="@(new List<string> { ".gif",".jpg",".mp4" })"
+                   BrowseButtonLabel="Select or drag and drop files"
+                   UploadUrl="@UploadUrl"
+                   RemoveUrl="@RemoveUrl">
+    </BitFileUpload>
 </div>
