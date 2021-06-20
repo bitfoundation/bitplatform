@@ -49,7 +49,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components
                 Key = "Progress",
                 Links = new List<NavLink>
                 {
-                    new NavLink{ Name = "Spinner", Key = "Spinner", Url = "#" }
+                    new NavLink{ Name = "Spinner", Key = "Spinner", Url = "/components/spinner" }
                 }
             },
         };
