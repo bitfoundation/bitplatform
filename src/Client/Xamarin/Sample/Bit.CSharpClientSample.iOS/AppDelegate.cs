@@ -1,6 +1,8 @@
 ﻿using Bit.iOS;
 using Bit.ViewModel.Implementations;
 using Foundation;
+using Microsoft.AppCenter.Analytics;
+using Microsoft.AppCenter.Crashes;
 using UIKit;
 using Xamarin.Forms;
 
@@ -22,6 +24,9 @@ namespace Bit.CSharpClientSample.iOS
 
             FirebaseTelemetryService.Current.Init();
             LocalTelemetryService.Current.Init();
+            AppCenterTelemetryService.Current.Init("1aa04988-ef59-4a4b-9b40-8f838a862018",
+                   typeof(Analytics), typeof(Crashes));
+            ApplicationInsightsTelemetryService.Current.Init("55f4c3a7-8bd1-4ec0-92b3-717cb9ddde1d");
 
             SQLitePCL.Batteries.Init();
 
