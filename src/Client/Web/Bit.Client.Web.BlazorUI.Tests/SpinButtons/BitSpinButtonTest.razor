@@ -1,8 +1,16 @@
-﻿<BitSpinButton Min="@Min" Max="@Max" Suffix="@Suffix" LabelPosition="@LabelPosition"></BitSpinButton>
+﻿<CascadingValue Value="Visual">
+    <BitSpinButton 
+                   Min="@Min"
+                   Max="@Max" 
+                   Suffix="@Suffix"
+                   LabelPosition="@LabelPosition">
+    </BitSpinButton>
+</CascadingValue>
 
-@code{
-    [Parameter] public double Min { get; set; }
-    [Parameter] public double Max { get; set; }
-    [Parameter] public string Suffix { get; set; }
-    [Parameter] public LabelPosition LabelPosition { get; set; } = LabelPosition.left;
-}
+    @code{
+        [Parameter] public Visual Visual { get; set; }
+        [Parameter] public double Min { get; set; }
+        [Parameter] public double Max { get; set; }
+        [Parameter] public string Suffix { get; set; }
+        [Parameter] public LabelPosition LabelPosition { get; set; } = LabelPosition.left;
+    }

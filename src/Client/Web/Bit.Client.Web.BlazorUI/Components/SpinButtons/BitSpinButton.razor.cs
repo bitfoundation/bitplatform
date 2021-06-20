@@ -12,15 +12,15 @@ namespace Bit.Client.Web.BlazorUI
         public ElementReference InputElement { get; set; }
         public double Value { get; set; }
 
-        [Inject] public IJSRuntime JSRuntime { get; set; }
+        [Inject] public IJSRuntime? JSRuntime { get; set; }
 
         [Parameter] public double Min { get; set; } = 0;
         [Parameter] public double Max { get; set; } = double.MaxValue;
         [Parameter] public double DefaultValue { get; set; } = 0;
         [Parameter] public double Step { get; set; } = 1;
-        [Parameter] public string Suffix { get; set; }
-        [Parameter] public string Label { get; set; }
-        [Parameter] public string IconName { get; set; }
+        [Parameter] public string Suffix { get; set; } = string.Empty;
+        [Parameter] public string Label { get; set; } = string.Empty;
+        [Parameter] public string IconName { get; set; } = string.Empty;
 
         [Parameter]
         public LabelPosition LabelPosition
@@ -81,7 +81,7 @@ namespace Bit.Client.Web.BlazorUI
                 }
                 else
                 {
-                    await JSRuntime.SetProperty(InputElement, "value", ValueWithSuffix);
+                    _ =  JSRuntime?.SetProperty(InputElement, "value", ValueWithSuffix);
                 }
             }
         }
@@ -91,7 +91,7 @@ namespace Bit.Client.Web.BlazorUI
             if (firstRender)
             {
                 Value = DefaultValue;
-                await JSRuntime.SetProperty(InputElement, "value", ValueWithSuffix);
+                _ = JSRuntime?.SetProperty(InputElement, "value", ValueWithSuffix);
             }
             await base.OnAfterRenderAsync(firstRender);
         }
