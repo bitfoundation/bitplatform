@@ -17,7 +17,9 @@ namespace Bit.ViewModel.Implementations
     delegate bool DidCrashOnPreviousExecutionDelegate();
 #elif iOS
     delegate void LogEventDelegate(string name, Foundation.NSDictionary<Foundation.NSString, Foundation.NSObject> nsParameters);
-    delegate void SetUserIdentifierDelegate(string? identifier);
+    delegate void CrashlyticsSetUserIdDelegate(string? identifier);
+    delegate void AnalyticsSetUserIdDelegate(string? userId);
+    delegate void RecordErrorDelegate(Foundation.NSError error);
 #endif
 
     public class FirebaseTelemetryService : TelemetryServiceBase, ITelemetryService
@@ -32,7 +34,9 @@ namespace Bit.ViewModel.Implementations
         private DidCrashOnPreviousExecutionDelegate _DidCrashOnPreviousExecution;
 #elif iOS
         private LogEventDelegate _LogEvent;
-        private SetUserIdentifierDelegate _SetUserIdentifier;
+        private CrashlyticsSetUserIdDelegate _CrashlyticsSetUserId;
+        private AnalyticsSetUserIdDelegate _AnalyticsSetUserId;
+        private RecordErrorDelegate _RecordError;
 #endif
 
         private static FirebaseTelemetryService? _current;
@@ -64,26 +68,19 @@ namespace Bit.ViewModel.Implementations
 #elif iOS
         public virtual void Init()
         {
-            Assembly.Load("Firebase.Core")
-                .GetType("Firebase.Core.App")
-                .GetMethod("Configure")
-                .Invoke(null, Array.Empty<object>());
+            Type analytics = Assembly.Load("Firebase.Analytics")
+                .GetType("Firebase.Analytics.Analytics");
 
-            Assembly.Load("Firebase.Crashlytics")
-                .GetType("Firebase.Crashlytics.Crashlytics")
-                .GetMethod("Configure")
-                .Invoke(null, Array.Empty<object>());
-
-            _LogEvent = (LogEventDelegate)Delegate.CreateDelegate(typeof(LogEventDelegate), Assembly.Load("Firebase.Analytics")
-                .GetType("Firebase.Analytics.Analytics")
-                .GetMethod("LogEvent"));
+            _LogEvent = (LogEventDelegate)Delegate.CreateDelegate(typeof(LogEventDelegate), target: analytics, method: "LogEvent");
 
             object sharedInstance = Assembly.Load("Firebase.Crashlytics")
                 .GetType("Firebase.Crashlytics.Crashlytics")
                 .GetProperty("SharedInstance")
                 .GetValue(null);
 
-            _SetUserIdentifier = (SetUserIdentifierDelegate)Delegate.CreateDelegate(typeof(SetUserIdentifierDelegate), target: sharedInstance, "SetUserIdentifier");
+            _CrashlyticsSetUserId = (CrashlyticsSetUserIdDelegate)Delegate.CreateDelegate(typeof(CrashlyticsSetUserIdDelegate), target: sharedInstance, "SetUserId");
+            _RecordError = (RecordErrorDelegate)Delegate.CreateDelegate(typeof(RecordErrorDelegate), target: sharedInstance, "RecordError");
+            _AnalyticsSetUserId = (AnalyticsSetUserIdDelegate)Delegate.CreateDelegate(typeof(AnalyticsSetUserIdDelegate), target: analytics, method: "SetUserId");
 
             _isInited = true;
         }
@@ -118,10 +115,10 @@ namespace Bit.ViewModel.Implementations
                 var values = new List<Foundation.NSString>();
                 if (properties != null)
                 {
-                    foreach (var item in properties)
+                    foreach (var param in properties)
                     {
-                        keys.Add(new Foundation.NSString(item.Key));
-                        values.Add(new Foundation.NSString(item.Value));
+                        keys.Add(new Foundation.NSString(param.Key.Length > 40 ? param.Key.Substring(0, 40) : param.Key));
+                        values.Add(new Foundation.NSString(param.Value?.Length > 100 ? param.Value.Substring(0, 100) : param.Value));
                     }
                 }
 
@@ -141,6 +138,10 @@ namespace Bit.ViewModel.Implementations
 
 #if Android
                 _RecordException(Java.Lang.Throwable.FromException(exception));
+#elif iOS
+                properties ??= new Dictionary<string, string?>();
+
+                _RecordError(new Foundation.NSError(new Foundation.NSString(exception.ToString()), -1001, Foundation.NSDictionary.FromObjectsAndKeys(properties.Keys.ToArray(), properties.Values.ToArray(), properties.Count )));
 #else
                 properties ??= new Dictionary<string, string?>();
 
@@ -222,7 +223,8 @@ namespace Bit.ViewModel.Implementations
                 _CrashlyticsSetUserId.Invoke(userId);
                 _AnalyticsSetUserId(userId);
 #elif iOS
-                _SetUserIdentifier(userId);
+                _CrashlyticsSetUserId(userId ?? string.Empty);
+                _AnalyticsSetUserId(userId ?? string.Empty);
 #endif
             }
         }

@@ -11,6 +11,16 @@ namespace Bit.CSharpClientSample.iOS
     {
         public override bool FinishedLaunching(UIApplication app, NSDictionary options)
         {
+            // https://stackoverflow.com/a/51367084/2720104
+            // <FirebaseCrashlyticsUploadSymbolsEnabled>True</FirebaseCrashlyticsUploadSymbolsEnabled>
+            // <StartArguments>-FIRAnalyticsDebugEnabled</StartArguments>
+            // <BundleResource Include="GoogleService-Info.plist" />
+            Firebase.Core.App.Configure();
+            Firebase.Analytics.Analytics.SetAnalyticsCollectionEnabled(true);
+            Firebase.Crashlytics.Crashlytics.SharedInstance.Init();
+            Firebase.Crashlytics.Crashlytics.SharedInstance.SetCrashlyticsCollectionEnabled(true);
+
+            FirebaseTelemetryService.Current.Init();
             LocalTelemetryService.Current.Init();
 
             SQLitePCL.Batteries.Init();
