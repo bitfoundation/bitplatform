@@ -118,10 +118,6 @@ p {
     background-color: $LightGray;
 }
 
-.m-t-15 {
-    margin-top: 20px;
-}
-
 .dark-green {
     font-weight: bold;
     color: $DarkGreen;
@@ -135,6 +131,14 @@ p {
 .light-blue {
     font-weight: bold;
     color: $LightBlue;
+}
+
+.light-yellow-bg {
+    background-color: $LightYellow;
+}
+
+.m-t-15 {
+    margin-top: 20px;
 }
 
 .m-t-10 {
