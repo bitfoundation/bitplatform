@@ -1,15 +1,14 @@
 ﻿<CascadingValue Value="Visual">
     <BitToggleButton @bind-IsChecked="@IsChecked"
-                     ChekedLabel="@ChekedLabel"
-                     UnChekedLabel="@UnChekedLabel"
-                     CheckedIconName="@CheckedIconName"
-                     UnCheckedIconName="@UnCheckedIconName"
+                     Label="@(IsChecked?ChekedLabel:UnChekedLabel)"
+                     IconName="@(IsChecked?CheckedIconName:UnCheckedIconName)"
                      AllowDisabledFocus="AllowDisabledFocus"
                      IsEnabled="IsEnabled"
                      ButtonStyle="ButtonStyle"
                      AriaDescription="@AriaDescription"
                      AriaLabel="@AriaLabel"
-                     AriaHidden="AriaHidden">
+                     AriaHidden="AriaHidden"
+                     OnClick="OnClick">
     </BitToggleButton>
 </CascadingValue>
 
@@ -26,12 +25,5 @@
     [Parameter] public string? ChekedLabel { get; set; }
     [Parameter] public string? UnChekedLabel { get; set; }
     [Parameter] public ButtonStyle ButtonStyle { get; set; }
-
-
-    public int CurrentCount { get; set; }
-
-    public void IncrementCount(MouseEventArgs e)
-    {
-        CurrentCount++;
-    }
+    [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 }

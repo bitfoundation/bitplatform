@@ -23,9 +23,13 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
            DataRow(Visual.Material, false, true, "Button checked", "Button unchecked", "EmojiNeutral", "Emoji2"),
            DataRow(Visual.Material, false, false, "Button checked", "Button unchecked", "EmojiNeutral", "Emoji2"),
        ]
-        public Task BitToggleButtonShouldHaveCorrectLabelAndIcon(Visual visual,
-        bool isChecked, bool isEnabled,
-        string checkedLabel, string unCheckedLabel, string checkedIconName, string unCheckedIconName)
+        public void BitToggleButtonShouldHaveCorrectLabelAndIcon(Visual visual,
+            bool isChecked,
+            bool isEnabled,
+            string checkedLabel,
+            string unCheckedLabel,
+            string checkedIconName,
+            string unCheckedIconName)
         {
             var component = RenderComponent<BitToggleButtonTest>(parameters =>
             {
@@ -52,30 +56,31 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
 
             var iconName = (isChecked) ? checkedIconName : unCheckedIconName;
             Assert.IsTrue(bitIconTag.ClassList.Contains($"bit-icon--{iconName}"));
-
-            return Task.CompletedTask;
         }
 
         [DataTestMethod,
-            DataRow(Visual.Fluent, true, true, "Button checked", "Button unchecked", "EmojiNeutral", "Emoji2", false),
-            DataRow(Visual.Fluent, true, false, "Button checked", "Button unchecked", "EmojiNeutral", "Emoji2", true),
-            DataRow(Visual.Fluent, false, true, "Button checked", "Button unchecked", "EmojiNeutral", "Emoji2", true),
-            DataRow(Visual.Fluent, false, false, "Button checked", "Button unchecked", "EmojiNeutral", "Emoji2", false),
+            DataRow(Visual.Fluent, true, true, "Button checked", "Button unchecked", "EmojiNeutral", "Emoji2"),
+            DataRow(Visual.Fluent, true, false, "Button checked", "Button unchecked", "EmojiNeutral", "Emoji2"),
+            DataRow(Visual.Fluent, false, true, "Button checked", "Button unchecked", "EmojiNeutral", "Emoji2"),
+            DataRow(Visual.Fluent, false, false, "Button checked", "Button unchecked", "EmojiNeutral", "Emoji2"),
 
-            DataRow(Visual.Cupertino, true, true, "Button checked", "Button unchecked", "EmojiNeutral", "Emoji2", false),
-            DataRow(Visual.Cupertino, true, false, "Button checked", "Button unchecked", "EmojiNeutral", "Emoji2", true),
-            DataRow(Visual.Cupertino, false, true, "Button checked", "Button unchecked", "EmojiNeutral", "Emoji2", true),
-            DataRow(Visual.Cupertino, false, false, "Button checked", "Button unchecked", "EmojiNeutral", "Emoji2", false),
+            DataRow(Visual.Cupertino, true, true, "Button checked", "Button unchecked", "EmojiNeutral", "Emoji2"),
+            DataRow(Visual.Cupertino, true, false, "Button checked", "Button unchecked", "EmojiNeutral", "Emoji2"),
+            DataRow(Visual.Cupertino, false, true, "Button checked", "Button unchecked", "EmojiNeutral", "Emoji2"),
+            DataRow(Visual.Cupertino, false, false, "Button checked", "Button unchecked", "EmojiNeutral", "Emoji2"),
 
-            DataRow(Visual.Material, true, true, "Button checked", "Button unchecked", "EmojiNeutral", "Emoji2", false),
-            DataRow(Visual.Material, true, false, "Button checked", "Button unchecked", "EmojiNeutral", "Emoji2", true),
-            DataRow(Visual.Material, false, true, "Button checked", "Button unchecked", "EmojiNeutral", "Emoji2", true),
-            DataRow(Visual.Material, false, false, "Button checked", "Button unchecked", "EmojiNeutral", "Emoji2", false)
+            DataRow(Visual.Material, true, true, "Button checked", "Button unchecked", "EmojiNeutral", "Emoji2"),
+            DataRow(Visual.Material, true, false, "Button checked", "Button unchecked", "EmojiNeutral", "Emoji2"),
+            DataRow(Visual.Material, false, true, "Button checked", "Button unchecked", "EmojiNeutral", "Emoji2"),
+            DataRow(Visual.Material, false, false, "Button checked", "Button unchecked", "EmojiNeutral", "Emoji2")
         ]
-        public Task BitToggleButtonClickEvent(Visual visual,
-            bool isChecked, bool isEnabled,
-            string checkedLabel, string unCheckedLabel, string checkedIconName, string unCheckedIconName,
-            bool expectedResult)
+        public void BitToggleButtonClickEvent(Visual visual,
+            bool isChecked,
+            bool isEnabled,
+            string checkedLabel,
+            string unCheckedLabel,
+            string checkedIconName,
+            string unCheckedIconName)
         {
             var component = RenderComponent<BitToggleButtonTest>(parameters =>
             {
@@ -86,15 +91,16 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
                 parameters.Add(p => p.CheckedIconName, checkedIconName);
                 parameters.Add(p => p.UnCheckedIconName, unCheckedIconName);
                 parameters.Add(p => p.IsEnabled, isEnabled);
+                parameters.Add(p => p.OnClick, OnToggleButtonClick);
             });
 
             var bitToggleButton = component.Find(".bit-tgl-btn");
 
             bitToggleButton.Click();
 
-            Assert.AreEqual(isEnabled ? 1 : 0, component.Instance.CurrentCount);
+            Assert.AreEqual(isEnabled ? 1 : 0, IncrementValueOnClick);
 
-            Assert.AreEqual(expectedResult, bitToggleButton.ClassList.Contains("bit-tgl-btn-checked"));
+            Assert.AreEqual(isChecked ^ isEnabled, bitToggleButton.ClassList.Contains("bit-tgl-btn-checked"));
 
             var bitIconTag = component.Find(".bit-tgl-btn > span > i");
 
@@ -109,18 +115,15 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
             {
                 Assert.AreEqual(bitLabelTag.TextContent, (isChecked ? checkedLabel : unCheckedLabel));
             }
-
-            return Task.CompletedTask;
         }
 
         [DataTestMethod,
-          DataRow(true, ButtonStyle.Primary, false, false),
-          DataRow(true, ButtonStyle.Standard, true, false),
-          DataRow(false, ButtonStyle.Primary, false, true),
-          DataRow(false, ButtonStyle.Standard, true, false),
+          DataRow(true, ButtonStyle.Primary, false),
+          DataRow(true, ButtonStyle.Standard, true),
+          DataRow(false, ButtonStyle.Primary, false),
+          DataRow(false, ButtonStyle.Standard, true),
       ]
-        public Task BitToggleButtonDisabledFocusTest(bool isEnabled, ButtonStyle style,
-            bool allowDisabledFocus, bool expectedResult)
+        public void BitToggleButtonDisabledFocusTest(bool isEnabled, ButtonStyle style, bool allowDisabledFocus)
         {
             var com = RenderComponent<BitToggleButtonTest>(parameters =>
             {
@@ -133,17 +136,17 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
 
             var hasTabindexAttr = bitButton.HasAttribute("tabindex");
 
-            Assert.AreEqual(hasTabindexAttr, expectedResult);
+            Assert.AreEqual(hasTabindexAttr, !isEnabled && !allowDisabledFocus);
 
             if (hasTabindexAttr)
+            {
                 Assert.IsTrue(bitButton.GetAttribute("tabindex").Equals("-1"));
-
-            return Task.CompletedTask;
+            }
         }
 
 
         [DataTestMethod, DataRow("Detailed description")]
-        public Task BitToggleButtonAriaDescriptionTest(string ariaDescription)
+        public void BitToggleButtonAriaDescriptionTest(string ariaDescription)
         {
             var com = RenderComponent<BitToggleButtonTest>(parameters =>
             {
@@ -154,11 +157,11 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
 
             Assert.IsTrue(bitButton.HasAttribute("aria-describedby"));
 
-            return Task.CompletedTask;
+            Assert.AreEqual(ariaDescription, bitButton.GetAttribute("aria-describedby"));
         }
 
         [DataTestMethod, DataRow("Detailed label")]
-        public Task BitToggleButtonAriaLabelTest(string ariaLabel)
+        public void BitToggleButtonAriaLabelTest(string ariaLabel)
         {
             var com = RenderComponent<BitToggleButtonTest>(parameters =>
             {
@@ -169,7 +172,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
 
             Assert.IsTrue(bitButton.HasAttribute("aria-label"));
 
-            return Task.CompletedTask;
+            Assert.AreEqual(ariaLabel, bitButton.GetAttribute("aria-label"));
         }
 
         [DataTestMethod,
@@ -177,7 +180,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
             DataRow(false, false),
             DataRow(null, false)
         ]
-        public Task BitToggleButtonAriaHiddenTest(bool ariaHidden, bool expectedResult)
+        public void BitToggleButtonAriaHiddenTest(bool ariaHidden, bool expectedResult)
         {
             var com = RenderComponent<BitToggleButtonTest>(parameters =>
             {
@@ -187,8 +190,12 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
             var bitButton = com.Find(".bit-tgl-btn");
 
             Assert.AreEqual(bitButton.HasAttribute("aria-hidden"), expectedResult);
+        }
 
-            return Task.CompletedTask;
+        private int IncrementValueOnClick = 0;
+        public void OnToggleButtonClick()
+        {
+            IncrementValueOnClick++;
         }
     }
 }

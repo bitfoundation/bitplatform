@@ -32,21 +32,13 @@ namespace Bit.Client.Web.BlazorUI
         }
         [Parameter] public EventCallback<bool> IsCheckedChanged { get; set; }
         /// <summary>
-        /// the icon that shows in checked state
+        /// the icon that shows in the button
         /// </summary>
-        [Parameter] public string? CheckedIconName { get; set; }
+        [Parameter] public string? IconName { get; set; }
         /// <summary>
-        /// the icon that shows in unChecked state
+        /// the text that shows in the label
         /// </summary>
-        [Parameter] public string? UnCheckedIconName { get; set; }
-        /// <summary>
-        /// the text that shows in Checked state
-        /// </summary>
-        [Parameter] public string? ChekedLabel { get; set; }
-        /// <summary>
-        /// the text that shows in unChecked state
-        /// </summary>
-        [Parameter] public string? UnChekedLabel { get; set; }
+        [Parameter] public string? Label { get; set; }
         [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
         [Parameter] public EventCallback<bool> OnChange { get; set; }
         [Parameter]
@@ -118,17 +110,11 @@ namespace Bit.Client.Web.BlazorUI
                         IsCheckedHasBeenSet = true;
                         IsChecked = (bool)parameter.Value;
                         break;
-                    case nameof(CheckedIconName):
-                        CheckedIconName = (string?)parameter.Value;
+                    case nameof(IconName):
+                        IconName = (string?)parameter.Value;
                         break;
-                    case nameof(UnCheckedIconName):
-                        UnCheckedIconName = (string?)parameter.Value;
-                        break;
-                    case nameof(ChekedLabel):
-                        ChekedLabel = (string?)parameter.Value;
-                        break;
-                    case nameof(UnChekedLabel):
-                        UnChekedLabel = (string?)parameter.Value;
+                    case nameof(Label):
+                        Label = (string?)parameter.Value;
                         break;
                     case nameof(OnClick):
                         OnClick = (Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.Web.MouseEventArgs>)parameter.Value;
