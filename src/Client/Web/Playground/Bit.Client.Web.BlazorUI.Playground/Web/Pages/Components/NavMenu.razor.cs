@@ -13,7 +13,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components
                 IsExpanded = true,
                 Links = new List<NavLink>
                 {
-                     new NavLink { Name= "Button", Key = "Button", Url = "/components/buttons", TargetType = NavLinkTargetType.Self },
+                     new NavLink { Name= "Button", Key = "Button", Url = "/components/buttons", Target = "_Self" },
                      new NavLink { Name= "Checkbox", Key = "Checkbox", Url = "#" },
                      new NavLink { Name= "ChoiceGroup", Key = "Choice", Url = "/components/choicegroup", Target = "_Self" },
                      new NavLink { Name= "Label", Key = "Label", Url = "#" },
