@@ -37,12 +37,40 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
 
             Assert.IsTrue(bitButton.ClassList.Contains($"bit-act-btn-{isEnabledClass}-{visualClass}"));
 
-            if (string.IsNullOrEmpty(iconName) is false)
+            if (iconName.HasValue())
+            {
                 Assert.AreEqual(bitIconITag.ClassList.Contains($"bit-icon--{iconName}"), expectedResult);
+            }
 
             bitButton.Click();
 
             Assert.AreEqual(isEnabled ? 1 : 0, com.Instance.CurrentCount);
+
+            return Task.CompletedTask;
+        }
+
+        [DataTestMethod,
+           DataRow(true, false, false),
+           DataRow(true, true, false),
+           DataRow(false, false, true),
+           DataRow(false, true, false),
+       ]
+        public Task BitActionButtonDisabledFocusTest(bool isEnabled, bool allowDisabledFocus, bool expectedResult)
+        {
+            var com = RenderComponent<BitActionButtonTest>(parameters =>
+            {
+                parameters.Add(p => p.IsEnabled, isEnabled);
+                parameters.Add(p => p.AllowDisabledFocus, allowDisabledFocus);
+            });
+
+            var bitButton = com.Find(".bit-act-btn");
+
+            var hasTabindexAttr = bitButton.HasAttribute("tabindex");
+
+            Assert.AreEqual(hasTabindexAttr, expectedResult);
+
+            if (hasTabindexAttr)
+                Assert.IsTrue(bitButton.GetAttribute("tabindex").Equals("-1"));
 
             return Task.CompletedTask;
         }
