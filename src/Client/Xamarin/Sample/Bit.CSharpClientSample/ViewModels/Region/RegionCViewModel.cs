@@ -1,5 +1,4 @@
 ﻿using Bit.ViewModel;
-using Prism.Navigation;
 using Prism.Regions;
 using Prism.Regions.Navigation;
 using System.Threading.Tasks;
@@ -20,11 +19,6 @@ namespace Bit.CSharpClientSample.ViewModels
         async Task GoToDRegion()
         {
             RegionManager.RequestNavigate("ContentRegion2", "RegionD");
-        }
-
-        public async override Task OnNavigatedToAsync(INavigationParameters parameters)
-        {
-            await base.OnNavigatedToAsync(parameters);
         }
     }
 }
