@@ -40,18 +40,6 @@ namespace Bit.Client.Web.BlazorUI
                                             : $"{RootElementClass}-no-top");
         }
 
-        private static string MapNavLinkTargetTypeToString(NavLinkTargetType navLinkTargetType)
-        {
-            return navLinkTargetType switch
-            {
-                NavLinkTargetType.Blank => "_blank",
-                NavLinkTargetType.Parent => "_parent",
-                NavLinkTargetType.Self => "_self",
-                NavLinkTargetType.Top => "_top",
-                _ => throw new System.Exception($"NavLinkTargetType not supported: {navLinkTargetType}")
-            };
-        }
-
         private string GetLinkClass(NavLink navLink)
         {
             var enabledClass = navLink.Disabled ? "disabled" : "enabled";

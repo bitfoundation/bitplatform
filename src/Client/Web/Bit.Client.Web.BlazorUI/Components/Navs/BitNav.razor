@@ -2,6 +2,7 @@
 @inherits BitComponentBase
 
 <nav @ref="RootElement"
+     @attributes="HtmlAttributes"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      role="navigation"
@@ -40,7 +41,6 @@
 </nav>
 
 @code{
-
     public RenderFragment<NavLink>? childTemplate { get; set; }
 
     protected override void OnParametersSet()
@@ -65,7 +65,7 @@
                title="@navLink.Title"
                tabindex="-1"
                onclick="@(navLink.Disabled ? "return false;" : "")"
-               target="@(MapNavLinkTargetTypeToString(navLink.TargetType))"
+               target="@navLink.Target"
                style="padding: 0px 20px 0px @(((navLink.Depth * 14)+(navLink.Icon.HasNoValue() ? 27 : 3)).ToString())px;"
                class="@GetLinkClass(navLink)">
 
@@ -88,9 +88,9 @@
                         }
                 </ul>
             }
+
         </div>
     </li>
     );
     }
-
 }

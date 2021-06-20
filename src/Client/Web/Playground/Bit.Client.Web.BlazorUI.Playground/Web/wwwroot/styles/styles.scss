@@ -1,9 +1,150 @@
-﻿* {
+﻿@import "colors.scss";
+
+* {
     //todo this code is added because due to latest changes our index page has no font right now
     //after finding a cool font for our websites this will be redundant
     font-family: FluentFont;
 }
 
+body {
+    margin: 0;
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+th, td {
+    width: 0;
+    font-size: 14px;
+    padding: 8px;
+    text-align: left;
+    border-bottom: 1px solid $Grey;
+}
+
+p {
+    font-size: 14px;
+}
+
+.header-title {
+    color: $White;
+    font-size: 23px;
+    margin: 22px;
+}
+
+.navbar {
+    height: 80px;
+    overflow: hidden;
+    background-color: $DarkBlue;
+    position: sticky;
+    top: 0;
+
+    .active > a {
+        background-color: $DarkRed;
+    }
+}
+
+.bit-lnk-fluent > a {
+    float: left;
+    display: block;
+    color: $White;
+    text-align: center;
+    padding: 30px;
+    text-decoration: none;
+    float: right;
+
+    &:hover {
+        text-decoration: none;
+        color: $White;
+    }
+}
+
+.row {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.side {
+    flex: 5%;
+    background-color: $LightGray;
+    padding: 20px;
+    position: fixed;
+    width: 255px;
+}
+
+.card {
+    padding: 10px 10px 20px 10px;
+    border: 1px solid $VeryLightPink;
+    background-color: $White;
+    box-shadow: 10px 10px 5px $White;
+
+    .desc {
+        font-size: 16px;
+    }
+}
+
+.main {
+    background-color: $White;
+    padding: 20px;
+    width: calc(100% - 325px);
+    margin-left: auto;
+}
+
+.container {
+    display: flex;
+
+    .box-left {
+        padding: 10px 10px 20px 10px;
+        border-right: 1px solid $VeryLightPink;
+        width: 47%;
+    }
+
+    .box-right {
+        padding: 10px 10px 20px 10px;
+        border-left: 1px solid $VeryLightPink;
+        width: 53%;
+    }
+}
+
+.wrapper {
+    margin-top: 20px;
+}
+
+.footer {
+    padding: 20px;
+    text-align: center;
+    background-color: $LightGray;
+}
+
+.dark-green {
+    font-weight: bold;
+    color: $DarkGreen;
+}
+
+.light-green {
+    font-weight: bold;
+    color: $LightGreen;
+}
+
+.light-blue {
+    font-weight: bold;
+    color: $LightBlue;
+}
+
+.light-yellow-bg {
+    background-color: $LightYellow;
+}
+
+.m-t-15 {
+    margin-top: 20px;
+}
+
+.m-t-10 {
+    margin-top: 10px;
+}
+
 .custom-button {
-    background-color: palevioletred;
+    background-color: $DarkRed;
+    border-color: $DarkRed;
 }
