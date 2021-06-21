@@ -149,6 +149,10 @@ p {
     padding-left: 20px;
 }
 
+.link {
+    color: $LightBlue;
+    text-decoration: underline;
+}
 .custom-button {
     background-color: $DarkRed;
     border-color: $DarkRed;

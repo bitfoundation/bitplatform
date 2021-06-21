@@ -14,10 +14,10 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components
                 Links = new List<NavLink>
                 {
                      new NavLink { Name= "Button", Key = "Button", Url = "/components/buttons", Target = "_Self" },
-                     new NavLink { Name= "Checkbox", Key = "Checkbox", Url = "/components/checkboxes"},
+                     new NavLink { Name= "Checkbox", Key = "Checkbox", Url = "/components/checkboxes" },
                      new NavLink { Name= "ChoiceGroup", Key = "Choice", Url = "/components/choicegroup" },
                      new NavLink { Name= "Label", Key = "Label", Url = "/components/labels" },
-                     new NavLink { Name= "Link", Key = "Link", Url = "#" },
+                     new NavLink { Name = "Link", Key = "Link", Url = "/components/links" },
                      new NavLink { Name= "Rating", Key = "Rating", Url = "#" },
                      new NavLink { Name= "SearchBox", Key = "SearchBox", Url = "#" },
                      new NavLink { Name= "TextField", Key = "TextField", Url = "#" },
@@ -49,7 +49,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components
                 Key = "Progress",
                 Links = new List<NavLink>
                 {
-                    new NavLink{ Name = "Spinner", Key = "Spinner", Url = "#" }
+                    new NavLink{ Name = "Spinner", Key = "Spinner", Url = "/components/spinner" }
                 }
             },
         };
