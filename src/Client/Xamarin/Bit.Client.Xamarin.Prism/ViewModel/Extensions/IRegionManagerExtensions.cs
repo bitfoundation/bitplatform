@@ -1,23 +1,40 @@
-﻿using Prism.Common;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Prism.Navigation;
 
 namespace Prism.Regions
 {
     public static class IRegionManagerExtensions
     {
-        public static void RequestNavigate(this IRegionManager regionManager, string regionName, string target, params (string, object)[] parameters)
+        public static async Task NavigateAsync(this IRegionManager regionManager, string regionName, string target, INavigationParameters parentParameters, params (string key, object value)[] parameters)
         {
-            regionManager.RequestNavigate(regionName, target, ConvertToINavigationParameters(parameters));
+            Exception? exception = null;
+
+            regionManager.RequestNavigate(regionName, target, result =>
+            {
+                exception = result.Error;
+            }, ConvertToINavigationParameters(parentParameters, parameters));
+
+            if (exception != null)
+                throw exception;
         }
 
-        static INavigationParameters ConvertToINavigationParameters(params (string, object)[] parameters)
+        static INavigationParameters ConvertToINavigationParameters(INavigationParameters parentParameters, params (string key, object value)[] parameters)
         {
             INavigationParameters navigationParameters = new NavigationParameters();
 
-            foreach ((string, object) parameter in parameters)
+            ((INavigationParametersInternal)navigationParameters).Add("__NavigationMode", NavigationMode.New);
+
+            foreach ((string key, object value) parameter in parameters)
             {
-                navigationParameters.Add(parameter.Item1, parameter.Item2);
+                navigationParameters.Add(parameter.key, parameter.value);
             };
+
+            foreach (KeyValuePair<string, object> parameter in parentParameters)
+            {
+                navigationParameters.Add(parameter.Key, parameter.Value);
+            }
 
             return navigationParameters;
         }
@@ -26,10 +43,7 @@ namespace Prism.Regions
         {
             IRegion region = regionManager.Regions[regionName];
 
-            foreach (var view in region.Views)
-            {
-                PageUtilities.InvokeViewAndViewModelAction<IDestructible>(view, destructible => destructible.Destroy());
-            }
+            region.RemoveAll();
 
             regionManager.Regions.Remove(regionName);
 

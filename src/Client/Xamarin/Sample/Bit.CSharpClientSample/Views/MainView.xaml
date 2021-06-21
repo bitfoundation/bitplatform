@@ -24,6 +24,7 @@
         <Button Command="{Binding LogoutCommand}" Text="Logout" />
         <Button Command="{Binding ShowPopupCommand}" Text="Show popup" />
         <Button Command="{Binding OpenConsoleCommand}" Text="Open console" />
+        <Button Command="{Binding RefreshPageCommand}" Text="Refresh page" />
 
         <ContentView prism:RegionManager.RegionName="ContentRegion1" />
         <ContentView prism:RegionManager.RegionName="ContentRegion2" />

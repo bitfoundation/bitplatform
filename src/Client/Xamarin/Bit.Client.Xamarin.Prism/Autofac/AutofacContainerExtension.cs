@@ -4,6 +4,7 @@ using Bit.ViewModel;
 using Bit.ViewModel.Contracts;
 using Prism.Ioc;
 using Prism.Navigation;
+using Prism.Regions;
 using Rg.Plugins.Popup.Contracts;
 using System;
 using System.Collections.Generic;
@@ -74,7 +75,7 @@ namespace Prism.Autofac
 
         internal static INavService BuildNavService(ILifetimeScope scope, INavigationService prismNavigationService)
         {
-            return scope!.Resolve<INavServiceFactory>()(prismNavigationService, scope!.Resolve<IPopupNavigation>());
+            return scope!.Resolve<INavServiceFactory>()(prismNavigationService, scope!.Resolve<IPopupNavigation>(), scope!.Resolve<IRegionManager>());
         }
     }
 

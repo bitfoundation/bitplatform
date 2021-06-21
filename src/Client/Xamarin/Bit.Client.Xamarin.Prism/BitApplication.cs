@@ -125,7 +125,7 @@ namespace Bit
             return Task.CompletedTask;
         }
 
-        public new INavService NavigationService => (PrismNavigationService == null ? null : Container.Resolve<INavServiceFactory>()(PrismNavigationService, Container.Resolve<IPopupNavigation>()))!;
+        public new INavService NavigationService => (PrismNavigationService == null ? null : Container.Resolve<INavServiceFactory>()(PrismNavigationService, Container.Resolve<IPopupNavigation>(), Container.Resolve<IRegionManager>()))!;
 
         public new static BitApplication Current => (PrismApplicationBase.Current as BitApplication)!;
 
@@ -180,6 +180,7 @@ namespace Bit
             // workaround end
 
             //containerRegistry.RegisterPopupDialogService();
+            containerRegistry.RegisterForNav<ContentPage>("PageWhichWeStayThereUntilRegionsAreDisposed"); // See DefaultNavService. Without this, it's almost impossible to reload a page which has one or more regions!
         }
     }
 
