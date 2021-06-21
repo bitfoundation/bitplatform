@@ -28,7 +28,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.FileUpload
            DataRow(true),
            DataRow(false)
         ]
-        public void BitUploadFile_MultipleTest(bool isMultiFile)
+        public void BitFileUpload_MultipleTest(bool isMultiFile)
         {
             var com = RenderComponent<BitFileUploadTest>(parameters =>
             {
