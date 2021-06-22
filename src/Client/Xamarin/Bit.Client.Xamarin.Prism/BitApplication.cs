@@ -1,5 +1,6 @@
 ﻿using Autofac;
 using Autofac.Extensions.DependencyInjection;
+using Bit.Client.Xamarin.Prism.View;
 using Bit.Core.Contracts;
 using Bit.Core.Implementations;
 using Bit.Core.Models.Events;
@@ -180,7 +181,7 @@ namespace Bit
             // workaround end
 
             //containerRegistry.RegisterPopupDialogService();
-            containerRegistry.RegisterForNav<ContentPage>("PageWhichWeStayThereUntilRegionsAreDisposed"); // See DefaultNavService. Without this, it's almost impossible to reload a page which has one or more regions!
+            containerRegistry.RegisterForNav<PageWhichWeStayThereUntilRegionsAreDisposedPage>("PageWhichWeStayThereUntilRegionsAreDisposed");
         }
     }
 
