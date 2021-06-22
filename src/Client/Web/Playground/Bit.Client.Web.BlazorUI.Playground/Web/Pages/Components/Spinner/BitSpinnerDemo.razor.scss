@@ -1,0 +1,12 @@
+﻿.spinner-container > div:not(.spinner-positioning), .action-btn-container {
+    display: flex;
+}
+
+.spinner-container span {
+    margin: 10px;
+}
+
+.spinner-positioning {
+    display: inline-block;
+    line-height: 30px;
+}
