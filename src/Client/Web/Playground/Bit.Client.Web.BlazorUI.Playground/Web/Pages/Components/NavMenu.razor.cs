@@ -40,7 +40,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components
                 Key = "Notifications",
                 Links = new List<BitNavLinkItem>
                 {
-                    new BitNavLinkItem { Name = "MessageBar", Key = "MessageBar",Url="#" }
+                    new BitNavLinkItem { Name = "MessageBar", Key = "MessageBar", Url="#" }
                 }
             },
             new BitNavLinkItem
@@ -49,7 +49,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components
                 Key = "Progress",
                 Links = new List<BitNavLinkItem>
                 {
-                    new BitNavLinkItem{ Name = "Spinner", Key = "Spinner", Url = "#" }
+                    new BitNavLinkItem{ Name = "Spinner", Key = "Spinner", Url = "/components/spinner" }
                 }
             },
         };
