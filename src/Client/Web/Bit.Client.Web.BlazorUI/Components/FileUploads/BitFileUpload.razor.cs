@@ -10,7 +10,7 @@ using Microsoft.JSInterop;
 namespace Bit.Client.Web.BlazorUI
 {
     /// <summary>
-    /// A component that wraps the HTML file input element and supplies a <see cref="Stream"/> for each file's contents.
+    /// A component that wraps the HTML file input element and upload them.
     /// </summary>
     public partial class BitFileUpload : IDisposable
     {
