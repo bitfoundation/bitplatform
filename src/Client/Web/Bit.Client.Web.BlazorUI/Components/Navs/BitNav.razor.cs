@@ -13,7 +13,7 @@ namespace Bit.Client.Web.BlazorUI
 
         [Parameter] public bool IsOnTop { get; set; }
 
-        [Parameter] public ICollection<BitNavLinkItem> NavLinks { get; set; } = new List<BitNavLinkItem>();
+        [Parameter] public ICollection<BitNavLinkItem> NavLinkItems { get; set; } = new List<BitNavLinkItem>();
 
         [Parameter] public EventCallback<BitNavLinkItem> OnClick { get; set; }
 

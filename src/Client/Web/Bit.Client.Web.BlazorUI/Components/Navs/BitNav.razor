@@ -12,7 +12,7 @@
         <div>
             <div>
                 <ul role="list">
-                    @foreach (var navLink in NavLinks)
+                    @foreach (var navLink in NavLinkItems)
                         if (childTemplate is not null)
                             @childTemplate(navLink)
                 </ul>
@@ -21,7 +21,7 @@
     }
     else
     {
-        @foreach (var navLink in NavLinks)
+        @foreach (var navLink in NavLinkItems)
         {
             <div>
                 @HeaderTemplate(navLink)
