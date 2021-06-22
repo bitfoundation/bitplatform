@@ -13,7 +13,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components
                 IsExpanded = true,
                 Links = new List<NavLink>
                 {
-                     new NavLink { Name= "Button", Key = "Button", Url = "/components/buttons", Target = "_Self" },
+                     new NavLink { Name= "Button", Key = "Button", Url = "/components/buttons" },
                      new NavLink { Name= "Checkbox", Key = "Checkbox", Url = "/components/checkboxes" },
                      new NavLink { Name= "ChoiceGroup", Key = "Choice", Url = "/components/choicegroup" },
                      new NavLink { Name= "Label", Key = "Label", Url = "/components/labels" },
@@ -40,7 +40,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components
                 Key = "Notifications",
                 Links = new List<NavLink>
                 {
-                    new NavLink { Name = "MessageBar", Key = "MessageBar",Url="#" }
+                    new NavLink { Name = "MessageBar", Key = "MessageBar", Url="#" }
                 }
             },
             new NavLink
