@@ -21,6 +21,12 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
         private int RatingReadOnlyValue = 5;
         private int RatingOutsideValue = 5;
 
+        private string SpinButtunValue = string.Empty;
+        private void HandleSpinButtonValueChange(string value)
+        {
+            SpinButtunValue = value;
+        }
+
         private readonly List<NavLink> BasicNavLinks = new()
         {
             new NavLink
