@@ -53,6 +53,11 @@
                         statusClass = "failed";
                         message = FailedUploadedResultMessage;
                     }
+                    else if (file.UploadStatus == UploadStatus.Unaccepted)
+                    {
+                        statusClass = "failed";
+                        message = MaxSizeMessage;
+                    }
                     else if (file.UploadStatus == UploadStatus.Paused)
                     {
                         statusClass = "paused";

@@ -8,6 +8,7 @@
         Canceled,
         Completed,
         Failed,
-        Removed
+        Removed,
+        Unaccepted
     }
 }

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -100,6 +99,10 @@ namespace Bit.Client.Web.BlazorUI
         /// </summary>
         [Parameter] public bool AutoUploadEnabled { get; set; } = true;
 
+        [Parameter] public long MaxSize { get; set; }
+        [Parameter] public string MaxSizeMessage { get; set; } = "File size is too large";
+
+
         /// <summary>
         /// Select file(s) by brows button or drag and drop.
         /// </summary>
@@ -149,11 +152,17 @@ namespace Bit.Client.Web.BlazorUI
         private async Task UploadOneFile(int index)
         {
             if (JSRuntime is null || Files is null) return;
+            if (Files[index].UploadStatus == UploadStatus.Unaccepted) return;
+
             var uploadedSize = Files[index].ChunkesUpLoadedSize.Sum();
-            if (uploadedSize >= Files[index].Size)
+            if (uploadedSize >= Files[index].Size) return;
+
+            if (Files[index].Size > MaxSize)
             {
+                Files[index].UploadStatus = UploadStatus.Unaccepted;
                 return;
             }
+
             if (Files[index].RequestToPause)
             {
                 await PauseAsync(index);
@@ -324,11 +333,11 @@ namespace Bit.Client.Web.BlazorUI
             if (index < 0)
             {
                 UploadStatus = uploadStatus;
-                Files.ToList().ForEach(c => c.UploadStatus = uploadStatus);
+                Files.Where(c => c.UploadStatus != UploadStatus.Unaccepted).ToList().ForEach(c => c.UploadStatus = uploadStatus);
             }
             else
             {
-                if (Files[index].UploadStatus == uploadStatus) return;
+                if (Files[index].UploadStatus == uploadStatus || Files[index].UploadStatus == UploadStatus.Unaccepted) return;
                 Files[index].UploadStatus = uploadStatus;
             }
         }

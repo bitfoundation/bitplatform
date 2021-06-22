@@ -567,6 +567,14 @@
                    RemoveUrl="@RemoveUrl">
     </BitFileUpload>
 
+    <h3>Auto & Multiple with maxsize limitation</h3>
+    <BitFileUpload IsMultiFile="true"
+                   BrowseButtonLabel="Select or drag and drop files"
+                   MaxSize="FileSizeHumanizer.OneMegaByte * 100"
+                   UploadUrl="@UploadUrl"
+                   RemoveUrl="@RemoveUrl">
+    </BitFileUpload>
+
     <h3>individual & Multiple (limit by extensions format)</h3>
     <BitFileUpload IsMultiFile="true"
                    AutoUploadEnabled="false"

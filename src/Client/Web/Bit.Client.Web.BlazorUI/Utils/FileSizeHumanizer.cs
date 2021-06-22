@@ -1,12 +1,12 @@
 ﻿namespace Bit.Client.Web.BlazorUI
 {
-    internal static class FileSizeHumanizer
+    public static class FileSizeHumanizer
     {
         public const long OneKiloByte = 1024;
         public const long OneMegaByte = OneKiloByte * 1024;
         public const long OneGigaByte = OneMegaByte * 1024;
 
-        internal static string Humanize(this long size)
+        public static string Humanize(this long size)
         {
             string suffix;
             if (size > OneGigaByte)
