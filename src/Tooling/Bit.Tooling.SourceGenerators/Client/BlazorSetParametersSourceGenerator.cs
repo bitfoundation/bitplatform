@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
@@ -39,7 +40,7 @@ using Microsoft.AspNetCore.Components.Web;
 
 namespace {namespaceName}
 {{
-    public partial class {classSymbol.Name}
+    public partial class {GetClassName(classSymbol)}
     {{
         public override Task SetParametersAsync(ParameterView parameters)
         {{
@@ -76,6 +77,20 @@ namespace {namespaceName}
             source.AppendLine("}");
 
             return source.ToString();
+        }
+
+        private string GetClassName(INamedTypeSymbol classSymbol)
+        {
+            StringBuilder sbName = new StringBuilder(classSymbol.Name);
+
+            if (classSymbol.IsGenericType)
+            {
+                sbName.Append("<");
+                sbName.Append(string.Join(", ", classSymbol.TypeArguments.Select(s => s.Name)));
+                sbName.Append(">");
+            }
+
+            return sbName.ToString();
         }
     }
 }
