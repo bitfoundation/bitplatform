@@ -13,26 +13,9 @@
                     Context="item"
                     ItemSize="@ItemSize"
                     OverscanCount="@OverscanCount">
-
             <ItemContent>
                 @RowTemplate!(item)
             </ItemContent>
-
-            <Placeholder>
-                @if (!string.IsNullOrEmpty(LoadingText))
-                {
-                    <p class="text-secondary">
-                        @LoadingText
-                    </p>
-                }
-                else
-                {
-                    <p>
-                        Loading&hellip;
-                    </p>
-                }
-
-            </Placeholder>
         </Virtualize>
     }
     else
