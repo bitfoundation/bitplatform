@@ -108,6 +108,11 @@
             }
 
             > div:nth-child(1) {
+
+                * {
+                    cursor: default;
+                }
+
                 > div:nth-child(1) {
                     padding: rem(4px);
                     overflow: hidden;
