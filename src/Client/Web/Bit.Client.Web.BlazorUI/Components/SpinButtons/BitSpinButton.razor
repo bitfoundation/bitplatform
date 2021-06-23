@@ -13,7 +13,7 @@
         <input @ref="InputElement"
                disabled="@(IsEnabled is false)"
                value="@($"{Value} {Suffix}")"
-               @onchange="@(e => HandleValueOnInputChange(e))" />
+               @onchange="@(e => HandleOnInputChange(e))" />
         <span>
             <button @onclick="@HandleUpClick">
                 <span>

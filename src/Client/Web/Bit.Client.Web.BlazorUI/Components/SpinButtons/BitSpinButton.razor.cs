@@ -68,7 +68,7 @@ namespace Bit.Client.Web.BlazorUI
             ClassBuilder.Register(() => $"{RootElementClass}-label-{LabelPosition}-{VisualClassRegistrar()}");
         }
 
-        private async Task HandleValueOnInputChange(ChangeEventArgs e)
+        private async Task HandleOnInputChange(ChangeEventArgs e)
         {
             if (IsEnabled)
             {
