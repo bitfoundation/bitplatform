@@ -52,33 +52,13 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
         }
 
         [DataTestMethod,
-            DataRow(Visual.Fluent, true, true, "Button label", "Emoji2"),
-            DataRow(Visual.Fluent, true, false, "Button label", "Emoji2"),
-            DataRow(Visual.Fluent, false, true, "Button label", "Emoji2"),
-            DataRow(Visual.Fluent, false, false, "Button label", "Emoji2"),
-
-            DataRow(Visual.Cupertino, true, true, "Button label", "Emoji2"),
-            DataRow(Visual.Cupertino, true, false, "Button label", "Emoji2"),
-            DataRow(Visual.Cupertino, false, true, "Button label", "Emoji2"),
-            DataRow(Visual.Cupertino, false, false, "Button label", "Emoji2"),
-
-            DataRow(Visual.Material, true, true, "Button label", "Emoji2"),
-            DataRow(Visual.Material, true, false, "Button label", "Emoji2"),
-            DataRow(Visual.Material, false, true, "Button label", "Emoji2"),
-            DataRow(Visual.Material, false, false, "Button label", "Emoji2")
+            DataRow(true),
+            DataRow(false),
         ]
-        public void BitToggleButtonClickEvent(Visual visual,
-            bool isChecked,
-            bool isEnabled,
-            string label,
-            string iconName)
+        public void BitToggleButtonClickEvent(bool isEnabled)
         {
             var component = RenderComponent<BitToggleButtonTest>(parameters =>
             {
-                parameters.Add(p => p.Visual, visual);
-                parameters.Add(p => p.IsChecked, isChecked);
-                parameters.Add(p => p.Label, label);
-                parameters.Add(p => p.IconName, iconName);
                 parameters.Add(p => p.IsEnabled, isEnabled);
             });
 
@@ -87,30 +67,68 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
             bitToggleButton.Click();
 
             Assert.AreEqual(isEnabled ? 1 : 0, component.Instance.CurrentCount);
-
-            Assert.AreEqual(isChecked ^ isEnabled, bitToggleButton.ClassList.Contains("bit-tgl-btn-checked"));                 
         }
 
         [DataTestMethod,
-          DataRow(true, ButtonStyle.Primary, false),
-          DataRow(true, ButtonStyle.Standard, true),
-          DataRow(false, ButtonStyle.Primary, false),
-          DataRow(false, ButtonStyle.Standard, true),
-      ]
-        public void BitToggleButtonDisabledFocusTest(bool isEnabled, ButtonStyle style, bool allowDisabledFocus)
+            DataRow(true, true),
+            DataRow(true, false),
+            DataRow(false, true),
+            DataRow(false, false)
+        ]
+        public void BitToggleButtonShouldChangeIsCheckedParameterAfterClickWhenIsEnable(bool isEnabled, bool isChecked)
         {
-            var com = RenderComponent<BitToggleButtonTest>(parameters =>
+            var component = RenderComponent<BitToggleButtonTest>(parameters =>
+               {
+                   parameters.Add(p => p.IsEnabled, isEnabled);
+                   parameters.Add(p => p.IsChecked, isChecked);
+               });
+
+            var bitToggleButton = component.Find(".bit-tgl-btn");
+
+            bitToggleButton.Click();
+
+            Assert.AreEqual(isEnabled ? !isChecked : isChecked, component.Instance.IsChecked);
+        }
+
+        [DataTestMethod,
+            DataRow(true, true),
+            DataRow(true, false),
+            DataRow(false, true),
+            DataRow(false, false)
+        ]
+        public void BitToggleButtonShouldAddRomveCheckedClassAfterClickWhenIsEnable(bool isEnabled, bool isChecked)
+        {
+            var component = RenderComponent<BitToggleButtonTest>(parameters =>
             {
                 parameters.Add(p => p.IsEnabled, isEnabled);
-                parameters.Add(p => p.ButtonStyle, style);
+                parameters.Add(p => p.IsChecked, isChecked);
+            });
+
+            var bitToggleButton = component.Find(".bit-tgl-btn");
+
+            bitToggleButton.Click();
+
+            Assert.AreEqual(isEnabled ? !isChecked : isChecked, bitToggleButton.ClassList.Contains("bit-tgl-btn-checked"));
+        }
+
+        [DataTestMethod,
+          DataRow(true, false),
+          DataRow(true, true),
+          DataRow(false, false),
+          DataRow(false, true),
+        ]
+        public void BitToggleButtonDisabledFocusTest(bool isEnabled, bool allowDisabledFocus)
+        {
+            var component = RenderComponent<BitToggleButtonTest>(parameters =>
+            {
+                parameters.Add(p => p.IsEnabled, isEnabled);
                 parameters.Add(p => p.AllowDisabledFocus, allowDisabledFocus);
             });
 
-            var bitButton = com.Find(".bit-tgl-btn");
-
+            var bitButton = component.Find(".bit-tgl-btn");
             var hasTabindexAttr = bitButton.HasAttribute("tabindex");
 
-            Assert.AreEqual(hasTabindexAttr, !isEnabled && !allowDisabledFocus);
+            Assert.AreEqual(!isEnabled && !allowDisabledFocus, hasTabindexAttr);
 
             if (hasTabindexAttr)
             {
@@ -118,53 +136,52 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
             }
         }
 
-
         [DataTestMethod, DataRow("Detailed description")]
         public void BitToggleButtonAriaDescriptionTest(string ariaDescription)
         {
-            var com = RenderComponent<BitToggleButtonTest>(parameters =>
+            var component = RenderComponent<BitToggleButtonTest>(parameters =>
             {
                 parameters.Add(p => p.AriaDescription, ariaDescription);
             });
 
-            var bitButton = com.Find(".bit-tgl-btn");
+            var bitButton = component.Find(".bit-tgl-btn");
 
             Assert.IsTrue(bitButton.HasAttribute("aria-describedby"));
 
-            Assert.AreEqual(ariaDescription, bitButton.GetAttribute("aria-describedby"));
+            Assert.AreEqual(bitButton.GetAttribute("aria-describedby"), ariaDescription);
         }
 
         [DataTestMethod, DataRow("Detailed label")]
         public void BitToggleButtonAriaLabelTest(string ariaLabel)
         {
-            var com = RenderComponent<BitToggleButtonTest>(parameters =>
+            var component = RenderComponent<BitToggleButtonTest>(parameters =>
             {
                 parameters.Add(p => p.AriaLabel, ariaLabel);
             });
 
-            var bitButton = com.Find(".bit-tgl-btn");
+            var bitButton = component.Find(".bit-tgl-btn");
 
             Assert.IsTrue(bitButton.HasAttribute("aria-label"));
 
-            Assert.AreEqual(ariaLabel, bitButton.GetAttribute("aria-label"));
+            Assert.AreEqual(bitButton.GetAttribute("aria-label"), ariaLabel);
         }
 
         [DataTestMethod,
-            DataRow(true, true),
-            DataRow(false, false),
-            DataRow(null, false)
+            DataRow(true),
+            DataRow(false),
+            DataRow(null)
         ]
-        public void BitToggleButtonAriaHiddenTest(bool ariaHidden, bool expectedResult)
+        public void BitToggleButtonAriaHiddenTest(bool ariaHidden)
         {
-            var com = RenderComponent<BitToggleButtonTest>(parameters =>
+            var component = RenderComponent<BitToggleButtonTest>(parameters =>
             {
                 parameters.Add(p => p.AriaHidden, ariaHidden);
             });
 
-            var bitButton = com.Find(".bit-tgl-btn");
+            var bitButton = component.Find(".bit-tgl-btn");
 
-            Assert.AreEqual(bitButton.HasAttribute("aria-hidden"), expectedResult);
-        }      
+            Assert.AreEqual(ariaHidden ? true : false, bitButton.HasAttribute("aria-hidden"));
+        }
     }
 }
 
