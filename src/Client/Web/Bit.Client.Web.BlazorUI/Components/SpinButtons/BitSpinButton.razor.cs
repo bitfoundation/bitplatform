@@ -14,7 +14,7 @@ namespace Bit.Client.Web.BlazorUI
 
         [Inject] public IJSRuntime? JSRuntime { get; set; }
 
-        [Parameter] public double Min { get; set; } = 0;
+        [Parameter] public double Min { get; set; } = double.MinValue;
         [Parameter] public double Max { get; set; } = double.MaxValue;
         [Parameter] public double DefaultValue { get; set; } = 0;
         [Parameter] public double Step { get; set; } = 1;
@@ -96,16 +96,9 @@ namespace Bit.Client.Web.BlazorUI
             await base.OnAfterRenderAsync(firstRender);
         }
 
-        private bool IsStepDecimal => Step.ToString().Contains(".");
+        private bool IsStepDecimal => Step % 1 == 0;
 
-        private double Normalize(double value)
-        {
-            var result = IsStepDecimal
-                ? Math.Round(value, 2)
-                : value;
-
-            return result;
-        }
+        private double Normalize(double value) => IsStepDecimal ? Math.Round(value, 2) : value;
 
         private string ValueWithSuffix => string.IsNullOrEmpty(Suffix) ? $"{Normalize(Value)}" : $"{Normalize(Value)} {Suffix}";
     }
