@@ -69,8 +69,8 @@ namespace Bit.Client.Web.BlazorUI.Tests.SpinButtons
         }
 
         [DataTestMethod,
-            DataRow(LabelPosition.left),
-            DataRow(LabelPosition.top)]
+            DataRow(LabelPosition.Left),
+            DataRow(LabelPosition.Top)]
         public void SpinButtonShouldHaveLabelPositionClassName(LabelPosition labelPosition)
         {
             var component = RenderComponent<BitSpinButtonTest>(parameters => parameters.Add(p => p.LabelPosition, labelPosition));

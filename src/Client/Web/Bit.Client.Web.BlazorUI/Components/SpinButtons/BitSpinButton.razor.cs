@@ -8,7 +8,7 @@ namespace Bit.Client.Web.BlazorUI
 {
     public partial class BitSpinButton
     {
-        private LabelPosition labelPosition = LabelPosition.left;
+        private LabelPosition labelPosition = LabelPosition.Left;
         public ElementReference InputElement { get; set; }
         public double Value { get; set; }
 

@@ -2,7 +2,7 @@
 {
     public enum LabelPosition
     {
-        top,
-        left,
+        Top,
+        Left,
     }
 }
