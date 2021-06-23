@@ -342,6 +342,40 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
+        private static string GetFileIcon(string fileName)
+        {
+            var fileSections = fileName?.Split('.')?.ToList();
+            var extension = fileSections?.Last();
+
+            return extension switch
+            {
+                "jpg" => "FileImage",
+                "gif" => "FileImage",
+                "png" => "FileImage",
+                "bmp" => "FileImage",
+                "webp" => "FileImage",
+
+                "mp4" => "Video",
+                "mov" => "Video",
+                "wmv" => "Video",
+                "avi" => "Video",
+                "avchd" => "Video",
+                "flv" => "Video",
+                "f4v" => "Video",
+                "swf" => "Video",
+                "mkv" => "Video",
+                "webm" => "Video",
+
+                "zip" => "Zip",
+                "rar" => "Zip",
+
+                "pdf" => "PDF",
+                "txt" => "InsertTextBox",
+
+                _ => ""
+            };
+        }
+
         /// <summary>
         /// Get updload status from XHR response status
         /// </summary>
