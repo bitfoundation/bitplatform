@@ -157,7 +157,7 @@ namespace Bit.Client.Web.BlazorUI
             var uploadedSize = Files[index].ChunkesUpLoadedSize.Sum();
             if (uploadedSize >= Files[index].Size) return;
 
-            if (Files[index].Size > MaxSize)
+            if (MaxSize > 0 && Files[index].Size > MaxSize)
             {
                 Files[index].UploadStatus = UploadStatus.Unaccepted;
                 return;
