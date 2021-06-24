@@ -21,7 +21,7 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public string Suffix { get; set; } = string.Empty;
         [Parameter] public string Label { get; set; } = string.Empty;
         [Parameter] public string IconName { get; set; } = string.Empty;
-
+        
         [Parameter]
         public LabelPosition LabelPosition
         {
@@ -65,7 +65,9 @@ namespace Bit.Client.Web.BlazorUI
 
         protected override void RegisterComponentClasses()
         {
-            ClassBuilder.Register(() => $"{RootElementClass}-label-{LabelPosition}-{VisualClassRegistrar()}");
+            ClassBuilder.Register(() => LabelPosition == LabelPosition.Left
+                                                ? $"{RootElementClass}-label-left-{VisualClassRegistrar()}"
+                                                : $"{RootElementClass}-label-top-{VisualClassRegistrar()}");
         }
 
         private async Task HandleOnInputChange(ChangeEventArgs e)

@@ -69,16 +69,42 @@ namespace Bit.Client.Web.BlazorUI.Tests.SpinButtons
         }
 
         [DataTestMethod,
-            DataRow(LabelPosition.Left),
-            DataRow(LabelPosition.Top)]
-        public void SpinButtonShouldHaveLabelPositionClassName(LabelPosition labelPosition)
+            DataRow(Visual.Fluent, LabelPosition.Left),
+            DataRow(Visual.Fluent, LabelPosition.Top),
+
+            DataRow(Visual.Cupertino, LabelPosition.Left),
+            DataRow(Visual.Cupertino, LabelPosition.Top),
+
+            DataRow(Visual.Material, LabelPosition.Left),
+            DataRow(Visual.Material, LabelPosition.Top),
+            ]
+        public void SpinButtonShouldHaveLabelPositionClassName(Visual visual, LabelPosition labelPosition)
         {
-            var component = RenderComponent<BitSpinButtonTest>(parameters => parameters.Add(p => p.LabelPosition, labelPosition));
+            var component = RenderComponent<BitSpinButtonTest>(parameters =>
+            {
+                parameters.Add(p => p.Visual, visual);
+                parameters.Add(p => p.LabelPosition, labelPosition);
+            });
+
+            var labelPositionClass = labelPosition == LabelPosition.Left ? "left" : "top";
+            var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
 
             var container = component.Find(".bit-spb");
-            var hasLabelClass = container.ClassList
-                .Any(className => className.Contains($"label-{labelPosition}"));
+            var hasLabelClass = container.ClassList.Contains($"bit-spb-label-{labelPositionClass}-{visualClass}");
             Assert.IsTrue(hasLabelClass);
+        }
+
+        [DataTestMethod,
+            DataRow("IncreaseIndentLegacy", true),
+            DataRow("IconName", true)]
+        public void SpinButtonLabelShouldHaveIconClassName(string iconName, bool expectedResult)
+        {
+            var component = RenderComponent<BitSpinButtonTest>(parameters => parameters.Add(p => p.IconName, iconName));
+
+            var IconElement = component.Find(".bit-spb > div > i");
+            var hasIconClass = IconElement.ClassList.Contains($"bit-icon--{iconName}");
+
+            Assert.AreEqual(hasIconClass, expectedResult);
         }
     }
 }
