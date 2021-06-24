@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Bit.Client.Web.BlazorUI.Components.SpinButtons;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
@@ -21,7 +22,7 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public string Suffix { get; set; } = string.Empty;
         [Parameter] public string Label { get; set; } = string.Empty;
         [Parameter] public string IconName { get; set; } = string.Empty;
-        
+
         [Parameter]
         public LabelPosition LabelPosition
         {
@@ -35,25 +36,24 @@ namespace Bit.Client.Web.BlazorUI
 
         [Parameter] public EventCallback<string> OnChange { get; set; }
 
-        private async Task HandleUpClick(MouseEventArgs e)
+        private async Task HandleButtonClick(SpinButtonAction action)
         {
             if (IsEnabled)
             {
-                var result = Value + Step;
-                if (result <= Max)
+                double result = 0;
+                bool isValid = false;
+                switch (action)
                 {
-                    Value = Normalize(result);
-                    await OnChange.InvokeAsync(ValueWithSuffix);
+                    case SpinButtonAction.Up:
+                        result = Value + Step;
+                        isValid = result <= Max;
+                        break;
+                    case SpinButtonAction.Down:
+                        result = Value - Step;
+                        isValid = result >= Min;
+                        break;
                 }
-            }
-        }
-
-        private async Task HandleDownClick(MouseEventArgs e)
-        {
-            if (IsEnabled)
-            {
-                var result = Value - Step;
-                if (result >= Min)
+                if (isValid)
                 {
                     Value = Normalize(result);
                     await OnChange.InvokeAsync(ValueWithSuffix);
@@ -98,7 +98,7 @@ namespace Bit.Client.Web.BlazorUI
             await base.OnAfterRenderAsync(firstRender);
         }
 
-        private bool IsStepDecimal => Step % 1 == 0;
+        private bool IsStepDecimal => Step % 1 != 0;
 
         private double Normalize(double value) => IsStepDecimal ? Math.Round(value, 2) : value;
 
