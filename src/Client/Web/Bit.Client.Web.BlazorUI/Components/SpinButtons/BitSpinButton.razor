@@ -11,8 +11,7 @@
     </div>
 
     <div>
-        <input @ref="InputElement"
-               disabled="@(IsEnabled is false)"
+        <input disabled="@(IsEnabled is false)"
                value="@($"{Value} {Suffix}")"
                @onchange="e => HandleOnInputChange(e)" />
         <span>

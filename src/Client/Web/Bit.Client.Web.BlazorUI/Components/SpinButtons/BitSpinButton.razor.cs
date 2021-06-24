@@ -9,10 +9,20 @@ namespace Bit.Client.Web.BlazorUI
 {
     public partial class BitSpinButton
     {
+        private double inputValue;
         private LabelPosition labelPosition = LabelPosition.Left;
-        public ElementReference InputElement { get; set; }
-        public double Value { get; set; }
+        [Parameter] public double Value
+        {
+            get => inputValue;
+            set
+            {
+                if (value == inputValue) return;
+                inputValue = value;
+                _ = ValueChanged.InvokeAsync(value);
+            }
+        }
 
+        [Parameter] public EventCallback<double> ValueChanged { get; set; }
         [Inject] public IJSRuntime? JSRuntime { get; set; }
 
         [Parameter] public double Min { get; set; } = double.MinValue;
@@ -34,7 +44,7 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
-        [Parameter] public EventCallback<string> OnChange { get; set; }
+        [Parameter] public EventCallback<double> OnChange { get; set; }
 
         private async Task HandleButtonClick(SpinButtonAction action)
         {
@@ -56,7 +66,7 @@ namespace Bit.Client.Web.BlazorUI
                 if (isValid)
                 {
                     Value = Normalize(result);
-                    await OnChange.InvokeAsync(ValueWithSuffix);
+                    await OnChange.InvokeAsync(Value);
                 }
             }
         }
@@ -79,23 +89,9 @@ namespace Bit.Client.Web.BlazorUI
                 if (isNumber && numericValue >= Min && numericValue <= Max)
                 {
                     Value = numericValue;
-                    await OnChange.InvokeAsync(ValueWithSuffix);
-                }
-                else
-                {
-                    _ = JSRuntime?.SetProperty(InputElement, "value", ValueWithSuffix);
+                    await OnChange.InvokeAsync(Value);
                 }
             }
-        }
-
-        protected override async Task OnAfterRenderAsync(bool firstRender)
-        {
-            if (firstRender)
-            {
-                Value = DefaultValue;
-                _ = JSRuntime?.SetProperty(InputElement, "value", ValueWithSuffix);
-            }
-            await base.OnAfterRenderAsync(firstRender);
         }
 
         private bool IsStepDecimal => Step % 1 != 0;
