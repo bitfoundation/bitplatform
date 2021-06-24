@@ -36,6 +36,7 @@ p {
 .navbar {
     display: flex;
     justify-content: space-between;
+    z-index: 9999;
     height: 80px;
     overflow: hidden;
     background-color: $DarkBlue;
@@ -147,11 +148,14 @@ p {
     margin-top: 10px;
 }
 
+.p-l-20 {
+    padding-left: 20px;
+}
+
 .link {
     color: $LightBlue;
     text-decoration: underline;
 }
-
 .custom-button {
     background-color: $DarkRed;
     border-color: $DarkRed;
