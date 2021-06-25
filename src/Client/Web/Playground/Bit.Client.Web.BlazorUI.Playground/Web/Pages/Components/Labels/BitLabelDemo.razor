@@ -1,0 +1,106 @@
+﻿@page "/components/labels"
+
+<h2>Label</h2>
+
+<div class="card">
+    <p class="desc">BitLabel give a name or title to a control or group of controls.</p>
+</div>
+
+<h2>Usage</h2>
+<div class="wrapper">
+    <div class="card">
+        <h3>BitLabel</h3>
+        <div class="desc">
+            <p>
+                To create a label you can use a BitLabel component. You can enable and disable the label by changing the IsEnabled attribute and by using IsRequired determine whether label is required or not.
+                For, attribute defines a label for a form element.
+            </p>
+        </div>
+        <BitPivot>
+            <BitPivotItem HeaderText="Example" IconName="ViewList">
+                <BitLabel>I'm a Label</BitLabel>
+                <BitLabel IsEnabled="false">I'm a disabled Label</BitLabel>
+                <BitLabel IsRequired="true">I'm a required Label</BitLabel>
+                <BitLabel For="labels-container__input">A Label for An Input</BitLabel>
+
+                <input type="text" name="labels-container__input" id="labels-container__input" />
+            </BitPivotItem>
+            <BitPivotItem HeaderText="Code" IconName="Source">
+                <p>
+                    &lt<span class="dark-green">BitLabel</span>>I'm a Label<span>&lt/</span><span class="dark-green">BitLabel</span><span>&gt;</span>
+                </p>
+                <p>
+                    &lt<span class="dark-green">BitLabel IsEnabled="</span><span class="light-blue">false"</span>>I'm a disabled Label<span>&lt/</span><span class="dark-green">BitLabel</span><span>&gt;</span>
+                </p>
+                <p>
+                    &lt<span class="dark-green">BitLabel IsRequired="</span><span class="light-blue">true"</span>>I'm a required Label<span>&lt/</span><span class="dark-green">BitLabel</span><span>&gt;</span>
+                </p>
+                <p>
+                    &lt<span class="dark-green">BitLabel For="</span>labels-container__input">A Label for An Input<span>&lt/</span><span class="dark-green">BitLabel</span><span>&gt;</span>
+                </p>
+                <p>
+                    &lt<span class="light-blue">input </span><span>type="text" name="labels-container__input" id="labels-container__input"<span>/&gt</span></span>
+                </p>
+            </BitPivotItem>
+        </BitPivot>
+    </div>
+</div>
+<h2>Implementation</h2>
+<div class="card">
+    <table>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Default value</th>
+            <th>Description</th>
+        </tr>
+        <tr>
+            <td>className</td>
+            <td>string</td>
+            <td></td>
+            <td>If provided, additional class name to provide on the root element.</td>
+        </tr>
+        <tr>
+            <td>childContent</td>
+            <td>renderfragment</td>
+            <td></td>
+            <td>Any custom tag or text the developer wishes to associate with the label.</td>
+        </tr>
+        <tr>
+            <td>for</td>
+            <td>string</td>
+            <td></td>
+            <td>A label for a form element.</td>
+        </tr>
+        <tr>
+            <td>isEnabled</td>
+            <td>boolean</td>
+            <td>true</td>
+            <td>Whether the label is enabled.</td>
+        </tr>
+        <tr>
+            <td>isRequired</td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>Whether the associated form field is required or not.</td>
+        </tr>
+        <tr>
+            <td>ref</td>
+            <td>elementreference</td>
+            <td></td>
+            <td>Access the public methods and properties of the component.</td>
+        </tr>
+        <tr>
+            <td>styles</td>
+            <td>string</td>
+            <td></td>
+            <td>Custom styling for individual elements within the label DOM.</td>
+        </tr>
+        <tr>
+            <td>uniqueId</td>
+            <td>guid</td>
+            <td></td>
+            <td>Unique ID to identify the item. Typically a duplicate of key value.</td>
+        </tr>
+    </table>
+</div>

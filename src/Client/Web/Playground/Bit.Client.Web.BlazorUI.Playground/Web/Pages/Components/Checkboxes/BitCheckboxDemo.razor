@@ -1,0 +1,236 @@
+﻿@page "/components/checkboxes"
+
+<h2>Checkbox</h2>
+
+<div class="card">
+    <p class="desc">BitCheckbox is component that permits the user to make a binary choice, a choice between one of two possible mutually exclusive options. For example, the user may have to answer 'yes' or 'no' on a simple yes/no question. Checkboxes are shown as ☐ when unchecked, or ☑ when checked.</p>
+</div>
+
+<h2>Usage</h2>
+<div class="wrapper">
+    <div class="card">
+        <h3>Basics</h3>
+        <div class="desc">
+            <p>
+                To create a checkbox you can use a BitCheckbox component. You can enable and disable the checkbox by changing the IsEnabled attribute and by using IsChecked determine whether to check or not.
+                BitCheckbox component also support two-way binding, by using <span class="light-yellow-bg">&#64;</span>bind-IsChecked you can easily achevie this.
+            </p>
+        </div>
+        <BitPivot>
+            <BitPivotItem HeaderText="Example" IconName="ViewList">
+                <div>
+                    <BitCheckbox @bind-IsChecked="IsCheckBoxChecked">Basic Checkbox</BitCheckbox>
+                    <BitCheckbox IsChecked="true">Checked Checkbox</BitCheckbox>
+                    <BitCheckbox IsEnabled="false">Disable Checkbox</BitCheckbox>
+                    <BitCheckbox IsEnabled="false" IsChecked="true">Disable Checked Checkbox</BitCheckbox>
+                </div>
+            </BitPivotItem>
+            <BitPivotItem HeaderText="Code" IconName="Source">
+                <p>
+                    &lt<span class="dark-green">BitCheckbox </span><span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-IsChecked="</span><span>IsCheckBoxChecked"</span>>Basic Checkbox<span>&lt/</span><span class="dark-green">BitCheckbox</span><span>&gt;</span>
+                </p>
+                <p>
+                    &lt<span class="dark-green">BitCheckbox IsChecked="</span><span>true"></span><span>Checked Checkbox</span><span>&lt/</span><span class="dark-green">BitCheckbox</span><span>&gt;</span>
+                </p>
+                <p>
+                    &lt<span class="dark-green">BitCheckbox IsEnabled="</span><span>false"></span><span>Disable Checkbox</span><span>&lt/</span><span class="dark-green">BitCheckbox</span><span>&gt;</span>
+                </p>
+                <p>
+                    &lt<span class="dark-green">BitCheckbox IsEnabled="</span><span>false"</span><span class="dark-green"> IsChecked="</span><span>true"></span><span>Disable Checked Checkbox</span><span>&lt/</span><span class="dark-green">BitCheckbox</span><span>&gt;</span>
+                </p>
+                <div class="m-t-10">
+                    <span class="light-yellow-bg">&#64;code {</span>
+                    <p>
+                        private bool IsCheckBoxChecked = false;
+                    </p>
+                    <span class="light-yellow-bg">}</span>
+                </div>
+            </BitPivotItem>
+        </BitPivot>
+    </div>
+    <div class="card">
+        <h3>Reversed</h3>
+        <div class="desc">
+            <p>
+                In BitCheckbox component you can change the position of your checkbox by using BoxSide attribute, it can set before or after your label, By default it is in start.
+            </p>
+        </div>
+        <BitPivot>
+            <BitPivotItem HeaderText="Example" IconName="ViewList">
+                <BitCheckbox BoxSide="@BoxSide.End">Reversed -- Basic Checkbox</BitCheckbox>
+                <BitCheckbox BoxSide="@BoxSide.End" IsChecked="true">Reversed -- Checked Checkbox</BitCheckbox>
+                <BitCheckbox BoxSide="@BoxSide.End" IsEnabled="false">Reversed -- Disable Checkbox</BitCheckbox>
+                <BitCheckbox BoxSide="@BoxSide.End" IsEnabled="false" IsChecked="true">Reversed -- Disable Checked Checkbox</BitCheckbox>
+            </BitPivotItem>
+            <BitPivotItem HeaderText="Code" IconName="Source">
+                <p>
+                    &lt<span class="dark-green">BitCheckbox BoxSide="</span><span class="light-yellow-bg">&#64;</span>BoxSide.End">Reversed -- Basic Checkbox<span>&lt/</span><span class="dark-green">BitCheckbox</span><span>&gt;</span>
+                </p>
+                <p>
+                    &lt<span class="dark-green">BitCheckbox BoxSide="</span><span class="light-yellow-bg">&#64;</span><span>BoxSide.End"</span><span class="dark-green"> IsChecked="</span><span>true"></span>Reversed -- Checked Checkbox<span>&lt/</span><span class="dark-green">BitCheckbox</span><span>&gt;</span>
+                </p>
+                <p>
+                    &lt<span class="dark-green">BitCheckbox BoxSide="</span><span class="light-yellow-bg">&#64;</span><span>BoxSide.End"</span><span class="dark-green"> IsEnabled="</span><span>true"></span>Reversed -- Disable Checkbox<span>&lt/</span><span class="dark-green">BitCheckbox</span><span>&gt;</span>
+                </p>
+                <p>
+                    &lt<span class="dark-green">BitCheckbox BoxSide="</span><span class="light-yellow-bg">&#64;</span>BoxSide.End"<span class="dark-green"> IsEnabled="</span>false<span class="dark-green"> IsChecked="</span><span>true"></span><span>Reversed -- Disable Checked Checkbox</span><span>&lt/</span><span class="dark-green">BitCheckbox</span><span>&gt;</span>
+                </p>
+            </BitPivotItem>
+        </BitPivot>
+    </div>
+    <div class="card">
+        <h3>Indeterminate</h3>
+        <div class="desc">
+            <p>
+                BitCheckbox component can get IsIndeterminate attribute, and like IsChecked attribute it support two-way binding.
+            </p>
+        </div>
+        <BitPivot>
+            <BitPivotItem HeaderText="Example" IconName="ViewList">
+                <div>
+                    <BitCheckbox @bind-IsIndeterminate="IsCheckBoxIndeterminate" @bind-IsChecked="IsCheckBoxChecked">Indeterminated checkbox</BitCheckbox>
+                    <BitCheckbox IsIndeterminate="true">Indeterminate checkbox</BitCheckbox>
+                    <BitCheckbox IsIndeterminate="true" IsEnabled="false">Disabled indeterminated checkbox</BitCheckbox>
+                    <BitCheckbox @bind-IsIndeterminate="IsCheckBoxIndeterminateInCode" @bind-IsChecked="IsCheckBoxChecked">Controlled indeterminated checkbox</BitCheckbox>
+                    <BitButton OnClick="() => IsCheckBoxIndeterminateInCode = true">Make Checkbox Indeterminate</BitButton>
+                </div>
+            </BitPivotItem>
+            <BitPivotItem HeaderText="Code" IconName="Source">
+                <p>
+                    &lt<span class="dark-green">BitCheckbox </span><span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-IsChecked="</span><span>IsCheckBoxIndeterminate" </span><span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-IsIndeterminate="</span><span>IsCheckBoxChecked"</span>>Basic Checkbox<span>&lt/</span><span class="dark-green">BitCheckbox</span><span>&gt;</span>
+                </p>
+                <p>
+                    &lt<span class="dark-green">BitCheckbox IsIndeterminate="</span><span>true"></span><span>Indeterminate checkbox</span><span>&lt/</span><span class="dark-green">BitCheckbox</span><span>&gt;</span>
+                </p>
+                <p>
+                    &lt<span class="dark-green">BitCheckbox IsIndeterminate="</span><span>true"<span class="dark-green"> IsEnabled="</span><span>false"</span>></span><span>Disabled indeterminated checkbox</span><span>&lt/</span><span class="dark-green">BitCheckbox</span><span>&gt;</span>
+                </p>
+                <p>
+                    &lt<span class="dark-green">BitCheckbox </span><span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-IsIndeterminate="</span><span>IsCheckBoxIndeterminateInCode" </span><span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-IsChecked="</span>IsCheckBoxChecked<span class="dark-green"> IsChecked="</span><span>true"></span><span>Controlled indeterminated checkbox</span><span>&lt/</span><span class="dark-green">BitCheckbox</span><span>&gt;</span>
+                </p>
+                <p>
+                    &lt<span class="dark-green">BitCheckbox OnClick="</span><span>() => IsCheckBoxIndeterminateInCode = true"></span><span>Make Checkbox Indeterminate></span><span>&lt/</span><span class="dark-green">BitCheckbox</span><span>&gt;</span>
+                </p>
+                <div class="m-t-10">
+                    <span class="light-yellow-bg">&#64;code {</span>
+                    <p>
+                        private bool IsCheckBoxIndeterminate = true;
+                    </p>
+                    <p>
+                        private bool IsCheckBoxIndeterminateInCode = true;
+                    </p>
+                    <span class="light-yellow-bg">}</span>
+                </div>
+            </BitPivotItem>
+        </BitPivot>
+        <div class="card">
+            <h3>Custom Label</h3>
+            <div class="desc">
+                <p>
+                    You can have custom element inside of BitCheckbox component.
+                </p>
+            </div>
+            <BitPivot>
+                <BitPivotItem HeaderText="Example" IconName="ViewList">
+                    <BitCheckbox>
+                        Custom-rendered label with a link go to
+                        <a href='https://github.com/bitfoundation/bitframework'>
+                            bit foundation repository page
+                        </a>
+                    </BitCheckbox>
+                </BitPivotItem>
+                <BitPivotItem HeaderText="Code" IconName="Source">
+                    <p>
+                        &lt<span class="dark-green">BitCheckbox></span>Custom-rendered label with a link go to <span class="light-blue">&lta </span><span>href="https://github.com/bitfoundation/bitframework">bit foundation repository page</span><span class="light-blue"><span>&lt/</span>a></span><span>&lt/</span><span class="dark-green">BitCheckbox</span><span>&gt;</span>
+                    </p>
+                </BitPivotItem>
+            </BitPivot>
+        </div>
+    </div>
+</div>
+<h2>Implementation</h2>
+<div class="card">
+    <table>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Default value</th>
+            <th>Description</th>
+        </tr>
+        <tr>
+            <td>boxSide</td>
+            <td>BoxSide</td>
+            <td>start</td>
+            <td>Determines whether the checkbox should be shown before the label (start) or after (end).</td>
+        </tr>
+        <tr>
+            <td>className</td>
+            <td>string</td>
+            <td></td>
+            <td>If provided, additional class name to provide on the root element.</td>
+        </tr>
+        <tr>
+            <td>childContent</td>
+            <td>renderfragment</td>
+            <td></td>
+            <td>Any custom tag or label the developer wishes to associate with the checkbox.</td>
+        </tr>
+        <tr>
+            <td>ref</td>
+            <td>elementreference</td>
+            <td></td>
+            <td>Access the public methods and properties of the component.</td>
+        </tr>
+        <tr>
+            <td>isEnabled</td>
+            <td>boolean</td>
+            <td>true</td>
+            <td>Whether the checkbox is enabled.</td>
+        </tr>
+        <tr>
+            <td>isChecked</td>
+            <td>boolean</td>
+            <td></td>
+            <td>Checked state. Use this if you control the checked state at a higher level and plan to pass in the correct value.</td>
+        </tr>
+        <tr>
+            <td>isIndeterminate</td>
+            <td>boolean</td>
+            <td></td>
+            <td>Optional controlled indeterminate visual state for checkbox. Setting indeterminate state takes visual precedence over ischecked attribute given but does not affect ischecked state. On initialize, the checkbox will receive indeterminate visual state.</td>
+        </tr>
+        <tr>
+            <td>styles</td>
+            <td>string</td>
+            <td></td>
+            <td>Custom styling for individual elements within the checkbox DOM.</td>
+        </tr>
+        <tr>
+            <td>uniqueId</td>
+            <td>guid</td>
+            <td></td>
+            <td>Unique ID to identify the item. Typically a duplicate of key value.</td>
+        </tr>
+    </table>
+    <div>
+        <h4>BoxSide</h4>
+        <hr />
+        <table>
+            <tr>
+                <th>Name</th>
+                <th>Value</th>
+                <th>Description</th>
+            </tr>
+            <tr>
+                <td>start</td>
+                <td>0</td>
+                <td>checkbox show before the label.</td>
+            </tr>
+            <tr>
+                <td>end</td>
+                <td>1</td>
+                <td>checkbox show after the label.</td>
+            </tr>
+        </table>
+    </div>
+</div>
