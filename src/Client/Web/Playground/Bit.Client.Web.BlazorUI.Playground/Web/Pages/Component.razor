@@ -120,12 +120,22 @@
                          Label="@(TogleButtonChecked?"Button checked":"Button unchecked")"
                          IconName=@(TogleButtonChecked?"Emoji2" :"EmojiNeutral")></BitToggleButton>
 
-        <h4>Toggle Button with Onclick event </h4>
+        <h4>Toggle Button with OnChange event </h4>
         <BitToggleButton @bind-IsChecked="TogleButtonChecked"
                          Label="@(TogleButtonChecked?"Button checked":"Button unchecked")"
                          IconName=@(TogleButtonChecked?"Emoji2" :"EmojiNeutral")
-                         OnClick="ToggleButtonClick"></BitToggleButton>
-        <span>Check status is: @OnToggleButtonChecked</span>
+                         OnClick="ToggleButtonChanged"></BitToggleButton>
+        <span>Check status is: @OnToggleButtonChanged</span>
+
+        <h4>Toggle Button with two way binding </h4>
+        <div>
+            <input type=checkbox id="BitTogleButtonTwoWayValue" @bind="TogleButtonTwoWayValue">
+            <label for="BitTogleButtonTwoWayValue">Checked Toggle Button</label>
+        </div>
+        <BitToggleButton @bind-IsChecked="TogleButtonTwoWayValue"
+                         Label="@(TogleButtonTwoWayValue?"Button checked":"Button unchecked")"
+                         IconName=@(TogleButtonTwoWayValue?"Emoji2" :"EmojiNeutral")></BitToggleButton>
+
 
         <h4>Toggle Button with Standard style</h4>
         <BitToggleButton @bind-IsChecked="TogleButtonChecked"
