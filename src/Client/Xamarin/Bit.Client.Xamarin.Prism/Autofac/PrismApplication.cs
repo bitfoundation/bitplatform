@@ -2,7 +2,6 @@
 using Prism.Ioc;
 #if Android
 using Autofac.Core;
-using Prism.Logging;
 using System;
 using System.Collections.Generic;
 using Xamarin.Forms.Internals;
@@ -38,35 +37,6 @@ namespace Prism.Autofac
         /// <param name="setFormsDependencyResolver">Should <see cref="PrismApplication" /> set the <see cref="DependencyResolver" />.</param>
         protected PrismApplication(IPlatformInitializer? platformInitializer, bool setFormsDependencyResolver)
             : base(platformInitializer, setFormsDependencyResolver) { }
-
-#if Android
-        /// <summary>
-        /// Sets the <see cref="DependencyResolver" /> to use the App Container for resolving types
-        /// </summary>
-        protected override void SetDependencyResolver(IContainerProvider containerProvider)
-        {
-            base.SetDependencyResolver(containerProvider);
-            DependencyResolver.ResolveUsing((type, dependencies) =>
-            {
-                var container = containerProvider.GetContainer();
-                var parameters = new List<Parameter>();
-                foreach (var dependency in dependencies)
-                {
-                    if (dependency is Android.Content.Context context)
-                    {
-                        parameters.Add(new TypedParameter(typeof(Android.Content.Context), context));
-                    }
-                    else
-                    {
-                        container.Resolve<ILoggerFacade>().Log($"Resolving an unknown type {dependency.GetType().Name}", Category.Warn, Priority.High);
-                        parameters.Add(new TypedParameter(dependency.GetType(), dependency));
-                    }
-                }
-
-                return container.Resolve(type, parameters.ToArray());
-            });
-        }
-#endif
 
         /// <summary>
         /// Creates the <see cref="IAutofacContainerExtension"/>

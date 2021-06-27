@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using Xamarin.Essentials.Interfaces;
 
 namespace Bit.Core.Implementations
@@ -140,6 +141,11 @@ namespace Bit.Core.Implementations
         public virtual void LogPreviousSessionCrashIfAny()
         {
 
+        }
+
+        public virtual async Task<bool> DidCrashOnPreviousExecution()
+        {
+            return false;
         }
     }
 }
