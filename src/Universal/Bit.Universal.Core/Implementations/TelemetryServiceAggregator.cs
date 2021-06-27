@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Bit.Core.Implementations
 {
@@ -116,6 +117,11 @@ namespace Bit.Core.Implementations
         public virtual void TrackTrace(string message, (string key, string? value)[] properties)
         {
             TrackTrace(message, properties.ToDictionary(item => item.key, item => item.value));
+        }
+
+        public virtual async Task<bool> DidCrashOnPreviousExecution()
+        {
+            return false;
         }
     }
 }

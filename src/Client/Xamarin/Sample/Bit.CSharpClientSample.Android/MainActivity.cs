@@ -5,6 +5,8 @@ using Android.OS;
 using Bit.Android;
 using Bit.ViewModel.Implementations;
 using Firebase.Messaging;
+using Microsoft.AppCenter.Analytics;
+using Microsoft.AppCenter.Crashes;
 using Plugin.LocalNotification;
 using System.Linq;
 using Xamarin.Forms;
@@ -20,6 +22,9 @@ namespace Bit.CSharpClientSample.Droid
         {
             LocalTelemetryService.Current.Init();
             FirebaseTelemetryService.Current.Init(this);
+            AppCenterTelemetryService.Current.Init("79771c81-f748-4649-8787-74508df44145",
+                   typeof(Analytics), typeof(Crashes));
+            ApplicationInsightsTelemetryService.Current.Init("55f4c3a7-8bd1-4ec0-92b3-717cb9ddde1d");
 
             SQLitePCL.Batteries.Init();
 
