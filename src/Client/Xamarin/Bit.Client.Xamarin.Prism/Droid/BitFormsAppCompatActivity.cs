@@ -8,6 +8,7 @@ using Bit.Core.Models.Events;
 using Bit.View;
 using Bit.ViewModel;
 using Bit.ViewModel.Implementations;
+using Prism;
 using Prism.Events;
 using Prism.Ioc;
 using System;
@@ -53,11 +54,13 @@ namespace Bit.Android
             }
         }
 
-        public override void OnBackPressed()
+        public async override void OnBackPressed()
         {
             if (_useDefaultConfiguration == true)
             {
-                Rg.Plugins.Popup.Popup.SendBackPressed(base.OnBackPressed);
+                IBackPressedResult result = await PrismPlatform.OnBackPressed(this);
+                if (!result.Success)
+                    BitExceptionHandler.Current.OnExceptionReceived(result.Exception);
             }
             else
             {
