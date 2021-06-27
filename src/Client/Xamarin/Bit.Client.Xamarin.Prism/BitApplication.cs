@@ -1,20 +1,22 @@
 ﻿using Autofac;
 using Autofac.Extensions.DependencyInjection;
+using Bit.Client.Xamarin.Prism.View;
 using Bit.Core.Contracts;
 using Bit.Core.Implementations;
 using Bit.Core.Models.Events;
 using Bit.View;
 using Bit.ViewModel;
 using Bit.ViewModel.Contracts;
-using Bit.ViewModel.Implementations;
 using Microsoft.Extensions.DependencyInjection;
 using Prism;
 using Prism.Autofac;
 using Prism.Events;
 using Prism.Ioc;
-using Prism.Logging;
 using Prism.Navigation;
 using Prism.Plugin.Popups;
+using Prism.Regions;
+using Prism.Regions.Adapters;
+using Prism.Regions.Behaviors;
 using Prism.Services;
 using Rg.Plugins.Popup.Contracts;
 using System;
@@ -124,7 +126,7 @@ namespace Bit
             return Task.CompletedTask;
         }
 
-        public new INavService NavigationService => (PrismNavigationService == null ? null : Container.Resolve<INavServiceFactory>()(PrismNavigationService, Container.Resolve<IPopupNavigation>()))!;
+        public new INavService NavigationService => (PrismNavigationService == null ? null : Container.Resolve<INavServiceFactory>()(PrismNavigationService, Container.Resolve<IPopupNavigation>(), Container.Resolve<IRegionManager>()))!;
 
         public new static BitApplication Current => (PrismApplicationBase.Current as BitApplication)!;
 
@@ -150,11 +152,51 @@ namespace Bit
 
         protected virtual void RegisterTypes(IDependencyManager dependencyManager, IContainerRegistry containerRegistry, ContainerBuilder containerBuilder, IServiceCollection services)
         {
-            dependencyManager.Register<ILoggerFacade, BitPrismLogger>(overwriteExisting: false);
             dependencyManager.RegisterUsing(resolver => Container, lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
             dependencyManager.RegisterUsing(resolver => Container.GetContainer(), lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
             BitCSharpClientControls.UseBitPopupNavigation();
             containerRegistry.RegisterPopupNavigationService();
+
+            containerRegistry.RegisterRegionServices();
+
+            // workaround begin
+            containerRegistry.Register<CarouselViewRegionAdapter>();
+            containerRegistry.Register<LayoutViewRegionAdapter>();
+            containerRegistry.Register<ScrollViewRegionAdapter>();
+            containerRegistry.Register<ContentViewRegionAdapter>();
+
+            containerRegistry.Register<SingleActiveRegion, BitSingleActiveRegion>();
+
+            containerRegistry.Register<DelayedRegionCreationBehavior>();
+            containerRegistry.Register<RegionBehaviorFactory>();
+            containerRegistry.Register<BindRegionContextToVisualElementBehavior>();
+            containerRegistry.Register<RegionActiveAwareBehavior>();
+            containerRegistry.Register<SyncRegionContextWithHostBehavior>();
+            containerRegistry.Register<BindRegionContextToVisualElementBehavior>();
+            containerRegistry.Register<RegionManagerRegistrationBehavior>();
+            containerRegistry.Register<RegionMemberLifetimeBehavior>();
+            containerRegistry.Register<ClearChildViewsRegionBehavior>();
+            containerRegistry.Register<AutoPopulateRegionBehavior>();
+            containerRegistry.Register<DestructibleRegionBehavior>();
+            // workaround end
+
+            //containerRegistry.RegisterPopupDialogService();
+            containerRegistry.RegisterForNav<PageWhichWeStayThereUntilRegionsAreDisposedPage>("PageWhichWeStayThereUntilRegionsAreDisposed");
+        }
+    }
+
+    public class BitSingleActiveRegion : SingleActiveRegion
+    {
+        public override void Activate(VisualElement view)
+        {
+            var currentActiveView = ActiveViews.FirstOrDefault();
+
+            if (currentActiveView != null && currentActiveView != view && Views.Contains(currentActiveView))
+            {
+                Remove(currentActiveView);
+            }
+
+            base.Activate(view);
         }
     }
 }

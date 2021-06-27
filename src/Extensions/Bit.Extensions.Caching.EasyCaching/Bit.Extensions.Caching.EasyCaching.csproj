@@ -5,9 +5,9 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>    
     <PackageTags>$(PackageTags) Hybrid Synchronization LocalCache DistributedCache Caching Cache MemoryCache EasyCaching</PackageTags>    
-    <Version>1.2.0</Version>
-    <AssemblyVersion>1.2.0.0</AssemblyVersion>
-    <PackageVersion>1.2.0</PackageVersion>    
+    <Version>1.3.0</Version>
+    <AssemblyVersion>1.3.0.0</AssemblyVersion>
+    <PackageVersion>1.3.0</PackageVersion>    
     <RepositoryUrl>https://github.com/bitfoundation/bitframework</RepositoryUrl>
     <PackageProjectUrl>https://github.com/bitfoundation/bitframework</PackageProjectUrl>
     <PackageReleaseNotes>https://github.com/bitfoundation/bitframework/releases/tag/v1.1.0</PackageReleaseNotes>    
