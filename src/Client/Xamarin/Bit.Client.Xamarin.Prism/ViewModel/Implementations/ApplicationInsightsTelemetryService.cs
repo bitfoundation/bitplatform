@@ -35,30 +35,33 @@ namespace Bit.ViewModel.Implementations
             _isInited = true;
         }
 
-#if UWP
-        protected virtual TelemetryClient Client => _client ?? (_client = new TelemetryClient(TelemetryConfiguration.Active));
-#else
+
         protected virtual TelemetryClient Client
         {
             get
             {
                 if (_client == null)
                 {
+#if UWP
+                    _client = new TelemetryClient(TelemetryConfiguration.Active);
+#else
                     _client = new TelemetryClient(_configuration)
                     {
                         InstrumentationKey = _configuration!.InstrumentationKey
                     };
+#endif
 
 #if XamarinEssentials
-
                     _client.Context.Device.Model = Xamarin.Essentials.DeviceInfo.Model;
+                    _client.Context.Session.IsFirst = Xamarin.Essentials.VersionTracking.IsFirstLaunchEver;
 #endif
                     _client.Context.Device.OperatingSystem = Device.RuntimePlatform;
+
+                    _client.Context.Session.Id = Guid.NewGuid().ToString();
                 }
                 return _client;
             }
         }
-#endif
 
         public override bool IsConfigured()
         {
@@ -102,9 +105,13 @@ namespace Bit.ViewModel.Implementations
             {
                 properties = PopulateProperties(properties);
 
+                Uri uri = default;
+                var _ = properties.TryGetValue("NavUri", out string? navUri) && Uri.TryCreate(navUri, UriKind.Relative, out uri);
+
                 PageViewTelemetry pageViewTelemetry = new PageViewTelemetry(name)
                 {
-                    Duration = duration
+                    Duration = duration,
+                    Url = uri
                 };
 
                 foreach (KeyValuePair<string, string?> prp in properties)

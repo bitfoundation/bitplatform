@@ -2,6 +2,7 @@
 using Bit.Core.Exceptions;
 using Bit.Core.Models.Events;
 using Bit.ViewModel;
+using Prism.Commands;
 using Prism.Events;
 using System;
 using System.Collections.Generic;
@@ -16,6 +17,7 @@ namespace Bit.CSharpClientSample.ViewModels
 
         public BitDelegateCommand IncreaseStepsCountCommand { get; set; }
         public BitDelegateCommand ThrowExceptionCommand { get; set; }
+        public DelegateCommand CrashCommand { get; set; }
         public BitDelegateCommand TestSignalrCommand { get; set; }
 
         public IMessageReceiver MessageReceiver { get; set; }
@@ -28,6 +30,7 @@ namespace Bit.CSharpClientSample.ViewModels
         {
             CloseCommand = new BitDelegateCommand(Close);
             ThrowExceptionCommand = new BitDelegateCommand(ThrowException);
+            CrashCommand = new DelegateCommand(Crash);
             IncreaseStepsCountCommand = new BitDelegateCommand(IncreaseSteps);
             TestSignalrCommand = new BitDelegateCommand(TestSignalr);
         }
@@ -35,6 +38,11 @@ namespace Bit.CSharpClientSample.ViewModels
         async Task ThrowException()
         {
             throw new DomainLogicException("It's not good!");
+        }
+
+        void Crash()
+        {
+            throw new DomainLogicException("It's awful!");
         }
 
         async Task IncreaseSteps()
