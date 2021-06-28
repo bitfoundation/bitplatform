@@ -1,6 +1,7 @@
 ﻿using Bit.View;
 using Bit.ViewModel.Contracts;
 using Prism.Navigation;
+using Prism.Regions;
 using Rg.Plugins.Popup.Contracts;
 using System;
 using System.Collections.Generic;
@@ -13,13 +14,14 @@ namespace Bit.ViewModel.Implementations
 {
     public class DefaultNavService : INavService
     {
-        public static TINavService INavServiceFactory<TINavService>(INavigationService prismNavService, IPopupNavigation popupNavigation)
+        public static TINavService INavServiceFactory<TINavService>(INavigationService prismNavService, IPopupNavigation popupNavigation, IRegionManager regionManager)
             where TINavService : DefaultNavService, new()
         {
             var navService = new TINavService
             {
                 PrismNavigationService = prismNavService,
-                PopupNavigation = popupNavigation
+                PopupNavigation = popupNavigation,
+                RegionManager = regionManager
             };
 
             return navService;
@@ -31,7 +33,12 @@ namespace Bit.ViewModel.Implementations
                 throw new ArgumentNullException(nameof(name));
 
             if (name.StartsWith("/", StringComparison.InvariantCultureIgnoreCase))
+            {
                 await ClearPopupStackAsync(parameters);
+
+                if (RegionManager.Regions.Any())
+                    await PrismNavigationService.NavigateAsync("/PageWhichWeStayThereUntilRegionsAreDisposed");
+            }
 
             INavigationResult navigationResult = await PrismNavigationService.NavigateAsync(name, parameters, useModalNavigation: false, animated: false);
 
@@ -39,7 +46,7 @@ namespace Bit.ViewModel.Implementations
                 throw navigationResult.Exception;
         }
 
-        public virtual async Task NavigateAsync(string name, params (string, object)[] parameters)
+        public virtual async Task NavigateAsync(string name, params (string key, object value)[] parameters)
         {
             await NavigateAsync(name, ConvertToINavigationParameters(parameters));
         }
@@ -50,7 +57,12 @@ namespace Bit.ViewModel.Implementations
                 throw new ArgumentNullException(nameof(uri));
 
             if (uri.LocalPath.StartsWith("/", StringComparison.InvariantCultureIgnoreCase))
+            {
+                if (RegionManager.Regions.Any())
+                    await PrismNavigationService.NavigateAsync("/PageWhichWeStayThereUntilRegionsAreDisposed");
+
                 await ClearPopupStackAsync(parameters);
+            }
 
             INavigationResult navigationResult = await PrismNavigationService.NavigateAsync(uri, parameters, useModalNavigation: false, animated: false);
 
@@ -58,7 +70,7 @@ namespace Bit.ViewModel.Implementations
                 throw navigationResult.Exception;
         }
 
-        public virtual async Task NavigateAsync(Uri uri, params (string, object)[] parameters)
+        public virtual async Task NavigateAsync(Uri uri, params (string key, object value)[] parameters)
         {
             await NavigateAsync(uri, ConvertToINavigationParameters(parameters));
         }
@@ -88,7 +100,7 @@ namespace Bit.ViewModel.Implementations
             }
         }
 
-        public virtual async Task GoBackAsync(params (string, object)[] parameters)
+        public virtual async Task GoBackAsync(params (string key, object value)[] parameters)
         {
             await GoBackAsync(ConvertToINavigationParameters(parameters));
         }
@@ -100,7 +112,7 @@ namespace Bit.ViewModel.Implementations
                 throw navigationResult.Exception;
         }
 
-        public virtual async Task GoBackToRootAsync(params (string, object)[] parameters)
+        public virtual async Task GoBackToRootAsync(params (string key, object value)[] parameters)
         {
             await GoBackToRootAsync(ConvertToINavigationParameters(parameters));
         }
@@ -110,19 +122,19 @@ namespace Bit.ViewModel.Implementations
             return PrismNavigationService.GetNavigationUriPath();
         }
 
-        protected virtual INavigationParameters ConvertToINavigationParameters(params (string, object)[] parameters)
+        protected virtual INavigationParameters ConvertToINavigationParameters(params (string key, object value)[] parameters)
         {
             INavigationParameters navigationParameters = new NavigationParameters();
 
-            foreach ((string, object) parameter in parameters)
+            foreach ((string key, object value) parameter in parameters)
             {
-                navigationParameters.Add(parameter.Item1, parameter.Item2);
+                navigationParameters.Add(parameter.key, parameter.value);
             };
 
             return navigationParameters;
         }
 
-        public virtual async Task ClearPopupStackAsync(params (string, object)[] parameters)
+        public virtual async Task ClearPopupStackAsync(params (string key, object value)[] parameters)
         {
             await ClearPopupStackAsync(parameters: ConvertToINavigationParameters(parameters));
         }
@@ -136,7 +148,7 @@ namespace Bit.ViewModel.Implementations
             await PopupNavigation.PopAllAsync(animate: false); // all popups which are not managed by prism's nav service.
         }
 
-        public virtual async Task GoBackToAsync(string name, params (string, object)[] parameters)
+        public virtual async Task GoBackToAsync(string name, params (string key, object value)[] parameters)
         {
             await GoBackToAsync(name, ConvertToINavigationParameters(parameters));
         }
@@ -168,6 +180,8 @@ namespace Bit.ViewModel.Implementations
         public INavigationService PrismNavigationService { get; set; } = default!;
 
         public IPopupNavigation PopupNavigation { get; set; } = default!;
+
+        public IRegionManager RegionManager { get; set; } = default!;
 
         public virtual INavService AppNavService => BitApplication.Current.NavigationService;
 

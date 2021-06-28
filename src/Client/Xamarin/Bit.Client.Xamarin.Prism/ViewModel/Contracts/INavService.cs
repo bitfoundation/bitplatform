@@ -1,11 +1,12 @@
 ﻿using Prism.Navigation;
+using Prism.Regions;
 using Rg.Plugins.Popup.Contracts;
 using System;
 using System.Threading.Tasks;
 
 namespace Bit.ViewModel.Contracts
 {
-    public delegate INavService INavServiceFactory(INavigationService navigationService, IPopupNavigation popupNavigation);
+    public delegate INavService INavServiceFactory(INavigationService navigationService, IPopupNavigation popupNavigation, IRegionManager regionManager);
 
     /// <summary>
     /// It can be easily mocked.
@@ -17,22 +18,22 @@ namespace Bit.ViewModel.Contracts
     public interface INavService
     {
         Task NavigateAsync(string name, INavigationParameters? parameters = null);
-        Task NavigateAsync(string name, params (string, object)[] parameters);
+        Task NavigateAsync(string name, params (string key, object value)[] parameters);
         Task NavigateAsync(Uri uri, INavigationParameters? parameters = null);
-        Task NavigateAsync(Uri uri, params (string, object)[] parameters);
+        Task NavigateAsync(Uri uri, params (string key, object value)[] parameters);
 
-        Task GoBackAsync(params (string, object)[] parameters);
+        Task GoBackAsync(params (string key, object value)[] parameters);
         Task GoBackAsync(INavigationParameters? parameters = null);
 
-        Task GoBackToRootAsync(params (string, object)[] parameters);
+        Task GoBackToRootAsync(params (string key, object value)[] parameters);
         Task GoBackToRootAsync(INavigationParameters? parameters = null);
 
         string GetNavigationUriPath();
 
-        Task ClearPopupStackAsync(params (string, object)[] parameters);
+        Task ClearPopupStackAsync(params (string key, object value)[] parameters);
         Task ClearPopupStackAsync(INavigationParameters? parameters = null);
 
-        Task GoBackToAsync(string name, params (string, object)[] parameters);
+        Task GoBackToAsync(string name, params (string key, object value)[] parameters);
         Task GoBackToAsync(string name, INavigationParameters? parameters = null);
 
         INavigationService PrismNavigationService { get; }

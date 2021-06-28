@@ -9,16 +9,16 @@ namespace Prism.Navigation
             if (parameters == null)
                 throw new ArgumentNullException(nameof(parameters));
 
-            try
+            INavigationParametersInternal internalParameters = (INavigationParametersInternal)parameters;
+
+            if (internalParameters.ContainsKey("__NavigationMode"))
             {
-                navigationMode = parameters.GetNavigationMode();
+                navigationMode = internalParameters.GetValue<NavigationMode>("__NavigationMode");
                 return true;
             }
-            catch
-            {
-                navigationMode = default;
-                return false;
-            }
+
+            navigationMode = NavigationMode.New;
+            return false;
         }
     }
 }

@@ -189,7 +189,7 @@ namespace Bit.Test.Server
 
             if (acr_values != null)
             {
-                loginData.Add("acr_values", string.Join(" ", acr_values.Select(p => $"{p.Key}:{p.Value}")));
+                loginData.Add("acr_values", string.Join(" ", acr_values.Select(p => $"{p.Key}:{System.Uri.EscapeDataString(p.Value ?? string.Empty)}")));
             }
 
             using HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, "core/connect/token");
@@ -230,7 +230,7 @@ namespace Bit.Test.Server
             if (!string.IsNullOrEmpty(client_id))
                 relativeUri += $"&client_id={client_id}";
             if (acr_values != null)
-                relativeUri += $"&acr_values={string.Join(" ", acr_values.Select(p => $"{p.Key}:{p.Value}"))}";
+                relativeUri += $"&acr_values={string.Join(" ", acr_values.Select(p => $"{p.Key}:{System.Uri.EscapeDataString(p.Value ?? string.Empty)}"))}";
 
             return relativeUri;
         }

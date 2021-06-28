@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Bit.Core.Contracts
 {
@@ -36,5 +37,7 @@ namespace Bit.Core.Contracts
         void SetUserId(string? userId);
 
         void LogPreviousSessionCrashIfAny();
+
+        Task<bool> DidCrashOnPreviousExecution();
     }
 }

@@ -1,4 +1,5 @@
-﻿using Bit.Core.Exceptions;
+﻿using Bit.Core.Contracts;
+using Bit.Core.Exceptions;
 using Bit.Core.Models;
 using Bit.IdentityServer.Implementations;
 using IdentityServer3.Core.Models;
@@ -6,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -26,8 +28,19 @@ namespace Bit.Tests.IdentityServer.Implementations
             new LocalUser { UserId = "User2" , Password = "ValidPassword"}
         };
 
+        public virtual ILogger Logger { get; set; }
+
         public async override Task<BitJwtToken> LocalLogin(LocalAuthenticationContext context, CancellationToken cancellationToken)
         {
+            if (context.SignInMessage.TryGetValueFromAcr("x", out string x))
+                Logger.AddLogData("x", x);
+
+            if (context.SignInMessage.TryGetValueFromAcr("y", out string y))
+                Logger.AddLogData("y", y);
+
+            Logger.AddLogData("username", context.UserName);
+            Logger.AddLogData("password", context.Password);
+
             LocalUser user = _localUsers.SingleOrDefault(u => u.UserId == context.UserName && u.Password == context.Password);
 
             if (user == null)
