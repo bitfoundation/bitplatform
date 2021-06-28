@@ -16,6 +16,10 @@ namespace Bit.Client.Web.BlazorUI
 
         [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
+        [Parameter] public string? AriaDescription { get; set; }
+
+        [Parameter] public bool AriaHidden { get; set; }
+
         protected override string RootElementClass => "bit-act-btn";
 
         protected override async Task OnInitializedAsync()

@@ -8,7 +8,10 @@
     <label>@ChildContent</label>
 
     <div>
-        <button @onclick="HandleOnClick"><span></span></button>
+        <button @onclick="HandleOnClick"
+                aria-label="@AriaLabel">
+            <span></span>
+        </button>
         @if (OnText.HasValue() && OffText.HasValue())
         {
             @if (isChecked)

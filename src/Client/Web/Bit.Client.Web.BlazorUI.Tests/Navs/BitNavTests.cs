@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Threading.Tasks;
+using System.Collections.Generic;
 using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -142,6 +143,36 @@ namespace Bit.Client.Web.BlazorUI.Tests.Navs
             var element = com.Find($".bit-nav-{hasIconClass}-{visualClass}");
 
             Assert.IsNotNull(element);
+        }
+
+        [DataTestMethod, DataRow("Detailed label")]
+        public Task BitNavLinkAriaLabelTest(string ariaLabel)
+        {
+            var com = RenderComponent<BitNavTest>(parameters =>
+            {
+                parameters.Add(p => p.AriaLabel, ariaLabel);
+            });
+
+            var bitNavLinkTest = com.Find(".bit-nav");
+
+            Assert.IsTrue(bitNavLinkTest.GetAttribute("aria-label").Contains(ariaLabel));
+
+            return Task.CompletedTask;
+        }
+
+        [DataTestMethod, DataRow("Detailed label")]
+        public Task BitNavLinksAriaLabelTest(string ariaLabel)
+        {
+            var com = RenderComponent<BitNavTest>(parameters =>
+            {
+                parameters.Add(p => p.AriaLabel, ariaLabel);
+            });
+
+            var bitNavTest = com.Find(".bit-nav button");
+
+            Assert.IsTrue(bitNavTest.GetAttribute("aria-label").Contains(ariaLabel));
+
+            return Task.CompletedTask;
         }
     }
 }

@@ -12,12 +12,6 @@ namespace Bit.Client.Web.BlazorUI
         private bool isEnabled = true;
         private ComponentVisibility visibility;
 
-        [Parameter] public string? AriaDescription { get; set; }
-
-        [Parameter] public bool AriaHidden { get; set; }
-
-        [Parameter] public string? AriaLabel { get; set; }
-
         protected bool Rendered { get; private set; }
 
         private Guid _uniqueId = Guid.NewGuid();
@@ -84,6 +78,8 @@ namespace Bit.Client.Web.BlazorUI
                 StyleBuilder.Reset();
             }
         }
+
+        [Parameter] public string? AriaLabel { get; set; }
 
         protected override void OnInitialized()
         {

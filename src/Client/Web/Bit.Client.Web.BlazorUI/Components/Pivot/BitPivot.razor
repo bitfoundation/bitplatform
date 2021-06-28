@@ -11,7 +11,9 @@
             {
                 <div @onclick="() => ItemClicked(item)"
                      class="@(GetItemClass(item.Value))"
-                     style="@(GetItemStyle(item.Value))">
+                     style="@(GetItemStyle(item.Value))"
+                     aria-label="@AriaLabel">
+
                     @if (item.Value.IconName is not null)
                     {
                         <i class="bit-icon bit-icon--@(item.Value.IconName)"></i>

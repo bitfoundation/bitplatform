@@ -1,4 +1,5 @@
-﻿using Bunit;
+﻿using System.Threading.Tasks;
+using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.Client.Web.BlazorUI.Tests.SearchBoxes
@@ -48,6 +49,21 @@ namespace Bit.Client.Web.BlazorUI.Tests.SearchBoxes
             var searchBox = component.Find(".bit-sch-box-fluent");
 
             Assert.AreEqual(isUnderlined, searchBox.ClassList.Contains("bit-sch-box-underlined-fluent"));
+        }
+
+        [DataTestMethod, DataRow("Detailed label")]
+        public Task BitSearchBoxAriaLabelTest(string ariaLabel)
+        {
+            var com = RenderComponent<BitSearchBoxTest>(parameters =>
+            {
+                parameters.Add(p => p.AriaLabel, ariaLabel);
+            });
+
+            var bitSearchBox = com.Find(".search-input");
+
+            Assert.IsTrue(bitSearchBox.GetAttribute("aria-label").Contains(ariaLabel));
+
+            return Task.CompletedTask;
         }
     }
 }

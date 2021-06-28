@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Threading.Tasks;
+using System.Linq;
 using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -97,6 +98,21 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
             bitChoiceOptionInput.Click();
             Assert.AreEqual(count, com.Instance.CurrentCount);
             Assert.IsTrue(bitChoiceGroup.ClassList.Contains($"bit-chg-{className}-fluent"));
+        }
+
+        [DataTestMethod, DataRow("Detailed label")]
+        public Task BitTextFieldAriaLabelTest(string ariaLabel)
+        {
+            var com = RenderComponent<BitTextFieldTest>(parameters =>
+            {
+                parameters.Add(p => p.AriaLabel, ariaLabel);
+            });
+
+            var bitTextField = com.Find(".bit-txt > input, .bit-txt > textarea");
+
+            Assert.IsTrue(bitTextField.GetAttribute("aria-label").Contains(ariaLabel));
+
+            return Task.CompletedTask;
         }
     }
 }

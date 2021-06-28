@@ -60,5 +60,20 @@ namespace Bit.Client.Web.BlazorUI.Tests.Pivot
             Assert.AreEqual(component.FindAll(".bit-pvt > div:first-child > div")[1].ClassList.Contains("selected-item"), expectedResult);
             return Task.CompletedTask;
         }
+
+        [DataTestMethod, DataRow("Detailed label")]
+        public Task BitPivotAriaLabelTest(string ariaLabel)
+        {
+            var com = RenderComponent<BitPivotTest>(parameters =>
+            {
+                parameters.Add(p => p.AriaLabel, ariaLabel);
+            });
+
+            var bitPivot = com.Find(".bit-pvt-itm");
+
+            Assert.IsTrue(bitPivot.GetAttribute("aria-label").Contains(ariaLabel));
+
+            return Task.CompletedTask;
+        }
     }
 }

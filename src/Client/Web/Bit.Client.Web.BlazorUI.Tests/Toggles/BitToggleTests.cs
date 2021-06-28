@@ -119,5 +119,20 @@ namespace Bit.Client.Web.BlazorUI.Tests.Toggles
 
             return Task.CompletedTask;
         }
+
+        [DataTestMethod, DataRow("Detailed label")]
+        public Task BitToggleAriaLabelTest(string ariaLabel)
+        {
+            var com = RenderComponent<BitToggleTest>(parameters =>
+            {
+                parameters.Add(p => p.AriaLabel, ariaLabel);
+            });
+
+            var bitToggle = com.Find(".bit-tgl > div > button");
+
+            Assert.IsTrue(bitToggle.GetAttribute("aria-label").Contains(ariaLabel));
+
+            return Task.CompletedTask;
+        }
     }
 }
