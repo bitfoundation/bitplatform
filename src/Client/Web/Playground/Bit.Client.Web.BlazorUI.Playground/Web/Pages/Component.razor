@@ -534,5 +534,18 @@
     </BitNav>
 </div>
 <div>
-    <BitColorPicker></BitColorPicker>
+    <BitColorPicker @bind-Color="SelectedColor" ShowPreview="true" AlphaType="AlphaType.Transparency"></BitColorPicker>
 </div>
+
+
+<div>
+    <BitColorPicker Color="rgb(243,33,105)" ShowPreview="false" AlphaType="AlphaType.Transparency"></BitColorPicker>
+</div>
+
+<div>
+    <BitColorPicker Color="rgb(243,33,105)" ShowPreview="false" AlphaType="AlphaType.Alpha"></BitColorPicker>
+    @SelectedColor
+</div>
+@code{
+    public string SelectedColor { get; set; } = "rgb(243,33,105,0.30)";
+}

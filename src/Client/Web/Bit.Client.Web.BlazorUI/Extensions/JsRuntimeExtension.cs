@@ -22,6 +22,23 @@ namespace Microsoft.JSInterop
         {
             return await jsRuntime.InvokeAsync<BoundingClientRect>("Bit.getBoundingClientRect", element);
         }
+
+        public static async Task<string> OnWindowMouseUp(this IJSRuntime jsRuntime, BitComponentBase dontetHelper, string callbackName)
+        {
+
+           return await jsRuntime.InvokeAsync<string>("Bit.onWindowMouseUp", DotNetObjectReference.Create(dontetHelper),
+               callbackName);
+        }
+        public static async Task<string> OnWindowMouseMove(this IJSRuntime jsRuntime, BitComponentBase dontetHelper, string callbackName)
+        {
+          return  await jsRuntime.InvokeAsync<string>("Bit.onWindowMouseMove", DotNetObjectReference.Create(dontetHelper),
+               callbackName);
+        }
+
+        public static async Task AbortProcedure(this IJSRuntime jSRuntime, string abortControllerId)
+        {
+            await jSRuntime.InvokeVoidAsync("Bit.abortProcedure", abortControllerId);
+        }
     }
 
     public class BoundingClientRect

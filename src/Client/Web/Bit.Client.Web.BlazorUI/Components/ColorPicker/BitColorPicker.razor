@@ -5,59 +5,64 @@
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
     <div @ref="SaturationPickerRef"
-         @onmousedown="OnSaturationPickerMouseDown"
-         @onmouseup="() => SaturationPickerMouseDown = false"
-         @onmousemove="OnSaturationPickerMouseMove">
+         @onmousedown="OnSaturationPickerMouseDown">
         <div></div>
         <div style=@($"background-color: {SaturationPickerBackground.ToRGB().ToCss()}")></div>
-        <div style=@($"top: {SaturationPickerThumbPosition?.Top}px; left: {SaturationPickerThumbPosition?.Left}px; background: {Color.ToCss(Alpha)};")>
+        <div style=@($"top: {SaturationPickerThumbPosition?.Top}px; left: {SaturationPickerThumbPosition?.Left}px; background: {MainColor.ToCss(AlphaType is AlphaType.Transparency ? (100 - Alpha)/100: Alpha/100)};")>
         </div>
     </div>
 
     <div>
         <div>
-            <div @ref="HuePickerRef"
-                 @onmousedown="OnHuePickerMouseDown"
-                 @onmouseup="() => HuePickerMouseDown = false"
-                 @onmousemove="OnHuePickerMouseMove">
-                <div class="thumb" style=@($" left: {HuePickerThumbPosition?.Left}px;")></div>
-
-            </div>
             <div>
-                <div @ref="AlphaPickerRef" style=@($"background:linear-gradient(to left,{Color.ToCss()} 0%,transparent 100%)")
-                     @onmousedown="OnAlphaPickerMouseDown"
-                     @onmouseup="() => AlphaPickerMouseDown = false"
-                     @onmousemove="OnAlphaPickerMouseMove">
-                    <div class="thumb" style=@($"left: {AlphaPickerThumbPosition?.Left}px;")></div>
+                <input type="range" min="0" max="360" value="@Hue" @oninput="PickMainColor">
+            </div>
+
+            <div style=@($"display: {(AlphaType is not AlphaType.None? "block" : "none")};")>
+                <div style=@($"background:linear-gradient(to {(AlphaType is AlphaType.Transparency ? "right": "left")},{SaturationPickerBackground.ToRGB().ToCss()} 0%,transparent 100%)")>
+                    <input type="range" min="0" max="100" value="@Alpha" @oninput="PickAlphaColor">
                 </div>
             </div>
         </div>
-        <div style=@($"background: {Color.ToCss(Alpha)}")>
+        <div style=@($"background: {MainColor.ToCss(AlphaType is AlphaType.Transparency ? (100 - Alpha)/100: Alpha/100)}; display: {(ShowPreview ? "block" : "none")}")>
         </div>
+
     </div>
 
-    <div>
-        <div>
-            <label>Hex</label>
-            <input type="text" maxlength="6" value="@Color.ToHex().ColorCode" @onchange="HexCHanged" />
-        </div>
-
-        <div>
-            <label>Red</label>
-            <input type="number" min="0" max="255" value="@Color.Red" @onchange="(e) => UpdateColor(e.Value as double? ?? Color.Red)" />
-        </div>
-        <div>
-            <label>Green</label>
-            <input type="number" min="0" max="255" value="@Color.Green" @onchange="(e) => UpdateColor(null, Convert.ToDouble(e.Value.ToString()))" />
-        </div>
-        <div>
-            <label>Blue</label>
-
-            <input type="number" min="0" max="255" value="@Color.Blue" @onchange="(e) => UpdateColor(null, null, Convert.ToDouble(e.Value.ToString()))" />
-        </div>
-        <div>
-            <label>Alpha</label>
-            <input type="number" min="0" max="100" @bind-value="@Alpha" />
-        </div>
-    </div>
+    <table>
+        <thead>
+            <tr>
+                <td colspan="2">Hex</td>
+                <td>Red</td>
+                <td>Green</td>
+                <td>Blue</td>
+                @if (AlphaType is not AlphaType.None)
+                {
+                    <td>@AlphaType.ToString()</td>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td colspan="2">
+                    <input type="text" maxlength="6" value="@MainColor.ToHex().ColorCode " @oninput="HexCHanged" />
+                </td>
+                <td>
+                    <input type="number" min="0" max="255" value="@MainColor.Red" @oninput="(e) => RGBColorChanged(e.Value.ToString())" @onblur="() => StateHasChanged()" />
+                </td>
+                <td>
+                    <input type="number" min="0" max="255" value="@MainColor.Green" @oninput="(e) => RGBColorChanged(null, e.Value.ToString())" />
+                </td>
+                <td>
+                    <input type="number" min="0" max="255" value="@MainColor.Blue" @oninput="(e) => RGBColorChanged(null,null, e.Value.ToString())" />
+                </td>
+                @if (AlphaType is not AlphaType.None)
+                {
+                    <td>
+                        <input type="number" min="0" max="100" @bind-value="@Alpha" @bind-value:event="oninput" />
+                    </td>
+                }
+            </tr>
+        </tbody>
+    </table>
 </div>

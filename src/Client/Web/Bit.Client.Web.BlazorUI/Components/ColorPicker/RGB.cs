@@ -49,15 +49,15 @@ namespace Bit.Client.Web.BlazorUI
             double cMin = Math.Min(red, Math.Min(green, blue));
             double span = cMax - cMin;
 
-            hue = red == cMax ? (green - blue) / span % 6
-                : green == cMax ? (blue - red) / span + 2
-                : (red - green) / span + 4;
+            hue = red == cMax ? (60 * ((green - blue) / span) + 360) % 360
+                : green == cMax ? (60 * ((blue - red) / span) + 120) % 360
+                : (60 * ((red - green) / span) + 240) % 360;
 
-            saturation = cMin == 0 ? 0 : span / cMax;
+            saturation = cMax == 0 ? 0 : span / cMax;
 
             return new HSV()
             {
-                Hue = Math.Floor(hue * 60),
+                Hue = Math.Floor(hue),
                 Saturation = Math.Floor(saturation * 100),
                 Value = Math.Floor(cMax * 100)
             };
@@ -69,7 +69,7 @@ namespace Bit.Client.Web.BlazorUI
             return new Hex() { ColorCode = myColor.Name.Remove(0, 2) };
         }
 
-        public string ToCss(double alpha = 1)
+        public string ToCss(double alpha = 100)
         {
             return $"rgba({Red}, {Green}, {Blue}, {alpha})";
         }

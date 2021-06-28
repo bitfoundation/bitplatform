@@ -3,6 +3,7 @@
 .bit-clr-pkr-fluent {
     padding: 12px;
     width: 300px;
+    user-select: none;
 
     & > div:first-child {
         width: 300px;
@@ -33,14 +34,16 @@
         & > div:last-child {
             position: absolute;
             inset: 0px;
-            border: 2px solid rgb(255, 255, 255);
             border-radius: 50%;
             box-sizing: border-box;
-            width: 15px;
-            height: 15px;
+            width: 18px;
+            height: 18px;
+            box-shadow: 0 0px 0px 1px #8a8886;
             transform: translate(-50%,-50%);
             background: white;
-            border: 1px solid rgb(138, 136, 134);
+            box-shadow: 0 0px 0px 1px #8a8886;
+            border: 2px solid white;
+            z-index: 1;
         }
     }
 
@@ -59,6 +62,35 @@
                 box-sizing: border-box;
                 margin-bottom: 8px;
                 position: relative;
+
+                & > input[type=range] {
+                    position: relative;
+                    top: -1px;
+                    width: calc(100% + 14px);
+                    background: none;
+                    -webkit-appearance: none;
+                    margin: 0 -7px;
+
+                    &::-webkit-slider-thumb {
+                        -webkit-appearance: none;
+                        appearance: none;
+                        width: 20px;
+                        height: 20px;
+                        background: $White;
+                        cursor: pointer;
+                        border-radius: 50%;
+                        border: 1px solid rgb(138, 136, 134);
+                    }
+
+                    &::-moz-range-thumb {
+                        width: 20px;
+                        height: 20px;
+                        background: $White;
+                        cursor: pointer;
+                        border-radius: 50%;
+                        border: 1px solid rgb(138, 136, 134);
+                    }
+                }
             }
 
             & > div:last-child {
@@ -73,6 +105,33 @@
                     height: 20px;
                     background: linear-gradient(to left, red 0%, transparent 100%);
                     margin-bottom: 8px;
+
+                    & > input[type=range] {
+                        width: calc(100% + 14px);
+                        background: none;
+                        -webkit-appearance: none;
+                        margin: 0 -7px;
+
+                        &::-webkit-slider-thumb {
+                            -webkit-appearance: none;
+                            appearance: none;
+                            width: 20px;
+                            height: 20px;
+                            background: $White;
+                            cursor: pointer;
+                            border-radius: 50%;
+                            border: 1px solid rgb(138, 136, 134);
+                        }
+
+                        &::-moz-range-thumb {
+                            width: 20px;
+                            height: 20px;
+                            background: $White;
+                            cursor: pointer;
+                            border-radius: 50%;
+                            border: 1px solid rgb(138, 136, 134);
+                        }
+                    }
                 }
             }
         }
@@ -84,18 +143,56 @@
             border: 1px solid rgb(200, 198, 196);
         }
     }
-}
 
+    & > table {
+        table-layout: fixed;
+        width: 100%;
 
-.thumb {
-    position: absolute;
-    inset: 0px;
-    border: 2px solid rgb(255, 255, 255);
-    border-radius: 50%;
-    box-sizing: border-box;
-    width: 19px;
-    height: 19px;
-    transform: translate(-50%,0%);
-    background: white;
-    border: 1px solid rgb(138, 136, 134);
+        & > thead {
+            & > tr {
+                & > td {
+                    color: $Grey160;
+                    font-size: 11px;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                }
+            }
+        }
+
+        & > tbody {
+            & > tr {
+                & > td {
+                    & > input {
+                        max-width: 100%;
+                        width: 100%;
+                        box-sizing: border-box;
+                        -webkit-box-sizing: border-box;
+                        -moz-box-sizing: border-box;
+                        padding: 5px;
+                        text-overflow: clip;
+                        font-size: 14px;
+                        -webkit-font-smoothing: antialiased;
+                        color: $Grey160;
+                        outline: 0px;
+                        border: none;
+                        box-shadow: 0 0 0 1px $Grey130;
+
+                        &:focus {
+                            box-shadow: 0 0 0 2px $CyanBlue10;
+                        }
+
+                        &[type=number] {
+                            -moz-appearance: textfield;
+
+                            &::-webkit-outer-spin-button,
+                            &::-webkit-inner-spin-button {
+                                -webkit-appearance: none;
+                                margin: 0;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 }

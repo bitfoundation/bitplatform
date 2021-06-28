@@ -39,6 +39,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
+                    webBuilder.UseSetting(WebHostDefaults.DetailedErrorsKey, "true");
                 });
 #endif
     }
