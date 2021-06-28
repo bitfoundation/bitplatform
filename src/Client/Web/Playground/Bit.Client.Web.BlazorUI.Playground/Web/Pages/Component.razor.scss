@@ -4,7 +4,8 @@
 .search-box-container,
 .rating-container,
 .spinner-positioning,
-.pivot-container {
+.pivot-container,
+.basic-list-container {
     font-family: FluentFont;
 }
 
@@ -52,11 +53,9 @@
     }
 }
 
-
 .pivot-container {
     margin: 20px 10px;
 }
-
 
 .lst-custom-style {
     .lst3-list-item {

@@ -285,6 +285,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
 
             return items;
         }
+
         public List<Person> GetPeople(int itemCount)
         {
             List<Person> people = new();

@@ -13,9 +13,7 @@
                     Context="item"
                     ItemSize="@ItemSize"
                     OverscanCount="@OverscanCount">
-            <ItemContent>
-                @RowTemplate!(item)
-            </ItemContent>
+            @RowTemplate!(item)
         </Virtualize>
     }
     else

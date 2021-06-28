@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using static Bit.Client.Web.BlazorUI.Tests.Lists.BitBasicListTest;
@@ -12,165 +11,95 @@ namespace Bit.Client.Web.BlazorUI.Tests.Lists
     {
 
         [DataTestMethod,
-            DataRow(Visual.Fluent, true, 1000, 500, 100),
-            DataRow(Visual.Fluent, false, 100, 500, 100),
-            DataRow(Visual.Fluent, true, 1000, null, 100),
-            DataRow(Visual.Fluent, false, 100, null, 100),
-            DataRow(Visual.Fluent, true, 1000, 500, null),
-            DataRow(Visual.Fluent, false, 100, 500, null),
-
-            DataRow(Visual.Cupertino, true, 1000, 500, 100),
-            DataRow(Visual.Cupertino, false, 100, 500, 100),
-            DataRow(Visual.Cupertino, true, 1000, null, 100),
-            DataRow(Visual.Cupertino, false, 100, null, 100),
-            DataRow(Visual.Cupertino, true, 1000, 500, null),
-            DataRow(Visual.Cupertino, false, 100, 500, null),
-
-            DataRow(Visual.Material, true, 1000, 500, 100),
-            DataRow(Visual.Material, false, 100, 500, 100),
-            DataRow(Visual.Material, true, 1000, null, 100),
-            DataRow(Visual.Material, false, 100, null, 100),
-            DataRow(Visual.Material, true, 1000, 500, null),
-            DataRow(Visual.Material, false, 100, 500, null),
-            ]
-        //When we use virtualization,extra items renderd base on overScanCount values that by defualt is 3
-        public void BitBasicListShoudRenderExpectedChildElements(Visual visual, bool virtualize,
-            int itemCount, decimal? listHeight, decimal? itemHeight)
+            DataRow(true, 1000, 500, 50, null, 1),
+            DataRow(true, 1000, 500, 50, 50, 1),
+            DataRow(true, 1000, 500, 50, null, null),
+            DataRow(true, 1000, 500, 50, 50, null),
+            DataRow(true, 1000, null, 50, null, 1),
+            DataRow(true, 1000, null, 50, 50, 1),
+            DataRow(true, 1000, null, 50, null, null),
+            DataRow(true, 1000, null, 50, 50, null),
+            DataRow(false, 100, null, null, null, null)
+        ]
+        public void BitBasicListShoudRenderExpectedChildElements(
+            bool virtualize,
+            int itemCount,
+            int? listHeight,
+            int? itemHeight,
+            int? itemSize,
+            int? overscanCount)
         {
             var component = RenderComponent<BitBasicListTest>(parameters =>
             {
-                parameters.Add(p => p.Visual, visual);
                 parameters.Add(p => p.Virtualize, virtualize);
                 parameters.Add(p => p.Items, GetTestData(itemCount));
-                parameters.Add(p => p.ListHeight, (listHeight is null) ? "500px" : $"height:{listHeight}px");
-                parameters.Add(p => p.ItemHeight, (itemHeight is null) ? "100px" : $"height:{itemHeight}px");
+                parameters.Add(p => p.ListStyle, (listHeight is null) ? "height:500px" : $"height:{listHeight}px");
+                parameters.Add(p => p.ItemStyle, (itemHeight is null) ? "height:50px" : $"height:{itemHeight}px");
+                //ItemSize default value is 50.
+                parameters.Add(p => p.ItemSize, (itemSize is null) ? 50 : itemSize.Value);
+                //OverscanCount default value is 3.
+                parameters.Add(p => p.OverscanCount, (overscanCount is null) ? 3 : overscanCount.Value);
             });
 
             var bitList = component.Find(".bit-bsc-lst");
-
-            int comItemCount = bitList.ChildElementCount;
 
             if (virtualize)
             {
                 listHeight = (listHeight is null) ? 500 : listHeight;
-                itemHeight = (itemHeight is null) ? 100 : itemHeight;
+                itemHeight = (itemHeight is null) ? 50 : itemHeight;
+                overscanCount = (overscanCount is null) ? 3 : overscanCount;
 
-                decimal itemForRender = Math.Ceiling(listHeight.GetValueOrDefault() / itemHeight.GetValueOrDefault());
-
-                var renderedItems = bitList.GetElementsByClassName("list-item").Length;
-                Assert.AreEqual(itemForRender + 3, renderedItems);
+                //When virtualize is true, number of rendered items is greater than number of items showm in the list + 2 * overScanCount.
+                var expectedRenderedItemCount = Math.Ceiling((decimal)(listHeight / itemHeight)) + 2 * overscanCount;
+                var actualRenderedItemCount = bitList.GetElementsByClassName("list-item").Length;
+                Assert.IsTrue(actualRenderedItemCount >= expectedRenderedItemCount);
             }
             else
             {
-                Assert.AreEqual(comItemCount, itemCount);
+                var actualRenderedItemCount = bitList.GetElementsByClassName("list-item").Length;
+                Assert.AreEqual(itemCount, actualRenderedItemCount);
             }
         }
 
         [DataTestMethod,
-            DataRow(Visual.Fluent, 1000, true, 1, 500, 100),
-            DataRow(Visual.Fluent, 100, false, 1, 500, 100),
-            DataRow(Visual.Fluent, 1000, true, 1, null, 100),
-            DataRow(Visual.Fluent, 100, false, 1, null, 100),
-            DataRow(Visual.Fluent, 1000, true, 1, 500, null),
-            DataRow(Visual.Fluent, 100, false, 1, 500, null),
-
-            DataRow(Visual.Cupertino, 1000, true, 1, 500, 100),
-            DataRow(Visual.Cupertino, 100, false, 1, 500, 100),
-            DataRow(Visual.Cupertino, 1000, true, 1, null, 100),
-            DataRow(Visual.Cupertino, 100, false, 1, null, 100),
-            DataRow(Visual.Cupertino, 1000, true, 1, 500, null),
-            DataRow(Visual.Cupertino, 100, false, 1, 500, null),
-
-            DataRow(Visual.Material, 1000, true, 1, 500, 100),
-            DataRow(Visual.Material, 100, false, 1, 500, 100),
-            DataRow(Visual.Material, 1000, true, 1, null, 100),
-            DataRow(Visual.Material, 100, false, 1, null, 100),
-            DataRow(Visual.Material, 1000, true, 1, 500, null),
-            DataRow(Visual.Material, 100, false, 1, 500, null)
+            DataRow(100, "AssignedRole"),
+            DataRow(100, null)
         ]
-        public void BitBasicListRenderExtraItemsUsingOverScanCount(Visual visual,
-             int itemCount, bool virtualize, int overScanCount, decimal? listHeight, decimal? itemHeight)
+        public void BitBasicListShouldHaveCorrectRole(int itemCount, string role)
         {
             var component = RenderComponent<BitBasicListTest>(parameters =>
             {
-                parameters.Add(p => p.Visual, visual);
-                parameters.Add(p => p.Virtualize, virtualize);
                 parameters.Add(p => p.Items, GetTestData(itemCount));
-                parameters.Add(p => p.OverscanCount, overScanCount);
-                parameters.Add(p => p.ListHeight, (listHeight is null) ? "500px" : $"height:{listHeight}px");
-                parameters.Add(p => p.ItemHeight, (itemHeight is null) ? "100px" : $"height:{itemHeight}px");
+                if (!String.IsNullOrEmpty(role))
+                    parameters.Add(p => p.Role, role);
             });
 
             var bitList = component.Find(".bit-bsc-lst");
 
-            int comItemCount = bitList.ChildElementCount;
-            if (virtualize)
+            var bitLisRole = bitList.GetAttribute("role");
+
+            if (String.IsNullOrEmpty(role))
             {
-                listHeight = (listHeight is null) ? 500 : listHeight;
-                itemHeight = (itemHeight is null) ? 100 : itemHeight;
-
-                decimal itemForRender = Math.Ceiling(listHeight.GetValueOrDefault() / itemHeight.GetValueOrDefault());
-
-                var renderedItems = bitList.GetElementsByClassName("list-item").Length;
-                Assert.AreEqual(comItemCount, itemCount + (overScanCount + 2));
+                Assert.AreEqual("list", bitLisRole);
             }
             else
             {
-                Assert.AreEqual(comItemCount, itemCount);
+                Assert.AreEqual(role, bitLisRole);
             }
         }
 
-        [DataTestMethod,
-            DataRow(Visual.Fluent, 1000, "RoleItem", true),
-            DataRow(Visual.Fluent, 100, "RoleItem", false),
-
-            DataRow(Visual.Cupertino, 1000, "RoleItem", true),
-            DataRow(Visual.Cupertino, 100, "RoleItem", false),
-
-            DataRow(Visual.Material, 1000, "RoleItem", true),
-            DataRow(Visual.Material, 100, "RoleItem", false),
-            ]
-        public void BitBasicListCheckForCorrectRole(Visual visual, int itemCount, string role, bool virtualize)
+        [DataTestMethod, DataRow(100)]
+        public void BitBasicListShouldHaveCorrectClass(int itemCount)
         {
             var component = RenderComponent<BitBasicListTest>(parameters =>
             {
-                parameters.Add(p => p.Visual, visual);
+                parameters.Add(p => p.Visual, Visual.Fluent);
                 parameters.Add(p => p.Items, GetTestData(itemCount));
-                parameters.Add(p => p.Role, role);
-                parameters.Add(p => p.Virtualize, virtualize);
             });
+
             var bitList = component.Find(".bit-bsc-lst");
 
-            var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
-            Assert.IsTrue(bitList.ClassList.Contains($"bit-bsc-lst-{visualClass}"));
-
-            var itemRole = bitList.GetAttribute("role");
-
-            Assert.AreEqual(role, itemRole);
-        }
-
-        [DataTestMethod,
-            DataRow(Visual.Fluent, 1000, true),
-            DataRow(Visual.Fluent, 100, false),
-
-            DataRow(Visual.Cupertino, 1000, true),
-            DataRow(Visual.Cupertino, 100, false),
-
-            DataRow(Visual.Material, 1000, true),
-            DataRow(Visual.Material, 100, false),
-        ]
-        public void BitBasicListCheckForCorrectVisual(Visual visual, int itemCount, bool virtualize)
-        {
-            var component = RenderComponent<BitBasicListTest>(parameters =>
-            {
-                parameters.Add(p => p.Visual, visual);
-                parameters.Add(p => p.Items, GetTestData(itemCount));
-                parameters.Add(p => p.Virtualize, virtualize);
-            });
-            var bitList = component.Find(".bit-bsc-lst");
-
-            var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
-            Assert.IsTrue(bitList.ClassList.Contains($"bit-bsc-lst-{visualClass}"));
+            Assert.IsTrue(bitList.ClassList.Contains("bit-bsc-lst"));
         }
 
         private List<Person> GetTestData(int itemCount)
