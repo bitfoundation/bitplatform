@@ -21,6 +21,16 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
         private int RatingReadOnlyValue = 5;
         private int RatingOutsideValue = 5;
 
+        private double BasicSpinButtonValue = 5;
+        private double BasicSpinButtonDisableValue = 20;
+        private double SpinButtonWithCustomHandlerValue = 14;
+        private double SpinButtonWithLabelAboveValue = 7;
+        private void HandleSpinButtonValueChange(double value)
+        {
+            SpinButtonWithCustomHandlerValue = value;
+        }
+
+        private readonly List<NavLink> BasicNavLinks = new()
         private readonly List<BitNavLinkItem> BasicNavLinks = new()
         {
             new BitNavLinkItem
