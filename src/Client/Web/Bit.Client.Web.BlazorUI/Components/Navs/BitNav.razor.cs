@@ -11,15 +11,15 @@ namespace Bit.Client.Web.BlazorUI
 
         [Parameter] public bool IsOnTop { get; set; }
 
-        [Parameter] public ICollection<NavLink> NavLinks { get; set; } = new List<NavLink>();
+        [Parameter] public ICollection<BitNavLinkItem> NavLinkItems { get; set; } = new List<BitNavLinkItem>();
 
-        [Parameter] public EventCallback<NavLink> OnClick { get; set; }
+        [Parameter] public EventCallback<BitNavLinkItem> OnClick { get; set; }
 
-        [Parameter] public RenderFragment<NavLink>? HeaderTemplate { get; set; }
+        [Parameter] public RenderFragment<BitNavLinkItem>? HeaderTemplate { get; set; }
 
         protected override string RootElementClass => "bit-nav";
 
-        private async Task Toggle(NavLink navLink)
+        private async Task Toggle(BitNavLinkItem navLink)
         {
             if (IsEnabled is false || navLink.Disabled) return;
 
@@ -38,19 +38,7 @@ namespace Bit.Client.Web.BlazorUI
                                             : $"{RootElementClass}-no-top");
         }
 
-        private static string MapNavLinkTargetTypeToString(NavLinkTargetType navLinkTargetType)
-        {
-            return navLinkTargetType switch
-            {
-                NavLinkTargetType.Blank => "_blank",
-                NavLinkTargetType.Parent => "_parent",
-                NavLinkTargetType.Self => "_self",
-                NavLinkTargetType.Top => "_top",
-                _ => throw new System.Exception($"NavLinkTargetType not supported: {navLinkTargetType}")
-            };
-        }
-
-        private string GetLinkClass(NavLink navLink)
+        private string GetLinkClass(BitNavLinkItem navLink)
         {
             var enabledClass = navLink.Disabled ? "disabled" : "enabled";
             var hasUrlClass = navLink.Url.HasNoValue() ? "nourl" : "hasurl";

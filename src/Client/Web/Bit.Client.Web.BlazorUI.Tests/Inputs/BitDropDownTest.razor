@@ -1,0 +1,31 @@
+﻿<CascadingValue Value="Visual">
+	<BitDropDown IsEnabled="IsEnabled"
+				 IsMultiSelect="IsMultiSelect"
+				 Items="Items"
+				 OnClick="ClickEvent"
+				 OnSelectItem="ChangeEvent">
+	</BitDropDown>
+</CascadingValue>
+@code {
+	[Parameter] public Visual Visual { get; set; }
+	[Parameter] public string Value { get; set; }
+	[Parameter] public bool IsEnabled { get; set; } = true;
+	[Parameter] public bool ItemIsEnabled { get; set; } = true;
+	[Parameter] public bool IsMultiSelect { get; set; } = false;
+	[Parameter] public List<DropDownItem> Items { get; set; } = new List<DropDownItem>();
+
+	public void ChangeEvent(DropDownItem e)
+	{
+		IncrementCount();
+	}
+	public void ClickEvent(MouseEventArgs e)
+	{
+		IncrementCount();
+	}
+	public int CurrentCount { get; set; }
+	public void IncrementCount()
+	{
+		CurrentCount++;
+		Value = CurrentCount.ToString();
+	}
+}

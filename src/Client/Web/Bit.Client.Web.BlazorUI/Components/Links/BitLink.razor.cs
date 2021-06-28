@@ -12,6 +12,8 @@ namespace Bit.Client.Web.BlazorUI
 
         [Parameter] public RenderFragment? ChildContent { get; set; }
 
+        [Parameter] public bool HasUnderline { get; set; } = false;
+
         [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
         protected override string RootElementClass => "bit-lnk";
