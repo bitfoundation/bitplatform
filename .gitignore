@@ -253,3 +253,4 @@ _book
 /src/Client/Web/Playground/Bit.Client.Web.BlazorUI.Playground/Web/wwwroot/**/*.js
 /src/Client/Web/Playground/Bit.Client.Web.BlazorUI.Playground/Web/**/**/*.css
 
+/src/Client/Xamarin/Sample/Bit.CSharpClientSample.iOS/GoogleService-Info.plist

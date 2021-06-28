@@ -52,20 +52,34 @@ namespace Bit.Tests.IdentityServer
             {
                 try
                 {
-                    await testEnvironment.Server.LoginWithCredentials("InValidUser", "InvalidPassword", "TestResOwner", acr_values: new Dictionary<string, string>
+                    await testEnvironment.Server.LoginWithCredentials("+9891255447788", "سلام به معنی Hello است", "TestResOwner", acr_values: new Dictionary<string, string>
                     {
-                        { "x",  "1" },
-                        { "y",  "2" }
+                        { "x",  "1:1" },
+                        { "y",  "test test:test" }
                     });
 
                     Assert.Fail();
                 }
                 catch (LoginFailureException exp) when (exp.Message == "LoginFailed") { }
 
-                bool acr_values_are_logged = testEnvironment.GetObjects<ILogger>()
-                     .Any(l => l.LogData.Any(ld => ld.Key == "AcrValues" && ((List<string>)ld.Value).SequenceEqual(new[] { "x:1", "y:2" })));
+                var logger = testEnvironment.GetObjects<ILogger>();
 
-                Assert.IsTrue(acr_values_are_logged);
+                bool x_is_logged = logger
+                     .Any(l => l.LogData.Any(ld => ld.Key == "x" && ((string)ld.Value).Equals("1:1")));
+
+                bool y_is_logged = logger
+                     .Any(l => l.LogData.Any(ld => ld.Key == "y" && ((string)ld.Value).Equals("test test:test")));
+
+                bool password_is_logged = logger
+                    .Any(l => l.LogData.Any(ld => ld.Key == "password" && ((string)ld.Value) == "سلام به معنی Hello است"));
+
+                bool username_is_logged = logger
+                    .Any(l => l.LogData.Any(ld => ld.Key == "username" && ((string)ld.Value) == "+9891255447788"));
+
+                Assert.IsTrue(x_is_logged);
+                Assert.IsTrue(y_is_logged);
+                Assert.IsTrue(password_is_logged);
+                Assert.IsTrue(username_is_logged);
             }
         }
 
@@ -86,10 +100,24 @@ namespace Bit.Tests.IdentityServer
                 }
                 catch { }
 
-                bool acr_values_are_logged = testEnvironment.GetObjects<ILogger>()
-                     .Any(l => l.LogData.Any(ld => ld.Key == "AcrValues" && ((List<string>)ld.Value).SequenceEqual(new[] { "x:1", "y:2" })));
+                var logger = testEnvironment.GetObjects<ILogger>();
 
-                Assert.IsTrue(acr_values_are_logged);
+                bool x_is_logged = logger
+                     .Any(l => l.LogData.Any(ld => ld.Key == "x" && ((string)ld.Value).Equals("1:1")));
+
+                bool y_is_logged = logger
+                     .Any(l => l.LogData.Any(ld => ld.Key == "y" && ((string)ld.Value).Equals("test test:test")));
+
+                bool password_is_logged = logger
+                    .Any(l => l.LogData.Any(ld => ld.Key == "password" && ((string)ld.Value) == "سلام به معنی Hello است"));
+                
+                bool username_is_logged = logger
+                    .Any(l => l.LogData.Any(ld => ld.Key == "username" && ((string)ld.Value) == "+9891255447788"));
+
+                Assert.IsTrue(x_is_logged);
+                Assert.IsTrue(y_is_logged);
+                Assert.IsTrue(password_is_logged);
+                Assert.IsTrue(username_is_logged);
             }
         }
     }

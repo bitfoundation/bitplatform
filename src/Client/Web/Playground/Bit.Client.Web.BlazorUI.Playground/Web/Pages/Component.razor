@@ -500,7 +500,7 @@
                    border: 1px solid #eee;
                    overflow-y: auto;"
             Class="bit-nav-simple-link"
-            NavLinks="BasicNavLinks"
+            NavLinkItems="BasicNavLinks"
             AriaLabel="Nav basic example"
             SelectedKey="key3">
     </BitNav>
@@ -515,25 +515,25 @@
             Class="bit-nav-wrapped-link"
             SelectedKey="key5"
             AriaLabel="Nav example with wrapped link text"
-            NavLinks="BasicNoToolTipNavLinks">
+            NavLinkItems="BasicNoToolTipNavLinks">
     </BitNav>
 
     <br />
     <h2>Nav similar to the one in this demo app</h2>
     <BitNav Style="width: 300px;"
-            NavLinks="BasicNoUrlNavLinks"
+            NavLinkItems="BasicNoUrlNavLinks"
             AriaLabel="Nav example similar to one found in this demo page">
     </BitNav>
 
     <br />
     <h2>Nav with nested links</h2>
-    <BitNav NavLinks="NestedLinks"
+    <BitNav NavLinkItems="NestedLinks"
             AriaLabel="Nav example with nested links">
     </BitNav>
 
     <br />
     <h2>Nav with custom group header</h2>
-    <BitNav NavLinks="CustomHeaderLinks"
+    <BitNav NavLinkItems="CustomHeaderLinks"
             AriaLabel="Nav with custom group header">
         <HeaderTemplate Context="link">
             <h3> @link.Name </h3>

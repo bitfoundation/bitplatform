@@ -4,52 +4,52 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components
 {
     public partial class NavMenu
     {
-        private readonly List<NavLink> NavLinks = new()
+        private readonly List<BitNavLinkItem> NavLinks = new()
         {
-            new NavLink
+            new BitNavLinkItem
             {
                 Name = "Basic Inputs",
                 Key = "Inputs",
                 IsExpanded = true,
-                Links = new List<NavLink>
+                Links = new List<BitNavLinkItem>
                 {
-                     new NavLink { Name = "Button", Key = "Button", Url = "/components/buttons" },
-                     new NavLink { Name = "Checkbox", Key = "Checkbox", Url = "/components/checkboxes" },
-                     new NavLink { Name = "Choice", Key = "Choice", Url = "#" },
-                     new NavLink { Name = "Label", Key = "Label", Url = "/components/labels" },
-                     new NavLink { Name = "Link", Key = "Link", Url = "/components/links" },
-                     new NavLink { Name = "Rating", Key = "Rating", Url = "#" },
-                     new NavLink { Name = "SearchBox", Key = "SearchBox", Url = "#" },
-                     new NavLink { Name = "TextField", Key = "TextField", Url = "#" },
-                     new NavLink { Name = "Toggle", Key = "Toggle", Url = "#" }
+                     new BitNavLinkItem { Name= "Button", Key = "Button", Url = "/components/buttons"},
+                     new BitNavLinkItem { Name= "Checkbox", Key = "Checkbox", Url = "/components/checkboxes" },
+                     new BitNavLinkItem { Name= "ChoiceGroup", Key = "Choice", Url = "/components/choicegroup" },
+                     new BitNavLinkItem { Name= "Label", Key = "Label",  Url = "/components/labels" },
+                     new BitNavLinkItem { Name= "Link", Key = "Link", Url = "/components/links" },
+                     new BitNavLinkItem { Name= "Rating", Key = "Rating", Url = "/components/rating" },
+                     new BitNavLinkItem { Name= "SearchBox", Key = "SearchBox", Url = "#" },
+                     new BitNavLinkItem { Name= "TextField", Key = "TextField", Url = "#" },
+                     new BitNavLinkItem { Name= "Toggle", Key = "Toggle", Url = "#" }
                 }
             },
-            new NavLink
+            new BitNavLinkItem
             {
                 Name = "Commands, Menus & Navs",
                 Key = "Navigations",
-                Links = new List<NavLink>
+                Links = new List<BitNavLinkItem>
                 {
-                    new NavLink { Name = "Nav", Key = "Nav", Url = "#" },
-                    new NavLink { Name = "Pivot", Key = "Pivot", Url = "#" },
+                    new BitNavLinkItem { Name = "Nav", Key = "Nav", Url = "#" },
+                    new BitNavLinkItem { Name = "Pivot", Key = "Pivot", Url = "#" },
                 }
             },
-            new NavLink
+            new BitNavLinkItem
             {
                 Name = "Notification & Engagement",
                 Key = "Notifications",
-                Links = new List<NavLink>
+                Links = new List<BitNavLinkItem>
                 {
-                    new NavLink { Name = "MessageBar", Key = "MessageBar", Url="#" }
+                    new BitNavLinkItem { Name = "MessageBar", Key = "MessageBar", Url="#" }
                 }
             },
-            new NavLink
+            new BitNavLinkItem
             {
                 Name = "Progress",
                 Key = "Progress",
-                Links = new List<NavLink>
+                Links = new List<BitNavLinkItem>
                 {
-                    new NavLink{ Name = "Spinner", Key = "Spinner", Url = "/components/spinner" }
+                    new BitNavLinkItem{ Name = "Spinner", Key = "Spinner", Url = "/components/spinner" }
                 }
             },
         };
