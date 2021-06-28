@@ -8,25 +8,56 @@ namespace Bit.Client.Web.BlazorUI
     {
         private ButtonStyle buttonStyle = ButtonStyle.Primary;
 
-
         private int? tabIndex;
 
+        /// <summary>
+        /// Allow focus on button when it is disabled
+        /// </summary>
         [Parameter] public bool AllowDisabledFocus { get; set; } = true;
+
+        /// <summary>
+        /// Define a string value to describe the button for a screen reader
+        /// </summary>
         [Parameter] public string? AriaDescription { get; set; }
+
+        /// <summary>
+        /// Hide button from a screen reader and display it visually
+        /// </summary>
         [Parameter] public bool AriaHidden { get; set; }
 
+        /// <summary>
+        /// Define a string to label the button for a screen reader
+        /// </summary>
         [Parameter] public string? AriaLabel { get; set; }
 
+        /// <summary>
+        /// If provided, button renders as an anchor
+        /// </summary>
         [Parameter] public string? Href { get; set; }
 
+        /// <summary>
+        /// If Href provided, specifies how to open the link, Possible values: _blank | _self | _parent | _top 
+        /// </summary>
         [Parameter] public string? Target { get; set; }
 
+        /// <summary>
+        /// Define a string value as a tooltip
+        /// </summary>
         [Parameter] public string? Title { get; set; }
 
+        /// <summary>
+        /// Define Any custom tag or text to associate with the button
+        /// </summary>
         [Parameter] public RenderFragment? ChildContent { get; set; }
 
+        /// <summary>
+        /// Execute a method when a button is clicked
+        /// </summary>
         [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
+        /// <summary>
+        /// Define The style of button, Possible values: Primary | Standard
+        /// </summary>
         [Parameter]
         public ButtonStyle ButtonStyle
         {
