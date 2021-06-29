@@ -221,7 +221,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
 
         #endregion 
 
-        private void HideMessageBar(MouseEventArgs args)
+        private void HideMessageBar()
 
         {
             IsMessageBarHidden = true;
