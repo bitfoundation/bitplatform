@@ -114,6 +114,29 @@
 
 <hr />
 
+<div class="spin-button-components-container">
+    <h2>BitSpinButton </h2>
+
+    <h4># Basic SpinButton</h4>
+    <BitSpinButton @bind-Value="BasicSpinButtonValue" Min="0" Max="100" Step="1" Label="Basic SpinButton"></BitSpinButton>
+    <BitSpinButton Min="-10" Max="10" Step="0.1" Label="Decimal SpinButton"></BitSpinButton>
+    <BitSpinButton @bind-Value="BasicSpinButtonDisableValue" Min="0" Max="100" Step="1" Label="Disabled SpinButton" IsEnabled="false"></BitSpinButton>
+    <h4># SpinButton with icon</h4>
+    <BitSpinButton IconName="IncreaseIndentLegacy" Min="0" Max="100" Step="1" Label="With icon"></BitSpinButton>
+    <BitSpinButton IconName="IncreaseIndentLegacy" Min="0" Max="100" Step="1" Label="Disabled with icon" IsEnabled="false"></BitSpinButton>
+    <h4># SpinButton with suffic</h4>
+    <BitSpinButton Suffix="Inch" Min="0" Max="100" Step="1" Label="With suffix"></BitSpinButton>
+
+    <h4># SpinButton with custom handler</h4>
+    <BitSpinButton @bind-Value="SpinButtonWithCustomHandlerValue" Min="0" Max="100" Step="1" Label="With custom handler" OnChange="@(e => HandleSpinButtonValueChange(e))"></BitSpinButton>
+    <p>value of spin button is: @SpinButtonWithCustomHandlerValue</p>
+
+    <h4># SpinButton with label above</h4>
+    <BitSpinButton @bind-Value="SpinButtonWithLabelAboveValue" Suffix="cm" Min="0" Max="100" Step="1" Label="With labal above" LabelPosition="@LabelPosition.Top"></BitSpinButton>
+</div>
+
+<hr />
+
 <div class="labels-container">
 
     <h2>Labels</h2>
@@ -480,7 +503,7 @@
                    border: 1px solid #eee;
                    overflow-y: auto;"
             Class="bit-nav-simple-link"
-            NavLinks="BasicNavLinks"
+            NavLinkItems="BasicNavLinks"
             AriaLabel="Nav basic example"
             SelectedKey="key3">
     </BitNav>
@@ -495,25 +518,25 @@
             Class="bit-nav-wrapped-link"
             SelectedKey="key5"
             AriaLabel="Nav example with wrapped link text"
-            NavLinks="BasicNoToolTipNavLinks">
+            NavLinkItems="BasicNoToolTipNavLinks">
     </BitNav>
 
     <br />
     <h2>Nav similar to the one in this demo app</h2>
     <BitNav Style="width: 300px;"
-            NavLinks="BasicNoUrlNavLinks"
+            NavLinkItems="BasicNoUrlNavLinks"
             AriaLabel="Nav example similar to one found in this demo page">
     </BitNav>
 
     <br />
     <h2>Nav with nested links</h2>
-    <BitNav NavLinks="NestedLinks"
+    <BitNav NavLinkItems="NestedLinks"
             AriaLabel="Nav example with nested links">
     </BitNav>
 
     <br />
     <h2>Nav with custom group header</h2>
-    <BitNav NavLinks="CustomHeaderLinks"
+    <BitNav NavLinkItems="CustomHeaderLinks"
             AriaLabel="Nav with custom group header">
         <HeaderTemplate Context="link">
             <h3> @link.Name </h3>

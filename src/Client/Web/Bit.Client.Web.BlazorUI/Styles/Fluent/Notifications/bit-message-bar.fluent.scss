@@ -53,23 +53,23 @@
 }
 
 .bit-msg-bar-error-fluent {
-    background-color: $red20;
+    background-color: $ErrorBlockRed;
 
     & > span:first-child {
-        color: $red180;
+        color: $ErrorBlockIconRed;
     }
 }
 
 .bit-msg-bar-success-fluent {
-    background-color: $green60;
+    background-color: $Green60;
 
     & > span:first-child {
-        color: $green120;
+        color: $Green120;
     }
 }
 
 .bit-msg-bar-warning-fluent {
-    background-color: $yellow20;
+    background-color: $Yellow20;
 
     & > span:first-child {
         color: $Grey160;
@@ -77,18 +77,18 @@
 }
 
 .bit-msg-bar-severe-fluent {
-    background-color: $orange20;
+    background-color: $Orange20;
 
     & > span:first-child {
-        color: $orange180;
+        color: $Orange180;
     }
 }
 
 .bit-msg-bar-blocked-fluent {
-    background-color: $red20;
+    background-color: $ErrorBlockRed;
 
     & > span:first-child {
-        color: $red180;
+        color: $ErrorBlockIconRed;
     }
 }
 

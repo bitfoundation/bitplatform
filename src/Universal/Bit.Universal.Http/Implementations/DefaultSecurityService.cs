@@ -84,7 +84,7 @@ namespace Bit.Http.Implementations
 
             if (acr_values != null)
             {
-                loginData.Add("acr_values", string.Join(" ", acr_values.Select(p => $"{p.Key}:{p.Value}")));
+                loginData.Add("acr_values", string.Join(" ", acr_values.Select(p => $"{p.Key}:{Uri.EscapeDataString(p.Value ?? string.Empty)}")));
             }
 
             using HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, "core/connect/token");
@@ -196,7 +196,7 @@ namespace Bit.Http.Implementations
             if (!string.IsNullOrEmpty(client_id))
                 relativeUri += $"&client_id={client_id}";
             if (acr_values != null)
-                relativeUri += $"&acr_values={string.Join(" ", acr_values.Select(p => $"{p.Key}:{p.Value}"))}";
+                relativeUri += $"&acr_values={string.Join(" ", acr_values.Select(p => $"{p.Key}:{Uri.EscapeDataString(p.Value ?? string.Empty)}"))}";
 
             return new Uri(ClientAppProfile.HostUri ?? throw new InvalidOperationException($"{nameof(IClientAppProfile.HostUri)} is null."), relativeUri: relativeUri);
         }

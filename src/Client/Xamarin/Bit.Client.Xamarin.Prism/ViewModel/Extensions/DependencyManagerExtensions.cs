@@ -27,7 +27,7 @@ namespace Autofac
 
             dependencyManager.RegisterInstance(DefaultJsonContentFormatter.Current, overwriteExisting: false);
 
-            dependencyManager.RegisterUsing(resolver => new INavServiceFactory((prismNavService, popupNav) => DefaultNavService.INavServiceFactory<DefaultNavService>(prismNavService, popupNav)), overwriteExisting: false, lifeCycle: DependencyLifeCycle.Transient);
+            dependencyManager.RegisterUsing(resolver => new INavServiceFactory((prismNavService, popupNav, regionManager) => DefaultNavService.INavServiceFactory<DefaultNavService>(prismNavService, popupNav, regionManager)), overwriteExisting: false, lifeCycle: DependencyLifeCycle.Transient);
 
             dependencyManager.RegisterInstance<IExceptionHandler>(BitExceptionHandler.Current);
 
