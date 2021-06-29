@@ -30,7 +30,6 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
             SpinButtonWithCustomHandlerValue = value;
         }
 
-        private readonly List<NavLink> BasicNavLinks = new()
         private readonly List<BitNavLinkItem> BasicNavLinks = new()
         {
             new BitNavLinkItem
