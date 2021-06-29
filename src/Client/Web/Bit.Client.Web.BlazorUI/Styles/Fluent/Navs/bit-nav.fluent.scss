@@ -26,13 +26,7 @@
         color: $Black;
 
         &:hover {
-            @if $hasUrl != true {
-                background-color: transparent;
-            }
-            @else {
-                background-color: $Grey30;
-            }
-
+            background-color: $Grey30;
             color: $Primary;
         }
     }
