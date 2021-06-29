@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using Xamarin.Essentials.Interfaces;
 using Xamarin.Forms;
 
@@ -133,7 +134,7 @@ namespace Bit.ViewModel.Implementations
             {
                 try
                 {
-                    if (await Crashes.HasCrashedInLastSessionAsync().ConfigureAwait(false))
+                    if (await DidCrashOnPreviousExecution())
                     {
                         var crashReport = await Crashes.GetLastSessionCrashReportAsync().ConfigureAwait(false);
 
@@ -174,6 +175,11 @@ namespace Bit.ViewModel.Implementations
                     BitExceptionHandler.Current.OnExceptionReceived(exp);
                 }
             }
+        }
+
+        public async override Task<bool> DidCrashOnPreviousExecution()
+        {
+            return await Crashes.HasCrashedInLastSessionAsync().ConfigureAwait(false);
         }
     }
 }

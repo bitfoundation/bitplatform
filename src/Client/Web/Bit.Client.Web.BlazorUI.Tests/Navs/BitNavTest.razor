@@ -3,7 +3,7 @@
             SelectedKey="@SelectedKey"
             AriaLabel="@AriaLabel"
             IsOnTop="IsOnTop"
-            NavLinks="NavLinks">
+            NavLinkItems="NavLinkItems">
     </BitNav>
 </CascadingValue>
 @code {
@@ -12,6 +12,5 @@
     [Parameter] public string SelectedKey { get; set; }
     [Parameter] public string AriaLabel { get; set; }
     [Parameter] public bool IsOnTop { get; set; }
-    [Parameter]
-    public List<NavLink> NavLinks { get; set; } = new List<NavLink> {new NavLink{Name= "Activity",Key= "key1-1",Links=new List<NavLink>{new NavLink{ Name= "Activity",Key= "key1-1-1"},new NavLink{ Name= "MSN",Key= "key1-1-2"}}},new NavLink{Name= "MSN",Key= "key1-2"},};}
-
+    [Parameter] public List<BitNavLinkItem> NavLinkItems { get; set; } = new List<BitNavLinkItem> { new BitNavLinkItem { Name = "Test", Key = "Test" } };
+}

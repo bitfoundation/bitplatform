@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
     <RuntimeIdentifier>win7-x86</RuntimeIdentifier>
-    <TypeScriptToolsVersion>4.1</TypeScriptToolsVersion>
+    <TypeScriptToolsVersion>4.3</TypeScriptToolsVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,16 +17,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Bit.Server.Data.EntityFramework" Version="7.3.0" />
-    <PackageReference Include="Bit.Server.Hangfire" Version="7.3.0" />
-    <PackageReference Include="Bit.Server.IdentityServer" Version="7.3.0" />
-    <PackageReference Include="Bit.Server.OData" Version="7.3.0" />
-    <PackageReference Include="Bit.Server.Owin" Version="7.3.0" />
-    <PackageReference Include="Bit.Server.Signalr" Version="7.3.0" />
-    <PackageReference Include="Bit.Tooling.CodeAnalyzer" Version="7.3.0" />
-    <PackageReference Include="Bit.Tooling.CodeGenerator.Task" Version="7.3.0" />
-    <PackageReference Include="Bit.Universal.AutoMapper" Version="7.3.0" />
-    <PackageReference Include="Dapper" Version="2.0.78" />
+    <PackageReference Include="Bit.Server.Data.EntityFramework" Version="7.5.0" />
+    <PackageReference Include="Bit.Server.Hangfire" Version="7.5.0" />
+    <PackageReference Include="Bit.Server.IdentityServer" Version="7.5.0" />
+    <PackageReference Include="Bit.Server.OData" Version="7.5.0" />
+    <PackageReference Include="Bit.Server.Owin" Version="7.5.0" />
+    <PackageReference Include="Bit.Server.Signalr" Version="7.5.0" />
+    <PackageReference Include="Bit.Tooling.CodeAnalyzer" Version="7.5.0" />
+    <PackageReference Include="Bit.Tooling.CodeGenerator.Task" Version="7.5.0" />
+    <PackageReference Include="Bit.Universal.AutoMapper" Version="7.5.0" />
+    <PackageReference Include="Dapper" Version="2.0.90" />
     <PackageReference Include="SourceLink.Copy.PdbFiles" Version="2.8.3" PrivateAssets="All" />
   </ItemGroup>
   

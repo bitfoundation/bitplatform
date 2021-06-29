@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Bit.Client.Web.BlazorUI.Utils;
 using Microsoft.AspNetCore.Components;
 
@@ -79,6 +81,55 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
+        [Parameter]
+        public Dictionary<string, object> HtmlAttributes { get; set; } = new Dictionary<string, object>();
+
+        public override Task SetParametersAsync(ParameterView parameters)
+        {
+            HtmlAttributes.Clear();
+            var parametersDictionary = parameters.ToDictionary() as Dictionary<string, object>;
+            foreach (var parameter in parametersDictionary!)
+            {
+                switch (parameter.Key)
+                {
+                    case nameof(Theme):
+                        Theme = (Theme)parameter.Value;
+                        parametersDictionary.Remove(parameter.Key);
+                        break;
+
+                    case nameof(Visual):
+                        Visual = (Visual)parameter.Value;
+                        parametersDictionary.Remove(parameter.Key);
+                        break;
+
+                    case nameof(Style):
+                        Style = (string?)parameter.Value;
+                        parametersDictionary.Remove(parameter.Key);
+                        break;
+
+                    case nameof(Class):
+                        Class = (string?)parameter.Value;
+                        parametersDictionary.Remove(parameter.Key);
+                        break;
+
+                    case nameof(IsEnabled):
+                        IsEnabled = (bool)parameter.Value;
+                        parametersDictionary.Remove(parameter.Key);
+                        break;
+
+                    case nameof(Visibility):
+                        Visibility = (ComponentVisibility)parameter.Value;
+                        parametersDictionary.Remove(parameter.Key);
+                        break;
+
+                    default:
+                        HtmlAttributes.Add(parameter.Key, parameter.Value);
+                        break;
+                }
+            }
+            return base.SetParametersAsync(ParameterView.Empty);
+        }
+
         [Parameter] public string? AriaLabel { get; set; }
 
         protected override void OnInitialized()
@@ -127,7 +178,6 @@ namespace Bit.Client.Web.BlazorUI
 
         protected virtual void OnComponentVisibilityChanged(ComponentVisibility visibility)
         {
-
         }
     }
 }

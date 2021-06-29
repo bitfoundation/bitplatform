@@ -2,9 +2,11 @@
 @inherits BitComponentBase
 
 <div @ref="RootElement"
+     @attributes="HtmlAttributes"
      class="@ClassBuilder.Value"
      style="@StyleBuilder.Value"
      aria-label="@AriaLabel">
+
     @for (int item = 0; item < Max; item++)
     {
         var index = item;

@@ -1,8 +1,5 @@
-﻿using System;
+﻿using System.Threading.Tasks;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 
 namespace Bit.Client.Web.BlazorUI
@@ -59,7 +56,6 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter]
         public bool HeadersOnly { get; set; } = false;
 
-
         [Parameter]
         public EventCallback<BitPivotItem> OnLinkClick { get; set; }
 
@@ -93,41 +89,60 @@ namespace Bit.Client.Web.BlazorUI
 
         public override Task SetParametersAsync(ParameterView parameters)
         {
-            foreach (ParameterValue parameter in parameters)
+            var parametersDictionary = parameters.ToDictionary() as Dictionary<string, object>;
+
+            foreach (var parameter in parametersDictionary!)
             {
-                switch (parameter.Name)
+                switch (parameter.Key)
                 {
                     case nameof(DefaultSelectedKey):
                         DefaultSelectedKey = (string)parameter.Value;
+                        parametersDictionary.Remove(parameter.Key);
                         break;
 
                     case nameof(ChildContent):
                         ChildContent = (RenderFragment)parameter.Value;
+                        parametersDictionary.Remove(parameter.Key);
                         break;
 
                     case nameof(OverflowBehavior):
                         OverflowBehavior = (OverflowBehavior)parameter.Value;
+                        parametersDictionary.Remove(parameter.Key);
                         break;
 
                     case nameof(LinkFormat):
                         LinkFormat = (LinkFormat)parameter.Value;
+                        parametersDictionary.Remove(parameter.Key);
                         break;
+
                     case nameof(LinkSize):
                         LinkSize = (LinkSize)parameter.Value;
+                        parametersDictionary.Remove(parameter.Key);
                         break;
+
                     case nameof(HeadersOnly):
                         HeadersOnly = (bool)parameter.Value;
+                        parametersDictionary.Remove(parameter.Key);
                         break;
+
                     case nameof(OnLinkClick):
                         OnLinkClick = (EventCallback<BitPivotItem>)parameter.Value;
+                        parametersDictionary.Remove(parameter.Key);
                         break;
+
                     case nameof(SelectedKey):
                         SelectedKey = (string)parameter.Value;
                         hasSetSelectedKey = true;
+                        parametersDictionary.Remove(parameter.Key);
+                        break;
+
+                    case nameof(SelectedKeyChanged):
+                        SelectedKeyChanged = (EventCallback<string>)parameter.Value;
+                        parametersDictionary.Remove(parameter.Key);
                         break;
                 }
             }
-            return base.SetParametersAsync(parameters);
+            return base.SetParametersAsync(ParameterView.FromDictionary(parametersDictionary));
         }
 
         protected override void RegisterComponentClasses()
@@ -154,7 +169,6 @@ namespace Bit.Client.Web.BlazorUI
 
             if (hasSetSelectedKey && SelectedKeyChanged.HasDelegate is false) return;
             SelectedKey = item.Key;
-
         }
 
         internal void RegisterOption(BitPivotItem item)
@@ -193,6 +207,7 @@ namespace Bit.Client.Web.BlazorUI
         {
             return Items[SelectedKey] == item ? "selected-item" : string.Empty;
         }
+
         private string GetItemStyle(BitPivotItem item)
         {
             return item.Visibility == ComponentVisibility.Collapsed ? "display:none" : item.Visibility == ComponentVisibility.Hidden ? "visibility:hidden" : string.Empty;
