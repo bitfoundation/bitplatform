@@ -2,6 +2,8 @@
 using Bit.Core.Models;
 using Bit.ViewModel.Contracts;
 using Prism.Navigation;
+using Prism.Regions;
+using Prism.Regions.Navigation;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -11,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace Bit.ViewModel
 {
-    public class BitViewModelBase : Bindable, INavigatedAware, IInitializeAsync, INavigationAware, IDestructible
+    public class BitViewModelBase : Bindable, INavigatedAware, IInitializeAsync, INavigationAware, IDestructible, IRegionAware
     {
         public CancellationTokenSource CancellationTokenSource { get; set; }
 
@@ -152,7 +154,24 @@ namespace Bit.ViewModel
             return Task.CompletedTask;
         }
 
+        public void OnNavigatedTo(INavigationContext navigationContext)
+        {
+            OnNavigatedTo(navigationContext.Parameters);
+        }
+
+        public virtual bool IsNavigationTarget(INavigationContext navigationContext)
+        {
+            return true;
+        }
+
+        public void OnNavigatedFrom(INavigationContext navigationContext)
+        {
+            OnNavigatedFrom(navigationContext.Parameters);
+        }
+
         public INavService NavigationService { get; set; } = default!;
+
+        public IRegionManager RegionManager { get; set; }
 
         public IEnumerable<ITelemetryService> TelemetryServices { get; set; } = default!;
     }

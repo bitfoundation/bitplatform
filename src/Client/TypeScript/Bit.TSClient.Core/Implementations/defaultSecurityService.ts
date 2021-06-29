@@ -20,17 +20,26 @@
         }
 
         public getLoginUrl(state?: any, client_id?: string, acr_values?: { key: string, value: string }[]): string {
+
+            const loginData: Array<string> = [];
+
+            if (client_id != null) {
+                loginData.push("client_id" + "=" + encodeURIComponent(client_id));
+            }
+
+            if (acr_values != null) {
+                loginData.push("acr_values" + "=" + encodeURIComponent(acr_values.map(p => `${p.key}:${escape(p.value)}`).join(' ')));
+            }
+
             if (state == null) {
                 state = {};
             }
+
             state["pathname"] = location.pathname;
-            let url = `InvokeLogin?state=${JSON.stringify(state)}`;
-            if (client_id != null) {
-                url += `&client_id${client_id}`;
-            }
-            if (acr_values != null)
-                url += `&acr_values=${acr_values.map(p => `${p.key}:${p.value}`).join(' ')}`;
-            return encodeURI(url);
+
+            loginData.push("state" + "=" + encodeURIComponent(JSON.stringify(state)));
+
+            return `InvokeLogin?${loginData.join("&")}`;
         }
 
         @Log()
@@ -73,21 +82,28 @@
                 throw new Error("client_secret is null");
             }
 
-            let loginData = `scope=${scopes.join("+")}&grant_type=password&username=${userName}&password=${password}&client_id=${client_id}&client_secret=${client_secret}`;
+            const loginData: Array<string> = [];
+
+            loginData.push("scope" + "=" + encodeURIComponent(scopes.join(" ")));
+            loginData.push("grant_type" + "=" + "password");
+            loginData.push("username" + "=" + encodeURIComponent(userName));
+            loginData.push("password" + "=" + encodeURIComponent(password));
+            loginData.push("client_id" + "=" + encodeURIComponent(client_id));
+            loginData.push("client_secret" + "=" + encodeURIComponent(client_secret));
 
             if (acr_values != null) {
-                loginData += `&acr_values=${acr_values.map(p => `${p.key}:${p.value}`).join(' ')}`;
+                loginData.push("acr_values" + "=" + encodeURIComponent(acr_values.map(p => `${p.key}:${escape(p.value)}`).join(' ')));
             }
 
-            loginData = encodeURI(loginData);
+            const loginDataStr = loginData.join("&");
 
             const loginHeaders = new Headers({
                 "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
-                "Content-Length": loginData.length.toString(),
+                "Content-Length": loginDataStr.toString(),
             });
 
             const res = await fetch("core/connect/token", {
-                method: "POST", body: loginData, headers: loginHeaders, credentials: "include"
+                method: "POST", body: loginDataStr, headers: loginHeaders, credentials: "include"
             });
 
             const json: Contracts.Token & { error_description: string } = await res.json();

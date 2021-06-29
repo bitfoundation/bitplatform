@@ -37,8 +37,10 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
 
             Assert.IsTrue(bitButton.ClassList.Contains($"bit-act-btn-{isEnabledClass}-{visualClass}"));
 
-            if (string.IsNullOrEmpty(iconName) is false)
+            if (iconName.HasValue())
+            {
                 Assert.AreEqual(bitIconITag.ClassList.Contains($"bit-icon--{iconName}"), expectedResult);
+            }
 
             bitButton.Click();
 
