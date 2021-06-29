@@ -146,31 +146,33 @@ namespace Bit.Client.Web.BlazorUI.Tests.Navs
         }
 
         [DataTestMethod, DataRow("Detailed label")]
-        public Task BitNavLinkAriaLabelTest(string ariaLabel)
+        public Task BitNavAriaLabelTest(string ariaLabel)
         {
             var com = RenderComponent<BitNavTest>(parameters =>
             {
                 parameters.Add(p => p.AriaLabel, ariaLabel);
             });
 
-            var bitNavLinkTest = com.Find(".bit-nav");
+            var bitNavTest = com.Find(".bit-nav");
 
-            Assert.IsTrue(bitNavLinkTest.GetAttribute("aria-label").Contains(ariaLabel));
+            Assert.IsTrue(bitNavTest.GetAttribute("aria-label").Contains(ariaLabel));
 
             return Task.CompletedTask;
         }
 
         [DataTestMethod, DataRow("Detailed label")]
-        public Task BitNavLinksAriaLabelTest(string ariaLabel)
+        public Task BitNavLinkItemsAriaLabelTest(string ariaLabel)
         {
+            var navLinkItems = new List<BitNavLinkItem> { new BitNavLinkItem { Name = "Activity", Key = "key1-1", Links = new List<BitNavLinkItem> { new BitNavLinkItem { Name = "Activity", Key = "key1-1-1" }, new BitNavLinkItem { Name = "MSN", Key = "key1-1-2" } } }, new BitNavLinkItem { Name = "MSN", Key = "key1-2" }};
             var com = RenderComponent<BitNavTest>(parameters =>
             {
+                parameters.Add(p => p.NavLinkItems, navLinkItems);
                 parameters.Add(p => p.AriaLabel, ariaLabel);
             });
 
-            var bitNavTest = com.Find(".bit-nav button");
+            var bitNavLinksItemsTest = com.Find(".bit-nav button");
 
-            Assert.IsTrue(bitNavTest.GetAttribute("aria-label").Contains(ariaLabel));
+            Assert.IsTrue(bitNavLinksItemsTest.GetAttribute("aria-label").Contains(ariaLabel));
 
             return Task.CompletedTask;
         }
