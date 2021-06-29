@@ -6,7 +6,7 @@ on:
     - 'src/Client/Web/**'
 jobs:
   build:
-    name: Test successful build and Run Tests
+    name: build and test
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v2
