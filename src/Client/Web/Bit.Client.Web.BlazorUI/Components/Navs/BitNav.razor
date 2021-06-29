@@ -49,12 +49,11 @@
 
         childTemplate = (navLink) =>
         (
-    @<li role="listitem" @key="navLink.Key">
+    @<li role="listitem" @key="navLink.Key" @onclick="(() => Toggle(navLink))">
         <div name="@navLink.Name">
             @if (navLink.Links?.Any() ?? false)
             {
                 <button tabindex="0"
-                        @onclick="(() => Toggle(navLink))"
                         aria-label="@navLink.CollapseAriaLabel"
                         aria-expanded="@navLink.IsExpanded">
                     <i class="bit-icon bit-icon--ChevronDown @(navLink.IsExpanded ? "bit-nav-expand-fluent" : "")"></i>

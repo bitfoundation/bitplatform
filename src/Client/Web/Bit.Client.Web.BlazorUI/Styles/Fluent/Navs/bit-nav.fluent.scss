@@ -19,7 +19,6 @@
     user-select: none;
 
     @if $hasUrl != true {
-        pointer-events: none;
         border-bottom: 1px solid $Grey30;
     }
 
@@ -27,7 +26,13 @@
         color: $Black;
 
         &:hover {
-            background-color: $Grey30;
+            @if $hasUrl != true {
+                background-color: transparent;
+            }
+            @else {
+                background-color: $Grey30;
+            }
+
             color: $Primary;
         }
     }
