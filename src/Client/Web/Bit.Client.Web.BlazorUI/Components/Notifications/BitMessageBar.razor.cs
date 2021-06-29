@@ -7,19 +7,16 @@ namespace Bit.Client.Web.BlazorUI
 {
     public partial class BitMessageBar
     {
-
         protected override string RootElementClass => "bit-msg-bar";
 
         [Parameter]
         public bool IsMultiline { get; set; } = true;
 
-        //[Parameter]
-        //public MessageBarBase ComponentRef { get; set; }
-
         [Parameter]
         public BitMessageBarType MessageBarType { get; set; } = BitMessageBarType.Info;
 
-        [Parameter] public string DismissIconName { get; set; } = "Clear";
+        [Parameter]
+        public string DismissIconName { get; set; } = "Clear";
 
         [Parameter]
         public bool Truncated { get; set; }
@@ -39,9 +36,7 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter]
         public EventCallback OnDismiss { get; set; }
 
-
         protected bool HasDismiss { get => (OnDismiss.HasDelegate); }
-
 
         protected bool ExpandSingelLine { get; set; }
 
@@ -56,7 +51,6 @@ namespace Bit.Client.Web.BlazorUI
                                         : MessageBarType == BitMessageBarType.SevereWarning ? $"{RootElementClass}-severe-warning-{VisualClassRegistrar()}"
                                         : $"{RootElementClass}-success-{VisualClassRegistrar()}");
         }
-
 
         protected void Truncate()
         {
@@ -73,18 +67,4 @@ namespace Bit.Client.Web.BlazorUI
             [BitMessageBarType.Success] = "Completed"
         };
     }
-
-
-    public enum BitMessageBarType
-    {
-        Info,
-        Warning,
-        Error,
-        Blocked,
-        SevereWarning,
-        Success
-    }
-
-
-
 }
