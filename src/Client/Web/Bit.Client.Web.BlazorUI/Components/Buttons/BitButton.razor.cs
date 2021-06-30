@@ -11,52 +11,52 @@ namespace Bit.Client.Web.BlazorUI
         private int? tabIndex;
 
         /// <summary>
-        /// Allow focus on button when it is disabled
+        /// Whether the button can have focus in disabled mode
         /// </summary>
         [Parameter] public bool AllowDisabledFocus { get; set; } = true;
 
         /// <summary>
-        /// Define a string value to describe the button for a screen reader
+        /// Detailed description of the button for the benefit of screen readers
         /// </summary>
         [Parameter] public string? AriaDescription { get; set; }
 
         /// <summary>
-        /// Hide button from a screen reader and display it visually
+        /// If true, add an aria-hidden attribute instructing screen readers to ignore the element
         /// </summary>
         [Parameter] public bool AriaHidden { get; set; }
 
         /// <summary>
-        /// Define a string to label the button for a screen reader
+        /// The aria label of the button for the benefit of screen readers
         /// </summary>
         [Parameter] public string? AriaLabel { get; set; }
 
         /// <summary>
-        /// If provided, button renders as an anchor
+        /// URL the link points to, if provided, button renders as an anchor
         /// </summary>
         [Parameter] public string? Href { get; set; }
 
         /// <summary>
-        /// If Href provided, specifies how to open the link, Possible values: _blank | _self | _parent | _top 
+        /// If Href provided, specifies how to open the link
         /// </summary>
         [Parameter] public string? Target { get; set; }
 
         /// <summary>
-        /// Define a string value as a tooltip
+        /// The title to show when the mouse is placed on the button
         /// </summary>
         [Parameter] public string? Title { get; set; }
 
         /// <summary>
-        /// Define Any custom tag or text to associate with the button
+        /// The content of button, It can be Any custom tag or a text
         /// </summary>
         [Parameter] public RenderFragment? ChildContent { get; set; }
 
         /// <summary>
-        /// Execute a method when a button is clicked
+        /// Callback for when the button clicked
         /// </summary>
         [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
         /// <summary>
-        /// Define The style of button, Possible values: Primary | Standard
+        /// The style of button, Possible values: Primary | Standard
         /// </summary>
         [Parameter]
         public ButtonStyle ButtonStyle
