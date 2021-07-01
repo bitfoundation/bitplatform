@@ -50,32 +50,46 @@
         childTemplate = (navLink) =>
         (
     @<li role="listitem" @key="navLink.Key">
-        <div name="@navLink.Name" @onclick="(() => Toggle(navLink))">
+        <div name="@navLink.Name">
             @if (navLink.Links?.Any() ?? false)
             {
                 <button tabindex="0"
                         aria-label="@navLink.CollapseAriaLabel"
-                        aria-expanded="@navLink.IsExpanded">
+                        aria-expanded="@navLink.IsExpanded"
+                        @onclick="(() => Toggle(navLink))">
                     <i class="bit-icon bit-icon--ChevronDown @(navLink.IsExpanded ? "bit-nav-expand-fluent" : "")"></i>
                 </button>
             }
+            @if (navLink.Url.HasValue())
+            {
+                <a href="@(navLink.Disabled ? "/" : navLink.Url)"
+                   title="@navLink.Title"
+                   tabindex="-1"
+                   onclick="@(navLink.Disabled ? "return false;" : "")"
+                   target="@navLink.Target"
+                   style="padding: 0px 20px 0px @(((navLink.Depth * 14)+(navLink.Icon.HasNoValue() ? 27 : 3)).ToString())px;"
+                   class="@GetLinkClass(navLink)">
 
-            <a href="@(navLink.Disabled ? "/" : navLink.Url)"
-               title="@navLink.Title"
-               tabindex="-1"
-               onclick="@(navLink.Disabled ? "return false;" : "")"
-               target="@navLink.Target"
-               style="padding: 0px 20px 0px @(((navLink.Depth * 14)+(navLink.Icon.HasNoValue() ? 27 : 3)).ToString())px;"
-               class="@GetLinkClass(navLink)">
+                    <span>
+                        @if (navLink.Icon.HasValue())
+                        {
+                            <i class=@($"bit-icon bit-icon--{navLink.Icon}")></i>
+                        }
+                        <div>@navLink.Name</div>
+                    </span>
+                </a>
+            }
+            else
+            {
+                <button class="@GetLinkClass(navLink)"
+                        style="padding: 0px 20px 0px @(((navLink.Depth * 14)+27).ToString())px;"
+                        @onclick="(() => Toggle(navLink))">
+                    <span>
+                        <div>@navLink.Name</div>
+                    </span>
+                </button>
 
-                <span>
-                    @if (navLink.Icon.HasValue())
-                    {
-                        <i class=@($"bit-icon bit-icon--{navLink.Icon}")></i>
-                    }
-                    <div>@navLink.Name</div>
-                </span>
-            </a>
+            }
         </div>
 
         @if (@navLink.Links?.Any() != null && navLink.IsExpanded)

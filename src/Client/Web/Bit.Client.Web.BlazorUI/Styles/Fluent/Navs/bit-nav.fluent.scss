@@ -90,6 +90,10 @@
                     position: relative;
 
                     button {
+                        background-color: transparent;
+                    }
+
+                    button:first-child {
                         outline: transparent;
                         position: absolute;
                         font-size: 12px;
@@ -104,7 +108,6 @@
                         white-space: nowrap;
                         overflow: hidden;
                         cursor: pointer;
-                        background-color: transparent;
                         width: 26px;
                         height: 42px;
                         top: 1px;
