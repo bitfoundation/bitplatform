@@ -8,19 +8,41 @@ namespace Bit.Client.Web.BlazorUI
     {
         private ButtonStyle buttonStyle = ButtonStyle.Primary;
 
-
         private int? tabIndex;
 
+        /// <summary>
+        /// Whether the compound button can have focus in disabled mode
+        /// </summary>
         [Parameter] public bool AllowDisabledFocus { get; set; } = true;
+
+        /// <summary>
+        /// Detailed description of the compound button for the benefit of screen readers
+        /// </summary>
         [Parameter] public string? AriaDescription { get; set; }
+
+        /// <summary>
+        /// If true, add an aria-hidden attribute instructing screen readers to ignore the element
+        /// </summary>
         [Parameter] public bool AriaHidden { get; set; }
 
+        /// <summary>
+        /// The aria label of the compound button for the benefit of screen readers
+        /// </summary>
         [Parameter] public string? AriaLabel { get; set; }
 
+        /// <summary>
+        /// The text of compound button
+        /// </summary>
         [Parameter] public string? Text { get; set; }
 
+        /// <summary>
+        /// Description of the action compound button takes
+        /// </summary>
         [Parameter] public string? SecondaryText { get; set; }
 
+        /// <summary>
+        /// The style of compound button, Possible values: Primary | Standard
+        /// </summary>
         [Parameter]
         public ButtonStyle ButtonStyle
         {
@@ -32,6 +54,9 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
+        /// <summary>
+        /// Callback for when the compound button clicked
+        /// </summary>
         [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
         protected override string RootElementClass => "bit-cmp-btn";
