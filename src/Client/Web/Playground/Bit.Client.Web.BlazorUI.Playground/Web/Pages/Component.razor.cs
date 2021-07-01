@@ -249,16 +249,6 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
             people[0] = person.GetPeople(8000);
             people[1] = person.GetPeople(100);
         }
-    }
-
-    public class Person
-    {
-        public int Id { get; set; }
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
-        public string Job { get; set; }
-
-        private string RatingChangedText = "";
 
         private List<DropDownItem> GetDropdownItems()
         {
@@ -305,6 +295,14 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
 
             return items;
         }
+    }
+
+    public class Person
+    {
+        public int Id { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public string Job { get; set; }
 
         public List<Person> GetPeople(int itemCount)
         {
