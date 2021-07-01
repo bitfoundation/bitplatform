@@ -10,8 +10,11 @@ namespace Bit.Client.Web.BlazorUI
     public partial class BitProgressIndicator
     {
         private double percentComplete;
+        private string description = string.Empty;
+        private string ProgressTrackerWidth => PercentCompleteChanged.HasDelegate
+            ? $"width: {percentComplete}%"
+            : string.Empty;
         [Parameter] public string Label { get; set; } = string.Empty;
-        [Parameter] public string Description { get; set; } = string.Empty;
         [Parameter]
         public double PercentComplete
         {
@@ -23,8 +26,20 @@ namespace Bit.Client.Web.BlazorUI
                 _ = PercentCompleteChanged.InvokeAsync(value);
             }
         }
+        [Parameter]
+        public string Description
+        {
+            get => description;
+            set
+            {
+                if (value == description) return;
+                description = value;
+                _ = DescriptionChanged.InvokeAsync(value);
+            }
+        }
 
         [Parameter] public EventCallback<double> PercentCompleteChanged { get; set; }
+        [Parameter] public EventCallback<string> DescriptionChanged { get; set; }
         protected override string RootElementClass => "bit-pi";
         protected override void RegisterComponentClasses()
         {

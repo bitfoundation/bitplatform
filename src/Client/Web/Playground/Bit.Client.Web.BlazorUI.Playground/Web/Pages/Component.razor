@@ -5,6 +5,8 @@
 <hr />
 <div class="pi-container">
     <BitProgressIndicator Label="Example title" Description="Example description"></BitProgressIndicator>
+    <BitProgressIndicator Label="Example title" @bind-Description="@description" @bind-PercentComplete="@precentComplete"></BitProgressIndicator>
+    <BitButton OnClick="@HandleProgress">Start Progress</BitButton>
 </div>
 <hr />
 <div class="buttons-container">
