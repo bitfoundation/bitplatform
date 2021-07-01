@@ -224,10 +224,11 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
         protected override void OnInitialized()
         {
             base.OnInitialized();
+
             //initialize people list
-            Person persons= new Person();
-            people[0] = persons.GetPeople(8000);
-            people[1] = persons.GetPeople(100);
+            Person person = new Person();
+            people[0] = person.GetPeople(8000);
+            people[1] = person.GetPeople(100);
         }
     }
 
