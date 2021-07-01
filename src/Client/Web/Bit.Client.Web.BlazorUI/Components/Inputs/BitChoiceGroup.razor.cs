@@ -9,12 +9,24 @@ namespace Bit.Client.Web.BlazorUI
     {
         private readonly List<BitChoiceOption> _options = new();
 
+        /// <summary>
+        /// Name of choicegroup, this name is used to group each choiceoption into the same logical choicegroup
+        /// </summary>
         [Parameter] public string Name { get; set; } = Guid.NewGuid().ToString();
 
+        /// <summary>
+        /// Value of choice group, the value of selectedchoice option set on it
+        /// </summary>
         [Parameter] public string? Value { get; set; }
 
+        /// <summary>
+        /// The content of choicegroup, common values are choiceoption component 
+        /// </summary>
         [Parameter] public RenderFragment? ChildContent { get; set; }
 
+        /// <summary>
+        /// Callback that is called when the value parameter changed
+        /// </summary>
         [Parameter] public EventCallback<string> OnValueChange { get; set; }
 
         protected override string RootElementClass => "bit-chg";
