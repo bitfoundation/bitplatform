@@ -10,17 +10,17 @@ namespace Bit.Client.Web.BlazorUI
         private readonly List<BitChoiceOption> _options = new();
 
         /// <summary>
-        /// Name of choicegroup, this name is used to group each choiceoption into the same logical choicegroup
+        /// Name of ChoiceGroup, this name is used to group each ChoiceOption into the same logical ChoiceGroup
         /// </summary>
         [Parameter] public string Name { get; set; } = Guid.NewGuid().ToString();
 
         /// <summary>
-        /// Value of choice group, the value of selectedchoice option set on it
+        /// Value of ChoiceGroup, the value of selected ChoiceOption set on it
         /// </summary>
         [Parameter] public string? Value { get; set; }
 
         /// <summary>
-        /// The content of choicegroup, common values are choiceoption component 
+        /// The content of ChoiceGroup, common values are ChoiceOption component 
         /// </summary>
         [Parameter] public RenderFragment? ChildContent { get; set; }
 
