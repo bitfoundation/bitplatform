@@ -5,7 +5,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
 {
     public partial class Component
     {
-        private bool CheckBoxOnChangedValue= false;
+        private bool CheckBoxOnChangedValue = false;
         private bool IsCheckBoxChecked = false;
         private bool IsCheckBoxIndeterminate = true;
         private bool IsCheckBoxIndeterminateInCode = true;
@@ -20,6 +20,15 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
         private int RatingSmallValue = 4;
         private int RatingReadOnlyValue = 5;
         private int RatingOutsideValue = 5;
+
+        private double BasicSpinButtonValue = 5;
+        private double BasicSpinButtonDisableValue = 20;
+        private double SpinButtonWithCustomHandlerValue = 14;
+        private double SpinButtonWithLabelAboveValue = 7;
+        private void HandleSpinButtonValueChange(double value)
+        {
+            SpinButtonWithCustomHandlerValue = value;
+        }
 
         private readonly List<BitNavLinkItem> BasicNavLinks = new()
         {
@@ -211,6 +220,16 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
         }
 
         #endregion 
+
+        private bool TogleButtonChecked = true;
+        private bool TogleButtonChecked2 = true;
+        private bool TogleButtonTwoWayValue = true;
+        private bool TogleButtonTwoWayValue2 = true;
+        private bool OnToggleButtonChanged;
+        private void ToggleButtonChanged(bool newValue)
+        {
+            OnToggleButtonChanged = newValue;
+        }
 
         private void HideMessageBar(MouseEventArgs args)
 
