@@ -97,7 +97,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Lists
                 parameters.Add(p => p.Items, GetTestData(itemCount));
             });
 
-            var bitList = component.Find(".bit-bsc-lst");
+            var bitList = component.Find("div");
 
             Assert.IsTrue(bitList.ClassList.Contains("bit-bsc-lst"));
         }
