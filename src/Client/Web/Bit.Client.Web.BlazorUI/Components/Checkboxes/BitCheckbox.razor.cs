@@ -15,6 +15,9 @@ namespace Bit.Client.Web.BlazorUI
 
         [Inject] public IJSRuntime? JSRuntime { get; set; }
 
+        /// <summary>
+        /// Checkbox state, control the checked state at a higher level
+        /// </summary>
         [Parameter]
         public bool IsChecked
         {
@@ -28,8 +31,14 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
+        /// <summary>
+        /// Callback that is called when the IsChecked parameter changed
+        /// </summary>
         [Parameter] public EventCallback<bool> IsCheckedChanged { get; set; }
 
+        /// <summary>
+        /// Determines whether the checkbox should be shown before the label (start) or after (end)
+        /// </summary>
         [Parameter]
         public BoxSide BoxSide
         {
@@ -42,6 +51,9 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
+        /// <summary>
+        /// An indeterminate visual state for checkbox. Setting indeterminate state takes visual precedence over checked given but does not affect on IsChecked state
+        /// </summary>
         [Parameter]
         public bool IsIndeterminate
         {
@@ -56,13 +68,20 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
+        /// <summary>
+        ///  Callback that is called when the IsIndeterminate parameter changed
+        /// </summary>
         [Parameter] public EventCallback<bool> IsIndeterminateChanged { get; set; }
 
+        /// <summary>
+        /// The content of checkbox, It can be Any custom tag or a text
+        /// </summary>
         [Parameter] public RenderFragment? ChildContent { get; set; }
 
+        /// <summary>
+        /// Callback that is called when the checked value has changed
+        /// </summary>
         [Parameter] public EventCallback<bool> OnChange { get; set; }
-
-
 
         protected override string RootElementClass => "bit-chb";
 
