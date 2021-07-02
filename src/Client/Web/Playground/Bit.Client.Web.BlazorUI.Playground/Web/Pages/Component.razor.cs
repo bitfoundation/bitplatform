@@ -5,7 +5,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
 {
     public partial class Component
     {
-        private bool CheckBoxOnChangedValue= false;
+        private bool CheckBoxOnChangedValue = false;
         private bool IsCheckBoxChecked = false;
         private bool IsCheckBoxIndeterminate = true;
         private bool IsCheckBoxIndeterminateInCode = true;
@@ -29,6 +29,8 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
         {
             SpinButtonWithCustomHandlerValue = value;
         }
+
+        public string Key3 { get; set; } = "key3";
 
         private readonly List<BitNavLinkItem> BasicNavLinks = new()
         {

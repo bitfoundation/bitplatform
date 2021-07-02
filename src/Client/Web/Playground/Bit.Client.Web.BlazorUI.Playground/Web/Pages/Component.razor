@@ -505,8 +505,10 @@
             Class="bit-nav-simple-link"
             NavLinkItems="BasicNavLinks"
             AriaLabel="Nav basic example"
-            SelectedKey="key3">
+            @bind-SelectedKey="Key3">
     </BitNav>
+    
+    Selected Link is :@Key3
 
     <br />
     <h2>Nav with wrapped link text and no tooltips</h2>
@@ -567,13 +569,13 @@
     <h2>BitDropDown</h2>
     <br />
     <h3>Single select</h3>
-        <BitDropDown Items="GetDropdownItems()" Placeholder="Select an option">
-        </BitDropDown>
-        <br />
-     <h3>Disabled</h3>
-        <BitDropDown IsEnabled="false" Items="GetDropdownItems()" Placeholder="Select an option">
-        </BitDropDown>
-        <br />
+    <BitDropDown Items="GetDropdownItems()" Placeholder="Select an option">
+    </BitDropDown>
+    <br />
+    <h3>Disabled</h3>
+    <BitDropDown IsEnabled="false" Items="GetDropdownItems()" Placeholder="Select an option">
+    </BitDropDown>
+    <br />
     <h3>Multi select</h3>
     <BitDropDown IsMultiSelect="true" Items="GetDropdownItems()" Placeholder="Select options">
     </BitDropDown>

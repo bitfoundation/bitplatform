@@ -7,7 +7,19 @@ namespace Bit.Client.Web.BlazorUI
 {
     public partial class BitNav
     {
-        [Parameter] public string? SelectedKey { get; set; }
+        private string? selectedKey;
+
+        [Parameter]
+        public string? SelectedKey
+        {
+            get => selectedKey;
+            set
+            {
+                if (selectedKey == value) return;
+                selectedKey = value;
+                SelectedKeyChanged.InvokeAsync(value);
+            }
+        }
 
         [Parameter] public string? AriaLabel { get; set; }
 
@@ -16,6 +28,8 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public ICollection<BitNavLinkItem> NavLinkItems { get; set; } = new List<BitNavLinkItem>();
 
         [Parameter] public EventCallback<BitNavLinkItem> OnClick { get; set; }
+
+        [Parameter] public EventCallback<string> SelectedKeyChanged { get; set; }
 
         [Parameter] public RenderFragment<BitNavLinkItem>? HeaderTemplate { get; set; }
 
@@ -30,8 +44,17 @@ namespace Bit.Client.Web.BlazorUI
                 navLink.IsExpanded = !navLink.IsExpanded;
             }
 
+            SelectedKey = navLink.Key;
+
             await OnClick.InvokeAsync(navLink);
         }
+
+        private void OnLinkClicked(string? key, bool navLinkIsDisable)
+        {
+            if (navLinkIsDisable) return;
+            SelectedKey = key;
+        }
+
 
         protected override void RegisterComponentClasses()
         {
