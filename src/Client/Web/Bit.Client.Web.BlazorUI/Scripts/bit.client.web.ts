@@ -1,5 +1,5 @@
 ﻿class Bit {
-    static setProperty(element: { [key: string]: any },property: string,value: any): void {
+    static setProperty(element: { [key: string]: any }, property: string, value: any): void {
         element[property] = value;
     }
 

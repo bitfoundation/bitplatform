@@ -5,7 +5,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
 {
     public partial class Component
     {
-        private bool CheckBoxOnChangedValue= false;
+        private bool CheckBoxOnChangedValue = false;
         private bool IsCheckBoxChecked = false;
         private bool IsCheckBoxIndeterminate = true;
         private bool IsCheckBoxIndeterminateInCode = true;
@@ -221,13 +221,34 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
 
         #endregion 
 
+        private bool TogleButtonChecked = true;
+        private bool TogleButtonChecked2 = true;
+        private bool TogleButtonTwoWayValue = true;
+        private bool TogleButtonTwoWayValue2 = true;
+        private bool OnToggleButtonChanged;
+        private void ToggleButtonChanged(bool newValue)
+        {
+            OnToggleButtonChanged = newValue;
+        }
+
         private void HideMessageBar(MouseEventArgs args)
 
         {
             IsMessageBarHidden = true;
         }
-
         private string RatingChangedText = "";
+
+        private List<Person>[] people = new List<Person>[2];
+
+        protected override void OnInitialized()
+        {
+            base.OnInitialized();
+
+            //initialize people list
+            Person person = new Person();
+            people[0] = person.GetPeople(8000);
+            people[1] = person.GetPeople(100);
+        }
 
         private List<DropDownItem> GetDropdownItems()
         {
@@ -273,6 +294,30 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
             });
 
             return items;
+        }
+    }
+
+    public class Person
+    {
+        public int Id { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public string Job { get; set; }
+
+        public List<Person> GetPeople(int itemCount)
+        {
+            List<Person> people = new();
+            for (int i = 0; i < itemCount; i++)
+            {
+                people.Add(new Person
+                {
+                    Id = i + 1,
+                    FirstName = $"Person {(i + 1).ToString()}",
+                    LastName = $"Person Family {(i + 1).ToString()}",
+                    Job = $"Programmer {(i + 1).ToString()}"
+                });
+            }
+            return people;
         }
     }
 }
