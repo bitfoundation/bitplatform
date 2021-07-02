@@ -110,6 +110,72 @@
     <BitButton Target="_self" Href="https://github.com/bitfoundation/bitframework" IsEnabled="false">
         <span>Bit Foundation From Span</span>
     </BitButton>
+
+    <hr />
+
+    <div>
+        <h3>Toggle Button</h3>
+        <h4>Checked Button</h4>
+        <BitToggleButton @bind-IsChecked="TogleButtonChecked"
+                         Label="@(TogleButtonChecked?"Button checked":"Button unchecked")"
+                         IconName=@(TogleButtonChecked?"Emoji2" :"EmojiNeutral")></BitToggleButton>
+
+        <h4>Toggle Button with OnChange event </h4>
+        <BitToggleButton @bind-IsChecked="TogleButtonChecked2"
+                         Label="@(TogleButtonChecked2?"Button checked":"Button unchecked")"
+                         IconName=@(TogleButtonChecked2?"Emoji2" :"EmojiNeutral")
+                         OnChange="ToggleButtonChanged"></BitToggleButton>
+        <span>Check status is: @OnToggleButtonChanged</span>
+
+        <h4>Toggle Button with two way binding </h4>
+        <div>
+            <input type=checkbox id="BitTogleButtonTwoWayValue" @bind="TogleButtonTwoWayValue">
+            <label for="BitTogleButtonTwoWayValue">Checked Toggle Button</label>
+        </div>
+        <BitToggleButton @bind-IsChecked="TogleButtonTwoWayValue"
+                         Label="@(TogleButtonTwoWayValue?"Button checked":"Button unchecked")"
+                         IconName=@(TogleButtonTwoWayValue?"Emoji2" :"EmojiNeutral")></BitToggleButton>
+
+        <br />
+
+        <BitToggleButton @bind-IsChecked="TogleButtonTwoWayValue2"
+                         Label="@(TogleButtonTwoWayValue2?"Button checked":"Button unchecked")"
+                         IconName=@(TogleButtonTwoWayValue2?"Emoji2" :"EmojiNeutral")></BitToggleButton>
+        <BitButton OnClick="()=>TogleButtonTwoWayValue2=true">Check</BitButton>
+        <BitButton OnClick="()=>TogleButtonTwoWayValue2=false">UnCheck</BitButton>
+
+        <h4>Toggle Button with Standard style</h4>
+        <BitToggleButton @bind-IsChecked="TogleButtonChecked"
+                         Label="@(TogleButtonChecked?"Button checked":"Button unchecked")"
+                         IconName=@(TogleButtonChecked?"Emoji2" :"EmojiNeutral")
+                         ButtonStyle="ButtonStyle.Standard"></BitToggleButton>
+
+        <h4>Toggle Button with Primary style</h4>
+        <BitToggleButton @bind-IsChecked="TogleButtonChecked"
+                         Label="@(TogleButtonChecked?"Button checked":"Button unchecked")"
+                         IconName=@(TogleButtonChecked?"Emoji2" :"EmojiNeutral")
+                         ButtonStyle="ButtonStyle.Primary"></BitToggleButton>
+
+        <h4>Disabeled Toggle Buttons</h4>
+        <BitToggleButton @bind-IsChecked="TogleButtonChecked"
+                         IsEnabled="false"
+                         Label="@(TogleButtonChecked?"Button checked":"Button unchecked")"
+                         IconName=@(TogleButtonChecked?"Emoji2" :"EmojiNeutral")></BitToggleButton>
+
+
+        <h4>Toggle Button with aria description</h4>
+        <BitToggleButton @bind-IsChecked="TogleButtonChecked"
+                         Label="@(TogleButtonChecked?"Button checked":"Button unchecked")"
+                         IconName=@(TogleButtonChecked?"Emoji2" :"EmojiNeutral")
+                         AriaDescription="Detailed description used for screen reader."></BitToggleButton>
+
+        <h4>Toggle Button with aria hidden</h4>
+        <BitToggleButton @bind-IsChecked="TogleButtonChecked"
+                         Label="@(TogleButtonChecked?"Button checked":"Button unchecked")"
+                         IconName=@(TogleButtonChecked?"Emoji2" :"EmojiNeutral")
+                         AriaHidden="true"></BitToggleButton>
+    </div>
+
 </div>
 
 <hr />
@@ -349,7 +415,6 @@
     <BitButton OnClick="() => RatingOutsideValue = 5">Make Rating Full</BitButton>
 </div>
 
-
 <hr />
 
 <div class="toggle-container">
@@ -494,6 +559,7 @@
 </div>
 
 <hr />
+
 <div class="nav-container">
     <h1>Bit Navs</h1>
     <h2>Basic nav with sample links</h2>
@@ -545,6 +611,60 @@
 </div>
 
 <hr />
+
+<div class="basic-list-container">
+    <h2>BitList</h2>
+
+    <h3>Basic List using virtualization</h3>
+    <BitBasicList Items="people[0]" Virtualize="true" Style="border: 1px #a19f9d solid; border-radius: 3px; width: 90%; margin: auto;">
+        <RowTemplate Context="person">
+            <div style="border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;">
+                <img src="https://picsum.photos/100/100?random=@(@person.Id)">
+                <div style="margin-left:3%; display: inline-block;">
+                    <p>Id: <strong>@person.Id</strong></p>
+                    <p>Full Name: <strong>@person.FirstName @person.LastName</strong></p>
+                    <p>Job: <strong>@person.Job</strong></p>
+                </div>
+            </div>
+        </RowTemplate>
+    </BitBasicList>
+
+    <h3>Basic List without virtualization</h3>
+    <BitBasicList Items="people[1]" Virtualize="false" Style="border: 1px #a19f9d solid; border-radius: 3px; width: 90%; margin: auto;">
+        <RowTemplate Context="person">
+            <div style="border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;">
+                <p>Id: <strong>@person.Id</strong></p>
+                <p>Full Name: <strong>@person.FirstName @person.LastName</strong></p>
+                <p>Job: <strong>@person.Job</strong></p>
+            </div>
+        </RowTemplate>
+    </BitBasicList>
+
+    <h3>Basic List with custom role and class</h3>
+    <BitBasicList Items="people[0]" Virtualize="true" Role="list" Class="lst-custom-style" Style="border: 1px #a19f9d solid; border-radius: 3px; width: 90%; margin: auto;">
+        <RowTemplate Context="person">
+            <div class="lst3-list-item">
+                <span>Id: <strong>@person.Id</strong></span>
+                <span>Full Name: <strong>@person.FirstName</strong></span>
+                <span>Job: <strong>@person.Job</strong></span>
+            </div>
+        </RowTemplate>
+    </BitBasicList>
+
+    <h3>Basic List with overscan count 1 </h3>
+    <BitBasicList Items="people[0]" Virtualize="true" OverscanCount="5" ItemSize="300" Style="border: 1px #a19f9d solid; border-radius: 3px; width: 90%; margin: auto;">
+        <RowTemplate Context="person">
+            <div style="border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;">
+                <p>Id: <strong>@person.Id</strong></p>
+                <p>Full Name: <strong>@person.FirstName @person.LastName</strong></p>
+                <p>Job: <strong>@person.Job</strong></p>
+            </div>
+        </RowTemplate>
+    </BitBasicList>
+</div>
+
+<hr />
+
 <div class="choice-container">
     <h2>BitChoiceGroup & BitChoiceOption</h2>
     <br />
@@ -567,13 +687,13 @@
     <h2>BitDropDown</h2>
     <br />
     <h3>Single select</h3>
-        <BitDropDown Items="GetDropdownItems()" Placeholder="Select an option">
-        </BitDropDown>
-        <br />
-     <h3>Disabled</h3>
-        <BitDropDown IsEnabled="false" Items="GetDropdownItems()" Placeholder="Select an option">
-        </BitDropDown>
-        <br />
+    <BitDropDown Items="GetDropdownItems()" Placeholder="Select an option">
+    </BitDropDown>
+    <br />
+    <h3>Disabled</h3>
+    <BitDropDown IsEnabled="false" Items="GetDropdownItems()" Placeholder="Select an option">
+    </BitDropDown>
+    <br />
     <h3>Multi select</h3>
     <BitDropDown IsMultiSelect="true" Items="GetDropdownItems()" Placeholder="Select options">
     </BitDropDown>
