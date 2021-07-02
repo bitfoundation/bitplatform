@@ -11,7 +11,10 @@ namespace Bit.Client.Web.BlazorUI
     {
         private double inputValue;
         private LabelPosition labelPosition = LabelPosition.Left;
-        [Parameter] public double Value
+        private bool ValueHasBeenSet;
+
+        [Parameter]
+        public double Value
         {
             get => inputValue;
             set
