@@ -42,6 +42,11 @@
 
     <hr />
 
+    <h3>Button with Html Attributes</h3>
+    <BitButton Visibility="ComponentVisibility.Visible" style="background-color: red;" dir="rtl" class="text-btn" type="button">Button</BitButton>
+
+    <hr />
+
     <h3>BitCompoundButton</h3>
     <BitCompoundButton IsEnabled="true"
                        Text="Primary"
@@ -105,6 +110,95 @@
     <BitButton Target="_self" Href="https://github.com/bitfoundation/bitframework" IsEnabled="false">
         <span>Bit Foundation From Span</span>
     </BitButton>
+
+    <hr />
+
+    <div>
+        <h3>Toggle Button</h3>
+        <h4>Checked Button</h4>
+        <BitToggleButton @bind-IsChecked="TogleButtonChecked"
+                         Label="@(TogleButtonChecked?"Button checked":"Button unchecked")"
+                         IconName=@(TogleButtonChecked?"Emoji2" :"EmojiNeutral")></BitToggleButton>
+
+        <h4>Toggle Button with OnChange event </h4>
+        <BitToggleButton @bind-IsChecked="TogleButtonChecked2"
+                         Label="@(TogleButtonChecked2?"Button checked":"Button unchecked")"
+                         IconName=@(TogleButtonChecked2?"Emoji2" :"EmojiNeutral")
+                         OnChange="ToggleButtonChanged"></BitToggleButton>
+        <span>Check status is: @OnToggleButtonChanged</span>
+
+        <h4>Toggle Button with two way binding </h4>
+        <div>
+            <input type=checkbox id="BitTogleButtonTwoWayValue" @bind="TogleButtonTwoWayValue">
+            <label for="BitTogleButtonTwoWayValue">Checked Toggle Button</label>
+        </div>
+        <BitToggleButton @bind-IsChecked="TogleButtonTwoWayValue"
+                         Label="@(TogleButtonTwoWayValue?"Button checked":"Button unchecked")"
+                         IconName=@(TogleButtonTwoWayValue?"Emoji2" :"EmojiNeutral")></BitToggleButton>
+
+        <br />
+
+        <BitToggleButton @bind-IsChecked="TogleButtonTwoWayValue2"
+                         Label="@(TogleButtonTwoWayValue2?"Button checked":"Button unchecked")"
+                         IconName=@(TogleButtonTwoWayValue2?"Emoji2" :"EmojiNeutral")></BitToggleButton>
+        <BitButton OnClick="()=>TogleButtonTwoWayValue2=true">Check</BitButton>
+        <BitButton OnClick="()=>TogleButtonTwoWayValue2=false">UnCheck</BitButton>
+
+        <h4>Toggle Button with Standard style</h4>
+        <BitToggleButton @bind-IsChecked="TogleButtonChecked"
+                         Label="@(TogleButtonChecked?"Button checked":"Button unchecked")"
+                         IconName=@(TogleButtonChecked?"Emoji2" :"EmojiNeutral")
+                         ButtonStyle="ButtonStyle.Standard"></BitToggleButton>
+
+        <h4>Toggle Button with Primary style</h4>
+        <BitToggleButton @bind-IsChecked="TogleButtonChecked"
+                         Label="@(TogleButtonChecked?"Button checked":"Button unchecked")"
+                         IconName=@(TogleButtonChecked?"Emoji2" :"EmojiNeutral")
+                         ButtonStyle="ButtonStyle.Primary"></BitToggleButton>
+
+        <h4>Disabeled Toggle Buttons</h4>
+        <BitToggleButton @bind-IsChecked="TogleButtonChecked"
+                         IsEnabled="false"
+                         Label="@(TogleButtonChecked?"Button checked":"Button unchecked")"
+                         IconName=@(TogleButtonChecked?"Emoji2" :"EmojiNeutral")></BitToggleButton>
+
+
+        <h4>Toggle Button with aria description</h4>
+        <BitToggleButton @bind-IsChecked="TogleButtonChecked"
+                         Label="@(TogleButtonChecked?"Button checked":"Button unchecked")"
+                         IconName=@(TogleButtonChecked?"Emoji2" :"EmojiNeutral")
+                         AriaDescription="Detailed description used for screen reader."></BitToggleButton>
+
+        <h4>Toggle Button with aria hidden</h4>
+        <BitToggleButton @bind-IsChecked="TogleButtonChecked"
+                         Label="@(TogleButtonChecked?"Button checked":"Button unchecked")"
+                         IconName=@(TogleButtonChecked?"Emoji2" :"EmojiNeutral")
+                         AriaHidden="true"></BitToggleButton>
+    </div>
+
+</div>
+
+<hr />
+
+<div class="spin-button-components-container">
+    <h2>BitSpinButton </h2>
+
+    <h4># Basic SpinButton</h4>
+    <BitSpinButton @bind-Value="BasicSpinButtonValue" Min="0" Max="100" Step="1" Label="Basic SpinButton"></BitSpinButton>
+    <BitSpinButton Min="-10" Max="10" Step="0.1" Label="Decimal SpinButton"></BitSpinButton>
+    <BitSpinButton @bind-Value="BasicSpinButtonDisableValue" Min="0" Max="100" Step="1" Label="Disabled SpinButton" IsEnabled="false"></BitSpinButton>
+    <h4># SpinButton with icon</h4>
+    <BitSpinButton IconName="IncreaseIndentLegacy" Min="0" Max="100" Step="1" Label="With icon"></BitSpinButton>
+    <BitSpinButton IconName="IncreaseIndentLegacy" Min="0" Max="100" Step="1" Label="Disabled with icon" IsEnabled="false"></BitSpinButton>
+    <h4># SpinButton with suffic</h4>
+    <BitSpinButton Suffix="Inch" Min="0" Max="100" Step="1" Label="With suffix"></BitSpinButton>
+
+    <h4># SpinButton with custom handler</h4>
+    <BitSpinButton @bind-Value="SpinButtonWithCustomHandlerValue" Min="0" Max="100" Step="1" Label="With custom handler" OnChange="@(e => HandleSpinButtonValueChange(e))"></BitSpinButton>
+    <p>value of spin button is: @SpinButtonWithCustomHandlerValue</p>
+
+    <h4># SpinButton with label above</h4>
+    <BitSpinButton @bind-Value="SpinButtonWithLabelAboveValue" Suffix="cm" Min="0" Max="100" Step="1" Label="With labal above" LabelPosition="@LabelPosition.Top"></BitSpinButton>
 </div>
 
 <hr />
@@ -126,10 +220,10 @@
 <div class="links-container">
     <h3>Links</h3>
     <p>
-        When a link has an href, <BitLink Href="https://github.com/bitfoundation/bitframework" Target="_blank">it renders as an anchor tag</BitLink>.
-        Without an href, <BitLink>the link is rendered as a button</BitLink>.
+        When a link has an href, <BitLink Href="https://github.com/bitfoundation/bitframework" Target="_blank" HasUnderline="true">it renders as an anchor tag</BitLink>.
+        Without an href, <BitLink HasUnderline="true">the link is rendered as a button</BitLink>.
         You can also use the disabled attribute
-        to create a <BitLink IsEnabled="false">disabled link</BitLink>.It's not recommended to use Links with imgs because
+        to create a <BitLink Href="https://github.com/bitfoundation/bitframework" IsEnabled="false" HasUnderline="true">disabled link</BitLink>. It's not recommended to use Links with imgs because
         Links are meant to render textual inline content. Buttons are inline-block or
         in the case of imgs, block. However, it is possible to create a linked image
         button by making a button with an unstyled variant and adding the img content
@@ -177,8 +271,9 @@
     <h2>Checkboxes</h2>
     <h3>Basics</h3>
     <BitCheckbox @bind-IsChecked="IsCheckBoxChecked">Basic Checkbox</BitCheckbox>
-    <BitCheckbox IsChecked="true">Checked Checkbox</BitCheckbox>
+    <BitCheckbox IsChecked="true">Checked Checkbox (my value wont changed because im not provided with IsCheckedChanged)</BitCheckbox>
     <BitCheckbox IsEnabled="false">Disable Checkbox</BitCheckbox>
+    <BitCheckbox IsEnabled="true" OnChange="e => CheckBoxOnChangedValue = e">checkbox with only onchange </BitCheckbox> @(CheckBoxOnChangedValue ? "im checked" : "im not checked")
     <BitCheckbox IsEnabled="false" IsChecked="true">Disable Checked Checkbox</BitCheckbox>
     <br />
     <h3>Indeterminate</h3>
@@ -318,26 +413,6 @@
     <br />
     <BitButton OnClick="() => RatingOutsideValue = 0">Make Rating Empty</BitButton>
     <BitButton OnClick="() => RatingOutsideValue = 5">Make Rating Full</BitButton>
-</div>
-
-<hr />
-
-<div class="choice-container">
-    <h2>BitChoiceGroup & BitChoiceOption</h2>
-    <br />
-    <h3>Enabled</h3>
-    <BitChoiceGroup Name="Group1">
-        <BitChoiceOption Text="Option1" Value="1"></BitChoiceOption>
-        <BitChoiceOption Text="Option2" Value="2"></BitChoiceOption>
-        <BitChoiceOption Text="Disabled option" Value="3" IsEnabled="false"></BitChoiceOption>
-    </BitChoiceGroup>
-    <br />
-    <h3>Disabled</h3>
-    <BitChoiceGroup Name="Group2" IsEnabled="false">
-        <BitChoiceOption Text="Option1" Value="1"></BitChoiceOption>
-        <BitChoiceOption Text="Option2" Value="2"></BitChoiceOption>
-        <BitChoiceOption Text="Disabled option" Value="3" IsEnabled="false"></BitChoiceOption>
-    </BitChoiceGroup>
 </div>
 
 <hr />
@@ -484,6 +559,7 @@
 </div>
 
 <hr />
+
 <div class="nav-container">
     <h1>Bit Navs</h1>
     <h2>Basic nav with sample links</h2>
@@ -493,7 +569,7 @@
                    border: 1px solid #eee;
                    overflow-y: auto;"
             Class="bit-nav-simple-link"
-            NavLinks="BasicNavLinks"
+            NavLinkItems="BasicNavLinks"
             AriaLabel="Nav basic example"
             SelectedKey="key3">
     </BitNav>
@@ -508,35 +584,123 @@
             Class="bit-nav-wrapped-link"
             SelectedKey="key5"
             AriaLabel="Nav example with wrapped link text"
-            NavLinks="BasicNoToolTipNavLinks">
+            NavLinkItems="BasicNoToolTipNavLinks">
     </BitNav>
 
     <br />
     <h2>Nav similar to the one in this demo app</h2>
     <BitNav Style="width: 300px;"
-            NavLinks="BasicNoUrlNavLinks"
+            NavLinkItems="BasicNoUrlNavLinks"
             AriaLabel="Nav example similar to one found in this demo page">
     </BitNav>
 
     <br />
     <h2>Nav with nested links</h2>
-    <BitNav NavLinks="NestedLinks"
+    <BitNav NavLinkItems="NestedLinks"
             AriaLabel="Nav example with nested links">
     </BitNav>
 
     <br />
     <h2>Nav with custom group header</h2>
-    <BitNav NavLinks="CustomHeaderLinks"
+    <BitNav NavLinkItems="CustomHeaderLinks"
             AriaLabel="Nav with custom group header">
         <HeaderTemplate Context="link">
             <h3> @link.Name </h3>
         </HeaderTemplate>
     </BitNav>
 </div>
+
+<hr />
+
+<div class="basic-list-container">
+    <h2>BitList</h2>
+
+    <h3>Basic List using virtualization</h3>
+    <BitBasicList Items="people[0]" Virtualize="true" Style="border: 1px #a19f9d solid; border-radius: 3px; width: 90%; margin: auto;">
+        <RowTemplate Context="person">
+            <div style="border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;">
+                <img src="https://picsum.photos/100/100?random=@(@person.Id)">
+                <div style="margin-left:3%; display: inline-block;">
+                    <p>Id: <strong>@person.Id</strong></p>
+                    <p>Full Name: <strong>@person.FirstName @person.LastName</strong></p>
+                    <p>Job: <strong>@person.Job</strong></p>
+                </div>
+            </div>
+        </RowTemplate>
+    </BitBasicList>
+
+    <h3>Basic List without virtualization</h3>
+    <BitBasicList Items="people[1]" Virtualize="false" Style="border: 1px #a19f9d solid; border-radius: 3px; width: 90%; margin: auto;">
+        <RowTemplate Context="person">
+            <div style="border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;">
+                <p>Id: <strong>@person.Id</strong></p>
+                <p>Full Name: <strong>@person.FirstName @person.LastName</strong></p>
+                <p>Job: <strong>@person.Job</strong></p>
+            </div>
+        </RowTemplate>
+    </BitBasicList>
+
+    <h3>Basic List with custom role and class</h3>
+    <BitBasicList Items="people[0]" Virtualize="true" Role="list" Class="lst-custom-style" Style="border: 1px #a19f9d solid; border-radius: 3px; width: 90%; margin: auto;">
+        <RowTemplate Context="person">
+            <div class="lst3-list-item">
+                <span>Id: <strong>@person.Id</strong></span>
+                <span>Full Name: <strong>@person.FirstName</strong></span>
+                <span>Job: <strong>@person.Job</strong></span>
+            </div>
+        </RowTemplate>
+    </BitBasicList>
+
+    <h3>Basic List with overscan count 1 </h3>
+    <BitBasicList Items="people[0]" Virtualize="true" OverscanCount="5" ItemSize="300" Style="border: 1px #a19f9d solid; border-radius: 3px; width: 90%; margin: auto;">
+        <RowTemplate Context="person">
+            <div style="border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;">
+                <p>Id: <strong>@person.Id</strong></p>
+                <p>Full Name: <strong>@person.FirstName @person.LastName</strong></p>
+                <p>Job: <strong>@person.Job</strong></p>
+            </div>
+        </RowTemplate>
+    </BitBasicList>
+</div>
+
+<hr />
+
+<div class="choice-container">
+    <h2>BitChoiceGroup & BitChoiceOption</h2>
+    <br />
+    <h3>Enabled</h3>
+    <BitChoiceGroup Name="Group1">
+        <BitChoiceOption Text="Option1" Value="1"></BitChoiceOption>
+        <BitChoiceOption Text="Option2" Value="2"></BitChoiceOption>
+        <BitChoiceOption Text="Disabled option" Value="3" IsEnabled="false"></BitChoiceOption>
+    </BitChoiceGroup>
+    <br />
+    <h3>Disabled</h3>
+    <BitChoiceGroup Name="Group2" IsEnabled="false">
+        <BitChoiceOption Text="Option1" Value="1"></BitChoiceOption>
+        <BitChoiceOption Text="Option2" Value="2"></BitChoiceOption>
+        <BitChoiceOption Text="Disabled option" Value="3" IsEnabled="false"></BitChoiceOption>
+    </BitChoiceGroup>
+</div>
+<hr />
+<div class="drop-container">
+    <h2>BitDropDown</h2>
+    <br />
+    <h3>Single select</h3>
+    <BitDropDown Items="GetDropdownItems()" Placeholder="Select an option">
+    </BitDropDown>
+    <br />
+    <h3>Disabled</h3>
+    <BitDropDown IsEnabled="false" Items="GetDropdownItems()" Placeholder="Select an option">
+    </BitDropDown>
+    <br />
+    <h3>Multi select</h3>
+    <BitDropDown IsMultiSelect="true" Items="GetDropdownItems()" Placeholder="Select options">
+    </BitDropDown>
+</div>
 <div>
     <BitColorPicker @bind-Color="SelectedColor" ShowPreview="true" AlphaType="AlphaType.Transparency"></BitColorPicker>
 </div>
-
 
 <div>
     <BitColorPicker Color="rgb(243,33,105)" ShowPreview="false" AlphaType="AlphaType.Transparency"></BitColorPicker>

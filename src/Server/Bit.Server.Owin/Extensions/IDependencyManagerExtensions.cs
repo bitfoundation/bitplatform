@@ -5,6 +5,7 @@ using Bit.Owin.Contracts.Metadata;
 using Bit.Owin.Implementations;
 using Bit.Owin.Implementations.Metadata;
 using Bit.Owin.Middlewares;
+using Microsoft.ApplicationInsights.DependencyCollector;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
@@ -51,6 +52,13 @@ namespace Bit.Core.Contracts
         {
             if (dependencyManager == null)
                 throw new ArgumentNullException(nameof(dependencyManager));
+
+            IServiceCollection services = dependencyManager.GetServiceCollection();
+
+            services.ConfigureTelemetryModule<DependencyTrackingTelemetryModule>((module, options) =>
+            {
+                module.EnableSqlCommandTextInstrumentation = true;
+            });
 
             dependencyManager.Register<ITelemetryInitializer, BitTelemetryInitializer>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
             dependencyManager.RegisterLogStore<ApplicationInsightsLogStore>();

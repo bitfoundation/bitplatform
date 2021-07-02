@@ -1,0 +1,31 @@
+﻿@using Bit.Client.Web.BlazorUI.Components.SpinButtons
+@namespace Bit.Client.Web.BlazorUI
+@inherits BitComponentBase
+
+<div @ref="RootElement"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value">
+    <div>
+        <i class="bit-icon bit-icon--@IconName bit-icon--l"></i>
+        <label>@Label</label>
+    </div>
+
+    <div>
+        <input disabled="@(IsEnabled is false)"
+               value="@($"{Value} {Suffix}")"
+               @onchange="e => HandleOnInputChange(e)" />
+        <span>
+            <button @onclick="e => HandleButtonClick(SpinButtonAction.Up)">
+                <span>
+                    <i class="bit-icon bit-icon--ChevronUpSmall bit-icon--s"></i>
+                </span>
+            </button>
+
+            <button @onclick="e => HandleButtonClick(SpinButtonAction.Down)">
+                <span>
+                    <i class="bit-icon bit-icon--ChevronDownSmall bit-icon--s"></i>
+                </span>
+            </button>
+        </span>
+    </div>
+</div>
