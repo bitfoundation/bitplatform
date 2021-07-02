@@ -63,7 +63,7 @@ namespace {namespaceName}
             {
                 source.AppendLine($"                    case nameof({bitProperty.PropertySymbol.Name}):");
                 if (bitProperty.IsTwoWayBoundProperty)
-                    source.AppendLine($"                       {bitProperty.PropertySymbol.Name}HasBeenSet = false;");
+                    source.AppendLine($"                       {bitProperty.PropertySymbol.Name}HasBeenSet = true;");
                 source.AppendLine($"                       {bitProperty.PropertySymbol.Name} = ({bitProperty.PropertySymbol.Type.ToDisplayString()})parameter.Value;");
                 source.AppendLine("                       parametersDictionary.Remove(parameter.Key);");
                 source.AppendLine("                       break;");
