@@ -20,7 +20,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
             DataRow(Visual.Material, true, "AddFriend", true),
             DataRow(Visual.Material, false, "AddFriend", true),
         ]
-        public Task BitActionButtonTest(Visual visual, bool isEnabled, string iconName, bool expectedResult)
+        public void BitActionButtonTest(Visual visual, bool isEnabled, string iconName, bool expectedResult)
         {
             var com = RenderComponent<BitActionButtonTest>(parameters =>
             {
@@ -45,8 +45,6 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
             bitButton.Click();
 
             Assert.AreEqual(isEnabled ? 1 : 0, com.Instance.CurrentCount);
-
-            return Task.CompletedTask;
         }
 
         [DataTestMethod,
@@ -55,7 +53,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
            DataRow(false, false, true),
            DataRow(false, true, false),
        ]
-        public Task BitActionButtonDisabledFocusTest(bool isEnabled, bool allowDisabledFocus, bool expectedResult)
+        public void BitActionButtonDisabledFocusTest(bool isEnabled, bool allowDisabledFocus, bool expectedResult)
         {
             var com = RenderComponent<BitActionButtonTest>(parameters =>
             {
@@ -70,13 +68,14 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
             Assert.AreEqual(hasTabindexAttr, expectedResult);
 
             if (hasTabindexAttr)
+            {
                 Assert.IsTrue(bitButton.GetAttribute("tabindex").Equals("-1"));
+            }
 
-            return Task.CompletedTask;
         }
 
         [DataTestMethod, DataRow("Detailed description")]
-        public Task BitActionButtonAriaDescriptionTest(string ariaDescription)
+        public void BitActionButtonAriaDescriptionTest(string ariaDescription)
         {
             var com = RenderComponent<BitActionButtonTest>(parameters =>
             {
@@ -86,12 +85,10 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
             var bitButton = com.Find(".bit-act-btn");
 
             Assert.IsTrue(bitButton.GetAttribute("aria-describedby").Contains(ariaDescription));
-
-            return Task.CompletedTask;
         }
 
         [DataTestMethod, DataRow("Detailed label")]
-        public Task BitActionButtonAriaLabelTest(string ariaLabel)
+        public void BitActionButtonAriaLabelTest(string ariaLabel)
         {
             var com = RenderComponent<BitActionButtonTest>(parameters =>
             {
@@ -101,12 +98,10 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
             var bitButton = com.Find(".bit-act-btn");
 
             Assert.IsTrue(bitButton.GetAttribute("aria-label").Contains(ariaLabel));
-
-            return Task.CompletedTask;
         }
 
         [DataTestMethod, DataRow(true, true), DataRow(false, false), DataRow(null, false)]
-        public Task BitActionButtonAriaHiddenTest(bool ariaHidden, bool expectedResult)
+        public void BitActionButtonAriaHiddenTest(bool ariaHidden, bool expectedResult)
         {
             var com = RenderComponent<BitActionButtonTest>(parameters =>
             {
@@ -116,8 +111,6 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
             var bitButton = com.Find(".bit-act-btn");
 
             Assert.AreEqual(bitButton.HasAttribute("aria-hidden"), expectedResult);
-
-            return Task.CompletedTask;
         }
     }
 }

@@ -23,7 +23,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Toggles
            DataRow(Visual.Material, false, true),
            DataRow(Visual.Material, false, false),
        ]
-        public Task BitToggleTest(Visual visual, bool isEnabled, bool isChecked)
+        public void BitToggleTest(Visual visual, bool isEnabled, bool isChecked)
         {
             var com = RenderComponent<BitToggleTest>(parameters =>
             {
@@ -39,7 +39,6 @@ namespace Bit.Client.Web.BlazorUI.Tests.Toggles
             var ischeckedClass = isChecked ? "checked" : "unchecked";
 
             Assert.IsTrue(bitToggle.ClassList.Contains($"bit-tgl-{isEnabledClass}-{ischeckedClass}-{visualClass}"));
-            return Task.CompletedTask;
         }
 
         [DataTestMethod,
@@ -73,7 +72,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Toggles
             DataRow(Visual.Material, "", "Off"),
             DataRow(Visual.Material, null, "Off"),
         ]
-        public Task BitToggle_WithoutOnOffText_ShouldHaveClassName(Visual visual, string onText, string offText)
+        public void BitToggle_WithoutOnOffText_ShouldHaveClassName(Visual visual, string onText, string offText)
         {
             var com = RenderComponent<BitToggleTest>(parameters =>
             {
@@ -89,8 +88,6 @@ namespace Bit.Client.Web.BlazorUI.Tests.Toggles
             {
                 Assert.IsTrue(bitToggle.ClassList.Contains($"bit-tgl-noonoff-{visualClass}"));
             }
-
-            return Task.CompletedTask;
         }
 
         [DataTestMethod,
@@ -101,7 +98,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Toggles
           DataRow(Visual.Material, true),
           DataRow(Visual.Material, false),
         ]
-        public Task BitToggle_InlineLabrl_ShouldHaveClassName(Visual visual, bool isInlioneLabel)
+        public void BitToggle_InlineLabrl_ShouldHaveClassName(Visual visual, bool isInlioneLabel)
         {
             var com = RenderComponent<BitToggleTest>(parameters =>
             {
@@ -116,8 +113,6 @@ namespace Bit.Client.Web.BlazorUI.Tests.Toggles
             {
                 Assert.IsTrue(bitToggle.ClassList.Contains($"bit-tgl-inline-{visualClass}"));
             }
-
-            return Task.CompletedTask;
         }
     }
 }
