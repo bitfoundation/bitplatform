@@ -8,6 +8,10 @@ using Bit.Tests.Model.Dto;
 using Bit.ViewModel;
 using Bit.ViewModel.Implementations;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
+using Prism.Navigation;
+using Prism.Regions;
+using Prism.Regions.Navigation;
 using Refit;
 using Simple.OData.Client;
 using System;
@@ -49,6 +53,8 @@ namespace Bit.CSharpClientSample.ViewModels
         public BitDelegateCommand OpenConsoleCommand { get; set; }
         public BitDelegateCommand GoToSampleCommand { get; set; }
 
+        public BitDelegateCommand RefreshPageCommand { get; set; }
+
         public MainViewModel()
         {
             SyncCommand = new BitDelegateCommand(Sync);
@@ -61,6 +67,7 @@ namespace Bit.CSharpClientSample.ViewModels
             ShowPopupCommand = new BitDelegateCommand(ShowPopup);
             OpenConsoleCommand = new BitDelegateCommand(OpenConsole);
             GoToSampleCommand = new BitDelegateCommand(GoToSample);
+            RefreshPageCommand = new BitDelegateCommand(RefreshPage);
         }
 
         async Task OpenConsole()
@@ -71,6 +78,11 @@ namespace Bit.CSharpClientSample.ViewModels
         async Task GoToSample()
         {
             await NavigationService.NavigateAsync("Sample");
+        }
+
+        async Task RefreshPage()
+        {
+            await NavigationService.NavigateAsync("/Nav/Main");
         }
 
         async Task Sync()
@@ -251,6 +263,25 @@ namespace Bit.CSharpClientSample.ViewModels
         async Task ShowPopup()
         {
             await NavigationService.NavigateAsync("Test", ("Test", "Test"));
+        }
+
+        public async override Task OnNavigatedToAsync(INavigationParameters parameters)
+        {
+            await base.OnNavigatedToAsync(parameters);
+
+            if (parameters.GetNavigationMode() == NavigationMode.New)
+            {
+                await RegionManager.NavigateAsync("ContentRegion1", "RegionA", parameters, ("Parameter1", 1));
+                await RegionManager.NavigateAsync("ContentRegion2", "RegionC", parameters, ("Parameter1", 1));
+            }
+        }
+
+        public async override Task OnDestroyAsync()
+        {
+            RegionManager.DestroyRegion("ContentRegion1");
+            RegionManager.DestroyRegion("ContentRegion2");
+
+            await base.OnDestroyAsync();
         }
     }
 }

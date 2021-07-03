@@ -2,7 +2,7 @@
 
 namespace Bit.Client.Web.BlazorUI
 {
-    public class NavLink
+    public class BitNavLinkItem
     {
         public string? Key { get; set; }
 
@@ -22,7 +22,7 @@ namespace Bit.Client.Web.BlazorUI
 
         public string? Target { get; set; }
 
-        public IEnumerable<NavLink>? Links { get; set; }
+        public IEnumerable<BitNavLinkItem>? Links { get; set; }
 
         internal int Depth { get; set; }
     }

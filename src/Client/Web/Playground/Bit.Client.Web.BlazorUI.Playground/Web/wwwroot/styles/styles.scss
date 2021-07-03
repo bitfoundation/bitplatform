@@ -34,6 +34,7 @@ p {
 }
 
 .navbar {
+    z-index: 9999;
     height: 80px;
     overflow: hidden;
     background-color: $DarkBlue;
@@ -117,10 +118,6 @@ p {
     background-color: $LightGray;
 }
 
-.m-t-15 {
-    margin-top: 20px;
-}
-
 .dark-green {
     font-weight: bold;
     color: $DarkGreen;
@@ -136,10 +133,26 @@ p {
     color: $LightBlue;
 }
 
+.light-yellow-bg {
+    background-color: $LightYellow;
+}
+
+.m-t-15 {
+    margin-top: 20px;
+}
+
 .m-t-10 {
     margin-top: 10px;
 }
 
+.p-l-20 {
+    padding-left: 20px;
+}
+
+.link {
+    color: $LightBlue;
+    text-decoration: underline;
+}
 .custom-button {
     background-color: $DarkRed;
     border-color: $DarkRed;
