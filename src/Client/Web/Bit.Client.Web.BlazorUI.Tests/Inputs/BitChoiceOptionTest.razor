@@ -1,6 +1,9 @@
 ﻿<CascadingValue Value="Visual">
     <BitChoiceOption Value="@Value"
                      IsEnabled="@IsEnabled"
+                     Text="@Text"
+                     Name="@Name"
+                     IsChecked="IsChecked"
                      OnClick="ClickEvent"
                      OnChange="ChangeEvent">
     </BitChoiceOption>
@@ -10,6 +13,10 @@
     [Parameter] public Visual Visual { get; set; }
     [Parameter] public string Value { get; set; }
     [Parameter] public bool IsEnabled { get; set; }
+    [Parameter] public string? Text { get; set; }
+    [Parameter] public string? Name { get; set; }
+    [Parameter] public bool IsChecked { get; set; }
+
     public void ChangeEvent(ChangeEventArgs e)
     {
         IncrementCount();
