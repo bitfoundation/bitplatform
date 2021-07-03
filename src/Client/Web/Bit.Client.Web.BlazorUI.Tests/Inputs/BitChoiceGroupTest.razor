@@ -1,10 +1,14 @@
-﻿<BitChoiceGroup Name="@Name" IsEnabled="@IsEnabled" OnValueChange="ValueChangeEvent">
-    <BitChoiceOption OnClick="ClickEvent" Value="@Value"></BitChoiceOption>
-</BitChoiceGroup>
+﻿<CascadingValue Value="Visual">
+    <BitChoiceGroup Name="@Name" IsEnabled="@IsEnabled" OnValueChange="ValueChangeEvent">
+        <BitChoiceOption OnClick="ClickEvent" Value="@Value"></BitChoiceOption>
+    </BitChoiceGroup>
+</CascadingValue>
+
 @code {
+    [Parameter] public Visual Visual { get; set; }
     [Parameter] public bool IsEnabled { get; set; }
     [Parameter] public string Name { get; set; }
-    [Parameter]public string Value { get; set; } = "0";
+    [Parameter] public string Value { get; set; } = "0";
     public void ClickEvent(MouseEventArgs e)
     {
         IncrementCount();
