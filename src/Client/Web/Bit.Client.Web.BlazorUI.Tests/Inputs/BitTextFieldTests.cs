@@ -102,9 +102,9 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
 
             var bitTextField = component.Find(".bit-txt");
 
-            Assert.IsTrue(bitTextField.HasAttribute("placeholder"));
+            Assert.IsTrue(bitTextField.FirstElementChild.HasAttribute("placeholder"));
 
-            Assert.AreEqual(bitTextField.GetAttribute("maxlength"), placeholder);
+            Assert.AreEqual(bitTextField.FirstElementChild.GetAttribute("placeholder"), placeholder);
         }
 
         [DataTestMethod,
@@ -122,7 +122,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
 
             var bitTextField = component.Find(".bit-txt");
 
-            Assert.IsTrue(bitTextField.FirstElementChild.HasAttribute("readonly"));
+            Assert.IsTrue(bitTextField.FirstElementChild.HasAttribute("readonly"));            
         }
 
         [DataTestMethod,
