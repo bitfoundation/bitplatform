@@ -4,13 +4,13 @@
     $color: $Grey120;
 
     @if $class=="uploaded" {
-        $color: $green120;
+        $color: $Green120;
     }
     @else if $class=="paused" {
         $color: $Primary;
     }
     @else if $class=="failed" {
-        $color: $red180;
+        $color: $Red20;
     }
 
     border: 1px solid $color;

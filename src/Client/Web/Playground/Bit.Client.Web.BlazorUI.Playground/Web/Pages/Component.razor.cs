@@ -25,7 +25,6 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
         private readonly Uri UploadUrl = new("https://localhost:5001/FileUpload/UploadStreamedFile");
         private readonly Uri RemoveUrl = new("https://localhost:5001/FileUpload/RemoveFile");
 
-        private readonly List<NavLink> BasicNavLinks = new()
         private double BasicSpinButtonValue = 5;
         private double BasicSpinButtonDisableValue = 20;
         private double SpinButtonWithCustomHandlerValue = 14;
