@@ -60,7 +60,7 @@ class BitFileUpload {
             return;
         }
 
-        this.request.upload.onprogress = function (e) {
+        this.request.upload.onprogress = function (e: ProgressEvent) {
             dotnetReference.invokeMethodAsync("BitHandleUploadProgress", index, e.loaded);
         };
 

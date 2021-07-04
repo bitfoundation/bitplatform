@@ -102,7 +102,6 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public long MaxSize { get; set; }
         [Parameter] public string MaxSizeMessage { get; set; } = "File size is too large";
 
-
         /// <summary>
         /// Select file(s) by brows button or drag and drop.
         /// </summary>
@@ -275,8 +274,15 @@ namespace Bit.Client.Web.BlazorUI
         {
             if (Files is null || RemoveUrl is null) return;
             var uri = new Uri($"{RemoveUrl.AbsoluteUri}?fileName={Files[index].Name}");
-
-            _ = await client.GetAsync(uri);
+            try
+            {
+                _ = await client.GetAsync(uri);
+            }
+            catch (Exception ex) when (ex.HResult == -2147467259)
+            {
+                //No connection could be made because the target machine actively refused it.
+                Console.WriteLine($"RemoveOneFileAsync|index:{index}|exception:{ex.Message}");
+            }
         }
 
         /// <summary>
@@ -337,7 +343,7 @@ namespace Bit.Client.Web.BlazorUI
             }
             else
             {
-                if (Files[index].UploadStatus == uploadStatus || Files[index].UploadStatus == UploadStatus.Unaccepted) return;
+                if (Files[index].UploadStatus == uploadStatus) return;
                 Files[index].UploadStatus = uploadStatus;
             }
         }
