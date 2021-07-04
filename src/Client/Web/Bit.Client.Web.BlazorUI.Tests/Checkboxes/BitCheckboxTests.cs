@@ -74,8 +74,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Checkboxes
 
             var bitCheckbox = com.Find(".bit-chb > input");
 
-            Assert.IsTrue(bitCheckbox.GetAttribute("aria-label").Contains(ariaLabel));
-
+            Assert.IsTrue(bitCheckbox.GetAttribute("aria-label").Equals(ariaLabel));
             return Task.CompletedTask;
         }
     }

@@ -61,8 +61,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.SearchBoxes
 
             var bitSearchBox = com.Find(".search-input");
 
-            Assert.IsTrue(bitSearchBox.GetAttribute("aria-label").Contains(ariaLabel));
-
+            Assert.IsTrue(bitSearchBox.GetAttribute("aria-label").Equals(ariaLabel));
             return Task.CompletedTask;
         }
     }

@@ -128,10 +128,9 @@ namespace Bit.Client.Web.BlazorUI.Tests.Toggles
                 parameters.Add(p => p.AriaLabel, ariaLabel);
             });
 
-            var bitToggle = com.Find(".bit-tgl  button");
+            var bitToggle = com.Find(".bit-tgl button");
 
-            Assert.IsTrue(bitToggle.GetAttribute("aria-label").Contains(ariaLabel));
-
+            Assert.IsTrue(bitToggle.GetAttribute("aria-label").Equals(ariaLabel));
             return Task.CompletedTask;
         }
     }

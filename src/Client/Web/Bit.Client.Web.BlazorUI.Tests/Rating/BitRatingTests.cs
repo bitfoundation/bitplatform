@@ -152,10 +152,12 @@ namespace Bit.Client.Web.BlazorUI.Tests.Rating
                 parameters.Add(p => p.AriaLabel, ariaLabel);
             });
 
-            var bitRating = com.Find(".bit-rating, .bit-rating button");
+            var bitRatings = com.FindAll(".bit-rating, .bit-rating button");
 
-            Assert.IsTrue(bitRating.GetAttribute("aria-label").Contains(ariaLabel));
-
+            foreach (var bitRating in bitRatings)
+            {
+                Assert.IsTrue(bitRating.GetAttribute("aria-label").Equals(ariaLabel));
+            }
             return Task.CompletedTask;
         }
     }

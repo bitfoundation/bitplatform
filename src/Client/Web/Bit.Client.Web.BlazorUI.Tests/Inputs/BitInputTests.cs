@@ -110,8 +110,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
 
             var bitTextField = com.Find(".bit-txt > input, .bit-txt > textarea");
 
-            Assert.IsTrue(bitTextField.GetAttribute("aria-label").Contains(ariaLabel));
-
+            Assert.IsTrue(bitTextField.GetAttribute("aria-label").Equals(ariaLabel));
             return Task.CompletedTask;
         }
     }

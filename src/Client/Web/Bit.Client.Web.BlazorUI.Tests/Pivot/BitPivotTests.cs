@@ -71,8 +71,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Pivot
 
             var bitPivot = com.Find(".bit-pvt-itm");
 
-            Assert.IsTrue(bitPivot.GetAttribute("aria-label").Contains(ariaLabel));
-
+            Assert.IsTrue(bitPivot.GetAttribute("aria-label").Equals(ariaLabel));
             return Task.CompletedTask;
         }
     }
