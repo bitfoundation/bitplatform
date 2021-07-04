@@ -19,7 +19,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                 parameters =>
                 {
                     parameters.Add(p => p.IsEnabled, isEnabled);
-                    parameters.Add(p => p.InputType, type);
+                    parameters.Add(p => p.Type, type);
                     parameters.Add(p => p.IsReadOnly, isReadonly);
                 });
 
@@ -49,7 +49,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                 {
                     parameters.Add(p => p.IsMultiLine, true);
                     parameters.Add(p => p.IsEnabled, isEnabled);
-                    parameters.Add(p => p.InputType, type);
+                    parameters.Add(p => p.Type, type);
                     parameters.Add(p => p.IsReadOnly, isReadonly);
                 });
             var bitTextField = type == TextFieldType.Text ? com.Find("textarea") : com.Find("input");

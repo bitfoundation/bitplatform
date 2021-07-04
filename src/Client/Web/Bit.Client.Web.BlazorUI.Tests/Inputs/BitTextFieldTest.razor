@@ -1,20 +1,34 @@
-﻿<BitTextField IsMultiLine="IsMultiLine" Type="InputType" Placeholder="Placeholder" IsReadonly="IsReadOnly" IsEnabled="IsEnabled" Value="Value"
-              OnClick="ClickEvent" OnChange="ChangeEvent" OnFocus="FocusEvent" OnFocusIn="FocusEvent" OnFocusOut="FocusEvent"
-              OnKeyDown="KeyEvent" OnKeyUp="KeyEvent">
-    <BitButton ButtonStyle="@ButtonStyle.Standard">
-    </BitButton>
-    <label>
-        @Value
-    </label>
-</BitTextField>
-@code {
+﻿<CascadingValue Value="Visual">
+    <BitTextField MaxLength="MaxLength"
+                  IsMultiLine="IsMultiLine"
+                  Type="Type"
+                  Placeholder="@Placeholder"
+                  IsReadonly="IsReadOnly"
+                  IsEnabled="IsEnabled"
+                  IconName="@IconName"
+                  Value="@Value"
+                  CanRevealPassword="CanRevealPassword"
+                  OnClick="ClickEvent"
+                  OnChange="ChangeEvent"
+                  OnFocus="FocusEvent"
+                  OnFocusIn="FocusEvent"
+                  OnFocusOut="FocusEvent"
+                  OnKeyDown="KeyEvent"
+                  OnKeyUp="KeyEvent">
+    </BitTextField>
+</CascadingValue>
 
+@code {
+    [Parameter] public int MaxLength { get; set; } = -1;
+    [Parameter] public string? IconName { get; set; }
+    [Parameter] public Visual Visual { get; set; }
     [Parameter] public bool IsMultiLine { get; set; } = false;
     [Parameter] public bool IsEnabled { get; set; }
     [Parameter] public bool IsReadOnly { get; set; }
     [Parameter] public string Placeholder { get; set; }
     [Parameter] public string Value { get; set; }
-    [Parameter] public TextFieldType InputType { get; set; }
+    [Parameter] public bool CanRevealPassword { get; set; }
+    [Parameter] public TextFieldType Type { get; set; }
 
     public void KeyEvent(KeyboardEventArgs e)
     {
