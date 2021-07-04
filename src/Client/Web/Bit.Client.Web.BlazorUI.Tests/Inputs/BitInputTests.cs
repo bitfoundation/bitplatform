@@ -22,7 +22,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
             bitChoiceOptionInput.Change(count);
             bitChoiceOptionInput.Click();
             Assert.IsTrue(bitChoiceOptionInput.ParentElement.ClassList.Contains($"bit-cho-{enabledClass}-fluent"));
-            Assert.AreEqual(count, com.Instance.CurrentCount);
+            Assert.AreEqual(count, com.Instance.Count1);
         }
 
         [DataTestMethod, DataRow(true, 2, "enabled"),

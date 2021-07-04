@@ -17,18 +17,14 @@
     [Parameter] public string? Name { get; set; }
     [Parameter] public bool IsChecked { get; set; }
 
-    public void ChangeEvent(ChangeEventArgs e)
-    {
-        IncrementCount();
-    }
+    public int Count1 { get; set; }
+    public int Count2 { get; set; }
     public void ClickEvent(MouseEventArgs e)
     {
-        IncrementCount();
+        Count1++;
     }
-    public int CurrentCount { get; set; }
-    public void IncrementCount()
+    public void ChangeEvent(ChangeEventArgs e)
     {
-        CurrentCount++;
-        Value = CurrentCount.ToString();
+        Count2++;
     }
 }

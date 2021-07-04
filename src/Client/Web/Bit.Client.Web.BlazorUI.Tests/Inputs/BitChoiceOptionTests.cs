@@ -95,5 +95,43 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
             Assert.AreEqual(isChecked, bitChoiceOptionInput.HasAttribute("checked"));
 
         }
+
+        [DataTestMethod,
+           DataRow(true),
+           DataRow(false),
+        ]
+        public void BitChoiceOptionMustRespondToTheClickEvent(bool isEnabled)
+        {
+            var component = RenderComponent<BitChoiceOptionTest>(
+                parameters =>
+                {
+                    parameters.Add(p => p.IsEnabled, isEnabled);
+                });
+
+            var bitChoiceOptionInput = component.Find(".bit-cho input");
+
+            bitChoiceOptionInput.Click();
+
+            Assert.AreEqual(isEnabled ? 1 : 0, component.Instance.Count1);
+        }
+
+        [DataTestMethod,
+           DataRow(true,2),
+           DataRow(false,2),
+        ]
+        public void BitChoiceOptionMustRespondToTheChangeEvent(bool isEnabled,int count)
+        {
+            var component = RenderComponent<BitChoiceOptionTest>(
+                parameters =>
+                {
+                    parameters.Add(p => p.IsEnabled, isEnabled);                    
+                });
+
+            var bitChoiceOptionInput = component.Find(".bit-cho input");
+
+            bitChoiceOptionInput.Change(count);
+
+            Assert.AreEqual(isEnabled ? 1 : 0, component.Instance.Count2);
+        }
     }
 }
