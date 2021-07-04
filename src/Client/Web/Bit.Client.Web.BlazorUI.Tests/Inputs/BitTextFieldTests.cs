@@ -81,10 +81,10 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                     parameters.Add(p => p.IsMultiLine, isMultiLine);
                 });
 
-            var bitTextField = component.Find(".bit-txt");
+            var bitTextField = isMultiLine ? component.Find(".bit-txt textarea") : component.Find(".bit-txt input");
 
-            Assert.IsTrue(bitTextField.FirstElementChild.HasAttribute("maxlength"));
-            Assert.AreEqual(bitTextField.FirstElementChild.GetAttribute("maxlength"), maxLength.ToString());
+            Assert.IsTrue(bitTextField.HasAttribute("maxlength"));
+            Assert.AreEqual(bitTextField.GetAttribute("maxlength"), maxLength.ToString());
         }
 
         [DataTestMethod,
@@ -100,11 +100,11 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                     parameters.Add(p => p.IsMultiLine, isMultiLine);
                 });
 
-            var bitTextField = component.Find(".bit-txt");
+            var bitTextField = isMultiLine ? component.Find(".bit-txt textarea") : component.Find(".bit-txt input");
 
-            Assert.IsTrue(bitTextField.FirstElementChild.HasAttribute("placeholder"));
+            Assert.IsTrue(bitTextField.HasAttribute("placeholder"));
 
-            Assert.AreEqual(bitTextField.FirstElementChild.GetAttribute("placeholder"), placeholder);
+            Assert.AreEqual(bitTextField.GetAttribute("placeholder"), placeholder);
         }
 
         [DataTestMethod,
@@ -120,9 +120,9 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                     parameters.Add(p => p.IsReadOnly, true);
                 });
 
-            var bitTextField = component.Find(".bit-txt");
+            var bitTextField = isMultiLine ? component.Find(".bit-txt textarea") : component.Find(".bit-txt input");
 
-            Assert.IsTrue(bitTextField.FirstElementChild.HasAttribute("readonly"));            
+            Assert.IsTrue(bitTextField.HasAttribute("readonly"));
         }
 
         [DataTestMethod,
@@ -168,6 +168,100 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
 
             Assert.AreEqual("Text", bitTextField.FirstElementChild.GetAttribute("type"));
             Assert.IsTrue(bitTextFieldRevealPassword.FirstElementChild.ClassList.Contains($"bit-icon--Hide"));
+        }
+
+        [DataTestMethod,
+            DataRow(true, false),
+            DataRow(true, true),
+            DataRow(false, false),
+            DataRow(false, true),
+        ]
+        public void BitTextFieldMustRespondToTheClickEvent(bool isEnabled, bool isMultiLine)
+        {
+            var component = RenderComponent<BitTextFieldTest>(
+                parameters =>
+                {
+                    parameters.Add(p => p.IsEnabled, isEnabled);
+                    parameters.Add(p => p.IsMultiLine, isMultiLine);
+                });
+
+            var bitTextField = isMultiLine ? component.Find(".bit-txt textarea") : component.Find(".bit-txt input");
+
+            bitTextField.Click();
+
+            Assert.AreEqual(isEnabled ? 1 : 0, component.Instance.CurrentCount);
+        }
+
+        [DataTestMethod,
+            DataRow(true, false),
+            DataRow(true, true),
+            DataRow(false, false),
+            DataRow(false, true),
+        ]
+        public void BitTextFieldMustRespondToTheFocusEvent(bool isEnabled, bool isMultiLine)
+        {
+            var component = RenderComponent<BitTextFieldTest>(
+                parameters =>
+                {
+                    parameters.Add(p => p.IsEnabled, isEnabled);
+                    parameters.Add(p => p.IsMultiLine, isMultiLine);
+                });
+
+            var bitTextField = isMultiLine ? component.Find(".bit-txt textarea") : component.Find(".bit-txt input");
+
+            bitTextField.Focus();
+            Assert.AreEqual(isEnabled ? 1 : 0, component.Instance.CurrentCount);
+
+            bitTextField.FocusIn();
+            Assert.AreEqual(isEnabled ? 2 : 0, component.Instance.CurrentCount);
+
+            bitTextField.FocusOut();
+            Assert.AreEqual(isEnabled ? 3 : 0, component.Instance.CurrentCount);
+        }
+
+        [DataTestMethod,
+            DataRow(true, false),
+            DataRow(true, true),
+            DataRow(false, false),
+            DataRow(false, true),
+        ]
+        public void BitTextFieldMustRespondToTheKeyEvent(bool isEnabled, bool isMultiLine)
+        {
+            var component = RenderComponent<BitTextFieldTest>(
+                parameters =>
+                {
+                    parameters.Add(p => p.IsEnabled, isEnabled);
+                    parameters.Add(p => p.IsMultiLine, isMultiLine);
+                });
+
+            var bitTextField = isMultiLine ? component.Find(".bit-txt textarea") : component.Find(".bit-txt input");
+
+            bitTextField.KeyDown("down");
+            Assert.AreEqual(isEnabled ? 1 : 0, component.Instance.CurrentCount);
+
+            bitTextField.KeyUp("up");
+            Assert.AreEqual(isEnabled ? 2 : 0, component.Instance.CurrentCount);
+        }
+
+        [DataTestMethod,
+           DataRow(true, false),
+           DataRow(true, true),
+           DataRow(false, false),
+           DataRow(false, true),
+       ]
+        public void BitTextFieldMustRespondToTheChangeEvent(bool isEnabled, bool isMultiLine)
+        {
+            var component = RenderComponent<BitTextFieldTest>(
+                parameters =>
+                {
+                    parameters.Add(p => p.IsEnabled, isEnabled);
+                    parameters.Add(p => p.IsMultiLine, isMultiLine);
+                });
+
+            var bitTextField = isMultiLine ? component.Find(".bit-txt textarea") : component.Find(".bit-txt input");
+
+            bitTextField.Change("change");
+            Assert.AreEqual(isEnabled ? 1 : 0, component.Instance.CurrentCount);
         }
     }
 }
