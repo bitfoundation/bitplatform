@@ -1,4 +1,5 @@
-﻿using Bunit;
+﻿using System.Threading.Tasks;
+using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.Client.Web.BlazorUI.Tests.Checkboxes
@@ -61,6 +62,20 @@ namespace Bit.Client.Web.BlazorUI.Tests.Checkboxes
 
             var bitCheckboxContainer = component.Find(".bit-chb-fluent");
             Assert.AreEqual(afterClickHasCheckedClass, bitCheckboxContainer.ClassList.Contains("bit-chb-checked-fluent"));
+        }
+
+        [DataTestMethod, DataRow("Detailed label")]
+        public Task BitCheckboxAriaLabelTest(string ariaLabel)
+        {
+            var com = RenderComponent<BitCheckboxTest>(parameters =>
+            {
+                parameters.Add(p => p.AriaLabel, ariaLabel);
+            });
+
+            var bitCheckbox = com.Find(".bit-chb > input");
+
+            Assert.IsTrue(bitCheckbox.GetAttribute("aria-label").Equals(ariaLabel));
+            return Task.CompletedTask;
         }
     }
 }

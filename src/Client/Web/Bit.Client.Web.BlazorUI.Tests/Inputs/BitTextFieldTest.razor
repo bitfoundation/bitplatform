@@ -1,6 +1,17 @@
-﻿<BitTextField IsMultiLine="IsMultiLine" Type="InputType" Placeholder="Placeholder" IsReadonly="IsReadOnly" IsEnabled="IsEnabled" Value="Value"
-              OnClick="ClickEvent" OnChange="ChangeEvent" OnFocus="FocusEvent" OnFocusIn="FocusEvent" OnFocusOut="FocusEvent"
-              OnKeyDown="KeyEvent" OnKeyUp="KeyEvent">
+﻿<BitTextField IsMultiLine="IsMultiLine" 
+              Type="InputType" 
+              Placeholder="Placeholder" 
+              IsReadonly="IsReadOnly" 
+              IsEnabled="IsEnabled" 
+              Value="Value"
+              OnClick="ClickEvent" 
+              OnChange="ChangeEvent" 
+              OnFocus="FocusEvent" 
+              OnFocusIn="FocusEvent" 
+              OnFocusOut="FocusEvent"
+              OnKeyDown="KeyEvent" 
+              OnKeyUp="KeyEvent"
+              AriaLabel="@AriaLabel">
     <BitButton ButtonStyle="@ButtonStyle.Standard">
     </BitButton>
     <label>
@@ -15,6 +26,7 @@
     [Parameter] public string Placeholder { get; set; }
     [Parameter] public string Value { get; set; }
     [Parameter] public TextFieldType InputType { get; set; }
+    [Parameter] public string AriaLabel { get; set; }
 
     public void KeyEvent(KeyboardEventArgs e)
     {

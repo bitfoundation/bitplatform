@@ -26,11 +26,6 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public bool AriaHidden { get; set; }
 
         /// <summary>
-        /// The aria label of the button for the benefit of screen readers
-        /// </summary>
-        [Parameter] public string? AriaLabel { get; set; }
-
-        /// <summary>
         /// URL the link points to, if provided, button renders as an anchor
         /// </summary>
         [Parameter] public string? Href { get; set; }

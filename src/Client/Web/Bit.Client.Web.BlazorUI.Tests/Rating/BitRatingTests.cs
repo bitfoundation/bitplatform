@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Threading.Tasks;
+using System.Linq;
 using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -142,6 +143,23 @@ namespace Bit.Client.Web.BlazorUI.Tests.Rating
             //TODO: bypassed - BUnit 2-way bound parameters issue
             //Assert.AreEqual(filledBitRatingIconCount, expectedResult);
             //Assert.AreEqual(unselectedBitRatingIconCount, (max - expectedResult));
+        }
+
+        [DataTestMethod, DataRow("Detailed label")]
+        public Task BitRatingAriaLabelTest(string ariaLabel)
+        {
+            var com = RenderComponent<BitRatingTest>(parameters =>
+            {
+                parameters.Add(p => p.AriaLabel, ariaLabel);
+            });
+
+            var bitRatings = com.FindAll(".bit-rating, .bit-rating button");
+
+            foreach (var bitRating in bitRatings)
+            {
+                Assert.IsTrue(bitRating.GetAttribute("aria-label").Equals(ariaLabel));
+            }
+            return Task.CompletedTask;
         }
     }
 }

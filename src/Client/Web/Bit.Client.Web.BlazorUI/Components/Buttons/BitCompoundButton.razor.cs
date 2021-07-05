@@ -26,11 +26,6 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public bool AriaHidden { get; set; }
 
         /// <summary>
-        /// The aria label of the compound button for the benefit of screen readers
-        /// </summary>
-        [Parameter] public string? AriaLabel { get; set; }
-
-        /// <summary>
         /// The text of compound button
         /// </summary>
         [Parameter] public string? Text { get; set; }

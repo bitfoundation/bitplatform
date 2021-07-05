@@ -60,5 +60,19 @@ namespace Bit.Client.Web.BlazorUI.Tests.Pivot
             //TODO: bypassed - BUnit 2-way bound parameters issue
             //Assert.AreEqual(component.FindAll(".bit-pvt > div:first-child > div")[1].ClassList.Contains("selected-item"), expectedResult);
         }
+
+        [DataTestMethod, DataRow("Detailed label")]
+        public Task BitPivotAriaLabelTest(string ariaLabel)
+        {
+            var com = RenderComponent<BitPivotTest>(parameters =>
+            {
+                parameters.Add(p => p.AriaLabel, ariaLabel);
+            });
+
+            var bitPivot = com.Find(".bit-pvt-itm");
+
+            Assert.IsTrue(bitPivot.GetAttribute("aria-label").Equals(ariaLabel));
+            return Task.CompletedTask;
+        }
     }
 }

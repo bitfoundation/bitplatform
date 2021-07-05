@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Threading.Tasks;
+using System.Collections.Generic;
 using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -142,6 +143,68 @@ namespace Bit.Client.Web.BlazorUI.Tests.Navs
             var element = com.Find($".bit-nav-{hasIconClass}-{visualClass}");
 
             Assert.IsNotNull(element);
+        }
+
+        [DataTestMethod, DataRow("Detailed label")]
+        public Task BitNavAriaLabelTest(string ariaLabel)
+        {
+            var com = RenderComponent<BitNavTest>(parameters =>
+            {
+                parameters.Add(p => p.AriaLabel, ariaLabel);
+            });
+
+            var bitNav = com.Find(".bit-nav");
+
+            Assert.IsTrue(bitNav.GetAttribute("aria-label").Equals(ariaLabel));
+            return Task.CompletedTask;
+        }
+
+        [DataTestMethod, DataRow("Detailed label")]
+        public Task BitNavLinkItemsAriaLabelTest(string ariaLabel)
+        {
+            var navLinkItems = new List<BitNavLinkItem> {
+              new BitNavLinkItem {
+                Name = "Activity",
+                Key = "key1-1",
+                Links = new List < BitNavLinkItem > {
+                  new BitNavLinkItem {
+                    Name = "Activity",
+                    Key = "key1-1-1"
+                  },
+                  new BitNavLinkItem {
+                    Name = "MSN",
+                    Key = "key1-1-2"
+                  }
+                }
+              },
+              new BitNavLinkItem {
+                Name = "MSN",
+                Key = "key1-2",
+                Links = new List < BitNavLinkItem > {
+                  new BitNavLinkItem {
+                    Name = "Activity",
+                    Key = "key1-2-1"
+                  },
+                  new BitNavLinkItem {
+                    Name = "MSN",
+                    Key = "key1-2-2"
+                  }
+                }
+              }
+            };
+            var com = RenderComponent<BitNavTest>(parameters =>
+            {
+                parameters.Add(p => p.NavLinkItems, navLinkItems);
+                parameters.Add(p => p.AriaLabel, ariaLabel);
+            });
+
+            var bitNavLinksItems = com.FindAll(".bit-nav button");
+
+            foreach (var bitNavLinksItem in bitNavLinksItems)
+            {
+                Assert.IsTrue(bitNavLinksItem.GetAttribute("aria-label").Equals(ariaLabel));
+            }
+            return Task.CompletedTask;
         }
     }
 }

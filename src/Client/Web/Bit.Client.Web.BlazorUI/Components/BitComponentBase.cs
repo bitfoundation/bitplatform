@@ -130,6 +130,8 @@ namespace Bit.Client.Web.BlazorUI
             return base.SetParametersAsync(ParameterView.Empty);
         }
 
+        [Parameter] public string? AriaLabel { get; set; }
+
         protected override void OnInitialized()
         {
             RegisterComponentStyles();
