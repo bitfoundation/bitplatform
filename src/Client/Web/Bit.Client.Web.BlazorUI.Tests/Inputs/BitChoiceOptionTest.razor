@@ -1,24 +1,29 @@
-﻿<BitChoiceOption 
-    Value="@Value"
-    IsEnabled="@IsEnabled"
-    OnClick="ClickEvent" 
-    OnChange="ChangeEvent">
-</BitChoiceOption>
+﻿<CascadingValue Value="Visual">
+    <BitChoiceOption Value="@Value"
+                     IsEnabled="@IsEnabled"
+                     Text="@Text"
+                     Name="@Name"
+                     IsChecked="IsChecked"
+                     OnClick="ClickEvent"
+                     OnChange="ChangeEvent">
+    </BitChoiceOption>
+</CascadingValue>
 @code {
+    [Parameter] public Visual Visual { get; set; }
     [Parameter] public string Value { get; set; }
     [Parameter] public bool IsEnabled { get; set; }
-    public void ChangeEvent(ChangeEventArgs e)
-    {
-        IncrementCount();
-    }
+    [Parameter] public string? Text { get; set; }
+    [Parameter] public string? Name { get; set; }
+    [Parameter] public bool IsChecked { get; set; }
+
+    public int Count1 { get; set; }
+    public int Count2 { get; set; }
     public void ClickEvent(MouseEventArgs e)
     {
-        IncrementCount();
+        Count1++;
     }
-    public int CurrentCount { get; set; }
-    public void IncrementCount()
+    public void ChangeEvent(ChangeEventArgs e)
     {
-        CurrentCount++;
-        Value = CurrentCount.ToString();
+        Count2++;
     }
 }
