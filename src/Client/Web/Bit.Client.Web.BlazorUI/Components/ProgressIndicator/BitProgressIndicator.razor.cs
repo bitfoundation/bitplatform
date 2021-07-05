@@ -9,6 +9,8 @@ namespace Bit.Client.Web.BlazorUI
 {
     public partial class BitProgressIndicator
     {
+        private bool PercentCompleteHasBeenSet;
+        private bool DescriptionHasBeenSet;
         private double percentComplete;
         private string description = string.Empty;
         private string ProgressTrackerWidth => PercentCompleteChanged.HasDelegate
