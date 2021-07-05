@@ -13,10 +13,8 @@ namespace Bit.Client.Web.BlazorUI
         private bool DescriptionHasBeenSet;
         private double percentComplete;
         private string description = string.Empty;
-        private string ProgressTrackerWidth => PercentCompleteChanged.HasDelegate
-            ? $"width: {percentComplete}%"
-            : string.Empty;
         [Parameter] public string Label { get; set; } = string.Empty;
+
         [Parameter]
         public double PercentComplete
         {
@@ -28,6 +26,7 @@ namespace Bit.Client.Web.BlazorUI
                 _ = PercentCompleteChanged.InvokeAsync(value);
             }
         }
+
         [Parameter]
         public string Description
         {
@@ -50,5 +49,7 @@ namespace Bit.Client.Web.BlazorUI
                                                 : $"{RootElementClass}-indeterminate-{VisualClassRegistrar()}");
         }
         private static double Normalize(double value) => value > 100 ? 100 : value < 0 ? 0 : value;
+        private string ProgressTrackerWidth => PercentCompleteChanged.HasDelegate
+            ? $"width: {percentComplete}%" : string.Empty;
     }
 }

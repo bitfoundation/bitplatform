@@ -22,7 +22,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.ProgressIndicator
             var piTracker = component.Find(".bit-pi>div:nth-child(2)>div:nth-child(2)");
             var piTrackerWidth = piTracker.GetAttribute("style").Replace(" ", string.Empty);
             var expectedValue = $"width:{precentComplete}%";
-            Assert.AreEqual(piTrackerWidth,expectedValue);
+            Assert.AreEqual(piTrackerWidth, expectedValue);
         }
 
         [DataTestMethod,
