@@ -19,7 +19,6 @@
     user-select: none;
 
     @if $hasUrl != true {
-        pointer-events: none;
         border-bottom: 1px solid $Grey30;
     }
 
@@ -91,41 +90,45 @@
                     position: relative;
 
                     button {
-                        outline: transparent;
-                        position: absolute;
-                        font-size: 12px;
-                        font-weight: 400;
-                        display: block;
-                        text-align: left;
-                        line-height: 44px;
-                        margin: 0px;
-                        padding: 0px;
-                        border: none;
-                        text-overflow: ellipsis;
-                        white-space: nowrap;
-                        overflow: hidden;
-                        cursor: pointer;
                         background-color: transparent;
-                        width: 26px;
-                        height: 42px;
-                        top: 1px;
-                        left: 1px;
-                        z-index: 1;
 
-                        & > i {
-                            display: inline-block;
-                            font-style: normal;
-                            font-weight: normal;
-                            speak: none;
+                        &:first-child {
+                            outline: transparent;
                             position: absolute;
-                            left: 8px;
-                            height: 44px;
-                            line-height: 44px;
                             font-size: 12px;
-                            transition: transform 0.1s linear 0s;
-                            top: 0px;
+                            font-weight: 400;
+                            display: block;
+                            text-align: left;
+                            line-height: 44px;
+                            margin: 0px;
+                            padding: 0px;
+                            border: none;
+                            text-overflow: ellipsis;
+                            white-space: nowrap;
+                            overflow: hidden;
+                            cursor: pointer;
+                            width: 26px;
+                            height: 42px;
+                            top: 1px;
+                            left: 1px;
+                            z-index: 1;
+
+                            & > i {
+                                display: inline-block;
+                                font-style: normal;
+                                font-weight: normal;
+                                speak: none;
+                                position: absolute;
+                                left: 8px;
+                                height: 44px;
+                                line-height: 44px;
+                                font-size: 12px;
+                                transition: transform 0.1s linear 0s;
+                                top: 0px;
+                            }
                         }
                     }
+
 
                     span {
                         display: flex;
