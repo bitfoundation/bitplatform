@@ -24,7 +24,7 @@ namespace Bit.Client.Web.BlazorUI
             set
             {
                 if (value == percentComplete) return;
-                percentComplete = value;
+                percentComplete = Normalize(value);
                 _ = PercentCompleteChanged.InvokeAsync(value);
             }
         }
@@ -49,5 +49,6 @@ namespace Bit.Client.Web.BlazorUI
                                                 ? string.Empty
                                                 : $"{RootElementClass}-indeterminate-{VisualClassRegistrar()}");
         }
+        private static double Normalize(double value) => value > 100 ? 100 : value < 0 ? 0 : value;
     }
 }

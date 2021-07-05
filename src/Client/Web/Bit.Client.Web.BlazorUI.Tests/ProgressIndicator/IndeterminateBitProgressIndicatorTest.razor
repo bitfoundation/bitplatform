@@ -1,0 +1,11 @@
+﻿<CascadingValue Value="Visual">
+    <BitProgressIndicator Label="@Label"
+                          Description="@Description">
+    </BitProgressIndicator>
+</CascadingValue>
+
+@code{
+    [Parameter] public Visual Visual { get; set; }
+    [Parameter] public string Label { get; set; }
+    [Parameter] public string Description { get; set; }
+}
