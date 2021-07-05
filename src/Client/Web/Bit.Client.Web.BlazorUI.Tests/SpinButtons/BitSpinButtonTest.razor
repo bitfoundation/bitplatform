@@ -1,0 +1,17 @@
+﻿<CascadingValue Value="Visual">
+    <BitSpinButton Min="@Min"
+                   Max="@Max"
+                   Suffix="@Suffix"
+                   LabelPosition="@LabelPosition"
+                   IconName="@IconName">
+    </BitSpinButton>
+</CascadingValue>
+
+@code{
+    [Parameter] public Visual Visual { get; set; }
+    [Parameter] public LabelPosition LabelPosition { get; set; } = LabelPosition.Left;
+    [Parameter] public double Min { get; set; }
+    [Parameter] public double Max { get; set; }
+    [Parameter] public string Suffix { get; set; }
+    [Parameter] public string IconName { get; set; }
+}

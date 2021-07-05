@@ -1,5 +1,4 @@
 ﻿using System.Linq;
-using System.Threading.Tasks;
 using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -14,7 +13,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
          DataRow(true, false, 7, "bit-txt-enabled-fluent", TextFieldType.Password),
          DataRow(false, false, 0, "bit-txt-disabled-fluent", TextFieldType.Password),
          DataRow(true, true, 7, "bit-txt-readonly-fluent", TextFieldType.Password)]
-        public async Task BitTextFieldShouldRespectIsEnabledAndReadonly(bool isEnabled, bool isReadonly, int count, string className, TextFieldType type)
+        public void BitTextFieldShouldRespectIsEnabledAndReadonly(bool isEnabled, bool isReadonly, int count, string className, TextFieldType type)
         {
             var com = RenderComponent<BitTextFieldTest>(
                 parameters =>
@@ -43,7 +42,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
          DataRow(true, false, 7, "bit-txt-enabled-fluent", TextFieldType.Password),
          DataRow(false, false, 0, "bit-txt-disabled-fluent", TextFieldType.Password),
          DataRow(true, true, 7, "bit-txt-readonly-fluent", TextFieldType.Password)]
-        public async Task BitTextFieldShouldRespectMultiLine(bool isEnabled, bool isReadonly, int count, string className, TextFieldType type)
+        public void BitTextFieldShouldRespectMultiLine(bool isEnabled, bool isReadonly, int count, string className, TextFieldType type)
         {
             var com = RenderComponent<BitTextFieldTest>(
                 parameters =>
@@ -68,7 +67,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
 
         [DataTestMethod, DataRow(true, 2, "enabled"),
          DataRow(false, 0, "disabled")]
-        public async Task BitChoiceOptionShouldRespectIsEnabled(bool isEnabled, int count, string enabledClass)
+        public void BitChoiceOptionShouldRespectIsEnabled(bool isEnabled, int count, string enabledClass)
         {
             var com = RenderComponent<BitChoiceOptionTest>(
                 parameters =>
@@ -85,7 +84,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
 
         [DataTestMethod, DataRow(true, 2, "enabled"),
          DataRow(false, 0, "disabled")]
-        public async Task BitChoiceGroupShouldRespectIsEnabled(bool isEnabled, int count, string className)
+        public void BitChoiceGroupShouldRespectIsEnabled(bool isEnabled, int count, string className)
         {
             var com = RenderComponent<BitChoiceGroupTest>(
                 parameters =>

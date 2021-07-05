@@ -2,10 +2,11 @@
 @inherits BitComponentBase
 
 <div @ref="RootElement"
+     @attributes="HtmlAttributes"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
     <div></div>
-    @if(string.IsNullOrEmpty(Label) is false)
+    @if (Label.HasValue())
     {
         <div>@Label</div>
     }

@@ -6,11 +6,22 @@ namespace Bit.Client.Web.BlazorUI
 {
     public partial class BitRating
     {
+        private bool isReadOnly;
+        private int ratingValue;
+        private bool ValueHasBeenSet;
+
+        private string[] RatingColorClasses { get; set; } = Array.Empty<string>();
+
+        public string[] RatingIcons { get; set; } = Array.Empty<string>();
+
         [Parameter] public bool AllowZeroStars { get; set; }
-        [Parameter] public int DefaultRating { get; set; }
+
         [Parameter] public int Max { get; set; } = 5;
+
         [Parameter] public string Icon { get; set; } = "FavoriteStarFill";
+
         [Parameter] public string UnselectedIcon { get; set; } = "FavoriteStar";
+
         [Parameter] public RatingSize Size { get; set; }
 
         [Parameter]
@@ -24,13 +35,28 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
-        public string[] RatingColorClass { get; set; }
-        public string[] RatingIcon { get; set; }
+        [Parameter]
+        public int Value
+        {
+            get => ratingValue;
+            set
+            {
+                if (value == ratingValue) return;
+                ratingValue = value;
 
-        private string colorClass { get; set; } = "bit-rating-dark-fluent";
-        private int min { get; set; }
+                FillRating(ratingValue);
 
-        private bool isReadOnly;
+                ClassBuilder.Reset();
+                _ = ValueChanged.InvokeAsync(value);
+            }
+        }
+
+        [Parameter] public EventCallback<int> ValueChanged { get; set; }
+
+        [Parameter] public EventCallback<int> OnChange { get; set; }
+
+        private string? _colorClass;
+        private int _min;
 
         protected override string RootElementClass => "bit-rating";
 
@@ -46,38 +72,50 @@ namespace Bit.Client.Web.BlazorUI
 
         protected override async Task OnInitializedAsync()
         {
-            min = AllowZeroStars == true ? 0 : 1;
-            Max = Max > min ? Max : min;
-            DefaultRating = DefaultRating > 0 ? DefaultRating : min;
+            _colorClass = $"{RootElementClass}-dark-{VisualClassRegistrar()}";
 
-            RatingColorClass = new string[Max + 1];
-            RatingIcon = new string[Max + 1];
+            _min = AllowZeroStars ? 0 : 1;
+            Max = Max > _min ? Max : _min;
 
-            FillRating(DefaultRating);
+            RatingColorClasses = new string[Max + 1];
+            RatingIcons = new string[Max + 1];
+
+            FillRating(Value > 0 ? Value : _min);
 
             await base.OnInitializedAsync();
         }
 
-        protected virtual void HandleClick(int index)
+        private async Task HandleClick(int index)
         {
-            FillRating(index);
+            if ((_min == 1 && index == 0) || IsReadonly is true || IsEnabled is false || ValueChanged.HasDelegate is false) return;
+
+            Value = index;
+
+            await OnChange.InvokeAsync(Value);
         }
 
         private void FillRating(int index)
         {
+            if (RatingIcons.Length == 0 || RatingColorClasses.Length == 0) return;
+
+            if (AllowZeroStars is false && index == 0)
+            {
+                index = 1;
+            }
+
             EmptyRating();
 
             for (var item = 0; item < index; item++)
             {
-                RatingIcon[item] = Icon;
-                RatingColorClass[item] = colorClass;
+                RatingIcons![item] = Icon;
+                RatingColorClasses![item] = _colorClass!;
             }
         }
 
         private void EmptyRating()
         {
-            Array.Fill(RatingIcon, UnselectedIcon);
-            Array.Fill(RatingColorClass, colorClass);
+            Array.Fill(RatingIcons!, UnselectedIcon);
+            Array.Fill(RatingColorClasses!, _colorClass);
         }
     }
 }

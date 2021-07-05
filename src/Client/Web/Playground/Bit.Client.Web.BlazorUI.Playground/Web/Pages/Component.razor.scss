@@ -3,7 +3,9 @@
 .labels-container,
 .search-box-container,
 .rating-container,
-.spinner-positioning {
+.spinner-positioning,
+.pivot-container,
+.basic-list-container {
     font-family: FluentFont;
 }
 
@@ -31,3 +33,40 @@
 .spinner-positioning {
     display: inline-block;
 }
+
+.bit-nav-wrapped-link a {
+    white-space: normal;
+    line-height: inherit;
+}
+
+.bit-nav-simple-link a {
+    white-space: nowrap;
+    line-height: 44px;
+}
+
+.rating-container {
+    > div {
+
+        > span {
+            margin-left: 10px;
+        }
+    }
+}
+
+.pivot-container {
+    margin: 20px 10px;
+}
+
+.lst-custom-style {
+    .lst3-list-item {
+        padding: 16px 20px;
+        background-color: #f2f2f2;
+        margin: 10px 10px;
+        width: 200px;        
+        height: 143px;
+        display: inline-grid;
+        justify-content: center;
+        align-items: center;
+    }
+}
+

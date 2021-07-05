@@ -1,6 +1,5 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 
 namespace Bit.Client.Web.BlazorUI
@@ -10,11 +9,16 @@ namespace Bit.Client.Web.BlazorUI
         private bool isIndeterminate;
         private BoxSide boxSide;
         private bool isChecked;
+        private bool IsCheckedHasBeenSet;
+        private bool IsIndeterminateHasBeenSet;
 
         public ElementReference CheckboxElement { get; set; }
 
-        [Inject] public IJSRuntime JSRuntime { get; set; }
+        [Inject] public IJSRuntime? JSRuntime { get; set; }
 
+        /// <summary>
+        /// Checkbox state, control the checked state at a higher level
+        /// </summary>
         [Parameter]
         public bool IsChecked
         {
@@ -28,8 +32,14 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
+        /// <summary>
+        /// Callback that is called when the IsChecked parameter changed
+        /// </summary>
         [Parameter] public EventCallback<bool> IsCheckedChanged { get; set; }
 
+        /// <summary>
+        /// Determines whether the checkbox should be shown before the label (start) or after (end)
+        /// </summary>
         [Parameter]
         public BoxSide BoxSide
         {
@@ -42,6 +52,9 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
+        /// <summary>
+        /// An indeterminate visual state for checkbox. Setting indeterminate state takes visual precedence over checked given but does not affect on IsChecked state
+        /// </summary>
         [Parameter]
         public bool IsIndeterminate
         {
@@ -50,16 +63,25 @@ namespace Bit.Client.Web.BlazorUI
             {
                 if (value == isIndeterminate) return;
                 isIndeterminate = value;
-                _ = JSRuntime.SetProperty(CheckboxElement, "indeterminate", value);
+                _ = JSRuntime?.SetProperty(CheckboxElement, "indeterminate", value);
                 ClassBuilder.Reset();
                 _ = IsIndeterminateChanged.InvokeAsync(value);
             }
         }
 
+        /// <summary>
+        ///  Callback that is called when the IsIndeterminate parameter changed
+        /// </summary>
         [Parameter] public EventCallback<bool> IsIndeterminateChanged { get; set; }
 
-        [Parameter] public RenderFragment ChildContent { get; set; }
+        /// <summary>
+        /// The content of checkbox, It can be Any custom tag or a text
+        /// </summary>
+        [Parameter] public RenderFragment? ChildContent { get; set; }
 
+        /// <summary>
+        /// Callback that is called when the checked value has changed
+        /// </summary>
         [Parameter] public EventCallback<bool> OnChange { get; set; }
 
         protected override string RootElementClass => "bit-chb";
@@ -82,18 +104,18 @@ namespace Bit.Client.Web.BlazorUI
                                         : string.Empty);
         }
 
-        protected async Task HandleCheckboxClick(MouseEventArgs e)
+        protected async Task HandleCheckboxClick()
         {
             if (IsEnabled is false) return;
 
             if (IsIndeterminate)
             {
-                if (IsIndeterminateChanged.HasDelegate is false) return;
+                if (IsCheckedHasBeenSet && IsIndeterminateChanged.HasDelegate is false) return;
                 IsIndeterminate = false;
             }
             else
             {
-                if (IsCheckedChanged.HasDelegate is false) return;
+                if (IsCheckedHasBeenSet && IsCheckedChanged.HasDelegate is false) return;
                 IsChecked = !IsChecked;
             }
 
@@ -104,7 +126,7 @@ namespace Bit.Client.Web.BlazorUI
         {
             if (firstRender)
             {
-                await JSRuntime.SetProperty(CheckboxElement, "indeterminate", IsIndeterminate);
+                _ = JSRuntime?.SetProperty(CheckboxElement, "indeterminate", IsIndeterminate);
             }
 
             await base.OnAfterRenderAsync(firstRender);
