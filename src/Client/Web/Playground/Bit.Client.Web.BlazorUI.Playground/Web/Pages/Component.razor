@@ -3,12 +3,6 @@
 <h1>Bit Components</h1>
 
 <hr />
-<div class="pi-container">
-    <BitProgressIndicator Label="Example title" Description="Example description"></BitProgressIndicator>
-    <BitProgressIndicator Label="Example title" @bind-Description="@description" @bind-PercentComplete="@precentComplete"></BitProgressIndicator>
-    <BitButton OnClick="@HandleProgress">Start Progress</BitButton>
-</div>
-<hr />
 <div class="buttons-container">
     <h2>BitButton</h2>
     <h3>Visibility</h3>
@@ -702,4 +696,13 @@
     <h3>Multi select</h3>
     <BitDropDown IsMultiSelect="true" Items="GetDropdownItems()" Placeholder="Select options">
     </BitDropDown>
+</div>
+<hr />
+<h3>Bit Progress Indicator</h3>
+<div class="pi-container">
+    <h4>Default Progress Indicator</h4>
+    <BitProgressIndicator Label="Example title" @bind-Description="@description" @bind-PercentComplete="@precentComplete"></BitProgressIndicator>
+    <BitButton OnClick="@HandleProgress">Start Progress</BitButton>
+    <h4>Indeterminate Progress Indicator</h4>
+    <BitProgressIndicator Label="Example title" Description="Example description"></BitProgressIndicator>
 </div>
