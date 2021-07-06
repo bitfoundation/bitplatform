@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -146,7 +145,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Navs
         }
 
         [DataTestMethod, DataRow("Detailed label")]
-        public Task BitNavAriaLabelTest(string ariaLabel)
+        public void BitNavAriaLabelTest(string ariaLabel)
         {
             var com = RenderComponent<BitNavTest>(parameters =>
             {
@@ -156,11 +155,10 @@ namespace Bit.Client.Web.BlazorUI.Tests.Navs
             var bitNav = com.Find(".bit-nav");
 
             Assert.IsTrue(bitNav.GetAttribute("aria-label").Equals(ariaLabel));
-            return Task.CompletedTask;
         }
 
         [DataTestMethod, DataRow("Detailed label")]
-        public Task BitNavLinkItemsAriaLabelTest(string ariaLabel)
+        public void BitNavLinkItemsAriaLabelTest(string ariaLabel)
         {
             var navLinkItems = new List<BitNavLinkItem> {
               new BitNavLinkItem {
@@ -210,7 +208,6 @@ namespace Bit.Client.Web.BlazorUI.Tests.Navs
             {
                 Assert.IsTrue(bitNavLinksItem.GetAttribute("aria-label").Equals(ariaLabel));
             }
-            return Task.CompletedTask;
         }
     }
 }

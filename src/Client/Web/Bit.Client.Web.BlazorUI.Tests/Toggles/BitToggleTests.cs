@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using Bunit;
+﻿using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.Client.Web.BlazorUI.Tests.Toggles
@@ -116,7 +115,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Toggles
         }
 
         [DataTestMethod, DataRow("Detailed label")]
-        public Task BitToggleAriaLabelTest(string ariaLabel)
+        public void BitToggleAriaLabelTest(string ariaLabel)
         {
             var com = RenderComponent<BitToggleTest>(parameters =>
             {
@@ -126,7 +125,6 @@ namespace Bit.Client.Web.BlazorUI.Tests.Toggles
             var bitToggle = com.Find(".bit-tgl button");
 
             Assert.IsTrue(bitToggle.GetAttribute("aria-label").Equals(ariaLabel));
-            return Task.CompletedTask;
         }
     }
 }

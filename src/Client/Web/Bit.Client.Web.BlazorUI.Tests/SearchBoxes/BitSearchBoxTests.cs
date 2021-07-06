@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using Bunit;
+﻿using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.Client.Web.BlazorUI.Tests.SearchBoxes
@@ -52,7 +51,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.SearchBoxes
         }
 
         [DataTestMethod, DataRow("Detailed label")]
-        public Task BitSearchBoxAriaLabelTest(string ariaLabel)
+        public void BitSearchBoxAriaLabelTest(string ariaLabel)
         {
             var com = RenderComponent<BitSearchBoxTest>(parameters =>
             {
@@ -62,7 +61,6 @@ namespace Bit.Client.Web.BlazorUI.Tests.SearchBoxes
             var bitSearchBox = com.Find(".search-input");
 
             Assert.IsTrue(bitSearchBox.GetAttribute("aria-label").Equals(ariaLabel));
-            return Task.CompletedTask;
         }
     }
 }

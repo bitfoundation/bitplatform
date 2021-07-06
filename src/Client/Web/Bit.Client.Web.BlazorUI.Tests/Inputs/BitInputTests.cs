@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using System.Linq;
+﻿using System.Linq;
 using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -101,7 +100,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
         }
 
         [DataTestMethod, DataRow("Detailed label")]
-        public Task BitTextFieldAriaLabelTest(string ariaLabel)
+        public void BitTextFieldAriaLabelTest(string ariaLabel)
         {
             var com = RenderComponent<BitTextFieldTest>(parameters =>
             {
@@ -111,7 +110,6 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
             var bitTextField = com.Find(".bit-txt > input, .bit-txt > textarea");
 
             Assert.IsTrue(bitTextField.GetAttribute("aria-label").Equals(ariaLabel));
-            return Task.CompletedTask;
         }
     }
 }

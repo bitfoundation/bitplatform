@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using System.Linq;
+﻿using System.Linq;
 using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -146,7 +145,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Rating
         }
 
         [DataTestMethod, DataRow("Detailed label")]
-        public Task BitRatingAriaLabelTest(string ariaLabel)
+        public void BitRatingAriaLabelTest(string ariaLabel)
         {
             var com = RenderComponent<BitRatingTest>(parameters =>
             {
@@ -159,7 +158,6 @@ namespace Bit.Client.Web.BlazorUI.Tests.Rating
             {
                 Assert.IsTrue(bitRating.GetAttribute("aria-label").Equals(ariaLabel));
             }
-            return Task.CompletedTask;
         }
     }
 }

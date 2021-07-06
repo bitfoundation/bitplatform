@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using Bunit;
+﻿using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.Client.Web.BlazorUI.Tests.Pivot
@@ -62,7 +61,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Pivot
         }
 
         [DataTestMethod, DataRow("Detailed label")]
-        public Task BitPivotAriaLabelTest(string ariaLabel)
+        public void BitPivotAriaLabelTest(string ariaLabel)
         {
             var com = RenderComponent<BitPivotTest>(parameters =>
             {
@@ -76,7 +75,6 @@ namespace Bit.Client.Web.BlazorUI.Tests.Pivot
             {
                 Assert.IsTrue(bitPivot.GetAttribute("aria-label").Equals(ariaLabel));
             }
-            return Task.CompletedTask;
         }
     }
 }
