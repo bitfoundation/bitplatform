@@ -81,6 +81,8 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
+        [Parameter] public string? AriaLabel { get; set; }
+
         [Parameter]
         public Dictionary<string, object> HtmlAttributes { get; set; } = new Dictionary<string, object>();
 
@@ -122,6 +124,11 @@ namespace Bit.Client.Web.BlazorUI
                         parametersDictionary.Remove(parameter.Key);
                         break;
 
+                    case nameof(AriaLabel):
+                        AriaLabel = (string?)parameter.Value;
+                        parametersDictionary.Remove(parameter.Key);
+                        break;
+
                     default:
                         HtmlAttributes.Add(parameter.Key, parameter.Value);
                         break;
@@ -129,8 +136,6 @@ namespace Bit.Client.Web.BlazorUI
             }
             return base.SetParametersAsync(ParameterView.Empty);
         }
-
-        [Parameter] public string? AriaLabel { get; set; }
 
         protected override void OnInitialized()
         {
