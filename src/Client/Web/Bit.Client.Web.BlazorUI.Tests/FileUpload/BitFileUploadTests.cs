@@ -11,7 +11,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.FileUpload
            DataRow(Visual.Cupertino),
            DataRow(Visual.Material),
         ]
-        public void BitUploadFile_BaseTest(Visual visual)
+        public void BitUploadFile_HasBasicClasses(Visual visual)
         {
             var com = RenderComponent<BitFileUploadTest>(parameters =>
             {
@@ -28,7 +28,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.FileUpload
            DataRow(true),
            DataRow(false)
         ]
-        public void BitFileUpload_MultipleTest(bool isMultiFile)
+        public void BitFileUpload_MultipleAttributeTest(bool isMultiFile)
         {
             var com = RenderComponent<BitFileUploadTest>(parameters =>
             {
