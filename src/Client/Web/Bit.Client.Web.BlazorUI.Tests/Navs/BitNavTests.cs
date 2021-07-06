@@ -166,28 +166,34 @@ namespace Bit.Client.Web.BlazorUI.Tests.Navs
               new BitNavLinkItem {
                 Name = "Activity",
                 Key = "key1-1",
+                CollapseAriaLabel = ariaLabel,
                 Links = new List < BitNavLinkItem > {
                   new BitNavLinkItem {
                     Name = "Activity",
-                    Key = "key1-1-1"
+                    Key = "key1-1-1",
+                    CollapseAriaLabel = ariaLabel,
                   },
                   new BitNavLinkItem {
                     Name = "MSN",
-                    Key = "key1-1-2"
+                    Key = "key1-1-2",
+                    CollapseAriaLabel = ariaLabel,
                   }
                 }
               },
               new BitNavLinkItem {
                 Name = "MSN",
                 Key = "key1-2",
+                CollapseAriaLabel = ariaLabel,
                 Links = new List < BitNavLinkItem > {
                   new BitNavLinkItem {
                     Name = "Activity",
-                    Key = "key1-2-1"
+                    Key = "key1-2-1",
+                    CollapseAriaLabel = ariaLabel,
                   },
                   new BitNavLinkItem {
                     Name = "MSN",
-                    Key = "key1-2-2"
+                    Key = "key1-2-2",
+                    CollapseAriaLabel = ariaLabel,
                   }
                 }
               }

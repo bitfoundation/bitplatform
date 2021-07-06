@@ -66,12 +66,16 @@ namespace Bit.Client.Web.BlazorUI.Tests.Pivot
         {
             var com = RenderComponent<BitPivotTest>(parameters =>
             {
-                parameters.Add(p => p.AriaLabel, ariaLabel);
+                parameters.AddChildContent<BitPivotItem>();
+                parameters.AddChildContent<BitPivotItem>(parameters => parameters.Add(p => p.AriaLabel, ariaLabel));
             });
 
-            var bitPivot = com.Find(".bit-pvt > div:first-child > div");
+            var bitPivots = com.FindAll(".bit-pvt > div:first-child > div");
 
-            Assert.IsTrue(bitPivot.GetAttribute("aria-label").Equals(ariaLabel));
+            foreach (var bitPivot in bitPivots)
+            {
+                Assert.IsTrue(bitPivot.GetAttribute("aria-label").Equals(ariaLabel));
+            }
             return Task.CompletedTask;
         }
     }
