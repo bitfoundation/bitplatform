@@ -20,10 +20,10 @@ namespace Bit.Client.Web.BlazorUI.Tests.FileUpload
                 parameters.Add(p => p.Visual, visual);
             });
 
-            var bitFileUpload = com.Find(".bit-fu");
+            var bitFileUpload = com.Find(".bit-fl-up");
             var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
 
-            Assert.IsTrue(bitFileUpload.ClassList.Contains($"bit-fu-{visualClass}") && bitFileUpload.ClassList.Contains($"bit-fu"));
+            Assert.IsTrue(bitFileUpload.ClassList.Contains($"bit-fl-up-{visualClass}") && bitFileUpload.ClassList.Contains($"bit-fl-up"));
         }
 
         [DataTestMethod,

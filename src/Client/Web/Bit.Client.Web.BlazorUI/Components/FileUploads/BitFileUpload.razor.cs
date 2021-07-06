@@ -13,7 +13,7 @@ namespace Bit.Client.Web.BlazorUI
     /// </summary>
     public partial class BitFileUpload : IDisposable
     {
-        protected override string RootElementClass => "bit-fu";
+        protected override string RootElementClass => "bit-fl-up";
 
         private static readonly HttpClient client = new();
 
