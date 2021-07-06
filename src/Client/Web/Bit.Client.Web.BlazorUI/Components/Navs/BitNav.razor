@@ -62,7 +62,7 @@
             }
 
             <a href="@(navLink.Disabled ? "/" : navLink.Url)"
-               title="@navLink.Title"
+               title=" @(navLink.Title.HasValue()?navLink.Title:navLink.Name)"
                tabindex="-1"
                onclick="@(navLink.Disabled ? "return false;" : "")"
                target="@navLink.Target"
