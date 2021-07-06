@@ -571,8 +571,10 @@
             Class="bit-nav-simple-link"
             NavLinkItems="BasicNavLinks"
             AriaLabel="Nav basic example"
-            SelectedKey="key3">
+            @bind-SelectedKey="key3">
     </BitNav>
+
+    @key3
 
     <br />
     <h2>Nav with wrapped link text and no tooltips</h2>

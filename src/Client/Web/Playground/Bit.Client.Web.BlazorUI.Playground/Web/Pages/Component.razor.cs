@@ -21,6 +21,8 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
         private int RatingReadOnlyValue = 5;
         private int RatingOutsideValue = 5;
 
+        private string key3 = "key3";
+
         private double BasicSpinButtonValue = 5;
         private double BasicSpinButtonDisableValue = 20;
         private double SpinButtonWithCustomHandlerValue = 14;
