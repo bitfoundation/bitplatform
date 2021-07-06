@@ -1,8 +1,9 @@
 ﻿<CascadingValue Value="Visual">
     <BitFileUpload IsEnabled="IsEnabled"
                    IsMultiFile="IsMultiFile"
-                   BrowseButtonLabel="Select or drag and drop files"
+                   Label="Select or drag and drop files"
                    UploadUrl="@UploadUrl"
+                   AcceptedExtensions="AcceptedExtensions"
                    RemoveUrl="@RemoveUrl">
     </BitFileUpload>
 </CascadingValue>
@@ -12,4 +13,5 @@
     [Parameter] public Visual Visual { get; set; }
     [Parameter] public bool IsEnabled { get; set; }
     [Parameter] public bool IsMultiFile { get; set; }
+    [Parameter] public IReadOnlyCollection<string> AcceptedExtensions { get; set; } = new List<string> { "*" };
 }
