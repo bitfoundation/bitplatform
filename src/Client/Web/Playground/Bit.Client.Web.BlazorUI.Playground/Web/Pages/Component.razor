@@ -699,21 +699,21 @@
 <hr />
 <div class="bit-file-upload-container">
     <h3>Auto</h3>
-    <BitFileUpload BrowseButtonLabel="Select or drag and drop files"
+    <BitFileUpload Label="Select or drag and drop files"
                    UploadUrl="@UploadUrl"
                    RemoveUrl="@RemoveUrl">
     </BitFileUpload>
 
     <h3>Auto & Multiple</h3>
     <BitFileUpload IsMultiFile="true"
-                   BrowseButtonLabel="Select or drag and drop files"
+                   Label="Select or drag and drop files"
                    UploadUrl="@UploadUrl"
                    RemoveUrl="@RemoveUrl">
     </BitFileUpload>
 
     <h3>Auto & Multiple with maxsize limitation</h3>
     <BitFileUpload IsMultiFile="true"
-                   BrowseButtonLabel="Select or drag and drop files"
+                   Label="Select or drag and drop files"
                    MaxSize="FileSizeHumanizer.OneMegaByte * 100"
                    UploadUrl="@UploadUrl"
                    RemoveUrl="@RemoveUrl">
@@ -723,7 +723,7 @@
     <BitFileUpload IsMultiFile="true"
                    AutoUploadEnabled="false"
                    AcceptedExtensions="@(new List<string> { ".gif",".jpg",".mp4" })"
-                   BrowseButtonLabel="Select or drag and drop files"
+                   Label="Select or drag and drop files"
                    UploadUrl="@UploadUrl"
                    RemoveUrl="@RemoveUrl">
     </BitFileUpload>

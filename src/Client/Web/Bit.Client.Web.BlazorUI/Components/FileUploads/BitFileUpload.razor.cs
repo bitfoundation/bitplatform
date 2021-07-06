@@ -72,7 +72,7 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// Custom label for Browse button
         /// </summary>
-        [Parameter] public string BrowseButtonLabel { get; set; } = "Browse";
+        [Parameter] public string Label { get; set; } = "Browse";
 
         /// <summary>
         /// Custom label for Uploaded Status
