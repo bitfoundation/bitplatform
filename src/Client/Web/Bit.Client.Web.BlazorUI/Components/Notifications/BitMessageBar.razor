@@ -5,25 +5,85 @@
      @attributes="HtmlAttributes"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
-    <span>
-        <i class="bit-icon bit-icon--@MessageBarIconName"></i>
-    </span>
-    <span class="@((Truncated && !ElementTruncateState) || IsMultiline ? "not-truncate" : "")">
-        @ChildContent
-    </span>
-    <span>
-        @if (Truncated)
-        {
-            <span @onclick="ToggleElementTruncate">
-                <i class="bit-icon bit-icon--@(ElementTruncateState ? "DoubleChevronDown" : "DoubleChevronUp" )"></i>
-            </span>
-        }
 
-        @if (OnDismiss.HasDelegate)
-        {
-            <span @onclick="Dismiss">
-                <i class="bit-icon bit-icon--@DismissIconName"></i>
-            </span>
-        }
-    </span>
+    @if (IsMultiline)
+    {
+        <div class=@($"{RootElementClass}-multiline")>
+            <div class=@($"{RootElementClass}-content")>
+
+                <div class=@($"{RootElementClass}-icon")>
+                    <i class=@($"bit-icon bit-icon--{IconMap[MessageBarType]}")></i>
+                </div>
+
+                <div class=@($"{RootElementClass}-text")>
+                    <span class=@($"{RootElementClass}-innertext")>
+                        <span>
+                            @ChildContent
+                        </span>
+                    </span>
+                </div>
+
+                @*DismissSingleLine*@
+                @if (HasDismiss)
+                {
+                    <div Class=@($"{RootElementClass}-dismiss")>
+                        <button onclick=@OnDismiss>
+                            <i class="bit-icon bit-icon--Clear"></i>
+                        </button>
+                    </div>
+                }
+            </div>
+            @if (Actions is not null)
+            {
+                <div class=@($"{RootElementClass}-actions")>@Actions</div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class=@($"{RootElementClass}-singleline")>
+            <div class=@($"{RootElementClass}-content")>
+
+                @*Icon*@
+                <div class=@($"{RootElementClass}-icon")>
+                    <i class=@($"bit-icon bit-icon--{IconMap[MessageBarType]}")></i>
+                </div>
+
+                @*ChildContent*@
+                <div class=@($"{RootElementClass}-text {(ExpandSingelLine ? $"{RootElementClass}-open": "")}")>
+                    <span class=@($"{RootElementClass}-innertext")>
+                        <span>
+                            @ChildContent
+                        </span>
+                    </span>
+                </div>
+
+                @*Action*@
+                @if (Actions is not null)
+                {
+                    <div class=@($"{RootElementClass}-actions")>@Actions</div>
+                }
+
+                @*ExpandSingleLine*@
+                @if (Truncated && Actions is null)
+                {
+                    <div class=@($"{RootElementClass}-truncate")>
+                        <button @onclick=@Truncate>
+                            <i class=@($"bit-icon bit-icon--{(ExpandSingelLine ? "DoubleChevronUp" : "DoubleChevronDown")}")></i>
+                        </button>
+                    </div>
+                }
+
+                @*DismissSingleLine*@
+                @if (HasDismiss)
+                {
+                    <div class=@($"{RootElementClass}-dismiss")>
+                        <button onclick=@OnDismiss>
+                            <i class="bit-icon bit-icon--Clear"></i>
+                        </button>
+                    </div>
+                }
+            </div>
+        </div>
+    }
 </div>

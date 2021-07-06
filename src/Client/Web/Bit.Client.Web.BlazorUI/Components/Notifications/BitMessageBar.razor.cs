@@ -1,88 +1,70 @@
-﻿using Microsoft.AspNetCore.Components;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 
 namespace Bit.Client.Web.BlazorUI
 {
     public partial class BitMessageBar
     {
-        private MessageBarStyle messageBarStyle = MessageBarStyle.Default;
-
-        [Parameter] public RenderFragment? ChildContent { get; set; }
-
-        [Parameter] public string? MessageBarIconName { get; set; }
-
-        [Parameter] public string DismissIconName { get; set; } = "Clear";
-
-        [Parameter] public EventCallback<MouseEventArgs> OnDismiss { get; set; }
-
-        [Parameter] public bool Truncated { get; set; } = false;
-
-        public bool ElementTruncateState { get; set; } = true;
-
-        [Parameter] public bool IsMultiline { get; set; } = false;
+        protected override string RootElementClass => "bit-msg-bar";
 
         [Parameter]
-        public MessageBarStyle MessageBarStyle
-        {
-            get => messageBarStyle;
-            set
-            {
-                messageBarStyle = value;
-                ChooseMessageBarIcon();
-                ClassBuilder.Reset();
-            }
-        }
+        public bool IsMultiline { get; set; } = true;
 
-        protected override string RootElementClass => "bit-msg-bar";
+        [Parameter]
+        public BitMessageBarType MessageBarType { get; set; } = BitMessageBarType.Info;
+
+        [Parameter]
+        public string DismissIconName { get; set; } = "Clear";
+
+        [Parameter]
+        public bool Truncated { get; set; }
+
+        [Parameter]
+        public RenderFragment? ChildContent { get; set; }
+
+        [Parameter]
+        public RenderFragment? Actions { get; set; }
+
+        [Parameter]
+        public string? DismissButtonAriaLabel { get; set; }
+
+        [Parameter]
+        public string? OverflowButtonAriaLabel { get; set; }
+
+        [Parameter]
+        public EventCallback OnDismiss { get; set; }
+
+        protected bool HasDismiss { get => (OnDismiss.HasDelegate); }
+
+        protected bool ExpandSingelLine { get; set; }
 
         protected override void RegisterComponentClasses()
         {
-            ClassBuilder.Register(() => MessageBarStyle == MessageBarStyle.Warning ? $"{RootElementClass}-warning-{VisualClassRegistrar()}"
-                                      : MessageBarStyle == MessageBarStyle.Severe ? $"{RootElementClass}-severe-{VisualClassRegistrar()}"
-                                      : MessageBarStyle == MessageBarStyle.Error ? $"{RootElementClass}-error-{VisualClassRegistrar()}"
-                                      : MessageBarStyle == MessageBarStyle.Success ? $"{RootElementClass}-success-{VisualClassRegistrar()}"
-                                      : MessageBarStyle == MessageBarStyle.Blocked ? $"{RootElementClass}-blocked-{VisualClassRegistrar()}"
-                                      : $"{RootElementClass}-default-{VisualClassRegistrar()}");
+            ClassBuilder.Register(() => IsEnabled is false
+                                        ? string.Empty
+                                        : MessageBarType == BitMessageBarType.Info ? $"{RootElementClass}-info-{VisualClassRegistrar()}"
+                                        : MessageBarType == BitMessageBarType.Warning ? $"{RootElementClass}-warning-{VisualClassRegistrar()}"
+                                        : MessageBarType == BitMessageBarType.Error ? $"{RootElementClass}-error-{VisualClassRegistrar()}"
+                                        : MessageBarType == BitMessageBarType.Blocked ? $"{RootElementClass}-blocked-{VisualClassRegistrar()}"
+                                        : MessageBarType == BitMessageBarType.SevereWarning ? $"{RootElementClass}-severe-warning-{VisualClassRegistrar()}"
+                                        : $"{RootElementClass}-success-{VisualClassRegistrar()}");
         }
 
-        public void ToggleElementTruncate()
+        protected void Truncate()
         {
-            ElementTruncateState = !ElementTruncateState;
+            ExpandSingelLine = !ExpandSingelLine;
         }
 
-        public void ChooseMessageBarIcon()
+        public static Dictionary<BitMessageBarType, string> IconMap = new()
         {
-            switch (MessageBarStyle)
-            {
-                case MessageBarStyle.Default:
-                    MessageBarIconName = "Info";
-                    break;
-
-                case MessageBarStyle.Error:
-                    MessageBarIconName = "ErrorBadge";
-                    break;
-
-                case MessageBarStyle.Blocked:
-                    MessageBarIconName = "Blocked2";
-                    break;
-
-                case MessageBarStyle.Success:
-                    MessageBarIconName = "Completed";
-                    break;
-
-                case MessageBarStyle.Warning:
-                    MessageBarIconName = "ErrorBadge";
-                    break;
-
-                case MessageBarStyle.Severe:
-                    MessageBarIconName = "Warning";
-                    break;
-            }
-        }
-
-        public void Dismiss(MouseEventArgs args)
-        {
-            OnDismiss.InvokeAsync(args);
-        }
+            [BitMessageBarType.Info] = "Info",
+            [BitMessageBarType.Warning] = "Info",
+            [BitMessageBarType.Error] = "ErrorBadge",
+            [BitMessageBarType.Blocked] = "Blocked2",
+            [BitMessageBarType.SevereWarning] = "Warning",
+            [BitMessageBarType.Success] = "Completed"
+        };
     }
 }
