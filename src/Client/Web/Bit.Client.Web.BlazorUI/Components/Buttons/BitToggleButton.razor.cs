@@ -86,51 +86,5 @@ namespace Bit.Client.Web.BlazorUI
 
             await base.OnInitializedAsync();
         }
-
-        public override Task SetParametersAsync(ParameterView parameters)
-        {
-            IsCheckedHasBeenSet = false;
-            foreach (ParameterValue parameter in parameters)
-            {
-                switch (parameter.Name)
-                {
-                    case nameof(AllowDisabledFocus):
-                        AllowDisabledFocus = (bool)parameter.Value;
-                        break;
-                    case nameof(AriaDescription):
-                        AriaDescription = (string?)parameter.Value;
-                        break;
-                    case nameof(AriaHidden):
-                        AriaHidden = (bool)parameter.Value;
-                        break;
-                    case nameof(AriaLabel):
-                        AriaLabel = (string?)parameter.Value;
-                        break;
-                    case nameof(IsChecked):
-                        IsCheckedHasBeenSet = true;
-                        IsChecked = (bool)parameter.Value;
-                        break;
-                    case nameof(IconName):
-                        IconName = (string?)parameter.Value;
-                        break;
-                    case nameof(Label):
-                        Label = (string?)parameter.Value;
-                        break;
-                    case nameof(OnClick):
-                        OnClick = (Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.Web.MouseEventArgs>)parameter.Value;
-                        break;
-                    case nameof(OnChange):
-                        OnChange = (EventCallback<bool>)parameter.Value;
-                        break;
-                    case nameof(ButtonStyle):
-                        ButtonStyle = (Bit.Client.Web.BlazorUI.ButtonStyle)parameter.Value;
-                        break;
-                    case nameof(IsCheckedChanged):
-                        IsCheckedChanged = (EventCallback<bool>)parameter.Value;
-                        break;
-                }
-            }
-            return base.SetParametersAsync(parameters);
-        }
     }
 }

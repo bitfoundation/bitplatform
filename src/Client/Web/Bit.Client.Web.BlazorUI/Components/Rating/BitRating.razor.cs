@@ -8,6 +8,7 @@ namespace Bit.Client.Web.BlazorUI
     {
         private bool isReadOnly;
         private int ratingValue;
+        private bool ValueHasBeenSet;
 
         private string[] RatingColorClasses { get; set; } = Array.Empty<string>();
 
@@ -73,7 +74,7 @@ namespace Bit.Client.Web.BlazorUI
         {
             _colorClass = $"{RootElementClass}-dark-{VisualClassRegistrar()}";
 
-            _min = AllowZeroStars == true ? 0 : 1;
+            _min = AllowZeroStars ? 0 : 1;
             Max = Max > _min ? Max : _min;
 
             RatingColorClasses = new string[Max + 1];

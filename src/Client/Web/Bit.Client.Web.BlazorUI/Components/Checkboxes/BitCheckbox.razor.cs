@@ -10,6 +10,7 @@ namespace Bit.Client.Web.BlazorUI
         private BoxSide boxSide;
         private bool isChecked;
         private bool IsCheckedHasBeenSet;
+        private bool IsIndeterminateHasBeenSet;
 
         public ElementReference CheckboxElement { get; set; }
 
@@ -129,41 +130,6 @@ namespace Bit.Client.Web.BlazorUI
             }
 
             await base.OnAfterRenderAsync(firstRender);
-        }
-
-        public override Task SetParametersAsync(ParameterView parameters)
-        {
-            IsCheckedHasBeenSet = false;
-
-            foreach (ParameterValue parameter in parameters)
-            {
-                switch (parameter.Name)
-                {
-                    case nameof(IsChecked):
-                        IsCheckedHasBeenSet = true;
-                        IsChecked = (bool)parameter.Value;
-                        break;
-                    case nameof(IsCheckedChanged):
-                        IsCheckedChanged = (EventCallback<bool>)parameter.Value;
-                        break;
-                    case nameof(BoxSide):
-                        BoxSide = (BoxSide)parameter.Value;
-                        break;
-                    case nameof(IsIndeterminate):
-                        IsIndeterminate = (bool)parameter.Value;
-                        break;
-                    case nameof(IsIndeterminateChanged):
-                        IsIndeterminateChanged = (EventCallback<bool>)parameter.Value;
-                        break;
-                    case nameof(ChildContent):
-                        ChildContent = (RenderFragment?)parameter.Value;
-                        break;
-                    case nameof(OnChange):
-                        OnChange = (EventCallback<bool>)parameter.Value;
-                        break;
-                }
-            }
-            return base.SetParametersAsync(parameters);
         }
     }
 }
