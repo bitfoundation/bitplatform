@@ -7,20 +7,41 @@ namespace Bit.Client.Web.BlazorUI
     {
         private MessageBarStyle messageBarStyle = MessageBarStyle.Default;
 
-        [Parameter] public RenderFragment? ChildContent { get; set; }
-
-        [Parameter] public string? MessageBarIconName { get; set; }
-
-        [Parameter] public string DismissIconName { get; set; } = "Clear";
-
-        [Parameter] public EventCallback<MouseEventArgs> OnDismiss { get; set; }
-
-        [Parameter] public bool Truncated { get; set; } = false;
-
         public bool ElementTruncateState { get; set; } = true;
 
+        /// <summary>
+        /// The content of messagebar, It can be Any custom tag or a text
+        /// </summary>
+        [Parameter] public RenderFragment? ChildContent { get; set; }
+
+        /// <summary>
+        /// Custom icon to replace the messagebar icon. If unset, default will be the icon set by MessageBarStyle
+        /// </summary>
+        [Parameter] public string? MessageBarIconName { get; set; }
+
+        /// <summary>
+        /// Custom icon to replace the dismiss icon. If unset, default will be the Clear icon
+        /// </summary>
+        [Parameter] public string DismissIconName { get; set; } = "Clear";
+
+        /// <summary>
+        /// Whether the messagebar has a dismiss button and its callback. If null, dismiss button won't show
+        /// </summary>
+        [Parameter] public EventCallback<MouseEventArgs> OnDismiss { get; set; }
+
+        /// <summary>
+        /// Determines if the message bar text is truncated. If true, a button will render to toggle between a single line view and multiline view. This parameter is for single line message bars with no buttons only in a limited space scenario
+        /// </summary>
+        [Parameter] public bool Truncated { get; set; } = false;
+
+        /// <summary>
+        /// Determines if the messagebar is multi lined. If false, and the text overflows over buttons or to another line
+        /// </summary>
         [Parameter] public bool IsMultiline { get; set; } = false;
 
+        /// <summary>
+        /// The style of MessageBar to render
+        /// </summary>
         [Parameter]
         public MessageBarStyle MessageBarStyle
         {
