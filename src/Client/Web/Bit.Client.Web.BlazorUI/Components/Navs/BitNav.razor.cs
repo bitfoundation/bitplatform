@@ -33,7 +33,7 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public EventCallback<BitNavLinkItem> OnClick { get; set; }
 
         /// <summary>
-        /// The template of navigation header, it can be a BitNavLinkItem
+        /// The template of navigation header, It can be Any custom tag and use link item as context
         /// </summary>
         [Parameter] public RenderFragment<BitNavLinkItem>? HeaderTemplate { get; set; }
 

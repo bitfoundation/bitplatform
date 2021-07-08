@@ -15,7 +15,7 @@ namespace Bit.Client.Web.BlazorUI
         public string Name { get; set; } = "";
 
         /// <summary>
-        /// Text for title tooltip and ARIA description
+        /// Text for title tooltip
         /// </summary>
         public string? Title { get; set; }
 
@@ -50,7 +50,7 @@ namespace Bit.Client.Web.BlazorUI
         public string? Target { get; set; }
 
         /// <summary>
-        /// Child links to this link, the items to display in the a child of navigation bar
+        /// Child links to this link, the links that are below this link
         /// </summary>
         public IEnumerable<BitNavLinkItem>? Links { get; set; }
 
