@@ -34,7 +34,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
         }
 
         [DataTestMethod, DataRow("testName")]
-        public void BitChoiceGroupShouldGiveNameToChpiceOptions(string name)
+        public void BitChoiceGroupShouldGiveNameToChoiceOptions(string name)
         {
             var component = RenderComponent<BitChoiceGroupTest>(
                 parameters =>
@@ -42,10 +42,10 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                     parameters.Add(p => p.Name, name);
                 });
 
-            var bitChoiceGroupOption = component.Find(".bit-chg .bit-cho");
+            var bitChoiceOption = component.Find(".bit-chg .bit-cho");
 
-            Assert.IsTrue(bitChoiceGroupOption.FirstElementChild.HasAttribute("name"));
-            Assert.AreEqual(name, bitChoiceGroupOption.FirstElementChild.GetAttribute("name"));
+            Assert.IsTrue(bitChoiceOption.FirstElementChild.HasAttribute("name"));
+            Assert.AreEqual(name, bitChoiceOption.FirstElementChild.GetAttribute("name"));
         }
 
         [DataTestMethod,
@@ -61,12 +61,12 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                     parameters.Add(p => p.IsEnabled, isEnabled);
                 });
 
-            var bitChoiceGroupOption = component.Find(".bit-chg .bit-cho input");
+            var input = component.Find(".bit-chg .bit-cho input");
 
-            bitChoiceGroupOption.Click();
+            input.Click();
 
             Assert.AreEqual(isEnabled ? 1 : 0, component.Instance.CurrentCount);
-            Assert.AreEqual(isEnabled ? value: "", component.Instance.ValueChangeMessage);
+            Assert.AreEqual(isEnabled ? value: "", component.Instance.ChangedValue);
         }
     }
 }

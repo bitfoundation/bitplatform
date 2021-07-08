@@ -1,12 +1,14 @@
 ﻿<CascadingValue Value="Visual">
-    <BitChoiceOption Value="@Value"
-                     IsEnabled="@IsEnabled"
-                     Text="@Text"
-                     Name="@Name"
-                     IsChecked="IsChecked"
-                     OnClick="ClickEvent"
-                     OnChange="ChangeEvent">
-    </BitChoiceOption>
+    <BitChoiceGroup>
+        <BitChoiceOption Value="@Value"
+                         IsEnabled="@IsEnabled"
+                         Text="@Text"
+                         Name="@Name"
+                         IsChecked="IsChecked"
+                         OnClick="HandleClick"
+                         OnChange="HandleChange">
+        </BitChoiceOption>
+    </BitChoiceGroup>
 </CascadingValue>
 @code {
     [Parameter] public Visual Visual { get; set; }
@@ -18,12 +20,13 @@
 
     public int Count1 { get; set; }
     public int Count2 { get; set; }
-    public void ClickEvent(MouseEventArgs e)
+    public void HandleClick(MouseEventArgs e)
     {
         Count1++;
     }
-    public void ChangeEvent(ChangeEventArgs e)
+    public void HandleChange(ChangeEventArgs e)
     {
         Count2++;
+        Value = e.Value.ToString();
     }
 }

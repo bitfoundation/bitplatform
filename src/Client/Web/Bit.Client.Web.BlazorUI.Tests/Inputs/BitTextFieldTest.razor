@@ -8,13 +8,13 @@
                   IconName="@IconName"
                   Value="@Value"
                   CanRevealPassword="CanRevealPassword"
-                  OnClick="ClickEvent"
-                  OnChange="ChangeEvent"
-                  OnFocus="FocusEvent"
-                  OnFocusIn="FocusEvent"
-                  OnFocusOut="FocusEvent"
-                  OnKeyDown="KeyEvent"
-                  OnKeyUp="KeyEvent">
+                  OnClick="HandleClick"
+                  OnChange="HandleChange"
+                  OnFocus="HandleFocus"
+                  OnFocusIn="HandleFocusIn"
+                  OnFocusOut="HandleFocusOut"
+                  OnKeyDown="HandleKeyDown"
+                  OnKeyUp="HandleKeyUp">
     </BitTextField>
 </CascadingValue>
 
@@ -30,27 +30,38 @@
     [Parameter] public bool CanRevealPassword { get; set; }
     [Parameter] public TextFieldType Type { get; set; }
 
-    public void KeyEvent(KeyboardEventArgs e)
+    public void HandleKeyDown(KeyboardEventArgs e)
     {
-        IncrementCount();
+        KeyDownedValue++;
     }
-    public void FocusEvent(FocusEventArgs e)
+    public void HandleKeyUp(KeyboardEventArgs e)
     {
-        IncrementCount();
+        KeyUpedValue++;
     }
-    public void ChangeEvent(ChangeEventArgs e)
+    public void HandleFocus(FocusEventArgs e)
     {
-        IncrementCount();
+        FocusedValue++;
     }
-    public void ClickEvent(MouseEventArgs e)
+    public void HandleFocusIn(FocusEventArgs e)
     {
-        IncrementCount();
+        FocusedInValue++;
     }
-    public int CurrentCount { get; set; }
-    public void IncrementCount()
+    public void HandleFocusOut(FocusEventArgs e)
+    {
+        FocusedOutValue++;
+    }
+    public void HandleChange(ChangeEventArgs e)
     {
         CurrentCount++;
-        Value = CurrentCount.ToString();
     }
-
+    public void HandleClick(MouseEventArgs e)
+    {
+        CurrentCount++;
+    }
+    public int CurrentCount { get; set; }
+    public int FocusedValue { get; set; }
+    public int FocusedOutValue { get; set; }
+    public int FocusedInValue { get; set; }
+    public int KeyDownedValue { get; set; }
+    public int KeyUpedValue { get; set; }
 }
