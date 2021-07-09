@@ -70,7 +70,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Lists
             var component = RenderComponent<BitBasicListTest>(parameters =>
             {
                 parameters.Add(p => p.Items, GetTestData(itemCount));
-                if (!String.IsNullOrEmpty(role))
+                if (role.HasValue())
                     parameters.Add(p => p.Role, role);
             });
 
@@ -78,7 +78,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Lists
 
             var bitLisRole = bitList.GetAttribute("role");
 
-            if (String.IsNullOrEmpty(role))
+            if (role.HasNoValue())
             {
                 Assert.AreEqual("list", bitLisRole);
             }
