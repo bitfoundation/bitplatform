@@ -12,6 +12,7 @@ namespace Bit.Client.Web.BlazorUI
         private OverflowBehavior overflowBehavior = OverflowBehavior.None;
         private LinkFormat linkFormat = LinkFormat.Links;
         private LinkSize linkSize = LinkSize.Normal;
+        private bool SelectedKeyHasBeenSet;
         private bool hasSetSelectedKey;
 
         [Parameter]
@@ -85,64 +86,6 @@ namespace Bit.Client.Web.BlazorUI
         protected override Task OnParametersSetAsync()
         {
             return base.OnParametersSetAsync();
-        }
-
-        public override Task SetParametersAsync(ParameterView parameters)
-        {
-            var parametersDictionary = parameters.ToDictionary() as Dictionary<string, object>;
-
-            foreach (var parameter in parametersDictionary!)
-            {
-                switch (parameter.Key)
-                {
-                    case nameof(DefaultSelectedKey):
-                        DefaultSelectedKey = (string)parameter.Value;
-                        parametersDictionary.Remove(parameter.Key);
-                        break;
-
-                    case nameof(ChildContent):
-                        ChildContent = (RenderFragment)parameter.Value;
-                        parametersDictionary.Remove(parameter.Key);
-                        break;
-
-                    case nameof(OverflowBehavior):
-                        OverflowBehavior = (OverflowBehavior)parameter.Value;
-                        parametersDictionary.Remove(parameter.Key);
-                        break;
-
-                    case nameof(LinkFormat):
-                        LinkFormat = (LinkFormat)parameter.Value;
-                        parametersDictionary.Remove(parameter.Key);
-                        break;
-
-                    case nameof(LinkSize):
-                        LinkSize = (LinkSize)parameter.Value;
-                        parametersDictionary.Remove(parameter.Key);
-                        break;
-
-                    case nameof(HeadersOnly):
-                        HeadersOnly = (bool)parameter.Value;
-                        parametersDictionary.Remove(parameter.Key);
-                        break;
-
-                    case nameof(OnLinkClick):
-                        OnLinkClick = (EventCallback<BitPivotItem>)parameter.Value;
-                        parametersDictionary.Remove(parameter.Key);
-                        break;
-
-                    case nameof(SelectedKey):
-                        SelectedKey = (string)parameter.Value;
-                        hasSetSelectedKey = true;
-                        parametersDictionary.Remove(parameter.Key);
-                        break;
-
-                    case nameof(SelectedKeyChanged):
-                        SelectedKeyChanged = (EventCallback<string>)parameter.Value;
-                        parametersDictionary.Remove(parameter.Key);
-                        break;
-                }
-            }
-            return base.SetParametersAsync(ParameterView.FromDictionary(parametersDictionary));
         }
 
         protected override void RegisterComponentClasses()
