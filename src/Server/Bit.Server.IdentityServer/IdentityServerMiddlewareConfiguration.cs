@@ -122,6 +122,10 @@ namespace Bit.IdentityServer
                     AuthenticationOptions = new AuthenticationOptions
                     {
                         IdentityProviders = ConfigureIdentityProviders
+                    },
+                    InputLengthRestrictions = new InputLengthRestrictions
+                    {
+                        AcrValues = 8 * 1024
                     }
                 };
 

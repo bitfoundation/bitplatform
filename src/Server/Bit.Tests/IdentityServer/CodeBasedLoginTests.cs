@@ -54,7 +54,7 @@ namespace Bit.Tests.IdentityServer
                 {
                     await testEnvironment.Server.LoginWithCredentials("+9891255447788", "سلام به معنی Hello است", "TestResOwner", acr_values: new Dictionary<string, string>
                     {
-                        { "x",  "1:1" },
+                        { "x",  "1:11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111" },
                         { "y",  "test test:test" }
                     });
 
@@ -65,7 +65,7 @@ namespace Bit.Tests.IdentityServer
                 var logger = testEnvironment.GetObjects<ILogger>();
 
                 bool x_is_logged = logger
-                     .Any(l => l.LogData.Any(ld => ld.Key == "x" && ((string)ld.Value).Equals("1:1")));
+                     .Any(l => l.LogData.Any(ld => ld.Key == "x" && ((string)ld.Value).Equals("1:11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111")));
 
                 bool y_is_logged = logger
                      .Any(l => l.LogData.Any(ld => ld.Key == "y" && ((string)ld.Value).Equals("test test:test")));
@@ -103,7 +103,7 @@ namespace Bit.Tests.IdentityServer
                 var logger = testEnvironment.GetObjects<ILogger>();
 
                 bool x_is_logged = logger
-                     .Any(l => l.LogData.Any(ld => ld.Key == "x" && ((string)ld.Value).Equals("1:1")));
+                     .Any(l => l.LogData.Any(ld => ld.Key == "x" && ((string)ld.Value).Equals("1:11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111")));
 
                 bool y_is_logged = logger
                      .Any(l => l.LogData.Any(ld => ld.Key == "y" && ((string)ld.Value).Equals("test test:test")));
