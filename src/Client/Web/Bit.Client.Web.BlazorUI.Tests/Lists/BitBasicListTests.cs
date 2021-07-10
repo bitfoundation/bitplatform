@@ -71,7 +71,9 @@ namespace Bit.Client.Web.BlazorUI.Tests.Lists
             {
                 parameters.Add(p => p.Items, GetTestData(itemCount));
                 if (role.HasValue())
+                {
                     parameters.Add(p => p.Role, role);
+                }
             });
 
             var bitList = component.Find(".bit-bsc-lst");
