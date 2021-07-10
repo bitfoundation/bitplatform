@@ -7,7 +7,7 @@
         return element[property];
     }
 
-    static getHeight(element: { [key: string]: any }): string {
+    static getClientHeight(element: { [key: string]: any }): string {
         return element.clientHeight;
     }
 }

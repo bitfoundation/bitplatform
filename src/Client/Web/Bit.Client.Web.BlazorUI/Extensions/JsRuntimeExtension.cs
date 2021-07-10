@@ -15,9 +15,9 @@ namespace Microsoft.JSInterop
             return await jsRuntime.InvokeAsync<string>("Bit.getProperty", element, property);
         }
 
-        public static async Task<int> GetHeight(this IJSRuntime jsRuntime, ElementReference element)
+        public static async Task<int> GetClientHeight(this IJSRuntime jsRuntime, ElementReference element)
         {
-            return await jsRuntime.InvokeAsync<int>("Bit.getHeight", element);
+            return await jsRuntime.InvokeAsync<int>("Bit.getClientHeight", element);
         }
     }
 }
