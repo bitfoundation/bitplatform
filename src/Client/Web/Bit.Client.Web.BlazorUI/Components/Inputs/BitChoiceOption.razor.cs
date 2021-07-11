@@ -10,12 +10,24 @@ namespace Bit.Client.Web.BlazorUI
     {
         private bool isChecked;
 
+        /// <summary>
+        /// ChoiceOption content, It can be a text
+        /// </summary>
         [Parameter] public string? Text { get; set; }
 
+        /// <summary>
+        /// This value is used to group each ChoiceGroupOption into the same logical ChoiceGroup
+        /// </summary>
         [Parameter] public string? Name { get; set; }
 
+        /// <summary>
+        /// Value of selected ChoiceOption
+        /// </summary>
         [Parameter] public string? Value { get; set; }
 
+        /// <summary>
+        /// Whether or not the option is checked
+        /// </summary>
         [Parameter]
         public bool IsChecked
         {
@@ -27,8 +39,14 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
+        /// <summary>
+        /// Callback for when the ChoiceOption clicked
+        /// </summary>
         [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
+        /// <summary>
+        /// Callback for when the option has been changed
+        /// </summary>
         [Parameter] public EventCallback<ChangeEventArgs> OnChange { get; set; }
 
         [CascadingParameter] protected BitChoiceGroup? ChoiceGroup { get; set; }
