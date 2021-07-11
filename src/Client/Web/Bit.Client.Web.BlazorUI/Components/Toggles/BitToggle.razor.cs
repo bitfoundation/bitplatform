@@ -7,6 +7,7 @@ namespace Bit.Client.Web.BlazorUI
     public partial class BitToggle
     {
         private bool isChecked;
+        private bool IsCheckedHasBeenSet;
 
         [Parameter] public string? OnText { get; set; }
 
