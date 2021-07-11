@@ -1,12 +1,19 @@
-﻿using System.Collections.Generic;
-using Bunit;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-
-namespace Bit.Client.Web.BlazorUI.Tests.Navs
+﻿namespace Bit.Client.Web.BlazorUI.Tests.Navs
 {
+    using System.Collections.Generic;
+    using Bunit;
+    using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+    /// <summary>
+    /// Defines the <see cref="BitNavTests" />.
+    /// </summary>
     [TestClass]
     public class BitNavTests : BunitTestContext
     {
+        /// <summary>
+        /// The BitNav_BaseTest.
+        /// </summary>
+        /// <param name="visual">The visual<see cref="Visual"/>.</param>
         [DataTestMethod,
            DataRow(Visual.Fluent),
            DataRow(Visual.Cupertino),
@@ -25,6 +32,11 @@ namespace Bit.Client.Web.BlazorUI.Tests.Navs
             Assert.IsTrue(bitNav.ClassList.Contains($"bit-nav-{visualClass}") && bitNav.ClassList.Contains($"bit-nav"));
         }
 
+        /// <summary>
+        /// The BitNav_IsEnableTest.
+        /// </summary>
+        /// <param name="visual">The visual<see cref="Visual"/>.</param>
+        /// <param name="isEnabled">The isEnabled<see cref="bool"/>.</param>
         [DataTestMethod,
            DataRow(Visual.Fluent, true),
            DataRow(Visual.Fluent, false),
@@ -48,6 +60,10 @@ namespace Bit.Client.Web.BlazorUI.Tests.Navs
             Assert.IsTrue(bitNav.ClassList.Contains($"bit-nav-{isEnabledClass}-{visualClass}"));
         }
 
+        /// <summary>
+        /// The BitNav_IsOnTopTest.
+        /// </summary>
+        /// <param name="isOnTop">The isOnTop<see cref="bool"/>.</param>
         [DataTestMethod,
           DataRow(true),
           DataRow(false),
@@ -65,6 +81,11 @@ namespace Bit.Client.Web.BlazorUI.Tests.Navs
             Assert.IsTrue(bitNav.ClassList.Contains($"bit-nav-{isOnTopClass}"));
         }
 
+        /// <summary>
+        /// The BitNav_SelectedKeyTest.
+        /// </summary>
+        /// <param name="visual">The visual<see cref="Visual"/>.</param>
+        /// <param name="selectedKey">The selectedKey<see cref="string"/>.</param>
         [DataTestMethod,
          DataRow(Visual.Fluent, "key"),
          DataRow(Visual.Cupertino, "key"),
@@ -85,6 +106,12 @@ namespace Bit.Client.Web.BlazorUI.Tests.Navs
             Assert.IsNotNull(selectedNav);
         }
 
+        /// <summary>
+        /// The BitNavChildrenTest.
+        /// </summary>
+        /// <param name="visual">The visual<see cref="Visual"/>.</param>
+        /// <param name="disabled">The disabled<see cref="bool"/>.</param>
+        /// <param name="hasUrl">The hasUrl<see cref="bool"/>.</param>
         [DataTestMethod,
           DataRow(Visual.Fluent, true, true),
           DataRow(Visual.Fluent, true, false),
@@ -119,6 +146,11 @@ namespace Bit.Client.Web.BlazorUI.Tests.Navs
             Assert.IsNotNull(element);
         }
 
+        /// <summary>
+        /// The BitNavChildren_HasIconTest.
+        /// </summary>
+        /// <param name="visual">The visual<see cref="Visual"/>.</param>
+        /// <param name="hasIcon">The hasIcon<see cref="bool"/>.</param>
         [DataTestMethod,
           DataRow(Visual.Fluent, true),
           DataRow(Visual.Fluent, false),
@@ -144,6 +176,10 @@ namespace Bit.Client.Web.BlazorUI.Tests.Navs
             Assert.IsNotNull(element);
         }
 
+        /// <summary>
+        /// The BitNavAriaLabelTest.
+        /// </summary>
+        /// <param name="ariaLabel">The ariaLabel<see cref="string"/>.</param>
         [DataTestMethod, DataRow("Detailed label")]
         public void BitNavAriaLabelTest(string ariaLabel)
         {
@@ -157,45 +193,59 @@ namespace Bit.Client.Web.BlazorUI.Tests.Navs
             Assert.IsTrue(bitNav.GetAttribute("aria-label").Equals(ariaLabel));
         }
 
+        /// <summary>
+        /// The BitNavLinkItemsAriaLabelTest.
+        /// </summary>
+        /// <param name="ariaLabel">The ariaLabel<see cref="string"/>.</param>
         [DataTestMethod, DataRow("Detailed label")]
         public void BitNavLinkItemsAriaLabelTest(string ariaLabel)
         {
             var navLinkItems = new List<BitNavLinkItem> {
-              new BitNavLinkItem {
-                Name = "Activity",
-                Key = "key1-1",
-                CollapseAriaLabel = ariaLabel,
-                Links = new List < BitNavLinkItem > {
-                  new BitNavLinkItem {
-                    Name = "Activity",
-                    Key = "key1-1-1",
+                new BitNavLinkItem {
+                    Name = "Home",
+                    Key = "key1",
                     CollapseAriaLabel = ariaLabel,
-                  },
-                  new BitNavLinkItem {
-                    Name = "MSN",
-                    Key = "key1-1-2",
-                    CollapseAriaLabel = ariaLabel,
-                  }
+                    Links = new List < BitNavLinkItem > {
+                    new BitNavLinkItem {
+                        Name = "Activity",
+                        Url = "http://msn.com",
+                        Key = "key1-1",
+                        Title = "Activity",
+                        Links = new List < BitNavLinkItem > {
+                            new BitNavLinkItem {
+                                Name = "Activity",
+                                Title = "Activity",
+                                Url = "http://msn.com",
+                                Key = "key1-1-1"
+                            },
+                            new BitNavLinkItem {
+                                Name = "MSN",
+                                Title = "MSN",
+                                Url = "http://msn.com",
+                                Key = "key1-1-2",
+                                Disabled = true
+                            }
+                        }
+                    },
+                    new BitNavLinkItem {
+                        Name = "MSN",
+                        Title = "MSN",
+                        Url = "http://msn.com",
+                        Key = "key1-2",
+                        Disabled = true
+                    },
+                    }
+                },
+                new BitNavLinkItem {
+                    Name = "Documents",
+                    Title = "Documents",
+                    Url = "http://example.com",
+                    Key = "key2",
+                    Target = "_blank",
+                    IsExpanded = true
                 }
-              },
-              new BitNavLinkItem {
-                Name = "MSN",
-                Key = "key1-2",
-                CollapseAriaLabel = ariaLabel,
-                Links = new List < BitNavLinkItem > {
-                  new BitNavLinkItem {
-                    Name = "Activity",
-                    Key = "key1-2-1",
-                    CollapseAriaLabel = ariaLabel,
-                  },
-                  new BitNavLinkItem {
-                    Name = "MSN",
-                    Key = "key1-2-2",
-                    CollapseAriaLabel = ariaLabel,
-                  }
-                }
-              }
             };
+
             var com = RenderComponent<BitNavTest>(parameters =>
             {
                 parameters.Add(p => p.NavLinkItems, navLinkItems);
