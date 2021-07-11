@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
@@ -161,7 +162,7 @@ namespace Bit.Client.Web.BlazorUI
             {
                 if (IsRanged)
                 {
-                    inputHeight = await JSRuntime.GetClientHeight(RootElement);
+                    inputHeight = await JSRuntime!.GetClientHeight(RootElement);
 
                     if (Label.HasValue())
                     {
@@ -177,7 +178,7 @@ namespace Bit.Client.Web.BlazorUI
                 }
                 else
                 {
-                    inputHeight = await JSRuntime.GetClientHeight(ContainerRef);
+                    inputHeight = await JSRuntime!.GetClientHeight(ContainerRef);
                 }
                 FillSlider();
             }
@@ -194,29 +195,25 @@ namespace Bit.Client.Web.BlazorUI
 
         private void HandleInput(ChangeEventArgs e)
         {
-            if (!IsRanged)
-            {
-                Value = Convert.ToInt32(e.Value);
-                FillSlider();
-            }
-            else
-            {
-                UpperValue = null;
-                LowerValue = null;
-            }
-        }
-
-        private void HandleInput(ChangeEventArgs e, bool isLower)
-        {
             if (IsRanged)
             {
-                if (isLower)
+                Value = null;
+
+                if (e.Value is null)
                 {
-                    LowerValue = Convert.ToInt32(e.Value);
+                    LowerValue = null;
+                    UpperValue = null;
+                    return;
+                }
+
+                var val = (int)e.Value;
+                if (val > UpperValue)
+                {
+                    UpperValue = val;
                 }
                 else
                 {
-                    UpperValue = Convert.ToInt32(e.Value);
+                    LowerValue = val;
                 }
 
                 RangeValue = (LowerValue.GetValueOrDefault(RangeValue.Lower), UpperValue.GetValueOrDefault(RangeValue.Upper));
@@ -224,7 +221,18 @@ namespace Bit.Client.Web.BlazorUI
             }
             else
             {
-                Value = null;
+                LowerValue = null;
+                UpperValue = null;
+
+                if (e.Value is null)
+                {
+                    Value = null;
+                }
+                else
+                {
+                    Value = (int)e.Value;
+                    FillSlider();
+                }
             }
         }
 
@@ -253,20 +261,20 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
-        private string GetValueDisplay(int? val)
+        private string? GetValueDisplay(int? val)
         {
             if (ValueFormat.HasNoValue())
             {
-                return val.ToString();
+                return $"{val}";
             }
             else if (ValueFormat!.Contains("p", StringComparison.CurrentCultureIgnoreCase))
             {
-                int digitCount = (Max - 1).ToString().Length;
-                return (val.GetValueOrDefault() / Math.Pow(10, digitCount)).ToString(ValueFormat);
+                int digitCount = $"{(Max - 1)}".Length;
+                return (val.GetValueOrDefault() / Math.Pow(10, digitCount)).ToString(ValueFormat, CultureInfo.InvariantCulture);
             }
             else
             {
-                return val.GetValueOrDefault().ToString(ValueFormat);
+                return val.GetValueOrDefault().ToString(ValueFormat, CultureInfo.InvariantCulture);
             }
         }
     }
