@@ -2,6 +2,7 @@
   "compileOnSave": true,
   "compilerOptions": {
     "strict": true,
-    "outFile": "wwwroot/scripts/bit.client.web.js"
+    "outFile": "wwwroot/scripts/bit.client.web.js",
+    "target": "ES7"
   }
 }
