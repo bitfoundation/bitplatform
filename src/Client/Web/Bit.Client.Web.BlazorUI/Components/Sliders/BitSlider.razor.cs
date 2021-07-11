@@ -18,6 +18,11 @@ namespace Bit.Client.Web.BlazorUI
         private string? styleContainer;
         private int inputHeight;
 
+        private bool ValueHasBeenSet;
+        private bool UpperValueHasBeenSet;
+        private bool LowerValueHasBeenSet;
+        private bool RangeValueHasBeenSet;
+
         private ElementReference ContainerRef { get; set; }
         private ElementReference TitleRef { get; set; }
         private ElementReference ValueLabelRef { get; set; }
