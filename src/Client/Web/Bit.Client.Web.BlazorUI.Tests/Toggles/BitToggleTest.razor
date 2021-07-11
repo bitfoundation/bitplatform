@@ -1,5 +1,11 @@
 ﻿<CascadingValue Value="Visual">
-	<BitToggle IsEnabled="@IsEnabled" @bind-IsChecked="@IsChecked" IsInlineLabel="@IsInlineLabel" OnText="@OnText" OffText="@OffText" AriaLabel="@AriaLabel"></BitToggle>
+	<BitToggle IsEnabled="@IsEnabled" 
+               @bind-IsChecked="@IsChecked" 
+               IsInlineLabel="@IsInlineLabel" 
+               OnText="@OnText" 
+               OffText="@OffText" 
+               AriaLabel="@AriaLabel">
+    </BitToggle>
 </CascadingValue>
 @code {
     [Parameter] public Visual Visual { get; set; }
