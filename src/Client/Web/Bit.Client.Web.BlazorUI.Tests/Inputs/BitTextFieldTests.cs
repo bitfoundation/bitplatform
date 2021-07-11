@@ -187,12 +187,12 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
         }
 
         [DataTestMethod,
-            DataRow(true, false),
-            DataRow(true, true),
-            DataRow(false, false),
-            DataRow(false, true),
+            DataRow(true, false, "u", "d"),
+            DataRow(true, true, "u", "d"),
+            DataRow(false, false, "u", "d"),
+            DataRow(false, true, "u", "d"),
         ]
-        public void BitTextFieldMustRespondToTheKeyEvent(bool isEnabled, bool IsMultiline)
+        public void BitTextFieldMustRespondToTheKeyEvent(bool isEnabled, bool IsMultiline, string keyUpValue, string keyDownValue)
         {
             var component = RenderComponent<BitTextFieldTest>(
                 parameters =>
@@ -203,33 +203,33 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
 
             var bitTextField = IsMultiline ? component.Find(".bit-txt textarea") : component.Find(".bit-txt input");
 
-            bitTextField.KeyDown("down");
-            Assert.AreEqual(isEnabled ? 1 : 0, component.Instance.KeyDownedValue);
+            bitTextField.KeyDown(keyDownValue);
+            Assert.AreEqual(isEnabled ? keyDownValue : null, component.Instance.KeyDownedValue);
 
-            bitTextField.KeyUp("up");
-            Assert.AreEqual(isEnabled ? 1 : 0, component.Instance.KeyUpedValue);
+            bitTextField.KeyUp(keyUpValue);
+            Assert.AreEqual(isEnabled ? keyUpValue : null, component.Instance.KeyUpedValue);
         }
 
-       // [DataTestMethod,
-       //    DataRow(true, false),
-       //    DataRow(true, true),
-       //    DataRow(false, false),
-       //    DataRow(false, true),
-       //]
-       // public void BitTextFieldMustRespondToTheChangeEvent(bool isEnabled, bool IsMultiline)
-       // {
-       //     var component = RenderComponent<BitTextFieldTest>(
-       //         parameters =>
-       //         {
-       //             parameters.Add(p => p.IsEnabled, isEnabled);
-       //             parameters.Add(p => p.IsMultiLine, IsMultiline);
-       //         });
+        [DataTestMethod,
+           DataRow(true, false),
+           DataRow(true, true),
+           DataRow(false, false),
+           DataRow(false, true),
+       ]
+        public void BitTextFieldMustRespondToTheChangeEvent(bool isEnabled, bool IsMultiline)
+        {
+            var component = RenderComponent<BitTextFieldTest>(
+                parameters =>
+                {
+                    parameters.Add(p => p.IsEnabled, isEnabled);
+                    parameters.Add(p => p.IsMultiLine, IsMultiline);
+                });
 
-       //     var bitTextField = IsMultiline ? component.Find(".bit-txt textarea") : component.Find(".bit-txt input");
+            var bitTextField = IsMultiline ? component.Find(".bit-txt textarea") : component.Find(".bit-txt input");
 
-       //     bitTextField.KeyDown("a");
+            bitTextField.KeyDown("a");
 
-       //     Assert.AreEqual(isEnabled ? 1 : 0, component.Instance.CurrentCount);
-       // }
+            //Assert.AreEqual(isEnabled ? 1 : 0, component.Instance.CurrentCount);
+        }
     }
 }

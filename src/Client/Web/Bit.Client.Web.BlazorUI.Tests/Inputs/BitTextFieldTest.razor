@@ -32,11 +32,11 @@
 
     public void HandleKeyDown(KeyboardEventArgs e)
     {
-        KeyDownedValue++;
+        KeyDownedValue = e.Key;
     }
     public void HandleKeyUp(KeyboardEventArgs e)
     {
-        KeyUpedValue++;
+        KeyUpedValue=e.Key;
     }
     public void HandleFocus(FocusEventArgs e)
     {
@@ -62,6 +62,6 @@
     public int FocusedValue { get; set; }
     public int FocusedOutValue { get; set; }
     public int FocusedInValue { get; set; }
-    public int KeyDownedValue { get; set; }
-    public int KeyUpedValue { get; set; }
+    public string KeyDownedValue { get; set; }
+    public string KeyUpedValue { get; set; }
 }

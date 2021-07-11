@@ -1,25 +1,45 @@
 ﻿<CascadingValue Value="Visual">
-    <BitChoiceGroup Name="@Name"
-                    IsEnabled="@IsEnabled"
+    <BitChoiceGroup Name="@ChoiceGroupName"
+                    IsEnabled="@ChoiceGroupIsEnabled"
                     OnValueChange="HandleValueChange">
-        <BitChoiceOption OnClick="HandleClick" Value="@Value"></BitChoiceOption>
+        <BitChoiceOption Value="@Value"
+                         IsEnabled="@ChoiceOptionIsEnabled"
+                         Text="@Text"
+                         Name="@ChoiceOptionName"
+                         IsChecked="IsChecked"
+                         OnClick="HandleClick"
+                         OnChange="HandleChange">
+        </BitChoiceOption>
+
     </BitChoiceGroup>
 </CascadingValue>
 @code {
     [Parameter] public Visual Visual { get; set; }
-    [Parameter] public bool IsEnabled { get; set; }
-    [Parameter] public string Name { get; set; }
-    [Parameter] public string Value { get; set; }
+    [Parameter] public bool ChoiceGroupIsEnabled { get; set; }
+    [Parameter] public string ChoiceGroupName { get; set; }
 
-    public int CurrentCount { get; set; }
-    public string ChangedValue { get; set; } = "";
+    [Parameter] public bool ChoiceOptionIsEnabled { get; set; }
+    [Parameter] public string Value { get; set; }
+    [Parameter] public string? Text { get; set; }
+    [Parameter] public string? ChoiceOptionName { get; set; }
+    [Parameter] public bool IsChecked { get; set; }
+
+    public int ChoiceOptionClickedValue { get; set; }
+    public int ChoiceOptionChangedValue { get; set; }
+    public string ChoiceGroupChangedValue { get; set; } = "";
 
     public void HandleClick(MouseEventArgs e)
     {
-        CurrentCount++;
+        ChoiceOptionClickedValue++;
     }
     public void HandleValueChange(string value)
     {
-        ChangedValue = value;
+        ChoiceGroupChangedValue = value;
+    }
+    public void HandleChange(ChangeEventArgs e)
+    {
+        ChoiceOptionChangedValue++;
+        //Count2++;
+        Value = e.Value.ToString();
     }
 }
