@@ -1,0 +1,16 @@
+﻿<CascadingValue Value="Visual">
+    <BitPivot OverflowBehavior="OverflowBehavior"
+              HeadersOnly="HeadersOnly"
+              LinkFormat="LinkFormat"
+              LinkSize="LinkSize">
+    </BitPivot>
+</CascadingValue>
+
+@code{
+    [Parameter] public OverflowBehavior OverflowBehavior { get; set; }
+    [Parameter] public Visual Visual { get; set; }
+    [Parameter] public bool HeadersOnly { get; set; }
+    [Parameter] public LinkFormat LinkFormat { get; set; }
+    [Parameter] public LinkSize LinkSize { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

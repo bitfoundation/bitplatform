@@ -7,6 +7,7 @@
 @import "SearchBoxes/bit-search-box.fluent.scss";
 @import "Inputs/bit-text-field.fluent.scss";
 @import "Inputs/bit-choice-option.fluent.scss";
+@import "Inputs/bit-drop-down.fluent.scss";
 @import "Buttons/bit-button.fluent.scss";
 @import "Buttons/bit-compound-button.fluent.scss";
 @import "Buttons/bit-action-button.fluent.scss";
@@ -15,7 +16,11 @@
 @import "Labels/bit-label.fluent.scss";
 @import "Links/bit-link.fluent.scss";
 @import "Checkboxes/bit-checkbox.fluent.scss";
+@import "SpinButtons/bit-spin-button.fluent.scss";
 @import "Rating/bit-rating.fluent.scss";
 @import "Spinner/bit-spinner.fluent.scss";
 @import "Toggles/bit-toggle.fluent.scss";
 @import "Navs/bit-nav.fluent.scss";
+@import "Lists/bit-basic-list.scss";
+@import "Pivot/pivot.fluent.scss";
+@import "Buttons/bit-toggle-button.fluent.scss";

@@ -12,10 +12,10 @@
 
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="5.0.0" />
 
-    <PackageReference Include="PropertyChanged.Fody" Version="3.3.3" />
+    <PackageReference Include="PropertyChanged.Fody" Version="3.4.0" />
     <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
     <PackageReference Include="System.Net.Http.Json" Version="5.0.0" />
-    <PackageReference Include="Xamarin.Forms" Version="5.0.0.1931" />
+    <PackageReference Include="Xamarin.Forms" Version="5.0.0.2012" />
 
   </ItemGroup>
 

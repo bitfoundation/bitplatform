@@ -5,7 +5,9 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:animations="clr-namespace:Rg.Plugins.Popup.Animations;assembly=Rg.Plugins.Popup"
     xmlns:pages="clr-namespace:Rg.Plugins.Popup.Pages;assembly=Rg.Plugins.Popup"
-    xmlns:view="clr-namespace:Bit.CSharpClientSample.Views">
+    xmlns:view="clr-namespace:Bit.CSharpClientSample.Views"
+    xmlns:vm="clr-namespace:Bit.CSharpClientSample.ViewModels"
+    x:DataType="vm:TestViewModel">
     <pages:PopupPage.Animation>
         <animations:MoveAnimation PositionOut="Right" />
     </pages:PopupPage.Animation>
@@ -19,6 +21,7 @@
         <Button Command="{Binding IncreaseStepsCountCommand}" Text="{Binding StepsCount, StringFormat='{} Tapped {0} times!', Converter={view:TestConverter}}" />
         <Button Command="{Binding TestSignalrCommand}" Text="Test signalr!" />
         <Button Command="{Binding ThrowExceptionCommand}" Text="Throw an exception!" />
+        <Button Command="{Binding CrashCommand}" Text="Crash!" />
         <Label Text="{Binding MessageReceiver.IsConnected, StringFormat='{} IsConnected: {0}'}" />
     </StackLayout>
 </pages:PopupPage>

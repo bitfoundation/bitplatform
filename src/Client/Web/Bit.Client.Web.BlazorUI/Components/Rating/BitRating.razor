@@ -1,13 +1,17 @@
 ﻿@namespace Bit.Client.Web.BlazorUI
 @inherits BitComponentBase
 
-<div @ref="RootElement" class="@ClassBuilder.Value" style="@StyleBuilder.Value">
+<div @ref="RootElement"
+     @attributes="HtmlAttributes"
+     class="@ClassBuilder.Value"
+     style="@StyleBuilder.Value">
+
     @for (int item = 0; item < Max; item++)
     {
         var index = item;
         <button @onclick="() => HandleClick(index + 1)">
             <div>
-                <i class="@RatingColorClass[index] bit-icon bit-icon--@RatingIcon[index]"></i>
+                <i class="@RatingColorClasses[index] bit-icon bit-icon--@RatingIcons[index]"></i>
             </div>
         </button>
     }

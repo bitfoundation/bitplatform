@@ -9,14 +9,18 @@ namespace Prism.Ioc
 {
     public static class IContainerRegistryExtensions
     {
-        public static IContainerRegistry RegisterPartialView<TPartialView, TPartialViewModel>(this IContainerRegistry containerRegistry)
-            where TPartialView : TemplatedView
-            where TPartialViewModel : BitViewModelBase
+        public static void RegisterForRegionNav<TView>(this IContainerRegistry containerRegistry, string? name = null)
+            where TView : View
         {
-            ViewModelLocationProvider.Register<TPartialView>(() => containerRegistry.GetContainer().Resolve<TPartialViewModel>());
-            containerRegistry.GetBuilder().RegisterType<TPartialViewModel>().AsSelf().PropertiesAutowired(PropertyWiringOptions.PreserveSetValues);
+            containerRegistry.RegisterForRegionNavigation<TView>(name);
+        }
 
-            return containerRegistry;
+        public static void RegisterForRegionNav<TView, TViewModel>(this IContainerRegistry containerRegistry, string? name = null)
+            where TView : View
+            where TViewModel : class
+        {
+            containerRegistry.RegisterForRegionNavigation<TView, TViewModel>(name);
+            containerRegistry.GetBuilder().RegisterType<TViewModel>().PropertiesAutowired(PropertyWiringOptions.PreserveSetValues);
         }
 
         public static void RegisterForNav<TView>(this IContainerRegistry containerRegistry, string? name = null)

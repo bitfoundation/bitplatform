@@ -2,6 +2,7 @@
 @inherits BitComponentBase
 
 <nav @ref="RootElement"
+     @attributes="HtmlAttributes"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      role="navigation"
@@ -11,7 +12,7 @@
         <div>
             <div>
                 <ul role="list">
-                    @foreach (var navLink in NavLinks)
+                    @foreach (var navLink in NavLinkItems)
                         if (childTemplate is not null)
                             @childTemplate(navLink)
                 </ul>
@@ -20,7 +21,7 @@
     }
     else
     {
-        @foreach (var navLink in NavLinks)
+        @foreach (var navLink in NavLinkItems)
         {
             <div>
                 @HeaderTemplate(navLink)
@@ -40,8 +41,7 @@
 </nav>
 
 @code{
-
-    public RenderFragment<NavLink>? childTemplate { get; set; }
+    public RenderFragment<BitNavLinkItem>? childTemplate { get; set; }
 
     protected override void OnParametersSet()
     {
@@ -61,39 +61,48 @@
                 </button>
             }
 
-            <a href="@(navLink.Disabled ? "/" : navLink.Url)"
-               title="@navLink.Title"
-               tabindex="-1"
-               onclick="@(navLink.Disabled ? "return false;" : "")"
-               target="@(MapNavLinkTargetTypeToString(navLink.TargetType))"
-               style="padding: 0px 20px 0px @(((navLink.Depth * 14)+(string.IsNullOrWhiteSpace(navLink.Icon) ? 27 : 3)).ToString())px;"
-               class="@GetLinkClass(navLink)">
-
-                <span>
-                    @if (!string.IsNullOrWhiteSpace(navLink.Icon))
-                    {
-                        <i class=@($"bit-icon bit-icon--{navLink.Icon}")></i>
-                    }
-                    <div>@navLink.Name</div>
-
-                </span>
-            </a>
-            @if (@navLink.Links?.Any() != null && navLink.IsExpanded)
+            @if (navLink.Url.HasValue())
             {
-                <ul role="list">
-                    @foreach (var childLink in navLink.Links)
-                    {
-                        childLink.Depth = navLink.Depth + 1;
-                        if (childTemplate is not null)
-                            @childTemplate(childLink)
-                    }
-                </ul>
+                <a href="@(navLink.Disabled ? "/" : navLink.Url)"
+                   title="@navLink.Title"
+                   tabindex="-1"
+                   onclick="@(navLink.Disabled ? "return false;" : "")"
+                   target="@navLink.Target"
+                   style="padding: 0px 20px 0px @(((navLink.Depth * 14)+(navLink.Icon.HasNoValue() ? 27 : 3)).ToString())px;"
+                   class="@GetLinkClass(navLink)">
+
+                    <span>
+                        @if (navLink.Icon.HasValue())
+                        {
+                            <i class=@($"bit-icon bit-icon--{navLink.Icon}")></i>
+                        }
+                        <div>@navLink.Name</div>
+                    </span>
+                </a>
+            }
+            else
+            {
+                <button class="@GetLinkClass(navLink)"
+                        style="padding: 0px 20px 0px @(((navLink.Depth * 14)+27).ToString())px;"
+                        @onclick="(() => Toggle(navLink))">
+                    <span>
+                        <div>@navLink.Name</div>
+                    </span>
+                </button>
             }
         </div>
-
+        @if (@navLink.Links?.Any() != null && navLink.IsExpanded)
+        {
+            <ul role="list">
+                @foreach (var childLink in navLink.Links)
+                {
+                    childLink.Depth = navLink.Depth + 1;
+                    if (childTemplate is not null)
+                        @childTemplate(childLink)
+                    }
+            </ul>
+        }
     </li>
     );
     }
-
-
 }

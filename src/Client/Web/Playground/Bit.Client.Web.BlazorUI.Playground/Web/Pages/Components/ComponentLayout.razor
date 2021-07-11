@@ -1,0 +1,21 @@
+﻿@inherits LayoutComponentBase
+@layout MainLayout
+
+<div>
+   <div class="navbar">
+        <h3 class="header-title">Bit Component</h3>
+        <div class="links">
+            <BitLink Href="#">Home</BitLink>
+            <BitLink Href="/components/buttons" Class="active">Components</BitLink>
+            <BitLink Href="#">Description</BitLink>
+        </div>
+    </div>
+    <div class="row">
+        <NavMenu />
+        <div class="main">
+            @Body
+        </div>
+    </div>
+    <div class="footer">
+    </div>
+</div>
