@@ -19,4 +19,4 @@ jobs:
     - name: Build
       run: dotnet build --no-restore src/Bit.Client.Web.BlazorUI.sln
     - name: Test
-      run: dotnet test --no-build src/Client/Web/Bit.Client.Web.BlazorUI.Tests/Bit.Client.Web.BlazorUI.Tests.csproj
+      run: dotnet test --no-build --verbosity normal src/Client/Web/Bit.Client.Web.BlazorUI.Tests/Bit.Client.Web.BlazorUI.Tests.csproj
