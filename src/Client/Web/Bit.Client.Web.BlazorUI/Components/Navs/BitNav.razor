@@ -61,13 +61,15 @@
                 </button>
             }
 
-            <a href="@(navLink.Disabled ? "/" : navLink.Url)"
-               title="@(navLink.Title.HasValue() ? navLink.Title : navLink.Name)"
-               tabindex="-1"
-               onclick="@(navLink.Disabled ? "return false;" : "")"
-               target="@navLink.Target"
-               style="padding: 0px 20px 0px @(((navLink.Depth * 14)+(navLink.Icon.HasNoValue() ? 27 : 3)).ToString())px;"
-               class="@GetLinkClass(navLink)">
+            @if (navLink.Url.HasValue())
+            {
+                <a href="@(navLink.Disabled ? "/" : navLink.Url)"
+                   title="@(navLink.Title.HasValue() ? navLink.Title : navLink.Name)"
+                   tabindex="-1"
+                   onclick="@(navLink.Disabled ? "return false;" : "")"
+                   target="@navLink.Target"
+                   style="padding: 0px 20px 0px @(((navLink.Depth * 14)+(navLink.Icon.HasNoValue() ? 27 : 3)).ToString())px;"
+                   class="@GetLinkClass(navLink)">
 
                     <span>
                         @if (navLink.Icon.HasValue())
@@ -81,6 +83,7 @@
             else
             {
                 <button class="@GetLinkClass(navLink)"
+                        title="@(navLink.Title.HasValue() ? navLink.Title : navLink.Name)"
                         style="padding: 0px 20px 0px @(((navLink.Depth * 14)+27).ToString())px;"
                         @onclick="(() => Toggle(navLink))">
                     <span>
