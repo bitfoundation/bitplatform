@@ -5,7 +5,7 @@ namespace Bit.Client.Web.BlazorUI
     public class BitNavLinkItem
     {
         /// <summary>
-        /// Unique, stable key for this link, used when rendering the list of links and for tracking the currently selected link
+        /// A unique value to use as a key or id of the item, used when rendering the list of links and for tracking the currently selected link
         /// </summary>
         public string? Key { get; set; }
 
@@ -50,7 +50,7 @@ namespace Bit.Client.Web.BlazorUI
         public string? Target { get; set; }
 
         /// <summary>
-        /// Child links to this link, the links that are below this link
+        /// A list of items to render as children of the current item
         /// </summary>
         public IEnumerable<BitNavLinkItem>? Links { get; set; }
 
