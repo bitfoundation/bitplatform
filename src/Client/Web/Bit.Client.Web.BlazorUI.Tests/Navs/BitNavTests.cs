@@ -167,39 +167,28 @@
                     Key = "key1",
                     CollapseAriaLabel = ariaLabel,
                     Links = new List < BitNavLinkItem > {
-                    new BitNavLinkItem {
-                        Name = "Activity",
-                        Url = "http://msn.com",
-                        Key = "key1-1",
-                        Title = "Activity",
-                        Links = new List < BitNavLinkItem > {
-                            new BitNavLinkItem {
-                                Name = "Activity",
-                                Title = "Activity",
-                                Url = "http://msn.com",
-                                Key = "key1-1-1"
-                            },
-                            new BitNavLinkItem {
-                                Name = "MSN",
-                                Title = "MSN",
-                                Url = "http://msn.com",
-                                Key = "key1-1-2"
-                            }
+                        new BitNavLinkItem {
+                            Name = "Activity",
+                            Url = "http://msn.com",
+                            Key = "key1-1",
+                            Title = "Activity"
                         }
-                    },
-                    new BitNavLinkItem {
-                        Name = "MSN",
-                        Title = "MSN",
-                        Url = "http://msn.com",
-                        Key = "key1-2"
-                    },
                     }
                 },
                 new BitNavLinkItem {
                     Name = "Documents",
                     Title = "Documents",
                     Url = "http://example.com",
-                    Key = "key2"
+                    Key = "key2",
+                    CollapseAriaLabel = ariaLabel,
+                    Links = new List < BitNavLinkItem > {
+                        new BitNavLinkItem {
+                            Name = "Activity",
+                            Url = "http://example.com",
+                            Key = "key2-1",
+                            Title = "Activity"
+                        }
+                    }
                 }
             };
 
