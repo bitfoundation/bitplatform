@@ -122,6 +122,12 @@ namespace Bit.IdentityServer
                     AuthenticationOptions = new AuthenticationOptions
                     {
                         IdentityProviders = ConfigureIdentityProviders
+                    },
+                    InputLengthRestrictions = new InputLengthRestrictions
+                    {
+                        AcrValues = 32 * 1024
+                        // if we were using http headers instead of acr values, kestrel's default max http headers size would affect us which is 32 KB. IIS default max http headers size is 8 to 16 KB (Based on version). nginx default max http headers size is 8 KB.
+                        // Note that acr values are persisted in body, not headers.
                     }
                 };
 

@@ -34,6 +34,8 @@ p {
 }
 
 .navbar {
+    display: flex;
+    justify-content: space-between;
     z-index: 9999;
     height: 80px;
     overflow: hidden;
@@ -46,18 +48,19 @@ p {
     }
 }
 
-.bit-lnk-fluent > a {
-    float: left;
-    display: block;
-    color: $White;
-    text-align: center;
-    padding: 30px;
-    text-decoration: none;
-    float: right;
+.links {
+    padding-top: 29px;
 
-    &:hover {
-        text-decoration: none;
+    .bit-lnk > a {
         color: $White;
+        text-align: center;
+        padding: 30px;
+        text-decoration: none;
+
+        &:hover {
+            text-decoration: none;
+            color: $White;
+        }
     }
 }
 
@@ -153,6 +156,7 @@ p {
     color: $LightBlue;
     text-decoration: underline;
 }
+
 .custom-button {
     background-color: $DarkRed;
     border-color: $DarkRed;
