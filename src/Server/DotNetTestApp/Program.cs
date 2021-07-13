@@ -1,7 +1,10 @@
-﻿using Bit.Owin;
+﻿using Bit.Core;
+using Bit.Core.Implementations;
+using Bit.Owin;
 using Bit.Owin.Implementations;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Serilog;
 using Serilog.Formatting.Compact;
 using System;
@@ -13,6 +16,10 @@ namespace DotNetTestApp
     {
         public static async Task Main(string[] args)
         {
+            AssemblyContainer.Current.Init();
+
+            AspNetCoreAppEnvironmentsProvider.Current.Use();
+
             Log.Logger = new LoggerConfiguration()
                 .WriteTo.Console(new RenderedCompactJsonFormatter())
                 .Enrich.FromLogContext()
@@ -36,10 +43,8 @@ namespace DotNetTestApp
             }
         }
 
-        public static IWebHost BuildWebHost(string[] args) =>
-            BitWebHost.CreateDefaultBuilder(args)
-                .UseStartup<AppStartup>()
-                .ConfigureServices(services => services.AddSingleton(Log.Logger))
+        public static IHost BuildWebHost(string[] args) =>
+            BitWebHost.CreateWebHost(args)
                 .UseSerilog()
                 .Build();
     }

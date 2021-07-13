@@ -43,7 +43,7 @@ namespace Bit.Core.Contracts
     /// <summary>
     /// Registers dependencies such as repositories and middlewares such as web api, signalr etc
     /// </summary>
-    public interface IDependencyManager : IDependencyResolver
+    public interface IDependencyManager : IDependencyResolver, IServiceProviderFactory<IDependencyManager>
     {
         /// <summary>
         /// By calling <see cref="Init"/> you can start registering your services.
