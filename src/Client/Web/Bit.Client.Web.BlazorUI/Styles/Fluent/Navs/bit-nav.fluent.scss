@@ -1,6 +1,6 @@
 ﻿@import "../colors.fluent.scss", "../../functions.scss";
 
-@mixin getLinkStyle($hasUrl: true,$enabled: true, $noChildren: false) {
+@mixin getLinkStyle($hasUrl: true, $enabled: true, $haschildren: false) {
     outline: transparent;
     position: relative;
     font-size: 14px;
@@ -18,7 +18,7 @@
     overflow: hidden;
     user-select: none;
 
-    @if $noChildren == false {
+    @if $haschildren == true {
         border-bottom: 1px solid $Grey30;
     }
 
@@ -30,8 +30,7 @@
             color: $Primary !important;
         }
 
-        @if $noChildren == true or $hasUrl {
-
+        @if $haschildren == false or $hasUrl {
             &:focus {
                 background-color: $Grey30;
                 color: $Black;
@@ -209,9 +208,9 @@
 }
 
 .bit-nav-link-disabled-nourl-fluent {
-    @include getLinkStyle($hasUrl:false,$enabled:false)
+    @include getLinkStyle($hasUrl: false, $enabled: false)
 }
 
-.bit-nav-no-children-fluent {
-    @include getLinkStyle($noChildren:true)
+.bit-nav-haschildren-fluent {
+    @include getLinkStyle($haschildren: true)
 }
