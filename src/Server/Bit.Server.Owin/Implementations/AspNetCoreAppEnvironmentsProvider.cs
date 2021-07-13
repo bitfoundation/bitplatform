@@ -23,7 +23,7 @@ namespace Bit.Owin.Implementations
 
         public virtual IConfiguration Configuration { get; set; } = default!;
 
-        public virtual IWebHostEnvironment WebHostEnvironment { get; set; } = default!;
+        public virtual IHostEnvironment HostEnvironment { get; set; } = default!;
 
         private AppEnvironment? _appEnvironment;
 
@@ -104,12 +104,12 @@ namespace Bit.Owin.Implementations
 
             _appEnvironment = new AppEnvironment
             {
-                Name = WebHostEnvironment.EnvironmentName,
+                Name = HostEnvironment.EnvironmentName,
                 IsActive = true,
-                DebugMode = WebHostEnvironment.IsDevelopment(),
+                DebugMode = HostEnvironment.IsDevelopment(),
                 AppInfo = new EnvironmentAppInfo
                 {
-                    Name = WebHostEnvironment.ApplicationName,
+                    Name = HostEnvironment.ApplicationName,
                     Version = (Assembly.GetCallingAssembly().GetCustomAttribute<AssemblyFileVersionAttribute>()!).Version,
                     DefaultTimeZone = appInfo?.GetValue<string?>(nameof(EnvironmentAppInfo.DefaultTimeZone), defaultValue: null)
                 },
@@ -122,8 +122,6 @@ namespace Bit.Owin.Implementations
             _appEnvironment.Security.IssuerName = security?.GetValue<string?>(nameof(EnvironmentSecurity.IssuerName), defaultValue: null) ?? _appEnvironment.Security.IssuerName;
             _appEnvironment.Security.Scopes = security?.GetValue<string[]?>(nameof(EnvironmentSecurity.Scopes), defaultValue: null) ?? _appEnvironment.Security.Scopes;
             _appEnvironment.Security.SsoServerUrl = security?.GetValue<string?>(nameof(EnvironmentSecurity.SsoServerUrl), defaultValue: null) ?? _appEnvironment.Security.SsoServerUrl;
-
-            DefaultAppEnvironmentsProvider.Current = this;
         }
 
         public virtual (bool success, string? message) TryGetActiveAppEnvironment(out AppEnvironment? activeAppEnvironment)
@@ -144,6 +142,11 @@ namespace Bit.Owin.Implementations
                 return _appEnvironment!;
 
             throw new InvalidOperationException(message);
+        }
+
+        public virtual void Use()
+        {
+            DefaultAppEnvironmentsProvider.Current = this;
         }
     }
 }

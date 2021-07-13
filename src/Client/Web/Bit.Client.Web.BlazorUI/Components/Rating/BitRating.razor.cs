@@ -14,16 +14,34 @@ namespace Bit.Client.Web.BlazorUI
 
         public string[] RatingIcons { get; set; } = Array.Empty<string>();
 
+        /// <summary>
+        /// Allow the initial rating value be 0. Note that a value of 0 still won't be selectable by mouse or keyboard
+        /// </summary>
         [Parameter] public bool AllowZeroStars { get; set; }
 
+        /// <summary>
+        /// Maximum rating. Must be >= min (0 if AllowZeroStars is true, 1 otherwise)
+        /// </summary>
         [Parameter] public int Max { get; set; } = 5;
 
+        /// <summary>
+        /// Custom icon name for selected rating elements, If unset, default will be the FavoriteStarFill icon
+        /// </summary>
         [Parameter] public string Icon { get; set; } = "FavoriteStarFill";
 
+        /// <summary>
+        /// Custom icon name for unselected rating elements, If unset, default will be the FavoriteStar icon
+        /// </summary>
         [Parameter] public string UnselectedIcon { get; set; } = "FavoriteStar";
 
+        /// <summary>
+        /// Size of rating
+        /// </summary>
         [Parameter] public RatingSize Size { get; set; }
 
+        /// <summary>
+        /// A flag to mark rating control as readOnly
+        /// </summary>
         [Parameter]
         public bool IsReadonly
         {
@@ -35,6 +53,9 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
+        /// <summary>
+        /// Current rating value. Must be a number between min (0 if AllowZeroStars is true, 1 otherwise) and max.
+        /// </summary>
         [Parameter]
         public int Value
         {
@@ -51,8 +72,14 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
+        /// <summary>
+        /// Callback that is called when the rating value changed
+        /// </summary>
         [Parameter] public EventCallback<int> ValueChanged { get; set; }
 
+        /// <summary>
+        /// Callback that is called when the rating has changed
+        /// </summary>
         [Parameter] public EventCallback<int> OnChange { get; set; }
 
         private string? _colorClass;
