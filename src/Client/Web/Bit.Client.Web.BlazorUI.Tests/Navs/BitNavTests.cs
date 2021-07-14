@@ -3,8 +3,8 @@ using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.Client.Web.BlazorUI.Tests.Navs
-{
-        [TestClass]
+{ 
+    [TestClass]
     public class BitNavTests : BunitTestContext
     {
  
