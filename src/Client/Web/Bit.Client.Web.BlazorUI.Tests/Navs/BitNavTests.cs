@@ -1,10 +1,9 @@
-﻿namespace Bit.Client.Web.BlazorUI.Tests.Navs
+﻿using System.Collections.Generic;
+using Bunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+namespace Bit.Client.Web.BlazorUI.Tests.Navs
 {
-    using System.Collections.Generic;
-    using Bunit;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
-
-    [TestClass]
+        [TestClass]
     public class BitNavTests : BunitTestContext
     {
  
