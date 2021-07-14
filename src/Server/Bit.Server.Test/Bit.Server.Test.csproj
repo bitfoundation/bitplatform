@@ -17,7 +17,7 @@
     <PackageReference Include="Selenium.Support" Version="3.141.0" />
     <PackageReference Include="Selenium.WebDriver" Version="3.141.0" />
     <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="91.0.4472.10100" />
-    <PackageReference Include="Simple.OData.V4.Client" Version="5.21.0" />
+    <PackageReference Include="Simple.OData.V4.Client" Version="5.22.0" />
   </ItemGroup>
 
   <ItemGroup>

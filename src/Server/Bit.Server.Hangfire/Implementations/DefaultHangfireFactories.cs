@@ -28,6 +28,7 @@ namespace Bit.Hangfire.Implementations
 
             return new DashboardOptions
             {
+                AsyncAuthorization = resolver.ResolveAll<IDashboardAsyncAuthorizationFilter>(),
                 Authorization = resolver.ResolveAll<IDashboardAuthorizationFilter>(),
                 AppPath = appEnv.GetHostVirtualPath(),
                 DashboardTitle = $"Hangfire dashboard - {appEnv.Name} environment"

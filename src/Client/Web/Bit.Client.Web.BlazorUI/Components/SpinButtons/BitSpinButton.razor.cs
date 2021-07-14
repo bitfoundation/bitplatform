@@ -101,6 +101,6 @@ namespace Bit.Client.Web.BlazorUI
 
         private double Normalize(double value) => IsStepDecimal ? Math.Round(value, 2) : value;
 
-        private string ValueWithSuffix => string.IsNullOrEmpty(Suffix) ? $"{Normalize(Value)}" : $"{Normalize(Value)} {Suffix}";
+        private string ValueWithSuffix => Suffix.HasNoValue() ? $"{Normalize(Value)}" : $"{Normalize(Value)} {Suffix}";
     }
 }
