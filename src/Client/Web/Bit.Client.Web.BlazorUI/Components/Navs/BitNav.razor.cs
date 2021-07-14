@@ -50,8 +50,9 @@ namespace Bit.Client.Web.BlazorUI
             var hasIcon = navLink.Icon.HasNoValue()
                             ? $"bit-nav-has-not-icon-{VisualClassRegistrar()}"
                             : $"bit-nav-has-icon-{VisualClassRegistrar()}";
+            var hasChildren = navLink.Links?.Any() ?? false ? $"bit-nav-haschildren-{VisualClassRegistrar()}" : "";
 
-            return $"{mainStyle} {selected} {hasIcon}";
+            return $"{mainStyle} {selected} {hasIcon} {hasChildren}";
         }
     }
 }
