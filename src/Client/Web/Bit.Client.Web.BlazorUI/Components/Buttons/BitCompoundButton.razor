@@ -12,11 +12,17 @@
         type="button"
         @onclick="HandleOnClick">
     <span class="no-text-select">
-        <span>
-            @Text
-        </span>
-        <span>
-            @SecondaryText
-        </span>
+        @if (Text.HasValue())
+        {
+            <span class="bit-cmp-btn-text">
+                @Text
+            </span>
+        }
+        @if (SecondaryText.HasValue())
+        {
+            <span class="bit-cmp-btn-secondary-text">
+                @SecondaryText
+            </span>
+        }
     </span>
 </button>

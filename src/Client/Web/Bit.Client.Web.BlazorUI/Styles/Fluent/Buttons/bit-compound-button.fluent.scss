@@ -12,17 +12,19 @@
     box-sizing: border-box;
     max-width: 280px;
     min-height: 72px;
+    display: inline-flex;
+    position: relative;
 
     & > span {
         height: 100%;
         min-width: 100%;
 
-        & span:first-child {
+        .bit-cmp-btn-text {
             margin: 0px 0px 5px;
             display: block;
         }
 
-        & span:last-child {
+        .bit-cmp-btn-secondary-text {
             font-size: rem(12px);
             font-weight: 400;
             line-height: 100%;
