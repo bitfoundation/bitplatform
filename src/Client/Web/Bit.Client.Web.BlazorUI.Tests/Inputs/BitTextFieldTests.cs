@@ -229,6 +229,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
 
             bitTextField.KeyDown("a");
 
+            //TODO: bypassed - BUnit oninput event issue
             //Assert.AreEqual(isEnabled ? 1 : 0, component.Instance.CurrentCount);
         }
     }

@@ -46,10 +46,6 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
             Assert.IsTrue(bitChoiceOption.ClassList.Contains($"bit-cho-{optionIsEnabledClass}-{visualClass}"));
         }
 
-        /// <summary>
-        /// /
-        /// </summary>
-        /// <param name="name"></param>
         [DataTestMethod, DataRow("groupName", "optionName")]
         public void BitChoiceGroupShouldGiveNameToChoiceOptions(string groupName, string optionName)
         {
@@ -83,19 +79,10 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
 
             input.Click();
 
+            //TODO: bypassed - BUnit onchange event issue
             //Assert.AreEqual(isEnabled ? 1 : 0, component.Instance.ChoiceOptionClickedValue);
             //Assert.AreEqual(isEnabled ? value : "", component.Instance.ChoiceGroupChangedValue);
         }
-
-
-
-        /// ////////////////////////////////////////////////////////////////////////////////////
-        /// ////////////////////////////////////////////////////////////////////////////////////
-        /// ////////////////////////////////////////////////////////////////////////////////////
-        /// ////////////////////////////////////////////////////////////////////////////////////
-        /// ////////////////////////////////////////////////////////////////////////////////////
-        /// ////////////////////////////////////////////////////////////////////////////////////
-        /// ////////////////////////////////////////////////////////////////////////////////////
 
         [DataTestMethod, DataRow("test value")]
         public void BitChoiceOptionShouldTakeCorrectValue(string value)
@@ -159,15 +146,25 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                     parameters.Add(p => p.ChoiceOptionIsEnabled, optionIsEnabled);
                 });
 
-            var bitChoiceOptionInput = component.Find(".bit-cho input");
-
-            bitChoiceOptionInput.Click();
+            var input1 = component.Find(".bit-chg .bit-cho:nth-child(1) input");
+            input1.Click();
 
             if (groupIsEnabled && optionIsEnabled)
             {
-                //Assert.IsTrue(bitChoiceOptionInput.HasAttribute("checked"));
+                //TODO: bypassed - BUnit onchange event issue
+                //Assert.IsTrue(input1.HasAttribute("checked"));
             }
 
+            var input2 = component.Find($".bit-chg .bit-cho:nth-child(2) input");
+            input2.Click();
+
+            if (groupIsEnabled && optionIsEnabled)
+            {
+                //TODO: bypassed - BUnit onchange event issue
+                //Assert.IsTrue(input2.HasAttribute("checked"));
+            }
+
+            //TODO: bypassed - BUnit onchange event issue
             //Assert.AreEqual(groupIsEnabled && optionIsEnabled ? 1 : 0, component.Instance.ChoiceOptionClickedValue);
         }
 
@@ -192,9 +189,11 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
 
             if (groupIsEnabled && optionIsEnabled)
             {
+                //TODO: bypassed - BUnit onchange event issue
                 //Assert.IsTrue(input.HasAttribute("checked"));
             }
 
+            //TODO: bypassed - BUnit onchange event issue
             //Assert.AreEqual(groupIsEnabled && optionIsEnabled ? count.ToString() : null, component.Instance.Value);
             //Assert.AreEqual(groupIsEnabled && optionIsEnabled ? 1 : 0, component.Instance.ChoiceOptionChangedValue);
         }
