@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 namespace Bit.Client.Web.BlazorUI.Tests.Navs
 {
         [TestClass]
