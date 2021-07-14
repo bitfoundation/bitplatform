@@ -79,7 +79,9 @@ namespace Bit.Client.Web.BlazorUI
         protected override void RegisterComponentClasses()
         {
             ClassBuilder.Register(() => IsEnabled is false
-                                        ? string.Empty
+                                        ? ButtonStyle == ButtonStyle.Primary
+                                            ? $"{RootElementClass}-primary-disabled-{VisualClassRegistrar()}"
+                                            : $"{RootElementClass}-standard-disabled-{VisualClassRegistrar()}"
                                         : ButtonStyle == ButtonStyle.Primary
                                             ? $"{RootElementClass}-primary-{VisualClassRegistrar()}"
                                             : $"{RootElementClass}-standard-{VisualClassRegistrar()}");
