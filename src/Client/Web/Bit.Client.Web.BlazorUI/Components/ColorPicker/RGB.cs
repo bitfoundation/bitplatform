@@ -47,7 +47,7 @@ namespace Bit.Client.Web.BlazorUI
 
             double cMax = Math.Max(red, Math.Max(green, blue));
             double cMin = Math.Min(red, Math.Min(green, blue));
-            double span = cMax - cMin;
+            double span = cMax - cMin == 0 ? 1 : cMax - cMin;
 
             hue = red == cMax ? (60 * ((green - blue) / span) + 360) % 360
                 : green == cMax ? (60 * ((blue - red) / span) + 120) % 360

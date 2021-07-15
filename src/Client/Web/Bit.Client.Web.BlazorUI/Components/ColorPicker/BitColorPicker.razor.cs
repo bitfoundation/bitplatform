@@ -69,20 +69,24 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter]
         public AlphaType AlphaType { get; set; }
 
-        protected override async Task OnInitializedAsync()
+        protected override async Task OnAfterRenderAsync(bool firstRender)
         {
-            onWindowMouseUpAbortControllerId = await JSRuntime.OnWindowMouseUp(this, "OnWindowMouseUp");
-            onWindowMouseMoveAbortControllerId = await JSRuntime.OnWindowMouseMove(this, "OnWindowMouseMove");
-
-            var saturationPickerRect = await JSRuntime.GetBoundingClientRect(SaturationPickerRef);
-
-            SaturationPickerThumbPosition = new Position
+            if (firstRender)
             {
-                Left = Convert.ToInt32(saturationPickerRect.Width),
-                Top = 0
-            };
+                onWindowMouseUpAbortControllerId = await JSRuntime.OnWindowMouseUp(this, "OnWindowMouseUp");
+                onWindowMouseMoveAbortControllerId = await JSRuntime.OnWindowMouseMove(this, "OnWindowMouseMove");
 
-            await base.OnInitializedAsync();
+                var saturationPickerRect = await JSRuntime.GetBoundingClientRect(SaturationPickerRef);
+
+                SaturationPickerThumbPosition = new Position
+                {
+                    Left = Convert.ToInt32(saturationPickerRect.Width),
+                    Top = 0
+                };
+            }
+
+            await base.OnAfterRenderAsync(firstRender);
+
         }
 
         [JSInvokable]
