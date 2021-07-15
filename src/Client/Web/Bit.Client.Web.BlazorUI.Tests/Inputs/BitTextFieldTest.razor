@@ -1,42 +1,69 @@
-﻿<BitTextField IsMultiLine="IsMultiLine" Type="InputType" Placeholder="Placeholder" IsReadonly="IsReadOnly" IsEnabled="IsEnabled" Value="Value"
-              OnClick="ClickEvent" OnChange="ChangeEvent" OnFocus="FocusEvent" OnFocusIn="FocusEvent" OnFocusOut="FocusEvent"
-              OnKeyDown="KeyEvent" OnKeyUp="KeyEvent">
-    <BitButton ButtonStyle="@ButtonStyle.Standard">
-    </BitButton>
-    <label>
-        @Value
-    </label>
-</BitTextField>
-@code {
+﻿<CascadingValue Value="Visual">
+    <BitTextField MaxLength="MaxLength"
+                  IsMultiLine="IsMultiLine"
+                  Type="Type"
+                  Placeholder="@Placeholder"
+                  IsReadonly="IsReadOnly"
+                  IsEnabled="IsEnabled"
+                  IconName="@IconName"
+                  Value="@Value"
+                  CanRevealPassword="CanRevealPassword"
+                  OnClick="HandleClick"
+                  OnChange="HandleChange"
+                  OnFocus="HandleFocus"
+                  OnFocusIn="HandleFocusIn"
+                  OnFocusOut="HandleFocusOut"
+                  OnKeyDown="HandleKeyDown"
+                  OnKeyUp="HandleKeyUp"
+                  AriaLabel="@AriaLabel">>
+    </BitTextField>
+</CascadingValue>
 
+@code {
+    [Parameter] public int MaxLength { get; set; } = -1;
+    [Parameter] public string? IconName { get; set; }
+    [Parameter] public Visual Visual { get; set; }
     [Parameter] public bool IsMultiLine { get; set; } = false;
     [Parameter] public bool IsEnabled { get; set; }
     [Parameter] public bool IsReadOnly { get; set; }
     [Parameter] public string Placeholder { get; set; }
     [Parameter] public string Value { get; set; }
-    [Parameter] public TextFieldType InputType { get; set; }
+    [Parameter] public bool CanRevealPassword { get; set; }
+    [Parameter] public TextFieldType Type { get; set; }
+    [Parameter] public string AriaLabel { get; set; }
 
-    public void KeyEvent(KeyboardEventArgs e)
+    public void HandleKeyDown(KeyboardEventArgs e)
     {
-        IncrementCount();
+        KeyDownedValue = e.Key;
     }
-    public void FocusEvent(FocusEventArgs e)
+    public void HandleKeyUp(KeyboardEventArgs e)
     {
-        IncrementCount();
+        KeyUpedValue = e.Key;
     }
-    public void ChangeEvent(ChangeEventArgs e)
+    public void HandleFocus(FocusEventArgs e)
     {
-        IncrementCount();
+        FocusedValue++;
     }
-    public void ClickEvent(MouseEventArgs e)
+    public void HandleFocusIn(FocusEventArgs e)
     {
-        IncrementCount();
+        FocusedInValue++;
     }
-    public int CurrentCount { get; set; }
-    public void IncrementCount()
+    public void HandleFocusOut(FocusEventArgs e)
+    {
+        FocusedOutValue++;
+    }
+    public void HandleChange(ChangeEventArgs e)
     {
         CurrentCount++;
-        Value = CurrentCount.ToString();
     }
-
+    public void HandleClick(MouseEventArgs e)
+    {
+        CurrentCount++;
+    }
+    public int CurrentCount { get; set; }
+    public int FocusedValue { get; set; }
+    public int FocusedOutValue { get; set; }
+    public int FocusedInValue { get; set; }
+    public string KeyDownedValue { get; set; }
+    public string KeyUpedValue { get; set; }
 }

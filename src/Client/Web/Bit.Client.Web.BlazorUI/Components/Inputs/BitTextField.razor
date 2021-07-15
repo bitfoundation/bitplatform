@@ -12,11 +12,12 @@
                   readonly=@IsReadonly
                   placeholder="@Placeholder"
                   maxlength="@MaxLength"
+                  aria-label="@AriaLabel"
                   @onclick="@HandleClick"
                   @onfocusin="@HandleFocusIn"
                   @onfocusout="@HandleFocusOut"
                   @onfocus="@HandleFocus"
-                  @onchange="@HandleChange"
+                  @oninput="@HandleChange"
                   @onkeydown="@HandleKeyDown"
                   @onkeyup="@HandleKeyUp">
             @Value
@@ -30,11 +31,12 @@
                value="@Value"
                placeholder="@Placeholder"
                maxlength="@MaxLength"
+               aria-label="@AriaLabel"
                @onclick="@HandleClick"
                @onfocusin="@HandleFocusIn"
                @onfocusout="@HandleFocusOut"
                @onfocus="@HandleFocus"
-               @onchange="@HandleChange"
+               @oninput="@HandleChange"
                @onkeydown="@HandleKeyDown"
                @onkeyup="@HandleKeyUp" />
     }
