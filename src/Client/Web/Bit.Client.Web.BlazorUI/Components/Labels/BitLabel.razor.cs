@@ -7,12 +7,12 @@ namespace Bit.Client.Web.BlazorUI
         private bool isRequired;
 
         /// <summary>
-        /// A label for a form element
+        /// The for attribute specifies which form element a label is bound to
         /// </summary>
         [Parameter] public string? For { get; set; }
 
         /// <summary>
-        /// Whether the associated form field is required or not
+        /// Whether the label is required or not
         /// </summary>
         [Parameter]
         public bool IsRequired
