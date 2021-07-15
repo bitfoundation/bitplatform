@@ -13,11 +13,6 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public string? SelectedKey { get; set; }
 
         /// <summary>
-        /// The aria label of nav container for the benefit of screen readers
-        /// </summary>
-        [Parameter] public string? AriaLabel { get; set; }
-
-        /// <summary>
         /// Indicates whether the navigation component renders on top of other content in the UI
         /// </summary>
         [Parameter] public bool IsOnTop { get; set; }

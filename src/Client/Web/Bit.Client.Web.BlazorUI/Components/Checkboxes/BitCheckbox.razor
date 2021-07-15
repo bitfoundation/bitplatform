@@ -9,6 +9,7 @@
            @ref="CheckboxElement"
            checked=@IsChecked
            disabled="@(IsEnabled is false)"
+           aria-label="@AriaLabel"
            hidden>
     <div>
         <div @onclick="@HandleCheckboxClick">
