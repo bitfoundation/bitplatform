@@ -73,7 +73,6 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
             }
         }
 
-
         [DataTestMethod, DataRow("this is label")]
         public void BitTextFieldLabel(string label)
         {
@@ -82,7 +81,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                 parameters.Add(p => p.Label, label);
             });
 
-            var bitTextFieldLabel = com.Find(".bit-txt label");
+            var bitTextFieldLabel = com.Find(".bit-txt label").TextContent;
 
             Assert.AreEqual(label, bitTextFieldLabel);
         }
