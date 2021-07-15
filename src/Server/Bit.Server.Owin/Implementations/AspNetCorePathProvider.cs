@@ -1,29 +1,30 @@
 ﻿using Bit.Core.Contracts;
 using Bit.Core.Implementations;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
 using System;
 
 namespace Bit.Owin.Implementations
 {
     public class AspNetCorePathProvider : DefaultPathProvider, IPathProvider
     {
-        private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly IHostEnvironment _HostEnvironment;
 
         protected AspNetCorePathProvider()
         {
         }
 
-        public AspNetCorePathProvider(IWebHostEnvironment webHostEnvironment)
+        public AspNetCorePathProvider(IHostEnvironment hostEnvironment)
         {
-            if (webHostEnvironment == null)
-                throw new ArgumentNullException(nameof(webHostEnvironment));
+            if (hostEnvironment == null)
+                throw new ArgumentNullException(nameof(hostEnvironment));
 
-            _webHostEnvironment = webHostEnvironment;
+            _HostEnvironment = hostEnvironment;
         }
 
         public override string GetCurrentAppPath()
         {
-            return _webHostEnvironment.ContentRootPath;
+            return _HostEnvironment.ContentRootPath;
         }
     }
 }

@@ -1,22 +1,45 @@
-﻿<BitChoiceGroup Name="@Name" IsEnabled="@IsEnabled" OnValueChange="ValueChangeEvent">
-    <BitChoiceOption OnClick="ClickEvent" Value="@Value"></BitChoiceOption>
-</BitChoiceGroup>
+﻿<CascadingValue Value="Visual">
+    <BitChoiceGroup Name="@ChoiceGroupName"
+                    IsEnabled="@ChoiceGroupIsEnabled"
+                    OnValueChange="HandleValueChange">
+        <BitChoiceOption Value="@Value"
+                         IsEnabled="@ChoiceOptionIsEnabled"
+                         Text="@Text"
+                         Name="@ChoiceOptionName"
+                         IsChecked="IsChecked"
+                         OnClick="HandleClick"
+                         OnChange="HandleChange">
+        </BitChoiceOption>
+        <BitChoiceOption Value="option2"></BitChoiceOption>
+    </BitChoiceGroup>
+</CascadingValue>
 @code {
-    [Parameter] public bool IsEnabled { get; set; }
-    [Parameter] public string Name { get; set; }
-    [Parameter]public string Value { get; set; } = "0";
-    public void ClickEvent(MouseEventArgs e)
+    [Parameter] public Visual Visual { get; set; }
+    [Parameter] public bool ChoiceGroupIsEnabled { get; set; }
+    [Parameter] public string ChoiceGroupName { get; set; }
+
+    [Parameter] public bool ChoiceOptionIsEnabled { get; set; }
+    [Parameter] public string Value { get; set; }
+    [Parameter] public string? Text { get; set; }
+    [Parameter] public string? ChoiceOptionName { get; set; }
+    [Parameter] public bool IsChecked { get; set; }
+
+    public int ChoiceOptionClickedValue { get; set; }
+    public int ChoiceOptionChangedValue { get; set; }
+    public string ChoiceGroupChangedValue { get; set; } = "";
+
+    public void HandleClick(MouseEventArgs e)
     {
-        IncrementCount();
+        ChoiceOptionClickedValue++;
     }
-    public void ValueChangeEvent(string value)
+    public void HandleValueChange(string value)
     {
-        IncrementCount();
+        ChoiceGroupChangedValue = value;
     }
-    public int CurrentCount { get; set; }
-    public void IncrementCount()
+    public void HandleChange(ChangeEventArgs e)
     {
-        CurrentCount++;
-        Value = CurrentCount.ToString();
+        ChoiceOptionChangedValue++;
+        //Count2++;
+        Value = e.Value.ToString();
     }
 }
