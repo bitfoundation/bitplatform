@@ -6,9 +6,9 @@
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
     <label for="@_inputId">
-        testjahkkljsakskashka
+        @Label
     </label>
-   
+    <div>
         @if (IsMultiLine && Type == TextFieldType.Text)
         {
             <textarea id="@_inputId"
@@ -62,5 +62,5 @@
                 <i class="bit-icon bit-icon--@IconName"></i>
             </span>
         }
-   
+    </div>
 </div>
