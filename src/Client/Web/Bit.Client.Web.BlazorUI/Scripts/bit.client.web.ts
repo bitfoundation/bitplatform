@@ -43,9 +43,10 @@
 }
 
 document.addEventListener('click', e => {
-    var calloutParent = e.target.classList.contains('bit-cal-com')
-        ? e.target
-        : Bit.getParentElementByClass(e.target, 'bit-cal-com');
+    var clickedElement = e.target as Element;
+    var calloutParent = clickedElement.classList.contains('bit-cal-com')
+        ? clickedElement
+        : Bit.getParentElementByClass(clickedElement, 'bit-cal-com');
     if (calloutParent != null) {
         if (Bit.checkElementHasClassLike(calloutParent, 'disabled')) {
             return;
