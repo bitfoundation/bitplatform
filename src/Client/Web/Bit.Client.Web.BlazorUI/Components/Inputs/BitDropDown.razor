@@ -16,7 +16,7 @@
     <span @onclick="HandleClick">
         <i class="bit-icon"></i>
     </span>
-    <div class="bit-callout" style="@(IsEnabled?"display: none;":"")">
+    <div class="bit-callout" style="display: none;">
         @foreach (DropDownItem item in Items)
         {
             if (item.ItemType == DropDownItemType.Header)
