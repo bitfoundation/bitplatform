@@ -123,6 +123,18 @@
     }
 }
 
+.bit-txt-Underlined-focused-fluent {
+    & > div {
+        :after {
+            border: 1px solid $Primary;
+            position: absolute;
+            inset: -1px;           
+            content: "";
+            pointer-events: none;
+        }
+    }
+}
+
 .bit-txt-disabled-fluent {
     label {
         color: $Grey90;
@@ -149,6 +161,25 @@
             color: $Red20;
             margin-left: em(5px);
         }
+    }
+}
+
+.bit-txt-Underlined-fluent {
+    display: flex;
+    border-bottom: 1px solid rgb(96, 94, 92);
+    width: 100%;
+
+    & > div {
+        border: none;
+        flex: 1 1 0px;
+        text-align: left;
+    }
+
+    label {
+        padding: 5px 0px 5px 12px;
+        line-height: 22px;
+        height: 32px;
+        margin: 0px 8px 0px 0px;
     }
 }
 

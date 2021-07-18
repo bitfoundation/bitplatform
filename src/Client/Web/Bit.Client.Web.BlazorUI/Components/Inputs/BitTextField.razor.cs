@@ -10,6 +10,7 @@ namespace Bit.Client.Web.BlazorUI
         private bool isMultiLine;
         private bool isReadonly;
         private bool isRequired;
+        private bool underlined;
         private string focusClass = "";
         private TextFieldType type = TextFieldType.Text;
         private Guid InputId = Guid.NewGuid();
@@ -78,6 +79,17 @@ namespace Bit.Client.Web.BlazorUI
 
         [Parameter] public string? Suffix { get; set; }
 
+        [Parameter]
+        public bool Underlined
+        {
+            get => underlined;
+            set
+            {
+                underlined = value;
+                ClassBuilder.Reset();
+            }
+        }
+
         [Parameter] public EventCallback<FocusEventArgs> OnFocusIn { get; set; }
 
         [Parameter] public EventCallback<FocusEventArgs> OnFocusOut { get; set; }
@@ -118,8 +130,12 @@ namespace Bit.Client.Web.BlazorUI
             ClassBuilder.Register(() => IsEnabled && IsRequired
                                         ? $"{RootElementClass}-required-{VisualClassRegistrar()}" : string.Empty);
 
+            ClassBuilder.Register(() => Underlined
+                                       ? $"{RootElementClass}-Underlined-{VisualClassRegistrar()}" : string.Empty);
+
             ClassBuilder.Register(() => FocusClass.HasValue()
-                                        ? $"{RootElementClass}-{FocusClass}-{VisualClassRegistrar()}" : string.Empty);
+                                        ? $"{RootElementClass}-{(Underlined? "Underlined-" : "")}{FocusClass}-{VisualClassRegistrar()}" : string.Empty);
+
         }
 
         protected virtual async Task HandleFocusIn(FocusEventArgs e)
