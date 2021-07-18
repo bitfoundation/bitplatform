@@ -12,7 +12,7 @@ namespace Bit.Client.Web.BlazorUI
         private bool isRequired;
         private string focusClass = "";
         private TextFieldType type = TextFieldType.Text;
-        private Guid _inputId = Guid.NewGuid();
+        private Guid InputId = Guid.NewGuid();
 
         [Parameter] public int MaxLength { get; set; } = -1;
 

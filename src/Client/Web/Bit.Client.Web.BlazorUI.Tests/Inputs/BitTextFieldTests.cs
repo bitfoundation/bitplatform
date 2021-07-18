@@ -36,15 +36,16 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                 });
 
             var bitTextField = component.Find(".bit-txt");
-            var bitTextFieldFieldGroup = component.Find(".bit-txt > div");
+            var containerDiv = component.Find(".bit-txt > div");
 
             var isEnabledClass = isEnabled ? "enabled" : "disabled";
             var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
 
             Assert.IsTrue(bitTextField.ClassList.Contains($"bit-txt-{isEnabledClass}-{visualClass}"));
 
-            Assert.AreEqual(IsMultiline ? "TEXTAREA" : "INPUT", bitTextFieldFieldGroup.FirstElementChild.TagName);
+            Assert.AreEqual(IsMultiline ? "TEXTAREA" : "INPUT", containerDiv.FirstElementChild.TagName);
 
+            Assert.AreEqual(isRequired, containerDiv.FirstElementChild.HasAttribute("required"));
             Assert.AreEqual(bitTextField.ClassList.Contains($"bit-txt-required-{visualClass}"), isRequired);
         }
 
@@ -143,15 +144,15 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                 });
 
             var bitTextField = component.Find(".bit-txt");
-            var bitTextFieldFieldGroup = component.Find(".bit-txt > div");
+            var containerDiv = component.Find(".bit-txt > div");
             var bitTextFieldRevealPassword = component.Find(".bit-txt > div > span");
 
-            Assert.AreEqual("Password", bitTextFieldFieldGroup.FirstElementChild.GetAttribute("type"));
+            Assert.AreEqual("Password", containerDiv.FirstElementChild.GetAttribute("type"));
             Assert.IsTrue(bitTextFieldRevealPassword.FirstElementChild.ClassList.Contains($"bit-icon--RedEye"));
 
             bitTextFieldRevealPassword.Click();
 
-            Assert.AreEqual("Text", bitTextFieldFieldGroup.FirstElementChild.GetAttribute("type"));
+            Assert.AreEqual("Text", containerDiv.FirstElementChild.GetAttribute("type"));
             Assert.IsTrue(bitTextFieldRevealPassword.FirstElementChild.ClassList.Contains($"bit-icon--Hide"));
         }
 

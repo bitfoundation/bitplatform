@@ -79,9 +79,11 @@
 }
 
 .bit-txt-multiline-fluent {
-    min-height: rem(60);
-    align-items: stretch;
-    height: auto;
+    & > div {
+        min-height: rem(60);
+        align-items: stretch;
+        height: auto;
+    }
 
     textarea {
         padding: em(6px) em(8px);

@@ -5,13 +5,13 @@
      @attributes="HtmlAttributes"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
-    <label for="@_inputId">
+    <label for="@InputId">
         @Label
     </label>
     <div>
         @if (IsMultiLine && Type == TextFieldType.Text)
         {
-            <textarea id="@_inputId"
+            <textarea id="@InputId"
                       rows="3"
                       disabled=@(!IsEnabled)
                       readonly=@IsReadonly
@@ -31,7 +31,7 @@
         }
         else
         {
-            <input id="@_inputId"
+            <input id="@InputId"
                    disabled=@(!IsEnabled)
                    readonly=@IsReadonly
                    required=@IsRequired
