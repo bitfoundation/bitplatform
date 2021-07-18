@@ -74,6 +74,10 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
+        [Parameter] public string? Prefix { get; set; }
+
+        [Parameter] public string? Suffix { get; set; }
+
         [Parameter] public EventCallback<FocusEventArgs> OnFocusIn { get; set; }
 
         [Parameter] public EventCallback<FocusEventArgs> OnFocusOut { get; set; }

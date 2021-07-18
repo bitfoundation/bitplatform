@@ -9,6 +9,12 @@
         @Label
     </label>
     <div>
+        @if (Prefix is not null)
+        {
+            <div>
+                <span>@Prefix</span>
+            </div>
+        }
         @if (IsMultiLine && Type == TextFieldType.Text)
         {
             <textarea id="@InputId"
@@ -62,5 +68,13 @@
                 <i class="bit-icon bit-icon--@IconName"></i>
             </span>
         }
+
+        @if (Suffix is not null)
+        {
+            <div>
+                <span>@Suffix</span>
+            </div>
+        }
+
     </div>
 </div>

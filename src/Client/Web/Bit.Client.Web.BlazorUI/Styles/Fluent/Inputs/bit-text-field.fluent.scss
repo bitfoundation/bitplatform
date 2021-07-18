@@ -24,6 +24,22 @@
         flex-direction: row;
         align-items: stretch;
         position: relative;
+
+        & > div {
+            background: rgb(243, 242, 241);
+            color: rgb(96, 94, 92);
+            display: flex;
+            align-items: center;
+            padding: 0px 10px;
+            line-height: 1px;
+            white-space: nowrap;
+            flex-shrink: 0;
+
+            & > span {
+                padding-bottom: 1px;
+                font-size: 14px;
+            }
+        }
     }
 
     label {
@@ -119,6 +135,10 @@
         cursor: default;
         border: none $Grey20;
         background: none $Grey20;
+
+        & > div {
+            color: $Grey90;
+        }
     }
 }
 
