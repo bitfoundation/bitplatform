@@ -1,12 +1,12 @@
 {
-  "version": 1,
-  "isRoot": true,
-  "tools": {
-    "excubo.webcompiler": {
-      "version": "2.6.5",
-      "commands": [
-        "webcompiler"
-      ]
+    "version": 1,
+    "isRoot": true,
+    "tools": {
+        "excubo.webcompiler": {
+            "version": "2.7.12",
+            "commands": [
+                "webcompiler"
+            ]
+        }
     }
-  }
 }
