@@ -15,7 +15,7 @@ namespace Bit.Test
 {
     public class TestEnvironmentArgs
     {
-        public string? FullUri { get; set; } = null;
+        public string? FullUri { get; set; }
 
         public string? HostName { get; set; }
 
@@ -27,13 +27,13 @@ namespace Bit.Test
 
         public Action<AppEnvironment>? ActiveAppEnvironmentCustomizer { get; set; }
 
-        public IAppModulesProvider? CustomAppModulesProvider { get; set; } = null;
+        public IAppModulesProvider? CustomAppModulesProvider { get; set; }
 
-        public IAppEnvironmentsProvider? CustomAppEnvironmentsProvider { get; set; } = null;
+        public IAppEnvironmentsProvider? CustomAppEnvironmentsProvider { get; set; }
 
         public bool UseTestDependencyManager { get; set; } = true;
 
-        public int? Port { get; set; } = null;
+        public int? Port { get; set; }
     }
 
     public class TestAdditionalDependencies : IAppModule, IAppModulesProvider

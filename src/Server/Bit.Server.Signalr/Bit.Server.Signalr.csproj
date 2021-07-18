@@ -3,7 +3,7 @@
   <Import Project="../../Bit.Build.props" />
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <PackageTags>$(PackageTags) AspNet Microsoft SignalR AspNetSignalR websockets real-time realtime comet HTTP streaming</PackageTags>
     <RootNamespace>Bit.Signalr</RootNamespace>
   </PropertyGroup>
@@ -13,7 +13,7 @@
     <PackageReference Include="Microsoft.AspNet.SignalR.Core" Version="2.4.2" />
     <PackageReference Include="Microsoft.AspNet.SignalR.ServiceBus" Version="2.4.2" />
     <PackageReference Include="Microsoft.AspNet.SignalR.SqlServer" Version="2.4.2" />
-    <PackageReference Include="System.Diagnostics.PerformanceCounter" Version="5.0.1" />
+    <PackageReference Include="System.Diagnostics.PerformanceCounter" Version="6.0.0-preview.6.21352.12" />
   </ItemGroup>
 
   <ItemGroup>

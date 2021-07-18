@@ -5,7 +5,7 @@ namespace System.Text.Json
 {
     public static partial class JsonExtensions
     {
-#if DotNetStandard2_0 || UWP
+#if DotNetStandard2_0 || UWP || iOS
         public static async Task<T> ToObjectAsync<T>(this JsonElement element, JsonSerializerOptions? options = null)
         {
             string json = element.GetRawText();

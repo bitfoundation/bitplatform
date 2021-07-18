@@ -3,7 +3,7 @@
   <Import Project="../../Bit.Build.props" />
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <PackageTags>$(PackageTags) Microsoft Katana OWIN aspnetcore</PackageTags>
     <RootNamespace>Bit.Owin</RootNamespace>
   </PropertyGroup>
@@ -22,11 +22,11 @@
     <PackageReference Include="NodaTime" Version="3.0.5" />
     <PackageReference Include="NWebsec.Core" Version="3.0.1" />
     <PackageReference Include="NWebsec.Owin" Version="4.0.0" />
-    <PackageReference Include="System.Diagnostics.EventLog" Version="5.0.1" />
+    <PackageReference Include="System.Diagnostics.EventLog" Version="6.0.0-preview.6.21352.12" />
     <PackageReference Include="Serilog.AspNetCore" Version="4.1.0" />
-    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="5.0.0" />
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="6.0.0-preview.6.21352.12" />
     <PackageReference Include="NWebsec.AspNetCore.Middleware" Version="3.0.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Owin" Version="5.0.7" />
+    <PackageReference Include="Microsoft.AspNetCore.Owin" Version="6.0.0-preview.6.21355.2" />
   </ItemGroup>
 
   <ItemGroup>

@@ -3,14 +3,10 @@
   <Import Project="../../Bit.Build.props" />
 
   <PropertyGroup>
-    <TargetFrameworks>net5.0;monoandroid10.0;Xamarin.iOS10;uap10.0.17763;netstandard2.0;netstandard2.1;</TargetFrameworks>
+    <TargetFrameworks>net6.0;monoandroid10.0;Xamarin.iOS10;uap10.0.17763;netstandard2.0;netstandard2.1;</TargetFrameworks>
     <PackageTags>$(PackageTags) entity-framework-core EF Data O/RM</PackageTags>
     <RootNamespace>Bit.Data.EntityFrameworkCore</RootNamespace>
   </PropertyGroup>
-
-  <ItemGroup>
-	  <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="3.1.16" />
-  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\Universal\Bit.Universal.Data.EntityFrameworkCore\Bit.Universal.Data.EntityFrameworkCore.csproj" />

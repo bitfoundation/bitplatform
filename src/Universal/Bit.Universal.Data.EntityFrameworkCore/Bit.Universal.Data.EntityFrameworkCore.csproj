@@ -1,18 +1,22 @@
 ﻿<Project Sdk="MSBuild.Sdk.Extras/2.1.2">
 
-	<Import Project="../../Bit.Build.props" />
+    <Import Project="../../Bit.Build.props" />
 
-	<PropertyGroup>
-		<TargetFrameworks>net5.0;monoandroid10.0;Xamarin.iOS10;uap10.0.17763;netstandard2.0;netstandard2.1;</TargetFrameworks>
-		<PackageTags>$(PackageTags) entity-framework-core EF Data O/RM</PackageTags>
-		<RootNamespace>Bit.Data.EntityFrameworkCore</RootNamespace>
-	</PropertyGroup>
+    <PropertyGroup>
+        <TargetFrameworks>net6.0;monoandroid10.0;Xamarin.iOS10;uap10.0.17763;netstandard2.0;netstandard2.1;</TargetFrameworks>
+        <PackageTags>$(PackageTags) entity-framework-core EF Data O/RM</PackageTags>
+        <RootNamespace>Bit.Data.EntityFrameworkCore</RootNamespace>
+    </PropertyGroup>
 
-	<ItemGroup>
-		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.1.16" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="3.1.16" />
-		<PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="5.0.0" />
-		<ProjectReference Include="..\Bit.Universal.Data\Bit.Universal.Data.csproj" />
-	</ItemGroup>
+    <ItemGroup>
+        <PackageReference Condition=" '$(TargetFramework)' == 'net6.0' " Include="Microsoft.EntityFrameworkCore.Sqlite" Version="6.0.0-preview.6.21352.1" />
+        <PackageReference Condition=" '$(TargetFramework)' != 'net6.0' " Include="Microsoft.EntityFrameworkCore.Sqlite" Version="3.1.17" />
+        <PackageReference Condition=" '$(TargetFramework)' == 'net6.0' " Include="Microsoft.EntityFrameworkCore" Version="6.0.0-preview.6.21352.1" />
+        <PackageReference Condition=" '$(TargetFramework)' != 'net6.0' " Include="Microsoft.EntityFrameworkCore" Version="3.1.17" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="6.0.0-preview.6.21352.12" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.0-preview.6.21352.12" />
+        <PackageReference Include="System.Text.Json" Version="6.0.0-preview.6.21352.12" />
+        <ProjectReference Include="..\Bit.Universal.Data\Bit.Universal.Data.csproj" />
+    </ItemGroup>
 
 </Project>
