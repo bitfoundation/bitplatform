@@ -36,7 +36,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                 });
 
             var bitTextField = component.Find(".bit-txt");
-            var containerDiv = component.Find(".bit-txt > div");
+            var containerDiv = component.Find(".bit-txt > div > div");
 
             var isEnabledClass = isEnabled ? "enabled" : "disabled";
             var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
@@ -144,8 +144,8 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                 });
 
             var bitTextField = component.Find(".bit-txt");
-            var containerDiv = component.Find(".bit-txt > div");
-            var bitTextFieldRevealPassword = component.Find(".bit-txt > div > span");
+            var containerDiv = component.Find(".bit-txt > div > div");
+            var bitTextFieldRevealPassword = component.Find(".bit-txt > div > div > span");
 
             Assert.AreEqual("Password", containerDiv.FirstElementChild.GetAttribute("type"));
             Assert.IsTrue(bitTextFieldRevealPassword.FirstElementChild.ClassList.Contains($"bit-icon--RedEye"));
