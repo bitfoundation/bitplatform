@@ -12,17 +12,20 @@
     box-sizing: border-box;
     max-width: 280px;
     min-height: 72px;
+    display: inline-flex;
+    position: relative;
+    text-decoration: none;
 
     & > span {
         height: 100%;
         min-width: 100%;
 
-        & span:first-child {
+        .bit-cmp-btn-text {
             margin: 0px 0px 5px;
             display: block;
         }
 
-        & span:last-child {
+        .bit-cmp-btn-secondary-text {
             font-size: rem(12px);
             font-weight: 400;
             line-height: 100%;
@@ -61,9 +64,16 @@
 
 .bit-cmp-btn-disabled-fluent {
     background: $Grey20;
-    color: $Grey90;
     border: 1px solid $Grey20;
     cursor: default;
     pointer-events: none;
     border: 1px solid $Grey20;
+}
+
+.bit-cmp-btn-primary-disabled-fluent {
+    color: $Grey50;
+}
+
+.bit-cmp-btn-standard-disabled-fluent {
+    color: $Grey90;
 }

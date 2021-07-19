@@ -6,12 +6,14 @@
     border-radius: em(2px);
     padding: em(6px) em(20px);
     font-size: rem(14px);
-    font-weight: 600;
+    font-weight: 400;
     line-height: em(20px);
     cursor: pointer;
-    min-height: 32px;
+    height: 32px;
     text-decoration: none;
-    margin: 2px;
+    position: relative;
+    min-width: 80px;
+    box-sizing: border-box;
 }
 
 .bit-btn-standard-fluent {
