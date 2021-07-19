@@ -10,7 +10,7 @@ namespace Bit.Client.Web.BlazorUI
         private bool isMultiLine;
         private bool isReadonly;
         private bool isRequired;
-        private bool underlined;
+        private bool isUnderlined;
         private string focusClass = "";
         private TextFieldType type = TextFieldType.Text;
         private Guid InputId = Guid.NewGuid();
@@ -80,12 +80,12 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public string? Suffix { get; set; }
 
         [Parameter]
-        public bool Underlined
+        public bool IsUnderlined
         {
-            get => underlined;
+            get => isUnderlined;
             set
             {
-                underlined = value;
+                isUnderlined = value;
                 ClassBuilder.Reset();
             }
         }
@@ -127,14 +127,14 @@ namespace Bit.Client.Web.BlazorUI
             ClassBuilder.Register(() => IsEnabled && IsRequired
                                         ? $"{RootElementClass}-required-{VisualClassRegistrar()}" : string.Empty);
 
-            ClassBuilder.Register(() => Underlined
+            ClassBuilder.Register(() => IsUnderlined
                                        ? $"{RootElementClass}-Underlined-{VisualClassRegistrar()}" : string.Empty);
 
             ClassBuilder.Register(() => IsEnabled is false
-                                        ? $"{RootElementClass}-{(Underlined ? "Underlined-" : "")}disabled-{VisualClassRegistrar()}" : string.Empty);
+                                        ? $"{RootElementClass}-{(IsUnderlined ? "Underlined-" : "")}disabled-{VisualClassRegistrar()}" : string.Empty);
 
             ClassBuilder.Register(() => FocusClass.HasValue()
-                                        ? $"{RootElementClass}-{(Underlined? "Underlined-" : "")}{FocusClass}-{VisualClassRegistrar()}" : string.Empty);
+                                        ? $"{RootElementClass}-{(IsUnderlined ? "Underlined-" : "")}{FocusClass}-{VisualClassRegistrar()}" : string.Empty);
 
         }
 
