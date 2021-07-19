@@ -451,7 +451,6 @@
     <br />
     <br />
 
-
     <h3>Link Pivot</h3>
     <div class="pivot-container">
         <BitPivot>
@@ -525,7 +524,6 @@
             <BitPivotItem HeaderText="Bas" ItemKey="Bas"></BitPivotItem>
             <BitPivotItem HeaderText="Biz" ItemKey="Biz"></BitPivotItem>
         </BitPivot>
-
 
         @if (SelectedPivotKey?.ItemKey == "Foo")
         {
@@ -699,4 +697,36 @@
     <h3>Multi select</h3>
     <BitDropDown IsMultiSelect="true" Items="GetDropdownItems()" Placeholder="Select options">
     </BitDropDown>
+</div>
+<hr />
+<div class="bit-file-upload-container">
+    <h3>Auto</h3>
+    <BitFileUpload Label="Select or drag and drop files"
+                   UploadUrl="@UploadUrl"
+                   RemoveUrl="@RemoveUrl">
+    </BitFileUpload>
+
+    <h3>Auto & Multiple</h3>
+    <BitFileUpload IsMultiFile="true"
+                   Label="Select or drag and drop files"
+                   UploadUrl="@UploadUrl"
+                   RemoveUrl="@RemoveUrl">
+    </BitFileUpload>
+
+    <h3>Auto & Multiple with maxsize limitation</h3>
+    <BitFileUpload IsMultiFile="true"
+                   Label="Select or drag and drop files"
+                   MaxSize="FileSizeHumanizer.OneMegaByte * 100"
+                   UploadUrl="@UploadUrl"
+                   RemoveUrl="@RemoveUrl">
+    </BitFileUpload>
+
+    <h3>individual & Multiple (limit by extensions format)</h3>
+    <BitFileUpload IsMultiFile="true"
+                   AutoUploadEnabled="false"
+                   AcceptedExtensions="@(new List<string> { ".gif",".jpg",".mp4" })"
+                   Label="Select or drag and drop files"
+                   UploadUrl="@UploadUrl"
+                   RemoveUrl="@RemoveUrl">
+    </BitFileUpload>
 </div>
