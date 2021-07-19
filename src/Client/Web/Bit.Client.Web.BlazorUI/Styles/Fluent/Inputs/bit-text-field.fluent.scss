@@ -124,14 +124,12 @@
 }
 
 .bit-txt-Underlined-focused-fluent {
-    & > div {
-        :after {
-            border: 1px solid $Primary;
-            position: absolute;
-            inset: -1px;           
-            content: "";
-            pointer-events: none;
-        }
+    ::after {
+        border-bottom: 2px solid $Primary;
+        position: absolute;
+        inset: -1px;
+        content: "";
+        pointer-events: none;
     }
 }
 
@@ -152,6 +150,10 @@
             color: $Grey90;
         }
     }
+}
+
+.bit-txt-Underlined-disabled-fluent {
+    border-bottom: 1px solid $Grey20;
 }
 
 .bit-txt-required-fluent {

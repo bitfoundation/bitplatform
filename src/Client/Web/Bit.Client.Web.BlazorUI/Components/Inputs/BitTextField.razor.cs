@@ -121,9 +121,6 @@ namespace Bit.Client.Web.BlazorUI
             ClassBuilder.Register(() => IsMultiLine && Type == TextFieldType.Text
                                         ? $"{RootElementClass}-multiline-{VisualClassRegistrar()}" : string.Empty);
 
-            ClassBuilder.Register(() => IsEnabled is false
-                                        ? $"{RootElementClass}-disabled-{VisualClassRegistrar()}" : string.Empty);
-
             ClassBuilder.Register(() => IsEnabled && IsReadonly
                                         ? $"{RootElementClass}-readonly-{VisualClassRegistrar()}" : string.Empty);
 
@@ -132,6 +129,9 @@ namespace Bit.Client.Web.BlazorUI
 
             ClassBuilder.Register(() => Underlined
                                        ? $"{RootElementClass}-Underlined-{VisualClassRegistrar()}" : string.Empty);
+
+            ClassBuilder.Register(() => IsEnabled is false
+                                        ? $"{RootElementClass}-{(Underlined ? "Underlined-" : "")}disabled-{VisualClassRegistrar()}" : string.Empty);
 
             ClassBuilder.Register(() => FocusClass.HasValue()
                                         ? $"{RootElementClass}-{(Underlined? "Underlined-" : "")}{FocusClass}-{VisualClassRegistrar()}" : string.Empty);
