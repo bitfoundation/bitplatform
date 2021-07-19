@@ -26,6 +26,8 @@ namespace Bit.Client.Web.BlazorUI
 
         [Parameter] public string? Label { get; set; }
 
+        [Parameter] public string? Description { get; set; }
+
         [Parameter]
         public bool CanRevealPassword { get; set; }
 
