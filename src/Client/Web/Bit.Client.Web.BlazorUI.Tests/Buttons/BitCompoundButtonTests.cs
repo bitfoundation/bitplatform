@@ -127,5 +127,29 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
 
             Assert.AreEqual(expectedElement, tagName, ignoreCase: true);
         }
+
+        [DataTestMethod,
+            DataRow(Visual.Fluent, ButtonStyle.Primary, false),
+            DataRow(Visual.Fluent, ButtonStyle.Standard, false),
+            DataRow(Visual.Cupertino, ButtonStyle.Primary, false),
+            DataRow(Visual.Cupertino, ButtonStyle.Standard, false),
+            DataRow(Visual.Material, ButtonStyle.Primary, false),
+            DataRow(Visual.Material, ButtonStyle.Standard, false)
+        ]
+        public void BitCompoundButtonShouldHaveCorrectDisabledClassBasedOnButtonStyle(Visual visual, ButtonStyle buttonStyle, bool isEnabled)
+        {
+            var component = RenderComponent<BitCompoundButtonTest>(parameters =>
+            {
+                parameters.Add(p => p.Visual, visual);
+                parameters.Add(p => p.ButtonStyle, buttonStyle);
+                parameters.Add(p => p.IsEnabled, isEnabled);
+            });
+
+            var bitCompoundButton = component.Find(".bit-cmp-btn");
+
+            var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
+            var buttonStyleStr = buttonStyle == ButtonStyle.Primary ? "primary" : "standard";
+            Assert.IsTrue(bitCompoundButton.ClassList.Contains($"bit-cmp-btn-{buttonStyleStr}-disabled-{visualClass}"));
+        }
     }
 }
