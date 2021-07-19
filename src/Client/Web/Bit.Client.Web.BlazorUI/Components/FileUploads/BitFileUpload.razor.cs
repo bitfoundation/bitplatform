@@ -274,15 +274,7 @@ namespace Bit.Client.Web.BlazorUI
         {
             if (Files is null || RemoveUrl is null) return;
             var uri = new Uri($"{RemoveUrl.AbsoluteUri}?fileName={Files[index].Name}");
-            try
-            {
-                _ = await client.GetAsync(uri);
-            }
-            catch (Exception ex) when (ex.HResult == -2147467259)
-            {
-                //No connection could be made because the target machine actively refused it.
-                Console.WriteLine($"RemoveOneFileAsync|index:{index}|exception:{ex.Message}");
-            }
+            _ = await client.GetAsync(uri);
         }
 
         /// <summary>
