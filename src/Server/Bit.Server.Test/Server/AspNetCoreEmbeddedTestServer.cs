@@ -24,9 +24,14 @@ namespace Bit.Test.Server
         {
             base.Initialize(uri);
 
-            _server = new TestServer(BitWebHost.CreateDefaultBuilder(Array.Empty<string>())
-                .UseUrls(uri)
-                .UseStartup<AutofacAspNetCoreAppStartup>());
+            IHostBuilder hostBuilder = BitWebHost.CreateWebHost(Array.Empty<string>())
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder.UseUrls(uri);
+                    webHostBuilder.UseTestServer();
+                });
+
+            _server = hostBuilder.Start().GetTestServer();
         }
 
         public override void Dispose()

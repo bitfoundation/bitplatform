@@ -51,27 +51,6 @@ namespace Bit.Owin
 
             owinAppProps.AppName = activeEnvironment.AppInfo.Name;
 
-            if (DefaultDependencyManager.Current.ContainerIsBuilt() == false)
-            {
-                DefaultDependencyManager.Current.Init();
-
-                IServiceCollection services = new BitServiceCollection();
-
-                if (DefaultDependencyManager.Current is IServiceCollectionAccessor dependencyManagerIServiceCollectionInterop)
-                {
-                    dependencyManagerIServiceCollectionInterop.ServiceCollection = services;
-                }
-
-                foreach (IAppModule appModule in DefaultAppModulesProvider.Current.GetAppModules())
-                {
-                    appModule.ConfigureDependencies(services, DefaultDependencyManager.Current);
-                }
-
-                DefaultDependencyManager.Current.Populate(services);
-
-                DefaultDependencyManager.Current.BuildContainer();
-            }
-
             if (DefaultDependencyManager.Current.IsRegistered<ILoggerFactory>())
             {
                 owinApp.SetLoggerFactory(DefaultDependencyManager.Current.Resolve<ILoggerFactory>());

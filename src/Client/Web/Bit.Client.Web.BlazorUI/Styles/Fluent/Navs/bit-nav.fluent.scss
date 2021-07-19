@@ -1,10 +1,10 @@
 ﻿@import "../colors.fluent.scss", "../../functions.scss";
 
-@mixin getLinkStyle($hasUrl: true,$enabled: true) {
+@mixin getLinkStyle($hasUrl: true, $enabled: true, $haschildren: false) {
     outline: transparent;
     position: relative;
     font-size: 14px;
-    font-weight: 600;
+    font-weight: 400;
     box-sizing: border-box;
     border: 1px solid transparent;
     display: block;
@@ -18,7 +18,7 @@
     overflow: hidden;
     user-select: none;
 
-    @if $hasUrl != true {
+    @if $haschildren == true {
         border-bottom: 1px solid $Grey30;
     }
 
@@ -26,8 +26,16 @@
         color: $Black;
 
         &:hover {
-            background-color: $Grey30;
-            color: $Primary;
+            background-color: $Grey20;
+            color: $Primary !important;
+        }
+
+        @if $haschildren == false or $hasUrl {
+            &:focus {
+                background-color: $Grey30;
+                color: $Black;
+                font-weight: 600;
+            }
         }
     }
     @else {
@@ -200,5 +208,9 @@
 }
 
 .bit-nav-link-disabled-nourl-fluent {
-    @include getLinkStyle($hasUrl:false,$enabled:false)
+    @include getLinkStyle($hasUrl: false, $enabled: false)
+}
+
+.bit-nav-haschildren-fluent {
+    @include getLinkStyle($haschildren: true)
 }
