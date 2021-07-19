@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO.Compression;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Net.Http.Headers;
+
 #if BlazorClient
 using System.Net.Http;
 using Microsoft.AspNetCore.Components;
@@ -30,6 +31,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Api
             });
             services.AddRazorPages();
 #endif
+            services.AddCors();
             services.AddMvcCore();
             services.AddResponseCompression(opts =>
             {
@@ -68,6 +70,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Api
             });
 
             app.UseRouting();
+            app.UseCors(options => options.WithOrigins("https://localhost:4001").AllowAnyMethod().AllowAnyHeader());
 
             app.UseEndpoints(endpoints =>
             {

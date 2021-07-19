@@ -327,26 +327,28 @@
 
 <div class="text-field-container">
     <h2>BitTextField</h2>
-    <BitTextField Value="Enabled"></BitTextField>
+    <BitTextField Label="Standard"></BitTextField>
     <br />
-    <BitTextField IsReadonly="true" Value="Readonly"></BitTextField>
+    <BitTextField Label="Read-only" IsReadonly="true" Value="I am read-only"></BitTextField>
     <br />
-    <BitTextField IsEnabled="false" Value="Disabled"></BitTextField>
+    <BitTextField Label="Disabled" IsEnabled="false" Value="I am disabled"></BitTextField>
     <br />
-    <BitTextField Placeholder="Placeholder"></BitTextField>
+    <BitTextField Label="With placeholder" Placeholder="Please enter text here"></BitTextField>
     <br />
-    <BitTextField MaxLength="10" Placeholder="Limited text field - 10 chars"></BitTextField>
+    <BitTextField Label="Controlled TextField limiting length of value to 10" MaxLength="10"></BitTextField>
     <br />
-    <BitTextField Placeholder="With an icon" IconName="CalendarMirrored"></BitTextField>
+    <BitTextField Label="With an icon" IconName="CalendarMirrored"></BitTextField>
     <br />
-    <BitTextField Type="@InputType" Placeholder="Password input" CanRevealPassword="true"></BitTextField>
+    <BitTextField Label="Password with reveal button" Type="@InputType" CanRevealPassword="true"></BitTextField>
+    <br />
+    <BitTextField Label="Required" IsRequired="true"></BitTextField>
     <br />
     <h3>Multi-line</h3>
-    <BitTextField IsMultiLine="true" Value="Multi-line text field"></BitTextField>
+    <BitTextField Label="Standard" IsMultiLine="true"></BitTextField>
     <br />
-    <BitTextField IsMultiLine="true" MaxLength="10" Placeholder="Limited multi-line text field - 10 chars"></BitTextField>
+    <BitTextField Label="Limited multi-line text field - 10 chars" IsMultiLine="true" MaxLength="10"></BitTextField>
     <br />
-    <BitTextField IsMultiLine="true" IsEnabled="false" Value="Multi-line Disabled"></BitTextField>
+    <BitTextField Label="Disabled" IsMultiLine="true" IsEnabled="false" Value="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat"></BitTextField>
 </div>
 
 <hr />
@@ -449,7 +451,6 @@
     <br />
     <br />
 
-
     <h3>Link Pivot</h3>
     <div class="pivot-container">
         <BitPivot>
@@ -523,7 +524,6 @@
             <BitPivotItem HeaderText="Bas" ItemKey="Bas"></BitPivotItem>
             <BitPivotItem HeaderText="Biz" ItemKey="Biz"></BitPivotItem>
         </BitPivot>
-
 
         @if (SelectedPivotKey?.ItemKey == "Foo")
         {
@@ -697,4 +697,36 @@
     <h3>Multi select</h3>
     <BitDropDown IsMultiSelect="true" Items="GetDropdownItems()" Placeholder="Select options">
     </BitDropDown>
+</div>
+<hr />
+<div class="bit-file-upload-container">
+    <h3>Auto</h3>
+    <BitFileUpload Label="Select or drag and drop files"
+                   UploadUrl="@UploadUrl"
+                   RemoveUrl="@RemoveUrl">
+    </BitFileUpload>
+
+    <h3>Auto & Multiple</h3>
+    <BitFileUpload IsMultiFile="true"
+                   Label="Select or drag and drop files"
+                   UploadUrl="@UploadUrl"
+                   RemoveUrl="@RemoveUrl">
+    </BitFileUpload>
+
+    <h3>Auto & Multiple with maxsize limitation</h3>
+    <BitFileUpload IsMultiFile="true"
+                   Label="Select or drag and drop files"
+                   MaxSize="FileSizeHumanizer.OneMegaByte * 100"
+                   UploadUrl="@UploadUrl"
+                   RemoveUrl="@RemoveUrl">
+    </BitFileUpload>
+
+    <h3>individual & Multiple (limit by extensions format)</h3>
+    <BitFileUpload IsMultiFile="true"
+                   AutoUploadEnabled="false"
+                   AcceptedExtensions="@(new List<string> { ".gif",".jpg",".mp4" })"
+                   Label="Select or drag and drop files"
+                   UploadUrl="@UploadUrl"
+                   RemoveUrl="@RemoveUrl">
+    </BitFileUpload>
 </div>
