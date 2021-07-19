@@ -108,5 +108,24 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
 
             Assert.AreEqual(bitCompoundButton.HasAttribute("aria-hidden"), expectedResult);
         }
+
+        [DataTestMethod,
+            DataRow("", "button", true),
+            DataRow("bing.com", "a", true),
+            DataRow("bing.com", "button", false)
+        ]
+        public void BitCompoundButtonShouldRenderExpectedElementBasedOnHref(string href, string expectedElement, bool isEnabled)
+        {
+            var component = RenderComponent<BitCompoundButtonTest>(parameters =>
+            {
+                parameters.Add(p => p.Href, href);
+                parameters.Add(p => p.IsEnabled, isEnabled);
+            });
+
+            var bitCompoundButton = component.Find(".bit-cmp-btn");
+            var tagName = bitCompoundButton.TagName;
+
+            Assert.AreEqual(expectedElement, tagName, ignoreCase: true);
+        }
     }
 }
