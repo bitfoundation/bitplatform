@@ -11,6 +11,7 @@ namespace Bit.Client.Web.BlazorUI
         private bool isReadonly;
         private bool isRequired;
         private bool isUnderlined;
+        private bool isBorderless;
         private string focusClass = "";
         private TextFieldType type = TextFieldType.Text;
         private Guid InputId = Guid.NewGuid();
@@ -90,6 +91,16 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
+        [Parameter]
+        public bool IsBorderless
+        {
+            get => isBorderless;
+            set
+            {
+                isBorderless = value;
+                ClassBuilder.Reset();
+            }
+        }
         [Parameter] public EventCallback<FocusEventArgs> OnFocusIn { get; set; }
 
         [Parameter] public EventCallback<FocusEventArgs> OnFocusOut { get; set; }
@@ -128,13 +139,16 @@ namespace Bit.Client.Web.BlazorUI
                                         ? $"{RootElementClass}-required-{VisualClassRegistrar()}" : string.Empty);
 
             ClassBuilder.Register(() => IsUnderlined
-                                       ? $"{RootElementClass}-Underlined-{VisualClassRegistrar()}" : string.Empty);
+                                       ? $"{RootElementClass}-underlined-{VisualClassRegistrar()}" : string.Empty);
+
+            ClassBuilder.Register(() => IsBorderless
+                                       ? $"{RootElementClass}-borderless-{VisualClassRegistrar()}" : string.Empty);
 
             ClassBuilder.Register(() => IsEnabled is false
-                                        ? $"{RootElementClass}-{(IsUnderlined ? "Underlined-" : "")}disabled-{VisualClassRegistrar()}" : string.Empty);
+                                        ? $"{RootElementClass}-{(IsUnderlined ? "underlined-" : "")}disabled-{VisualClassRegistrar()}" : string.Empty);
 
             ClassBuilder.Register(() => FocusClass.HasValue()
-                                        ? $"{RootElementClass}-{(IsUnderlined ? "Underlined-" : "")}{FocusClass}-{VisualClassRegistrar()}" : string.Empty);
+                                        ? $"{RootElementClass}-{(IsUnderlined ? "underlined-" : "")}{FocusClass}-{VisualClassRegistrar()}" : string.Empty);
 
         }
 

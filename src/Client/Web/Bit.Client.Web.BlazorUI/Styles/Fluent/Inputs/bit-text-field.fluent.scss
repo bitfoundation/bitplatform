@@ -123,7 +123,7 @@
     }
 }
 
-.bit-txt-Underlined-focused-fluent {
+.bit-txt-underlined-focused-fluent {
     ::after {
         border-bottom: 2px solid $Primary;
         position: absolute;
@@ -152,7 +152,7 @@
     }
 }
 
-.bit-txt-Underlined-disabled-fluent {
+.bit-txt-underlined-disabled-fluent {
     border-bottom: 1px solid $Grey20;
 }
 
@@ -166,7 +166,7 @@
     }
 }
 
-.bit-txt-Underlined-fluent {
+.bit-txt-underlined-fluent {
     display: flex;
     border-bottom: 1px solid rgb(96, 94, 92);
     width: 100%;
@@ -182,6 +182,12 @@
         line-height: 22px;
         height: 32px;
         margin: 0px 8px 0px 0px;
+    }
+}
+
+.bit-txt-borderless-fluent {
+    & > div {
+        border: none;
     }
 }
 
