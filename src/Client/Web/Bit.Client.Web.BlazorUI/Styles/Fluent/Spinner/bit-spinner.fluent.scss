@@ -10,26 +10,6 @@
     }
 }
 
-.bit-spn-bottom-fluent {
-    flex-direction: column-reverse;
-    align-items: center;
-}
-
-.bit-spn-top-fluent {
-    flex-direction: column;
-    align-items: center;
-}
-
-.bit-spn-left-fluent {
-    flex-direction: row;
-    align-items: flex-end;
-}
-
-.bit-spn-right-fluent {
-    flex-direction: row-reverse;
-    align-items: flex-end;
-}
-
 .bit-spn-fluent {
     display: flex;
     justify-content: center;
@@ -43,11 +23,55 @@
             animation: bit-spn-fluent 1.3s linear infinite;
         }
 
-        &:nth-child(2) {
-            font-size: rem(14px);
+        &:last-child {
+            font-size: rem(12px);
             color: $Primary;
             margin: 2px 8px;
             text-align: center;
+        }
+    }
+}
+
+.bit-spn-bottom-fluent {
+    flex-direction: column-reverse;
+    align-items: center;
+
+    & > div {
+        &:last-child {
+            margin: 0px 0px 8px;
+        }
+    }
+}
+
+.bit-spn-top-fluent {
+    flex-direction: column;
+    align-items: center;
+
+    & > div {
+        &:last-child {
+            margin: 8px 0px 0px;
+        }
+    }
+}
+
+.bit-spn-left-fluent {
+    flex-direction: row;
+    align-items: flex-end;
+
+    & > div {
+        &:last-child {
+            margin: 0px 0px 0px 8px;
+        }
+    }
+}
+
+.bit-spn-right-fluent {
+    flex-direction: row-reverse;
+    align-items: flex-end;
+
+    & > div {
+        &:last-child {
+            margin: 0px 8px 0px 0px;
         }
     }
 }
