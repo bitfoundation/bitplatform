@@ -56,7 +56,7 @@
 
 .bit-spn-left-fluent {
     flex-direction: row;
-    align-items: flex-end;
+    align-items: center;
 
     & > div {
         &:last-child {
@@ -67,7 +67,7 @@
 
 .bit-spn-right-fluent {
     flex-direction: row-reverse;
-    align-items: flex-end;
+    align-items: center;
 
     & > div {
         &:last-child {
