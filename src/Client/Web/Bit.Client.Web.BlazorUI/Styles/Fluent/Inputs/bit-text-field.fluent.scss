@@ -28,8 +28,8 @@
             position: relative;
 
             & > div {
-                background: rgb(243, 242, 241);
-                color: rgb(96, 94, 92);
+                background: $Grey20;
+                color: $Grey130;
                 display: flex;
                 align-items: center;
                 padding: 0px 10px;
@@ -93,6 +93,24 @@
             color: $Grey130;
             font-size: 10px;
         }
+
+        & > div {
+
+            & > p {
+                animation-name: css-0, css-13;
+                animation-duration: 0.367s;
+                animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
+                animation-fill-mode: both;
+                -webkit-font-smoothing: antialiased;
+                font-size: 12px;
+                font-weight: 400;
+                color: $Red20;
+                margin: 0px;
+                padding-top: 5px;
+                display: flex;
+                align-items: center;
+            }
+        }
     }
 
     .clickable {
@@ -143,6 +161,28 @@
     }
 }
 
+.bit-txt-underlined-fluent {
+
+    & > div {
+        display: flex;
+        border-bottom: 1px solid $Grey130;
+        width: 100%;
+
+        & > div {
+            border: none;
+            flex: 1 1 0px;
+            text-align: left;
+        }
+
+        label {
+            padding: 5px 0px 5px 12px;
+            line-height: 22px;
+            height: 32px;
+            margin: 0px 8px 0px 0px;
+        }
+    }
+}
+
 .bit-txt-underlined-focused-fluent {
 
     & > div {
@@ -150,7 +190,39 @@
         &::after {
             border-bottom: 2px solid $Primary;
             position: absolute;
-            inset: -1px;
+            inset: 32px 0;
+            content: "";
+            pointer-events: none;
+        }
+    }
+}
+
+.bit-txt-haserror-focused-fluent {
+
+    & > div {
+
+        & > div {
+
+            ::after {
+                border: 2px solid $Red20;
+                position: absolute;
+                inset: -1px;
+                border-radius: 2px;
+                content: "";
+                pointer-events: none;
+            }
+        }
+    }
+}
+
+.bit-txt-underlined-haserror-focused-fluent {
+
+    & > div {
+
+        &::after {
+            border-bottom: 2px solid $Red20;
+            position: absolute;
+            inset: 32px 0;
             content: "";
             pointer-events: none;
         }
@@ -202,34 +274,23 @@
     }
 }
 
-.bit-txt-underlined-fluent {
-
-    & > div {
-        display: flex;
-        border-bottom: 1px solid rgb(96, 94, 92);
-        width: 100%;
-
-        & > div {
-            border: none;
-            flex: 1 1 0px;
-            text-align: left;
-        }
-
-        label {
-            padding: 5px 0px 5px 12px;
-            line-height: 22px;
-            height: 32px;
-            margin: 0px 8px 0px 0px;
-        }
-    }
-}
-
 .bit-txt-borderless-fluent {
 
     & > div {
 
         & > div {
             border: none;
+        }
+    }
+}
+
+.bit-txt-haserror-fluent {
+
+    & > div {
+        border-color: $Red20;
+
+        & > div {
+            border-color: $Red20;
         }
     }
 }

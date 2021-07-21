@@ -79,7 +79,19 @@
 
         </div>
     </div>
-    <span id="TextFieldDescription987">
-        <span>@Description</span>
+    <span>
+        @if (Description is not null)
+        {
+            <span>@Description</span>
+        }
+
+        @if (ErrorMessage is not null)
+        {
+            <div role="alert">
+                <p>
+                    <span>@ErrorMessage</span>
+                </p>
+            </div>
+        }
     </span>
 </div>

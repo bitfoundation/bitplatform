@@ -28,6 +28,8 @@ namespace Bit.Client.Web.BlazorUI
 
         [Parameter] public string? Description { get; set; }
 
+        [Parameter] public string? ErrorMessage { get; set; }
+
         [Parameter]
         public bool CanRevealPassword { get; set; }
 
@@ -150,8 +152,10 @@ namespace Bit.Client.Web.BlazorUI
                                         ? $"{RootElementClass}-{(IsUnderlined ? "underlined-" : "")}disabled-{VisualClassRegistrar()}" : string.Empty);
 
             ClassBuilder.Register(() => FocusClass.HasValue()
-                                        ? $"{RootElementClass}-{(IsUnderlined ? "underlined-" : "")}{FocusClass}-{VisualClassRegistrar()}" : string.Empty);
+                                        ? $"{RootElementClass}-{(IsUnderlined ? "underlined-" : "")}{(ErrorMessage.HasValue()? "haserror-" : "")}{FocusClass}-{VisualClassRegistrar()}" : string.Empty);
 
+            ClassBuilder.Register(() => ErrorMessage.HasValue()
+                           ? $"{RootElementClass}-haserror-{VisualClassRegistrar()}" : string.Empty);
         }
 
         protected virtual async Task HandleFocusIn(FocusEventArgs e)
