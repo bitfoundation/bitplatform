@@ -615,13 +615,13 @@ namespace Bit.Client.Web.BlazorUI.Tests.Sliders
             var bitSlider = com.Find(".bit-slider");
             var labels = bitSlider.GetElementsByTagName("label");
 
-            if (string.IsNullOrEmpty(label))
+            if (label.HasValue())
             {
-                Assert.IsFalse(labels.Any(l => l.ClassList.Contains("title")));
+                Assert.IsTrue(labels.Any(l => l.ClassList.Contains("title") && l.TextContent.Equals(label)));
             }
             else
             {
-                Assert.IsTrue(labels.Any(l => l.ClassList.Contains("title") && l.TextContent.Equals(label)));
+                Assert.IsFalse(labels.Any(l => l.ClassList.Contains("title") || l.TextContent.Equals(label)));
             }
         }
 
@@ -692,15 +692,15 @@ namespace Bit.Client.Web.BlazorUI.Tests.Sliders
             });
 
             var bitSlider = com.Find(".bit-slider");
-            var labels = bitSlider.GetElementsByTagName("span");
+            var spans = bitSlider.GetElementsByTagName("span");
 
             if (originFromZero)
             {
-                Assert.IsTrue(labels.Any(l => l.ClassList.Contains("zeroTick")));
+                Assert.IsTrue(spans.Any(l => l.ClassList.Contains("zeroTick")));
             }
             else
             {
-                Assert.IsFalse(labels?.Any(l => l.ClassList.Contains("zeroTick")) ?? false);
+                Assert.IsFalse(spans?.Any(l => l.ClassList.Contains("zeroTick")) ?? false);
             }
         }
 
