@@ -232,7 +232,6 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
         }
 
         private void HideMessageBar(MouseEventArgs args)
-
         {
             IsMessageBarHidden = true;
         }
@@ -294,6 +293,17 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
             });
 
             return items;
+        }
+
+        private int? BitSliderHorizontalValue = 2;
+        private int? BitSliderVerticalValue = 0;
+        private int? BitSliderRangedLowerValue = 0;
+        private int? BitSliderRangedUpperValue = 0;
+
+        private void ChangeBitSliderRangedValues()
+        {
+            BitSliderRangedLowerValue = 2;
+            BitSliderRangedUpperValue = 9;
         }
     }
 

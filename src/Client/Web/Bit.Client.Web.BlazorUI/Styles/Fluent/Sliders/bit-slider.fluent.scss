@@ -15,7 +15,7 @@ $BgTrackHover: $DarkAlt;
 .bit-slider .bit-slider-container {
     display: flex;
     align-items: center;
-    padding: 0 8px;
+    padding: 0;
 }
 
 .bit-slider .zeroTick {
@@ -23,7 +23,7 @@ $BgTrackHover: $DarkAlt;
     background: $BgTrack;
 }
 
-.bit-slider input[type=range]:hover .zeroTick {
+.bit-slider-enabled-fluent input[type=range]:hover .zeroTick {
     background: $BgTrackHover;
 }
 
@@ -90,18 +90,18 @@ $BgTrackHover: $DarkAlt;
     box-shadow: none;
 }
 
-.bit-slider input[type=range]::-webkit-slider-thumb:hover,
-.bit-slider input[type=range]::-webkit-slider-thumb:active,
-.bit-slider input[type=range]:hover::-webkit-slider-thumb,
-.bit-slider input[type=range]:active::-webkit-slider-thumb {
+.bit-slider-enabled-fluent input[type=range]::-webkit-slider-thumb:hover,
+.bit-slider-enabled-fluent input[type=range]::-webkit-slider-thumb:active,
+.bit-slider-enabled-fluent input[type=range]:hover::-webkit-slider-thumb,
+.bit-slider-enabled-fluent input[type=range]:active::-webkit-slider-thumb {
     border-color: $BgTrackHover;
 }
 
-.bit-slider input[type=range]:hover::-webkit-slider-runnable-track {
+.bit-slider-enabled-fluent input[type=range]:hover::-webkit-slider-runnable-track {
     background: $BgTrackHover;
 }
 
-.bit-slider input[type=range]:active::-webkit-slider-runnable-track {
+.bit-slider-enabled-fluent input[type=range]:active::-webkit-slider-runnable-track {
     background: $BgTrackHover;
 }
 
@@ -109,8 +109,8 @@ $BgTrackHover: $DarkAlt;
     background: linear-gradient($BgTrack,$BgTrack) 0/var(--sx) 100% no-repeat,$BgDefult;
 }
 
-.bit-slider input[type=range]:hover::-webkit-slider-runnable-track,
-.bit-slider input[type=range]:active::-webkit-slider-runnable-track {
+.bit-slider-enabled-fluent input[type=range]:hover::-webkit-slider-runnable-track,
+.bit-slider-enabled-fluent input[type=range]:active::-webkit-slider-runnable-track {
     background: linear-gradient($BgTrackHover,$BgTrackHover) 0/var(--sx) 100% no-repeat,$BgHover;
 }
 
@@ -134,10 +134,10 @@ $BgTrackHover: $DarkAlt;
     box-shadow: none;
 }
 
-.bit-slider input[type=range]::-moz-range-thumb:hover,
-.bit-slider input[type=range]:hover::-moz-range-track,
-.bit-slider input[type=range]::-moz-range-thumb:active,
-.bit-slider input[type=range]:active::-moz-range-track {
+.bit-slider-enabled-fluent input[type=range]::-moz-range-thumb:hover,
+.bit-slider-enabled-fluent input[type=range]:hover::-moz-range-track,
+.bit-slider-enabled-fluent input[type=range]::-moz-range-thumb:active,
+.bit-slider-enabled-fluent input[type=range]:active::-moz-range-track {
     border-color: $BgTrackHover;
 }
 
@@ -145,8 +145,8 @@ $BgTrackHover: $DarkAlt;
     background: linear-gradient($BgTrack,$BgTrack) 0/var(--sx) 100% no-repeat,$BgDefult;
 }
 
-.bit-slider input[type=range]:hover::-moz-range-track,
-.bit-slider input[type=range]:active::-moz-range-track {
+.bit-slider-enabled-fluent input[type=range]:hover::-moz-range-track,
+.bit-slider-enabled-fluent input[type=range]:active::-moz-range-track {
     background: linear-gradient($BgTrackHover,$BgTrackHover) 0/var(--sx) 100% no-repeat,$BgHover;
 }
 
@@ -180,10 +180,10 @@ $BgTrackHover: $DarkAlt;
     box-shadow: none;
 }
 
-.bit-slider input[type=range]::-ms-thumb:hover,
-.bit-slider input[type=range]:hover::-ms-thumb,
-.bit-slider input[type=range]::-ms-thumb:active,
-.bit-slider input[type=range]:active::-ms-thumb {
+.bit-slider-enabled-fluent input[type=range]::-ms-thumb:hover,
+.bit-slider-enabled-fluent input[type=range]:hover::-ms-thumb,
+.bit-slider-enabled-fluent input[type=range]::-ms-thumb:active,
+.bit-slider-enabled-fluent input[type=range]:active::-ms-thumb {
     border-color: $BgTrackHover;
 }
 
@@ -194,8 +194,8 @@ $BgTrackHover: $DarkAlt;
     box-shadow: none;
 }
 
-.bit-slider input[type=range]:hover::-ms-fill-lower,
-.bit-slider input[type=range]:active::-ms-fill-lower {
+.bit-slider-enabled-fluent input[type=range]:hover::-ms-fill-lower,
+.bit-slider-enabled-fluent input[type=range]:active::-ms-fill-lower {
     background: $BgTrackHover;
 }
 
@@ -271,8 +271,8 @@ $BgTrackHover: $DarkAlt;
     background: linear-gradient(0deg, $BgDefult 4px, transparent 0);
 }
 
-.bit-slider-ranged-row .bit-slider-box:hover,
-.bit-slider-ranged-column .bit-slider-box:hover {
+.bit-slider-enabled-fluent.bit-slider-ranged-row .bit-slider-box:hover,
+.bit-slider-enabled-fluent.bit-slider-ranged-column .bit-slider-box:hover {
     background: linear-gradient(0deg, $BgHover 4px, transparent 0);
 }
 
@@ -295,8 +295,8 @@ $BgTrackHover: $DarkAlt;
     content: "";
 }
 
-.bit-slider-ranged-row .bit-slider-box:hover::before, .bit-slider-ranged-row .bit-slider-box:hover::after,
-.bit-slider-ranged-column .bit-slider-box:hover::before, .bit-slider-ranged-column .bit-slider-box:hover::after {
+.bit-slider-enabled-fluent.bit-slider-ranged-row .bit-slider-box:hover::before, .bit-slider-enabled-fluent.bit-slider-ranged-row .bit-slider-box:hover::after,
+.bit-slider-enabled-fluent.bit-slider-ranged-column .bit-slider-box:hover::before, .bit-slider-enabled-fluent.bit-slider-ranged-column .bit-slider-box:hover::after {
     background: $BgTrackHover;
 }
 
@@ -384,9 +384,4 @@ input[type=range]::-moz-range-thumb {
 .bit-slider.bit-slider-ranged-column input[type=range]:focus {
     z-index: 2;
     outline: dotted 1px currentcolor;
-}
-
-.bit-slider.bit-slider-ranged-row input[type=range]:focus, .bit-slider.bit-slider-ranged-row input[type=range]:focus + output,
-.bit-slider.bit-slider-ranged-column input[type=range]:focus, .bit-slider.bit-slider-ranged-column input[type=range]:focus + output {
-    --col: darkorange;
 }

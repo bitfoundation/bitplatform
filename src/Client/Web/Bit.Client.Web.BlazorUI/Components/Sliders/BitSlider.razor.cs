@@ -8,10 +8,11 @@ namespace Bit.Client.Web.BlazorUI
 {
     public partial class BitSlider
     {
+        private int? fisrtInputValue;
+        private int? secoundInputValue;
         private int? upperValue;
         private int? lowerValue;
         private int? value;
-        private (int Lower, int Upper) rangeValue;
 
         private bool isReadOnly;
         private string? styleProgress;
@@ -31,7 +32,7 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public int? DefaultUpperValue { get; set; }
         [Parameter] public int? DefaultLowerValue { get; set; }
         [Parameter] public int? DefaultValue { get; set; }
-        [Parameter] public int Min { get; set; } = 1;
+        [Parameter] public int Min { get; set; }
         [Parameter] public int Max { get; set; } = 10;
         [Parameter] public int Step { get; set; } = 1;
 
@@ -43,7 +44,9 @@ namespace Bit.Client.Web.BlazorUI
             {
                 if (value == upperValue) return;
                 upperValue = value;
+                SetInputValueOnRanged(upper: value);
                 ClassBuilder.Reset();
+                FillSlider();
                 _ = UpperValueChanged.InvokeAsync(value);
             }
         }
@@ -57,7 +60,9 @@ namespace Bit.Client.Web.BlazorUI
             {
                 if (value == lowerValue) return;
                 lowerValue = value;
+                SetInputValueOnRanged(lower: value);
                 ClassBuilder.Reset();
+                FillSlider();
                 _ = LowerValueChanged.InvokeAsync(value);
             }
         }
@@ -72,24 +77,30 @@ namespace Bit.Client.Web.BlazorUI
                 if (value == this.value) return;
                 this.value = value;
                 ClassBuilder.Reset();
+                FillSlider();
                 _ = ValueChanged.InvokeAsync(value);
             }
         }
         [Parameter] public EventCallback<int?> ValueChanged { get; set; }
 
         [Parameter]
-        public (int Lower, int Upper) RangeValue
+        public (int? Lower, int? Upper) RangeValue
         {
-            get => rangeValue;
+            get => (lowerValue, upperValue);
             set
             {
-                if (value == this.rangeValue) return;
-                this.rangeValue = value;
+                if (value.Lower == lowerValue && value.Upper == upperValue) return;
+                if ((!value.Lower.HasValue && lowerValue.HasValue) || (!value.Upper.HasValue && upperValue.HasValue)) return;
+
+                lowerValue = value.Lower;
+                upperValue = value.Upper;
+                SetInputValueOnRanged(value.Lower, value.Upper);
                 ClassBuilder.Reset();
+                FillSlider();
                 _ = RangeValueChanged.InvokeAsync(value);
             }
         }
-        [Parameter] public EventCallback<(int Lower, int Upper)> RangeValueChanged { get; set; }
+        [Parameter] public EventCallback<(int? Lower, int? Upper)> RangeValueChanged { get; set; }
 
         [Parameter] public bool IsOriginFromZero { get; set; }
         [Parameter] public string? Label { get; set; }
@@ -117,40 +128,31 @@ namespace Bit.Client.Web.BlazorUI
                                                 ? $"{RootElementClass}-readonly-{VisualClassRegistrar()}"
                                                 : string.Empty);
 
+            var rangedClass = IsRanged ? "-ranged" : null;
             ClassBuilder.Register(() => IsVertical
-                                                ? $"{RootElementClass}{(IsRanged ? "-ranged" : null)}-column"
-                                                : $"{RootElementClass}{(IsRanged ? "-ranged" : null)}-row");
+                                                ? $"{RootElementClass}{rangedClass}-column"
+                                                : $"{RootElementClass}{rangedClass}-row");
         }
 
         protected override void OnInitialized()
         {
             if (DefaultUpperValue.HasValue)
             {
-                UpperValue = DefaultUpperValue.Value;
+                upperValue = DefaultUpperValue.Value;
             }
 
             if (DefaultLowerValue.HasValue)
             {
-                LowerValue = DefaultLowerValue.Value;
+                lowerValue = DefaultLowerValue.Value;
             }
 
             if (IsRanged)
             {
-                RangeValue = (LowerValue.GetValueOrDefault(RangeValue.Lower), UpperValue.GetValueOrDefault(RangeValue.Upper));
-
-                if (!LowerValue.HasValue)
-                {
-                    LowerValue = RangeValue.Lower;
-                }
-
-                if (!UpperValue.HasValue)
-                {
-                    UpperValue = RangeValue.Upper;
-                }
+                SetInputValueOnRanged(lowerValue, upperValue);
             }
-            else
+            else if (!Value.HasValue)
             {
-                Value = DefaultValue.GetValueOrDefault(Min);
+                value = DefaultValue.GetValueOrDefault(Min);
             }
 
             if (!IsVertical)
@@ -171,13 +173,13 @@ namespace Bit.Client.Web.BlazorUI
 
                     if (Label.HasValue())
                     {
-                        var titleHeight = await JSRuntime.GetClientHeight(TitleRef);
+                        var titleHeight = await JSRuntime!.GetClientHeight(TitleRef);
                         inputHeight -= titleHeight;
                     }
 
                     if (ShowValue)
                     {
-                        var valueLabelHeight = await JSRuntime.GetClientHeight(ValueLabelRef);
+                        var valueLabelHeight = await JSRuntime!.GetClientHeight(ValueLabelRef);
                         inputHeight -= (valueLabelHeight * 2);
                     }
                 }
@@ -190,54 +192,59 @@ namespace Bit.Client.Web.BlazorUI
             await base.OnAfterRenderAsync(firstRender);
         }
 
-        protected virtual async Task HandleChange(ChangeEventArgs e)
+        private async Task HandleInput(ChangeEventArgs e)
         {
             if (IsEnabled)
             {
+                if (!IsRanged)
+                {
+                    Value = Convert.ToInt32(e.Value, CultureInfo.InvariantCulture);
+                    FillSlider();
+                }
+                else
+                {
+                    UpperValue = null;
+                    LowerValue = null;
+                }
+
                 await OnChange.InvokeAsync(e);
             }
         }
 
-        private void HandleInput(ChangeEventArgs e)
+        private async Task HandleInput(ChangeEventArgs e, bool isFirstInput)
         {
-            if (IsRanged)
+            if (IsEnabled)
             {
-                Value = null;
-
-                if (e.Value is null)
+                if (IsRanged)
                 {
-                    LowerValue = null;
-                    UpperValue = null;
-                    return;
-                }
+                    if (isFirstInput)
+                    {
+                        fisrtInputValue = Convert.ToInt32(e.Value, CultureInfo.InvariantCulture);
+                    }
+                    else
+                    {
+                        secoundInputValue = Convert.ToInt32(e.Value, CultureInfo.InvariantCulture);
+                    }
 
-                var val = (int)e.Value;
-                if (val > UpperValue)
-                {
-                    UpperValue = val;
+                    if (fisrtInputValue < secoundInputValue)
+                    {
+                        lowerValue = fisrtInputValue;
+                        upperValue = secoundInputValue;
+                    }
+                    else
+                    {
+                        lowerValue = secoundInputValue;
+                        upperValue = fisrtInputValue;
+                    }
+
+                    FillSlider();
                 }
                 else
-                {
-                    LowerValue = val;
-                }
-
-                RangeValue = (LowerValue.GetValueOrDefault(RangeValue.Lower), UpperValue.GetValueOrDefault(RangeValue.Upper));
-                FillSlider();
-            }
-            else
-            {
-                LowerValue = null;
-                UpperValue = null;
-
-                if (e.Value is null)
                 {
                     Value = null;
                 }
-                else
-                {
-                    Value = (int)e.Value;
-                    FillSlider();
-                }
+
+                await OnChange.InvokeAsync(e);
             }
         }
 
@@ -245,7 +252,7 @@ namespace Bit.Client.Web.BlazorUI
         {
             if (IsRanged)
             {
-                styleProgress = $"--l: {RangeValue.Lower}; --h: {RangeValue.Upper}; --min: {Min}; --max: {Max}";
+                styleProgress = $"--l: {fisrtInputValue}; --h: {secoundInputValue}; --min: {Min}; --max: {Max}";
                 if (IsVertical)
                 {
                     styleContainer = $"width: {inputHeight}px; height: {inputHeight}px;";
@@ -263,6 +270,24 @@ namespace Bit.Client.Web.BlazorUI
                 {
                     styleProgress = $"--value: {Value}; --min: {Min}; --max: {Max};";
                 }
+            }
+        }
+
+        private void SetInputValueOnRanged(int? lower = null, int? upper = null)
+        {
+            var defaultValue = Min > 0 || Max < 0 ? Min : 0;
+            lower = lower.GetValueOrDefault(lowerValue ?? defaultValue);
+            upper = upper.GetValueOrDefault(upperValue ?? defaultValue);
+
+            if (upper > lower)
+            {
+                fisrtInputValue = lower;
+                secoundInputValue = upper;
+            }
+            else
+            {
+                fisrtInputValue = upper;
+                secoundInputValue = lower;
             }
         }
 
