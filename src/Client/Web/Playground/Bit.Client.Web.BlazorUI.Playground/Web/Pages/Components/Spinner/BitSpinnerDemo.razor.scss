@@ -1,12 +1,39 @@
-﻿.spinner-container > div:not(.spinner-positioning), .action-btn-container {
-    display: flex;
+﻿.spinner-container,
+.spinner-positioning {
+    label {
+        padding: 5px 0px;
+        font-size: 14px;
+    }
 }
 
-.spinner-container span {
-    margin: 10px;
+.spinner-container {
+    label {
+        margin-right: 20px;
+    }
+
+    > div {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+
+        > div {
+            margin-left: 20px;
+        }
+    }
 }
 
 .spinner-positioning {
-    display: inline-block;
-    line-height: 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+
+    > div {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+
+        &:not(:first-child) {
+            margin-top: 20px;
+        }
+    }
 }
