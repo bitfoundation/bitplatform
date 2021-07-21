@@ -62,5 +62,18 @@ namespace Bit.Client.Web.BlazorUI.Tests.Checkboxes
             var bitCheckboxContainer = component.Find(".bit-chb-fluent");
             Assert.AreEqual(afterClickHasCheckedClass, bitCheckboxContainer.ClassList.Contains("bit-chb-checked-fluent"));
         }
+
+        [DataTestMethod, DataRow("Detailed label")]
+        public void BitCheckboxAriaLabelTest(string ariaLabel)
+        {
+            var com = RenderComponent<BitCheckboxTest>(parameters =>
+            {
+                parameters.Add(p => p.AriaLabel, ariaLabel);
+            });
+
+            var bitCheckbox = com.Find(".bit-chb > input");
+
+            Assert.IsTrue(bitCheckbox.GetAttribute("aria-label").Equals(ariaLabel));
+        }
     }
 }

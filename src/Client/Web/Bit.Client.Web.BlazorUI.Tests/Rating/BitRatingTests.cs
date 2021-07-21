@@ -143,5 +143,21 @@ namespace Bit.Client.Web.BlazorUI.Tests.Rating
             //Assert.AreEqual(filledBitRatingIconCount, expectedResult);
             //Assert.AreEqual(unselectedBitRatingIconCount, (max - expectedResult));
         }
+
+        [DataTestMethod, DataRow("Detailed label")]
+        public void BitRatingAriaLabelTest(string ariaLabel)
+        {
+            var com = RenderComponent<BitRatingTest>(parameters =>
+            {
+                parameters.Add(p => p.AriaLabel, ariaLabel);
+            });
+
+            var bitRatings = com.FindAll(".bit-rating, .bit-rating button");
+
+            foreach (var bitRating in bitRatings)
+            {
+                Assert.IsTrue(bitRating.GetAttribute("aria-label").Equals(ariaLabel));
+            }
+        }
     }
 }

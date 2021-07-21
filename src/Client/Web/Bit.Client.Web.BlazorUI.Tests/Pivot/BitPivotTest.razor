@@ -2,7 +2,8 @@
     <BitPivot OverflowBehavior="OverflowBehavior"
               HeadersOnly="HeadersOnly"
               LinkFormat="LinkFormat"
-              LinkSize="LinkSize">
+              LinkSize="LinkSize"
+              AriaLabel="@AriaLabel">
     </BitPivot>
 </CascadingValue>
 
@@ -13,4 +14,5 @@
     [Parameter] public LinkFormat LinkFormat { get; set; }
     [Parameter] public LinkSize LinkSize { get; set; }
     [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public string AriaLabel { get; set; }
 }

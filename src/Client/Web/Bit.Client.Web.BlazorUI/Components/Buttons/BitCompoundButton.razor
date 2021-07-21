@@ -1,21 +1,61 @@
 ﻿@namespace Bit.Client.Web.BlazorUI
 @inherits BitComponentBase
 
-<button @ref="RootElement"
-        @attributes="HtmlAttributes"
-        style="@StyleBuilder.Value"
-        class="@ClassBuilder.Value"
-        aria-label="@AriaLabel"
-        aria-describedby="@AriaDescription"
-        aria-hidden="@AriaHidden"
-        tabindex="@tabIndex"
-        @onclick="HandleOnClick">
-    <span class="no-text-select">
-        <span>
-            @Text
+@if (Href.HasValue() && IsEnabled)
+{
+    <a @ref="RootElement"
+       @attributes="HtmlAttributes"
+       style="@StyleBuilder.Value"
+       class="@ClassBuilder.Value"
+       aria-label="@AriaLabel"
+       aria-describedby="@AriaDescription"
+       aria-hidden="@AriaHidden"
+       href="@Href"
+       target="@Target"
+       title="@Title"
+       tabindex="@tabIndex">
+        <span class="no-text-select">
+            @if (Text.HasValue())
+            {
+                <span class="bit-cmp-btn-text">
+                    @Text
+                </span>
+            }
+            @if (SecondaryText.HasValue())
+            {
+                <span class="bit-cmp-btn-secondary-text">
+                    @SecondaryText
+                </span>
+            }
         </span>
-        <span>
-            @SecondaryText
+    </a>
+}
+else
+{
+    <button @ref="RootElement"
+            @attributes="HtmlAttributes"
+            style="@StyleBuilder.Value"
+            class="@ClassBuilder.Value"
+            aria-label="@AriaLabel"
+            aria-describedby="@AriaDescription"
+            aria-hidden="@AriaHidden"
+            tabindex="@tabIndex"
+            type="button"
+            title="@Title"
+            @onclick="HandleOnClick">
+        <span class="no-text-select">
+            @if (Text.HasValue())
+            {
+                <span class="bit-cmp-btn-text">
+                    @Text
+                </span>
+            }
+            @if (SecondaryText.HasValue())
+            {
+                <span class="bit-cmp-btn-secondary-text">
+                    @SecondaryText
+                </span>
+            }
         </span>
-    </span>
-</button>
+    </button>
+}

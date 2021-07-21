@@ -81,6 +81,8 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
+        [Parameter] public string? AriaLabel { get; set; }
+
         [Parameter]
         public Dictionary<string, object> HtmlAttributes { get; set; } = new Dictionary<string, object>();
 
@@ -119,6 +121,11 @@ namespace Bit.Client.Web.BlazorUI
 
                     case nameof(Visibility):
                         Visibility = (ComponentVisibility)parameter.Value;
+                        parametersDictionary.Remove(parameter.Key);
+                        break;
+
+                    case nameof(AriaLabel):
+                        AriaLabel = (string?)parameter.Value;
                         parametersDictionary.Remove(parameter.Key);
                         break;
 
