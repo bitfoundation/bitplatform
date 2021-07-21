@@ -21,7 +21,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
             DataRow(Visual.Material, true, ButtonStyle.Primary),
             DataRow(Visual.Material, true, ButtonStyle.Standard),
             DataRow(Visual.Material, false, ButtonStyle.Primary),
-            DataRow(Visual.Material, false, ButtonStyle.Standard),
+            DataRow(Visual.Material, false, ButtonStyle.Standard)
         ]
         public void BitCompoundButtonTest(Visual visual, bool isEnabled, ButtonStyle style)
         {
@@ -110,11 +110,11 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
         }
 
         [DataTestMethod,
-            DataRow("", "button", true),
-            DataRow("bing.com", "a", true),
-            DataRow("bing.com", "button", false)
+            DataRow("", true),
+            DataRow("bing.com", true),
+            DataRow("bing.com", false)
         ]
-        public void BitCompoundButtonShouldRenderExpectedElementBasedOnHref(string href, string expectedElement, bool isEnabled)
+        public void BitCompoundButtonShouldRenderExpectedElementBasedOnHref(string href, bool isEnabled)
         {
             var component = RenderComponent<BitCompoundButtonTest>(parameters =>
             {
@@ -124,6 +124,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
 
             var bitCompoundButton = component.Find(".bit-cmp-btn");
             var tagName = bitCompoundButton.TagName;
+            var expectedElement = href.HasValue() && isEnabled ? "a" : "button" ;
 
             Assert.AreEqual(expectedElement, tagName, ignoreCase: true);
         }
