@@ -12,6 +12,9 @@ namespace Bit.Client.Web.BlazorUI
         private string expandClass = "";
         private bool isMultiSelect = false;
 
+        /// <summary>
+        /// Whether multiple items are allowed to be selected
+        /// </summary>
         [Parameter]
         public bool IsMultiSelect
         {
@@ -22,11 +25,32 @@ namespace Bit.Client.Web.BlazorUI
                 ClassBuilder.Reset();
             }
         }
-        
+        [Parameter]
+        public bool IsOpen
+        {
+            get => isOpen;
+            set
+            {
+                isOpen = value;
+                ClassBuilder.Reset();
+            }
+        }
+
         [Parameter] public List<DropDownItem> Items { get; set; } = new List<DropDownItem>();
+
+        /// <summary>
+        /// Input placeholder text, Displayed until an option is selected
+        /// </summary>
         [Parameter] public string? Placeholder { get; set; }
 
+        /// <summary>
+        /// Callback for when the dropdown clicked
+        /// </summary>
         [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+
+        /// <summary>
+        /// Callback for when an item is selected
+        /// </summary>
         [Parameter] public EventCallback<DropDownItem> OnSelectItem { get; set; }
 
         public string? Text { get; set; }
@@ -68,8 +92,6 @@ namespace Bit.Client.Web.BlazorUI
             ClassBuilder.Register(() => IsMultiSelect is false
                 ? string.Empty
                 : $"{RootElementClass}-{"multi"}-{VisualClassRegistrar()}");
-
-            ClassBuilder.Register(() => "bit-cal-com");
         }
 
         protected virtual async Task HandleClick(MouseEventArgs e)
