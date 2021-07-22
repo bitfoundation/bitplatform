@@ -14,19 +14,40 @@ namespace Bit.Client.Web.BlazorUI
         private TextFieldType type = TextFieldType.Text;
         private Guid InputId = Guid.NewGuid();
 
+        /// <summary>
+        /// Specifies the maximum number of characters allowed in the input
+        /// </summary>
         [Parameter] public int MaxLength { get; set; } = -1;
 
+        /// <summary>
+        /// The icon name for the icon shown in the far right end of the text field
+        /// </summary>
         [Parameter] public string? IconName { get; set; }
 
+        /// <summary>
+        /// Current value of the text field
+        /// </summary>
         [Parameter] public string? Value { get; set; }
 
+        /// <summary>
+        /// Input placeholder text, displayed until input value change
+        /// </summary>
         [Parameter] public string? Placeholder { get; set; }
 
+        /// <summary>
+        /// Label displayed above the text field and read by screen readers
+        /// </summary>
         [Parameter] public string? Label { get; set; }
 
+        /// <summary>
+        /// Whether to show the reveal password button for input type 'password'. This will be ignored if the type is not set to 'password', or if the browser is known to have a built-in reveal button for password inputs (Edge, IE)
+        /// </summary>
         [Parameter]
         public bool CanRevealPassword { get; set; }
 
+        /// <summary>
+        /// If true, the text field is readonly
+        /// </summary>
         [Parameter]
         public bool IsReadonly
         {
@@ -38,6 +59,9 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
+        /// <summary>
+        /// Whether the associated input is required or not, add an asterisk "*" to its label
+        /// </summary>
         [Parameter]
         public bool IsRequired
         {
@@ -49,6 +73,9 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
+        /// <summary>
+        /// Input type
+        /// </summary>
         [Parameter]
         public TextFieldType Type
         {
@@ -63,6 +90,9 @@ namespace Bit.Client.Web.BlazorUI
 
         public TextFieldType ElementType { get; set; }
 
+        /// <summary>
+        /// Whether or not the text field is a multiline text field
+        /// </summary>
         [Parameter]
         public bool IsMultiLine
         {
@@ -74,18 +104,39 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
+        /// <summary>
+        /// Callback for when focus moves into the input
+        /// </summary>
         [Parameter] public EventCallback<FocusEventArgs> OnFocusIn { get; set; }
 
+        /// <summary>
+        /// Callback for when focus moves into the input
+        /// </summary>
         [Parameter] public EventCallback<FocusEventArgs> OnFocusOut { get; set; }
 
+        /// <summary>
+        /// Callback for when focus moves out of the input
+        /// </summary>
         [Parameter] public EventCallback<FocusEventArgs> OnFocus { get; set; }
 
+        /// <summary>
+        /// Callback for when the input value changes
+        /// </summary>
         [Parameter] public EventCallback<ChangeEventArgs> OnChange { get; set; }
 
+        /// <summary>
+        /// Callback for when a keyboard key is pressed
+        /// </summary>
         [Parameter] public EventCallback<KeyboardEventArgs> OnKeyDown { get; set; }
 
+        /// <summary>
+        /// Callback for When a keyboard key is released
+        /// </summary>
         [Parameter] public EventCallback<KeyboardEventArgs> OnKeyUp { get; set; }
 
+        /// <summary>
+        /// Callback for when the input clicked
+        /// </summary>
         [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
         public string FocusClass
