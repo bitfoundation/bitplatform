@@ -50,7 +50,7 @@
                 </div>
 
                 @*ChildContent*@
-                <div class=@($"{RootElementClass}-text {(ExpandSingelLine ? $"{RootElementClass}-open": "")}")>
+                <div class=@($"{RootElementClass}-text {(ExpandSingleLine ? $"{RootElementClass}-open": "")}")>
                     <span class=@($"{RootElementClass}-innertext")>
                         <span>
                             @ChildContent
@@ -65,11 +65,11 @@
                 }
 
                 @*ExpandSingleLine*@
-                @if (Truncated && Actions is null)
+                else if (Truncated)
                 {
                     <div class=@($"{RootElementClass}-truncate")>
-                        <button @onclick=@Truncate>
-                            <i class=@($"bit-icon bit-icon--{(ExpandSingelLine ? "DoubleChevronUp" : "DoubleChevronDown")}")></i>
+                        <button @onclick=@ToggleExpandSingleLine>
+                            <i class=@($"bit-icon bit-icon--{(ExpandSingleLine ? "DoubleChevronUp" : "DoubleChevronDown")}")></i>
                         </button>
                     </div>
                 }

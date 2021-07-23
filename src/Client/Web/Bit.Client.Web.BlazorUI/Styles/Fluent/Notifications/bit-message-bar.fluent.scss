@@ -79,6 +79,7 @@
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
+            flex:1;
 
             &.bit-msg-bar-open {
                 white-space: normal;
