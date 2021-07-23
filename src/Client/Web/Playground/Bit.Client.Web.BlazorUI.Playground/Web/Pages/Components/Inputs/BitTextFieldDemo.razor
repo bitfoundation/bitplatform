@@ -12,55 +12,61 @@
         <h3>Basic TextFields</h3>
         <div class="desc">
             <p>
-                To create a TextField you can use a BitTextField component. You can enable and disable the textfield by changing the IsEnabled attribute, A textfiled can set for ReadOnly mode. You can set Placeholder
-                and limit the chars of entered on textfield by MaxLength attribute. You can even set icon for it and change textfield type to password.
+                To create a text field you can use a BitTextField component. You can enable and disable the text field by changing the IsEnabled attribute, A text filed can set for ReadOnly mode. By setting label attribute, a label appears above the text field. You can set Placeholder
+                and limit the chars of entered on text field by MaxLength attribute. You can even set icon for it and change text field type to password. By IsRequierd attribute check if the associated input is required or not.
             </p>
         </div>
         <BitPivot>
             <BitPivotItem HeaderText="Example" IconName="ViewList">
                 <div>
-                    <BitTextField Value="Enabled"></BitTextField>
+                    <BitTextField Label="Standard"></BitTextField>
                 </div>
                 <div class="m-t-15">
-                    <BitTextField IsReadonly="true" Value="Readonly"></BitTextField>
+                    <BitTextField Label="Read-only" IsReadonly="true" Value="I am read-only"></BitTextField>
                 </div>
                 <div class="m-t-15">
-                    <BitTextField IsEnabled="false" Value="Disabled"></BitTextField>
+                    <BitTextField Label="Disabled" IsEnabled="false" Value="I am disabled"></BitTextField>
                 </div>
                 <div class="m-t-15">
-                    <BitTextField Placeholder="Placeholder"></BitTextField>
+                    <BitTextField Label="With placeholder" Placeholder="Please enter text here"></BitTextField>
                 </div>
                 <div class="m-t-15">
-                    <BitTextField MaxLength="10" Placeholder="Limited text field - 10 chars"></BitTextField>
+                    <BitTextField Label="Controlled TextField limiting length of value to 10" MaxLength="10"></BitTextField>
                 </div>
                 <div class="m-t-15">
-                    <BitTextField Placeholder="With an icon" IconName="CalendarMirrored"></BitTextField>
+                    <BitTextField Label="With an icon" IconName="CalendarMirrored"></BitTextField>
                 </div>
                 <div class="m-t-15">
-                    <BitTextField Type="@InputType" Placeholder="Password input" CanRevealPassword="true"></BitTextField>
+                    <BitTextField Label="Password with reveal button" Type="@InputType" CanRevealPassword="true"></BitTextField>
+                </div>
+                <div class="m-t-15">
+                    <BitTextField Label="Required" IsRequired="true"></BitTextField>
                 </div>
             </BitPivotItem>
             <BitPivotItem HeaderText="Code" IconName="Source">
                 <p>
-                    &lt<span class="dark-green">BitTextField Value</span>="Enabled"><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
+                    &lt<span class="dark-green">BitTextField Label</span>="Standard"><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
                 </p>
                 <p>
-                    &lt<span class="dark-green">BitTextField IsReadonly</span>="<span class="light-blue">true</span>" <span class="dark-green">Value</span>="Readonly"><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
+                    &lt<span class="dark-green">BitTextField IsReadonly</span>="<span class="light-blue">true</span>" <span class="dark-green">Label</span>="Read-only" <span class="dark-green">Value</span>="I am read-only"><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
                 </p>
                 <p>
-                    &lt<span class="dark-green">BitTextField IsEnabled</span>="<span class="light-blue">false</span>" <span class="dark-green">Value</span>="Disabled"><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
+                    &lt<span class="dark-green">BitTextField IsEnabled</span>="<span class="light-blue">false</span>" <span class="dark-green">Label</span>="Disabled" <span class="dark-green">Value</span>="I am disabled"><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
                 </p>
                 <p>
-                    &lt<span class="dark-green">BitTextField Placeholder</span>="Placeholder"><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
+                    &lt<span class="dark-green">BitTextField Placeholder</span>="Please enter text here" <span class="dark-green">Label</span>="With placeholder"><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
                 </p>
                 <p>
-                    &lt<span class="dark-green">BitTextField MaxLength</span>="10" <span class="dark-green">Placeholder</span>="Limited text field - 10 chars"><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
+                    &lt<span class="dark-green">BitTextField MaxLength</span>="10" <span class="dark-green">Label</span>="Controlled TextField limiting length of value to 10"><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
                 </p>
                 <p>
-                    &lt<span class="dark-green">BitTextField Placeholder</span>="With an icon" <span class="dark-green">IconName</span>="CalendarMirrored"><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
+                    &lt<span class="dark-green">BitTextField Label</span>="With an icon" <span class="dark-green">IconName</span>="CalendarMirrored"><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
                 </p>
                 <p>
-                    &lt<span class="dark-green">BitTextField Type</span>="<span class="light-yellow-bg">&#64;</span>InputType" <span class="dark-green">Placeholder</span>="Password input" <span class="dark-green">CanRevealPassword</span>="<span class="light-blue">true</span>"><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
+                    &lt<span class="dark-green">BitTextField Type</span>="<span class="light-yellow-bg">&#64;</span>InputType" <span class="dark-green">Label</span>="Password with reveal button" <span class="dark-green">CanRevealPassword</span>="<span class="light-blue">true</span>"><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
+                </p>
+                <p>
+                    &lt<span class="dark-green">BitTextField Label</span>="Required" <span class="dark-green">IsRequired</span>="<span class="light-blue">true</span>"><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
                 </p>
             </BitPivotItem>
         </BitPivot>
@@ -131,6 +137,18 @@
             <td>If true, the text field is readonly.</td>
         </tr>
         <tr>
+            <td>isRequired</td>
+            <td>bool</td>
+            <td>false</td>
+            <td>Whether the associated input is required or not, add an asterisk "*" to its label.</td>
+        </tr>
+        <tr>
+            <td>label</td>
+            <td>string</td>
+            <td></td>
+            <td>Label displayed above the textfield and read by screen readers.</td>
+        </tr>
+        <tr>
             <td>maxLength</td>
             <td>int</td>
             <td></td>
@@ -173,7 +191,7 @@
             <td>Current value of the text field.</td>
         </tr>
     </table>
-     <div>
+    <div>
         <h4>TextFieldType</h4>
         <hr />
         <table>
