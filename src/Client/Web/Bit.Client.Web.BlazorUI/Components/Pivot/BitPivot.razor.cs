@@ -15,12 +15,21 @@ namespace Bit.Client.Web.BlazorUI
         private bool SelectedKeyHasBeenSet;
         private bool hasSetSelectedKey;
 
+        /// <summary>
+        /// Default selected key for the pivot. Only provide this if the pivot is an uncontrolled component; otherwise, use the selectedKey parameter
+        /// </summary>
         [Parameter]
         public string DefaultSelectedKey { get; set; } = "0";
 
+        /// <summary>
+        /// The content of pivot, It can be Any custom tag
+        /// </summary>
         [Parameter]
         public RenderFragment? ChildContent { get; set; }
 
+        /// <summary>
+        /// Overflow behavior when there is not enough room to display all of the links/tabs * none: Pivot links will overflow the container and may not be visible * menu: Display an overflow menu that contains the tabs that don't fit * scroll: Display all Pivot links with a scroll bar placed under it
+        /// </summary>
         [Parameter]
         public OverflowBehavior OverflowBehavior
         {
@@ -32,6 +41,9 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
+        /// <summary>
+        /// Pivot link format, display mode for the pivot links
+        /// </summary>
         [Parameter]
         public LinkFormat LinkFormat
         {
@@ -43,6 +55,9 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
+        /// <summary>
+        /// Pivot link size
+        /// </summary>
         [Parameter]
         public LinkSize LinkSize
         {
@@ -54,12 +69,21 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
+        /// <summary>
+        /// Whether to skip rendering the tabpanel with the content of the selected tab
+        /// </summary>
         [Parameter]
         public bool HeadersOnly { get; set; } = false;
 
+        /// <summary>
+        /// Callback for when the selected pivot item is changed
+        /// </summary>
         [Parameter]
         public EventCallback<BitPivotItem> OnLinkClick { get; set; }
 
+        /// <summary>
+        /// Key of the selected pivot item. Updating this will override the Pivot's selected item state
+        /// </summary>
         [Parameter]
         public string SelectedKey
         {
@@ -72,6 +96,9 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
+        /// <summary>
+        /// Callback for when the selected key changed
+        /// </summary>
         [Parameter]
         public EventCallback<string> SelectedKeyChanged { get; set; }
 
