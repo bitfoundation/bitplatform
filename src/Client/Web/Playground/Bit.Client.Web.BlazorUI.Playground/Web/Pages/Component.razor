@@ -355,39 +355,47 @@
 
 <div class="spinner-container">
     <h2>Spinner</h2>
-    <div>
-        <span>Extra small spinner:</span>
-        <BitSpinner Size="SpinnerSize.XSmall" />
+    <div class="spinner-sizes">
+        <h3>Spinner sizes</h3>
+        <div>
+            <div>
+                <label>Extra small spinner</label>
+                <BitSpinner Size="SpinnerSize.XSmall" />
+            </div>
+            <div>
+                <label>Small spinner</label>
+                <BitSpinner Size="SpinnerSize.Small" />
+            </div>
+            <div>
+                <label>Medium spinner</label>
+                <BitSpinner Size="SpinnerSize.Medium" />
+            </div>
+            <div>
+                <label>Large spinner</label>
+                <BitSpinner Size="SpinnerSize.Large" />
+            </div>
+        </div>
     </div>
-    <br />
-    <div>
-        <span>Small spinner:</span>
-        <BitSpinner Size="SpinnerSize.Small" />
-    </div>
-    <br />
-    <div>
-        <span>Medium spinner:</span>
-        <BitSpinner Size="SpinnerSize.Medium" />
-    </div>
-    <br />
-    <div>
-        <span>Large spinner:</span>
-        <BitSpinner Size="SpinnerSize.Large" />
-    </div>
-    <br />
     <div class="spinner-positioning">
         <h3>Spinner label positioning</h3>
-        <span>Spinner with label positioned below</span>
-        <BitSpinner LabelPosition="SpinnerLabelPosition.Bottom" Label="I am definitely loading..." />
-        <br />
-        <span>Spinner with label positioned above</span>
-        <BitSpinner LabelPosition="SpinnerLabelPosition.Top" Label="Seriously, still loading..." />
-        <br />
-        <span>Spinner with label positioned to right</span>
-        <BitSpinner LabelPosition="SpinnerLabelPosition.Right" Label="Wait, wait..." />
-        <br />
-        <span>Spinner with label positioned to left</span>
-        <BitSpinner LabelPosition="SpinnerLabelPosition.Left" Label="Nope, still loading..." />
+        <div>
+            <div>
+                <label>Spinner with label positioned below</label>
+                <BitSpinner LabelPosition="SpinnerLabelPosition.Top" Label="I am definitely loading..." />
+            </div>
+            <div>
+                <label>Spinner with label positioned above</label>
+                <BitSpinner LabelPosition="SpinnerLabelPosition.Bottom" Label="Seriously, still loading..." />
+            </div>
+            <div>
+                <label>Spinner with label positioned to right</label>
+                <BitSpinner LabelPosition="SpinnerLabelPosition.Left" Label="Wait, wait..." />
+            </div>
+            <div>
+                <label>Spinner with label positioned to left</label>
+                <BitSpinner LabelPosition="SpinnerLabelPosition.Right" Label="Nope, still loading..." />
+            </div>
+        </div>
     </div>
 </div>
 
@@ -450,7 +458,6 @@
     <BitButton OnClick="() => IsToggleChecked = true">Make Toggle Check</BitButton>
     <br />
     <br />
-
 
     <h3>Link Pivot</h3>
     <div class="pivot-container">
@@ -525,7 +532,6 @@
             <BitPivotItem HeaderText="Bas" ItemKey="Bas"></BitPivotItem>
             <BitPivotItem HeaderText="Biz" ItemKey="Biz"></BitPivotItem>
         </BitPivot>
-
 
         @if (SelectedPivotKey?.ItemKey == "Foo")
         {
@@ -699,4 +705,36 @@
     <h3>Multi select</h3>
     <BitDropDown IsMultiSelect="true" Items="GetDropdownItems()" Placeholder="Select options">
     </BitDropDown>
+</div>
+<hr />
+<div class="bit-file-upload-container">
+    <h3>Auto</h3>
+    <BitFileUpload Label="Select or drag and drop files"
+                   UploadUrl="@UploadUrl"
+                   RemoveUrl="@RemoveUrl">
+    </BitFileUpload>
+
+    <h3>Auto & Multiple</h3>
+    <BitFileUpload IsMultiFile="true"
+                   Label="Select or drag and drop files"
+                   UploadUrl="@UploadUrl"
+                   RemoveUrl="@RemoveUrl">
+    </BitFileUpload>
+
+    <h3>Auto & Multiple with maxsize limitation</h3>
+    <BitFileUpload IsMultiFile="true"
+                   Label="Select or drag and drop files"
+                   MaxSize="FileSizeHumanizer.OneMegaByte * 100"
+                   UploadUrl="@UploadUrl"
+                   RemoveUrl="@RemoveUrl">
+    </BitFileUpload>
+
+    <h3>individual & Multiple (limit by extensions format)</h3>
+    <BitFileUpload IsMultiFile="true"
+                   AutoUploadEnabled="false"
+                   AcceptedExtensions="@(new List<string> { ".gif",".jpg",".mp4" })"
+                   Label="Select or drag and drop files"
+                   UploadUrl="@UploadUrl"
+                   RemoveUrl="@RemoveUrl">
+    </BitFileUpload>
 </div>
