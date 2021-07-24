@@ -49,5 +49,18 @@ namespace Bit.Client.Web.BlazorUI.Tests.SearchBoxes
 
             Assert.AreEqual(isUnderlined, searchBox.ClassList.Contains("bit-sch-box-underlined-fluent"));
         }
+
+        [DataTestMethod, DataRow("Detailed label")]
+        public void BitSearchBoxAriaLabelTest(string ariaLabel)
+        {
+            var com = RenderComponent<BitSearchBoxTest>(parameters =>
+            {
+                parameters.Add(p => p.AriaLabel, ariaLabel);
+            });
+
+            var bitSearchBox = com.Find(".search-input");
+
+            Assert.IsTrue(bitSearchBox.GetAttribute("aria-label").Equals(ariaLabel));
+        }
     }
 }

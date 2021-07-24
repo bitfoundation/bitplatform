@@ -13,8 +13,8 @@ using Bit.OData.ActionFilters;
 using Bit.OData.Contracts;
 using Bit.OData.Implementations;
 using Bit.OData.ODataControllers;
-using Bit.Owin;
 using Bit.Owin.Implementations;
+using DotNetTestApp;
 using IdentityServer3.Core.Models;
 using Microsoft.AspNet.OData.Builder;
 using Microsoft.AspNetCore.Builder;
@@ -34,24 +34,12 @@ using System.Threading.Tasks;
 using System.Web.Http;
 
 [assembly: ODataModule("Test")]
+[assembly: AppModule(typeof(DotNetTestAppModule))]
 
 namespace DotNetTestApp
 {
-    public class AppStartup : AutofacAspNetCoreAppStartup, IAppModule, IAppModulesProvider
+    public class DotNetTestAppModule : IAppModule, IAppModulesProvider
     {
-        public AppStartup(IServiceProvider serviceProvider)
-            : base(serviceProvider)
-        {
-            AspNetCoreAppEnvironmentsProvider.Current.Init();
-        }
-
-        public override IServiceProvider ConfigureServices(IServiceCollection services)
-        {
-            DefaultAppModulesProvider.Current = this;
-
-            return base.ConfigureServices(services);
-        }
-
         public IEnumerable<IAppModule> GetAppModules()
         {
             yield return this;
@@ -59,7 +47,7 @@ namespace DotNetTestApp
 
         public virtual void ConfigureDependencies(IServiceCollection services, IDependencyManager dependencyManager)
         {
-            AssemblyContainer.Current.Init();
+            services.AddSingleton(Log.Logger);
 
             dependencyManager.RegisterMinimalDependencies();
 
