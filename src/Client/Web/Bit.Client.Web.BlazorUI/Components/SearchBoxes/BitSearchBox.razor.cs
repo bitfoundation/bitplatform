@@ -22,7 +22,7 @@ namespace Bit.Client.Web.BlazorUI
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
         /// <summary>
-        /// Placeholder for the search box, displayed until search box value change
+        /// Placeholder for the search box
         /// </summary>
         [Parameter] public string? Placeholder { get; set; }
 
