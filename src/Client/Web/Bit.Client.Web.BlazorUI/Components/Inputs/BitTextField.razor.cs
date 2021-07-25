@@ -30,7 +30,7 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public string? Value { get; set; }
 
         /// <summary>
-        /// Input placeholder text, displayed until input value change
+        /// Input placeholder text
         /// </summary>
         [Parameter] public string? Placeholder { get; set; }
 
@@ -40,7 +40,7 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public string? Label { get; set; }
 
         /// <summary>
-        /// Whether to show the reveal password button for input type 'password'. This will be ignored if the type is not set to 'password', or if the browser is known to have a built-in reveal button for password inputs (Edge, IE)
+        /// Whether to show the reveal password button for input type 'password'
         /// </summary>
         [Parameter]
         public bool CanRevealPassword { get; set; }
@@ -110,12 +110,12 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public EventCallback<FocusEventArgs> OnFocusIn { get; set; }
 
         /// <summary>
-        /// Callback for when focus moves into the input
+        /// Callback for when focus moves out of the input
         /// </summary>
         [Parameter] public EventCallback<FocusEventArgs> OnFocusOut { get; set; }
 
         /// <summary>
-        /// Callback for when focus moves out of the input
+        /// Callback for when focus moves into the input
         /// </summary>
         [Parameter] public EventCallback<FocusEventArgs> OnFocus { get; set; }
 
