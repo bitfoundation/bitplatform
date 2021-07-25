@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 
@@ -8,12 +9,26 @@ namespace Bit.Client.Web.BlazorUI
     {
         private bool isChecked;
         private bool IsCheckedHasBeenSet;
+        private Guid Id = Guid.NewGuid();
+        private string? LabelledById;
+        private string? StateText;
+        private string LabelId => Id + "-label";
+        private string StateTextId => Id + "-stateText";
+        private string? AriaChecked => IsChecked ? "true" : "false";
+
+        [Parameter] public string? DefaultText { get; set; }
 
         [Parameter] public string? OnText { get; set; }
 
         [Parameter] public string? OffText { get; set; }
 
         [Parameter] public bool IsInlineLabel { get; set; }
+
+        [Parameter] public string? Label { get; set; }
+
+        [Parameter] public RenderFragment? LabelFragment { get; set; }
+
+        [Parameter] public string? Role { get; set; } = "Switch";
 
         [Parameter]
         public bool IsChecked
@@ -29,8 +44,6 @@ namespace Bit.Client.Web.BlazorUI
         }
 
         [Parameter] public EventCallback<bool> IsCheckedChanged { get; set; }
-
-        [Parameter] public RenderFragment? ChildContent { get; set; }
 
         [Parameter] public EventCallback<bool> OnChange { get; set; }
 
@@ -55,6 +68,25 @@ namespace Bit.Client.Web.BlazorUI
             if (IsEnabled is false || IsCheckedChanged.HasDelegate is false) return;
             IsChecked = !IsChecked;
             await OnChange.InvokeAsync(IsChecked);
+        }
+
+        protected override async Task OnInitializedAsync()
+        {
+            StateText = (IsChecked ? OnText : OffText) ?? DefaultText ?? "";
+
+            if (AriaLabel.HasNoValue())
+            {
+                if (Label.HasValue())
+                {
+                    LabelledById = LabelId;
+                }
+                if (StateText.HasValue())
+                {
+                    LabelledById = LabelledById.HasValue() ? LabelId + " " + StateTextId : StateTextId;
+                } 
+            }
+
+            await base.OnInitializedAsync();
         }
     }
 }
