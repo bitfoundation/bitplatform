@@ -22,6 +22,8 @@ namespace Bit.Client.Web.BlazorUI
 
         [Parameter] public string? Value { get; set; }
 
+        [Parameter] public string? DefaultValue { get; set; }
+
         [Parameter] public string? Placeholder { get; set; }
 
         [Parameter] public string? Label { get; set; }
@@ -152,7 +154,7 @@ namespace Bit.Client.Web.BlazorUI
                                         ? $"{RootElementClass}-{(IsUnderlined ? "underlined-" : "")}disabled-{VisualClassRegistrar()}" : string.Empty);
 
             ClassBuilder.Register(() => FocusClass.HasValue()
-                                        ? $"{RootElementClass}-{(IsUnderlined ? "underlined-" : "")}{(ErrorMessage.HasValue()? "haserror-" : "")}{FocusClass}-{VisualClassRegistrar()}" : string.Empty);
+                                        ? $"{RootElementClass}-{(IsUnderlined ? "underlined-" : "")}{(ErrorMessage.HasValue() ? "haserror-" : "")}{FocusClass}-{VisualClassRegistrar()}" : string.Empty);
 
             ClassBuilder.Register(() => ErrorMessage.HasValue()
                            ? $"{RootElementClass}-haserror-{VisualClassRegistrar()}" : string.Empty);
@@ -220,6 +222,17 @@ namespace Bit.Client.Web.BlazorUI
         public void TogglePasswordRevealIcon()
         {
             ElementType = ElementType == TextFieldType.Text ? TextFieldType.Password : TextFieldType.Text;
+        }
+
+        protected override Task OnParametersSetAsync()
+        {
+            if (DefaultValue.HasValue())
+            {
+                Value = DefaultValue;
+                DefaultValue = default;
+            }
+
+            return base.OnParametersSetAsync();
         }
     }
 }
