@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using Bit.Client.Web.BlazorUI.Components.SpinButtons;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 
 namespace Bit.Client.Web.BlazorUI
@@ -91,27 +90,31 @@ namespace Bit.Client.Web.BlazorUI
 
         private async Task HandleButtonClick(SpinButtonAction action)
         {
-            if (IsEnabled)
+            if (IsEnabled is false) return;
+
+            double result = 0;
+            bool isValid = false;
+
+            switch (action)
             {
-                double result = 0;
-                bool isValid = false;
-                switch (action)
-                {
-                    case SpinButtonAction.Up:
-                        result = Value + Step;
-                        isValid = result <= Max;
-                        break;
-                    case SpinButtonAction.Down:
-                        result = Value - Step;
-                        isValid = result >= Min;
-                        break;
-                }
-                if (isValid)
-                {
-                    Value = Normalize(result);
-                    await OnChange.InvokeAsync(Value);
-                }
+                case SpinButtonAction.Up:
+                    result = Value + Step;
+                    isValid = result <= Max;
+                    break;
+
+                case SpinButtonAction.Down:
+                    result = Value - Step;
+                    isValid = result >= Min;
+                    break;
+
+                default:
+                    break;
             }
+
+            if (isValid is false) return;
+
+            Value = Normalize(result);
+            await OnChange.InvokeAsync(Value);
         }
 
         protected override string RootElementClass => "bit-spb";
@@ -125,15 +128,14 @@ namespace Bit.Client.Web.BlazorUI
 
         private async Task HandleOnInputChange(ChangeEventArgs e)
         {
-            if (IsEnabled)
+            if (IsEnabled is false) return;
+
+            var userInput = e.Value?.ToString();
+            var isNumber = double.TryParse(userInput, out var numericValue);
+            if (isNumber && numericValue >= Min && numericValue <= Max)
             {
-                var userInput = e.Value?.ToString();
-                var isNumber = double.TryParse(userInput, out var numericValue);
-                if (isNumber && numericValue >= Min && numericValue <= Max)
-                {
-                    Value = numericValue;
-                    await OnChange.InvokeAsync(Value);
-                }
+                Value = numericValue;
+                await OnChange.InvokeAsync(Value);
             }
         }
 
