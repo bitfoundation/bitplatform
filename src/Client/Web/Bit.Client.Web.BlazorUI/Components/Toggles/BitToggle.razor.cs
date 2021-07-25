@@ -18,18 +18,30 @@ namespace Bit.Client.Web.BlazorUI
 
         [Parameter] public string? DefaultText { get; set; }
 
-        [Parameter] public string? OnText { get; set; }
-
-        [Parameter] public string? OffText { get; set; }
-
-        [Parameter] public bool IsInlineLabel { get; set; }
-
         [Parameter] public string? Label { get; set; }
 
         [Parameter] public RenderFragment? LabelFragment { get; set; }
 
-        [Parameter] public string? Role { get; set; } = "Switch";
+        [Parameter] public string? Role { get; set; } = "switch";
 
+        /// <summary>
+        /// Text to display when toggle is ON
+        /// </summary>
+        [Parameter] public string? OnText { get; set; }
+
+        /// <summary>
+        /// Text to display when toggle is OFF
+        /// </summary>
+        [Parameter] public string? OffText { get; set; }
+
+        /// <summary>
+        /// Whether the label (not the onText/offText) should be positioned inline with the toggle control. Left (right in RTL) side when on/off text provided VS right (left in RTL) side when no on/off text
+        /// </summary>
+        [Parameter] public bool IsInlineLabel { get; set; }
+
+        /// <summary>
+        /// Checked state of the toggle
+        /// </summary>
         [Parameter]
         public bool IsChecked
         {
@@ -43,8 +55,14 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
+        /// <summary>
+        /// Callback that is called when the IsChecked parameter changed
+        /// </summary>
         [Parameter] public EventCallback<bool> IsCheckedChanged { get; set; }
 
+        /// <summary>
+        /// Callback that is called when the checked value has changed
+        /// </summary>
         [Parameter] public EventCallback<bool> OnChange { get; set; }
 
         protected override string RootElementClass => "bit-tgl";

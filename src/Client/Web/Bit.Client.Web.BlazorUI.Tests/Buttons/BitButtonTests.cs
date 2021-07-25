@@ -8,28 +8,29 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
     public class BitButtonTests : BunitTestContext
     {
         [DataTestMethod,
-            DataRow(Visual.Fluent, true, ButtonStyle.Primary),
-            DataRow(Visual.Fluent, true, ButtonStyle.Standard),
-            DataRow(Visual.Fluent, false, ButtonStyle.Primary),
-            DataRow(Visual.Fluent, false, ButtonStyle.Standard),
+            DataRow(Visual.Fluent, true, ButtonStyle.Primary, "title"),
+            DataRow(Visual.Fluent, true, ButtonStyle.Standard, "title"),
+            DataRow(Visual.Fluent, false, ButtonStyle.Primary, "title"),
+            DataRow(Visual.Fluent, false, ButtonStyle.Standard, "title"),
 
-            DataRow(Visual.Cupertino, true, ButtonStyle.Primary),
-            DataRow(Visual.Cupertino, true, ButtonStyle.Standard),
-            DataRow(Visual.Cupertino, false, ButtonStyle.Primary),
-            DataRow(Visual.Cupertino, false, ButtonStyle.Standard),
+            DataRow(Visual.Cupertino, true, ButtonStyle.Primary, "title"),
+            DataRow(Visual.Cupertino, true, ButtonStyle.Standard, "title"),
+            DataRow(Visual.Cupertino, false, ButtonStyle.Primary, "title"),
+            DataRow(Visual.Cupertino, false, ButtonStyle.Standard, "title"),
 
-            DataRow(Visual.Material, true, ButtonStyle.Primary),
-            DataRow(Visual.Material, true, ButtonStyle.Standard),
-            DataRow(Visual.Material, false, ButtonStyle.Primary),
-            DataRow(Visual.Material, false, ButtonStyle.Standard),
+            DataRow(Visual.Material, true, ButtonStyle.Primary, "title"),
+            DataRow(Visual.Material, true, ButtonStyle.Standard, "title"),
+            DataRow(Visual.Material, false, ButtonStyle.Primary, "title"),
+            DataRow(Visual.Material, false, ButtonStyle.Standard, "title"),
         ]
-        public void BitButtonTest(Visual visual, bool isEnabled, ButtonStyle style)
+        public void BitButtonTest(Visual visual, bool isEnabled, ButtonStyle style, string title)
         {
             var com = RenderComponent<BitButtonTest>(parameters =>
             {
                 parameters.Add(p => p.Visual, visual);
                 parameters.Add(p => p.IsEnabled, isEnabled);
                 parameters.Add(p => p.ButtonStyle, style);
+                parameters.Add(p => p.Title, title);
             });
 
             var bitButton = com.Find(".bit-btn");
@@ -38,6 +39,8 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
             var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
 
             Assert.IsTrue(bitButton.ClassList.Contains($"bit-btn-{isEnabledClass}-{visualClass}"));
+
+            Assert.AreEqual(bitButton.GetAttribute("title"), title);
 
             bitButton.Click();
 

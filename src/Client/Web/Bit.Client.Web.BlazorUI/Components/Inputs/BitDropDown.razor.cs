@@ -13,6 +13,9 @@ namespace Bit.Client.Web.BlazorUI
         private bool isOpen = false;
         private bool isMultiSelect = false;
 
+        /// <summary>
+        /// Whether multiple items are allowed to be selected
+        /// </summary>
         [Parameter]
         public bool IsMultiSelect
         {
@@ -23,6 +26,10 @@ namespace Bit.Client.Web.BlazorUI
                 ClassBuilder.Reset();
             }
         }
+
+        /// <summary>
+        /// Whether or not this dropdown is open
+        /// </summary>
         [Parameter]
         public bool IsOpen
         {
@@ -34,10 +41,24 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
+        /// <summary>
+        /// A list of items to display in the dropdown
+        /// </summary>
         [Parameter] public List<DropDownItem> Items { get; set; } = new List<DropDownItem>();
+
+        /// <summary>
+        /// Input placeholder text, Displayed until an option is selected
+        /// </summary>
         [Parameter] public string? Placeholder { get; set; }
 
+        /// <summary>
+        /// Callback for when the dropdown clicked
+        /// </summary>
         [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+
+        /// <summary>
+        /// Callback for when an item is selected
+        /// </summary>
         [Parameter] public EventCallback<DropDownItem> OnSelectItem { get; set; }
 
         public string? Text { get; set; }
