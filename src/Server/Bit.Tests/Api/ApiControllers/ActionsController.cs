@@ -11,7 +11,7 @@ namespace Bit.Tests.Api.ApiControllers
         [HttpGet, Route("some-action/log={log}")]
         public virtual void SomeAction(bool log)
         {
-            Logger.AddLogData("Test", "Test");
+            Logger.AddLogData("Test-Data", "Test-Data");
 
             if (log == true)
                 Logger.Policy = LogPolicy.Always;
