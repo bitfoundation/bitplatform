@@ -5,7 +5,7 @@ namespace Bit.Client.Web.BlazorUI
     public partial class BitSpinner
     {
         /// <summary>
-        /// The position of the label in regards of the spinner animation
+        /// The position of the label in regards to the spinner animation
         /// </summary>
         [Parameter] public SpinnerLabelPosition LabelPosition { get; set; }
 
