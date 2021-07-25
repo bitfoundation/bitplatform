@@ -9,12 +9,24 @@ namespace Bit.Client.Web.BlazorUI
         private bool isChecked;
         private bool IsCheckedHasBeenSet;
 
+        /// <summary>
+        /// Text to display when toggle is ON
+        /// </summary>
         [Parameter] public string? OnText { get; set; }
 
+        /// <summary>
+        /// Text to display when toggle is OFF
+        /// </summary>
         [Parameter] public string? OffText { get; set; }
 
+        /// <summary>
+        /// Whether the label (not the onText/offText) should be positioned inline with the toggle control. Left (right in RTL) side when on/off text provided VS right (left in RTL) side when no on/off text
+        /// </summary>
         [Parameter] public bool IsInlineLabel { get; set; }
 
+        /// <summary>
+        /// Checked state of the toggle
+        /// </summary>
         [Parameter]
         public bool IsChecked
         {
@@ -28,10 +40,19 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
+        /// <summary>
+        /// Callback that is called when the IsChecked parameter changed
+        /// </summary>
         [Parameter] public EventCallback<bool> IsCheckedChanged { get; set; }
 
+        /// <summary>
+        /// The content of toggle, It can be Any custom tag or a text
+        /// </summary>
         [Parameter] public RenderFragment? ChildContent { get; set; }
 
+        /// <summary>
+        /// Callback that is called when the checked value has changed
+        /// </summary>
         [Parameter] public EventCallback<bool> OnChange { get; set; }
 
         protected override string RootElementClass => "bit-tgl";
