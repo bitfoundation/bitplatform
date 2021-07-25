@@ -21,14 +21,29 @@ namespace Bit.Client.Web.BlazorUI
 
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
+        /// <summary>
+        /// Placeholder for the search box
+        /// </summary>
         [Parameter] public string? Placeholder { get; set; }
 
+        /// <summary>
+        /// The icon name for the icon shown at the beginning of the search box
+        /// </summary>
         [Parameter] public string IconName { get; set; } = "Search";
 
+        /// <summary>
+        /// Callback executed when the user clears the search box by either clicking 'X' or hitting escape
+        /// </summary>
         [Parameter] public EventCallback OnClear { get; set; }
 
+        /// <summary>
+        /// Callback executed when the user presses enter in the search box
+        /// </summary>
         [Parameter] public EventCallback<string> OnSearch { get; set; }
 
+        /// <summary>
+        /// The value of the text in the search box
+        /// </summary>
         [Parameter]
         public string? Value
         {
@@ -40,6 +55,9 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
+        /// <summary>
+        /// Whether or not to animate the search box icon on focus
+        /// </summary>
         [Parameter]
         public bool DisableAnimation
         {
@@ -51,6 +69,9 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
+        /// <summary>
+        /// Whether or not the SearchBox is underlined
+        /// </summary>
         [Parameter]
         public bool IsUnderlined
         {
@@ -62,6 +83,9 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
+        /// <summary>
+        /// Specifies the width of the search box
+        /// </summary>
         [Parameter]
         public string? Width
         {
