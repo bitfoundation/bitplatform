@@ -13,6 +13,11 @@ namespace Bit.Client.Web.BlazorUI
         private LabelPosition labelPosition = LabelPosition.Left;
         private bool ValueHasBeenSet;
 
+        [Inject] public IJSRuntime? JSRuntime { get; set; }
+
+        /// <summary>
+        /// Current value of the spin button
+        /// </summary>
         [Parameter]
         public double Value
         {
@@ -25,17 +30,49 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
+        /// <summary>
+        /// Callback for when the spin button value change
+        /// </summary>
         [Parameter] public EventCallback<double> ValueChanged { get; set; }
-        [Inject] public IJSRuntime? JSRuntime { get; set; }
 
+        /// <summary>
+        /// Min value of the spin button. If not provided, the spin button has minimum value of double type
+        /// </summary>
         [Parameter] public double Min { get; set; } = double.MinValue;
+
+        /// <summary>
+        /// Max value of the spin button. If not provided, the spin button has max value of double type
+        /// </summary>
         [Parameter] public double Max { get; set; } = double.MaxValue;
+
+        /// <summary>
+        /// Initial value of the spin button 
+        /// </summary>
         [Parameter] public double DefaultValue { get; set; } = 0;
+
+        /// <summary>
+        /// Difference between two adjacent values of the spin button
+        /// </summary>
         [Parameter] public double Step { get; set; } = 1;
+
+        /// <summary>
+        /// A text is shown after the spin button value
+        /// </summary>
         [Parameter] public string Suffix { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Descriptive label for the spin button, Label displayed above the spin button and read by screen readers
+        /// </summary>
         [Parameter] public string Label { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Icon name for an icon to display alongside the spin button's label
+        /// </summary>
         [Parameter] public string IconName { get; set; } = string.Empty;
 
+        /// <summary>
+        /// The position of the label in regards to the spin button
+        /// </summary>
         [Parameter]
         public LabelPosition LabelPosition
         {
@@ -47,6 +84,9 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
+        /// <summary>
+        /// Callback for when the spin button value change
+        /// </summary>
         [Parameter] public EventCallback<double> OnChange { get; set; }
 
         private async Task HandleButtonClick(SpinButtonAction action)
