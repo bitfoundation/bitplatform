@@ -16,7 +16,7 @@ namespace Bit.Client.Web.BlazorUI
         private bool hasSetSelectedKey;
 
         /// <summary>
-        /// Default selected key for the pivot. Only provide this if the pivot is an uncontrolled component; otherwise, use the selectedKey parameter
+        /// Default selected key for the pivot
         /// </summary>
         [Parameter]
         public string DefaultSelectedKey { get; set; } = "0";
@@ -28,7 +28,7 @@ namespace Bit.Client.Web.BlazorUI
         public RenderFragment? ChildContent { get; set; }
 
         /// <summary>
-        /// Overflow behavior when there is not enough room to display all of the links/tabs * none: Pivot links will overflow the container and may not be visible * menu: Display an overflow menu that contains the tabs that don't fit * scroll: Display all Pivot links with a scroll bar placed under it
+        /// Overflow behavior when there is not enough room to display all of the links/tabs
         /// </summary>
         [Parameter]
         public OverflowBehavior OverflowBehavior

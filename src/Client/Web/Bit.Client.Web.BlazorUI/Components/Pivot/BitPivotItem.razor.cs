@@ -50,7 +50,7 @@ namespace Bit.Client.Web.BlazorUI
         public int? ItemCount { get; set; }
 
         /// <summary>
-        /// An required key to uniquely identify a pivot item
+        /// A required key to uniquely identify a pivot item
         /// </summary>
         [Parameter]
         public string ItemKey { get; set; }
