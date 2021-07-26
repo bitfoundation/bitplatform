@@ -1,6 +1,8 @@
-﻿using Bit.Owin;
+﻿using Bit.Core;
+using Bit.Owin;
+using Bit.Owin.Implementations;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using System.Threading.Tasks;
 
 namespace CustomerDtoControllerSample
@@ -9,14 +11,16 @@ namespace CustomerDtoControllerSample
     {
         public static async Task Main(string[] args)
         {
+            AssemblyContainer.Current.Init();
+
+            AspNetCoreAppEnvironmentsProvider.Current.Use();
+
             await BuildWebHost(args)
                 .RunAsync();
         }
 
-        public static IWebHost BuildWebHost(string[] args) =>
-            BitWebHost.CreateDefaultBuilder(args)
-            .UseConfiguration(new ConfigurationBuilder().AddEnvironmentVariables().Build())
-                .UseStartup<AppStartup>()
+        public static IHost BuildWebHost(string[] args) =>
+            BitWebHost.CreateWebHost(args)
                 .Build();
     }
 }

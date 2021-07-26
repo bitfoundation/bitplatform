@@ -8,11 +8,11 @@ using Bit.Hangfire.Implementations;
 using Bit.Model.Implementations;
 using Bit.OData.ActionFilters;
 using Bit.OData.Contracts;
-using Bit.Owin;
 using Bit.Owin.Contracts;
 using Bit.Owin.Implementations;
 using Bit.Owin.Middlewares;
 using Bit.Signalr.Implementations;
+using BitChangeSetManager;
 using BitChangeSetManager.Api.Implementations;
 using BitChangeSetManager.DataAccess;
 using BitChangeSetManager.DataAccess.Implementations;
@@ -21,41 +21,19 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.DependencyInjection;
 using Swashbuckle.Application;
-using System;
-using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.IO.Compression;
 using System.Reflection;
 
 [assembly: ODataModule("BitChangeSetManager")]
+[assembly: AppModule(typeof(BitChangeSetManagerAppModule))]
 
 namespace BitChangeSetManager
 {
-    public class AppStartup : AutofacAspNetCoreAppStartup, IAppModule, IAppModulesProvider
+    public class BitChangeSetManagerAppModule : IAppModule
     {
-        public AppStartup(IServiceProvider serviceProvider)
-            : base(serviceProvider)
-        {
-
-        }
-
-        public override IServiceProvider ConfigureServices(IServiceCollection services)
-        {
-            DefaultAppModulesProvider.Current = this;
-
-            return base.ConfigureServices(services);
-        }
-
-        public IEnumerable<IAppModule> GetAppModules()
-        {
-            yield return this;
-        }
-
         public virtual void ConfigureDependencies(IServiceCollection services, IDependencyManager dependencyManager)
         {
-            AssemblyContainer.Current.Init();
-            AssemblyContainer.Current.AddAppAssemblies();
-
             dependencyManager.RegisterMinimalDependencies();
 
             dependencyManager.RegisterDefaultLogger(typeof(DebugLogStore).GetTypeInfo(), typeof(ConsoleLogStore).GetTypeInfo());

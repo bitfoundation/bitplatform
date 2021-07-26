@@ -17,7 +17,6 @@
 		<None Include="$(OutputPath)\..\..\..\..\Bit.Tooling.CodeGenerator\bin\$(Configuration)\net6.0\Bit.Tooling.CodeGenerator.deps.json" Pack="true" PackagePath="implementation" Visible="false" />
 		<None Include="$(OutputPath)\..\..\..\..\Bit.Tooling.CodeGenerator\bin\$(Configuration)\net6.0\Bit.Tooling.CodeGenerator.dll.config" Pack="true" PackagePath="implementation" Visible="false" />
 		<None Include="$(OutputPath)\..\..\..\..\Bit.Tooling.CodeGenerator\bin\$(Configuration)\net6.0\Bit.Tooling.CodeGenerator.exe" Pack="true" PackagePath="implementation" Visible="false" />
-		<None Include="$(OutputPath)\..\..\..\..\Bit.Tooling.CodeGenerator\bin\$(Configuration)\net6.0\Bit.Tooling.CodeGenerator.runtimeconfig.dev.json" Pack="true" PackagePath="implementation" Visible="false" />
 		<None Include="$(OutputPath)\..\..\..\..\Bit.Tooling.CodeGenerator\bin\$(Configuration)\net6.0\Bit.Tooling.CodeGenerator.runtimeconfig.json" Pack="true" PackagePath="implementation" Visible="false" />
 		<None Include="$(OutputPath)\..\..\..\..\Bit.Tooling.CodeGenerator\bin\$(Configuration)\net6.0\*.dll" Pack="true" PackagePath="implementation" Visible="false" />
 		<None Include="$(OutputPath)\..\..\..\..\Bit.Tooling.CodeGenerator\bin\$(Configuration)\net6.0\runtimes\win\lib\netcoreapp3.0\*.dll" Pack="true" PackagePath="implementation\runtimes\win\lib\netcoreapp3.0" Visible="false" />
