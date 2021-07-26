@@ -11,5 +11,10 @@ namespace Bit.Client.Web.Wasm.Implementation
         {
             throw new NotImplementedException();
         }
+
+        public Task<WebAuthenticatorResult> AuthenticateAsync(WebAuthenticatorOptions webAuthenticatorOptions)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

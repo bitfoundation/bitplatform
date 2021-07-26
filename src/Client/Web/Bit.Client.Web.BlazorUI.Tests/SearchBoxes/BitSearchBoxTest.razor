@@ -1,7 +1,8 @@
 ﻿<BitSearchBox Placeholder="@Placeholder"
               Value="@Value"
               DisableAnimation="@DisableAnimation"
-              IsUnderlined="@IsUnderlined">
+              IsUnderlined="@IsUnderlined"
+              AriaLabel="@AriaLabel">
 </BitSearchBox>
 
 @code {
@@ -13,4 +14,5 @@
 
     [Parameter] public bool IsUnderlined { get; set; }
 
+    [Parameter] public string AriaLabel { get; set; }
 }

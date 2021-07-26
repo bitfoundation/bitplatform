@@ -8,11 +8,25 @@ using Bit.Test.Server;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 
 namespace Bit.Test
 {
+    public class TestClientArgs
+    {
+        public string AppVersion { get; set; } = "1.0";
+
+        public string ClientScreenSize { get; set; } = "DesktopAndTablet";
+
+        public string Culture { get; set; } = CultureInfo.CurrentUICulture.Name;
+
+        public string CurrentTimeZone { get; set; } = TimeZoneInfo.Local.Id;
+
+        public string DesiredTimeZone { get; set; } = TimeZoneInfo.Local.Id;
+    }
+
     public class TestEnvironmentArgs
     {
         public string? FullUri { get; set; }
@@ -23,6 +37,10 @@ namespace Bit.Test
 
         public bool UseHttps { get; set; }
 
+        public int? Port { get; set; }
+
+        public TestClientArgs ClientArgs { get; set; } = new TestClientArgs { };
+
         public Action<IDependencyManager, IServiceCollection>? AdditionalDependencies { get; set; }
 
         public Action<AppEnvironment>? ActiveAppEnvironmentCustomizer { get; set; }
@@ -32,8 +50,6 @@ namespace Bit.Test
         public IAppEnvironmentsProvider? CustomAppEnvironmentsProvider { get; set; }
 
         public bool UseTestDependencyManager { get; set; } = true;
-
-        public int? Port { get; set; }
     }
 
     public class TestAdditionalDependencies : IAppModule, IAppModulesProvider
@@ -137,11 +153,11 @@ namespace Bit.Test
 
             if (args.UseRealServer == true)
             {
-                return new AspNetCoreSelfHostTestServer();
+                return new AspNetCoreSelfHostTestServer(args);
             }
             else
             {
-                return new AspNetCoreEmbeddedTestServer();
+                return new AspNetCoreEmbeddedTestServer(args);
             }
         }
 
