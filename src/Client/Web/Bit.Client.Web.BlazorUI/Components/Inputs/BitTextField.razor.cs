@@ -113,7 +113,7 @@ namespace Bit.Client.Web.BlazorUI
 
         [Parameter] public EventCallback<FocusEventArgs> OnFocus { get; set; }
 
-        [Parameter] public EventCallback<ChangeEventArgs> OnChange { get; set; }
+        [Parameter] public EventCallback<ChangeEventArgs> OnInput { get; set; }
 
         [Parameter] public EventCallback<KeyboardEventArgs> OnKeyDown { get; set; }
 
@@ -188,11 +188,11 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
-        protected virtual async Task HandleChange(ChangeEventArgs e)
+        protected virtual async Task HandleInput(ChangeEventArgs e)
         {
             if (IsEnabled)
             {
-                await OnChange.InvokeAsync(e);
+                await OnInput.InvokeAsync(e);
             }
 
             string? errorMessage = OnGetErrorMessage?.Invoke(e.Value.ToString());
