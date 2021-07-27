@@ -295,6 +295,19 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
 
             return items;
         }
+
+
+        public string GetErrorMessage(string value)
+        {
+            if (value == null)
+            {
+                return "Value Required";
+            }
+            else
+            {
+                return value.Length < 3 ? "" : $"Input value length must be less than 3. Actual length is {value.Length}.";
+            }
+        }
     }
 
     public class Person

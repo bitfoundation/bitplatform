@@ -121,6 +121,7 @@ namespace Bit.Client.Web.BlazorUI
 
         [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
+        [Parameter] public Func<string, string> OnGetErrorMessage { get; set; }
         public string FocusClass
         {
             get => focusClass;
@@ -192,6 +193,15 @@ namespace Bit.Client.Web.BlazorUI
             if (IsEnabled)
             {
                 await OnChange.InvokeAsync(e);
+            }
+
+            string? errorMessage = OnGetErrorMessage?.Invoke(e.Value.ToString());
+            if (ErrorMessage.HasNoValue() && OnGetErrorMessage != null && errorMessage.HasNoValue())
+            {
+                ErrorMessage = "";
+            }
+            else {
+                ErrorMessage = errorMessage;
             }
         }
 
