@@ -107,6 +107,9 @@ namespace Bit.Client.Web.BlazorUI
                 ClassBuilder.Reset();
             }
         }
+
+        [Parameter] public bool ValidateOnLoad { get; set; } = true;
+
         [Parameter] public EventCallback<FocusEventArgs> OnFocusIn { get; set; }
 
         [Parameter] public EventCallback<FocusEventArgs> OnFocusOut { get; set; }
@@ -195,14 +198,7 @@ namespace Bit.Client.Web.BlazorUI
                 await OnInput.InvokeAsync(e);
             }
 
-            string? errorMessage = OnGetErrorMessage?.Invoke(e.Value.ToString());
-            if (ErrorMessage.HasNoValue() && OnGetErrorMessage != null && errorMessage.HasNoValue())
-            {
-                ErrorMessage = "";
-            }
-            else {
-                ErrorMessage = errorMessage;
-            }
+            Validate(e.Value!.ToString());
         }
 
         protected virtual async Task HandleKeyDown(KeyboardEventArgs e)
@@ -234,6 +230,22 @@ namespace Bit.Client.Web.BlazorUI
             ElementType = ElementType == TextFieldType.Text ? TextFieldType.Password : TextFieldType.Text;
         }
 
+        private void Validate(string? value)
+        {
+
+            string? errorMessage = OnGetErrorMessage?.Invoke(value!);
+            if (ErrorMessage.HasNoValue() && OnGetErrorMessage != null && errorMessage.HasNoValue())
+            {
+                ErrorMessage = "";
+            }
+            else
+            {
+                ErrorMessage = errorMessage;
+                StateHasChanged();
+            }                       
+        }
+
+
         protected override Task OnParametersSetAsync()
         {
             if (DefaultValue.HasValue())
@@ -244,5 +256,16 @@ namespace Bit.Client.Web.BlazorUI
 
             return base.OnParametersSetAsync();
         }
+
+        protected override void OnAfterRender(bool firstRender)
+        {
+            if (firstRender & ValidateOnLoad)
+            {
+                Validate(Value);
+            }
+            base.OnAfterRenderAsync(firstRender);
+        }
+
+
     }
 }

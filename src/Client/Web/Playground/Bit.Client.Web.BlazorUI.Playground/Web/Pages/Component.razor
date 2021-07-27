@@ -379,6 +379,10 @@
     <BitTextField Label="With error" ErrorMessage="Error message"></BitTextField>
     <br />
     <BitTextField Label="String-based validation" OnGetErrorMessage="GetErrorMessage" />
+    <br />
+    <BitTextField Label="String-based validation on render" DefaultValue="Shows an error message on render" OnGetErrorMessage="GetErrorMessage" />
+    <br />
+    <BitTextField Label="String-based validation only on change" DefaultValue="Validates only on input change, not on first render" OnGetErrorMessage="GetErrorMessage" ValidateOnLoad="false" />
 </div>
 
 <hr />
