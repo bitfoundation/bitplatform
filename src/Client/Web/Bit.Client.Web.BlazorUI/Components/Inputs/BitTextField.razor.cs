@@ -110,6 +110,10 @@ namespace Bit.Client.Web.BlazorUI
 
         [Parameter] public bool ValidateOnLoad { get; set; } = true;
 
+        [Parameter] public bool ValidateOnFocusOut { get; set; }
+        
+        [Parameter] public bool ValidateOnFocusIn { get; set; }
+
         [Parameter] public EventCallback<FocusEventArgs> OnFocusIn { get; set; }
 
         [Parameter] public EventCallback<FocusEventArgs> OnFocusOut { get; set; }
@@ -170,6 +174,11 @@ namespace Bit.Client.Web.BlazorUI
             {
                 FocusClass = "focused";
                 await OnFocusIn.InvokeAsync(e);
+
+                if (ValidateOnFocusIn)
+                {
+                    Validate(Value);
+                }
             }
         }
 
@@ -179,6 +188,11 @@ namespace Bit.Client.Web.BlazorUI
             {
                 FocusClass = "";
                 await OnFocusOut.InvokeAsync(e);
+
+                if (ValidateOnFocusOut)
+                {
+                    Validate(Value);
+                }
             }
         }
 
@@ -198,7 +212,9 @@ namespace Bit.Client.Web.BlazorUI
                 await OnInput.InvokeAsync(e);
             }
 
-            Validate(e.Value!.ToString());
+            if (!ValidateOnFocusIn && !ValidateOnFocusOut ){
+                Validate(e.Value!.ToString());
+            }
         }
 
         protected virtual async Task HandleKeyDown(KeyboardEventArgs e)
@@ -232,17 +248,19 @@ namespace Bit.Client.Web.BlazorUI
 
         private void Validate(string? value)
         {
-
-            string? errorMessage = OnGetErrorMessage?.Invoke(value!);
-            if (ErrorMessage.HasNoValue() && OnGetErrorMessage != null && errorMessage.HasNoValue())
+            if (value != null)
             {
-                ErrorMessage = "";
+                string? errorMessage = OnGetErrorMessage?.Invoke(value!);
+                if (ErrorMessage.HasNoValue() && OnGetErrorMessage != null && errorMessage.HasNoValue())
+                {
+                    ErrorMessage = "";
+                }
+                else
+                {
+                    ErrorMessage = errorMessage;
+                    StateHasChanged();
+                }
             }
-            else
-            {
-                ErrorMessage = errorMessage;
-                StateHasChanged();
-            }                       
         }
 
 
