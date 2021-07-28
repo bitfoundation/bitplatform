@@ -7,6 +7,12 @@ namespace Bit.Client.Web.BlazorUI.Tests.Sliders
     [TestClass]
     public class BitSliderTests : BunitTestContext
     {
+        [TestInitialize]
+        public void SetupJsInteropMode()
+        {
+            Context.JSInterop.Mode = JSRuntimeMode.Loose;
+        }
+
         [DataTestMethod,
             DataRow(Visual.Fluent, false),
             DataRow(Visual.Fluent, true),
@@ -19,7 +25,6 @@ namespace Bit.Client.Web.BlazorUI.Tests.Sliders
         ]
         public void BitSliderVerticalTest(Visual visual, bool vertical)
         {
-            Context.JSInterop.Mode = JSRuntimeMode.Loose;
             var com = RenderComponent<BitSliderTest>(parameters =>
             {
                 parameters.Add(p => p.Visual, visual);
@@ -42,7 +47,6 @@ namespace Bit.Client.Web.BlazorUI.Tests.Sliders
         ]
         public void BitSliderRangedVerticalTest(Visual visual, bool vertical)
         {
-            Context.JSInterop.Mode = JSRuntimeMode.Loose;
             var com = RenderComponent<BitSliderTest>(parameters =>
             {
                 parameters.Add(p => p.Visual, visual);
@@ -64,9 +68,8 @@ namespace Bit.Client.Web.BlazorUI.Tests.Sliders
             DataRow(Visual.Material, false),
             DataRow(Visual.Material, true),
         ]
-        public void BitSliderEnabledHorizontalTest(Visual visual, bool isEnabled)
+        public void BitSliderEnabledTest(Visual visual, bool isEnabled)
         {
-            Context.JSInterop.Mode = JSRuntimeMode.Loose;
             var com = RenderComponent<BitSliderTest>(parameters =>
             {
                 parameters.Add(p => p.Visual, visual);
@@ -79,104 +82,6 @@ namespace Bit.Client.Web.BlazorUI.Tests.Sliders
             var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
 
             Assert.IsTrue(bitSlider.ClassList.Contains($"bit-slider-{isEnabledClass}-{visualClass}"));
-
-            //Assert.IsTrue(isEnabled ? com.Instance.Value.HasValue : !com.Instance.Value.HasValue);
-            //Assert.AreEqual(isEnabled ? 0 : null, com.Instance.Value);
-        }
-
-        [DataTestMethod,
-            DataRow(Visual.Fluent, false),
-            DataRow(Visual.Fluent, true),
-
-            DataRow(Visual.Cupertino, false),
-            DataRow(Visual.Cupertino, true),
-
-            DataRow(Visual.Material, false),
-            DataRow(Visual.Material, true),
-        ]
-        public void BitSliderEnabledVerticalTest(Visual visual, bool isEnabled)
-        {
-            Context.JSInterop.Mode = JSRuntimeMode.Loose;
-            var com = RenderComponent<BitSliderTest>(parameters =>
-            {
-                parameters.Add(p => p.Visual, visual);
-                parameters.Add(p => p.IsEnabled, isEnabled);
-                parameters.Add(p => p.Vertical, true);
-            });
-
-            var bitSlider = com.Find(".bit-slider");
-
-            var isEnabledClass = isEnabled ? "enabled" : "disabled";
-            var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
-
-            Assert.IsTrue(bitSlider.ClassList.Contains($"bit-slider-{isEnabledClass}-{visualClass}"));
-
-            //Assert.IsTrue(isEnabled ? com.Instance.Value.HasValue : !com.Instance.Value.HasValue);
-            //Assert.AreEqual(isEnabled ? 0 : null, com.Instance.Value);
-        }
-
-        [DataTestMethod,
-            DataRow(Visual.Fluent, false),
-            DataRow(Visual.Fluent, true),
-
-            DataRow(Visual.Cupertino, false),
-            DataRow(Visual.Cupertino, true),
-
-            DataRow(Visual.Material, false),
-            DataRow(Visual.Material, true),
-        ]
-        public void BitSliderEnabledHorizontalRangedTest(Visual visual, bool isEnabled)
-        {
-            Context.JSInterop.Mode = JSRuntimeMode.Loose;
-            var com = RenderComponent<BitSliderTest>(parameters =>
-            {
-                parameters.Add(p => p.Visual, visual);
-                parameters.Add(p => p.IsEnabled, isEnabled);
-                parameters.Add(p => p.Ranged, true);
-            });
-
-
-            var bitSlider = com.Find(".bit-slider");
-
-            var isEnabledClass = isEnabled ? "enabled" : "disabled";
-            var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
-
-            Assert.IsTrue(bitSlider.ClassList.Contains($"bit-slider-{isEnabledClass}-{visualClass}"));
-
-            //Assert.IsTrue(isEnabled ? com.Instance.LowerValue.HasValue : !com.Instance.LowerValue.HasValue);
-            //Assert.IsTrue(isEnabled ? com.Instance.UpperValue.HasValue : !com.Instance.UpperValue.HasValue);
-        }
-
-        [DataTestMethod,
-            DataRow(Visual.Fluent, false),
-            DataRow(Visual.Fluent, true),
-
-            DataRow(Visual.Cupertino, false),
-            DataRow(Visual.Cupertino, true),
-
-            DataRow(Visual.Material, false),
-            DataRow(Visual.Material, true),
-        ]
-        public void BitSliderEnabledVerticalRangedTest(Visual visual, bool isEnabled)
-        {
-            Context.JSInterop.Mode = JSRuntimeMode.Loose;
-            var com = RenderComponent<BitSliderTest>(parameters =>
-            {
-                parameters.Add(p => p.Visual, visual);
-                parameters.Add(p => p.IsEnabled, isEnabled);
-                parameters.Add(p => p.Vertical, true);
-                parameters.Add(p => p.Ranged, true);
-            });
-
-            var bitSlider = com.Find(".bit-slider");
-
-            var isEnabledClass = isEnabled ? "enabled" : "disabled";
-            var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
-
-            Assert.IsTrue(bitSlider.ClassList.Contains($"bit-slider-{isEnabledClass}-{visualClass}"));
-
-            //Assert.IsTrue(isEnabled ? com.Instance.LowerValue.HasValue : !com.Instance.LowerValue.HasValue);
-            //Assert.IsTrue(isEnabled ? com.Instance.UpperValue.HasValue : !com.Instance.UpperValue.HasValue);
         }
 
         [DataTestMethod,
@@ -191,7 +96,6 @@ namespace Bit.Client.Web.BlazorUI.Tests.Sliders
         ]
         public void BitSliderRangedTest(Visual visual, bool ranged)
         {
-            Context.JSInterop.Mode = JSRuntimeMode.Loose;
             var com = RenderComponent<BitSliderTest>(parameters =>
             {
                 parameters.Add(p => p.Visual, visual);
@@ -201,31 +105,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Sliders
             var bitSlider = com.Find(".bit-slider");
 
             Assert.IsTrue(!ranged || bitSlider.ClassList.Contains($"bit-slider-ranged-row"));
-        }
-
-        [DataTestMethod,
-            DataRow(Visual.Fluent, false),
-            DataRow(Visual.Fluent, true),
-
-            DataRow(Visual.Cupertino, false),
-            DataRow(Visual.Cupertino, true),
-
-            DataRow(Visual.Material, false),
-            DataRow(Visual.Material, true),
-        ]
-        public void BitSliderVerticalRangedTest(Visual visual, bool ranged)
-        {
-            Context.JSInterop.Mode = JSRuntimeMode.Loose;
-            var com = RenderComponent<BitSliderTest>(parameters =>
-            {
-                parameters.Add(p => p.Visual, visual);
-                parameters.Add(p => p.Ranged, ranged);
-                parameters.Add(p => p.Vertical, true);
-            });
-
-            var bitSlider = com.Find(".bit-slider");
-
-            Assert.IsTrue(!ranged || bitSlider.ClassList.Contains($"bit-slider-ranged-column"));
+            Assert.AreEqual(bitSlider.GetElementsByTagName("input").Count(), ranged ? 2 : 1);
         }
 
         [DataTestMethod,
@@ -240,7 +120,6 @@ namespace Bit.Client.Web.BlazorUI.Tests.Sliders
         ]
         public void BitSliderDefaultLowerValueTest(Visual visual, int? defaultLowerValue)
         {
-            Context.JSInterop.Mode = JSRuntimeMode.Loose;
             var com = RenderComponent<BitSliderTest>(parameters =>
             {
                 parameters.Add(p => p.Visual, visual);
@@ -269,7 +148,6 @@ namespace Bit.Client.Web.BlazorUI.Tests.Sliders
         ]
         public void BitSliderDefaultUpperValueTest(Visual visual, int? defaultUpperValue)
         {
-            Context.JSInterop.Mode = JSRuntimeMode.Loose;
             var com = RenderComponent<BitSliderTest>(parameters =>
             {
                 parameters.Add(p => p.Visual, visual);
@@ -298,7 +176,6 @@ namespace Bit.Client.Web.BlazorUI.Tests.Sliders
         ]
         public void BitSliderLowerValueTest(Visual visual, int? lowerValue)
         {
-            Context.JSInterop.Mode = JSRuntimeMode.Loose;
             var com = RenderComponent<BitSliderTest>(parameters =>
             {
                 parameters.Add(p => p.Visual, visual);
@@ -328,7 +205,6 @@ namespace Bit.Client.Web.BlazorUI.Tests.Sliders
         ]
         public void BitSliderUpperValueTest(Visual visual, int? defaultUpperValue)
         {
-            Context.JSInterop.Mode = JSRuntimeMode.Loose;
             var com = RenderComponent<BitSliderTest>(parameters =>
             {
                 parameters.Add(p => p.Visual, visual);
@@ -361,9 +237,8 @@ namespace Bit.Client.Web.BlazorUI.Tests.Sliders
             DataRow(Visual.Material, null, 6),
             DataRow(Visual.Material, 2, 6),
         ]
-        public void BitSliderUpperValueTest(Visual visual, int? lowerValue, int? upperValue)
+        public void BitSliderLowerAndUpperValueTest(Visual visual, int? lowerValue, int? upperValue)
         {
-            Context.JSInterop.Mode = JSRuntimeMode.Loose;
             var com = RenderComponent<BitSliderTest>(parameters =>
             {
                 parameters.Add(p => p.Visual, visual);
@@ -394,7 +269,6 @@ namespace Bit.Client.Web.BlazorUI.Tests.Sliders
         ]
         public void BitSliderDefaultValueTest(Visual visual, int? defaultValue)
         {
-            Context.JSInterop.Mode = JSRuntimeMode.Loose;
             var com = RenderComponent<BitSliderTest>(parameters =>
             {
                 parameters.Add(p => p.Visual, visual);
@@ -422,7 +296,6 @@ namespace Bit.Client.Web.BlazorUI.Tests.Sliders
         ]
         public void BitSliderVerticalDefaultValueTest(Visual visual, int? defaultValue)
         {
-            Context.JSInterop.Mode = JSRuntimeMode.Loose;
             var com = RenderComponent<BitSliderTest>(parameters =>
             {
                 parameters.Add(p => p.Visual, visual);
@@ -451,7 +324,6 @@ namespace Bit.Client.Web.BlazorUI.Tests.Sliders
         ]
         public void BitSliderValueTest(Visual visual, int? value)
         {
-            Context.JSInterop.Mode = JSRuntimeMode.Loose;
             var com = RenderComponent<BitSliderTest>(parameters =>
             {
                 parameters.Add(p => p.Visual, visual);
@@ -479,7 +351,6 @@ namespace Bit.Client.Web.BlazorUI.Tests.Sliders
         ]
         public void BitSliderVerticalValueTest(Visual visual, int? value)
         {
-            Context.JSInterop.Mode = JSRuntimeMode.Loose;
             var com = RenderComponent<BitSliderTest>(parameters =>
             {
                 parameters.Add(p => p.Visual, visual);
@@ -514,7 +385,6 @@ namespace Bit.Client.Web.BlazorUI.Tests.Sliders
         ]
         public void BitSliderStepTest(Visual visual, bool ranged, int? step)
         {
-            Context.JSInterop.Mode = JSRuntimeMode.Loose;
             var com = RenderComponent<BitSliderTest>(parameters =>
             {
                 parameters.Add(p => p.Visual, visual);
@@ -533,95 +403,60 @@ namespace Bit.Client.Web.BlazorUI.Tests.Sliders
         }
 
         [DataTestMethod,
-            DataRow(Visual.Fluent, false, null, null),
-            DataRow(Visual.Fluent, false, 4, null),
-            DataRow(Visual.Fluent, false, null, 8),
-            DataRow(Visual.Fluent, true, null, null),
-            DataRow(Visual.Fluent, true, 4, null),
-            DataRow(Visual.Fluent, true, null, 8),
             DataRow(Visual.Fluent, false, 4, 8),
             DataRow(Visual.Fluent, true, 4, 8),
 
-            DataRow(Visual.Cupertino, false, null, null),
-            DataRow(Visual.Cupertino, false, 4, null),
-            DataRow(Visual.Cupertino, false, null, 8),
-            DataRow(Visual.Cupertino, true, null, null),
-            DataRow(Visual.Cupertino, true, 4, null),
-            DataRow(Visual.Cupertino, true, null, 8),
             DataRow(Visual.Cupertino, false, 4, 8),
             DataRow(Visual.Cupertino, true, 4, 8),
 
-            DataRow(Visual.Material, false, null, null),
-            DataRow(Visual.Material, false, 4, null),
-            DataRow(Visual.Material, false, null, 8),
-            DataRow(Visual.Material, true, null, null),
-            DataRow(Visual.Material, true, 4, null),
-            DataRow(Visual.Material, true, null, 8),
             DataRow(Visual.Material, false, 4, 8),
-            DataRow(Visual.Material, true, 4, 8),
+            DataRow(Visual.Material, true, 4, 8)
         ]
-        public void BitSliderMinMaxTest(Visual visual, bool ranged, int? min, int? max)
+        public void BitSliderMinMaxTest(Visual visual, bool ranged, int min, int max)
         {
-            Context.JSInterop.Mode = JSRuntimeMode.Loose;
             var com = RenderComponent<BitSliderTest>(parameters =>
             {
                 parameters.Add(p => p.Visual, visual);
                 parameters.Add(p => p.Ranged, ranged);
-                if (min.HasValue)
-                {
-                    parameters.Add(p => p.Min, min.Value);
-                }
-
-                if (max.HasValue)
-                {
-                    parameters.Add(p => p.Max, max.Value);
-                }
+                parameters.Add(p => p.Min, min);
+                parameters.Add(p => p.Max, max);
             });
 
             var bitSlider = com.Find(".bit-slider");
             foreach (var item in bitSlider.GetElementsByTagName("input"))
             {
-                Assert.AreEqual(item.GetAttribute("min"), (min.HasValue ? min.Value : com.Instance.Min).ToString());
-                Assert.AreEqual(item.GetAttribute("max"), (max.HasValue ? max.Value : com.Instance.Max).ToString());
+                Assert.AreEqual(item.GetAttribute("min"), min.ToString());
+                Assert.AreEqual(item.GetAttribute("max"), max.ToString());
             }
         }
 
         [DataTestMethod,
-            DataRow(Visual.Fluent, false, null),
-            DataRow(Visual.Fluent, true, null),
-            DataRow(Visual.Fluent, false, "Bit Title"),
-            DataRow(Visual.Fluent, true, "Bit Title"),
+            DataRow(Visual.Fluent, null),
+            DataRow(Visual.Fluent, "Bit Title"),
 
-            DataRow(Visual.Cupertino, false, null),
-            DataRow(Visual.Cupertino, true, null),
-            DataRow(Visual.Cupertino, false, "Bit Title"),
-            DataRow(Visual.Cupertino, true, "Bit Title"),
+            DataRow(Visual.Cupertino, null),
+            DataRow(Visual.Cupertino, "Bit Title"),
 
-            DataRow(Visual.Material, false, null),
-            DataRow(Visual.Material, true, null),
-            DataRow(Visual.Material, false, "Bit Title"),
-            DataRow(Visual.Material, true, "Bit Title"),
+            DataRow(Visual.Material, null),
+            DataRow(Visual.Material, "Bit Title")
         ]
-        public void BitSliderLabelTest(Visual visual, bool ranged, string label)
+        public void BitSliderLabelTest(Visual visual, string label)
         {
-            Context.JSInterop.Mode = JSRuntimeMode.Loose;
             var com = RenderComponent<BitSliderTest>(parameters =>
             {
                 parameters.Add(p => p.Visual, visual);
-                parameters.Add(p => p.Ranged, ranged);
                 parameters.Add(p => p.Label, label);
             });
 
-            var bitSlider = com.Find(".bit-slider");
-            var labels = bitSlider.GetElementsByTagName("label");
+            var labelElements = com.FindAll(".bit-slider label");
 
             if (label.HasValue())
             {
-                Assert.IsTrue(labels.Any(l => l.ClassList.Contains("title") && l.TextContent.Equals(label)));
+                Assert.IsTrue(labelElements.Any(l => l.ClassList.Contains("title") && l.TextContent == label));
             }
             else
             {
-                Assert.IsFalse(labels.Any(l => l.ClassList.Contains("title") || l.TextContent.Equals(label)));
+                Assert.IsFalse(labelElements.Any(l => l.ClassList.Contains("title") && l.TextContent == label));
             }
         }
 
@@ -643,7 +478,6 @@ namespace Bit.Client.Web.BlazorUI.Tests.Sliders
         ]
         public void BitSliderShowValueTest(Visual visual, bool ranged, bool showValue)
         {
-            Context.JSInterop.Mode = JSRuntimeMode.Loose;
             var com = RenderComponent<BitSliderTest>(parameters =>
             {
                 parameters.Add(p => p.Visual, visual);
@@ -683,7 +517,6 @@ namespace Bit.Client.Web.BlazorUI.Tests.Sliders
         ]
         public void BitSliderOriginFromZeroTest(Visual visual, bool ranged, bool originFromZero)
         {
-            Context.JSInterop.Mode = JSRuntimeMode.Loose;
             var com = RenderComponent<BitSliderTest>(parameters =>
             {
                 parameters.Add(p => p.Visual, visual);
@@ -722,7 +555,6 @@ namespace Bit.Client.Web.BlazorUI.Tests.Sliders
         ]
         public void BitSliderValueFormatTest(Visual visual, bool ranged, string valueFormat)
         {
-            Context.JSInterop.Mode = JSRuntimeMode.Loose;
             var com = RenderComponent<BitSliderTest>(parameters =>
             {
                 parameters.Add(p => p.Visual, visual);
