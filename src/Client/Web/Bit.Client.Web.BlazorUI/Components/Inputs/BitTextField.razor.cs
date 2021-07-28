@@ -16,24 +16,16 @@ namespace Bit.Client.Web.BlazorUI
         private TextFieldType type = TextFieldType.Text;
         private Guid InputId = Guid.NewGuid();
 
-        [Parameter] public int MaxLength { get; set; } = -1;
-
-        [Parameter] public string? IconName { get; set; }
-
-        [Parameter] public string? Value { get; set; }
-
-        [Parameter] public string? DefaultValue { get; set; }
-
-        [Parameter] public string? Placeholder { get; set; }
-
-        [Parameter] public string? Label { get; set; }
-
-        [Parameter] public string? Description { get; set; }
-
-        [Parameter] public string? ErrorMessage { get; set; }
-
         [Parameter]
-        public bool CanRevealPassword { get; set; }
+        public bool IsMultiLine
+        {
+            get => isMultiLine;
+            set
+            {
+                isMultiLine = value;
+                ClassBuilder.Reset();
+            }
+        }
 
         [Parameter]
         public bool IsReadonly
@@ -58,35 +50,6 @@ namespace Bit.Client.Web.BlazorUI
         }
 
         [Parameter]
-        public TextFieldType Type
-        {
-            get => type;
-            set
-            {
-                type = value;
-                ElementType = value;
-                ClassBuilder.Reset();
-            }
-        }
-
-        public TextFieldType ElementType { get; set; }
-
-        [Parameter]
-        public bool IsMultiLine
-        {
-            get => isMultiLine;
-            set
-            {
-                isMultiLine = value;
-                ClassBuilder.Reset();
-            }
-        }
-
-        [Parameter] public string? Prefix { get; set; }
-
-        [Parameter] public string? Suffix { get; set; }
-
-        [Parameter]
         public bool IsUnderlined
         {
             get => isUnderlined;
@@ -108,11 +71,47 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
+        [Parameter] public string? Value { get; set; }
+
+        [Parameter] public string? DefaultValue { get; set; }
+
+        [Parameter] public string? Placeholder { get; set; }
+
+        [Parameter] public string? Label { get; set; }
+
+        [Parameter] public string? Description { get; set; }
+
+        [Parameter] public int MaxLength { get; set; } = -1;
+
+        [Parameter] public string? IconName { get; set; }
+
+        [Parameter] public string? Prefix { get; set; }
+
+        [Parameter] public string? Suffix { get; set; }
+
+        [Parameter] public string? ErrorMessage { get; set; }
+
+        [Parameter] public bool CanRevealPassword { get; set; }
+
+        [Parameter]
+        public TextFieldType Type
+        {
+            get => type;
+            set
+            {
+                type = value;
+                ElementType = value;
+                ClassBuilder.Reset();
+            }
+        }
+
         [Parameter] public bool ValidateOnLoad { get; set; } = true;
 
         [Parameter] public bool ValidateOnFocusOut { get; set; }
-        
+
         [Parameter] public bool ValidateOnFocusIn { get; set; }
+
+        [Parameter] public Func<string, string> OnGetErrorMessage { get; set; }
 
         [Parameter] public EventCallback<FocusEventArgs> OnFocusIn { get; set; }
 
@@ -128,7 +127,8 @@ namespace Bit.Client.Web.BlazorUI
 
         [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
-        [Parameter] public Func<string, string> OnGetErrorMessage { get; set; }
+        public TextFieldType ElementType { get; set; }
+
         public string FocusClass
         {
             get => focusClass;
@@ -212,7 +212,8 @@ namespace Bit.Client.Web.BlazorUI
                 await OnInput.InvokeAsync(e);
             }
 
-            if (!ValidateOnFocusIn && !ValidateOnFocusOut ){
+            if (!ValidateOnFocusIn && !ValidateOnFocusOut)
+            {
                 Validate(e.Value!.ToString());
             }
         }
