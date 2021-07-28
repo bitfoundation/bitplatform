@@ -6,9 +6,12 @@
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
     <div>
-        <label for="@InputId">
-            @Label
-        </label>
+        @if (Label.HasValue())
+        {
+            <label for="@InputId">
+                @Label
+            </label>
+        }
         <div>
             @if (Prefix is not null)
             {
@@ -79,19 +82,21 @@
 
         </div>
     </div>
-    <span>
-        @if (Description is not null)
-        {
-            <span>@Description</span>
-        }
+    @if (Description.HasValue() || ErrorMessage.HasValue())
+    {
+        <span>
+            @if (Description.HasValue())
+            {
+                <span>@Description</span>
+            }
 
-        @if (ErrorMessage is not null)
-        {
-            <div role="alert">
-                <p>
-                    <span>@ErrorMessage</span>
-                </p>
-            </div>
-        }
-    </span>
+            @if (ErrorMessage.HasValue())
+            {
+                <div role="alert">
+                    <p>
+                        <span>@ErrorMessage</span>
+                    </p>
+                </div>
+            }
+        </span>}
 </div>
