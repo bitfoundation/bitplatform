@@ -4,10 +4,19 @@ namespace Bit.Client.Web.BlazorUI
 {
     public partial class BitSpinner
     {
+        /// <summary>
+        /// The position of the label in regards to the spinner animation
+        /// </summary>
         [Parameter] public SpinnerLabelPosition LabelPosition { get; set; }
 
+        /// <summary>
+        /// The size of spinner to render
+        /// </summary>
         [Parameter] public SpinnerSize Size { get; set; }
 
+        /// <summary>
+        /// The label to show next to the spinner. Label updates will be announced to the screen readers
+        /// </summary>
         [Parameter] public string? Label { get; set; }
 
         protected override string RootElementClass => "bit-spn";

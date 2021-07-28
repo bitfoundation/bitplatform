@@ -21,7 +21,7 @@ namespace Bit.Owin.Implementations
                 if (_currentTimeZoneName == "British Summer Time")
                     _currentTimeZoneName = "GMT Daylight Time";
 
-                _desiredTimeZoneName = value.DesiredTimeZone;
+                _desiredTimeZoneName = value.DesiredTimeZone ?? _currentTimeZoneName;
                 if (_desiredTimeZoneName == "British Summer Time")
                     _desiredTimeZoneName = "GMT Daylight Time";
             }
