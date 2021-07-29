@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -105,13 +107,15 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
+        [Parameter] public int DeferredValidationTime { get; set; } = 200;
+
         [Parameter] public bool ValidateOnLoad { get; set; } = true;
 
         [Parameter] public bool ValidateOnFocusOut { get; set; }
 
         [Parameter] public bool ValidateOnFocusIn { get; set; }
 
-        [Parameter] public Func<string, string> OnGetErrorMessage { get; set; }
+        [Parameter] public Func<string, string>? OnGetErrorMessage { get; set; }
 
         [Parameter] public EventCallback<FocusEventArgs> OnFocusIn { get; set; }
 
@@ -214,7 +218,7 @@ namespace Bit.Client.Web.BlazorUI
 
             if (!ValidateOnFocusIn && !ValidateOnFocusOut)
             {
-                Validate(e.Value!.ToString());
+                await DeferredValidation(e.Value.ToString()).ConfigureAwait(false);
             }
         }
 
@@ -247,6 +251,8 @@ namespace Bit.Client.Web.BlazorUI
             ElementType = ElementType == TextFieldType.Text ? TextFieldType.Password : TextFieldType.Text;
         }
 
+        private readonly ICollection<Task> DeferredValidationTasks = new List<Task>();
+
         private void Validate(string? value)
         {
             if (value != null)
@@ -264,6 +270,34 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
+        private async Task DeferredValidation(string value)
+        {
+            if (DeferredValidationTime == 0)
+            {
+                Validate(value);
+            }
+            else
+            {
+                DeferredValidationTasks.Add(Task.Run(async () =>
+                {
+                    await Task.Delay(DeferredValidationTime);
+                }));
+                int TaskCount = DeferredValidationTasks.Count;
+                await Task.WhenAll(DeferredValidationTasks.ToArray());
+                if (TaskCount == DeferredValidationTasks.Count)
+                {
+                    _ = Task.Run(() =>
+                    {
+                        InvokeAsync(() =>
+                        {
+                            Validate(value);
+                            StateHasChanged();
+                        });
+                        //invokeasync required for serverside
+                    }).ConfigureAwait(false);
+                }
+            }
+        }
 
         protected override Task OnParametersSetAsync()
         {
