@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.JSInterop;
 
 namespace Bit.Client.Web.BlazorUI
 {
@@ -11,6 +12,8 @@ namespace Bit.Client.Web.BlazorUI
         private string focusClass = "";
         private string expandClass = "";
         private bool isMultiSelect = false;
+
+        [Inject] public IJSRuntime? JSRuntime { get; set; }
 
         /// <summary>
         /// Whether multiple items are allowed to be selected
@@ -25,17 +28,10 @@ namespace Bit.Client.Web.BlazorUI
                 ClassBuilder.Reset();
             }
         }
-        [Parameter]
-        public bool IsOpen
-        {
-            get => isOpen;
-            set
-            {
-                isOpen = value;
-                ClassBuilder.Reset();
-            }
-        }
 
+        /// <summary>
+        /// A list of items to display in the dropdown
+        /// </summary>
         [Parameter] public List<DropDownItem> Items { get; set; } = new List<DropDownItem>();
 
         /// <summary>
@@ -106,6 +102,7 @@ namespace Bit.Client.Web.BlazorUI
                 {
                     FocusClass = "";
                 }
+                await JSRuntime.OpenCallout(UniqueId.ToString());
                 await OnClick.InvokeAsync(e);
             }
         }
@@ -151,6 +148,7 @@ namespace Bit.Client.Web.BlazorUI
                     }
                 }
             }
+            await JSRuntime.CloseCallout(UniqueId.ToString());
         }
 
         internal void ChangeAllItemsIsSelected(bool value)

@@ -54,6 +54,16 @@ namespace Microsoft.JSInterop
         {
             await jSRuntime.InvokeVoidAsync("BitColorPicker.abortProcedure", abortControllerId);
         }
+
+        public static async Task CloseCallout(this IJSRuntime jsRuntime,string calloutId)
+        {
+            await jsRuntime.InvokeVoidAsync("BitDropDown.closeCallout", calloutId);
+        }
+
+        public static async Task OpenCallout(this IJSRuntime jsRuntime, string calloutId)
+        {
+            await jsRuntime.InvokeVoidAsync("BitDropDown.openCallout", calloutId);
+        }
     }
 
     public class BoundingClientRect
