@@ -81,7 +81,11 @@ namespace Bit.Client.Web.BlazorUI
 
         [Parameter] public string? Label { get; set; }
 
+        [Parameter] public RenderFragment? RenderLabel { get; set; }
+
         [Parameter] public string? Description { get; set; }
+
+        [Parameter] public RenderFragment? RenderDescription { get; set; }
 
         [Parameter] public int MaxLength { get; set; } = -1;
 

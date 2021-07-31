@@ -6,11 +6,18 @@
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
     <div>
-        @if (Label.HasValue())
+        @if (Label.HasValue() || RenderLabel is not null)
         {
-            <label for="@InputId">
-                @Label
-            </label>
+            @if (RenderLabel is not null)
+            {
+                <span>@RenderLabel</span>
+            }
+            else if (Label.HasValue())
+            {
+                <label for="@InputId">
+                    @Label
+                </label>
+            }
         }
         <div>
             @if (Prefix is not null)
@@ -82,12 +89,17 @@
 
         </div>
     </div>
-    @if (Description.HasValue() || ErrorMessage.HasValue())
+    @if (Description.HasValue() || ErrorMessage.HasValue() || RenderDescription is not null)
     {
         <span>
-            @if (Description.HasValue())
+            @if (RenderDescription is not null)
             {
                 <span>@Description</span>
+            }
+            else if (Description.HasValue())
+            {
+
+                @RenderDescription
             }
 
             @if (ErrorMessage.HasValue())
