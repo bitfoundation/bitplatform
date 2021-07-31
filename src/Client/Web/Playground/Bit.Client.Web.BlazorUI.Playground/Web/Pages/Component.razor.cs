@@ -238,8 +238,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
             OnToggleButtonChanged = newValue;
         }
 
-        private void HideMessageBar(MouseEventArgs args)
-
+        private void HideMessageBar()
         {
             IsMessageBarHidden = true;
         }
