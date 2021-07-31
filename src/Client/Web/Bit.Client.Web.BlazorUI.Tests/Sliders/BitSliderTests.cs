@@ -128,12 +128,10 @@ namespace Bit.Client.Web.BlazorUI.Tests.Sliders
                 parameters.Add(p => p.Ranged, true);
             });
 
-            var bitSlider = com.Find(".bit-slider");
+            // Find fisrt label with valueLabel css class
+            var label = com.Find(".bit-slider label.valueLabel");
 
-            var labels = bitSlider.GetElementsByTagName("label");
-
-            Assert.AreEqual(labels.First(l => l.ClassList.Contains("valueLabel")).TextContent, defaultLowerValue.GetValueOrDefault().ToString());
-            //Assert.AreEqual(defaultLowerValue.GetValueOrDefault(), com.Instance.LowerValue);
+            Assert.AreEqual(label.TextContent, defaultLowerValue.GetValueOrDefault().ToString());
         }
 
         [DataTestMethod,
@@ -156,12 +154,11 @@ namespace Bit.Client.Web.BlazorUI.Tests.Sliders
                 parameters.Add(p => p.Ranged, true);
             });
 
-            var bitSlider = com.Find(".bit-slider");
+            // Find labels with valueLabel css class
+            var labels = com.FindAll(".bit-slider label.valueLabel");
 
-            var labels = bitSlider.GetElementsByTagName("label");
-
-            Assert.AreEqual(labels.Last(l => l.ClassList.Contains("valueLabel")).TextContent, defaultUpperValue.GetValueOrDefault().ToString());
-            //Assert.AreEqual(defaultUpperValue.GetValueOrDefault(), com.Instance.UpperValue);
+            Assert.AreEqual(labels.Count, 2);
+            Assert.AreEqual(labels.Last().TextContent, defaultUpperValue.GetValueOrDefault().ToString());
         }
 
         [DataTestMethod,
@@ -185,12 +182,9 @@ namespace Bit.Client.Web.BlazorUI.Tests.Sliders
                 parameters.Add(p => p.Ranged, true);
             });
 
-            var bitSlider = com.Find(".bit-slider");
+            var label = com.Find(".bit-slider label.valueLabel");
 
-            var labels = bitSlider.GetElementsByTagName("label");
-
-            Assert.AreEqual(labels.First(l => l.ClassList.Contains("valueLabel")).TextContent, lowerValue.GetValueOrDefault().ToString());
-            //Assert.AreEqual(defaultLowerValue.GetValueOrDefault(), com.Instance.LowerValue);
+            Assert.AreEqual(label.TextContent, lowerValue.GetValueOrDefault().ToString());
         }
 
         [DataTestMethod,
@@ -213,12 +207,11 @@ namespace Bit.Client.Web.BlazorUI.Tests.Sliders
                 parameters.Add(p => p.Ranged, true);
             });
 
-            var bitSlider = com.Find(".bit-slider");
+            // Find labels with valueLabel css class
+            var labels = com.FindAll(".bit-slider label.valueLabel");
 
-            var labels = bitSlider.GetElementsByTagName("label");
-
-            Assert.AreEqual(labels.Last(l => l.ClassList.Contains("valueLabel")).TextContent, defaultUpperValue.GetValueOrDefault().ToString());
-            //Assert.AreEqual(defaultUpperValue.GetValueOrDefault(), com.Instance.UpperValue);
+            Assert.AreEqual(labels.Count, 2);
+            Assert.AreEqual(labels.Last().TextContent, defaultUpperValue.GetValueOrDefault().ToString());
         }
 
         [DataTestMethod,
@@ -247,14 +240,12 @@ namespace Bit.Client.Web.BlazorUI.Tests.Sliders
                 parameters.Add(p => p.Ranged, true);
             });
 
-            var bitSlider = com.Find(".bit-slider");
+            // Find labels with valueLabel css class
+            var labels = com.FindAll(".bit-slider label.valueLabel");
 
-            var labels = bitSlider.GetElementsByTagName("label");
-
-            Assert.AreEqual(labels.First(l => l.ClassList.Contains("valueLabel")).TextContent, lowerValue.GetValueOrDefault().ToString());
-            Assert.AreEqual(labels.Last(l => l.ClassList.Contains("valueLabel")).TextContent, upperValue.GetValueOrDefault().ToString());
-            //Assert.AreEqual(lowerValue.GetValueOrDefault(), com.Instance.LowerValue);
-            //Assert.AreEqual(upperValue.GetValueOrDefault(), com.Instance.UpperValue);
+            Assert.AreEqual(labels.Count, 2);
+            Assert.AreEqual(labels.First().TextContent, lowerValue.GetValueOrDefault().ToString());
+            Assert.AreEqual(labels.Last().TextContent, upperValue.GetValueOrDefault().ToString());
         }
 
         [DataTestMethod,
@@ -276,12 +267,10 @@ namespace Bit.Client.Web.BlazorUI.Tests.Sliders
                 parameters.Add(p => p.ShowValue, true);
             });
 
-            var bitSlider = com.Find(".bit-slider");
+            // Find fisrt label with valueLabel css class
+            var label = com.Find(".bit-slider label.valueLabel");
 
-            var labels = bitSlider.GetElementsByTagName("label");
-
-            Assert.AreEqual(labels.First(l => l.ClassList.Contains("valueLabel")).TextContent, defaultValue.GetValueOrDefault().ToString());
-            //Assert.AreEqual(defaultValue.GetValueOrDefault(), com.Instance.Value);
+            Assert.AreEqual(label.TextContent, defaultValue.GetValueOrDefault().ToString());
         }
 
         [DataTestMethod,
@@ -304,12 +293,10 @@ namespace Bit.Client.Web.BlazorUI.Tests.Sliders
                 parameters.Add(p => p.ShowValue, true);
             });
 
-            var bitSlider = com.Find(".bit-slider");
+            // Find fisrt label with valueLabel css class
+            var label = com.Find(".bit-slider label.valueLabel");
 
-            var labels = bitSlider.GetElementsByTagName("label");
-
-            Assert.AreEqual(labels.First(l => l.ClassList.Contains("valueLabel")).TextContent, defaultValue.GetValueOrDefault().ToString());
-            //Assert.AreEqual(defaultValue.GetValueOrDefault(), com.Instance.Value);
+            Assert.AreEqual(label.TextContent, defaultValue.GetValueOrDefault().ToString());
         }
 
         [DataTestMethod,
@@ -331,12 +318,10 @@ namespace Bit.Client.Web.BlazorUI.Tests.Sliders
                 parameters.Add(p => p.ShowValue, true);
             });
 
-            var bitSlider = com.Find(".bit-slider");
+            // Find fisrt label with valueLabel css class
+            var label = com.Find(".bit-slider label.valueLabel");
 
-            var labels = bitSlider.GetElementsByTagName("label");
-
-            Assert.AreEqual(labels.First(l => l.ClassList.Contains("valueLabel")).TextContent, value.GetValueOrDefault().ToString());
-            //Assert.AreEqual(value.GetValueOrDefault(), com.Instance.Value);
+            Assert.AreEqual(label.TextContent, value.GetValueOrDefault().ToString());
         }
 
         [DataTestMethod,
@@ -359,12 +344,10 @@ namespace Bit.Client.Web.BlazorUI.Tests.Sliders
                 parameters.Add(p => p.ShowValue, true);
             });
 
-            var bitSlider = com.Find(".bit-slider");
+            // Find fisrt label with valueLabel css class
+            var label = com.Find(".bit-slider label.valueLabel");
 
-            var labels = bitSlider.GetElementsByTagName("label");
-
-            Assert.AreEqual(labels.First(l => l.ClassList.Contains("valueLabel")).TextContent, value.GetValueOrDefault().ToString());
-            //Assert.AreEqual(defaultValue.GetValueOrDefault(), com.Instance.Value);
+            Assert.AreEqual(label.TextContent, value.GetValueOrDefault().ToString());
         }
 
         [DataTestMethod,
@@ -395,10 +378,12 @@ namespace Bit.Client.Web.BlazorUI.Tests.Sliders
                 }
             });
 
-            var bitSlider = com.Find(".bit-slider");
-            foreach (var item in bitSlider.GetElementsByTagName("input"))
+            var inputs = com.FindAll(".bit-slider input");
+            Assert.AreEqual(inputs.Count, ranged ? 2 : 1);
+
+            foreach (var input in inputs)
             {
-                Assert.AreEqual(item.GetAttribute("step"), (step.HasValue ? step.Value : com.Instance.Step).ToString());
+                Assert.AreEqual(input.GetAttribute("step"), (step.HasValue ? step.Value : com.Instance.Step).ToString());
             }
         }
 
@@ -422,11 +407,13 @@ namespace Bit.Client.Web.BlazorUI.Tests.Sliders
                 parameters.Add(p => p.Max, max);
             });
 
-            var bitSlider = com.Find(".bit-slider");
-            foreach (var item in bitSlider.GetElementsByTagName("input"))
+            var inputs = com.FindAll(".bit-slider input");
+            Assert.AreEqual(inputs.Count, ranged ? 2 : 1);
+
+            foreach (var input in inputs)
             {
-                Assert.AreEqual(item.GetAttribute("min"), min.ToString());
-                Assert.AreEqual(item.GetAttribute("max"), max.ToString());
+                Assert.AreEqual(input.GetAttribute("min"), min.ToString());
+                Assert.AreEqual(input.GetAttribute("max"), max.ToString());
             }
         }
 
@@ -448,15 +435,19 @@ namespace Bit.Client.Web.BlazorUI.Tests.Sliders
                 parameters.Add(p => p.Label, label);
             });
 
-            var labelElements = com.FindAll(".bit-slider label");
+            // Find all labels with title css class
+            // Method 'FindAll' is used because if the component does not have a label, the element will not be rendered. 
+            var labelElements = com.FindAll(".bit-slider label.title");
+            var labelElement = labelElements.SingleOrDefault();
 
             if (label.HasValue())
             {
-                Assert.IsTrue(labelElements.Any(l => l.ClassList.Contains("title") && l.TextContent == label));
+                Assert.IsNotNull(labelElement);
+                Assert.AreEqual(labelElement.TextContent, label);
             }
             else
             {
-                Assert.IsFalse(labelElements.Any(l => l.ClassList.Contains("title") && l.TextContent == label));
+                Assert.IsNull(labelElement);
             }
         }
 
@@ -485,17 +476,16 @@ namespace Bit.Client.Web.BlazorUI.Tests.Sliders
                 parameters.Add(p => p.ShowValue, showValue);
             });
 
-            var bitSlider = com.Find(".bit-slider");
-            var labels = bitSlider.GetElementsByTagName("label");
+            var labels = com.FindAll(".bit-slider label.valueLabel");
 
             if (showValue)
             {
-                Assert.IsTrue(labels.Any(l => l.ClassList.Contains("valueLabel")));
-                Assert.AreEqual(labels.Count(l => l.ClassList.Contains("valueLabel")), ranged ? 2 : 1);
+                Assert.IsTrue(labels.Any());
+                Assert.AreEqual(labels.Count, ranged ? 2 : 1);
             }
             else
             {
-                Assert.IsFalse(labels?.Any(l => l.ClassList.Contains("valueLabel")) ?? false);
+                Assert.IsFalse(labels.Any());
             }
         }
 
@@ -524,17 +514,9 @@ namespace Bit.Client.Web.BlazorUI.Tests.Sliders
                 parameters.Add(p => p.OriginFromZero, originFromZero);
             });
 
-            var bitSlider = com.Find(".bit-slider");
-            var spans = bitSlider.GetElementsByTagName("span");
+            var spans = com.FindAll(".bit-slider span.zeroTick");
 
-            if (originFromZero)
-            {
-                Assert.IsTrue(spans.Any(l => l.ClassList.Contains("zeroTick")));
-            }
-            else
-            {
-                Assert.IsFalse(spans?.Any(l => l.ClassList.Contains("zeroTick")) ?? false);
-            }
+            Assert.AreEqual(spans.Count, originFromZero ? 1 : 0);
         }
 
         [DataTestMethod,
@@ -563,16 +545,15 @@ namespace Bit.Client.Web.BlazorUI.Tests.Sliders
                 parameters.Add(p => p.ValueFormat, valueFormat);
             });
 
-            var bitSlider = com.Find(".bit-slider");
-            var labels = bitSlider.GetElementsByTagName("label");
+            var labels = com.FindAll(".bit-slider label.valueLabel");
 
             if (string.IsNullOrEmpty(valueFormat))
             {
-                Assert.AreEqual(labels.Count(l => l.ClassList.Contains("valueLabel") && !l.TextContent.Contains("%")), ranged ? 2 : 1);
+                Assert.AreEqual(labels.Count(l => !l.TextContent.Contains("%")), ranged ? 2 : 1);
             }
             else
             {
-                Assert.AreEqual(labels.Count(l => l.ClassList.Contains("valueLabel") && l.TextContent.Contains("%")), ranged ? 2 : 1);
+                Assert.AreEqual(labels.Count(l => l.TextContent.Contains("%")), ranged ? 2 : 1);
             }
         }
     }
