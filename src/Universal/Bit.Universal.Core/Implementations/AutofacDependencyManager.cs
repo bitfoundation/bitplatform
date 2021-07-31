@@ -75,9 +75,6 @@ namespace Bit.Core.Implementations
             if (_containerBuilder == null)
                 throw new InvalidOperationException("Container builder is not prepared, Either call Init or UseContainerBuilder first");
 
-            if (ContainerIsBuilt())
-                throw new InvalidOperationException("We may not do anything with container builder after container is built");
-
             return _containerBuilder;
         }
 

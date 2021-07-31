@@ -7,6 +7,11 @@
         return element[property];
     }
 
+    static getBoundingClientRect(element: any): object {
+        return element.getBoundingClientRect();
+    }
+}
+
     static getClientHeight(element: { [key: string]: any }): string {
         return element.clientHeight;
     }
