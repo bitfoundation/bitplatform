@@ -1,9 +1,9 @@
-﻿namespace Bit.Client.Web.BlazorUI.Tests.Toggles
-{
-    using System;
-    using Bunit;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System;
+using Bunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+namespace Bit.Client.Web.BlazorUI.Tests.Toggles
+{
     [TestClass]
     public class BitToggleTests : BunitTestContext
     {
@@ -128,10 +128,10 @@
         }
 
         [DataTestMethod, 
-            DataRow(true, "on", "off", "This is defaultText", "", "This is Label"),
-            DataRow(false, "on", "off", "This is defaultText", "", "This is Label")
+            DataRow(true, "on", "off", "This is the first defaultText", "This is the first label"),
+            DataRow(false, "off", "on", "This is the second defaultText", "This is the second label")
         ]
-        public void BitToggleAriaLabelledyTest(bool isChecked, string onText, string offText, string defaultText, string ariaLabel, string label)
+        public void BitToggleAriaLabelledyTest(bool isChecked, string onText, string offText, string defaultText, string label)
         {
             var com = RenderComponent<BitToggleTest>(parameters =>
             {
@@ -139,7 +139,7 @@
                 parameters.Add(p => p.OnText, onText);
                 parameters.Add(p => p.OffText, offText);
                 parameters.Add(p => p.DefaultText, defaultText);
-                parameters.Add(p => p.AriaLabel, ariaLabel);
+                parameters.Add(p => p.AriaLabel, "");
                 parameters.Add(p => p.Label, label);
             });
 
@@ -150,19 +150,16 @@
             var ariaLabelledById = "";
             var stateText = (isChecked ? onText : offText) ?? defaultText ?? "";
 
-            if (ariaLabel.HasNoValue())
+            if (label.HasValue())
             {
-                if (label.HasValue())
-                {
-                    ariaLabelledById = labelId;
-                }
-                if (stateText.HasValue())
-                {
-                    ariaLabelledById = ariaLabelledById.HasValue() ? labelId + " " + stateTextId : stateTextId;
-                }
+                ariaLabelledById = labelId;
+            }
+            if (stateText.HasValue())
+            {
+                ariaLabelledById = ariaLabelledById.HasValue() ? labelId + " " + stateTextId : stateTextId;
             }
 
-            Assert.IsTrue(bitToggleButton.GetAttribute("aria-labelledby").Equals(ariaLabelledById));
+            Assert.AreEqual(bitToggleButton.GetAttribute("aria-labelledby"), ariaLabelledById);
         }
 
         [DataTestMethod, 
@@ -178,7 +175,7 @@
 
             var ariaChecked = isChecked ? "true" : "false";
             var bitToggleButton = com.Find(".bit-tgl button");
-            Assert.IsTrue(bitToggleButton.GetAttribute("aria-checked").Equals(ariaChecked));
+            Assert.AreEqual(bitToggleButton.GetAttribute("aria-checked"), ariaChecked);
         }
 
         [DataTestMethod, DataRow("Switch")]
@@ -190,7 +187,7 @@
             });
 
             var bitToggleButton = com.Find(".bit-tgl button");
-            Assert.IsTrue(bitToggleButton.GetAttribute("role").Equals(role));
+            Assert.AreEqual(bitToggleButton.GetAttribute("role"), role);
         }
 
         [DataTestMethod, DataRow("This is label")]
@@ -202,7 +199,7 @@
             });
 
             var bitToggleLabel = com.Find(".bit-tgl > label");
-            Assert.IsTrue(bitToggleLabel.TextContent.Equals(label));
+            Assert.AreEqual(bitToggleLabel.TextContent, label);
         }
 
         [DataTestMethod, DataRow("<div>This is labelFragment</div>")]
