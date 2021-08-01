@@ -61,7 +61,7 @@ namespace Bit.Client.Web.BlazorUI
         }
 
         /// <summary>
-        /// Input type
+        /// Whether or not the text field is underlined
         /// </summary>
         [Parameter]
         public bool IsUnderlined
@@ -74,6 +74,9 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
+        /// <summary>
+        /// Whether or not the text field is borderless
+        /// </summary>
         [Parameter]
         public bool IsBorderless
         {
@@ -90,6 +93,9 @@ namespace Bit.Client.Web.BlazorUI
         /// </summary>
         [Parameter] public string? Value { get; set; }
 
+        /// <summary>
+        /// Default value of the text field. Only provide this if the text field is an uncontrolled component; otherwise, use the value property
+        /// </summary>
         [Parameter] public string? DefaultValue { get; set; }
 
         /// <summary>
@@ -104,6 +110,9 @@ namespace Bit.Client.Web.BlazorUI
 
         [Parameter] public RenderFragment? RenderLabel { get; set; }
 
+        /// <summary>
+        /// Description displayed below the text field to provide additional details about what text to enter.
+        /// </summary>
         [Parameter] public string? Description { get; set; }
 
         [Parameter] public RenderFragment? RenderDescription { get; set; }
@@ -118,10 +127,23 @@ namespace Bit.Client.Web.BlazorUI
         /// </summary>
         [Parameter] public string? IconName { get; set; }
 
+        /// <summary>
+        /// Prefix displayed before the text field contents. This is not included in the value.
+        /// Ensure a descriptive label is present to assist screen readers, as the value does not include the prefix.
+        /// </summary>
         [Parameter] public string? Prefix { get; set; }
 
+        /// <summary>
+        /// Suffix displayed after the text field contents. This is not included in the value. 
+        /// Ensure a descriptive label is present to assist screen readers, as the value does not include the suffix.
+        /// </summary>
         [Parameter] public string? Suffix { get; set; }
 
+        /// <summary>
+        /// Static error message displayed below the text field. 
+        /// Use onGetErrorMessage to dynamically change the error message displayed (if any) based on the current value. 
+        /// errorMessage and onGetErrorMessage are mutually exclusive (errorMessage takes precedence)
+        /// </summary>
         [Parameter] public string? ErrorMessage { get; set; }
 
         /// <summary>
@@ -144,14 +166,34 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
+        /// <summary>
+        /// Text field will start to validate after users stop typing for deferredValidationTime milliseconds. 
+        /// Updates to this prop will not be respected.
+        /// default value of DeferredValidationTime is 200
+        /// </summary>
         [Parameter] public int DeferredValidationTime { get; set; } = 200;
 
+        /// <summary>
+        /// Whether validation should run when the input is initially rendered. by default is true
+        /// </summary>
         [Parameter] public bool ValidateOnLoad { get; set; } = true;
 
+        /// <summary>
+        /// Run validation when focus moves out of the input, and **do not** validate on change
+        /// </summary>
         [Parameter] public bool ValidateOnFocusOut { get; set; }
 
+        /// <summary>
+        /// Run validation when focus moves into the input, and **do not** validate on change.
+        /// </summary>
         [Parameter] public bool ValidateOnFocusIn { get; set; }
 
+        /// <summary>
+        /// Function used to determine whether the input value is valid and get an error message if not. 
+        /// Mutually exclusive with the static string errorMessage (it will take precedence over this).
+        /// When it returns string - If valid, it returns empty string. - If invalid, it returns the error message and 
+        /// the text field will show a red border and show an error message below the text field
+        /// </summary>
         [Parameter] public Func<string, string>? OnGetErrorMessage { get; set; }
 
         /// <summary>
