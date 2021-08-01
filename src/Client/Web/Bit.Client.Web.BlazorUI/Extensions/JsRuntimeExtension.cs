@@ -32,5 +32,39 @@ namespace Microsoft.JSInterop
         {
             await jsRuntime.InvokeVoidAsync("BitFileUploader.pause", index);
         }
+
+        public static async Task<BoundingClientRect> GetBoundingClientRect(this IJSRuntime jsRuntime, ElementReference element)
+        {
+            return await jsRuntime.InvokeAsync<BoundingClientRect>("Bit.getBoundingClientRect", element);
+        }
+
+        public static async Task<string> RegisterOnWindowMouseUpEvent(this IJSRuntime jsRuntime, BitComponentBase dontetHelper, string callbackName)
+        {
+
+            return await jsRuntime.InvokeAsync<string>("BitColorPicker.registerOnWindowMouseUpEvent", DotNetObjectReference.Create(dontetHelper),
+                callbackName);
+        }
+        public static async Task<string> RegisterOnWindowMouseMoveEvent(this IJSRuntime jsRuntime, BitComponentBase dontetHelper, string callbackName)
+        {
+            return await jsRuntime.InvokeAsync<string>("BitColorPicker.registerOnWindowMouseMoveEvent", DotNetObjectReference.Create(dontetHelper),
+                 callbackName);
+        }
+
+        public static async Task AbortProcedure(this IJSRuntime jSRuntime, string abortControllerId)
+        {
+            await jSRuntime.InvokeVoidAsync("BitColorPicker.abortProcedure", abortControllerId);
+        }
+    }
+
+    public class BoundingClientRect
+    {
+        public double Bottom { get; set; }
+        public double Height { get; set; }
+        public double Left { get; set; }
+        public double Right { get; set; }
+        public double Top { get; set; }
+        public double Width { get; set; }
+        public double X { get; set; }
+        public double Y { get; set; }
     }
 }

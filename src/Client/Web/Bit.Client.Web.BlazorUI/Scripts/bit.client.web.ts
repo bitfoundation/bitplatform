@@ -6,4 +6,8 @@
     static getProperty(element: { [key: string]: any }, property: string): string | null {
         return element[property];
     }
+
+    static getBoundingClientRect(element: any): object {
+        return element.getBoundingClientRect();
+    }
 }

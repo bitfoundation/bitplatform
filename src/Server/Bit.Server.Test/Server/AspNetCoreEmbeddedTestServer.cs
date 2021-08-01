@@ -4,6 +4,7 @@ using Autofac.Core.Activators.ProvidedInstance;
 using Autofac.Core.Registration;
 using Autofac.Extensions.DependencyInjection;
 using Bit.Owin;
+using Bit.Test.Implementations;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,6 +20,12 @@ namespace Bit.Test.Server
     public class AspNetCoreEmbeddedTestServer : TestServerBase
     {
         private TestServer? _server;
+        private TestEnvironmentArgs _args;
+
+        public AspNetCoreEmbeddedTestServer(TestEnvironmentArgs args)
+        {
+            _args = args;
+        }
 
         public override void Initialize(string uri)
         {
@@ -88,7 +95,7 @@ namespace Bit.Test.Server
 
         protected override HttpMessageHandler GetHttpMessageHandler()
         {
-            return _server!.CreateHandler();
+            return new TestHttpClientHandler(_server!.CreateHandler(), _args);
         }
 
         public override RemoteWebDriver BuildWebDriver(RemoteWebDriverOptions? options = null)

@@ -76,19 +76,17 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
                 AdditionalDependencies = (manager, services) =>
                 {
                     manager.RegisterInstance(valueChecker);
+                },
+                ClientArgs = new TestClientArgs
+                {
+                    CurrentTimeZone = "Afghanistan Standard Time",
+                    DesiredTimeZone = "Iran Standard Time"
                 }
             }))
             {
                 Token token = await testEnvironment.Server.LoginWithCredentials("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
-                IODataClient client = testEnvironment.BuildTestODataClient(token: token, odataClientSettings: new ODataClientSettings
-                {
-                    BeforeRequest = message =>
-                    {
-                        message.Headers.Add("Desired-Time-Zone", "Iran Standard Time");
-                        message.Headers.Add("Current-Time-Zone", "Afghanistan Standard Time");
-                    }
-                });
+                IODataClient client = testEnvironment.BuildTestODataClient(token: token);
 
                 DateTimeOffset date = new DateTimeOffset(2016, 1, 1, 10, 30, 0, TimeSpan.Zero);
 
@@ -144,18 +142,18 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
         [TestCategory("WebApi")]
         public virtual async Task TestTimeZonesInUrlWithClientDemand()
         {
-            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs
+            {
+                ClientArgs = new TestClientArgs
+                {
+                    CurrentTimeZone = "Asia/Kabul",
+                    DesiredTimeZone = "Asia/Tehran"
+                }
+            }))
             {
                 Token token = await testEnvironment.Server.LoginWithCredentials("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
-                IODataClient client = testEnvironment.BuildTestODataClient(token: token, odataClientSettings: new ODataClientSettings
-                {
-                    BeforeRequest = message =>
-                    {
-                        message.Headers.Add("Desired-Time-Zone", "Asia/Tehran");
-                        message.Headers.Add("Current-Time-Zone", "Asia/Kabul");
-                    }
-                });
+                IODataClient client = testEnvironment.BuildTestODataClient(token: token);
 
                 IEnumerable<TestModel> testModels = await client.TestModels()
                      .Where(tm => tm.DateProperty == new DateTimeOffset(2016, 1, 1, 9, 30, 0, TimeSpan.Zero))
