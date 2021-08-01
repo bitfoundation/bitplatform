@@ -251,5 +251,31 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
             //TODO: bypassed - BUnit oninput event issue
             //Assert.AreEqual(isEnabled ? 1 : 0, component.Instance.CurrentCount);
         }
+
+        [DataTestMethod, DataRow("Prefix")]
+        public void BitTextFieldShowPrefix(string prefix)
+        {
+            var component = RenderComponent<BitTextFieldTest>(
+                parameters =>
+                {
+                    parameters.Add(p => p.Prefix, prefix);
+                });
+
+            var bitTextFieldPrefix = component.Find(".bit-txt-fluent > div > div > div > span");
+            Assert.AreEqual(prefix, bitTextFieldPrefix.TextContent);
+        }
+
+        [DataTestMethod, DataRow("Suffix")]
+        public void BitTextFieldShowSuffix(string suffix)
+        {
+            var component = RenderComponent<BitTextFieldTest>(
+                parameters =>
+                {
+                    parameters.Add(p => p.Suffix, suffix);
+                });
+
+            var bitTextFieldSuffix = component.Find(".bit-txt-fluent > div > div > div > span");
+            Assert.AreEqual(suffix, bitTextFieldSuffix.TextContent);
+        }
     }
 }
