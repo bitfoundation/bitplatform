@@ -12,33 +12,29 @@ using System.Text.Json;
 
 namespace Bit.Client.Web.BlazorUI
 {
-    public partial class BitColorPicker// : IAsyncDisposable
+    public partial class BitColorPicker : IAsyncDisposable
     {
-        //private string? onWindowMouseUpAbortControllerId;
-        //private string? onWindowMouseMoveAbortControllerId;
+        private string? onWindowMouseUpAbortControllerId;
+        private string? onWindowMouseMoveAbortControllerId;
 
-        //private RGB mainColor = new RGB() { Red = 255 };
+        private RGB mainColor = new RGB() { Red = 255 };
 
-        //[Inject]
-        //public IJSRuntime JSRuntime { get; set; }
+        [Inject]
+        public IJSRuntime JSRuntime { get; set; }
 
-        //[Parameter]
-        //public AlphaType AlphaType { get; set; }
-
-        private string color;
+        [Parameter]
+        public AlphaType AlphaType { get; set; }
 
         [Parameter]
         public string Color
         {
-            get => color;
+            get => MainColor.ToCss(Alpha);
             set
             {
-                //if (value == MainColor.ToCss(Alpha)) return;
-                //MainColor = StringToRGBConverter(value);
-                //Hue = MainColor.toHSV().Hue;
-                //SaturationPickerBackground = new HSV { Hue = Hue, Value = 1, Saturation = 1 };
-
-                color = value;
+                if (value == MainColor.ToCss(Alpha)) return;
+                MainColor = StringToRGBConverter(value);
+                Hue = MainColor.toHSV().Hue;
+                SaturationPickerBackground = new HSV { Hue = Hue, Value = 1, Saturation = 1 };
 
                 ColorChanged.InvokeAsync(value);
             }
@@ -47,199 +43,199 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter]
         public EventCallback<string> ColorChanged { get; set; }
 
-        //[Parameter]
-        //public bool ShowPreview { get; set; }
+        [Parameter]
+        public bool ShowPreview { get; set; }
         public bool ColorHasBeenSet { get; set; }
-        //public bool SaturationPickerMouseDown { get; set; }
+        public bool SaturationPickerMouseDown { get; set; }
 
-        //public ElementReference SaturationPickerRef { get; set; }
+        public ElementReference SaturationPickerRef { get; set; }
 
-        //public Position? SaturationPickerThumbPosition { get; set; }
+        public Position? SaturationPickerThumbPosition { get; set; }
 
 
-        //public double SelectedSaturation { get; set; } = 1;
-        //public double SelectedValue { get; set; } = 1;
-        //public double Hue { get; set; }
-        //public double Alpha { get; set; } = 100;
+        public double SelectedSaturation { get; set; } = 1;
+        public double SelectedValue { get; set; } = 1;
+        public double Hue { get; set; }
+        public double Alpha { get; set; } = 100;
 
-        //public HSV SaturationPickerBackground { get; set; } = new HSV() { Hue = 0, Saturation = 1, Value = 1 };
+        public HSV SaturationPickerBackground { get; set; } = new HSV() { Hue = 0, Saturation = 1, Value = 1 };
 
-        //public RGB MainColor
-        //{
-        //    get => mainColor; set
-        //    {
-        //        mainColor = value;
-        //    }
-        //}
+        public RGB MainColor
+        {
+            get => mainColor; set
+            {
+                mainColor = value;
+            }
+        }
 
         protected override string RootElementClass => "bit-clr-pkr";
 
-        //protected override async Task OnAfterRenderAsync(bool firstRender)
-        //{
-        //    if (firstRender)
-        //    {
-        //        //onWindowMouseUpAbortControllerId = await JSRuntime.RegisterOnWindowMouseUpEvent(this, "OnWindowMouseUp");
-        //        //onWindowMouseMoveAbortControllerId = await JSRuntime.RegisterOnWindowMouseMoveEvent(this, "OnWindowMouseMove");
+        protected override async Task OnAfterRenderAsync(bool firstRender)
+        {
+            if (firstRender)
+            {
+                onWindowMouseUpAbortControllerId = await JSRuntime.RegisterOnWindowMouseUpEvent(this, "OnWindowMouseUp");
+                onWindowMouseMoveAbortControllerId = await JSRuntime.RegisterOnWindowMouseMoveEvent(this, "OnWindowMouseMove");
 
-        //        //var saturationPickerRect = await JSRuntime.GetBoundingClientRect(SaturationPickerRef);
+                var saturationPickerRect = await JSRuntime.GetBoundingClientRect(SaturationPickerRef);
 
-        //        //SaturationPickerThumbPosition = new Position
-        //        //{
-        //        //    Left = Convert.ToInt32(saturationPickerRect.Width),
-        //        //    Top = 0
-        //        //};
-        //    }
+                SaturationPickerThumbPosition = new Position
+                {
+                    Left = Convert.ToInt32(saturationPickerRect.Width),
+                    Top = 0
+                };
+            }
 
-        //    await base.OnAfterRenderAsync(firstRender);
-        //}
+            await base.OnAfterRenderAsync(firstRender);
+        }
 
-        //private async Task PickColorTune(MouseEventArgs e)
-        //{
-        //    var parent = await JSRuntime.GetBoundingClientRect(SaturationPickerRef);
+        private async Task PickColorTune(MouseEventArgs e)
+        {
+            var parent = await JSRuntime.GetBoundingClientRect(SaturationPickerRef);
 
-        //    SaturationPickerThumbPosition = new Position
-        //    {
-        //        Left = e.ClientX < parent.Left ? 0 : e.ClientX > parent.Left + parent.Width ? Convert.ToInt32(parent.Width) : Convert.ToInt32(e.ClientX - parent.Left),
-        //        Top = e.ClientY < parent.Top ? 0 : e.ClientY > parent.Top + parent.Height ? Convert.ToInt32(parent.Height) : Convert.ToInt32(e.ClientY - parent.Top)
-        //    };
-
-
-        //    SelectedSaturation = Math.Clamp(ToValidSpanValue(0, parent.Width, 0, 1, Convert.ToInt32(e.ClientX - parent.Left)), 0, 1);
-        //    SelectedValue = Math.Clamp(ToValidSpanValue(0, parent.Height, 0, 1, parent.Height - Convert.ToInt32(e.ClientY - parent.Top)), 0, 1);
-
-        //    MainColor = new HSV() { Hue = Hue, Saturation = SelectedSaturation, Value = SelectedValue }.ToRGB();
-        //    SaturationPickerBackground = new HSV { Hue = Hue, Value = 1, Saturation = 1 };
-
-        //    await ColorChanged.InvokeAsync(MainColor.ToCss(Alpha));
-
-        //    StateHasChanged();
-        //}
-
-        //private async Task PickMainColor(ChangeEventArgs args)
-        //{
-        //    Hue = Convert.ToInt32(args.Value);
-        //    MainColor = new HSV() { Hue = Hue, Saturation = SelectedSaturation, Value = SelectedValue }.ToRGB();
-        //    SaturationPickerBackground = new HSV() { Hue = Hue, Saturation = 1, Value = 1 };
-
-        //    await ColorChanged.InvokeAsync(MainColor.ToCss(Alpha));
-        //}
-
-        //private async Task PickAlphaColor(ChangeEventArgs args)
-        //{
-        //    Alpha = Convert.ToDouble(args.Value);
-        //    await ColorChanged.InvokeAsync(MainColor.ToCss(Alpha));
-        //}
-
-        //private async Task RGBColorChanged(string? red = null, string? green = null, string? blue = null)
-        //{
-        //    MainColor.Red = string.IsNullOrWhiteSpace(red) ? MainColor.Red : Convert.ToDouble(red);
-        //    MainColor.Green = string.IsNullOrWhiteSpace(green) ? MainColor.Green : Convert.ToDouble(green);
-        //    MainColor.Blue = string.IsNullOrWhiteSpace(blue) ? MainColor.Blue : Convert.ToDouble(blue);
-
-        //    var saturationPickerRect = await JSRuntime.GetBoundingClientRect(SaturationPickerRef);
-
-        //    var hsv = MainColor.toHSV();
-        //    Hue = hsv.Hue;
-        //    SaturationPickerBackground = new HSV() { Hue = Hue, Saturation = 1, Value = 1 };
-
-        //    SaturationPickerThumbPosition = new Position
-        //    {
-        //        Left = Convert.ToInt32(Math.Round(saturationPickerRect.Width * hsv.Saturation / 100)),
-        //        Top = Convert.ToInt32(Math.Round(saturationPickerRect.Height - saturationPickerRect.Height * hsv.Value / 100))
-        //    };
+            SaturationPickerThumbPosition = new Position
+            {
+                Left = e.ClientX < parent.Left ? 0 : e.ClientX > parent.Left + parent.Width ? Convert.ToInt32(parent.Width) : Convert.ToInt32(e.ClientX - parent.Left),
+                Top = e.ClientY < parent.Top ? 0 : e.ClientY > parent.Top + parent.Height ? Convert.ToInt32(parent.Height) : Convert.ToInt32(e.ClientY - parent.Top)
+            };
 
 
-        //    await ColorChanged.InvokeAsync(MainColor.ToCss(Alpha));
+            SelectedSaturation = Math.Clamp(ToValidSpanValue(0, parent.Width, 0, 1, Convert.ToInt32(e.ClientX - parent.Left)), 0, 1);
+            SelectedValue = Math.Clamp(ToValidSpanValue(0, parent.Height, 0, 1, parent.Height - Convert.ToInt32(e.ClientY - parent.Top)), 0, 1);
 
-        //    StateHasChanged();
-        //}
+            MainColor = new HSV() { Hue = Hue, Saturation = SelectedSaturation, Value = SelectedValue }.ToRGB();
+            SaturationPickerBackground = new HSV { Hue = Hue, Value = 1, Saturation = 1 };
 
-        //private async Task HexCHanged(ChangeEventArgs args)
-        //{
-        //    var color = args.Value.ToString();
+            await ColorChanged.InvokeAsync(MainColor.ToCss(Alpha));
 
-        //    if (color.Length is 6 && Regex.IsMatch(color, @"\A\b[0-9a-fA-F]+\b\Z"))
-        //    {
-        //        var hex = new Hex() { ColorCode = color };
+            StateHasChanged();
+        }
 
-        //        var saturationPickerRect = await JSRuntime.GetBoundingClientRect(SaturationPickerRef);
+        private async Task PickMainColor(ChangeEventArgs args)
+        {
+            Hue = Convert.ToInt32(args.Value);
+            MainColor = new HSV() { Hue = Hue, Saturation = SelectedSaturation, Value = SelectedValue }.ToRGB();
+            SaturationPickerBackground = new HSV() { Hue = Hue, Saturation = 1, Value = 1 };
 
-        //        MainColor = hex.ToRGB();
-        //        var hsv = MainColor.toHSV();
-        //        Hue = hsv.Hue;
-        //        SaturationPickerBackground = new HSV() { Hue = Hue, Saturation = 1, Value = 1 };
+            await ColorChanged.InvokeAsync(MainColor.ToCss(Alpha));
+        }
 
-        //        SaturationPickerThumbPosition = new Position
-        //        {
-        //            Left = Convert.ToInt32(saturationPickerRect.Width * hsv.Saturation / 100),
-        //            Top = Convert.ToInt32(saturationPickerRect.Height - saturationPickerRect.Height * hsv.Value / 100)
-        //        };
+        private async Task PickAlphaColor(ChangeEventArgs args)
+        {
+            Alpha = Convert.ToDouble(args.Value);
+            await ColorChanged.InvokeAsync(MainColor.ToCss(Alpha));
+        }
 
-        //        StateHasChanged();
-        //    }
-        //}
+        private async Task RGBColorChanged(string? red = null, string? green = null, string? blue = null)
+        {
+            MainColor.Red = string.IsNullOrWhiteSpace(red) ? MainColor.Red : Convert.ToDouble(red);
+            MainColor.Green = string.IsNullOrWhiteSpace(green) ? MainColor.Green : Convert.ToDouble(green);
+            MainColor.Blue = string.IsNullOrWhiteSpace(blue) ? MainColor.Blue : Convert.ToDouble(blue);
 
-        //private double ToValidSpanValue(double min, double max, double newMin, double newMax, double value)
-        //{
-        //    return (value - min) * (newMax - newMin) / (max - min);
-        //}
+            var saturationPickerRect = await JSRuntime.GetBoundingClientRect(SaturationPickerRef);
 
-        //private async Task OnSaturationPickerMouseDown(MouseEventArgs e)
-        //{
-        //    SaturationPickerMouseDown = true;
+            var hsv = MainColor.toHSV();
+            Hue = hsv.Hue;
+            SaturationPickerBackground = new HSV() { Hue = Hue, Saturation = 1, Value = 1 };
 
-        //    await PickColorTune(e);
-        //}
+            SaturationPickerThumbPosition = new Position
+            {
+                Left = Convert.ToInt32(Math.Round(saturationPickerRect.Width * hsv.Saturation / 100)),
+                Top = Convert.ToInt32(Math.Round(saturationPickerRect.Height - saturationPickerRect.Height * hsv.Value / 100))
+            };
 
-        //private async Task OnSaturationPickerMouseMove(MouseEventArgs e)
-        //{
-        //    if (SaturationPickerMouseDown is false) return;
 
-        //    await PickColorTune(e);
-        //}
+            await ColorChanged.InvokeAsync(MainColor.ToCss(Alpha));
 
-        //private RGB StringToRGBConverter(string value)
-        //{
-        //    RGB color = new RGB { Red = 0, Green = 0, Blue = 0 };
-        //    try
-        //    {
-        //        Regex rx = new Regex(@"\(([^)]+)\)");
-        //        var mathedColor = rx.Match(value).Value;
+            StateHasChanged();
+        }
 
-        //        mathedColor = mathedColor.Trim('(');
-        //        mathedColor = mathedColor.Trim(')');
+        private async Task HexCHanged(ChangeEventArgs args)
+        {
+            var color = args.Value.ToString();
 
-        //        var colorString = mathedColor.Split(",");
-        //        if (colorString.Length >= 3)
-        //        {
-        //            color.Red = int.Parse(colorString[0]);
-        //            color.Green = int.Parse(colorString[1]);
-        //            color.Blue = int.Parse(colorString[2]);
-        //            Alpha = AlphaType is AlphaType.Transparency ? (1 - Convert.ToDouble(colorString[3])) * 100 : Convert.ToDouble(colorString[3]) * 100;
-        //        }
-        //    }
-        //    catch (Exception exp) { }
+            if (color.Length is 6 && Regex.IsMatch(color, @"\A\b[0-9a-fA-F]+\b\Z"))
+            {
+                var hex = new Hex() { ColorCode = color };
 
-        //    return color;
-        //}
+                var saturationPickerRect = await JSRuntime.GetBoundingClientRect(SaturationPickerRef);
 
-        ////[JSInvokable]
-        //public async Task OnWindowMouseUp(MouseEventArgs e)
-        //{
-        //    SaturationPickerMouseDown = false;
-        //}
+                MainColor = hex.ToRGB();
+                var hsv = MainColor.toHSV();
+                Hue = hsv.Hue;
+                SaturationPickerBackground = new HSV() { Hue = Hue, Saturation = 1, Value = 1 };
 
-        ////[JSInvokable]
-        //public async Task OnWindowMouseMove(MouseEventArgs e)
-        //{
-        //    await OnSaturationPickerMouseMove(e);
-        //}
+                SaturationPickerThumbPosition = new Position
+                {
+                    Left = Convert.ToInt32(saturationPickerRect.Width * hsv.Saturation / 100),
+                    Top = Convert.ToInt32(saturationPickerRect.Height - saturationPickerRect.Height * hsv.Value / 100)
+                };
 
-        //public async ValueTask DisposeAsync()
-        //{
-        //    await JSRuntime.AbortProcedure(onWindowMouseUpAbortControllerId);
-        //    await JSRuntime.AbortProcedure(onWindowMouseMoveAbortControllerId);
-        //}
+                StateHasChanged();
+            }
+        }
+
+        private double ToValidSpanValue(double min, double max, double newMin, double newMax, double value)
+        {
+            return (value - min) * (newMax - newMin) / (max - min);
+        }
+
+        private async Task OnSaturationPickerMouseDown(MouseEventArgs e)
+        {
+            SaturationPickerMouseDown = true;
+
+            await PickColorTune(e);
+        }
+
+        private async Task OnSaturationPickerMouseMove(MouseEventArgs e)
+        {
+            if (SaturationPickerMouseDown is false) return;
+
+            await PickColorTune(e);
+        }
+
+        private RGB StringToRGBConverter(string value)
+        {
+            RGB color = new RGB { Red = 0, Green = 0, Blue = 0 };
+            try
+            {
+                Regex rx = new Regex(@"\(([^)]+)\)");
+                var mathedColor = rx.Match(value).Value;
+
+                mathedColor = mathedColor.Trim('(');
+                mathedColor = mathedColor.Trim(')');
+
+                var colorString = mathedColor.Split(",");
+                if (colorString.Length >= 3)
+                {
+                    color.Red = int.Parse(colorString[0]);
+                    color.Green = int.Parse(colorString[1]);
+                    color.Blue = int.Parse(colorString[2]);
+                    Alpha = AlphaType is AlphaType.Transparency ? (1 - Convert.ToDouble(colorString[3])) * 100 : Convert.ToDouble(colorString[3]) * 100;
+                }
+            }
+            catch (Exception exp) { }
+
+            return color;
+        }
+
+        [JSInvokable]
+        public async Task OnWindowMouseUp(MouseEventArgs e)
+        {
+            SaturationPickerMouseDown = false;
+        }
+
+        [JSInvokable]
+        public async Task OnWindowMouseMove(MouseEventArgs e)
+        {
+            await OnSaturationPickerMouseMove(e);
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            await JSRuntime.AbortProcedure(onWindowMouseUpAbortControllerId);
+            await JSRuntime.AbortProcedure(onWindowMouseMoveAbortControllerId);
+        }
     }
 
     public class Position
