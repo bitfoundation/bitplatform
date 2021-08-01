@@ -47,15 +47,15 @@
     [Parameter] public TextFieldType Type { get; set; }
     [Parameter] public string AriaLabel { get; set; }
     [Parameter] public string Label { get; set; }
-
+    [Parameter] public string? Prefix { get; set; }
+    [Parameter] public string? Suffix { get; set; }
+    [Parameter] public string? DefaultValue { get; set; }
 
 
     [Parameter] public bool IsUnderlined { get; set; }
     [Parameter] public bool IsBorderless { get; set; }
-    [Parameter] public string? DefaultValue { get; set; }
     [Parameter] public string? Description { get; set; }
-    [Parameter] public string? Prefix { get; set; }
-    [Parameter] public string? Suffix { get; set; }
+
     [Parameter] public string? ErrorMessage { get; set; }
     [Parameter] public int DeferredValidationTime { get; set; }
     [Parameter] public bool ValidateOnLoad { get; set; } = true;

@@ -277,5 +277,31 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
             var bitTextFieldSuffix = component.Find(".bit-txt-fluent > div > div > div > span");
             Assert.AreEqual(suffix, bitTextFieldSuffix.TextContent);
         }
+
+
+        [DataTestMethod,
+            DataRow(true, "hello world"),
+            DataRow(false, "hello world")
+        ]
+        public void BitTextFieldShouldTakeDefaultValue(bool IsMultiline, string defaultValue)
+        {
+            var component = RenderComponent<BitTextFieldTest>(
+                parameters =>
+                {
+                    parameters.Add(p => p.DefaultValue, defaultValue);
+                    parameters.Add(p => p.IsMultiLine, IsMultiline);
+                });
+
+            var bitTextField = IsMultiline ? component.Find(".bit-txt textarea") : component.Find(".bit-txt input");
+
+            if (IsMultiline)
+            {
+                Assert.AreEqual(bitTextField.TextContent, defaultValue);
+            }
+            else
+            {
+                Assert.AreEqual(bitTextField.GetAttribute("value"), defaultValue);
+            }
+        }
     }
 }
