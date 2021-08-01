@@ -1,6 +1,4 @@
-﻿using System.Linq;
-using AngleSharp;
-using Bunit;
+﻿using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.Client.Web.BlazorUI.Tests.Inputs
@@ -314,6 +312,46 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
 
             var bitTextFieldDescription = component.Find(".bit-txt-fluent > span > span");
             Assert.AreEqual(description, bitTextFieldDescription.TextContent);
+        }
+
+        [DataTestMethod, DataRow("static errorMessage")]
+        public void BitTextFieldShouldShowErrorMessage(string errorMessage)
+        {
+            var component = RenderComponent<BitTextFieldTest>(
+                parameters =>
+                {
+                    parameters.Add(p => p.ErrorMessage, errorMessage);
+                });
+
+            var bitTextField = component.Find(".bit-txt");
+            Assert.IsTrue(bitTextField.ClassList.Contains($"bit-txt-haserror-fluent"));
+
+            var bitTextFieldErrorMessage = component.Find(".bit-txt-fluent > span > div > p");
+            Assert.AreEqual(errorMessage, bitTextFieldErrorMessage.TextContent);
+        }
+
+        [DataTestMethod,
+            DataRow("Ok"),
+            DataRow("unvalid value")
+        ]
+        public void BitTextFieldShouldShowCustomErrorMessage(string value)
+        {
+            var component = RenderComponent<BitTextFieldTest>(
+                parameters =>
+                {
+                    parameters.Add(p => p.Value, value);
+                });
+
+            var bitTextField = component.Find(".bit-txt");
+            string validationError = component.Instance.GetErrorMessage(value);
+            if (validationError.HasValue())
+            {
+                //TODO: bypassed - BUnit dynamic class issue
+                //Assert.IsTrue(bitTextField.ClassList.Contains($"bit-txt-haserror-fluent"));
+
+                var bitTextFieldErrorMessage = component.Find(".bit-txt-fluent > span > div > p");
+                Assert.AreEqual(validationError, bitTextFieldErrorMessage.TextContent);
+            }
         }
     }
 }

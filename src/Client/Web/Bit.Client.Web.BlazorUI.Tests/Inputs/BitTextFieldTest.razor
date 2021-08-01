@@ -37,8 +37,8 @@
     [Parameter] public int MaxLength { get; set; } = -1;
     [Parameter] public string? IconName { get; set; }
     [Parameter] public Visual Visual { get; set; }
-    [Parameter] public bool IsMultiLine { get; set; } = false;
-    [Parameter] public bool IsEnabled { get; set; }
+    [Parameter] public bool IsMultiLine { get; set; }
+    [Parameter] public bool IsEnabled { get; set; } = true;
     [Parameter] public bool IsReadOnly { get; set; }
     [Parameter] public bool IsRequired { get; set; }
     [Parameter] public string Placeholder { get; set; }
@@ -50,18 +50,18 @@
     [Parameter] public string? Prefix { get; set; }
     [Parameter] public string? Suffix { get; set; }
     [Parameter] public string? DefaultValue { get; set; }
+    [Parameter] public string? Description { get; set; }
+    [Parameter] public string? ErrorMessage { get; set; }
+    [Parameter] public Func<string, string>? OnGetErrorMessage { get; set; }
 
 
     [Parameter] public bool IsUnderlined { get; set; }
     [Parameter] public bool IsBorderless { get; set; }
-    [Parameter] public string? Description { get; set; }
 
-    [Parameter] public string? ErrorMessage { get; set; }
     [Parameter] public int DeferredValidationTime { get; set; }
     [Parameter] public bool ValidateOnLoad { get; set; } = true;
     [Parameter] public bool ValidateOnFocusOut { get; set; }
     [Parameter] public bool ValidateOnFocusIn { get; set; }
-    [Parameter] public Func<string, string>? OnGetErrorMessage { get; set; }
 
 
     public void HandleKeyDown(KeyboardEventArgs e)
