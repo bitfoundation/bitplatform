@@ -353,5 +353,37 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                 Assert.AreEqual(validationError, bitTextFieldErrorMessage.TextContent);
             }
         }
+
+        [DataTestMethod,
+            DataRow(true),
+            DataRow(false)
+        ]
+        public void BitTextFieldShouldRespectUnderLineStyle(bool isUnderlined)
+        {
+            var component = RenderComponent<BitTextFieldTest>(
+                parameters =>
+                {
+                    parameters.Add(p => p.IsUnderlined, isUnderlined);
+                });
+
+            var bitTextField = component.Find(".bit-txt");
+            Assert.AreEqual(isUnderlined, bitTextField.ClassList.Contains($"bit-txt-underlined-fluent"));
+        }
+
+        [DataTestMethod,
+           DataRow(true),
+           DataRow(false)
+       ]
+        public void BitTextFieldShouldRespectBorderlessStyle(bool isborderless)
+        {
+            var component = RenderComponent<BitTextFieldTest>(
+                parameters =>
+                {
+                    parameters.Add(p => p.IsBorderless, isborderless);
+                });
+
+            var bitTextField = component.Find(".bit-txt");
+            Assert.AreEqual(isborderless, bitTextField.ClassList.Contains($"bit-txt-borderless-fluent"));
+        }
     }
 }
