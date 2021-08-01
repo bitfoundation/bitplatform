@@ -10,14 +10,26 @@
                   Value="@Value"
                   CanRevealPassword="CanRevealPassword"
                   OnClick="HandleClick"
-                  OnChange="HandleChange"
+                  OnInput="HandleChange"
                   OnFocus="HandleFocus"
                   OnFocusIn="HandleFocusIn"
                   OnFocusOut="HandleFocusOut"
                   OnKeyDown="HandleKeyDown"
                   OnKeyUp="HandleKeyUp"
                   AriaLabel="@AriaLabel"
-                  Label="@Label">
+                  Label="@Label"
+                  IsUnderlined="IsUnderlined"
+                  IsBorderless="IsBorderless"
+                  DefaultValue="@DefaultValue"
+                  Description="@Description"
+                  Prefix="@Prefix"
+                  Suffix="@Suffix"
+                  ErrorMessage="@ErrorMessage"
+                  DeferredValidationTime="DeferredValidationTime"
+                  ValidateOnLoad="ValidateOnLoad"
+                  ValidateOnFocusIn="ValidateOnFocusIn"
+                  ValidateOnFocusOut="ValidateOnFocusOut"
+                  OnGetErrorMessage="GetErrorMessage">
     </BitTextField>
 </CascadingValue>
 
@@ -35,6 +47,22 @@
     [Parameter] public TextFieldType Type { get; set; }
     [Parameter] public string AriaLabel { get; set; }
     [Parameter] public string Label { get; set; }
+
+
+
+    [Parameter] public bool IsUnderlined { get; set; }
+    [Parameter] public bool IsBorderless { get; set; }
+    [Parameter] public string? DefaultValue { get; set; }
+    [Parameter] public string? Description { get; set; }
+    [Parameter] public string? Prefix { get; set; }
+    [Parameter] public string? Suffix { get; set; }
+    [Parameter] public string? ErrorMessage { get; set; }
+    [Parameter] public int DeferredValidationTime { get; set; }
+    [Parameter] public bool ValidateOnLoad { get; set; } = true;
+    [Parameter] public bool ValidateOnFocusOut { get; set; }
+    [Parameter] public bool ValidateOnFocusIn { get; set; }
+    [Parameter] public Func<string, string>? OnGetErrorMessage { get; set; }
+
 
     public void HandleKeyDown(KeyboardEventArgs e)
     {
@@ -64,6 +92,18 @@
     {
         CurrentCount++;
     }
+    public string GetErrorMessage(string value)
+    {
+        if (value == null)
+        {
+            return "Value Required";
+        }
+        else
+        {
+            return value.Length < 3 ? "" : $"Input value length must be less than 3. Actual length is {value.Length}.";
+        }
+    }
+
     public int CurrentCount { get; set; }
     public int FocusedValue { get; set; }
     public int FocusedOutValue { get; set; }
