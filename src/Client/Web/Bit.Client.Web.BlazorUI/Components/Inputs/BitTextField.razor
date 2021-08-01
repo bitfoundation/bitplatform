@@ -94,12 +94,11 @@
         <span>
             @if (RenderDescription is not null)
             {
-                <span>@Description</span>
+                @RenderDescription
             }
             else if (Description.HasValue())
             {
-
-                @RenderDescription
+                <span>@Description</span>
             }
 
             @if (ErrorMessage.HasValue())

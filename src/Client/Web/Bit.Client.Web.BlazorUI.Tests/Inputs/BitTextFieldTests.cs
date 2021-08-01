@@ -278,7 +278,6 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
             Assert.AreEqual(suffix, bitTextFieldSuffix.TextContent);
         }
 
-
         [DataTestMethod,
             DataRow(true, "hello world"),
             DataRow(false, "hello world")
@@ -302,6 +301,19 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
             {
                 Assert.AreEqual(bitTextField.GetAttribute("value"), defaultValue);
             }
+        }
+
+        [DataTestMethod, DataRow("test description")]
+        public void BitTextFieldShouldTakeDescription(string description)
+        {
+            var component = RenderComponent<BitTextFieldTest>(
+                parameters =>
+                {
+                    parameters.Add(p => p.Description, description);
+                });
+
+            var bitTextFieldDescription = component.Find(".bit-txt-fluent > span > span");
+            Assert.AreEqual(description, bitTextFieldDescription.TextContent);
         }
     }
 }
