@@ -1,11 +1,9 @@
 ﻿@import "../colors.fluent.scss", "../../functions.scss";
 
-.bit-spb
-{
+.bit-spb {
     display: flex;
 
-    & div:first-child
-    {
+    & div:first-child {
         display: inline-flex;
         align-items: center;
         height: 32px;
@@ -14,14 +12,12 @@
         flex-direction: row;
         flex-wrap: nowrap;
 
-        & .bit-icon
-        {
+        & .bit-icon {
             margin-right: 5px;
         }
     }
 
-    & div:nth-child(2)
-    {
+    & div:nth-child(2) {
         display: flex;
         position: relative;
         box-sizing: border-box;
@@ -31,8 +27,7 @@
         border: 1px solid $Grey130;
         border-radius: 2px;
 
-        & input
-        {
+        & input {
             box-sizing: border-box;
             box-shadow: none;
             border-style: none;
@@ -55,13 +50,11 @@
             user-select: text;
         }
 
-        & span
-        {
+        & span {
             display: flex;
             flex-direction: column;
 
-            & button
-            {
+            & button {
                 outline: none;
                 position: relative;
                 -webkit-font-smoothing: antialiased;
@@ -79,22 +72,19 @@
                 color: $Grey130;
                 user-select: none;
 
-                &:hover
-                {
+                &:hover {
                     color: $Grey160;
                     background-color: $Grey20;
                 }
 
-                span
-                {
+                span {
                     display: flex;
                     height: 100%;
                     flex-wrap: nowrap;
                     justify-content: center;
                     align-items: center;
 
-                    & .bit-icon
-                    {
+                    & .bit-icon {
                         font-size: 8px;
                         margin: 0px;
                         height: 16px;
@@ -104,70 +94,57 @@
                 }
             }
 
-            & button:first-child
-            {
+            & button:first-child {
                 border-radius: 0 2px 0 0;
             }
 
-            & button:nth-child(2)
-            {
+            & button:nth-child(2) {
                 border-radius: 0 0 2px 0;
             }
         }
     }
 
-    &-label-top-fluent
-    {
+    &-label-top-fluent {
         flex-direction: column;
     }
 
-    &-label-left-fluent
-    {
+    &-label-left-fluent {
         flex-direction: row;
     }
 
-    &-label-right-fluent
-    {
+    &-label-right-fluent {
         flex-direction: row-reverse;
     }
 
-    &-label-bottom-fluent
-    {
+    &-label-bottom-fluent {
         flex-direction: column-reverse;
     }
 }
 
-.bit-spb-disabled-fluent
-{
-    & div:first-child
-    {
+.bit-spb-disabled-fluent {
+    & div:first-child {
         color: $Grey90;
 
-        label
-        {
+        label {
             color: $Grey90;
         }
     }
 
-    & div:nth-child(2)
-    {
+    & div:nth-child(2) {
         color: $Grey90;
         cursor: default;
         border: none $Grey20;
         background: none $Grey20;
 
-        & input
-        {
+        & input {
             color: $Grey90;
             cursor: default;
             border: none $Grey20;
             background: none $Grey20;
         }
 
-        & span
-        {
-            & button
-            {
+        & span {
+            & button {
                 background: $Grey20;
                 color: $Grey90;
                 border: 1px solid $Grey20;
