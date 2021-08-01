@@ -1,0 +1,17 @@
+﻿<CascadingValue Value="Visual">
+    <BitFileUpload IsEnabled="IsEnabled"
+                   IsMultiFile="IsMultiFile"
+                   Label="Select or drag and drop files"
+                   UploadUrl="@UploadUrl"
+                   AcceptedExtensions="AcceptedExtensions"
+                   RemoveUrl="@RemoveUrl">
+    </BitFileUpload>
+</CascadingValue>
+@code {
+    private readonly Uri UploadUrl = new("https://localhost:5001/FileUpload/UploadStreamedFile");
+    private readonly Uri RemoveUrl = new("https://localhost:5001/FileUpload/RemoveFile");
+    [Parameter] public Visual Visual { get; set; }
+    [Parameter] public bool IsEnabled { get; set; }
+    [Parameter] public bool IsMultiFile { get; set; }
+    [Parameter] public IReadOnlyCollection<string> AcceptedExtensions { get; set; } = new List<string> { "*" };
+}

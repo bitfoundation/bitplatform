@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using Bunit;
+﻿using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.Client.Web.BlazorUI.Tests.Pivot
@@ -59,6 +58,23 @@ namespace Bit.Client.Web.BlazorUI.Tests.Pivot
             
             //TODO: bypassed - BUnit 2-way bound parameters issue
             //Assert.AreEqual(component.FindAll(".bit-pvt > div:first-child > div")[1].ClassList.Contains("selected-item"), expectedResult);
+        }
+
+        [DataTestMethod, DataRow("Detailed label")]
+        public void BitPivotAriaLabelTest(string ariaLabel)
+        {
+            var com = RenderComponent<BitPivotTest>(parameters =>
+            {
+                parameters.AddChildContent<BitPivotItem>();
+                parameters.AddChildContent<BitPivotItem>(parameters => parameters.Add(p => p.AriaLabel, ariaLabel));
+            });
+
+            var bitPivots = com.FindAll(".bit-pvt > div:first-child > div");
+
+            foreach (var bitPivot in bitPivots)
+            {
+                Assert.IsTrue(bitPivot.GetAttribute("aria-label").Equals(ariaLabel));
+            }
         }
     }
 }

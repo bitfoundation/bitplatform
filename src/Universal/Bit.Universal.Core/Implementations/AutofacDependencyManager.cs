@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Bit.Core.Implementations
 {
-    public class AutofacDependencyManager : IDependencyManager, IAutofacDependencyManager, IServiceCollectionAccessor
+    public class AutofacDependencyManager : IDependencyManager, IAutofacDependencyManager, IServiceCollectionAccessor, IServiceProviderFactory<IDependencyManager>
     {
         private ContainerBuilder? _containerBuilder;
         private ILifetimeScope? _container;
@@ -376,6 +376,23 @@ namespace Bit.Core.Implementations
         {
             GetContainerBuidler().Populate(services);
             return this;
+        }
+
+        public virtual IDependencyManager CreateBuilder(IServiceCollection services)
+        {
+            Populate(services);
+
+            return this;
+        }
+
+        public virtual IServiceProvider CreateServiceProvider(IDependencyManager dependencyManager)
+        {
+            if (dependencyManager == null)
+                throw new ArgumentNullException(nameof(dependencyManager));
+
+            dependencyManager.BuildContainer();
+
+            return dependencyManager;
         }
     }
 }

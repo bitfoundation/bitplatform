@@ -4,12 +4,13 @@
 <div @ref="RootElement"
      @attributes="HtmlAttributes"
      class="@ClassBuilder.Value"
-     style="@StyleBuilder.Value">
+     style="@StyleBuilder.Value"
+     aria-label="@AriaLabel">
 
     @for (int item = 0; item < Max; item++)
     {
         var index = item;
-        <button @onclick="() => HandleClick(index + 1)">
+        <button @onclick="() => HandleClick(index + 1)" aria-label="@AriaLabel">
             <div>
                 <i class="@RatingColorClasses[index] bit-icon bit-icon--@RatingIcons[index]"></i>
             </div>
