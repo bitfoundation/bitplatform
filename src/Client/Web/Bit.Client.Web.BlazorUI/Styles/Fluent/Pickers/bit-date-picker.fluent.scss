@@ -1,0 +1,506 @@
+﻿@import "../colors.fluent.scss", "../../functions.scss";
+
+.bit-dtp {
+    font-family: FluentFont;
+    -webkit-font-smoothing: antialiased;
+    font-size: rem(18px);
+    font-weight: 400;
+    box-shadow: none;
+    margin: em(0px);
+    padding: em(0px);
+    box-sizing: border-box;
+
+    .bit-txt-focused-fluent {
+        border: em(1px) solid $Primary;
+    }
+
+    div:nth-child(2) { // div-all
+        -webkit-font-smoothing: antialiased;
+        font-size: 14px;
+        font-weight: 400;
+        position: absolute;
+        box-sizing: border-box;
+        border-radius: 2px;
+        box-shadow: rgba(0,0,0, 0.13) 0px 6.4px 14.4px 0px, rgba(0,0,0, 0.11) 0px 1.2px 3.6px 0px;
+        outline: transparent;
+        z-index: 1;
+
+        div { //dialog
+            background-color: $White;
+            overflow: hidden auto;
+            position: relative;
+            border-radius: 2px;
+
+            div {
+                div:nth-child(2) { // group
+                    background-color: $White;
+                    overflow: hidden auto;
+                    position: relative;
+                    border-radius: em(2px);
+                    box-shadow: none;
+                    margin: 0px;
+                    padding: 0px;
+                    box-sizing: border-box;
+                    display: flex;
+                    width: em(440px);
+                    outline: none;
+                    max-height: em(329px);
+                    animation-name: fadeIn, slideDown;
+                    animation-duration: 167ms;
+                    animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
+                    animation-fill-mode: both;
+
+                    div:first-child { //live region
+                        border: em(0px);
+                        height: em(1px);
+                        margin: em(-1px);
+                        overflow: hidden;
+                        padding: em(0px);
+                        width: em(1px);
+                        position: absolute;
+                    }
+
+                    > div:nth-child(2) { //left
+                        box-shadow: none;
+                        margin: 0px;
+                        padding: 12px;
+                        box-sizing: content-box;
+                        width: 196px;
+                        display: flex;
+                        flex-direction: column;
+
+                        div:first-child { //header 1
+                            position: relative;
+                            display: inline-flex;
+                            height: em(28px);
+                            line-height: em(44px);
+                            width: 100%;
+
+                            div:first-child { //month
+                                outline: transparent;
+                                position: relative;
+                                animation-name: opacity;
+                                animation-duration: 0.267s;
+                                animation-timing-function: cubic-bezier(0.1, 0.25, 0.75, 0.9);
+                                animation-fill-mode: both;
+                                align-items: center;
+                                font-size: em(14px);
+                                font-family: inherit;
+                                color: $Grey160;
+                                display: inline-block;
+                                flex-grow: 1;
+                                font-weight: 600;
+                                border: none;
+                                background-color: transparent;
+                                border-radius: em(2px);
+                                line-height: em(28px);
+                                overflow: hidden;
+                                white-space: nowrap;
+                                text-align: left;
+                                text-overflow: ellipsis;
+
+                                span { //month-span
+                                }
+                            }
+
+                            div:nth-child(2) { //change-month
+                                display: inline-flex;
+                                align-self: flex-start;
+                                justify-content: flex-end;
+
+                                button:first-child { //up-previous
+                                    outline: transparent;
+                                    position: relative;
+                                    width: em(28px);
+                                    height: em(28px);
+                                    display: block;
+                                    text-align: center;
+                                    line-height: em(28px);
+                                    font-size: em(12px);
+                                    color: $Grey160;
+                                    border-radius: em(2px);
+                                    background-color: transparent;
+                                    border: none;
+                                    padding: em(0px);
+                                    overflow: visible;
+
+                                    &:hover {
+                                        color: $Grey190;
+                                        background-color: $Grey30;
+                                        cursor: pointer;
+                                        outline: transparent solid em(1px);
+                                    }
+
+                                    i { //up
+                                        display: inline-block;
+                                        font-style: normal;
+                                        font-weight: normal;
+                                        -webkit-font-smoothing: antialiased;
+                                        speak: none;
+                                        font-family: 'Fabric MDL2 Assets';
+                                    }
+                                }
+
+                                button:nth-child(2) { //down-next
+                                    outline: transparent;
+                                    position: relative;
+                                    width: em(28px);
+                                    height: em(28px);
+                                    display: block;
+                                    text-align: center;
+                                    line-height: em(28px);
+                                    font-size: em(12px);
+                                    color: $Grey160;
+                                    border-radius: em(2px);
+                                    background-color: transparent;
+                                    border: none;
+                                    padding: em(0px);
+                                    overflow: visible;
+
+                                    &:hover {
+                                        color: $Grey190;
+                                        background-color: $Grey30;
+                                        cursor: pointer;
+                                        outline: transparent solid em(1px);
+                                    }
+
+                                    i { //down
+                                        display: inline-block;
+                                        -webkit-font-smoothing: antialiased;
+                                        font-style: normal;
+                                        font-weight: normal;
+                                        speak: none;
+                                        font-family: 'Fabric MDL2 Assets';
+                                    }
+                                }
+                            }
+                        }
+
+                        div:nth-child(2) { //table-container
+                            padding-bottom: em(10px);
+
+                            table {
+                                text-align: center;
+                                border-collapse: collapse;
+                                border-spacing: em(0px);
+                                table-layout: fixed;
+                                font-size: inherit;
+                                margin-top: em(4px);
+                                width: em(196px);
+                                position: relative;
+                                padding-bottom: em(10px);
+
+                                tbody {
+                                    tr:first-child {
+                                        th {
+                                            margin: em(0px);
+                                            padding: em(0px);
+                                            width: em(28px);
+                                            height: em(28px);
+                                            line-height: em(28px);
+                                            font-size: em(12px);
+                                            font-weight: 400;
+                                            color: $Grey160;
+                                            cursor: pointer;
+                                            position: relative;
+                                            animation-name: fadeIn;
+                                            animation-duration: 0.267s;
+                                            animation-timing-function: cubic-bezier(0.1, 0.25, 0.75, 0.9);
+                                            animation-fill-mode: both;
+                                        }
+                                    }
+
+                                    tr[role=presentation] {
+                                        position: absolute;
+                                        opacity: 0;
+                                        width: 0px;
+                                        height: 0px;
+                                        overflow: hidden;
+                                        animation-name: css-147;
+
+                                        td {
+                                            color: $Grey130;
+                                            font-weight: 400;
+                                            margin: em(0px);
+                                            padding: em(0px);
+                                            width: em(28px);
+                                            height: em( 28px);
+                                            line-height: em(28px);
+                                            font-size: em(12px);
+                                            font-weight: 400;
+                                            color: $Grey160;
+                                            cursor: pointer;
+                                            position: relative;
+
+                                            button {
+                                                outline: transparent;
+                                                position: relative;
+                                                width: em(24px);
+                                                height: em( 24px);
+                                                line-height: em( 24px);
+                                                font-size: em(12px);
+                                                font-weight: inherit;
+                                                border-radius: em( 2px);
+                                                border: none;
+                                                padding: em(0px);
+                                                color: inherit;
+                                                background-color: transparent;
+                                                cursor: pointer;
+                                                overflow: visible;
+
+                                                &:hover {
+                                                    color: $Grey190;
+                                                    background-color: $Grey20;
+                                                    cursor: pointer;
+                                                    outline: transparent solid em(1px);
+                                                }
+
+                                                span {
+                                                    height: inherit;
+                                                    line-height: inherit;
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    tr:not([role]):nth-child(n+1) {
+                                        td {
+                                            border-bottom-left-radius: em(2px);
+                                            border-top-left-radius: em(2px);
+                                            border-top-right-radius: em(2px);
+                                            color: $Grey130;
+                                            font-weight: 400;
+                                            margin: em(0px);
+                                            padding: em(0px);
+                                            width: em(28px);
+                                            height: em(28px);
+                                            line-height: em(28px);
+                                            font-size: em(12px);
+                                            font-weight: 400;
+                                            color: $Grey160;
+                                            cursor: pointer;
+                                            position: relative;
+
+                                            button {
+                                                outline: transparent;
+                                                position: relative;
+                                                width: em(24px);
+                                                height: em(24px);
+                                                line-height: em(24px);
+                                                font-size: em(12px);
+                                                font-weight: inherit;
+                                                border-radius: em(2px);
+                                                border: none;
+                                                padding: em(0px);
+                                                color: inherit;
+                                                background-color: transparent;
+                                                cursor: pointer;
+                                                overflow: visible;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    div:nth-child(3) { //div
+                        top: em(0px);
+                        border-right: em(1px) solid $Grey30;
+                        border-top-color: $Grey30;
+                        border-bottom-color: $Grey30;
+                        border-left-color: $Grey30;
+                    }
+
+                    div:nth-child(4) { //right
+                        display: flex;
+                        flex-direction: column;
+
+                        div {
+                            box-shadow: none;
+                            margin: em(0px);
+                            padding: em(12px);
+                            box-sizing: content-box;
+                            width: em(196px);
+                            overflow: hidden;
+
+                            div:first-child { //header
+                                display: flex;
+
+                                button {
+                                    outline: transparent;
+                                    position: relative;
+                                    font-size: px(14px);
+                                    font-weight: 600;
+                                    font-family: inherit;
+                                    text-align: left;
+                                    background-color: transparent;
+                                    flex-grow: 1;
+                                    padding: px(0px) px(4px) px(0px) px(10px);
+                                    border: none;
+                                    overflow: visible;
+                                }
+
+                                div {
+                                    display: flex;
+                                    align-items: center;
+
+                                    button {
+                                        outline: transparent;
+                                        position: relative;
+                                        font-family: inherit;
+                                        width: em(28px);
+                                        min-width: em(28px);
+                                        height: em(28px);
+                                        min-height: em(28px);
+                                        display: block;
+                                        text-align: center;
+                                        line-height: em(28px);
+                                        font-size: em(12px);
+                                        color: $Grey160;
+                                        border-radius: em(2px);
+                                        background-color: transparent;
+                                        border: none;
+                                        padding: em(0px);
+                                        overflow: visible;
+
+                                        i {
+                                            display: inline-block;
+                                            -webkit-font-smoothing: antialiased;
+                                            font-style: normal;
+                                            font-weight: normal;
+                                            speak: none;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        div:nth-child(2) { //months-rows
+                            div { //role="grid"
+                                margin-top: em(4px);
+
+                                div { //role="row"
+                                    margin-bottom: em(16px);
+
+                                    button {
+                                        outline: transparent;
+                                        position: relative;
+                                        width: em(40px);
+                                        height: em(40px);
+                                        min-width: em(40px);
+                                        min-height: em(40px);
+                                        line-height: em(40px);
+                                        font-size: em(12px);
+                                        font-family: inherit;
+                                        padding: em(0px);
+                                        margin: em(0px) em(12px) em(0px) em(0px);
+                                        color: $Grey160;
+                                        background-color: transparent;
+                                        border: none;
+                                        border-radius: em(2px);
+                                        overflow: visible;
+                                    }
+                                }
+                            }
+                        }
+
+                        button {
+                            outline: transparent;
+                            position: relative;
+                            bottom: em(0px);
+                            color: $Grey160;
+                            height: em(30px);
+                            line-height: em(30px);
+                            background-color: transparent;
+                            border: none;
+                            box-sizing: content-box;
+                            padding: em(0px) em(4px);
+                            align-self: flex-end;
+                            margin-right: em(16px);
+                            margin-top: em(3px);
+                            font-size: em(12px);
+                            font-family: FluentFont;
+                            overflow: visible;
+
+                            &:hover {
+                                color: $CyanBlue10;
+                                background-color: transparent;
+                                cursor: pointer;
+                            }
+                        }
+
+                        button[disabled] {
+                            color: $Grey60;
+                            pointer-events: none;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@keyframes opacity {
+    0% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+@keyframes trans {
+    0% {
+        transform: translate3d(0px, -10px, 0px);
+        pointer-events: none;
+    }
+
+    100% {
+        transform: translate3d(0px, 0px, 0px);
+        pointer-events: auto;
+    }
+}
+
+@keyframes fadeIn {
+    0% {
+        opacity: 0;
+        -webkit-animation-timing-function: cubic-bezier(0.1,0.25,0.75,0.9);
+        animation-timing-function: cubic-bezier(0.1,0.25,0.75,0.9);
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+@keyframes slideDown {
+    0% {
+        transform: translate3d(0,-10px,0);
+    }
+
+    100% {
+        transform: translate3d(0,0,0);
+    }
+}
+
+@keyframes css-147 {
+    100% {
+        width: 0px;
+        height: 0px;
+        overflow: hidden;
+    }
+
+    99.9% {
+        width: 100%;
+        height: 28px;
+        overflow: visible;
+    }
+
+    0% {
+        width: 100%;
+        height: 28px;
+        overflow: visible;
+    }
+}
