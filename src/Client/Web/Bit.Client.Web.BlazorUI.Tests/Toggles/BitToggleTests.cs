@@ -124,12 +124,14 @@ namespace Bit.Client.Web.BlazorUI.Tests.Toggles
             });
 
             var bitToggleButton = com.Find(".bit-tgl button");
-            Assert.IsTrue(bitToggleButton.GetAttribute("aria-label").Equals(ariaLabel));
+            Assert.AreEqual(bitToggleButton.GetAttribute("aria-label"), ariaLabel);
         }
 
         [DataTestMethod, 
             DataRow(true, "on", "off", "This is the first defaultText", "This is the first label"),
-            DataRow(false, "off", "on", "This is the second defaultText", "This is the second label")
+            DataRow(false, "off", "on", "This is the second defaultText", "This is the second label"),
+            DataRow(true, "on", "on", "This is the Third defaultText", "This is the Third label"),
+            DataRow(false, "off", "off", "This is the fourth defaultText", "This is the fourth label")
         ]
         public void BitToggleAriaLabelledyTest(bool isChecked, string onText, string offText, string defaultText, string label)
         {

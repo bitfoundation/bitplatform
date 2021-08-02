@@ -8,22 +8,22 @@
 
     @if (Label.HasValue())
     {
-        <label for=@Id>
+        <label for="@Id">
             @Label
         </label>
     }
     else if (LabelFragment != null)
     {
-        <label for=@Id>
+        <label for="@Id">
             @LabelFragment
         </label>
     }
     <div>
-        <button id=@Id
-                aria-label=@AriaLabel
-                aria-checked=@AriaChecked
-                aria-labelledby=@LabelledById
-                role=@Role
+        <button id="@Id"
+                aria-label="@AriaLabel"
+                aria-checked="@AriaChecked"
+                aria-labelledby="@LabelledById"
+                role="@Role"
                 type="button"
                 data-is-focusable="true"
                 data-ktp-target="true"
@@ -33,7 +33,7 @@
 
         @if (StateText.HasValue())
         { 
-            <label for=@Id>
+            <label for="@Id">
                 @StateText
             </label>  
         }
