@@ -255,7 +255,10 @@
                                     </div>
                                 </div>
                             </div>
-                            <button type="button">@GoToToday</button>
+                            <button type="button"
+                                    @onclick="HandleGoToToday">
+                                @GoToToday
+                            </button>
                         </div>
                     </div>
                     <div aria-hidden="true" tabindex="0" data-is-visible="true" style="pointer-events: none; position: fixed;"></div>
