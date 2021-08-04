@@ -121,15 +121,11 @@
 }
 
 .bit-sch-box-focused-fluent {
-    border: 2px solid $Primary;
+    @include getFouceStyle();
+}
 
-    & > div:first-child {
-        width: 0px;
-
-        & i.bit-icon {
-            opacity: 0;
-        }
-    }
+.bit-sch-box-fixde-icon-focused-fluent {
+    @include getFouceStyle($fixedIcon: true);
 }
 
 .bit-sch-box-no-animation-fluent {
@@ -175,5 +171,19 @@
 
     & > div:first-child {
         color: $Grey90;
+    }
+}
+
+@mixin getFouceStyle($fixedIcon: false) {
+    border: 2px solid $Primary;
+
+    & > div:first-child {
+        @if $fixedIcon==false {
+            width: 0px;
+
+            & i.bit-icon {
+                opacity: 0;
+            }
+        }
     }
 }

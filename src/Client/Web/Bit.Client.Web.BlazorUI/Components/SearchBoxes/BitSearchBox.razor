@@ -11,11 +11,10 @@
     <input type="text" @ref="InputRef" class="search-input"
            placeholder="@Placeholder"
            @bind-value="Value"
-           @bind-value:event="oninput"
            @onkeydown="@((k) => HandleOnKeyDown(k))"
            @onfocusin="HandleInputFocusIn"
            @onfocusout="HandleInputFocusOut"
-           @oninput="@HandleInput"
+           @oninput="@HandleChange"
            aria-label="@AriaLabel"
            disabled="@(IsEnabled is false)" />
     <div>

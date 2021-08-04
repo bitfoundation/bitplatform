@@ -12,6 +12,7 @@ namespace Bit.Client.Web.BlazorUI
         private bool isUnderlined;
         private bool inputHasFocus;
         private string? width;
+        private bool showIcon;
 
         public ElementReference InputRef { get; set; }
 
@@ -92,6 +93,17 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
+        [Parameter]
+        public bool ShowIcon
+        {
+            get => showIcon;
+            set
+            {
+                showIcon = value;
+                ClassBuilder.Reset();
+            }
+        }
+
         /// <summary>
         /// Specifies the width of the search box
         /// </summary>
@@ -165,11 +177,11 @@ namespace Bit.Client.Web.BlazorUI
         protected override string RootElementClass => "bit-sch-box";
 
         protected override void RegisterComponentClasses()
-        {
+        {            
             ClassBuilder.Register(() => Value.HasValue() ? $"{RootElementClass}-has-value-{VisualClassRegistrar()}" : string.Empty);
             ClassBuilder.Register(() => DisableAnimation ? $"{RootElementClass}-no-animation-{VisualClassRegistrar()}" : string.Empty);
             ClassBuilder.Register(() => IsUnderlined ? $"{RootElementClass}-underlined-{VisualClassRegistrar()}" : string.Empty);
-            ClassBuilder.Register(() => InputHasFocus ? $"{RootElementClass}-focused-{VisualClassRegistrar()}" : string.Empty);
+            ClassBuilder.Register(() => InputHasFocus ? $"{RootElementClass}{(ShowIcon ? "-fixed-icon" : string.Empty)}-focused-{VisualClassRegistrar()}" : string.Empty);
         }
 
         protected override void RegisterComponentStyles()
@@ -178,7 +190,7 @@ namespace Bit.Client.Web.BlazorUI
         }
 
         protected override Task OnParametersSetAsync()
-        {
+        {            
             if (DefaultValue.HasValue())
             {
                 Value = DefaultValue;
