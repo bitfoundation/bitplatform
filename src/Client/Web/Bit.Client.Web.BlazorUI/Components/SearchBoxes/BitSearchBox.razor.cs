@@ -54,6 +54,10 @@ namespace Bit.Client.Web.BlazorUI
                 ClassBuilder.Reset();
             }
         }
+       
+
+        [Parameter]
+        public string? DefaultValue { get; set; }
 
         /// <summary>
         /// Whether or not to animate the search box icon on focus
@@ -158,6 +162,17 @@ namespace Bit.Client.Web.BlazorUI
         protected override void RegisterComponentStyles()
         {
             StyleBuilder.Register(() => Width.HasValue() ? $"width: {Width}" : string.Empty);
+        }
+
+        protected override Task OnParametersSetAsync()
+        {
+            if (DefaultValue.HasValue())
+            {
+                Value = DefaultValue;
+                DefaultValue = default;
+            }
+
+            return base.OnParametersSetAsync();
         }
     }
 }
