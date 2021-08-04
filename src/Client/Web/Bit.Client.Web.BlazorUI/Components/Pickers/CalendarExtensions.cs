@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System;
+using System.Globalization;
 
 namespace Bit.Client.Web.BlazorUI
 {
@@ -128,6 +129,102 @@ namespace Bit.Client.Web.BlazorUI
                         return "Bah";
                     case 12:
                         return "Esf";
+                }
+            }
+            return "";
+        }
+        public static string GetDayOfWeekName(this Calendar calendar, DayOfWeek dayOfWeek)
+        {
+            if (calendar is GregorianCalendar)
+            {
+                switch (dayOfWeek)
+                {
+                    case DayOfWeek.Sunday:
+                        return "Sunday";
+                    case DayOfWeek.Monday:
+                        return "Monday";
+                    case DayOfWeek.Tuesday:
+                        return "Tuesday";
+                    case DayOfWeek.Wednesday:
+                        return "Wednesday";
+                    case DayOfWeek.Thursday:
+                        return "Thursday";
+                    case DayOfWeek.Friday:
+                        return "Friday";
+                    case DayOfWeek.Saturday:
+                        return "Saturday";
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(dayOfWeek), dayOfWeek, null);
+                }
+            }
+            if (calendar is PersianCalendar)
+            {
+                switch (dayOfWeek)
+                {
+                    case DayOfWeek.Sunday:
+                        return "YekShanbe";
+                    case DayOfWeek.Monday:
+                        return "DoShanbe";
+                    case DayOfWeek.Tuesday:
+                        return "SeShanbe";
+                    case DayOfWeek.Wednesday:
+                        return "ChaharShanbe";
+                    case DayOfWeek.Thursday:
+                        return "PanjShanbe";
+                    case DayOfWeek.Friday:
+                        return "Jome";
+                    case DayOfWeek.Saturday:
+                        return "Shanbe";
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(dayOfWeek), dayOfWeek, null);
+                }
+            }
+            return "";
+        }
+        public static string GetDayOfWeekShortName(this Calendar calendar, DayOfWeek dayOfWeek)
+        {
+            if (calendar is GregorianCalendar)
+            {
+                switch (dayOfWeek)
+                {
+                    case DayOfWeek.Sunday:
+                        return "Sun";
+                    case DayOfWeek.Monday:
+                        return "Mon";
+                    case DayOfWeek.Tuesday:
+                        return "Tue";
+                    case DayOfWeek.Wednesday:
+                        return "Wed";
+                    case DayOfWeek.Thursday:
+                        return "Thu";
+                    case DayOfWeek.Friday:
+                        return "Fri";
+                    case DayOfWeek.Saturday:
+                        return "Sat";
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(dayOfWeek), dayOfWeek, null);
+                }
+            }
+            if (calendar is PersianCalendar)
+            {
+                switch (dayOfWeek)
+                {
+                    case DayOfWeek.Sunday:
+                        return "YkS";
+                    case DayOfWeek.Monday:
+                        return "DoS";
+                    case DayOfWeek.Tuesday:
+                        return "SeS";
+                    case DayOfWeek.Wednesday:
+                        return "ChS";
+                    case DayOfWeek.Thursday:
+                        return "PjS";
+                    case DayOfWeek.Friday:
+                        return "Jom";
+                    case DayOfWeek.Saturday:
+                        return "Shn";
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(dayOfWeek), dayOfWeek, null);
                 }
             }
             return "";

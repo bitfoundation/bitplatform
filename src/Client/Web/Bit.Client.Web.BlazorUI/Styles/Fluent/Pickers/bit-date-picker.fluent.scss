@@ -14,7 +14,7 @@
         border: em(1px) solid $Primary;
     }
 
-    div:nth-child(2) { // div-all
+    > div:nth-child(2) { // div-all
         -webkit-font-smoothing: antialiased;
         font-size: 14px;
         font-weight: 400;
@@ -25,14 +25,14 @@
         outline: transparent;
         z-index: 1;
 
-        div { //dialog
+        > div { //dialog
             background-color: $White;
             overflow: hidden auto;
             position: relative;
             border-radius: 2px;
 
-            div {
-                div:nth-child(2) { // group
+            > div {
+                > div:nth-child(2) { // group
                     background-color: $White;
                     overflow: hidden auto;
                     position: relative;
@@ -42,15 +42,14 @@
                     padding: 0px;
                     box-sizing: border-box;
                     display: flex;
-                    width: em(440px);
                     outline: none;
-                    max-height: em(329px);
+                    max-height: 341px;
                     animation-name: fadeIn, slideDown;
                     animation-duration: 167ms;
                     animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
                     animation-fill-mode: both;
 
-                    div:first-child { //live region
+                    > div:first-child { //live region
                         border: em(0px);
                         height: em(1px);
                         margin: em(-1px);
@@ -69,14 +68,14 @@
                         display: flex;
                         flex-direction: column;
 
-                        div:first-child { //header 1
+                        > div:first-child { //header 1
                             position: relative;
                             display: inline-flex;
                             height: em(28px);
                             line-height: em(44px);
                             width: 100%;
 
-                            div:first-child { //month
+                            > div:first-child { //month
                                 outline: transparent;
                                 position: relative;
                                 animation-name: opacity;
@@ -100,15 +99,17 @@
                                 text-overflow: ellipsis;
 
                                 span { //month-span
+                                    padding-left: 10px;
                                 }
                             }
 
-                            div:nth-child(2) { //change-month
+                            > div:nth-child(2) { //change-month
                                 display: inline-flex;
                                 align-self: flex-start;
                                 justify-content: flex-end;
+                                width: 65px;
 
-                                button:first-child { //up-previous
+                                > button:first-child { //up-previous
                                     outline: transparent;
                                     position: relative;
                                     width: em(28px);
@@ -116,19 +117,17 @@
                                     display: block;
                                     text-align: center;
                                     line-height: em(28px);
-                                    font-size: em(12px);
+                                    font-size: em(14px);
                                     color: $Grey160;
                                     border-radius: em(2px);
                                     background-color: transparent;
                                     border: none;
                                     padding: em(0px);
                                     overflow: visible;
+                                    cursor: pointer;
 
                                     &:hover {
-                                        color: $Grey190;
                                         background-color: $Grey30;
-                                        cursor: pointer;
-                                        outline: transparent solid em(1px);
                                     }
 
                                     i { //up
@@ -137,31 +136,28 @@
                                         font-weight: normal;
                                         -webkit-font-smoothing: antialiased;
                                         speak: none;
-                                        font-family: 'Fabric MDL2 Assets';
                                     }
                                 }
 
-                                button:nth-child(2) { //down-next
+                                > button:nth-child(2) { //down-next
                                     outline: transparent;
                                     position: relative;
-                                    width: em(28px);
-                                    height: em(28px);
+                                    width: 28px;
+                                    height: 28px;
+                                    line-height: 28px;
                                     display: block;
                                     text-align: center;
-                                    line-height: em(28px);
-                                    font-size: em(12px);
+                                    font-size: em(14px);
                                     color: $Grey160;
                                     border-radius: em(2px);
                                     background-color: transparent;
                                     border: none;
                                     padding: em(0px);
                                     overflow: visible;
+                                    cursor: pointer;
 
                                     &:hover {
-                                        color: $Grey190;
                                         background-color: $Grey30;
-                                        cursor: pointer;
-                                        outline: transparent solid em(1px);
                                     }
 
                                     i { //down
@@ -170,16 +166,15 @@
                                         font-style: normal;
                                         font-weight: normal;
                                         speak: none;
-                                        font-family: 'Fabric MDL2 Assets';
                                     }
                                 }
                             }
                         }
 
-                        div:nth-child(2) { //table-container
+                        > div:nth-child(2) { //table-container
                             padding-bottom: em(10px);
 
-                            table {
+                            > table {
                                 text-align: center;
                                 border-collapse: collapse;
                                 border-spacing: em(0px);
@@ -190,15 +185,16 @@
                                 position: relative;
                                 padding-bottom: em(10px);
 
-                                tbody {
+                                > tbody {
                                     tr:first-child {
                                         th {
                                             margin: em(0px);
                                             padding: em(0px);
-                                            width: em(28px);
-                                            height: em(28px);
-                                            line-height: em(28px);
-                                            font-size: em(12px);
+                                            width: 28px;
+                                            height: 28px;
+                                            line-height: 28px;
+                                            text-align: center;
+                                            font-size: 14px;
                                             font-weight: 400;
                                             color: $Grey160;
                                             cursor: pointer;
@@ -207,6 +203,7 @@
                                             animation-duration: 0.267s;
                                             animation-timing-function: cubic-bezier(0.1, 0.25, 0.75, 0.9);
                                             animation-fill-mode: both;
+                                            border: none;
                                         }
                                     }
 
@@ -223,16 +220,22 @@
                                             font-weight: 400;
                                             margin: em(0px);
                                             padding: em(0px);
-                                            width: em(28px);
-                                            height: em( 28px);
-                                            line-height: em(28px);
+                                            width: 28px;
+                                            height: 28px;
+                                            line-height: 28px;
+                                            text-align: center;
                                             font-size: em(12px);
                                             font-weight: 400;
                                             color: $Grey160;
                                             cursor: pointer;
                                             position: relative;
 
-                                            button {
+                                            &:hover {
+                                                background-color: $Grey30;
+                                            }
+
+
+                                            > button {
                                                 outline: transparent;
                                                 position: relative;
                                                 width: em(24px);
@@ -248,13 +251,6 @@
                                                 cursor: pointer;
                                                 overflow: visible;
 
-                                                &:hover {
-                                                    color: $Grey190;
-                                                    background-color: $Grey20;
-                                                    cursor: pointer;
-                                                    outline: transparent solid em(1px);
-                                                }
-
                                                 span {
                                                     height: inherit;
                                                     line-height: inherit;
@@ -268,20 +264,27 @@
                                             border-bottom-left-radius: em(2px);
                                             border-top-left-radius: em(2px);
                                             border-top-right-radius: em(2px);
-                                            color: $Grey130;
                                             font-weight: 400;
                                             margin: em(0px);
                                             padding: em(0px);
-                                            width: em(28px);
-                                            height: em(28px);
-                                            line-height: em(28px);
-                                            font-size: em(12px);
+                                            width: 28px;
+                                            height: 28px;
+                                            line-height: 28px;
+                                            text-align: center;
+                                            font-size: 14px;
                                             font-weight: 400;
                                             color: $Grey160;
                                             cursor: pointer;
                                             position: relative;
+                                            border: none;
 
-                                            button {
+
+                                            &:hover {
+                                                background-color: $Grey30;
+                                            }
+
+
+                                            > button {
                                                 outline: transparent;
                                                 position: relative;
                                                 width: em(24px);
@@ -304,7 +307,7 @@
                         }
                     }
 
-                    div:nth-child(3) { //div
+                    > div:nth-child(3) { //div
                         top: em(0px);
                         border-right: em(1px) solid $Grey30;
                         border-top-color: $Grey30;
@@ -312,22 +315,23 @@
                         border-left-color: $Grey30;
                     }
 
-                    div:nth-child(4) { //right
+                    > div:nth-child(4) { //right
                         display: flex;
                         flex-direction: column;
 
-                        div {
+                        > div {
                             box-shadow: none;
                             margin: em(0px);
                             padding: em(12px);
                             box-sizing: content-box;
-                            width: em(196px);
+                            width: 208px;
                             overflow: hidden;
+                            flex: 1;
 
-                            div:first-child { //header
+                            > div:first-child { //header
                                 display: flex;
 
-                                button {
+                                > button {
                                     outline: transparent;
                                     position: relative;
                                     font-size: px(14px);
@@ -339,13 +343,18 @@
                                     padding: px(0px) px(4px) px(0px) px(10px);
                                     border: none;
                                     overflow: visible;
+                                    cursor: pointer;
+
+                                    &:hover {
+                                        background-color: $Grey30;
+                                    }
                                 }
 
-                                div {
+                                > div {
                                     display: flex;
                                     align-items: center;
 
-                                    button {
+                                    > button {
                                         outline: transparent;
                                         position: relative;
                                         font-family: inherit;
@@ -356,13 +365,18 @@
                                         display: block;
                                         text-align: center;
                                         line-height: em(28px);
-                                        font-size: em(12px);
+                                        font-size: em(14px);
                                         color: $Grey160;
                                         border-radius: em(2px);
                                         background-color: transparent;
                                         border: none;
                                         padding: em(0px);
                                         overflow: visible;
+                                        cursor: pointer;
+
+                                        &:hover {
+                                            background-color: $Grey30;
+                                        }
 
                                         i {
                                             display: inline-block;
@@ -374,53 +388,62 @@
                                     }
                                 }
                             }
-                        }
 
-                        div:nth-child(2) { //months-rows
-                            div { //role="grid"
-                                margin-top: em(4px);
+                            > div:nth-child(2) { //months-rows
+                                > div { //role="grid"
+                                    margin-top: em(4px);
 
-                                div { //role="row"
-                                    margin-bottom: em(16px);
+                                    > div { //role="row"
+                                        margin-bottom: em(16px);
 
-                                    button {
-                                        outline: transparent;
-                                        position: relative;
-                                        width: em(40px);
-                                        height: em(40px);
-                                        min-width: em(40px);
-                                        min-height: em(40px);
-                                        line-height: em(40px);
-                                        font-size: em(12px);
-                                        font-family: inherit;
-                                        padding: em(0px);
-                                        margin: em(0px) em(12px) em(0px) em(0px);
-                                        color: $Grey160;
-                                        background-color: transparent;
-                                        border: none;
-                                        border-radius: em(2px);
-                                        overflow: visible;
+                                        > button {
+                                            outline: transparent;
+                                            position: relative;
+                                            width: 40px;
+                                            height: 40px;
+                                            min-width: 40px;
+                                            min-height: 40px;
+                                            line-height: 40px;
+                                            font-size: 12px;
+                                            font-family: inherit;
+                                            padding: em(0px);
+                                            margin: 0px 12px 0px 0px;
+                                            color: $Grey160;
+                                            background-color: transparent;
+                                            border: none;
+                                            border-radius: em(2px);
+                                            overflow: visible;
+                                            cursor: pointer;
+
+                                            &:hover {
+                                                background-color: $Grey30;
+                                            }
+                                        }
+
+                                        > button:last-child {
+                                            margin: 0px;
+                                        }
                                     }
                                 }
                             }
                         }
 
-                        button {
+                        > button {
                             outline: transparent;
                             position: relative;
-                            bottom: em(0px);
-                            color: $Grey160;
-                            height: em(30px);
-                            line-height: em(30px);
+                            bottom: 0px;
+                            color: rgb(50, 49, 48);
+                            height: 30px;
+                            line-height: 30px;
                             background-color: transparent;
                             border: none;
                             box-sizing: content-box;
-                            padding: em(0px) em(4px);
+                            padding: 0px 4px;
                             align-self: flex-end;
-                            margin-right: em(16px);
-                            margin-top: em(3px);
-                            font-size: em(12px);
-                            font-family: FluentFont;
+                            margin-right: 16px;
+                            margin-top: 3px;
+                            font-size: 12px;
+                            font-family: inherit;
                             overflow: visible;
 
                             &:hover {
@@ -430,7 +453,7 @@
                             }
                         }
 
-                        button[disabled] {
+                        > button[disabled] {
                             color: $Grey60;
                             pointer-events: none;
                         }

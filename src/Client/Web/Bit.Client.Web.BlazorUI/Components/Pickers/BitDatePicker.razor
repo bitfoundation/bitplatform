@@ -8,7 +8,10 @@
                   IconName="CalendarMirrored"
                   OnClick="HandleClick"
                   OnFocusIn="HandleFocusIn"
-                  OnFocusOut="HandleFocusOut">
+                  OnFocusOut="HandleFocusOut"
+                  Placeholder="@Placeholder"
+                  Value="@selectedDate"
+                  IsReadonly="true">
     </BitTextField>
     @if (IsOpen)
     {
@@ -17,18 +20,20 @@
                 <div>
                     <div aria-hidden="true" tabindex="0" data-is-visible="true" style="pointer-events: none; position: fixed;"></div>
                     <div role="group">
-                        <div class="live-region" aria-live="polite" aria-atomic="true">Selected date July 6, 2021</div>
+                        <div class="live-region" aria-live="polite" aria-atomic="true">
+                            Selected date @selectedDate
+                        </div>
                         <div class="left">
                             <div class="header1">
                                 <div class="month">
                                     <span class="month-span">@monthTitle</span>
                                 </div>
                                 <div class="change-month">
-                                    <button class="up-previous" title="Go to previous month" @onclick="() => HandleMonthChanged(false)">
-                                        <i class="up"></i>
+                                    <button class="up-previous" title="Go to previous month" @onclick="() => HandleMonthChange(false)">
+                                        <i class="up bit-icon"></i>
                                     </button>
-                                    <button class="down-next" title="Go to next month" @onclick="() => HandleMonthChanged(true)">
-                                        <i class="down"></i>
+                                    <button class="down-next" title="Go to next month" @onclick="() => HandleMonthChange(true)">
+                                        <i class="down bit-icon"></i>
                                     </button>
                                 </div>
                             </div>
@@ -36,13 +41,27 @@
                                 <table class="weeks" role="grid">
                                     <tbody class="tbody">
                                         <tr class="week-name">
-                                            <th scope="col" title="Sunday">S</th>
-                                            <th scope="col" title="Monday">M</th>
-                                            <th scope="col" title="Tuesday">T</th>
-                                            <th scope="col" title="Wednesday">W</th>
-                                            <th scope="col" title="Thursday">T</th>
-                                            <th scope="col" title="Friday">F</th>
-                                            <th scope="col" title="Saturday">S</th>
+                                            <th scope="col" title="@calendar.GetDayOfWeekName(DayOfWeek.Sunday)">
+                                                @calendar.GetDayOfWeekName(DayOfWeek.Sunday)[0]
+                                            </th>
+                                            <th scope="col" title="@calendar.GetDayOfWeekName(DayOfWeek.Monday)">
+                                                @calendar.GetDayOfWeekName(DayOfWeek.Monday)[0]
+                                            </th>
+                                            <th scope="col" title="@calendar.GetDayOfWeekName(DayOfWeek.Tuesday)">
+                                                @calendar.GetDayOfWeekName(DayOfWeek.Tuesday)[0]
+                                            </th>
+                                            <th scope="col" title="@calendar.GetDayOfWeekName(DayOfWeek.Wednesday)">
+                                                @calendar.GetDayOfWeekName(DayOfWeek.Wednesday)[0]
+                                            </th>
+                                            <th scope="col" title="@calendar.GetDayOfWeekName(DayOfWeek.Thursday)">
+                                                @calendar.GetDayOfWeekName(DayOfWeek.Thursday)[0]
+                                            </th>
+                                            <th scope="col" title="@calendar.GetDayOfWeekName(DayOfWeek.Friday)">
+                                                @calendar.GetDayOfWeekName(DayOfWeek.Friday)[0]
+                                            </th>
+                                            <th scope="col" title="@calendar.GetDayOfWeekName(DayOfWeek.Saturday)">
+                                                @calendar.GetDayOfWeekName(DayOfWeek.Saturday)[0]
+                                            </th>
                                         </tr>
                                         <tr role="presentation">
                                             <td aria-hidden="true" role="presentation">
@@ -67,22 +86,58 @@
                                                 <button aria-hidden="true" aria-label="26, June, 2021" aria-selected="false" data-is-focusable="false" aria-disabled="false" type="button" role="gridcell" aria-readonly="true" tabindex="-1"><span aria-hidden="true">26</span></button>
                                             </td>
                                         </tr>
-                                        @for (int weekIndex = 0; weekIndex < monthWeeks.GetLength(0); weekIndex++)
+                                        @if (_monthCalendarIsShown)
                                         {
-                                            if (monthWeeks[weekIndex, 0] == 0)
+                                            bool currentMonthIsStarted = false;
+                                            int todayYear = calendar.GetYear(DateTime.Now);
+                                            int todayMonth = calendar.GetMonth(DateTime.Now);
+                                            int todayDay = calendar.GetDayOfMonth(DateTime.Now);
+                                            @for (int weekIndex = 0;
+                                         weekIndex < monthWeeks.GetLength(0);
+                                         weekIndex++)
                                             {
-                                                break;
-                                            }
-                                            <tr>
-                                                @for (int dayIndex = 0; dayIndex < monthWeeks.GetLength(1); dayIndex++)
+                                                int localWeekIndex = weekIndex;
+                                                if (monthWeeks[weekIndex, 0] == 0)
                                                 {
-                                                    <td>
-                                                        <button>
-                                                            <span>@monthWeeks[weekIndex, dayIndex]</span>
-                                                        </button>
-                                                    </td>
+                                                    weekIndex = 0;
+                                                    break;
                                                 }
-                                            </tr>
+                                                <tr>
+                                                    @for (int dayIndex = 0; dayIndex < monthWeeks.GetLength(1); dayIndex++)
+                                                    {
+                                                        int localDayIndex = dayIndex;
+                                                        if (monthWeeks[localWeekIndex, localDayIndex] == 1)
+                                                        {
+                                                            currentMonthIsStarted = !currentMonthIsStarted;
+                                                        }
+                                                        if (currentMonthIsStarted)
+                                                        {
+                                                            string todayClass = "";
+                                                            if (todayYear == currentYear
+                                                            && todayMonth == currentMonth
+                                                            && todayDay == monthWeeks[localWeekIndex, localDayIndex])
+                                                            {
+                                                                todayClass = "bit-dtp-today";
+                                                            }
+                                                            <td class="@todayClass"
+                                                                @onclick="() => HandleDateChoose(localDayIndex, monthWeeks[localWeekIndex, localDayIndex], currentMonth)">
+                                                                <button>
+                                                                    <span>@monthWeeks[localWeekIndex, localDayIndex]</span>
+                                                                </button>
+                                                            </td>
+                                                        }
+                                                        else
+                                                        {
+                                                            int localMonth = weekIndex >= 4 ? currentMonth + 1 : currentMonth - 1;
+                                                            <td @onclick="() => HandleDateChoose(localDayIndex, monthWeeks[localWeekIndex, localDayIndex], localMonth)">
+                                                                <button>
+                                                                    <span>@monthWeeks[localWeekIndex, localDayIndex]</span>
+                                                                </button>
+                                                            </td>
+                                                        }
+                                                    }
+                                                </tr>
+                                            }
                                         }
                                         <tr role="presentation">
                                             <td aria-hidden="true" role="presentation">
@@ -120,34 +175,82 @@
                                         <button title="Go to previous year @(currentYear - 1)"
                                                 class="previous-year"
                                                 @onclick="() => HandleYearChanged(false)">
-                                            <i class="up"></i>
+                                            <i class="up bit-icon"></i>
                                         </button>
                                         <button title="Go to previous year @(currentYear + 1)"
                                                 class="next-year"
                                                 @onclick="() => HandleYearChanged(true)">
-                                            <i class="down"></i>
+                                            <i class="down bit-icon"></i>
                                         </button>
                                     </div>
                                 </div>
                                 <div class="months-rows">
                                     <div role="grid">
                                         <div role="row">
-                                            <button type="button" aria-label="@calendar.GetMonthName(1)"><span aria-hidden="true">@calendar.GetMonthShortName(1)</span></button>
-                                            <button type="button" aria-label="@calendar.GetMonthName(2)"><span aria-hidden="true">@calendar.GetMonthShortName(2)</span></button>
-                                            <button type="button" aria-label="@calendar.GetMonthName(3)"><span aria-hidden="true">@calendar.GetMonthShortName(3)</span></button>
-                                            <button type="button" aria-label="@calendar.GetMonthName(4)"><span aria-hidden="true">@calendar.GetMonthShortName(4)</span></button>
+                                            <button type="button"
+                                                    aria-label="@calendar.GetMonthName(1)"
+                                                    @onclick="()=>HandleMonthChange(1)">
+                                                <span aria-hidden="true">@calendar.GetMonthShortName(1)</span>
+                                            </button>
+                                            <button type="button"
+                                                    aria-label="@calendar.GetMonthName(2)"
+                                                    @onclick="()=>HandleMonthChange(2)">
+                                                <span aria-hidden="true">@calendar.GetMonthShortName(2)</span>
+                                            </button>
+                                            <button type="button"
+                                                    aria-label="@calendar.GetMonthName(3)"
+                                                    @onclick="()=>HandleMonthChange(3)">
+                                                <span aria-hidden="true">@calendar.GetMonthShortName(3)</span>
+                                            </button>
+                                            <button type="button"
+                                                    aria-label="@calendar.GetMonthName(4)"
+                                                    @onclick="()=>HandleMonthChange(4)">
+                                                <span aria-hidden="true">@calendar.GetMonthShortName(4)</span>
+                                            </button>
                                         </div>
                                         <div role="row">
-                                            <button type="button" aria-label="@calendar.GetMonthName(5)"><span aria-hidden="true">@calendar.GetMonthShortName(5)</span></button>
-                                            <button type="button" aria-label="@calendar.GetMonthName(6)"><span aria-hidden="true">@calendar.GetMonthShortName(6)</span></button>
-                                            <button type="button" aria-label="@calendar.GetMonthName(7)"><span aria-hidden="true">@calendar.GetMonthShortName(7)</span></button>
-                                            <button type="button" aria-label="@calendar.GetMonthName(8)"><span aria-hidden="true">@calendar.GetMonthShortName(8)</span></button>
+                                            <button type="button"
+                                                    aria-label="@calendar.GetMonthName(5)"
+                                                    @onclick="()=>HandleMonthChange(5)">
+                                                <span aria-hidden="true">@calendar.GetMonthShortName(5)</span>
+                                            </button>
+                                            <button type="button"
+                                                    aria-label="@calendar.GetMonthName(6)"
+                                                    @onclick="() => HandleMonthChange(6)">
+                                                <span aria-hidden="true">@calendar.GetMonthShortName(6)</span>
+                                            </button>
+                                            <button type="button"
+                                                    aria-label="@calendar.GetMonthName(7)"
+                                                    @onclick="() => HandleMonthChange(7)">
+                                                <span aria-hidden="true">@calendar.GetMonthShortName(7)</span>
+                                            </button>
+                                            <button type="button"
+                                                    aria-label="@calendar.GetMonthName(8)"
+                                                    @onclick="()=>HandleMonthChange(8)">
+                                                <span aria-hidden="true">@calendar.GetMonthShortName(8)</span>
+                                            </button>
                                         </div>
                                         <div role="row">
-                                            <button type="button" aria-label="@calendar.GetMonthName(9)"><span aria-hidden="true">@calendar.GetMonthShortName(9)</span></button>
-                                            <button type="button" aria-label="@calendar.GetMonthName(10)"><span aria-hidden="true">@calendar.GetMonthShortName(10)</span></button>
-                                            <button type="button" aria-label="@calendar.GetMonthName(11)"><span aria-hidden="true">@calendar.GetMonthShortName(11)</span></button>
-                                            <button type="button" aria-label="@calendar.GetMonthName(12)"><span aria-hidden="true">@calendar.GetMonthShortName(12)</span></button>
+                                            <button type="button"
+                                                    aria-label="@calendar.GetMonthName(9)"
+                                                    @onclick="()=>HandleMonthChange(9)">
+                                                <span aria-hidden="true">@calendar.GetMonthShortName(9)</span>
+                                            </button>
+                                            <button type="button"
+                                                    aria-label="@calendar.GetMonthName(10)"
+                                                    @onclick="()=>HandleMonthChange(10)">
+                                                <span aria-hidden="true">@calendar.GetMonthShortName(10)</span>
+                                            </button>
+                                            <button type="button"
+                                                    aria-label="@calendar.GetMonthName(11)"
+                                                    @onclick="()=>HandleMonthChange(11)">
+                                                <span aria-hidden="true">@calendar.GetMonthShortName(11)</span>
+                                            </button>
+                                            <button type="button"
+                                                    aria-label="@calendar.GetMonthName(12)"
+                                                    @onclick="()=>HandleMonthChange(12)">
+                                                <span aria-hidden="true">@calendar.GetMonthShortName(12)</span>
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
