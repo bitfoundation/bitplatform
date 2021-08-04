@@ -42,6 +42,11 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public EventCallback<string> OnSearch { get; set; }
 
         /// <summary>
+        /// Callback for when the input value changes
+        /// </summary>
+        [Parameter] public EventCallback<ChangeEventArgs> OnChange { get; set; }
+
+        /// <summary>
         /// The value of the text in the search box
         /// </summary>
         [Parameter]
@@ -54,7 +59,7 @@ namespace Bit.Client.Web.BlazorUI
                 ClassBuilder.Reset();
             }
         }
-       
+
 
         [Parameter]
         public string? DefaultValue { get; set; }
@@ -136,6 +141,14 @@ namespace Bit.Client.Web.BlazorUI
                     Value = await JSRuntime.GetProperty(InputRef, "value");
                     await OnSearch.InvokeAsync(Value);
                 }
+            }
+        }
+
+        protected virtual async Task HandleChange(ChangeEventArgs e)
+        {
+            if (IsEnabled)
+            {
+                await OnChange.InvokeAsync(e);
             }
         }
 

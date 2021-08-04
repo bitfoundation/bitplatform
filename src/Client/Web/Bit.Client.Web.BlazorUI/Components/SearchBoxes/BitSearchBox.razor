@@ -15,6 +15,7 @@
            @onkeydown="@((k) => HandleOnKeyDown(k))"
            @onfocusin="HandleInputFocusIn"
            @onfocusout="HandleInputFocusOut"
+           @oninput="@HandleInput"
            aria-label="@AriaLabel"
            disabled="@(IsEnabled is false)" />
     <div>
