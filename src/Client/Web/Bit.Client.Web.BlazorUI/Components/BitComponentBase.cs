@@ -50,7 +50,7 @@ namespace Bit.Client.Web.BlazorUI
         }
 
         /// <summary>
-        /// Custom CSS class for individual 
+        /// Custom CSS class for individual components
         /// </summary>
         [Parameter]
         public string? Class
@@ -99,7 +99,7 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public string? AriaLabel { get; set; }
 
         /// <summary>
-        /// Capture and render additional attributes in addition to the component
+        /// Capture and render additional attributes in addition to the component's parameters
         /// </summary>
         [Parameter]
         public Dictionary<string, object> HtmlAttributes { get; set; } = new Dictionary<string, object>();
