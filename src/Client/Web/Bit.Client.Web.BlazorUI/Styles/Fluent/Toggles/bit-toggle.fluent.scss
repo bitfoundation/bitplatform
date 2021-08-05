@@ -1,7 +1,16 @@
 ﻿@import "../colors.fluent.scss", "../../functions.scss";
 
 @mixin getStyle($enabled: true,$checked: true ) {
-    label:first-child {
+     label {
+        font-size: rem(14);
+        font-weight: 600;
+        box-sizing: border-box;
+        box-shadow: none;
+        margin: 0px;
+        display: inline-block;
+        padding: 5px 0px;
+        overflow-wrap: break-word;
+
         @if $enabled {
             color: $Grey160;
         }
@@ -136,15 +145,17 @@
     display: flex;
     align-items: center;
 
-    label:first-child {
+    & > label {
         margin: 0px 16px 0px 0px;
     }
 }
 
 .bit-tgl-noonoff-fluent {
-    label:first-child {
-        display: inline-block;
-        margin: 0px 0px 0px 16px;
-        order: 1;
+   & > div {
+        label {
+            display: inline-block;
+            margin: 0px 0px 0px 16px;
+            order: 1;
+        }
     }
 }
