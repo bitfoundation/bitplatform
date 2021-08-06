@@ -22,17 +22,45 @@
     background-color: palevioletred;
 }
 
-.spinner-container > div:not(.spinner-positioning), .action-btn-container {
-    display: flex;
+.spinner-container {
+    label {
+        padding: 5px 0px;
+        font-size: 14px;
+    }
 }
 
-.spinner-container span {
-    margin: 0px 10px;
+.spinner-sizes {
+    > div {
+        > div {
+            display: flex;
+            flex-direction: row;
+            align-items: flex-start;
+
+            &:not(:first-child) {
+                margin-top: 10px;
+            }
+        }
+    }
 }
 
 .spinner-positioning {
-    display: inline-block;
+    > div {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+
+        > div {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+
+            &:not(:first-child) {
+                margin-top: 20px;
+            }
+        }
+    }
 }
+
 
 .bit-nav-wrapped-link a {
     white-space: normal;

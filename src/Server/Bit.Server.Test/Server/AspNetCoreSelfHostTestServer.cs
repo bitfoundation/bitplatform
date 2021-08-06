@@ -1,4 +1,5 @@
 ﻿using Bit.Owin;
+using Bit.Test.Implementations;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -10,6 +11,12 @@ namespace Bit.Test.Server
     public class AspNetCoreSelfHostTestServer : TestServerBase
     {
         private IHost? _host;
+        private TestEnvironmentArgs _args;
+
+        public AspNetCoreSelfHostTestServer(TestEnvironmentArgs args)
+        {
+            _args = args;
+        }
 
         public override void Initialize(string uri)
         {
@@ -31,7 +38,7 @@ namespace Bit.Test.Server
 
         protected override HttpMessageHandler GetHttpMessageHandler()
         {
-            return new HttpClientHandler();
+            return new TestHttpClientHandler(new HttpClientHandler(), _args);
         }
     }
 }

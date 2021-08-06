@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 
@@ -8,13 +9,39 @@ namespace Bit.Client.Web.BlazorUI
     {
         private bool isChecked;
         private bool IsCheckedHasBeenSet;
+        private Guid Id = Guid.NewGuid();
+        private string? LabelledById;
+        private string? StateText;
+        private string LabelId => Id + "-label";
+        private string StateTextId => Id + "-stateText";
+        private string? AriaChecked => IsChecked ? "true" : "false";
 
+        [Parameter] public string? DefaultText { get; set; }
+
+        [Parameter] public string? Label { get; set; }
+
+        [Parameter] public RenderFragment? LabelFragment { get; set; }
+
+        [Parameter] public string? Role { get; set; } = "switch";
+
+        /// <summary>
+        /// Text to display when toggle is ON
+        /// </summary>
         [Parameter] public string? OnText { get; set; }
 
+        /// <summary>
+        /// Text to display when toggle is OFF
+        /// </summary>
         [Parameter] public string? OffText { get; set; }
 
+        /// <summary>
+        /// Whether the label (not the onText/offText) should be positioned inline with the toggle control. Left (right in RTL) side when on/off text provided VS right (left in RTL) side when no on/off text
+        /// </summary>
         [Parameter] public bool IsInlineLabel { get; set; }
 
+        /// <summary>
+        /// Checked state of the toggle
+        /// </summary>
         [Parameter]
         public bool IsChecked
         {
@@ -28,10 +55,14 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
+        /// <summary>
+        /// Callback that is called when the IsChecked parameter changed
+        /// </summary>
         [Parameter] public EventCallback<bool> IsCheckedChanged { get; set; }
 
-        [Parameter] public RenderFragment? ChildContent { get; set; }
-
+        /// <summary>
+        /// Callback that is called when the checked value has changed
+        /// </summary>
         [Parameter] public EventCallback<bool> OnChange { get; set; }
 
         protected override string RootElementClass => "bit-tgl";
@@ -55,6 +86,25 @@ namespace Bit.Client.Web.BlazorUI
             if (IsEnabled is false || IsCheckedChanged.HasDelegate is false) return;
             IsChecked = !IsChecked;
             await OnChange.InvokeAsync(IsChecked);
+        }
+
+        protected override async Task OnInitializedAsync()
+        {
+            StateText = (IsChecked ? OnText : OffText) ?? DefaultText ?? "";
+
+            if (AriaLabel.HasNoValue())
+            {
+                if (Label.HasValue())
+                {
+                    LabelledById = LabelId;
+                }
+                if (StateText.HasValue())
+                {
+                    LabelledById = LabelledById.HasValue() ? LabelId + " " + StateTextId : StateTextId;
+                } 
+            }
+
+            await base.OnInitializedAsync();
         }
     }
 }
