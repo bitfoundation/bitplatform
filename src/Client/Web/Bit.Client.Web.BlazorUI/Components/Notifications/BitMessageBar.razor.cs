@@ -10,7 +10,7 @@ namespace Bit.Client.Web.BlazorUI
         private BitMessageBarType messageBarType = BitMessageBarType.Info;
 
         /// <summary>
-        /// Determines if the message bar is multi-lined. If false, and the text overflows over buttons or to another line
+        /// Determines if the message bar is multi lined. If false, and the text overflows over buttons or to another line, it is clipped
         /// </summary>
         [Parameter] public bool IsMultiline { get; set; } = true;
 
@@ -29,17 +29,17 @@ namespace Bit.Client.Web.BlazorUI
         }
 
         /// <summary>
-        /// Custom icon to replace the dismiss icon. If unset, default will be the Clear icon
+        /// Custom Fabric icon name to replace the dismiss icon. If unset, default will be the Fabric Clear icon
         /// </summary>
         [Parameter] public string DismissIconName { get; set; } = "Clear";
 
         /// <summary>
-        /// Determines if the message bar text is truncated. This parameter is for single-line message bars with no buttons only in a limited space scenario
+        /// Determines if the message bar text is truncated. If true, a button will render to toggle between a single line view and multiline view. This parameter is for single line message bars with no buttons only in a limited space scenario
         /// </summary>
         [Parameter] public bool Truncated { get; set; }
 
         /// <summary>
-        /// The content of message bar, It can be Any custom tag or a text
+        /// The content of message bar
         /// </summary>
         [Parameter] public RenderFragment? ChildContent { get; set; }
 
@@ -54,7 +54,7 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public string? DismissButtonAriaLabel { get; set; }
 
         /// <summary>
-        /// Aria label on overflow button if truncated is defined
+        /// Aria label on overflow button if truncated is true
         /// </summary>
         [Parameter] public string? OverflowButtonAriaLabel { get; set; }
 
