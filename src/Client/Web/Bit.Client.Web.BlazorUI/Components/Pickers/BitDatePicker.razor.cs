@@ -14,9 +14,12 @@ namespace Bit.Client.Web.BlazorUI
         private int[,] monthWeeks = new int[6, 7];
         private int currentYear;
         private int currentMonth;
+        private int yearRangeFrom;
+        private int yearRangeTo;
         private string monthTitle = "";
         private string selectedDate = "";
-        private bool _monthCalendarIsShown = true;
+        private bool monthCalendarIsShown = true;
+        private bool isMonthsShown = true;
 
         [Parameter]
         public bool IsOpen
@@ -51,7 +54,7 @@ namespace Bit.Client.Web.BlazorUI
                 ? $"{RootElementClass}-open-{VisualClassRegistrar()}" : string.Empty);
         }
 
-        protected async override Task OnInitializedAsync()
+        protected override async Task OnInitializedAsync()
         {
             if (CalendarType == CalendarType.Gregorian)
             {
@@ -61,7 +64,7 @@ namespace Bit.Client.Web.BlazorUI
             {
                 calendar = new PersianCalendar();
             }
-            CreateMonthCalendar();
+            await CreateMonthCalendar();
         }
 
         public async Task HandleClick(MouseEventArgs eventArgs)
@@ -123,6 +126,18 @@ namespace Bit.Client.Web.BlazorUI
             await OnMonthChange.InvokeAsync(currentMonth);
         }
 
+        public async Task HandleYearChanged(int year)
+        {
+            currentYear = year;
+            await CreateMonthCalendar(currentYear, currentMonth);
+            await OnYearChange.InvokeAsync(currentYear);
+        }
+
+        public async Task HandleMonthsShownChanged(MouseEventArgs eventArgs)
+        {
+            isMonthsShown = !isMonthsShown;
+        }
+
         public async Task HandleYearChanged(bool nextYear)
         {
             if (nextYear)
@@ -137,6 +152,12 @@ namespace Bit.Client.Web.BlazorUI
             await OnYearChange.InvokeAsync(currentYear);
         }
 
+        public async Task HandleYearRangeChanged(int fromYear)
+        {
+            yearRangeFrom = fromYear;
+            yearRangeTo = fromYear+11;
+        }
+
         public async Task HandleGoToToday(MouseEventArgs args)
         {
             await CreateMonthCalendar();
@@ -146,6 +167,8 @@ namespace Bit.Client.Web.BlazorUI
         {
             currentMonth = calendar.GetMonth(DateTime.Now);
             currentYear = calendar.GetYear(DateTime.Now);
+            yearRangeFrom = currentYear - 1;
+            yearRangeTo = currentYear + 10;
             await CreateMonthCalendar(currentYear, currentMonth);
         }
 
@@ -153,7 +176,7 @@ namespace Bit.Client.Web.BlazorUI
         {
             await this.InvokeAsync(new Action(() =>
              {
-                 _monthCalendarIsShown = false;
+                 monthCalendarIsShown = false;
              }));
             monthTitle = $"{calendar.GetMonthName(month)} {year}";
             var daysCount = calendar.GetDaysInMonth(year, month);
@@ -205,7 +228,7 @@ namespace Bit.Client.Web.BlazorUI
             }
             await this.InvokeAsync(new Action(() =>
             {
-                _monthCalendarIsShown = true;
+                monthCalendarIsShown = true;
                 StateHasChanged();
             }));
         }

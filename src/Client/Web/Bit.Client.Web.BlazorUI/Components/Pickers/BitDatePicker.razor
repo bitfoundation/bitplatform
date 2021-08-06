@@ -86,7 +86,7 @@
                                                 <button aria-hidden="true" aria-label="26, June, 2021" aria-selected="false" data-is-focusable="false" aria-disabled="false" type="button" role="gridcell" aria-readonly="true" tabindex="-1"><span aria-hidden="true">26</span></button>
                                             </td>
                                         </tr>
-                                        @if (_monthCalendarIsShown)
+                                        @if (monthCalendarIsShown)
                                         {
                                             bool currentMonthIsStarted = false;
                                             int todayYear = calendar.GetYear(DateTime.Now);
@@ -168,93 +168,149 @@
                         </div>
                         <div class="div"></div>
                         <div class="right">
-                            <div>
-                                <div class="header-year">
-                                    <button type="button">@currentYear</button>
-                                    <div class="">
-                                        <button title="Go to previous year @(currentYear - 1)"
-                                                class="previous-year"
-                                                @onclick="() => HandleYearChanged(false)">
-                                            <i class="up bit-icon"></i>
-                                        </button>
-                                        <button title="Go to previous year @(currentYear + 1)"
-                                                class="next-year"
-                                                @onclick="() => HandleYearChanged(true)">
-                                            <i class="down bit-icon"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="months-rows">
-                                    <div role="grid">
-                                        <div role="row">
-                                            <button type="button"
-                                                    aria-label="@calendar.GetMonthName(1)"
-                                                    @onclick="()=>HandleMonthChange(1)">
-                                                <span aria-hidden="true">@calendar.GetMonthShortName(1)</span>
+                            @if (isMonthsShown)
+                            {
+                                <div>
+                                    <div class="header-year">
+                                        <button type="button"
+                                                @onclick="HandleMonthsShownChanged">@currentYear</button>
+                                        <div class="">
+                                            <button title="Go to previous year @(currentYear - 1)"
+                                                    class="previous-year"
+                                                    @onclick="() => HandleYearChanged(false)">
+                                                <i class="up bit-icon"></i>
                                             </button>
-                                            <button type="button"
-                                                    aria-label="@calendar.GetMonthName(2)"
-                                                    @onclick="()=>HandleMonthChange(2)">
-                                                <span aria-hidden="true">@calendar.GetMonthShortName(2)</span>
-                                            </button>
-                                            <button type="button"
-                                                    aria-label="@calendar.GetMonthName(3)"
-                                                    @onclick="()=>HandleMonthChange(3)">
-                                                <span aria-hidden="true">@calendar.GetMonthShortName(3)</span>
-                                            </button>
-                                            <button type="button"
-                                                    aria-label="@calendar.GetMonthName(4)"
-                                                    @onclick="()=>HandleMonthChange(4)">
-                                                <span aria-hidden="true">@calendar.GetMonthShortName(4)</span>
-                                            </button>
-                                        </div>
-                                        <div role="row">
-                                            <button type="button"
-                                                    aria-label="@calendar.GetMonthName(5)"
-                                                    @onclick="()=>HandleMonthChange(5)">
-                                                <span aria-hidden="true">@calendar.GetMonthShortName(5)</span>
-                                            </button>
-                                            <button type="button"
-                                                    aria-label="@calendar.GetMonthName(6)"
-                                                    @onclick="() => HandleMonthChange(6)">
-                                                <span aria-hidden="true">@calendar.GetMonthShortName(6)</span>
-                                            </button>
-                                            <button type="button"
-                                                    aria-label="@calendar.GetMonthName(7)"
-                                                    @onclick="() => HandleMonthChange(7)">
-                                                <span aria-hidden="true">@calendar.GetMonthShortName(7)</span>
-                                            </button>
-                                            <button type="button"
-                                                    aria-label="@calendar.GetMonthName(8)"
-                                                    @onclick="()=>HandleMonthChange(8)">
-                                                <span aria-hidden="true">@calendar.GetMonthShortName(8)</span>
-                                            </button>
-                                        </div>
-                                        <div role="row">
-                                            <button type="button"
-                                                    aria-label="@calendar.GetMonthName(9)"
-                                                    @onclick="()=>HandleMonthChange(9)">
-                                                <span aria-hidden="true">@calendar.GetMonthShortName(9)</span>
-                                            </button>
-                                            <button type="button"
-                                                    aria-label="@calendar.GetMonthName(10)"
-                                                    @onclick="()=>HandleMonthChange(10)">
-                                                <span aria-hidden="true">@calendar.GetMonthShortName(10)</span>
-                                            </button>
-                                            <button type="button"
-                                                    aria-label="@calendar.GetMonthName(11)"
-                                                    @onclick="()=>HandleMonthChange(11)">
-                                                <span aria-hidden="true">@calendar.GetMonthShortName(11)</span>
-                                            </button>
-                                            <button type="button"
-                                                    aria-label="@calendar.GetMonthName(12)"
-                                                    @onclick="()=>HandleMonthChange(12)">
-                                                <span aria-hidden="true">@calendar.GetMonthShortName(12)</span>
+                                            <button title="Go to previous year @(currentYear + 1)"
+                                                    class="next-year"
+                                                    @onclick="() => HandleYearChanged(true)">
+                                                <i class="down bit-icon"></i>
                                             </button>
                                         </div>
                                     </div>
+                                    <div class="months-rows">
+                                        <div role="grid">
+                                            <div role="row">
+                                                <button type="button"
+                                                        aria-label="@calendar.GetMonthName(1)"
+                                                        @onclick="() => HandleMonthChange(1)">
+                                                    <span aria-hidden="true">@calendar.GetMonthShortName(1)</span>
+                                                </button>
+                                                <button type="button"
+                                                        aria-label="@calendar.GetMonthName(2)"
+                                                        @onclick="() => HandleMonthChange(2)">
+                                                    <span aria-hidden="true">@calendar.GetMonthShortName(2)</span>
+                                                </button>
+                                                <button type="button"
+                                                        aria-label="@calendar.GetMonthName(3)"
+                                                        @onclick="() => HandleMonthChange(3)">
+                                                    <span aria-hidden="true">@calendar.GetMonthShortName(3)</span>
+                                                </button>
+                                                <button type="button"
+                                                        aria-label="@calendar.GetMonthName(4)"
+                                                        @onclick="() => HandleMonthChange(4)">
+                                                    <span aria-hidden="true">@calendar.GetMonthShortName(4)</span>
+                                                </button>
+                                            </div>
+                                            <div role="row">
+                                                <button type="button"
+                                                        aria-label="@calendar.GetMonthName(5)"
+                                                        @onclick="() => HandleMonthChange(5)">
+                                                    <span aria-hidden="true">@calendar.GetMonthShortName(5)</span>
+                                                </button>
+                                                <button type="button"
+                                                        aria-label="@calendar.GetMonthName(6)"
+                                                        @onclick="() => HandleMonthChange(6)">
+                                                    <span aria-hidden="true">@calendar.GetMonthShortName(6)</span>
+                                                </button>
+                                                <button type="button"
+                                                        aria-label="@calendar.GetMonthName(7)"
+                                                        @onclick="() => HandleMonthChange(7)">
+                                                    <span aria-hidden="true">@calendar.GetMonthShortName(7)</span>
+                                                </button>
+                                                <button type="button"
+                                                        aria-label="@calendar.GetMonthName(8)"
+                                                        @onclick="() => HandleMonthChange(8)">
+                                                    <span aria-hidden="true">@calendar.GetMonthShortName(8)</span>
+                                                </button>
+                                            </div>
+                                            <div role="row">
+                                                <button type="button"
+                                                        aria-label="@calendar.GetMonthName(9)"
+                                                        @onclick="() => HandleMonthChange(9)">
+                                                    <span aria-hidden="true">@calendar.GetMonthShortName(9)</span>
+                                                </button>
+                                                <button type="button"
+                                                        aria-label="@calendar.GetMonthName(10)"
+                                                        @onclick="() => HandleMonthChange(10)">
+                                                    <span aria-hidden="true">@calendar.GetMonthShortName(10)</span>
+                                                </button>
+                                                <button type="button"
+                                                        aria-label="@calendar.GetMonthName(11)"
+                                                        @onclick="() => HandleMonthChange(11)">
+                                                    <span aria-hidden="true">@calendar.GetMonthShortName(11)</span>
+                                                </button>
+                                                <button type="button"
+                                                        aria-label="@calendar.GetMonthName(12)"
+                                                        @onclick="() => HandleMonthChange(12)">
+                                                    <span aria-hidden="true">@calendar.GetMonthShortName(12)</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
+                            }
+                            else
+                            {
+                                <div>
+                                    <div class="header-year">
+                                        <button type="button"
+                                                @onclick="HandleMonthsShownChanged">@yearRangeFrom - @yearRangeTo</button>
+                                        <div class="">
+                                            <button title="Previous year range @(yearRangeFrom - 12) - @(yearRangeFrom - 1)"
+                                                    class="previous-year"
+                                                    @onclick="() => HandleYearRangeChanged(yearRangeFrom-12)">
+                                                <i class="up bit-icon"></i>
+                                            </button>
+                                            <button title="Next year range @(yearRangeFrom + 12) - @(yearRangeTo + 12)"
+                                                    class="next-year"
+                                                    @onclick="() => HandleYearRangeChanged(yearRangeFrom+12)">
+                                                <i class="down bit-icon"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="months-rows">
+                                        <div role="grid">
+                                            @for (int i = yearRangeFrom; i <= yearRangeTo; i++)
+                                            {
+                                                <div role="row">
+                                                    <button type="button"
+                                                            aria-label="@i"
+                                                            @onclick="() => HandleYearChanged(i)">
+                                                        <span aria-hidden="true">@i</span>
+                                                    </button>
+                                                    <button type="button"
+                                                            aria-label="@(i+1)"
+                                                            @onclick="() => HandleYearChanged(i+1)">
+                                                        <span aria-hidden="true">@(i+1)</span>
+                                                    </button>
+                                                    <button type="button"
+                                                            aria-label="@(i+2)"
+                                                            @onclick="() => HandleYearChanged(i+2)">
+                                                        <span aria-hidden="true">@(i+2)</span>
+                                                    </button>
+                                                    <button type="button"
+                                                            aria-label="@(i+3)"
+                                                            @onclick="() => HandleYearChanged(i+3)">
+                                                        <span aria-hidden="true">@(i+3)</span>
+                                                    </button>
+                                                </div>
+                                                i = i + 3;
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+
                             <button type="button"
                                     @onclick="HandleGoToToday">
                                 @GoToToday
