@@ -36,7 +36,7 @@ namespace Bit.Client.Web.BlazorUI
         }
 
         /// <summary>
-        /// Custom styling for individual components
+        /// Custom style for the root element of the component
         /// </summary>
         [Parameter]
         public string? Style
@@ -50,7 +50,7 @@ namespace Bit.Client.Web.BlazorUI
         }
 
         /// <summary>
-        /// Custom CSS class for individual components
+        /// Custom CSS class for the root element of the component
         /// </summary>
         [Parameter]
         public string? Class
