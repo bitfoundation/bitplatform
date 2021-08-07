@@ -15,8 +15,7 @@
 
     @if $hasValue= true {
         & > div:last-child {
-            background-color: yellow;
-            /*opacity: 1;*/
+            opacity: 1;
             flex-basis: 0px;
 
             & i {
@@ -83,7 +82,6 @@
     }
 
     & > div:last-child {
-        background-color: red;
         display: flex;
         flex-direction: row;
         align-items: stretch;
@@ -93,7 +91,7 @@
         padding: 0px;
         margin: -1px 0px;
         width: 32px;
-        /*opacity: 0;*/
+        opacity: 0;
         transition: opacity 0.167s ease 0s;
 
         & i {
@@ -130,8 +128,7 @@
 
 .bit-sch-box-has-value-fluent {
     & > div:last-child {
-        background-color: green;
-        /*opacity: 1;*/
+        opacity: 1;
         flex-basis: 0px;
 
         & i {
@@ -149,11 +146,8 @@
 }
 
 .bit-sch-box-fixed-icon-has-value-fluent {
-    background-color: blue;
-
     & > div:last-child {
-        background-color: pink;
-        /*opacity: 1;*/
+        opacity: 1;
         flex-basis: 0px;
 
         & i {
