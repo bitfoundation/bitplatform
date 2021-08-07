@@ -41,27 +41,54 @@
                                 <table class="weeks" role="grid">
                                     <tbody class="tbody">
                                         <tr class="week-name">
-                                            <th scope="col" title="@calendar.GetDayOfWeekName(DayOfWeek.Sunday)">
-                                                @calendar.GetDayOfWeekName(DayOfWeek.Sunday)[0]
-                                            </th>
-                                            <th scope="col" title="@calendar.GetDayOfWeekName(DayOfWeek.Monday)">
-                                                @calendar.GetDayOfWeekName(DayOfWeek.Monday)[0]
-                                            </th>
-                                            <th scope="col" title="@calendar.GetDayOfWeekName(DayOfWeek.Tuesday)">
-                                                @calendar.GetDayOfWeekName(DayOfWeek.Tuesday)[0]
-                                            </th>
-                                            <th scope="col" title="@calendar.GetDayOfWeekName(DayOfWeek.Wednesday)">
-                                                @calendar.GetDayOfWeekName(DayOfWeek.Wednesday)[0]
-                                            </th>
-                                            <th scope="col" title="@calendar.GetDayOfWeekName(DayOfWeek.Thursday)">
-                                                @calendar.GetDayOfWeekName(DayOfWeek.Thursday)[0]
-                                            </th>
-                                            <th scope="col" title="@calendar.GetDayOfWeekName(DayOfWeek.Friday)">
-                                                @calendar.GetDayOfWeekName(DayOfWeek.Friday)[0]
-                                            </th>
-                                            <th scope="col" title="@calendar.GetDayOfWeekName(DayOfWeek.Saturday)">
-                                                @calendar.GetDayOfWeekName(DayOfWeek.Saturday)[0]
-                                            </th>
+                                            @if (CalendarType is CalendarType.Gregorian)
+                                            {
+                                                <th scope="col" title="@calendar.GetDayOfWeekName(DayOfWeek.Sunday)">
+                                                    @calendar.GetDayOfWeekName(DayOfWeek.Sunday)[0]
+                                                </th>
+                                                <th scope="col" title="@calendar.GetDayOfWeekName(DayOfWeek.Monday)">
+                                                    @calendar.GetDayOfWeekName(DayOfWeek.Monday)[0]
+                                                </th>
+                                                <th scope="col" title="@calendar.GetDayOfWeekName(DayOfWeek.Tuesday)">
+                                                    @calendar.GetDayOfWeekName(DayOfWeek.Tuesday)[0]
+                                                </th>
+                                                <th scope="col" title="@calendar.GetDayOfWeekName(DayOfWeek.Wednesday)">
+                                                    @calendar.GetDayOfWeekName(DayOfWeek.Wednesday)[0]
+                                                </th>
+                                                <th scope="col" title="@calendar.GetDayOfWeekName(DayOfWeek.Thursday)">
+                                                    @calendar.GetDayOfWeekName(DayOfWeek.Thursday)[0]
+                                                </th>
+                                                <th scope="col" title="@calendar.GetDayOfWeekName(DayOfWeek.Friday)">
+                                                    @calendar.GetDayOfWeekName(DayOfWeek.Friday)[0]
+                                                </th>
+                                                <th scope="col" title="@calendar.GetDayOfWeekName(DayOfWeek.Saturday)">
+                                                    @calendar.GetDayOfWeekName(DayOfWeek.Saturday)[0]
+                                                </th>
+                                            }
+                                            else if (CalendarType is CalendarType.Persian)
+                                            {
+                                                <th scope="col" title="@calendar.GetDayOfWeekName(DayOfWeek.Saturday)">
+                                                    @calendar.GetDayOfWeekName(DayOfWeek.Saturday)[0]
+                                                </th>
+                                                <th scope="col" title="@calendar.GetDayOfWeekName(DayOfWeek.Sunday)">
+                                                    @calendar.GetDayOfWeekName(DayOfWeek.Sunday)[0]
+                                                </th>
+                                                <th scope="col" title="@calendar.GetDayOfWeekName(DayOfWeek.Monday)">
+                                                    @calendar.GetDayOfWeekName(DayOfWeek.Monday)[0]
+                                                </th>
+                                                <th scope="col" title="@calendar.GetDayOfWeekName(DayOfWeek.Tuesday)">
+                                                    @calendar.GetDayOfWeekName(DayOfWeek.Tuesday)[0]
+                                                </th>
+                                                <th scope="col" title="@calendar.GetDayOfWeekName(DayOfWeek.Wednesday)">
+                                                    @calendar.GetDayOfWeekName(DayOfWeek.Wednesday)[0]
+                                                </th>
+                                                <th scope="col" title="@calendar.GetDayOfWeekName(DayOfWeek.Thursday)">
+                                                    @calendar.GetDayOfWeekName(DayOfWeek.Thursday)[0]
+                                                </th>
+                                                <th scope="col" title="@calendar.GetDayOfWeekName(DayOfWeek.Friday)">
+                                                    @calendar.GetDayOfWeekName(DayOfWeek.Friday)[0]
+                                                </th>
+                                            }
                                         </tr>
                                         <tr role="presentation">
                                             <td aria-hidden="true" role="presentation">
@@ -86,15 +113,14 @@
                                                 <button aria-hidden="true" aria-label="26, June, 2021" aria-selected="false" data-is-focusable="false" aria-disabled="false" type="button" role="gridcell" aria-readonly="true" tabindex="-1"><span aria-hidden="true">26</span></button>
                                             </td>
                                         </tr>
-                                        @if (monthCalendarIsShown)
-                                        {
+                                        @{
                                             bool currentMonthIsStarted = false;
                                             int todayYear = calendar.GetYear(DateTime.Now);
                                             int todayMonth = calendar.GetMonth(DateTime.Now);
                                             int todayDay = calendar.GetDayOfMonth(DateTime.Now);
                                             @for (int weekIndex = 0;
-                                         weekIndex < monthWeeks.GetLength(0);
-                                         weekIndex++)
+                                       weekIndex < monthWeeks.GetLength(0);
+                                       weekIndex++)
                                             {
                                                 int localWeekIndex = weekIndex;
                                                 if (monthWeeks[weekIndex, 0] == 0)
@@ -173,7 +199,9 @@
                                 <div>
                                     <div class="header-year">
                                         <button type="button"
-                                                @onclick="HandleMonthsShownChanged">@currentYear</button>
+                                                @onclick="HandleMonthsShownChanged">
+                                            @currentYear
+                                        </button>
                                         <div class="">
                                             <button title="Go to previous year @(currentYear - 1)"
                                                     class="previous-year"
@@ -264,7 +292,9 @@
                                 <div>
                                     <div class="header-year">
                                         <button type="button"
-                                                @onclick="HandleMonthsShownChanged">@yearRangeFrom - @yearRangeTo</button>
+                                                @onclick="HandleMonthsShownChanged">
+                                            @yearRangeFrom - @yearRangeTo
+                                        </button>
                                         <div class="">
                                             <button title="Previous year range @(yearRangeFrom - 12) - @(yearRangeFrom - 1)"
                                                     class="previous-year"

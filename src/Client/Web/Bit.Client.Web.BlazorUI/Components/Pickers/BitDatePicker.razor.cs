@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Globalization;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -18,8 +17,8 @@ namespace Bit.Client.Web.BlazorUI
         private int yearRangeTo;
         private string monthTitle = "";
         private string selectedDate = "";
-        private bool monthCalendarIsShown = true;
         private bool isMonthsShown = true;
+        private DayOfWeek weekStartingDay;
 
         [Parameter]
         public bool IsOpen
@@ -59,10 +58,12 @@ namespace Bit.Client.Web.BlazorUI
             if (CalendarType == CalendarType.Gregorian)
             {
                 calendar = new GregorianCalendar();
+                weekStartingDay = DayOfWeek.Sunday;
             }
             else if (CalendarType == CalendarType.Persian)
             {
                 calendar = new PersianCalendar();
+                weekStartingDay = DayOfWeek.Saturday;
             }
             await CreateMonthCalendar();
         }
@@ -72,13 +73,15 @@ namespace Bit.Client.Web.BlazorUI
             IsOpen = true;
             await OnClick.InvokeAsync(eventArgs);
         }
+
         public async Task HandleFocusIn(FocusEventArgs eventArgs)
         {
             await OnFocusIn.InvokeAsync(eventArgs);
         }
+
         public async Task HandleFocusOut(FocusEventArgs eventArgs)
         {
-            //   IsOpen = false;
+           // IsOpen = false;
             await OnFocusOut.InvokeAsync(eventArgs);
         }
 
@@ -155,7 +158,7 @@ namespace Bit.Client.Web.BlazorUI
         public async Task HandleYearRangeChanged(int fromYear)
         {
             yearRangeFrom = fromYear;
-            yearRangeTo = fromYear+11;
+            yearRangeTo = fromYear + 11;
         }
 
         public async Task HandleGoToToday(MouseEventArgs args)
@@ -174,16 +177,13 @@ namespace Bit.Client.Web.BlazorUI
 
         private async Task CreateMonthCalendar(int year, int month)
         {
-            await this.InvokeAsync(new Action(() =>
-             {
-                 monthCalendarIsShown = false;
-             }));
             monthTitle = $"{calendar.GetMonthName(month)} {year}";
             var daysCount = calendar.GetDaysInMonth(year, month);
             var firstDay = calendar.ToDateTime(year, month, 1, 0, 0, 0, 0);
             var currentDay = 1;
             var dayOfWeekDifference = CalendarType == CalendarType.Persian ? -1 : 0;
             var isCalendarEnded = false;
+            monthWeeks = new int[6, 7];
             for (int weekIndex = 0; weekIndex < monthWeeks.GetLength(0); weekIndex++)
             {
                 for (int dayIndex = 0; dayIndex < monthWeeks.GetLength(1); dayIndex++)
@@ -208,6 +208,10 @@ namespace Bit.Client.Web.BlazorUI
                     }
                     else
                     {
+                        if (currentDay > calendar.GetDaysInMonth(year, month))
+                        {
+                            continue;
+                        }
                         monthWeeks[weekIndex, dayIndex] = currentDay;
                         currentDay++;
                     }
@@ -226,11 +230,6 @@ namespace Bit.Client.Web.BlazorUI
                     break;
                 }
             }
-            await this.InvokeAsync(new Action(() =>
-            {
-                monthCalendarIsShown = true;
-                StateHasChanged();
-            }));
         }
 
         private string GetSelectedDateString(int dayOfWeek, int day, int month)
