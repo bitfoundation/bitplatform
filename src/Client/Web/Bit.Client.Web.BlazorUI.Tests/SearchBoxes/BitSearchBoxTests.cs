@@ -62,5 +62,53 @@ namespace Bit.Client.Web.BlazorUI.Tests.SearchBoxes
 
             Assert.IsTrue(bitSearchBox.GetAttribute("aria-label").Equals(ariaLabel));
         }
+
+        [DataTestMethod, DataRow("hello world")]
+        public void BitTextFieldShouldTakeDefaultValue(string defaultValue)
+        {
+            var component = RenderComponent<BitSearchBoxTest>(
+                parameters =>
+                {
+                    parameters.Add(p => p.DefaultValue, defaultValue);
+                });
+
+            var input = component.Find(".bit-sch-box input");
+            Assert.AreEqual(defaultValue, input.GetAttribute("value"));
+        }
+
+        [DataTestMethod,
+            DataRow("hello world", true),
+            DataRow("hello world", false)
+        ]
+        public void BitSearchBoxdMustShowSearchIconEvenHasValueWhenShowIconTrue(string value, bool showIcon)
+        {
+            var component = RenderComponent<BitSearchBoxTest>(
+                parameters =>
+                {
+                    parameters.Add(p => p.Value, value);
+                    parameters.Add(p => p.ShowIcon, showIcon);
+                });
+
+            var bitSearchBox = component.Find(".bit-sch-box");
+            Assert.AreEqual(showIcon, bitSearchBox.ClassList.Contains("bit-sch-box-fixed-icon-has-value-fluent"));
+        }
+
+        //[DataTestMethod,
+        //    DataRow(true),
+        //    DataRow(false)
+        //]
+        //public void BitSearchBoxMustRespondToTheChangeEvent(bool isEnabled)
+        //{
+        //    var component = RenderComponent<BitSearchBoxTest>(
+        //        parameters =>
+        //        {
+        //            parameters.Add(p => p.IsEnabled, isEnabled);
+        //        });
+        //    var bitSearchBox = component.Find(".bit-sch-box");
+        //    bitSearchBox.KeyDown("a");
+        //    //TODO: bypassed - BUnit oninput event issue
+        //    Assert.AreEqual(isEnabled ? 1 : 0, component.Instance.CurrentCount);
+        //}
+
     }
 }

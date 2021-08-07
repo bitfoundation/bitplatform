@@ -1,5 +1,31 @@
 ﻿@import "../colors.fluent.scss", "../../functions.scss";
 
+@mixin getFocusedStyle($fixedIcon: false, $hasValue: false) {
+    border: 2px solid $Primary;
+
+    & > div:first-child {
+        @if $fixedIcon==false {
+            width: 0px;
+
+            & i.bit-icon {
+                opacity: 0;
+            }
+        }
+    }
+
+    @if $hasValue= true {
+        & > div:last-child {
+            background-color: yellow;
+            /*opacity: 1;*/
+            flex-basis: 0px;
+
+            & i {
+                opacity: 1;
+            }
+        }
+    }
+}
+
 .bit-sch-box-fluent {
     font-family: FluentFont;
     -webkit-font-smoothing: antialiased;
@@ -57,6 +83,7 @@
     }
 
     & > div:last-child {
+        background-color: red;
         display: flex;
         flex-direction: row;
         align-items: stretch;
@@ -66,7 +93,7 @@
         padding: 0px;
         margin: -1px 0px;
         width: 32px;
-        opacity: 0;
+        /*opacity: 0;*/
         transition: opacity 0.167s ease 0s;
 
         & i {
@@ -103,7 +130,8 @@
 
 .bit-sch-box-has-value-fluent {
     & > div:last-child {
-        opacity: 1;
+        background-color: green;
+        /*opacity: 1;*/
         flex-basis: 0px;
 
         & i {
@@ -120,12 +148,26 @@
     }
 }
 
+.bit-sch-box-fixed-icon-has-value-fluent {
+    background-color: blue;
+
+    & > div:last-child {
+        background-color: pink;
+        /*opacity: 1;*/
+        flex-basis: 0px;
+
+        & i {
+            opacity: 1;
+        }
+    }
+}
+
 .bit-sch-box-focused-fluent {
-    @include getFouceStyle();
+    @include getFocusedStyle();
 }
 
 .bit-sch-box-fixde-icon-focused-fluent {
-    @include getFouceStyle($fixedIcon: true);
+    @include getFocusedStyle($fixedIcon: true);
 }
 
 .bit-sch-box-no-animation-fluent {
@@ -171,19 +213,5 @@
 
     & > div:first-child {
         color: $Grey90;
-    }
-}
-
-@mixin getFouceStyle($fixedIcon: false) {
-    border: 2px solid $Primary;
-
-    & > div:first-child {
-        @if $fixedIcon==false {
-            width: 0px;
-
-            & i.bit-icon {
-                opacity: 0;
-            }
-        }
     }
 }
