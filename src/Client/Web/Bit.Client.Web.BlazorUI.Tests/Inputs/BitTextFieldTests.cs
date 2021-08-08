@@ -344,7 +344,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                 });
 
             var bitTextField = component.Find(".bit-txt");
-            Assert.AreEqual(hasBorder, bitTextField.ClassList.Contains($"bit-txt-no-border-fluent"));
+            Assert.AreEqual(!hasBorder, bitTextField.ClassList.Contains($"bit-txt-no-border-fluent"));
         }
     }
 }
