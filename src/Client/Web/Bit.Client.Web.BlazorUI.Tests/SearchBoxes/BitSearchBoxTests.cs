@@ -93,22 +93,21 @@ namespace Bit.Client.Web.BlazorUI.Tests.SearchBoxes
             Assert.AreEqual(showIcon, bitSearchBox.ClassList.Contains("bit-sch-box-fixed-icon-has-value-fluent"));
         }
 
-        //[DataTestMethod,
-        //    DataRow(true),
-        //    DataRow(false)
-        //]
-        //public void BitSearchBoxMustRespondToTheChangeEvent(bool isEnabled)
-        //{
-        //    var component = RenderComponent<BitSearchBoxTest>(
-        //        parameters =>
-        //        {
-        //            parameters.Add(p => p.IsEnabled, isEnabled);
-        //        });
-        //    var bitSearchBox = component.Find(".bit-sch-box");
-        //    bitSearchBox.KeyDown("a");
-        //    //TODO: bypassed - BUnit oninput event issue
-        //    Assert.AreEqual(isEnabled ? 1 : 0, component.Instance.CurrentCount);
-        //}
-
+        [DataTestMethod,
+            DataRow(true),
+            DataRow(false)
+        ]
+        public void BitSearchBoxMustRespondToTheChangeEvent(bool isEnabled)
+        {
+            var component = RenderComponent<BitSearchBoxTest>(
+                parameters =>
+                {
+                    parameters.Add(p => p.IsEnabled, isEnabled);                    
+                });
+            var input = component.Find(".bit-sch-box input");
+            //TODO: bypassed - BUnit oninput event issue
+            //input.KeyDown("a");
+            //Assert.AreEqual(isEnabled ? 1 : 0, component.Instance.CurrentCount);
+        }
     }
 }
