@@ -315,23 +315,6 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
             Assert.AreEqual(description, bitTextFieldDescription.TextContent);
         }
 
-        [DataTestMethod, DataRow("static errorMessage")]
-        public void BitTextFieldShouldShowErrorMessage(string errorMessage)
-        {
-            var component = RenderComponent<BitTextFieldTest>(
-                parameters =>
-                {
-                    parameters.Add(p => p.ErrorMessage, errorMessage);
-                });
-
-            var bitTextField = component.Find(".bit-txt");
-            Assert.IsTrue(bitTextField.ClassList.Contains($"bit-txt-haserror-fluent"));
-
-            var bitTextFieldErrorMessage = component.Find(".bit-txt-fluent > span > div > p");
-            Assert.AreEqual(errorMessage, bitTextFieldErrorMessage.TextContent);
-        }
-
-       
         [DataTestMethod,
             DataRow(true),
             DataRow(false)
@@ -352,16 +335,16 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
            DataRow(true),
            DataRow(false)
         ]
-        public void BitTextFieldShouldRespectBorderlessStyle(bool isborderless)
+        public void BitTextFieldShouldRespectHasBorderStyle(bool hasBorder)
         {
             var component = RenderComponent<BitTextFieldTest>(
                 parameters =>
                 {
-                    parameters.Add(p => p.IsBorderless, isborderless);
+                    parameters.Add(p => p.HasBorder, hasBorder);
                 });
 
             var bitTextField = component.Find(".bit-txt");
-            Assert.AreEqual(isborderless, bitTextField.ClassList.Contains($"bit-txt-borderless-fluent"));
+            Assert.AreEqual(hasBorder, bitTextField.ClassList.Contains($"bit-txt-no-border-fluent"));
         }
     }
 }

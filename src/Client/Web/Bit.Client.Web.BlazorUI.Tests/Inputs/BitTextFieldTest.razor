@@ -10,7 +10,7 @@
                   Value="@Value"
                   CanRevealPassword="CanRevealPassword"
                   OnClick="HandleClick"
-                  OnInput="HandleChange"
+                  OnChange="HandleChange"
                   OnFocus="HandleFocus"
                   OnFocusIn="HandleFocusIn"
                   OnFocusOut="HandleFocusOut"
@@ -19,12 +19,11 @@
                   AriaLabel="@AriaLabel"
                   Label="@Label"
                   IsUnderlined="IsUnderlined"
-                  IsBorderless="IsBorderless"
+                  HasBorder="HasBorder"
                   DefaultValue="@DefaultValue"
                   Description="@Description"
                   Prefix="@Prefix"
-                  Suffix="@Suffix"
-                  ErrorMessage="@ErrorMessage">
+                  Suffix="@Suffix">
     </BitTextField>
 </CascadingValue>
 
@@ -48,7 +47,7 @@
     [Parameter] public string? Description { get; set; }
     [Parameter] public string? ErrorMessage { get; set; }
     [Parameter] public bool IsUnderlined { get; set; }
-    [Parameter] public bool IsBorderless { get; set; }
+    [Parameter] public bool HasBorder { get; set; }
 
     public void HandleKeyDown(KeyboardEventArgs e)
     {
