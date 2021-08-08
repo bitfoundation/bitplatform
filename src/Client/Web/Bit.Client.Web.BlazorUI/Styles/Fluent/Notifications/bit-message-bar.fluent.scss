@@ -1,7 +1,7 @@
 ﻿@import "../colors.fluent.scss", "../../functions.scss";
 
 .bit-msg-bar-fluent {
-    font-family: FluentFont;
+    font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
     font-size: rem(12px);
     font-weight: 400;
     min-height: 32px;
@@ -79,7 +79,7 @@
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
-            flex:1;
+            flex: 1;
 
             &.bit-msg-bar-open {
                 white-space: normal;

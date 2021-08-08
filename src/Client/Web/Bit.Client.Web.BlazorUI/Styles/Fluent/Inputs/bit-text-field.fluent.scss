@@ -1,7 +1,7 @@
 ﻿@import "../colors.fluent.scss", "../../functions.scss";
 
 .bit-txt-fluent {
-    font-family: FluentFont;
+    font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
     font-size: rem(14px);
     font-weight: 400;
     box-shadow: none;
@@ -45,7 +45,7 @@
         }
 
         label {
-            font-family: FluentFont;
+            font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
             -webkit-font-smoothing: antialiased;
             font-size: rem(14px);
             font-weight: 600;
