@@ -6,7 +6,9 @@
                    AriaLabel="@AriaLabel"
                    AriaHidden="AriaHidden"
                    IconName="@IconName"
-                   ToolTip="@ToolTip">
+                   Title="@Title"
+                   Href="@Href"
+                   Target="@Target">
     </BitIconButton>
 </CascadingValue>
 
@@ -18,7 +20,9 @@
     [Parameter] public string AriaLabel { get; set; }
     [Parameter] public bool AriaHidden { get; set; }
     [Parameter] public string IconName { get; set; }
-    [Parameter] public string ToolTip { get; set; }
+    [Parameter] public string Title { get; set; }
+    [Parameter] public string Href { get; set; }
+    [Parameter] public string Target { get; set; }
 
     public int CurrentCount { get; set; }
 
