@@ -1,4 +1,5 @@
-﻿using Bunit;
+﻿using System;
+using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.Client.Web.BlazorUI.Tests.Toggles
@@ -114,7 +115,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Toggles
             }
         }
 
-        [DataTestMethod, DataRow("Detailed label")]
+        [DataTestMethod, DataRow("Detailed AriaLabel")]
         public void BitToggleAriaLabelTest(string ariaLabel)
         {
             var com = RenderComponent<BitToggleTest>(parameters =>
@@ -122,9 +123,97 @@ namespace Bit.Client.Web.BlazorUI.Tests.Toggles
                 parameters.Add(p => p.AriaLabel, ariaLabel);
             });
 
-            var bitToggle = com.Find(".bit-tgl button");
+            var bitToggleButton = com.Find(".bit-tgl button");
+            Assert.AreEqual(bitToggleButton.GetAttribute("aria-label"), ariaLabel);
+        }
 
-            Assert.IsTrue(bitToggle.GetAttribute("aria-label").Equals(ariaLabel));
+        [DataTestMethod, 
+            DataRow(true, "on", "off", "This is the first defaultText", "This is the first label"),
+            DataRow(false, "off", "on", "This is the second defaultText", "This is the second label"),
+            DataRow(true, "on", "on", "This is the Third defaultText", "This is the Third label"),
+            DataRow(false, "off", "off", "This is the fourth defaultText", "This is the fourth label")
+        ]
+        public void BitToggleAriaLabelledyTest(bool isChecked, string onText, string offText, string defaultText, string label)
+        {
+            var com = RenderComponent<BitToggleTest>(parameters =>
+            {
+                parameters.Add(p => p.IsChecked, isChecked);
+                parameters.Add(p => p.OnText, onText);
+                parameters.Add(p => p.OffText, offText);
+                parameters.Add(p => p.DefaultText, defaultText);
+                parameters.Add(p => p.AriaLabel, "");
+                parameters.Add(p => p.Label, label);
+            });
+
+            var bitToggleButton = com.Find(".bit-tgl button");
+            var bitToggleButtonId = bitToggleButton.Id;
+            var labelId = bitToggleButtonId + "-label";
+            var stateTextId = bitToggleButtonId + "-stateText";
+            var ariaLabelledById = "";
+            var stateText = (isChecked ? onText : offText) ?? defaultText ?? "";
+
+            if (label.HasValue())
+            {
+                ariaLabelledById = labelId;
+            }
+            if (stateText.HasValue())
+            {
+                ariaLabelledById = ariaLabelledById.HasValue() ? labelId + " " + stateTextId : stateTextId;
+            }
+
+            Assert.AreEqual(bitToggleButton.GetAttribute("aria-labelledby"), ariaLabelledById);
+        }
+
+        [DataTestMethod, 
+            DataRow(true),
+            DataRow(false)
+        ]
+        public void BitToggleAriaCheckedTest(bool isChecked)
+        {
+            var com = RenderComponent<BitToggleTest>(parameters =>
+            {
+                parameters.Add(p => p.IsChecked, isChecked);
+            });
+
+            var ariaChecked = isChecked ? "true" : "false";
+            var bitToggleButton = com.Find(".bit-tgl button");
+            Assert.AreEqual(bitToggleButton.GetAttribute("aria-checked"), ariaChecked);
+        }
+
+        [DataTestMethod, DataRow("Switch")]
+        public void BitToggleRoleTest(string role)
+        {
+            var com = RenderComponent<BitToggleTest>(parameters =>
+            {
+                parameters.Add(p => p.Role, role);
+            });
+
+            var bitToggleButton = com.Find(".bit-tgl button");
+            Assert.AreEqual(bitToggleButton.GetAttribute("role"), role);
+        }
+
+        [DataTestMethod, DataRow("This is label")]
+        public void BitToggleLabel(string label)
+        {
+            var com = RenderComponent<BitToggleTest>(parameters =>
+            {
+                parameters.Add(p => p.Label, label);
+            });
+
+            var bitToggleLabel = com.Find(".bit-tgl > label");
+            Assert.AreEqual(bitToggleLabel.TextContent, label);
+        }
+
+        [DataTestMethod, DataRow("<div>This is labelFragment</div>")]
+        public void BitToggleMarkupLabelTest(string labelFragment)
+        {
+            var com = RenderComponent<BitToggleTest>(parameters =>
+            {
+                parameters.Add(p => p.LabelFragment, labelFragment);
+            });
+
+            var bitToggleLabelChild = com.Find(".bit-tgl > label").ChildNodes;
+            bitToggleLabelChild.MarkupMatches(labelFragment);
         }
     }
 }
