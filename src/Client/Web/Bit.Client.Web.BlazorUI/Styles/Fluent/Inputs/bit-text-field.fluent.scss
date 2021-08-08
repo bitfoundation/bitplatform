@@ -197,38 +197,6 @@
     }
 }
 
-.bit-txt-haserror-focused-fluent {
-
-    & > div {
-
-        & > div {
-
-            ::after {
-                border: 2px solid $Red20;
-                position: absolute;
-                inset: -1px;
-                border-radius: 2px;
-                content: "";
-                pointer-events: none;
-            }
-        }
-    }
-}
-
-.bit-txt-underlined-haserror-focused-fluent {
-
-    & > div {
-
-        &::after {
-            border-bottom: 2px solid $Red20;
-            position: absolute;
-            inset: 32px 0;
-            content: "";
-            pointer-events: none;
-        }
-    }
-}
-
 .bit-txt-disabled-fluent {
 
     & > div {
@@ -280,17 +248,6 @@
 
         & > div {
             border: none;
-        }
-    }
-}
-
-.bit-txt-haserror-fluent {
-
-    & > div {
-        border-color: $Red20;
-
-        & > div {
-            border-color: $Red20;
         }
     }
 }

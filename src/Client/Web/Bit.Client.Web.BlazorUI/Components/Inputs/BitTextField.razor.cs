@@ -140,13 +140,6 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public string? Suffix { get; set; }
 
         /// <summary>
-        /// Static error message displayed below the text field. 
-        /// Use onGetErrorMessage to dynamically change the error message displayed (if any) based on the current value. 
-        /// errorMessage and onGetErrorMessage are mutually exclusive (errorMessage takes precedence)
-        /// </summary>
-        [Parameter] public string? ErrorMessage { get; set; }
-
-        /// <summary>
         /// Whether to show the reveal password button for input type 'password'
         /// </summary>
         [Parameter] public bool CanRevealPassword { get; set; }
@@ -236,10 +229,7 @@ namespace Bit.Client.Web.BlazorUI
                                         ? $"{RootElementClass}-{(IsUnderlined ? "underlined-" : "")}disabled-{VisualClassRegistrar()}" : string.Empty);
 
             ClassBuilder.Register(() => FocusClass.HasValue()
-                                        ? $"{RootElementClass}-{(IsUnderlined ? "underlined-" : "")}{(ErrorMessage.HasValue() ? "haserror-" : "")}{FocusClass}-{VisualClassRegistrar()}" : string.Empty);
-
-            ClassBuilder.Register(() => ErrorMessage.HasValue()
-                           ? $"{RootElementClass}-haserror-{VisualClassRegistrar()}" : string.Empty);
+                                        ? $"{RootElementClass}-{(IsUnderlined ? "underlined-" : "")}{FocusClass}-{VisualClassRegistrar()}" : string.Empty);
         }
 
         protected virtual async Task HandleFocusIn(FocusEventArgs e)

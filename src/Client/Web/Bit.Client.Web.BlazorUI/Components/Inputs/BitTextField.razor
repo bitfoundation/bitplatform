@@ -89,7 +89,7 @@
 
         </div>
     </div>
-    @if (Description.HasValue() || ErrorMessage.HasValue() || RenderDescription is not null)
+    @if (Description.HasValue() || RenderDescription is not null)
     {
         <span>
             @if (RenderDescription is not null)
@@ -99,15 +99,6 @@
             else if (Description.HasValue())
             {
                 <span>@Description</span>
-            }
-
-            @if (ErrorMessage.HasValue())
-            {
-                <div role="alert">
-                    <p>
-                        <span>@ErrorMessage</span>
-                    </p>
-                </div>
             }
         </span>}
 </div>
