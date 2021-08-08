@@ -456,34 +456,40 @@
     <h2>BitToggle</h2>
     <h3>Basics</h3>
 
-    <BitToggle @bind-IsChecked="IsToggleChecked" IsEnabled="true" OnText="On" OffText="Off">Enabled and checked</BitToggle>
+    <BitToggle Label="Enabled and checked" @bind-IsChecked="IsToggleChecked" IsEnabled="true"  OnText="On" OffText="Off"/>
     <br />
-    <BitToggle @bind-IsChecked="IsToggleUnChecked" IsEnabled="true" OnText="On" OffText="Off">Enabled and unchecked</BitToggle>
+    <BitToggle Label="Enabled and unchecked" @bind-IsChecked="IsToggleUnChecked" IsEnabled="true" OnText="On" OffText="Off" />
     <br />
-    <BitToggle IsChecked="true" IsEnabled="false" OnText="On" OffText="Off">Disabled and checked</BitToggle>
+    <BitToggle Label="Disabled and checked" IsChecked="true" IsEnabled="false" OnText="On" OffText="Off" />
     <br />
-    <BitToggle IsChecked="false" IsEnabled="false" OnText="On" OffText="Off">Disabled and unchecked</BitToggle>
+    <BitToggle Label="Disabled and unchecked" IsChecked="false" IsEnabled="false" OnText="On" OffText="Off" />
     <br />
-    <BitToggle @bind-IsChecked="IsToggleUnChecked" IsEnabled="true" IsInlineLabel="true" OnText="On" OffText="Off">With inline label</BitToggle>
+    <BitToggle Label="With inline label" @bind-IsChecked="IsToggleUnChecked" IsEnabled="true" IsInlineLabel="true" OnText="On" OffText="Off" />
     <br />
-    <BitToggle IsChecked="false" IsEnabled="false" IsInlineLabel="true" OnText="On" OffText="Off">Disabled with inline label</BitToggle>
+    <BitToggle Label="Disabled with inline label" IsChecked="false" IsEnabled="false" IsInlineLabel="true" OnText="On" OffText="Off" />
     <br />
-    <BitToggle @bind-IsChecked="IsToggleUnChecked" IsEnabled="true" IsInlineLabel="true">With inline label and without onText and offText</BitToggle>
+    <BitToggle Label="With inline label and without onText and offText" @bind-IsChecked="IsToggleUnChecked" IsEnabled="true" IsInlineLabel="true" />
     <br />
-    <BitToggle IsChecked="false" IsEnabled="false" IsInlineLabel="true">Disabled With inline label and without onText and offText</BitToggle>
+    <BitToggle Label="Disabled With inline label and without onText and offText" IsChecked="false" IsEnabled="false" IsInlineLabel="true" />
+    <br />
+    <BitToggle Label="Enabled and checked (ARIA 1.0 compatible)" @bind-IsChecked="IsToggleChecked" IsEnabled="true" OnText="On" OffText="Off" Role="Checkbox" />
     <br />
     <h3>Toggles with Custom Labels</h3>
+    <BitToggle @bind-IsChecked="IsToggleUnChecked" IsEnabled="true" OnText="On" OffText="Off">
+        <LabelFragment>
+            Custom label
+        </LabelFragment>
+    </BitToggle>
     <br />
-    <BitToggle @bind-IsChecked="IsToggleUnChecked" IsEnabled="true" OnText="On" OffText="Off">Custom label <i class="bit-icon bit-icon--Info"></i></BitToggle>
-    <br />
-    <BitToggle @bind-IsChecked="IsToggleUnChecked" IsEnabled="true" OnText="On" OffText="Off" IsInlineLabel="true">Custom inline label <i class="bit-icon bit-icon--Info"></i></BitToggle>
-    <br />
-    <BitToggle @bind-IsChecked="IsToggleChecked" IsEnabled="true" OnText="On" OffText="Off">Enabled and checked</BitToggle>
+    <BitToggle @bind-IsChecked="IsToggleUnChecked" IsEnabled="true" OnText="On" OffText="Off" IsInlineLabel="true">
+        <LabelFragment>
+            Custom inline label
+        </LabelFragment>
+    </BitToggle>
     <br />
     <BitButton OnClick="() => IsToggleChecked = true">Make Toggle Check</BitButton>
     <br />
-    <br />
-
+</div>
     <h3>Link Pivot</h3>
     <div class="pivot-container">
         <BitPivot>
@@ -589,7 +595,6 @@
         </BitPivot>
     </div>
     <BitButton OnClick="TogglePivotItemVisobility">hide/show Biz</BitButton>
-</div>
 
 <hr />
 
