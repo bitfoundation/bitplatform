@@ -13,7 +13,7 @@ namespace Bit.Client.Web.BlazorUI
         private bool isReadonly;
         private bool isRequired;
         private bool isUnderlined;
-        private bool isBorderless;
+        private bool hasBorder;
         private string focusClass = "";
         private TextFieldType type = TextFieldType.Text;
         private Guid InputId = Guid.NewGuid();
@@ -78,12 +78,12 @@ namespace Bit.Client.Web.BlazorUI
         /// Whether or not the text field is borderless
         /// </summary>
         [Parameter]
-        public bool IsBorderless
+        public bool HasBorder
         {
-            get => isBorderless;
+            get => hasBorder;
             set
             {
-                isBorderless = value;
+                hasBorder = value;
                 ClassBuilder.Reset();
             }
         }
@@ -222,8 +222,8 @@ namespace Bit.Client.Web.BlazorUI
             ClassBuilder.Register(() => IsUnderlined
                                        ? $"{RootElementClass}-underlined-{VisualClassRegistrar()}" : string.Empty);
 
-            ClassBuilder.Register(() => IsBorderless
-                                       ? $"{RootElementClass}-borderless-{VisualClassRegistrar()}" : string.Empty);
+            ClassBuilder.Register(() => HasBorder
+                                       ? $"{RootElementClass}-no-border-{VisualClassRegistrar()}" : string.Empty);
 
             ClassBuilder.Register(() => IsEnabled is false
                                         ? $"{RootElementClass}-{(IsUnderlined ? "underlined-" : "")}disabled-{VisualClassRegistrar()}" : string.Empty);
