@@ -402,18 +402,6 @@
     <br />
     <h3>TextField Error Message Variations</h3>
     <BitTextField Label="With error" ErrorMessage="Error message"></BitTextField>
-    <br />
-    <BitTextField Label="String-based validation" OnGetErrorMessage="GetErrorMessage" />
-    <br />
-    <BitTextField Label="String-based validation on render" DefaultValue="Shows an error message on render" OnGetErrorMessage="GetErrorMessage" />
-    <br />
-    <BitTextField Label="String-based validation only on change" DefaultValue="Validates only on input change, not on first render" OnGetErrorMessage="GetErrorMessage" ValidateOnLoad="false" />
-    <br />
-    <BitTextField Label="Validates only on blur" Placeholder="Validates only on blur" OnGetErrorMessage="GetErrorMessage" ValidateOnFocusOut="true" />
-    <br />
-    <BitTextField Label="Validates only on focus and blur" Placeholder="Validates only on input focus and blur" OnGetErrorMessage="GetErrorMessage" ValidateOnFocusIn="true" ValidateOnFocusOut="true" />
-    <br />
-    <BitTextField Label="Deferred string-based validation" Placeholder="Validates after user stops typing for 2 seconds" DeferredValidationTime="2000" OnGetErrorMessage="GetErrorMessage" />
 </div>
 
 <hr />

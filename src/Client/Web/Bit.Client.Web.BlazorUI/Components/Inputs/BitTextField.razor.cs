@@ -167,36 +167,6 @@ namespace Bit.Client.Web.BlazorUI
         }
 
         /// <summary>
-        /// Text field will start to validate after users stop typing for deferredValidationTime milliseconds. 
-        /// Updates to this prop will not be respected.
-        /// default value of DeferredValidationTime is 200
-        /// </summary>
-        [Parameter] public int DeferredValidationTime { get; set; } = 200;
-
-        /// <summary>
-        /// Whether validation should run when the input is initially rendered. by default is true
-        /// </summary>
-        [Parameter] public bool ValidateOnLoad { get; set; } = true;
-
-        /// <summary>
-        /// Run validation when focus moves out of the input, and **do not** validate on change
-        /// </summary>
-        [Parameter] public bool ValidateOnFocusOut { get; set; }
-
-        /// <summary>
-        /// Run validation when focus moves into the input, and **do not** validate on change.
-        /// </summary>
-        [Parameter] public bool ValidateOnFocusIn { get; set; }
-
-        /// <summary>
-        /// Function used to determine whether the input value is valid and get an error message if not. 
-        /// Mutually exclusive with the static string errorMessage (it will take precedence over this).
-        /// When it returns string - If valid, it returns empty string. - If invalid, it returns the error message and 
-        /// the text field will show a red border and show an error message below the text field
-        /// </summary>
-        [Parameter] public Func<string, string>? OnGetErrorMessage { get; set; }
-
-        /// <summary>
         /// Callback for when focus moves into the input
         /// </summary>
         [Parameter] public EventCallback<FocusEventArgs> OnFocusIn { get; set; }
@@ -278,11 +248,6 @@ namespace Bit.Client.Web.BlazorUI
             {
                 FocusClass = "focused";
                 await OnFocusIn.InvokeAsync(e);
-
-                if (ValidateOnFocusIn)
-                {
-                    Validate(Value);
-                }
             }
         }
 
@@ -292,11 +257,6 @@ namespace Bit.Client.Web.BlazorUI
             {
                 FocusClass = "";
                 await OnFocusOut.InvokeAsync(e);
-
-                if (ValidateOnFocusOut)
-                {
-                    Validate(Value);
-                }
             }
         }
 
@@ -314,11 +274,6 @@ namespace Bit.Client.Web.BlazorUI
             if (IsEnabled)
             {
                 await OnInput.InvokeAsync(e);
-            }
-
-            if (!ValidateOnFocusIn && !ValidateOnFocusOut)
-            {
-                await DeferredValidation(e.Value.ToString()).ConfigureAwait(false);
             }
         }
 
@@ -351,54 +306,6 @@ namespace Bit.Client.Web.BlazorUI
             ElementType = ElementType == TextFieldType.Text ? TextFieldType.Password : TextFieldType.Text;
         }
 
-        private readonly ICollection<Task> DeferredValidationTasks = new List<Task>();
-
-        private void Validate(string? value)
-        {
-            if (value != null)
-            {
-                string? errorMessage = OnGetErrorMessage?.Invoke(value!);
-                if (ErrorMessage.HasNoValue() && OnGetErrorMessage != null && errorMessage.HasNoValue())
-                {
-                    ErrorMessage = "";
-                }
-                else
-                {
-                    ErrorMessage = errorMessage;
-                    StateHasChanged();
-                }
-            }
-        }
-
-        private async Task DeferredValidation(string value)
-        {
-            if (DeferredValidationTime == 0)
-            {
-                Validate(value);
-            }
-            else
-            {
-                DeferredValidationTasks.Add(Task.Run(async () =>
-                {
-                    await Task.Delay(DeferredValidationTime);
-                }));
-                int TaskCount = DeferredValidationTasks.Count;
-                await Task.WhenAll(DeferredValidationTasks.ToArray());
-                if (TaskCount == DeferredValidationTasks.Count)
-                {
-                    _ = Task.Run(() =>
-                    {
-                        InvokeAsync(() =>
-                        {
-                            Validate(value);
-                            StateHasChanged();
-                        });
-                        //invokeasync required for serverside
-                    }).ConfigureAwait(false);
-                }
-            }
-        }
-
         protected override Task OnParametersSetAsync()
         {
             if (DefaultValue.HasValue())
@@ -409,16 +316,5 @@ namespace Bit.Client.Web.BlazorUI
 
             return base.OnParametersSetAsync();
         }
-
-        protected override void OnAfterRender(bool firstRender)
-        {
-            if (firstRender & ValidateOnLoad)
-            {
-                Validate(Value);
-            }
-            base.OnAfterRenderAsync(firstRender);
-        }
-
-
     }
 }
