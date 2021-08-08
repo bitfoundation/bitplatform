@@ -107,13 +107,18 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
             var isEnabledClass = isEnabled ? "enabled" : "disabled";
             var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
 
-            Assert.IsTrue(bitButton.ClassList.Contains($"bit-btn-{isEnabledClass}-{visualClass}"));
-
-            Assert.IsTrue(bitButton.HasAttribute("href"));
+            if (isEnabled)
+            {
+                Assert.IsTrue(bitButton.ClassList.Contains($"bit-btn-{visualClass}"));
+                Assert.AreEqual(bitButton.GetAttribute("target"), target);
+                Assert.IsTrue(bitButton.HasAttribute("href"));
+            }
+            else
+            {
+                Assert.IsTrue(bitButton.ClassList.Contains($"bit-btn-{isEnabledClass}-{visualClass}"));
+            }
 
             Assert.AreEqual(bitButton.GetAttribute("title"), title);
-
-            Assert.AreEqual(bitButton.GetAttribute("target"), target);
         }
 
         [DataTestMethod, DataRow("Detailed description")]
