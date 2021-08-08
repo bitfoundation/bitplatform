@@ -177,7 +177,7 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// Callback for when the input value changes
         /// </summary>
-        [Parameter] public EventCallback<ChangeEventArgs> OnInput { get; set; }
+        [Parameter] public EventCallback<ChangeEventArgs> OnChange { get; set; }
 
         /// <summary>
         /// Callback for when a keyboard key is pressed
@@ -259,11 +259,11 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
-        protected virtual async Task HandleInput(ChangeEventArgs e)
+        protected virtual async Task HandleChange(ChangeEventArgs e)
         {
             if (IsEnabled)
             {
-                await OnInput.InvokeAsync(e);
+                await OnChange.InvokeAsync(e);
             }
         }
 

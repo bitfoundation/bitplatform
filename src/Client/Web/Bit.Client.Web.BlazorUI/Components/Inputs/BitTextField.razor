@@ -40,11 +40,12 @@
                           @onfocusin="@HandleFocusIn"
                           @onfocusout="@HandleFocusOut"
                           @onfocus="@HandleFocus"
-                          @oninput="@HandleInput"
+                          @oninput="@HandleChange"
+                          @onchange="@HandleChange"
                           @onkeydown="@HandleKeyDown"
                           @onkeyup="@HandleKeyUp">
-            @Value
-        </textarea>
+                    @Value
+                </textarea>
             }
             else
             {
@@ -61,7 +62,8 @@
                        @onfocusin="@HandleFocusIn"
                        @onfocusout="@HandleFocusOut"
                        @onfocus="@HandleFocus"
-                       @oninput="@HandleInput"
+                       @oninput="@HandleChange"
+                       @onchange="@HandleChange"
                        @onkeydown="@HandleKeyDown"
                        @onkeyup="@HandleKeyUp" />
             }
