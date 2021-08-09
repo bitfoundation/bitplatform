@@ -1,4 +1,4 @@
-﻿@import "../colors.fluent.scss", "../../functions.scss";
+﻿@import "../../Styles/Fluent/colors.fluent.scss", "../../Styles/functions.scss";
 
 @mixin getStyle($enabled: true,$checked: true ) {
      label {
