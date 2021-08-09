@@ -1,5 +1,4 @@
-﻿
-class BitColorPicker {
+﻿class BitColorPicker {
     static listOfAbortControllers: BitAbortController[] = [];
 
     static registerOnWindowMouseUpEvent(dotnetHelper: any, callback: string): string {
