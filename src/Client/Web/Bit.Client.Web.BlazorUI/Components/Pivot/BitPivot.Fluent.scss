@@ -1,4 +1,6 @@
-﻿.bit-pvt-fluent {
+﻿@import "../../Styles/Fluent/colors.fluent.scss", "../../Styles/functions.scss";
+
+.bit-pvt-fluent {
     & > div:nth-child(1) {
         white-space: nowrap;
 
