@@ -9,7 +9,7 @@ namespace Bit.Client.Web.BlazorUI
 {
     public partial class BitTextField
     {
-        private bool isMultiLine;
+        private bool isMultiline;
         private bool isReadonly;
         private bool isRequired;
         private bool isUnderlined;
@@ -17,17 +17,19 @@ namespace Bit.Client.Web.BlazorUI
         private string focusClass = "";
         private TextFieldType type = TextFieldType.Text;
         private Guid InputId = Guid.NewGuid();
+        private string? textValue;
+        private bool ValueHasBeenSet;
 
         /// <summary>
-        /// Whether or not the text field is a multiline text field
+        /// Whether or not the text field is a Multiline text field
         /// </summary>
         [Parameter]
-        public bool IsMultiLine
+        public bool IsMultiline
         {
-            get => isMultiLine;
+            get => isMultiline;
             set
             {
-                isMultiLine = value;
+                isMultiline = value;
                 ClassBuilder.Reset();
             }
         }
@@ -91,8 +93,24 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// Current value of the text field
         /// </summary>
-        [Parameter] public string? Value { get; set; }
+        [Parameter]
+        public string? Value
+        {
+            get => textValue;
+            set
+            {
+                if (value == textValue) return;
+                textValue = value;
+                
+                _ = ValueChanged.InvokeAsync(value);
+            }
+        }
 
+        /// <summary>
+        /// Callback for when the input value changes
+        /// </summary>
+        [Parameter] public EventCallback<string?> ValueChanged { get; set; }
+        [Parameter] public EventCallback<string?> OnChange { get; set; }
         /// <summary>
         /// Default value of the text field. Only provide this if the text field is an uncontrolled component; otherwise, use the value property
         /// </summary>
@@ -108,7 +126,7 @@ namespace Bit.Client.Web.BlazorUI
         /// </summary>
         [Parameter] public string? Label { get; set; }
 
-        [Parameter] public RenderFragment? RenderLabel { get; set; }
+        [Parameter] public RenderFragment? LabelFragment { get; set; }
 
         /// <summary>
         /// Description displayed below the text field to provide additional details about what text to enter.
@@ -174,10 +192,6 @@ namespace Bit.Client.Web.BlazorUI
         /// </summary>
         [Parameter] public EventCallback<FocusEventArgs> OnFocus { get; set; }
 
-        /// <summary>
-        /// Callback for when the input value changes
-        /// </summary>
-        [Parameter] public EventCallback<ChangeEventArgs> OnChange { get; set; }
 
         /// <summary>
         /// Callback for when a keyboard key is pressed
@@ -210,7 +224,7 @@ namespace Bit.Client.Web.BlazorUI
 
         protected override void RegisterComponentClasses()
         {
-            ClassBuilder.Register(() => IsMultiLine && Type == TextFieldType.Text
+            ClassBuilder.Register(() => IsMultiline && Type == TextFieldType.Text
                                         ? $"{RootElementClass}-multiline-{VisualClassRegistrar()}" : string.Empty);
 
             ClassBuilder.Register(() => IsEnabled && IsReadonly
@@ -222,7 +236,7 @@ namespace Bit.Client.Web.BlazorUI
             ClassBuilder.Register(() => IsUnderlined
                                        ? $"{RootElementClass}-underlined-{VisualClassRegistrar()}" : string.Empty);
 
-            ClassBuilder.Register(() => !HasBorder
+            ClassBuilder.Register(() => HasBorder is false
                                        ? $"{RootElementClass}-no-border-{VisualClassRegistrar()}" : string.Empty);
 
             ClassBuilder.Register(() => IsEnabled is false
@@ -261,10 +275,10 @@ namespace Bit.Client.Web.BlazorUI
 
         protected virtual async Task HandleChange(ChangeEventArgs e)
         {
-            if (IsEnabled)
-            {
-                await OnChange.InvokeAsync(e);
-            }
+            if (IsEnabled is false) return;
+            if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+            Value = e.Value?.ToString();
+            await OnChange.InvokeAsync(Value);
         }
 
         protected virtual async Task HandleKeyDown(KeyboardEventArgs e)
@@ -296,15 +310,13 @@ namespace Bit.Client.Web.BlazorUI
             ElementType = ElementType == TextFieldType.Text ? TextFieldType.Password : TextFieldType.Text;
         }
 
-        protected override Task OnParametersSetAsync()
+        protected override Task OnInitializedAsync()
         {
             if (DefaultValue.HasValue())
             {
                 Value = DefaultValue;
-                DefaultValue = default;
             }
-
-            return base.OnParametersSetAsync();
+            return base.OnInitializedAsync();
         }
     }
 }

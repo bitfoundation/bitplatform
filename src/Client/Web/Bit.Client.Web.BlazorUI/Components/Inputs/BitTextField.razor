@@ -6,19 +6,18 @@
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
     <div>
-        @if (Label.HasValue() || RenderLabel is not null)
+
+        @if (Label.HasValue())
         {
-            @if (RenderLabel is not null)
-            {
-                <span>@RenderLabel</span>
-            }
-            else if (Label.HasValue())
-            {
-                <label for="@InputId">
-                    @Label
-                </label>
-            }
+            <span>@LabelFragment</span>
         }
+        else if (LabelFragment != null)
+        {
+            <label for="@InputId">
+                @Label
+            </label>
+        }
+
         <div>
             @if (Prefix is not null)
             {
@@ -26,7 +25,7 @@
                     <span>@Prefix</span>
                 </div>
             }
-            @if (IsMultiLine && Type == TextFieldType.Text)
+            @if (IsMultiline && Type == TextFieldType.Text)
             {
                 <textarea id="@InputId"
                           rows="3"
