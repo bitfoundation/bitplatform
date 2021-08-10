@@ -133,7 +133,7 @@ namespace Bit.Client.Web.BlazorUI
         /// </summary>
         [Parameter] public string? Description { get; set; }
 
-        [Parameter] public RenderFragment? RenderDescription { get; set; }
+        [Parameter] public RenderFragment? DescriptionFragment { get; set; }
 
         /// <summary>
         /// Specifies the maximum number of characters allowed in the input

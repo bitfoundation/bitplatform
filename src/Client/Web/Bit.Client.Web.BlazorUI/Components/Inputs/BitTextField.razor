@@ -90,12 +90,12 @@
 
         </div>
     </div>
-    @if (Description.HasValue() || RenderDescription is not null)
+    @if (Description.HasValue() || DescriptionFragment is not null)
     {
         <span>
-            @if (RenderDescription is not null)
+            @if (DescriptionFragment is not null)
             {
-                @RenderDescription
+                @DescriptionFragment
             }
             else if (Description.HasValue())
             {
