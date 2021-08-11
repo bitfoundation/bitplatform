@@ -65,6 +65,9 @@ namespace Bit.Client.Web.BlazorUI
         }
         [Parameter] public EventCallback<string?> ValueChanged { get; set; }
 
+        /// <summary>
+        /// The default value of the text in the SearchBox, in the case of an uncontrolled component.
+        /// </summary>
         [Parameter]
         public string? DefaultValue { get; set; }
 
@@ -96,6 +99,9 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
+        /// <summary>
+        /// Whether or not to make the icon be always visible (it hides by default when the search box is focused).
+        /// </summary>
         [Parameter]
         public bool ShowIcon
         {

@@ -10,8 +10,6 @@
 <div class="wrapper">
     <div class="card">
         <h3>BitSearchBox</h3>
-        <div>binded: @TextValue</div>
-        <BitSearchBox Placeholder="Search" @bind-Value="@TextValue"></BitSearchBox>
         <div class="desc">
             <p>
                 To create a searchbox you can use a BitSearchbox component. By DisableAnimation attribute, you can disable searchbox animation.
@@ -22,8 +20,20 @@
                 <div>
                     <BitSearchBox Placeholder="Search"></BitSearchBox>
                 </div>
+
+                <div class="m-t-10">
+                    <BitSearchBox Placeholder="Search" DefaultValue="this is default value"></BitSearchBox>
+                </div>
+                <div class="m-t-10">
+                    <BitSearchBox Placeholder="Search with Binded value" @bind-Value="@TextValue"></BitSearchBox>
+                    <BitLabel>The value you are looking for: @TextValue</BitLabel>
+                </div>
+                <br />
                 <div class="m-t-10">
                     <BitSearchBox Placeholder="Search with no animation" DisableAnimation=true></BitSearchBox>
+                </div>
+                <div class="m-t-10">
+                    <BitSearchBox Placeholder="SearchBox with fixed icon" ShowIcon="true"></BitSearchBox>
                 </div>
             </BitPivotItem>
             <BitPivotItem HeaderText="Code" IconName="Source">
@@ -31,7 +41,16 @@
                     &lt<span class="dark-green">BitSearchBox Placeholder="</span>Search"><span>&lt/</span><span class="dark-green">BitSearchBox</span><span>&gt;</span>
                 </p>
                 <p>
+                    &lt<span class="dark-green">BitSearchBox DefaultValue="</span>this is default value">&lt/<span class="dark-green">BitSearchBox</span><span>&gt;</span>
+                </p>
+                <p>
+                    &lt<span class="dark-green">BitSearchBox Placeholder="</span>Search with Binded value"<span class="dark-green">&nbsp;@@bind-Value</span>="<span class="light-blue">@@TextValue</span>">&lt/<span class="dark-green">BitSearchBox</span><span>&gt;</span>
+                </p>
+                <p>
                     &lt<span class="dark-green">BitSearchBox Placeholder="</span>Search with no animation"<span class="dark-green"> DisableAnimation</span>="<span class="light-blue">true</span>">&lt/<span class="dark-green">BitSearchBox</span><span>&gt;</span>
+                </p> 
+                <p>
+                    &lt<span class="dark-green">BitSearchBox Placeholder="</span>SearchBox with fixed icon"<span class="dark-green"> ShowIcon</span>="<span class="light-blue">true</span>">&lt/<span class="dark-green">BitSearchBox</span><span>&gt;</span>
                 </p>
             </BitPivotItem>
         </BitPivot>
