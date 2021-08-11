@@ -47,12 +47,11 @@ namespace BitChangeSetManager
             services.AddResponseCompression(options =>
             {
                 options.EnableForHttps = true;
+                options.Providers.Add<BrotliCompressionProvider>();
                 options.Providers.Add<GzipCompressionProvider>();
-            });
-
-            services.Configure<GzipCompressionProviderOptions>(options =>
+            }).Configure<GzipCompressionProviderOptions>(options =>
             {
-                options.Level = CompressionLevel.Optimal;
+                options.Level = CompressionLevel.Fastest;
             });
 
             dependencyManager.RegisterAspNetCoreMiddlewareUsing(aspNetCoreApp =>

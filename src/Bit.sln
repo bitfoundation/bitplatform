@@ -123,6 +123,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Client.Web.BlazorUI", "
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Playground", "Playground", "{23426B1A-CC46-4D11-B233-208A57B2BCA2}"
 	ProjectSection(SolutionItems) = preProject
+		Client\Web\Playground\Directory.build.props = Client\Web\Playground\Directory.build.props
 		Client\Web\Playground\README.md = Client\Web\Playground\README.md
 	EndProjectSection
 EndProject

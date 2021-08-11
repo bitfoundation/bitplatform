@@ -16,17 +16,17 @@
   <ItemGroup>
     <PackageReference Include="Autofac.Owin" Version="6.0.1" />
     <PackageReference Include="Lambda2Js" Version="3.1.3" />
-    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.17.0" />
+    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.18.0" />
     <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.7" />
     <PackageReference Include="Microsoft.Owin.Security.Jwt" Version="4.2.0" />
     <PackageReference Include="NodaTime" Version="3.0.5" />
     <PackageReference Include="NWebsec.Core" Version="3.0.1" />
     <PackageReference Include="NWebsec.Owin" Version="4.0.0" />
-    <PackageReference Include="System.Diagnostics.EventLog" Version="6.0.0-preview.6.21352.12" />
+    <PackageReference Include="System.Diagnostics.EventLog" Version="6.0.0-preview.7.21377.19" />
     <PackageReference Include="Serilog.AspNetCore" Version="4.1.0" />
-    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="6.0.0-preview.6.21352.12" />
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="6.0.0-preview.7.21377.19" />
     <PackageReference Include="NWebsec.AspNetCore.Middleware" Version="3.0.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Owin" Version="6.0.0-preview.6.21355.2" />
+    <PackageReference Include="Microsoft.AspNetCore.Owin" Version="6.0.0-preview.7.21378.6" />
   </ItemGroup>
 
   <ItemGroup>
