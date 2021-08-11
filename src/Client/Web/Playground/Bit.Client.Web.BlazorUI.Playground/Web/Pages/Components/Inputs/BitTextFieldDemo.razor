@@ -1,0 +1,215 @@
+﻿@page "/components/textfield"
+
+<h2>TextField</h2>
+
+<div class="card">
+    <p class="desc"> Text fields give people a way to enter and edit text. They’re used in forms, modal dialogs, tables, and other surfaces where text input is required.</p>
+</div>
+
+<h2>Usage</h2>
+<div class="wrapper">
+    <div class="card">
+        <h3>Basic TextFields</h3>
+        <div class="desc">
+            <p>
+                To create a text field you can use a BitTextField component. You can enable and disable the text field by changing the IsEnabled attribute, A text filed can set for ReadOnly mode. By setting label attribute, a label appears above the text field. You can set Placeholder
+                and limit the chars of entered on text field by MaxLength attribute. You can even set icon for it and change text field type to password. By IsRequierd attribute check if the associated input is required or not.
+            </p>
+        </div>
+        <BitPivot>
+            <BitPivotItem HeaderText="Example" IconName="ViewList">
+                <div>
+                    <BitTextField Label="Standard"></BitTextField>
+                </div>
+                <div class="m-t-15">
+                    <BitTextField Label="Read-only" IsReadonly="true" Value="I am read-only"></BitTextField>
+                </div>
+                <div class="m-t-15">
+                    <BitTextField Label="Disabled" IsEnabled="false" Value="I am disabled"></BitTextField>
+                </div>
+                <div class="m-t-15">
+                    <BitTextField Label="With placeholder" Placeholder="Please enter text here"></BitTextField>
+                </div>
+                <div class="m-t-15">
+                    <BitTextField Label="Controlled TextField limiting length of value to 10" MaxLength="10"></BitTextField>
+                </div>
+                <div class="m-t-15">
+                    <BitTextField Label="With an icon" IconName="CalendarMirrored"></BitTextField>
+                </div>
+                <div class="m-t-15">
+                    <BitTextField Label="Password with reveal button" Type="@InputType" CanRevealPassword="true"></BitTextField>
+                </div>
+                <div class="m-t-15">
+                    <BitTextField Label="Required" IsRequired="true"></BitTextField>
+                </div>
+            </BitPivotItem>
+            <BitPivotItem HeaderText="Code" IconName="Source">
+                <p>
+                    &lt<span class="dark-green">BitTextField Label</span>="Standard"><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
+                </p>
+                <p>
+                    &lt<span class="dark-green">BitTextField IsReadonly</span>="<span class="light-blue">true</span>" <span class="dark-green">Label</span>="Read-only" <span class="dark-green">Value</span>="I am read-only"><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
+                </p>
+                <p>
+                    &lt<span class="dark-green">BitTextField IsEnabled</span>="<span class="light-blue">false</span>" <span class="dark-green">Label</span>="Disabled" <span class="dark-green">Value</span>="I am disabled"><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
+                </p>
+                <p>
+                    &lt<span class="dark-green">BitTextField Placeholder</span>="Please enter text here" <span class="dark-green">Label</span>="With placeholder"><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
+                </p>
+                <p>
+                    &lt<span class="dark-green">BitTextField MaxLength</span>="10" <span class="dark-green">Label</span>="Controlled TextField limiting length of value to 10"><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
+                </p>
+                <p>
+                    &lt<span class="dark-green">BitTextField Label</span>="With an icon" <span class="dark-green">IconName</span>="CalendarMirrored"><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
+                </p>
+                <p>
+                    &lt<span class="dark-green">BitTextField Type</span>="<span class="light-yellow-bg">&#64;</span>InputType" <span class="dark-green">Label</span>="Password with reveal button" <span class="dark-green">CanRevealPassword</span>="<span class="light-blue">true</span>"><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
+                </p>
+                <p>
+                    &lt<span class="dark-green">BitTextField Label</span>="Required" <span class="dark-green">IsRequired</span>="<span class="light-blue">true</span>"><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
+                </p>
+            </BitPivotItem>
+        </BitPivot>
+    </div>
+    <h3>Multi-line</h3>
+    <BitPivot>
+        <BitPivotItem HeaderText="Example" IconName="ViewList">
+            <div>
+                <BitTextField Label="Standard" IsMultiLine="true"></BitTextField>
+            </div>
+            <div class="m-t-15">
+                <BitTextField Label="Limited multi-line text field - 10 chars" IsMultiLine="true" MaxLength="10"></BitTextField>
+            </div>
+            <div class="m-t-15">
+                <BitTextField Label="Disabled" IsMultiLine="true" IsEnabled="false" Value="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat"></BitTextField>
+            </div>
+        </BitPivotItem>
+        <BitPivotItem HeaderText="Code" IconName="Source">
+            <p>
+                &lt<span class="dark-green">BitTextField IsMultiLine</span>="<span class="light-blue">true</span>" <span class="dark-green">Label</span>="Standard" <span class="dark-green">Value</span>="Multi-line text field"><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
+            </p>
+            <p>
+                &lt<span class="dark-green">BitTextField IsMultiLine</span>="<span class="light-blue">true</span>" <span class="dark-green">Label</span>="Limited multi-line text field - 10 chars" <span class="dark-green">MaxLength</span>="10" <span class="dark-green">Placeholder</span>="Limited multi-line text field - 10 chars"><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
+            </p>
+            <p>
+                &lt<span class="dark-green">BitTextField IsMultiLine</span>="<span class="light-blue">true</span>" <span class="dark-green">Label</span>="Disabled" <span class="dark-green">IsEnabled</span>="<span class="light-blue">false</span>" <span class="dark-green">Value</span>="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat"><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
+            </p>
+        </BitPivotItem>
+    </BitPivot>
+</div>
+<h2>Implementation</h2>
+<div class="card">
+    <table>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Default value</th>
+            <th>Description</th>
+        </tr>
+        <tr>
+            <td>canRevealPassword</td>
+            <td>bool</td>
+            <td>false</td>
+            <td>Whether to show the reveal password button for input type 'password'. This will be ignored if the type prop is not set to 'password', or if the browser is known to have a built-in reveal button for password inputs.</td>
+        </tr>
+        <tr>
+            <td>iconName</td>
+            <td>string</td>
+            <td></td>
+            <td>Icon name for an optional icon, displayed in the far right end of the text field..</td>
+        </tr>
+        <tr>
+            <td>isEnabled</td>
+            <td>bool</td>
+            <td>true</td>
+            <td>Whether the textfield is enabled.</td>
+        </tr>
+        <tr>
+            <td>isMultiLine</td>
+            <td>bool</td>
+            <td>false</td>
+            <td>Whether or not the text field is a multiline text field.</td>
+        </tr>
+        <tr>
+            <td>isReadonly</td>
+            <td>bool</td>
+            <td>false</td>
+            <td>If true, the text field is readonly.</td>
+        </tr>
+        <tr>
+            <td>isRequired</td>
+            <td>bool</td>
+            <td>false</td>
+            <td>Whether the associated input is required or not, add an asterisk "*" to its label.</td>
+        </tr>
+        <tr>
+            <td>label</td>
+            <td>string</td>
+            <td></td>
+            <td>Label displayed above the textfield and read by screen readers.</td>
+        </tr>
+        <tr>
+            <td>maxLength</td>
+            <td>int</td>
+            <td></td>
+            <td>Define max length of text field.</td>
+        </tr>
+        <tr>
+            <td>placeholder</td>
+            <td>string</td>
+            <td></td>
+            <td>A text for textfield as placeholder.</td>
+        </tr>
+        <tr>
+            <td>ref</td>
+            <td>elementreference</td>
+            <td></td>
+            <td>Access the public methods and properties of the component.</td>
+        </tr>
+        <tr>
+            <td>styles</td>
+            <td>string</td>
+            <td></td>
+            <td>Custom styling for individual elements within the textfield DOM.</td>
+        </tr>
+        <tr>
+            <td>type</td>
+            <td>textfieldtype</td>
+            <td></td>
+            <td>Type of textfield, text or password</td>
+        </tr>
+        <tr>
+            <td>uniqueId</td>
+            <td>guid</td>
+            <td></td>
+            <td>Unique ID to identify the item. Typically a duplicate of key value.</td>
+        </tr>
+        <tr>
+            <td>value</td>
+            <td>string</td>
+            <td></td>
+            <td>Current value of the text field.</td>
+        </tr>
+    </table>
+    <div>
+        <h4>TextFieldType</h4>
+        <hr />
+        <table>
+            <tr>
+                <th>Name</th>
+                <th>Value</th>
+                <th>Description</th>
+            </tr>
+            <tr>
+                <td>text</td>
+                <td>0</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>password</td>
+                <td>1</td>
+                <td></td>
+            </tr>
+        </table>
+    </div>
+</div>

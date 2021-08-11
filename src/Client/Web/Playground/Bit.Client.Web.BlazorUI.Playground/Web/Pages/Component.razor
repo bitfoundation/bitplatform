@@ -234,35 +234,60 @@
 
 <hr />
 
+
 <div class="message-bar-container">
     <h2>BitMessageBar</h2>
     @if (IsMessageBarHidden is false)
     {
-        <BitMessageBar MessageBarStyle="@MessageBarStyle.Success" OnDismiss="HideMessageBar">
+        <BitMessageBar MessageBarType="@BitMessageBarType.Success" OnDismiss="HideMessageBar" IsMultiline="false" Truncated="true">
+            Action completed! This is a sample of message bar with dismiss ability
+            Action completed! This is a sample of message bar with dismiss ability
+            Action completed! This is a sample of message bar with dismiss ability
+            Action completed! This is a sample of message bar with dismiss ability
             Action completed! This is a sample of message bar with dismiss ability
         </BitMessageBar>
         <br />
+
+        <BitMessageBar MessageBarType="@BitMessageBarType.Success" OnDismiss="HideMessageBar" IsMultiline="false" Truncated="true">
+            <Actions>
+                <BitButton>Ok</BitButton>
+            </Actions>
+            <ChildContent>
+                Action completed! This is a sample of message bar with dismiss ability
+                Action completed! This is a sample of message bar with dismiss ability
+                Action completed! This is a sample of message bar with dismiss ability
+                Action completed! This is a sample of message bar with dismiss ability
+                Action completed! This is a sample of message bar with dismiss ability
+            </ChildContent>
+        </BitMessageBar>
+        <br />
     }
-    <BitMessageBar MessageBarStyle="@MessageBarStyle.Error" Truncated="true">
-        This is an error message bar with the ability to truncate your text Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+    <BitMessageBar MessageBarType="@BitMessageBarType.Error" Truncated="true" OnDismiss="HideMessageBar">
+        <ChildContent>
+            This is an error message bar with the ability to truncate your text Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+        </ChildContent>
+        <Actions>
+            <BitButton>Ok</BitButton>
+        </Actions>
     </BitMessageBar>
     <br />
-    <BitMessageBar MessageBarStyle="@MessageBarStyle.Warning" IsMultiline="true">
+    <BitMessageBar MessageBarType="@BitMessageBarType.Warning" IsMultiline="true">
         Caution! Action may takes long and also this message bar shown multiline messages time Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
     </BitMessageBar>
     <br />
-    <BitMessageBar MessageBarStyle="@MessageBarStyle.Blocked">
+    <BitMessageBar MessageBarType="@BitMessageBarType.Blocked">
         Blocked MessageBar - single line Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
     </BitMessageBar>
     <br />
-    <BitMessageBar MessageBarStyle="@MessageBarStyle.Severe">
+    <BitMessageBar MessageBarType="@BitMessageBarType.SevereWarning">
         Cannot connect to server
     </BitMessageBar>
     <br />
-    <BitMessageBar MessageBarStyle="@MessageBarStyle.Default">
-        Visit repository <BitLink Href="https://github.com/bitfoundation/bitframework">here</BitLink>
+    <BitMessageBar MessageBarType="@BitMessageBarType.Info">
+        Visit repository <BitLink HasUnderline="true">the link is rendered as a button</BitLink>
     </BitMessageBar>
 </div>
+
 
 <hr />
 
@@ -327,7 +352,10 @@
 
 <div class="text-field-container">
     <h2>BitTextField</h2>
-    <BitTextField Label="Standard"></BitTextField>
+    <div>binded: @TextValue</div>
+    <BitTextField Label="Standard" @bind-Value="@TextValue"></BitTextField>
+    <br />
+    <BitTextField Label="Standard with default value" DefaultValue="Hello I am default value"></BitTextField>
     <br />
     <BitTextField Label="Read-only" IsReadonly="true" Value="I am read-only"></BitTextField>
     <br />
@@ -343,12 +371,35 @@
     <br />
     <BitTextField Label="Required" IsRequired="true"></BitTextField>
     <br />
+    <BitTextField Label="With prefix" Prefix="https://"></BitTextField>
+    <br />
+    <BitTextField Label="Disabled with prefix" Prefix="https://" IsEnabled="false"></BitTextField>
+    <br />
+    <BitTextField Label="With suffix" Suffix=".com"></BitTextField>
+    <br />
+    <BitTextField Label="Disabled With suffix" Suffix=".com" IsEnabled="false"></BitTextField>
+    <br />
+    <BitTextField Label="With prefix and suffix" Prefix="https://" Suffix=".com"></BitTextField>
+    <br />
     <h3>Multi-line</h3>
-    <BitTextField Label="Standard" IsMultiLine="true"></BitTextField>
+    <BitTextField Label="Standard" IsMultiline="true"></BitTextField>
     <br />
-    <BitTextField Label="Limited multi-line text field - 10 chars" IsMultiLine="true" MaxLength="10"></BitTextField>
+    <BitTextField Label="Limited multi-line text field - 10 chars" IsMultiline="true" MaxLength="10"></BitTextField>
     <br />
-    <BitTextField Label="Disabled" IsMultiLine="true" IsEnabled="false" Value="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat"></BitTextField>
+    <BitTextField Label="Disabled" IsMultiline="true" IsEnabled="false" Value="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat"></BitTextField>
+    <br />
+    <h3>Underlined and borderless TextFields</h3>
+    <BitTextField Label="Standard" IsUnderlined="true"></BitTextField>
+    <br />
+    <BitTextField Label="Disabled" IsUnderlined="true" IsEnabled="false"></BitTextField>
+    <br />
+    <BitTextField Label="Required" IsRequired IsUnderlined="true"></BitTextField>
+    <br />
+    <BitTextField Label="Borderless single-line TextField" Placeholder="No borders here, folks." HasBorder="false"></BitTextField>
+    <br />
+    <BitTextField Label="Borderless multi-line TextField" Placeholder="No borders here, folks." IsMultiline="true" HasBorder="false"></BitTextField>
+    <br />
+    <BitTextField Label="Description" Description="this is sample description"></BitTextField>
 </div>
 
 <hr />
@@ -431,140 +482,145 @@
     <h2>BitToggle</h2>
     <h3>Basics</h3>
 
-    <BitToggle @bind-IsChecked="IsToggleChecked" IsEnabled="true" OnText="On" OffText="Off">Enabled and checked</BitToggle>
+    <BitToggle Label="Enabled and checked" @bind-IsChecked="IsToggleChecked" IsEnabled="true" OnText="On" OffText="Off" />
     <br />
-    <BitToggle @bind-IsChecked="IsToggleUnChecked" IsEnabled="true" OnText="On" OffText="Off">Enabled and unchecked</BitToggle>
+    <BitToggle Label="Enabled and unchecked" @bind-IsChecked="IsToggleUnChecked" IsEnabled="true" OnText="On" OffText="Off" />
     <br />
-    <BitToggle IsChecked="true" IsEnabled="false" OnText="On" OffText="Off">Disabled and checked</BitToggle>
+    <BitToggle Label="Disabled and checked" IsChecked="true" IsEnabled="false" OnText="On" OffText="Off" />
     <br />
-    <BitToggle IsChecked="false" IsEnabled="false" OnText="On" OffText="Off">Disabled and unchecked</BitToggle>
+    <BitToggle Label="Disabled and unchecked" IsChecked="false" IsEnabled="false" OnText="On" OffText="Off" />
     <br />
-    <BitToggle @bind-IsChecked="IsToggleUnChecked" IsEnabled="true" IsInlineLabel="true" OnText="On" OffText="Off">With inline label</BitToggle>
+    <BitToggle Label="With inline label" @bind-IsChecked="IsToggleUnChecked" IsEnabled="true" IsInlineLabel="true" OnText="On" OffText="Off" />
     <br />
-    <BitToggle IsChecked="false" IsEnabled="false" IsInlineLabel="true" OnText="On" OffText="Off">Disabled with inline label</BitToggle>
+    <BitToggle Label="Disabled with inline label" IsChecked="false" IsEnabled="false" IsInlineLabel="true" OnText="On" OffText="Off" />
     <br />
-    <BitToggle @bind-IsChecked="IsToggleUnChecked" IsEnabled="true" IsInlineLabel="true">With inline label and without onText and offText</BitToggle>
+    <BitToggle Label="With inline label and without onText and offText" @bind-IsChecked="IsToggleUnChecked" IsEnabled="true" IsInlineLabel="true" />
     <br />
-    <BitToggle IsChecked="false" IsEnabled="false" IsInlineLabel="true">Disabled With inline label and without onText and offText</BitToggle>
+    <BitToggle Label="Disabled With inline label and without onText and offText" IsChecked="false" IsEnabled="false" IsInlineLabel="true" />
+    <br />
+    <BitToggle Label="Enabled and checked (ARIA 1.0 compatible)" @bind-IsChecked="IsToggleChecked" IsEnabled="true" OnText="On" OffText="Off" Role="Checkbox" />
     <br />
     <h3>Toggles with Custom Labels</h3>
+    <BitToggle @bind-IsChecked="IsToggleUnChecked" IsEnabled="true" OnText="On" OffText="Off">
+        <LabelFragment>
+            Custom label
+        </LabelFragment>
+    </BitToggle>
     <br />
-    <BitToggle @bind-IsChecked="IsToggleUnChecked" IsEnabled="true" OnText="On" OffText="Off">Custom label <i class="bit-icon bit-icon--Info"></i></BitToggle>
-    <br />
-    <BitToggle @bind-IsChecked="IsToggleUnChecked" IsEnabled="true" OnText="On" OffText="Off" IsInlineLabel="true">Custom inline label <i class="bit-icon bit-icon--Info"></i></BitToggle>
-    <br />
-    <BitToggle @bind-IsChecked="IsToggleChecked" IsEnabled="true" OnText="On" OffText="Off">Enabled and checked</BitToggle>
+    <BitToggle @bind-IsChecked="IsToggleUnChecked" IsEnabled="true" OnText="On" OffText="Off" IsInlineLabel="true">
+        <LabelFragment>
+            Custom inline label
+        </LabelFragment>
+    </BitToggle>
     <br />
     <BitButton OnClick="() => IsToggleChecked = true">Make Toggle Check</BitButton>
     <br />
-    <br />
-
-    <h3>Link Pivot</h3>
-    <div class="pivot-container">
-        <BitPivot>
-            <BitPivotItem HeaderText="File">Pivot #1</BitPivotItem>
-            <BitPivotItem HeaderText="Shared with me">Pivot #2</BitPivotItem>
-            <BitPivotItem HeaderText="Recent">Pivot #3</BitPivotItem>
-        </BitPivot>
-    </div>
-
-    <h3>Link pivot with Count and Icon and custom template for icon </h3>
-    <div class="pivot-container">
-        <BitPivot OverflowBehavior="@OverflowBehavior.Scroll">
-            <BitPivotItem HeaderText="Files" IconName="Info"></BitPivotItem>
-            <BitPivotItem HeaderText="Shared with me" ItemCount="32"></BitPivotItem>
-            <BitPivotItem HeaderText="Recent" IconName="Info" ItemCount="32"></BitPivotItem>
-            <BitPivotItem HeaderText="Some tab" IconName="Info" ItemCount="32"></BitPivotItem>
-            <BitPivotItem HeaderText="Latest" IconName="Info" ItemCount="32"></BitPivotItem>
-            <BitPivotItem HeaderText="I also have a custom template for icon" IconName="Info" ItemCount="32">
-                <HeaderContent>
-                    <i class="bit-icon bit-icon--HeartFill"></i>
-                </HeaderContent>
-            </BitPivotItem>
-        </BitPivot>
-    </div>
-
-    <h3> Large link pivot</h3>
-    <div class="pivot-container">
-        <BitPivot LinkSize="@LinkSize.Large">
-            <BitPivotItem HeaderText="File "></BitPivotItem>
-            <BitPivotItem HeaderText="Shared with me"></BitPivotItem>
-            <BitPivotItem HeaderText="Recent"></BitPivotItem>
-        </BitPivot>
-    </div>
-
-    <h3> Pivot tab style</h3>
-    <div class="pivot-container">
-        <BitPivot LinkFormat="@LinkFormat.Tabs">
-            <BitPivotItem HeaderText="Foo"></BitPivotItem>
-            <BitPivotItem HeaderText="Bar"></BitPivotItem>
-            <BitPivotItem HeaderText="Bas"></BitPivotItem>
-            <BitPivotItem HeaderText="Biz"></BitPivotItem>
-        </BitPivot>
-    </div>
-
-    <h3> Pivot large tabs</h3>
-    <div class="pivot-container">
-        <BitPivot LinkFormat="@LinkFormat.Tabs" LinkSize="@LinkSize.Large">
-            <BitPivotItem HeaderText="Foo">Pivot #1</BitPivotItem>
-            <BitPivotItem HeaderText="Bar">Pivot #2</BitPivotItem>
-            <BitPivotItem HeaderText="Bas">Pivot #3</BitPivotItem>
-            <BitPivotItem HeaderText="Biz">Pivot #4</BitPivotItem>
-        </BitPivot>
-    </div>
-
-    <h3> you can change tabs from outside of component</h3>
-    <div class="pivot-container">
-        <BitPivot LinkFormat="@LinkFormat.Tabs" LinkSize="@LinkSize.Large" SelectedKey="@OverridePivotSelectedKey" SelectedKeyChanged="PivotSelectedKeyChanged">
-            <BitPivotItem HeaderText="samples">Pivot #1</BitPivotItem>
-            <BitPivotItem HeaderText="Fiels">Pivot #2</BitPivotItem>
-            <BitPivotItem HeaderText="Recent">Pivot #3</BitPivotItem>
-        </BitPivot>
-        <BitButton OnClick="(() => OverridePivotSelectedKey = (((int.Parse(OverridePivotSelectedKey) + 3 - 1) % 3)).ToString())">prev</BitButton>
-        <BitButton OnClick="(() => OverridePivotSelectedKey = (((int.Parse(OverridePivotSelectedKey) + 1 ) % 3)).ToString())">next</BitButton>
-    </div>
-
-    <h3>Render content separately</h3>
-    <div class="pivot-container">
-        <BitPivot LinkFormat="@LinkFormat.Tabs" DefaultSelectedKey="Foo" LinkSize="@LinkSize.Large" HeadersOnly="true" OnLinkClick="@(e => SelectedPivotKey = e)">
-            <BitPivotItem HeaderText="Foo" ItemKey="Foo"></BitPivotItem>
-            <BitPivotItem HeaderText="Bar" ItemKey="Bar"></BitPivotItem>
-            <BitPivotItem HeaderText="Bas" ItemKey="Bas"></BitPivotItem>
-            <BitPivotItem HeaderText="Biz" ItemKey="Biz"></BitPivotItem>
-        </BitPivot>
-
-        @if (SelectedPivotKey?.ItemKey == "Foo")
-        {
-            <div> hello im foo</div>
-        }
-        else if (SelectedPivotKey?.ItemKey == "Bar")
-        {
-            <div> hello im Bar</div>
-        }
-        else if (SelectedPivotKey?.ItemKey == "Bas")
-        {
-            <div> hello im Bas</div>
-        }
-        else if (SelectedPivotKey?.ItemKey == "Biz")
-        {
-            <div> hello im Biz</div>
-        }
-    </div>
-
-    <h3>Trigger onchange event</h3>
-    <div class="pivot-container">
-        @BitPivotItem?.HeaderText Clicked
-        <BitPivot LinkFormat="@LinkFormat.Tabs" LinkSize="@LinkSize.Large" OnLinkClick="@(e => BitPivotItem = e)">
-            <BitPivotItem HeaderText="Foo aaaaaa">Pivot #1</BitPivotItem>
-            <BitPivotItem HeaderText="Bar bbbbbb">Pivot #2</BitPivotItem>
-            <BitPivotItem HeaderText="Bas cccccc" ItemKey="aaa">Pivot #3</BitPivotItem>
-            <BitPivotItem Visibility="@PivotItemVisibility" HeaderText="Biz dddddd">Pivot #4</BitPivotItem>
-            <BitPivotItem HeaderText="Bar eeeeee">Pivot #5</BitPivotItem>
-            <BitPivotItem HeaderText="Bas ffffff">Pivot #6</BitPivotItem>
-        </BitPivot>
-    </div>
-    <BitButton OnClick="TogglePivotItemVisobility">hide/show Biz</BitButton>
 </div>
+<h3>Link Pivot</h3>
+<div class="pivot-container">
+    <BitPivot>
+        <BitPivotItem HeaderText="File">Pivot #1</BitPivotItem>
+        <BitPivotItem HeaderText="Shared with me">Pivot #2</BitPivotItem>
+        <BitPivotItem HeaderText="Recent">Pivot #3</BitPivotItem>
+    </BitPivot>
+</div>
+
+<h3>Link pivot with Count and Icon and custom template for icon </h3>
+<div class="pivot-container">
+    <BitPivot OverflowBehavior="@OverflowBehavior.Scroll">
+        <BitPivotItem HeaderText="Files" IconName="Info"></BitPivotItem>
+        <BitPivotItem HeaderText="Shared with me" ItemCount="32"></BitPivotItem>
+        <BitPivotItem HeaderText="Recent" IconName="Info" ItemCount="32"></BitPivotItem>
+        <BitPivotItem HeaderText="Some tab" IconName="Info" ItemCount="32"></BitPivotItem>
+        <BitPivotItem HeaderText="Latest" IconName="Info" ItemCount="32"></BitPivotItem>
+        <BitPivotItem HeaderText="I also have a custom template for icon" IconName="Info" ItemCount="32">
+            <HeaderContent>
+                <i class="bit-icon bit-icon--HeartFill"></i>
+            </HeaderContent>
+        </BitPivotItem>
+    </BitPivot>
+</div>
+
+<h3> Large link pivot</h3>
+<div class="pivot-container">
+    <BitPivot LinkSize="@LinkSize.Large">
+        <BitPivotItem HeaderText="File "></BitPivotItem>
+        <BitPivotItem HeaderText="Shared with me"></BitPivotItem>
+        <BitPivotItem HeaderText="Recent"></BitPivotItem>
+    </BitPivot>
+</div>
+
+<h3> Pivot tab style</h3>
+<div class="pivot-container">
+    <BitPivot LinkFormat="@LinkFormat.Tabs">
+        <BitPivotItem HeaderText="Foo"></BitPivotItem>
+        <BitPivotItem HeaderText="Bar"></BitPivotItem>
+        <BitPivotItem HeaderText="Bas"></BitPivotItem>
+        <BitPivotItem HeaderText="Biz"></BitPivotItem>
+    </BitPivot>
+</div>
+
+<h3> Pivot large tabs</h3>
+<div class="pivot-container">
+    <BitPivot LinkFormat="@LinkFormat.Tabs" LinkSize="@LinkSize.Large">
+        <BitPivotItem HeaderText="Foo">Pivot #1</BitPivotItem>
+        <BitPivotItem HeaderText="Bar">Pivot #2</BitPivotItem>
+        <BitPivotItem HeaderText="Bas">Pivot #3</BitPivotItem>
+        <BitPivotItem HeaderText="Biz">Pivot #4</BitPivotItem>
+    </BitPivot>
+</div>
+
+<h3> you can change tabs from outside of component</h3>
+<div class="pivot-container">
+    <BitPivot LinkFormat="@LinkFormat.Tabs" LinkSize="@LinkSize.Large" SelectedKey="@OverridePivotSelectedKey" SelectedKeyChanged="PivotSelectedKeyChanged">
+        <BitPivotItem HeaderText="samples">Pivot #1</BitPivotItem>
+        <BitPivotItem HeaderText="Fiels">Pivot #2</BitPivotItem>
+        <BitPivotItem HeaderText="Recent">Pivot #3</BitPivotItem>
+    </BitPivot>
+    <BitButton OnClick="(() => OverridePivotSelectedKey = (((int.Parse(OverridePivotSelectedKey) + 3 - 1) % 3)).ToString())">prev</BitButton>
+    <BitButton OnClick="(() => OverridePivotSelectedKey = (((int.Parse(OverridePivotSelectedKey) + 1 ) % 3)).ToString())">next</BitButton>
+</div>
+
+<h3>Render content separately</h3>
+<div class="pivot-container">
+    <BitPivot LinkFormat="@LinkFormat.Tabs" DefaultSelectedKey="Foo" LinkSize="@LinkSize.Large" HeadersOnly="true" OnLinkClick="@(e => SelectedPivotKey = e)">
+        <BitPivotItem HeaderText="Foo" ItemKey="Foo"></BitPivotItem>
+        <BitPivotItem HeaderText="Bar" ItemKey="Bar"></BitPivotItem>
+        <BitPivotItem HeaderText="Bas" ItemKey="Bas"></BitPivotItem>
+        <BitPivotItem HeaderText="Biz" ItemKey="Biz"></BitPivotItem>
+    </BitPivot>
+
+    @if (SelectedPivotKey?.ItemKey == "Foo")
+    {
+        <div> hello im foo</div>
+    }
+    else if (SelectedPivotKey?.ItemKey == "Bar")
+    {
+        <div> hello im Bar</div>
+    }
+    else if (SelectedPivotKey?.ItemKey == "Bas")
+    {
+        <div> hello im Bas</div>
+    }
+    else if (SelectedPivotKey?.ItemKey == "Biz")
+    {
+        <div> hello im Biz</div>
+    }
+</div>
+
+<h3>Trigger onchange event</h3>
+<div class="pivot-container">
+    @BitPivotItem?.HeaderText Clicked
+    <BitPivot LinkFormat="@LinkFormat.Tabs" LinkSize="@LinkSize.Large" OnLinkClick="@(e => BitPivotItem = e)">
+        <BitPivotItem HeaderText="Foo aaaaaa">Pivot #1</BitPivotItem>
+        <BitPivotItem HeaderText="Bar bbbbbb">Pivot #2</BitPivotItem>
+        <BitPivotItem HeaderText="Bas cccccc" ItemKey="aaa">Pivot #3</BitPivotItem>
+        <BitPivotItem Visibility="@PivotItemVisibility" HeaderText="Biz dddddd">Pivot #4</BitPivotItem>
+        <BitPivotItem HeaderText="Bar eeeeee">Pivot #5</BitPivotItem>
+        <BitPivotItem HeaderText="Bas ffffff">Pivot #6</BitPivotItem>
+    </BitPivot>
+</div>
+<BitButton OnClick="TogglePivotItemVisobility">hide/show Biz</BitButton>
 
 <hr />
 
@@ -737,4 +793,10 @@
                    UploadUrl="@UploadUrl"
                    RemoveUrl="@RemoveUrl">
     </BitFileUpload>
+</div>
+
+<div>
+    <BitColorPicker @bind-Color="SelectedColor"></BitColorPicker>
+
+    @SelectedColor
 </div>

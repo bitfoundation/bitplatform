@@ -1,7 +1,7 @@
 ﻿@namespace Bit.Client.Web.BlazorUI
 @inherits BitComponentBase
 
-@if (Href.HasValue())
+@if (Href.HasValue() && IsEnabled)
 {
     <a @ref="RootElement"
        @attributes="HtmlAttributes"

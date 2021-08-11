@@ -1,38 +1,39 @@
-﻿
-@import "../colors.fluent.scss", "../../functions.scss";
+﻿@import "../colors.fluent.scss", "../../functions.scss";
 
 .bit-tgl-btn-fluent {
-    font-family: FluentFont;
+    font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
     text-align: center;
-    border-radius: em(2px);
-    padding: em(6px) em(20px);
+    border-radius: rem(2px);
+    padding: 0 rem(16px);
     font-size: rem(14px);
-    font-weight: 600;
-    line-height: em(20px);
+    font-weight: 400;
+    line-height: rem(20px);
     cursor: pointer;
-    min-height: 32px;
+    min-height: rem(32px);
+    min-width: rem(80px);
     text-decoration: none;
-    margin: 2px;
+    box-sizing: border-box;
+    display: inline-block;
 
     > span {
         display: flex;
+        flex-flow: row nowrap;
         height: 100%;
-        flex-wrap: nowrap;
         justify-content: center;
         align-items: center;
 
         > span {
-            margin: 0px 4px;
+            margin: 0 rem(4px);
             line-height: 100%;
             display: block;
             font-weight: 600;
         }
 
         > i {
-            font-size: 16px;
-            margin: 0px 4px;
-            height: 16px;
-            line-height: 16px;
+            font-size: rem(16px);
+            margin: 0 rem(4px);
+            height: rem(16px);
+            line-height: rem(16px);
             text-align: center;
             flex-shrink: 0;
         }
@@ -46,19 +47,22 @@
 
     &:hover {
         background-color: $Grey20;
-        border-color: $Grey160;
+        color: $Grey190;
     }
 
     &:active {
         background-color: $Grey30;
     }
+}
 
-    > span {
-        display: flex;
-        height: 100%;
-        flex-wrap: nowrap;
-        justify-content: center;
-        align-items: center;
+
+.bit-tgl-btn-standard-checked-fluent {
+    background-color: $Grey30;
+    color: $Grey190;
+
+    &:hover {
+        background-color: $Grey30;
+        color: $Black;
     }
 }
 
@@ -69,17 +73,45 @@
 
     &:hover {
         background-color: $DarkAlt;
+        border-color: $DarkAlt;
     }
 
     &:active {
         background-color: $Dark;
+        border-color: $Dark;
+    }
+}
+
+.bit-tgl-btn-primary-checked-fluent {
+    background-color: $Dark;
+
+    &:hover {
+        background-color: $Dark;
+        border-color: $Primary;
+    }
+
+    &:active {
+        border-color: $Primary;
     }
 }
 
 .bit-tgl-btn-disabled-fluent {
     background: $Grey20;
-    color: $Grey90;
     border: 1px solid $Grey20;
     cursor: default;
     pointer-events: none;
+
+    > span {
+        > i {
+            color: $Grey90;
+        }
+    }
+}
+
+.bit-tgl-btn-primary-disabled-fluent {
+    color: $Grey50;
+}
+
+.bit-tgl-btn-standard-disabled-fluent {
+    color: $Grey90;
 }
