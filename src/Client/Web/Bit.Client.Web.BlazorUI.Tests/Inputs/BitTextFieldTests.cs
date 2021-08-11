@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using AngleSharp;
+﻿using System.Threading;
 using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -36,7 +35,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                 });
 
             var bitTextField = component.Find(".bit-txt");
-            var containerDiv = component.Find(".bit-txt > div");
+            var containerDiv = component.Find(".bit-txt > div > div");
 
             var isEnabledClass = isEnabled ? "enabled" : "disabled";
             var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
@@ -144,8 +143,8 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                 });
 
             var bitTextField = component.Find(".bit-txt");
-            var containerDiv = component.Find(".bit-txt > div");
-            var bitTextFieldRevealPassword = component.Find(".bit-txt > div > span");
+            var containerDiv = component.Find(".bit-txt > div > div");
+            var bitTextFieldRevealPassword = component.Find(".bit-txt > div > div > span");
 
             Assert.AreEqual("Password", containerDiv.FirstElementChild.GetAttribute("type"));
             Assert.IsTrue(bitTextFieldRevealPassword.FirstElementChild.ClassList.Contains($"bit-icon--RedEye"));
@@ -250,6 +249,102 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
 
             //TODO: bypassed - BUnit oninput event issue
             //Assert.AreEqual(isEnabled ? 1 : 0, component.Instance.CurrentCount);
+        }
+
+        [DataTestMethod, DataRow("Prefix")]
+        public void BitTextFieldShowPrefix(string prefix)
+        {
+            var component = RenderComponent<BitTextFieldTest>(
+                parameters =>
+                {
+                    parameters.Add(p => p.Prefix, prefix);
+                });
+
+            var bitTextFieldPrefix = component.Find(".bit-txt-fluent > div > div > div > span");
+            Assert.AreEqual(prefix, bitTextFieldPrefix.TextContent);
+        }
+
+        [DataTestMethod, DataRow("Suffix")]
+        public void BitTextFieldShowSuffix(string suffix)
+        {
+            var component = RenderComponent<BitTextFieldTest>(
+                parameters =>
+                {
+                    parameters.Add(p => p.Suffix, suffix);
+                });
+
+            var bitTextFieldSuffix = component.Find(".bit-txt-fluent > div > div > div > span");
+            Assert.AreEqual(suffix, bitTextFieldSuffix.TextContent);
+        }
+
+        [DataTestMethod,
+            DataRow(true, "hello world"),
+            DataRow(false, "hello world")
+        ]
+        public void BitTextFieldShouldTakeDefaultValue(bool IsMultiline, string defaultValue)
+        {
+            var component = RenderComponent<BitTextFieldTest>(
+                parameters =>
+                {
+                    parameters.Add(p => p.DefaultValue, defaultValue);
+                    parameters.Add(p => p.IsMultiLine, IsMultiline);
+                });
+
+            var bitTextField = IsMultiline ? component.Find(".bit-txt textarea") : component.Find(".bit-txt input");
+
+            if (IsMultiline)
+            {
+                Assert.AreEqual(bitTextField.TextContent, defaultValue);
+            }
+            else
+            {
+                Assert.AreEqual(bitTextField.GetAttribute("value"), defaultValue);
+            }
+        }
+
+        [DataTestMethod, DataRow("test description")]
+        public void BitTextFieldShouldTakeDescription(string description)
+        {
+            var component = RenderComponent<BitTextFieldTest>(
+                parameters =>
+                {
+                    parameters.Add(p => p.Description, description);
+                });
+
+            var bitTextFieldDescription = component.Find(".bit-txt-fluent > span > span");
+            Assert.AreEqual(description, bitTextFieldDescription.TextContent);
+        }
+
+        [DataTestMethod,
+            DataRow(true),
+            DataRow(false)
+        ]
+        public void BitTextFieldShouldRespectUnderLineStyle(bool isUnderlined)
+        {
+            var component = RenderComponent<BitTextFieldTest>(
+                parameters =>
+                {
+                    parameters.Add(p => p.IsUnderlined, isUnderlined);
+                });
+
+            var bitTextField = component.Find(".bit-txt");
+            Assert.AreEqual(isUnderlined, bitTextField.ClassList.Contains($"bit-txt-underlined-fluent"));
+        }
+
+        [DataTestMethod,
+           DataRow(true),
+           DataRow(false)
+        ]
+        public void BitTextFieldShouldRespectHasBorderStyle(bool hasBorder)
+        {
+            var component = RenderComponent<BitTextFieldTest>(
+                parameters =>
+                {
+                    parameters.Add(p => p.HasBorder, hasBorder);
+                });
+
+            var bitTextField = component.Find(".bit-txt");
+            Assert.AreEqual(!hasBorder, bitTextField.ClassList.Contains($"bit-txt-no-border-fluent"));
         }
     }
 }
