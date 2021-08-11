@@ -41,7 +41,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components
                 Key = "Notifications",
                 Links = new List<BitNavLinkItem>
                 {
-                    new BitNavLinkItem { Name = "MessageBar", Key = "MessageBar", Url="#" }
+                    new BitNavLinkItem { Name = "MessageBar", Key = "MessageBar", Url="/components/messagebar" }
                 }
             },
             new BitNavLinkItem

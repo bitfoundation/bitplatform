@@ -1,18 +1,30 @@
 ﻿<CascadingValue Value="Visual">
-	<BitToggle IsEnabled="@IsEnabled" 
-               @bind-IsChecked="@IsChecked" 
-               IsInlineLabel="@IsInlineLabel" 
-               OnText="@OnText" 
-               OffText="@OffText" 
-               AriaLabel="@AriaLabel">
+    <BitToggle IsEnabled="IsEnabled"
+               @bind-IsChecked="IsChecked"
+               IsInlineLabel="IsInlineLabel"
+               OnText="@OnText"
+               OffText="@OffText"
+               AriaLabel="@AriaLabel"
+               Role="@Role"
+               Label="@Label">
+        <LabelFragment>
+            @LabelFragment
+        </LabelFragment>
     </BitToggle>
 </CascadingValue>
+
 @code {
+    private string AriaLabelledById;
+    private string AriaChecked;
     [Parameter] public Visual Visual { get; set; }
     [Parameter] public bool IsEnabled { get; set; }
     [Parameter] public bool IsChecked { get; set; }
     [Parameter] public bool IsInlineLabel { get; set; }
     [Parameter] public string OnText { get; set; }
     [Parameter] public string OffText { get; set; }
+    [Parameter] public string DefaultText { get; set; }
     [Parameter] public string AriaLabel { get; set; }
+    [Parameter] public string Role { get; set; }
+    [Parameter] public string Label { get; set; }
+    [Parameter] public RenderFragment? LabelFragment { get; set; }
 }
