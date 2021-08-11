@@ -35,6 +35,9 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
+        /// <summary>
+        /// Custom style for the root element of the component
+        /// </summary>
         [Parameter]
         public string? Style
         {
@@ -46,6 +49,9 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
+        /// <summary>
+        /// Custom CSS class for the root element of the component
+        /// </summary>
         [Parameter]
         public string? Class
         {
@@ -57,6 +63,9 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
+        /// <summary>
+        /// Whether or not the component is enabled
+        /// </summary>
         [Parameter]
         public bool IsEnabled
         {
@@ -68,6 +77,9 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
+        /// <summary>
+        /// Whether the component is visible, hidden, collapsed
+        /// </summary>
         [Parameter]
         public ComponentVisibility Visibility
         {
@@ -81,8 +93,14 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
+        /// <summary>
+        /// The aria-label of the control for the benefit of screen readers
+        /// </summary>
         [Parameter] public string? AriaLabel { get; set; }
 
+        /// <summary>
+        /// Capture and render additional attributes in addition to the component's parameters
+        /// </summary>
         [Parameter]
         public Dictionary<string, object> HtmlAttributes { get; set; } = new Dictionary<string, object>();
 

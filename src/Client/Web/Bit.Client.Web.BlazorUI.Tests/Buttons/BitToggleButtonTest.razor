@@ -8,7 +8,10 @@
                      AriaDescription="@AriaDescription"
                      AriaLabel="@AriaLabel"
                      AriaHidden="AriaHidden"
-                     OnClick="IncrementCount">
+                     OnClick="IncrementCount"
+                     Href="@Href"
+                     Target="@Target"
+                     Title="@Title">
     </BitToggleButton>
 </CascadingValue>
 
@@ -23,6 +26,9 @@
     [Parameter] public string? IconName { get; set; }
     [Parameter] public string? Label { get; set; }
     [Parameter] public ButtonStyle ButtonStyle { get; set; }
+    [Parameter] public string Href { get; set; }
+    [Parameter] public string Title { get; set; }
+    [Parameter] public string Target { get; set; }
 
     public int CurrentCount { get; set; }
 
