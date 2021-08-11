@@ -1,33 +1,36 @@
-using Bit.Core.Models;
+﻿using Bit.Core.Models;
 using Bit.Owin.Contracts;
+using Microsoft.AspNetCore.Builder;
 using Owin;
 using System;
 
 namespace Bit.Owin.Middlewares
 {
-    public class IndexPageMiddlewareConfiguration : IOwinMiddlewareConfiguration
+    public class IndexPageMiddlewareConfiguration : IAspNetCoreMiddlewareConfiguration
     {
+        public virtual MiddlewarePosition MiddlewarePosition => MiddlewarePosition.AfterOwinMiddlewares;
+
         public virtual AppEnvironment AppEnvironment { get; set; } = default!;
 
-        public virtual void Configure(IAppBuilder owinApp)
+        public virtual void Configure(IApplicationBuilder aspNetCoreApp)
         {
-            if (owinApp == null)
-                throw new ArgumentNullException(nameof(owinApp));
+            if (aspNetCoreApp == null)
+                throw new ArgumentNullException(nameof(aspNetCoreApp));
 
             if (AppEnvironment.GetConfig(AppEnvironment.KeyValues.RequireSsl, defaultValueOnNotFound: false))
             {
-                owinApp.UseHsts(config => config.IncludeSubdomains().MaxAge(days: 30));
+                aspNetCoreApp.UseHsts(config => config.IncludeSubdomains().MaxAge(days: 30));
             }
 
-            owinApp.UseXContentTypeOptions();
+            aspNetCoreApp.UseXContentTypeOptions();
 
-            owinApp.UseXDownloadOptions();
+            aspNetCoreApp.UseXDownloadOptions();
 
-            owinApp.UseXXssProtection(xssProtectionOptions => { xssProtectionOptions.EnabledWithBlockMode(); });
+            aspNetCoreApp.UseXXssProtection(xssProtectionOptions => { xssProtectionOptions.EnabledWithBlockMode(); });
 
-            owinApp.Use<OwinNoCacheResponseMiddleware>();
+            aspNetCoreApp.UseMiddleware<AspNetCoreNoCacheResponseMiddleware>();
 
-            owinApp.Use<IndexPageMiddleware>();
+            aspNetCoreApp.UseMiddleware<IndexPageMiddleware>();
         }
     }
 }

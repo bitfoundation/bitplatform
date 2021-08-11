@@ -1,20 +1,21 @@
 ﻿using Bit.Core.Models;
 using Bit.Owin.Contracts;
-using Owin;
-using System;
+using Microsoft.AspNetCore.Builder;
 
 namespace Bit.Owin.Middlewares
 {
-    public class SignOutPageMiddlewareConfiguration : IOwinMiddlewareConfiguration
+    public class SignOutPageMiddlewareConfiguration : IAspNetCoreMiddlewareConfiguration
     {
         public virtual AppEnvironment AppEnvironment { get; set; } = default!;
 
-        public virtual void Configure(IAppBuilder owinApp)
-        {
-            if (owinApp == null)
-                throw new ArgumentNullException(nameof(owinApp));
+        public virtual MiddlewarePosition MiddlewarePosition => MiddlewarePosition.BeforeOwinMiddlewares;
 
-            owinApp.Map("/SignOut",
+        public virtual void Configure(IApplicationBuilder aspNetCoreApp)
+        {
+            if (aspNetCoreApp == null)
+                throw new ArgumentNullException(nameof(aspNetCoreApp));
+
+            aspNetCoreApp.Map("/SignOut",
                 innerApp =>
                 {
                     if (AppEnvironment.GetConfig(AppEnvironment.KeyValues.RequireSsl, defaultValueOnNotFound: false))
@@ -30,9 +31,9 @@ namespace Bit.Owin.Middlewares
 
                     innerApp.UseXXssProtection(xssProtectionOptions => { xssProtectionOptions.EnabledWithBlockMode(); });
 
-                    innerApp.Use<OwinNoCacheResponseMiddleware>();
+                    innerApp.UseMiddleware<AspNetCoreNoCacheResponseMiddleware>();
 
-                    innerApp.Use<SignOutPageMiddleware>();
+                    innerApp.UseMiddleware<SignOutPageMiddleware>();
                 });
         }
     }

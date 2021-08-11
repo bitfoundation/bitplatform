@@ -1,41 +1,40 @@
-﻿using Bit.Core.Contracts;
-using Bit.Owin.Contracts;
+﻿using Bit.Owin.Contracts;
 using Bit.Owin.Models;
-using Microsoft.Owin;
-using Owin;
-using System;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Bit.Owin.Middlewares
 {
-    public class ClientAppProfileMiddlewareConfiguration : IOwinMiddlewareConfiguration
+    public class ClientAppProfileMiddlewareConfiguration : IAspNetCoreMiddlewareConfiguration
     {
-        public virtual void Configure(IAppBuilder owinApp)
+        public virtual MiddlewarePosition MiddlewarePosition => MiddlewarePosition.BeforeOwinMiddlewares;
+
+        public virtual void Configure(IApplicationBuilder aspNetCoreApp)
         {
-            if (owinApp == null)
-                throw new ArgumentNullException(nameof(owinApp));
+            if (aspNetCoreApp == null)
+                throw new ArgumentNullException(nameof(aspNetCoreApp));
 
-            owinApp.Map("/ClientAppProfile", innerOwinApp =>
+            aspNetCoreApp.Map("/ClientAppProfile", innerAspNetCoreApp =>
             {
-                innerOwinApp.UseXContentTypeOptions();
+                innerAspNetCoreApp.UseXContentTypeOptions();
 
-                innerOwinApp.Use<OwinNoCacheResponseMiddleware>();
+                innerAspNetCoreApp.UseMiddleware<AspNetCoreNoCacheResponseMiddleware>();
 
-                innerOwinApp.Run(async context =>
+                innerAspNetCoreApp.Run(async context =>
                 {
                     if (context == null)
                         throw new ArgumentNullException(nameof(context));
 
-                    IDependencyResolver dependencyResolver = context.GetDependencyResolver();
+                    IClientProfileModelProvider clientProfileModelProvider = context.RequestServices.GetService<IClientProfileModelProvider>();
 
-                    IClientProfileModelProvider clientProfileModelProvider = dependencyResolver.Resolve<IClientProfileModelProvider>();
-
-                    ClientProfileModel clientProfileModel = await clientProfileModelProvider.GetClientProfileModelAsync(context.Request.CallCancelled).ConfigureAwait(false);
+                    ClientProfileModel clientProfileModel = await clientProfileModelProvider.GetClientProfileModelAsync(context.RequestAborted).ConfigureAwait(false);
 
                     string clientAppProfileJson = clientProfileModel.ToJavaScriptObject();
 
                     context.Response.ContentType = "text/javascript; charset=utf-8";
 
-                    await context.Response.WriteAsync(clientAppProfileJson, context.Request.CallCancelled).ConfigureAwait(false);
+                    await context.Response.WriteAsync(clientAppProfileJson, context.RequestAborted).ConfigureAwait(false);
                 });
             });
         }

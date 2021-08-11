@@ -1,30 +1,28 @@
-﻿using Bit.Core.Contracts;
-using Bit.Core.Models;
-using Microsoft.Owin;
-using System;
-using System.Threading.Tasks;
+﻿using Bit.Core.Models;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Bit.Owin.Middlewares
 {
-    public class SignInPageMiddleware : OwinMiddleware
+    public class SignInPageMiddleware
     {
-        public SignInPageMiddleware(OwinMiddleware next)
-            : base(next)
+        private readonly RequestDelegate _next;
+
+        public SignInPageMiddleware(RequestDelegate next)
         {
+            _next = next;
         }
 
         private AppEnvironment? _App;
 
-        public override Task Invoke(IOwinContext context)
+        public Task Invoke(HttpContext context)
         {
             if (context == null)
                 throw new ArgumentNullException(nameof(context));
 
-            IDependencyResolver dependencyResolver = context.GetDependencyResolver();
-
             if (_App == null)
             {
-                _App = dependencyResolver.Resolve<AppEnvironment>();
+                _App = context.RequestServices.GetService<AppEnvironment>();
             }
 
             string defaultPath = _App.GetHostVirtualPath();
@@ -69,7 +67,7 @@ namespace Bit.Owin.Middlewares
 
             context.Response.ContentType = "text/html; charset=utf-8";
 
-            return context.Response.WriteAsync(signInPage, context.Request.CallCancelled);
+            return context.Response.WriteAsync(signInPage, context.RequestAborted);
         }
     }
 }

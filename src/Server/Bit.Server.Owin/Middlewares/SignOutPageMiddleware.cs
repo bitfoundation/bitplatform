@@ -1,34 +1,33 @@
-﻿using Bit.Core.Contracts;
-using Bit.Core.Models;
+﻿using Bit.Core.Models;
 using Bit.Owin.Contracts;
-using Microsoft.Owin;
-using System;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Bit.Owin.Middlewares
 {
-    public class SignOutPageMiddleware : OwinMiddleware
+    public class SignOutPageMiddleware
     {
-        public SignOutPageMiddleware(OwinMiddleware next)
-            : base(next)
+        private readonly RequestDelegate _next;
+
+        public SignOutPageMiddleware(RequestDelegate next)
         {
+            _next = next;
         }
 
-        public override Task Invoke(IOwinContext context)
+        public Task Invoke(HttpContext context)
         {
             if (context == null)
                 throw new ArgumentNullException(nameof(context));
 
-            IDependencyResolver dependencyResolver = context.GetDependencyResolver();
-
-            AppEnvironment activeAppEnvironment = dependencyResolver.Resolve<AppEnvironment>();
+            AppEnvironment activeAppEnvironment = context.RequestServices.GetService<AppEnvironment>();
 
             string defaultPath = activeAppEnvironment.GetHostVirtualPath();
             string defaultPathWithoutEndingSlashIfIsNotRoot = defaultPath == "/" ? defaultPath : defaultPath.Substring(0, defaultPath.Length - 1);
 
-            IUrlStateProvider urlStateProvider = dependencyResolver.Resolve<IUrlStateProvider>();
+            IUrlStateProvider urlStateProvider = context.RequestServices.GetService<IUrlStateProvider>();
 
-            dynamic state = urlStateProvider.GetState(context.Request.Uri);
+            dynamic state = urlStateProvider.GetState(new Uri(context.Request.GetEncodedUrl()));
 
             bool autoCloseIsTrue = false;
 
@@ -71,7 +70,7 @@ namespace Bit.Owin.Middlewares
 
             context.Response.ContentType = "text/html; charset=utf-8";
 
-            return context.Response.WriteAsync(singOutPage, context.Request.CallCancelled);
+            return context.Response.WriteAsync(singOutPage, context.RequestAborted);
         }
     }
 }
