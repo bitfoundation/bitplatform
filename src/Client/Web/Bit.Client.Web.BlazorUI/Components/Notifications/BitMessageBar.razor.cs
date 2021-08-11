@@ -44,7 +44,7 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public RenderFragment? ChildContent { get; set; }
 
         /// <summary>
-        /// The content of the action to show on the message bar, It can be Any custom tag
+        /// The content of the action to show on the message bar
         /// </summary>
         [Parameter] public RenderFragment? Actions { get; set; }
 
