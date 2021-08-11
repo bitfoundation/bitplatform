@@ -8,22 +8,22 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
     public class BitIconButtonTests : BunitTestContext
     {
         [DataTestMethod,
-               DataRow(Visual.Fluent, true, "Emoji2", null, false),
-               DataRow(Visual.Fluent, false, "Emoji2", null, false),
-               DataRow(Visual.Fluent, true, "Emoji2", "I'm Happy", true),
-               DataRow(Visual.Fluent, false, "Emoji2", "I'm Happy", false),
+               DataRow(Visual.Fluent, true, "Emoji2", null),
+               DataRow(Visual.Fluent, false, "Emoji2", null),
+               DataRow(Visual.Fluent, true, "Emoji2", "I'm Happy"),
+               DataRow(Visual.Fluent, false, "Emoji2", "I'm Happy"),
 
-               DataRow(Visual.Cupertino, true, "Emoji2", null, false),
-               DataRow(Visual.Cupertino, false, "Emoji2", null, false),
-               DataRow(Visual.Cupertino, true, "Emoji2", "I'm Happy", true),
-               DataRow(Visual.Cupertino, false, "Emoji2", "I'm Happy", false),
+               DataRow(Visual.Cupertino, true, "Emoji2", null),
+               DataRow(Visual.Cupertino, false, "Emoji2", null),
+               DataRow(Visual.Cupertino, true, "Emoji2", "I'm Happy"),
+               DataRow(Visual.Cupertino, false, "Emoji2", "I'm Happy"),
 
-               DataRow(Visual.Material, true, "Emoji2", null, false),
-               DataRow(Visual.Material, false, "Emoji2", null, false),
-               DataRow(Visual.Material, true, "Emoji2", "I'm Happy", true),
-               DataRow(Visual.Material, false, "Emoji2", "I'm Happy", false),
+               DataRow(Visual.Material, true, "Emoji2", null),
+               DataRow(Visual.Material, false, "Emoji2", null),
+               DataRow(Visual.Material, true, "Emoji2", "I'm Happy"),
+               DataRow(Visual.Material, false, "Emoji2", "I'm Happy"),
            ]
-        public void BitIconButtonTest(Visual visual, bool isEnabled, string iconName, string title, bool expectedResult)
+        public void BitIconButtonTest(Visual visual, bool isEnabled, string iconName, string title)
         {
             var com = RenderComponent<BitIconButtonTest>(parameters =>
             {
@@ -54,12 +54,12 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
         }
 
         [DataTestMethod,
-          DataRow(true, false, false),
-          DataRow(true, true, false),
-          DataRow(false, false, true),
-          DataRow(false, true, false),
+          DataRow(true, false),
+          DataRow(true, true),
+          DataRow(false, false),
+          DataRow(false, true),
         ]
-        public void BitIconButtonDisabledFocusTest(bool isEnabled, bool allowDisabledFocus, bool expectedResult)
+        public void BitIconButtonDisabledFocusTest(bool isEnabled, bool allowDisabledFocus)
         {
             var com = RenderComponent<BitIconButtonTest>(parameters =>
             {
@@ -70,6 +70,8 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
             var bitButton = com.Find(".bit-ico-btn");
 
             var hasTabindexAttr = bitButton.HasAttribute("tabindex");
+
+            var expectedResult = isEnabled ? false : allowDisabledFocus ? false : true;
 
             Assert.AreEqual(hasTabindexAttr, expectedResult);
 
@@ -105,8 +107,12 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
             Assert.IsTrue(bitIconButton.GetAttribute("aria-label").Contains(ariaLabel));
         }
 
-        [DataTestMethod, DataRow(true, true), DataRow(false, false), DataRow(null, false)]
-        public void BitIconButtonAriaHiddenTest(bool ariaHidden, bool expectedResult)
+        [DataTestMethod,
+            DataRow(true),
+            DataRow(false),
+            DataRow(null)
+        ]
+        public void BitIconButtonAriaHiddenTest(bool ariaHidden)
         {
             var com = RenderComponent<BitIconButtonTest>(parameters =>
             {
@@ -114,6 +120,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
             });
 
             var bitIconButton = com.Find(".bit-ico-btn");
+            var expectedResult = ariaHidden ? true : false;
 
             Assert.AreEqual(bitIconButton.HasAttribute("aria-hidden"), expectedResult);
         }
