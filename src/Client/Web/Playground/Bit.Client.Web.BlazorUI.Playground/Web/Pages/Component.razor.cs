@@ -301,6 +301,8 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
 
             return items;
         }
+
+        private string? TextValue;
     }
 
     public class Person

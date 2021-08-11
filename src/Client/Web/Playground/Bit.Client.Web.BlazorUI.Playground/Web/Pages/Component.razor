@@ -330,7 +330,8 @@
 <div class="search-box-container">
     <h3>SearchBox</h3>
     <h5>Default SearchBox</h5>
-    <BitSearchBox Placeholder="Search"></BitSearchBox>
+    <div>binded: @TextValue</div>
+    <BitSearchBox Placeholder="Search" @bind-Value="@TextValue"></BitSearchBox>
     <br />
     <BitSearchBox Placeholder="Search with no animation" DisableAnimation=true></BitSearchBox>
     <br />
@@ -350,7 +351,7 @@
     <BitSearchBox DefaultValue="this is Default Value" Width="250px"></BitSearchBox>
     <br />
     <h5>SearchBox with fixed icon</h5>
-    <BitSearchBox Placeholder="Search" ShowIcon="true" Value="SampleSearch"></BitSearchBox>    
+    <BitSearchBox Placeholder="Search" ShowIcon="true" Value="SampleSearch"></BitSearchBox>
     <br />
 </div>
 

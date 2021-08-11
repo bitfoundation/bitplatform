@@ -2,5 +2,7 @@
 {
     public partial class BitSearchBoxDemo
     {
+        private string? TextValue;
+
     }
 }
