@@ -9,13 +9,13 @@
 
         @if (Label.HasValue())
         {
-            <span>@LabelFragment</span>
-        }
-        else if (LabelFragment != null)
-        {
             <label for="@InputId">
                 @Label
             </label>
+        }
+        else if (LabelFragment != null)
+        {
+            <span>@LabelFragment</span>
         }
 
         <div>
