@@ -5,7 +5,10 @@
                      AriaDescription="@AriaDescription"
                      AriaLabel="@AriaLabel"
                      AriaHidden="AriaHidden"
-                     IconName="@IconName">
+                     IconName="@IconName"
+                     Target="@Target"
+                     Href="@Href"
+                     Title="@Title">
         <span>span test</span>
     </BitActionButton>
 </CascadingValue>
@@ -18,6 +21,9 @@
     [Parameter] public string AriaLabel { get; set; }
     [Parameter] public bool AriaHidden { get; set; }
     [Parameter] public string IconName { get; set; }
+    [Parameter] public string Title { get; set; }
+    [Parameter] public string Href { get; set; }
+    [Parameter] public string Target { get; set; }
 
     public int CurrentCount { get; set; }
 

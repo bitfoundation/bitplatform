@@ -1,15 +1,20 @@
 ﻿@import "../colors.fluent.scss", "../../functions.scss";
 
 .bit-act-btn-fluent {
-    font-family: FluentFont;
-    display: flex;
+    font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+    display: inline-flex;
+    align-items: center;
     cursor: pointer;
     border: none;
     background-color: transparent;
-
-    &:active {
-        color: $Primary;
-    }
+    font-size: rem(14px);
+    font-weight: 400;
+    box-sizing: border-box;
+    text-decoration: none;
+    height: rem(40px);
+    padding: 0 rem(4px);
+    color: $Grey160;
+    text-align: center;
 
     & > span {
         &:first-child {
@@ -21,21 +26,55 @@
 
             & i {
                 font-size: rem(16px);
-                margin: 0px 4px;
-                height: 16px;
+                margin: 0 rem(4px);
+                height: rem(16px);
                 line-height: 16px;
                 text-align: center;
                 flex-shrink: 0;
-                color: $Primary;
+                color: $DarkAlt;
+            }
+        }
+
+        &:last-child {
+            margin: 0 rem(4px);
+        }
+    }
+
+    &:active {
+        color: $Black;
+
+        & > span {
+            &:first-child {
+                & i {
+                    color: $ThemeDarker;
+                }
+            }
+        }
+    }
+
+    &:hover {
+        color: $Primary;
+
+        & > span {
+            &:first-child {
+                & i {
+                    color: $Primary;
+                }
             }
         }
     }
 }
 
 .bit-act-btn-disabled-fluent {
-    background: $Grey20;
     color: $Grey90;
-    border: 1px solid $Grey20;
     cursor: default;
     pointer-events: none;
+
+    & > span {
+        &:first-child {
+            & i {
+                color: $Grey90;
+            }
+        }
+    }
 }
