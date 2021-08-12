@@ -88,7 +88,7 @@
     <hr />
 
     <h3>Icon Button with Tooltip</h3>
-    <BitIconButton IconName="Emoji2" ToolTip="I'm Happy" />
+    <BitIconButton IconName="Emoji2" Title="I'm Happy" />
 
     <hr />
 
@@ -352,7 +352,10 @@
 
 <div class="text-field-container">
     <h2>BitTextField</h2>
-    <BitTextField Label="Standard"></BitTextField>
+    <div>binded: @TextValue</div>
+    <BitTextField Label="Standard" @bind-Value="@TextValue"></BitTextField>
+    <br />
+    <BitTextField Label="Standard with default value" DefaultValue="Hello I am default value"></BitTextField>
     <br />
     <BitTextField Label="Read-only" IsReadonly="true" Value="I am read-only"></BitTextField>
     <br />
@@ -368,12 +371,35 @@
     <br />
     <BitTextField Label="Required" IsRequired="true"></BitTextField>
     <br />
+    <BitTextField Label="With prefix" Prefix="https://"></BitTextField>
+    <br />
+    <BitTextField Label="Disabled with prefix" Prefix="https://" IsEnabled="false"></BitTextField>
+    <br />
+    <BitTextField Label="With suffix" Suffix=".com"></BitTextField>
+    <br />
+    <BitTextField Label="Disabled With suffix" Suffix=".com" IsEnabled="false"></BitTextField>
+    <br />
+    <BitTextField Label="With prefix and suffix" Prefix="https://" Suffix=".com"></BitTextField>
+    <br />
     <h3>Multi-line</h3>
-    <BitTextField Label="Standard" IsMultiLine="true"></BitTextField>
+    <BitTextField Label="Standard" IsMultiline="true"></BitTextField>
     <br />
-    <BitTextField Label="Limited multi-line text field - 10 chars" IsMultiLine="true" MaxLength="10"></BitTextField>
+    <BitTextField Label="Limited multi-line text field - 10 chars" IsMultiline="true" MaxLength="10"></BitTextField>
     <br />
-    <BitTextField Label="Disabled" IsMultiLine="true" IsEnabled="false" Value="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat"></BitTextField>
+    <BitTextField Label="Disabled" IsMultiline="true" IsEnabled="false" Value="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat"></BitTextField>
+    <br />
+    <h3>Underlined and borderless TextFields</h3>
+    <BitTextField Label="Standard" IsUnderlined="true"></BitTextField>
+    <br />
+    <BitTextField Label="Disabled" IsUnderlined="true" IsEnabled="false"></BitTextField>
+    <br />
+    <BitTextField Label="Required" IsRequired IsUnderlined="true"></BitTextField>
+    <br />
+    <BitTextField Label="Borderless single-line TextField" Placeholder="No borders here, folks." HasBorder="false"></BitTextField>
+    <br />
+    <BitTextField Label="Borderless multi-line TextField" Placeholder="No borders here, folks." IsMultiline="true" HasBorder="false"></BitTextField>
+    <br />
+    <BitTextField Label="Description" Description="this is sample description"></BitTextField>
 </div>
 
 <hr />
