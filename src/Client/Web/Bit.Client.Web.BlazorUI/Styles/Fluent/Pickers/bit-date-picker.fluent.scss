@@ -300,6 +300,26 @@
                                                 cursor: pointer;
                                                 overflow: visible;
                                             }
+
+                                            &.bit-dtp-today {
+                                                > button {
+                                                    border-radius: 100%;
+                                                    background-color: $CyanBlue10;
+                                                    color: $White;
+                                                    font-weight: 600;
+                                                }
+                                            }
+
+                                            &.bit-dtp-selected {
+                                                border: 1px solid $Grey130;
+                                                background-color: $Grey30;
+                                            }
+
+                                            &.bit-dtp-out-month {
+                                                > button {
+                                                    color: $Grey130;
+                                                }
+                                            }
                                         }
                                     }
                                 }

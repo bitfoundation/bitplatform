@@ -210,15 +210,15 @@ namespace Bit.Client.Web.BlazorUI
                 switch (dayOfWeek)
                 {
                     case DayOfWeek.Sunday:
-                        return "YkS";
+                        return "Yek";
                     case DayOfWeek.Monday:
-                        return "DoS";
+                        return "Do";
                     case DayOfWeek.Tuesday:
-                        return "SeS";
+                        return "Se";
                     case DayOfWeek.Wednesday:
-                        return "ChS";
+                        return "Ch";
                     case DayOfWeek.Thursday:
-                        return "PjS";
+                        return "Pj";
                     case DayOfWeek.Friday:
                         return "Jom";
                     case DayOfWeek.Saturday:

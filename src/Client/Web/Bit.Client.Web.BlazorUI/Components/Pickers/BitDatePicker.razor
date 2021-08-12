@@ -115,12 +115,13 @@
                                         </tr>
                                         @{
                                             bool currentMonthIsStarted = false;
+                                            bool currentMonthIsFinished = false;
                                             int todayYear = calendar.GetYear(DateTime.Now);
                                             int todayMonth = calendar.GetMonth(DateTime.Now);
                                             int todayDay = calendar.GetDayOfMonth(DateTime.Now);
                                             @for (int weekIndex = 0;
-                                       weekIndex < monthWeeks.GetLength(0);
-                                       weekIndex++)
+                                      weekIndex < monthWeeks.GetLength(0);
+                                      weekIndex++)
                                             {
                                                 int localWeekIndex = weekIndex;
                                                 if (monthWeeks[weekIndex, 0] == 0)
@@ -131,12 +132,19 @@
                                                 <tr>
                                                     @for (int dayIndex = 0; dayIndex < monthWeeks.GetLength(1); dayIndex++)
                                                     {
+                                                        string selectClass = "";
                                                         int localDayIndex = dayIndex;
                                                         if (monthWeeks[localWeekIndex, localDayIndex] == 1)
                                                         {
-                                                            currentMonthIsStarted = !currentMonthIsStarted;
+                                                            currentMonthIsStarted = true;
                                                         }
-                                                        if (currentMonthIsStarted)
+                                                        if (currentMonthIsStarted
+                                                        && monthWeeks[localWeekIndex, localDayIndex] == monthLength)
+                                                        {
+                                                            currentMonthIsFinished = true;
+                                                        }
+                                                        if (currentMonthIsStarted
+                                                        && !currentMonthIsFinished)
                                                         {
                                                             string todayClass = "";
                                                             if (todayYear == currentYear
@@ -145,8 +153,22 @@
                                                             {
                                                                 todayClass = "bit-dtp-today";
                                                             }
-                                                            <td class="@todayClass"
-                                                                @onclick="() => HandleDateChoose(localDayIndex, monthWeeks[localWeekIndex, localDayIndex], currentMonth)">
+                                                            if (selectedDate.HasValue())
+                                                            {
+                                                                if (selectedDate == GetSelectedDateString(localDayIndex + dayOfWeekDifference, monthWeeks[localWeekIndex, localDayIndex], currentMonth))
+                                                                {
+                                                                    selectClass = "bit-dtp-selected";
+                                                                }
+                                                            }
+                                                            else
+                                                            {
+                                                                if (todayClass.HasValue())
+                                                                {
+                                                                    selectClass = "bit-dtp-selected";
+                                                                }
+                                                            }
+                                                            <td class="@todayClass @selectClass"
+                                                                @onclick="() => HandleDateChoose(localDayIndex + dayOfWeekDifference, monthWeeks[localWeekIndex, localDayIndex], currentMonth)">
                                                                 <button>
                                                                     <span>@monthWeeks[localWeekIndex, localDayIndex]</span>
                                                                 </button>
@@ -155,7 +177,15 @@
                                                         else
                                                         {
                                                             int localMonth = weekIndex >= 4 ? currentMonth + 1 : currentMonth - 1;
-                                                            <td @onclick="() => HandleDateChoose(localDayIndex, monthWeeks[localWeekIndex, localDayIndex], localMonth)">
+                                                            if (selectedDate.HasValue())
+                                                            {
+                                                                if (selectedDate == GetSelectedDateString(localDayIndex + dayOfWeekDifference, monthWeeks[localWeekIndex, localDayIndex], localMonth))
+                                                                {
+                                                                    selectClass = "bit-dtp-selected";
+                                                                }
+                                                            }
+                                                            <td class="@selectClass bit-dtp-out-month"
+                                                                @onclick="() => HandleDateChoose(localDayIndex + dayOfWeekDifference, monthWeeks[localWeekIndex, localDayIndex], localMonth)">
                                                                 <button>
                                                                     <span>@monthWeeks[localWeekIndex, localDayIndex]</span>
                                                                 </button>
@@ -310,37 +340,37 @@
                                     </div>
                                     <div class="months-rows">
                                         <div role="grid">
-                                            @for (int i = yearRangeFrom; i <= yearRangeTo; i++)
+                                            @for (int yearIndex = yearRangeFrom; yearIndex <= yearRangeTo; yearIndex++)
                                             {
+                                                int localYearIndex = yearIndex;
                                                 <div role="row">
                                                     <button type="button"
-                                                            aria-label="@i"
-                                                            @onclick="() => HandleYearChanged(i)">
-                                                        <span aria-hidden="true">@i</span>
+                                                            aria-label="@localYearIndex"
+                                                            @onclick="() => HandleYearChanged(localYearIndex)">
+                                                        <span aria-hidden="true">@localYearIndex</span>
                                                     </button>
                                                     <button type="button"
-                                                            aria-label="@(i+1)"
-                                                            @onclick="() => HandleYearChanged(i+1)">
-                                                        <span aria-hidden="true">@(i+1)</span>
+                                                            aria-label="@(yearIndex+1)"
+                                                            @onclick="() => HandleYearChanged(localYearIndex+1)">
+                                                        <span aria-hidden="true">@(localYearIndex + 1)</span>
                                                     </button>
                                                     <button type="button"
-                                                            aria-label="@(i+2)"
-                                                            @onclick="() => HandleYearChanged(i+2)">
-                                                        <span aria-hidden="true">@(i+2)</span>
+                                                            aria-label="@(localYearIndex+2)"
+                                                            @onclick="() => HandleYearChanged(localYearIndex+2)">
+                                                        <span aria-hidden="true">@(localYearIndex + 2)</span>
                                                     </button>
                                                     <button type="button"
-                                                            aria-label="@(i+3)"
-                                                            @onclick="() => HandleYearChanged(i+3)">
-                                                        <span aria-hidden="true">@(i+3)</span>
+                                                            aria-label="@(localYearIndex+3)"
+                                                            @onclick="() => HandleYearChanged(localYearIndex+3)">
+                                                        <span aria-hidden="true">@(localYearIndex + 3)</span>
                                                     </button>
                                                 </div>
-                                                i = i + 3;
+                                                yearIndex = yearIndex + 3;
                                             }
                                         </div>
                                     </div>
                                 </div>
                             }
-
                             <button type="button"
                                     @onclick="HandleGoToToday">
                                 @GoToToday
