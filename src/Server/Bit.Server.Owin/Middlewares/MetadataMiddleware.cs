@@ -1,4 +1,6 @@
-﻿using Bit.Core.Contracts;
+﻿using System;
+using System.Threading.Tasks;
+using Bit.Core.Contracts;
 using Bit.Owin.Contracts.Metadata;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;

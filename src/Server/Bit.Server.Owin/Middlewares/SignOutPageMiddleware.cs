@@ -1,4 +1,6 @@
-﻿using Bit.Core.Models;
+﻿using System;
+using System.Threading.Tasks;
+using Bit.Core.Models;
 using Bit.Owin.Contracts;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;

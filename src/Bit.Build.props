@@ -25,11 +25,11 @@
 		<PackageProjectUrl>https://github.com/bitfoundation/bitframework</PackageProjectUrl>
 		<PackageIconUrl>https://avatars.githubusercontent.com/u/22663390</PackageIconUrl>
 		<PackageReleaseNotes>https://github.com/bitfoundation/bitframework/releases/tag/v7.4.0</PackageReleaseNotes>
-		<PackageVersion>8.1.0-alpha</PackageVersion>
+		<PackageVersion>7.6.0</PackageVersion>
 
 		<!-- Version -->
-		<Version>8.1.0</Version>
-		<AssemblyVersion>8.1.0</AssemblyVersion>
+		<Version>7.6.0</Version>
+		<AssemblyVersion>7.6.0</AssemblyVersion>
 
 		<!-- Compile -->
 		<NeutralLanguage>en</NeutralLanguage>
@@ -43,7 +43,7 @@
 		<DefineConstants Condition=" '$(TargetFramework)' == 'monoandroid10.0' ">$(DefineConstants);Android</DefineConstants>
 		<DefineConstants Condition=" '$(TargetFramework)' == 'monoandroid10.0'">$(DefineConstants);Android10</DefineConstants>
 		<DefineConstants Condition=" '$(TargetFramework)' == 'Xamarin.iOS10' ">$(DefineConstants);iOS</DefineConstants>
-		<DefineConstants Condition=" '$(TargetFramework)' == 'net6.0' ">$(DefineConstants);DotNet</DefineConstants>
+		<DefineConstants Condition=" '$(TargetFramework)' == 'net5.0' ">$(DefineConstants);DotNet</DefineConstants>
 		<DefineConstants Condition=" '$(TargetFramework)' == 'uap10.0.17763' ">$(DefineConstants);UWP</DefineConstants>
 		<DefineConstants Condition=" '$(TargetFramework)' == 'netstandard2.0' ">$(DefineConstants);DotNetStandard;DotNetStandard2_0</DefineConstants>
 		<DefineConstants Condition=" '$(TargetFramework)' == 'netstandard2.1' ">$(DefineConstants);DotNetStandard;DotNetStandard2_1</DefineConstants>

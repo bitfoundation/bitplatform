@@ -49,7 +49,7 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
 
             if (itemToAdd is ISyncableEntity syncableEntity)
             {
-                object[] keys = DbContext.Model.FindEntityType(typeof(T).GetTypeInfo())
+                object[] keys = ModelExtensions.FindEntityType(DbContext.Model, typeof(T).GetTypeInfo())
                     .FindPrimaryKey()
                     .Properties
                     .Select(p => p.PropertyInfo.GetValue(syncableEntity)!)

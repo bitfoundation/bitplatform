@@ -1,4 +1,5 @@
-﻿using Bit.Owin.Contracts;
+﻿using System;
+using Bit.Owin.Contracts;
 using Bit.Owin.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
