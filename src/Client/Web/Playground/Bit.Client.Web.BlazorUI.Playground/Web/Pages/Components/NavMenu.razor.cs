@@ -32,7 +32,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components
                 Links = new List<BitNavLinkItem>
                 {
                     new BitNavLinkItem { Name = "Nav", Key = "Nav", Url = "#" },
-                    new BitNavLinkItem { Name = "Pivot", Key = "Pivot", Url = "#" },
+                    new BitNavLinkItem { Name = "Pivot", Key = "Pivot", Url = "/components/pivot" },
                 }
             },
             new BitNavLinkItem
