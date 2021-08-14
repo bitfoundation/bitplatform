@@ -9,7 +9,7 @@
     </div>
     <div>
         <div style="@($"height: {BarHeight}px;")"></div>
-        <div style="@($"{ProgressTrackerWidth}; height: {BarHeight}px;")"></div>
+        <div style="@($"{(PercentCompleteHasBeenSet ? $"width: {percentComplete}%" : string.Empty)}; height: {BarHeight}px;")"></div>
     </div>
 
     <div>

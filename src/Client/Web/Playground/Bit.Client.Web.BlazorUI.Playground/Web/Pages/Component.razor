@@ -767,7 +767,7 @@
 <div class="pi-container">
     <h4>Default Progress Indicator</h4>
     <BitProgressIndicator  Label="Example title" Description="@description" PercentComplete="@CompletedPercent"></BitProgressIndicator>
-    <BitButton OnClick="@HandleProgress">Start Progress</BitButton>
+    <BitButton OnClick="@StartProgress">Start Progress</BitButton>
     <h4>Indeterminate Progress Indicator</h4>
     <BitProgressIndicator Label="Example title" Description="Example description" BarHeight="20"></BitProgressIndicator>
 
@@ -807,6 +807,4 @@
 
 <div>
     <BitColorPicker @bind-Color="SelectedColor"></BitColorPicker>
-
-    @typeof(BitToggleButton)
 </div>
