@@ -17,7 +17,7 @@ namespace BitChangeSetManager
         }
 
         public static IHost BuildWebHost(string[] args) =>
-            BitWebHost.CreateWebHost(args)
+            BitWebHost.CreateWebHost<AppStartup>(args)
                 .Build();
     }
 }
