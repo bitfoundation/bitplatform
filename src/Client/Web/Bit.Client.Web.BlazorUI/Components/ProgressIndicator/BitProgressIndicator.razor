@@ -7,9 +7,9 @@
     <div>
         @Label
     </div>
-    <div>
-        <div style="@($"height: {BarHeight}px;")"></div>
-        <div style="@($"{ProgressTrackerWidth}; height: {BarHeight}px;")"></div>
+    <div style="@($"height: {BarHeight}px;")">
+        <div></div>
+        <div style="@($"{(PercentCompleteHasBeenSet ? $"width: {percentComplete}%" : string.Empty)};")"></div>
     </div>
 
     <div>
