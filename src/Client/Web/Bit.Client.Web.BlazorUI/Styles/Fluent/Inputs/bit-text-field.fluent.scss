@@ -123,8 +123,7 @@
     }
 }
 
-.bit-txt-multiline-fluent {
-
+@mixin getMultilineStyle($isResizable: true) {
     & > div {
 
         & > div {
@@ -141,6 +140,14 @@
             min-height: inherit;
         }
     }
+}
+
+.bit-txt-multiline-fluent {
+    @include getMultilineStyle();
+}
+
+.bit-txt-multiline-fix-fluent {
+    @include getMultilineStyle($isResizable:false);
 }
 
 .bit-txt-focused-fluent {

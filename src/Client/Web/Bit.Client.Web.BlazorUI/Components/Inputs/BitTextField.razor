@@ -28,7 +28,7 @@
             @if (IsMultiline && Type == TextFieldType.Text)
             {
                 <textarea id="@InputId"
-                          rows="3"
+                          rows="@Rows"
                           disabled=@(!IsEnabled)
                           readonly=@IsReadonly
                           required=@IsRequired

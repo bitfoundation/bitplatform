@@ -19,6 +19,7 @@ namespace Bit.Client.Web.BlazorUI
         private Guid InputId = Guid.NewGuid();
         private string? textValue;
         private bool ValueHasBeenSet;
+        private bool isResizable = true;
 
         /// <summary>
         /// Whether or not the text field is a Multiline text field
@@ -77,6 +78,20 @@ namespace Bit.Client.Web.BlazorUI
         }
 
         /// <summary>
+        /// For multiline text fields, whether or not the field is resizable.
+        /// </summary>
+        [Parameter]
+        public bool IsResizable
+        {
+            get => isResizable;
+            set
+            {
+                isResizable = value;
+                ClassBuilder.Reset();
+            }
+        }
+
+        /// <summary>
         /// Whether or not the text field is borderless
         /// </summary>
         [Parameter]
@@ -101,7 +116,7 @@ namespace Bit.Client.Web.BlazorUI
             {
                 if (value == textValue) return;
                 textValue = value;
-                
+
                 _ = ValueChanged.InvokeAsync(value);
             }
         }
@@ -110,7 +125,9 @@ namespace Bit.Client.Web.BlazorUI
         /// Callback for when the input value changes
         /// </summary>
         [Parameter] public EventCallback<string?> ValueChanged { get; set; }
+
         [Parameter] public EventCallback<string?> OnChange { get; set; }
+
         /// <summary>
         /// Default value of the text field. Only provide this if the text field is an uncontrolled component; otherwise, use the value property
         /// </summary>
@@ -139,6 +156,11 @@ namespace Bit.Client.Web.BlazorUI
         /// Specifies the maximum number of characters allowed in the input
         /// </summary>
         [Parameter] public int MaxLength { get; set; } = -1;
+
+        /// <summary>
+        /// For multiline text, Number of rows when BitTextField is multiline
+        /// </summary>
+        [Parameter] public int Rows { get; set; } = 3;
 
         /// <summary>
         /// The icon name for the icon shown in the far right end of the text field
@@ -192,7 +214,6 @@ namespace Bit.Client.Web.BlazorUI
         /// </summary>
         [Parameter] public EventCallback<FocusEventArgs> OnFocus { get; set; }
 
-
         /// <summary>
         /// Callback for when a keyboard key is pressed
         /// </summary>
@@ -225,7 +246,7 @@ namespace Bit.Client.Web.BlazorUI
         protected override void RegisterComponentClasses()
         {
             ClassBuilder.Register(() => IsMultiline && Type == TextFieldType.Text
-                                        ? $"{RootElementClass}-multiline-{VisualClassRegistrar()}" : string.Empty);
+                                        ? $"{RootElementClass}-multiline-{(IsResizable is false ? "fix-" : string.Empty)}{VisualClassRegistrar()}" : string.Empty);
 
             ClassBuilder.Register(() => IsEnabled && IsReadonly
                                         ? $"{RootElementClass}-readonly-{VisualClassRegistrar()}" : string.Empty);
