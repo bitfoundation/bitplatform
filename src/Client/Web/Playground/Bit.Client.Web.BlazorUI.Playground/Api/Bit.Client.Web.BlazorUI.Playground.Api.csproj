@@ -6,7 +6,7 @@
 
 	<ItemGroup>
 		<Content Condition=" '$(BlazorMode)' == 'Client' " Include="..\Web\Pages\_Host.cshtml" Link="Pages\_Host.cshtml" />
-		<PackageReference Condition=" '$(BlazorMode)' == 'Client' " Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="5.0.1" />
+		<PackageReference Condition=" '$(BlazorMode)' == 'Client' " Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="5.0.9" />
 	</ItemGroup>
 
 	<ItemGroup>

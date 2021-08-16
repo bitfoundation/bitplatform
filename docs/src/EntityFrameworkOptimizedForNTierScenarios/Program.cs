@@ -7,12 +7,12 @@ using Bit.Data.EntityFramework.Implementations;
 using Bit.Model.Contracts;
 using Bit.Owin;
 using Bit.Owin.Implementations;
+using EntityFrameworkOptimizedForNTierScenarios;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -25,6 +25,7 @@ using System.Threading.Tasks;
 using System.Web.Http;
 
 [assembly: InProcess]
+[assembly: AppModule(typeof(EntityFrameworkOptimizedForNTierScenariosAppModule))]
 
 namespace EntityFrameworkOptimizedForNTierScenarios
 {
@@ -159,10 +160,12 @@ namespace EntityFrameworkOptimizedForNTierScenarios
     {
         public static string BaseAddress { get; set; } = "http://localhost:9000/";
 
-        public static IWebHost WebHost { get; set; }
+        public static IHost WebHost { get; set; }
 
         public static async Task Main(string[] args)
         {
+            AssemblyContainer.Current.Init();
+
 #if DEBUG
             System.Console.ForegroundColor = System.ConsoleColor.Yellow;
             System.Console.WriteLine("*****To achieve accurate results, set project configuration to release mode.*****");
@@ -183,38 +186,20 @@ namespace EntityFrameworkOptimizedForNTierScenarios
             await WebHost.RunAsync();
         }
 
-        public static IWebHost BuildWebHost(string[] args) =>
-            BitWebHost.CreateDefaultBuilder(args)
-                .UseStartup<AppStartup>()
-                .ConfigureLogging(loggingBuilder => loggingBuilder.ClearProviders())
-                .UseUrls(BaseAddress)
+        public static IHost BuildWebHost(string[] args) =>
+            BitWebHost.CreateWebHost(args)
+                .ConfigureWebHostDefaults(webHostBuilder =>
+                {
+                    webHostBuilder.ConfigureLogging(loggingBuilder => loggingBuilder.ClearProviders());
+                    webHostBuilder.UseUrls(BaseAddress);
+                })
                 .Build();
     }
 
-    public class AppStartup : AutofacAspNetCoreAppStartup, IAppModule, IAppModulesProvider
+    public class EntityFrameworkOptimizedForNTierScenariosAppModule : IAppModule
     {
-        public AppStartup(IServiceProvider serviceProvider)
-            : base(serviceProvider)
-        {
-
-        }
-
-        public override IServiceProvider ConfigureServices(IServiceCollection services)
-        {
-            DefaultAppModulesProvider.Current = this;
-
-            return base.ConfigureServices(services);
-        }
-
-        public IEnumerable<IAppModule> GetAppModules()
-        {
-            yield return this;
-        }
-
         public virtual void ConfigureDependencies(IServiceCollection services, IDependencyManager dependencyManager)
         {
-            AssemblyContainer.Current.Init();
-
             dependencyManager.RegisterMinimalDependencies();
 
             dependencyManager.RegisterDefaultLogger(typeof(ConsoleLogStore).GetTypeInfo());
