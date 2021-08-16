@@ -81,9 +81,9 @@ namespace Bit.Core.Contracts
 
             dependencyManager.RegisterAspNetCoreMiddleware<AspNetCoreReadAuthTokenFromCookieMiddlewareConfiguration>();
             dependencyManager.RegisterAspNetCoreMiddleware<AspNetCoreSingleSignOnClientMiddlewareConfiguration>();
-            dependencyManager.RegisterOwinMiddleware<SignOutPageMiddlewareConfiguration>();
+            dependencyManager.RegisterAspNetCoreMiddleware<SignOutPageMiddlewareConfiguration>();
             dependencyManager.RegisterOwinMiddleware<InvokeLogOutMiddlewareConfiguration>();
-            dependencyManager.RegisterOwinMiddleware<SignInPageMiddlewareConfiguration>();
+            dependencyManager.RegisterAspNetCoreMiddleware<SignInPageMiddlewareConfiguration>();
             dependencyManager.RegisterOwinMiddleware<InvokeLoginMiddlewareConfiguration>();
             dependencyManager.RegisterAspNetCoreMiddleware<AspNetCoreLogUserInformationMiddlewareConfiguration>();
             dependencyManager.Register<IRandomStringProvider, DefaultRandomStringProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
@@ -236,7 +236,7 @@ namespace Bit.Core.Contracts
             if (dependencyManager == null)
                 throw new ArgumentNullException(nameof(dependencyManager));
 
-            dependencyManager.RegisterOwinMiddleware<IndexPageMiddlewareConfiguration>();
+            dependencyManager.RegisterAspNetCoreMiddleware<IndexPageMiddlewareConfiguration>();
 
             return dependencyManager;
         }
@@ -249,8 +249,8 @@ namespace Bit.Core.Contracts
             if (metadataAssemblies == null)
                 throw new ArgumentNullException(nameof(metadataAssemblies));
 
-            dependencyManager.RegisterOwinMiddleware<MetadataMiddlewareConfiguration>();
-            dependencyManager.RegisterOwinMiddleware<ClientAppProfileMiddlewareConfiguration>();
+            dependencyManager.RegisterAspNetCoreMiddleware<MetadataMiddlewareConfiguration>();
+            dependencyManager.RegisterAspNetCoreMiddleware<ClientAppProfileMiddlewareConfiguration>();
             dependencyManager.Register<IAppMetadataProvider, DefaultAppMetadataProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
 
             metadataAssemblies = AssemblyContainer.Current.AssembliesWithDefaultAssemblies(metadataAssemblies).Union(new[] { AssemblyContainer.Current.GetServerMetadataAssembly() }).ToArray();

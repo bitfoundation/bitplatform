@@ -29,7 +29,7 @@ namespace Bit.Test
 
     public class TestEnvironmentArgs
     {
-        public string? FullUri { get; set; } = null;
+        public string? FullUri { get; set; }
 
         public string? HostName { get; set; }
 

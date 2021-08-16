@@ -14,11 +14,6 @@ using System.Xml.Serialization;
 
 namespace Bit.Tooling.CodeGenerator.Implementations.CSharpODataMetadataGenerator
 {
-    public class MetadataWriter : StringWriter
-    {
-        public override Encoding Encoding => Encoding.UTF8;
-    }
-
     public class CSharpSimpleODataClientMetadataGenerator : ICSharpClientMetadataGenerator
     {
         readonly string escapeStr = new string(new[] { '\\', '"' });
@@ -194,10 +189,10 @@ namespace Bit.Tooling.CodeGenerator.Implementations.CSharpODataMetadataGenerator
                 }
             };
 
-            using MetadataWriter metadataStringBuilder = new MetadataWriter { NewLine = string.Empty };
+            using StringWriter metadataStringBuilder = new StringWriter { NewLine = string.Empty };
             new XmlSerializer(typeof(MetadataEdmx)).Serialize(metadataStringBuilder, metadata);
 
-            string metadataString = metadataStringBuilder.ToString().Replace("\"", escapeStr, StringComparison.InvariantCulture);
+            string metadataString = metadataStringBuilder.ToString().Replace("\"", escapeStr, StringComparison.InvariantCulture).Replace(Environment.NewLine, string.Empty);
 
             return metadataString;
         }

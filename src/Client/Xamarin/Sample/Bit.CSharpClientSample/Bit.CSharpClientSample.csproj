@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <LangVersion>9.0</LangVersion>
+    <LangVersion>preview</LangVersion>
     <Nullable>disable</Nullable>
   </PropertyGroup>
 

@@ -25,15 +25,15 @@
 		<PackageProjectUrl>https://github.com/bitfoundation/bitframework</PackageProjectUrl>
 		<PackageIconUrl>https://avatars.githubusercontent.com/u/22663390</PackageIconUrl>
 		<PackageReleaseNotes>https://github.com/bitfoundation/bitframework/releases/tag/v7.4.0</PackageReleaseNotes>
-		<PackageVersion>7.5.0</PackageVersion>
+		<PackageVersion>7.6.0</PackageVersion>
 
 		<!-- Version -->
-		<Version>7.5.0</Version>
-		<AssemblyVersion>7.5.0</AssemblyVersion>
+		<Version>7.6.0</Version>
+		<AssemblyVersion>7.6.0</AssemblyVersion>
 
 		<!-- Compile -->
 		<NeutralLanguage>en</NeutralLanguage>
-		<LangVersion>9.0</LangVersion>
+		<LangVersion>preview</LangVersion>
 		<Nullable>enable</Nullable>
 		<NoWarn>$(NoWarn);NU1605;CS1591;NU1701;NU1605;CA1303</NoWarn>
 		<!-- https://stackoverflow.com/a/46815541/2720104 -->

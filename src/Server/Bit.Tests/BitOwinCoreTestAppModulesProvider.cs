@@ -59,11 +59,12 @@ namespace Bit.Tests
 
             services.AddResponseCompression(options =>
             {
-                options.EnableForHttps = true;
+                options.Providers.Add<BrotliCompressionProvider>();
                 options.Providers.Add<GzipCompressionProvider>();
+                options.EnableForHttps = true;
             }).Configure<GzipCompressionProviderOptions>(options =>
             {
-                options.Level = CompressionLevel.Optimal;
+                options.Level = CompressionLevel.Fastest;
             });
 
             dependencyManager.RegisterAspNetCoreMiddlewareUsing(aspNetCoreApp =>
