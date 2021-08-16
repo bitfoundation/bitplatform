@@ -15,13 +15,13 @@
                value="@($"{Value} {Suffix}")"
                @onchange="e => HandleOnInputChange(e)" />
         <span>
-            <button @onclick="e => HandleButtonClick(SpinButtonAction.Up)">
+            <button @onclick="e => HandleButtonClick(SpinButtonAction.Up)" class="@UpArrowButtonStyles">
                 <span>
                     <i class="bit-icon bit-icon--ChevronUpSmall bit-icon--s"></i>
                 </span>
             </button>
 
-            <button @onclick="e => HandleButtonClick(SpinButtonAction.Down)">
+            <button @onclick="e => HandleButtonClick(SpinButtonAction.Down)" class="@DownArrowButtonStyles">
                 <span>
                     <i class="bit-icon bit-icon--ChevronDownSmall bit-icon--s"></i>
                 </span>

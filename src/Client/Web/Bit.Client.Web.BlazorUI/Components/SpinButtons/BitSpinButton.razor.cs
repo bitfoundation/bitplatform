@@ -28,9 +28,19 @@ namespace Bit.Client.Web.BlazorUI
                 _ = ValueChanged.InvokeAsync(value);
             }
         }
+        /// <summary>
+        /// Custom style for down arrow button
+        /// </summary>
+
+        [Parameter] public string? DownArrowButtonStyles { get; set; }
 
         /// <summary>
-        /// Callback for when the spin button value change
+        /// Custom style for down arrow button
+        /// </summary>
+        [Parameter] public string? UpArrowButtonStyles { get; set; }
+
+        /// <summary>
+        /// Custom style for up arrow button
         /// </summary>
         [Parameter] public EventCallback<double> ValueChanged { get; set; }
 
