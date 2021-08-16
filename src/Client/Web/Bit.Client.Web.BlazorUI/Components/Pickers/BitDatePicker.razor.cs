@@ -72,101 +72,132 @@ namespace Bit.Client.Web.BlazorUI
 
         public async Task HandleClick(MouseEventArgs eventArgs)
         {
-            IsOpen = true;
-            await OnClick.InvokeAsync(eventArgs);
+            if (IsEnabled)
+            {
+                IsOpen = true;
+                await OnClick.InvokeAsync(eventArgs);
+            }
         }
 
         public async Task HandleFocusIn(FocusEventArgs eventArgs)
         {
-            await OnFocusIn.InvokeAsync(eventArgs);
+            if (IsEnabled)
+            {
+                await OnFocusIn.InvokeAsync(eventArgs);
+            }
         }
 
         public async Task HandleFocusOut(FocusEventArgs eventArgs)
         {
-           // IsOpen = false;
-            await OnFocusOut.InvokeAsync(eventArgs);
+            if (IsEnabled)
+            {
+                await OnFocusOut.InvokeAsync(eventArgs);
+            }
         }
 
         public async Task HandleDateChoose(int dayOfWeek, int day, int month)
         {
-            IsOpen = false;
-             
-            selectedDate = GetSelectedDateString(dayOfWeek, day, month);
-            await OnDateChoose.InvokeAsync(selectedDate);
+            if (IsEnabled)
+            {
+                IsOpen = false;
+                selectedDate = GetSelectedDateString(dayOfWeek, day, month);
+                await OnDateChoose.InvokeAsync(selectedDate);
+            }
         }
 
         public async Task HandleMonthChange(bool nextMonth)
         {
-            if (nextMonth)
+            if (IsEnabled)
             {
-                if (currentMonth + 1 == 13)
+                if (nextMonth)
                 {
-                    currentYear++;
-                    currentMonth = 1;
+                    if (currentMonth + 1 == 13)
+                    {
+                        currentYear++;
+                        currentMonth = 1;
+                    }
+                    else
+                    {
+                        currentMonth++;
+                    }
                 }
                 else
                 {
-                    currentMonth++;
+                    if (currentMonth - 1 == 0)
+                    {
+                        currentYear--;
+                        currentMonth = 12;
+                    }
+                    else
+                    {
+                        currentMonth--;
+                    }
                 }
+                await CreateMonthCalendar(currentYear, currentMonth);
+                await OnMonthChange.InvokeAsync(currentMonth);
             }
-            else
-            {
-                if (currentMonth - 1 == 0)
-                {
-                    currentYear--;
-                    currentMonth = 12;
-                }
-                else
-                {
-                    currentMonth--;
-                }
-            }
-            await CreateMonthCalendar(currentYear, currentMonth);
-            await OnMonthChange.InvokeAsync(currentMonth);
         }
 
         public async Task HandleMonthChange(int month)
         {
-            currentMonth = month;
-            await CreateMonthCalendar(currentYear, currentMonth);
-            await OnMonthChange.InvokeAsync(currentMonth);
+            if (IsEnabled)
+            {
+                currentMonth = month;
+                await CreateMonthCalendar(currentYear, currentMonth);
+                await OnMonthChange.InvokeAsync(currentMonth);
+            }
         }
 
         public async Task HandleYearChanged(int year)
         {
-            currentYear = year;
-            ChangeYearRanges(currentYear-1);
-            await CreateMonthCalendar(currentYear, currentMonth);
-            await OnYearChange.InvokeAsync(currentYear);
+            if (IsEnabled)
+            {
+                currentYear = year;
+                ChangeYearRanges(currentYear - 1);
+                await CreateMonthCalendar(currentYear, currentMonth);
+                await OnYearChange.InvokeAsync(currentYear);
+            }
         }
 
         public async Task HandleMonthsShownChanged(MouseEventArgs eventArgs)
         {
-            isMonthsShown = !isMonthsShown;
+            if (IsEnabled)
+            {
+                isMonthsShown = !isMonthsShown;
+            }
         }
 
         public async Task HandleYearChanged(bool nextYear)
         {
-            if (nextYear)
+            if (IsEnabled)
             {
-                currentYear++;
+                if (nextYear)
+                {
+                    currentYear++;
+                }
+                else
+                {
+                    currentYear--;
+                }
+                CreateMonthCalendar(currentYear, currentMonth);
+                await OnYearChange.InvokeAsync(currentYear);
             }
-            else
-            {
-                currentYear--;
-            }
-            CreateMonthCalendar(currentYear, currentMonth);
-            await OnYearChange.InvokeAsync(currentYear);
         }
 
         public async Task HandleYearRangeChanged(int fromYear)
         {
-            ChangeYearRanges(fromYear);
+            if (IsEnabled)
+            {
+                ChangeYearRanges(fromYear);
+            }
         }
 
         public async Task HandleGoToToday(MouseEventArgs args)
         {
-            await CreateMonthCalendar();
+            if (IsEnabled)
+            {
+                await CreateMonthCalendar();
+            }
         }
 
         private async Task CreateMonthCalendar()
