@@ -326,9 +326,6 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
         }
 
         private string? TextValue;
-        private void TextChanged(string val) {
-            TextValue = val;
-        }
     }
 
     public class Person
