@@ -33,7 +33,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
 
         public int CompletedPercent { get; set; }
         private string description = "Push button to start !";
-        private async Task HandleProgress()
+        private async Task StartProgress()
         {
             CompletedPercent = 0;
             while (CompletedPercent <= 100)

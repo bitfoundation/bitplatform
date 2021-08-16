@@ -22,6 +22,7 @@
             position: absolute;
             width: 100%;
             background-color: rgb(237, 235, 233);
+            height: inherit;
         }
 
         & > div:nth-child(2) {
@@ -29,6 +30,7 @@
             position: absolute;
             transition: width 0.15s linear 0s;
             width: 0;
+            height: inherit;
         }
     }
 
