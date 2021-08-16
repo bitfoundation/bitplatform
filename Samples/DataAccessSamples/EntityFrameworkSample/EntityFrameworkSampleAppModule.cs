@@ -8,6 +8,7 @@ using Bit.Data.EntityFramework.Implementations;
 using Bit.Model.Contracts;
 using Bit.Owin;
 using Bit.Owin.Implementations;
+using EntityFrameworkSample;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
@@ -18,6 +19,8 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
+
+[assembly: AppModule(typeof(EntityFrameworkSampleAppModule))]
 
 namespace EntityFrameworkSample
 {
@@ -125,30 +128,10 @@ namespace EntityFrameworkSample
         }
     }
 
-    public class AppStartup : AutofacAspNetCoreAppStartup, IAppModule, IAppModulesProvider
+    public class EntityFrameworkSampleAppModule : IAppModule
     {
-        public AppStartup(IServiceProvider serviceProvider)
-            : base(serviceProvider)
-        {
-
-        }
-
-        public override IServiceProvider ConfigureServices(IServiceCollection services)
-        {
-            DefaultAppModulesProvider.Current = this;
-
-            return base.ConfigureServices(services);
-        }
-
-        public IEnumerable<IAppModule> GetAppModules()
-        {
-            yield return this;
-        }
-
         public virtual void ConfigureDependencies(IServiceCollection services, IDependencyManager dependencyManager)
         {
-            AssemblyContainer.Current.Init();
-
             dependencyManager.RegisterMinimalDependencies();
 
             dependencyManager.RegisterDefaultLogger(typeof(DebugLogStore).GetTypeInfo(), typeof(ConsoleLogStore).GetTypeInfo());
