@@ -22,10 +22,13 @@
                     <BitTextField Label="Standard"></BitTextField>
                 </div>
                 <div class="m-t-15">
-                    <BitTextField Label="Read-only" IsReadonly="true" Value="I am read-only"></BitTextField>
+                    <BitTextField Label="Read-only" IsReadonly="true" DefaultValue="I am read-only"></BitTextField>
                 </div>
                 <div class="m-t-15">
-                    <BitTextField Label="Disabled" IsEnabled="false" Value="I am disabled"></BitTextField>
+                    <BitTextField Label="Disabled" IsEnabled="false" DefaultValue="I am disabled"></BitTextField>
+                </div>
+                <div class="m-t-15">
+                    <BitTextField Label="Disabled with placeholder" IsEnabled="false" Placeholder="I am disabled"></BitTextField>
                 </div>
                 <div class="m-t-15">
                     <BitTextField Label="With placeholder" Placeholder="Please enter text here"></BitTextField>
@@ -42,16 +45,22 @@
                 <div class="m-t-15">
                     <BitTextField Label="Required" IsRequired="true"></BitTextField>
                 </div>
+                <div class="m-t-15">
+                    <BitTextField AriaLabel="Required without visible label" IsRequired="true"></BitTextField>
+                </div>
             </BitPivotItem>
             <BitPivotItem HeaderText="Code" IconName="Source">
                 <p>
                     &lt<span class="dark-green">BitTextField Label</span>="Standard"><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
                 </p>
                 <p>
-                    &lt<span class="dark-green">BitTextField IsReadonly</span>="<span class="light-blue">true</span>" <span class="dark-green">Label</span>="Read-only" <span class="dark-green">Value</span>="I am read-only"><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
+                    &lt<span class="dark-green">BitTextField IsReadonly</span>="<span class="light-blue">true</span>" <span class="dark-green">Label</span>="Read-only" <span class="dark-green">DefaultValue</span>="I am read-only"><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
                 </p>
                 <p>
-                    &lt<span class="dark-green">BitTextField IsEnabled</span>="<span class="light-blue">false</span>" <span class="dark-green">Label</span>="Disabled" <span class="dark-green">Value</span>="I am disabled"><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
+                    &lt<span class="dark-green">BitTextField IsEnabled</span>="<span class="light-blue">false</span>" <span class="dark-green">Label</span>="Disabled" <span class="dark-green">DefaultValue</span>="I am disabled"><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
+                </p>
+                <p>
+                    &lt<span class="dark-green">BitTextField IsEnabled</span>="<span class="light-blue">false</span>" <span class="dark-green">Label</span>="Disabled" <span class="dark-green">Placeholder</span>="I am disabled"><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
                 </p>
                 <p>
                     &lt<span class="dark-green">BitTextField Placeholder</span>="Please enter text here" <span class="dark-green">Label</span>="With placeholder"><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
@@ -68,14 +77,17 @@
                 <p>
                     &lt<span class="dark-green">BitTextField Label</span>="Required" <span class="dark-green">IsRequired</span>="<span class="light-blue">true</span>"><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
                 </p>
+                <p>
+                    &lt<span class="dark-green">BitTextField AriaLabel</span>="Required without visible label" <span class="dark-green">IsRequired</span>="<span class="light-blue">true</span>"><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
+                </p>
             </BitPivotItem>
         </BitPivot>
     </div>
-    <h3>Multi-line</h3>
+    <h3>Multi-line BitTextField</h3>
     <BitPivot>
         <BitPivotItem HeaderText="Example" IconName="ViewList">
             <div>
-                <BitTextField Label="Standard" IsMultiline="true"></BitTextField>
+                <BitTextField Label="Standard" IsMultiline="true" Rows="3"></BitTextField>
             </div>
             <div class="m-t-15">
                 <BitTextField Label="Limited multi-line text field - 10 chars" IsMultiline="true" MaxLength="10"></BitTextField>
@@ -83,16 +95,22 @@
             <div class="m-t-15">
                 <BitTextField Label="Disabled" IsMultiline="true" IsEnabled="false" Value="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat"></BitTextField>
             </div>
+            <div class="m-t-15">
+                <BitTextField Label="Non-resizable" IsMultiline="true" IsResizable="false"></BitTextField>
+            </div>
         </BitPivotItem>
         <BitPivotItem HeaderText="Code" IconName="Source">
             <p>
-                &lt<span class="dark-green">BitTextField IsMultiline</span>="<span class="light-blue">true</span>" <span class="dark-green">Label</span>="Standard" ><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
+                &lt<span class="dark-green">BitTextField Label</span>="Standard" <span class="dark-green"> IsMultiline</span>="<span class="light-blue">true</span>" <span class="dark-green"> Rows</span>="3" ><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
             </p>
             <p>
-                &lt<span class="dark-green">BitTextField IsMultiline</span>="<span class="light-blue">true</span>" <span class="dark-green">Label</span>="Limited multi-line text field - 10 chars" <span class="dark-green">MaxLength</span>="10" ><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
+                &lt<span class="dark-green">BitTextField Label</span>="Limited multi-line text field - 10 chars" <span class="dark-green">IsMultiline</span>="<span class="light-blue">true</span>" <span class="dark-green">MaxLength</span>="10" ><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
             </p>
             <p>
-                &lt<span class="dark-green">BitTextField IsMultiline</span>="<span class="light-blue">true</span>" <span class="dark-green">Label</span>="Disabled" <span class="dark-green">IsEnabled</span>="<span class="light-blue">false</span>" <span class="dark-green">Value</span>="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat"><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
+                &lt<span class="dark-green">BitTextField Label</span>="Disabled" <span class="dark-green">IsMultiline</span>="<span class="light-blue">true</span>" <span class="dark-green">IsEnabled</span>="<span class="light-blue">false</span>" <span class="dark-green">Value</span>="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat"><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
+            </p>
+            <p>
+                &lt<span class="dark-green">BitTextField Label</span>="Non-resizable" <span class="dark-green">IsMultiline</span>="<span class="light-blue">true</span>" <span class="dark-green">IsResizable</span>="<span class="light-blue">false</span>" ><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
             </p>
         </BitPivotItem>
     </BitPivot>
@@ -143,6 +161,12 @@
             <td>Whether the associated input is required or not, add an asterisk "*" to its label.</td>
         </tr>
         <tr>
+            <td>IsResizable</td>
+            <td>bool</td>
+            <td>true</td>
+            <td>For multiline text fields, whether or not the field is resizable.</td>
+        </tr>
+        <tr>
             <td>label</td>
             <td>string</td>
             <td></td>
@@ -165,6 +189,12 @@
             <td>elementreference</td>
             <td></td>
             <td>Access the public methods and properties of the component.</td>
+        </tr>
+        <tr>
+            <td>Rows</td>
+            <td>int</td>
+            <td>3</td>
+            <td>For multiline text, Number of rows.</td>
         </tr>
         <tr>
             <td>styles</td>

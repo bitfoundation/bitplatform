@@ -158,7 +158,7 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public int MaxLength { get; set; } = -1;
 
         /// <summary>
-        /// For multiline text, Number of rows when BitTextField is multiline
+        /// For multiline text, Number of rows
         /// </summary>
         [Parameter] public int Rows { get; set; } = 3;
 
