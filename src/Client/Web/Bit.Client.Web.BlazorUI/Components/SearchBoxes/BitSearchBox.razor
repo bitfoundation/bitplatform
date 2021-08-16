@@ -10,7 +10,7 @@
     </div>
     <input type="text" @ref="InputRef" class="search-input"
            placeholder="@Placeholder"
-           @bind-value="Value"
+           value="@Value"
            @onkeydown="@((k) => HandleOnKeyDown(k))"
            @onfocusin="HandleInputFocusIn"
            @onfocusout="HandleInputFocusOut"

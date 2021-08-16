@@ -64,7 +64,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.SearchBoxes
         }
 
         [DataTestMethod, DataRow("hello world")]
-        public void BitTextFieldShouldTakeDefaultValue(string defaultValue)
+        public void BitSearchBoxShouldTakeDefaultValue(string defaultValue)
         {
             var component = RenderComponent<BitSearchBoxTest>(
                 parameters =>
