@@ -90,6 +90,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
         public async Task BitDropDownMultiSelectShouldRespectIsEnabled(Visual visual, bool isEnabled, int count)
         {
             Context.JSInterop.Mode = JSRuntimeMode.Loose;
+            
             var items = new List<DropDownItem>
             {
                 new() {ItemType = DropDownItemType.Header, IsEnabled = isEnabled},
@@ -97,23 +98,28 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                 new() {ItemType = DropDownItemType.Normal, IsEnabled = isEnabled},
                 new() {ItemType = DropDownItemType.Divider, IsEnabled = isEnabled}
             };
-            var com = RenderComponent<BitDropDownTest>(
-                parameters =>
-                {
-                    parameters.Add(p => p.Visual, visual);
-                    parameters.Add(p => p.Items, items);
-                    parameters.Add(p => p.IsMultiSelect, true);
-                    parameters.Add(p => p.ItemIsEnabled, isEnabled);
-                    parameters.Add(p => p.Value, count.ToString());
-                });
-            var bitChoiceGroup = com.Find(".bit-drp");
-            bitChoiceGroup.Children.First().Click();
+
+            var com = RenderComponent<BitDropDownTest>(parameters =>
+            {
+                parameters.Add(p => p.Visual, visual);
+                parameters.Add(p => p.Items, items);
+                parameters.Add(p => p.IsMultiSelect, true);
+                parameters.Add(p => p.ItemIsEnabled, isEnabled);
+                parameters.Add(p => p.Value, count.ToString());
+            });
+
             var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
-            var checkboxItems = com.FindAll($".bit-chb-{visualClass} > div > div");
+            var bitChoiceGroup = com.Find(".bit-drp");
+
+            bitChoiceGroup.Children.First().Click();
+
+            var checkboxItems = com.FindAll($".bit-chb-{visualClass} > div > div", true);
+            
             for (int index = 0; index < checkboxItems.Count; index++)
             {
                 checkboxItems[index].Click();
             }
+
             Assert.AreEqual(count, com.Instance.CurrentCount);
         }
     }
