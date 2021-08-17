@@ -28,9 +28,9 @@ namespace Bit.Owin
 
                     AspNetCoreAppEnvironmentsProvider.Current.Configuration = context.Configuration;
 
-                    AspNetCoreAppEnvironmentsProvider.Current.HostEnvironment = context.HostingEnvironment;
+                    AspNetCoreAppEnvironmentsProvider.Current.HostingEnvironment = context.HostingEnvironment;
 
-                    DefaultPathProvider.Current = new AspNetCorePathProvider(AspNetCoreAppEnvironmentsProvider.Current.HostEnvironment);
+                    DefaultPathProvider.Current = new AspNetCorePathProvider(AspNetCoreAppEnvironmentsProvider.Current.HostingEnvironment);
 
                     AspNetCoreAppEnvironmentsProvider.Current.Init();
 

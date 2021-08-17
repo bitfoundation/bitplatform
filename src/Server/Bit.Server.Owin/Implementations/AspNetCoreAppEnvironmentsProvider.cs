@@ -23,7 +23,7 @@ namespace Bit.Owin.Implementations
 
         public virtual IConfiguration Configuration { get; set; } = default!;
 
-        public virtual IHostEnvironment HostEnvironment { get; set; } = default!;
+        public virtual IHostEnvironment HostingEnvironment { get; set; } = default!;
 
         private AppEnvironment? _appEnvironment;
 
@@ -104,12 +104,12 @@ namespace Bit.Owin.Implementations
 
             _appEnvironment = new AppEnvironment
             {
-                Name = HostEnvironment.EnvironmentName,
+                Name = HostingEnvironment.EnvironmentName,
                 IsActive = true,
-                DebugMode = HostEnvironment.IsDevelopment(),
+                DebugMode = HostingEnvironment.IsDevelopment(),
                 AppInfo = new EnvironmentAppInfo
                 {
-                    Name = HostEnvironment.ApplicationName,
+                    Name = HostingEnvironment.ApplicationName,
                     Version = (Assembly.GetCallingAssembly().GetCustomAttribute<AssemblyFileVersionAttribute>()!).Version,
                     DefaultTimeZone = appInfo?.GetValue<string?>(nameof(EnvironmentAppInfo.DefaultTimeZone), defaultValue: null)
                 },

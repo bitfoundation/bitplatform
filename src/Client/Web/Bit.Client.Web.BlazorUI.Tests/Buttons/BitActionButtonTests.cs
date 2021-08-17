@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using Bunit;
+﻿using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.Client.Web.BlazorUI.Tests.Buttons
@@ -8,25 +7,26 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
     public class BitActionButtonTests : BunitTestContext
     {
         [DataTestMethod,
-            DataRow(Visual.Fluent, true, null, false),
-            DataRow(Visual.Fluent, true, "AddFriend", true),
-            DataRow(Visual.Fluent, false, "AddFriend", true),
+            DataRow(Visual.Fluent, true, null, false, "title"),
+            DataRow(Visual.Fluent, true, "AddFriend", true, "title"),
+            DataRow(Visual.Fluent, false, "AddFriend", true, "title"),
 
-            DataRow(Visual.Cupertino, true, null, false),
-            DataRow(Visual.Cupertino, true, "AddFriend", true),
-            DataRow(Visual.Cupertino, false, "AddFriend", true),
+            DataRow(Visual.Cupertino, true, null, false, "title"),
+            DataRow(Visual.Cupertino, true, "AddFriend", true, "title"),
+            DataRow(Visual.Cupertino, false, "AddFriend", true, "title"),
 
-            DataRow(Visual.Material, true, null, false),
-            DataRow(Visual.Material, true, "AddFriend", true),
-            DataRow(Visual.Material, false, "AddFriend", true),
+            DataRow(Visual.Material, true, null, false, "title"),
+            DataRow(Visual.Material, true, "AddFriend", true, "title"),
+            DataRow(Visual.Material, false, "AddFriend", true, "title"),
         ]
-        public void BitActionButtonTest(Visual visual, bool isEnabled, string iconName, bool expectedResult)
+        public void BitActionButtonTest(Visual visual, bool isEnabled, string iconName, bool expectedResult, string title)
         {
             var com = RenderComponent<BitActionButtonTest>(parameters =>
             {
                 parameters.Add(p => p.Visual, visual);
                 parameters.Add(p => p.IsEnabled, isEnabled);
                 parameters.Add(p => p.IconName, iconName);
+                parameters.Add(p => p.Title, title);
             });
 
             var bitButton = com.Find(".bit-act-btn");
@@ -41,6 +41,8 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
             {
                 Assert.AreEqual(bitIconITag.ClassList.Contains($"bit-icon--{iconName}"), expectedResult);
             }
+
+            Assert.AreEqual(bitButton.GetAttribute("title"), title);
 
             bitButton.Click();
 
@@ -111,6 +113,26 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
             var bitButton = com.Find(".bit-act-btn");
 
             Assert.AreEqual(bitButton.HasAttribute("aria-hidden"), expectedResult);
+        }
+
+        [DataTestMethod,
+            DataRow("", true),
+            DataRow("bing.com", true),
+            DataRow("bing.com", false)
+        ]
+        public void BitActionButtonShouldRenderExpectedElementBasedOnHref(string href, bool isEnabled)
+        {
+            var component = RenderComponent<BitActionButton>(parameters =>
+            {
+                parameters.Add(p => p.Href, href);
+                parameters.Add(p => p.IsEnabled, isEnabled);
+            });
+
+            var bitActionButton = component.Find(".bit-act-btn");
+            var tagName = bitActionButton.TagName;
+            var expectedElement = href.HasValue() && isEnabled ? "a" : "button";
+
+            Assert.AreEqual(expectedElement, tagName, ignoreCase: true);
         }
     }
 }

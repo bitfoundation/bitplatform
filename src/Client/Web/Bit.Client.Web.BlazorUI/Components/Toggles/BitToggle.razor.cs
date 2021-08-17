@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 
@@ -8,6 +9,20 @@ namespace Bit.Client.Web.BlazorUI
     {
         private bool isChecked;
         private bool IsCheckedHasBeenSet;
+        private Guid Id = Guid.NewGuid();
+        private string? LabelledById;
+        private string? StateText;
+        private string LabelId => Id + "-label";
+        private string StateTextId => Id + "-stateText";
+        private string? AriaChecked => IsChecked ? "true" : "false";
+
+        [Parameter] public string? DefaultText { get; set; }
+
+        [Parameter] public string? Label { get; set; }
+
+        [Parameter] public RenderFragment? LabelFragment { get; set; }
+
+        [Parameter] public string? Role { get; set; } = "switch";
 
         /// <summary>
         /// Text to display when toggle is ON
@@ -46,11 +61,6 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public EventCallback<bool> IsCheckedChanged { get; set; }
 
         /// <summary>
-        /// The content of toggle, It can be Any custom tag or a text
-        /// </summary>
-        [Parameter] public RenderFragment? ChildContent { get; set; }
-
-        /// <summary>
         /// Callback that is called when the checked value has changed
         /// </summary>
         [Parameter] public EventCallback<bool> OnChange { get; set; }
@@ -76,6 +86,25 @@ namespace Bit.Client.Web.BlazorUI
             if (IsEnabled is false || IsCheckedChanged.HasDelegate is false) return;
             IsChecked = !IsChecked;
             await OnChange.InvokeAsync(IsChecked);
+        }
+
+        protected override async Task OnInitializedAsync()
+        {
+            StateText = (IsChecked ? OnText : OffText) ?? DefaultText ?? "";
+
+            if (AriaLabel.HasNoValue())
+            {
+                if (Label.HasValue())
+                {
+                    LabelledById = LabelId;
+                }
+                if (StateText.HasValue())
+                {
+                    LabelledById = LabelledById.HasValue() ? LabelId + " " + StateTextId : StateTextId;
+                } 
+            }
+
+            await base.OnInitializedAsync();
         }
     }
 }
