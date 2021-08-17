@@ -1,8 +1,12 @@
-﻿<BitSearchBox Placeholder="@Placeholder"
+﻿<BitSearchBox IsEnabled="IsEnabled"
+              Placeholder="@Placeholder"
               Value="@Value"
               DisableAnimation="@DisableAnimation"
               IsUnderlined="@IsUnderlined"
-              AriaLabel="@AriaLabel">
+              AriaLabel="@AriaLabel"
+              DefaultValue="@DefaultValue"
+              ShowIcon="ShowIcon"
+              OnChange="HandleChange">
 </BitSearchBox>
 
 @code {
@@ -15,4 +19,17 @@
     [Parameter] public bool IsUnderlined { get; set; }
 
     [Parameter] public string AriaLabel { get; set; }
+
+    [Parameter] public string? DefaultValue { get; set; }
+
+    [Parameter] public bool ShowIcon { get; set; }
+
+    [Parameter] public bool IsEnabled { get; set; }
+
+    public int CurrentCount { get; set; }
+
+    public void HandleChange(string e)
+    {
+        CurrentCount++;
+    }
 }

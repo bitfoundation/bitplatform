@@ -84,13 +84,13 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
 
             public void SaveLog(LogEntry logEntry)
             {
-                if (logEntry.LogData.Any(ld => ld.Key == "Test"))
+                if (logEntry.LogData.Any(ld => ld.Key == "Test-Data"))
                     LogEntriesCount++;
             }
 
             public Task SaveLogAsync(LogEntry logEntry)
             {
-                if (logEntry.LogData.Any(ld => ld.Key == "Test"))
+                if (logEntry.LogData.Any(ld => ld.Key == "Test-Data"))
                     LogEntriesCount++;
 
                 return Task.CompletedTask;

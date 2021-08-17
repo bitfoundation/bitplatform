@@ -34,6 +34,21 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public RenderFragment? ChildContent { get; set; }
 
         /// <summary>
+        /// URL the link points to, if provided, button renders as an anchor
+        /// </summary>
+        [Parameter] public string? Href { get; set; }
+
+        /// <summary>
+        /// If Href provided, specifies how to open the link
+        /// </summary>
+        [Parameter] public string? Target { get; set; }
+
+        /// <summary>
+        /// The title to show when the mouse is placed on the button
+        /// </summary>
+        [Parameter] public string? Title { get; set; }
+
+        /// <summary>
         /// Callback for when the button clicked
         /// </summary>
         [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }

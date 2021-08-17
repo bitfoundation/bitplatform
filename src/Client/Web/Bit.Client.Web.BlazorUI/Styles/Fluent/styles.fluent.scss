@@ -1,4 +1,4 @@
-﻿@import "fonts.fluent.scss";
+@import "fonts.fluent.scss";
 @import "icons.fluent.scss";
 
 @import "../general.scss";
@@ -26,3 +26,5 @@
 @import "Pivot/pivot.fluent.scss";
 @import "Buttons/bit-toggle-button.fluent.scss";
 @import "Lists/bit-details-list.scss";
+@import "ColorPicker/color-picker.fluent.scss";
+@import "ProgressIndicator/bit-progressIndicator.fluent.scss";

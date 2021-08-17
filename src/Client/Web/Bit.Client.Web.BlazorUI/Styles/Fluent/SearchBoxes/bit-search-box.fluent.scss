@@ -1,7 +1,32 @@
 ﻿@import "../colors.fluent.scss", "../../functions.scss";
 
+@mixin getFocusedStyle($fixedIcon: false, $hasValue: false) {
+    border: 2px solid $Primary;
+
+    & > div:first-child {
+        @if $fixedIcon == false {
+            width: 0px;
+
+            & i.bit-icon {
+                opacity: 0;
+            }
+        }
+    }
+
+    @if $hasValue = true {
+        & > div:last-child {
+            opacity: 1;
+            flex-basis: 0px;
+
+            & i {
+                opacity: 1;
+            }
+        }
+    }
+}
+
 .bit-sch-box-fluent {
-    font-family: FluentFont;
+    font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
     -webkit-font-smoothing: antialiased;
     font-size: 14px;
     font-weight: 400;
@@ -120,16 +145,23 @@
     }
 }
 
-.bit-sch-box-focused-fluent {
-    border: 2px solid $Primary;
+.bit-sch-box-fixed-icon-has-value-fluent {
+    & > div:last-child {
+        opacity: 1;
+        flex-basis: 0px;
 
-    & > div:first-child {
-        width: 0px;
-
-        & i.bit-icon {
-            opacity: 0;
+        & i {
+            opacity: 1;
         }
     }
+}
+
+.bit-sch-box-focused-fluent {
+    @include getFocusedStyle();
+}
+
+.bit-sch-box-fixde-icon-focused-fluent {
+    @include getFocusedStyle($fixedIcon: true);
 }
 
 .bit-sch-box-no-animation-fluent {

@@ -1,6 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Web;
 
 namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
@@ -30,6 +31,31 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
         private double BasicSpinButtonDisableValue = 20;
         private double SpinButtonWithCustomHandlerValue = 14;
         private double SpinButtonWithLabelAboveValue = 7;
+
+        public int CompletedPercent { get; set; }
+        private string description = "Push button to start !";
+        private async Task StartProgress()
+        {
+            CompletedPercent = 0;
+            while (CompletedPercent <= 100)
+            {
+                if (CompletedPercent == 100)
+                {
+                    description = $"Completed !";
+                    break;
+                }
+                else
+                {
+                    CompletedPercent++;
+                    description = $"{CompletedPercent}%";
+                }
+                StateHasChanged();
+                await Task.Delay(100);
+            }
+        }
+
+        public string SelectedColor { get; set; } = "rgb(243,33,105,0.30)";
+
         private void HandleSpinButtonValueChange(double value)
         {
             SpinButtonWithCustomHandlerValue = value;
@@ -280,8 +306,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
             OnToggleButtonChanged = newValue;
         }
 
-        private void HideMessageBar(MouseEventArgs args)
-
+        private void HideMessageBar()
         {
             IsMessageBarHidden = true;
         }
@@ -409,6 +434,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
             int range = (DateTime.Today - start).Days;
             return start.AddDays(random.Next(range));
         }
+        private string? TextValue;
     }
 
     public class Person
