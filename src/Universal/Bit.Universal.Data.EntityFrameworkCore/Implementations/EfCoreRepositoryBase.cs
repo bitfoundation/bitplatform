@@ -49,11 +49,7 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
 
             if (itemToAdd is ISyncableEntity syncableEntity)
             {
-                object[] keys = DbContext.Model.FindEntityType(typeof(T).GetTypeInfo())
-                    .FindPrimaryKey()
-                    .Properties
-                    .Select(p => p.PropertyInfo.GetValue(syncableEntity)!)
-                    .ToArray();
+                object[] keys = GetEntityKeyValues(syncableEntity);
 
                 T? entityIfExists = await GetByIdAsync(cancellationToken, keys).ConfigureAwait(false);
 
@@ -66,6 +62,15 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
             await SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
             return itemToAdd;
+        }
+
+        object[] GetEntityKeyValues(ISyncableEntity syncableEntity)
+        {
+            return DbContext.Model.FindEntityType(typeof(T).GetTypeInfo())
+                        .FindPrimaryKey()
+                        .Properties
+                        .Select(p => p.PropertyInfo.GetValue(syncableEntity)!)
+                        .ToArray();
         }
 
         public virtual async Task<IEnumerable<T>> AddRangeAsync(IEnumerable<T> entitiesToAdd, CancellationToken cancellationToken)

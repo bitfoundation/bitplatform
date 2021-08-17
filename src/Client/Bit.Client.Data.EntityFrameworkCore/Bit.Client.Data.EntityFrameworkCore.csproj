@@ -9,10 +9,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-	  <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="3.1.17" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\..\Universal\Bit.Universal.Data.EntityFrameworkCore\Bit.Universal.Data.EntityFrameworkCore.csproj" />
   </ItemGroup>
 

@@ -1,30 +1,32 @@
-﻿using Bit.Core.Models;
+﻿using System;
+using Bit.Core.Models;
 using Bit.Owin.Contracts;
-using Owin;
-using System;
+using Microsoft.AspNetCore.Builder;
 
 namespace Bit.Owin.Middlewares
 {
-    public class MetadataMiddlewareConfiguration : IOwinMiddlewareConfiguration
+    public class MetadataMiddlewareConfiguration : IAspNetCoreMiddlewareConfiguration
     {
+        public virtual MiddlewarePosition MiddlewarePosition => MiddlewarePosition.BeforeOwinMiddlewares;
+
         public virtual AppEnvironment AppEnvironment { get; set; } = default!;
 
-        public virtual void Configure(IAppBuilder owinApp)
+        public virtual void Configure(IApplicationBuilder aspNetCoreApp)
         {
-            if (owinApp == null)
-                throw new ArgumentNullException(nameof(owinApp));
+            if (aspNetCoreApp == null)
+                throw new ArgumentNullException(nameof(aspNetCoreApp));
 
             string path = $@"/Metadata/V{AppEnvironment.AppInfo.Version}";
 
-            owinApp.Map(path, innerApp =>
+            aspNetCoreApp.Map(path, innerApp =>
             {
                 if (AppEnvironment.DebugMode == true)
-                    innerApp.Use<OwinNoCacheResponseMiddleware>();
+                    innerApp.UseMiddleware<AspNetCoreNoCacheResponseMiddleware>();
                 else
-                    innerApp.Use<OwinCacheResponseMiddleware>();
+                    innerApp.UseMiddleware<AspNetCoreCacheResponseMiddleware>();
                 innerApp.UseXContentTypeOptions();
                 innerApp.UseXDownloadOptions();
-                innerApp.Use<MetadataMiddleware>();
+                innerApp.UseMiddleware<MetadataMiddleware>();
             });
         }
     }
