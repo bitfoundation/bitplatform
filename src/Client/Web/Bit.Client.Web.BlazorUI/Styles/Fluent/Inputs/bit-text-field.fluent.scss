@@ -272,18 +272,3 @@
         }
     }
 }
-
-.bit-txt-disabled-fluent {
-
-    & > div {
-
-        & > div {
-            border: 1px solid $Grey20;
-            background: $White;
-            color: $Grey90;
-            cursor: default;
-            border: none $Grey20;
-            background: none $Grey20;
-        }
-    }
-}
