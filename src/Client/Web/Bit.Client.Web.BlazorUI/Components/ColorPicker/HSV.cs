@@ -12,7 +12,7 @@ namespace Bit.Client.Web.BlazorUI
         public double Saturation { get; set; }
         public double Value { get; set; }
 
-        public RGB ToRGB()
+        public RGB ToRGB(double alpha = 1)
         {
             var c = Value * Saturation;
             var x = c * (1 - Math.Abs((Hue / 60) % 2 - 1));
@@ -31,8 +31,8 @@ namespace Bit.Client.Web.BlazorUI
                 Red = Math.Floor((color.r + m) * 255),
                 Green = Math.Floor((color.g + m) * 255),
                 Blue = Math.Floor((color.b + m) * 255),
+                Alpha = alpha
             };
-
         }
     }
 }

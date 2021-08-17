@@ -12,6 +12,7 @@ namespace Bit.Client.Web.BlazorUI
         private double red;
         private double green;
         private double blue;
+        private double alpha = 1;
 
         public double Red
         {
@@ -33,6 +34,15 @@ namespace Bit.Client.Web.BlazorUI
             set
             {
                 blue = Math.Clamp(value, 0, 255);
+            }
+        }
+
+        public double Alpha
+        {
+            get => alpha;
+            set
+            {
+                alpha = Math.Clamp(value, 0, 1);
             }
         }
 
@@ -69,9 +79,9 @@ namespace Bit.Client.Web.BlazorUI
             return new Hex() { ColorCode = myColor.Name.Remove(0, 2) };
         }
 
-        public string ToCss(double alpha = 100)
+        public string ToCss()
         {
-            return $"rgba({Red}, {Green}, {Blue}, {alpha})";
+            return $"rgba({Red},{Green},{Blue},{Alpha})";
         }
     }
 }

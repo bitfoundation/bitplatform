@@ -17,7 +17,7 @@ namespace Bit.Client.Web.BlazorUI
         private string? onWindowMouseUpAbortControllerId;
         private string? onWindowMouseMoveAbortControllerId;
 
-        private RGB mainColor = new RGB() { Red = 255 };
+        private BitColor mainColor = new BitColor("rgb(255,255,255)");
 
         [Inject]
         public IJSRuntime JSRuntime { get; set; }
@@ -28,12 +28,13 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter]
         public string Color
         {
-            get => MainColor.ToCss(Alpha);
+            get => MainColor.Color.ToCss();
             set
             {
-                if (value == MainColor.ToCss(Alpha)) return;
-                MainColor = StringToRGBConverter(value);
-                Hue = MainColor.toHSV().Hue;
+                var valueAsBitColor = new BitColor(value);
+                if (valueAsBitColor.Color.ToCss() == MainColor.Color.ToCss()) return;
+                MainColor = valueAsBitColor;
+                Hue = MainColor.Color.toHSV().Hue;
                 SaturationPickerBackground = new HSV { Hue = Hue, Value = 1, Saturation = 1 };
 
                 ColorChanged.InvokeAsync(value);
@@ -56,11 +57,10 @@ namespace Bit.Client.Web.BlazorUI
         public double SelectedSaturation { get; set; } = 1;
         public double SelectedValue { get; set; } = 1;
         public double Hue { get; set; }
-        public double Alpha { get; set; } = 100;
 
         public HSV SaturationPickerBackground { get; set; } = new HSV() { Hue = 0, Saturation = 1, Value = 1 };
 
-        public RGB MainColor
+        public BitColor MainColor
         {
             get => mainColor; set
             {
@@ -103,10 +103,11 @@ namespace Bit.Client.Web.BlazorUI
             SelectedSaturation = Math.Clamp(ToValidSpanValue(0, parent.Width, 0, 1, Convert.ToInt32(e.ClientX - parent.Left)), 0, 1);
             SelectedValue = Math.Clamp(ToValidSpanValue(0, parent.Height, 0, 1, parent.Height - Convert.ToInt32(e.ClientY - parent.Top)), 0, 1);
 
-            MainColor = new HSV() { Hue = Hue, Saturation = SelectedSaturation, Value = SelectedValue }.ToRGB();
+            MainColor.SetColorByRGB(new HSV() { Hue = Hue, Saturation = SelectedSaturation, Value = SelectedValue }.ToRGB(MainColor.Color.Alpha));
             SaturationPickerBackground = new HSV { Hue = Hue, Value = 1, Saturation = 1 };
 
-            await ColorChanged.InvokeAsync(MainColor.ToCss(Alpha));
+            await ColorChanged.InvokeAsync(MainColor.Color.ToCss());
+            Console.WriteLine("Test");
 
             StateHasChanged();
         }
@@ -114,27 +115,27 @@ namespace Bit.Client.Web.BlazorUI
         private async Task PickMainColor(ChangeEventArgs args)
         {
             Hue = Convert.ToInt32(args.Value);
-            MainColor = new HSV() { Hue = Hue, Saturation = SelectedSaturation, Value = SelectedValue }.ToRGB();
+            MainColor.SetColorByRGB(new HSV() { Hue = Hue, Saturation = SelectedSaturation, Value = SelectedValue }.ToRGB(MainColor.Color.Alpha));
             SaturationPickerBackground = new HSV() { Hue = Hue, Saturation = 1, Value = 1 };
 
-            await ColorChanged.InvokeAsync(MainColor.ToCss(Alpha));
+            await ColorChanged.InvokeAsync(MainColor.Color.ToCss());
         }
 
         private async Task PickAlphaColor(ChangeEventArgs args)
         {
-            Alpha = Convert.ToDouble(args.Value);
-            await ColorChanged.InvokeAsync(MainColor.ToCss(Alpha));
+            MainColor.Color.Alpha = Convert.ToDouble(args.Value) / 100;
+            await ColorChanged.InvokeAsync(MainColor.Color.ToCss());
         }
 
         private async Task RGBColorChanged(string? red = null, string? green = null, string? blue = null)
         {
-            MainColor.Red = string.IsNullOrWhiteSpace(red) ? MainColor.Red : Convert.ToDouble(red);
-            MainColor.Green = string.IsNullOrWhiteSpace(green) ? MainColor.Green : Convert.ToDouble(green);
-            MainColor.Blue = string.IsNullOrWhiteSpace(blue) ? MainColor.Blue : Convert.ToDouble(blue);
+            MainColor.Color.Red = string.IsNullOrWhiteSpace(red) ? MainColor.Color.Red : Convert.ToDouble(red);
+            MainColor.Color.Green = string.IsNullOrWhiteSpace(green) ? MainColor.Color.Green : Convert.ToDouble(green);
+            MainColor.Color.Blue = string.IsNullOrWhiteSpace(blue) ? MainColor.Color.Blue : Convert.ToDouble(blue);
 
             var saturationPickerRect = await JSRuntime.GetBoundingClientRect(SaturationPickerRef);
 
-            var hsv = MainColor.toHSV();
+            var hsv = MainColor.Color.toHSV();
             Hue = hsv.Hue;
             SaturationPickerBackground = new HSV() { Hue = Hue, Saturation = 1, Value = 1 };
 
@@ -145,7 +146,7 @@ namespace Bit.Client.Web.BlazorUI
             };
 
 
-            await ColorChanged.InvokeAsync(MainColor.ToCss(Alpha));
+            await ColorChanged.InvokeAsync(MainColor.Color.ToCss());
 
             StateHasChanged();
         }
@@ -160,8 +161,8 @@ namespace Bit.Client.Web.BlazorUI
 
                 var saturationPickerRect = await JSRuntime.GetBoundingClientRect(SaturationPickerRef);
 
-                MainColor = hex.ToRGB();
-                var hsv = MainColor.toHSV();
+                MainColor = new BitColor(hex.ToRGB().ToCss());
+                var hsv = MainColor.Color.toHSV();
                 Hue = hsv.Hue;
                 SaturationPickerBackground = new HSV() { Hue = Hue, Saturation = 1, Value = 1 };
 
@@ -192,31 +193,6 @@ namespace Bit.Client.Web.BlazorUI
             if (SaturationPickerMouseDown is false) return;
 
             await PickColorTune(e);
-        }
-
-        private RGB StringToRGBConverter(string value)
-        {
-            RGB color = new RGB { Red = 0, Green = 0, Blue = 0 };
-            try
-            {
-                Regex rx = new Regex(@"\(([^)]+)\)");
-                var mathedColor = rx.Match(value).Value;
-
-                mathedColor = mathedColor.Trim('(');
-                mathedColor = mathedColor.Trim(')');
-
-                var colorString = mathedColor.Split(",");
-                if (colorString.Length >= 3)
-                {
-                    color.Red = int.Parse(colorString[0]);
-                    color.Green = int.Parse(colorString[1]);
-                    color.Blue = int.Parse(colorString[2]);
-                    Alpha = AlphaType is AlphaType.Transparency ? (1 - Convert.ToDouble(colorString[3])) * 100 : Convert.ToDouble(colorString[3]) * 100;
-                }
-            }
-            catch (Exception exp) { }
-
-            return color;
         }
 
         [JSInvokable]
