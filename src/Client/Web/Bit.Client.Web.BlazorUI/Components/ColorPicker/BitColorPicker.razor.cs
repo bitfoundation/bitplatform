@@ -107,7 +107,6 @@ namespace Bit.Client.Web.BlazorUI
             SaturationPickerBackground = new HSV { Hue = Hue, Value = 1, Saturation = 1 };
 
             await ColorChanged.InvokeAsync(MainColor.Color.ToCss());
-            Console.WriteLine("Test");
 
             StateHasChanged();
         }
