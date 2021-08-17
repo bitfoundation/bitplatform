@@ -3,27 +3,68 @@
 @inherits BitComponentBase
 
 <div @ref="RootElement"
+     @attributes="HtmlAttributes"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
-    <div>
-        <i class="bit-icon bit-icon--@IconName bit-icon--l"></i>
-        <label>@Label</label>
-    </div>
+    @if (IconName.HasValue() || Label.HasValue())
+    {
+        <div class="bit-spb-label-wrapper">
+            @if (IconName.HasValue())
+            {
+                <i class="bit-icon bit-icon--@IconName bit-icon--l"
+                   aria-hidden="true"></i>
+            }
+            @if (Label.HasValue())
+            {
+                <label for="@UniqueId">@Label</label>
+            }
+        </div>
+    }
 
-    <div>
-        <input disabled="@(IsEnabled is false)"
-               value="@($"{Value} {Suffix}")"
-               @onchange="e => HandleOnInputChange(e)" />
+    <div class="bit-spb-spin-button-wrapper"
+         title="@Title"
+         aria-label="@AriaLabel"
+         aria-setsize="@AriaSetSize"
+         aria-posinset="@AriaPositionInSet">
+        <input value="@($"{Value}{Suffix}")"
+               id="@UniqueId"
+               type="text"
+               @ref="inputRef"
+               autocomplete="off"
+               role="spinbutton"
+               aria-labelledby=""
+               aria-valuenow="@ariaValueNow"
+               aria-valuetext="@ariaValueText"
+               aria-valuemin="@Min"
+               aria-valuemax="@Max"
+               aria-describedby="@AriaDescription"
+               aria-disabled="@(IsEnabled is false)"
+               disabled="@(IsEnabled is false)"
+               @onfocus="e => HandleFocus(e)"
+               @onblur="e => HandleBlur(e)"
+               @oninput="e => HandleChange(e)" />
         <span>
-            <button @onclick="e => HandleButtonClick(SpinButtonAction.Up)">
+            <button type="button"
+                    disabled="@(IsEnabled is false)"
+                    aria-disabled="@(IsEnabled is false)"
+                    date-is-focusable="false"
+                    tabindex="-1"
+                    aria-label="@IncrementButtonAriaLabel"
+                    @onclick="e => HandleButtonClick(SpinButtonAction.Up)">
                 <span>
-                    <i class="bit-icon bit-icon--ChevronUpSmall bit-icon--s"></i>
+                    <i class="bit-icon bit-icon--@IncrementButtonIcon bit-icon--s"></i>
                 </span>
             </button>
 
-            <button @onclick="e => HandleButtonClick(SpinButtonAction.Down)">
+            <button type="button"
+                    disabled="@(IsEnabled is false)"
+                    aria-disabled="@(IsEnabled is false)"
+                    date-is-focusable="false"
+                    tabindex="-1"
+                    aria-label="@DecrementButtonAriaLabel"
+                    @onclick="e => HandleButtonClick(SpinButtonAction.Down)">
                 <span>
-                    <i class="bit-icon bit-icon--ChevronDownSmall bit-icon--s"></i>
+                    <i class="bit-icon bit-icon--@DecrementButtonIcon bit-icon--s"></i>
                 </span>
             </button>
         </span>

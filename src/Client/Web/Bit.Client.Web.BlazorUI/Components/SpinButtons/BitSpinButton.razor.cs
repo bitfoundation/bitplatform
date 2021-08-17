@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using Bit.Client.Web.BlazorUI.Components.SpinButtons;
 using Microsoft.AspNetCore.Components;
-using Microsoft.JSInterop;
+using Microsoft.AspNetCore.Components.Web;
 
 namespace Bit.Client.Web.BlazorUI
 {
@@ -12,7 +12,39 @@ namespace Bit.Client.Web.BlazorUI
         private LabelPosition labelPosition = LabelPosition.Left;
         private bool ValueHasBeenSet;
 
-        [Inject] public IJSRuntime? JSRuntime { get; set; }
+        /// <summary>
+        /// Detailed description of the input for the benefit of screen readers
+        /// </summary>
+        [Parameter] public string? AriaDescription { get; set; }
+
+        // <summary>
+        // If true, add an aria-hidden attribute instructing screen readers to ignore the element
+        // </summary>
+        [Parameter] public bool AriaHidden { get; set; }
+
+        /// <summary>
+        /// The position in the parent set (if in a set)
+        /// </summary>
+        [Parameter]
+        public int? AriaPositionInSet { get; set; }
+
+        /// <summary>
+        /// The total size of the parent set (if in a set)
+        /// </summary>
+        [Parameter]
+        public int? AriaSetSize { get; set; }
+
+        /// <summary>
+        /// Sets the control's aria-valuenow. Providing this only makes sense when using as a controlled component.
+        /// </summary>
+        [Parameter]
+        public double? AriaValueNow { get; set; }
+
+        /// <summary>
+        /// Sets the control's aria-valuetext.
+        /// </summary>
+        [Parameter]
+        public string? AriaValueText { get; set; }
 
         /// <summary>
         /// Current value of the spin button
@@ -35,6 +67,31 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public EventCallback<double> ValueChanged { get; set; }
 
         /// <summary>
+        /// Callback for when the spin button value change
+        /// </summary>
+        [Parameter] public EventCallback<double> OnChange { get; set; }
+
+        /// <summary>
+        /// Callback for when focus moves into the input
+        /// </summary>
+        [Parameter] public EventCallback<FocusEventArgs> OnFocus { get; set; }
+
+        /// <summary>
+        /// Callback for when the control loses focus
+        /// </summary>
+        [Parameter] public EventCallback<FocusEventArgs> OnBlur { get; set; }
+
+        /// <summary>
+        /// Callback for when the decrement button or down arrow key is pressed
+        /// </summary>
+        [Parameter] public EventCallback<double> OnDecrement { get; set; }
+
+        /// <summary>
+        /// Callback for when the increment button or up arrow key is pressed
+        /// </summary>
+        [Parameter] public EventCallback<double> OnIncrement { get; set; }
+
+        /// <summary>
         /// Min value of the spin button. If not provided, the spin button has minimum value of double type
         /// </summary>
         [Parameter] public double Min { get; set; } = double.MinValue;
@@ -47,7 +104,7 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// Initial value of the spin button 
         /// </summary>
-        [Parameter] public double DefaultValue { get; set; } = 0;
+        [Parameter] public double? DefaultValue { get; set; }
 
         /// <summary>
         /// Difference between two adjacent values of the spin button
@@ -84,13 +141,49 @@ namespace Bit.Client.Web.BlazorUI
         }
 
         /// <summary>
-        /// Callback for when the spin button value change
+        /// Accessible label text for the decrement button (for screen reader users)
         /// </summary>
-        [Parameter] public EventCallback<double> OnChange { get; set; }
+        [Parameter] public string? DecrementButtonAriaLabel { get; set; }
 
-        private async Task HandleButtonClick(SpinButtonAction action)
+        /// <summary>
+        /// Accessible label text for the increment button (for screen reader users)
+        /// </summary>
+        [Parameter] public string? IncrementButtonAriaLabel { get; set; }
+
+        /// <summary>
+        /// Custom icon name for the decrement button
+        /// </summary>
+        [Parameter] public string DecrementButtonIcon { get; set; } = "ChevronDownSmall";
+
+        /// <summary>
+        /// Custom icon name for the increment button
+        /// </summary>
+        [Parameter] public string IncrementButtonIcon { get; set; } = "ChevronUpSmall";
+
+        /// <summary>
+        /// A more descriptive title for the control, visible on its tooltip
+        /// </summary>
+        [Parameter] public string? Title { get; set; }
+
+        /// <summary>
+        /// How many decimal places the value should be rounded to
+        /// </summary>
+        [Parameter] public int Precision { get; set; } = 1;
+
+        protected async override Task OnInitializedAsync()
+        {
+            if (ValueChanged.HasDelegate is false)
+            {
+                Value = DefaultValue ?? Math.Min(0, Min);
+            }
+
+            await base.OnInitializedAsync();
+        }
+
+        protected virtual async Task HandleButtonClick(SpinButtonAction action)
         {
             if (IsEnabled is false) return;
+            if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
 
             double result = 0;
             bool isValid = false;
@@ -99,12 +192,14 @@ namespace Bit.Client.Web.BlazorUI
             {
                 case SpinButtonAction.Up:
                     result = Value + Step;
-                    isValid = result <= Max;
+                    isValid = result <= Max && result >= Min;
+                    await OnIncrement.InvokeAsync();
                     break;
 
                 case SpinButtonAction.Down:
                     result = Value - Step;
-                    isValid = result >= Min;
+                    isValid = result <= Max && result >= Min;
+                    await OnDecrement.InvokeAsync();
                     break;
 
                 default:
@@ -112,9 +207,27 @@ namespace Bit.Client.Web.BlazorUI
             }
 
             if (isValid is false) return;
-
-            Value = Normalize(result);
             await OnChange.InvokeAsync(Value);
+            Value = Normalize(result);
+        }
+
+        protected virtual async Task HandleFocus(FocusEventArgs e)
+        {
+            if (IsEnabled)
+            {
+                await OnFocus.InvokeAsync(e);
+            }
+        }
+
+        protected virtual async Task HandleBlur(FocusEventArgs e)
+        {
+            if (IsEnabled)
+            {
+                if (Value > Max) Value = Max;
+                if (Value < Min) Value = Min;
+                await OnBlur.InvokeAsync(e);
+                await OnChange.InvokeAsync(Value);
+            }
         }
 
         protected override string RootElementClass => "bit-spb";
@@ -126,16 +239,20 @@ namespace Bit.Client.Web.BlazorUI
                                                 : $"{RootElementClass}-label-top-{VisualClassRegistrar()}");
         }
 
-        private async Task HandleOnInputChange(ChangeEventArgs e)
+        protected virtual async Task HandleChange(ChangeEventArgs e)
         {
             if (IsEnabled is false) return;
+            if (ValueHasBeenSet && ValueChanged.HasDelegate is false)
+            {
+                StateHasChanged();
+                return;
+            }
 
             var userInput = e.Value?.ToString();
             var isNumber = double.TryParse(userInput, out var numericValue);
-            if (isNumber && numericValue >= Min && numericValue <= Max)
+            if (isNumber)
             {
                 Value = numericValue;
-                await OnChange.InvokeAsync(Value);
             }
         }
 
@@ -143,6 +260,8 @@ namespace Bit.Client.Web.BlazorUI
 
         private double Normalize(double value) => IsStepDecimal ? Math.Round(value, 2) : value;
 
-        private string ValueWithSuffix => Suffix.HasNoValue() ? $"{Normalize(Value)}" : $"{Normalize(Value)} {Suffix}";
+        private double? ariaValueNow => AriaValueNow is not null ? AriaValueNow : Suffix.HasNoValue() ? Value : null;
+        private string? ariaValueText => AriaValueText.HasValue() ? AriaValueText : Suffix.HasValue() ? $"{Normalize(Value)}{Suffix}" : null;
+        private ElementReference inputRef { get; set; }
     }
 }
