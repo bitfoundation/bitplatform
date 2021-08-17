@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Bit.Client.Web.BlazorUI.Components.SpinButtons;
 using Microsoft.AspNetCore.Components;
@@ -84,12 +85,12 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// Callback for when the decrement button or down arrow key is pressed
         /// </summary>
-        [Parameter] public EventCallback<double> OnDecrement { get; set; }
+        [Parameter] public EventCallback<BitSpinButtonEventArgs> OnDecrement { get; set; }
 
         /// <summary>
         /// Callback for when the increment button or up arrow key is pressed
         /// </summary>
-        [Parameter] public EventCallback<double> OnIncrement { get; set; }
+        [Parameter] public EventCallback<BitSpinButtonEventArgs> OnIncrement { get; set; }
 
         /// <summary>
         /// Min value of the spin button. If not provided, the spin button has minimum value of double type
@@ -180,7 +181,7 @@ namespace Bit.Client.Web.BlazorUI
             await base.OnInitializedAsync();
         }
 
-        protected virtual async Task HandleButtonClick(SpinButtonAction action)
+        protected virtual async Task HandleButtonClick(SpinButtonAction action, MouseEventArgs e)
         {
             if (IsEnabled is false) return;
             if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
@@ -191,15 +192,31 @@ namespace Bit.Client.Web.BlazorUI
             switch (action)
             {
                 case SpinButtonAction.Up:
+                    if (OnIncrement.HasDelegate is true)
+                    {
+                        var args = new BitSpinButtonEventArgs();
+                        args.Value = Value;
+                        args.MouseEventArgs = e;
+                        await OnIncrement.InvokeAsync(args);
+                        break;
+                    }
+
                     result = Value + Step;
                     isValid = result <= Max && result >= Min;
-                    await OnIncrement.InvokeAsync();
                     break;
 
                 case SpinButtonAction.Down:
+                    if (OnDecrement.HasDelegate is true)
+                    {
+                        var args = new BitSpinButtonEventArgs();
+                        args.Value = Value;
+                        args.MouseEventArgs = e;
+                        await OnDecrement.InvokeAsync(args);
+                        break;
+                    }
+
                     result = Value - Step;
                     isValid = result <= Max && result >= Min;
-                    await OnDecrement.InvokeAsync();
                     break;
 
                 default:
@@ -244,6 +261,7 @@ namespace Bit.Client.Web.BlazorUI
             if (IsEnabled is false) return;
             if (ValueHasBeenSet && ValueChanged.HasDelegate is false)
             {
+                //update input field value
                 StateHasChanged();
                 return;
             }
@@ -253,6 +271,10 @@ namespace Bit.Client.Web.BlazorUI
             if (isNumber)
             {
                 Value = numericValue;
+            }
+            else
+            {
+                //update input field value
             }
         }
 

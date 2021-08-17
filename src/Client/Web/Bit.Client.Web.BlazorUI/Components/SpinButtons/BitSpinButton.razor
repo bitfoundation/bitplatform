@@ -42,7 +42,7 @@
                disabled="@(IsEnabled is false)"
                @onfocus="e => HandleFocus(e)"
                @onblur="e => HandleBlur(e)"
-               @oninput="e => HandleChange(e)" />
+               @oninput="e => HandleChange(e)"/>
         <span>
             <button type="button"
                     disabled="@(IsEnabled is false)"
@@ -50,7 +50,7 @@
                     date-is-focusable="false"
                     tabindex="-1"
                     aria-label="@IncrementButtonAriaLabel"
-                    @onclick="e => HandleButtonClick(SpinButtonAction.Up)">
+                    @onclick="e => HandleButtonClick(SpinButtonAction.Up, e)">
                 <span>
                     <i class="bit-icon bit-icon--@IncrementButtonIcon bit-icon--s"></i>
                 </span>
@@ -62,7 +62,7 @@
                     date-is-focusable="false"
                     tabindex="-1"
                     aria-label="@DecrementButtonAriaLabel"
-                    @onclick="e => HandleButtonClick(SpinButtonAction.Down)">
+                    @onclick="e => HandleButtonClick(SpinButtonAction.Down, e)">
                 <span>
                     <i class="bit-icon bit-icon--@DecrementButtonIcon bit-icon--s"></i>
                 </span>
