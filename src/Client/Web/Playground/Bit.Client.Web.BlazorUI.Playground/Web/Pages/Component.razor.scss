@@ -90,7 +90,7 @@
         padding: 16px 20px;
         background-color: #f2f2f2;
         margin: 10px 10px;
-        width: 200px;        
+        width: 200px;
         height: 143px;
         display: inline-grid;
         justify-content: center;
@@ -98,3 +98,46 @@
     }
 }
 
+.bit-dt-lst-fluent-fileIconHeaderIcon {
+    padding: 0;
+    font-size: 16px;
+}
+
+.bit-dt-lst-fluent-fileIconCell {
+    text-align: center;
+
+    &:before {
+        content: '.';
+        display: inline-block;
+        vertical-align: middle;
+        height: 100%;
+        width: 0px;
+        visibility: hidden;
+    }
+}
+
+.bit-dt-lst-fluent-fileIconImg {
+    vertical-align: middle;
+    max-height: 16px;
+    max-width: 16px;
+}
+
+.bit-dt-lst-fluent-controlWrapper {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.bit-dt-lst-fluent-exampleToggle {
+    display: inline-block;
+    margin-bottom: 10px;
+    margin-right: 30px;
+}
+
+.bit-dt-lst-fluent-selectionDetails {
+    margin-bottom: 20px;
+}
+
+.bit-dt-lst-fluent-root {
+    margin: 0 30px 20px 0;
+    max-width: 300px;
+}

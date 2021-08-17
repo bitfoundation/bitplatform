@@ -1,0 +1,237 @@
+﻿@namespace Bit.Client.Web.BlazorUI
+@inherits BitComponentBase
+
+<div @ref="RootElement"
+     @attributes="HtmlAttributes"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     aria-label="@AriaLabel"
+     aria-describedby="@AriaDescription"
+     aria-hidden="@AriaHidden">
+    <div class="css-210">
+        <div data-is-scrollable="true">
+            <div>
+                <div>
+                    @*Filter*@
+                    <div>
+                        <BitToggle OffText="Normal"
+                                   OnText="Compact"
+                                   Class="@ControlClassName"
+                                   @bind-IsChecked="IsCompactMode">
+                            Enable compact mode
+                        </BitToggle>
+                    </div>
+                    <div>
+                        <BitToggle OffText="Normal"
+                                   OnText="Modal"
+                                   Class="@ControlClassName"
+                                   @bind-IsChecked="IsModalSelection">
+                            Enable modal selection
+                        </BitToggle>
+                    </div>
+                    <div>
+                        <BitSearchBox Class="@ControlClassName"
+                                      Placeholder="Filter by name"
+                                      Width="250px">
+
+                        </BitSearchBox>
+                    </div>
+                    <div role="status"
+                         aria-live="polite">
+                        <div class="screenReaderText-86">
+                            Number of items after filter applied: 500.
+                        </div>
+                    </div>
+                </div>
+                <div>No items selected</div>
+                <div role="status" aria-live="polite">
+                    <div>No items selected</div>
+                </div>
+                <div style="min-width: 1px; min-height: 1px;">
+                    <div data-automationid="DetailsList"
+                         data-is-scrollable="false">
+                        <div role="grid"
+                             aria-rowcount="501"
+                             aria-colcount="5"
+                             aria-readonly="true">
+
+                            <!--Header-->
+                            <div role="presentation">
+                                <div role="row"
+                                     data-automationid="DetailsList"
+                                     data-focuszone-id="FocusZone159">
+                                    @{
+                                        var coulumnCount = Columns.Count();
+                                    }
+                                    @for (int i = 0; i < coulumnCount; i++)
+                                    {
+                                        var column = Columns.ToArray()[i];
+
+                                        if (column is null) continue;
+
+                                        var columnClass = "bit-dt-list-fluent-no-padded";
+                                        var ariaSort = "none";
+                                        var sortIcon = "";
+
+                                        if (column.IsPadded is true)
+                                        {
+                                            columnClass = "bit-dt-list-fluent-padded";
+                                        }
+
+                                        if (column.IsSorted is true)
+                                        {
+                                            if (column.IsSortedDescending)
+                                            {
+                                                ariaSort = "descending";
+                                                sortIcon = "SortDown";
+                                            }
+                                            else
+                                            {
+                                                ariaSort = "ascending";
+                                                sortIcon = "SortUp";
+                                            }
+                                        }
+
+                                        <div role="columnheader"
+                                             aria-sort="@ariaSort"
+                                             aria-colindex="2"
+                                             data-is-draggable="false"
+                                             draggable="false"
+                                             data-automationid="ColumnsHeaderColumn"
+                                             data-item-key="@column.Key"
+                                             class="@columnClass"
+                                             style="width: @(column.CalculatedWidth)px;">
+                                            <span>
+                                                <span data-is-focusable="true"
+                                                      class="@column.ClassName"
+                                                      role="button"
+                                                      aria-labelledby="@(column.Key)-name"
+                                                      aria-describedby="@(column.Key)-tooltip"
+                                                      aria-haspopup="false"
+                                                      tabindex="-1">
+                                                    <span id="@(column.Key)-name">
+                                                        @if (column.IsIconOnly is true)
+                                                        {
+                                                            <i data-icon-name="Page" aria-hidden="true" class="bit-icon bit-icon--OpenFile"></i>
+                                                            <span>File Type</span>
+                                                        }
+                                                        else
+                                                        {
+                                                            @column.Name
+                                                        }
+                                                    </span>
+                                                    @if (column.IsFiltered is true)
+                                                    {
+                                                        <i class="bit-icon bit-icon--Filter"></i>
+                                                    }
+                                                    @if (column.IsSorted is true)
+                                                    {
+                                                        <i class="bit-icon bit-icon--@sortIcon"></i>
+                                                    }
+                                                    @if (column.IsGrouped is true)
+                                                    {
+                                                        <i class="bit-icon bit-icon--GroupedDescending"></i>
+                                                    }
+
+                                                </span>
+                                            </span>
+                                        </div>
+                                        @if (column.IsSorted is true)
+                                        {
+                                            @if (column.IsSortedDescending)
+                                            {
+                                                <label>@column.SortDescendingAriaLabel</label>
+                                            }
+                                            else
+                                            {
+                                                <label>@column.SortAscendingAriaLabel</label>
+                                            }
+                                        }
+                                        <div aria-hidden="true"
+                                             role="button"
+                                             data-is-focusable="false"
+                                             data-sizer-index="1"
+                                             class="vafs"
+                                             tabindex="-1">
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+
+                            <!--Body-->
+                            <div role="presentation">
+                                <div role="presentation">
+                                    <div data-focuszone-id="FocusZone160">
+                                        <div role="presentation">
+                                            <div role="presentation">
+                                                @{
+                                                    var itemsCount = Items.Count();
+                                                }
+                                                @for (int i = 0; i < itemsCount; i++)
+                                                {
+                                                    var item = Items.ToArray()[i];
+                                                    if (item is null)
+                                                    {
+                                                        continue;
+                                                    }
+
+
+                                                    <div role="presentation"
+                                                         data-list-index="@i"
+                                                         data-automationid="ListCell">
+                                                        <div data-is-focusable="true"
+                                                             role="row"
+                                                             data-selection-index="@i"
+                                                             data-selection-touch-invoke="true"
+                                                             data-item-index="@i"
+                                                             aria-rowindex="@i"
+                                                             data-automationid="DetailsRow"
+                                                             data-focuszone-id="FocusZone195"
+                                                             style="min-width: 400px;">
+                                                            <div data-automationid="DetailsRowFields"
+                                                                 role="presentation">
+
+                                                                @for (int j = 0; j < coulumnCount; j++)
+                                                                {
+                                                                    var column = Columns.ToArray()[j];
+
+                                                                    if (column is null)
+                                                                        continue;
+                                                                    <div role="gridcell"
+                                                                         aria-readonly="true"
+                                                                         aria-colindex="@j"
+                                                                         data-automationid="DetailsRowCell"
+                                                                         data-automation-key="@column.Key"
+                                                                         style="width: @(column.CalculatedWidth)px;">
+                                                                        <div>
+                                                                            @if (@column.OnRender is not null)
+                                                                            {
+                                                                                @column.OnRender(item)
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                @item.Name
+                                                                            }
+                                                                        </div>
+                                                                    </div>
+                                                                }
+                                                            </div>
+                                                            <span role="checkbox"
+                                                                  aria-checked="false"
+                                                                  data-selection-toggle="true">
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

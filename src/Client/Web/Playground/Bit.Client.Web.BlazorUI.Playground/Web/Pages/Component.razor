@@ -706,6 +706,8 @@
     <BitDropDown IsMultiSelect="true" Items="GetDropdownItems()" Placeholder="Select options">
     </BitDropDown>
 </div>
+
+
 <hr />
 <div class="bit-file-upload-container">
     <h3>Auto</h3>
@@ -738,3 +740,83 @@
                    RemoveUrl="@RemoveUrl">
     </BitFileUpload>
 </div>
+
+<div>
+    <BitDetailsList Style="max-width:750px"
+                    ControlClassName="bit-dt-lst-fluent-root"
+                    Columns="DetailsListColumns"
+                    Items="DetailListItems">
+    </BitDetailsList>
+</div>
+@code{
+    private readonly List<BitColumn> DetailsListColumns = new()
+    {
+            new BitColumn
+            {
+                Key = "col1",
+                Name = "File Type",
+                ClassName = "bit-dt-lst-fluent-fileIconCell",
+                IconClassName = "bit-dt-lst-fluent-fileIconHeaderIcon",
+                AriaLabel = "Column operations for File type, Press to sort on File type",
+                IconName = "Page",
+                IsIconOnly = true,
+                FieldName = "name",
+                MinWidth = 16,
+                MaxWidth = 16,
+                OnRender = (item) => (@<img src="@(item.IconName)" class="bit-dt-lst-fluent-fileIconCell" alt="@($"{item.FileType} file icon")" />)
+            },
+            new BitColumn
+            {
+                Key = "col2",
+                Name = "Name",
+                FieldName = "name",
+                MinWidth = 210,
+                MaxWidth = 350,
+                IsRowHeader = true,
+                IsResizable = true,
+                IsSorted = true,
+                IsSortedDescending = false,
+                SortAscendingAriaLabel = "Sorted A to Z",
+                SortDescendingAriaLabel = "Sorted Z to A",
+                DataType = "string",
+                IsPadded = true
+            },
+            new BitColumn
+            {
+                Key = "col3",
+                Name = "Date Modified",
+                FieldName = "dateModifiedValue",
+                MinWidth = 70,
+                MaxWidth = 90,
+                IsResizable = true,
+                DataType = "number",
+                IsPadded = true,
+                OnRender = (item) => (@<span>@item.DateModified</span>)
+            },
+            new BitColumn
+            {
+                Key = "col4",
+                Name = "Modified By",
+                FieldName = "modifiedBy",
+                MinWidth = 70,
+                MaxWidth = 90,
+                IsResizable = true,
+                IsCollapsible = true,
+                DataType = "string",
+                IsPadded = true,
+                OnRender = (item) => (@<span>@item.ModifiedBy</span>)
+            },
+            new BitColumn
+            {
+                Key = "col5",
+                Name = "File Size",
+                FieldName = "fileSizeRaw",
+                MinWidth = 70,
+                MaxWidth = 90,
+                IsResizable = true,
+                IsCollapsible = true,
+                DataType = "number",
+                OnRender = (item) => (@<span>@item.FileSize</span>)
+            },
+        };
+}

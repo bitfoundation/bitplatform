@@ -1,0 +1,346 @@
+﻿@import "../colors.fluent.scss", "../../functions.scss";
+
+.bit-dt-lst-fluent {
+    color: rgb(50, 49, 48);
+    background: rgb(255, 255, 255);
+    font-family: FluentFont;
+    -webkit-font-smoothing: antialiased;
+    font-size: 14px;
+    font-weight: 400;
+    & > div {
+        display: flex;
+        flex-flow: column nowrap;
+        width: auto;
+        height: auto;
+        box-sizing: border-box;
+        background-color: rgb(255, 255, 255);
+        color: rgb(50, 49, 48);
+
+        & > div {
+            flex-shrink: 1;
+            text-overflow: ellipsis;
+            max-height: 80vh;
+            overflow: hidden auto;
+            padding: 20px 4px;
+            position: relative;
+
+            & > div {
+                & > div:nth-child(1) {
+                    display: flex;
+                    flex-wrap: wrap;
+
+                    & > div:nth-child(1), div:nth-child(2) {
+                        margin: 0px 30px 20px 0px;
+                        max-width: 300px;
+                    }
+
+                    & > div:nth-child(3) {
+                        margin: 8px 30px 20px 0px;
+                        max-width: 300px;
+                    }
+
+                    & > div:last-child {
+                        & > div {
+                            position: absolute;
+                            width: 1px;
+                            height: 1px;
+                            margin: -1px;
+                            padding: 0px;
+                            border: 0px;
+                            overflow: hidden;
+                            white-space: nowrap;
+                        }
+                    }
+                }
+
+                & > div:nth-child(2) {
+                    margin-bottom: 20px;
+                }
+
+                & > div:nth-child(3) {
+                    & > div {
+                        position: absolute;
+                        width: 1px;
+                        height: 1px;
+                        margin: -1px;
+                        padding: 0px;
+                        border: 0px;
+                        overflow: hidden;
+                        white-space: nowrap;
+                    }
+                }
+
+                & > div:nth-child(4) {
+                    & > div {
+                        position: relative;
+                        overflow: auto visible;
+                        font-size: 12px;
+                        font-weight: 400;
+                        color: rgb(50, 49, 48);
+
+                        & > div {
+                            & > div:nth-child(1) {
+                                & > div {
+                                    font-size: 12px;
+                                    font-weight: 400;
+                                    display: inline-block;
+                                    background: rgb(255, 255, 255);
+                                    position: relative;
+                                    min-width: 100%;
+                                    vertical-align: top;
+                                    height: 42px;
+                                    line-height: 42px;
+                                    white-space: nowrap;
+                                    box-sizing: content-box;
+                                    padding-bottom: 1px;
+                                    padding-top: 16px;
+                                    border-bottom: 1px solid rgb(237, 235, 233);
+                                    cursor: default;
+                                    user-select: none;
+
+                                    label {
+                                        position: absolute;
+                                        width: 1px;
+                                        height: 1px;
+                                        margin: -1px;
+                                        padding: 0px;
+                                        border: 0px;
+                                        overflow: hidden;
+                                        white-space: nowrap;
+                                    }
+
+                                    i {
+                                        display: inline-block;
+                                        font-style: normal;
+                                        font-weight: 400;
+                                        speak: none;
+                                    }
+                                }
+                            }
+                            & > div:nth-child(2) {
+                                & > div {
+                                    & > div {
+                                        display: inline-block;
+                                        min-width: 100%;
+                                        min-height: 1px;
+
+                                        & > div {
+                                            & > div {
+                                                & > div {
+                                                    min-height: 38px;
+                                                    word-break: break-word;
+
+                                                    & > div {
+                                                        animation-name: css-0;
+                                                        animation-duration: 0.367s;
+                                                        animation-timing-function: cubic-bezier(0.1, 0.25, 0.75, 0.9);
+                                                        animation-fill-mode: both;
+                                                        font-size: 12px;
+                                                        font-weight: 400;
+                                                        outline: transparent;
+                                                        position: relative;
+                                                        border-bottom: 1px solid rgb(243, 242, 241);
+                                                        background: rgb(255, 255, 255);
+                                                        color: rgb(96, 94, 92);
+                                                        display: inline-flex;
+                                                        min-width: 100%;
+                                                        min-height: 42px;
+                                                        white-space: nowrap;
+                                                        padding: 0px;
+                                                        box-sizing: border-box;
+                                                        vertical-align: top;
+                                                        text-align: left;
+
+                                                        & > div {
+                                                            display: flex;
+                                                            align-items: stretch;
+
+                                                            & > div {
+                                                                outline: transparent;
+                                                                position: relative;
+                                                                display: inline-block;
+                                                                box-sizing: border-box;
+                                                                min-height: 42px;
+                                                                vertical-align: top;
+                                                                white-space: nowrap;
+                                                                overflow: hidden;
+                                                                text-overflow: ellipsis;
+                                                                padding-top: 11px;
+                                                                padding-bottom: 11px;
+                                                                padding-left: 12px;
+                                                                padding-right: 8px;
+
+                                                                & > div {
+                                                                    display: inline;
+
+                                                                    & > img {
+                                                                        vertical-align: middle;
+                                                                        max-height: 16px;
+                                                                        max-width: 16px;
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+
+                                                        & > span {
+                                                            position: absolute;
+                                                            inset: -1px 0px 0px;
+                                                            display: none;
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+.root-234 {
+    display: inline-block;
+    background: rgb(255, 255, 255);
+    position: relative;
+    min-width: 100%;
+    vertical-align: top;
+    height: 42px;
+    line-height: 42px;
+    white-space: nowrap;
+    box-sizing: content-box;
+    padding-bottom: 1px;
+    padding-top: 16px;
+    border-bottom: 1px solid rgb(237, 235, 233);
+    cursor: default;
+    user-select: none;
+}
+
+.bit-dt-list-fluent-no-padded {
+    outline: transparent;
+    position: relative;
+    color: rgb(50, 49, 48);
+    display: inline-block;
+    box-sizing: border-box;
+    padding: 0px 8px 0px 12px;
+    line-height: inherit;
+    margin: 0px;
+    height: 42px;
+    vertical-align: top;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    text-align: left;
+    -webkit-font-smoothing: antialiased;
+
+    & > span {
+        display: block;
+        position: absolute;
+        inset: 0px;
+
+        & > span {
+            outline: transparent;
+            position: relative;
+            display: flex;
+            flex-direction: row;
+            justify-content: flex-start;
+            align-items: stretch;
+            box-sizing: border-box;
+            overflow: hidden;
+            padding: 0px 8px 0px 12px;
+            max-height: 100%;
+
+            & > span {
+                flex: 0 1 auto;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                font-weight: 600;
+                font-size: 14px;
+                & > span {
+                    position: absolute;
+                    width: 1px;
+                    height: 1px;
+                    margin: -1px;
+                    padding: 0px;
+                    border: 0px;
+                    overflow: hidden;
+                    white-space: nowrap;
+                }
+            }
+
+            & > i {
+                color: rgb(96, 94, 92);
+                opacity: 1;
+                padding-left: 4px;
+                position: relative;
+                top: 1px;
+            }
+        }
+    }
+}
+
+.bit-dt-list-fluent-padded {
+    outline: transparent;
+    position: relative;
+    color: rgb(50, 49, 48);
+    display: inline-block;
+    box-sizing: border-box;
+    padding: 0px 32px 0px 12px;
+    line-height: inherit;
+    margin: 0px;
+    height: 42px;
+    vertical-align: top;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    text-align: left;
+    -webkit-font-smoothing: antialiased;
+    font-size: 12px;
+    font-weight: 400;
+
+    & > span {
+        display: block;
+        position: absolute;
+        inset: 0px;
+
+        & > span {
+            outline: transparent;
+            position: relative;
+            display: flex;
+            flex-direction: row;
+            justify-content: flex-start;
+            align-items: stretch;
+            box-sizing: border-box;
+            overflow: hidden;
+            padding: 0px 8px 0px 12px;
+            max-height: 100%;
+
+            & > span {
+                flex: 0 1 auto;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                font-weight: 600;
+                font-size: 14px;
+                & > span {
+                    position: absolute;
+                    width: 1px;
+                    height: 1px;
+                    margin: -1px;
+                    padding: 0px;
+                    border: 0px;
+                    overflow: hidden;
+                    white-space: nowrap;
+                }
+            }
+
+            & > i {
+                color: rgb(96, 94, 92);
+                opacity: 1;
+                padding-left: 4px;
+                position: relative;
+                top: 1px;
+            }
+        }
+    }
+}

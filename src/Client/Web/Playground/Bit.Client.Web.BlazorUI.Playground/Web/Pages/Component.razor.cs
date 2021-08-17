@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNetCore.Components.Web;
 
 namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
@@ -205,6 +206,50 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
             }
         };
 
+        #region BitDetailsList properties
+        private List<BitDocument> DetailListItems { get; set; } = new();
+
+        private static readonly string[] FileIcons =
+        {
+            "accdb",
+            "audio",
+            "code",
+            "csv",
+            "docx",
+            "dotx",
+            "mpp",
+            "mpt",
+            "model",
+            "one",
+            "onetoc",
+            "potx",
+            "ppsx",
+            "pdf",
+            "photo",
+            "pptx",
+            "presentation",
+            "potx",
+            "pub",
+            "rtf",
+            "spreadsheet",
+            "txt",
+            "vector",
+            "vsdx",
+            "vssx",
+            "vstx",
+            "xlsx",
+            "xltx",
+            "xsn",
+        };
+
+        private static readonly string LoremIpsumStr =
+            "lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut " +
+            "labore et dolore magna aliqua ut enim ad minim veniam quis nostrud exercitation ullamco laboris nisi ut " +
+            "aliquip ex ea commodo consequat duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore " +
+            "eu fugiat nulla pariatur excepteur sint occaecat cupidatat non proident sunt in culpa qui officia deserunt";
+        private static readonly List<string> LoremIpsum = LoremIpsumStr.Split(" ").ToList(); 
+        #endregion
+
         #region PivotSamples
 
         public string OverridePivotSelectedKey { get; set; } = "1";
@@ -252,9 +297,11 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
             Person person = new Person();
             people[0] = person.GetPeople(8000);
             people[1] = person.GetPeople(100);
+
+            DetailListItems = GenerateDocument();
         }
 
-        private List<DropDownItem> GetDropdownItems()
+        private static List<DropDownItem> GetDropdownItems()
         {
             List<DropDownItem> items = new();
             items.Add(new DropDownItem()
@@ -298,6 +345,69 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
             });
 
             return items;
+        }
+
+        #region BitDetailsList methods
+
+        private static List<BitDocument> GenerateDocument()
+        {
+            List<BitDocument> result = new();
+            for (int i = 0; i < 500; i++)
+            {
+                var range = FileIcons.Length - 1;
+                var random = new Random();
+                var randomNumber = random.Next(0, range);
+                var fileSize = (randomNumber == 0 ? 1 : randomNumber) * 1000;
+
+                var docType = FileIcons[randomNumber];
+                var iconUrl = $"https://static2.sharepointonline.com/files/fabric/assets/item-types/16/{docType}.svg";
+                var randomDate = RandomDate();
+                string fileName = Lorem(2);
+                string userName = Lorem(2);
+                BitDocument bitDocument = new()
+                {
+                    Key = i.ToString(),
+                    DateModified = randomDate.ToString("G"),
+                    DateModifiedValue = randomDate,
+                    FileSize = fileSize,
+                    FileType = docType,
+                    IconName = iconUrl,
+                    ModifiedBy = userName,
+                    Name = fileName,
+                    Value = fileName
+                };
+
+                result.Add(bitDocument);
+            }
+
+            return result;
+        }
+
+        private static string Lorem(int wordCount)
+        {
+            var maxRange = wordCount > LoremIpsum.Count ? LoremIpsum.Count : wordCount;
+            var range = LoremIpsum.Count - maxRange - 1;
+            var random = new Random();
+            var loremIndex = random.Next(0, range);
+            int startIndex = (loremIndex + wordCount) > LoremIpsum.Count ? 0 : loremIndex;
+            loremIndex = startIndex + wordCount;
+
+            var value = "";
+            for (int i = startIndex; i < loremIndex; i++)
+            {
+                value += $"{LoremIpsum[i]} ";
+            }
+            return value.Trim();
+        } 
+        #endregion
+
+
+        private static DateTimeOffset RandomDate()
+        {
+            var random = new Random();
+            DateTime start = new DateTime(1995, 1, 1);
+            int range = (DateTime.Today - start).Days;
+            return start.AddDays(random.Next(range));
         }
     }
 
