@@ -255,13 +255,10 @@ namespace Bit.Client.Web.BlazorUI
                                         ? $"{RootElementClass}-required-{VisualClassRegistrar()}" : string.Empty);
 
             ClassBuilder.Register(() => IsUnderlined
-                                       ? $"{RootElementClass}-underlined-{VisualClassRegistrar()}" : string.Empty);
+                                       ? $"{RootElementClass}-underlined-{(IsEnabled is false? "disabled-":string.Empty)}{VisualClassRegistrar()}" : string.Empty);
 
             ClassBuilder.Register(() => HasBorder is false
                                        ? $"{RootElementClass}-no-border-{VisualClassRegistrar()}" : string.Empty);
-
-            ClassBuilder.Register(() => IsEnabled is false
-                                        ? $"{RootElementClass}-{(IsUnderlined ? "underlined-" : "")}disabled-{VisualClassRegistrar()}" : string.Empty);
 
             ClassBuilder.Register(() => FocusClass.HasValue()
                                         ? $"{RootElementClass}-{(IsUnderlined ? "underlined-" : "")}{FocusClass}-{VisualClassRegistrar()}" : string.Empty);
