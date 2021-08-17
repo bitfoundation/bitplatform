@@ -171,6 +171,12 @@ namespace Bit.Client.Web.BlazorUI
         /// </summary>
         [Parameter] public int Precision { get; set; } = 1;
 
+        /// <summary>
+        /// Additional props for the input field
+        /// </summary>
+        [Parameter]
+        public Dictionary<string, object> InputProps { get; set; } = new Dictionary<string, object>();
+
         protected async override Task OnInitializedAsync()
         {
             if (ValueChanged.HasDelegate is false)

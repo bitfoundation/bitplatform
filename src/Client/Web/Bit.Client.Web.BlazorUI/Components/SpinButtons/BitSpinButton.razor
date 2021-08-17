@@ -42,7 +42,8 @@
                disabled="@(IsEnabled is false)"
                @onfocus="e => HandleFocus(e)"
                @onblur="e => HandleBlur(e)"
-               @oninput="e => HandleChange(e)"/>
+               @oninput="e => HandleChange(e)"
+               @attributes="InputProps"/>
         <span>
             <button type="button"
                     disabled="@(IsEnabled is false)"
