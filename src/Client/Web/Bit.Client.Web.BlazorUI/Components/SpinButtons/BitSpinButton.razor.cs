@@ -184,7 +184,30 @@ namespace Bit.Client.Web.BlazorUI
                 Value = DefaultValue ?? Math.Min(0, Min);
             }
 
+            intermediateValue = $"{Value}";
             await base.OnInitializedAsync();
+        }
+
+        protected override string RootElementClass => "bit-spb";
+
+        protected override void RegisterComponentClasses()
+        {
+            ClassBuilder.Register(() => LabelPosition == LabelPosition.Left
+                                                ? $"{RootElementClass}-label-left-{VisualClassRegistrar()}"
+                                                : $"{RootElementClass}-label-top-{VisualClassRegistrar()}");
+        }
+
+        protected virtual void HandleChange(ChangeEventArgs e)
+        {
+            if (IsEnabled is false) return;
+            if (ValueHasBeenSet && ValueChanged.HasDelegate is false)
+            {
+                //update input field value
+                StateHasChanged();
+                return;
+            }
+
+            intermediateValue = e.Value?.ToString();
         }
 
         protected virtual async Task HandleButtonClick(SpinButtonAction action, MouseEventArgs e)
@@ -230,8 +253,97 @@ namespace Bit.Client.Web.BlazorUI
             }
 
             if (isValid is false) return;
-            await OnChange.InvokeAsync(Value);
             Value = Normalize(result);
+            await OnChange.InvokeAsync(Value);
+        }
+
+        protected virtual async Task HandleKeyDown(KeyboardEventArgs e)
+        {
+            if (IsEnabled is false) return;
+            if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+
+            double result = 0;
+            bool isValid = false;
+
+            switch (e.Key)
+            {
+                case "ArrowUp":
+                    if (OnIncrement.HasDelegate is true)
+                    {
+                        var args = new BitSpinButtonEventArgs();
+                        args.Value = Value;
+                        args.KeyboardEventArgs = e;
+                        await OnIncrement.InvokeAsync(args);
+                        break;
+                    }
+
+                    result = Value + Step;
+                    isValid = result <= Max && result >= Min;
+                    break;
+
+                case "ArrowDown":
+                    if (OnDecrement.HasDelegate is true)
+                    {
+                        var args = new BitSpinButtonEventArgs();
+                        args.Value = Value;
+                        args.KeyboardEventArgs = e;
+                        await OnDecrement.InvokeAsync(args);
+                        break;
+                    }
+
+                    result = Value - Step;
+                    isValid = result <= Max && result >= Min;
+                    break;
+
+                case "Enter":
+                    if (intermediateValue == Value.ToString()) break;
+
+                    var isNumber = double.TryParse(intermediateValue, out var numericValue);
+                    if (isNumber)
+                    {
+                        Value = Normalize(numericValue);
+                        if (Value > Max) Value = Max;
+                        if (Value < Min) Value = Min;
+                        await OnChange.InvokeAsync(Value);
+                    }
+                    else
+                    {
+                        //update input field value
+                    }
+
+                    intermediateValue = Value.ToString();
+                    break;
+
+                default:
+                    break;
+            }
+
+            if (isValid is false) return;
+            Value = Normalize(result);
+            await OnChange.InvokeAsync(Value);
+        }
+
+        protected virtual async Task HandleBlur(FocusEventArgs e)
+        {
+            if (IsEnabled is false) return;
+            if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+
+            if (intermediateValue == Value.ToString()) return;
+
+            var isNumber = double.TryParse(intermediateValue, out var numericValue);
+            if (isNumber)
+            {
+                Value = Normalize(numericValue);
+                if (Value > Max) Value = Max;
+                if (Value < Min) Value = Min;
+                await OnBlur.InvokeAsync(e);
+                await OnChange.InvokeAsync(Value);
+            }
+            else
+            {
+                //update input field value
+                intermediateValue = Value.ToString();
+            }
         }
 
         protected virtual async Task HandleFocus(FocusEventArgs e)
@@ -242,54 +354,14 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
-        protected virtual async Task HandleBlur(FocusEventArgs e)
-        {
-            if (IsEnabled)
-            {
-                if (Value > Max) Value = Max;
-                if (Value < Min) Value = Min;
-                await OnBlur.InvokeAsync(e);
-                await OnChange.InvokeAsync(Value);
-            }
-        }
-
-        protected override string RootElementClass => "bit-spb";
-
-        protected override void RegisterComponentClasses()
-        {
-            ClassBuilder.Register(() => LabelPosition == LabelPosition.Left
-                                                ? $"{RootElementClass}-label-left-{VisualClassRegistrar()}"
-                                                : $"{RootElementClass}-label-top-{VisualClassRegistrar()}");
-        }
-
-        protected virtual async Task HandleChange(ChangeEventArgs e)
-        {
-            if (IsEnabled is false) return;
-            if (ValueHasBeenSet && ValueChanged.HasDelegate is false)
-            {
-                //update input field value
-                StateHasChanged();
-                return;
-            }
-
-            var userInput = e.Value?.ToString();
-            var isNumber = double.TryParse(userInput, out var numericValue);
-            if (isNumber)
-            {
-                Value = numericValue;
-            }
-            else
-            {
-                //update input field value
-            }
-        }
-
         private bool IsStepDecimal => Step % 1 != 0;
 
         private double Normalize(double value) => IsStepDecimal ? Math.Round(value, 2) : value;
 
         private double? ariaValueNow => AriaValueNow is not null ? AriaValueNow : Suffix.HasNoValue() ? Value : null;
         private string? ariaValueText => AriaValueText.HasValue() ? AriaValueText : Suffix.HasValue() ? $"{Normalize(Value)}{Suffix}" : null;
-        private ElementReference inputRef { get; set; }
+        private string intermediateValue { get; set; } = String.Empty;
+        private string inputId { get; set; } = $"input{Guid.NewGuid()}";
+        private string labelId => Label.HasValue() ? $"label{Guid.NewGuid()}" : String.Empty;
     }
 }
