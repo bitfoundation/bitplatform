@@ -77,13 +77,15 @@
             text-overflow: ellipsis;
         }
 
-        span {
-            height: 100%;
-            width: rem(32px);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: rem(16);
+        & > div {
+            & > span {
+                height: 100%;
+                width: rem(32px);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                font-size: rem(16);
+            }
         }
     }
 
@@ -138,6 +140,10 @@
             flex-grow: 1;
             overflow: auto;
             min-height: inherit;
+
+            @if $isResizable == false {
+                resize: none;
+            }
         }
     }
 }
