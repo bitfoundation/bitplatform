@@ -1,5 +1,4 @@
-﻿using System.Threading;
-using Bunit;
+﻿using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.Client.Web.BlazorUI.Tests.Inputs
@@ -358,7 +357,21 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                 });
 
             var input = component.Find(".bit-txt textarea");
-            Assert.AreEqual(rows.ToString(),input.GetAttribute("rows"));
+            Assert.AreEqual(rows.ToString(), input.GetAttribute("rows"));
+        }
+
+        [DataTestMethod, DataRow(true), DataRow(false)]
+        public void BitTextFieldShouldRespectIsResizableWhenItIsMultiline(bool isResizable)
+        {
+            var component = RenderComponent<BitTextFieldTest>(
+                parameters =>
+                {
+                    parameters.Add(p => p.IsMultiLine, true);
+                    parameters.Add(p => p.IsResizable, isResizable);
+                });
+
+            var bitTextField = component.Find(".bit-txt");
+            Assert.AreEqual(!isResizable, bitTextField.ClassList.Contains("bit-txt-multiline-fix-fluent"));
         }
     }
 }

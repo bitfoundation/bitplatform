@@ -24,7 +24,8 @@
                   Description="@Description"
                   Prefix="@Prefix"
                   Suffix="@Suffix"
-                  Rows="Rows">
+                  Rows="Rows"
+                  IsResizable="IsResizable">
     </BitTextField>
 </CascadingValue>
 
@@ -49,6 +50,7 @@
     [Parameter] public string? ErrorMessage { get; set; }
     [Parameter] public bool IsUnderlined { get; set; }
     [Parameter] public bool HasBorder { get; set; }
+    [Parameter] public bool IsResizable { get; set; } 
     [Parameter] public int Rows { get; set; }
 
     public void HandleKeyDown(KeyboardEventArgs e)
