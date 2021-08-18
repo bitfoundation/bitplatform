@@ -1,17 +1,13 @@
 ﻿class BitDropDown {
-    static closeCallout(calloutId: string) {
-        var element = document.getElementById(calloutId) as Element;
-        Bit.setProperty(element, 'style', 'display:none;');
-    }
-
-    static openCallout(calloutId: string) {
-        var element = document.getElementById(calloutId) as Element;
-        Bit.setProperty(element, 'style', '');
+    static registerOnDocumentClickEvent(dotnetHelper: any, componentId: string, callback: string): void {
+        document.addEventListener('click', e => {
+            var element = e.target as Element;
+            if (element.id == componentId ||
+                element.parentElement?.id == componentId) {
+                e.stopPropagation();
+            } else {
+                dotnetHelper.invokeMethodAsync(callback);
+            }
+        });
     }
 }
-document.addEventListener('click', e => {
-    var callouts = document.querySelectorAll('.bit-callout');
-    callouts.forEach((callout: Element) => {
-        BitDropDown.closeCallout(Bit.getProperty(callout, 'id') as string);
-    });
-});

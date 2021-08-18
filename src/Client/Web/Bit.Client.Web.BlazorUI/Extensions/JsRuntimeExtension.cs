@@ -55,14 +55,10 @@ namespace Microsoft.JSInterop
             await jSRuntime.InvokeVoidAsync("BitColorPicker.abortProcedure", abortControllerId);
         }
 
-        public static async Task CloseCallout(this IJSRuntime jsRuntime,string calloutId)
+        public static async Task RegisterOnDocumentClickEvent(this IJSRuntime jsRuntime, BitComponentBase dontetHelper, string callbackName)
         {
-            await jsRuntime.InvokeVoidAsync("BitDropDown.closeCallout", calloutId);
-        }
-
-        public static async Task OpenCallout(this IJSRuntime jsRuntime, string calloutId)
-        {
-            await jsRuntime.InvokeVoidAsync("BitDropDown.openCallout", calloutId);
+            await jsRuntime.InvokeAsync<string>("BitDropDown.registerOnDocumentClickEvent", DotNetObjectReference.Create(dontetHelper),
+                dontetHelper.UniqueId.ToString(), callbackName);
         }
     }
 

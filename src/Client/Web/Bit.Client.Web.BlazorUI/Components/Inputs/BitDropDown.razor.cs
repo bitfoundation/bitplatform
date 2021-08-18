@@ -11,6 +11,7 @@ namespace Bit.Client.Web.BlazorUI
     {
         private string focusClass = "";
         private string expandClass = "";
+        private bool isOpen = false;
         private bool isMultiSelect = false;
 
         [Inject] public IJSRuntime? JSRuntime { get; set; }
@@ -25,6 +26,20 @@ namespace Bit.Client.Web.BlazorUI
             set
             {
                 isMultiSelect = value;
+                ClassBuilder.Reset();
+            }
+        }
+
+        /// <summary>
+        /// Whether or not this dropdown is open
+        /// </summary>
+        [Parameter]
+        public bool IsOpen
+        {
+            get => isOpen;
+            set
+            {
+                isOpen = value;
                 ClassBuilder.Reset();
             }
         }
@@ -85,6 +100,10 @@ namespace Bit.Client.Web.BlazorUI
                 ? string.Empty
                 : $"{RootElementClass}-{"hasValue"}-{VisualClassRegistrar()}");
 
+            ClassBuilder.Register(() => IsOpen is false
+                ? string.Empty
+                : $"{RootElementClass}-{"opened"}-{VisualClassRegistrar()}");
+
             ClassBuilder.Register(() => IsMultiSelect is false
                 ? string.Empty
                 : $"{RootElementClass}-{"multi"}-{VisualClassRegistrar()}");
@@ -94,21 +113,23 @@ namespace Bit.Client.Web.BlazorUI
         {
             if (IsEnabled)
             {
-                if (FocusClass.HasNoValue())
+                if (isOpen is false)
                 {
+                    isOpen = true;
                     FocusClass = "focused";
                 }
                 else
                 {
+                    isOpen = false;
                     FocusClass = "";
                 }
-                await JSRuntime.OpenCallout(UniqueId.ToString());
                 await OnClick.InvokeAsync(e);
             }
         }
 
         protected virtual async Task HandleItemClick(DropDownItem? selectedItem)
         {
+            isOpen = false;
             if (selectedItem is not null)
             {
                 if (selectedItem.IsEnabled)
@@ -148,7 +169,6 @@ namespace Bit.Client.Web.BlazorUI
                     }
                 }
             }
-            await JSRuntime.CloseCallout(UniqueId.ToString());
         }
 
         internal void ChangeAllItemsIsSelected(bool value)
@@ -157,6 +177,24 @@ namespace Bit.Client.Web.BlazorUI
             {
                 item.IsSelected = value;
             }
+        }
+
+        [JSInvokable]
+        public void CloseCallout()
+        {
+            IsOpen = false;
+            FocusClass = "";
+            StateHasChanged();
+        }
+
+        protected async override Task OnAfterRenderAsync(bool firstRender)
+        {
+            if (firstRender)
+            {
+                _ = JSRuntime?.RegisterOnDocumentClickEvent(this, "CloseCallout");
+            }
+
+            await base.OnAfterRenderAsync(firstRender);
         }
     }
 }
