@@ -41,7 +41,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
             var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
             Assert.AreEqual(count, com.Instance.CurrentCount);
             Assert.IsTrue(bitChoiceGroup.ClassList.Contains($"bit-drp-{className}-{visualClass}"));
-            Assert.IsTrue(!isCalloutOpen || bitChoiceGroup.Children[2].Attributes.Any(p => p.Name.Equals("style")));
+            Assert.IsTrue(bitChoiceGroup.Children.Count().Equals(isCalloutOpen ? 3 : 2));
         }
 
         [DataTestMethod,
@@ -79,13 +79,13 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
 
         [DataTestMethod,
            DataRow(Visual.Fluent, true, 3),
-           DataRow(Visual.Fluent, false, 1),
+           DataRow(Visual.Fluent, false, 0),
 
            DataRow(Visual.Cupertino, true, 3),
-           DataRow(Visual.Cupertino, false, 1),
+           DataRow(Visual.Cupertino, false, 0),
 
            DataRow(Visual.Material, true, 3),
-           DataRow(Visual.Material, false, 1)
+           DataRow(Visual.Material, false, 0)
         ]
         public async Task BitDropDownMultiSelectShouldRespectIsEnabled(Visual visual, bool isEnabled, int count)
         {
@@ -105,12 +105,12 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                 parameters.Add(p => p.Items, items);
                 parameters.Add(p => p.IsMultiSelect, true);
                 parameters.Add(p => p.ItemIsEnabled, isEnabled);
+                parameters.Add(p => p.IsEnabled, isEnabled);
                 parameters.Add(p => p.Value, count.ToString());
             });
 
             var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
             var bitChoiceGroup = com.Find(".bit-drp");
-
             bitChoiceGroup.Children.First().Click();
 
             var checkboxItems = com.FindAll($".bit-chb-{visualClass} > div > div", true);
@@ -118,6 +118,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
             for (int index = 0; index < checkboxItems.Count; index++)
             {
                 checkboxItems[index].Click();
+                bitChoiceGroup.Children.First().Click();
             }
 
             Assert.AreEqual(count, com.Instance.CurrentCount);

@@ -129,7 +129,6 @@ namespace Bit.Client.Web.BlazorUI
 
         protected virtual async Task HandleItemClick(DropDownItem? selectedItem)
         {
-            isOpen = false;
             if (selectedItem is not null)
             {
                 if (selectedItem.IsEnabled)
@@ -147,6 +146,7 @@ namespace Bit.Client.Web.BlazorUI
                         ChangeAllItemsIsSelected(false);
                         Text = selectedItem.Text;
                         selectedItem.IsSelected = true;
+                        isOpen = false;
                     }
                     await OnSelectItem.InvokeAsync(selectedItem);
                 }
@@ -189,7 +189,7 @@ namespace Bit.Client.Web.BlazorUI
 
         protected async override Task OnAfterRenderAsync(bool firstRender)
         {
-            if (firstRender)
+            if (IsEnabled && firstRender)
             {
                 _ = JSRuntime?.RegisterOnDocumentClickEvent(this, "CloseCallout");
             }
