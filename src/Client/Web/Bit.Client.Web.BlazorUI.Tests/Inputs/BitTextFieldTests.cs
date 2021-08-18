@@ -346,5 +346,19 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
             var bitTextField = component.Find(".bit-txt");
             Assert.AreEqual(!hasBorder, bitTextField.ClassList.Contains($"bit-txt-no-border-fluent"));
         }
+
+        [DataTestMethod, DataRow(5)]
+        public void BitTextFieldShouldRespectRowsNumberWhenItIsMultiline(int rows)
+        {
+            var component = RenderComponent<BitTextFieldTest>(
+                parameters =>
+                {
+                    parameters.Add(p => p.IsMultiLine, true);
+                    parameters.Add(p => p.Rows, rows);
+                });
+
+            var input = component.Find(".bit-txt textarea");
+            Assert.AreEqual(rows.ToString(),input.GetAttribute("rows"));
+        }
     }
 }

@@ -23,7 +23,8 @@
                   DefaultValue="@DefaultValue"
                   Description="@Description"
                   Prefix="@Prefix"
-                  Suffix="@Suffix">
+                  Suffix="@Suffix"
+                  Rows="Rows">
     </BitTextField>
 </CascadingValue>
 
@@ -48,6 +49,7 @@
     [Parameter] public string? ErrorMessage { get; set; }
     [Parameter] public bool IsUnderlined { get; set; }
     [Parameter] public bool HasBorder { get; set; }
+    [Parameter] public int Rows { get; set; }
 
     public void HandleKeyDown(KeyboardEventArgs e)
     {
