@@ -143,7 +143,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
 
             var bitTextField = component.Find(".bit-txt");
             var containerDiv = component.Find(".bit-txt > div > div");
-            var bitTextFieldRevealPassword = component.Find(".bit-txt > div > div > span");
+            var bitTextFieldRevealPassword = component.Find(".bit-txt > div > div > button > span");
 
             Assert.AreEqual("Password", containerDiv.FirstElementChild.GetAttribute("type"));
             Assert.IsTrue(bitTextFieldRevealPassword.FirstElementChild.ClassList.Contains($"bit-icon--RedEye"));
