@@ -129,6 +129,25 @@
         }
 
         & > div {
+            /* reveal password button*/
+            & button {
+                height: 100%;
+                width: rem(32px);
+                outline: transparent;
+                position: relative;
+                border: none;
+                padding: 0px 4px;
+                background-color: transparent;
+                color: rgb(0, 120, 212);
+
+                & > span {
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    font-size: rem(16);
+                }
+            }
+
             & > span {
                 height: 100%;
                 width: rem(32px);
