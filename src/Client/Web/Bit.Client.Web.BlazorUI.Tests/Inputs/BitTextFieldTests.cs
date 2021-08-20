@@ -411,5 +411,24 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
 
             Assert.AreEqual(isAriaRequired, input.HasAttribute("aria-required"));
         }
+
+        [DataTestMethod,
+            DataRow(true, "this is label"),
+            DataRow(false, "this is label"),
+            DataRow(true, null),
+            DataRow(false, null)
+        ]
+        public void BitToggleButtonAriaLabelledbyTest(bool isMultiline, string? lable)
+        {
+            var component = RenderComponent<BitTextFieldTest>(parameters =>
+            {
+                parameters.Add(p => p.Label, lable);
+                parameters.Add(p => p.IsMultiLine, isMultiline);
+            });
+
+            var input = isMultiline ? component.Find(".bit-txt textarea") : component.Find(".bit-txt input");
+
+            Assert.AreEqual(lable.HasValue(), input.HasAttribute("aria-labelledby"));
+        }
     }
 }

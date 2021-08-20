@@ -36,6 +36,7 @@
                           maxlength="@MaxLength"
                           aria-label="@AriaLabel"
                           aria-required=@(IsAriaRequired is true)
+                          aria-labelledby="@(Label.HasValue() ? InputId : null)"
                           @onclick="@HandleClick"
                           @onfocusin="@HandleFocusIn"
                           @onfocusout="@HandleFocusOut"
@@ -59,6 +60,7 @@
                        maxlength="@MaxLength"
                        aria-label="@AriaLabel"
                        aria-required=@(IsAriaRequired is true)
+                       aria-labelledby="@(Label.HasValue() ? InputId : null)"
                        @onclick="@HandleClick"
                        @onfocusin="@HandleFocusIn"
                        @onfocusout="@HandleFocusOut"
