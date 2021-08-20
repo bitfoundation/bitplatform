@@ -37,6 +37,7 @@
                           aria-label="@AriaLabel"
                           aria-required=@(IsAriaRequired is true)
                           aria-labelledby="@(Label.HasValue() ? InputId : null)"
+                          aria-invalid="false"
                           @onclick="@HandleClick"
                           @onfocusin="@HandleFocusIn"
                           @onfocusout="@HandleFocusOut"
@@ -61,6 +62,7 @@
                        aria-label="@AriaLabel"
                        aria-required=@(IsAriaRequired is true)
                        aria-labelledby="@(Label.HasValue() ? InputId : null)"
+                       aria-invalid="false"
                        @onclick="@HandleClick"
                        @onfocusin="@HandleFocusIn"
                        @onfocusout="@HandleFocusOut"

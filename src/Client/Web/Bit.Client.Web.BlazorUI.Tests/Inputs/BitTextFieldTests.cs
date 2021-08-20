@@ -430,5 +430,26 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
 
             Assert.AreEqual(lable.HasValue(), input.HasAttribute("aria-labelledby"));
         }
+
+        [DataTestMethod,
+            DataRow(true, true),
+            DataRow(true, false),
+            DataRow(false, true),
+            DataRow(false, false)
+        ]
+        public void BitToggleButtonAriaInvalidTest(bool isMultiline, bool hasError)
+        {
+            var component = RenderComponent<BitTextFieldTest>(parameters =>
+            {
+                parameters.Add(p => p.IsMultiLine, isMultiline);
+            });
+
+            var input = isMultiline ? component.Find(".bit-txt textarea") : component.Find(".bit-txt input");
+
+            Assert.IsTrue(input.HasAttribute("aria-invalid"));
+
+            //TODO: bypassed - this method will shold test when validation is set to component, when is valid aria-invalid is true otherwise it will be false, it is false by defualt 
+            //Assert.IsTrue(hasError, input.GetAttribute("aria-invalid"));
+        }
     }
 }
