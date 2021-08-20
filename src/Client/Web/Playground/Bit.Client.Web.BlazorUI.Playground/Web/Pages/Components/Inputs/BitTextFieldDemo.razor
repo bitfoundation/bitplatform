@@ -51,7 +51,7 @@
                     <BitTextField Label="Required" IsRequired="true"></BitTextField>
                 </div>
                 <div class="m-t-15">
-                    <BitTextField AriaLabel="Required without visible label" IsRequired="true"></BitTextField>
+                    <BitTextField AriaLabel="Required without visible label" IsRequired="true" IsAriaRequired="true"></BitTextField>
                 </div>
             </BitPivotItem>
             <BitPivotItem HeaderText="Code" IconName="Source">
@@ -272,6 +272,12 @@
             <td>string</td>
             <td></td>
             <td>Icon name for an optional icon, displayed in the far right end of the text field..</td>
+        </tr>
+        <tr>
+            <td>IsAriaRequired</td>
+            <td>bool</td>
+            <td>false</td>
+            <td>Add aria-required field to assist screen readers to read out required field.</td>
         </tr>
         <tr>
             <td>isEnabled</td>

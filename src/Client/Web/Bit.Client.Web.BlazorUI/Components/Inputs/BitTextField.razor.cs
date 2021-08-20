@@ -21,6 +21,10 @@ namespace Bit.Client.Web.BlazorUI
         private bool ValueHasBeenSet;
         private bool isResizable = true;
 
+
+        //Add aria-required field to assist screen readers to read out required field. 
+        [Parameter] public bool IsAriaRequired { get; set; }
+
         /// <summary>
         /// Whether or not the text field is a Multiline text field
         /// </summary>
@@ -255,7 +259,7 @@ namespace Bit.Client.Web.BlazorUI
                                         ? $"{RootElementClass}-required-{VisualClassRegistrar()}" : string.Empty);
 
             ClassBuilder.Register(() => IsUnderlined
-                                       ? $"{RootElementClass}-underlined-{(IsEnabled is false? "disabled-":string.Empty)}{VisualClassRegistrar()}" : string.Empty);
+                                       ? $"{RootElementClass}-underlined-{(IsEnabled is false ? "disabled-" : string.Empty)}{VisualClassRegistrar()}" : string.Empty);
 
             ClassBuilder.Register(() => HasBorder is false
                                        ? $"{RootElementClass}-no-border-{VisualClassRegistrar()}" : string.Empty);
