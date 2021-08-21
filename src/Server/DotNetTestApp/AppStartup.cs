@@ -13,11 +13,13 @@ using Bit.OData.ActionFilters;
 using Bit.OData.Contracts;
 using Bit.OData.Implementations;
 using Bit.OData.ODataControllers;
+using Bit.Owin;
 using Bit.Owin.Implementations;
 using DotNetTestApp;
 using IdentityServer3.Core.Models;
 using Microsoft.AspNet.OData.Builder;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -38,6 +40,39 @@ using System.Web.Http;
 
 namespace DotNetTestApp
 {
+    public class AppStartup : AspNetCoreAppStartup
+    {
+        public override void ConfigureMiddlewares(IApplicationBuilder aspNetCoreApp)
+        {
+            aspNetCoreApp.Map("/xyz", innerAspNetCoreApp =>
+            {
+                innerAspNetCoreApp.Run(async cntx =>
+                {
+                    await cntx.Response.WriteAsync(cntx.RequestServices.GetRequiredService<ITest>().GetVal());
+                });
+            });
+
+            base.ConfigureMiddlewares(aspNetCoreApp);
+        }
+
+        public override void ConfigureServices(IServiceCollection services)
+        {
+            services.AddScoped<ITest, Test>();
+
+            base.ConfigureServices(services);
+        }
+    }
+
+    public interface ITest
+    {
+        string GetVal();
+    }
+
+    public class Test : ITest
+    {
+        public string GetVal() => "!";
+    }
+
     public class DotNetTestAppModule : IAppModule, IAppModulesProvider
     {
         public IEnumerable<IAppModule> GetAppModules()
