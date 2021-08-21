@@ -9,6 +9,7 @@ namespace Bit.Client.Web.BlazorUI
     public partial class BitChoiceOption : IDisposable
     {
         private bool isChecked;
+        internal bool IsRequired { get; set; }
 
         /// <summary>
         /// ChoiceOption content, It can be a text
