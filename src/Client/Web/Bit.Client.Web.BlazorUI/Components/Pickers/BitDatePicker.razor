@@ -15,32 +15,32 @@
     </BitTextField>
     @if (IsOpen)
     {
-        <div class="div-all">
+        <div>
             <div role="dialog">
                 <div>
                     <div aria-hidden="true" tabindex="0" data-is-visible="true" style="pointer-events: none; position: fixed;"></div>
                     <div role="group">
-                        <div class="live-region" aria-live="polite" aria-atomic="true">
+                        <div aria-live="polite" aria-atomic="true">
                             Selected date @selectedDate
                         </div>
-                        <div class="left">
-                            <div class="header1">
-                                <div class="month">
-                                    <span class="month-span">@monthTitle</span>
+                        <div>
+                            <div>
+                                <div>
+                                    <span>@monthTitle</span>
                                 </div>
-                                <div class="change-month">
-                                    <button class="up-previous" title="Go to previous month" @onclick="() => HandleMonthChange(false)">
-                                        <i class="up bit-icon"></i>
+                                <div>
+                                    <button title="Go to previous month" @onclick="() => HandleMonthChange(false)">
+                                        <i class="bit-icon"></i>
                                     </button>
-                                    <button class="down-next" title="Go to next month" @onclick="() => HandleMonthChange(true)">
-                                        <i class="down bit-icon"></i>
+                                    <button title="Go to next month" @onclick="() => HandleMonthChange(true)">
+                                        <i class="bit-icon"></i>
                                     </button>
                                 </div>
                             </div>
-                            <div class="table-container">
-                                <table class="weeks" role="grid">
-                                    <tbody class="tbody">
-                                        <tr class="week-name">
+                            <div>
+                                <table role="grid">
+                                    <tbody>
+                                        <tr>
                                             @if (CalendarType is CalendarType.Gregorian)
                                             {
                                                 <th scope="col" title="@calendar.GetDayOfWeekName(DayOfWeek.Sunday)">
@@ -89,29 +89,6 @@
                                                     @calendar.GetDayOfWeekName(DayOfWeek.Friday)[0]
                                                 </th>
                                             }
-                                        </tr>
-                                        <tr role="presentation">
-                                            <td aria-hidden="true" role="presentation">
-                                                <button aria-hidden="true" aria-label="20, June, 2021" aria-selected="false" data-is-focusable="false" aria-disabled="false" type="button" role="gridcell" aria-readonly="true" tabindex="-1"><span aria-hidden="true">20</span></button>
-                                            </td>
-                                            <td aria-hidden="true" role="presentation">
-                                                <button aria-label="21, June, 2021" aria-selected="false" data-is-focusable="false" aria-disabled="false" type="button" role="gridcell" aria-readonly="true" tabindex="-1"><span aria-hidden="true">21</span></button>
-                                            </td>
-                                            <td aria-hidden="true" role="presentation">
-                                                <button aria-hidden="true" aria-label="22, June, 2021" aria-selected="false" data-is-focusable="false" aria-disabled="false" type="button" role="gridcell" aria-readonly="true" tabindex="-1"><span aria-hidden="true">22</span></button>
-                                            </td>
-                                            <td aria-hidden="true" role="presentation">
-                                                <button aria-hidden="true" aria-label="23, June, 2021" aria-selected="false" data-is-focusable="false" aria-disabled="false" type="button" role="gridcell" aria-readonly="true" tabindex="-1"><span aria-hidden="true">23</span></button>
-                                            </td>
-                                            <td aria-hidden="true" role="presentation">
-                                                <button aria-hidden="true" aria-label="24, June, 2021" aria-selected="false" data-is-focusable="false" aria-disabled="false" type="button" role="gridcell" aria-readonly="true" tabindex="-1"><span aria-hidden="true">24</span></button>
-                                            </td>
-                                            <td aria-hidden="true" role="presentation">
-                                                <button aria-hidden="true" class="dayButton-357" aria-label="25, June, 2021" aria-selected="false" data-is-focusable="false" aria-disabled="false" type="button" role="gridcell" aria-readonly="true" tabindex="-1"><span aria-hidden="true">25</span></button>
-                                            </td>
-                                            <td aria-hidden="true" role="presentation">
-                                                <button aria-hidden="true" aria-label="26, June, 2021" aria-selected="false" data-is-focusable="false" aria-disabled="false" type="button" role="gridcell" aria-readonly="true" tabindex="-1"><span aria-hidden="true">26</span></button>
-                                            </td>
                                         </tr>
                                         @{
                                             bool currentMonthIsStarted = false;
@@ -195,57 +172,32 @@
                                                 </tr>
                                             }
                                         }
-                                        <tr role="presentation">
-                                            <td aria-hidden="true" role="presentation">
-                                                <button aria-hidden="true" aria-label="1, August, 2021" aria-selected="false" data-is-focusable="false" aria-disabled="false" type="button" role="gridcell" aria-readonly="true" tabindex="-1"><span aria-hidden="true">1</span></button>
-                                            </td>
-                                            <td aria-hidden="true" role="presentation">
-                                                <button aria-hidden="true" aria-label="2, August, 2021" aria-selected="false" data-is-focusable="false" aria-disabled="false" type="button" role="gridcell" aria-readonly="true" tabindex="-1"><span aria-hidden="true">2</span></button>
-                                            </td>
-                                            <td aria-hidden="true" role="presentation">
-                                                <button aria-hidden="true" aria-label="3, August, 2021" aria-selected="false" data-is-focusable="false" aria-disabled="false" type="button" role="gridcell" aria-readonly="true" tabindex="-1"><span aria-hidden="true">3</span></button>
-                                            </td>
-                                            <td aria-hidden="true" role="presentation">
-                                                <button aria-hidden="true" aria-label="4, August, 2021" aria-selected="false" data-is-focusable="false" aria-disabled="false" type="button" role="gridcell" aria-readonly="true" tabindex="-1"><span aria-hidden="true">4</span></button>
-                                            </td>
-                                            <td aria-hidden="true" role="presentation">
-                                                <button aria-hidden="true" aria-label="5, August, 2021" aria-selected="false" data-is-focusable="false" aria-disabled="false" type="button" role="gridcell" aria-readonly="true" tabindex="-1"><span aria-hidden="true">5</span></button>
-                                            </td>
-                                            <td aria-hidden="true" role="presentation">
-                                                <button aria-hidden="true" aria-label="6, August, 2021" aria-selected="false" data-is-focusable="false" aria-disabled="false" type="button" role="gridcell" aria-readonly="true" tabindex="-1"><span aria-hidden="true">6</span></button>
-                                            </td>
-                                            <td aria-hidden="true" role="presentation">
-                                                <button aria-hidden="true" aria-label="7, August, 2021" aria-selected="false" data-is-focusable="false" aria-disabled="false" type="button" role="gridcell" aria-readonly="true" tabindex="-1"><span aria-hidden="true">7</span></button>
-                                            </td>
-                                        </tr>
                                     </tbody>
                                 </table>
                             </div>
                         </div>
-                        <div class="div"></div>
-                        <div class="right">
+                        <div></div>
+                        <div>
                             @if (isMonthsShown)
                             {
                                 <div>
-                                    <div class="header-year">
+                                    <div>
                                         <button type="button"
                                                 @onclick="HandleMonthsShownChanged">
                                             @currentYear
                                         </button>
-                                        <div class="">
+                                        <div>
                                             <button title="Go to previous year @(currentYear - 1)"
-                                                    class="previous-year"
                                                     @onclick="() => HandleYearChanged(false)">
-                                                <i class="up bit-icon"></i>
+                                                <i class="bit-icon"></i>
                                             </button>
                                             <button title="Go to previous year @(currentYear + 1)"
-                                                    class="next-year"
                                                     @onclick="() => HandleYearChanged(true)">
-                                                <i class="down bit-icon"></i>
+                                                <i class="bit-icon"></i>
                                             </button>
                                         </div>
                                     </div>
-                                    <div class="months-rows">
+                                    <div>
                                         <div role="grid">
                                             <div role="row">
                                                 <button type="button"
@@ -320,25 +272,23 @@
                             else
                             {
                                 <div>
-                                    <div class="header-year">
+                                    <div>
                                         <button type="button"
                                                 @onclick="HandleMonthsShownChanged">
                                             @yearRangeFrom - @yearRangeTo
                                         </button>
-                                        <div class="">
+                                        <div>
                                             <button title="Previous year range @(yearRangeFrom - 12) - @(yearRangeFrom - 1)"
-                                                    class="previous-year"
                                                     @onclick="() => HandleYearRangeChanged(yearRangeFrom-12)">
-                                                <i class="up bit-icon"></i>
+                                                <i class="bit-icon"></i>
                                             </button>
                                             <button title="Next year range @(yearRangeFrom + 12) - @(yearRangeTo + 12)"
-                                                    class="next-year"
                                                     @onclick="() => HandleYearRangeChanged(yearRangeFrom+12)">
-                                                <i class="down bit-icon"></i>
+                                                <i class="bit-icon"></i>
                                             </button>
                                         </div>
                                     </div>
-                                    <div class="months-rows">
+                                    <div>
                                         <div role="grid">
                                             @for (int yearIndex = yearRangeFrom; yearIndex <= yearRangeTo; yearIndex++)
                                             {

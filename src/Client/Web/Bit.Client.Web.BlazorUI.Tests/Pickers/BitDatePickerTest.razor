@@ -1,11 +1,13 @@
 ﻿<CascadingValue Value="Visual">
-  <BitDatePicker IsEnabled="IsEnabled"
-                 CalendarType="CalendarType"
-                 Placeholder="@Placeholder"
-                 GoToToday="@GoToToday"
-                 IsOpen="IsOpen">
-      
-  </BitDatePicker>
+    <BitDatePicker IsEnabled="IsEnabled"
+                   CalendarType="CalendarType"
+                   Placeholder="@Placeholder"
+                   GoToToday="@GoToToday"
+                   IsOpen="IsOpen"
+                   OnClick="HandleClick"
+                   OnDateChoose="HandleSelectDate">
+
+    </BitDatePicker>
 </CascadingValue>
 @code {
     [Parameter] public Visual Visual { get; set; }
@@ -15,22 +17,15 @@
     [Parameter] public string GoToToday { get; set; }
     [Parameter] public bool IsOpen { get; set; }
 
-    public int ChoiceOptionClickedValue { get; set; }
-    public int ChoiceOptionChangedValue { get; set; }
-    public string ChoiceGroupChangedValue { get; set; } = "";
+    public int ClickedValue { get; set; }
+    public int SelectedDateValue { get; set; }
 
     public void HandleClick(MouseEventArgs e)
     {
-        ChoiceOptionClickedValue++;
+        ClickedValue++;
     }
-    public void HandleValueChange(string value)
+    public void HandleSelectDate(string value)
     {
-        ChoiceGroupChangedValue = value;
-    }
-    public void HandleChange(ChangeEventArgs e)
-    {
-        ChoiceOptionChangedValue++;
-        //Count2++;
-        //Value = e.Value.ToString();
+        SelectedDateValue++;
     }
 }
