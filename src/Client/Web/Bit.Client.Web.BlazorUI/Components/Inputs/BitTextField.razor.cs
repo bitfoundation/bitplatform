@@ -21,10 +21,6 @@ namespace Bit.Client.Web.BlazorUI
         private bool ValueHasBeenSet;
         private bool isResizable = true;
 
-
-        //Add aria-required field to assist screen readers to read out required field. 
-        [Parameter] public bool IsAriaRequired { get; set; }
-
         /// <summary>
         /// Whether or not the text field is a Multiline text field
         /// </summary>
@@ -130,6 +126,9 @@ namespace Bit.Client.Web.BlazorUI
         /// </summary>
         [Parameter] public EventCallback<string?> ValueChanged { get; set; }
 
+        /// <summary>
+        /// Callback for when the input value changes. This is called on both input and change events. 
+        /// </summary>
         [Parameter] public EventCallback<string?> OnChange { get; set; }
 
         /// <summary>
@@ -147,6 +146,9 @@ namespace Bit.Client.Web.BlazorUI
         /// </summary>
         [Parameter] public string? Label { get; set; }
 
+        /// <summary>
+        /// Shows the custom Label for text field.If you don't call default label, ensure that you give your custom label an id and that you set the textfield's aria-labelledby prop to that id.
+        /// </summary>
         [Parameter] public RenderFragment? LabelFragment { get; set; }
 
         /// <summary>
@@ -154,6 +156,9 @@ namespace Bit.Client.Web.BlazorUI
         /// </summary>
         [Parameter] public string? Description { get; set; }
 
+        /// <summary>
+        /// Shows the custom description for text field.
+        /// </summary>
         [Parameter] public RenderFragment? DescriptionFragment { get; set; }
 
         /// <summary>

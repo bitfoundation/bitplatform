@@ -29,7 +29,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                 {
                     parameters.Add(p => p.Visual, visual);
                     parameters.Add(p => p.IsEnabled, isEnabled);
-                    parameters.Add(p => p.IsMultiLine, isMultiline);
+                    parameters.Add(p => p.IsMultiline, isMultiline);
                     parameters.Add(p => p.IsRequired, isRequired);
                 });
 
@@ -57,7 +57,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                 parameters =>
                 {
                     parameters.Add(p => p.Value, value);
-                    parameters.Add(p => p.IsMultiLine, isMultiline);
+                    parameters.Add(p => p.IsMultiline, isMultiline);
                 });
 
             var bitTextField = isMultiline ? component.Find(".bit-txt textarea") : component.Find(".bit-txt input");
@@ -97,7 +97,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                 parameters =>
                 {
                     parameters.Add(p => p.MaxLength, maxLength);
-                    parameters.Add(p => p.IsMultiLine, isMultiline);
+                    parameters.Add(p => p.IsMultiline, isMultiline);
                     parameters.Add(p => p.Placeholder, placeholder);
                     parameters.Add(p => p.IsReadOnly, isReadOnly);
                 });
@@ -166,7 +166,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                 parameters =>
                 {
                     parameters.Add(p => p.IsEnabled, isEnabled);
-                    parameters.Add(p => p.IsMultiLine, isMultiline);
+                    parameters.Add(p => p.IsMultiline, isMultiline);
                 });
 
             var bitTextField = isMultiline ? component.Find(".bit-txt textarea") : component.Find(".bit-txt input");
@@ -188,7 +188,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                 parameters =>
                 {
                     parameters.Add(p => p.IsEnabled, isEnabled);
-                    parameters.Add(p => p.IsMultiLine, isMultiline);
+                    parameters.Add(p => p.IsMultiline, isMultiline);
                 });
 
             var bitTextField = isMultiline ? component.Find(".bit-txt textarea") : component.Find(".bit-txt input");
@@ -215,7 +215,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                 parameters =>
                 {
                     parameters.Add(p => p.IsEnabled, isEnabled);
-                    parameters.Add(p => p.IsMultiLine, isMultiline);
+                    parameters.Add(p => p.IsMultiline, isMultiline);
                 });
 
             var bitTextField = isMultiline ? component.Find(".bit-txt textarea") : component.Find(".bit-txt input");
@@ -239,7 +239,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                 parameters =>
                 {
                     parameters.Add(p => p.IsEnabled, isEnabled);
-                    parameters.Add(p => p.IsMultiLine, isMultiline);
+                    parameters.Add(p => p.IsMultiline, isMultiline);
                 });
 
             var bitTextField = isMultiline ? component.Find(".bit-txt textarea") : component.Find(".bit-txt input");
@@ -286,7 +286,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                 parameters =>
                 {
                     parameters.Add(p => p.DefaultValue, defaultValue);
-                    parameters.Add(p => p.IsMultiLine, isMultiline);
+                    parameters.Add(p => p.IsMultiline, isMultiline);
                 });
 
             var bitTextField = isMultiline ? component.Find(".bit-txt textarea") : component.Find(".bit-txt input");
@@ -352,7 +352,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
             var component = RenderComponent<BitTextFieldTest>(
                 parameters =>
                 {
-                    parameters.Add(p => p.IsMultiLine, true);
+                    parameters.Add(p => p.IsMultiline, true);
                     parameters.Add(p => p.Rows, rows);
                 });
 
@@ -366,7 +366,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
             var component = RenderComponent<BitTextFieldTest>(
                 parameters =>
                 {
-                    parameters.Add(p => p.IsMultiLine, true);
+                    parameters.Add(p => p.IsMultiline, true);
                     parameters.Add(p => p.IsResizable, isResizable);
                 });
 
@@ -378,12 +378,12 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
             DataRow("Detailed label", true),
             DataRow("Detailed label", false)
         ]
-        public void BitToggleButtonAriaLabelTest(string ariaLabel, bool isMultiline)
+        public void BitTextFieldAriaLabelTest(string ariaLabel, bool isMultiline)
         {
             var component = RenderComponent<BitTextFieldTest>(parameters =>
             {
                 parameters.Add(p => p.AriaLabel, ariaLabel);
-                parameters.Add(p => p.IsMultiLine, isMultiline);
+                parameters.Add(p => p.IsMultiline, isMultiline);
             });
 
             var input = isMultiline ? component.Find(".bit-txt textarea") : component.Find(".bit-txt input");
@@ -394,62 +394,22 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
         }
 
         [DataTestMethod,
-            DataRow(true, true),
-            DataRow(true, false),
-            DataRow(false, true),
-            DataRow(false, false),
-        ]
-        public void BitToggleButtonAriaRequiredTest(bool isAriaRequired, bool isMultiline)
-        {
-            var component = RenderComponent<BitTextFieldTest>(parameters =>
-            {
-                parameters.Add(p => p.IsAriaRequired, isAriaRequired);
-                parameters.Add(p => p.IsMultiLine, isMultiline);
-            });
-
-            var input = isMultiline ? component.Find(".bit-txt textarea") : component.Find(".bit-txt input");
-
-            Assert.AreEqual(isAriaRequired, input.HasAttribute("aria-required"));
-        }
-
-        [DataTestMethod,
             DataRow(true, "this is label"),
             DataRow(false, "this is label"),
             DataRow(true, null),
             DataRow(false, null)
         ]
-        public void BitToggleButtonAriaLabelledbyTest(bool isMultiline, string? lable)
+        public void BitTextFieldAriaLabelledbyTest(bool isMultiline, string? lable)
         {
             var component = RenderComponent<BitTextFieldTest>(parameters =>
             {
                 parameters.Add(p => p.Label, lable);
-                parameters.Add(p => p.IsMultiLine, isMultiline);
+                parameters.Add(p => p.IsMultiline, isMultiline);
             });
 
             var input = isMultiline ? component.Find(".bit-txt textarea") : component.Find(".bit-txt input");
 
             Assert.AreEqual(lable.HasValue(), input.HasAttribute("aria-labelledby"));
-        }
-
-        [DataTestMethod,
-            DataRow(true, true),
-            DataRow(true, false),
-            DataRow(false, true),
-            DataRow(false, false)
-        ]
-        public void BitToggleButtonAriaInvalidTest(bool isMultiline, bool hasError)
-        {
-            var component = RenderComponent<BitTextFieldTest>(parameters =>
-            {
-                parameters.Add(p => p.IsMultiLine, isMultiline);
-            });
-
-            var input = isMultiline ? component.Find(".bit-txt textarea") : component.Find(".bit-txt input");
-
-            Assert.IsTrue(input.HasAttribute("aria-invalid"));
-
-            //TODO: bypassed - this method will shold test when validation is set to component, when is valid aria-invalid is true otherwise it will be false, it is false by defualt 
-            //Assert.IsTrue(hasError, input.GetAttribute("aria-invalid"));
         }
     }
 }

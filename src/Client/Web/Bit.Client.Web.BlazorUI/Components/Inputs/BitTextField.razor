@@ -35,7 +35,6 @@
                           placeholder="@Placeholder"
                           maxlength="@MaxLength"
                           aria-label="@AriaLabel"
-                          aria-required=@(IsAriaRequired is true)
                           aria-labelledby="@(Label.HasValue() ? InputId : null)"
                           aria-invalid="false"
                           @onclick="@HandleClick"
@@ -60,7 +59,6 @@
                        placeholder="@Placeholder"
                        maxlength="@MaxLength"
                        aria-label="@AriaLabel"
-                       aria-required=@(IsAriaRequired is true)
                        aria-labelledby="@(Label.HasValue() ? InputId : null)"
                        aria-invalid="false"
                        @onclick="@HandleClick"
