@@ -1,7 +1,9 @@
 ﻿<CascadingValue Value="Visual">
     <BitChoiceGroup Name="@ChoiceGroupName"
                     IsEnabled="@ChoiceGroupIsEnabled"
-                    OnValueChange="HandleValueChange">
+                    OnValueChange="HandleValueChange"
+                    IsRequired="IsRequired"
+                    Label="@Label">
         <BitChoiceOption Value="@Value"
                          IsEnabled="@ChoiceOptionIsEnabled"
                          Text="@Text"
@@ -17,6 +19,8 @@
     [Parameter] public Visual Visual { get; set; }
     [Parameter] public bool ChoiceGroupIsEnabled { get; set; }
     [Parameter] public string ChoiceGroupName { get; set; }
+    [Parameter] public bool IsRequired { get; set; }
+    [Parameter] public string? Label { get; set; }
 
     [Parameter] public bool ChoiceOptionIsEnabled { get; set; }
     [Parameter] public string Value { get; set; }
