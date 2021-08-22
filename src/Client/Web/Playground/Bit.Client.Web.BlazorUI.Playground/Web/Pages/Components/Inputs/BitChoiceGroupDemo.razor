@@ -62,6 +62,30 @@
             </div>
         </BitPivotItem>
     </BitPivot>
+
+    <div class="card">
+        <h3>ChoiceGroup with images</h3>
+
+        <BitPivot>
+            <BitPivotItem HeaderText="Example" IconName="ViewList">
+                <div>
+                    <BitChoiceGroup Name="Group1">
+                        <BitChoiceOption Text="Option1" Value="1" ImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png" ImageAlt="alt for image Option 1" SelectedImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png"></BitChoiceOption>
+                        <BitChoiceOption Text="Option2" Value="2" ImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png" ImageAlt="alt for image Option 2" SelectedImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png"></BitChoiceOption>
+                    </BitChoiceGroup>
+                </div>
+            </BitPivotItem>
+            <BitPivotItem HeaderText="Code" IconName="Source">
+                <div>
+                    <p>&lt<span class="dark-green">BitChoiceGroup Name</span>="Group1"></p>
+                    <p class="p-l-20">&lt<span class="dark-green">BitChoiceOption Text</span>="Option1" <span class="dark-green">Value</span>="1">&lt/<span class="dark-green">BitChoiceOption</span>></p>
+                    <p class="p-l-20"> &lt<span class="dark-green">BitChoiceOption Text</span>="Option2" <span class="dark-green">Value</span>="2">&lt/<span class="dark-green">BitChoiceOption</span>></p>
+                    <p class="p-l-20"> &lt<span class="dark-green">BitChoiceOption Text</span>="Disabled Option" <span class="dark-green">Value</span>="3" <span class="dark-green">IsEnabled</span>="<span class="light-blue">false</span>">&lt/<span class="dark-green">BitChoiceOption</span>></p>
+                    <p> &lt/<span class="dark-green">BitChoiceGroup</span>></p>
+                </div>
+            </BitPivotItem>
+        </BitPivot>
+    </div>
 </div>
 <h2>Implementation</h2>
 <div class="card">
@@ -72,7 +96,7 @@
             <th>Default value</th>
             <th>Description</th>
         </tr>
-         <tr>
+        <tr>
             <td>childContent</td>
             <td>renderfragment</td>
             <td></td>

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -9,6 +10,36 @@ namespace Bit.Client.Web.BlazorUI
     public partial class BitChoiceOption : IDisposable
     {
         private bool isChecked;
+
+        /// <summary>
+        /// A required key to uniquely identify the option.
+        /// </summary>
+        [Parameter] public string Key { get; set; }
+
+        /// <summary>
+        /// Image src to display with this option.
+        /// </summary>
+        [Parameter] public string? ImageSrc { get; set; }
+
+        /// <summary>
+        /// Alt text if the option is an image. default is an empty string
+        /// </summary>
+        [Parameter] public string? ImageAlt { get; set; }
+
+        /// <summary>
+        /// The src of image for choice field which is selected.
+        /// </summary>
+        [Parameter] public string? SelectedImageSrc { get; set; }
+
+        /// <summary>
+        /// The width and height of the image in px for choice field.
+        /// </summary>
+        [Parameter] public Size? ImageSize { get; set; }
+
+        /// <summary>
+        /// Icon to display with this option.
+        /// </summary>
+        [Parameter] public string? IconName { get; set; }
 
         /// <summary>
         /// ChoiceOption content, It can be a text
