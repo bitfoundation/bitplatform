@@ -182,7 +182,7 @@ namespace Bit.Client.Web.BlazorUI
             min = Min is not null ? Min.Value : double.MinValue;
             max = Max is not null ? Max.Value : double.MaxValue;
             precision = Precision is not null ? Precision.Value : CalculatePrecision(Step);
-            if (ValueHasBeenSet is false && ValueChanged.HasDelegate is false)
+            if (ValueHasBeenSet is false)
             {
                 Value = DefaultValue ?? Math.Min(0, min);
             }
