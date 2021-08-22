@@ -21,8 +21,8 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components
                      new BitNavLinkItem { Name= "Link", Key = "Link", Url = "/components/links" },
                      new BitNavLinkItem { Name= "Rating", Key = "Rating", Url = "/components/rating" },
                      new BitNavLinkItem { Name= "SearchBox", Key = "SearchBox", Url = "/components/searchbox" },
-                     new BitNavLinkItem { Name= "TextField", Key = "TextField", Url = "#" },
-                     new BitNavLinkItem { Name= "Toggle", Key = "Toggle", Url = "#" }
+                     new BitNavLinkItem { Name= "TextField", Key = "TextField", Url = "/components/textfield" },
+                     new BitNavLinkItem { Name= "Toggle", Key = "Toggle", Url = "/components/toggle" }
                 }
             },
             new BitNavLinkItem
@@ -31,8 +31,8 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components
                 Key = "Navigations",
                 Links = new List<BitNavLinkItem>
                 {
-                    new BitNavLinkItem { Name = "Nav", Key = "Nav", Url = "#" },
-                    new BitNavLinkItem { Name = "Pivot", Key = "Pivot", Url = "#" },
+                    new BitNavLinkItem { Name = "Nav", Key = "Nav", Url = "/components/nav" },
+                    new BitNavLinkItem { Name = "Pivot", Key = "Pivot", Url = "/components/pivot" },
                 }
             },
             new BitNavLinkItem
@@ -41,7 +41,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components
                 Key = "Notifications",
                 Links = new List<BitNavLinkItem>
                 {
-                    new BitNavLinkItem { Name = "MessageBar", Key = "MessageBar", Url="#" }
+                    new BitNavLinkItem { Name = "MessageBar", Key = "MessageBar", Url="/components/messagebar" }
                 }
             },
             new BitNavLinkItem

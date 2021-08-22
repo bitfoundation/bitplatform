@@ -1,9 +1,7 @@
 ﻿using Bit.Core;
-using Bit.Core.Implementations;
 using Bit.Owin;
 using Bit.Owin.Implementations;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 using Serilog.Formatting.Compact;
@@ -44,7 +42,7 @@ namespace DotNetTestApp
         }
 
         public static IHost BuildWebHost(string[] args) =>
-            BitWebHost.CreateWebHost(args)
+            BitWebHost.CreateWebHost<AppStartup>(args)
                 .UseSerilog()
                 .Build();
     }

@@ -12,6 +12,8 @@ namespace Bit.Client.Web.BlazorUI
         private bool isUnderlined;
         private bool inputHasFocus;
         private string? width;
+        private bool showIcon;
+        private bool ValueHasBeenSet;
 
         public ElementReference InputRef { get; set; }
 
@@ -42,6 +44,11 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public EventCallback<string> OnSearch { get; set; }
 
         /// <summary>
+        /// Callback for when the input value changes
+        /// </summary>
+        [Parameter] public EventCallback<string?> OnChange { get; set; }
+
+        /// <summary>
         /// The value of the text in the search box
         /// </summary>
         [Parameter]
@@ -50,10 +57,19 @@ namespace Bit.Client.Web.BlazorUI
             get => inputValue;
             set
             {
+                if (value == inputValue) return;
                 inputValue = value;
                 ClassBuilder.Reset();
+                _ = ValueChanged.InvokeAsync(value);
             }
         }
+        [Parameter] public EventCallback<string?> ValueChanged { get; set; }
+
+        /// <summary>
+        /// The default value of the text in the SearchBox, in the case of an uncontrolled component.
+        /// </summary>
+        [Parameter]
+        public string? DefaultValue { get; set; }
 
         /// <summary>
         /// Whether or not to animate the search box icon on focus
@@ -79,6 +95,20 @@ namespace Bit.Client.Web.BlazorUI
             set
             {
                 isUnderlined = value;
+                ClassBuilder.Reset();
+            }
+        }
+
+        /// <summary>
+        /// Whether or not to make the icon be always visible (it hides by default when the search box is focused).
+        /// </summary>
+        [Parameter]
+        public bool ShowIcon
+        {
+            get => showIcon;
+            set
+            {
+                showIcon = value;
                 ClassBuilder.Reset();
             }
         }
@@ -135,6 +165,14 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
+        protected virtual async Task HandleChange(ChangeEventArgs e)
+        {
+            if (IsEnabled is false) return;
+            if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+            Value = e.Value?.ToString();
+            await OnChange.InvokeAsync(Value);
+        }
+
         public void HandleInputFocusIn()
         {
             InputHasFocus = true;
@@ -149,15 +187,24 @@ namespace Bit.Client.Web.BlazorUI
 
         protected override void RegisterComponentClasses()
         {
-            ClassBuilder.Register(() => Value.HasValue() ? $"{RootElementClass}-has-value-{VisualClassRegistrar()}" : string.Empty);
+            ClassBuilder.Register(() => Value.HasValue() ? $"{RootElementClass}{(ShowIcon ? "-fixed-icon" : string.Empty)}-has-value-{VisualClassRegistrar()}" : string.Empty);
             ClassBuilder.Register(() => DisableAnimation ? $"{RootElementClass}-no-animation-{VisualClassRegistrar()}" : string.Empty);
             ClassBuilder.Register(() => IsUnderlined ? $"{RootElementClass}-underlined-{VisualClassRegistrar()}" : string.Empty);
-            ClassBuilder.Register(() => InputHasFocus ? $"{RootElementClass}-focused-{VisualClassRegistrar()}" : string.Empty);
+            ClassBuilder.Register(() => InputHasFocus ? $"{RootElementClass}{(ShowIcon ? "-fixed-icon" : string.Empty)}-focused-{VisualClassRegistrar()}" : string.Empty);
         }
 
         protected override void RegisterComponentStyles()
         {
             StyleBuilder.Register(() => Width.HasValue() ? $"width: {Width}" : string.Empty);
+        }
+
+        protected override Task OnInitializedAsync()
+        {
+            if (DefaultValue.HasValue())
+            {
+                Value = DefaultValue;
+            }
+            return base.OnInitializedAsync();
         }
     }
 }

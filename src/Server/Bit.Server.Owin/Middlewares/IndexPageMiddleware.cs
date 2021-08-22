@@ -1,35 +1,36 @@
 ﻿using Bit.Core.Contracts;
 using Bit.Core.Models;
 using Bit.Owin.Contracts;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Owin;
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Bit.Owin.Middlewares
 {
-    public class IndexPageMiddleware : OwinMiddleware
+    public class IndexPageMiddleware
     {
-        public IndexPageMiddleware(OwinMiddleware next)
-            : base(next)
-        {
+        private readonly RequestDelegate _next;
 
+        public IndexPageMiddleware(RequestDelegate next)
+        {
+            _next = next;
         }
 
-        public override async Task Invoke(IOwinContext context)
+        public async Task Invoke(HttpContext context)
         {
             if (context == null)
                 throw new ArgumentNullException(nameof(context));
 
-            IDependencyResolver dependencyResolver = context.GetDependencyResolver();
+            string htmlPage = await File.ReadAllTextAsync(context.RequestServices.GetService<IPathProvider>().MapStaticFilePath(context.RequestServices.GetService<AppEnvironment>().GetConfig(AppEnvironment.KeyValues.IndexPagePath, AppEnvironment.KeyValues.IndexPagePathDefaultValue)!)).ConfigureAwait(false);
 
-            string htmlPage = await File.ReadAllTextAsync(dependencyResolver.Resolve<IPathProvider>().MapStaticFilePath(dependencyResolver.Resolve<AppEnvironment>().GetConfig(AppEnvironment.KeyValues.IndexPagePath, AppEnvironment.KeyValues.IndexPagePathDefaultValue)!)).ConfigureAwait(false);
-
-            string indexPageContents = await dependencyResolver.Resolve<IHtmlPageProvider>().GetHtmlPageAsync(htmlPage, context.Request.CallCancelled).ConfigureAwait(false);
+            string indexPageContents = await context.RequestServices.GetService<IHtmlPageProvider>().GetHtmlPageAsync(htmlPage, context.RequestAborted).ConfigureAwait(false);
 
             context.Response.ContentType = "text/html; charset=utf-8";
 
-            await context.Response.WriteAsync(indexPageContents, context.Request.CallCancelled).ConfigureAwait(false);
+            await context.Response.WriteAsync(indexPageContents, context.RequestAborted).ConfigureAwait(false);
         }
     }
 }

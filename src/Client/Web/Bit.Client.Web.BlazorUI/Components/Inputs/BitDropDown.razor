@@ -2,7 +2,8 @@
 @inherits BitComponentBase
 <div @ref="RootElement"
      style="@StyleBuilder.Value"
-     class="@ClassBuilder.Value">
+     class="@ClassBuilder.Value"
+     id="@UniqueId.ToString()">
     <span @onclick="HandleClick">
         @if (Text.HasValue())
         {

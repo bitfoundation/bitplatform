@@ -5,7 +5,7 @@
     margin: em(0px);
     padding: em(0px);
     box-sizing: border-box;
-    font-family: FluentFont;
+    font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
     -webkit-font-smoothing: antialiased;
     font-size: rem(14px);
     font-weight: 400;
@@ -59,7 +59,7 @@
     }
 
     div:nth-child(3) {
-        font-family: FluentFont;
+        font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
         -webkit-font-smoothing: antialiased;
         font-size: rem(15px);
         font-weight: 400;
@@ -74,10 +74,11 @@
         animation-duration: 0.367s;
         animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
         animation-fill-mode: both;
-        background-color:$White;
-        z-index:2;
+        background-color: $White;
+        z-index: 2;
+
         div[class=bit-drp-head-fluent] {
-            font-family: FluentFont;
+            font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
             -webkit-font-smoothing: antialiased;
             font-size: rem(15px);
             font-weight: 600;
@@ -95,7 +96,7 @@
         button {
             outline: transparent;
             position: relative;
-            font-family: FluentFont;
+            font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
             -webkit-font-smoothing: antialiased;
             font-size: rem(15px);
             font-weight: 400;
@@ -125,7 +126,7 @@
         button[disabled] {
             outline: transparent;
             position: relative;
-            font-family: FluentFont;
+            font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
             -webkit-font-smoothing: antialiased;
             font-size: rem(15px);
             font-weight: 400;
@@ -175,7 +176,7 @@
             text-align: left;
             color: $Grey190;
             box-shadow: none;
-            background-color:transparent;
+            background-color: transparent;
         }
     }
 }

@@ -17,7 +17,10 @@ namespace Bit.Owin
 {
     public class BitWebHost
     {
-        public static IHostBuilder CreateHost(string[] args)
+        public static IHostBuilder CreateHost(string[] args) => CreateHost<AspNetCoreAppStartup>(args);
+
+        public static IHostBuilder CreateHost<TAppStartup>(string[] args)
+            where TAppStartup : AspNetCoreAppStartup
         {
             AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
 
@@ -28,9 +31,9 @@ namespace Bit.Owin
 
                     AspNetCoreAppEnvironmentsProvider.Current.Configuration = context.Configuration;
 
-                    AspNetCoreAppEnvironmentsProvider.Current.HostEnvironment = context.HostingEnvironment;
+                    AspNetCoreAppEnvironmentsProvider.Current.HostingEnvironment = context.HostingEnvironment;
 
-                    DefaultPathProvider.Current = new AspNetCorePathProvider(AspNetCoreAppEnvironmentsProvider.Current.HostEnvironment);
+                    DefaultPathProvider.Current = new AspNetCorePathProvider(AspNetCoreAppEnvironmentsProvider.Current.HostingEnvironment);
 
                     AspNetCoreAppEnvironmentsProvider.Current.Init();
 
@@ -71,15 +74,18 @@ namespace Bit.Owin
                 .UseServiceProviderFactory(DefaultDependencyManager.Current)
                 .ConfigureWebHost(webHostBuilder =>
                 {
-                    webHostBuilder.UseStartup<AspNetCoreAppStartup>();
+                    webHostBuilder.UseStartup<TAppStartup>();
                     webHostBuilder.CaptureStartupErrors(captureStartupErrors: true);
                     webHostBuilder.UseSetting(WebHostDefaults.DetailedErrorsKey, "true");
                 });
         }
 
-        public static IHostBuilder CreateWebHost(string[] args)
+        public static IHostBuilder CreateWebHost(string[] args) => CreateWebHost<AspNetCoreAppStartup>(args);
+
+        public static IHostBuilder CreateWebHost<TAppStartup>(string[] args)
+            where TAppStartup : AspNetCoreAppStartup
         {
-            return CreateHost(args)
+            return CreateHost<TAppStartup>(args)
                 .ConfigureWebHostDefaults(webHostBuilder =>
                 {
 

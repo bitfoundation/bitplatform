@@ -13,6 +13,7 @@ using Bit.Owin.Contracts;
 using Bit.Owin.Implementations;
 using Bit.Owin.Middlewares;
 using Bit.Signalr.Implementations;
+using BitChangeSetManager;
 using BitChangeSetManager.Api.Implementations;
 using BitChangeSetManager.DataAccess;
 using BitChangeSetManager.DataAccess.Implementations;
@@ -21,41 +22,32 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.DependencyInjection;
 using Swashbuckle.Application;
-using System;
-using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.IO.Compression;
 using System.Reflection;
 
 [assembly: ODataModule("BitChangeSetManager")]
+[assembly: AppModule(typeof(BitChangeSetManagerAppModule))]
 
 namespace BitChangeSetManager
 {
-    public class AppStartup : AutofacAspNetCoreAppStartup, IAppModule, IAppModulesProvider
+    public class AppStartup : AspNetCoreAppStartup
     {
-        public AppStartup(IServiceProvider serviceProvider)
-            : base(serviceProvider)
+        public override void ConfigureMiddlewares(IApplicationBuilder aspNetCoreApp)
         {
-
+            base.ConfigureMiddlewares(aspNetCoreApp);
         }
 
-        public override IServiceProvider ConfigureServices(IServiceCollection services)
+        public override void ConfigureServices(IServiceCollection services)
         {
-            DefaultAppModulesProvider.Current = this;
-
-            return base.ConfigureServices(services);
+            base.ConfigureServices(services);
         }
+    }
 
-        public IEnumerable<IAppModule> GetAppModules()
-        {
-            yield return this;
-        }
-
+    public class BitChangeSetManagerAppModule : IAppModule
+    {
         public virtual void ConfigureDependencies(IServiceCollection services, IDependencyManager dependencyManager)
         {
-            AssemblyContainer.Current.Init();
-            AssemblyContainer.Current.AddAppAssemblies();
-
             dependencyManager.RegisterMinimalDependencies();
 
             dependencyManager.RegisterDefaultLogger(typeof(DebugLogStore).GetTypeInfo(), typeof(ConsoleLogStore).GetTypeInfo());
@@ -69,12 +61,11 @@ namespace BitChangeSetManager
             services.AddResponseCompression(options =>
             {
                 options.EnableForHttps = true;
+                options.Providers.Add<BrotliCompressionProvider>();
                 options.Providers.Add<GzipCompressionProvider>();
-            });
-
-            services.Configure<GzipCompressionProviderOptions>(options =>
+            }).Configure<GzipCompressionProviderOptions>(options =>
             {
-                options.Level = CompressionLevel.Optimal;
+                options.Level = CompressionLevel.Fastest;
             });
 
             dependencyManager.RegisterAspNetCoreMiddlewareUsing(aspNetCoreApp =>

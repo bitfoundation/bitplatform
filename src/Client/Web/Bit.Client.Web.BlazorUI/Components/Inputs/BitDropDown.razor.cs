@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.JSInterop;
 
 namespace Bit.Client.Web.BlazorUI
 {
@@ -12,6 +13,8 @@ namespace Bit.Client.Web.BlazorUI
         private string expandClass = "";
         private bool isOpen = false;
         private bool isMultiSelect = false;
+
+        [Inject] public IJSRuntime? JSRuntime { get; set; }
 
         /// <summary>
         /// Whether multiple items are allowed to be selected
@@ -126,7 +129,6 @@ namespace Bit.Client.Web.BlazorUI
 
         protected virtual async Task HandleItemClick(DropDownItem? selectedItem)
         {
-            isOpen = false;
             if (selectedItem is not null)
             {
                 if (selectedItem.IsEnabled)
@@ -144,6 +146,7 @@ namespace Bit.Client.Web.BlazorUI
                         ChangeAllItemsIsSelected(false);
                         Text = selectedItem.Text;
                         selectedItem.IsSelected = true;
+                        isOpen = false;
                     }
                     await OnSelectItem.InvokeAsync(selectedItem);
                 }
@@ -174,6 +177,24 @@ namespace Bit.Client.Web.BlazorUI
             {
                 item.IsSelected = value;
             }
+        }
+
+        [JSInvokable]
+        public void CloseCallout()
+        {
+            IsOpen = false;
+            FocusClass = "";
+            StateHasChanged();
+        }
+
+        protected async override Task OnAfterRenderAsync(bool firstRender)
+        {
+            if (IsEnabled && firstRender)
+            {
+                _ = JSRuntime?.RegisterOnDocumentClickEvent(this, "CloseCallout");
+            }
+
+            await base.OnAfterRenderAsync(firstRender);
         }
     }
 }
