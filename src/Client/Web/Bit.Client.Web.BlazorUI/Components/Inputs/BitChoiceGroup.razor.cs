@@ -8,6 +8,31 @@ namespace Bit.Client.Web.BlazorUI
     public partial class BitChoiceGroup
     {
         private readonly List<BitChoiceOption> _options = new();
+        private bool isRequired;
+
+        /// <summary>
+        /// If true, an option must be selected in the ChoiceGroup.
+        /// </summary>
+        [Parameter]
+        public bool IsRequired
+        {
+            get => isRequired;
+            set
+            {
+                isRequired = value;
+                ClassBuilder.Reset();
+            }
+        }
+
+        /// <summary>
+        /// Descriptive label for the choice group.
+        /// </summary>
+        [Parameter] public string? Label { get; set; }
+
+        /// <summary>
+        /// Used to customize the label for the choice group.
+        /// </summary>
+        [Parameter] public RenderFragment? LabelFragment { get; set; }
 
         /// <summary>
         /// Name of ChoiceGroup, this name is used to group each ChoiceOption into the same logical ChoiceGroup
@@ -31,6 +56,12 @@ namespace Bit.Client.Web.BlazorUI
 
         protected override string RootElementClass => "bit-chg";
 
+        protected override void RegisterComponentClasses()
+        {
+            ClassBuilder.Register(() => IsEnabled && IsRequired
+                                       ? $"{RootElementClass}-required-{VisualClassRegistrar()}" : string.Empty);
+        }
+
         internal async Task ChangeSelection(BitChoiceOption option)
         {
             if (IsEnabled)
@@ -49,6 +80,11 @@ namespace Bit.Client.Web.BlazorUI
             if (IsEnabled is false)
             {
                 option.IsEnabled = false;
+            }
+
+            if (IsRequired)
+            {
+                option.IsRequired = true;
             }
             _options.Add(option);
         }
