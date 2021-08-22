@@ -74,7 +74,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Api
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapDefaultControllerRoute();
+                
 #if BlazorClient
                 endpoints.MapFallbackToPage("/_Host");
 #endif

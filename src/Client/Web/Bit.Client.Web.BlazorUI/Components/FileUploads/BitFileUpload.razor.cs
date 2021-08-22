@@ -62,12 +62,12 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// URL of the server endpoint receiving the files.
         /// </summary>
-        [Parameter] public Uri? UploadUrl { get; set; }
+        [Parameter] public string UploadUrl { get; set; }
 
         /// <summary>
         /// URL of the server endpoint removing the files.
         /// </summary>
-        [Parameter] public Uri? RemoveUrl { get; set; }
+        [Parameter] public string RemoveUrl { get; set; }
 
         /// <summary>
         /// Custom label for Browse button
@@ -273,7 +273,7 @@ namespace Bit.Client.Web.BlazorUI
         private async Task RemoveOneFileAsync(int index)
         {
             if (Files is null || RemoveUrl is null) return;
-            var uri = new Uri($"{RemoveUrl.AbsoluteUri}?fileName={Files[index].Name}");
+            var uri = new Uri($"{RemoveUrl}?fileName={Files[index].Name}");
             _ = await client.GetAsync(uri);
         }
 
