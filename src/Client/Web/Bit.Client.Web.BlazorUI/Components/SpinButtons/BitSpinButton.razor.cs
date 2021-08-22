@@ -185,6 +185,7 @@ namespace Bit.Client.Web.BlazorUI
             }
 
             intermediateValue = $"{Value}";
+            precision = Precision is not null ? Precision.Value : CalculatePrecision(Step);
             await base.OnInitializedAsync();
         }
 
@@ -357,7 +358,7 @@ namespace Bit.Client.Web.BlazorUI
         private int CalculatePrecision(double value)
         {
             var regex = new Regex(@"[1-9]([0]+$)|\.([0-9]*)");
-            if (regex.IsMatch(Value.ToString()) is false) return 0;
+            if (regex.IsMatch(value.ToString()) is false) return 0;
 
             var matches = regex.Matches(value.ToString());
             if (matches.Count == 0) return 0;
@@ -376,12 +377,13 @@ namespace Bit.Client.Web.BlazorUI
             return 0;
         }
 
-        private double Normalize(double value) => Math.Round(value, 2);
+        private double Normalize(double value) => Math.Round(value, precision);
 
         private double? ariaValueNow => AriaValueNow is not null ? AriaValueNow : Suffix.HasNoValue() ? Value : null;
         private string? ariaValueText => AriaValueText.HasValue() ? AriaValueText : Suffix.HasValue() ? $"{Normalize(Value)}{Suffix}" : null;
         private string intermediateValue { get; set; } = String.Empty;
         private string inputId { get; set; } = $"input{Guid.NewGuid()}";
         private string labelId => Label.HasValue() ? $"label{Guid.NewGuid()}" : String.Empty;
+        private int precision { get; set; }
     }
 }
