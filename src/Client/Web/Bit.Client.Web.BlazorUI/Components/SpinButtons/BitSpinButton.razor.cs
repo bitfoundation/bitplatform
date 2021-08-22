@@ -95,12 +95,12 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// Min value of the spin button. If not provided, the spin button has minimum value of double type
         /// </summary>
-        [Parameter] public double Min { get; set; } = double.MinValue;
+        [Parameter] public double? Min { get; set; }
 
         /// <summary>
         /// Max value of the spin button. If not provided, the spin button has max value of double type
         /// </summary>
-        [Parameter] public double Max { get; set; } = double.MaxValue;
+        [Parameter] public double? Max { get; set; }
 
         /// <summary>
         /// Initial value of the spin button 
@@ -179,13 +179,15 @@ namespace Bit.Client.Web.BlazorUI
 
         protected async override Task OnInitializedAsync()
         {
-            if (ValueChanged.HasDelegate is false)
+            min = Min is not null ? Min.Value : double.MinValue;
+            max = Max is not null ? Max.Value : double.MaxValue;
+            precision = Precision is not null ? Precision.Value : CalculatePrecision(Step);
+            if (ValueHasBeenSet is false && ValueChanged.HasDelegate is false)
             {
-                Value = DefaultValue ?? Math.Min(0, Min);
+                Value = DefaultValue ?? Math.Min(0, min);
             }
 
             intermediateValue = $"{Value}";
-            precision = Precision is not null ? Precision.Value : CalculatePrecision(Step);
             await base.OnInitializedAsync();
         }
 
@@ -232,7 +234,7 @@ namespace Bit.Client.Web.BlazorUI
                     }
 
                     result = Value + Step;
-                    isValid = result <= Max && result >= Min;
+                    isValid = result <= max && result >= min;
                     break;
 
                 case BitSpinButtonAction.Down:
@@ -246,7 +248,7 @@ namespace Bit.Client.Web.BlazorUI
                     }
 
                     result = Value - Step;
-                    isValid = result <= Max && result >= Min;
+                    isValid = result <= max && result >= min;
                     break;
 
                 default:
@@ -279,7 +281,7 @@ namespace Bit.Client.Web.BlazorUI
                     }
 
                     result = Value + Step;
-                    isValid = result <= Max && result >= Min;
+                    isValid = result <= max && result >= min;
                     break;
 
                 case "ArrowDown":
@@ -293,7 +295,7 @@ namespace Bit.Client.Web.BlazorUI
                     }
 
                     result = Value - Step;
-                    isValid = result <= Max && result >= Min;
+                    isValid = result <= max && result >= min;
                     break;
 
                 case "Enter":
@@ -303,8 +305,8 @@ namespace Bit.Client.Web.BlazorUI
                     if (isNumber)
                     {
                         Value = Normalize(numericValue);
-                        if (Value > Max) Value = Max;
-                        if (Value < Min) Value = Min;
+                        if (Value > max) Value = max;
+                        if (Value < min) Value = min;
                         await OnChange.InvokeAsync(Value);
                     }
                     else
@@ -335,8 +337,8 @@ namespace Bit.Client.Web.BlazorUI
             if (isNumber)
             {
                 Value = Normalize(numericValue);
-                if (Value > Max) Value = Max;
-                if (Value < Min) Value = Min;
+                if (Value > max) Value = max;
+                if (Value < min) Value = min;
                 await OnBlur.InvokeAsync(e);
                 await OnChange.InvokeAsync(Value);
             }
@@ -378,12 +380,13 @@ namespace Bit.Client.Web.BlazorUI
         }
 
         private double Normalize(double value) => Math.Round(value, precision);
-
         private double? ariaValueNow => AriaValueNow is not null ? AriaValueNow : Suffix.HasNoValue() ? Value : null;
         private string? ariaValueText => AriaValueText.HasValue() ? AriaValueText : Suffix.HasValue() ? $"{Normalize(Value)}{Suffix}" : null;
         private string intermediateValue { get; set; } = String.Empty;
         private string inputId { get; set; } = $"input{Guid.NewGuid()}";
         private string labelId => Label.HasValue() ? $"label{Guid.NewGuid()}" : String.Empty;
         private int precision { get; set; }
+        private double min { get; set; }
+        private double max { get; set; }
     }
 }
