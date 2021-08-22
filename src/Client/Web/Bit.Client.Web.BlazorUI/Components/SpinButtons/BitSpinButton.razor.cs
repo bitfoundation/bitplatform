@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Bit.Client.Web.BlazorUI.Components.SpinButtons;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 
@@ -10,7 +10,7 @@ namespace Bit.Client.Web.BlazorUI
     public partial class BitSpinButton
     {
         private double inputValue;
-        private LabelPosition labelPosition = LabelPosition.Left;
+        private BitSpinButtonLabelPosition labelPosition = BitSpinButtonLabelPosition.Left;
         private bool ValueHasBeenSet;
 
         /// <summary>
@@ -85,12 +85,12 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// Callback for when the decrement button or down arrow key is pressed
         /// </summary>
-        [Parameter] public EventCallback<BitSpinButtonEventArgs> OnDecrement { get; set; }
+        [Parameter] public EventCallback<BitSpinButtonChangeEventArgs> OnDecrement { get; set; }
 
         /// <summary>
         /// Callback for when the increment button or up arrow key is pressed
         /// </summary>
-        [Parameter] public EventCallback<BitSpinButtonEventArgs> OnIncrement { get; set; }
+        [Parameter] public EventCallback<BitSpinButtonChangeEventArgs> OnIncrement { get; set; }
 
         /// <summary>
         /// Min value of the spin button. If not provided, the spin button has minimum value of double type
@@ -131,7 +131,7 @@ namespace Bit.Client.Web.BlazorUI
         /// The position of the label in regards to the spin button
         /// </summary>
         [Parameter]
-        public LabelPosition LabelPosition
+        public BitSpinButtonLabelPosition LabelPosition
         {
             get => labelPosition;
             set
@@ -154,12 +154,12 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// Custom icon name for the decrement button
         /// </summary>
-        [Parameter] public string DecrementButtonIcon { get; set; } = "ChevronDownSmall";
+        [Parameter] public string DecrementButtonIconName { get; set; } = "ChevronDownSmall";
 
         /// <summary>
         /// Custom icon name for the increment button
         /// </summary>
-        [Parameter] public string IncrementButtonIcon { get; set; } = "ChevronUpSmall";
+        [Parameter] public string IncrementButtonIconName { get; set; } = "ChevronUpSmall";
 
         /// <summary>
         /// A more descriptive title for the control, visible on its tooltip
@@ -169,13 +169,13 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// How many decimal places the value should be rounded to
         /// </summary>
-        [Parameter] public int Precision { get; set; } = 1;
+        [Parameter] public int? Precision { get; set; }
 
         /// <summary>
         /// Additional props for the input field
         /// </summary>
         [Parameter]
-        public Dictionary<string, object> InputProps { get; set; } = new Dictionary<string, object>();
+        public Dictionary<string, object>? InputHtmlAttributes { get; set; }
 
         protected async override Task OnInitializedAsync()
         {
@@ -192,7 +192,7 @@ namespace Bit.Client.Web.BlazorUI
 
         protected override void RegisterComponentClasses()
         {
-            ClassBuilder.Register(() => LabelPosition == LabelPosition.Left
+            ClassBuilder.Register(() => LabelPosition == BitSpinButtonLabelPosition.Left
                                                 ? $"{RootElementClass}-label-left-{VisualClassRegistrar()}"
                                                 : $"{RootElementClass}-label-top-{VisualClassRegistrar()}");
         }
@@ -210,7 +210,7 @@ namespace Bit.Client.Web.BlazorUI
             intermediateValue = e.Value?.ToString();
         }
 
-        protected virtual async Task HandleButtonClick(SpinButtonAction action, MouseEventArgs e)
+        protected virtual async Task HandleButtonClick(BitSpinButtonAction action, MouseEventArgs e)
         {
             if (IsEnabled is false) return;
             if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
@@ -220,10 +220,10 @@ namespace Bit.Client.Web.BlazorUI
 
             switch (action)
             {
-                case SpinButtonAction.Up:
+                case BitSpinButtonAction.Up:
                     if (OnIncrement.HasDelegate is true)
                     {
-                        var args = new BitSpinButtonEventArgs();
+                        var args = new BitSpinButtonChangeEventArgs();
                         args.Value = Value;
                         args.MouseEventArgs = e;
                         await OnIncrement.InvokeAsync(args);
@@ -234,10 +234,10 @@ namespace Bit.Client.Web.BlazorUI
                     isValid = result <= Max && result >= Min;
                     break;
 
-                case SpinButtonAction.Down:
+                case BitSpinButtonAction.Down:
                     if (OnDecrement.HasDelegate is true)
                     {
-                        var args = new BitSpinButtonEventArgs();
+                        var args = new BitSpinButtonChangeEventArgs();
                         args.Value = Value;
                         args.MouseEventArgs = e;
                         await OnDecrement.InvokeAsync(args);
@@ -270,7 +270,7 @@ namespace Bit.Client.Web.BlazorUI
                 case "ArrowUp":
                     if (OnIncrement.HasDelegate is true)
                     {
-                        var args = new BitSpinButtonEventArgs();
+                        var args = new BitSpinButtonChangeEventArgs();
                         args.Value = Value;
                         args.KeyboardEventArgs = e;
                         await OnIncrement.InvokeAsync(args);
@@ -284,7 +284,7 @@ namespace Bit.Client.Web.BlazorUI
                 case "ArrowDown":
                     if (OnDecrement.HasDelegate is true)
                     {
-                        var args = new BitSpinButtonEventArgs();
+                        var args = new BitSpinButtonChangeEventArgs();
                         args.Value = Value;
                         args.KeyboardEventArgs = e;
                         await OnDecrement.InvokeAsync(args);
@@ -354,9 +354,29 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
-        private bool IsStepDecimal => Step % 1 != 0;
+        private int CalculatePrecision(double value)
+        {
+            var regex = new Regex(@"[1-9]([0]+$)|\.([0-9]*)");
+            if (regex.IsMatch(Value.ToString()) is false) return 0;
 
-        private double Normalize(double value) => IsStepDecimal ? Math.Round(value, 2) : value;
+            var matches = regex.Matches(value.ToString());
+            if (matches.Count == 0) return 0;
+
+            var groups = matches[0].Groups;
+            if (groups[1] != null && groups[1].Length != 0)
+            {
+                return -groups[1].Length;
+            }
+
+            if (groups[2] != null && groups[2].Length != 0)
+            {
+                return groups[2].Length;
+            }
+
+            return 0;
+        }
+
+        private double Normalize(double value) => Math.Round(value, 2);
 
         private double? ariaValueNow => AriaValueNow is not null ? AriaValueNow : Suffix.HasNoValue() ? Value : null;
         private string? ariaValueText => AriaValueText.HasValue() ? AriaValueText : Suffix.HasValue() ? $"{Normalize(Value)}{Suffix}" : null;

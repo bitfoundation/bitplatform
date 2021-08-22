@@ -1,5 +1,4 @@
-﻿@using Bit.Client.Web.BlazorUI.Components.SpinButtons
-@namespace Bit.Client.Web.BlazorUI
+﻿@namespace Bit.Client.Web.BlazorUI
 @inherits BitComponentBase
 
 <div @ref="RootElement"
@@ -8,7 +7,7 @@
      class="@ClassBuilder.Value">
     @if (IconName.HasValue() || Label.HasValue())
     {
-        <div class="bit-spb-label-wrapper">
+        <div class="bit-spb-lbl-wrapper">
             @if (IconName.HasValue())
             {
                 <i class="bit-icon bit-icon--@IconName bit-icon--l"
@@ -21,7 +20,7 @@
         </div>
     }
 
-    <div class="bit-spb-spin-button-wrapper"
+    <div class="bit-spb-wrapper"
          title="@Title"
          aria-label="@AriaLabel"
          aria-setsize="@AriaSetSize"
@@ -42,8 +41,9 @@
                @onfocus="e => HandleFocus(e)"
                @onblur="e => HandleBlur(e)"
                @oninput="e => HandleChange(e)"
+               @onchange="e => HandleChange(e)"
                @onkeydown="e => HandleKeyDown(e)"
-               @attributes="@InputProps" />
+               @attributes="@InputHtmlAttributes" />
         <span>
             <button type="button"
                     disabled="@(IsEnabled is false)"
@@ -51,9 +51,9 @@
                     date-is-focusable="false"
                     tabindex="-1"
                     aria-label="@IncrementButtonAriaLabel"
-                    @onclick="e => HandleButtonClick(SpinButtonAction.Up, e)">
+                    @onclick="e => HandleButtonClick(BitSpinButtonAction.Up, e)">
                 <span>
-                    <i class="bit-icon bit-icon--@IncrementButtonIcon bit-icon--s"></i>
+                    <i class="bit-icon bit-icon--@IncrementButtonIconName bit-icon--s"></i>
                 </span>
             </button>
 
@@ -63,9 +63,9 @@
                     date-is-focusable="false"
                     tabindex="-1"
                     aria-label="@DecrementButtonAriaLabel"
-                    @onclick="e => HandleButtonClick(SpinButtonAction.Down, e)">
+                    @onclick="e => HandleButtonClick(BitSpinButtonAction.Down, e)">
                 <span>
-                    <i class="bit-icon bit-icon--@DecrementButtonIcon bit-icon--s"></i>
+                    <i class="bit-icon bit-icon--@DecrementButtonIconName bit-icon--s"></i>
                 </span>
             </button>
         </span>
