@@ -12,6 +12,15 @@ namespace Bit.Client.Web.BlazorUI
         private double inputValue;
         private BitSpinButtonLabelPosition labelPosition = BitSpinButtonLabelPosition.Left;
         private bool ValueHasBeenSet;
+        private double Normalize(double value) => Math.Round(value, precision);
+        private double? ariaValueNow => AriaValueNow is not null ? AriaValueNow : Suffix.HasNoValue() ? Value : null;
+        private string? ariaValueText => AriaValueText.HasValue() ? AriaValueText : Suffix.HasValue() ? $"{Normalize(Value)}{Suffix}" : null;
+        private string inputId { get; set; } = $"input{Guid.NewGuid()}";
+        private string labelId => Label.HasValue() ? $"label{Guid.NewGuid()}" : String.Empty;
+        private string intermediateValue { get; set; } = String.Empty;
+        private int precision { get; set; }
+        private double min { get; set; }
+        private double max { get; set; }
 
         /// <summary>
         /// Detailed description of the input for the benefit of screen readers
@@ -203,15 +212,9 @@ namespace Bit.Client.Web.BlazorUI
         protected virtual void HandleChange(ChangeEventArgs e)
         {
             if (IsEnabled is false) return;
-            if (ValueHasBeenSet && ValueChanged.HasDelegate is false)
-            {
-                //update input field value
-                //intermediateValue = $"{Value}";
-                StateHasChanged();
-                return;
-            }
+            if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
 
-            intermediateValue = e.Value?.ToString();
+            intermediateValue = $"{e.Value}";
         }
 
         protected virtual async Task HandleButtonClick(BitSpinButtonAction action, MouseEventArgs e)
@@ -225,29 +228,11 @@ namespace Bit.Client.Web.BlazorUI
             switch (action)
             {
                 case BitSpinButtonAction.Increment:
-                    if (OnIncrement.HasDelegate is true)
-                    {
-                        var args = new BitSpinButtonChangeEventArgs();
-                        args.Value = Value;
-                        args.MouseEventArgs = e;
-                        await OnIncrement.InvokeAsync(args);
-                        break;
-                    }
-
                     result = Value + Step;
                     isValid = result <= max && result >= min;
                     break;
 
                 case BitSpinButtonAction.Decrement:
-                    if (OnDecrement.HasDelegate is true)
-                    {
-                        var args = new BitSpinButtonChangeEventArgs();
-                        args.Value = Value;
-                        args.MouseEventArgs = e;
-                        await OnDecrement.InvokeAsync(args);
-                        break;
-                    }
-
                     result = Value - Step;
                     isValid = result <= max && result >= min;
                     break;
@@ -257,8 +242,25 @@ namespace Bit.Client.Web.BlazorUI
             }
 
             if (isValid is false) return;
+
             Value = Normalize(result);
+            intermediateValue = $"{Value}";
             await OnChange.InvokeAsync(Value);
+            if (action is BitSpinButtonAction.Increment && OnIncrement.HasDelegate is true)
+            {
+                var args = new BitSpinButtonChangeEventArgs();
+                args.Value = Value;
+                args.MouseEventArgs = e;
+                await OnIncrement.InvokeAsync(args);
+            }
+
+            if (action is BitSpinButtonAction.Decrement && OnDecrement.HasDelegate is true)
+            {
+                var args = new BitSpinButtonChangeEventArgs();
+                args.Value = Value;
+                args.MouseEventArgs = e;
+                await OnDecrement.InvokeAsync(args);
+            }
         }
 
         protected virtual async Task HandleKeyDown(KeyboardEventArgs e)
@@ -272,35 +274,17 @@ namespace Bit.Client.Web.BlazorUI
             switch (e.Key)
             {
                 case "ArrowUp":
-                    if (OnIncrement.HasDelegate is true)
-                    {
-                        var args = new BitSpinButtonChangeEventArgs();
-                        args.Value = Value;
-                        args.KeyboardEventArgs = e;
-                        await OnIncrement.InvokeAsync(args);
-                        break;
-                    }
-
                     result = Value + Step;
                     isValid = result <= max && result >= min;
                     break;
 
                 case "ArrowDown":
-                    if (OnDecrement.HasDelegate is true)
-                    {
-                        var args = new BitSpinButtonChangeEventArgs();
-                        args.Value = Value;
-                        args.KeyboardEventArgs = e;
-                        await OnDecrement.InvokeAsync(args);
-                        break;
-                    }
-
                     result = Value - Step;
                     isValid = result <= max && result >= min;
                     break;
 
                 case "Enter":
-                    if (intermediateValue == Value.ToString()) break;
+                    if (intermediateValue == $"{Value}") break;
 
                     var isNumber = double.TryParse(intermediateValue, out var numericValue);
                     if (isNumber)
@@ -312,10 +296,10 @@ namespace Bit.Client.Web.BlazorUI
                     }
                     else
                     {
-                        //update input field value
+                        await Task.Delay(1);
+                        intermediateValue = $"{Value}";
+                        StateHasChanged();
                     }
-
-                    intermediateValue = Value.ToString();
                     break;
 
                 default:
@@ -323,8 +307,25 @@ namespace Bit.Client.Web.BlazorUI
             }
 
             if (isValid is false) return;
+
             Value = Normalize(result);
+            intermediateValue = $"{Value}";
             await OnChange.InvokeAsync(Value);
+            if (e.Key is "ArrowUp" && OnIncrement.HasDelegate is true)
+            {
+                var args = new BitSpinButtonChangeEventArgs();
+                args.Value = Value;
+                args.KeyboardEventArgs = e;
+                await OnIncrement.InvokeAsync(args);
+            }
+
+            if (e.Key is "ArrowDown" && OnDecrement.HasDelegate is true)
+            {
+                var args = new BitSpinButtonChangeEventArgs();
+                args.Value = Value;
+                args.KeyboardEventArgs = e;
+                await OnDecrement.InvokeAsync(args);
+            }
         }
 
         protected virtual async Task HandleBlur(FocusEventArgs e)
@@ -332,7 +333,7 @@ namespace Bit.Client.Web.BlazorUI
             if (IsEnabled is false) return;
             if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
 
-            if (intermediateValue == Value.ToString()) return;
+            if (intermediateValue == $"{Value}") return;
 
             var isNumber = double.TryParse(intermediateValue, out var numericValue);
             if (isNumber)
@@ -345,8 +346,8 @@ namespace Bit.Client.Web.BlazorUI
             }
             else
             {
-                //update input field value
-                intermediateValue = Value.ToString();
+                intermediateValue = $"{Value}";
+                StateHasChanged();
             }
         }
 
@@ -379,16 +380,5 @@ namespace Bit.Client.Web.BlazorUI
 
             return 0;
         }
-
-        private double Normalize(double value) => Math.Round(value, precision);
-        private double? ariaValueNow => AriaValueNow is not null ? AriaValueNow : Suffix.HasNoValue() ? Value : null;
-        private string? ariaValueText => AriaValueText.HasValue() ? AriaValueText : Suffix.HasValue() ? $"{Normalize(Value)}{Suffix}" : null;
-        private string intermediateValue { get; set; } = String.Empty;
-        private string inputId { get; set; } = $"input{Guid.NewGuid()}";
-        private string labelId => Label.HasValue() ? $"label{Guid.NewGuid()}" : String.Empty;
-        private int precision { get; set; }
-        private double min { get; set; }
-        private double max { get; set; }
-        //private double value { get; set; }
     }
 }

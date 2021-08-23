@@ -25,7 +25,7 @@
          aria-label="@AriaLabel"
          aria-setsize="@AriaSetSize"
          aria-posinset="@AriaPositionInSet">
-        <input value="@($"{Value}{Suffix}")"
+        <input value="@($"{intermediateValue}{Suffix}")"
                id="@inputId"
                type="text"
                autocomplete="off"
@@ -37,7 +37,7 @@
                aria-valuemax="@Max"
                aria-describedby="@AriaDescription"
                aria-disabled="@(IsEnabled is false)"
-               disabled="@(IsEnabled is false)"
+               disabled="@(IsEnabled is false || (ValueHasBeenSet && ValueChanged.HasDelegate is false))"
                @onfocus="e => HandleFocus(e)"
                @onblur="e => HandleBlur(e)"
                @oninput="e => HandleChange(e)"
