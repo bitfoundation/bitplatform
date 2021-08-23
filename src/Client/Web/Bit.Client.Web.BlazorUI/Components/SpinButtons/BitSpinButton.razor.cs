@@ -127,6 +127,8 @@ namespace Bit.Client.Web.BlazorUI
         /// </summary>
         [Parameter] public string Label { get; set; } = string.Empty;
 
+        [Parameter] public RenderFragment? LabelFragment { get; set; }
+
         /// <summary>
         /// Icon name for an icon to display alongside the spin button's label
         /// </summary>

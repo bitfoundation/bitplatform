@@ -15,9 +15,14 @@
                    role="@GetIconRole"
                    aria-label="@IconAriaLabel"></i>
             }
+
             @if (Label.HasValue())
             {
                 <label id="@GetLabelId" for="@InputId">@Label</label>
+            }
+            else if (LabelFragment != null)
+            {
+                <span>@LabelFragment</span>
             }
         </div>
     }
