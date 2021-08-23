@@ -2,7 +2,7 @@
 {
     public enum BitSpinButtonAction
     {
-        Up,
-        Down
+        Increment,
+        Decrement
     }
 }

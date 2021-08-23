@@ -206,6 +206,7 @@ namespace Bit.Client.Web.BlazorUI
             if (ValueHasBeenSet && ValueChanged.HasDelegate is false)
             {
                 //update input field value
+                //intermediateValue = $"{Value}";
                 StateHasChanged();
                 return;
             }
@@ -223,7 +224,7 @@ namespace Bit.Client.Web.BlazorUI
 
             switch (action)
             {
-                case BitSpinButtonAction.Up:
+                case BitSpinButtonAction.Increment:
                     if (OnIncrement.HasDelegate is true)
                     {
                         var args = new BitSpinButtonChangeEventArgs();
@@ -237,7 +238,7 @@ namespace Bit.Client.Web.BlazorUI
                     isValid = result <= max && result >= min;
                     break;
 
-                case BitSpinButtonAction.Down:
+                case BitSpinButtonAction.Decrement:
                     if (OnDecrement.HasDelegate is true)
                     {
                         var args = new BitSpinButtonChangeEventArgs();
@@ -388,5 +389,6 @@ namespace Bit.Client.Web.BlazorUI
         private int precision { get; set; }
         private double min { get; set; }
         private double max { get; set; }
+        //private double value { get; set; }
     }
 }
