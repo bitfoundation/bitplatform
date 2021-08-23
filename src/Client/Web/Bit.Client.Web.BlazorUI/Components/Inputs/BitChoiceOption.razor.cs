@@ -10,6 +10,7 @@ namespace Bit.Client.Web.BlazorUI
     public partial class BitChoiceOption : IDisposable
     {
         private bool isChecked;
+        private string? imageSizeStyle;
 
         /// <summary>
         /// A required key to uniquely identify the option.
@@ -95,13 +96,24 @@ namespace Bit.Client.Web.BlazorUI
             return base.OnInitializedAsync();
         }
 
+        protected override Task OnParametersSetAsync()
+        {
+            if (ImageSize is not null)
+            {
+                imageSizeStyle = $" width:{ImageSize?.Width}px; height:{ImageSize?.Height}px;";
+            }
+            return base.OnParametersSetAsync();
+        }
+
         protected override string RootElementClass => "bit-cho";
 
         protected override void RegisterComponentClasses()
         {
-            ClassBuilder.Register(() => IsChecked is false
-                ? string.Empty
-                : $"{RootElementClass}-checked-{VisualClassRegistrar()}");
+            ClassBuilder.Register(() => IsChecked
+                                        ? $"{RootElementClass}-checked-{VisualClassRegistrar()}" : string.Empty);
+
+            ClassBuilder.Register(() => ImageSrc.HasValue()
+                                        ? $"{RootElementClass}-image-{VisualClassRegistrar()}" : string.Empty);
         }
 
         protected virtual async Task HandleClick(MouseEventArgs e)

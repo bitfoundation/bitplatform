@@ -12,9 +12,31 @@
            hidden
            @onclick="@HandleClick"
            @onchange="@HandleChange" />
+
     <label for="@UniqueId">
-        <span>
-            @Text
-        </span>
+        @if (ImageSrc.HasValue())
+        {
+            <div>
+                <div class="@(IsChecked?"image-wrapper-is-hidden":string.Empty)">
+                    <div style="@imageSizeStyle">
+                        <img src="@ImageSrc" alt="@ImageAlt">
+                    </div>
+                </div>
+                <div class="@(!IsChecked?"image-wrapper-is-hidden":string.Empty)">
+                    <div style="@imageSizeStyle">
+                        <img src="@SelectedImageSrc" alt="@ImageAlt">
+                    </div>
+                </div>
+            </div>
+            <div>
+                <span>@Text</span>
+            </div>
+        }
+        else
+        {
+            <span>
+                @Text
+            </span>
+        }
     </label>
 </div>
