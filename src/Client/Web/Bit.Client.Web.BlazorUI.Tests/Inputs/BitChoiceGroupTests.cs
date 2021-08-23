@@ -62,6 +62,41 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
             Assert.AreEqual(optionName, bitChoiceOption.FirstElementChild.GetAttribute("name"));
         }
 
+
+        [DataTestMethod, DataRow("this is label")]
+        public void BitChoiceGroupShouldTakeLabel(string label)
+        {
+            var component = RenderComponent<BitChoiceGroupTest>(
+                parameters =>
+                {
+                    parameters.Add(p => p.Label, label);
+                });
+
+            var bitChoiceGroupLabel = component.Find(".bit-chg > label");
+
+            Assert.AreEqual(label, bitChoiceGroupLabel.TextContent);
+        }
+
+        [DataTestMethod,
+            DataRow(true),
+            DataRow(false)
+        ]
+        public void BitChoiceGroupShouldRespectIsRequired(bool isRequired)
+        {
+            var component = RenderComponent<BitChoiceGroupTest>(
+                parameters =>
+                {
+                    parameters.Add(p => p.IsRequired, isRequired);
+                });
+
+            var bitChoiceGroup = component.Find(".bit-chg");
+            var input = component.Find(".bit-cho input");
+
+            Assert.AreEqual(isRequired, bitChoiceGroup.ClassList.Contains("bit-chg-required-fluent"));
+
+            Assert.AreEqual(isRequired, input.HasAttribute("required"));
+        }
+
         [DataTestMethod,
            DataRow(true, "value1"),
            DataRow(false, "value2")

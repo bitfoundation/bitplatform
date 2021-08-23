@@ -1,0 +1,31 @@
+﻿<CascadingValue Value="Visual">
+    <BitDatePicker IsEnabled="IsEnabled"
+                   CalendarType="CalendarType"
+                   Placeholder="@Placeholder"
+                   GoToToday="@GoToToday"
+                   IsOpen="IsOpen"
+                   OnClick="HandleClick"
+                   OnDateChoose="HandleSelectDate">
+
+    </BitDatePicker>
+</CascadingValue>
+@code {
+    [Parameter] public Visual Visual { get; set; }
+    [Parameter] public bool IsEnabled { get; set; }
+    [Parameter] public CalendarType CalendarType { get; set; }
+    [Parameter] public string Placeholder { get; set; }
+    [Parameter] public string GoToToday { get; set; }
+    [Parameter] public bool IsOpen { get; set; }
+
+    public int ClickedValue { get; set; }
+    public int SelectedDateValue { get; set; }
+
+    public void HandleClick(MouseEventArgs e)
+    {
+        ClickedValue++;
+    }
+    public void HandleSelectDate(string value)
+    {
+        SelectedDateValue++;
+    }
+}
