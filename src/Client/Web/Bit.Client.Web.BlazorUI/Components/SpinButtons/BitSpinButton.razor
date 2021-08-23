@@ -11,7 +11,9 @@
             @if (IconName.HasValue())
             {
                 <i class="bit-icon bit-icon--@IconName bit-icon--l"
-                   aria-hidden="true"></i>
+                   aria-hidden="true"
+                   role="@iconRole"
+                   aria-label="@IconAriaLabel"></i>
             }
             @if (Label.HasValue())
             {

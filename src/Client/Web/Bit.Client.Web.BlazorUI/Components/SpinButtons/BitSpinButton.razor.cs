@@ -21,6 +21,7 @@ namespace Bit.Client.Web.BlazorUI
         private int precision { get; set; }
         private double min { get; set; }
         private double max { get; set; }
+        private string? iconRole => IconAriaLabel.HasValue() ? "img" : null;
 
         /// <summary>
         /// Detailed description of the input for the benefit of screen readers
@@ -135,6 +136,11 @@ namespace Bit.Client.Web.BlazorUI
         /// Icon name for an icon to display alongside the spin button's label
         /// </summary>
         [Parameter] public string IconName { get; set; } = string.Empty;
+
+        /// <summary>
+        /// The aria label of the icon for the benefit of screen readers
+        /// </summary>
+        [Parameter] public string IconAriaLabel { get; set; } = string.Empty;
 
         /// <summary>
         /// The position of the label in regards to the spin button
