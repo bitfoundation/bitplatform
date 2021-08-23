@@ -13,7 +13,17 @@ namespace Bit.Owin
 {
     public class AspNetCoreAppStartup
     {
-        public virtual void Configure(IApplicationBuilder aspNetCoreApp, OwinAppStartup owinAppStartup, IEnumerable<IAspNetCoreMiddlewareConfiguration> aspNetCoreMiddlewares, IServiceProvider serviceProvider, IPathProvider pathProvider)
+        public virtual void ConfigureServices(IServiceCollection services)
+        {
+
+        }
+
+        public virtual void ConfigureMiddlewares(IApplicationBuilder aspNetCoreApp)
+        {
+
+        }
+
+        public void Configure(IApplicationBuilder aspNetCoreApp, OwinAppStartup owinAppStartup, IEnumerable<IAspNetCoreMiddlewareConfiguration> aspNetCoreMiddlewares, IServiceProvider serviceProvider, IPathProvider pathProvider)
         {
             IWebHostEnvironment webHostEnvironment = serviceProvider.GetService<IWebHostEnvironment>();
 
@@ -29,7 +39,7 @@ namespace Bit.Owin
             ConfigureBitAspNetCoreApp(aspNetCoreApp, owinAppStartup, aspNetCoreMiddlewares);
         }
 
-        public virtual void ConfigureBitAspNetCoreApp(IApplicationBuilder aspNetCoreApp, OwinAppStartup owinAppStartup, IEnumerable<IAspNetCoreMiddlewareConfiguration> aspNetCoreMiddlewares)
+        public void ConfigureBitAspNetCoreApp(IApplicationBuilder aspNetCoreApp, OwinAppStartup owinAppStartup, IEnumerable<IAspNetCoreMiddlewareConfiguration> aspNetCoreMiddlewares)
         {
             if (owinAppStartup == null)
                 throw new ArgumentNullException(nameof(owinAppStartup));
@@ -38,6 +48,8 @@ namespace Bit.Owin
                 .Where(m => m.MiddlewarePosition == MiddlewarePosition.BeforeOwinMiddlewares)
                 .ToList()
                 .ForEach(aspNetCoreMiddleware => aspNetCoreMiddleware.Configure(aspNetCoreApp));
+
+            ConfigureMiddlewares(aspNetCoreApp);
 
             aspNetCoreApp.UseOwinApp(owinAppStartup.Configuration);
 

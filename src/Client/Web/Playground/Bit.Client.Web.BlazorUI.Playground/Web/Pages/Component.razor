@@ -735,9 +735,7 @@
         </RowTemplate>
     </BitBasicList>
 </div>
-
 <hr />
-
 <div class="choice-container">
     <h2>BitChoiceGroup & BitChoiceOption</h2>
     <br />
@@ -818,4 +816,15 @@
     <BitColorPicker @bind-Color="SelectedColor"></BitColorPicker>
 
     @SelectedColor
-</div>*@
+</div>
+<hr />
+<div class="date-picker-container">
+    <h3>Date picker</h3>
+    <BitDatePicker></BitDatePicker>
+
+    <h3>Date picker disabled</h3>
+    <BitDatePicker IsEnabled="false"></BitDatePicker>
+
+    <h3>Shamsi Date picker</h3>
+    <BitDatePicker CalendarType="CalendarType.Persian"></BitDatePicker>
+</div>
