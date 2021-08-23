@@ -11,17 +11,12 @@ namespace Bit.Client.Web.BlazorUI
     {
         private double inputValue;
         private BitSpinButtonLabelPosition labelPosition = BitSpinButtonLabelPosition.Left;
+        private int precision;
+        private double min;
+        private double max;
+        private string InputId = $"input{Guid.NewGuid()}";
+        private string IntermediateValue = String.Empty;
         private bool ValueHasBeenSet;
-        private double Normalize(double value) => Math.Round(value, precision);
-        private double? ariaValueNow => AriaValueNow is not null ? AriaValueNow : Suffix.HasNoValue() ? Value : null;
-        private string? ariaValueText => AriaValueText.HasValue() ? AriaValueText : Suffix.HasValue() ? $"{Normalize(Value)}{Suffix}" : null;
-        private string inputId { get; set; } = $"input{Guid.NewGuid()}";
-        private string labelId => Label.HasValue() ? $"label{Guid.NewGuid()}" : String.Empty;
-        private string intermediateValue { get; set; } = String.Empty;
-        private int precision { get; set; }
-        private double min { get; set; }
-        private double max { get; set; }
-        private string? iconRole => IconAriaLabel.HasValue() ? "img" : null;
 
         /// <summary>
         /// Detailed description of the input for the benefit of screen readers
@@ -192,6 +187,15 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter]
         public Dictionary<string, object>? InputHtmlAttributes { get; set; }
 
+        protected override string RootElementClass => "bit-spb";
+
+        protected override void RegisterComponentClasses()
+        {
+            ClassBuilder.Register(() => LabelPosition == BitSpinButtonLabelPosition.Left
+                                                ? $"{RootElementClass}-label-left-{VisualClassRegistrar()}"
+                                                : $"{RootElementClass}-label-top-{VisualClassRegistrar()}");
+        }
+
         protected async override Task OnInitializedAsync()
         {
             min = Min is not null ? Min.Value : double.MinValue;
@@ -202,17 +206,8 @@ namespace Bit.Client.Web.BlazorUI
                 Value = DefaultValue ?? Math.Min(0, min);
             }
 
-            intermediateValue = $"{Value}";
+            IntermediateValue = $"{Value}";
             await base.OnInitializedAsync();
-        }
-
-        protected override string RootElementClass => "bit-spb";
-
-        protected override void RegisterComponentClasses()
-        {
-            ClassBuilder.Register(() => LabelPosition == BitSpinButtonLabelPosition.Left
-                                                ? $"{RootElementClass}-label-left-{VisualClassRegistrar()}"
-                                                : $"{RootElementClass}-label-top-{VisualClassRegistrar()}");
         }
 
         protected virtual void HandleChange(ChangeEventArgs e)
@@ -220,7 +215,7 @@ namespace Bit.Client.Web.BlazorUI
             if (IsEnabled is false) return;
             if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
 
-            intermediateValue = $"{e.Value}";
+            IntermediateValue = $"{e.Value}";
         }
 
         protected virtual async Task HandleButtonClick(BitSpinButtonAction action, MouseEventArgs e)
@@ -250,7 +245,7 @@ namespace Bit.Client.Web.BlazorUI
             if (isValid is false) return;
 
             Value = Normalize(result);
-            intermediateValue = $"{Value}";
+            IntermediateValue = $"{Value}";
             await OnChange.InvokeAsync(Value);
             if (action is BitSpinButtonAction.Increment && OnIncrement.HasDelegate is true)
             {
@@ -290,9 +285,9 @@ namespace Bit.Client.Web.BlazorUI
                     break;
 
                 case "Enter":
-                    if (intermediateValue == $"{Value}") break;
+                    if (IntermediateValue == $"{Value}") break;
 
-                    var isNumber = double.TryParse(intermediateValue, out var numericValue);
+                    var isNumber = double.TryParse(IntermediateValue, out var numericValue);
                     if (isNumber)
                     {
                         Value = Normalize(numericValue);
@@ -303,7 +298,7 @@ namespace Bit.Client.Web.BlazorUI
                     else
                     {
                         await Task.Delay(1);
-                        intermediateValue = $"{Value}";
+                        IntermediateValue = $"{Value}";
                         StateHasChanged();
                     }
                     break;
@@ -315,7 +310,7 @@ namespace Bit.Client.Web.BlazorUI
             if (isValid is false) return;
 
             Value = Normalize(result);
-            intermediateValue = $"{Value}";
+            IntermediateValue = $"{Value}";
             await OnChange.InvokeAsync(Value);
             if (e.Key is "ArrowUp" && OnIncrement.HasDelegate is true)
             {
@@ -339,9 +334,9 @@ namespace Bit.Client.Web.BlazorUI
             if (IsEnabled is false) return;
             if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
 
-            if (intermediateValue == $"{Value}") return;
+            if (IntermediateValue == $"{Value}") return;
 
-            var isNumber = double.TryParse(intermediateValue, out var numericValue);
+            var isNumber = double.TryParse(IntermediateValue, out var numericValue);
             if (isNumber)
             {
                 Value = Normalize(numericValue);
@@ -352,7 +347,7 @@ namespace Bit.Client.Web.BlazorUI
             }
             else
             {
-                intermediateValue = $"{Value}";
+                IntermediateValue = $"{Value}";
                 StateHasChanged();
             }
         }
@@ -386,5 +381,11 @@ namespace Bit.Client.Web.BlazorUI
 
             return 0;
         }
+
+        private double Normalize(double value) => Math.Round(value, precision);
+        private double? GetAriaValueNow => AriaValueNow is not null ? AriaValueNow : Suffix.HasNoValue() ? Value : null;
+        private string? GetAriaValueText => AriaValueText.HasValue() ? AriaValueText : Suffix.HasValue() ? $"{Normalize(Value)}{Suffix}" : null;
+        private string? GetIconRole => IconAriaLabel.HasValue() ? "img" : null;
+        private string GetLabelId => Label.HasValue() ? $"label{Guid.NewGuid()}" : String.Empty;
     }
 }

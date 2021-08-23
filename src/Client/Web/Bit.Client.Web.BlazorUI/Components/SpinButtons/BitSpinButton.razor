@@ -12,12 +12,12 @@
             {
                 <i class="bit-icon bit-icon--@IconName bit-icon--l"
                    aria-hidden="true"
-                   role="@iconRole"
+                   role="@GetIconRole"
                    aria-label="@IconAriaLabel"></i>
             }
             @if (Label.HasValue())
             {
-                <label id="@labelId" for="@inputId">@Label</label>
+                <label id="@GetLabelId" for="@InputId">@Label</label>
             }
         </div>
     }
@@ -27,14 +27,14 @@
          aria-label="@AriaLabel"
          aria-setsize="@AriaSetSize"
          aria-posinset="@AriaPositionInSet">
-        <input value="@($"{intermediateValue}{Suffix}")"
-               id="@inputId"
+        <input value="@($"{IntermediateValue}{Suffix}")"
+               id="@InputId"
                type="text"
                autocomplete="off"
                role="spinbutton"
-               aria-labelledby="@labelId"
-               aria-valuenow="@ariaValueNow"
-               aria-valuetext="@ariaValueText"
+               aria-labelledby="@GetLabelId"
+               aria-valuenow="@GetAriaValueNow"
+               aria-valuetext="@GetAriaValueText"
                aria-valuemin="@Min"
                aria-valuemax="@Max"
                aria-describedby="@AriaDescription"
