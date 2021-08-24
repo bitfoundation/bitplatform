@@ -53,6 +53,16 @@ namespace Bit.Client.Web.BlazorUI
         public string? AriaValueText { get; set; }
 
         /// <summary>
+        /// Min value of the spin button. If not provided, the spin button has minimum value of double type
+        /// </summary>
+        [Parameter] public double? Min { get; set; }
+
+        /// <summary>
+        /// Max value of the spin button. If not provided, the spin button has max value of double type
+        /// </summary>
+        [Parameter] public double? Max { get; set; }
+
+        /// <summary>
         /// Current value of the spin button
         /// </summary>
         [Parameter]
@@ -63,6 +73,8 @@ namespace Bit.Client.Web.BlazorUI
             {
                 if (value == inputValue) return;
                 inputValue = value;
+                if (inputValue > max) inputValue = max;
+                if (inputValue < min) inputValue = min;
                 _ = ValueChanged.InvokeAsync(value);
             }
         }
@@ -96,16 +108,6 @@ namespace Bit.Client.Web.BlazorUI
         /// Callback for when the increment button or up arrow key is pressed
         /// </summary>
         [Parameter] public EventCallback<BitSpinButtonChangeEventArgs> OnIncrement { get; set; }
-
-        /// <summary>
-        /// Min value of the spin button. If not provided, the spin button has minimum value of double type
-        /// </summary>
-        [Parameter] public double? Min { get; set; }
-
-        /// <summary>
-        /// Max value of the spin button. If not provided, the spin button has max value of double type
-        /// </summary>
-        [Parameter] public double? Max { get; set; }
 
         /// <summary>
         /// Initial value of the spin button 
@@ -201,10 +203,17 @@ namespace Bit.Client.Web.BlazorUI
                                                 : $"{RootElementClass}-label-top-{VisualClassRegistrar()}");
         }
 
-        protected async override Task OnInitializedAsync()
+        protected async override Task OnParametersSetAsync()
         {
             min = Min is not null ? Min.Value : double.MinValue;
             max = Max is not null ? Max.Value : double.MaxValue;
+            if (min > max)
+            {
+                min = min + max;
+                max = min - max;
+                min = min - max;
+            }
+
             precision = Precision is not null ? Precision.Value : CalculatePrecision(Step);
             if (ValueHasBeenSet is false)
             {
@@ -244,7 +253,7 @@ namespace Bit.Client.Web.BlazorUI
                 });
             }
 
-            await base.OnInitializedAsync();
+            await base.OnParametersSetAsync();
         }
 
         protected virtual void HandleChange(ChangeEventArgs e)
@@ -300,8 +309,6 @@ namespace Bit.Client.Web.BlazorUI
                     if (isNumber)
                     {
                         Value = Normalize(numericValue);
-                        if (Value > max) Value = max;
-                        if (Value < min) Value = min;
                         await OnChange.InvokeAsync(Value);
                     }
                     else
@@ -344,8 +351,6 @@ namespace Bit.Client.Web.BlazorUI
             if (isNumber)
             {
                 Value = Normalize(numericValue);
-                if (Value > max) Value = max;
-                if (Value < min) Value = min;
                 IntermediateValue = $"{Value}";
                 await OnBlur.InvokeAsync(e);
                 await OnChange.InvokeAsync(Value);
