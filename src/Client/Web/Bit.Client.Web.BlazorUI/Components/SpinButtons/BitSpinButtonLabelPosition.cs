@@ -1,6 +1,6 @@
 ﻿namespace Bit.Client.Web.BlazorUI
 {
-    public enum LabelPosition
+    public enum BitSpinButtonLabelPosition
     {
         Top,
         Left,

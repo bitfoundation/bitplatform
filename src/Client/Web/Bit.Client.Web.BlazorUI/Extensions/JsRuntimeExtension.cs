@@ -16,6 +16,10 @@ namespace Microsoft.JSInterop
         {
             return await jsRuntime.InvokeAsync<string>("Bit.getProperty", element, property);
         }
+        public static async Task<int> GetClientHeight(this IJSRuntime jsRuntime, ElementReference element)
+        {
+            return await jsRuntime.InvokeAsync<int>("Bit.getClientHeight", element);
+        }
 
         public static async Task<BitFileInfo[]?> InitUploader(this IJSRuntime jsRuntime, ElementReference element, DotNetObjectReference<BitFileUpload>? dotnetObjectReference, Uri UploadAddress)
         {

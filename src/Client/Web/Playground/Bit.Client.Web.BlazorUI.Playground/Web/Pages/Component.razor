@@ -184,21 +184,23 @@
     <h2>BitSpinButton </h2>
 
     <h4># Basic SpinButton</h4>
-    <BitSpinButton @bind-Value="BasicSpinButtonValue" Min="0" Max="100" Step="1" Label="Basic SpinButton"></BitSpinButton>
+    <BitSpinButton DefaultValue="BasicSpinButtonValue" Min="0" Max="100" Step="1" Label="Basic SpinButton"></BitSpinButton>
     <BitSpinButton Min="-10" Max="10" Step="0.1" Label="Decimal SpinButton"></BitSpinButton>
-    <BitSpinButton @bind-Value="BasicSpinButtonDisableValue" Min="0" Max="100" Step="1" Label="Disabled SpinButton" IsEnabled="false"></BitSpinButton>
+    <BitSpinButton DefaultValue="BasicSpinButtonDisableValue" Min="0" Max="100" Step="1" Label="Disabled SpinButton" IsEnabled="false"></BitSpinButton>
+
     <h4># SpinButton with icon</h4>
     <BitSpinButton IconName="IncreaseIndentLegacy" Min="0" Max="100" Step="1" Label="With icon"></BitSpinButton>
     <BitSpinButton IconName="IncreaseIndentLegacy" Min="0" Max="100" Step="1" Label="Disabled with icon" IsEnabled="false"></BitSpinButton>
-    <h4># SpinButton with suffic</h4>
-    <BitSpinButton Suffix="Inch" Min="0" Max="100" Step="1" Label="With suffix"></BitSpinButton>
-
-    <h4># SpinButton with custom handler</h4>
-    <BitSpinButton @bind-Value="SpinButtonWithCustomHandlerValue" Min="0" Max="100" Step="1" Label="With custom handler" OnChange="@(e => HandleSpinButtonValueChange(e))"></BitSpinButton>
-    <p>value of spin button is: @SpinButtonWithCustomHandlerValue</p>
 
     <h4># SpinButton with label above</h4>
-    <BitSpinButton @bind-Value="SpinButtonWithLabelAboveValue" Suffix="cm" Min="0" Max="100" Step="1" Label="With labal above" LabelPosition="@LabelPosition.Top"></BitSpinButton>
+    <BitSpinButton DefaultValue="SpinButtonWithLabelAboveValue" Suffix=" cm" Min="0" Max="100" Step="1" Label="With labal above" LabelPosition="@BitSpinButtonLabelPosition.Top"></BitSpinButton>
+
+    <h4># SpinButton with suffix</h4>
+    <BitSpinButton Suffix=" Inch" Min="0" Max="100" Step="1" Label="With suffix"></BitSpinButton>
+
+    <h4># SpinButton with custom handler</h4>
+    <BitSpinButton DefaultValue="SpinButtonWithCustomHandlerValue" Min="0" Max="100" Step="1" Label="With custom handler" OnChange="@(e => HandleSpinButtonValueChange(e))"></BitSpinButton>
+    <p>value of spin button is: @SpinButtonWithCustomHandlerValue</p>
 </div>
 
 <hr />
@@ -816,6 +818,7 @@
     @SelectedColor
 </div>
 <hr />
+
 <div class="date-picker-container">
     <h3>Date picker</h3>
     <BitDatePicker></BitDatePicker>
@@ -825,4 +828,51 @@
 
     <h3>Shamsi Date picker</h3>
     <BitDatePicker CalendarType="CalendarType.Persian"></BitDatePicker>
+</div>
+<hr />
+
+<div class="slider-container">
+    <h2>BitSlider</h2>
+    <br />
+    <h3>
+        Horizontal sliders
+    </h3>
+    <div style="width: 300px;">
+        <BitSlider />
+        <BitSlider Label="Snapping slider example" Min="0" Max="50" Step="10" DefaultValue="20" />
+        <BitSlider Label="Disabled example" Min="50" Max="500" Step="50" DefaultValue="300" IsEnabled="false" />
+        <BitSlider Label="Controlled example" Max="10" @bind-Value="BitSliderHorizontalValue" />
+        <BitButton OnClick="() => BitSliderHorizontalValue = 8">Change Value</BitButton>
+        <BitSlider Label="Example with formatted value" Max="100" DefaultValue="31" ValueFormat="P00" />
+        <BitSlider Label="Example with formatted value" Max="1000" DefaultValue="319" ValueFormat="P01" />
+        <BitSlider Label="Origin from zero" Min="-5" Max="5" Step="1" DefaultValue="2" IsOriginFromZero="true" />
+    </div>
+
+    <h3>
+        Vertical sliders
+    </h3>
+    <div style="height: 250px; margin: 50px; display: flex; flex-flow: row nowrap;">
+        <BitSlider Label="Basic" Min="1" Max="5" Step="1" DefaultValue="2" IsVertical="true" />
+        <BitSlider Label="Disabled" Min="50" Max="500" Step="50" DefaultValue="300" IsVertical="true" />
+        <BitSlider Label="Controlled" @bind-Value="BitSliderVerticalValue" IsVertical="true" />
+        <BitSlider Label="Formatted value" Max="100" ValueFormat="P00" IsVertical="true" />
+        <BitSlider Label="Origin from zero" Min="-5" Max="15" Step="1" DefaultValue="5" IsVertical="true" IsOriginFromZero="true" />
+    </div>
+    <BitButton OnClick="() => BitSliderVerticalValue = 6">Change Value</BitButton>
+
+    <h3>
+        Ranged sliders
+    </h3>
+    <div style="width: 300px;">
+        <BitSlider Label="Range slider" Min="0" Max="10" DefaultUpperValue="8" DefaultLowerValue="2" IsRanged="true" />
+        <BitSlider Label="Disabled example" Min="50" Max="500" Step="50" DefaultUpperValue="300" IsRanged="true" IsEnabled="false" />
+        <BitSlider Label="Controlled example" Max="10" @bind-LowerValue="BitSliderRangedLowerValue" @bind-UpperValue="BitSliderRangedUpperValue" IsRanged="true" />
+        <BitButton OnClick="ChangeBitSliderRangedValues">Change Value</BitButton>
+        <BitSlider Label="Example with formatted value" Max="100" IsRanged="true" ValueFormat="P00" />
+        <BitSlider Label="Origin from zero" Min="-5" Max="5" Step="1" DefaultUpperValue="2" IsRanged="true" IsOriginFromZero="true" />
+    </div>
+
+    <div style="height: 500px; margin: 50px 0 0 50px; width: 150px; padding: 20px; display: flex;">
+        <BitSlider Label="Range slider vertical" Min="1" Max="5" Step="1" DefaultUpperValue="2" DefaultLowerValue="1" IsRanged="true" IsVertical="true" />
+    </div>
 </div>

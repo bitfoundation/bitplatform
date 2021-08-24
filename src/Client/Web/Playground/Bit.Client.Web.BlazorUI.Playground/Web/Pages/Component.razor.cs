@@ -326,6 +326,16 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
         }
 
         private string? TextValue;
+        private int? BitSliderHorizontalValue = 2;
+        private int? BitSliderVerticalValue = 0;
+        private int? BitSliderRangedLowerValue = 0;
+        private int? BitSliderRangedUpperValue = 0;
+
+        private void ChangeBitSliderRangedValues()
+        {
+            BitSliderRangedLowerValue = 2;
+            BitSliderRangedUpperValue = 9;
+        }
     }
 
     public class Person

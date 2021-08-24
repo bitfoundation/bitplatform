@@ -69,16 +69,16 @@ namespace Bit.Client.Web.BlazorUI.Tests.SpinButtons
         }
 
         [DataTestMethod,
-            DataRow(Visual.Fluent, LabelPosition.Left),
-            DataRow(Visual.Fluent, LabelPosition.Top),
+            DataRow(Visual.Fluent, BitSpinButtonLabelPosition.Left),
+            DataRow(Visual.Fluent, BitSpinButtonLabelPosition.Top),
 
-            DataRow(Visual.Cupertino, LabelPosition.Left),
-            DataRow(Visual.Cupertino, LabelPosition.Top),
+            DataRow(Visual.Cupertino, BitSpinButtonLabelPosition.Left),
+            DataRow(Visual.Cupertino, BitSpinButtonLabelPosition.Top),
 
-            DataRow(Visual.Material, LabelPosition.Left),
-            DataRow(Visual.Material, LabelPosition.Top),
+            DataRow(Visual.Material, BitSpinButtonLabelPosition.Left),
+            DataRow(Visual.Material, BitSpinButtonLabelPosition.Top),
             ]
-        public void SpinButtonShouldHaveLabelPositionClassName(Visual visual, LabelPosition labelPosition)
+        public void SpinButtonShouldHaveLabelPositionClassName(Visual visual, BitSpinButtonLabelPosition labelPosition)
         {
             var component = RenderComponent<BitSpinButtonTest>(parameters =>
             {
@@ -86,7 +86,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.SpinButtons
                 parameters.Add(p => p.LabelPosition, labelPosition);
             });
 
-            var labelPositionClass = labelPosition == LabelPosition.Left ? "left" : "top";
+            var labelPositionClass = labelPosition == BitSpinButtonLabelPosition.Left ? "left" : "top";
             var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
 
             var container = component.Find(".bit-spb");
