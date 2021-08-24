@@ -112,7 +112,7 @@ namespace Bit.Client.Web.BlazorUI
             ClassBuilder.Register(() => IsChecked
                                         ? $"{RootElementClass}-checked-{VisualClassRegistrar()}" : string.Empty);
 
-            ClassBuilder.Register(() => ImageSrc.HasValue()
+            ClassBuilder.Register(() => ImageSrc.HasValue() || IconName.HasValue()
                                         ? $"{RootElementClass}-image-{VisualClassRegistrar()}" : string.Empty);
         }
 

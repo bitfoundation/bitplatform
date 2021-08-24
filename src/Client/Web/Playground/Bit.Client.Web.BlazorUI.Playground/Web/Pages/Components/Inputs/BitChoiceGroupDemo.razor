@@ -70,8 +70,33 @@
             <BitPivotItem HeaderText="Example" IconName="ViewList">
                 <div>
                     <BitChoiceGroup Name="Group1">
-                        <BitChoiceOption Text="Option1" Value="1" ImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png" ImageAlt="alt for image Option 1" SelectedImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png" ImageSize="new System.Drawing.Size( width: 32, height: 32)"></BitChoiceOption>
-                        <BitChoiceOption Text="Option2" Value="2" ImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png" ImageAlt="alt for image Option 2" SelectedImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png" ImageSize="new System.Drawing.Size( width: 32, height: 32)"></BitChoiceOption>
+                        <BitChoiceOption Text="Clustered bar chart" Value="1" ImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png" ImageAlt="alt for image Option 1" SelectedImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png" ImageSize="new System.Drawing.Size( width: 32, height: 32)"></BitChoiceOption>
+                        <BitChoiceOption Text="Pie chart" Value="2" ImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png" ImageAlt="alt for image Option 2" SelectedImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png" ImageSize="new System.Drawing.Size( width: 32, height: 32)"></BitChoiceOption>
+                        <BitChoiceOption Text="Disabeled" IsEnabled="false" Value="2" ImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png" ImageAlt="alt for image Option 2" SelectedImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png" ImageSize="new System.Drawing.Size( width: 32, height: 32)"></BitChoiceOption>
+                    </BitChoiceGroup>
+                </div>
+            </BitPivotItem>
+            <BitPivotItem HeaderText="Code" IconName="Source">
+                <div>
+                    <p>&lt<span class="dark-green">BitChoiceGroup Name</span>="Group1"></p>
+                    <p class="p-l-20">&lt<span class="dark-green">BitChoiceOption Text</span>="Option1" <span class="dark-green">Value</span>="1">&lt/<span class="dark-green">BitChoiceOption</span>></p>
+                    <p class="p-l-20"> &lt<span class="dark-green">BitChoiceOption Text</span>="Option2" <span class="dark-green">Value</span>="2">&lt/<span class="dark-green">BitChoiceOption</span>></p>
+                    <p> &lt/<span class="dark-green">BitChoiceGroup</span>></p>
+                </div>
+            </BitPivotItem>
+        </BitPivot>
+    </div>
+
+    <div class="card">
+        <h3>ChoiceGroup with icons</h3>
+
+        <BitPivot>
+            <BitPivotItem HeaderText="Example" IconName="ViewList">
+                <div>
+                    <BitChoiceGroup Name="Group1">
+                        <BitChoiceOption Text="Day" Value="1" IconName="CalendarDay"></BitChoiceOption>
+                        <BitChoiceOption Text="Week" Value="2" IconName="CalendarWeek"></BitChoiceOption>
+                        <BitChoiceOption Text="Month" Value="2" IconName="Calendar" IsEnabled="false"></BitChoiceOption>
                     </BitChoiceGroup>
                 </div>
             </BitPivotItem>
@@ -86,6 +111,7 @@
             </BitPivotItem>
         </BitPivot>
     </div>
+
 </div>
 <h2>Implementation</h2>
 <div class="card">

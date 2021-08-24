@@ -128,7 +128,7 @@
                 all: unset;
             }
 
-            & > div:first-child {
+            & > div.bit-cho-img-wrpr {
                 /*this height width must taken from the child*/
                 height: 32px;
                 width: 32px;
@@ -162,7 +162,20 @@
                 }
             }
 
-            & > div:nth-child(2) {
+            & > div.bit-cho-icn-wrpr {
+                position: relative;
+                display: inline-block;
+                padding-left: 30px;
+                padding-right: 30px;
+
+                & > div {
+                    font-size: 32px;
+                    line-height: 32px;
+                    height: 32px;
+                }
+            }
+
+            & > div.bit-cho-lbl-wrpr {
                 -webkit-font-smoothing: antialiased;
                 font-size: 14px;
                 font-weight: 400;
@@ -265,22 +278,34 @@
 .bit-cho-disabled-fluent {
     label {
         cursor: default;
+        color: $Grey90;
 
-        &:before, &:hover:before {
-            border-color: $Grey60;
+        &:before, &:hover {
+            border-color: $Grey60 !important;
         }
 
         &:hover:after {
             all: unset;
         }
+    }
 
-        & > span {
-            color: $Grey90;
+    &.bit-cho-image-fluent {
+        & label {
+            &:hover {
+                border-color: transparent !important;
+                border-color: transparent;
+            }
+
+            &:hover:before {
+                border-color: transparent !important;
+                background-color: transparent;
+                transition-duration: unset;
+            }
         }
     }
 }
 
-.bit-cho-fluent .image-wrapper-is-hidden {
+.bit-cho-fluent-img-wrpr-is-hidden {
     position: absolute;
     width: 100%;
     height: 100%;
