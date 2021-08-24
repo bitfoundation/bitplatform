@@ -283,17 +283,16 @@ namespace Bit.Client.Web.BlazorUI
             if (IsEnabled is false) return;
             if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
 
-            if (e.Key == "ArrowUp")
-            {
-                await ChangeHandler.InvokeAsync(BitSpinButtonAction.Increment);
-            }
-            else if (e.Key == "ArrowDown")
-            {
-                await ChangeHandler.InvokeAsync(BitSpinButtonAction.Decrement);
-            }
-
             switch (e.Key)
             {
+                case "ArrowUp":
+                    await ChangeHandler.InvokeAsync(BitSpinButtonAction.Increment);
+                    break;
+
+                case "ArrowDown":
+                    await ChangeHandler.InvokeAsync(BitSpinButtonAction.Decrement);
+                    break;
+
                 case "Enter":
                     if (IntermediateValue == $"{Value}") break;
 
