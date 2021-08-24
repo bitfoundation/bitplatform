@@ -184,21 +184,23 @@
     <h2>BitSpinButton </h2>
 
     <h4># Basic SpinButton</h4>
-    <BitSpinButton @bind-Value="BasicSpinButtonValue" Min="0" Max="100" Step="1" Label="Basic SpinButton"></BitSpinButton>
+    <BitSpinButton DefaultValue="BasicSpinButtonValue" Min="0" Max="100" Step="1" Label="Basic SpinButton"></BitSpinButton>
     <BitSpinButton Min="-10" Max="10" Step="0.1" Label="Decimal SpinButton"></BitSpinButton>
-    <BitSpinButton @bind-Value="BasicSpinButtonDisableValue" Min="0" Max="100" Step="1" Label="Disabled SpinButton" IsEnabled="false"></BitSpinButton>
+    <BitSpinButton DefaultValue="BasicSpinButtonDisableValue" Min="0" Max="100" Step="1" Label="Disabled SpinButton" IsEnabled="false"></BitSpinButton>
+
     <h4># SpinButton with icon</h4>
     <BitSpinButton IconName="IncreaseIndentLegacy" Min="0" Max="100" Step="1" Label="With icon"></BitSpinButton>
     <BitSpinButton IconName="IncreaseIndentLegacy" Min="0" Max="100" Step="1" Label="Disabled with icon" IsEnabled="false"></BitSpinButton>
-    <h4># SpinButton with suffic</h4>
-    <BitSpinButton Suffix="Inch" Min="0" Max="100" Step="1" Label="With suffix"></BitSpinButton>
-
-    <h4># SpinButton with custom handler</h4>
-    <BitSpinButton @bind-Value="SpinButtonWithCustomHandlerValue" Min="0" Max="100" Step="1" Label="With custom handler" OnChange="@(e => HandleSpinButtonValueChange(e))"></BitSpinButton>
-    <p>value of spin button is: @SpinButtonWithCustomHandlerValue</p>
 
     <h4># SpinButton with label above</h4>
-    <BitSpinButton @bind-Value="SpinButtonWithLabelAboveValue" Suffix="cm" Min="0" Max="100" Step="1" Label="With labal above" LabelPosition="@LabelPosition.Top"></BitSpinButton>
+    <BitSpinButton DefaultValue="SpinButtonWithLabelAboveValue" Suffix=" cm" Min="0" Max="100" Step="1" Label="With labal above" LabelPosition="@BitSpinButtonLabelPosition.Top"></BitSpinButton>
+
+    <h4># SpinButton with suffix</h4>
+    <BitSpinButton Suffix=" Inch" Min="0" Max="100" Step="1" Label="With suffix"></BitSpinButton>
+
+    <h4># SpinButton with custom handler</h4>
+    <BitSpinButton DefaultValue="SpinButtonWithCustomHandlerValue" Min="0" Max="100" Step="1" Label="With custom handler" OnChange="@(e => HandleSpinButtonValueChange(e))"></BitSpinButton>
+    <p>value of spin button is: @SpinButtonWithCustomHandlerValue</p>
 </div>
 
 <hr />
