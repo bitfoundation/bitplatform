@@ -189,6 +189,9 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter]
         public Dictionary<string, object>? InputHtmlAttributes { get; set; }
 
+        [Parameter]
+        public EventCallback<BitSpinButtonAction> ChangeHandler { get; set; }
+
         protected override string RootElementClass => "bit-spb";
 
         protected override void RegisterComponentClasses()
@@ -209,6 +212,38 @@ namespace Bit.Client.Web.BlazorUI
             }
 
             IntermediateValue = $"{Value}";
+
+            if (ChangeHandler.HasDelegate is false)
+            {
+                ChangeHandler = EventCallback.Factory.Create(this, async (BitSpinButtonAction action) =>
+                {
+                    double result = 0;
+                    bool isValid = false;
+
+                    switch (action)
+                    {
+                        case BitSpinButtonAction.Increment:
+                            result = Value + Step;
+                            isValid = result <= max && result >= min;
+                            break;
+
+                        case BitSpinButtonAction.Decrement:
+                            result = Value - Step;
+                            isValid = result <= max && result >= min;
+                            break;
+
+                        default:
+                            break;
+                    }
+
+                    if (isValid is false) return;
+
+                    Value = Normalize(result);
+                    IntermediateValue = $"{Value}";
+                    await OnChange.InvokeAsync(Value);
+                });
+            }
+
             await base.OnInitializedAsync();
         }
 
@@ -225,30 +260,7 @@ namespace Bit.Client.Web.BlazorUI
             if (IsEnabled is false) return;
             if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
 
-            double result = 0;
-            bool isValid = false;
-
-            switch (action)
-            {
-                case BitSpinButtonAction.Increment:
-                    result = Value + Step;
-                    isValid = result <= max && result >= min;
-                    break;
-
-                case BitSpinButtonAction.Decrement:
-                    result = Value - Step;
-                    isValid = result <= max && result >= min;
-                    break;
-
-                default:
-                    break;
-            }
-
-            if (isValid is false) return;
-
-            Value = Normalize(result);
-            IntermediateValue = $"{Value}";
-            await OnChange.InvokeAsync(Value);
+            await ChangeHandler.InvokeAsync(action);
             if (action is BitSpinButtonAction.Increment && OnIncrement.HasDelegate is true)
             {
                 var args = new BitSpinButtonChangeEventArgs();
@@ -271,21 +283,17 @@ namespace Bit.Client.Web.BlazorUI
             if (IsEnabled is false) return;
             if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
 
-            double result = 0;
-            bool isValid = false;
+            if (e.Key == "ArrowUp")
+            {
+                await ChangeHandler.InvokeAsync(BitSpinButtonAction.Increment);
+            }
+            else if (e.Key == "ArrowDown")
+            {
+                await ChangeHandler.InvokeAsync(BitSpinButtonAction.Decrement);
+            }
 
             switch (e.Key)
             {
-                case "ArrowUp":
-                    result = Value + Step;
-                    isValid = result <= max && result >= min;
-                    break;
-
-                case "ArrowDown":
-                    result = Value - Step;
-                    isValid = result <= max && result >= min;
-                    break;
-
                 case "Enter":
                     if (IntermediateValue == $"{Value}") break;
 
@@ -309,11 +317,6 @@ namespace Bit.Client.Web.BlazorUI
                     break;
             }
 
-            if (isValid is false) return;
-
-            Value = Normalize(result);
-            IntermediateValue = $"{Value}";
-            await OnChange.InvokeAsync(Value);
             if (e.Key is "ArrowUp" && OnIncrement.HasDelegate is true)
             {
                 var args = new BitSpinButtonChangeEventArgs();
@@ -344,6 +347,7 @@ namespace Bit.Client.Web.BlazorUI
                 Value = Normalize(numericValue);
                 if (Value > max) Value = max;
                 if (Value < min) Value = min;
+                IntermediateValue = $"{Value}";
                 await OnBlur.InvokeAsync(e);
                 await OnChange.InvokeAsync(Value);
             }
