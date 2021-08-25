@@ -62,12 +62,12 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// URL of the server endpoint receiving the files.
         /// </summary>
-        [Parameter] public string UploadUrl { get; set; }
+        [Parameter] public string? UploadUrl { get; set; }
 
         /// <summary>
         /// URL of the server endpoint removing the files.
         /// </summary>
-        [Parameter] public string RemoveUrl { get; set; }
+        [Parameter] public string? RemoveUrl { get; set; }
 
         /// <summary>
         /// Custom label for Browse button

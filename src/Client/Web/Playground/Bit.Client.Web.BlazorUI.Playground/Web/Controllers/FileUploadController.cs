@@ -18,7 +18,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Api.Controllers
         
         public FileUploadController(IConfiguration Configuration)
         {
-            BasePath = $"{Configuration["UploadPath"]}";
+            BasePath = Configuration["UploadPath"];
         }
 
         [HttpGet]
