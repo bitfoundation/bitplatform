@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Bunit;
+using Microsoft.AspNetCore.Components;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.Client.Web.BlazorUI.Tests.SpinButtons
@@ -326,28 +327,76 @@ namespace Bit.Client.Web.BlazorUI.Tests.SpinButtons
             Assert.AreEqual(countOfFocus, component.Instance.OnFocusEventCounter);
         }
 
-        //[DataTestMethod,
-        //    DataRow(3, 1, 12),
-        //    DataRow(8, 2, 10),
-        //    DataRow(8, 1, 8),
-        //    DataRow(8, 2, 9)
-        //]
-        //public void SpinButtonIncreasementButtonTestClick(double value, double step, double max)
-        //{
-        //    var component = RenderComponent<BitSpinButtonTest>(parameters =>
-        //    {
-        //        parameters.Add(p => p.Step, step);
-        //        parameters.Add(p => p.Max, max);
-        //        parameters.Add(p => p.Value, value);
-        //    });
+        [DataTestMethod,
+           DataRow(4),
+           DataRow(12)
+        ]
+        public void SpinButtonOnChangeTest(double inputValue)
+        {
+            var component = RenderComponent<BitSpinButtonTest>();
 
-        //    var input = component.Find("input");
-        //    var increaseButton = component.FindAll("button")[0];
-        //    increaseButton.Click();
-        //    var inputValue = input.GetAttribute("value");
-        //    var expectedResult = value + step > max ? max : value + step;
+            var input = component.Find("input");
+            var changeArgs = new ChangeEventArgs();
+            changeArgs.Value = inputValue;
+            input.Change(changeArgs);
+            input.Blur();
 
-        //    Assert.AreEqual(expectedResult.ToString(), inputValue);
-        //}
+            Assert.AreEqual(inputValue, component.Instance.OnChangeEventValue);
+        }
+
+        [DataTestMethod,
+           DataRow(null),
+           DataRow("AriaDescription")
+        ]
+        public void SpinButtonShoudHaveCorrectAriaDecription(string ariaDescription)
+        {
+            var component = RenderComponent<BitSpinButtonTest>(parameters =>
+            {
+                parameters.Add(p => p.AriaDescription, ariaDescription);
+            });
+
+            var input = component.Find("input");
+
+            Assert.AreEqual(ariaDescription, input.GetAttribute("aria-describedby"));
+        }
+
+        [DataTestMethod,
+           DataRow(3.0, null),
+           DataRow(3.0, " cm"),
+           DataRow(null, null)
+        ]
+        public void SpinButtonInputShoudHaveCorrectAriaValueNow(double? ariaValueNow, string suffix)
+        {
+            var component = RenderComponent<BitSpinButtonTest>(parameters =>
+            {
+                parameters.Add(p => p.AriaValueNow, ariaValueNow);
+                parameters.Add(p => p.Suffix, suffix);
+            });
+
+            var input = component.Find("input");
+            var expectedResult = ariaValueNow is not null ? ariaValueNow : String.IsNullOrEmpty(suffix) ? component.Instance.Value : null;
+            Assert.AreEqual(expectedResult.ToString(), input.GetAttribute("aria-valuenow"));
+        }
+
+        [DataTestMethod,
+           DataRow("3", null, 0),
+           DataRow(null, " cm", 0),
+           DataRow(null, null, 0)
+        ]
+        public void SpinButtonInputShoudHaveCorrectAriaValueText(string ariaValueText, string suffix, int precision)
+        {
+            var component = RenderComponent<BitSpinButtonTest>(parameters =>
+            {
+                parameters.Add(p => p.AriaValueText, ariaValueText);
+                parameters.Add(p => p.Suffix, suffix);
+                parameters.Add(p => p.Precision, precision);
+            });
+
+            var input = component.Find("input");
+            var expectedResult = !String.IsNullOrEmpty(ariaValueText) ? ariaValueText : !String.IsNullOrEmpty(suffix) ? $"{Normalize(component.Instance.Value, precision)}{suffix}" : null;
+            Assert.AreEqual(expectedResult, input.GetAttribute("aria-valuetext"));
+        }
+
+        private double Normalize(double value, int precision) => Math.Round(value, precision);
     }
 }
