@@ -23,8 +23,8 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
         private int RatingReadOnlyValue = 5;
         private int RatingOutsideValue = 5;
 
-        private readonly Uri UploadUrl = new("https://localhost:5001/FileUpload/UploadStreamedFile");
-        private readonly Uri RemoveUrl = new("https://localhost:5001/FileUpload/RemoveFile");
+        private readonly string UploadUrl = "/FileUpload/UploadStreamedFile";
+        private readonly string RemoveUrl = "/FileUpload/RemoveFile";
 
         private double BasicSpinButtonValue = 5;
         private double BasicSpinButtonDisableValue = 20;
