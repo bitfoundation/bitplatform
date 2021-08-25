@@ -11,6 +11,7 @@ namespace Bit.Client.Web.BlazorUI
     {
         private bool isChecked;
         private string? imageSizeStyle;
+        private bool IsCheckedHasBeenSet;
 
         /// <summary>
         /// A required key to uniquely identify the option.
@@ -66,10 +67,18 @@ namespace Bit.Client.Web.BlazorUI
             get => isChecked;
             set
             {
+                if (value == isChecked) return;
                 isChecked = value;
+                ClassBuilder.Reset();
+                _ = IsCheckedChanged.InvokeAsync(value);
                 ClassBuilder.Reset();
             }
         }
+
+        /// <summary>
+        /// Callback for when the option IsChecked changes
+        /// </summary>
+        [Parameter] public EventCallback<bool> IsCheckedChanged { get; set; }
 
         /// <summary>
         /// Callback for when the ChoiceOption clicked
@@ -79,7 +88,7 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// Callback for when the option has been changed
         /// </summary>
-        [Parameter] public EventCallback<ChangeEventArgs> OnChange { get; set; }
+        [Parameter] public EventCallback<bool> OnChange { get; set; }
 
         [CascadingParameter] protected BitChoiceGroup? ChoiceGroup { get; set; }
 
@@ -130,10 +139,10 @@ namespace Bit.Client.Web.BlazorUI
 
         protected virtual async Task HandleChange(ChangeEventArgs e)
         {
-            if (IsEnabled)
-            {
-                await OnChange.InvokeAsync(e);
-            }
+            if (IsEnabled is false) return;
+            if (IsCheckedHasBeenSet && IsCheckedChanged.HasDelegate is false) return;
+            IsChecked = (bool)e.Value!;
+            await OnChange.InvokeAsync(IsChecked);
         }
 
         internal void SetOptionCheckedStatus(bool status)
