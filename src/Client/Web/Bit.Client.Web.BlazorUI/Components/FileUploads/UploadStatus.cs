@@ -2,7 +2,14 @@
 {
     public enum UploadStatus
     {
+        /// <summary>
+        /// 
+        /// </summary>
         Pending,
+
+        /// <summary>
+        /// 
+        /// </summary>
         InProgress,
         Paused,
         Canceled,
