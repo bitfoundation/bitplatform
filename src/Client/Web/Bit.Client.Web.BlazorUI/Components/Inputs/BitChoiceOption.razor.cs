@@ -71,7 +71,6 @@ namespace Bit.Client.Web.BlazorUI
                 isChecked = value;
                 ClassBuilder.Reset();
                 _ = IsCheckedChanged.InvokeAsync(value);
-                ClassBuilder.Reset();
             }
         }
 
@@ -141,7 +140,7 @@ namespace Bit.Client.Web.BlazorUI
         {
             if (IsEnabled is false) return;
             if (IsCheckedHasBeenSet && IsCheckedChanged.HasDelegate is false) return;
-            IsChecked = (bool)e.Value!;
+            
             await OnChange.InvokeAsync(IsChecked);
         }
 
