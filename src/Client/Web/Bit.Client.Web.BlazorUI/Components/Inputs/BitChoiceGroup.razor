@@ -4,7 +4,19 @@
      @attributes="HtmlAttributes"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
-    <CascadingValue Value="this" 
+
+
+    @if (Label.HasValue())
+    {
+        <label>
+            @Label
+        </label>
+    }
+    else if (LabelFragment != null)
+    {
+        <span>@LabelFragment</span>
+    }
+    <CascadingValue Value="this"
                     IsFixed="true">
         @ChildContent
     </CascadingValue>

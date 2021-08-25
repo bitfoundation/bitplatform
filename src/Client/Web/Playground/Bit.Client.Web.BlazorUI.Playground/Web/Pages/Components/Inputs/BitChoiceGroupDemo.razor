@@ -19,7 +19,7 @@
         <BitPivot>
             <BitPivotItem HeaderText="Example" IconName="ViewList">
                 <div>
-                    <BitChoiceGroup Name="Group1">
+                    <BitChoiceGroup Name="Group1" Label="Pick one" IsRequired="true">
                         <BitChoiceOption Key="A" Text="Option A" Value="1"></BitChoiceOption>
                         <BitChoiceOption Key="B" Text="Option B" Value="2"></BitChoiceOption>
                         <BitChoiceOption Key="C" Text="Disabled option B" Value="3" IsEnabled="false"></BitChoiceOption>
@@ -28,7 +28,7 @@
             </BitPivotItem>
             <BitPivotItem HeaderText="Code" IconName="Source">
                 <div>
-                    <p>&lt<span class="dark-green">BitChoiceGroup Name</span>="Group1"></p>
+                    <p>&lt<span class="dark-green">BitChoiceGroup Name</span>="Group1" <span class="dark-green">Label</span>="Pick one" <span class="dark-green">IsRequired</span>="<span class="light-blue">true</span>"></p>
                     <p class="p-l-20">&lt<span class="dark-green">BitChoiceOption</span> <span class="dark-green">Key</span>="A" <span class="dark-green">Text</span>="Option1" <span class="dark-green">Value</span>="1">&lt/<span class="dark-green">BitChoiceOption</span>></p>
                     <p class="p-l-20"> &lt<span class="dark-green">BitChoiceOption</span> <span class="dark-green">Key</span>="B" <span class="dark-green">Text</span>="Option2" <span class="dark-green">Value</span>="2">&lt/<span class="dark-green">BitChoiceOption</span>></p>
                     <p class="p-l-20"> &lt<span class="dark-green">BitChoiceOption</span> <span class="dark-green">Key</span>="C" <span class="dark-green">Text</span>="Disabled Option" <span class="dark-green">Value</span>="3" <span class="dark-green">IsEnabled</span>="<span class="light-blue">false</span>">&lt/<span class="dark-green">BitChoiceOption</span>></p>
@@ -47,7 +47,7 @@
     <BitPivot>
         <BitPivotItem HeaderText="Example" IconName="ViewList">
             <div>
-                <BitChoiceGroup Name="Group2" IsEnabled="false">
+                <BitChoiceGroup Name="Group2" IsEnabled="false" Label="Pick one">
                     <BitChoiceOption Key="A" Text="Option A" Value="1"></BitChoiceOption>
                     <BitChoiceOption Key="B" Text="Option2 B" Value="2"></BitChoiceOption>
                     <BitChoiceOption Key="C" Text="Disabled option B" Value="3" IsEnabled="false"></BitChoiceOption>
@@ -56,7 +56,7 @@
         </BitPivotItem>
         <BitPivotItem HeaderText="Code" IconName="Source">
             <div>
-                <p>&lt<span class="dark-green">BitChoiceGroup Name</span>="Group2" <span class="dark-green">IsEnabled</span>="<span class="light-blue">false</span>"></p>
+                <p>&lt<span class="dark-green">BitChoiceGroup Name</span>="Group2" <span class="dark-green">IsEnabled</span>="<span class="light-blue">false</span>" <span class="dark-green">Label</span>="Pick one" ></p>
                 <p class="p-l-20">&lt<span class="dark-green">BitChoiceOption</span> <span class="dark-green">Key</span>="A" <span class="dark-green">Text</span>="Option1" <span class="dark-green">Value</span>="1">&lt/<span class="dark-green">BitChoiceOption</span>></p>
                 <p class="p-l-20">&lt<span class="dark-green">BitChoiceOption</span> <span class="dark-green">Key</span>="B" <span class="dark-green">Text</span>="Option2" <span class="dark-green">Value</span>="2">&lt/<span class="dark-green">BitChoiceOption</span>></p>
                 <p class="p-l-20">&lt<span class="dark-green">BitChoiceOption</span> <span class="dark-green">Key</span>="C" <span class="dark-green">Text</span>="Disabled option" <span class="dark-green">Value</span>="3" <span class="dark-green">IsEnabled</span>="<span class="light-blue">false</span>">&lt/<span class="dark-green">BitChoiceOption</span>></p>
@@ -71,7 +71,7 @@
         <BitPivot>
             <BitPivotItem HeaderText="Example" IconName="ViewList">
                 <div>
-                    <BitChoiceGroup Name="Group1">
+                    <BitChoiceGroup Name="Group1" Label="Pic one image">
                         <BitChoiceOption Key="bar" Text="Clustered bar chart" Value="1" ImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png" ImageAlt="alt for image Option 1" SelectedImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png" ImageSize="new System.Drawing.Size( width: 32, height: 32)"></BitChoiceOption>
                         <BitChoiceOption Key="pie" Text="Pie chart" Value="2" ImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png" ImageAlt="alt for image Option 2" SelectedImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png" ImageSize="new System.Drawing.Size( width: 32, height: 32)"></BitChoiceOption>
                         <BitChoiceOption Key="disabeled_option" Text="Disabeled" IsEnabled="false" Value="3" ImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png" ImageAlt="alt for image Option 2" SelectedImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png" ImageSize="new System.Drawing.Size( width: 32, height: 32)"></BitChoiceOption>
@@ -80,7 +80,7 @@
             </BitPivotItem>
             <BitPivotItem HeaderText="Code" IconName="Source">
                 <div>
-                    <p>&lt<span class="dark-green">BitChoiceGroup Name</span>="Group1"></p>
+                    <p>&lt<span class="dark-green">BitChoiceGroup Name</span>="Group1 <span class="dark-green">Label</span>="Pick one image"></p>
                     <p class="p-l-20">&lt<span class="dark-green">BitChoiceOption</span> <span class="dark-green">Key</span>="bar" <span class="dark-green">Text</span>="Clustered bar chart" <span class="dark-green">Value</span>="1" <span class="dark-green">ImageSrc</span>="/choicegroup-bar-unselected.png" <span class="dark-green">SelectedImageSrc</span>="/choicegroup-bar-selected.png" <span class="dark-green">ImageAlt</span>="alt" <span class="dark-green">ImageSize</span>="<span class="light-blue">new</span> System.Drawing.Size( width: 32, height: 32)"><span class="dark-green">BitChoiceOption</span>></p>
                     <p class="p-l-20"> &lt<span class="dark-green">BitChoiceOption</span> <span class="dark-green">Key</span>="pie" <span class="dark-green">Text</span>="Pie chart" <span class="dark-green">Value</span>="2" <span class="dark-green">ImageSrc</span>="/choicegroup-bar-unselected.png" <span class="dark-green">SelectedImageSrc</span>="/choicegroup-bar-selected.png" <span class="dark-green">ImageAlt</span>="alt" <span class="dark-green">ImageSize</span>="<span class="light-blue">new</span> System.Drawing.Size( width: 32, height: 32)"<span class="dark-green">>&lt/BitChoiceOption</span></p>
                     <p class="p-l-20"> &lt<span class="dark-green">BitChoiceOption</span> <span class="dark-green">Key</span>="disabeled_option" <span class="dark-green">Text</span>="Disabeled" <span class="dark-green">IsEnabled</span>="<span class="light-blue">false</span>" <span class="dark-green">Value</span>="3" <span class="dark-green">ImageSrc</span>="/choicegroup-bar-unselected.png" <span class="dark-green">SelectedImageSrc</span>="/choicegroup-bar-selected.png" <span class="dark-green">ImageAlt</span>="alt"  <span class="dark-green">ImageSize</span>="<span class="light-blue">new</span> System.Drawing.Size( width: 32, height: 32)">&lt/<span class="dark-green">BitChoiceOption</span>></p>
@@ -96,7 +96,7 @@
         <BitPivot>
             <BitPivotItem HeaderText="Example" IconName="ViewList">
                 <div>
-                    <BitChoiceGroup Name="Group1">
+                    <BitChoiceGroup Name="Group1" Label="Pic one icon">
                         <BitChoiceOption Key="day" Text="Day" Value="1" IconName="CalendarDay"></BitChoiceOption>
                         <BitChoiceOption Key="week" Text="Week" Value="2" IconName="CalendarWeek"></BitChoiceOption>
                         <BitChoiceOption Key="month" Text="Month" Value="3" IconName="Calendar" IsEnabled="false"></BitChoiceOption>
@@ -105,7 +105,7 @@
             </BitPivotItem>
             <BitPivotItem HeaderText="Code" IconName="Source">
                 <div>
-                    <p>&lt<span class="dark-green">BitChoiceGroup Name</span>="Group1"></p>
+                    <p>&lt<span class="dark-green">BitChoiceGroup Name</span>="Group1" <span class="dark-green">Label</span>="Pick one icon" ></p>
                     <p class="p-l-20">&lt<span class="dark-green">BitChoiceOption</span> <span class="dark-green">Key</span>="day" <span class="dark-green">Text</span>="Day" <span class="dark-green">Value</span>="1" <span class="dark-green">IconName</span>="CalendarDay">&lt/<span class="dark-green">BitChoiceOption</span>></p>
                     <p class="p-l-20"> &lt<span class="dark-green">BitChoiceOption</span> <span class="dark-green">Key</span>="week" <span class="dark-green">Text</span>="Week" <span class="dark-green">Value</span>="2"  <span class="dark-green">IconName</span>="CalendarWeek">&lt/<span class="dark-green">BitChoiceOption</span>></p>
                     <p class="p-l-20"> &lt<span class="dark-green">BitChoiceOption</span> <span class="dark-green">Key</span>="month" <span class="dark-green">Text</span>="Disabled Month" <span class="dark-green">Value</span>="3" <span class="dark-green">IsEnabled</span>="<span class="light-blue">false</span> <span class="dark-green">IconName</span>="Calendar"">&lt/<span class="dark-green">BitChoiceOption</span>></p>
@@ -160,6 +160,24 @@
             <td>boolean</td>
             <td>true</td>
             <td>Whether the choicegroup and choiceoption are enabled.</td>
+        </tr>
+        <tr>
+            <td>IsRequired</td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>If true, an option must be selected in the ChoiceGroup.</td>
+        </tr>
+        <tr>
+            <td>Label</td>
+            <td>string</td>
+            <td></td>
+            <td>Descriptive label for the choice group.</td>
+        </tr>
+        <tr>
+            <td>LabelFragment</td>
+            <td>RenderFragment</td>
+            <td></td>
+            <td>Used to customize the label for the choice group.</td>
         </tr>
         <tr>
             <td>Key</td>
