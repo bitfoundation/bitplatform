@@ -1,4 +1,5 @@
-﻿using Bunit;
+﻿using System.Collections.Generic;
+using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.Client.Web.BlazorUI.Tests.SpinButtons
@@ -147,6 +148,24 @@ namespace Bit.Client.Web.BlazorUI.Tests.SpinButtons
 
             var spinButton = component.Find(".bit-spb");
             Assert.IsTrue(spinButton.ClassList.Contains($"bit-spb-label-{labelPositionClass}-{visualClass}"));
+        }
+
+        [DataTestMethod,
+            DataRow("dir", "ltr"),
+            DataRow("type", "number")
+        ]
+        public void SpinButtonInputShouldHaveHtmlAttributes(string attrKey, string attrValue)
+        {
+            var inputHtmlAttributes = new Dictionary<string, object> {
+                {attrKey, attrValue }
+            };
+            var component = RenderComponent<BitSpinButtonTest>(parameters =>
+            {
+                parameters.Add(p => p.InputHtmlAttributes, inputHtmlAttributes);
+            });
+
+            var input = component.Find("input");
+            Assert.AreEqual(attrValue, input.GetAttribute(attrKey));
         }
 
         //[DataTestMethod,
