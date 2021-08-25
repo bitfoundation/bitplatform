@@ -57,10 +57,9 @@
     {
         ChoiceGroupChangedValue = value;
     }
-    public void HandleChange(ChangeEventArgs e)
+    public void HandleChange(bool isChecked)
     {
         ChoiceOptionChangedValue++;
-        //Count2++;
-        Value = e.Value.ToString();
+        //Count2++;      
     }
 }
