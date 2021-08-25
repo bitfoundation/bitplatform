@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -168,7 +169,6 @@ namespace Bit.Client.Web.BlazorUI.Tests.SpinButtons
             Assert.AreEqual(attrValue, input.GetAttribute(attrKey));
         }
 
-
         [DataTestMethod,
             DataRow("SpbWrapper", null, null, null),
             DataRow(null, "SpbAriaLabel", null, null),
@@ -203,54 +203,151 @@ namespace Bit.Client.Web.BlazorUI.Tests.SpinButtons
                 Assert.AreEqual(ariaPositionInSet.ToString(), spbWrapper.GetAttribute("aria-posinset"));
             }
         }
-        //[DataTestMethod,
-        //    DataRow(2, 4, 2),
-        //    DataRow(20, 22, 20)]
-        //public void SpinButtonShouldRespectMaxValue(double max, double countOfClick, double expectedResult)
-        //{
-        //    var component = RenderComponent<BitSpinButtonTest>(parameters => parameters.Add(p => p.Max, max));
-
-        //    var input = component.Find("input");
-        //    var upButton = component.FindAll("button").First();
-        //    for (int i = 0; i < countOfClick; i++)
-        //    {
-        //        upButton.Click();
-        //    }
-        //    var inputValue = double.Parse(input.GetAttribute("value"));
-
-        //    Assert.AreEqual(inputValue, expectedResult);
-        //}
-
-        //[DataTestMethod,
-        //    DataRow(0, 4, 0),
-        //    DataRow(-2, 22, -2)]
-        //public void SpinButtonShouldRespectMinValue(double min, double countOfClick, double expectedResult)
-        //{
-        //    var component = RenderComponent<BitSpinButtonTest>(parameters => parameters.Add(p => p.Min, min));
-
-        //    var input = component.Find("input");
-        //    var downButton = component.FindAll("button").Last();
-        //    for (int i = 0; i < countOfClick; i++)
-        //    {
-        //        downButton.Click();
-        //    }
-        //    var inputValue = double.Parse(input.GetAttribute("value"));
-
-        //    Assert.AreEqual(inputValue, expectedResult);
-        //}
-
 
         [DataTestMethod,
-            DataRow("IncreaseIndentLegacy", true),
-            DataRow("IconName", true)]
-        public void SpinButtonLabelShouldHaveIconClassName(string iconName, bool expectedResult)
+            DataRow(null, null),
+            DataRow(5.0, null),
+            DataRow(null, 100.0),
+            DataRow(0.0, 100.0),
+            DataRow(50.0, 1.0)
+        ]
+        public void SpinButtonShouldHaveCorrectMaxMin(double? min, double? max)
         {
-            var component = RenderComponent<BitSpinButtonTest>(parameters => parameters.Add(p => p.IconName, iconName));
+            var component = RenderComponent<BitSpinButtonTest>(parameters =>
+            {
+                parameters.Add(p => p.Min, min);
+                parameters.Add(p => p.Max, max);
+            });
 
-            var IconElement = component.Find(".bit-spb > div > i");
-            var hasIconClass = IconElement.ClassList.Contains($"bit-icon--{iconName}");
+            var input = component.Find("input");
+            double expectedMinValue = 0;
+            double expectedMaxValue = 0;
+            if (min is null && max is null)
+            {
+                expectedMinValue = double.MinValue;
+                expectedMaxValue = double.MaxValue;
+            }
 
-            Assert.AreEqual(hasIconClass, expectedResult);
+            if (min is null && max is not null)
+            {
+                expectedMinValue = double.MinValue;
+                expectedMaxValue = max.Value;
+            }
+
+            if (min is not null && max is null)
+            {
+                expectedMinValue = min.Value;
+                expectedMaxValue = double.MaxValue;
+            }
+
+            if (min is not null && max is not null)
+            {
+                if (min > max)
+                {
+                    min = min + max;
+                    max = min - max;
+                    min = min - max;
+                }
+
+                expectedMinValue = min.Value;
+                expectedMaxValue = max.Value;
+            }
+
+            Assert.AreEqual(expectedMinValue.ToString(), input.GetAttribute("aria-valuemin"));
+            Assert.AreEqual(expectedMaxValue.ToString(), input.GetAttribute("aria-valuemax"));
         }
+
+        [DataTestMethod,
+            DataRow(4),
+            DataRow(12)
+        ]
+        public void SpinButtonOnIncrementTest(int countOfCliks)
+        {
+            var component = RenderComponent<BitSpinButtonTest>();
+
+            var increaseButton = component.FindAll("button")[0];
+            for (int i = 0; i < countOfCliks; i++)
+            {
+                increaseButton.Click();
+            }
+
+            Assert.AreEqual(countOfCliks, component.Instance.OnIncrementEventCounter);
+        }
+
+        [DataTestMethod,
+           DataRow(4),
+           DataRow(12)
+        ]
+        public void SpinButtonOnDecrementTest(int countOfCliks)
+        {
+            var component = RenderComponent<BitSpinButtonTest>();
+
+            var decreaseButton = component.FindAll("button")[1];
+            var onDecrementEventCounterInitValue = component.Instance.OnDecrementEventCounter;
+            for (int i = 0; i < countOfCliks; i++)
+            {
+                decreaseButton.Click();
+            }
+
+            Assert.AreEqual(onDecrementEventCounterInitValue - countOfCliks, component.Instance.OnDecrementEventCounter);
+        }
+
+        [DataTestMethod,
+           DataRow(4),
+           DataRow(12)
+        ]
+        public void SpinButtonInputOnBlurTest(int countOfBlur)
+        {
+            var component = RenderComponent<BitSpinButtonTest>();
+
+            var input = component.Find("input");
+            for (int i = 0; i < countOfBlur; i++)
+            {
+                input.Blur();
+            }
+
+            Assert.AreEqual(countOfBlur, component.Instance.OnBlurEventCounter);
+        }
+
+        [DataTestMethod,
+           DataRow(4),
+           DataRow(12)
+        ]
+        public void SpinButtonInputOnFocusTest(int countOfFocus)
+        {
+            var component = RenderComponent<BitSpinButtonTest>();
+
+            var input = component.Find("input");
+            for (int i = 0; i < countOfFocus; i++)
+            {
+                input.Focus();
+            }
+
+            Assert.AreEqual(countOfFocus, component.Instance.OnFocusEventCounter);
+        }
+
+        //[DataTestMethod,
+        //    DataRow(3, 1, 12),
+        //    DataRow(8, 2, 10),
+        //    DataRow(8, 1, 8),
+        //    DataRow(8, 2, 9)
+        //]
+        //public void SpinButtonIncreasementButtonTestClick(double value, double step, double max)
+        //{
+        //    var component = RenderComponent<BitSpinButtonTest>(parameters =>
+        //    {
+        //        parameters.Add(p => p.Step, step);
+        //        parameters.Add(p => p.Max, max);
+        //        parameters.Add(p => p.Value, value);
+        //    });
+
+        //    var input = component.Find("input");
+        //    var increaseButton = component.FindAll("button")[0];
+        //    increaseButton.Click();
+        //    var inputValue = input.GetAttribute("value");
+        //    var expectedResult = value + step > max ? max : value + step;
+
+        //    Assert.AreEqual(expectedResult.ToString(), inputValue);
+        //}
     }
 }

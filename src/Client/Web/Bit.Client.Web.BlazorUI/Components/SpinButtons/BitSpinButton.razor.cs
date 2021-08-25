@@ -338,8 +338,8 @@ namespace Bit.Client.Web.BlazorUI
         protected virtual async Task HandleBlur(FocusEventArgs e)
         {
             if (IsEnabled is false) return;
+            await OnBlur.InvokeAsync(e);
             if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
-
             if (IntermediateValue == $"{Value}") return;
 
             var isNumber = double.TryParse(IntermediateValue, out var numericValue);
@@ -347,7 +347,6 @@ namespace Bit.Client.Web.BlazorUI
             {
                 Value = Normalize(numericValue);
                 IntermediateValue = $"{Value}";
-                await OnBlur.InvokeAsync(e);
                 await OnChange.InvokeAsync(Value);
             }
             else

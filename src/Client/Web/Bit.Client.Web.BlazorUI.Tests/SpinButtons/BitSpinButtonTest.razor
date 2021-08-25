@@ -1,8 +1,9 @@
 ﻿<CascadingValue Value="Visual">
-    <BitSpinButton Value="@Value"
-                   ValueChanged="@HandleValueChange"
-                   Min="@Min"
+    <BitSpinButton Min="@Min"
                    Max="@Max"
+                   Step="@Step"
+                   Value="@Value"
+                   ValueChanged="@HandleValueChange"
                    IsEnabled="@IsEnabled"
                    AriaDescription="@AriaDescription"
                    AriaPositionInSet="@AriaPositionInSet"
@@ -11,7 +12,6 @@
                    AriaValueText="@AriaValueText"
                    AriaLabel="@AriaLabel"
                    Suffix="@Suffix"
-                   Step="@Step"
                    LabelPosition="@LabelPosition"
                    IconName="@IconName"
                    IconAriaLabel="@IconAriaLabel"
@@ -41,11 +41,12 @@
     [Parameter] public double? AriaValueNow { get; set; }
     [Parameter] public string AriaValueText { get; set; }
     [Parameter] public string AriaLabel { get; set; }
+    [Parameter] public double Step { get; set; } = 1;
     [Parameter] public double? Min { get; set; }
     [Parameter] public double? Max { get; set; }
     [Parameter] public double Value { get; set; }
+    [Parameter] public EventCallback<double> ValueChanged { get; set; }
     [Parameter] public string Suffix { get; set; } = string.Empty;
-    [Parameter] public double Step { get; set; } = 1;
     [Parameter] public string IconName { get; set; }
     [Parameter] public string Label { get; set; } = string.Empty;
     [Parameter] public Dictionary<string, object>? InputHtmlAttributes { get; set; } = null;
@@ -59,6 +60,11 @@
     [Parameter] public string? IncrementButtonAriaLabel { get; set; }
     [Parameter] public bool IsEnabled { get; set; } = true;
 
+    public int OnIncrementEventCounter { get; set; } = 0;
+    public int OnBlurEventCounter { get; set; } = 0;
+    public int OnFocusEventCounter { get; set; } = 0;
+    public int OnDecrementEventCounter { get; set; } = 20;
+
     public void HandleChange(double value)
     {
 
@@ -66,30 +72,25 @@
 
     public void HandleBlur(FocusEventArgs args)
     {
-
+        OnBlurEventCounter++;
     }
 
     public void HandleFocus(FocusEventArgs args)
     {
-
+        OnFocusEventCounter++;
     }
 
     public void HandleDecrement(BitSpinButtonChangeEventArgs args)
     {
-
+        OnDecrementEventCounter--;
     }
 
     public void HandleIncrement(BitSpinButtonChangeEventArgs args)
     {
-
+        OnIncrementEventCounter++;
     }
 
     public void HandleValueChange(double value)
-    {
-
-    }
-
-    public void HandleBitSpinButtonActionChange(BitSpinButtonAction action)
     {
 
     }
