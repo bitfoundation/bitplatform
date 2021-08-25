@@ -23,11 +23,6 @@ namespace Bit.Client.Web.BlazorUI
         /// </summary>
         [Parameter] public string? AriaDescription { get; set; }
 
-        // <summary>
-        // If true, add an aria-hidden attribute instructing screen readers to ignore the element
-        // </summary>
-        [Parameter] public bool AriaHidden { get; set; }
-
         /// <summary>
         /// The position in the parent set (if in a set)
         /// </summary>

@@ -5,11 +5,11 @@
                    Max="@Max"
                    IsEnabled="@IsEnabled"
                    AriaDescription="@AriaDescription"
-                   AriaHidden="@AriaHidden"
                    AriaPositionInSet="@AriaPositionInSet"
                    AriaSetSize="@AriaSetSize"
                    AriaValueNow="@AriaValueNow"
                    AriaValueText="@AriaValueText"
+                   AriaLabel="@AriaLabel"
                    Suffix="@Suffix"
                    Step="@Step"
                    LabelPosition="@LabelPosition"
@@ -36,11 +36,11 @@
     [Parameter] public Visual Visual { get; set; }
     [Parameter] public BitSpinButtonLabelPosition LabelPosition { get; set; } = BitSpinButtonLabelPosition.Left;
     [Parameter] public string AriaDescription { get; set; }
-    [Parameter] public bool AriaHidden { get; set; }
     [Parameter] public int? AriaPositionInSet { get; set; }
     [Parameter] public int? AriaSetSize { get; set; }
     [Parameter] public double? AriaValueNow { get; set; }
     [Parameter] public string AriaValueText { get; set; }
+    [Parameter] public string AriaLabel { get; set; }
     [Parameter] public double? Min { get; set; }
     [Parameter] public double? Max { get; set; }
     [Parameter] public double Value { get; set; }

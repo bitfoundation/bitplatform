@@ -168,6 +168,41 @@ namespace Bit.Client.Web.BlazorUI.Tests.SpinButtons
             Assert.AreEqual(attrValue, input.GetAttribute(attrKey));
         }
 
+
+        [DataTestMethod,
+            DataRow("SpbWrapper", null, null, null),
+            DataRow(null, "SpbAriaLabel", null, null),
+            DataRow("SpbWrapper", "SpbAriaLabel", 5, 3),
+            DataRow(null, null, 5, 3)
+        ]
+        public void SpinButtonWrapperShouldHaveCorrectAttributes(string title, string ariaLabel, int? ariaSetSize, int? ariaPositionInSet)
+        {
+            var component = RenderComponent<BitSpinButtonTest>(parameters =>
+            {
+                parameters.Add(p => p.Title, title);
+                parameters.Add(p => p.AriaLabel, ariaLabel);
+                parameters.Add(p => p.AriaSetSize, ariaSetSize);
+                parameters.Add(p => p.AriaPositionInSet, ariaPositionInSet);
+            });
+
+            var spbWrapper = component.Find(".bit-spb-wrapper");
+
+            if (title is not null)
+            {
+                Assert.AreEqual(title, spbWrapper.GetAttribute("title"));
+            }
+
+            if (ariaLabel is not null)
+            {
+                Assert.AreEqual(ariaLabel, spbWrapper.GetAttribute("aria-label"));
+            }
+
+            if (ariaSetSize is not null)
+            {
+                Assert.AreEqual(ariaSetSize.ToString(), spbWrapper.GetAttribute("aria-setsize"));
+                Assert.AreEqual(ariaPositionInSet.ToString(), spbWrapper.GetAttribute("aria-posinset"));
+            }
+        }
         //[DataTestMethod,
         //    DataRow(2, 4, 2),
         //    DataRow(20, 22, 20)]
