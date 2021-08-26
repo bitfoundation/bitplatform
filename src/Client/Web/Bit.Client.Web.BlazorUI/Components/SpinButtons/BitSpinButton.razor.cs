@@ -68,8 +68,6 @@ namespace Bit.Client.Web.BlazorUI
             {
                 if (value == inputValue) return;
                 inputValue = value;
-                if (inputValue > max) inputValue = max;
-                if (inputValue < min) inputValue = min;
                 _ = ValueChanged.InvokeAsync(value);
             }
         }
@@ -215,8 +213,8 @@ namespace Bit.Client.Web.BlazorUI
                 Value = DefaultValue ?? Math.Min(0, min);
             }
 
+            CheckValue();
             IntermediateValue = $"{Value}";
-
             if (ChangeHandler.HasDelegate is false)
             {
                 ChangeHandler = EventCallback.Factory.Create(this, async (BitSpinButtonAction action) =>
@@ -243,6 +241,7 @@ namespace Bit.Client.Web.BlazorUI
                     if (isValid is false) return;
 
                     Value = Normalize(result);
+                    CheckValue();
                     IntermediateValue = $"{Value}";
                     await OnChange.InvokeAsync(Value);
                 });
@@ -304,6 +303,7 @@ namespace Bit.Client.Web.BlazorUI
                     if (isNumber)
                     {
                         Value = Normalize(numericValue);
+                        CheckValue();
                         await OnChange.InvokeAsync(Value);
                     }
                     else
@@ -346,6 +346,7 @@ namespace Bit.Client.Web.BlazorUI
             if (isNumber)
             {
                 Value = Normalize(numericValue);
+                CheckValue();
                 IntermediateValue = $"{Value}";
                 await OnChange.InvokeAsync(Value);
             }
@@ -384,6 +385,12 @@ namespace Bit.Client.Web.BlazorUI
             }
 
             return 0;
+        }
+
+        private void CheckValue()
+        {
+            if (Value > max) Value = max;
+            if (Value < min) Value = min;
         }
 
         private double Normalize(double value) => Math.Round(value, precision);
