@@ -1,14 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
-using System.Text.Json;
 
 namespace Bit.Client.Web.BlazorUI
 {
@@ -22,9 +17,15 @@ namespace Bit.Client.Web.BlazorUI
         [Inject]
         public IJSRuntime JSRuntime { get; set; }
 
+        /// <summary>
+        /// Displays a slider and text field for editing alpha and transparency values
+        /// </summary>
         [Parameter]
         public AlphaType AlphaType { get; set; }
 
+        /// <summary>
+        /// Object or CSS-compatible string to describe the color
+        /// </summary>
         [Parameter]
         public string Color
         {
@@ -40,9 +41,15 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
+        /// <summary>
+        /// Callback that is called when the color changed
+        /// </summary>
         [Parameter]
         public EventCallback<string> ColorChanged { get; set; }
 
+        /// <summary>
+        /// Whether to show color preview box
+        /// </summary>
         [Parameter]
         public bool ShowPreview { get; set; }
         public bool ColorHasBeenSet { get; set; }
