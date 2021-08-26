@@ -2,8 +2,7 @@
     <BitSpinButton Min="@Min"
                    Max="@Max"
                    Step="@Step"
-                   Value="@Value"
-                   ValueChanged="@HandleValueChange"
+                   @bind-Value="@Value"
                    IsEnabled="@IsEnabled"
                    AriaDescription="@AriaDescription"
                    AriaPositionInSet="@AriaPositionInSet"
@@ -89,10 +88,5 @@
     public void HandleIncrement(BitSpinButtonChangeEventArgs args)
     {
         OnIncrementEventCounter++;
-    }
-
-    public void HandleValueChange(double value)
-    {
-
     }
 }

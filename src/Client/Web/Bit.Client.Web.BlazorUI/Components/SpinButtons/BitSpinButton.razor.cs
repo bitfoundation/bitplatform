@@ -122,6 +122,9 @@ namespace Bit.Client.Web.BlazorUI
         /// </summary>
         [Parameter] public string Label { get; set; } = string.Empty;
 
+        /// <summary>
+        /// Shows the custom Label for spin button. If you don't call default label, ensure that you give your custom label an id and that you set the input's aria-labelledby prop to that id.
+        /// </summary>
         [Parameter] public RenderFragment? LabelFragment { get; set; }
 
         /// <summary>

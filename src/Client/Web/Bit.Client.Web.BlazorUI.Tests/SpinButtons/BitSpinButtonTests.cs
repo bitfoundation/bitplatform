@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using Bunit;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.Client.Web.BlazorUI.Tests.SpinButtons
@@ -9,6 +11,8 @@ namespace Bit.Client.Web.BlazorUI.Tests.SpinButtons
     [TestClass]
     public class BitSpinButtonTests : BunitTestContext
     {
+        private double BitSpinButtonTwoWayBoundValue;
+
         [DataTestMethod,
             DataRow(null),
             DataRow("Button Label")
@@ -297,7 +301,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.SpinButtons
            DataRow(4),
            DataRow(12)
         ]
-        public void SpinButtonInputOnBlurTest(int countOfBlur)
+        public void SpinButtonInputOnBlurEventCallbackTest(int countOfBlur)
         {
             var component = RenderComponent<BitSpinButtonTest>();
 
@@ -423,10 +427,36 @@ namespace Bit.Client.Web.BlazorUI.Tests.SpinButtons
         }
 
         [DataTestMethod,
+            DataRow(3, 1, 12),
+            DataRow(8, 2, 10),
+            DataRow(8, 1, 8),
+            DataRow(8, 2, 9),
+            DataRow(8, 5, 9)
+        ]
+        public void SpinButtonArrowUpKeyDownTest(double defaultValue, double step, double max)
+        {
+            var component = RenderComponent<BitSpinButton>(parameters =>
+            {
+                parameters.Add(p => p.Step, step);
+                parameters.Add(p => p.Max, max);
+                parameters.Add(p => p.DefaultValue, defaultValue);
+            });
+
+            var input = component.Find("input");
+            var args = new KeyboardEventArgs();
+            args.Key = "ArrowUp";
+            input.KeyDown(args);
+            var inputValue = input.GetAttribute("value");
+            var expectedResult = defaultValue + step <= max ? defaultValue + step : defaultValue;
+
+            Assert.AreEqual(expectedResult.ToString(), inputValue);
+        }
+
+        [DataTestMethod,
             DataRow(3, 1, 0),
             DataRow(2, 2, 0),
             DataRow(3, 4, 0),
-            DataRow(0, 1, 0),
+            DataRow(0, 1, 0)
         ]
         public void SpinButtonDecrementButtonClickTest(double defaultValue, double step, double min)
         {
@@ -446,6 +476,190 @@ namespace Bit.Client.Web.BlazorUI.Tests.SpinButtons
             Assert.AreEqual(expectedResult.ToString(), inputValue);
         }
 
+        [DataTestMethod,
+            DataRow(3, 1, 0),
+            DataRow(2, 2, 0),
+            DataRow(3, 4, 0),
+            DataRow(0, 1, 0)
+        ]
+        public void SpinButtonArrowDownKeyDownTest(double defaultValue, double step, double min)
+        {
+            var component = RenderComponent<BitSpinButton>(parameters =>
+            {
+                parameters.Add(p => p.Step, step);
+                parameters.Add(p => p.Min, min);
+                parameters.Add(p => p.DefaultValue, defaultValue);
+            });
+
+            var input = component.Find("input");
+            var args = new KeyboardEventArgs();
+            args.Key = "ArrowDown";
+            input.KeyDown(args);
+            var inputValue = input.GetAttribute("value");
+            var expectedResult = defaultValue - step >= min ? defaultValue - step : defaultValue;
+
+            Assert.AreEqual(expectedResult.ToString(), inputValue);
+        }
+
+        [DataTestMethod,
+            DataRow(5, 0, 100, "25"),
+            DataRow(5, 0, 100, "112"),
+            DataRow(5, 0, 100, "-5"),
+            DataRow(5, 0, 100, "text123")
+        ]
+        public void SpinButtonEnterKeyDownTest(double defaultValue, double min, double max, string userInput)
+        {
+            var component = RenderComponent<BitSpinButton>(parameters =>
+            {
+                parameters.Add(p => p.DefaultValue, defaultValue);
+                parameters.Add(p => p.Max, max);
+                parameters.Add(p => p.Min, min);
+            });
+
+            var input = component.Find("input");
+            var changeArgs = new ChangeEventArgs();
+            changeArgs.Value = userInput;
+            input.Change(changeArgs);
+            var keyboardArgs = new KeyboardEventArgs();
+            keyboardArgs.Key = "Enter";
+            input.KeyDown(keyboardArgs);
+            var inputValue = component.Instance.Value;
+            double expectedResult = 0;
+            var isNumber = double.TryParse(userInput, out var numericValue);
+            if (isNumber)
+            {
+                expectedResult = Normalize(numericValue, 1);
+                if (expectedResult > max) expectedResult = max;
+                if (expectedResult < min) expectedResult = min;
+            }
+            else
+            {
+                expectedResult = defaultValue;
+            }
+
+            Assert.AreEqual(expectedResult, inputValue);
+        }
+
+        [DataTestMethod,
+            DataRow(5, 0, 100, "25"),
+            DataRow(5, 0, 100, "112"),
+            DataRow(5, 0, 100, "-5"),
+            DataRow(5, 0, 100, "text123")
+        ]
+        public void SpinButtonOnBlurTest(double defaultValue, double min, double max, string userInput)
+        {
+            var component = RenderComponent<BitSpinButton>(parameters =>
+            {
+                parameters.Add(p => p.DefaultValue, defaultValue);
+                parameters.Add(p => p.Max, max);
+                parameters.Add(p => p.Min, min);
+            });
+
+            var input = component.Find("input");
+            var changeArgs = new ChangeEventArgs();
+            changeArgs.Value = userInput;
+            input.Change(changeArgs);
+            input.Blur();
+            var inputValue = component.Instance.Value;
+            double expectedResult = 0;
+            var isNumber = double.TryParse(userInput, out var numericValue);
+            if (isNumber)
+            {
+                expectedResult = Normalize(numericValue, 1);
+                if (expectedResult > max) expectedResult = max;
+                if (expectedResult < min) expectedResult = min;
+            }
+            else
+            {
+                expectedResult = defaultValue;
+            }
+
+            Assert.AreEqual(expectedResult, inputValue);
+        }
+
+        [DataTestMethod,
+            DataRow(0, 100, 1, "25"),
+            DataRow(0, 100, 0.1, "25.68"),
+            DataRow(0, 100, 0.25, "12.6"),
+            DataRow(0, 10, 0.25, "12.6"),
+            DataRow(13, 100, 0.25, "12.6")
+        ]
+        public void SpinButtonPrecisionTest(double min, double max, double step, string userInput)
+        {
+            var component = RenderComponent<BitSpinButton>(parameters =>
+            {
+                parameters.Add(p => p.Step, step);
+                parameters.Add(p => p.Max, max);
+                parameters.Add(p => p.Min, min);
+            });
+
+            var input = component.Find("input");
+            var changeArgs = new ChangeEventArgs();
+            changeArgs.Value = userInput;
+            input.Change(changeArgs);
+            input.Blur();
+            var inputValue = component.Instance.Value;
+            var precision = CalculatePrecision(step);
+            var expectedResult = Normalize(double.Parse(userInput), precision);
+            if (expectedResult > max) expectedResult = max;
+            if (expectedResult < min) expectedResult = min;
+
+            Assert.AreEqual(expectedResult, inputValue);
+        }
+
+        [DataTestMethod,
+            DataRow(5, 2, 4),
+            DataRow(1, 15, 1)
+        ]
+        public void SpinButtonTwoWayBoundWithCustomHandlerShouldWorkCurrect(double value, int countOfIncrements, double step)
+        {
+            BitSpinButtonTwoWayBoundValue = value;
+
+            var component = RenderComponent<BitSpinButton>(parameters =>
+            {
+                parameters.Add(p => p.Step, step);
+                parameters.Add(p => p.Value, BitSpinButtonTwoWayBoundValue);
+                parameters.Add(p => p.ValueChanged, HandleValueChanged);
+            });
+
+            var incrementButton = component.FindAll("button")[0];
+            for (var i = 0; i < countOfIncrements; i++)
+            {
+                incrementButton.Click();
+            }
+
+            var expectedValue = value + (step * countOfIncrements);
+
+            Assert.AreEqual(expectedValue, BitSpinButtonTwoWayBoundValue);
+        }
+
         private double Normalize(double value, int precision) => Math.Round(value, precision);
+
+        private int CalculatePrecision(double value)
+        {
+            var regex = new Regex(@"[1-9]([0]+$)|\.([0-9]*)");
+            if (regex.IsMatch(value.ToString()) is false) return 0;
+
+            var matches = regex.Matches(value.ToString());
+            if (matches.Count == 0) return 0;
+
+            var groups = matches[0].Groups;
+            if (groups[1] != null && groups[1].Length != 0)
+            {
+                return -groups[1].Length;
+            }
+
+            if (groups[2] != null && groups[2].Length != 0)
+            {
+                return groups[2].Length;
+            }
+
+            return 0;
+        }
+
+        private void HandleValueChanged(double value)
+        {
+            BitSpinButtonTwoWayBoundValue = value;
+        }
     }
 }
