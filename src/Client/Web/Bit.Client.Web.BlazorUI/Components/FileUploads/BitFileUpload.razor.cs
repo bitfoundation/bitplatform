@@ -9,7 +9,7 @@ using Microsoft.JSInterop;
 namespace Bit.Client.Web.BlazorUI
 {
     /// <summary>
-    /// A component that wraps the HTML file input element and upload them.
+    /// A component that wraps the HTML file input element and uploads them.
     /// </summary>
     public partial class BitFileUpload : IDisposable
     {
@@ -18,7 +18,7 @@ namespace Bit.Client.Web.BlazorUI
         private static readonly HttpClient client = new();
 
         /// <summary>
-        /// Refrence to input file element
+        /// Reference to input file element.
         /// </summary>
         private ElementReference inputFileElement { get; set; }
 
@@ -38,22 +38,22 @@ namespace Bit.Client.Web.BlazorUI
         public long UpLoadedSize { get; set; }
 
         /// <summary>
-        /// General upload status
+        /// General upload status.
         /// </summary>
         public UploadStatus UploadStatus { get; set; }
 
         /// <summary>
-        /// Upload is done in the form of Chunks and this property shows the amount of upload in each Chunk
+        /// Upload is done in the form of chunks and this property shows the progress of upload in each chunk.
         /// </summary>
         public static long ChunkSize => FileSizeHumanizer.OneMegaByte * 10;
 
         /// <summary>
-        /// All selected files
+        /// All selected files.
         /// </summary>
         public IReadOnlyList<BitFileInfo>? Files { get; private set; }
 
         /// <summary>
-        /// Refrence to this component for js accessibility
+        /// Reference to this component for js accessibility.
         /// </summary>
         private DotNetObjectReference<BitFileUpload>? dotnetObjectReference;
 
@@ -70,22 +70,22 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public string? RemoveUrl { get; set; }
 
         /// <summary>
-        /// Custom label for Browse button
+        /// Custom label for browse button.
         /// </summary>
         [Parameter] public string Label { get; set; } = "Browse";
 
         /// <summary>
-        /// Custom label for Uploaded Status
+        /// Custom label for Uploaded Status.
         /// </summary>
         [Parameter] public string SuccessfulUploadedResultMessage { get; set; } = "File uploaded";
 
         /// <summary>
-        /// Custom label for Failed Status
+        /// Custom label for Failed Status.
         /// </summary>
         [Parameter] public string FailedUploadedResultMessage { get; set; } = "Uploading failed";
 
         /// <summary>
-        /// Filter files by extension
+        /// Filters files by extension.
         /// </summary>
         [Parameter] public IReadOnlyCollection<string> AcceptedExtensions { get; set; } = new List<string> { "*" };
 
@@ -95,15 +95,22 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public bool IsMultiFile { get; set; }
 
         /// <summary>
-        /// If you want to upload immediately after selecting the files, you need to set this parameter true
+        /// Uploads immediately after selecting the files.
         /// </summary>
         [Parameter] public bool AutoUploadEnabled { get; set; } = true;
 
+        /// <summary>
+        /// Specifies the maximum size of the file.
+        /// </summary>
         [Parameter] public long MaxSize { get; set; }
+
+        /// <summary>
+        /// Specifies the message for the failed uploading progress due to exceeding the maximum size.
+        /// </summary>
         [Parameter] public string MaxSizeMessage { get; set; } = "File size is too large";
 
         /// <summary>
-        /// Select file(s) by brows button or drag and drop.
+        /// Select file(s) by browse button or drag and drop.
         /// </summary>
         /// <returns></returns>
         public async Task HandleOnChange()
@@ -190,7 +197,7 @@ namespace Bit.Client.Web.BlazorUI
         }
 
         /// <summary>
-        /// pause upload
+        /// Pause upload.
         /// </summary>
         /// <param name="index">
         /// -1 => all files | else => specific file
@@ -218,7 +225,7 @@ namespace Bit.Client.Web.BlazorUI
         }
 
         /// <summary>
-        /// cancel upload
+        /// Cancel upload.
         /// </summary>
         /// <param name="index">
         /// -1 => all files | else => specific file
@@ -246,7 +253,7 @@ namespace Bit.Client.Web.BlazorUI
         }
 
         /// <summary>
-        /// remove files
+        /// Remove files.
         /// </summary>
         /// <param name="index">
         /// -1 => all files | else => specific file
@@ -319,7 +326,7 @@ namespace Bit.Client.Web.BlazorUI
         }
 
         /// <summary>
-        /// Update files status
+        /// Update files status.
         /// </summary>
         /// <param name="uploadStatus"></param>
         /// <param name="index">
@@ -375,7 +382,7 @@ namespace Bit.Client.Web.BlazorUI
         }
 
         /// <summary>
-        /// Get updload status from XHR response status
+        /// Get updload status from XHR response status.
         /// </summary>
         /// <param name="responseStatus"></param>
         /// <returns></returns>
