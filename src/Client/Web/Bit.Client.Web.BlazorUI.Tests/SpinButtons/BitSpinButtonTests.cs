@@ -214,7 +214,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.SpinButtons
         ]
         public void SpinButtonShouldHaveCorrectMaxMin(double? min, double? max)
         {
-            var component = RenderComponent<BitSpinButtonTest>(parameters =>
+            var component = RenderComponent<BitSpinButton>(parameters =>
             {
                 parameters.Add(p => p.Min, min);
                 parameters.Add(p => p.Max, max);
@@ -395,6 +395,55 @@ namespace Bit.Client.Web.BlazorUI.Tests.SpinButtons
             var input = component.Find("input");
             var expectedResult = !String.IsNullOrEmpty(ariaValueText) ? ariaValueText : !String.IsNullOrEmpty(suffix) ? $"{Normalize(component.Instance.Value, precision)}{suffix}" : null;
             Assert.AreEqual(expectedResult, input.GetAttribute("aria-valuetext"));
+        }
+
+        [DataTestMethod,
+            DataRow(3, 1, 12),
+            DataRow(8, 2, 10),
+            DataRow(8, 1, 8),
+            DataRow(8, 2, 9),
+            DataRow(8, 5, 9)
+        ]
+        public void SpinButtonIncrementButtonClickTest(double defaultValue, double step, double max)
+        {
+            var component = RenderComponent<BitSpinButton>(parameters =>
+            {
+                parameters.Add(p => p.Step, step);
+                parameters.Add(p => p.Max, max);
+                parameters.Add(p => p.DefaultValue, defaultValue);
+            });
+
+            var input = component.Find("input");
+            var incrementButton = component.FindAll("button")[0];
+            incrementButton.Click();
+            var inputValue = input.GetAttribute("value");
+            var expectedResult = defaultValue + step <= max ? defaultValue + step : defaultValue;
+
+            Assert.AreEqual(expectedResult.ToString(), inputValue);
+        }
+
+        [DataTestMethod,
+            DataRow(3, 1, 0),
+            DataRow(2, 2, 0),
+            DataRow(3, 4, 0),
+            DataRow(0, 1, 0),
+        ]
+        public void SpinButtonDecrementButtonClickTest(double defaultValue, double step, double min)
+        {
+            var component = RenderComponent<BitSpinButton>(parameters =>
+            {
+                parameters.Add(p => p.Step, step);
+                parameters.Add(p => p.Min, min);
+                parameters.Add(p => p.DefaultValue, defaultValue);
+            });
+
+            var input = component.Find("input");
+            var decrementButton = component.FindAll("button")[1];
+            decrementButton.Click();
+            var inputValue = input.GetAttribute("value");
+            var expectedResult = defaultValue - step >= min ? defaultValue - step : defaultValue;
+
+            Assert.AreEqual(expectedResult.ToString(), inputValue);
         }
 
         private double Normalize(double value, int precision) => Math.Round(value, precision);
