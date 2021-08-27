@@ -52,8 +52,9 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components
                 Key = "Progress",
                 Links = new List<BitNavLinkItem>
                 {
-                    new BitNavLinkItem{ Name = "Spinner", Key = "Spinner", Url = "/components/spinner" }
-                }
+                    new BitNavLinkItem{ Name = "Spinner", Key = "Spinner", Url = "/components/spinner" },
+                    new BitNavLinkItem{ Name = "Progressindicator", Key = "Progressindicator", Url = "/components/progressindicator" }
+                },
             },
         };
     }
