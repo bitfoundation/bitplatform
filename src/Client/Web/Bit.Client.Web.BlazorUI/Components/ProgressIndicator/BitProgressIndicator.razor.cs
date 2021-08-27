@@ -23,7 +23,7 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public int BarHeight { get; set; } = 2;
 
         /// <summary>
-        /// Percentage of the operation's completeness, numerically between 0 and 1. If this is not set, the indeterminate progress animation will be shown instead
+        /// Percentage of the operation's completeness, numerically between 0 and 100. If this is not set, the indeterminate progress animation will be shown instead
         /// </summary>
         [Parameter]
         public double PercentComplete
