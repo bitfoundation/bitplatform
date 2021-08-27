@@ -29,6 +29,15 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components
             },
             new BitNavLinkItem
             {
+                Name = "Items & Lists",
+                Key = "Lists",
+                Links = new List<BitNavLinkItem>
+                {
+                    new BitNavLinkItem { Name = "Basic List", Key = "BasicList", Url="/components/basiclist" }
+                }
+            },
+            new BitNavLinkItem
+            {
                 Name = "Commands, Menus & Navs",
                 Key = "Navigations",
                 Links = new List<BitNavLinkItem>
