@@ -19,15 +19,21 @@
         <BitPivot>
             <BitPivotItem HeaderText="Example" IconName="ViewList">
                 <div>
-                    <BitChoiceGroup Name="Group1" Label="Pick one" IsRequired="true">
+                    <BitLabel>Selected Key is : @MySelectedKey</BitLabel>
+                    <BitTextField @bind-Value="MySelectedKey" Placeholder="Select one of A, B or C"></BitTextField>
+                    <BitChoiceGroup Name="Group1" Label="Pick one" IsRequired="true" @bind-SelectedKey="MySelectedKey">
                         <BitChoiceOption Key="A" Text="Option A" Value="1"></BitChoiceOption>
                         <BitChoiceOption Key="B" Text="Option B" Value="2"></BitChoiceOption>
-                        <BitChoiceOption Key="C" Text="Disabled option B" Value="3" IsEnabled="false"></BitChoiceOption>
+                        <BitChoiceOption Key="C" Text="Disabled option C" Value="3" IsEnabled="false"></BitChoiceOption>
                     </BitChoiceGroup>
                 </div>
             </BitPivotItem>
             <BitPivotItem HeaderText="Code" IconName="Source">
                 <div>
+                    <p class="p-l-20">&lt<span class="dark-green">BitLabel</span>>Selected Key is : @@MySelectedKey<span>&lt/</span><span class="dark-green">BitLabel</span><span>&gt;</span></p>
+                    <p class="p-l-20">
+                        &lt<span class="dark-green">BitTextField @@bind-Value</span>="MySelectedKey" <span class="dark-green">Placeholder</span>="Select one of A, B or C"><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
+                    </p>
                     <p>&lt<span class="dark-green">BitChoiceGroup Name</span>="Group1" <span class="dark-green">Label</span>="Pick one" <span class="dark-green">IsRequired</span>="<span class="light-blue">true</span>"></p>
                     <p class="p-l-20">&lt<span class="dark-green">BitChoiceOption</span> <span class="dark-green">Key</span>="A" <span class="dark-green">Text</span>="Option1" <span class="dark-green">Value</span>="1">&lt/<span class="dark-green">BitChoiceOption</span>></p>
                     <p class="p-l-20"> &lt<span class="dark-green">BitChoiceOption</span> <span class="dark-green">Key</span>="B" <span class="dark-green">Text</span>="Option2" <span class="dark-green">Value</span>="2">&lt/<span class="dark-green">BitChoiceOption</span>></p>
@@ -47,16 +53,16 @@
     <BitPivot>
         <BitPivotItem HeaderText="Example" IconName="ViewList">
             <div>
-                <BitChoiceGroup Name="Group2" IsEnabled="false" Label="Pick one">
+                <BitChoiceGroup Name="Group2" IsEnabled="false" Label="Pick one" DefaultSelectedKey="C">
                     <BitChoiceOption Key="A" Text="Option A" Value="1"></BitChoiceOption>
                     <BitChoiceOption Key="B" Text="Option2 B" Value="2"></BitChoiceOption>
-                    <BitChoiceOption Key="C" Text="Disabled option B" Value="3" IsEnabled="false"></BitChoiceOption>
+                    <BitChoiceOption Key="C" Text="Disabled option C" Value="3" IsEnabled="false"></BitChoiceOption>
                 </BitChoiceGroup>
             </div>
         </BitPivotItem>
         <BitPivotItem HeaderText="Code" IconName="Source">
             <div>
-                <p>&lt<span class="dark-green">BitChoiceGroup Name</span>="Group2" <span class="dark-green">IsEnabled</span>="<span class="light-blue">false</span>" <span class="dark-green">Label</span>="Pick one" ></p>
+                <p>&lt<span class="dark-green">BitChoiceGroup Name</span>="Group2" <span class="dark-green">IsEnabled</span>="<span class="light-blue">false</span>" <span class="dark-green">Label</span>="Pick one"  <span class="dark-green">DefaultSelectedKey</span>="C"></p>
                 <p class="p-l-20">&lt<span class="dark-green">BitChoiceOption</span> <span class="dark-green">Key</span>="A" <span class="dark-green">Text</span>="Option1" <span class="dark-green">Value</span>="1">&lt/<span class="dark-green">BitChoiceOption</span>></p>
                 <p class="p-l-20">&lt<span class="dark-green">BitChoiceOption</span> <span class="dark-green">Key</span>="B" <span class="dark-green">Text</span>="Option2" <span class="dark-green">Value</span>="2">&lt/<span class="dark-green">BitChoiceOption</span>></p>
                 <p class="p-l-20">&lt<span class="dark-green">BitChoiceOption</span> <span class="dark-green">Key</span>="C" <span class="dark-green">Text</span>="Disabled option" <span class="dark-green">Value</span>="3" <span class="dark-green">IsEnabled</span>="<span class="light-blue">false</span>">&lt/<span class="dark-green">BitChoiceOption</span>></p>
@@ -71,7 +77,7 @@
         <BitPivot>
             <BitPivotItem HeaderText="Example" IconName="ViewList">
                 <div>
-                    <BitChoiceGroup Name="Group1" Label="Pic one image">
+                    <BitChoiceGroup Name="Group1" Label="Pic one image"  DefaultSelectedKey="pie">
                         <BitChoiceOption Key="bar" Text="Clustered bar chart" Value="1" ImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png" ImageAlt="alt for image Option 1" SelectedImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png" ImageSize="new System.Drawing.Size( width: 32, height: 32)"></BitChoiceOption>
                         <BitChoiceOption Key="pie" Text="Pie chart" Value="2" ImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png" ImageAlt="alt for image Option 2" SelectedImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png" ImageSize="new System.Drawing.Size( width: 32, height: 32)"></BitChoiceOption>
                         <BitChoiceOption Key="disabeled_option" Text="Disabeled" IsEnabled="false" Value="3" ImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png" ImageAlt="alt for image Option 2" SelectedImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png" ImageSize="new System.Drawing.Size( width: 32, height: 32)"></BitChoiceOption>
@@ -80,7 +86,7 @@
             </BitPivotItem>
             <BitPivotItem HeaderText="Code" IconName="Source">
                 <div>
-                    <p>&lt<span class="dark-green">BitChoiceGroup Name</span>="Group1 <span class="dark-green">Label</span>="Pick one image"></p>
+                    <p>&lt<span class="dark-green">BitChoiceGroup Name</span>="Group1 <span class="dark-green">Label</span>="Pick one image" <span class="dark-green">DefaultSelectedKey</span>="pie"></p>
                     <p class="p-l-20">&lt<span class="dark-green">BitChoiceOption</span> <span class="dark-green">Key</span>="bar" <span class="dark-green">Text</span>="Clustered bar chart" <span class="dark-green">Value</span>="1" <span class="dark-green">ImageSrc</span>="/choicegroup-bar-unselected.png" <span class="dark-green">SelectedImageSrc</span>="/choicegroup-bar-selected.png" <span class="dark-green">ImageAlt</span>="alt" <span class="dark-green">ImageSize</span>="<span class="light-blue">new</span> System.Drawing.Size( width: 32, height: 32)"><span class="dark-green">BitChoiceOption</span>></p>
                     <p class="p-l-20"> &lt<span class="dark-green">BitChoiceOption</span> <span class="dark-green">Key</span>="pie" <span class="dark-green">Text</span>="Pie chart" <span class="dark-green">Value</span>="2" <span class="dark-green">ImageSrc</span>="/choicegroup-bar-unselected.png" <span class="dark-green">SelectedImageSrc</span>="/choicegroup-bar-selected.png" <span class="dark-green">ImageAlt</span>="alt" <span class="dark-green">ImageSize</span>="<span class="light-blue">new</span> System.Drawing.Size( width: 32, height: 32)"<span class="dark-green">>&lt/BitChoiceOption</span></p>
                     <p class="p-l-20"> &lt<span class="dark-green">BitChoiceOption</span> <span class="dark-green">Key</span>="disabeled_option" <span class="dark-green">Text</span>="Disabeled" <span class="dark-green">IsEnabled</span>="<span class="light-blue">false</span>" <span class="dark-green">Value</span>="3" <span class="dark-green">ImageSrc</span>="/choicegroup-bar-unselected.png" <span class="dark-green">SelectedImageSrc</span>="/choicegroup-bar-selected.png" <span class="dark-green">ImageAlt</span>="alt"  <span class="dark-green">ImageSize</span>="<span class="light-blue">new</span> System.Drawing.Size( width: 32, height: 32)">&lt/<span class="dark-green">BitChoiceOption</span>></p>
@@ -96,7 +102,7 @@
         <BitPivot>
             <BitPivotItem HeaderText="Example" IconName="ViewList">
                 <div>
-                    <BitChoiceGroup Name="Group1" Label="Pic one icon">
+                    <BitChoiceGroup Name="Group1" Label="Pic one icon" >
                         <BitChoiceOption Key="day" Text="Day" Value="1" IconName="CalendarDay"></BitChoiceOption>
                         <BitChoiceOption Key="week" Text="Week" Value="2" IconName="CalendarWeek"></BitChoiceOption>
                         <BitChoiceOption Key="month" Text="Month" Value="3" IconName="Calendar" IsEnabled="false"></BitChoiceOption>

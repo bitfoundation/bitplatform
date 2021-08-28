@@ -285,7 +285,8 @@
         }
 
         &:hover:after {
-            all: unset;
+            border-color: unset;
+            background-color: unset;
         }
     }
 
@@ -300,6 +301,19 @@
                 border-color: transparent !important;
                 background-color: transparent;
                 transition-duration: unset;
+            }
+        }
+    }
+
+    &.bit-cho-checked-fluent {
+
+        label {
+            &:after {
+                border-color: $Grey60;
+            }
+
+            &:hover:after {
+                border-color: $Grey60 !important;
             }
         }
     }

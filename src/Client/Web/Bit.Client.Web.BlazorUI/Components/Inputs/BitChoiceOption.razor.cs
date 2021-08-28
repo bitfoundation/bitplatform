@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
@@ -127,21 +126,19 @@ namespace Bit.Client.Web.BlazorUI
 
         protected virtual async Task HandleClick(MouseEventArgs e)
         {
-            if (IsEnabled)
+            if (IsEnabled is false) return;
+            if (ChoiceGroup is not null)
             {
-                if (ChoiceGroup is not null)
-                {
-                    await ChoiceGroup.ChangeSelection(this);
-                }
-                await OnClick.InvokeAsync(e);
+                await ChoiceGroup.ChangeSelection(this);
             }
+            await OnClick.InvokeAsync(e);
         }
 
         protected virtual async Task HandleChange(ChangeEventArgs e)
         {
             if (IsEnabled is false) return;
             if (IsCheckedHasBeenSet && IsCheckedChanged.HasDelegate is false) return;
-            
+
             await OnChange.InvokeAsync(IsChecked);
         }
 
