@@ -1,0 +1,270 @@
+﻿@page "/components/iconbutton"
+
+<h2>IconButton</h2>
+
+<div class="card">
+    <p class="desc">BitIconButtons are just like BitButtons, the only difference is setting icon in BitIconButton component.</p>
+</div>
+
+<h2>Usage</h2>
+<div class="wrapper">
+    <div class="card">
+        <h3>BitIconButton</h3>
+        <div class="desc">
+            <p>
+                A BitIconButton has Tooltip attribute, you can use it for showing button tooltip.
+            </p>
+        </div>
+        <BitPivot>
+            <BitPivotItem HeaderText="Example" IconName="ViewList">
+                <BitIconButton IconName="Emoji" />
+                <BitIconButton IconName="EmojiDisappointed" AllowDisabledFocus="false" IsEnabled="false" />
+                <BitIconButton IconName="Emoji2" Title="I'm Happy" />
+            </BitPivotItem>
+            <BitPivotItem HeaderText="Code" IconName="Source">
+                <p>
+                    &lt<span class="dark-green">BitIconButton IconName="</span>Emoji2"><span>&lt/</span><span class="dark-green">BitIconButton</span><span>&gt;</span>
+                </p>
+                <p>
+                    &lt<span class="dark-green">BitIconButton IconName="</span>Emoji2" <span class="dark-green">AllowDisabledFocus="</span><span class="light-blue">false"</span><span class="dark-green"> IsEnabled="</span><span class="light-blue">false"></span><span>&lt/</span><span class="dark-green">BitIconButton</span><span>&gt;</span>
+                </p>
+                <p>
+                    &lt<span class="dark-green">BitIconButton IconName="</span>Emoji2"<span class="dark-green"> ToolTip=</span><span>"I'm Happy"><span>&lt/</span></span><span class="dark-green">BitIconButton</span><span>&gt;</span>
+                </p>
+            </BitPivotItem>
+        </BitPivot>
+        <div class="card">
+            <h3>Style & Class</h3>
+            <div class="desc">
+                <p>
+                    BitIconButton can directly get css class or inline style.
+                </p>
+            </div>
+            <BitPivot>
+                <BitPivotItem HeaderText="Example" IconName="ViewList">
+                    <div>
+                        <BitIconButton IconName="Home" Style="color:red">
+                            Styled Button
+                        </BitIconButton>
+                        <BitIconButton IconName="FileImage" Class="custom-button">
+                            Classed Button
+                        </BitIconButton>
+                    </div>
+                </BitPivotItem>
+                <BitPivotItem HeaderText="Code" IconName="Source">
+                    <p>
+                        &lt<span class="dark-green">BitIconButton Style="</span><span>color:red" </span><span class="dark-green"> IconName="</span>Home"> Styled Button<span>&lt/</span><span class="dark-green">BitIconButton</span><span>&gt;</span>
+                    </p>
+                    <p>
+                        &lt<span class="dark-green">BitIconButton Class="</span><span>custom-button"</span><span class="dark-green"> IconName="</span>FileImage"> Classed Button<span>&lt/</span><span class="dark-green">BitIconButton</span><span>&gt;</span>
+                    </p>
+                </BitPivotItem>
+            </BitPivot>
+        </div>
+        <div class="card">
+            <h3>Visibility</h3>
+            <div class="desc">
+                <p>
+                    By setting Visibility attribute, BitIconButton can be Visible, Hidden or Collapsed.
+                </p>
+            </div>
+            <BitPivot>
+                <BitPivotItem HeaderText="Example" IconName="ViewList">
+                    <div>
+                        <BitIconButton IconName="List" Visibility="ComponentVisibility.Visible">Visible Button</BitIconButton>
+                        <br />
+                        <span>Hidden Button: </span>[<BitIconButton Visibility="ComponentVisibility.Hidden">Hidden Button</BitIconButton>]
+                        <br />
+                        <span>Collapsed Button: </span>[<BitIconButton Visibility="ComponentVisibility.Collapsed">Collapsed Button</BitIconButton>]
+                    </div>
+                </BitPivotItem>
+                <BitPivotItem HeaderText="Code" IconName="Source">
+                    <p>
+                        &lt<span class="dark-green">BitIconButton Visibility="</span><span class="light-green">ComponentVisibility</span>.Visible"<span><span class="dark-green"> IconName="</span>List"></span><span>Visible Button</span><span>&lt/</span><span class="dark-green">BitIconButton</span><span>&gt;</span>
+                    </p>
+                    <p>
+                        &lt<span class="dark-green">BitIconButton Hidden="</span><span class="light-green">ComponentHidden</span>.Hidden"<span><span class="dark-green"> IconName="</span>List"></span><span>Hidden Button</span><span>&lt/</span><span class="dark-green">BitIconButton</span><span>&gt;</span>
+                    </p>
+                    <p>
+                        &lt<span class="dark-green">BitIconButton Visibility="</span><span class="light-green">ComponentVisibility</span>.Collapsed"<span><span class="dark-green"> IconName="</span>List"></span><span>Collapsed Button</span><span>&lt/</span><span class="dark-green">BitIconButton</span><span>&gt;</span>
+                    </p>
+                </BitPivotItem>
+            </BitPivot>
+        </div>
+        <div class="card">
+            <h3>Arias for Screen Reader</h3>
+            <div class="desc">
+                <p>
+                    Aria attribues can also set for a BitIconButton.
+                </p>
+            </div>
+            <BitPivot>
+                <BitPivotItem HeaderText="Example" IconName="ViewList">
+                    <div>
+                        <BitIconButton IconName="PowerButton" AriaDescription="Detailed description used for screen reader.">
+                            Button with Aria Description
+                        </BitIconButton>
+                        <BitIconButton IconName="PowerButton" AriaHidden="true">
+                            Button with Aria Hidden
+                        </BitIconButton>
+                    </div>
+                </BitPivotItem>
+                <BitPivotItem HeaderText="Code" IconName="Source">
+                    <p>
+                        &lt<span class="dark-green">BitIconButton AriaDescription="</span><span>Detailed description used for screen reader." <span class="dark-green"> IconName="</span>PowerButton">Icon Button with Aria Description</span><span>&lt/</span><span class="dark-green">BitIconButton</span><span>&gt;</span>
+                    </p>
+                    <p>
+                        &lt<span class="dark-green">BitIconButton AriaHidden="</span><span class="light-blue">true" </span><span class="dark-green"> IconName="</span>PowerButton">Icon Button with Aria Hidden<span>&lt/</span><span class="dark-green">BitIconButton</span><span>&gt;</span>
+                    </p>
+                </BitPivotItem>
+            </BitPivot>
+        </div>
+        <div class="card">
+            <h3>IconButton-like Anchor</h3>
+            <div class="desc">
+                <p>
+                    BitIconButton can act as a link by setting Href and Target attribute, you define how to open your link.
+                </p>
+            </div>
+            <BitPivot>
+                <BitPivotItem HeaderText="Example" IconName="ViewList">
+                    <div class="m-t-10">
+                        <BitIconButton IconName="Website" Target="_blank" Href="https://github.com/bitfoundation/bitframework">
+                            Open Bit Foundation In New Tab
+                        </BitIconButton>
+                        <BitIconButton IconName="Website" Href="https://github.com/bitfoundation/bitframework" ButtonStyle="ButtonStyle.Standard">
+                            Go To Bit Foundation
+                        </BitIconButton>
+                        <BitIconButton IconName="Website" Target="_self" Href="https://github.com/bitfoundation/bitframework" IsEnabled="false">
+                            <span>Bit Foundation From Span</span>
+                        </BitIconButton>
+                    </div>
+                </BitPivotItem>
+                <BitPivotItem HeaderText="Code" IconName="Source">
+                    <p>
+                        &lt<span class="dark-green">BitIconButton</span><span class="dark-green"> IconName="</span>Website"<span class="dark-green"> Target="</span><span>_blank"</span><span class="dark-green"> Href=</span><span class="light-blue">"https://github.com/bitfoundation/bitframework"></span>Open Bit Foundation In New Tab<span>&lt/</span><span class="dark-green">BitIconButton</span><span>&gt;</span>
+                    </p>
+                    <p>
+                        &lt<span class="dark-green">BitIconButton</span><span class="dark-green"> IconName="</span>Website"<span class="dark-green"> ButtonStyle="</span><span class="light-green">ButtonStyle</span><span>.Standard"</span><span class="dark-green"> Href=</span><span class="light-blue">"https://github.com/bitfoundation/bitframework"></span>Go To Bit Foundation<span>&lt/</span><span class="dark-green">BitIconButton</span><span>&gt;</span>
+                    </p>
+                    <p>
+                        &lt<span class="dark-green">BitIconButton Target="</span><span>_self"</span><span class="dark-green"> IconName="</span>Website"<span class="dark-green"> Href=</span><span class="light-blue">"https://github.com/bitfoundation/bitframework"</span><span class="dark-green"> IsEnabled="</span><span class="light-blue">false"&lt</span><span class="light-blue">span></span>Bit Foundation From Span<span class="light-blue">&ltspan></span><span>&lt/</span><span class="dark-green">BitIconButton</span><span>&gt;</span>
+                    </p>
+                </BitPivotItem>
+            </BitPivot>
+        </div>
+    </div>
+</div>
+<h2>Implementation</h2>
+<div class="card">
+    <table>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Default value</th>
+            <th>Description</th>
+        </tr>
+        <tr>
+            <td>allowDisabledFocus</td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>Whether the icon button can have focus in disabled mode.</td>
+        </tr>
+        <tr>
+            <td>ariaDescription</td>
+            <td>string</td>
+            <td></td>
+            <td>Detailed description of the icon button for the benefit of screen readers.</td>
+        </tr>
+        <tr>
+            <td>ariaHidden</td>
+            <td>boolean</td>
+            <td></td>
+            <td>If true, add an aria-hidden attribute instructing screen readers to ignore the element.</td>
+        </tr>
+        <tr>
+            <td>className</td>
+            <td>string</td>
+            <td></td>
+            <td>If provided, additional class name to provide on the root element.</td>
+        </tr>
+        <tr>
+            <td>ref</td>
+            <td>elementreference</td>
+            <td></td>
+            <td>Access the public methods and properties of the component.</td>
+        </tr>
+        <tr>
+            <td>href</td>
+            <td>string</td>
+            <td></td>
+            <td>If provided, this component will be rendered as an anchor.</td>
+        </tr>
+        <tr>
+            <td>iconName</td>
+            <td>string</td>
+            <td></td>
+            <td>The attribute for the icon shown in the icon button.</td>
+        </tr>
+        <tr>
+            <td>isEnabled</td>
+            <td>boolean</td>
+            <td>true</td>
+            <td>Whether the button is enabled.</td>
+        </tr>
+        <tr>
+            <td>target</td>
+            <td>string</td>
+            <td></td>
+            <td>Target of an anchor.</td>
+        </tr>
+        <tr>
+            <td>title</td>
+            <td>string</td>
+            <td></td>
+            <td>Optional title for this icon button.</td>
+        </tr>
+        <tr>
+            <td>styles</td>
+            <td>string</td>
+            <td></td>
+            <td>Custom styling for individual elements within the icon button DOM.</td>
+        </tr>
+        <tr>
+            <td>uniqueId</td>
+            <td>guid</td>
+            <td></td>
+            <td>Unique ID to identify the item. Typically a duplicate of key value.</td>
+        </tr>
+        <tr>
+            <td>visibility</td>
+            <td>componentVisibility</td>
+            <td>visible</td>
+            <td>Whether the button is visible, hidden ,collapsed.</td>
+        </tr>
+    </table>
+    <h4 id="component-visibility">ComponentVisibility</h4>
+    <hr />
+    <table>
+        <tr>
+            <th>Name</th>
+            <th>Value</th>
+            <th>Description</th>
+        </tr>
+        <tr>
+            <td>visible</td>
+            <td>0</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>hidden</td>
+            <td>1</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>collapsed</td>
+            <td>2</td>
+            <td></td>
+        </tr>
+    </table>
+</div>

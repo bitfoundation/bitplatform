@@ -1,0 +1,311 @@
+﻿@page "/components/compoundbutton"
+
+<h2>CompoundButton</h2>
+
+<h2>Usage</h2>
+<div class="wrapper">
+    <div class="card">
+        <h3>BitCompoundButton</h3>
+        <div class="desc">
+            <p>
+                A compound button with SecondaryText attribute.
+            </p>
+        </div>
+        <BitPivot>
+            <BitPivotItem HeaderText="Example" IconName="ViewList">
+                <BitCompoundButton IsEnabled="true"
+                                   Text="Primary"
+                                   SecondaryText="This Button is compound button">
+                </BitCompoundButton>
+                <BitCompoundButton IsEnabled="true"
+                                   Text="Standard"
+                                   AriaHidden="true"
+                                   SecondaryText="This Button is compound button"
+                                   ButtonStyle="ButtonStyle.Standard">
+                </BitCompoundButton>
+                <BitCompoundButton IsEnabled="false"
+                                   AllowDisabledFocus="false"
+                                   Text="Disabled"
+                                   AriaDescription="Detailed description used for screen reader."
+                                   SecondaryText="This Button is a disabled compound button">
+                </BitCompoundButton>
+            </BitPivotItem>
+            <BitPivotItem HeaderText="Code" IconName="Source">
+                <p>
+                    &lt<span class="dark-green">BitCompoundButton IsEnabled="</span><span class="light-blue">true"</span><span class="dark-green"> Text="</span><span>Primary"</span><span class="dark-green"> AriaLabel=</span><span>"Detailed label used for screen reader."</span><span class="dark-green"> SecondaryText</span>="This Button is compound button"><span>&lt/</span><span class="dark-green">BitCompoundButton</span><span>&gt;</span>
+                </p>
+                <p>
+                    &lt<span class="dark-green">BitCompoundButton IsEnabled="</span><span class="light-blue">true"</span><span class="dark-green"> Text="</span><span>Primary"</span><span class="dark-green"> AriaHidden=</span><span class="light-blue">true</span><span class="dark-green"> SecondaryText</span>="This Button is compound button"<span class="dark-green"> ButtonStyle="</span><span class="light-green">ButtonStyle</span>
+                    .Standard"><span>&lt/</span><span class="dark-green">BitCompoundButton</span><span>&gt;</span>
+                </p>
+                <p>
+                    &lt<span class="dark-green">BitCompoundButton IsEnabled="</span><span class="light-blue">false"</span><span class="dark-green"> Text="</span><span>Disabled"</span><span class="dark-green"> AriaDescription=</span><span>"Detailed description used for screen reader."</span><span class="dark-green"> SecondaryText</span>="This Button is a disabled compound button"<span class="light-green"> ButtonStyle</span>
+                    .Standard"><span>&lt/</span><span class="dark-green">BitCompoundButton</span><span>&gt;</span>
+                </p>
+            </BitPivotItem>
+        </BitPivot>
+        <div class="card">
+            <h3>Style & Class</h3>
+            <div class="desc">
+                <p>
+                    BitCompoundButton can directly get css class or inline style.
+                </p>
+            </div>
+            <BitPivot>
+                <BitPivotItem HeaderText="Example" IconName="ViewList">
+                    <div>
+                        <BitCompoundButton Style="background-color:#32385b;border-color:#32385b" Text="Styled" SecondaryText="This is styled compound button"></BitCompoundButton>
+                        <BitCompoundButton ButtonStyle="ButtonStyle.Standard" Class="custom-button" Text="Classed" SecondaryText="This is classed compound button"></BitCompoundButton>
+                    </div>
+                </BitPivotItem>
+                <BitPivotItem HeaderText="Code" IconName="Source">
+                    <p>
+                        &lt<span class="dark-green">BitCompoundButton Style="</span><span>background-color:#32385b;border-color:#32385b"</span><span class="dark-green"> Text</span>="<span>Styled</span>"<span class="dark-green"> SecondaryText</span>="This is styled compound button"><span>&lt/</span><span class="dark-green">BitCompoundButton</span><span>&gt;</span>
+                    </p>
+                    <p>
+                        &lt<span class="dark-green">BitCompoundButton Class="</span><span>custom-button"</span><span class="dark-green"> Text</span>="<span>Classed</span>"<span class="dark-green"> SecondaryText</span>="This is classed compound button" <span class="dark-green"> ButtonStyle="</span><span class="light-green">ButtonStyle</span>.Standard"><span>&lt/</span><span class="dark-green">BitCompoundButton</span><span>&gt;</span>
+                    </p>
+                    <div>
+                        <p>
+                            &lt<span class="light-blue">style></span>
+                            <br />
+                            <span class="m-l-30 dark-yellow">.custom-button</span> {
+                            <br />
+                            <span class="m-l-45"><span class="light-blue">border-style</span> : dashed;</span>
+                            <br />
+                            <span class="m-l-45"><span class="light-blue">border-color</span> : red;</span>
+                            <br />
+                            <span class="m-l-45"><span class="light-blue">font-weight</span> : bolder;</span>
+                            <br />
+                            <span class="m-l-30">}</span>
+                            <br />
+                            <span>&lt/</span><span class="light-blue">style</span><span>&gt;</span>
+                        </p>
+                    </div>
+                </BitPivotItem>
+            </BitPivot>
+        </div>
+        <div class="card">
+            <h3>Visibility</h3>
+            <div class="desc">
+                <p>
+                    By setting Visibility attribute, BitButton can be Visible, Hidden or Collapsed.
+                </p>
+            </div>
+            <BitPivot>
+                <BitPivotItem HeaderText="Example" IconName="ViewList">
+                    <div>
+                        <BitCompoundButton Visibility="ComponentVisibility.Visible" Text="Visible" SecondaryText="This Button is a visible compound button"></BitCompoundButton>
+                        <br />
+                        <span>Hidden Button: </span>[<BitCompoundButton Text="Hidden" SecondaryText="This Button is a hidden compound button" Visibility="ComponentVisibility.Hidden"></BitCompoundButton>]
+                        <br />
+                        <span>Collapsed Button: </span>[<BitCompoundButton Text="Collapsed" SecondaryText="This Button is a collapsed compound button" Visibility="ComponentVisibility.Collapsed"></BitCompoundButton>]
+                    </div>
+                </BitPivotItem>
+                <BitPivotItem HeaderText="Code" IconName="Source">
+                    <p>
+                        &lt<span class="dark-green">BitCompoundButton Visibility="</span><span class="light-green">ComponentVisibility</span>.Visible"<span><span class="dark-green"> Text</span>="<span>Visible</span>"<span class="dark-green"> SecondaryText</span>="This Button is a visible compound button"></span><span>&lt/</span><span class="dark-green">BitCompoundButton</span><span>&gt;</span>
+                    </p>
+                    <p>
+                        &lt<span class="dark-green">BitCompoundButton Hidden="</span><span class="light-green">ComponentHidden</span>.Hidden"<span><span class="dark-green"> Text</span>="<span>Hidden</span>"<span class="dark-green"> SecondaryText</span>="This Button is a hidden compound button"></span><span>&lt/</span><span class="dark-green">BitCompoundButton</span><span>&gt;</span>
+                    </p>
+                    <p>
+                        &lt<span class="dark-green">BitCompoundButton Visibility="</span><span class="light-green">ComponentVisibility</span>.Collapsed"<span><span class="dark-green"> Text</span>="<span>Collapsed</span>"<span class="dark-green"> SecondaryText</span>="This Button is a collapsed compound button"></span><span>&lt/</span><span class="dark-green">BitCompoundButton</span><span>&gt;</span>
+                    </p>
+                </BitPivotItem>
+            </BitPivot>
+        </div>
+        <div class="card">
+            <h3>Arias for Screen Reader</h3>
+            <div class="desc">
+                <p>
+                    Aria attribues can also set for a BitCompoundButton.
+                </p>
+            </div>
+            <BitPivot>
+                <BitPivotItem HeaderText="Example" IconName="ViewList">
+                    <div>
+                        <BitCompoundButton ButtonStyle="ButtonStyle.Standard" Text="AriaDescription" SecondaryText="This is a compound button with aria description" AriaDescription="Button with Aria Description"></BitCompoundButton>
+                        <BitCompoundButton Text="AriaHidden" SecondaryText="This is a compound button with aria hidden" AriaHidden="true"></BitCompoundButton>
+                    </div>
+                </BitPivotItem>
+                <BitPivotItem HeaderText="Code" IconName="Source">
+                    <p>
+                        &lt<span class="dark-green">BitCompoundButton AriaDescription="</span><span>Detailed description used for screen reader" <span class="dark-green"> Text</span>="<span>AriaDescription</span>"<span class="dark-green"> SecondaryText</span>="This is a compound button with aria description" <span class="dark-green"> ButtonStyle="</span><span class="light-green">ButtonStyle</span>.Standard"></span><span>&lt/</span><span class="dark-green">BitCompoundButton</span><span>&gt;</span>
+                    </p>
+                    <p>
+                        &lt<span class="dark-green">BitCompoundButton AriaHidden="</span><span class="light-blue">true"</span><span class="dark-green"> Text</span>="<span>AriaDescription</span>"<span class="dark-green"> SecondaryText</span>="This is a compound button with aria description"><span>&lt/</span><span class="dark-green">BitCompoundButton</span><span>&gt;</span>
+                    </p>
+                </BitPivotItem>
+            </BitPivot>
+        </div>
+        <div class="card">
+            <h3>CompundButton-like Anchor</h3>
+            <div class="desc">
+                <p>
+                    BitCompundButton can act as a link by setting Href and Target attribute, you define how to open your link.
+                </p>
+            </div>
+            <BitPivot>
+                <BitPivotItem HeaderText="Example" IconName="ViewList">
+                    <div class="m-t-10">
+                        <BitCompoundButton Target="_blank" Href="https://github.com/bitfoundation/bitframework" Text="Open the site" SecondaryText="Open Bit Foundation In New Tab"></BitCompoundButton>
+                        <BitCompoundButton Href="https://github.com/bitfoundation/bitframework" ButtonStyle="ButtonStyle.Standard" Text="Open the site" SecondaryText="Go To Bit Foundation"></BitCompoundButton>
+                        <BitCompoundButton Target="_self" Href="https://github.com/bitfoundation/bitframework" IsEnabled="false" Text="Open the site" SecondaryText="Go To Bit Foundation"></BitCompoundButton>
+                    </div>
+                </BitPivotItem>
+                <BitPivotItem HeaderText="Code" IconName="Source">
+                    <p>
+                        &lt<span class="dark-green">BitCompoundButton</span><span class="dark-green"> Target="</span><span>_blank"</span><span class="dark-green"> Href=</span><span class="light-blue">"https://github.com/bitfoundation/bitframework"<span class="dark-green"> Text</span>="<span>Open the site</span>"<span class="dark-green"> SecondaryText</span>="Open Bit Foundation In New Tab"></span><span>&lt/</span><span class="dark-green">BitCompoundButton</span><span>&gt;</span>
+                    </p>
+                    <p>
+                        &lt<span class="dark-green">BitCompoundButton</span><span class="dark-green"> ButtonStyle="</span><span class="light-green">ButtonStyle</span><span>.Standard"</span><span class="dark-green"> Href=</span><span class="light-blue">"https://github.com/bitfoundation/bitframework"</span><span class="dark-green"> Text</span>="<span>Open the site</span>"<span class="dark-green"> SecondaryText</span>="Go To Bit Foundation"><span>&lt/</span><span class="dark-green">BitCompoundButton</span><span>&gt;</span>
+                    </p>
+                    <p>
+                        &lt<span class="dark-green">BitCompoundButton</span><span class="dark-green"> Href=</span><span class="light-blue">"https://github.com/bitfoundation/bitframework"</span><span class="dark-green"> IsEnabled="</span><span class="light-blue">false"</span><span class="dark-green"> Text</span>="<span>Open the site</span>"<span class="dark-green"> SecondaryText</span>="Go To Bit Foundation"><span>&lt/</span><span class="dark-green">BitCompoundButton</span><span>&gt;</span>
+                    </p>
+                </BitPivotItem>
+            </BitPivot>
+        </div>
+    </div>
+</div>
+<h2>Implementation</h2>
+<div class="card">
+    <table>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Default value</th>
+            <th>Description</th>
+        </tr>
+        <tr>
+            <td>allowDisabledFocus</td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>Whether the compound button can have focus in disabled mode.</td>
+        </tr>
+        <tr>
+            <td>ariaDescription</td>
+            <td>string</td>
+            <td></td>
+            <td>Detailed description of the compound button for the benefit of screen readers. Besides the compound button, other button types will need more information provided to screen reader.</td>
+        </tr>
+        <tr>
+            <td>ariaHidden</td>
+            <td>boolean</td>
+            <td></td>
+            <td>If true, add an aria-hidden attribute instructing screen readers to ignore the element.</td>
+        </tr>
+        <tr>
+            <td>buttonStyle</td>
+            <td>buttonstyle</td>
+            <td>primary</td>
+            <td>The style of compound button.</td>
+        </tr>
+        <tr>
+            <td>className</td>
+            <td>string</td>
+            <td></td>
+            <td>If provided, additional class name to provide on the root element.</td>
+        </tr>
+        <tr>
+            <td>ref</td>
+            <td>elementreference</td>
+            <td></td>
+            <td>Access the public methods and properties of the component.</td>
+        </tr>
+        <tr>
+            <td>href</td>
+            <td>string</td>
+            <td></td>
+            <td>If provided, this component will be rendered as an anchor.</td>
+        </tr>
+        <tr>
+            <td>isEnabled</td>
+            <td>boolean</td>
+            <td>true</td>
+            <td>Whether the compound button is enabled.</td>
+        </tr>
+        <tr>
+            <td>target</td>
+            <td>string</td>
+            <td></td>
+            <td>Target of an anchor.</td>
+        </tr>
+        <tr>
+            <td>title</td>
+            <td>string</td>
+            <td></td>
+            <td>Optional title for this button.</td>
+        </tr>
+        <tr>
+            <td>secondaryText</td>
+            <td>string</td>
+            <td></td>
+            <td>Description of the action this compound button takes. Only used for compound buttons.</td>
+        </tr>
+        <tr>
+            <td>styles</td>
+            <td>string</td>
+            <td></td>
+            <td>Custom styling for individual elements within the compound button DOM.</td>
+        </tr>
+        <tr>
+            <td>uniqueId</td>
+            <td>guid</td>
+            <td></td>
+            <td>Unique ID to identify the item. Typically a duplicate of key value.</td>
+        </tr>
+        <tr>
+            <td>visibility</td>
+            <td>componentVisibility</td>
+            <td>visible</td>
+            <td>Whether the compound button  is visible, hidden ,collapsed.</td>
+        </tr>
+    </table>
+    <div id="button-style">
+        <h4>ButtonStyle</h4>
+        <hr />
+        <table>
+            <tr>
+                <th>Name</th>
+                <th>Value</th>
+                <th>Description</th>
+            </tr>
+            <tr>
+                <td>primary</td>
+                <td>0</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>standard</td>
+                <td>1</td>
+                <td></td>
+            </tr>
+        </table>
+    </div>
+    <h4 id="component-visibility">ComponentVisibility</h4>
+    <hr />
+    <table>
+        <tr>
+            <th>Name</th>
+            <th>Value</th>
+            <th>Description</th>
+        </tr>
+        <tr>
+            <td>visible</td>
+            <td>0</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>hidden</td>
+            <td>1</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>collapsed</td>
+            <td>2</td>
+            <td></td>
+        </tr>
+    </table>
+</div>
