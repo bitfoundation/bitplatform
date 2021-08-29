@@ -29,6 +29,15 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components
             },
             new BitNavLinkItem
             {
+                Name = "Items & Lists",
+                Key = "Lists",
+                Links = new List<BitNavLinkItem>
+                {
+                    new BitNavLinkItem { Name = "Basic List", Key = "BasicList", Url="/components/basiclist" }
+                }
+            },
+            new BitNavLinkItem
+            {
                 Name = "Commands, Menus & Navs",
                 Key = "Navigations",
                 Links = new List<BitNavLinkItem>
@@ -52,8 +61,9 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components
                 Key = "Progress",
                 Links = new List<BitNavLinkItem>
                 {
-                    new BitNavLinkItem{ Name = "Spinner", Key = "Spinner", Url = "/components/spinner" }
-                }
+                    new BitNavLinkItem{ Name = "Spinner", Key = "Spinner", Url = "/components/spinner" },
+                    new BitNavLinkItem{ Name = "Progressindicator", Key = "Progressindicator", Url = "/components/progressindicator" }
+                },
             },
         };
     }
