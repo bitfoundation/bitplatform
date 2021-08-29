@@ -129,7 +129,7 @@ namespace Bit.Client.Web.BlazorUI
             if (IsEnabled is false) return;
             if (ChoiceGroup is not null)
             {
-                await ChoiceGroup.ChangeSelection(this);
+                await ChoiceGroup.SelectOption(this);
             }
             await OnClick.InvokeAsync(e);
         }
@@ -166,6 +166,21 @@ namespace Bit.Client.Web.BlazorUI
             }
 
             _disposed = true;
+        }
+
+        internal void SelectedItemChanged(BitChoiceOption item)
+        {
+            IsChecked = item == this;
+        }
+
+        protected override void OnInitialized()
+        {
+            if (ChoiceGroup!.SelectedKey == Key)
+            {
+                ChoiceGroup?.SelectInitialOption(this);
+            }
+
+            base.OnInitialized();
         }
     }
 }
