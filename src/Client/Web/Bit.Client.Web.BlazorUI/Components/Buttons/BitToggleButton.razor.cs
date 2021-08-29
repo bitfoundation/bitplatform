@@ -27,7 +27,7 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public bool AriaHidden { get; set; }
 
         /// <summary>
-        /// Determine if the button is checked state, default is true.
+        /// Determine if the button is in checked state, default is true.
         /// </summary>        
         [Parameter]
         public bool IsChecked
@@ -41,10 +41,7 @@ namespace Bit.Client.Web.BlazorUI
                 _ = IsCheckedChanged.InvokeAsync(value);
             }
         }
-
-        /// <summary>
-        /// Callback that is called when the IsChecked parameter changed.
-        /// </summary>
+        
         [Parameter] public EventCallback<bool> IsCheckedChanged { get; set; }
 
         /// <summary>
@@ -73,7 +70,7 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public string? Title { get; set; }
 
         /// <summary>
-        /// Toggles the state when the button is clicked.
+        /// Callback that is called when the button is clicked.
         /// </summary>
         [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
