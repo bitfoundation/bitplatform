@@ -150,8 +150,8 @@ namespace Bit.Client.Web.BlazorUI
 
             var rangedClass = IsRanged ? "-ranged" : null;
             ClassBuilder.Register(() => IsVertical
-                                                ? $"{RootElementClass}{rangedClass}-column"
-                                                : $"{RootElementClass}{rangedClass}-row");
+                                                ? $"{RootElementClass}{rangedClass}-vertical"
+                                                : $"{RootElementClass}{rangedClass}-horizontal");
         }
 
         protected override void OnInitialized()
