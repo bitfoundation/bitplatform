@@ -29,31 +29,46 @@
                 <div id="@sliderBoxId"
                      class="bit-slider-box"
                      style="@styleProgress"
-                     role="slider"
-                     tabindex="@GetTabIndex"
-                     data-is-focusable="@GetDataIsFocusable"
-                     aria-disabled="@GetAriaDisabled"
-                     aria-label="@Label"
                      @attributes="@SliderBoxHtmlAttributes">
                     @if (IsOriginFromZero)
                     {
                         <span class="zeroTick" style="left: calc(50% - 1px);"></span>
                     }
 
-                    <input type="range"
+                    <input id="@($"min-{sliderBoxId}")"
+                           type="range"
                            min="@Min"
                            max="@Max"
                            step="@Step"
                            @bind-value="@fisrtInputValue"
                            @oninput="@(args => HandleInput(args, true))"
-                           disabled=@(!IsEnabled) />
-                    <input type="range"
+                           disabled=@(!IsEnabled)
+                           role="slider"
+                           tabindex="@GetTabIndex"
+                           data-is-focusable="@GetDataIsFocusable"
+                           aria-disabled="@GetAriaDisabled"
+                           aria-label="@Label"
+                           aria-valuemin="@Min"
+                           aria-valuemax="@Max"
+                           aria-valuetext="@GetAriaValueText(fisrtInputValue.GetValueOrDefault())"
+                           aria-valuenow="@fisrtInputValue" />
+                    <input id="@($"max-{sliderBoxId}")"
+                           type="range"
                            min="@Min"
                            max="@Max"
                            step="@Step"
                            @bind-value="@secoundInputValue"
                            @oninput="@(args => HandleInput(args, false))"
-                           disabled=@(!IsEnabled) />
+                           disabled=@(!IsEnabled)
+                           role="slider"
+                           tabindex="@GetTabIndex"
+                           data-is-focusable="@GetDataIsFocusable"
+                           aria-disabled="@GetAriaDisabled"
+                           aria-label="@Label"
+                           aria-valuemin="@Min"
+                           aria-valuemax="@Max"
+                           aria-valuetext="@GetAriaValueText(secoundInputValue.GetValueOrDefault())"
+                           aria-valuenow="@secoundInputValue" />
                 </div>
             </div>
             @if (ShowValue)
@@ -69,30 +84,49 @@
                 {
                     <label class="valueLabel">@GetValueDisplay(lowerValue.GetValueOrDefault())</label>
                 }
-                <div class="bit-slider-box"
+                <div id="@sliderBoxId"
+                     class="bit-slider-box"
                      style="@styleProgress"
-                     role="group"
-                     aria-labelledby="multi-lbl"
                      @attributes="@SliderBoxHtmlAttributes">
                     @if (IsOriginFromZero)
                     {
                         <span class="zeroTick" style="left: calc(50% - 1px);"></span>
                     }
 
-                    <input type="range"
+                    <input id="@($"min-{sliderBoxId}")"
+                           type="range"
                            min="@Min"
                            max="@Max"
                            step="@Step"
                            @bind-value="@fisrtInputValue"
                            @oninput="@(args => HandleInput(args, true))"
-                           disabled=@(!IsEnabled) />
-                    <input type="range"
+                           disabled=@(!IsEnabled)
+                           role="slider"
+                           tabindex="@GetTabIndex"
+                           data-is-focusable="@GetDataIsFocusable"
+                           aria-disabled="@GetAriaDisabled"
+                           aria-label="@Label"
+                           aria-valuemin="@Min"
+                           aria-valuemax="@Max"
+                           aria-valuetext="@GetAriaValueText(fisrtInputValue.GetValueOrDefault())"
+                           aria-valuenow="@fisrtInputValue" />
+                    <input id="@($"max-{sliderBoxId}")"
+                           type="range"
                            min="@Min"
                            max="@Max"
                            step="@Step"
                            @bind-value="@secoundInputValue"
                            @oninput="@(args => HandleInput(args, false))"
-                           disabled=@(!IsEnabled) />
+                           disabled=@(!IsEnabled)
+                           role="slider"
+                           tabindex="@GetTabIndex"
+                           data-is-focusable="@GetDataIsFocusable"
+                           aria-disabled="@GetAriaDisabled"
+                           aria-label="@Label"
+                           aria-valuemin="@Min"
+                           aria-valuemax="@Max"
+                           aria-valuetext="@GetAriaValueText(secoundInputValue.GetValueOrDefault())"
+                           aria-valuenow="@secoundInputValue" />
                 </div>
                 @if (ShowValue)
                 {
@@ -133,7 +167,14 @@
                     <span class="zeroTick" style="left: calc(50% - 29px);"></span>
                 }
 
-                <input type="range" min="@Min" max="@Max" step="@Step" @bind-value="@Value" @oninput="@HandleInput" style="@styleProgress" disabled=@(!IsEnabled) />
+                <input type="range"
+                       min="@Min"
+                       max="@Max"
+                       step="@Step"
+                       @bind-value="@Value"
+                       @oninput="@HandleInput"
+                       style="@styleProgress"
+                       disabled=@(!IsEnabled) />
 
                 @if (ShowValue)
                 {
