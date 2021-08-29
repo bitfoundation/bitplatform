@@ -5,7 +5,7 @@
      @attributes="HtmlAttributes"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
-    @if (IconName.HasValue() || Label.HasValue())
+    @if (IconName.HasValue() || Label.HasValue() || LabelFragment != null)
     {
         <div class="bit-spb-lbl-wrapper">
             @if (IconName.HasValue())
@@ -22,7 +22,7 @@
             }
             else if (LabelFragment != null)
             {
-                <span>@LabelFragment</span>
+                <label id="@GetLabelId" for="@InputId">@LabelFragment</label>
             }
         </div>
     }
