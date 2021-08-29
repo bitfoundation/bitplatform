@@ -114,7 +114,6 @@ namespace Bit.Client.Web.BlazorUI
             SelectedOption?.SelectedItemChanged(option);
             SelectedOption = option;
             SelectedOption?.SelectedItemChanged(option);
-            StateHasChanged();
 
             await OnValueChange.InvokeAsync(option!.Value);
 
