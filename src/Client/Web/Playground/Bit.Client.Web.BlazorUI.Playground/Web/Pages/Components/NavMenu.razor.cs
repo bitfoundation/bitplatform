@@ -13,7 +13,10 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components
                 IsExpanded = true,
                 Links = new List<BitNavLinkItem>
                 {
-                     new BitNavLinkItem { Name= "Button", Key = "Button", Url = "/components/buttons"},
+                     new BitNavLinkItem { Name= "Button", Key = "Button", Url = "/components/button"},
+                     new BitNavLinkItem { Name= "ActionButton", Key = "ActionButton", Url = "/components/actionbutton"},
+                     new BitNavLinkItem { Name= "CompoundButton", Key = "CompoundButton", Url = "/components/compoundbutton"},
+                     new BitNavLinkItem { Name= "IconButton", Key = "IconButton", Url = "/components/iconbutton"},
                      new BitNavLinkItem { Name= "ToggleButton", Key = "ToggleButton", Url = "/components/togglebutton" },
                      new BitNavLinkItem { Name= "Checkbox", Key = "Checkbox", Url = "/components/checkboxes" },
                      new BitNavLinkItem { Name= "ChoiceGroup", Key = "Choice", Url = "/components/choicegroup" },
