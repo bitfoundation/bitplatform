@@ -16,10 +16,7 @@ namespace Bit.Client.Web.BlazorUI
         protected override string RootElementClass => "bit-fl-up";
 
         private static readonly HttpClient client = new();
-
-        /// <summary>
-        /// Reference to input file element.
-        /// </summary>
+     
         private ElementReference inputFileElement { get; set; }
 
         /// <summary>
@@ -52,9 +49,6 @@ namespace Bit.Client.Web.BlazorUI
         /// </summary>
         public IReadOnlyList<BitFileInfo>? Files { get; private set; }
 
-        /// <summary>
-        /// Reference to this component for js accessibility.
-        /// </summary>
         private DotNetObjectReference<BitFileUpload>? dotnetObjectReference;
 
         [Inject] protected IJSRuntime? JSRuntime { get; set; }
@@ -149,12 +143,7 @@ namespace Bit.Client.Web.BlazorUI
                 }
             }
         }
-
-        /// <summary>
-        /// Upload one file with specific index.
-        /// </summary>
-        /// <param name="index"></param>
-        /// <returns></returns>
+        
         private async Task UploadOneFile(int index)
         {
             if (JSRuntime is null || Files is null) return;
@@ -252,13 +241,6 @@ namespace Bit.Client.Web.BlazorUI
             Files[index].RequestToCancell = false;
         }
 
-        /// <summary>
-        /// Remove files.
-        /// </summary>
-        /// <param name="index">
-        /// -1 => all files | else => specific file
-        /// </param>
-        /// <returns></returns>
         private async Task Remove(int index)
         {
             if (JSRuntime is null || Files is null) return;
@@ -325,13 +307,6 @@ namespace Bit.Client.Web.BlazorUI
             StateHasChanged();
         }
 
-        /// <summary>
-        /// Update files status.
-        /// </summary>
-        /// <param name="uploadStatus"></param>
-        /// <param name="index">
-        ///  -1 => all files | else => specific file
-        /// </param>
         private void UpdateStatus(UploadStatus uploadStatus, int index)
         {
             if (Files is null) return;
@@ -381,11 +356,6 @@ namespace Bit.Client.Web.BlazorUI
             };
         }
 
-        /// <summary>
-        /// Get updload status from XHR response status.
-        /// </summary>
-        /// <param name="responseStatus"></param>
-        /// <returns></returns>
         private static UploadStatus GetUploadStatus(int responseStatus)
         {
             return responseStatus >= 200 && responseStatus <= 299 ?
