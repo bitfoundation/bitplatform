@@ -16,22 +16,44 @@
         {
             @if (ShowValue)
             {
-                <label class="valueLabel" @ref="ValueLabelRef">@GetValueDisplay(upperValue.GetValueOrDefault())</label>
+                <label @ref="ValueLabelRef"
+                       class="valueLabel"
+                       for="@sliderBoxId">
+                    @GetValueDisplay(upperValue.GetValueOrDefault())
+                </label>
             }
+
             <div class="bit-slider-container"
                  @ref="ContainerRef"
                  style="@styleContainer">
-                <div class="bit-slider-box"
+                <div id="@sliderBoxId"
+                     class="bit-slider-box"
                      style="@styleProgress"
-                     role="group"
-                     aria-labelledby="multi-lbl"
+                     role="slider"
+                     tabindex="@GetTabIndex"
+                     data-is-focusable="@GetDataIsFocusable"
+                     aria-disabled="@GetAriaDisabled"
+                     aria-label="@Label"
                      @attributes="@SliderBoxHtmlAttributes">
                     @if (IsOriginFromZero)
                     {
                         <span class="zeroTick" style="left: calc(50% - 1px);"></span>
                     }
-                    <input type="range" min="@Min" max="@Max" step="@Step" @bind-value="@fisrtInputValue" @oninput="@(args => HandleInput(args, true))" disabled=@(!IsEnabled) />
-                    <input type="range" min="@Min" max="@Max" step="@Step" @bind-value="@secoundInputValue" @oninput="@(args => HandleInput(args, false))" disabled=@(!IsEnabled) />
+
+                    <input type="range"
+                           min="@Min"
+                           max="@Max"
+                           step="@Step"
+                           @bind-value="@fisrtInputValue"
+                           @oninput="@(args => HandleInput(args, true))"
+                           disabled=@(!IsEnabled) />
+                    <input type="range"
+                           min="@Min"
+                           max="@Max"
+                           step="@Step"
+                           @bind-value="@secoundInputValue"
+                           @oninput="@(args => HandleInput(args, false))"
+                           disabled=@(!IsEnabled) />
                 </div>
             </div>
             @if (ShowValue)
@@ -41,7 +63,8 @@
         }
         else
         {
-            <div class="bit-slider-container" @ref="ContainerRef">
+            <div @ref="ContainerRef"
+                 class="bit-slider-container">
                 @if (ShowValue)
                 {
                     <label class="valueLabel">@GetValueDisplay(lowerValue.GetValueOrDefault())</label>
@@ -55,8 +78,21 @@
                     {
                         <span class="zeroTick" style="left: calc(50% - 1px);"></span>
                     }
-                    <input type="range" min="@Min" max="@Max" step="@Step" @bind-value="@fisrtInputValue" @oninput="@(args => HandleInput(args, true))" disabled=@(!IsEnabled) />
-                    <input type="range" min="@Min" max="@Max" step="@Step" @bind-value="@secoundInputValue" @oninput="@(args => HandleInput(args, false))" disabled=@(!IsEnabled) />
+
+                    <input type="range"
+                           min="@Min"
+                           max="@Max"
+                           step="@Step"
+                           @bind-value="@fisrtInputValue"
+                           @oninput="@(args => HandleInput(args, true))"
+                           disabled=@(!IsEnabled) />
+                    <input type="range"
+                           min="@Min"
+                           max="@Max"
+                           step="@Step"
+                           @bind-value="@secoundInputValue"
+                           @oninput="@(args => HandleInput(args, false))"
+                           disabled=@(!IsEnabled) />
                 </div>
                 @if (ShowValue)
                 {
@@ -75,9 +111,15 @@
                     <span class="zeroTick" style="top: calc(50% - -2px);"></span>
                 }
 
-                <input type="range" min="@Min" max="@Max" step="@Step" @bind-value="@Value" @oninput="@HandleInput" style="@styleProgress" disabled=@(!IsEnabled) />
+                <input type="range"
+                       min="@Min"
+                       max="@Max"
+                       step="@Step"
+                       @bind-value="@Value"
+                       @oninput="@HandleInput"
+                       style="@styleProgress"
+                       disabled=@(!IsEnabled) />
             </div>
-
             @if (ShowValue)
             {
                 <label class="valueLabel">@GetValueDisplay(Value.GetValueOrDefault())</label>

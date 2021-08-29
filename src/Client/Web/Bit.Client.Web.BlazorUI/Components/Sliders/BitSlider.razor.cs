@@ -19,6 +19,7 @@ namespace Bit.Client.Web.BlazorUI
         private string? styleProgress;
         private string? styleContainer;
         private int inputHeight;
+        private readonly string sliderBoxId = $"Slider{Guid.NewGuid()}";
 
         private bool ValueHasBeenSet;
         private bool UpperValueHasBeenSet;
@@ -334,5 +335,9 @@ namespace Bit.Client.Web.BlazorUI
             else
                 return value.ToString();
         }
+
+        private bool GetAriaDisabled => !IsEnabled;
+        private int? GetTabIndex => IsEnabled ? 0 : null;
+        private bool GetDataIsFocusable => !IsEnabled;
     }
 }
