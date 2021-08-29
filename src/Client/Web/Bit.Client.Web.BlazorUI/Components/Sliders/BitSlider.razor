@@ -2,6 +2,7 @@
 @inherits BitComponentBase
 
 <div @ref="RootElement"
+     @attributes="@HtmlAttributes"
      class="@ClassBuilder.Value"
      style="@StyleBuilder.Value">
     @if (Label.HasValue())
@@ -20,7 +21,11 @@
             <div class="bit-slider-container"
                  @ref="ContainerRef"
                  style="@styleContainer">
-                <div class="bit-slider-box" role="group" aria-labelledby="multi-lbl" style="@styleProgress">
+                <div class="bit-slider-box"
+                     style="@styleProgress"
+                     role="group"
+                     aria-labelledby="multi-lbl"
+                     @attributes="@SliderBoxHtmlAttributes">
                     @if (IsOriginFromZero)
                     {
                         <span class="zeroTick" style="left: calc(50% - 1px);"></span>
@@ -41,7 +46,11 @@
                 {
                     <label class="valueLabel">@GetValueDisplay(lowerValue.GetValueOrDefault())</label>
                 }
-                <div class="bit-slider-box" role="group" aria-labelledby="multi-lbl" style="@styleProgress">
+                <div class="bit-slider-box"
+                     style="@styleProgress"
+                     role="group"
+                     aria-labelledby="multi-lbl"
+                     @attributes="@SliderBoxHtmlAttributes">
                     @if (IsOriginFromZero)
                     {
                         <span class="zeroTick" style="left: calc(50% - 1px);"></span>

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
@@ -50,6 +51,7 @@ namespace Bit.Client.Web.BlazorUI
                 _ = UpperValueChanged.InvokeAsync(value);
             }
         }
+
         [Parameter] public EventCallback<int?> UpperValueChanged { get; set; }
 
         [Parameter]
@@ -66,6 +68,7 @@ namespace Bit.Client.Web.BlazorUI
                 _ = LowerValueChanged.InvokeAsync(value);
             }
         }
+
         [Parameter] public EventCallback<int?> LowerValueChanged { get; set; }
 
         [Parameter]
@@ -81,6 +84,7 @@ namespace Bit.Client.Web.BlazorUI
                 _ = ValueChanged.InvokeAsync(value);
             }
         }
+
         [Parameter] public EventCallback<int?> ValueChanged { get; set; }
 
         [Parameter]
@@ -100,6 +104,7 @@ namespace Bit.Client.Web.BlazorUI
                 _ = RangeValueChanged.InvokeAsync(value);
             }
         }
+
         [Parameter] public EventCallback<(int? Lower, int? Upper)> RangeValueChanged { get; set; }
 
         [Parameter] public bool IsOriginFromZero { get; set; }
@@ -109,7 +114,19 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public bool IsVertical { get; set; }
         [Parameter] public string? ValueFormat { get; set; }
         [Parameter] public EventCallback<ChangeEventArgs> OnChange { get; set; }
-        protected override string RootElementClass => "bit-slider";
+
+
+        /// <summary>
+        ///  A text description of the Slider number value for the benefit of screen readers
+        ///  This should be used when the Slider number value is not accurately represented by a number
+        /// </summary>
+        [Parameter] public Func<double, string>? AriaValueText { get; set; }
+
+        /// <summary>
+        /// Additional props for the slider box
+        /// </summary>
+        [Parameter]
+        public Dictionary<string, object>? SliderBoxHtmlAttributes { get; set; }
 
         [Parameter]
         public bool IsReadonly
@@ -121,6 +138,8 @@ namespace Bit.Client.Web.BlazorUI
                 ClassBuilder.Reset();
             }
         }
+
+        protected override string RootElementClass => "bit-slider";
 
         protected override void RegisterComponentClasses()
         {
@@ -306,6 +325,14 @@ namespace Bit.Client.Web.BlazorUI
             {
                 return val.GetValueOrDefault().ToString(ValueFormat, CultureInfo.InvariantCulture);
             }
+        }
+
+        private string GetAriaValueText(double value)
+        {
+            if (AriaValueText != null)
+                return AriaValueText(value);
+            else
+                return value.ToString();
         }
     }
 }
