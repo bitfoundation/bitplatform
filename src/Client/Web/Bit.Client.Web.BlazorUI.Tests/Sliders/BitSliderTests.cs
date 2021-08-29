@@ -32,7 +32,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Sliders
             });
 
             var bitSlider = com.Find(".bit-slider");
-            Assert.IsTrue(bitSlider.ClassList.Contains($"bit-slider-{(vertical ? "column" : "row")}"));
+            Assert.IsTrue(bitSlider.ClassList.Contains($"bit-slider-{(vertical ? "vertical" : "horizontal")}"));
         }
 
         [DataTestMethod,
@@ -55,7 +55,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Sliders
             });
 
             var bitSlider = com.Find(".bit-slider");
-            Assert.IsTrue(bitSlider.ClassList.Contains($"bit-slider-ranged-{(vertical ? "column" : "row")}"));
+            Assert.IsTrue(bitSlider.ClassList.Contains($"bit-slider-ranged-{(vertical ? "vertical" : "horizontal")}"));
         }
 
         [DataTestMethod,
@@ -104,7 +104,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Sliders
 
             var bitSlider = com.Find(".bit-slider");
 
-            Assert.IsTrue(!ranged || bitSlider.ClassList.Contains($"bit-slider-ranged-row"));
+            Assert.IsTrue(!ranged || bitSlider.ClassList.Contains($"bit-slider-ranged-horizontal"));
             Assert.AreEqual(bitSlider.GetElementsByTagName("input").Count(), ranged ? 2 : 1);
         }
 
