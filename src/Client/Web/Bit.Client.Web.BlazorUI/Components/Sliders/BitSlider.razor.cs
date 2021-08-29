@@ -9,11 +9,11 @@ namespace Bit.Client.Web.BlazorUI
 {
     public partial class BitSlider
     {
-        private int? fisrtInputValue;
-        private int? secoundInputValue;
-        private int? upperValue;
-        private int? lowerValue;
-        private int? value;
+        private double? fisrtInputValue;
+        private double? secoundInputValue;
+        private double? upperValue;
+        private double? lowerValue;
+        private double? value;
 
         private bool isReadOnly;
         private string? styleProgress;
@@ -31,15 +31,15 @@ namespace Bit.Client.Web.BlazorUI
         private ElementReference ValueLabelRef { get; set; }
 
         [Inject] public IJSRuntime? JSRuntime { get; set; }
-        [Parameter] public int? DefaultUpperValue { get; set; }
-        [Parameter] public int? DefaultLowerValue { get; set; }
-        [Parameter] public int? DefaultValue { get; set; }
-        [Parameter] public int Min { get; set; }
-        [Parameter] public int Max { get; set; } = 10;
-        [Parameter] public int Step { get; set; } = 1;
+        [Parameter] public double? DefaultUpperValue { get; set; }
+        [Parameter] public double? DefaultLowerValue { get; set; }
+        [Parameter] public double? DefaultValue { get; set; }
+        [Parameter] public double Min { get; set; }
+        [Parameter] public double Max { get; set; } = 10;
+        [Parameter] public double Step { get; set; } = 1;
 
         [Parameter]
-        public int? UpperValue
+        public double? UpperValue
         {
             get => upperValue;
             set
@@ -53,10 +53,10 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
-        [Parameter] public EventCallback<int?> UpperValueChanged { get; set; }
+        [Parameter] public EventCallback<double?> UpperValueChanged { get; set; }
 
         [Parameter]
-        public int? LowerValue
+        public double? LowerValue
         {
             get => lowerValue;
             set
@@ -70,10 +70,10 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
-        [Parameter] public EventCallback<int?> LowerValueChanged { get; set; }
+        [Parameter] public EventCallback<double?> LowerValueChanged { get; set; }
 
         [Parameter]
-        public int? Value
+        public double? Value
         {
             get => value;
             set
@@ -86,10 +86,10 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
-        [Parameter] public EventCallback<int?> ValueChanged { get; set; }
+        [Parameter] public EventCallback<double?> ValueChanged { get; set; }
 
         [Parameter]
-        public (int? Lower, int? Upper) RangeValue
+        public (double? Lower, double? Upper) RangeValue
         {
             get => (lowerValue, upperValue);
             set
@@ -106,7 +106,7 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
-        [Parameter] public EventCallback<(int? Lower, int? Upper)> RangeValueChanged { get; set; }
+        [Parameter] public EventCallback<(double? Lower, double? Upper)> RangeValueChanged { get; set; }
 
         [Parameter] public bool IsOriginFromZero { get; set; }
         [Parameter] public string? Label { get; set; }
@@ -218,7 +218,7 @@ namespace Bit.Client.Web.BlazorUI
             {
                 if (!IsRanged)
                 {
-                    Value = Convert.ToInt32(e.Value, CultureInfo.InvariantCulture);
+                    Value = Convert.ToDouble(e.Value, CultureInfo.InvariantCulture);
                     FillSlider();
                 }
                 else
@@ -239,11 +239,11 @@ namespace Bit.Client.Web.BlazorUI
                 {
                     if (isFirstInput)
                     {
-                        fisrtInputValue = Convert.ToInt32(e.Value, CultureInfo.InvariantCulture);
+                        fisrtInputValue = Convert.ToDouble(e.Value, CultureInfo.InvariantCulture);
                     }
                     else
                     {
-                        secoundInputValue = Convert.ToInt32(e.Value, CultureInfo.InvariantCulture);
+                        secoundInputValue = Convert.ToDouble(e.Value, CultureInfo.InvariantCulture);
                     }
 
                     if (fisrtInputValue < secoundInputValue)
@@ -293,7 +293,7 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
-        private void SetInputValueOnRanged(int? lower = null, int? upper = null)
+        private void SetInputValueOnRanged(double? lower = null, double? upper = null)
         {
             var defaultValue = Min > 0 || Max < 0 ? Min : 0;
             lower = lower.GetValueOrDefault(lowerValue ?? defaultValue);
@@ -311,7 +311,7 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
-        private string? GetValueDisplay(int? val)
+        private string? GetValueDisplay(double? val)
         {
             if (ValueFormat.HasNoValue())
             {
