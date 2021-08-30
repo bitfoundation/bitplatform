@@ -12,8 +12,11 @@
                          OnClick="HandleClick"
                          OnChange="HandleChange">
         </BitChoiceOption>
-        <BitChoiceOption Value="option2"></BitChoiceOption>
+        <BitChoiceOption Value="option2"
+                         IsEnabled="@ChoiceOptionIsEnabled">
+        </BitChoiceOption>
         <BitChoiceOption Value="@Value"
+                         IsEnabled="@ChoiceOptionIsEnabled"
                          Text="@Text"
                          ImageSrc="@ImageSrc"
                          ImageAlt="@ImageAlt"
@@ -21,6 +24,7 @@
                          ImageSize="ImageSize">
         </BitChoiceOption>
         <BitChoiceOption Value="@Value"
+                         IsEnabled="@ChoiceOptionIsEnabled"
                          Text="@Text"
                          IconName="@IconName">
         </BitChoiceOption>
@@ -60,6 +64,6 @@
     public void HandleChange(bool isChecked)
     {
         ChoiceOptionChangedValue++;
-        //Count2++;      
+        //Count2++;
     }
 }
