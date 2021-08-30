@@ -1,0 +1,175 @@
+﻿@page "/components/datepicker"
+
+<h2>DatePicker</h2>
+
+<div class="card">
+    <p class="desc">Picking a date can be tough without context. A BitDatePicker offers a drop-down control that’s optimized for picking a single date from a calendar view where contextual information like the day of the week or fullness of the calendar is important. You can modify the calendar to provide additional context or to limit available dates.</p>
+</div>
+
+<h2>Usage</h2>
+<div class="wrapper">
+    <div class="card">
+        <h3>BitDatePicker</h3>
+        <BitPivot>
+            <BitPivotItem HeaderText="Example" IconName="ViewList">
+                 <BitDatePicker></BitDatePicker>
+            </BitPivotItem>
+            <BitPivotItem HeaderText="Code" IconName="Source">
+                <p>
+                    &lt<span class="dark-green">BitDatePicker</span>><span class="dark-green">&lt/BitDatePicker></span>
+                </p>
+            </BitPivotItem>
+        </BitPivot>
+    </div>
+    <div class="card">
+        <h3>Date picker disabled</h3>
+        <BitPivot>
+            <BitPivotItem HeaderText="Example" IconName="ViewList">
+                 <BitDatePicker IsEnabled="false"></BitDatePicker>
+            </BitPivotItem>
+            <BitPivotItem HeaderText="Code" IconName="Source">
+                <p>
+                    &lt<span class="dark-green">BitDatePicker IsEnabled</span>="<span class="light-blue">false</span>><span class="dark-green">&lt/BitDatePicker></span>
+                </p>
+            </BitPivotItem>
+        </BitPivot>
+    </div>
+    <div class="card">
+        <h3>Shamsi Date picker</h3>
+        <BitPivot>
+            <BitPivotItem HeaderText="Example" IconName="ViewList">
+                 <BitDatePicker CalendarType="CalendarType.Persian"></BitDatePicker>
+            </BitPivotItem>
+            <BitPivotItem HeaderText="Code" IconName="Source">
+                <p>
+                    &lt<span class="dark-green">BitDatePicker CalendarType</span>="<span class="light-green">CalendarType</span>.Persian"><span class="dark-green">&lt/BitDatePicker></span>
+                </p>
+            </BitPivotItem>
+        </BitPivot>
+    </div>
+</div>
+<h2>Implementation</h2>
+<div class="card">
+    <table>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Default value</th>
+            <th>Description</th>
+        </tr>
+        <tr>
+            <td>calendarType</td>
+            <td>calendarType</td>
+            <td>CalendarType.Gregorian</td>
+            <td>calendar type for the DatePicker.</td>
+        </tr>
+        <tr>
+            <td>className</td>
+            <td>string</td>
+            <td></td>
+            <td>If provided, additional class name to provide on the root element.</td>
+        </tr>
+        <tr>
+            <td>goToToday</td>
+            <td>string</td>
+            <td>Go to today</td>
+            <td>GoToToday text for the DatePicker.</td>
+        </tr>
+        <tr>
+            <td>isEnabled</td>
+            <td>boolean</td>
+            <td>true</td>
+            <td>Whether the DatePicker is enabled.</td>
+        </tr>
+        <tr>
+            <td>isOpen</td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>Whether or not this DatePicker is open.</td>
+        </tr>
+        <tr>
+            <td>onClick</td>
+            <td>eventCallback&ltMouseEventArgs></td>
+            <td></td>
+            <td>Callback for when clicking on DatePicker input.</td>
+        </tr>
+          <tr>
+            <td>onDateChoose</td>
+            <td>eventCallback&ltint></td>
+            <td></td>
+            <td>Callback for when the date changes.</td>
+        </tr>
+        <tr>
+            <td>onFocusIn</td>
+            <td>eventCallback&ltFocusEventArgs></td>
+            <td></td>
+            <td>Callback for when focus moves into the DatePicker input.</td>
+        </tr>
+        <tr>
+            <td>onFocusOut</td>
+            <td>eventCallback&ltFocusEventArgs></td>
+            <td></td>
+            <td>Callback for when focus moves out the DatePicker input.</td>
+        </tr>
+        <tr>
+            <td>onMonthChange</td>
+            <td>eventCallback&ltint></td>
+            <td></td>
+            <td>Callback for when the month changes.</td>
+        </tr>
+        <tr>
+            <td>onYearChange</td>
+            <td>eventCallback&ltint></td>
+            <td></td>
+            <td>Callback for when the year changes.</td>
+        </tr>
+        <tr>
+            <td>placeholder</td>
+            <td>string</td>
+            <td>Select a date...</td>
+            <td>Placeholder text for the DatePicker.</td>
+        </tr>
+        <tr>
+            <td>ref</td>
+            <td>elementreference</td>
+            <td></td>
+            <td>Access the public methods and properties of the component.</td>
+        </tr>
+        <tr>
+            <td>styles</td>
+            <td>string</td>
+            <td></td>
+            <td>Custom styling for individual elements within the datepicker DOM.</td>
+        </tr>
+        <tr>
+            <td>uniqueId</td>
+            <td>guid</td>
+            <td></td>
+            <td>Unique ID to identify the item. Typically a duplicate of key value.</td>
+        </tr>
+    </table>
+       <h4>CalendarType</h4>
+    <hr />
+    <table>
+        <tr>
+            <th>Name</th>
+            <th>Value</th>
+            <th>Description</th>
+        </tr>
+        <tr>
+            <td>gregorian</td>
+            <td>0</td>
+            <td>Show DatePicker in Gregorian calendar.</td>
+        </tr>
+        <tr>
+            <td>persian</td>
+            <td>1</td>
+            <td>Show DatePicker in Persian calendar.</td>
+        </tr>
+        <tr>
+            <td>other</td>
+            <td>2</td>
+            <td></td>
+        </tr>
+    </table>
+</div>
