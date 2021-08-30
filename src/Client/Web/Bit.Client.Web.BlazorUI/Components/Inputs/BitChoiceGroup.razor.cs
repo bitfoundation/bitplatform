@@ -8,12 +8,12 @@ namespace Bit.Client.Web.BlazorUI
 {
     public partial class BitChoiceGroup
     {
-        private readonly List<BitChoiceOption> _options = new();
         private bool isRequired;
         private string? selectedKey;
-        internal BitChoiceOption? SelectedOption { get; set; }
+        private bool SelectedKeyHasBeenSet;
+        private BitChoiceOption? SelectedOption;
+        private List<BitChoiceOption> AllOptions = new();
 
-        public bool SelectedKeyHasBeenSet { get; private set; }
 
         [Parameter] public string? DefaultSelectedKey { get; set; }
 
@@ -47,19 +47,8 @@ namespace Bit.Client.Web.BlazorUI
             {
                 if (value == selectedKey) return;
 
-                selectedKey = value;
-                SelectItemByKey();
-
-                _ = SelectedKeyChanged.InvokeAsync(value);
+                SelectOptionByKey(value);
             }
-        }
-
-        private void SelectItemByKey()
-        {
-            if (SelectedKey is null || _options is null) return;
-
-            SelectedOption = _options.FirstOrDefault(i => i.Key == SelectedKey);
-            _ = SelectOption(SelectedOption);
         }
 
         [Parameter] public EventCallback<string?> SelectedKeyChanged { get; set; }
@@ -89,31 +78,20 @@ namespace Bit.Client.Web.BlazorUI
         /// </summary>
         [Parameter] public EventCallback<string> OnValueChange { get; set; }
 
-        protected override string RootElementClass => "bit-chg";
-
-        protected override void RegisterComponentClasses()
-        {
-            ClassBuilder.Register(() => IsEnabled && IsRequired
-                                       ? $"{RootElementClass}-required-{VisualClassRegistrar()}" : string.Empty);
-        }
-
-
-        internal async Task SelectOption(BitChoiceOption? option)
+        internal async Task SelectOption(BitChoiceOption option)
         {
             if (SelectedKeyHasBeenSet && SelectedKeyChanged.HasDelegate is false) return;
 
             SelectedOption?.SetState(false);
+            option.SetState(true);
 
+            Value = option.Value;
             SelectedOption = option;
-            Value = option!.Value;
-            SelectedKey = option!.Key;
+            selectedKey = option.Key;
 
-            SelectedOption?.SetState(true);
+            await SelectedKeyChanged.InvokeAsync(selectedKey);
 
-            await OnValueChange.InvokeAsync(option!.Value);
-
-            await SelectedKeyChanged.InvokeAsync(SelectedKey);
-
+            await OnValueChange.InvokeAsync(Value);
         }
 
         internal void RegisterOption(BitChoiceOption option)
@@ -133,12 +111,20 @@ namespace Bit.Client.Web.BlazorUI
                 option.SetState(true);
                 SelectedOption = option;
             }
-            _options.Add(option);
+            AllOptions.Add(option);
         }
 
         internal void UnregisterOption(BitChoiceOption option)
         {
-            _options.Remove(option);
+            AllOptions.Remove(option);
+        }
+
+        protected override string RootElementClass => "bit-chg";
+
+        protected override void RegisterComponentClasses()
+        {
+            ClassBuilder.Register(() => IsEnabled && IsRequired
+                                       ? $"{RootElementClass}-required-{VisualClassRegistrar()}" : string.Empty);
         }
 
         protected override Task OnInitializedAsync()
@@ -147,6 +133,17 @@ namespace Bit.Client.Web.BlazorUI
             return base.OnInitializedAsync();
         }
 
+        private void SelectOptionByKey(string? key)
+        {
+            var newOption = AllOptions.FirstOrDefault(i => i.Key == key);
 
+            if (newOption == null || newOption == SelectedOption || newOption.IsEnabled is false)
+            {
+                _ = SelectedKeyChanged.InvokeAsync(selectedKey);
+                return;
+            }
+
+            _ = SelectOption(newOption);
+        }
     }
 }
