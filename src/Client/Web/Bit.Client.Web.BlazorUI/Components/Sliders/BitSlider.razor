@@ -2,6 +2,7 @@
 @inherits BitComponentBase
 
 <div @ref="RootElement"
+     @attributes="@HtmlAttributes"
      class="@ClassBuilder.Value"
      style="@StyleBuilder.Value">
     @if (Label.HasValue())
@@ -11,84 +12,103 @@
 
     @if (IsRanged)
     {
-        @if (IsVertical)
+        @if (ShowValue && IsVertical)
         {
-            @if (ShowValue)
-            {
-                <label class="valueLabel" @ref="ValueLabelRef">@GetValueDisplay(upperValue.GetValueOrDefault())</label>
-            }
-            <div class="bit-slider-container"
-                 @ref="ContainerRef"
-                 style="@styleContainer">
-                <div class="bit-slider-box" role="group" aria-labelledby="multi-lbl" style="@styleProgress">
-                    @if (IsOriginFromZero)
-                    {
-                        <span class="zeroTick" style="left: calc(50% - 1px);"></span>
-                    }
-                    <input type="range" min="@Min" max="@Max" step="@Step" @bind-value="@fisrtInputValue" @oninput="@(args => HandleInput(args, true))" disabled=@(!IsEnabled) />
-                    <input type="range" min="@Min" max="@Max" step="@Step" @bind-value="@secoundInputValue" @oninput="@(args => HandleInput(args, false))" disabled=@(!IsEnabled) />
-                </div>
-            </div>
-            @if (ShowValue)
+            <label @ref="ValueLabelRef"
+                   class="valueLabel"
+                   for="@sliderBoxId">
+                @GetValueDisplay(upperValue.GetValueOrDefault())
+            </label>
+        }
+
+        <div @ref="ContainerRef"
+             class="bit-slider-container"
+             style="@(IsVertical ? styleContainer : null)">
+            @if (ShowValue && IsVertical is false)
             {
                 <label class="valueLabel">@GetValueDisplay(lowerValue.GetValueOrDefault())</label>
             }
-        }
-        else
-        {
-            <div class="bit-slider-container" @ref="ContainerRef">
-                @if (ShowValue)
+            <div id="@sliderBoxId"
+                 class="bit-slider-box"
+                 style="@styleProgress"
+                 @attributes="@SliderBoxHtmlAttributes">
+                @if (IsOriginFromZero)
                 {
-                    <label class="valueLabel">@GetValueDisplay(lowerValue.GetValueOrDefault())</label>
+                    <span class="zeroTick" style="left: calc(50% - 1px);"></span>
                 }
-                <div class="bit-slider-box" role="group" aria-labelledby="multi-lbl" style="@styleProgress">
-                    @if (IsOriginFromZero)
-                    {
-                        <span class="zeroTick" style="left: calc(50% - 1px);"></span>
-                    }
-                    <input type="range" min="@Min" max="@Max" step="@Step" @bind-value="@fisrtInputValue" @oninput="@(args => HandleInput(args, true))" disabled=@(!IsEnabled) />
-                    <input type="range" min="@Min" max="@Max" step="@Step" @bind-value="@secoundInputValue" @oninput="@(args => HandleInput(args, false))" disabled=@(!IsEnabled) />
-                </div>
-                @if (ShowValue)
-                {
-                    <label class="valueLabel">@GetValueDisplay(upperValue.GetValueOrDefault())</label>
-                }
+
+                <input id="@($"min-{sliderBoxId}")"
+                       type="range"
+                       min="@Min"
+                       max="@Max"
+                       step="@Step"
+                       @bind-value="@fisrtInputValue"
+                       @oninput="@(args => HandleInput(args, true))"
+                       disabled=@(!IsEnabled)
+                       role="slider"
+                       tabindex="@GetTabIndex"
+                       data-is-focusable="@GetDataIsFocusable"
+                       aria-disabled="@GetAriaDisabled"
+                       aria-label="@Label"
+                       aria-valuemin="@Min"
+                       aria-valuemax="@Max"
+                       aria-valuetext="@GetAriaValueText(fisrtInputValue.GetValueOrDefault())"
+                       aria-valuenow="@fisrtInputValue" />
+                <input id="@($"max-{sliderBoxId}")"
+                       type="range"
+                       min="@Min"
+                       max="@Max"
+                       step="@Step"
+                       @bind-value="@secoundInputValue"
+                       @oninput="@(args => HandleInput(args, false))"
+                       disabled=@(!IsEnabled)
+                       role="slider"
+                       tabindex="@GetTabIndex"
+                       data-is-focusable="@GetDataIsFocusable"
+                       aria-disabled="@GetAriaDisabled"
+                       aria-label="@Label"
+                       aria-valuemin="@Min"
+                       aria-valuemax="@Max"
+                       aria-valuetext="@GetAriaValueText(secoundInputValue.GetValueOrDefault())"
+                       aria-valuenow="@secoundInputValue" />
             </div>
+            @if (ShowValue && IsVertical is false)
+            {
+                <label class="valueLabel">@GetValueDisplay(upperValue.GetValueOrDefault())</label>
+            }
+        </div>
+
+        @if (ShowValue && IsVertical)
+        {
+            <label class="valueLabel">@GetValueDisplay(lowerValue.GetValueOrDefault())</label>
         }
     }
     else
     {
-        @if (IsVertical)
-        {
-            <div class="bit-slider-container" @ref="ContainerRef">
-                @if (IsOriginFromZero)
-                {
-                    <span class="zeroTick" style="top: calc(50% - -2px);"></span>
-                }
+        <div @ref="ContainerRef"
+             class="bit-slider-container">
+            @if (IsOriginFromZero)
+            {
+                <span class="zeroTick" style="@(IsVertical ? "top: calc(50% - -2px);" : "left: calc(50% - 29px);")"></span>
+            }
 
-                <input type="range" min="@Min" max="@Max" step="@Step" @bind-value="@Value" @oninput="@HandleInput" style="@styleProgress" disabled=@(!IsEnabled) />
-            </div>
+            <input type="range"
+                   min="@Min"
+                   max="@Max"
+                   step="@Step"
+                   @bind-value="@Value"
+                   @oninput="@HandleInput"
+                   style="@styleProgress"
+                   disabled=@(!IsEnabled) />
 
-            @if (ShowValue)
+            @if (ShowValue && IsVertical is false)
             {
                 <label class="valueLabel">@GetValueDisplay(Value.GetValueOrDefault())</label>
             }
-        }
-        else
+        </div>
+        @if (ShowValue && IsVertical)
         {
-            <div class="bit-slider-container" @ref="ContainerRef">
-                @if (IsOriginFromZero)
-                {
-                    <span class="zeroTick" style="left: calc(50% - 29px);"></span>
-                }
-
-                <input type="range" min="@Min" max="@Max" step="@Step" @bind-value="@Value" @oninput="@HandleInput" style="@styleProgress" disabled=@(!IsEnabled) />
-
-                @if (ShowValue)
-                {
-                    <label class="valueLabel">@GetValueDisplay(Value.GetValueOrDefault())</label>
-                }
-            </div>
+            <label class="valueLabel">@GetValueDisplay(Value.GetValueOrDefault())</label>
         }
     }
 </div>

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
@@ -8,16 +9,17 @@ namespace Bit.Client.Web.BlazorUI
 {
     public partial class BitSlider
     {
-        private int? fisrtInputValue;
-        private int? secoundInputValue;
-        private int? upperValue;
-        private int? lowerValue;
-        private int? value;
+        private double? fisrtInputValue;
+        private double? secoundInputValue;
+        private double? upperValue;
+        private double? lowerValue;
+        private double? value;
 
         private bool isReadOnly;
         private string? styleProgress;
         private string? styleContainer;
         private int inputHeight;
+        private readonly string sliderBoxId = $"Slider{Guid.NewGuid()}";
 
         private bool ValueHasBeenSet;
         private bool UpperValueHasBeenSet;
@@ -29,15 +31,15 @@ namespace Bit.Client.Web.BlazorUI
         private ElementReference ValueLabelRef { get; set; }
 
         [Inject] public IJSRuntime? JSRuntime { get; set; }
-        [Parameter] public int? DefaultUpperValue { get; set; }
-        [Parameter] public int? DefaultLowerValue { get; set; }
-        [Parameter] public int? DefaultValue { get; set; }
-        [Parameter] public int Min { get; set; }
-        [Parameter] public int Max { get; set; } = 10;
-        [Parameter] public int Step { get; set; } = 1;
+        [Parameter] public double? DefaultUpperValue { get; set; }
+        [Parameter] public double? DefaultLowerValue { get; set; }
+        [Parameter] public double? DefaultValue { get; set; }
+        [Parameter] public double Min { get; set; }
+        [Parameter] public double Max { get; set; } = 10;
+        [Parameter] public double Step { get; set; } = 1;
 
         [Parameter]
-        public int? UpperValue
+        public double? UpperValue
         {
             get => upperValue;
             set
@@ -50,10 +52,11 @@ namespace Bit.Client.Web.BlazorUI
                 _ = UpperValueChanged.InvokeAsync(value);
             }
         }
-        [Parameter] public EventCallback<int?> UpperValueChanged { get; set; }
+
+        [Parameter] public EventCallback<double?> UpperValueChanged { get; set; }
 
         [Parameter]
-        public int? LowerValue
+        public double? LowerValue
         {
             get => lowerValue;
             set
@@ -66,10 +69,11 @@ namespace Bit.Client.Web.BlazorUI
                 _ = LowerValueChanged.InvokeAsync(value);
             }
         }
-        [Parameter] public EventCallback<int?> LowerValueChanged { get; set; }
+
+        [Parameter] public EventCallback<double?> LowerValueChanged { get; set; }
 
         [Parameter]
-        public int? Value
+        public double? Value
         {
             get => value;
             set
@@ -81,10 +85,11 @@ namespace Bit.Client.Web.BlazorUI
                 _ = ValueChanged.InvokeAsync(value);
             }
         }
-        [Parameter] public EventCallback<int?> ValueChanged { get; set; }
+
+        [Parameter] public EventCallback<double?> ValueChanged { get; set; }
 
         [Parameter]
-        public (int? Lower, int? Upper) RangeValue
+        public (double? Lower, double? Upper) RangeValue
         {
             get => (lowerValue, upperValue);
             set
@@ -100,7 +105,8 @@ namespace Bit.Client.Web.BlazorUI
                 _ = RangeValueChanged.InvokeAsync(value);
             }
         }
-        [Parameter] public EventCallback<(int? Lower, int? Upper)> RangeValueChanged { get; set; }
+
+        [Parameter] public EventCallback<(double? Lower, double? Upper)> RangeValueChanged { get; set; }
 
         [Parameter] public bool IsOriginFromZero { get; set; }
         [Parameter] public string? Label { get; set; }
@@ -109,7 +115,19 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public bool IsVertical { get; set; }
         [Parameter] public string? ValueFormat { get; set; }
         [Parameter] public EventCallback<ChangeEventArgs> OnChange { get; set; }
-        protected override string RootElementClass => "bit-slider";
+
+
+        /// <summary>
+        ///  A text description of the Slider number value for the benefit of screen readers
+        ///  This should be used when the Slider number value is not accurately represented by a number
+        /// </summary>
+        [Parameter] public Func<double, string>? AriaValueText { get; set; }
+
+        /// <summary>
+        /// Additional props for the slider box
+        /// </summary>
+        [Parameter]
+        public Dictionary<string, object>? SliderBoxHtmlAttributes { get; set; }
 
         [Parameter]
         public bool IsReadonly
@@ -122,6 +140,8 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
+        protected override string RootElementClass => "bit-slider";
+
         protected override void RegisterComponentClasses()
         {
             ClassBuilder.Register(() => IsReadonly
@@ -130,8 +150,8 @@ namespace Bit.Client.Web.BlazorUI
 
             var rangedClass = IsRanged ? "-ranged" : null;
             ClassBuilder.Register(() => IsVertical
-                                                ? $"{RootElementClass}{rangedClass}-column"
-                                                : $"{RootElementClass}{rangedClass}-row");
+                                                ? $"{RootElementClass}{rangedClass}-vertical"
+                                                : $"{RootElementClass}{rangedClass}-horizontal");
         }
 
         protected override void OnInitialized()
@@ -198,7 +218,7 @@ namespace Bit.Client.Web.BlazorUI
             {
                 if (!IsRanged)
                 {
-                    Value = Convert.ToInt32(e.Value, CultureInfo.InvariantCulture);
+                    Value = Convert.ToDouble(e.Value, CultureInfo.InvariantCulture);
                     FillSlider();
                 }
                 else
@@ -219,11 +239,11 @@ namespace Bit.Client.Web.BlazorUI
                 {
                     if (isFirstInput)
                     {
-                        fisrtInputValue = Convert.ToInt32(e.Value, CultureInfo.InvariantCulture);
+                        fisrtInputValue = Convert.ToDouble(e.Value, CultureInfo.InvariantCulture);
                     }
                     else
                     {
-                        secoundInputValue = Convert.ToInt32(e.Value, CultureInfo.InvariantCulture);
+                        secoundInputValue = Convert.ToDouble(e.Value, CultureInfo.InvariantCulture);
                     }
 
                     if (fisrtInputValue < secoundInputValue)
@@ -273,7 +293,7 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
-        private void SetInputValueOnRanged(int? lower = null, int? upper = null)
+        private void SetInputValueOnRanged(double? lower = null, double? upper = null)
         {
             var defaultValue = Min > 0 || Max < 0 ? Min : 0;
             lower = lower.GetValueOrDefault(lowerValue ?? defaultValue);
@@ -291,7 +311,7 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
-        private string? GetValueDisplay(int? val)
+        private string? GetValueDisplay(double? val)
         {
             if (ValueFormat.HasNoValue())
             {
@@ -307,5 +327,17 @@ namespace Bit.Client.Web.BlazorUI
                 return val.GetValueOrDefault().ToString(ValueFormat, CultureInfo.InvariantCulture);
             }
         }
+
+        private string GetAriaValueText(double value)
+        {
+            if (AriaValueText != null)
+                return AriaValueText(value);
+            else
+                return value.ToString();
+        }
+
+        private bool GetAriaDisabled => !IsEnabled;
+        private int? GetTabIndex => IsEnabled ? 0 : null;
+        private bool GetDataIsFocusable => !IsEnabled;
     }
 }

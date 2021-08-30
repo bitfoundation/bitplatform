@@ -326,10 +326,10 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
         }
 
         private string? TextValue;
-        private int? BitSliderHorizontalValue = 2;
-        private int? BitSliderVerticalValue = 0;
-        private int? BitSliderRangedLowerValue = 0;
-        private int? BitSliderRangedUpperValue = 0;
+        private double? BitSliderHorizontalValue = 2;
+        private double? BitSliderVerticalValue = 0;
+        private double? BitSliderRangedLowerValue = 0;
+        private double? BitSliderRangedUpperValue = 0;
 
         private void ChangeBitSliderRangedValues()
         {
