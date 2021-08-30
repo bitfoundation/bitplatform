@@ -1,5 +1,4 @@
-﻿
-namespace Bit.Client.Web.BlazorUI
+﻿namespace Bit.Client.Web.BlazorUI
 {
     public enum AlphaType
     {
