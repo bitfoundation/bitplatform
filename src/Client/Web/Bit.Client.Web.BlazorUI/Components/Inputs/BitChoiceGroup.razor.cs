@@ -133,7 +133,7 @@ namespace Bit.Client.Web.BlazorUI
 
             if (SelectedKey == option.Key)
             {
-                _ = SelectOption(option);
+                option.SetOptionCheckedStatus(true);
             }
             _options.Add(option);
         }
