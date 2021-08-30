@@ -19,7 +19,10 @@ namespace Bit.Client.Web.BlazorUI.Tests.SpinButtons
         ]
         public void SpinButtonShoudHaveCorrectLabel(string label)
         {
-            var component = RenderComponent<BitSpinButtonTest>(parameters => parameters.Add(p => p.Label, label));
+            var component = RenderComponent<BitSpinButton>(parameters =>
+            {
+                parameters.Add(p => p.Label, label);
+            });
 
             if (label is null)
             {
@@ -631,6 +634,20 @@ namespace Bit.Client.Web.BlazorUI.Tests.SpinButtons
             var expectedValue = value + (step * countOfIncrements);
 
             Assert.AreEqual(expectedValue, BitSpinButtonTwoWayBoundValue);
+        }
+
+        [DataTestMethod,
+            DataRow("<div>This is labelFragment</div>")
+        ]
+        public void BitSpinButtonLabelFragmentTest(string labelFragment)
+        {
+            var component = RenderComponent<BitSpinButtonTest>(parameters =>
+            {
+                parameters.Add(p => p.LabelFragment, labelFragment);
+            });
+
+            var spbLabelChild = component.Find("label").ChildNodes;
+            spbLabelChild.MarkupMatches(labelFragment);
         }
 
         private double Normalize(double value, int precision) => Math.Round(value, precision);
