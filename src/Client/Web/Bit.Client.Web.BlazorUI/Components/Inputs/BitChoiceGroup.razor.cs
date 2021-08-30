@@ -102,21 +102,18 @@ namespace Bit.Client.Web.BlazorUI
         {
             if (SelectedKeyHasBeenSet && SelectedKeyChanged.HasDelegate is false) return;
 
+            SelectedOption?.SetState(false);
+
+            SelectedOption = option;
             Value = option!.Value;
             SelectedKey = option!.Key;
 
-            foreach (BitChoiceOption item in _options)
-            {
-                item.SetOptionCheckedStatus(item == option);
-            }
-
-            SelectedOption?.SelectedItemChanged(option);
-            SelectedOption = option;
-            SelectedOption?.SelectedItemChanged(option);
+            SelectedOption?.SetState(true);
 
             await OnValueChange.InvokeAsync(option!.Value);
 
             await SelectedKeyChanged.InvokeAsync(SelectedKey);
+
         }
 
         internal void RegisterOption(BitChoiceOption option)
@@ -133,7 +130,8 @@ namespace Bit.Client.Web.BlazorUI
 
             if (SelectedKey == option.Key)
             {
-                option.SetOptionCheckedStatus(true);
+                option.SetState(true);
+                SelectedOption = option;
             }
             _options.Add(option);
         }

@@ -142,7 +142,7 @@ namespace Bit.Client.Web.BlazorUI
             await OnChange.InvokeAsync(IsChecked);
         }
 
-        internal void SetOptionCheckedStatus(bool status)
+        internal void SetState(bool status)
         {
             IsChecked = status;
             StateHasChanged();
@@ -167,10 +167,6 @@ namespace Bit.Client.Web.BlazorUI
 
             _disposed = true;
         }
-
-        internal void SelectedItemChanged(BitChoiceOption item)
-        {
-            IsChecked = item == this;
-        }
+      
     }
 }
