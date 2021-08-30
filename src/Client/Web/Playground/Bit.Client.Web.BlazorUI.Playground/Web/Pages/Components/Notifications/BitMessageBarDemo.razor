@@ -55,7 +55,7 @@
                         <br />
                         @if (IsMessageBarHidden2 is false)
                         {
-                            <BitMessageBar MessageBarType="@BitMessageBarType.Success" OnDismiss="HideMessageBar2" IsMultiline="false" DismissIconName="SkypeCheck">
+                            <BitMessageBar MessageBarType="@BitMessageBarType.Success" OnDismiss="HideMessageBar2" IsMultiline="false" DismissIconName="SkypeCheck" DismissButtonAriaLabel="close">
                                 Action completed! This is a sample of message bar with dismiss ability and custom dismiss icon
                             </BitMessageBar>
                         }
@@ -113,7 +113,7 @@
                         <br />
                         <span>{</span>
                         <br />
-                        <span class="m-l-30">&lt<span class="dark-green">BitMessageBar MessageBarType="</span><span class="light-yellow-bg">&#64;</span><span>BitMessageBarType.Success"<span class="dark-green">OnDismiss</span>="<span class="dark-yellow">HideMessageBar2</span>"<span class="dark-green"> IsMultiline</span>="<span class="light-blue">false</span>"<span class="dark-green"> DismissIconName</span>="SkypeCheck" ></span></span>
+                        <span class="m-l-30">&lt<span class="dark-green">BitMessageBar MessageBarType="</span><span class="light-yellow-bg">&#64;</span><span>BitMessageBarType.Success"<span class="dark-green">OnDismiss</span>="<span class="dark-yellow">HideMessageBar2</span>"<span class="dark-green"> IsMultiline</span>="<span class="light-blue">false</span>" <span class="dark-green"> DismissIconName</span>="SkypeCheck" <span class="dark-green"> DismissButtonAriaLabel</span>="close"></span></span>
                         <br />
                         <span class="m-l-45">Action completed! This is a sample of message bar with dismiss ability</span>
                         <br />

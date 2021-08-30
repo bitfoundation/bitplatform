@@ -27,8 +27,12 @@
                 @if (HasDismiss)
                 {
                     <div Class=@($"{RootElementClass}-dismiss")>
-                        <button onclick=@OnDismiss>
-                            <i class="bit-icon bit-icon--@DismissIconName"></i>
+                        <button onclick=@OnDismiss
+                                title="@(DismissButtonAriaLabel.HasValue() ? DismissButtonAriaLabel: null)"
+                                aria-label="@(DismissButtonAriaLabel.HasValue() ? DismissButtonAriaLabel: null)">
+                            <span>
+                                <i class="bit-icon bit-icon--@DismissIconName"></i>
+                            </span>
                         </button>
                     </div>
                 }
@@ -78,8 +82,12 @@
                 @if (HasDismiss)
                 {
                     <div class=@($"{RootElementClass}-dismiss")>
-                        <button onclick=@OnDismiss>
-                            <i class="bit-icon bit-icon--@DismissIconName"></i>
+                        <button onclick=@OnDismiss
+                                title="@(DismissButtonAriaLabel.HasValue() ? DismissButtonAriaLabel: null)"
+                                aria-label="@(DismissButtonAriaLabel.HasValue() ? DismissButtonAriaLabel: null)">
+                            <span>
+                                <i class="bit-icon bit-icon--@DismissIconName"></i>
+                            </span>
                         </button>
                     </div>
                 }
