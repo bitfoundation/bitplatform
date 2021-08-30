@@ -59,6 +59,10 @@
                                 Action completed! This is a sample of message bar with dismiss ability and custom dismiss icon
                             </BitMessageBar>
                         }
+                        <br />
+                        <BitMessageBar MessageBarType="@BitMessageBarType.Success" MessageBarIcon="Emoji2">
+                            Action completed! This is a sample of message bar with dismiss ability and custom dismiss icon
+                        </BitMessageBar>
                     </div>
                 </BitPivotItem>
                 <BitPivotItem HeaderText="Code" IconName="Source">
@@ -120,6 +124,13 @@
                         <span class="m-l-30">&lt/</span><span class="dark-green">BitMessageBar</span><span>&gt;</span>
                         <br />
                         <span>}</span>
+                    </p>
+                    <p>
+                        <span>&lt<span class="dark-green">BitMessageBar MessageBarType="</span><span class="light-yellow-bg">&#64;</span><span>BitMessageBarType.Success"<span class="dark-green">MessageBarIcon</span>="Emoji2"></span></span>
+                        <br />
+                        <span class="m-l-45">Action completed! This is a sample of message bar with dismiss ability</span>
+                        <br />
+                        <span>&lt/</span><span class="dark-green">BitMessageBar</span><span>&gt;</span>
                     </p>
 
                     <div>
@@ -310,6 +321,12 @@
             <td>boolean</td>
             <td>false</td>
             <td>Determines if the message bar is multi lined. If false, and the text overflows over buttons or to another line, it is clipped.</td>
+        </tr>
+        <tr>
+            <td>MessageBarIcon</td>
+            <td>string</td>
+            <td></td>
+            <td>Custom icon to replace the message bar icon. If unset, default will be the icon set by messageBarType.</td>
         </tr>
         <tr>
             <td>messageBarType</td>

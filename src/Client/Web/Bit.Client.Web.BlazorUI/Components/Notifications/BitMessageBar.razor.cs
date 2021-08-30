@@ -8,6 +8,7 @@ namespace Bit.Client.Web.BlazorUI
     public partial class BitMessageBar
     {
         private BitMessageBarType messageBarType = BitMessageBarType.Info;
+        private string? messageBarIcon;
 
         /// <summary>
         /// Determines if the message bar is multi lined. If false, and the text overflows over buttons or to another line, it is clipped
@@ -32,6 +33,11 @@ namespace Bit.Client.Web.BlazorUI
         /// Custom Fabric icon name to replace the dismiss icon. If unset, default will be the Fabric Clear icon
         /// </summary>
         [Parameter] public string DismissIconName { get; set; } = "Clear";
+
+        /// <summary>
+        /// Custom icon to replace the message bar icon. If unset, default will be the icon set by messageBarType.
+        /// </summary>
+        [Parameter] public string? MessageBarIconName { get; set; }
 
         /// <summary>
         /// Determines if the message bar text is truncated. If true, a button will render to toggle between a single line view and multiline view. This parameter is for single line message bars with no buttons only in a limited space scenario
@@ -95,5 +101,12 @@ namespace Bit.Client.Web.BlazorUI
             [BitMessageBarType.SevereWarning] = "Warning",
             [BitMessageBarType.Success] = "Completed"
         };
+
+        protected override Task OnInitializedAsync()
+        {
+            _ = MessageBarIconName.HasValue() ? messageBarIcon = MessageBarIconName! : messageBarIcon = IconMap[MessageBarType];
+
+            return base.OnInitializedAsync();
+        }
     }
 }
