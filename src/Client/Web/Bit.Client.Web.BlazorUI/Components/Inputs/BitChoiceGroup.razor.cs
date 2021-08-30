@@ -56,11 +56,10 @@ namespace Bit.Client.Web.BlazorUI
 
         private void SelectItemByKey()
         {
-            if (SelectedKey is not null && _options is not null)
-            {
-                SelectedOption = _options.FirstOrDefault(i => i.Key == SelectedKey);
-                _ = SelectOption(SelectedOption);
-            }
+            if (SelectedKey is null || _options is null) return;
+
+            SelectedOption = _options.FirstOrDefault(i => i.Key == SelectedKey);
+            _ = SelectOption(SelectedOption);
         }
 
         [Parameter] public EventCallback<string?> SelectedKeyChanged { get; set; }
@@ -120,14 +119,6 @@ namespace Bit.Client.Web.BlazorUI
             await SelectedKeyChanged.InvokeAsync(SelectedKey);
         }
 
-        internal void SelectInitialOption(BitChoiceOption item)
-        {
-            if (SelectedOption == null)
-            {
-                _ = SelectOption(item);
-            }
-        }
-
         internal void RegisterOption(BitChoiceOption option)
         {
             if (IsEnabled is false)
@@ -138,6 +129,11 @@ namespace Bit.Client.Web.BlazorUI
             if (IsRequired)
             {
                 option.IsRequired = true;
+            }
+
+            if (SelectedKey == option.Key)
+            {
+                _ = SelectOption(option);
             }
             _options.Add(option);
         }

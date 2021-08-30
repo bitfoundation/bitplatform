@@ -172,15 +172,5 @@ namespace Bit.Client.Web.BlazorUI
         {
             IsChecked = item == this;
         }
-
-        protected override void OnInitialized()
-        {
-            if (ChoiceGroup!.SelectedKey == Key)
-            {
-                ChoiceGroup?.SelectInitialOption(this);
-            }
-
-            base.OnInitialized();
-        }
     }
 }
