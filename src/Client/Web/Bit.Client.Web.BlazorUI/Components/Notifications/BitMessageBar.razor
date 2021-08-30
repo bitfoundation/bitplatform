@@ -28,8 +28,8 @@
                 {
                     <div Class=@($"{RootElementClass}-dismiss")>
                         <button onclick=@OnDismiss
-                                title="@(DismissButtonAriaLabel.HasValue() ? DismissButtonAriaLabel: null)"
-                                aria-label="@(DismissButtonAriaLabel.HasValue() ? DismissButtonAriaLabel: null)">
+                                title="@(DismissButtonAriaLabel.HasValue() ? DismissButtonAriaLabel : null)"
+                                aria-label="@(DismissButtonAriaLabel.HasValue() ? DismissButtonAriaLabel : null)">
                             <span>
                                 <i class="bit-icon bit-icon--@DismissIconName"></i>
                             </span>
@@ -72,7 +72,8 @@
                 else if (Truncated)
                 {
                     <div class=@($"{RootElementClass}-truncate")>
-                        <button @onclick=@ToggleExpandSingleLine>
+                        <button @onclick=@ToggleExpandSingleLine
+                                aria-label="@(OverflowButtonAriaLabel.HasValue()? OverflowButtonAriaLabel : null)">
                             <i class=@($"bit-icon bit-icon--{(ExpandSingleLine ? "DoubleChevronUp" : "DoubleChevronDown")}")></i>
                         </button>
                     </div>
@@ -83,8 +84,8 @@
                 {
                     <div class=@($"{RootElementClass}-dismiss")>
                         <button onclick=@OnDismiss
-                                title="@(DismissButtonAriaLabel.HasValue() ? DismissButtonAriaLabel: null)"
-                                aria-label="@(DismissButtonAriaLabel.HasValue() ? DismissButtonAriaLabel: null)">
+                                title="@(DismissButtonAriaLabel.HasValue() ? DismissButtonAriaLabel : null)"
+                                aria-label="@(DismissButtonAriaLabel.HasValue() ? DismissButtonAriaLabel : null)">
                             <span>
                                 <i class="bit-icon bit-icon--@DismissIconName"></i>
                             </span>
