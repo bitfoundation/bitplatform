@@ -29,9 +29,9 @@
             <BitPivot>
                 <BitPivotItem HeaderText="Example" IconName="ViewList">
                     <div>
-                        @if (IsMessageBarHidden is false)
+                        @if (IsMessageBarHidden1 is false)
                         {
-                            <BitMessageBar MessageBarType="@BitMessageBarType.Success" OnDismiss="HideMessageBar" IsMultiline="false" Truncated="true">
+                            <BitMessageBar MessageBarType="@BitMessageBarType.Success" OnDismiss="HideMessageBar1" IsMultiline="false" Truncated="true">
                                 Action completed! This is a sample of message bar with dismiss ability
                                 Action completed! This is a sample of message bar with dismiss ability
                                 Action completed! This is a sample of message bar with dismiss ability
@@ -52,15 +52,22 @@
                                 Action completed! This is a sample of message bar with dismiss ability
                             </ChildContent>
                         </BitMessageBar>
+                        <br />
+                        @if (IsMessageBarHidden2 is false)
+                        {
+                            <BitMessageBar MessageBarType="@BitMessageBarType.Success" OnDismiss="HideMessageBar2" IsMultiline="false" DismissIconName="SkypeCheck">
+                                Action completed! This is a sample of message bar with dismiss ability and custom dismiss icon
+                            </BitMessageBar>
+                        }
                     </div>
                 </BitPivotItem>
                 <BitPivotItem HeaderText="Code" IconName="Source">
                     <p>
-                        <span><span class="light-yellow-bg">&#64;</span>if (IsMessageBarHidden <span class="light-blue">is false</span>)</span>
+                        <span><span class="light-yellow-bg">&#64;</span>if (IsMessageBarHidden1 <span class="light-blue">is false</span>)</span>
                         <br />
                         <span>{</span>
                         <br />
-                        <span class="m-l-30">&lt<span class="dark-green">BitMessageBar MessageBarType="</span><span class="light-yellow-bg">&#64;</span><span>BitMessageBarType.Success"<span class="dark-green">OnDismiss</span>="<span class="dark-yellow">HideMessageBar</span>"<span class="dark-green"> Truncated</span>="<span class="light-blue">true</span>"<span class="dark-green"> IsMultiline</span>="<span class="light-blue">false</span>"></span></span>
+                        <span class="m-l-30">&lt<span class="dark-green">BitMessageBar MessageBarType="</span><span class="light-yellow-bg">&#64;</span><span>BitMessageBarType.Success"<span class="dark-green">OnDismiss</span>="<span class="dark-yellow">HideMessageBar1</span>"<span class="dark-green"> Truncated</span>="<span class="light-blue">true</span>"<span class="dark-green"> IsMultiline</span>="<span class="light-blue">false</span>"></span></span>
                         <br />
                         <span class="m-l-45">Action completed! This is a sample of message bar with dismiss ability</span>
                         <br />
@@ -101,16 +108,40 @@
                         <br />
                         <span>&lt/</span><span class="dark-green">BitMessageBar</span><span>&gt;</span>
                     </p>
+                    <p>
+                        <span><span class="light-yellow-bg">&#64;</span>if (IsMessageBarHidden2 <span class="light-blue">is false</span>)</span>
+                        <br />
+                        <span>{</span>
+                        <br />
+                        <span class="m-l-30">&lt<span class="dark-green">BitMessageBar MessageBarType="</span><span class="light-yellow-bg">&#64;</span><span>BitMessageBarType.Success"<span class="dark-green">OnDismiss</span>="<span class="dark-yellow">HideMessageBar2</span>"<span class="dark-green"> IsMultiline</span>="<span class="light-blue">false</span>"<span class="dark-green"> DismissIconName</span>="SkypeCheck" ></span></span>
+                        <br />
+                        <span class="m-l-45">Action completed! This is a sample of message bar with dismiss ability</span>
+                        <br />
+                        <span class="m-l-30">&lt/</span><span class="dark-green">BitMessageBar</span><span>&gt;</span>
+                        <br />
+                        <span>}</span>
+                    </p>
+
                     <div>
                         <span class="light-yellow-bg">&#64;code {</span>
                         <p>
-                            <span>private bool IsMessageBarHidden = false;</span>
+                            <span>private bool IsMessageBarHidden1 = false;</span>
                             <br />
-                            <span>private void </span><span class="dark-yellow">HideMessageBar</span>()
+                            <span>private bool IsMessageBarHidden2 = false;</span>
+                            <br />
+                            <span>private void </span><span class="dark-yellow">HideMessageBar1</span>()
                             <br />
                             <span>{</span>
                             <br />
-                            <span class="m-l-30">IsMessageBarHidden = true;</span>
+                            <span class="m-l-30">IsMessageBarHidden1 = true;</span>
+                            <br />
+                            <span>}</span>
+                            <br />
+                            <span>private void </span><span class="dark-yellow">HideMessageBar2</span>()
+                            <br />
+                            <span>{</span>
+                            <br />
+                            <span class="m-l-30">IsMessageBarHidden2 = true;</span>
                             <br />
                             <span>}</span>
                             <br />
