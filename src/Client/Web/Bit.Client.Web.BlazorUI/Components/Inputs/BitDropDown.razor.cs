@@ -106,6 +106,7 @@ namespace Bit.Client.Web.BlazorUI
         public string DropDownId { get; set; } = $"Dropdown{Guid.NewGuid()}";
 
         protected override string RootElementClass => "bit-drp";
+
         protected override void RegisterComponentClasses()
         {
             ClassBuilder.Register(() => FocusClass.HasNoValue()
@@ -129,7 +130,33 @@ namespace Bit.Client.Web.BlazorUI
                 : $"{RootElementClass}-{"multi"}-{VisualClassRegistrar()}");
         }
 
-        protected virtual async Task HandleClick(MouseEventArgs e)
+        protected async override Task OnAfterRenderAsync(bool firstRender)
+        {
+            if (IsEnabled && firstRender)
+            {
+                _ = JSRuntime?.RegisterOnDocumentClickEvent(this, "CloseCallout");
+            }
+
+            await base.OnAfterRenderAsync(firstRender);
+        }
+
+        internal void ChangeAllItemsIsSelected(bool value)
+        {
+            foreach (var item in Items)
+            {
+                item.IsSelected = value;
+            }
+        }
+
+        [JSInvokable]
+        private void CloseCallout()
+        {
+            IsOpen = false;
+            FocusClass = "";
+            StateHasChanged();
+        }
+
+        private async Task HandleClick(MouseEventArgs e)
         {
             if (IsEnabled)
             {
@@ -147,7 +174,7 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
-        protected virtual async Task HandleItemClick(DropDownItem? selectedItem)
+        private async Task HandleItemClick(DropDownItem? selectedItem)
         {
             if (selectedItem is not null)
             {
@@ -189,32 +216,6 @@ namespace Bit.Client.Web.BlazorUI
                     }
                 }
             }
-        }
-
-        internal void ChangeAllItemsIsSelected(bool value)
-        {
-            foreach (var item in Items)
-            {
-                item.IsSelected = value;
-            }
-        }
-
-        [JSInvokable]
-        public void CloseCallout()
-        {
-            IsOpen = false;
-            FocusClass = "";
-            StateHasChanged();
-        }
-
-        protected async override Task OnAfterRenderAsync(bool firstRender)
-        {
-            if (IsEnabled && firstRender)
-            {
-                _ = JSRuntime?.RegisterOnDocumentClickEvent(this, "CloseCallout");
-            }
-
-            await base.OnAfterRenderAsync(firstRender);
         }
     }
 }
