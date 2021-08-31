@@ -6,21 +6,22 @@
      id="@UniqueId.ToString()">
     @if (Label.HasValue())
     {
-        <label>@Label</label>
+        <label id="@DropdownLabelId">@Label</label>
     }
 
     <div class="bit-drp-wrapper"
+         id="@DropDownId"
          tabindex=@(IsEnabled ? 0 : -1)
          role="combobox"
          data-is-focusable="true"
          aria-expanded=@(isOpen ? "true" : "false")
-         aria-labelledby=""
+         aria-labelledby="@GetDropdownAriaLabelledby"
          aria-required="@IsRequired"
          aria-disabled="@(IsEnabled is false)"
          aria-controls=""
          title="@Title"
          @onclick="HandleClick">
-        <span>
+        <span id="@DropDownOptionId">
             @if (text.HasValue())
             {
                 @text
@@ -31,7 +32,7 @@
             }
         </span>
         <span>
-            <i class="bit-icon"></i>
+            <i class="bit-icon" aria-hidden="true"></i>
         </span>
     </div>
     @if (isOpen)

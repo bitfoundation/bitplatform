@@ -113,7 +113,9 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
-        public string DropDownId { get; set; } = $"Dropdown{Guid.NewGuid()}";
+        public string DropDownId { get; set; } = String.Empty;
+        public string? DropdownLabelId { get; set; } = String.Empty;
+        public string DropDownOptionId { get; set; } = String.Empty;
 
         protected override string RootElementClass => "bit-drp";
 
@@ -138,6 +140,14 @@ namespace Bit.Client.Web.BlazorUI
             ClassBuilder.Register(() => IsMultiSelect is false
                 ? string.Empty
                 : $"{RootElementClass}-{"multi"}-{VisualClassRegistrar()}");
+        }
+
+        protected async override Task OnParametersSetAsync()
+        {
+            DropDownId = $"Dropdown{UniqueId}";
+            DropdownLabelId = Label.HasValue() ? $"{DropDownId}-label" : null;
+            DropDownOptionId = $"{DropDownId}-option";
+            await base.OnParametersSetAsync();
         }
 
         protected async override Task OnAfterRenderAsync(bool firstRender)
@@ -230,5 +240,7 @@ namespace Bit.Client.Web.BlazorUI
                 }
             }
         }
+
+        private string GetDropdownAriaLabelledby => Label.HasValue() ? $"{DropDownId}-label {DropDownId}-option" : $"{DropDownId}-option";
     }
 }
