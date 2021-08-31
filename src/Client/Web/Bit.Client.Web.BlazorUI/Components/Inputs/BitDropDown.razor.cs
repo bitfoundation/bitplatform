@@ -74,6 +74,11 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public string? Label { get; set; }
 
         /// <summary>
+        /// When multiple items are selected, this still will be used to separate values in the dropdown title
+        /// </summary>
+        [Parameter] public string MultiSelectDelimiter { get; set; } = ", ";
+
+        /// <summary>
         /// Callback for when the dropdown clicked
         /// </summary>
         [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
@@ -149,7 +154,7 @@ namespace Bit.Client.Web.BlazorUI
         }
 
         [JSInvokable]
-        private void CloseCallout()
+        public void CloseCallout()
         {
             IsOpen = false;
             FocusClass = "";
@@ -184,7 +189,7 @@ namespace Bit.Client.Web.BlazorUI
                     {
                         if (Text.HasValue())
                         {
-                            Text += ", ";
+                            Text += MultiSelectDelimiter;
                         }
                         Text += selectedItem.Text;
                     }
@@ -209,7 +214,7 @@ namespace Bit.Client.Web.BlazorUI
                         {
                             if (Text.HasValue())
                             {
-                                Text += ", ";
+                                Text += MultiSelectDelimiter;
                             }
                             Text += item.Text;
                         }
