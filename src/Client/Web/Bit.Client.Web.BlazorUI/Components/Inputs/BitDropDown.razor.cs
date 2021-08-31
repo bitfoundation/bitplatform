@@ -74,6 +74,11 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public string? Label { get; set; }
 
         /// <summary>
+        /// The title to show when the mouse is placed on the drop down
+        /// </summary>
+        [Parameter] public string? Title { get; set; }
+
+        /// <summary>
         /// When multiple items are selected, this still will be used to separate values in the dropdown title
         /// </summary>
         [Parameter] public string MultiSelectDelimiter { get; set; } = ", ";
