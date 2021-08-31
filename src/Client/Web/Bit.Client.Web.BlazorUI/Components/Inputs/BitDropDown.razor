@@ -21,7 +21,10 @@
          aria-controls=""
          title="@Title"
          @onclick="HandleClick">
-        <span id="@DropDownOptionId">
+        <span id="@DropDownOptionId"
+              aria-live="polite"
+              aria-atomic="true"
+              aria-invalid="false">
             @if (text.HasValue())
             {
                 @text
@@ -37,7 +40,11 @@
     </div>
     @if (isOpen)
     {
-        <div class="bit-drp-items-wrapper">
+        <div class="bit-drp-items-wrapper"
+             id="@($"{DropDownId}-list")"
+             tabindex="0"
+             role="listbox"
+             aria-labelledby="@DropdownLabelId">
             @foreach (DropDownItem item in Items)
             {
                 if (item.ItemType == DropDownItemType.Header)
@@ -62,8 +69,13 @@
                                            ?$"{RootElementClass}-slc-{VisualClassRegistrar()}"
                                            :"")"
                                 type="button"
+                                role="option"
+                                data-is-focusable="@item.IsEnabled"
                                 title="@item.Text"
                                 disabled=@(!item.IsEnabled)
+                                aria-disabled="@(!item.IsEnabled)"
+                                aria-selected="@item.IsSelected"
+                                tabindex="@(item.IsEnabled ? 0 : -1)"
                                 @onclick="()=> HandleItemClick(item)">
                             @item.Text
                         </button>
@@ -71,7 +83,8 @@
                 }
                 else if (item.ItemType == DropDownItemType.Divider)
                 {
-                    <div class="@RootElementClass-div-@VisualClassRegistrar()">
+                    <div class="@RootElementClass-div-@VisualClassRegistrar()"
+                         role="separator">
                     </div>
                 }
             }
