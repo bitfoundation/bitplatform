@@ -15,7 +15,7 @@ namespace Bit.Client.Web.BlazorUI
         private bool isOpen = false;
         private bool isMultiSelect = false;
         private bool isRequired = false;
-        private string? Text;
+        private string? text;
 
         [Inject] public IJSRuntime? JSRuntime { get; set; }
 
@@ -192,19 +192,21 @@ namespace Bit.Client.Web.BlazorUI
                 {
                     if (IsMultiSelect)
                     {
-                        if (Text.HasValue())
+                        if (text.HasValue())
                         {
-                            Text += MultiSelectDelimiter;
+                            text += MultiSelectDelimiter;
                         }
-                        Text += selectedItem.Text;
+
+                        text += selectedItem.Text;
                     }
                     else
                     {
                         ChangeAllItemsIsSelected(false);
-                        Text = selectedItem.Text;
+                        text = selectedItem.Text;
                         selectedItem.IsSelected = true;
                         isOpen = false;
                     }
+
                     await OnSelectItem.InvokeAsync(selectedItem);
                 }
             }
@@ -212,16 +214,17 @@ namespace Bit.Client.Web.BlazorUI
             {
                 if (IsMultiSelect)
                 {
-                    Text = string.Empty;
+                    text = string.Empty;
                     foreach (var item in Items)
                     {
                         if (item.IsSelected)
                         {
-                            if (Text.HasValue())
+                            if (text.HasValue())
                             {
-                                Text += MultiSelectDelimiter;
+                                text += MultiSelectDelimiter;
                             }
-                            Text += item.Text;
+
+                            text += item.Text;
                         }
                     }
                 }
