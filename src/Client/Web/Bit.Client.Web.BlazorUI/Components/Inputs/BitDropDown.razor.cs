@@ -64,6 +64,28 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public List<DropDownItem> Items { get; set; } = new List<DropDownItem>();
 
         /// <summary>
+        /// Keys of the selected items for multiSelect scenarios
+        /// If you provide this, you must maintain selection state by observing onChange events and passing a new value in when changed
+        /// </summary>
+        [Parameter] public List<string> SelectedKeys { get; set; } = new List<string>();
+
+        /// <summary>
+        /// Key of the selected item
+        /// If you provide this, you must maintain selection state by observing onChange events and passing a new value in when changed
+        /// </summary>
+        [Parameter] public string? SelectedKey { get; set; }
+
+        /// <summary>
+        /// Keys that will be initially used to set selected items for multiSelect scenarios
+        /// </summary>
+        [Parameter] public List<string> DefaultSelectedKeys { get; set; } = new List<string>();
+
+        /// <summary>
+        /// Key that will be initially used to set selected item
+        /// </summary>
+        [Parameter] public string? DefaultSelectedKey { get; set; }
+
+        /// <summary>
         /// Input placeholder text, Displayed until an option is selected
         /// </summary>
         [Parameter] public string? Placeholder { get; set; }
@@ -147,6 +169,9 @@ namespace Bit.Client.Web.BlazorUI
             DropDownId = $"Dropdown{UniqueId}";
             DropdownLabelId = Label.HasValue() ? $"{DropDownId}-label" : null;
             DropDownOptionId = $"{DropDownId}-option";
+
+            InitText();
+
             await base.OnParametersSetAsync();
         }
 
@@ -237,6 +262,53 @@ namespace Bit.Client.Web.BlazorUI
                             text += item.Text;
                         }
                     }
+                }
+            }
+        }
+
+        private void InitText()
+        {
+            if (isMultiSelect)
+            {
+                if (SelectedKeys.Count != 0)
+                {
+                    Items.FindAll(i => SelectedKeys.Contains(i.Value)).ForEach(i => { i.IsSelected = true; });
+                }
+                else if (DefaultSelectedKeys.Count != 0)
+                {
+                    Items.FindAll(i => DefaultSelectedKeys.Contains(i.Value)).ForEach(i => { i.IsSelected = true; });
+                }
+
+                Items.ForEach(i =>
+                {
+                    if (i.IsSelected)
+                    {
+                        if (text.HasValue())
+                        {
+                            text += MultiSelectDelimiter;
+                        }
+
+                        text += i.Text;
+                    }
+                });
+            }
+            else
+            {
+                if (SelectedKey.HasValue())
+                {
+                    Items.Find(i => i.Value == SelectedKey).IsSelected = true;
+                    text = SelectedKey;
+                }
+                else if (DefaultSelectedKey.HasValue())
+                {
+                    Items.Find(i => i.Value == DefaultSelectedKey).IsSelected = true;
+                    text = DefaultSelectedKey;
+                }
+                else if (Items.FindAll(item => item.IsSelected is true).Count != 0)
+                {
+                    var firstSelectedItem = Items.Find(i => i.IsSelected);
+                    text = firstSelectedItem.Text;
+                    Items.FindAll(i => i.Value != firstSelectedItem.Value).ForEach(i => { i.IsSelected = false; });
                 }
             }
         }
