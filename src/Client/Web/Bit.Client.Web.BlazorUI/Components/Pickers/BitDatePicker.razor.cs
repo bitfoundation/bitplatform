@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.JSInterop;
 
 namespace Bit.Client.Web.BlazorUI
 {
@@ -21,6 +22,8 @@ namespace Bit.Client.Web.BlazorUI
         private DayOfWeek weekStartingDay;
         private int monthLength;
         private int dayOfWeekDifference;
+
+        [Inject] public IJSRuntime? JSRuntime { get; set; }
 
         /// <summary>
         /// Whether or not this DatePicker is open
@@ -323,6 +326,23 @@ namespace Bit.Client.Web.BlazorUI
         {
             yearRangeFrom = fromYear;
             yearRangeTo = fromYear + 11;
+        }
+
+        [JSInvokable]
+        public void CloseCallout()
+        {
+            IsOpen = false;
+            StateHasChanged();
+        }
+
+        protected async override Task OnAfterRenderAsync(bool firstRender)
+        {
+            if (IsEnabled && firstRender)
+            {
+                _ = JSRuntime?.BitDatePickerRegisterOnDocumentClickEvent(this, "CloseCallout");
+            }
+
+            await base.OnAfterRenderAsync(firstRender);
         }
     }
 }
