@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
@@ -13,6 +14,8 @@ namespace Bit.Client.Web.BlazorUI
         private string expandClass = "";
         private bool isOpen = false;
         private bool isMultiSelect = false;
+        private bool isRequired = false;
+        private string? Text;
 
         [Inject] public IJSRuntime? JSRuntime { get; set; }
 
@@ -44,6 +47,17 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
+        [Parameter]
+        public bool IsRequired
+        {
+            get => isRequired;
+            set
+            {
+                isRequired = value;
+                ClassBuilder.Reset();
+            }
+        }
+
         /// <summary>
         /// A list of items to display in the dropdown
         /// </summary>
@@ -55,6 +69,11 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public string? Placeholder { get; set; }
 
         /// <summary>
+        /// the label associated with the dropdown
+        /// </summary>
+        [Parameter] public string? Label { get; set; }
+
+        /// <summary>
         /// Callback for when the dropdown clicked
         /// </summary>
         [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
@@ -63,8 +82,6 @@ namespace Bit.Client.Web.BlazorUI
         /// Callback for when an item is selected
         /// </summary>
         [Parameter] public EventCallback<DropDownItem> OnSelectItem { get; set; }
-
-        public string? Text { get; set; }
 
         public string FocusClass
         {
@@ -75,6 +92,7 @@ namespace Bit.Client.Web.BlazorUI
                 ClassBuilder.Reset();
             }
         }
+
         public string ExpandClass
         {
             get => expandClass;
@@ -84,6 +102,8 @@ namespace Bit.Client.Web.BlazorUI
                 ClassBuilder.Reset();
             }
         }
+
+        public string DropDownId { get; set; } = $"Dropdown{Guid.NewGuid()}";
 
         protected override string RootElementClass => "bit-drp";
         protected override void RegisterComponentClasses()

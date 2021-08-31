@@ -2,24 +2,40 @@
 @inherits BitComponentBase
 <div @ref="RootElement"
      style="@StyleBuilder.Value"
-     class="@ClassBuilder.Value"
-     id="@UniqueId.ToString()">
-    <span @onclick="HandleClick">
-        @if (Text.HasValue())
-        {
-            @Text
-        }
-        else
-        {
-            @Placeholder
-        }
-    </span>
-    <span @onclick="HandleClick">
-        <i class="bit-icon"></i>
-    </span>
+     class="@ClassBuilder.Value">
+    @if (Label.HasValue())
+    {
+        <label>@Label</label>
+    }
+
+    <div class="bit-drp-wrapper"
+         id="@UniqueId.ToString()"
+         tabindex=@(IsEnabled ? 0 : -1)
+         role="combobox"
+         data-is-focusable="true"
+         aria-expanded=@(isOpen ? "true" : "false")
+         aria-labelledby=""
+         aria-required="@IsRequired"
+         aria-disabled="@(IsEnabled is false)"
+         aria-controls=""
+         @onclick="HandleClick">
+        <span>
+            @if (Text.HasValue())
+            {
+                @Text
+            }
+            else
+            {
+                @Placeholder
+            }
+        </span>
+        <span>
+            <i class="bit-icon"></i>
+        </span>
+    </div>
     @if (isOpen)
     {
-        <div>
+        <div class="bit-drp-items-wrapper">
             @foreach (DropDownItem item in Items)
             {
                 if (item.ItemType == DropDownItemType.Header)
