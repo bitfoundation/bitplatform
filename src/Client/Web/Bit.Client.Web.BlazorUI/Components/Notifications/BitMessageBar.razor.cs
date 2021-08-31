@@ -102,11 +102,10 @@ namespace Bit.Client.Web.BlazorUI
             [BitMessageBarType.Success] = "Completed"
         };
 
-        protected override Task OnInitializedAsync()
+        protected override Task OnParametersSetAsync()
         {
-            _ = MessageBarIconName.HasValue() ? messageBarIcon = MessageBarIconName! : messageBarIcon = IconMap[MessageBarType];
-
-            return base.OnInitializedAsync();
+            _ = MessageBarIconName.HasValue() ? messageBarIcon = MessageBarIconName : messageBarIcon = IconMap[MessageBarType];
+            return base.OnParametersSetAsync();
         }
     }
 }
