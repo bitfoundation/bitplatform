@@ -59,7 +59,7 @@
                     {
                         <BitCheckbox @bind-IsChecked="item.IsSelected"
                                      IsEnabled="item.IsEnabled"
-                                     OnChange="(isChecked) => HandleItemClick(isChecked?item:null)">
+                                     OnChange="(isChecked) => HandleItemClick(item)">
                             @item.Text
                         </BitCheckbox>
                     }

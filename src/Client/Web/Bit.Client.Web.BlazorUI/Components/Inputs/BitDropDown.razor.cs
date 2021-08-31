@@ -16,6 +16,10 @@ namespace Bit.Client.Web.BlazorUI
         private bool isMultiSelect = false;
         private bool isRequired = false;
         private string? text;
+        private List<string> selectedKeys = new();
+        private string selectedKey = string.Empty;
+        private bool SelectedKeysHasBeenSet;
+        private bool SelectedKeyHasBeenSet;
 
         [Inject] public IJSRuntime? JSRuntime { get; set; }
 
@@ -67,13 +71,35 @@ namespace Bit.Client.Web.BlazorUI
         /// Keys of the selected items for multiSelect scenarios
         /// If you provide this, you must maintain selection state by observing onChange events and passing a new value in when changed
         /// </summary>
-        [Parameter] public List<string> SelectedKeys { get; set; } = new List<string>();
+        [Parameter]
+        public List<string> SelectedKeys
+        {
+            get => selectedKeys;
+            set
+            {
+                selectedKeys = value;
+                _ = SelectedKeysChanged.InvokeAsync(value);
+            }
+        }
+
+        [Parameter] public EventCallback<List<string>> SelectedKeysChanged { get; set; }
 
         /// <summary>
         /// Key of the selected item
         /// If you provide this, you must maintain selection state by observing onChange events and passing a new value in when changed
         /// </summary>
-        [Parameter] public string? SelectedKey { get; set; }
+        [Parameter]
+        public string SelectedKey
+        {
+            get => selectedKey;
+            set
+            {
+                selectedKey = value;
+                _ = SelectedKeyChanged.InvokeAsync(value);
+            }
+        }
+
+        [Parameter] public EventCallback<string> SelectedKeyChanged { get; set; }
 
         /// <summary>
         /// Keys that will be initially used to set selected items for multiSelect scenarios
@@ -219,8 +245,22 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
-        private async Task HandleItemClick(DropDownItem? selectedItem)
+        private async Task HandleItemClick(DropDownItem selectedItem)
         {
+            if (IsEnabled is false) return;
+
+            if (isMultiSelect &&
+                    SelectedKeysHasBeenSet &&
+                    SelectedKeysChanged.HasDelegate is false)
+            {
+                selectedItem.IsSelected = !selectedItem.IsSelected;
+                return;
+            }
+
+            if (!isMultiSelect &&
+                SelectedKeyHasBeenSet &&
+                SelectedKeyChanged.HasDelegate is false) return;
+
             if (selectedItem is not null)
             {
                 if (selectedItem.IsEnabled)
@@ -272,16 +312,16 @@ namespace Bit.Client.Web.BlazorUI
             {
                 if (SelectedKeys.Count != 0)
                 {
-                    Items.FindAll(i => SelectedKeys.Contains(i.Value)).ForEach(i => { i.IsSelected = true; });
+                    Items.FindAll(i => SelectedKeys.Contains(i.Value) && i.ItemType == DropDownItemType.Normal).ForEach(i => { i.IsSelected = true; });
                 }
                 else if (DefaultSelectedKeys.Count != 0)
                 {
-                    Items.FindAll(i => DefaultSelectedKeys.Contains(i.Value)).ForEach(i => { i.IsSelected = true; });
+                    Items.FindAll(i => DefaultSelectedKeys.Contains(i.Value) && i.ItemType == DropDownItemType.Normal).ForEach(i => { i.IsSelected = true; });
                 }
 
                 Items.ForEach(i =>
                 {
-                    if (i.IsSelected)
+                    if (i.IsSelected && i.ItemType == DropDownItemType.Normal)
                     {
                         if (text.HasValue())
                         {
@@ -294,19 +334,21 @@ namespace Bit.Client.Web.BlazorUI
             }
             else
             {
-                if (SelectedKey.HasValue())
+                if (SelectedKey.HasValue() && Items.Find(i => i.Value == SelectedKey && i.ItemType == DropDownItemType.Normal) is not null)
                 {
                     Items.Find(i => i.Value == SelectedKey).IsSelected = true;
-                    text = SelectedKey;
+                    Items.FindAll(i => i.Value != SelectedKey).ForEach(i => { i.IsSelected = false; });
+                    text = Items.Find(i => i.Value == SelectedKey).Text;
                 }
-                else if (DefaultSelectedKey.HasValue())
+                else if (DefaultSelectedKey.HasValue() && Items.Find(i => i.Value == DefaultSelectedKey && i.ItemType == DropDownItemType.Normal) is not null)
                 {
-                    Items.Find(i => i.Value == DefaultSelectedKey).IsSelected = true;
-                    text = DefaultSelectedKey;
+                    Items.Find(i => i.Value == DefaultSelectedKey && i.ItemType == DropDownItemType.Normal).IsSelected = true;
+                    Items.FindAll(i => i.Value != DefaultSelectedKey && i.ItemType == DropDownItemType.Normal).ForEach(i => { i.IsSelected = false; });
+                    text = Items.Find(i => i.Value == DefaultSelectedKey && i.ItemType == DropDownItemType.Normal).Text;
                 }
-                else if (Items.FindAll(item => item.IsSelected is true).Count != 0)
+                else if (Items.FindAll(item => item.IsSelected is true && item.ItemType == DropDownItemType.Normal).Count != 0)
                 {
-                    var firstSelectedItem = Items.Find(i => i.IsSelected);
+                    var firstSelectedItem = Items.Find(i => i.IsSelected && i.ItemType == DropDownItemType.Normal);
                     text = firstSelectedItem.Text;
                     Items.FindAll(i => i.Value != firstSelectedItem.Value).ForEach(i => { i.IsSelected = false; });
                 }
