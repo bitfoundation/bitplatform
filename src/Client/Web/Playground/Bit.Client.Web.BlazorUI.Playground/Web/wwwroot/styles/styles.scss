@@ -71,10 +71,10 @@ p {
 
 .side {
     flex: 5%;
-    background-color: $LightGray;
-    padding: 20px;
+    background-color: $LightGray;    
     position: fixed;
-    width: 255px;
+    width: 255px;    
+    height: 100vh;
 }
 
 .card {
