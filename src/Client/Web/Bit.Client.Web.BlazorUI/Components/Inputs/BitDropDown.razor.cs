@@ -77,6 +77,7 @@ namespace Bit.Client.Web.BlazorUI
             get => selectedKeys;
             set
             {
+                if (selectedKeys.All(value.Contains) && selectedKeys.Count == value.Count) return;
                 selectedKeys = value;
                 _ = SelectedKeysChanged.InvokeAsync(value);
             }
@@ -94,6 +95,7 @@ namespace Bit.Client.Web.BlazorUI
             get => selectedKey;
             set
             {
+                if (selectedKey == value) return;
                 selectedKey = value;
                 _ = SelectedKeyChanged.InvokeAsync(value);
             }
@@ -247,7 +249,7 @@ namespace Bit.Client.Web.BlazorUI
 
         private async Task HandleItemClick(BitDropDownItem selectedItem)
         {
-            if (IsEnabled is false) return;
+            if (!IsEnabled || !selectedItem.IsEnabled) return;
 
             if (isMultiSelect &&
                     SelectedKeysHasBeenSet &&
@@ -261,33 +263,18 @@ namespace Bit.Client.Web.BlazorUI
                 SelectedKeyHasBeenSet &&
                 SelectedKeyChanged.HasDelegate is false) return;
 
-            if (selectedItem is not null)
+            if (isMultiSelect)
             {
-                if (selectedItem.IsEnabled)
+                if (selectedItem.IsSelected)
                 {
-                    if (IsMultiSelect)
+                    if (text.HasValue())
                     {
-                        if (text.HasValue())
-                        {
-                            text += MultiSelectDelimiter;
-                        }
-
-                        text += selectedItem.Text;
-                    }
-                    else
-                    {
-                        ChangeAllItemsIsSelected(false);
-                        text = selectedItem.Text;
-                        selectedItem.IsSelected = true;
-                        isOpen = false;
+                        text += MultiSelectDelimiter;
                     }
 
-                    await OnSelectItem.InvokeAsync(selectedItem);
+                    text += selectedItem.Text;
                 }
-            }
-            else
-            {
-                if (IsMultiSelect)
+                else
                 {
                     text = string.Empty;
                     foreach (var item in Items)
@@ -303,22 +290,44 @@ namespace Bit.Client.Web.BlazorUI
                         }
                     }
                 }
+
+                if (SelectedKeysHasBeenSet)
+                {
+                    SelectedKeys = Items.FindAll(i => i.IsSelected && i.ItemType == BitDropDownItemType.Normal).Select(i => i.Value).ToList();
+                }
             }
+            else
+            {
+                ChangeAllItemsIsSelected(false);
+                selectedItem.IsSelected = true;
+                text = selectedItem.Text;
+                isOpen = false;
+
+                if (SelectedKeyHasBeenSet)
+                {
+                    SelectedKey = selectedItem.Value;
+                }
+            }
+
+            await OnSelectItem.InvokeAsync(selectedItem);
         }
 
         private void InitText()
         {
             if (isMultiSelect)
             {
-                if (SelectedKeys.Count != 0)
+                if (SelectedKeysHasBeenSet)
                 {
+                    ChangeAllItemsIsSelected(false);
                     Items.FindAll(i => SelectedKeys.Contains(i.Value) && i.ItemType == BitDropDownItemType.Normal).ForEach(i => { i.IsSelected = true; });
                 }
                 else if (DefaultSelectedKeys.Count != 0)
                 {
+                    ChangeAllItemsIsSelected(false);
                     Items.FindAll(i => DefaultSelectedKeys.Contains(i.Value) && i.ItemType == BitDropDownItemType.Normal).ForEach(i => { i.IsSelected = true; });
                 }
 
+                text = string.Empty;
                 Items.ForEach(i =>
                 {
                     if (i.IsSelected && i.ItemType == BitDropDownItemType.Normal)

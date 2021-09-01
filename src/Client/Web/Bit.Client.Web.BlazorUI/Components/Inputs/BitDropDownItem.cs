@@ -10,7 +10,7 @@
         /// <summary>
         /// Value of this item
         /// </summary>
-        public string? Value { get; set; }
+        public string Value { get; set; }
 
         /// <summary>
         /// Whether or not this item is enabled
