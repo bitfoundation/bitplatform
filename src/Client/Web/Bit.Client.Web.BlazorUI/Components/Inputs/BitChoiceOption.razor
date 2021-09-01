@@ -13,9 +13,44 @@
            required="@(IsRequired is true)"
            @onclick="@HandleClick"
            @onchange="@HandleChange" />
+
     <label for="@UniqueId">
-        <span>
-            @Text
-        </span>
+        @if (ImageSrc.HasValue() || IconName.HasValue())
+        {
+            @if (ImageSrc.HasValue())
+            {
+                <div class="bit-cho-img-wrpr">
+                    <div class="@(IsChecked?"bit-cho-fluent-img-wrpr-is-hidden":string.Empty)">
+                        <div style="@imageSizeStyle">
+                            <img src="@ImageSrc" alt="@ImageAlt">
+                        </div>
+                    </div>
+                    <div class="@(!IsChecked?"bit-cho-fluent-img-wrpr-is-hidden":string.Empty)">
+                        <div style="@imageSizeStyle">
+                            <img src="@SelectedImageSrc" alt="@ImageAlt">
+                        </div>
+                    </div>
+                </div>
+            }
+
+            @if (IconName.HasValue())
+            {
+                <div class="bit-cho-icn-wrpr">
+                    <div>
+                        <i aria-hidden="true" class="bit-icon bit-icon--@IconName"></i>
+                    </div>
+                </div>
+            }
+
+            <div class="bit-cho-lbl-wrpr">
+                <span>@Text</span>
+            </div>
+        }
+        else
+        {
+            <span>
+                @Text
+            </span>
+        }
     </label>
 </div>

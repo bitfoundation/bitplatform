@@ -28,6 +28,9 @@
                    OnFocus="@HandleFocus"
                    OnIncrement="HandleIncrement"
                    OnDecrement="@HandleDecrement">
+        <LabelFragment>
+            @LabelFragment
+        </LabelFragment>
     </BitSpinButton>
 </CascadingValue>
 
@@ -58,6 +61,7 @@
     [Parameter] public string? DecrementButtonAriaLabel { get; set; }
     [Parameter] public string? IncrementButtonAriaLabel { get; set; }
     [Parameter] public bool IsEnabled { get; set; } = true;
+    [Parameter] public RenderFragment? LabelFragment { get; set; }
 
     public int OnIncrementEventCounter { get; set; } = 0;
     public int OnBlurEventCounter { get; set; } = 0;

@@ -22,16 +22,16 @@
 
 @code {
     [Parameter] public Visual Visual { get; set; }
-    [Parameter] public int? DefaultUpperValue { get; set; }
-    [Parameter] public int? DefaultLowerValue { get; set; }
-    [Parameter] public int? DefaultValue { get; set; }
-    [Parameter] public int Min { get; set; }
-    [Parameter] public int Max { get; set; }
-    [Parameter] public int Step { get; set; }
-    [Parameter] public int? UpperValue { get; set; }
-    [Parameter] public int? LowerValue { get; set; }
-    [Parameter] public int? Value { get; set; }
-    [Parameter] public (int? Lower, int? Upper) RangeValue { get; set; }
+    [Parameter] public double? DefaultUpperValue { get; set; }
+    [Parameter] public double? DefaultLowerValue { get; set; }
+    [Parameter] public double? DefaultValue { get; set; }
+    [Parameter] public double Min { get; set; }
+    [Parameter] public double Max { get; set; }
+    [Parameter] public double Step { get; set; }
+    [Parameter] public double? UpperValue { get; set; }
+    [Parameter] public double? LowerValue { get; set; }
+    [Parameter] public double? Value { get; set; }
+    [Parameter] public (double? Lower, double? Upper) RangeValue { get; set; }
     [Parameter] public bool OriginFromZero { get; set; }
     [Parameter] public string Label { get; set; }
     [Parameter] public bool Ranged { get; set; }

@@ -176,3 +176,24 @@ p {
     color: $LightBlue;
     text-decoration: underline;
 }
+
+.custom-button {
+    background-color: $DarkRed;
+    border-color: $DarkRed;
+}
+
+.custom-spb {
+    .bit-spb-wrapper {
+        & span {
+            & button:first-child:active {
+                color: rgb(50, 49, 48);
+                background-color: green;
+            }
+
+            & button:nth-child(2):active {
+                color: rgb(50, 49, 48);
+                background-color: red;
+            }
+        }
+    }
+}

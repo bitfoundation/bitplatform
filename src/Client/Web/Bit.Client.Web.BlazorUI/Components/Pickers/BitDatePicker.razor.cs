@@ -22,6 +22,9 @@ namespace Bit.Client.Web.BlazorUI
         private int monthLength;
         private int dayOfWeekDifference;
 
+        /// <summary>
+        /// Whether or not this DatePicker is open
+        /// </summary>
         [Parameter]
         public bool IsOpen
         {
@@ -33,15 +36,49 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
+        /// <summary>
+        /// GoToToday text for the DatePicker
+        /// </summary>
         [Parameter] public string GoToToday { get; set; } = "Go to today";
+
+        /// <summary>
+        /// Placeholder text for the DatePicker
+        /// </summary>
         [Parameter] public string Placeholder { get; set; } = "Select a date...";
+
+        /// <summary>
+        /// Calendar type for the DatePicker
+        /// </summary>
         [Parameter] public CalendarType CalendarType { get; set; } = CalendarType.Gregorian;
 
+        /// <summary>
+        /// Callback for when clicking on DatePicker input
+        /// </summary>
         [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+
+        /// <summary>
+        /// Callback for when focus moves into the DatePicker input
+        /// </summary>
         [Parameter] public EventCallback<FocusEventArgs> OnFocusIn { get; set; }
+
+        /// <summary>
+        /// Callback for when focus moves out the DatePicker input
+        /// </summary>
         [Parameter] public EventCallback<FocusEventArgs> OnFocusOut { get; set; }
+
+        /// <summary>
+        /// Callback for when the month changes
+        /// </summary>
         [Parameter] public EventCallback<int> OnMonthChange { get; set; }
+
+        /// <summary>
+        /// Callback for when the year changes
+        /// </summary>
         [Parameter] public EventCallback<int> OnYearChange { get; set; }
+
+        /// <summary>
+        /// Callback for when the date changes
+        /// </summary>
         [Parameter] public EventCallback<string> OnDateChoose { get; set; }
 
         protected override string RootElementClass { get; } = "bit-dtp";
