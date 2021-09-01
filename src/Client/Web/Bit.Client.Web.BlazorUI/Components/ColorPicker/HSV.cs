@@ -6,13 +6,14 @@ using System.Threading.Tasks;
 
 namespace Bit.Client.Web.BlazorUI
 {
-    public class HSV
+    public class Hsv
     {
         public double Hue { get; set; }
         public double Saturation { get; set; }
         public double Value { get; set; }
 
-        public RGB ToRGB(double alpha = 1)
+
+        public Rgb ToRgb()
         {
             var c = Value * Saturation;
             var x = c * (1 - Math.Abs((Hue / 60) % 2 - 1));
@@ -26,12 +27,11 @@ namespace Bit.Client.Web.BlazorUI
                 : Hue >= 240 && Hue < 300 ? (x, 0, c)
                 : (c, 0, x);
 
-            return new RGB()
+            return new Rgb()
             {
                 Red = Math.Floor((color.r + m) * 255),
                 Green = Math.Floor((color.g + m) * 255),
                 Blue = Math.Floor((color.b + m) * 255),
-                Alpha = alpha
             };
         }
     }

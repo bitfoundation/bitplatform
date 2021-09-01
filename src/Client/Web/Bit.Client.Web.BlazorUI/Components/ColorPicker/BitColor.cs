@@ -9,52 +9,70 @@ namespace Bit.Client.Web.BlazorUI
 {
     public class BitColor
     {
-        private RGB color;
+        private static Rgb defaultColor => new Rgb() { Red = 255, Green = 255, Blue = 255 };
 
-        public BitColor(string rgb)
+        private Rgb rgb = defaultColor;
+
+        public Rgb Rgb { get => rgb; }
+        public Hsv Hsv { get => rgb.ToHsv(); }
+        public Hex Hex { get => rgb.ToHex(); }
+
+        public double Alpha { get; set; }
+
+        public BitColor(string color = "", double alpha = 1)
         {
-            color = StringToRGBConverter(rgb);
-        }
-
-        public RGB Color { get => color; }
-
-        public void SetColorByString(string rgb)
-        {
-            color = StringToRGBConverter(rgb);
-        }
-
-        public void SetColorByRGB(RGB rgb)
-        {
-            color = rgb;
-        }
-
-        private RGB StringToRGBConverter(string value)
-        {
-            RGB color = new RGB { Red = 0, Green = 0, Blue = 0 };
             try
             {
-                Regex rx = new Regex(@"\(([^)]+)\)");
-                var mathedColor = rx.Match(value).Value;
-
-                mathedColor = mathedColor.Trim('(');
-                mathedColor = mathedColor.Trim(')');
-
-                var colorString = mathedColor.Split(",");
-                if (colorString.Length >= 3)
+                if (color.StartsWith("#"))
                 {
-                    color.Red = int.Parse(colorString[0]);
-                    color.Green = int.Parse(colorString[1]);
-                    color.Blue = int.Parse(colorString[2]);
+                    rgb = new Hex() { ColorCode = color }.ToRGB();
+                    Alpha = alpha;
+                }
+                else if (color.ToLower().Contains("rgb"))
+                {
+                    Regex rx = new Regex(@"\(([^)]+)\)");
+                    var mathedColor = rx.Match(color).Value;
 
-                    if (colorString.Length == 4)
+                    mathedColor = mathedColor.Trim('(');
+                    mathedColor = mathedColor.Trim(')');
+
+                    var colorString = mathedColor.Split(",");
+                    if (colorString.Length >= 3)
                     {
-                        color.Alpha = Convert.ToDouble(colorString[3]);
+                        rgb.Red = int.Parse(colorString[0]);
+                        rgb.Green = int.Parse(colorString[1]);
+                        rgb.Blue = int.Parse(colorString[2]);
+                        Alpha = alpha;
+
+
+                        if (colorString.Length == 4)
+                        {
+                            Alpha = Convert.ToDouble(colorString[3]);
+                        }
                     }
                 }
+                else
+                {
+                    rgb = defaultColor;
+                    Alpha = alpha;
+                }
             }
-            catch (Exception exp) { }
 
-            return color;
+            catch (Exception exp)
+            {
+                rgb = defaultColor;
+                Alpha = alpha;
+            }
+        }
+
+        public string ToRgbaCss()
+        {
+            return $"rgba({rgb.Red},{rgb.Green},{rgb.Blue},{Alpha})";
+        }
+
+        public void SetColorByRgb(Rgb color)
+        {
+            rgb = color;
         }
     }
 }

@@ -7,12 +7,11 @@ using System.Threading.Tasks;
 
 namespace Bit.Client.Web.BlazorUI
 {
-    public class RGB
+    public class Rgb
     {
         private double red;
         private double green;
         private double blue;
-        private double alpha = 1;
 
         public double Red
         {
@@ -37,16 +36,7 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
-        public double Alpha
-        {
-            get => alpha;
-            set
-            {
-                alpha = Math.Clamp(value, 0, 1);
-            }
-        }
-
-        public HSV toHSV()
+        public Hsv ToHsv()
         {
             double hue;
             double saturation;
@@ -65,7 +55,7 @@ namespace Bit.Client.Web.BlazorUI
 
             saturation = cMax == 0 ? 0 : span / cMax;
 
-            return new HSV()
+            return new Hsv()
             {
                 Hue = Math.Floor(hue),
                 Saturation = Math.Floor(saturation * 100),
@@ -76,12 +66,12 @@ namespace Bit.Client.Web.BlazorUI
         public Hex ToHex()
         {
             var myColor = Color.FromArgb(Convert.ToInt32(Red), Convert.ToInt32(Green), Convert.ToInt32(Blue));
-            return new Hex() { ColorCode = myColor.Name.Remove(0, 2) };
+            return new Hex() { ColorCode = $"#{myColor.Name.Remove(0, 2)}" };
         }
 
         public string ToCss()
         {
-            return $"rgba({Red},{Green},{Blue},{Alpha})";
+            return $"rgb({Red},{Green},{Blue})";
         }
     }
 }
