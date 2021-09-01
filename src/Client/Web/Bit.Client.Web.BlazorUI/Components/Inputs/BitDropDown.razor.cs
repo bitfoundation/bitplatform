@@ -143,6 +143,11 @@ namespace Bit.Client.Web.BlazorUI
         /// </summary>
         [Parameter] public EventCallback<BitDropDownItem> OnSelectItem { get; set; }
 
+        /// <summary>
+        /// Optional preference to have OnSelectItem still be called when an already selected item is clicked in single select mode
+        /// </summary>
+        [Parameter] public bool NotifyOnReselect { get; set; } = false;
+
         public string FocusClass
         {
             get => focusClass;
@@ -295,9 +300,12 @@ namespace Bit.Client.Web.BlazorUI
                 {
                     SelectedKeys = Items.FindAll(i => i.IsSelected && i.ItemType == BitDropDownItemType.Normal).Select(i => i.Value).ToList();
                 }
+
+                await OnSelectItem.InvokeAsync(selectedItem);
             }
             else
             {
+                var isSameItemSelected = Items.Any(i => i.Value == selectedItem.Value && i.IsSelected);
                 ChangeAllItemsIsSelected(false);
                 selectedItem.IsSelected = true;
                 text = selectedItem.Text;
@@ -307,9 +315,11 @@ namespace Bit.Client.Web.BlazorUI
                 {
                     SelectedKey = selectedItem.Value;
                 }
-            }
 
-            await OnSelectItem.InvokeAsync(selectedItem);
+                if(isSameItemSelected && !NotifyOnReselect) return;
+
+                await OnSelectItem.InvokeAsync(selectedItem);
+            }
         }
 
         private void InitText()
