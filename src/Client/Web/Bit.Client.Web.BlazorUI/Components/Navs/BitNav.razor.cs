@@ -16,7 +16,7 @@ namespace Bit.Client.Web.BlazorUI
 
         [Inject] private NavigationManager navigationManager { get; set; }
 
-        private bool SelectedKeyHasBeenSet { get; set; }
+        private bool SelectedKeyHasBeenSet;
 
         [Parameter]
         public string? SelectedKey
