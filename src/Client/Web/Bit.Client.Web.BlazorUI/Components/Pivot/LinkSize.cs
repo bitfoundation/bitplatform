@@ -8,8 +8,14 @@ namespace Bit.Client.Web.BlazorUI
 {
     public enum LinkSize
     {
+        /// <summary>
+        /// Display Link using normal font size
+        /// </summary>
         Normal,
+
+        /// <summary>
+        /// Display links using large font size
+        /// </summary>
         Large
     }
-   
 }

@@ -1,0 +1,114 @@
+﻿@namespace Bit.Client.Web.BlazorUI
+@inherits BitComponentBase
+
+<div @ref="RootElement"
+     @attributes="@HtmlAttributes"
+     class="@ClassBuilder.Value"
+     style="@StyleBuilder.Value">
+    @if (Label.HasValue())
+    {
+        <label class="title" @ref="TitleRef">@Label</label>
+    }
+
+    @if (IsRanged)
+    {
+        @if (ShowValue && IsVertical)
+        {
+            <label @ref="ValueLabelRef"
+                   class="valueLabel"
+                   for="@sliderBoxId">
+                @GetValueDisplay(upperValue.GetValueOrDefault())
+            </label>
+        }
+
+        <div @ref="ContainerRef"
+             class="bit-slider-container"
+             style="@(IsVertical ? styleContainer : null)">
+            @if (ShowValue && IsVertical is false)
+            {
+                <label class="valueLabel">@GetValueDisplay(lowerValue.GetValueOrDefault())</label>
+            }
+            <div id="@sliderBoxId"
+                 class="bit-slider-box"
+                 style="@styleProgress"
+                 @attributes="@SliderBoxHtmlAttributes">
+                @if (IsOriginFromZero)
+                {
+                    <span class="zeroTick" style="left: calc(50% - 1px);"></span>
+                }
+
+                <input id="@($"min-{sliderBoxId}")"
+                       type="range"
+                       min="@Min"
+                       max="@Max"
+                       step="@Step"
+                       @bind-value="@fisrtInputValue"
+                       @oninput="@(args => HandleInput(args, true))"
+                       disabled=@(!IsEnabled)
+                       role="slider"
+                       tabindex="@GetTabIndex"
+                       data-is-focusable="@GetDataIsFocusable"
+                       aria-disabled="@GetAriaDisabled"
+                       aria-label="@Label"
+                       aria-valuemin="@Min"
+                       aria-valuemax="@Max"
+                       aria-valuetext="@GetAriaValueText(fisrtInputValue.GetValueOrDefault())"
+                       aria-valuenow="@fisrtInputValue" />
+                <input id="@($"max-{sliderBoxId}")"
+                       type="range"
+                       min="@Min"
+                       max="@Max"
+                       step="@Step"
+                       @bind-value="@secoundInputValue"
+                       @oninput="@(args => HandleInput(args, false))"
+                       disabled=@(!IsEnabled)
+                       role="slider"
+                       tabindex="@GetTabIndex"
+                       data-is-focusable="@GetDataIsFocusable"
+                       aria-disabled="@GetAriaDisabled"
+                       aria-label="@Label"
+                       aria-valuemin="@Min"
+                       aria-valuemax="@Max"
+                       aria-valuetext="@GetAriaValueText(secoundInputValue.GetValueOrDefault())"
+                       aria-valuenow="@secoundInputValue" />
+            </div>
+            @if (ShowValue && IsVertical is false)
+            {
+                <label class="valueLabel">@GetValueDisplay(upperValue.GetValueOrDefault())</label>
+            }
+        </div>
+
+        @if (ShowValue && IsVertical)
+        {
+            <label class="valueLabel">@GetValueDisplay(lowerValue.GetValueOrDefault())</label>
+        }
+    }
+    else
+    {
+        <div @ref="ContainerRef"
+             class="bit-slider-container">
+            @if (IsOriginFromZero)
+            {
+                <span class="zeroTick" style="@(IsVertical ? "top: calc(50% - -2px);" : "left: calc(50% - 29px);")"></span>
+            }
+
+            <input type="range"
+                   min="@Min"
+                   max="@Max"
+                   step="@Step"
+                   @bind-value="@Value"
+                   @oninput="@HandleInput"
+                   style="@styleProgress"
+                   disabled=@(!IsEnabled) />
+
+            @if (ShowValue && IsVertical is false)
+            {
+                <label class="valueLabel">@GetValueDisplay(Value.GetValueOrDefault())</label>
+            }
+        </div>
+        @if (ShowValue && IsVertical)
+        {
+            <label class="valueLabel">@GetValueDisplay(Value.GetValueOrDefault())</label>
+        }
+    }
+</div>
