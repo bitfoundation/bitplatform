@@ -279,45 +279,46 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
             people[1] = person.GetPeople(100);
         }
 
-        private List<DropDownItem> GetDropdownItems()
+        private List<BitDropDownItem> GetDropdownItems()
         {
-            List<DropDownItem> items = new();
-            items.Add(new DropDownItem()
+            List<BitDropDownItem> items = new();
+            items.Add(new BitDropDownItem()
             {
-                ItemType = DropDownItemType.Header,
+                ItemType = BitDropDownItemType.Header,
                 Text = "Fruits"
             });
-            items.Add(new DropDownItem()
+            items.Add(new BitDropDownItem()
             {
-                ItemType = DropDownItemType.Normal,
+                ItemType = BitDropDownItemType.Normal,
                 Text = "Apple",
                 Value = "f-app"
             });
-            items.Add(new DropDownItem()
+            items.Add(new BitDropDownItem()
             {
-                ItemType = DropDownItemType.Normal,
+                ItemType = BitDropDownItemType.Normal,
                 Text = "Orange",
                 Value = "f-ora",
                 IsEnabled = false
             });
-            items.Add(new DropDownItem()
+            items.Add(new BitDropDownItem()
             {
-                ItemType = DropDownItemType.Normal,
+                ItemType = BitDropDownItemType.Normal,
                 Text = "Banana",
                 Value = "f-ban",
+                IsSelected = true
             });
-            items.Add(new DropDownItem()
+            items.Add(new BitDropDownItem()
             {
-                ItemType = DropDownItemType.Divider,
+                ItemType = BitDropDownItemType.Divider,
             });
-            items.Add(new DropDownItem()
+            items.Add(new BitDropDownItem()
             {
-                ItemType = DropDownItemType.Header,
+                ItemType = BitDropDownItemType.Header,
                 Text = "Vegetables"
             });
-            items.Add(new DropDownItem()
+            items.Add(new BitDropDownItem()
             {
-                ItemType = DropDownItemType.Normal,
+                ItemType = BitDropDownItemType.Normal,
                 Text = "Broccoli",
                 Value = "v-bro",
             });

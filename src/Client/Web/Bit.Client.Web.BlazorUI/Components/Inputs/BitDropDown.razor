@@ -45,15 +45,15 @@
              tabindex="0"
              role="listbox"
              aria-labelledby="@DropdownLabelId">
-            @foreach (DropDownItem item in Items)
+            @foreach (BitDropDownItem item in Items)
             {
-                if (item.ItemType == DropDownItemType.Header)
+                if (item.ItemType == BitDropDownItemType.Header)
                 {
                     <div class="@RootElementClass-head-@VisualClassRegistrar()">
                         @item.Text
                     </div>
                 }
-                else if (item.ItemType == DropDownItemType.Normal)
+                else if (item.ItemType == BitDropDownItemType.Normal)
                 {
                     @if (IsMultiSelect)
                     {
@@ -81,7 +81,7 @@
                         </button>
                     }
                 }
-                else if (item.ItemType == DropDownItemType.Divider)
+                else if (item.ItemType == BitDropDownItemType.Divider)
                 {
                     <div class="@RootElementClass-div-@VisualClassRegistrar()"
                          role="separator">

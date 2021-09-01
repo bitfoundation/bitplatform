@@ -21,25 +21,27 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
         ]
         public async Task BitDropDownShouldRespectIsEnabled(Visual visual, bool isEnabled, int count, bool isCalloutOpen, string className)
         {
-            var items = new List<DropDownItem>
+            var items = new List<BitDropDownItem>
             {
-                new() {ItemType = DropDownItemType.Header, IsEnabled = isEnabled},
-                new() {ItemType = DropDownItemType.Normal, IsEnabled = isEnabled},
-                new() {ItemType = DropDownItemType.Normal, IsEnabled = isEnabled},
-                new() {ItemType = DropDownItemType.Divider, IsEnabled = isEnabled}
+                new() {ItemType = BitDropDownItemType.Header, IsEnabled = isEnabled},
+                new() {ItemType = BitDropDownItemType.Normal, IsEnabled = isEnabled},
+                new() {ItemType = BitDropDownItemType.Normal, IsEnabled = isEnabled},
+                new() {ItemType = BitDropDownItemType.Divider, IsEnabled = isEnabled}
             };
-            var com = RenderComponent<BitDropDownTest>(
-                parameters =>
-                {
-                    parameters.Add(p => p.Visual, visual);
-                    parameters.Add(p => p.Items, items);
-                    parameters.Add(p => p.IsEnabled, isEnabled);
-                    parameters.Add(p => p.Value, count.ToString());
-                });
-            var bitChoiceGroup = com.Find(".bit-drp");
-            bitChoiceGroup.Children.First().Click();
+
+            var component = RenderComponent<BitDropDownTest>(parameters =>
+             {
+                 parameters.Add(p => p.Visual, visual);
+                 parameters.Add(p => p.Items, items);
+                 parameters.Add(p => p.IsEnabled, isEnabled);
+                 parameters.Add(p => p.Value, count.ToString());
+             });
+
             var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
-            Assert.AreEqual(count, com.Instance.CurrentCount);
+            var bitChoiceGroup = component.Find(".bit-drp");
+            bitChoiceGroup.Children.First().Click();
+            
+            Assert.AreEqual(count, component.Instance.CurrentCount);
             Assert.IsTrue(bitChoiceGroup.ClassList.Contains($"bit-drp-{className}-{visualClass}"));
             Assert.IsTrue(bitChoiceGroup.Children.Count().Equals(isCalloutOpen ? 3 : 2));
         }
@@ -56,13 +58,14 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
         ]
         public async Task BitDropDownItemsShouldRespectIsEnabled(Visual visual, bool isEnabled, int count)
         {
-            var items = new List<DropDownItem>
+            var items = new List<BitDropDownItem>
             {
-                new() {ItemType = DropDownItemType.Header, IsEnabled = isEnabled},
-                new() {ItemType = DropDownItemType.Normal, IsEnabled = isEnabled, Text = "Test1", Value = "Test value1"},
-                new() {ItemType = DropDownItemType.Normal, IsEnabled = isEnabled, Text = "Test2", Value = "Test value2"},
-                new() {ItemType = DropDownItemType.Divider, IsEnabled = isEnabled}
+                new() {ItemType = BitDropDownItemType.Header, IsEnabled = isEnabled},
+                new() {ItemType = BitDropDownItemType.Normal, IsEnabled = isEnabled, Text = "Test1", Value = "Test value1"},
+                new() {ItemType = BitDropDownItemType.Normal, IsEnabled = isEnabled, Text = "Test2", Value = "Test value2"},
+                new() {ItemType = BitDropDownItemType.Divider, IsEnabled = isEnabled}
             };
+
             var com = RenderComponent<BitDropDownTest>(
                 parameters =>
                 {
@@ -71,6 +74,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                     parameters.Add(p => p.ItemIsEnabled, isEnabled);
                     parameters.Add(p => p.Value, count.ToString());
                 });
+
             var bitChoiceGroup = com.Find(".bit-drp");
             bitChoiceGroup.Children.First().Click();
             bitChoiceGroup.Children[2].Children[1].Click();
@@ -90,13 +94,13 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
         public async Task BitDropDownMultiSelectShouldRespectIsEnabled(Visual visual, bool isEnabled, int count)
         {
             Context.JSInterop.Mode = JSRuntimeMode.Loose;
-            
-            var items = new List<DropDownItem>
+
+            var items = new List<BitDropDownItem>
             {
-                new() {ItemType = DropDownItemType.Header, IsEnabled = isEnabled},
-                new() {ItemType = DropDownItemType.Normal, IsEnabled = isEnabled},
-                new() {ItemType = DropDownItemType.Normal, IsEnabled = isEnabled},
-                new() {ItemType = DropDownItemType.Divider, IsEnabled = isEnabled}
+                new() {ItemType = BitDropDownItemType.Header, IsEnabled = isEnabled},
+                new() {ItemType = BitDropDownItemType.Normal, IsEnabled = isEnabled},
+                new() {ItemType = BitDropDownItemType.Normal, IsEnabled = isEnabled},
+                new() {ItemType = BitDropDownItemType.Divider, IsEnabled = isEnabled}
             };
 
             var com = RenderComponent<BitDropDownTest>(parameters =>
@@ -114,7 +118,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
             bitChoiceGroup.Children.First().Click();
 
             var checkboxItems = com.FindAll($".bit-chb-{visualClass} > div > div", true);
-            
+
             for (int index = 0; index < checkboxItems.Count; index++)
             {
                 checkboxItems[index].Click();

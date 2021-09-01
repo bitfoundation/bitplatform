@@ -1,6 +1,6 @@
 ﻿namespace Bit.Client.Web.BlazorUI
 {
-    public enum DropDownItemType
+    public enum BitDropDownItemType
     {
         /// <summary>
         /// DropDown items are being rendered as a normal item

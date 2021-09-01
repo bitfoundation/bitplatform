@@ -1,6 +1,6 @@
 ﻿namespace Bit.Client.Web.BlazorUI
 {
-    public class DropDownItem
+    public class BitDropDownItem
     {
         /// <summary>
         /// Text to render for this item
@@ -25,6 +25,6 @@
         /// <summary>
         /// The type of this item, Refers to the dropdown separator
         /// </summary>
-        public DropDownItemType ItemType { get; set; } = DropDownItemType.Normal;
+        public BitDropDownItemType ItemType { get; set; } = BitDropDownItemType.Normal;
     }
 }
