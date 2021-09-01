@@ -16,10 +16,10 @@ namespace Bit.Client.Web.BlazorUI
 
         [Inject] private NavigationManager navigationManager { get; set; }
 
-        public bool SelectedKeyHasBeenSet { get; set; }
+        private bool SelectedKeyHasBeenSet { get; set; }
 
         [Parameter]
-        public string SelectedKey
+        public string? SelectedKey
         {
             get => selectedKey;
             set
@@ -28,7 +28,9 @@ namespace Bit.Client.Web.BlazorUI
                 selectedKey = value;
                 SelectedKeyChanged.InvokeAsync(selectedKey);
 
-                var currentUrl = NavLinkItems.Where(nli => nli.Links != null).SelectMany(sli => sli.Links).FirstOrDefault(sli => sli.Key.Contains(selectedKey))?.Key ?? string.Empty;
+                var currentUrl = NavLinkItems.Where(nli => nli.Links != null)
+                    .SelectMany(sli => sli.Links)
+                    .FirstOrDefault(sli => sli.Key.Contains(selectedKey))?.Key ?? string.Empty;
 
                 if (!string.IsNullOrEmpty(currentUrl) && navigationManager.Uri.Contains(currentUrl))
                 {
@@ -75,7 +77,11 @@ namespace Bit.Client.Web.BlazorUI
         {
             var currentPage = navigationManager.Uri.Replace(navigationManager.BaseUri, string.Empty);
 
-            string currentPageKey = NavLinkItems.Where(nli => nli.Links != null).SelectMany(nli => nli.Links).FirstOrDefault(l => l.Url.ToLower().Contains(currentPage.ToLower()))?.Key ?? string.Empty;
+            string currentPageKey = NavLinkItems.Where(nli => nli.Links != null)
+                .SelectMany(nli => nli.Links)
+                .FirstOrDefault(l => l.Url.ToLower()
+                    .Contains(currentPage.ToLower())
+                    )?.Key ?? string.Empty;
 
 
             if (string.IsNullOrEmpty(currentPageKey)) return;
