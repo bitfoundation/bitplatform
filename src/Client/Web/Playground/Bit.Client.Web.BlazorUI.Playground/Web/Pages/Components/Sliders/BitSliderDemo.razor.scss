@@ -1,0 +1,18 @@
+﻿.slider-container {
+    width: 300px;
+}
+
+.vertical-slider-container {
+    height: 250px;
+    margin: 20px;
+    display: flex;
+    flex-flow: row nowrap;
+}
+
+.vertical-range-slider-container {
+    display: flex;
+    flex-flow: row nowrap;
+    width: 300px;
+    height: 200px;
+    box-sizing: border-box;
+}
