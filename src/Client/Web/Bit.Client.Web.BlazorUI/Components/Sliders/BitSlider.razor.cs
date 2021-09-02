@@ -9,8 +9,8 @@ namespace Bit.Client.Web.BlazorUI
 {
     public partial class BitSlider
     {
-        private double? fisrtInputValue;
-        private double? secoundInputValue;
+        private double? firstInputValue;
+        private double? secondInputValue;
         private double? upperValue;
         private double? lowerValue;
         private double? value;
@@ -239,22 +239,22 @@ namespace Bit.Client.Web.BlazorUI
                 {
                     if (isFirstInput)
                     {
-                        fisrtInputValue = Convert.ToDouble(e.Value, CultureInfo.InvariantCulture);
+                        firstInputValue = Convert.ToDouble(e.Value, CultureInfo.InvariantCulture);
                     }
                     else
                     {
-                        secoundInputValue = Convert.ToDouble(e.Value, CultureInfo.InvariantCulture);
+                        secondInputValue = Convert.ToDouble(e.Value, CultureInfo.InvariantCulture);
                     }
 
-                    if (fisrtInputValue < secoundInputValue)
+                    if (firstInputValue < secondInputValue)
                     {
-                        lowerValue = fisrtInputValue;
-                        upperValue = secoundInputValue;
+                        lowerValue = firstInputValue;
+                        upperValue = secondInputValue;
                     }
                     else
                     {
-                        lowerValue = secoundInputValue;
-                        upperValue = fisrtInputValue;
+                        lowerValue = secondInputValue;
+                        upperValue = firstInputValue;
                     }
 
                     FillSlider();
@@ -272,7 +272,7 @@ namespace Bit.Client.Web.BlazorUI
         {
             if (IsRanged)
             {
-                styleProgress = $"--l: {fisrtInputValue}; --h: {secoundInputValue}; --min: {Min}; --max: {Max}";
+                styleProgress = $"--l: {firstInputValue}; --h: {secondInputValue}; --min: {Min}; --max: {Max}";
                 if (IsVertical)
                 {
                     styleContainer = $"width: {inputHeight}px; height: {inputHeight}px;";
@@ -301,13 +301,13 @@ namespace Bit.Client.Web.BlazorUI
 
             if (upper > lower)
             {
-                fisrtInputValue = lower;
-                secoundInputValue = upper;
+                firstInputValue = lower;
+                secondInputValue = upper;
             }
             else
             {
-                fisrtInputValue = upper;
-                secoundInputValue = lower;
+                firstInputValue = upper;
+                secondInputValue = lower;
             }
         }
 
