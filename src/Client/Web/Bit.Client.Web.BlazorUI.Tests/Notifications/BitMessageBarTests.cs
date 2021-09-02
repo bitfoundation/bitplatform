@@ -1,4 +1,5 @@
-﻿using Bunit;
+﻿using System.Collections.Generic;
+using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.Client.Web.BlazorUI.Tests.Notifications
@@ -67,7 +68,21 @@ namespace Bit.Client.Web.BlazorUI.Tests.Notifications
 
             Assert.IsTrue(bitMessageBar.ClassList.Contains($"bit-msg-bar-{isEnabledClass}-{visualClass}"));
             Assert.AreEqual(isEnabled, bitMessageBar.ClassList.Contains($"bit-msg-bar-{messageBarTypeClass}-{visualClass}"));
-
+            
+            
+            
+            var icon = component.Find(".bit-msg-bar .bit-msg-bar-icon ");
+            
+            Dictionary<BitMessageBarType, string> IconMap = new()
+            {
+                [BitMessageBarType.Info] = "Info",
+                [BitMessageBarType.Warning] = "Info",
+                [BitMessageBarType.Error] = "ErrorBadge",
+                [BitMessageBarType.Blocked] = "Blocked2",
+                [BitMessageBarType.SevereWarning] = "Warning",
+                [BitMessageBarType.Success] = "Completed"
+            };
+            Assert.IsTrue(icon.FirstElementChild.ClassList.Contains ($"bit-icon--{IconMap[messageBarType]}"));
         }
 
         [DataTestMethod,
@@ -76,7 +91,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Notifications
             DataRow(false, true),
             DataRow(false, false)
         ]
-        public void BitTextFieldShouldRespectMultiline(bool isMultiline, bool truncated)
+        public void BitMessageBarShouldRespectMultiline(bool isMultiline, bool truncated)
         {
             var component = RenderComponent<BitMessageBarTest>(
                 parameters =>
@@ -85,10 +100,10 @@ namespace Bit.Client.Web.BlazorUI.Tests.Notifications
                     parameters.Add(p => p.Truncated, truncated);
                 });
 
-            var bitMessageBarWithoutAction = component.Find(".bit-msg-bar > div");
+            var bitMessageBar = component.Find(".bit-msg-bar > div");
 
-            string messageBar1MultilineType = isMultiline ? "multiline" : "singleline";
-            Assert.IsTrue(bitMessageBarWithoutAction.ClassList.Contains($"bit-msg-bar-{messageBar1MultilineType}"));
+            string messageBarMultilineType = isMultiline ? "multiline" : "singleline";
+            Assert.IsTrue(bitMessageBar.ClassList.Contains($"bit-msg-bar-{messageBarMultilineType}"));
 
             if (!isMultiline && truncated)
             {
@@ -100,13 +115,42 @@ namespace Bit.Client.Web.BlazorUI.Tests.Notifications
                 truncateButton.Click();
                 Assert.IsTrue(truncateButton.FirstElementChild.ClassList.Contains("bit-icon--DoubleChevronDown"));
             }
-
-
-            var bitMessageBarWithtAction = component.Find(".bit-msg-bar:nth-child(2) > div");
-
-            string messageBar2MultilineType = isMultiline ? "multiline" : "singleline";
-            Assert.IsTrue(bitMessageBarWithtAction.ClassList.Contains($"bit-msg-bar-{messageBar2MultilineType}"));
-
         }
+
+        [DataTestMethod,
+            DataRow(true),
+            DataRow(false),
+        ]
+        public void BitMessageBarShouldRespectAction(bool isEnable)
+        {
+            var component = RenderComponent<BitMessageBarTest>(
+                parameters =>
+                {
+                    parameters.Add(p => p.IsEnabled, isEnable);
+                });
+
+            var bitMessageBarActionContainer = component.Find(".bit-msg-bar:nth-child(2) div div:nth-child(3)");
+            Assert.IsTrue(bitMessageBarActionContainer.ClassList.Contains("bit-msg-bar-actions"));
+            Assert.AreEqual("BUTTON", bitMessageBarActionContainer.FirstElementChild.TagName);
+        }
+
+        [DataTestMethod,
+            DataRow(true),
+            DataRow(false),
+        ]
+        public void BitMessageBarShouldRespectCustomIcon(bool hasDismiss)
+        {
+            var component = RenderComponent<BitMessageBarTest>(
+                parameters =>
+                {
+                    parameters.Add(p => p.Dissmi, isEnable);
+                    parameters.Add(p => p.IsEnabled, isEnable);
+                });
+
+            var bitMessageBarActionContainer = component.Find(".bit-msg-bar:nth-child(2) div div:nth-child(2)");
+            Assert.IsTrue(bitMessageBarActionContainer.ClassList.Contains("bit-msg-bar-actions"));
+            Assert.AreEqual("BUTTON", bitMessageBarActionContainer.FirstElementChild.TagName);
+        }
+        
     }
 }
