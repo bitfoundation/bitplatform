@@ -104,7 +104,7 @@ namespace Bit.Client.Web.BlazorUI
 
         protected override Task OnParametersSetAsync()
         {
-            _ = MessageBarIconName.HasValue() ? messageBarIcon = MessageBarIconName : messageBarIcon = IconMap[MessageBarType];
+            messageBarIcon = MessageBarIconName.HasValue() ? MessageBarIconName : IconMap[MessageBarType];
             return base.OnParametersSetAsync();
         }
     }
