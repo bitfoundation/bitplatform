@@ -75,6 +75,11 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public EventCallback<bool> IsIndeterminateChanged { get; set; }
 
         /// <summary>
+        ///  Callback that is called when the check box is cliced
+        /// </summary>
+        [Parameter] public EventCallback<bool> OnClick { get; set; }
+
+        /// <summary>
         /// The content of checkbox, It can be Any custom tag or a text
         /// </summary>
         [Parameter] public RenderFragment? ChildContent { get; set; }
@@ -108,18 +113,18 @@ namespace Bit.Client.Web.BlazorUI
         {
             if (IsEnabled is false) return;
 
+            await OnClick.InvokeAsync(IsChecked);
             if (IsIndeterminate)
             {
-                if (IsCheckedHasBeenSet && IsIndeterminateChanged.HasDelegate is false) return;
+                if (IsIndeterminateHasBeenSet && IsIndeterminateChanged.HasDelegate is false) return;
                 IsIndeterminate = false;
             }
             else
             {
                 if (IsCheckedHasBeenSet && IsCheckedChanged.HasDelegate is false) return;
                 IsChecked = !IsChecked;
+                await OnChange.InvokeAsync(IsChecked);
             }
-
-            await OnChange.InvokeAsync(IsChecked);
         }
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
