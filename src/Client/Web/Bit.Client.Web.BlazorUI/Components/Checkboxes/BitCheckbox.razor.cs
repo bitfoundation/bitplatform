@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 
 namespace Bit.Client.Web.BlazorUI
@@ -77,7 +78,7 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         ///  Callback that is called when the check box is cliced
         /// </summary>
-        [Parameter] public EventCallback<bool> OnClick { get; set; }
+        [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
         /// <summary>
         /// The content of checkbox, It can be Any custom tag or a text
@@ -109,11 +110,10 @@ namespace Bit.Client.Web.BlazorUI
                                         : string.Empty);
         }
 
-        protected async Task HandleCheckboxClick()
+        protected async Task HandleCheckboxClick(MouseEventArgs args)
         {
             if (IsEnabled is false) return;
 
-            await OnClick.InvokeAsync(IsChecked);
             if (IsIndeterminate)
             {
                 if (IsIndeterminateHasBeenSet && IsIndeterminateChanged.HasDelegate is false) return;
@@ -125,6 +125,8 @@ namespace Bit.Client.Web.BlazorUI
                 IsChecked = !IsChecked;
                 await OnChange.InvokeAsync(IsChecked);
             }
+
+            await OnClick.InvokeAsync(args);
         }
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
