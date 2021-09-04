@@ -181,3 +181,21 @@
 .bit-file-format {
     margin-right: 5px;
 }
+
+.bit-fl-up-disabled-fluent {
+    > div:first-child {
+        > label {
+            border-color: $Grey60;
+            background-color: $Grey20;
+            color: $Grey120;
+
+            &:hover {
+                border-color: $Grey60;
+            }
+
+            &:active {
+                background-color: $Grey20;
+            }
+        }
+    }
+}

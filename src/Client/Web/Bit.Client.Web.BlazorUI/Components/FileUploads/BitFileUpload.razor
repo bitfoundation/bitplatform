@@ -14,7 +14,8 @@
                multiple="@IsMultiFile"
                id="@UniqueId"
                accept="@(string.Join(",",AcceptedExtensions))"
-               @onchange="@(() => HandleOnChange())" />
+               @onchange="@(() => HandleOnChange())"
+			   disabled=@(!IsEnabled) />
     </div>
 
     @if (Files is not null)
