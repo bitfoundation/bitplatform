@@ -1,6 +1,11 @@
 ﻿<div class="side">
+    <BitSearchBox Placeholder="Filter" 
+                  IconName="Filter"  
+                  OnChange="@HandleChange" 
+                  OnClear="@HandleClear"/>
+
     <BitNav Class="nav-link"
-            NavLinkItems="NavLinks"
+            NavLinkItems="NavLinksToShow"
             AriaLabel="Bit Component Nav">
     </BitNav>
 </div>
