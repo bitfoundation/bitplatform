@@ -56,7 +56,8 @@
                 <button tabindex="0"
                         @onclick="(() => Toggle(navLink))"
                         aria-label="@navLink.CollapseAriaLabel"
-                        aria-expanded="@navLink.IsExpanded">
+                        aria-expanded="@navLink.IsExpanded"
+                        style="left: @(navLink.Depth * 14 + 1)px !important">
                     <i class="bit-icon bit-icon--ChevronDown @(navLink.IsExpanded ? "bit-nav-expand-fluent" : "")"></i>
                 </button>
             }
@@ -68,7 +69,7 @@
                    tabindex="-1"
                    onclick="@(navLink.Disabled ? "return false;" : "")"
                    target="@navLink.Target"
-                   style="padding: 0px 20px 0px @(((navLink.Depth * 14)+(navLink.Icon.HasNoValue() ? 27 : 3)).ToString())px;"
+                   style="padding: 0 20px 0 @(navLink.Depth * 14 + (navLink.Icon.HasNoValue() ? 25 : 0))px;"
                    class="@GetLinkClass(navLink)">
 
                     <span>
@@ -84,7 +85,7 @@
             {
                 <button class="@GetLinkClass(navLink)"
                         title="@(navLink.Title.HasValue() ? navLink.Title : navLink.Name)"
-                        style="padding: 0px 20px 0px @(((navLink.Depth * 14)+27).ToString())px;"
+                        style="padding: 0 20px 0 @(navLink.Depth * 14 + 25)px;"
                         @onclick="(() => Toggle(navLink))">
                     <span>
                         <div>@navLink.Name</div>
