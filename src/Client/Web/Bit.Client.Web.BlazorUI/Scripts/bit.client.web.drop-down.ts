@@ -3,7 +3,7 @@
         document.addEventListener('click', e => {
             var element = e.target as Element;
             if (element.id == componentId ||
-                element.parentElement?.id == componentId) {
+                element.parentElement?.parentElement?.id == componentId) {
                 e.stopPropagation();
             } else {
                 dotnetHelper.invokeMethodAsync(callback);
