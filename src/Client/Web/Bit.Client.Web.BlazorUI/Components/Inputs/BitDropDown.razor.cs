@@ -308,7 +308,7 @@ namespace Bit.Client.Web.BlazorUI
             {
                 var oldSelectedItem = Items.SingleOrDefault(i => i.IsSelected)!;
                 var isSameItemSelected = oldSelectedItem == selectedItem;
-                oldSelectedItem.IsSelected = false;
+                if (oldSelectedItem is not null) oldSelectedItem.IsSelected = false;
                 selectedItem.IsSelected = true;
                 text = selectedItem.Text;
                 SelectedKey = selectedItem.Value;
