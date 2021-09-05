@@ -42,7 +42,7 @@
                        min="@Min"
                        max="@Max"
                        step="@Step"
-                       @bind-value="@fisrtInputValue"
+                       @bind-value="@firstInputValue"
                        @oninput="@(args => HandleInput(args, true))"
                        disabled=@(!IsEnabled)
                        role="slider"
@@ -52,14 +52,14 @@
                        aria-label="@Label"
                        aria-valuemin="@Min"
                        aria-valuemax="@Max"
-                       aria-valuetext="@GetAriaValueText(fisrtInputValue.GetValueOrDefault())"
-                       aria-valuenow="@fisrtInputValue" />
+                       aria-valuetext="@GetAriaValueText(firstInputValue.GetValueOrDefault())"
+                       aria-valuenow="@firstInputValue" />
                 <input id="@($"max-{sliderBoxId}")"
                        type="range"
                        min="@Min"
                        max="@Max"
                        step="@Step"
-                       @bind-value="@secoundInputValue"
+                       @bind-value="@secondInputValue"
                        @oninput="@(args => HandleInput(args, false))"
                        disabled=@(!IsEnabled)
                        role="slider"
@@ -69,8 +69,8 @@
                        aria-label="@Label"
                        aria-valuemin="@Min"
                        aria-valuemax="@Max"
-                       aria-valuetext="@GetAriaValueText(secoundInputValue.GetValueOrDefault())"
-                       aria-valuenow="@secoundInputValue" />
+                       aria-valuetext="@GetAriaValueText(secondInputValue.GetValueOrDefault())"
+                       aria-valuenow="@secondInputValue" />
             </div>
             @if (ShowValue && IsVertical is false)
             {
