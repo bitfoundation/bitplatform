@@ -132,7 +132,8 @@
                                                             }
                                                             if (selectedDate.HasValue())
                                                             {
-                                                                if (selectedDate == GetSelectedDateString(localDayIndex + dayOfWeekDifference, monthWeeks[localWeekIndex, localDayIndex], currentMonth))
+                                                                BitDate date = new(currentYear, currentMonth, monthWeeks[localWeekIndex, localDayIndex], localDayIndex + dayOfWeekDifference);
+                                                                if (selectedDate == GetSelectedDateString(date))
                                                                 {
                                                                     selectClass = "bit-dtp-selected";
                                                                 }
@@ -156,7 +157,8 @@
                                                             int localMonth = weekIndex >= 4 ? currentMonth + 1 : currentMonth - 1;
                                                             if (selectedDate.HasValue())
                                                             {
-                                                                if (selectedDate == GetSelectedDateString(localDayIndex + dayOfWeekDifference, monthWeeks[localWeekIndex, localDayIndex], localMonth))
+                                                                BitDate date = new(currentYear, localMonth, monthWeeks[localWeekIndex, localDayIndex], localDayIndex + dayOfWeekDifference);
+                                                                if (selectedDate == GetSelectedDateString(date))
                                                                 {
                                                                     selectClass = "bit-dtp-selected";
                                                                 }

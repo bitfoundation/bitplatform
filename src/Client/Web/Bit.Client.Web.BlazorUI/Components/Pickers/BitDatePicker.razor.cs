@@ -79,7 +79,9 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// Callback for when the date changes
         /// </summary>
-        [Parameter] public EventCallback<string> OnDateChoose { get; set; }
+        [Parameter] public EventCallback<string> OnDateSet { get; set; }
+
+        [Parameter] public Func<BitDate,string> OnSelectDate { get; set; }
 
         protected override string RootElementClass { get; } = "bit-dtp";
 
@@ -137,8 +139,9 @@ namespace Bit.Client.Web.BlazorUI
             if (IsEnabled)
             {
                 IsOpen = false;
-                selectedDate = GetSelectedDateString(dayOfWeek, day, month);
-                await OnDateChoose.InvokeAsync(selectedDate);
+                BitDate date = new(currentYear,month,day,dayOfWeek);
+                selectedDate = OnSelectDate is not null ? OnSelectDate.Invoke(date): GetSelectedDateString(date);
+                await OnDateSet.InvokeAsync(selectedDate);
             }
         }
 
@@ -303,8 +306,12 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
-        private string GetSelectedDateString(int dayOfWeek, int day, int month)
+        private string GetSelectedDateString(BitDate date)
         {
+            int year = date.GetYear();
+            int month = date.GetMonth();
+            int day = date.GetDate();
+            int dayOfWeek = date.GetDayOfWeek();
             if (dayOfWeek < 0)
             {
                 dayOfWeek = 7 + dayOfWeek;
@@ -316,7 +323,7 @@ namespace Bit.Client.Web.BlazorUI
             return calendar.GetDayOfWeekShortName(Enum.Parse<DayOfWeek>(dayOfWeek.ToString()))
                    + " " + calendar.GetMonthShortName(month)
                    + " " + day.ToString().PadLeft(2, '0')
-                   + " " + currentYear;
+                   + " " + year;
         }
         
         private void ChangeYearRanges(int fromYear)
