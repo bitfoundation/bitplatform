@@ -121,8 +121,10 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
             new BitNavLinkItem { Name = "Shared Documents and Files", Url = "http://example.com", Key = "key2", Target = "_blank", IsExpanded = true },
             new BitNavLinkItem { Name = "Pages", Url = "http://msn.com", Key = "key3", Target = "_parent" },
             new BitNavLinkItem { Name = "Notebook", Url = "http://msn.com", Key = "key4", Disabled = true },
-            new BitNavLinkItem { Name = "Communication and Media", Url = "http://msn.com", Key = "key5", Target = "_top" },
-            new BitNavLinkItem { Name = "News", Url = "http://msn.com", Key = "key6", Icon = "News", Target = "_self" },
+            new BitNavLinkItem { Name = "Communication and Media", Key = "key5", Target = "_top" },
+            new BitNavLinkItem { Name = "News", Key = "key6", Icon = "News", Target = "_self" },
+            new BitNavLinkItem { Name = "Component", Url = "component", Key = "component", Icon = "News", Target = "_self" },
+
         };
 
         private readonly List<BitNavLinkItem> BasicNoUrlNavLinks = new()
