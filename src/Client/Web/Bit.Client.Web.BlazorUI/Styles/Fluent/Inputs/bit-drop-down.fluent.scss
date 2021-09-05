@@ -260,6 +260,14 @@
         color: $Grey190;
         box-shadow: none;
         background-color: transparent;
+
+        > div {
+            width: 100%;
+
+            > div:nth-child(2) {
+                width: 100%;
+            }
+        }
     }
 }
 
