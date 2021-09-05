@@ -40,9 +40,8 @@
     [Parameter] public bool Truncated { get; set; }
     [Parameter] public string? DismissButtonAriaLabel { get; set; }
     [Parameter] public string? OverflowButtonAriaLabel { get; set; }
-    [Parameter] public EventCallback OnDismiss { get; set; }
 
-    private int CurrentCount;
+    public int CurrentCount;
     public void IncrementCount()
     {
         CurrentCount++;
