@@ -4,37 +4,66 @@
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      id="@UniqueId.ToString()">
-    <span @onclick="HandleClick">
-        @if (Text.HasValue())
-        {
-            @Text
-        }
-        else
-        {
-            @Placeholder
-        }
-    </span>
-    <span @onclick="HandleClick">
-        <i class="bit-icon"></i>
-    </span>
+    @if (Label.HasValue())
+    {
+        <label id="@DropdownLabelId">@Label</label>
+    }
+    else if (LabelFragment != null)
+    {
+        <label id="@DropdownLabelId">@LabelFragment</label>
+    }
+
+    <div class="bit-drp-wrapper"
+         id="@DropDownId"
+         tabindex=@(IsEnabled ? 0 : -1)
+         role="combobox"
+         data-is-focusable="true"
+         aria-expanded=@(isOpen ? "true" : "false")
+         aria-labelledby="@GetDropdownAriaLabelledby"
+         aria-required="@IsRequired"
+         aria-disabled="@(IsEnabled is false)"
+         aria-controls=""
+         title="@Title"
+         @onclick="HandleClick">
+        <span id="@DropDownOptionId"
+              aria-live="polite"
+              aria-atomic="true"
+              aria-invalid="false">
+            @if (text.HasValue())
+            {
+                @text
+            }
+            else
+            {
+                @Placeholder
+            }
+        </span>
+        <span>
+            <i class="bit-icon" aria-hidden="true"></i>
+        </span>
+    </div>
     @if (isOpen)
     {
-        <div>
-            @foreach (DropDownItem item in Items)
+        <div class="bit-drp-items-wrapper"
+             id="@($"{DropDownId}-list")"
+             tabindex="0"
+             role="listbox"
+             aria-labelledby="@DropdownLabelId">
+            @foreach (BitDropDownItem item in Items)
             {
-                if (item.ItemType == DropDownItemType.Header)
+                if (item.ItemType == BitDropDownItemType.Header)
                 {
                     <div class="@RootElementClass-head-@VisualClassRegistrar()">
                         @item.Text
                     </div>
                 }
-                else if (item.ItemType == DropDownItemType.Normal)
+                else if (item.ItemType == BitDropDownItemType.Normal)
                 {
                     @if (IsMultiSelect)
                     {
-                        <BitCheckbox @bind-IsChecked="item.IsSelected"
+                        <BitCheckbox IsChecked="item.IsSelected"
                                      IsEnabled="item.IsEnabled"
-                                     OnChange="(isChecked) => HandleItemClick(isChecked?item:null)">
+                                     OnClick="(e) => HandleItemClick(item)">
                             @item.Text
                         </BitCheckbox>
                     }
@@ -44,16 +73,22 @@
                                            ?$"{RootElementClass}-slc-{VisualClassRegistrar()}"
                                            :"")"
                                 type="button"
+                                role="option"
+                                data-is-focusable="@item.IsEnabled"
                                 title="@item.Text"
                                 disabled=@(!item.IsEnabled)
+                                aria-disabled="@(!item.IsEnabled)"
+                                aria-selected="@item.IsSelected"
+                                tabindex="@(item.IsEnabled ? 0 : -1)"
                                 @onclick="()=> HandleItemClick(item)">
                             @item.Text
                         </button>
                     }
                 }
-                else if (item.ItemType == DropDownItemType.Divider)
+                else if (item.ItemType == BitDropDownItemType.Divider)
                 {
-                    <div class="@RootElementClass-div-@VisualClassRegistrar()">
+                    <div class="@RootElementClass-div-@VisualClassRegistrar()"
+                         role="separator">
                     </div>
                 }
             }

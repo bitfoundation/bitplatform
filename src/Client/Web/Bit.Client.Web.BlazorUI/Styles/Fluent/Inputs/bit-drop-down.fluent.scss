@@ -1,21 +1,33 @@
 ﻿@import "../colors.fluent.scss", "../../functions.scss";
 
 .bit-drp-fluent {
-    box-shadow: none;
-    margin: em(0px);
-    padding: em(0px);
-    box-sizing: border-box;
     font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+
+    label {
+        font-size: rem(14px);
+        font-weight: 600;
+        color: $Grey160;
+        box-sizing: border-box;
+        margin: 0;
+        padding: rem(5px) 0;
+    }
+}
+
+.bit-drp-wrapper {
     -webkit-font-smoothing: antialiased;
     font-size: rem(14px);
     font-weight: 400;
     color: $Grey130;
     position: relative;
     outline: em(0px);
-    width: 300px;
     user-select: none;
     border: em(1px) solid $Grey130;
     border-radius: em(2px);
+    box-shadow: none;
+    margin: em(0px);
+    padding: em(0px);
+    box-sizing: border-box;
+    cursor: pointer;
 
     &:hover {
         color: $Grey160;
@@ -28,7 +40,6 @@
         padding: em(2px) em(28px) em(0px) em(8px);
         box-sizing: border-box;
         background-color: $White;
-        cursor: pointer;
         display: block;
         position: relative;
         overflow: hidden;
@@ -40,208 +51,223 @@
 
     span:nth-child(2) {
         position: absolute;
-        top: em(1px);
-        right: em(8px);
-        height: em(32px);
-        line-height: em(30px);
-        cursor: pointer;
-        padding-top: em(3.5px);
+        top: 0;
+        right: rem(8px);
+        height: 100%;
+        display: flex;
+        align-items: center;
 
         i:first-child {
             display: inline-block;
-            -webkit-font-smoothing: antialiased;
-            font-style: normal;
-            font-weight: normal;
-            speak: none;
             font-size: rem(12px);
-            pointer-events: none;
-        }
-    }
-
-    div:nth-child(3) {
-        font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
-        -webkit-font-smoothing: antialiased;
-        font-size: rem(15px);
-        font-weight: 400;
-        position: absolute;
-        box-sizing: border-box;
-        border-radius: em(2px) em(2px) em(0px) em(0px);
-        box-shadow: #00000021 em(0px) em(3.2px) em(7.2px) em(0px),#0000001C em(0px) em(0.6px) em(1.8px) em(0px);
-        outline: transparent;
-        width: 300px;
-        margin-top: em(3px);
-        animation-name: opacity, trans;
-        animation-duration: 0.367s;
-        animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
-        animation-fill-mode: both;
-        background-color: $White;
-        z-index: 2;
-
-        div[class=bit-drp-head-fluent] {
-            font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
-            -webkit-font-smoothing: antialiased;
-            font-size: rem(15px);
-            font-weight: 600;
-            color: $Primary;
-            background: none transparent;
-            border: none;
-            height: 36px;
-            line-height: 36px;
-            cursor: default;
-            padding: em(0px) em(8px);
-            text-align: left;
-            user-select: none;
-        }
-
-        button {
-            outline: transparent;
-            position: relative;
-            font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
-            -webkit-font-smoothing: antialiased;
-            font-size: rem(15px);
-            font-weight: 400;
-            box-sizing: border-box;
-            border: em(1px) solid transparent;
-            display: flex;
-            text-decoration: none;
-            text-align: left;
-            cursor: pointer;
-            padding: em(0px) em(8px);
-            border-radius: em(0px);
-            height: em(0px);
-            color: $Grey160;
-            background-color: transparent;
-            align-items: center;
-            width: 100%;
-            min-height: em(36px);
-            line-height: em(20px);
-            overflow-wrap: break-word;
-            user-select: none;
-
-            &:hover {
-                background-color: $Grey20;
-            }
-        }
-
-        button[disabled] {
-            outline: transparent;
-            position: relative;
-            font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
-            -webkit-font-smoothing: antialiased;
-            font-size: rem(15px);
-            font-weight: 400;
-            box-sizing: border-box;
-            border: em(1px) solid transparent;
-            display: flex;
-            text-decoration: none;
-            text-align: left;
-            cursor: default;
-            padding: em(0px) em(8px);
-            border-radius: em(0px);
-            height: em(0px);
-            color: $Grey90;
-            background-color: transparent;
-            align-items: center;
-            width: 100%;
-            min-height: em(36px);
-            line-height: em(20px);
-            overflow-wrap: break-word;
-            user-select: none;
-        }
-
-        button[class=bit-drp-slc-fluent] {
-            background-color: $Grey30;
-        }
-
-        div[class=bit-drp-div-fluent] {
-            height: 1px;
-            width: 100%;
-            background-color: $Grey30;
-        }
-
-        .bit-chb-fluent {
-            position: relative;
-            display: flex;
-            box-sizing: border-box;
-            cursor: pointer;
-            align-items: center;
-            padding: em(0px);
-            width: 100%;
-            min-height: em(36px);
-            line-height: em(20px);
-            height: em(0px);
-            border: em(1px) solid transparent;
-            border-radius: em(0px);
-            overflow-wrap: break-word;
-            text-align: left;
-            color: $Grey190;
-            box-shadow: none;
-            background-color: transparent;
         }
     }
 }
 
 .bit-drp-disabled-fluent {
-    color: $Grey90;
-    border-color: $Grey20;
-    background-color: $Grey20;
-
-    &:hover {
+    .bit-drp-wrapper {
         color: $Grey90;
-        border: em(1px) solid $Grey20;
-    }
-
-    span:first-child {
-        border: none;
-        color: $Grey90;
+        border-color: $Grey20;
         background-color: $Grey20;
         cursor: default;
+
+        &:hover {
+            color: $Grey90;
+            border: em(1px) solid $Grey20;
+        }
+
+        span:first-child {
+            border: none;
+            color: $Grey90;
+            background-color: $Grey20;
+        }
+
+        span:nth-child(2) {
+            i:first-child {
+                color: $Grey90;
+            }
+        }
     }
 
-    span:nth-child(2) {
+    label {
+        color: $Grey90;
+    }
+}
 
-        i:first-child {
+.bit-drp-disabled-fluent.bit-drp-hasValue-fluent {
+    .bit-drp-wrapper {
+        span:first-child {
             color: $Grey90;
         }
     }
 }
 
-.bit-drp-disabled-fluent.bit-drp-hasValue-fluent {
-    span:first-child {
-        color: $Grey90;
-    }
-}
-
 .bit-drp-hasValue-fluent {
-    span:first-child {
-        color: $Grey190;
+    .bit-drp-wrapper {
+        span:first-child {
+            color: $Grey190;
+        }
     }
 }
 
 .bit-drp-focused-fluent {
-    border: em(3px) solid $Primary;
-    color: $Grey160;
-
-    &:hover {
+    .bit-drp-wrapper {
         border: em(3px) solid $Primary;
-    }
+        color: $Grey160;
 
-    span:first-child {
-        bottom: em(1.2px);
-        padding-top: em(1px);
-        padding-left: em(6px);
-        height: 27px;
-    }
+        &:hover {
+            border: em(3px) solid $Primary;
+        }
 
-    span:nth-child(2) {
-        padding-top: em(1.55px);
-        right: em(6px);
+        span:first-child {
+            bottom: em(1.2px);
+            padding-top: em(1px);
+            padding-left: em(6px);
+            height: 27px;
+        }
+
+        span:nth-child(2) {
+            padding-top: em(1.55px);
+            right: em(6px);
+        }
     }
 }
 
 .bit-drp-multi-fluent.bit-drp-focused-fluent {
-    span:first-child {
-        bottom: em(0.8px);
+    .bit-drp-wrapper {
+        span:first-child {
+            bottom: em(0.8px);
+        }
+    }
+}
+
+.bit-drp-items-wrapper {
+    font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    font-size: rem(15px);
+    font-weight: 400;
+    position: absolute;
+    box-sizing: border-box;
+    border-radius: em(2px) em(2px) em(0px) em(0px);
+    box-shadow: #00000021 em(0px) em(3.2px) em(7.2px) em(0px),#0000001C em(0px) em(0.6px) em(1.8px) em(0px);
+    outline: transparent;
+    width: 300px;
+    margin-top: em(3px);
+    animation-name: opacity, trans;
+    animation-duration: 0.367s;
+    animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
+    animation-fill-mode: both;
+    background-color: $White;
+    z-index: 2;
+
+    div[class=bit-drp-head-fluent] {
+        font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+        -webkit-font-smoothing: antialiased;
+        font-size: rem(15px);
+        font-weight: 600;
+        color: $Primary;
+        background: none transparent;
+        border: none;
+        height: 36px;
+        line-height: 36px;
+        cursor: default;
+        padding: em(0px) em(8px);
+        text-align: left;
+        user-select: none;
+    }
+
+    button {
+        outline: transparent;
+        position: relative;
+        font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+        -webkit-font-smoothing: antialiased;
+        font-size: rem(15px);
+        font-weight: 400;
+        box-sizing: border-box;
+        border: em(1px) solid transparent;
+        display: flex;
+        text-decoration: none;
+        text-align: left;
+        cursor: pointer;
+        padding: em(0px) em(8px);
+        border-radius: em(0px);
+        height: em(0px);
+        color: $Grey160;
+        background-color: transparent;
+        align-items: center;
+        width: 100%;
+        min-height: em(36px);
+        line-height: em(20px);
+        overflow-wrap: break-word;
+        user-select: none;
+
+        &:hover {
+            background-color: $Grey20;
+        }
+    }
+
+    button[disabled] {
+        outline: transparent;
+        position: relative;
+        font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+        -webkit-font-smoothing: antialiased;
+        font-size: rem(15px);
+        font-weight: 400;
+        box-sizing: border-box;
+        border: em(1px) solid transparent;
+        display: flex;
+        text-decoration: none;
+        text-align: left;
+        cursor: default;
+        padding: em(0px) em(8px);
+        border-radius: em(0px);
+        height: em(0px);
+        color: $Grey90;
+        background-color: transparent;
+        align-items: center;
+        width: 100%;
+        min-height: em(36px);
+        line-height: em(20px);
+        overflow-wrap: break-word;
+        user-select: none;
+    }
+
+    button[class=bit-drp-slc-fluent] {
+        background-color: $Grey30;
+    }
+
+    div[class=bit-drp-div-fluent] {
+        height: 1px;
+        width: 100%;
+        background-color: $Grey30;
+    }
+
+    .bit-chb-fluent {
+        position: relative;
+        display: flex;
+        box-sizing: border-box;
+        cursor: pointer;
+        align-items: center;
+        padding: em(0px);
+        width: 100%;
+        min-height: em(36px);
+        line-height: em(20px);
+        height: em(0px);
+        border: em(1px) solid transparent;
+        border-radius: em(0px);
+        overflow-wrap: break-word;
+        text-align: left;
+        color: $Grey190;
+        box-shadow: none;
+        background-color: transparent;
+
+        > div {
+            width: 100%;
+
+            > div:nth-child(2) {
+                width: 100%;
+            }
+        }
     }
 }
 

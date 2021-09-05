@@ -12,17 +12,20 @@
 	[Parameter] public bool IsEnabled { get; set; } = true;
 	[Parameter] public bool ItemIsEnabled { get; set; } = true;
 	[Parameter] public bool IsMultiSelect { get; set; } = false;
-	[Parameter] public List<DropDownItem> Items { get; set; } = new List<DropDownItem>();
+	[Parameter] public List<BitDropDownItem> Items { get; set; } = new List<BitDropDownItem>();
 
-	public void ChangeEvent(DropDownItem e)
+	public void ChangeEvent(BitDropDownItem e)
 	{
 		IncrementCount();
 	}
+
 	public void ClickEvent(MouseEventArgs e)
 	{
 		IncrementCount();
 	}
+
 	public int CurrentCount { get; set; }
+
 	public void IncrementCount()
 	{
 		CurrentCount++;
