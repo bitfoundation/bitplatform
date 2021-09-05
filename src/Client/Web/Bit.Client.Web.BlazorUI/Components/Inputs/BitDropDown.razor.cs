@@ -258,11 +258,7 @@ namespace Bit.Client.Web.BlazorUI
 
             if (isMultiSelect &&
                     SelectedKeysHasBeenSet &&
-                    SelectedKeysChanged.HasDelegate is false)
-            {
-                selectedItem.IsSelected = !selectedItem.IsSelected;
-                return;
-            }
+                    SelectedKeysChanged.HasDelegate is false) return;
 
             if (!isMultiSelect &&
                 SelectedKeyHasBeenSet &&
@@ -270,6 +266,7 @@ namespace Bit.Client.Web.BlazorUI
 
             if (isMultiSelect)
             {
+                selectedItem.IsSelected = !selectedItem.IsSelected;
                 if (selectedItem.IsSelected)
                 {
                     if (text.HasValue())

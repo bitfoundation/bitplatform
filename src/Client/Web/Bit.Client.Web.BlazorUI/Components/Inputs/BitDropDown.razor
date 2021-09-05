@@ -57,9 +57,9 @@
                 {
                     @if (IsMultiSelect)
                     {
-                        <BitCheckbox @bind-IsChecked="item.IsSelected"
+                        <BitCheckbox IsChecked="item.IsSelected"
                                      IsEnabled="item.IsEnabled"
-                                     OnChange="(isChecked) => HandleItemClick(item)">
+                                     OnClick="(e) => HandleItemClick(item)">
                             @item.Text
                         </BitCheckbox>
                     }
