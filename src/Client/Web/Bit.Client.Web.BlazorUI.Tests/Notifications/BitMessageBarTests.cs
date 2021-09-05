@@ -84,18 +84,19 @@ namespace Bit.Client.Web.BlazorUI.Tests.Notifications
         }
 
         [DataTestMethod, DataRow("Emoji2")]
-        public void BitMessageBarShouldRespectCustomDismissIcon(string iconName)
+        public void BitMessageBarShouldRespectCustomIcon(string iconName)
         {
             var component = RenderComponent<BitMessageBarTest>(
                 parameters =>
                 {
-                    parameters.Add(p => p.DismissIconName, iconName);
+                    parameters.Add(p => p.MessageBarIconName, iconName);
                 });
 
-            var icon = component.Find(".bit-msg-bar .bit-msg-bar-dismiss button");
-            //TODO: bypassed - componenet disabled issue
-            //Assert.IsTrue(icon.FirstElementChild.ClassList.Contains($"bit-icon--{iconName}"));
+            var icon = component.Find(".bit-msg-bar .bit-msg-bar-icon i");
+            Assert.IsTrue(icon.ClassList.Contains($"bit-icon--{iconName}"));
         }
+
+
 
         [DataTestMethod,
             DataRow(true, true),
@@ -146,6 +147,58 @@ namespace Bit.Client.Web.BlazorUI.Tests.Notifications
             dismissButton.Click();
             //TODO: bypassed - componenet disabled issue
             //Assert.AreEqual(isEnabled ? 1 : 0, component.Instance.CurrentCount);
+        }
+
+        [DataTestMethod, DataRow("Emoji2")]
+        public void BitMessageBarShouldRespectCustomDismissIcon(string iconName)
+        {
+            var component = RenderComponent<BitMessageBarTest>(
+                parameters =>
+                {
+                    parameters.Add(p => p.DismissIconName, iconName);
+                });
+
+            var icon = component.Find(".bit-msg-bar .bit-msg-bar-dismiss button span i");
+            Assert.IsTrue(icon.ClassList.Contains($"bit-icon--{iconName}"));
+        }
+
+        [DataTestMethod,
+            DataRow("test dismiss aria label", false),
+            DataRow("test dismiss aria label", true)
+            ]
+        public void BitMessageBarDismissButtonAriaLabel(string areaLabel, bool isMultiline)
+        {
+            var component = RenderComponent<BitMessageBarTest>(
+                parameters =>
+                {
+                    parameters.Add(p => p.IsMultiline, isMultiline);
+                    parameters.Add(p => p.DismissButtonAriaLabel, areaLabel);
+                });
+
+            var dismissButton = component.Find(".bit-msg-bar .bit-msg-bar-dismiss button");
+
+            Assert.IsTrue(dismissButton.HasAttribute("aria-label"));
+            Assert.AreEqual(areaLabel, dismissButton.GetAttribute("aria-label"));
+
+            Assert.IsTrue(dismissButton.HasAttribute("title"));
+            Assert.AreEqual(areaLabel, dismissButton.GetAttribute("title"));
+        }
+
+        [DataTestMethod, DataRow("test overflow aria label")]
+        public void BitMessageBarOverflowButtonAriaLabel(string areaLabel)
+        {
+            var component = RenderComponent<BitMessageBarTest>(
+                parameters =>
+                {
+                    parameters.Add(p => p.IsMultiline, false);
+                    parameters.Add(p => p.Truncated, true);
+                    parameters.Add(p => p.OverflowButtonAriaLabel, areaLabel);
+                });
+
+            var dismissButton = component.Find(".bit-msg-bar .bit-msg-bar-truncate button");
+
+            Assert.IsTrue(dismissButton.HasAttribute("aria-label"));
+            Assert.AreEqual(areaLabel, dismissButton.GetAttribute("aria-label"));
         }
 
         [DataTestMethod,
