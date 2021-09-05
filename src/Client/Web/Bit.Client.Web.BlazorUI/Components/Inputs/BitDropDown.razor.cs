@@ -16,11 +16,11 @@ namespace Bit.Client.Web.BlazorUI
         private bool isMultiSelect = false;
         private bool isRequired = false;
         private string? text;
-        private List<string> selectedKeys = new();
+        private List<string> selectedMultipleKeys = new();
         private string selectedKey = string.Empty;
-        private bool SelectedKeysHasBeenSet;
+        private bool SelectedMultipleKeysHasBeenSet;
         private bool SelectedKeyHasBeenSet;
-        private bool IsSelectedKeysChanged = false;
+        private bool IsSelectedMultipleKeysChanged = false;
 
         [Inject] public IJSRuntime? JSRuntime { get; set; }
 
@@ -73,18 +73,18 @@ namespace Bit.Client.Web.BlazorUI
         /// If you provide this, you must maintain selection state by observing onChange events and passing a new value in when changed
         /// </summary>
         [Parameter]
-        public List<string> SelectedKeys
+        public List<string> SelectedMultipleKeys
         {
-            get => selectedKeys;
+            get => selectedMultipleKeys;
             set
             {
-                if (selectedKeys.All(value.Contains) && selectedKeys.Count == value.Count) return;
-                selectedKeys = value;
-                _ = SelectedKeysChanged.InvokeAsync(value);
+                if (selectedMultipleKeys.All(value.Contains) && selectedMultipleKeys.Count == value.Count) return;
+                selectedMultipleKeys = value;
+                _ = SelectedMultipleKeysChanged.InvokeAsync(value);
             }
         }
 
-        [Parameter] public EventCallback<List<string>> SelectedKeysChanged { get; set; }
+        [Parameter] public EventCallback<List<string>> SelectedMultipleKeysChanged { get; set; }
 
         /// <summary>
         /// Key of the selected item
@@ -263,8 +263,8 @@ namespace Bit.Client.Web.BlazorUI
             if (!IsEnabled || !selectedItem.IsEnabled) return;
 
             if (isMultiSelect &&
-                    SelectedKeysHasBeenSet &&
-                    SelectedKeysChanged.HasDelegate is false) return;
+                    SelectedMultipleKeysHasBeenSet &&
+                    SelectedMultipleKeysChanged.HasDelegate is false) return;
 
             if (!isMultiSelect &&
                 SelectedKeyHasBeenSet &&
@@ -272,7 +272,7 @@ namespace Bit.Client.Web.BlazorUI
 
             if (isMultiSelect)
             {
-                if (IsSelectedKeysChanged is false) IsSelectedKeysChanged = true;
+                if (IsSelectedMultipleKeysChanged is false) IsSelectedMultipleKeysChanged = true;
 
                 selectedItem.IsSelected = !selectedItem.IsSelected;
                 if (selectedItem.IsSelected)
@@ -301,7 +301,7 @@ namespace Bit.Client.Web.BlazorUI
                     }
                 }
 
-                SelectedKeys = Items.FindAll(i => i.IsSelected && i.ItemType == BitDropDownItemType.Normal).Select(i => i.Value).ToList();
+                SelectedMultipleKeys = Items.FindAll(i => i.IsSelected && i.ItemType == BitDropDownItemType.Normal).Select(i => i.Value).ToList();
                 await OnSelectItem.InvokeAsync(selectedItem);
             }
             else
@@ -324,10 +324,10 @@ namespace Bit.Client.Web.BlazorUI
         {
             if (isMultiSelect)
             {
-                if (SelectedKeysHasBeenSet || IsSelectedKeysChanged)
+                if (SelectedMultipleKeysHasBeenSet || IsSelectedMultipleKeysChanged)
                 {
                     ChangeAllItemsIsSelected(false);
-                    Items.FindAll(i => SelectedKeys.Contains(i.Value) && i.ItemType == BitDropDownItemType.Normal).ForEach(i => { i.IsSelected = true; });
+                    Items.FindAll(i => SelectedMultipleKeys.Contains(i.Value) && i.ItemType == BitDropDownItemType.Normal).ForEach(i => { i.IsSelected = true; });
                 }
                 else if (DefaultSelectedKeys.Count != 0)
                 {
