@@ -107,7 +107,7 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// Keys that will be initially used to set selected items for multiSelect scenarios
         /// </summary>
-        [Parameter] public List<string> DefaultSelectedKeys { get; set; } = new List<string>();
+        [Parameter] public List<string> DefaultSelectedMultipleKeys { get; set; } = new List<string>();
 
         /// <summary>
         /// Key that will be initially used to set selected item
@@ -329,10 +329,10 @@ namespace Bit.Client.Web.BlazorUI
                     ChangeAllItemsIsSelected(false);
                     Items.FindAll(i => SelectedMultipleKeys.Contains(i.Value) && i.ItemType == BitDropDownItemType.Normal).ForEach(i => { i.IsSelected = true; });
                 }
-                else if (DefaultSelectedKeys.Count != 0)
+                else if (DefaultSelectedMultipleKeys.Count != 0)
                 {
                     ChangeAllItemsIsSelected(false);
-                    Items.FindAll(i => DefaultSelectedKeys.Contains(i.Value) && i.ItemType == BitDropDownItemType.Normal).ForEach(i => { i.IsSelected = true; });
+                    Items.FindAll(i => DefaultSelectedMultipleKeys.Contains(i.Value) && i.ItemType == BitDropDownItemType.Normal).ForEach(i => { i.IsSelected = true; });
                 }
 
                 text = string.Empty;
