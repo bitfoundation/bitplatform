@@ -4,6 +4,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.JSInterop;
 
 namespace Bit.Client.Web.BlazorUI
 {
@@ -17,6 +18,8 @@ namespace Bit.Client.Web.BlazorUI
         private string InputId = $"input{Guid.NewGuid()}";
         private string IntermediateValue = String.Empty;
         private bool ValueHasBeenSet;
+
+        [Inject] public IJSRuntime? JsRuntime { get; set; }
 
         /// <summary>
         /// Detailed description of the input for the benefit of screen readers
@@ -199,7 +202,7 @@ namespace Bit.Client.Web.BlazorUI
                                                 : $"{RootElementClass}-label-top-{VisualClassRegistrar()}");
         }
 
-        protected async override Task OnParametersSetAsync()
+        protected override async Task OnParametersSetAsync()
         {
             min = Min is not null ? Min.Value : double.MinValue;
             max = Max is not null ? Max.Value : double.MaxValue;
@@ -261,25 +264,22 @@ namespace Bit.Client.Web.BlazorUI
             IntermediateValue = $"{e.Value}";
         }
 
-        protected virtual async Task HandleButtonClick(BitSpinButtonAction action, MouseEventArgs e)
+        [JSInvokable]
+        public virtual async Task HandleButtonClick(BitSpinButtonAction action, MouseEventArgs e)
         {
             if (IsEnabled is false) return;
             if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
 
             await ChangeHandler.InvokeAsync(action);
-            if (action is BitSpinButtonAction.Increment && OnIncrement.HasDelegate is true)
+
+            if (action == BitSpinButtonAction.Increment && OnIncrement.HasDelegate is true)
             {
-                var args = new BitSpinButtonChangeEventArgs();
-                args.Value = Value;
-                args.MouseEventArgs = e;
+                var args = new BitSpinButtonChangeEventArgs { Value = Value, MouseEventArgs = e };
                 await OnIncrement.InvokeAsync(args);
             }
-
-            if (action is BitSpinButtonAction.Decrement && OnDecrement.HasDelegate is true)
+            else if (action == BitSpinButtonAction.Decrement && OnDecrement.HasDelegate is true)
             {
-                var args = new BitSpinButtonChangeEventArgs();
-                args.Value = Value;
-                args.MouseEventArgs = e;
+                var args = new BitSpinButtonChangeEventArgs { Value = Value, MouseEventArgs = e };
                 await OnDecrement.InvokeAsync(args);
             }
         }
@@ -401,5 +401,16 @@ namespace Bit.Client.Web.BlazorUI
         private string? GetAriaValueText => AriaValueText.HasValue() ? AriaValueText : Suffix.HasValue() ? $"{Normalize(Value)}{Suffix}" : null;
         private string? GetIconRole => IconAriaLabel.HasValue() ? "img" : null;
         private string GetLabelId => Label.HasValue() ? $"label{Guid.NewGuid()}" : String.Empty;
+
+        protected override async Task OnAfterRenderAsync(bool firstRender)
+        {
+            if (IsEnabled && firstRender)
+            {
+                await JsRuntime!.InvokeAsync<string>("BitSpinButton.registerMouseEventsOnBitSpinButton", DotNetObjectReference.Create(this),
+                    InputId, nameof(HandleButtonClick));
+            }
+
+            await base.OnAfterRenderAsync(firstRender);
+        }
     }
 }

@@ -57,8 +57,7 @@
                     aria-disabled="@(IsEnabled is false)"
                     date-is-focusable="false"
                     tabindex="-1"
-                    aria-label="@IncrementButtonAriaLabel"
-                    @onclick="e => HandleButtonClick(BitSpinButtonAction.Increment, e)">
+                    aria-label="@IncrementButtonAriaLabel">
                 <span>
                     <i class="bit-icon bit-icon--@IncrementButtonIconName bit-icon--s"></i>
                 </span>
@@ -69,8 +68,7 @@
                     aria-disabled="@(IsEnabled is false)"
                     date-is-focusable="false"
                     tabindex="-1"
-                    aria-label="@DecrementButtonAriaLabel"
-                    @onclick="e => HandleButtonClick(BitSpinButtonAction.Decrement, e)">
+                    aria-label="@DecrementButtonAriaLabel">
                 <span>
                     <i class="bit-icon bit-icon--@DecrementButtonIconName bit-icon--s"></i>
                 </span>
