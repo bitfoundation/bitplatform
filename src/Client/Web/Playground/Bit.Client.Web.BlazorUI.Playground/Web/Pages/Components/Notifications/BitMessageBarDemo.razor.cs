@@ -2,11 +2,17 @@
 {
     public partial class BitMessageBarDemo
     {
-        private bool IsMessageBarHidden = false;
+        private bool IsMessageBarHidden1 = false;
+        private bool IsMessageBarHidden2 = false;
 
-        private void HideMessageBar()
+        private void HideMessageBar1()
         {
-            IsMessageBarHidden = true;
+            IsMessageBarHidden1 = true;
+        }
+
+        private void HideMessageBar2()
+        {
+            IsMessageBarHidden2 = true;
         }
     }
 }
