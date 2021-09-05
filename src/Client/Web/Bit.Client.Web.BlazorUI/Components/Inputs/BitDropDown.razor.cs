@@ -149,6 +149,11 @@ namespace Bit.Client.Web.BlazorUI
         /// </summary>
         [Parameter] public bool NotifyOnReselect { get; set; } = false;
 
+        /// <summary>
+        /// Shows the custom Label for drop down
+        /// </summary>
+        [Parameter] public RenderFragment? LabelFragment { get; set; }
+
         public string FocusClass
         {
             get => focusClass;
