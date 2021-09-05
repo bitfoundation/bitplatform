@@ -20,6 +20,7 @@ namespace Bit.Client.Web.BlazorUI
         private string selectedKey = string.Empty;
         private bool SelectedKeysHasBeenSet;
         private bool SelectedKeyHasBeenSet;
+        private bool IsSelectedKeysChanged = false;
 
         [Inject] public IJSRuntime? JSRuntime { get; set; }
 
@@ -266,6 +267,8 @@ namespace Bit.Client.Web.BlazorUI
 
             if (isMultiSelect)
             {
+                if (IsSelectedKeysChanged is false) IsSelectedKeysChanged = true;
+
                 selectedItem.IsSelected = !selectedItem.IsSelected;
                 if (selectedItem.IsSelected)
                 {
@@ -316,7 +319,7 @@ namespace Bit.Client.Web.BlazorUI
         {
             if (isMultiSelect)
             {
-                if (SelectedKeysHasBeenSet)
+                if (SelectedKeysHasBeenSet || IsSelectedKeysChanged)
                 {
                     ChangeAllItemsIsSelected(false);
                     Items.FindAll(i => SelectedKeys.Contains(i.Value) && i.ItemType == BitDropDownItemType.Normal).ForEach(i => { i.IsSelected = true; });

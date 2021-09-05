@@ -113,6 +113,7 @@ namespace Bit.Client.Web.BlazorUI
         protected async Task HandleCheckboxClick(MouseEventArgs args)
         {
             if (IsEnabled is false) return;
+            await OnClick.InvokeAsync(args);
 
             if (IsIndeterminate)
             {
@@ -125,8 +126,6 @@ namespace Bit.Client.Web.BlazorUI
                 IsChecked = !IsChecked;
                 await OnChange.InvokeAsync(IsChecked);
             }
-
-            await OnClick.InvokeAsync(args);
         }
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
