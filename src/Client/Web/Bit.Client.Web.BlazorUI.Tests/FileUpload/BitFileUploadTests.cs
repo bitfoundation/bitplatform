@@ -56,5 +56,29 @@ namespace Bit.Client.Web.BlazorUI.Tests.FileUpload
             var attribute = bitFileUpload.GetAttribute("accept");
             Assert.AreEqual(".mp4,.mp3", attribute);
         }
+
+        [DataTestMethod,
+           DataRow(true),
+           DataRow(false)
+        ]
+        public void BitFileUpload_IsEnabled_Test(bool isEnabled)
+        {
+            var com = RenderComponent<BitFileUploadTest>(parameters =>
+            {
+                parameters.Add(p => p.IsEnabled, isEnabled);
+            });
+
+            var bitFileUpload = com.Find("input[type=file]");
+            var hasDisabledAttribute = bitFileUpload.HasAttribute("disabled");
+
+            if (isEnabled)
+            {
+                Assert.IsFalse(hasDisabledAttribute);
+            }
+            else
+            {
+                Assert.IsTrue(hasDisabledAttribute);
+            }
+        }
     }
 }
