@@ -14,13 +14,13 @@
 }
 
 .bit-drp-wrapper {
+    width: 100%;
     -webkit-font-smoothing: antialiased;
     font-size: rem(14px);
     font-weight: 400;
     color: $Grey130;
     position: relative;
     outline: em(0px);
-    width: 300px;
     user-select: none;
     border: em(1px) solid $Grey130;
     border-radius: em(2px);
