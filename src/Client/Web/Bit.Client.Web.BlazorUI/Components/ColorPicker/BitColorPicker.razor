@@ -7,7 +7,7 @@
     <div @ref="SaturationPickerRef"
          @onmousedown="OnSaturationPickerMouseDown">
         <div></div>
-        <div style=@($"background-color: {SaturationPickerBackground.ToRgb().ToCss()}")></div>
+        <div style=@($"background-color: {SaturationPickerBackground.ToRgbCss()}")></div>
         <div style=@($"top: {SaturationPickerThumbPosition?.Top}px; left: {SaturationPickerThumbPosition?.Left}px; background: {MainColor.ToRgbaCss()};")>
         </div>
     </div>
@@ -18,8 +18,8 @@
                 <input type="range" min="0" max="360" value="@Hue" @oninput="PickMainColor">
             </div>
 
-            <div style=@($"display: {(AlphaType is not AlphaType.None? "block" : "none")};")>
-                <div style=@($"background:linear-gradient(to left,{SaturationPickerBackground.ToRgb().ToCss()} 0%, transparent 100%)")>
+            <div style=@($"display: {(ShowAlphaSlider ? "block" : "none")};")>
+                <div style=@($"background:linear-gradient(to left,{SaturationPickerBackground.ToRgbCss()} 0%, transparent 100%)")>
                     <input type="range" min="0" max="100" value="@(MainColor.Alpha * 100)" @oninput="PickAlphaColor">
                 </div>
             </div>
