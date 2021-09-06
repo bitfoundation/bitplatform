@@ -259,12 +259,12 @@ namespace Bit.Client.Web.BlazorUI
 
         private async void HandleMouseDown(BitSpinButtonAction action, MouseEventArgs e)
         {
-            await HandleButtonClick(action, e);
+            await HandleMouseDownAction(action, e);
             timer = new Timer((_) =>
             {
                 InvokeAsync(async () =>
                 {
-                    await HandleButtonClick(action, e);
+                    await HandleMouseDownAction(action, e);
                     StateHasChanged();
                 });
             }, null, INITIAL_STEP_DELAY, STEP_DELAY);
@@ -284,7 +284,7 @@ namespace Bit.Client.Web.BlazorUI
             IntermediateValue = $"{e.Value}";
         }
 
-        private async Task HandleButtonClick(BitSpinButtonAction action, MouseEventArgs e)
+        private async Task HandleMouseDownAction(BitSpinButtonAction action, MouseEventArgs e)
         {
             if (IsEnabled is false) return;
             if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
