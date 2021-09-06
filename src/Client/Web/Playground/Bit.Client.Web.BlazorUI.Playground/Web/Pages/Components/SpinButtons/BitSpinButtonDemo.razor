@@ -313,204 +313,222 @@
             <th>Description</th>
         </tr>
         <tr>
-            <td>ariaDescription</td>
+            <td>AriaDescription</td>
             <td>string</td>
             <td></td>
             <td>Detailed description of the input for the benefit of screen readers.</td>
         </tr>
         <tr>
-            <td>ariaPositionInSet</td>
+            <td>AriaLabel</td>
+            <td>string</td>
+            <td></td>
+            <td>The aria-label of the control for the benefit of screen readers.</td>
+        </tr>
+        <tr>
+            <td>AriaPositionInSet</td>
             <td>int</td>
             <td></td>
             <td>The position in the parent set (if in a set)</td>
         </tr>
         <tr>
-            <td>ariaSetSize</td>
+            <td>AriaSetSize</td>
             <td>int</td>
             <td></td>
             <td>The total size of the parent set (if in a set).</td>
         </tr>
         <tr>
-            <td>ariaValueNow</td>
+            <td>AriaValueNow</td>
             <td>double</td>
             <td></td>
             <td>Sets the control's aria-valuenow. Providing this only makes sense when using as a controlled component.</td>
         </tr>
         <tr>
-            <td>ariaValueText</td>
+            <td>AriaValueText</td>
             <td>string</td>
             <td></td>
             <td>Sets the control's aria-valuetext.</td>
         </tr>
         <tr>
-            <td>changeHandler</td>
+            <td>ChangeHandler</td>
             <td>EventCallback&lt;BitSpinButtonAction&gt;</td>
             <td></td>
             <td>Custom handler for increment or decrement events. If used, the increment and decrement are required to be implemented.</td>
         </tr>
         <tr>
-            <td>className</td>
+            <td>Class</td>
             <td>string</td>
             <td></td>
-            <td>If provided, additional class name to provide on the root element.</td>
+            <td>Custom CSS class for the root element of the component.</td>
         </tr>
         <tr>
-            <td>decrementButtonAriaLabel</td>
+            <td>DecrementButtonAriaLabel</td>
             <td>string</td>
             <td></td>
             <td>Accessible label text for the decrement button (for screen reader users)</td>
         </tr>
         <tr>
-            <td>decrementButtonIconName</td>
+            <td>DecrementButtonIconName</td>
             <td>string</td>
             <td>ChevronDownSmall</td>
             <td>Custom icon name for the decrement button</td>
         </tr>
         <tr>
-            <td>defaultValue</td>
+            <td>DefaultValue</td>
             <td>double</td>
             <td>0</td>
             <td>Initial value of the spin button.</td>
         </tr>
         <tr>
-            <td>iconAriaLabel</td>
+            <td>HtmlAttributes</td>
+            <td>Dictionary&lt;string, object&gt;</td>
+            <td></td>
+            <td>Capture and render additional attributes in addition to the component's parameters.</td>
+        </tr>
+        <tr>
+            <td>IconAriaLabel</td>
             <td>string</td>
             <td></td>
             <td>The aria label of the icon for the benefit of screen readers</td>
         </tr>
         <tr>
-            <td>iconName</td>
+            <td>IconName</td>
             <td>string</td>
             <td></td>
             <td>Icon name for an icon to display alongside the spin button's label.</td>
         </tr>
         <tr>
-            <td>incrementButtonAriaLabel</td>
+            <td>IncrementButtonAriaLabel</td>
             <td>string</td>
             <td></td>
             <td>Accessible label text for the increment button (for screen reader users).</td>
         </tr>
         <tr>
-            <td>incrementButtonIconName</td>
+            <td>IncrementButtonIconName</td>
             <td>string</td>
             <td>ChevronUpSmall</td>
             <td>Custom icon name for the increment button.</td>
         </tr>
         <tr>
-            <td>inputHtmlAttributes</td>
+            <td>InputHtmlAttributes</td>
             <td>Dictionary&lt;string, object&gt;</td>
             <td></td>
             <td>Additional props for the input field.</td>
         </tr>
         <tr>
-            <td>label</td>
+            <td>IsEnabled</td>
+            <td>bool</td>
+            <td></td>
+            <td>Whether or not the component is enabled.</td>
+        </tr>
+        <tr>
+            <td>Label</td>
             <td>string</td>
             <td></td>
             <td>Descriptive label for the spin button, Label displayed above the spin button and read by screen readers.</td>
         </tr>
         <tr>
-            <td>labelFragment</td>
+            <td>LabelFragment</td>
             <td>RenderFragment</td>
             <td></td>
             <td>Shows the custom Label for spin button. If you don't call default label, ensure that you give your custom label an id and that you set the input's aria-labelledby prop to that id.</td>
         </tr>
         <tr>
-            <td>labelPosition</td>
+            <td>LabelPosition</td>
             <td>LabelPosition</td>
             <td></td>
             <td>The position of the label in regards to the spin button.</td>
         </tr>
         <tr>
-            <td>max</td>
+            <td>Max</td>
             <td>double</td>
             <td>double.MaxValue</td>
             <td>Max value of the spin button. If not provided, the spin button has max value of double type.</td>
         </tr>
         <tr>
-            <td>min</td>
+            <td>Min</td>
             <td>double</td>
             <td>double.MinValue</td>
             <td>Min value of the spin button. If not provided, the spin button has minimum value of double type.</td>
         </tr>
         <tr>
-            <td>onBlur</td>
+            <td>OnBlur</td>
             <td>EventCallback&lt;FocusEventArgs&gt;</td>
             <td></td>
             <td>Callback for when the control loses focus.</td>
         </tr>
         <tr>
-            <td>onFocus</td>
+            <td>OnFocus</td>
             <td>EventCallback&lt;FocusEventArgs&gt;</td>
             <td></td>
             <td>Callback for when focus moves into the input.</td>
         </tr>
         <tr>
-            <td>onChange</td>
+            <td>OnChange</td>
             <td>EventCallback&ltdouble&gt</td>
             <td></td>
             <td>Callback for when the spin button value change.</td>
         </tr>
         <tr>
-            <td>onDecrement</td>
+            <td>OnDecrement</td>
             <td>EventCallback&lt;BitSpinButtonChangeEventArgs&gt;</td>
             <td></td>
             <td>Callback for when the decrement button or down arrow key is pressed.</td>
         </tr>
         <tr>
-            <td>onIncrement</td>
+            <td>OnIncrement</td>
             <td>EventCallback&lt;BitSpinButtonChangeEventArgs&gt;</td>
             <td></td>
             <td>Callback for when the increment button or up arrow key is pressed</td>
         </tr>
         <tr>
-            <td>precision</td>
+            <td>Precision</td>
             <td>int</td>
             <td></td>
             <td>How many decimal places the value should be rounded to</td>
         </tr>
         <tr>
-            <td>ref</td>
-            <td>elementreference</td>
-            <td></td>
-            <td>Access the public methods and properties of the component.</td>
-        </tr>
-        <tr>
-            <td>step</td>
+            <td>Step</td>
             <td>double</td>
             <td>1</td>
             <td>Difference between two adjacent values of the spin button.</td>
-        </tr>        
+        </tr>
         <tr>
-            <td>suffix</td>
+            <td>Style</td>
+            <td>string</td>
+            <td></td>
+            <td>Custom style for the root element of the component.</td>
+        </tr>
+        <tr>
+            <td>Suffix</td>
             <td>string</td>
             <td></td>
             <td>A text is shown after the spin button value.</td>
         </tr>
         <tr>
-            <td>title</td>
+            <td>Title</td>
             <td>string</td>
             <td></td>
             <td>A more descriptive title for the control, visible on its tooltip.</td>
         </tr>
         <tr>
-            <td>uniqueId</td>
-            <td>guid</td>
-            <td></td>
-            <td>Unique ID to identify the item. Typically a duplicate of key value.</td>
-        </tr>
-        <tr>
-            <td>value</td>
+            <td>Value</td>
             <td>double</td>
             <td></td>
             <td>Current value of the spin button.</td>
         </tr>
         <tr>
-            <td>valueChanged</td>
-            <td>EventCallback&ltdouble&gt</td>
+            <td>ValueChanged</td>
+            <td>EventCallback&lt;double&gt;</td>
             <td></td>
             <td>Callback for when the spin button value change.</td>
         </tr>
-    </table>  
+        <tr>
+            <td>Visibility</td>
+            <td>ComponentVisibility</td>
+            <td></td>
+            <td>Whether the component is visible, hidden, collapsed.</td>
+        </tr>
+    </table>
     <h4>BitSpinButtonLabelPosition</h4>
     <hr />
     <table>
@@ -520,13 +538,37 @@
             <th>Description</th>
         </tr>
         <tr>
-            <td>top</td>
+            <td>Top</td>
             <td>0</td>
             <td></td>
         </tr>
         <tr>
-            <td>left</td>
+            <td>Left</td>
             <td>1</td>
+            <td></td>
+        </tr>
+    </table>
+    <h4 id="component-visibility">ComponentVisibility</h4>
+    <hr />
+    <table>
+        <tr>
+            <th>Name</th>
+            <th>Value</th>
+            <th>Description</th>
+        </tr>
+        <tr>
+            <td>Visible</td>
+            <td>0</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>Hidden</td>
+            <td>1</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>Collapsed</td>
+            <td>2</td>
             <td></td>
         </tr>
     </table>

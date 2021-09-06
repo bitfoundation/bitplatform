@@ -165,81 +165,87 @@
             <th>Description</th>
         </tr>
         <tr>
-            <td>allowDisabledFocus</td>
-            <td>boolean</td>
+            <td>AllowDisabledFocus</td>
+            <td>bool</td>
             <td>false</td>
             <td>Whether the icon button can have focus in disabled mode.</td>
         </tr>
         <tr>
-            <td>ariaDescription</td>
+            <td>AriaDescription</td>
             <td>string</td>
             <td></td>
             <td>Detailed description of the icon button for the benefit of screen readers.</td>
         </tr>
         <tr>
-            <td>ariaHidden</td>
-            <td>boolean</td>
+            <td>AriaHidden</td>
+            <td>bool</td>
             <td></td>
             <td>If true, add an aria-hidden attribute instructing screen readers to ignore the element.</td>
-        </tr>
+        </tr>        
         <tr>
-            <td>className</td>
+            <td>AriaLabel</td>
             <td>string</td>
             <td></td>
-            <td>If provided, additional class name to provide on the root element.</td>
+            <td>The aria-label of the control for the benefit of screen readers.</td>
         </tr>
         <tr>
-            <td>ref</td>
-            <td>elementreference</td>
-            <td></td>
-            <td>Access the public methods and properties of the component.</td>
-        </tr>
-        <tr>
-            <td>href</td>
+            <td>Class</td>
             <td>string</td>
             <td></td>
-            <td>If provided, this component will be rendered as an anchor.</td>
+            <td>Custom CSS class for the root element of the component.</td>
         </tr>
         <tr>
-            <td>iconName</td>
+            <td>Href</td>
+            <td>string</td>
+            <td></td>
+            <td>URL the link points to, if provided, button renders as an anchor.</td>
+        </tr>
+        <tr>
+            <td>HtmlAttributes</td>
+            <td>Dictionary&lt;string, object&gt;</td>
+            <td></td>
+            <td>Capture and render additional attributes in addition to the component's parameters.</td>
+        </tr>
+        <tr>
+            <td>IconName</td>
             <td>string</td>
             <td></td>
             <td>The attribute for the icon shown in the icon button.</td>
         </tr>
         <tr>
-            <td>isEnabled</td>
-            <td>boolean</td>
+            <td>IsEnabled</td>
+            <td>bool</td>
             <td>true</td>
             <td>Whether the button is enabled.</td>
         </tr>
         <tr>
-            <td>target</td>
+            <td>OnClick</td>
+            <td>EventCallback&lt;MouseEventArgs&gt;</td>
+            <td></td>
+            <td>Callback for when the button clicked.</td>
+        </tr>
+        <tr>
+            <td>Style</td>
+            <td>string</td>
+            <td></td>
+            <td>Custom style for the root element of the component.</td>
+        </tr>
+        <tr>
+            <td>Target</td>
             <td>string</td>
             <td></td>
             <td>Target of an anchor.</td>
         </tr>
         <tr>
-            <td>title</td>
+            <td>Title</td>
             <td>string</td>
             <td></td>
-            <td>Optional title for this icon button.</td>
-        </tr>
+            <td>The tooltip to show when the mouse is placed on the icon button.</td>
+        </tr>        
         <tr>
-            <td>styles</td>
-            <td>string</td>
-            <td></td>
-            <td>Custom styling for individual elements within the icon button DOM.</td>
-        </tr>
-        <tr>
-            <td>uniqueId</td>
-            <td>guid</td>
-            <td></td>
-            <td>Unique ID to identify the item. Typically a duplicate of key value.</td>
-        </tr>
-        <tr>
-            <td>visibility</td>
-            <td>componentVisibility</td>
-            <td>visible</td>
+            <td>Visibility</td>
+            <td>ComponentVisibility</td>
+            <td>Visible</td>
             <td>Whether the button is visible, hidden ,collapsed.</td>
         </tr>
     </table>
@@ -252,17 +258,17 @@
             <th>Description</th>
         </tr>
         <tr>
-            <td>visible</td>
+            <td>Visible</td>
             <td>0</td>
             <td></td>
         </tr>
         <tr>
-            <td>hidden</td>
+            <td>Hidden</td>
             <td>1</td>
             <td></td>
         </tr>
         <tr>
-            <td>collapsed</td>
+            <td>Collapsed</td>
             <td>2</td>
             <td></td>
         </tr>

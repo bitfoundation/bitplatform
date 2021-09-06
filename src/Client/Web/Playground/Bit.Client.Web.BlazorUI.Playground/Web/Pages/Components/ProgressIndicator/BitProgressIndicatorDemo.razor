@@ -114,52 +114,90 @@
             <th>Description</th>
         </tr>
         <tr>
-            <td>barHeight</td>
+            <td>AriaLabel</td>
+            <td>string</td>
+            <td></td>
+            <td>The aria-label of the control for the benefit of screen readers.</td>
+        </tr>
+        <tr>
+            <td>BarHeight</td>
             <td>int</td>
             <td></td>
             <td>Height of the ProgressIndicator.</td>
-        </tr>
+        </tr>        
         <tr>
-            <td>className</td>
+            <td>Class</td>
             <td>string</td>
             <td></td>
-            <td>If provided, additional class name to provide on the root element.</td>
+            <td>Custom CSS class for the root element of the component.</td>
         </tr>
         <tr>
-            <td>description</td>
+            <td>Description</td>
             <td>string</td>
             <td></td>
             <td>Text describing or supplementing the operation.</td>
         </tr>
         <tr>
-            <td>label</td>
+            <td>HtmlAttributes</td>
+            <td>Dictionary&lt;string, object&gt;</td>
+            <td></td>
+            <td>Capture and render additional attributes in addition to the component's parameters.</td>
+        </tr>
+        <tr>
+            <td>IsEnabled</td>
+            <td>bool</td>
+            <td></td>
+            <td>Whether or not the component is enabled.</td>
+        </tr>
+        <tr>
+            <td>Label</td>
             <td>string</td>
             <td></td>
             <td>Label to display above the component.</td>
         </tr>
         <tr>
-            <td>percentComplete</td>
+            <td>PercentComplete</td>
             <td>double</td>
             <td></td>
             <td>Percentage of the operation's completeness, numerically between 0 and 1. If this is not set, the indeterminate progress animation will be shown instead.</td>
-        </tr>
+        </tr>              
         <tr>
-            <td>ref</td>
-            <td>elementreference</td>
-            <td></td>
-            <td>Access the public methods and properties of the component.</td>
-        </tr>
-        <tr>
-            <td>styles</td>
+            <td>Style</td>
             <td>string</td>
             <td></td>
-            <td>Custom styling for individual elements within the progressIndicator DOM.</td>
+            <td>Custom style for the root element of the component.</td>
         </tr>
         <tr>
-            <td>uniqueId</td>
-            <td>guid</td>
+            <td>Visibility</td>
+            <td>ComponentVisibility</td>
             <td></td>
-            <td>Unique ID to identify the item. Typically a duplicate of key value.</td>
+            <td>Whether the component is visible, hidden, collapsed.</td>
         </tr>
     </table>
+    <div>
+        <h4 id="component-visibility">ComponentVisibility</h4>
+        <hr />
+        <table>
+            <tr>
+                <th>Name</th>
+                <th>Value</th>
+                <th>Description</th>
+            </tr>
+            <tr>
+                <td>Visible</td>
+                <td>0</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>Hidden</td>
+                <td>1</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>Collapsed</td>
+                <td>2</td>
+                <td></td>
+            </tr>
+        </table>
+    </div>
 </div>
