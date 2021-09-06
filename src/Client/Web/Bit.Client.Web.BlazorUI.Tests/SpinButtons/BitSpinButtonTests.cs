@@ -276,7 +276,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.SpinButtons
             var increaseButton = component.FindAll("button")[0];
             for (int i = 0; i < countOfCliks; i++)
             {
-                increaseButton.Click();
+                increaseButton.MouseDown();
             }
 
             Assert.AreEqual(countOfCliks, component.Instance.OnIncrementEventCounter);
@@ -294,7 +294,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.SpinButtons
             var onDecrementEventCounterInitValue = component.Instance.OnDecrementEventCounter;
             for (int i = 0; i < countOfCliks; i++)
             {
-                decreaseButton.Click();
+                decreaseButton.MouseDown();
             }
 
             Assert.AreEqual(onDecrementEventCounterInitValue - countOfCliks, component.Instance.OnDecrementEventCounter);
@@ -422,7 +422,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.SpinButtons
 
             var input = component.Find("input");
             var incrementButton = component.FindAll("button")[0];
-            incrementButton.Click();
+            incrementButton.MouseDown();
             var inputValue = input.GetAttribute("value");
             var expectedResult = defaultValue + step <= max ? defaultValue + step : defaultValue;
 
@@ -472,7 +472,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.SpinButtons
 
             var input = component.Find("input");
             var decrementButton = component.FindAll("button")[1];
-            decrementButton.Click();
+            decrementButton.MouseDown();
             var inputValue = input.GetAttribute("value");
             var expectedResult = defaultValue - step >= min ? defaultValue - step : defaultValue;
 
@@ -628,7 +628,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.SpinButtons
             var incrementButton = component.FindAll("button")[0];
             for (var i = 0; i < countOfIncrements; i++)
             {
-                incrementButton.Click();
+                incrementButton.MouseDown();
             }
 
             var expectedValue = value + (step * countOfIncrements);
