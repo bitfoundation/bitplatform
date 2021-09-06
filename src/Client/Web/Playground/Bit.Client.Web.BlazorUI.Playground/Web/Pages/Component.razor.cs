@@ -339,6 +339,11 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
             BitSliderRangedLowerValue = 2;
             BitSliderRangedUpperValue = 9;
         }
+
+        private string OnDateFormat(BitDate date)
+        {
+            return $"{date.GetDate()}/{date.GetMonth()}/{date.GetYear()}";
+        }
     }
 
     public class Person
