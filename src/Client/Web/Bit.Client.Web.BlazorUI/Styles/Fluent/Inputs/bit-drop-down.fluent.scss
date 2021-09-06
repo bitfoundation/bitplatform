@@ -10,7 +10,19 @@
         box-sizing: border-box;
         margin: 0;
         padding: rem(5px) 0;
+        z-index: 1000;
+        position: relative;
     }
+}
+
+.bit-drp-callout {
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 999;
+    background-color: transparent;
 }
 
 .bit-drp-wrapper {
@@ -28,6 +40,7 @@
     padding: em(0px);
     box-sizing: border-box;
     cursor: pointer;
+    z-index: 1000;
 
     &:hover {
         color: $Grey160;
@@ -158,7 +171,7 @@
     animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
     animation-fill-mode: both;
     background-color: $White;
-    z-index: 2;
+    z-index: 1001;
 
     div[class=bit-drp-head-fluent] {
         font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;

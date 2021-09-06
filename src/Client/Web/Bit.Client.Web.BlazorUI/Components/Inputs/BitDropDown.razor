@@ -13,6 +13,12 @@
         <label id="@DropdownLabelId">@LabelFragment</label>
     }
 
+    @if (isOpen)
+    {
+        <div class="bit-drp-callout"
+             @onclick="CloseCallout"></div>
+    }
+
     <div class="bit-drp-wrapper"
          id="@DropDownId"
          tabindex=@(IsEnabled ? 0 : -1)

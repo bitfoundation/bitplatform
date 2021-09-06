@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
-using Microsoft.JSInterop;
 
 namespace Bit.Client.Web.BlazorUI
 {
@@ -21,8 +20,6 @@ namespace Bit.Client.Web.BlazorUI
         private bool SelectedMultipleKeysHasBeenSet;
         private bool SelectedKeyHasBeenSet;
         private bool IsSelectedMultipleKeysChanged = false;
-
-        [Inject] public IJSRuntime? JSRuntime { get; set; }
 
         /// <summary>
         /// Whether multiple items are allowed to be selected
@@ -214,16 +211,6 @@ namespace Bit.Client.Web.BlazorUI
             await base.OnParametersSetAsync();
         }
 
-        protected async override Task OnAfterRenderAsync(bool firstRender)
-        {
-            if (IsEnabled && firstRender)
-            {
-                _ = JSRuntime?.RegisterOnDocumentClickEvent(this, "CloseCallout");
-            }
-
-            await base.OnAfterRenderAsync(firstRender);
-        }
-
         internal void ChangeAllItemsIsSelected(bool value)
         {
             foreach (var item in Items)
@@ -232,8 +219,7 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
-        [JSInvokable]
-        public void CloseCallout()
+        private void CloseCallout()
         {
             IsOpen = false;
             FocusClass = "";
