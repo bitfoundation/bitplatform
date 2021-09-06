@@ -35,6 +35,9 @@ namespace Bit.Client.Web.BlazorUI
         /// </summary>
         [Parameter] public RenderFragment<TItem>? RowTemplate { get; set; }
 
+        /// <summary>
+        /// Role of the BasicList.
+        /// </summary>
         [Parameter] public string Role { get; set; } = "list";
 
         protected override string RootElementClass => "bit-bsc-lst";

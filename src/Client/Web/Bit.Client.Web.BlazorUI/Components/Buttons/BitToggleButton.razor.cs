@@ -42,6 +42,9 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
         
+        /// <summary>
+        /// Callback called when IsChecked is changed.
+        /// </summary>
         [Parameter] public EventCallback<bool> IsCheckedChanged { get; set; }
 
         /// <summary>

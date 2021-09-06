@@ -14,7 +14,9 @@ namespace Bit.Client.Web.BlazorUI
         private BitChoiceOption? SelectedOption;
         private List<BitChoiceOption> AllOptions = new();
 
-
+        /// <summary>
+        /// Default selected key for ChoiceGroup.
+        /// </summary>
         [Parameter] public string? DefaultSelectedKey { get; set; }
 
         /// <summary>
@@ -37,7 +39,7 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public string? Label { get; set; }
 
         /// <summary>
-        /// contain the key of the selected item
+        /// Contains the key of the selected item
         /// </summary>
         [Parameter]
         public string? SelectedKey
@@ -51,6 +53,9 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
+        /// <summary>
+        /// Callback called when SelectedKey parameter is changed.
+        /// </summary>
         [Parameter] public EventCallback<string?> SelectedKeyChanged { get; set; }
 
         /// <summary>
@@ -74,7 +79,7 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public RenderFragment? ChildContent { get; set; }
 
         /// <summary>
-        /// Callback that is called when the value parameter changed
+        /// Callback that is called when the value parameter is changed
         /// </summary>
         [Parameter] public EventCallback<string> OnValueChange { get; set; }
 

@@ -63,6 +63,9 @@ namespace Bit.Client.Web.BlazorUI
                 _ = ValueChanged.InvokeAsync(value);
             }
         }
+        /// <summary>
+        /// Callback called when value is changed.
+        /// </summary>
         [Parameter] public EventCallback<string?> ValueChanged { get; set; }
 
         /// <summary>
