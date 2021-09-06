@@ -650,6 +650,52 @@ namespace Bit.Client.Web.BlazorUI.Tests.SpinButtons
             spbLabelChild.MarkupMatches(labelFragment);
         }
 
+        [DataTestMethod,
+            DataRow(3, 1, 100, 475),
+            DataRow(3, 1, 100, 550)
+        ]
+        public void SpinButtonContinuousIncrementOnMouseDownTest(double defaultValue, double step, double max, int timeout)
+        {
+            var component = RenderComponent<BitSpinButton>(parameters =>
+            {
+                parameters.Add(p => p.Step, step);
+                parameters.Add(p => p.Max, max);
+                parameters.Add(p => p.DefaultValue, defaultValue);
+            });
+
+            var input = component.Find("input");
+            var incrementButton = component.FindAll("button")[0];
+            var initialIncrementCount = timeout / 400;
+            var continuousIncrementCount = timeout >= 400 ? (timeout - 400) / 75 : 0;
+            var expectedResult = defaultValue + step * (initialIncrementCount + continuousIncrementCount);
+            incrementButton.MouseDown();
+
+            component.WaitForAssertion(() => Assert.AreEqual(expectedResult.ToString(), input.GetAttribute("value")), new TimeSpan(0, 0, 0, 0, timeout));
+        }
+
+        [DataTestMethod,
+            DataRow(50, 1, 0, 475),
+            DataRow(50, 1, 0, 550)
+        ]
+        public void SpinButtonContinuousDecrementOnMouseDownTest(double defaultValue, double step, double min, int timeout)
+        {
+            var component = RenderComponent<BitSpinButton>(parameters =>
+            {
+                parameters.Add(p => p.Step, step);
+                parameters.Add(p => p.Min, min);
+                parameters.Add(p => p.DefaultValue, defaultValue);
+            });
+
+            var input = component.Find("input");
+            var incrementButton = component.FindAll("button")[1];
+            var initialDecrementCount = timeout / 400;
+            var continuousDecrementCount = timeout >= 400 ? (timeout - 400) / 75 : 0;
+            var expectedResult = defaultValue - step * (initialDecrementCount + continuousDecrementCount);
+            incrementButton.MouseDown();
+
+            component.WaitForAssertion(() => Assert.AreEqual(expectedResult.ToString(), input.GetAttribute("value")), new TimeSpan(0, 0, 0, 0, timeout));
+        }
+
         private double Normalize(double value, int precision) => Math.Round(value, precision);
 
         private int CalculatePrecision(double value)
