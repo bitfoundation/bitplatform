@@ -147,9 +147,29 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public bool NotifyOnReselect { get; set; } = false;
 
         /// <summary>
-        /// Shows the custom Label for drop down
+        /// Optional custom template for label
         /// </summary>
-        [Parameter] public RenderFragment? LabelFragment { get; set; }
+        [Parameter] public RenderFragment? LabelTemplate { get; set; }
+
+        /// <summary>
+        /// Optional custom template for selected option displayed in after selection
+        /// </summary>
+        [Parameter] public RenderFragment<BitDropDown>? TextTemplate { get; set; }
+
+        /// <summary>
+        /// Optional custom template for placeholder text
+        /// </summary>
+        [Parameter] public RenderFragment<BitDropDown>? PlaceholderTemplate { get; set; }
+
+        /// <summary>
+        /// Optional custom template for chevron icon
+        /// </summary>
+        [Parameter] public RenderFragment<BitDropDown>? CaretDownTemplate { get; set; }
+
+        /// <summary>
+        /// Optional custom template for drop-down item
+        /// </summary>
+        [Parameter] public RenderFragment<BitDropDownItem>? ItemTemplate { get; set; }
 
         public string FocusClass
         {
