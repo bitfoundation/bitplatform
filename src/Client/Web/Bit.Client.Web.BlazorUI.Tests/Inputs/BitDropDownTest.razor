@@ -22,7 +22,7 @@
     [Parameter] public bool IsEnabled { get; set; }
     [Parameter] public bool IsRequired { get; set; }
     [Parameter] public List<BitDropDownItem> Items { get; set; } = new List<BitDropDownItem>();
-    [Parameter] public List<string> SelectedMultipleKeys { get; set; }
+    [Parameter] public List<string> SelectedMultipleKeys { get; set; } = new List<string>();
     [Parameter] public string SelectedKey { get; set; }
     [Parameter] public List<string> DefaultSelectedMultipleKeys { get; set; } = new List<string>();
     [Parameter] public string? DefaultSelectedKey { get; set; }
