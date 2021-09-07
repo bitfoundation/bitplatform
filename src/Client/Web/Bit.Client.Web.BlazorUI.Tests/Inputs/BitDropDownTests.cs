@@ -369,6 +369,22 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
             drpLabelChild.MarkupMatches(labelTemplate);
         }
 
+        [DataTestMethod,
+            DataRow("Drop Down"),
+            DataRow(null)
+        ]
+        public void BitDropDownTitleTest(string title)
+        {
+            var component = RenderComponent<BitDropDownTest>(parameters =>
+            {
+                parameters.Add(p => p.Title, title);
+            });
+
+            var drpWrapper = component.Find(".bit-drp-wrapper");
+
+            Assert.AreEqual(title, drpWrapper.GetAttribute("title"));
+        }
+
         private List<BitDropDownItem> GetDropdownItems()
         {
             List<BitDropDownItem> items = new();
