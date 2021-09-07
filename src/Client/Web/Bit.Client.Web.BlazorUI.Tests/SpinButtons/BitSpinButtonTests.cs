@@ -670,7 +670,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.SpinButtons
             var expectedResult = defaultValue + step * (initialIncrementCount + continuousIncrementCount);
             incrementButton.MouseDown();
 
-            component.WaitForAssertion(() => Assert.AreEqual(expectedResult.ToString(), input.GetAttribute("value")), new TimeSpan(0, 0, 0, 0, timeout));
+            component.WaitForAssertion(() => Assert.AreEqual(expectedResult.ToString(), input.GetAttribute("value")), TimeSpan.FromMilliseconds(timeout));
         }
 
         [DataTestMethod,
@@ -693,7 +693,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.SpinButtons
             var expectedResult = defaultValue - step * (initialDecrementCount + continuousDecrementCount);
             incrementButton.MouseDown();
 
-            component.WaitForAssertion(() => Assert.AreEqual(expectedResult.ToString(), input.GetAttribute("value")), new TimeSpan(0, 0, 0, 0, timeout));
+            component.WaitForAssertion(() => Assert.AreEqual(expectedResult.ToString(), input.GetAttribute("value")), TimeSpan.FromMilliseconds(timeout));
         }
 
         private double Normalize(double value, int precision) => Math.Round(value, precision);
