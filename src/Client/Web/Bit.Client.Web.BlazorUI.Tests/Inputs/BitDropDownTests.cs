@@ -334,6 +334,27 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
             Assert.AreEqual(expectedText, targetSpan.InnerHtml);
         }
 
+        [DataTestMethod,
+            DataRow("Drop down"),
+            DataRow(null)
+        ]
+        public void BitDropDownLabelShouldWorkCorrect(string label)
+        {
+            var component = RenderComponent<BitDropDown>(parameters =>
+            {
+                parameters.Add(p => p.Label, label);
+            });
+
+            if (label is not null)
+            {
+                Assert.AreEqual(label, component.Find("label").InnerHtml);
+            }
+            else
+            {
+                Assert.ThrowsException<ElementNotFoundException>(() => component.Find("label"));
+            }
+        }
+
         private List<BitDropDownItem> GetDropdownItems()
         {
             List<BitDropDownItem> items = new();
