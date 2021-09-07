@@ -41,7 +41,7 @@
     [Parameter] public RenderFragment? LabelFragment { get; set; }
 
     public int Counter = 0;
-    public int NotifyOnReselectCounter = 0;
+    public int SelectItemCounter = 0;
 
     public void HandleClick(MouseEventArgs args)
     {
@@ -50,6 +50,6 @@
 
     public void HandleSelectItem(BitDropDownItem item)
     {
-        NotifyOnReselectCounter++;
+        SelectItemCounter++;
     }
 }

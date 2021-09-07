@@ -422,7 +422,31 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                 expectedResult = 0;
             }
 
-            Assert.AreEqual(expectedResult, component.Instance.NotifyOnReselectCounter);
+            Assert.AreEqual(expectedResult, component.Instance.SelectItemCounter);
+        }
+
+        [DataTestMethod,
+            DataRow(true),
+            DataRow(false)
+        ]
+        public void BitDropDownEnableItemSelectionShouldWOrkCorrect(bool itemIsEnabled)
+        {
+            var items = new List<BitDropDownItem>()
+            {
+                new BitDropDownItem() {Value = "Apple", Text = "f-app", IsEnabled = itemIsEnabled }
+            };
+            var component = RenderComponent<BitDropDownTest>(parameters =>
+            {
+                parameters.Add(p => p.Items, items);
+                parameters.Add(p => p.IsOpen, true);
+                parameters.Add(p => p.IsEnabled, true);
+            });
+
+            var drpItem = component.Find("button");
+
+            drpItem.Click();
+            var expectedResult = itemIsEnabled ? 1 : 0;
+            Assert.AreEqual(expectedResult, component.Instance.SelectItemCounter);
         }
 
         private List<BitDropDownItem> GetDropdownItems()
