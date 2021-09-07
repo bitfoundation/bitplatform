@@ -355,6 +355,20 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
             }
         }
 
+        [DataTestMethod,
+            DataRow("<div>This is labelTemplate</div>")
+        ]
+        public void BitDropDownLabelTemplateTest(string labelTemplate)
+        {
+            var component = RenderComponent<BitDropDownTest>(parameters =>
+            {
+                parameters.Add(p => p.LabelFragment, labelTemplate);
+            });
+
+            var drpLabelChild = component.Find("label").ChildNodes;
+            drpLabelChild.MarkupMatches(labelTemplate);
+        }
+
         private List<BitDropDownItem> GetDropdownItems()
         {
             List<BitDropDownItem> items = new();
