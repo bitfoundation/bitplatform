@@ -13,7 +13,7 @@
            hidden>
     <div>
         <div @onclick="@HandleCheckboxClick">
-            <i class="bit-icon bit-icon--@CheckmarkIconName"></i>
+            <i class=@($"{RootElementClass}-checkmark bit-icon bit-icon--{CheckmarkIconName}") ></i>
         </div>
 
         <div @onclick="@HandleCheckboxClick">
