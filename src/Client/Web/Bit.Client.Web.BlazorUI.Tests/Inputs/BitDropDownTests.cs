@@ -277,6 +277,63 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
             Assert.AreEqual(expectedText, textSpan.InnerHtml);
         }
 
+        [DataTestMethod,
+          DataRow(null, "f-app,f-ban", true, "Select options"),
+          DataRow(null, null, true, "Select options"),
+          DataRow("f-ban", null, false, "Select option"),
+          DataRow(null, null, false, "Select option")
+        ]
+        public void BitDropDownPlaceholderShouldWorkCorrect(string selectedKey, string selectedMultipleKeys, bool isMultiSelect, string placeholder)
+        {
+            var items = GetRawDropdownItems();
+            var selectedMultipleKeyList = selectedMultipleKeys is not null ? selectedMultipleKeys.Split(",").ToList() : new List<string>();
+            var component = RenderComponent<BitDropDown>(parameters =>
+            {
+                parameters.Add(p => p.Items, items);
+                parameters.Add(p => p.IsMultiSelect, isMultiSelect);
+                parameters.Add(p => p.SelectedMultipleKeys, selectedMultipleKeyList);
+                parameters.Add(p => p.SelectedKey, selectedKey);
+                parameters.Add(p => p.Placeholder, placeholder);
+            });
+
+            var targetSpan = component.Find(".bit-drp-wrapper > span");
+            var expectedText = "";
+
+            if (isMultiSelect)
+            {
+                if (selectedMultipleKeys is not null)
+                {
+                    var selectedItems = items.FindAll(i => selectedMultipleKeyList.Contains(i.Value) && i.ItemType == BitDropDownItemType.Normal);
+                    selectedItems.ForEach(item =>
+                    {
+                        if (expectedText.HasValue())
+                        {
+                            expectedText += component.Instance.MultiSelectDelimiter;
+                        }
+
+                        expectedText += item.Text;
+                    });
+                }
+                else
+                {
+                    expectedText = placeholder;
+                }
+            }
+            else
+            {
+                if (selectedKey is not null)
+                {
+                    expectedText = items.Find(i => i.Value == selectedKey).Text;
+                }
+                else
+                {
+                    expectedText = placeholder;
+                }
+            }
+
+            Assert.AreEqual(expectedText, targetSpan.InnerHtml);
+        }
+
         private List<BitDropDownItem> GetDropdownItems()
         {
             List<BitDropDownItem> items = new();
@@ -320,6 +377,37 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                 Text = "Broccoli",
                 Value = "v-bro",
                 IsSelected = true
+            });
+
+            return items;
+        }
+
+        private List<BitDropDownItem> GetRawDropdownItems()
+        {
+            List<BitDropDownItem> items = new();
+            items.Add(new BitDropDownItem()
+            {
+                ItemType = BitDropDownItemType.Normal,
+                Text = "Apple",
+                Value = "f-app"
+            });
+            items.Add(new BitDropDownItem()
+            {
+                ItemType = BitDropDownItemType.Normal,
+                Text = "Orange",
+                Value = "f-ora"
+            });
+            items.Add(new BitDropDownItem()
+            {
+                ItemType = BitDropDownItemType.Normal,
+                Text = "Banana",
+                Value = "f-ban"
+            });
+            items.Add(new BitDropDownItem()
+            {
+                ItemType = BitDropDownItemType.Normal,
+                Text = "Broccoli",
+                Value = "v-bro"
             });
 
             return items;

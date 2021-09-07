@@ -4,16 +4,16 @@
                  IsMultiSelect="IsMultiSelect"
                  IsOpen="IsOpen"
                  Items="Items"
-                 @bind-SelectedMultipleKeys="SelectedMultipleKeys"
-                 @bind-SelectedKey="@SelectedKey"
+                 MultiSelectDelimiter="@MultiSelectDelimiter"
                  DefaultSelectedMultipleKeys="DefaultSelectedMultipleKeys"
                  DefaultSelectedKey="@DefaultSelectedKey"
                  Placeholder="@Placeholder"
                  Label="@Label"
                  Title="@Title"
-                 MultiSelectDelimiter="@MultiSelectDelimiter"
                  OnSelectItem="HandleSelectItem"
                  NotifyOnReselect="NotifyOnReselect"
+                 @bind-SelectedMultipleKeys="SelectedMultipleKeys"
+                 @bind-SelectedKey="@SelectedKey"
                  IsRequired="IsRequired">
     </BitDropDown>
 </CascadingValue>
