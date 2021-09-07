@@ -125,6 +125,47 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
             }
         }
 
+        [DataTestMethod,
+          DataRow(true, "-"),
+          DataRow(false, null)
+        ]
+        public void BitDropDownTextWithSelectedItemsShouldInitCorrect(bool isMultiSelect, string multiSelectDelimiter)
+        {
+            var items = GetDropdownItems();
+            var component = RenderComponent<BitDropDownTest>(parameters =>
+            {
+                parameters.Add(p => p.Items, items);
+                parameters.Add(p => p.IsMultiSelect, isMultiSelect);
+                parameters.Add(p => p.MultiSelectDelimiter, multiSelectDelimiter);
+            });
+
+            var textSpan = component.Find(".bit-drp-wrapper > span");
+            var expectedText = "";
+
+            if (isMultiSelect)
+            {
+                items.ForEach(i =>
+                {
+                    if (i.IsSelected && i.ItemType == BitDropDownItemType.Normal)
+                    {
+                        if (expectedText.HasValue())
+                        {
+                            expectedText += multiSelectDelimiter;
+                        }
+
+                        expectedText += i.Text;
+                    }
+                });
+            }
+            else
+            {
+                var firstSelectedItem = items.FirstOrDefault(i => i.IsSelected);
+                expectedText = firstSelectedItem is null ? "" : firstSelectedItem.Text;
+            }
+
+            Assert.AreEqual(expectedText, textSpan.InnerHtml);
+        }
+
         private List<BitDropDownItem> GetDropdownItems()
         {
             List<BitDropDownItem> items = new();
@@ -167,6 +208,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                 ItemType = BitDropDownItemType.Normal,
                 Text = "Broccoli",
                 Value = "v-bro",
+                IsSelected = true
             });
 
             return items;
