@@ -34,5 +34,23 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
 
             Assert.IsTrue(bitDrp.ClassList.Contains($"bit-drp-{enabledClass}-{visualClass}"));
         }
+
+        [DataTestMethod,
+          DataRow(true),
+          DataRow(false)
+        ]
+        public void BitDropDownIsEnabledShouldWorkCorrect(bool isEnabled)
+        {
+            var component = RenderComponent<BitDropDownTest>(parameters =>
+            {
+                parameters.Add(p => p.IsEnabled, isEnabled);
+            });
+
+            var bitDrpWrapper = component.Find(".bit-drp-wrapper");
+            bitDrpWrapper.Click();
+            var expectedResult = isEnabled ? 1 : 0;
+
+            Assert.AreEqual(expectedResult, component.Instance.Counter);
+        }
     }
 }
