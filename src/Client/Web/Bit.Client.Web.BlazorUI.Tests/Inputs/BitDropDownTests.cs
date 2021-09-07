@@ -39,7 +39,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
           DataRow(true),
           DataRow(false)
         ]
-        public void BitDropDownIsEnabledShouldWorkCorrect(bool isEnabled)
+        public void BitDropDownOnClickShouldWorkCorrect(bool isEnabled)
         {
             var component = RenderComponent<BitDropDownTest>(parameters =>
             {
