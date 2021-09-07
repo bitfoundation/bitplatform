@@ -58,7 +58,9 @@
                     date-is-focusable="false"
                     tabindex="-1"
                     aria-label="@IncrementButtonAriaLabel"
-                    @onclick="e => HandleButtonClick(BitSpinButtonAction.Increment, e)">
+                    @onmousedown="e => HandleMouseDown(BitSpinButtonAction.Increment, e)"
+                    @onmouseout="HandleMouseUpOrOut"
+                    @onmouseup="HandleMouseUpOrOut">
                 <span>
                     <i class="bit-icon bit-icon--@IncrementButtonIconName bit-icon--s"></i>
                 </span>
@@ -70,7 +72,9 @@
                     date-is-focusable="false"
                     tabindex="-1"
                     aria-label="@DecrementButtonAriaLabel"
-                    @onclick="e => HandleButtonClick(BitSpinButtonAction.Decrement, e)">
+                    @onmousedown="e => HandleMouseDown(BitSpinButtonAction.Decrement, e)"
+                    @onmouseout="HandleMouseUpOrOut"
+                    @onmouseup="HandleMouseUpOrOut">
                 <span>
                     <i class="bit-icon bit-icon--@DecrementButtonIconName bit-icon--s"></i>
                 </span>
