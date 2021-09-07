@@ -1,7 +1,9 @@
 ﻿<CascadingValue Value="Visual">
     <BitChoiceGroup Name="@ChoiceGroupName"
                     IsEnabled="@ChoiceGroupIsEnabled"
-                    OnValueChange="HandleValueChange">
+                    OnValueChange="HandleValueChange"
+                    IsRequired="IsRequired"
+                    Label="@Label">
         <BitChoiceOption Value="@Value"
                          IsEnabled="@ChoiceOptionIsEnabled"
                          Text="@Text"
@@ -10,19 +12,42 @@
                          OnClick="HandleClick"
                          OnChange="HandleChange">
         </BitChoiceOption>
-        <BitChoiceOption Value="option2"></BitChoiceOption>
+        <BitChoiceOption Value="option2"
+                         IsEnabled="@ChoiceOptionIsEnabled">
+        </BitChoiceOption>
+        <BitChoiceOption Value="@Value"
+                         IsEnabled="@ChoiceOptionIsEnabled"
+                         Text="@Text"
+                         ImageSrc="@ImageSrc"
+                         ImageAlt="@ImageAlt"
+                         SelectedImageSrc="@SelectedImageSrc"
+                         ImageSize="ImageSize">
+        </BitChoiceOption>
+        <BitChoiceOption Value="@Value"
+                         IsEnabled="@ChoiceOptionIsEnabled"
+                         Text="@Text"
+                         IconName="@IconName">
+        </BitChoiceOption>
     </BitChoiceGroup>
 </CascadingValue>
 @code {
     [Parameter] public Visual Visual { get; set; }
-    [Parameter] public bool ChoiceGroupIsEnabled { get; set; }
+    [Parameter] public bool ChoiceGroupIsEnabled { get; set; } = true;
     [Parameter] public string ChoiceGroupName { get; set; }
+    [Parameter] public bool IsRequired { get; set; }
+    [Parameter] public string? Label { get; set; }
 
-    [Parameter] public bool ChoiceOptionIsEnabled { get; set; }
+    [Parameter] public bool ChoiceOptionIsEnabled { get; set; } = true;
     [Parameter] public string Value { get; set; }
     [Parameter] public string? Text { get; set; }
     [Parameter] public string? ChoiceOptionName { get; set; }
     [Parameter] public bool IsChecked { get; set; }
+
+    [Parameter] public string? ImageSrc { get; set; }
+    [Parameter] public string? ImageAlt { get; set; }
+    [Parameter] public string? SelectedImageSrc { get; set; }
+    [Parameter] public System.Drawing.Size? ImageSize { get; set; }
+    [Parameter] public string? IconName { get; set; }
 
     public int ChoiceOptionClickedValue { get; set; }
     public int ChoiceOptionChangedValue { get; set; }
@@ -36,10 +61,9 @@
     {
         ChoiceGroupChangedValue = value;
     }
-    public void HandleChange(ChangeEventArgs e)
+    public void HandleChange(bool isChecked)
     {
         ChoiceOptionChangedValue++;
         //Count2++;
-        Value = e.Value.ToString();
     }
 }

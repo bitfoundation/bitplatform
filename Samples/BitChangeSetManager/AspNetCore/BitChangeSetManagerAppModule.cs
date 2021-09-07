@@ -8,6 +8,7 @@ using Bit.Hangfire.Implementations;
 using Bit.Model.Implementations;
 using Bit.OData.ActionFilters;
 using Bit.OData.Contracts;
+using Bit.Owin;
 using Bit.Owin.Contracts;
 using Bit.Owin.Implementations;
 using Bit.Owin.Middlewares;
@@ -30,6 +31,19 @@ using System.Reflection;
 
 namespace BitChangeSetManager
 {
+    public class AppStartup : AspNetCoreAppStartup
+    {
+        public override void ConfigureMiddlewares(IApplicationBuilder aspNetCoreApp)
+        {
+            base.ConfigureMiddlewares(aspNetCoreApp);
+        }
+
+        public override void ConfigureServices(IServiceCollection services)
+        {
+            base.ConfigureServices(services);
+        }
+    }
+
     public class BitChangeSetManagerAppModule : IAppModule
     {
         public virtual void ConfigureDependencies(IServiceCollection services, IDependencyManager dependencyManager)

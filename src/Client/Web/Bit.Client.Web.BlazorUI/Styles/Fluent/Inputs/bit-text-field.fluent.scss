@@ -1,5 +1,56 @@
 ﻿@import "../colors.fluent.scss", "../../functions.scss";
 
+@mixin getMultilineStyle($isResizable: true) {
+    & > div {
+
+        & > div {
+            min-height: rem(60);
+            align-items: stretch;
+            height: auto;
+        }
+
+        textarea {
+            padding: em(6px) em(8px);
+            line-height: rem(17);
+            flex-grow: 1;
+            overflow: auto;
+            min-height: inherit;
+
+            @if $isResizable == false {
+                resize: none;
+            }
+        }
+    }
+}
+
+@mixin getUnderlineStyle($isEnabel: true) {
+    & > div {
+        display: flex;
+        border-bottom: 1px solid;
+        width: 100%;
+
+        @if($isEnabel == true) {
+            border-bottom-color: $Grey130;
+        }
+        @else {
+            border-bottom-color: $Grey20;
+        }
+
+        & > div {
+            border: none;
+            flex: 1 1 0px;
+            text-align: left;
+        }
+
+        label {
+            padding: 5px 0px 5px 12px;
+            line-height: 22px;
+            height: 32px;
+            margin: 0px 8px 0px 0px;
+        }
+    }
+}
+
 .bit-txt-fluent {
     font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
     font-size: rem(14px);
@@ -77,13 +128,34 @@
             text-overflow: ellipsis;
         }
 
-        span {
-            height: 100%;
-            width: rem(32px);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: rem(16);
+        & > div {
+            /* reveal password button*/
+            & button {
+                height: 100%;
+                width: rem(32px);
+                outline: transparent;
+                position: relative;
+                border: none;
+                padding: 0px 4px;
+                background-color: transparent;
+                color: rgb(0, 120, 212);
+
+                & > span {
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    font-size: rem(16);
+                }
+            }
+
+            & > span {
+                height: 100%;
+                width: rem(32px);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                font-size: rem(16);
+            }
         }
     }
 
@@ -123,24 +195,13 @@
     }
 }
 
+
 .bit-txt-multiline-fluent {
+    @include getMultilineStyle();
+}
 
-    & > div {
-
-        & > div {
-            min-height: rem(60);
-            align-items: stretch;
-            height: auto;
-        }
-
-        textarea {
-            padding: em(6px) em(8px);
-            line-height: rem(17);
-            flex-grow: 1;
-            overflow: auto;
-            min-height: inherit;
-        }
-    }
+.bit-txt-multiline-fix-fluent {
+    @include getMultilineStyle($isResizable: false);
 }
 
 .bit-txt-focused-fluent {
@@ -162,25 +223,7 @@
 }
 
 .bit-txt-underlined-fluent {
-
-    & > div {
-        display: flex;
-        border-bottom: 1px solid $Grey130;
-        width: 100%;
-
-        & > div {
-            border: none;
-            flex: 1 1 0px;
-            text-align: left;
-        }
-
-        label {
-            padding: 5px 0px 5px 12px;
-            line-height: 22px;
-            height: 32px;
-            margin: 0px 8px 0px 0px;
-        }
-    }
+    @include getUnderlineStyle();
 }
 
 .bit-txt-underlined-focused-fluent {
@@ -221,10 +264,7 @@
 }
 
 .bit-txt-underlined-disabled-fluent {
-
-    & > div {
-        border-bottom: 1px solid $Grey20;
-    }
+    @include getUnderlineStyle( $isEnabel: false);
 }
 
 .bit-txt-required-fluent {
@@ -248,21 +288,6 @@
 
         & > div {
             border: none;
-        }
-    }
-}
-
-.bit-txt-disabled-fluent {
-
-    & > div {
-
-        & > div {
-            border: 1px solid $Grey20;
-            background: $White;
-            color: $Grey90;
-            cursor: default;
-            border: none $Grey20;
-            background: none $Grey20;
         }
     }
 }

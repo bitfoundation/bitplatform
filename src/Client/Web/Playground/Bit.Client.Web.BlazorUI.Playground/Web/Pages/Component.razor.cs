@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Web;
 
 namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
@@ -22,13 +23,35 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
         private int RatingReadOnlyValue = 5;
         private int RatingOutsideValue = 5;
 
-        private readonly Uri UploadUrl = new("https://localhost:5001/FileUpload/UploadStreamedFile");
-        private readonly Uri RemoveUrl = new("https://localhost:5001/FileUpload/RemoveFile");
+        private readonly string UploadUrl = "/FileUpload/UploadStreamedFile";
+        private readonly string RemoveUrl = "/FileUpload/RemoveFile";
 
         private double BasicSpinButtonValue = 5;
         private double BasicSpinButtonDisableValue = 20;
         private double SpinButtonWithCustomHandlerValue = 14;
         private double SpinButtonWithLabelAboveValue = 7;
+
+        public int CompletedPercent { get; set; }
+        private string description = "Push button to start !";
+        private async Task StartProgress()
+        {
+            CompletedPercent = 0;
+            while (CompletedPercent <= 100)
+            {
+                if (CompletedPercent == 100)
+                {
+                    description = $"Completed !";
+                    break;
+                }
+                else
+                {
+                    CompletedPercent++;
+                    description = $"{CompletedPercent}%";
+                }
+                StateHasChanged();
+                await Task.Delay(100);
+            }
+        }
 
         public string SelectedColor { get; set; } = "#ffeeff";
 
@@ -98,8 +121,10 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
             new BitNavLinkItem { Name = "Shared Documents and Files", Url = "http://example.com", Key = "key2", Target = "_blank", IsExpanded = true },
             new BitNavLinkItem { Name = "Pages", Url = "http://msn.com", Key = "key3", Target = "_parent" },
             new BitNavLinkItem { Name = "Notebook", Url = "http://msn.com", Key = "key4", Disabled = true },
-            new BitNavLinkItem { Name = "Communication and Media", Url = "http://msn.com", Key = "key5", Target = "_top" },
-            new BitNavLinkItem { Name = "News", Url = "http://msn.com", Key = "key6", Icon = "News", Target = "_self" },
+            new BitNavLinkItem { Name = "Communication and Media", Key = "key5", Target = "_top" },
+            new BitNavLinkItem { Name = "News", Key = "key6", Icon = "News", Target = "_self" },
+            new BitNavLinkItem { Name = "Component", Url = "component", Key = "component", Icon = "News", Target = "_self" },
+
         };
 
         private readonly List<BitNavLinkItem> BasicNoUrlNavLinks = new()
@@ -256,45 +281,46 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
             people[1] = person.GetPeople(100);
         }
 
-        private List<DropDownItem> GetDropdownItems()
+        private List<BitDropDownItem> GetDropdownItems()
         {
-            List<DropDownItem> items = new();
-            items.Add(new DropDownItem()
+            List<BitDropDownItem> items = new();
+            items.Add(new BitDropDownItem()
             {
-                ItemType = DropDownItemType.Header,
+                ItemType = BitDropDownItemType.Header,
                 Text = "Fruits"
             });
-            items.Add(new DropDownItem()
+            items.Add(new BitDropDownItem()
             {
-                ItemType = DropDownItemType.Normal,
+                ItemType = BitDropDownItemType.Normal,
                 Text = "Apple",
                 Value = "f-app"
             });
-            items.Add(new DropDownItem()
+            items.Add(new BitDropDownItem()
             {
-                ItemType = DropDownItemType.Normal,
+                ItemType = BitDropDownItemType.Normal,
                 Text = "Orange",
                 Value = "f-ora",
                 IsEnabled = false
             });
-            items.Add(new DropDownItem()
+            items.Add(new BitDropDownItem()
             {
-                ItemType = DropDownItemType.Normal,
+                ItemType = BitDropDownItemType.Normal,
                 Text = "Banana",
                 Value = "f-ban",
+                IsSelected = true
             });
-            items.Add(new DropDownItem()
+            items.Add(new BitDropDownItem()
             {
-                ItemType = DropDownItemType.Divider,
+                ItemType = BitDropDownItemType.Divider,
             });
-            items.Add(new DropDownItem()
+            items.Add(new BitDropDownItem()
             {
-                ItemType = DropDownItemType.Header,
+                ItemType = BitDropDownItemType.Header,
                 Text = "Vegetables"
             });
-            items.Add(new DropDownItem()
+            items.Add(new BitDropDownItem()
             {
-                ItemType = DropDownItemType.Normal,
+                ItemType = BitDropDownItemType.Normal,
                 Text = "Broccoli",
                 Value = "v-bro",
             });
@@ -303,8 +329,20 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
         }
 
         private string? TextValue;
-        private void TextChanged(string val) {
-            TextValue = val;
+        private double? BitSliderHorizontalValue = 2;
+        private double? BitSliderVerticalValue = 0;
+        private double? BitSliderRangedLowerValue = 0;
+        private double? BitSliderRangedUpperValue = 0;
+
+        private void ChangeBitSliderRangedValues()
+        {
+            BitSliderRangedLowerValue = 2;
+            BitSliderRangedUpperValue = 9;
+        }
+
+        private string OnDateFormat(BitDate date)
+        {
+            return $"{date.GetDate()}/{date.GetMonth()}/{date.GetYear()}";
         }
     }
 

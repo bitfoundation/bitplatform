@@ -1,0 +1,67 @@
+﻿.bit-pi {
+    font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    font-size: 14px;
+    font-weight: 400;
+
+    & > div:first-child {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: rgb(50, 49, 48);
+        padding-top: 4px;
+        line-height: 20px;
+    }
+
+    & > div:nth-child(2) {
+        position: relative;
+        overflow: hidden;
+        padding: 8px 0px;
+
+        & > div:first-child {
+            position: absolute;
+            width: 100%;
+            background-color: rgb(237, 235, 233);
+            height: inherit;
+        }
+
+        & > div:nth-child(2) {
+            background-color: rgb(0, 120, 212);
+            position: absolute;
+            transition: width 0.15s linear 0s;
+            width: 0;
+            height: inherit;
+        }
+    }
+
+    & > div:last-child {
+        color: rgb(96, 94, 92);
+        font-size: 12px;
+        line-height: 18px;
+    }
+}
+
+.bit-pi.bit-pi-indeterminate-fluent {
+    & > div:nth-child(2) {
+        & > div:nth-child(2) {
+            position: absolute;
+            transition: width 0.3s ease 0s;
+            width: 0px;
+            min-width: 33%;
+            background: linear-gradient(to right, rgb(237, 235, 233) 0%, rgb(0, 120, 212) 50%, rgb(237, 235, 233) 100%);
+            animation: 3s ease 0s infinite normal none running pi-bar-animation;
+        }
+    }
+}
+
+@keyframes pi-bar-animation {
+    0% {
+        left: 0%;
+        transform: translateX(-100%);
+    }
+
+    100% {
+        left: 100%;
+        transform: translateX(0%);
+    }
+}

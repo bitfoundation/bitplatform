@@ -8,7 +8,14 @@ namespace Bit.Client.Web.BlazorUI
 {
     public enum LinkFormat
     {
+        /// <summary>
+        /// Display Pivot Links as Tabs
+        /// </summary>
         Tabs,
+
+        /// <summary>
+        /// Display Pivot Links as links
+        /// </summary>
         Links
     }
 }

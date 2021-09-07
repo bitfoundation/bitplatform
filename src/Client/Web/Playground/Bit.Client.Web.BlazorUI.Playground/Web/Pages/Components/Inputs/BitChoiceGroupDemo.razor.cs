@@ -2,5 +2,6 @@
 {
     public partial class BitChoiceGroupDemo
     {
+        private string MySelectedKey="B";
     }
 }

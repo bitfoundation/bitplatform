@@ -96,7 +96,7 @@ namespace Bit.Tests.IdentityServer
                 Assert.IsTrue(foundAnyCorrectCall);
 
                 bool acr_values_are_logged = testEnvironment.GetObjects<ILogger>()
-                     .Any(l => l.LogData.Any(ld => ld.Key == "AcrValues" && ((string[])ld.Value).SequenceEqual(new[] { "x:1", "y:2" })));
+                     .Any(l => l.LogData.Any(ld => ld.Key == "AcrValues" && ((string)ld.Value).Equals("x:1 y:2")));
 
                 Assert.IsTrue(acr_values_are_logged);
             }
