@@ -166,6 +166,60 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
             Assert.AreEqual(expectedText, textSpan.InnerHtml);
         }
 
+        [DataTestMethod,
+          DataRow("f-ban"),
+          DataRow("f-app"),
+        ]
+        public void BitDropDownTextWithDefaultSelectedKeyShouldInitCorrect(string defaultSelectedKey)
+        {
+            var items = GetDropdownItems();
+            var component = RenderComponent<BitDropDown>(parameters =>
+            {
+                parameters.Add(p => p.Items, items);
+                parameters.Add(p => p.DefaultSelectedKey, defaultSelectedKey);
+            });
+
+            var textSpan = component.Find(".bit-drp-wrapper > span");
+            var expectedText = items.Find(i => i.Value == defaultSelectedKey && i.ItemType == BitDropDownItemType.Normal).Text;
+
+            Assert.AreEqual(expectedText, textSpan.InnerHtml);
+        }
+
+        [DataTestMethod,
+          DataRow("f-ban"),
+          DataRow("f-app,f-ban"),
+        ]
+        public void BitDropDownTextWithDefaultSelectedMultipleKeysShouldInitCorrect(string defaultSelectedMultipleKey)
+        {
+            var items = GetDropdownItems();
+            var defaultSelectedMultipleKeyList = defaultSelectedMultipleKey.Split(",").ToList();
+            var component = RenderComponent<BitDropDown>(parameters =>
+            {
+                parameters.Add(p => p.Items, items);
+                parameters.Add(p => p.IsMultiSelect, true);
+                parameters.Add(p => p.DefaultSelectedMultipleKeys, defaultSelectedMultipleKeyList);
+            });
+
+            var textSpan = component.Find(".bit-drp-wrapper > span");
+            var defaultSelectedItems = items.FindAll(i => defaultSelectedMultipleKeyList.Contains(i.Value) && i.ItemType == BitDropDownItemType.Normal);
+            var expectedText = "";
+
+            defaultSelectedItems.ForEach(i =>
+            {
+                if (i.IsSelected && i.ItemType == BitDropDownItemType.Normal)
+                {
+                    if (expectedText.HasValue())
+                    {
+                        expectedText += component.Instance.MultiSelectDelimiter;
+                    }
+
+                    expectedText += i.Text;
+                }
+            });
+
+            Assert.AreEqual(expectedText, textSpan.InnerHtml);
+        }
+
         private List<BitDropDownItem> GetDropdownItems()
         {
             List<BitDropDownItem> items = new();
