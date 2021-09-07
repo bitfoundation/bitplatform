@@ -3,11 +3,11 @@ using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.Client.Web.BlazorUI.Tests.Navs
-{ 
+{
     [TestClass]
     public class BitNavTests : BunitTestContext
     {
- 
+
         [DataTestMethod,
            DataRow(Visual.Fluent),
            DataRow(Visual.Cupertino),
@@ -207,6 +207,28 @@ namespace Bit.Client.Web.BlazorUI.Tests.Navs
                 //Assert.IsTrue(hasAttribute);
                 //Assert.IsTrue(hasAttribute ? bitNavLinksItem.GetAttribute("aria-label").Equals(ariaLabel) : true);
             }
+        }
+
+        [DataTestMethod,
+            DataRow(true, true),
+            DataRow(true, false),
+            DataRow(false, true),
+            DataRow(false, false)
+        ]
+        public void BitNavShoulRespondToClickEvents(bool isEnabled, bool itemDisabled)
+        {
+            var componenet = RenderComponent<BitNavTest>(parameters =>
+            {
+                parameters.Add(p => p.NavLinkItems, new List<BitNavLinkItem> { new BitNavLinkItem { Name = "Test1", Key = "key1", Disabled = itemDisabled, Links = new List<BitNavLinkItem> { new BitNavLinkItem { Name = "Test2", Key = "key2" } } } });
+                parameters.Add(p => p.IsEnabled, isEnabled);
+            });
+
+            var navItem = componenet.Find($".bit-nav .bit-nav-link-{(itemDisabled ? "disabled" : "enabled")}-nourl-fluent");
+            navItem.Click();
+
+            Assert.AreEqual(isEnabled && !itemDisabled ? "Test1" : null, componenet.Instance.OnlinkClickValue);
+            Assert.AreEqual(isEnabled && !itemDisabled ? "key1" : null, componenet.Instance.OnLinkExpandClickValue);
+
         }
     }
 }

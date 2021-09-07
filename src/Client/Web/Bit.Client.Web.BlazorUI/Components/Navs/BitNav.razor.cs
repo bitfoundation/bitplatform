@@ -52,9 +52,14 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public ICollection<BitNavLinkItem> NavLinkItems { get; set; } = new List<BitNavLinkItem>();
 
         /// <summary>
-        /// Callback invoked when a link in the navigation is clicked
+        /// Function callback invoked when the chevron on a link is clicked
         /// </summary>
-        [Parameter] public EventCallback<BitNavLinkItem> OnClick { get; set; }
+        [Parameter] public EventCallback<BitNavLinkItem> OnLinkExpandClick { get; set; }
+
+        /// <summary>
+        /// Function callback invoked when a link in the navigation is clicked
+        /// </summary>
+        [Parameter] public EventCallback<BitNavLinkItem> OnLinkClick { get; set; }
 
         /// <summary>
         /// The template of the header for each nav item, which is a generic RenderFramgment that accepts a BitNavLinItem as input
@@ -90,16 +95,18 @@ namespace Bit.Client.Web.BlazorUI
             StateHasChanged();
         }
 
-        private async Task Toggle(BitNavLinkItem navLink)
+        protected async Task HandleOnClick(BitNavLinkItem navLink, bool toggle = true)
         {
             if (IsEnabled is false || navLink.Disabled) return;
 
-            if (navLink.Links?.Any() ?? false)
+            if (navLink.Links?.Any() ?? false && toggle)
             {
                 navLink.IsExpanded = !navLink.IsExpanded;
             }
 
-            await OnClick.InvokeAsync(navLink);
+            await OnLinkExpandClick.InvokeAsync(navLink);
+            await navLink.OnClick.InvokeAsync();
+            await OnLinkClick.InvokeAsync(navLink);
         }
 
         protected override void RegisterComponentClasses()
