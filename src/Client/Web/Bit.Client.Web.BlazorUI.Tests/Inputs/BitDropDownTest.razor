@@ -1,7 +1,8 @@
 ﻿<CascadingValue Value="Visual">
     <BitDropDown IsEnabled="IsEnabled"
+                 OnClick="HandleClick"
                  IsMultiSelect="IsMultiSelect"
-                 IsRequired="IsRequired"
+                 IsOpen="IsOpen"
                  Items="Items"
                  @bind-SelectedMultipleKeys="SelectedMultipleKeys"
                  @bind-SelectedKey="@SelectedKey"
@@ -11,9 +12,9 @@
                  Label="@Label"
                  Title="@Title"
                  MultiSelectDelimiter="@MultiSelectDelimiter"
-                 OnClick="HandleClick"
                  OnSelectItem="HandleSelectItem"
-                 NotifyOnReselect="NotifyOnReselect">
+                 NotifyOnReselect="NotifyOnReselect"
+                 IsRequired="IsRequired">
     </BitDropDown>
 </CascadingValue>
 @code {
@@ -21,6 +22,7 @@
     [Parameter] public bool IsMultiSelect { get; set; }
     [Parameter] public bool IsEnabled { get; set; }
     [Parameter] public bool IsRequired { get; set; }
+    [Parameter] public bool IsOpen { get; set; }
     [Parameter] public List<BitDropDownItem> Items { get; set; } = new List<BitDropDownItem>();
     [Parameter] public List<string> SelectedMultipleKeys { get; set; } = new List<string>();
     [Parameter] public string SelectedKey { get; set; }
