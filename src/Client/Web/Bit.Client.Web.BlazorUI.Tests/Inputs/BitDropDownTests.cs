@@ -385,6 +385,46 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
             Assert.AreEqual(title, drpWrapper.GetAttribute("title"));
         }
 
+        [DataTestMethod,
+            DataRow(Visual.Fluent, true, "f-app"),
+            DataRow(Visual.Fluent, false, "f-app"),
+
+            DataRow(Visual.Cupertino, true, "f-app"),
+            DataRow(Visual.Cupertino, false, "f-app"),
+
+            DataRow(Visual.Material, true, "f-app"),
+            DataRow(Visual.Material, false, "f-app"),
+        ]
+        public void BitDropDownNotifyOnReselectShouldWOrkCorrect(Visual visual, bool notifyOnReselect, string defaultSelectedKey)
+        {
+            var items = GetRawDropdownItems();
+            var component = RenderComponent<BitDropDownTest>(parameters =>
+            {
+                parameters.Add(p => p.Visual, visual);
+                parameters.Add(p => p.Items, items);
+                parameters.Add(p => p.IsOpen, true);
+                parameters.Add(p => p.IsEnabled, true);
+                parameters.Add(p => p.NotifyOnReselect, notifyOnReselect);
+                parameters.Add(p => p.DefaultSelectedKey, defaultSelectedKey);
+            });
+
+            var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
+            var selectedItem = component.Find($".bit-drp-slc-{visualClass}");
+            selectedItem.Click();
+
+            int expectedResult;
+            if (notifyOnReselect)
+            {
+                expectedResult = 1;
+            }
+            else
+            {
+                expectedResult = 0;
+            }
+
+            Assert.AreEqual(expectedResult, component.Instance.NotifyOnReselectCounter);
+        }
+
         private List<BitDropDownItem> GetDropdownItems()
         {
             List<BitDropDownItem> items = new();

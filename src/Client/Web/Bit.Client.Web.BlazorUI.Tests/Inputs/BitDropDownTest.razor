@@ -10,8 +10,8 @@
                  Placeholder="@Placeholder"
                  Label="@Label"
                  Title="@Title"
-                 OnSelectItem="HandleSelectItem"
                  NotifyOnReselect="NotifyOnReselect"
+                 OnSelectItem="HandleSelectItem"
                  @bind-SelectedMultipleKeys="SelectedMultipleKeys"
                  @bind-SelectedKey="@SelectedKey"
                  IsRequired="IsRequired">
@@ -41,6 +41,7 @@
     [Parameter] public RenderFragment? LabelFragment { get; set; }
 
     public int Counter = 0;
+    public int NotifyOnReselectCounter = 0;
 
     public void HandleClick(MouseEventArgs args)
     {
@@ -49,6 +50,6 @@
 
     public void HandleSelectItem(BitDropDownItem item)
     {
-
+        NotifyOnReselectCounter++;
     }
 }
