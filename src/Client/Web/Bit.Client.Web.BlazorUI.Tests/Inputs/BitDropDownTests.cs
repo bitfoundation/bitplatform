@@ -426,27 +426,42 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
         }
 
         [DataTestMethod,
-            DataRow(true),
-            DataRow(false)
+            DataRow(true, true),
+            DataRow(false, true),
+
+            DataRow(true, false),
+            DataRow(false, false)
         ]
-        public void BitDropDownEnableItemSelectionShouldWOrkCorrect(bool itemIsEnabled)
+        public void BitDropDownEnableItemSelectionShouldWOrkCorrect(bool itemIsEnabled, bool isMultiSelect)
         {
             var items = new List<BitDropDownItem>()
             {
-                new BitDropDownItem() {Value = "Apple", Text = "f-app", IsEnabled = itemIsEnabled }
+                new BitDropDownItem() {Value = "Apple", Text = "f-app", IsEnabled = itemIsEnabled },
+                new BitDropDownItem() {Value = "Banana", Text = "f-ban", IsEnabled = itemIsEnabled }
             };
             var component = RenderComponent<BitDropDownTest>(parameters =>
             {
                 parameters.Add(p => p.Items, items);
                 parameters.Add(p => p.IsOpen, true);
                 parameters.Add(p => p.IsEnabled, true);
+                parameters.Add(p => p.IsMultiSelect, isMultiSelect);
             });
 
-            var drpItem = component.Find("button");
-
-            drpItem.Click();
-            var expectedResult = itemIsEnabled ? 1 : 0;
-            Assert.AreEqual(expectedResult, component.Instance.SelectItemCounter);
+            if (isMultiSelect)
+            {
+                var drpItems = component.FindAll(".bit-chb");
+                drpItems[0].Children[1].Children[0].Click();
+                drpItems[1].Children[1].Children[0].Click();
+                var expectedResult = itemIsEnabled ? 2 : 0;
+                Assert.AreEqual(expectedResult, component.Instance.SelectItemCounter);
+            }
+            else
+            {
+                var drpItems = component.FindAll("button");
+                drpItems[0].Click();
+                var expectedResult = itemIsEnabled ? 1 : 0;
+                Assert.AreEqual(expectedResult, component.Instance.SelectItemCounter);
+            }
         }
 
         private List<BitDropDownItem> GetDropdownItems()
