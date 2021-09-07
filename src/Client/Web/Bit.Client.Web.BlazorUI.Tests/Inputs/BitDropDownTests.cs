@@ -168,7 +168,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
 
         [DataTestMethod,
           DataRow("f-ban"),
-          DataRow("f-app"),
+          DataRow("f-app")
         ]
         public void BitDropDownTextWithDefaultSelectedKeyShouldInitCorrect(string defaultSelectedKey)
         {
@@ -187,12 +187,12 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
 
         [DataTestMethod,
           DataRow("f-ban"),
-          DataRow("f-app,f-ban"),
+          DataRow("f-app,f-ban")
         ]
-        public void BitDropDownTextWithDefaultSelectedMultipleKeysShouldInitCorrect(string defaultSelectedMultipleKey)
+        public void BitDropDownTextWithDefaultSelectedMultipleKeysShouldInitCorrect(string defaultSelectedMultipleKeys)
         {
             var items = GetDropdownItems();
-            var defaultSelectedMultipleKeyList = defaultSelectedMultipleKey.Split(",").ToList();
+            var defaultSelectedMultipleKeyList = defaultSelectedMultipleKeys.Split(",").ToList();
             var component = RenderComponent<BitDropDown>(parameters =>
             {
                 parameters.Add(p => p.Items, items);
@@ -205,6 +205,63 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
             var expectedText = "";
 
             defaultSelectedItems.ForEach(i =>
+            {
+                if (i.IsSelected && i.ItemType == BitDropDownItemType.Normal)
+                {
+                    if (expectedText.HasValue())
+                    {
+                        expectedText += component.Instance.MultiSelectDelimiter;
+                    }
+
+                    expectedText += i.Text;
+                }
+            });
+
+            Assert.AreEqual(expectedText, textSpan.InnerHtml);
+        }
+
+        [DataTestMethod,
+          DataRow("f-ban", "f-app"),
+          DataRow("f-app", null)
+        ]
+        public void BitDropDownTextWithSelectedKeyShouldInitCorrect(string selectedKey, string defaultSelectedKey)
+        {
+            var items = GetDropdownItems();
+            var component = RenderComponent<BitDropDown>(parameters =>
+            {
+                parameters.Add(p => p.Items, items);
+                parameters.Add(p => p.DefaultSelectedKey, defaultSelectedKey);
+                parameters.Add(p => p.SelectedKey, selectedKey);
+            });
+
+            var textSpan = component.Find(".bit-drp-wrapper > span");
+            var expectedText = items.Find(i => i.Value == selectedKey && i.ItemType == BitDropDownItemType.Normal).Text;
+
+            Assert.AreEqual(expectedText, textSpan.InnerHtml);
+        }
+
+        [DataTestMethod,
+          DataRow("f-ban", "f-app,f-ban"),
+          DataRow("f-app,f-ban", "f-ban")
+        ]
+        public void BitDropDownTextWithDefaultSelectedMultipleKeysShouldInitCorrect(string defaultSelectedMultipleKeys, string selectedMultipleKeys)
+        {
+            var items = GetDropdownItems();
+            var defaultSelectedMultipleKeyList = defaultSelectedMultipleKeys.Split(",").ToList();
+            var selectedMultipleKeyList = selectedMultipleKeys.Split(",").ToList();
+            var component = RenderComponent<BitDropDown>(parameters =>
+            {
+                parameters.Add(p => p.Items, items);
+                parameters.Add(p => p.IsMultiSelect, true);
+                parameters.Add(p => p.DefaultSelectedMultipleKeys, defaultSelectedMultipleKeyList);
+                parameters.Add(p => p.SelectedMultipleKeys, selectedMultipleKeyList);
+            });
+
+            var textSpan = component.Find(".bit-drp-wrapper > span");
+            var selectedItems = items.FindAll(i => selectedMultipleKeyList.Contains(i.Value) && i.ItemType == BitDropDownItemType.Normal);
+            var expectedText = "";
+
+            selectedItems.ForEach(i =>
             {
                 if (i.IsSelected && i.ItemType == BitDropDownItemType.Normal)
                 {
