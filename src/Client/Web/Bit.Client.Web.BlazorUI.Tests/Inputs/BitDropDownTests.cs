@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -9,6 +8,9 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
     [TestClass]
     public class BitDropDownTests : BunitTestContext
     {
+        private string BitDropDownSelectedKey;
+        private List<string> BitDropDownSelectedMultipleKeys;
+
         [DataTestMethod,
           DataRow(Visual.Fluent, true),
           DataRow(Visual.Fluent, false),
@@ -462,6 +464,77 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                 var expectedResult = itemIsEnabled ? 1 : 0;
                 Assert.AreEqual(expectedResult, component.Instance.SelectItemCounter);
             }
+        }
+
+        [DataTestMethod,
+            DataRow("f-ban"),
+            DataRow("f-ora"),
+            DataRow("v-bro")
+        ]
+        public void BitDropDownTwoWayBoundWithCustomHandlerShouldWorkCorrect(string selectedKey)
+        {
+            BitDropDownSelectedKey = selectedKey;
+
+            var items = GetRawDropdownItems();
+            var component = RenderComponent<BitDropDown>(parameters =>
+            {
+                parameters.Add(p => p.IsOpen, true);
+                parameters.Add(p => p.IsEnabled, true);
+                parameters.Add(p => p.Items, items);
+                parameters.Add(p => p.SelectedKey, BitDropDownSelectedKey);
+                parameters.Add(p => p.SelectedKeyChanged, HandleSelectedKeyChanged);
+            });
+
+            var drpItems = component.FindAll("button");
+            drpItems[3].Click();
+
+            var expectedValue = items[3].Value;
+
+            Assert.AreEqual(expectedValue, BitDropDownSelectedKey);
+        }
+
+        [DataTestMethod,
+            DataRow("f-ban,v-bro"),
+            DataRow("f-ora")
+        ]
+        public void BitDropDownMultiSelectTwoWayBoundWithCustomHandlerShouldWorkCorrect(string selectedMultipleKeys)
+        {
+            BitDropDownSelectedMultipleKeys = selectedMultipleKeys.Split(",").ToList();
+            var initialSelectedKeysCount = BitDropDownSelectedMultipleKeys.Count;
+            var items = GetRawDropdownItems();
+            var component = RenderComponent<BitDropDown>(parameters =>
+            {
+                parameters.Add(p => p.IsOpen, true);
+                parameters.Add(p => p.IsEnabled, true);
+                parameters.Add(p => p.IsMultiSelect, true);
+                parameters.Add(p => p.Items, items);
+                parameters.Add(p => p.SelectedMultipleKeys, BitDropDownSelectedMultipleKeys);
+                parameters.Add(p => p.SelectedMultipleKeysChanged, HandleSelectedMultipleKeysChanged);
+            });
+
+            var drpItems = component.FindAll(".bit-chb");
+            drpItems[3].Children[1].Children[0].Click();
+
+            int expectedResult;
+            if (selectedMultipleKeys.Contains(items[3].Value))
+            {
+                expectedResult = --initialSelectedKeysCount;
+            } else
+            {
+                expectedResult = ++initialSelectedKeysCount;
+            }
+
+            Assert.AreEqual(expectedResult, BitDropDownSelectedMultipleKeys.Count);
+        }
+
+        private void HandleSelectedKeyChanged(string selectedKey)
+        {
+            BitDropDownSelectedKey = selectedKey;
+        }
+
+        private void HandleSelectedMultipleKeysChanged(List<string> selectedKeys)
+        {
+            BitDropDownSelectedMultipleKeys = selectedKeys;
         }
 
         private List<BitDropDownItem> GetDropdownItems()
