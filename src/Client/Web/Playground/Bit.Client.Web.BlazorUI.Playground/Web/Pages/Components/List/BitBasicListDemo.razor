@@ -466,60 +466,104 @@
             <th>Type</th>
             <th>Default value</th>
             <th>Description</th>
-        </tr>
+        </tr>        
         <tr>
-            <td>className</td>
+            <td>AriaLabel</td>
             <td>string</td>
             <td></td>
-            <td>If provided, additional class name to provide on the root element.</td>
+            <td>The aria-label of the control for the benefit of screen readers.</td>
         </tr>
         <tr>
-            <td>items</td>
+            <td>Class</td>
+            <td>string</td>
+            <td></td>
+            <td>Custom CSS class for the root element of the component.</td>
+        </tr>
+        <tr>
+            <td>HtmlAttributes</td>
+            <td>Dictionary&lt;string, object&gt;</td>
+            <td></td>
+            <td>Capture and render additional attributes in addition to the component's parameters.</td>
+        </tr>
+        <tr>
+            <td>IsEnabled</td>
+            <td>bool</td>
+            <td></td>
+            <td>Whether or not the component is enabled.</td>
+        </tr>
+        <tr>
+            <td>Items</td>
             <td>ICollection&ltTItem></td>
             <td></td>
             <td>List of items that want to render.</td>
         </tr>
         <tr>
-            <td>itemSize</td>
+            <td>ItemSize</td>
             <td>int</td>
             <td>50</td>
             <td>The height of each item in pixels.</td>
         </tr>
         <tr>
-            <td>overscanCount</td>
+            <td>OverscanCount</td>
             <td>int</td>
             <td>3</td>
             <td>Determines how many additional items are rendered before and after the visible region.</td>
-        </tr>
+        </tr>     
         <tr>
-            <td>ref</td>
-            <td>elementreference</td>
+            <td>Role</td>
+            <td>string</td>
             <td></td>
-            <td>Access the public methods and properties of the component.</td>
+            <td>Role of the BasicList.</td>
         </tr>
         <tr>
-            <td>rowTemplate</td>
+            <td>RowTemplate</td>
             <td>RenderFragment&ltTItem></td>
             <td></td>
             <td>Content of each item. it should determin with context attribute.</td>
         </tr>
         <tr>
-            <td>styles</td>
+            <td>Style</td>
             <td>string</td>
             <td></td>
-            <td>Custom styling for individual elements within the basic list DOM.</td>
+            <td>Custom style for the root element of the component.</td>
         </tr>
         <tr>
-            <td>uniqueId</td>
-            <td>guid</td>
-            <td></td>
-            <td>Unique ID to identify the item. Typically a duplicate of key value.</td>
-        </tr>
-        <tr>
-            <td>virtualize</td>
-            <td>boolean</td>
+            <td>Virtualize</td>
+            <td>bool</td>
             <td>false</td>
-            <td>virtualize rendering the list. UI rendering to just the parts that are currently visible.</td>
+            <td>Virtualize rendering the list. UI rendering to just the parts that are currently visible.</td>
+        </tr>
+        <tr>
+            <td>Visibility</td>
+            <td>ComponentVisibility</td>
+            <td></td>
+            <td>Whether the component is visible, hidden, collapsed.</td>
         </tr>
     </table>
+    <div>
+        <h4 id="component-visibility">ComponentVisibility</h4>
+        <hr />
+        <table>
+            <tr>
+                <th>Name</th>
+                <th>Value</th>
+                <th>Description</th>
+            </tr>
+            <tr>
+                <td>Visible</td>
+                <td>0</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>Hidden</td>
+                <td>1</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>Collapsed</td>
+                <td>2</td>
+                <td></td>
+            </tr>
+        </table>
+    </div>
 </div>

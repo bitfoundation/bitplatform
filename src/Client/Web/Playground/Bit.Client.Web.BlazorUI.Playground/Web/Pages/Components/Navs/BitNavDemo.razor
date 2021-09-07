@@ -520,66 +520,72 @@
             <th>Type</th>
             <th>Default value</th>
             <th>Description</th>
-        </tr>
+        </tr>                
         <tr>
-            <td>className</td>
+            <td>AriaLabel</td>
             <td>string</td>
             <td></td>
-            <td>If provided, additional class name to provide on the root element.</td>
+            <td>The aria-label of the control for the benefit of screen readers.</td>
         </tr>
         <tr>
-            <td>childContent</td>
-            <td>renderfragment</td>
+            <td>Class</td>
+            <td>string</td>
             <td></td>
-            <td>Any custom tag or text the developer wishes to associate with the nav.</td>
+            <td>Custom CSS class for the root element of the component.</td>
         </tr>
         <tr>
-            <td>headerTemplate</td>
-            <td>renderFragment of bitNavLinkItem</td>
+            <td>HeaderTemplate</td>
+            <td>RenderFragment&lt;BitNavLinkItem&gt;</td>
             <td></td>
             <td>The template of the header for each nav item, which is a generic RenderFramgment that accepts a BitNavLinItem as input.</td>
         </tr>
         <tr>
-            <td>isOnTop</td>
-            <td>boolean</td>
+            <td>HtmlAttributes</td>
+            <td>Dictionary&lt;string, object&gt;</td>
+            <td></td>
+            <td>Capture and render additional attributes in addition to the component's parameters.</td>
+        </tr>
+        <tr>
+            <td>IsEnabled</td>
+            <td>bool</td>
+            <td></td>
+            <td>Whether or not the component is enabled.</td>
+        </tr>
+        <tr>
+            <td>IsOnTop</td>
+            <td>bool</td>
             <td>false</td>
             <td>Indicates whether the navigation component renders on top of other content in the UI.</td>
         </tr>
         <tr>
-            <td>navLinkItems</td>
-            <td>icollection of bitNavLinkItem</td>
+            <td>NavLinkItems</td>
+            <td>ICollection&lt;BitNavLinkItem&gt;</td>
             <td></td>
             <td>A collection of link items to display in the navigation bar.</td>
         </tr>
         <tr>
-            <td>onClick</td>
-            <td>bitNavLinkItem</td>
+            <td>OnClick</td>
+            <td>EventCallback&lt;BitNavLinkItem&gt;</td>
             <td></td>
             <td>Callback invoked when a link in the navigation is clicked.</td>
-        </tr>
+        </tr>        
         <tr>
-            <td>ref</td>
-            <td>elementreference</td>
-            <td></td>
-            <td>Access the public methods and properties of the component.</td>
-        </tr>
-        <tr>
-            <td>selectedKey</td>
+            <td>SelectedKey</td>
             <td>string</td>
             <td></td>
             <td>The key of the nav item selected by caller.</td>
-        </tr>
+        </tr>        
         <tr>
-            <td>styles</td>
+            <td>Style</td>
             <td>string</td>
             <td></td>
-            <td>Custom styling for individual elements within the nav DOM.</td>
+            <td>Custom style for the root element of the component.</td>
         </tr>
         <tr>
-            <td>uniqueId</td>
-            <td>guid</td>
+            <td>Visibility</td>
+            <td>ComponentVisibility</td>
             <td></td>
-            <td>Unique ID to identify the item. Typically a duplicate of key value.</td>
+            <td>Whether the component is visible, hidden, collapsed.</td>
         </tr>
     </table>
     <h4>BitNavLinkItem</h4>
@@ -591,64 +597,90 @@
             <th>Description</th>
         </tr>
         <tr>
-            <td>collapseAriaLabel</td>
+            <td>CollapseAriaLabel</td>
             <td>string</td>
             <td></td>
             <td>ARIA label when items is collapsed and can be expanded.</td>
         </tr>
         <tr>
-            <td>disabled</td>
-            <td>boolean</td>
+            <td>Disabled</td>
+            <td>bool</td>
             <td></td>
             <td>Whether or not the link is disabled.</td>
         </tr>
         <tr>
-            <td>icon</td>
+            <td>Icon</td>
             <td>string</td>
             <td></td>
             <td>Name of an icon to render next to this link button.</td>
         </tr>
         <tr>
-            <td>isExpanded</td>
-            <td>boolean</td>
+            <td>IsExpanded</td>
+            <td>bool</td>
             <td></td>
             <td>Whether or not the link is in an expanded state.</td>
         </tr>
         <tr>
-            <td>key</td>
+            <td>Key</td>
             <td>string</td>
             <td></td>
             <td>A unique value to use as a key or id of the item, used when rendering the list of links and for tracking the currently selected link.</td>
         </tr>
         <tr>
-            <td>links</td>
+            <td>Links</td>
             <td>ienumerable of bitNavLinkItem</td>
             <td></td>
             <td>A list of items to render as children of the current item.</td>
         </tr>
         <tr>
-            <td>name</td>
+            <td>Name</td>
             <td>string</td>
             <td></td>
             <td>Text to render for this link.</td>
         </tr>
         <tr>
-            <td>target</td>
+            <td>Target</td>
             <td>string</td>
             <td></td>
             <td>Link target, specifies how to open the link.</td>
         </tr>
         <tr>
-            <td>title</td>
+            <td>Title</td>
             <td>string</td>
             <td></td>
             <td>Text for title tooltip.</td>
         </tr>
         <tr>
-            <td>url</td>
+            <td>Url</td>
             <td>string</td>
             <td></td>
             <td>URL to navigate to for this link.</td>
         </tr>
     </table>
+    <div>
+        <h4 id="component-visibility">ComponentVisibility</h4>
+        <hr />
+        <table>
+            <tr>
+                <th>Name</th>
+                <th>Value</th>
+                <th>Description</th>
+            </tr>
+            <tr>
+                <td>Visible</td>
+                <td>0</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>Hidden</td>
+                <td>1</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>Collapsed</td>
+                <td>2</td>
+                <td></td>
+            </tr>
+        </table>
+    </div>
 </div>
