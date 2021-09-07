@@ -89,6 +89,42 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
             }
         }
 
+        [DataTestMethod,
+          DataRow(Visual.Fluent, true),
+          DataRow(Visual.Fluent, false),
+
+          DataRow(Visual.Cupertino, true),
+          DataRow(Visual.Cupertino, false),
+
+          DataRow(Visual.Material, true),
+          DataRow(Visual.Material, false)
+        ]
+        public void BitDropDownItemsShouldRenderCorrect(Visual visual, bool isMultiSelect)
+        {
+            var items = GetDropdownItems();
+            var component = RenderComponent<BitDropDownTest>(parameters =>
+            {
+                parameters.Add(p => p.IsOpen, true);
+                parameters.Add(p => p.Items, items);
+                parameters.Add(p => p.IsMultiSelect, isMultiSelect);
+                parameters.Add(p => p.Visual, visual);
+            });
+
+            var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
+
+            Assert.AreEqual(items.FindAll(i => i.ItemType == BitDropDownItemType.Header).Count, component.FindAll($".bit-drp-head-{visualClass}").Count);
+            Assert.AreEqual(items.FindAll(i => i.ItemType == BitDropDownItemType.Divider).Count, component.FindAll($".bit-drp-div-{visualClass}").Count);
+
+            if (isMultiSelect)
+            {
+                Assert.AreEqual(items.FindAll(i => i.ItemType == BitDropDownItemType.Normal).Count, component.FindAll(".bit-chb").Count);
+            }
+            else
+            {
+                Assert.AreEqual(items.FindAll(i => i.ItemType == BitDropDownItemType.Normal).Count, component.FindAll("button").Count);
+            }
+        }
+
         private List<BitDropDownItem> GetDropdownItems()
         {
             List<BitDropDownItem> items = new();
