@@ -9,15 +9,18 @@ namespace Bit.Client.Web.BlazorUI
 {
     public partial class BitNav : IDisposable
     {
+        private string? selectedKey;
+        [Inject] private NavigationManager navigationManager { get; set; }
+        private bool SelectedKeyHasBeenSet;
+
+        /// <summary>
+        /// (Optional) The key of the nav item initially selected.
+        /// </summary>
+        [Parameter] public string? InitialSelectedKey { get; set; }
+
         /// <summary>
         /// The key of the nav item selected by caller
         /// </summary>
-        private string? selectedKey;
-
-        [Inject] private NavigationManager navigationManager { get; set; }
-
-        private bool SelectedKeyHasBeenSet;
-
         [Parameter]
         public string? SelectedKey
         {
@@ -66,9 +69,8 @@ namespace Bit.Client.Web.BlazorUI
 
         protected override async Task OnInitializedAsync()
         {
-
             navigationManager.LocationChanged += OnLocationChanged;
-
+            selectedKey = selectedKey ?? InitialSelectedKey;
 
             await base.OnInitializedAsync();
         }
