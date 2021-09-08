@@ -6,11 +6,11 @@
      id="@UniqueId.ToString()">
     @if (Label.HasValue())
     {
-        <label id="@DropdownLabelId">@Label</label>
+        <label class="bit-drp-lbl" id="@DropdownLabelId">@Label</label>
     }
     else if (LabelFragment != null)
     {
-        <label id="@DropdownLabelId">@LabelFragment</label>
+        <label class="bit-drp-lbl" id="@DropdownLabelId">@LabelFragment</label>
     }
 
     @if (isOpen)
@@ -69,7 +69,10 @@
                 {
                     @if (IsMultiSelect)
                     {
-                        <BitCheckbox IsChecked="item.IsSelected"
+                        <BitCheckbox Class="@(Items.Any(prop=>prop.IsSelected && prop.Value.Equals(item.Value))
+                                           ?$"{RootElementClass}-slc-{VisualClassRegistrar()}"
+                                           :"")"
+                                     IsChecked="item.IsSelected"
                                      IsEnabled="item.IsEnabled"
                                      OnClick="(e) => HandleItemClick(item)">
                             @item.Text

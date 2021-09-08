@@ -64,7 +64,7 @@
 .bit-chb-checked-fluent {
     & > div {
         & > div:first-child {
-            border-color: $Primary;
+            border: none;
             background-color: $Primary;
 
             .bit-chb-checkmark {
