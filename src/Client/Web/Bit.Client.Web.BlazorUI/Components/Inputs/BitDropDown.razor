@@ -56,7 +56,7 @@
              tabindex="0"
              role="listbox"
              aria-labelledby="@DropdownLabelId">
-            @foreach (BitDropDownItem item in Items)
+            @foreach ((BitDropDownItem item, Int32 i) in Items.Select((item, i) => (item, i)))
             {
                 if (item.ItemType == BitDropDownItemType.Header)
                 {
@@ -80,12 +80,16 @@
                         <button class="@(Items.Any(prop=>prop.IsSelected && prop.Value.Equals(item.Value))
                                            ?$"{RootElementClass}-slc-{VisualClassRegistrar()}"
                                            :"")"
+                                id="@($"{DropDownId}-list{i}")"
                                 type="button"
                                 role="option"
-                                data-is-focusable="@item.IsEnabled"
+                                data-is-focusable="@(item.IsEnabled ? "true" : "false")"
                                 disabled=@(!item.IsEnabled)
+                                data-index="@i"
                                 aria-disabled="@(!item.IsEnabled)"
-                                aria-selected="@item.IsSelected"
+                                aria-selected="@(item.IsSelected ? "true" : "false")"
+                                aria-setsize="@NormalDropDownItems.Count"
+                                aria-posinset="@GetItemPosInSet(item)"
                                 tabindex="@(item.IsEnabled ? 0 : -1)"
                                 @onclick="()=> HandleItemClick(item)">
                             @item.Text

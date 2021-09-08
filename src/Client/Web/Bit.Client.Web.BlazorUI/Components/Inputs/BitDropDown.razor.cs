@@ -20,6 +20,7 @@ namespace Bit.Client.Web.BlazorUI
         private bool SelectedMultipleKeysHasBeenSet;
         private bool SelectedKeyHasBeenSet;
         private bool IsSelectedMultipleKeysChanged = false;
+        private List<BitDropDownItem> NormalDropDownItems;
 
         /// <summary>
         /// Whether multiple items are allowed to be selected
@@ -206,6 +207,7 @@ namespace Bit.Client.Web.BlazorUI
             DropDownOptionId = $"{DropDownId}-option";
             DropdownLabelId = Label.HasValue() ? $"{DropDownId}-label" : null;
 
+            NormalDropDownItems = Items.FindAll(i => i.ItemType == BitDropDownItemType.Normal).ToList();
             InitText();
 
             await base.OnParametersSetAsync();
@@ -359,5 +361,6 @@ namespace Bit.Client.Web.BlazorUI
         }
 
         private string GetDropdownAriaLabelledby => Label.HasValue() ? $"{DropDownId}-label {DropDownId}-option" : $"{DropDownId}-option";
+        private int GetItemPosInSet(BitDropDownItem item) => NormalDropDownItems.IndexOf(item) + 1;
     }
 }
