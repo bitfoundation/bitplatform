@@ -28,9 +28,10 @@
 
 .bit-drp-wrapper {
     position: relative;
+    z-index: 1000;
+    outline: none;
     box-sizing: border-box;
     cursor: pointer;
-    z-index: 1000;
     user-select: none;
 
     &:hover {
@@ -122,6 +123,12 @@
                 color: $Grey90;
                 border-color: $Grey20;
             }
+        }
+
+        &:focus::after {
+            width: 0;
+            height: 0;
+            border: none;
         }
 
         span:nth-child(2) {
