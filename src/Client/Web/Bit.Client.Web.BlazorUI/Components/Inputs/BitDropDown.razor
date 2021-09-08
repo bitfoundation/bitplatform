@@ -28,7 +28,8 @@
          aria-labelledby="@GetDropdownAriaLabelledby"
          aria-required="@IsRequired"
          aria-disabled="@(IsEnabled is false)"
-         aria-controls=""
+         aria-haspopup="listbox"
+         aria-controls="@(IsOpen ? $"{DropDownId}-list" : null)"
          title="@Title"
          @onclick="HandleClick">
         <span id="@DropDownOptionId"
