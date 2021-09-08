@@ -192,10 +192,18 @@
     button[disabled] {
         cursor: default;
         color: $Grey90;
+
+        &:hover {
+            background-color: transparent;
+        }
     }
 
     .bit-drp-slc-fluent {
         background-color: $Grey30;
+
+        &:hover {
+            background-color: $Grey30;
+        }
     }
 
     .bit-drp-div-fluent {
