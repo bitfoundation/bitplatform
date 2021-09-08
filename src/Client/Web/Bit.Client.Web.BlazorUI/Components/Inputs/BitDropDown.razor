@@ -74,7 +74,18 @@
                                            :"")"
                                      IsChecked="item.IsSelected"
                                      IsEnabled="item.IsEnabled"
-                                     OnClick="(e) => HandleItemClick(item)">
+                                     OnClick="(e) => HandleItemClick(item)"
+                                     id="@($"{DropDownId}-list{i}")"
+                                     type="checkbox"
+                                     role="option"
+                                     data-is-focusable="@(item.IsEnabled ? "true" : "false")"
+                                     disabled=@(!item.IsEnabled)
+                                     data-index="@i"
+                                     aria-disabled="@(!item.IsEnabled)"
+                                     aria-selected="@(item.IsSelected ? "true" : "false")"
+                                     aria-setsize="@NormalDropDownItems.Count"
+                                     aria-posinset="@GetItemPosInSet(item)"
+                                     tabindex="@(item.IsEnabled ? 0 : -1)">
                             @item.Text
                         </BitCheckbox>
                     }
