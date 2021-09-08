@@ -43,12 +43,16 @@
         border: 1px solid $Grey160;
     }
 
+    &:active {
+        border-color: $CyanBlue10;
+        color: $Grey190;
+    }
+
     span:first-child {
         position: relative;
         margin: 0;
         padding: 0 rem(28px) 0 rem(8px);
         box-sizing: border-box;
-        background-color: $White;
         display: block;
         overflow: hidden;
         white-space: nowrap;
@@ -81,13 +85,12 @@
 
         &:hover {
             color: $Grey90;
-            border: 1px solid $Grey20;
+            border-color: $Grey20;
         }
 
-        span:first-child {
-            border: none;
+        &:active {
             color: $Grey90;
-            background-color: $Grey20;
+            border-color: $Grey20;
         }
 
         span:nth-child(2) {
