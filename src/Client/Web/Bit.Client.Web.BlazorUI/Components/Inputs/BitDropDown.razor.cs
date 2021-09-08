@@ -9,7 +9,6 @@ namespace Bit.Client.Web.BlazorUI
 {
     public partial class BitDropDown
     {
-        private string focusClass = "";
         private string expandClass = "";
         private bool isOpen = false;
         private bool isMultiSelect = false;
@@ -152,16 +151,6 @@ namespace Bit.Client.Web.BlazorUI
         /// </summary>
         [Parameter] public RenderFragment? LabelFragment { get; set; }
 
-        public string FocusClass
-        {
-            get => focusClass;
-            set
-            {
-                focusClass = value;
-                ClassBuilder.Reset();
-            }
-        }
-
         public string ExpandClass
         {
             get => expandClass;
@@ -180,10 +169,6 @@ namespace Bit.Client.Web.BlazorUI
 
         protected override void RegisterComponentClasses()
         {
-            ClassBuilder.Register(() => FocusClass.HasNoValue()
-                ? string.Empty
-                : $"{RootElementClass}-{FocusClass}-{VisualClassRegistrar()}");
-
             ClassBuilder.Register(() => ExpandClass.HasNoValue()
                 ? string.Empty
                 : $"{RootElementClass}-{ExpandClass}-{VisualClassRegistrar()}");
@@ -224,7 +209,6 @@ namespace Bit.Client.Web.BlazorUI
         private void CloseCallout()
         {
             IsOpen = false;
-            FocusClass = "";
             StateHasChanged();
         }
 
@@ -235,12 +219,10 @@ namespace Bit.Client.Web.BlazorUI
                 if (isOpen is false)
                 {
                     isOpen = true;
-                    FocusClass = "focused";
                 }
                 else
                 {
                     isOpen = false;
-                    FocusClass = "";
                 }
                 await OnClick.InvokeAsync(e);
             }
