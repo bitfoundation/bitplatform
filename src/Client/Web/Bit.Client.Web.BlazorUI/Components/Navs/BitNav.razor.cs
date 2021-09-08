@@ -117,13 +117,13 @@ namespace Bit.Client.Web.BlazorUI
             var hasUrlClass = navLink.Url.HasNoValue() ? "nourl" : "hasurl";
 
             var mainStyle = $"bit-nav-link-{enabledClass}-{hasUrlClass}-{VisualClassRegistrar()}";
-            var selectedClass = navLink.Key == SelectedKey ? $"bit-nav-selected-{VisualClassRegistrar()}" : "";
+            var selectedClass = navLink.Key == SelectedKey ? $"bit-nav-selected-{VisualClassRegistrar()}" : string.Empty;
             var hasIcon = navLink.Icon.HasNoValue()
                             ? $"bit-nav-has-not-icon-{VisualClassRegistrar()}"
                             : $"bit-nav-has-icon-{VisualClassRegistrar()}";
-            var hasChildren = navLink.Links?.Any() ?? false ? $"bit-nav-haschildren-{VisualClassRegistrar()}" : "";
+            var isGroup = navLink.IsGroup ? $"bit-nav-isgroup-{VisualClassRegistrar()}" : string.Empty;
 
-            return $"{mainStyle} {selectedClass} {hasIcon} {hasChildren}";
+            return $"{mainStyle} {selectedClass} {hasIcon} {isGroup}";
         }
 
         public void Dispose()

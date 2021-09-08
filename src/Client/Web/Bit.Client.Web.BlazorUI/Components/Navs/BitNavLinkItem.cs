@@ -5,6 +5,11 @@ namespace Bit.Client.Web.BlazorUI
     public class BitNavLinkItem
     {
         /// <summary>
+        /// determin if the item is group or not to seperate it by showing the underline 
+        /// </summary>
+        public bool IsGroup { get; set; }
+
+        /// <summary>
         /// A unique value to use as a key or id of the item, used when rendering the list of links and for tracking the currently selected link
         /// </summary>
         public string? Key { get; set; }
