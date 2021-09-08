@@ -10,7 +10,7 @@
         box-sizing: border-box;
         margin: 0;
         padding: rem(5px) 0;
-        z-index: 1000;
+        z-index: 999;
         position: relative;
         display: block;
     }
@@ -29,26 +29,48 @@
 .bit-drp-wrapper {
     position: relative;
     box-sizing: border-box;
-    font-size: rem(14px);
-    font-weight: 400;
-    color: $Grey130;
-    border: 1px solid $Grey130;
-    border-radius: rem(2px);
     cursor: pointer;
     z-index: 1000;
     user-select: none;
 
     &:hover {
-        color: $Grey160;
-        border: 1px solid $Grey160;
+        span:first-child {
+            color: $Grey160;
+            border: 1px solid $Grey160;
+        }
     }
 
     &:active {
-        border-color: $CyanBlue10;
-        color: $Grey190;
+        span:first-child {
+            border-color: $CyanBlue10;
+            color: $Grey190;
+        }
+    }
+
+    &:focus {
+        span:first-child {
+            color: $Grey160;
+        }
+    }
+
+    &:focus::after {
+        pointer-events: none;
+        content: "";
+        position: absolute;
+        box-sizing: border-box;
+        top: 0px;
+        left: 0px;
+        width: 100%;
+        height: 100%;
+        border: 2px solid $Primary;
+        border-radius: 2px;
     }
 
     span:first-child {
+        height: 32px;
+        font-size: rem(14px);
+        font-weight: 400;
+        color: $Grey130;
         position: relative;
         margin: 0;
         padding: 0 rem(28px) 0 rem(8px);
@@ -57,8 +79,10 @@
         overflow: hidden;
         white-space: nowrap;
         text-overflow: ellipsis;
-        height: 32px;
         line-height: rem(30px);
+        outline: none;
+        border: 1px solid $Grey130;
+        border-radius: rem(2px);
     }
 
     span:nth-child(2) {
@@ -78,19 +102,26 @@
 
 .bit-drp-disabled-fluent {
     .bit-drp-wrapper {
-        color: $Grey90;
-        border-color: $Grey20;
         background-color: $Grey20;
         cursor: default;
 
-        &:hover {
+        span:first-child {
             color: $Grey90;
             border-color: $Grey20;
         }
 
+        &:hover {
+            span:first-child {
+                color: $Grey90;
+                border-color: $Grey20;
+            }
+        }
+
         &:active {
-            color: $Grey90;
-            border-color: $Grey20;
+            span:first-child {
+                color: $Grey90;
+                border-color: $Grey20;
+            }
         }
 
         span:nth-child(2) {
@@ -117,17 +148,6 @@
     .bit-drp-wrapper {
         span:first-child {
             color: $Grey190;
-        }
-    }
-}
-
-.bit-drp-focused-fluent {
-    .bit-drp-wrapper {
-        border: 3px solid $Primary;
-        color: $Grey160;
-
-        &:hover {
-            border: 3px solid $Primary;
         }
     }
 }
