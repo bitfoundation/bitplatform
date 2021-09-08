@@ -15,6 +15,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Navs
                 Target = "_blank",
                 IsExpanded = true,
                 CollapseAriaLabel = "Collapse Home section",
+                ExpandAriaLabel= "Expand Home section",
                 Links = new List<BitNavLinkItem>
                 {
                     new BitNavLinkItem{

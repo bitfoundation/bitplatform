@@ -25,6 +25,11 @@ namespace Bit.Client.Web.BlazorUI
         public string? Url { get; set; }
 
         /// <summary>
+        /// Aria label when group is collapsed and can be expanded.
+        /// </summary>
+        public string? ExpandAriaLabel { get; set; }
+
+        /// <summary>
         /// ARIA label when items is collapsed and can be expanded
         /// </summary>
         public string? CollapseAriaLabel { get; set; }
@@ -49,7 +54,8 @@ namespace Bit.Client.Web.BlazorUI
         /// </summary>
         public string? Target { get; set; }
 
-        /// <summary>
+
+                /// <summary>
         /// A list of items to render as children of the current item
         /// </summary>
         public IEnumerable<BitNavLinkItem>? Links { get; set; }
