@@ -175,7 +175,7 @@ namespace Bit.Client.Web.BlazorUI
 
             ClassBuilder.Register(() => Items.Any(prop => prop.IsSelected)
                 ? string.Empty
-                : $"{RootElementClass}-{"hasValue"}-{VisualClassRegistrar()}");
+                : $"{RootElementClass}-{"has-value"}-{VisualClassRegistrar()}");
 
             ClassBuilder.Register(() => IsOpen is false
                 ? string.Empty

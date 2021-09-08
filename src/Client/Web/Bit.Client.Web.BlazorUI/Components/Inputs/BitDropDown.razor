@@ -2,8 +2,7 @@
 @inherits BitComponentBase
 <div @ref="RootElement"
      style="@StyleBuilder.Value"
-     class="@ClassBuilder.Value"
-     id="@UniqueId.ToString()">
+     class="@ClassBuilder.Value">
     @if (Label.HasValue())
     {
         <label class="bit-drp-lbl" id="@DropdownLabelId">@Label</label>
