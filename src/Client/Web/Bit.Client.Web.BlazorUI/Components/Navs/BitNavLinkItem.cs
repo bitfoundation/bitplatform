@@ -10,6 +10,11 @@ namespace Bit.Client.Web.BlazorUI
         public bool IsGroup { get; set; }
 
         /// <summary>
+        /// (Optional) By default, any link with onClick defined will render as a button. Set this property to true to override that behavior. (Links without onClick defined will render as anchors by default.)
+        /// </summary>
+        public bool ForceAnchor { get; set; }
+
+        /// <summary>
         /// A unique value to use as a key or id of the item, used when rendering the list of links and for tracking the currently selected link
         /// </summary>
         public string? Key { get; set; }
