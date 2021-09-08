@@ -75,5 +75,18 @@ namespace Bit.Client.Web.BlazorUI.Tests.Checkboxes
 
             Assert.IsTrue(bitCheckbox.GetAttribute("aria-label").Equals(ariaLabel));
         }
+
+        [DataTestMethod, DataRow("Emoji2")]
+        public void BitCheckboxCustomCheckmarkIcon(string checkmarkIconName)
+        {
+            var com = RenderComponent<BitCheckboxTest>(parameters =>
+            {
+                parameters.Add(p => p.CheckmarkIconName, checkmarkIconName);
+            });
+
+            var icon = com.Find(".bit-chb .bit-chb-checkmark");
+
+            Assert.IsTrue(icon.ClassList.Contains($"bit-icon--{checkmarkIconName}"));
+        }
     }
 }
