@@ -52,10 +52,7 @@ namespace Bit.Client.Web.BlazorUI
                 SelectOptionByKey(value);
             }
         }
-
-        /// <summary>
-        /// Callback called when SelectedKey parameter is changed.
-        /// </summary>
+        
         [Parameter] public EventCallback<string?> SelectedKeyChanged { get; set; }
 
         /// <summary>
