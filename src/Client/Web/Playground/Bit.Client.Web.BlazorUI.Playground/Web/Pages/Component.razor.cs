@@ -53,7 +53,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
             }
         }
 
-        public string SelectedColor { get; set; } = "rgb(243,33,105,0.30)";
+        public string SelectedColor { get; set; } = "#ffeeff";
 
         private void HandleSpinButtonValueChange(double value)
         {
