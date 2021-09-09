@@ -24,11 +24,10 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
-        public ElementReference InputRef { get; set; }
-
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         [Inject] public IJSRuntime JSRuntime { get; set; }
 
+        public ElementReference InputRef { get; set; }
 
         /// <summary>
         /// Whether or not to animate the search box icon on focus
@@ -72,21 +71,21 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         /// <summary>
-        /// Placeholder for the search box
+        /// The default value of the text in the SearchBox, in the case of an uncontrolled component.
         /// </summary>
-        [Parameter] public string? Placeholder { get; set; }
+        [Parameter] public string? DefaultValue { get; set; }
 
         /// <summary>
         /// The icon name for the icon shown at the beginning of the search box
         /// </summary>
         [Parameter] public string IconName { get; set; } = "Search";
 
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         /// <summary>
-        /// The default value of the text in the SearchBox, in the case of an uncontrolled component.
+        /// Placeholder for the search box
         /// </summary>
-        [Parameter] public string? DefaultValue { get; set; }
+        [Parameter] public string? Placeholder { get; set; }
 
         /// <summary>
         /// The value of the text in the search box
@@ -104,8 +103,6 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
-        [Parameter] public EventCallback<string?> ValueChanged { get; set; }
-
         /// <summary>
         /// Specifies the width of the search box
         /// </summary>
@@ -121,6 +118,11 @@ namespace Bit.Client.Web.BlazorUI
         }
 
         /// <summary>
+        /// Callback for when the input value changes
+        /// </summary>
+        [Parameter] public EventCallback<string?> OnChange { get; set; }
+
+        /// <summary>
         /// Callback executed when the user clears the search box by either clicking 'X' or hitting escape
         /// </summary>
         [Parameter] public EventCallback OnClear { get; set; }
@@ -133,7 +135,7 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// Callback for when the input value changes
         /// </summary>
-        [Parameter] public EventCallback<string?> OnChange { get; set; }
+        [Parameter] public EventCallback<string?> ValueChanged { get; set; }
 
         public void HandleInputFocusIn()
         {
