@@ -132,10 +132,34 @@
             <th>Description</th>
         </tr>
         <tr>
-            <td>childContent</td>
-            <td>renderfragment</td>
+            <td>AriaLabel</td>
+            <td>string</td>
+            <td></td>
+            <td>The aria-label of the control for the benefit of screen readers.</td>
+        </tr>
+        <tr>
+            <td>Class</td>
+            <td>string</td>
+            <td></td>
+            <td>Custom CSS class for the root element of the component.</td>
+        </tr>
+        <tr>
+            <td>ChildContent</td>
+            <td>RenderFragment</td>
             <td></td>
             <td>Any custom tag or text the developer wishes to associate with the choicegroup.</td>
+        </tr>
+        <tr>
+            <td>DefaultSelectedKey</td>
+            <td>string</td>
+            <td></td>
+            <td>Default selected key for ChoiceGroup.</td>
+        </tr>
+        <tr>
+            <td>HtmlAttributes</td>
+            <td>Dictionary&lt;string, object&gt;</td>
+            <td></td>
+            <td>Capture and render additional attributes in addition to the component's parameters.</td>
         </tr>
         <tr>
             <td>IconName</td>
@@ -147,11 +171,11 @@
             <td>ImageAlt</td>
             <td>string</td>
             <td></td>
-            <td>Alt text if the option is an image. default is an empty string</td>
+            <td>Alt text if the option is an image. default is an empty string.</td>
         </tr>
         <tr>
             <td>ImageSize</td>
-            <td>System.Drawing.Size</td>
+            <td>Size</td>
             <td></td>
             <td>The width and height of the image in px for choice field.</td>
         </tr>
@@ -162,16 +186,34 @@
             <td>Image src to display with this option.</td>
         </tr>
         <tr>
-            <td>isEnabled</td>
-            <td>boolean</td>
+            <td>IsChecked</td>
+            <td>bool</td>
+            <td></td>
+            <td>Whether or not the option is checked.</td>
+        </tr>
+        <tr>
+            <td>IsCheckedChanged</td>
+            <td>EventCallback&lt;bool&gt;</td>
+            <td></td>
+            <td>Callback for when the option IsChecked changes.</td>
+        </tr>
+        <tr>
+            <td>IsEnabled</td>
+            <td>bool</td>
             <td>true</td>
             <td>Whether the choicegroup and choiceoption are enabled.</td>
         </tr>
         <tr>
             <td>IsRequired</td>
-            <td>boolean</td>
+            <td>bool</td>
             <td>false</td>
             <td>If true, an option must be selected in the ChoiceGroup.</td>
+        </tr>
+        <tr>
+            <td>Key</td>
+            <td>string</td>
+            <td></td>
+            <td>A required key to uniquely identify the option.</td>
         </tr>
         <tr>
             <td>Label</td>
@@ -186,52 +228,94 @@
             <td>Used to customize the label for the choice group.</td>
         </tr>
         <tr>
-            <td>Key</td>
+            <td>Name</td>
             <td>string</td>
-            <td></td>
-            <td>A required key to uniquely identify the option.</td>
-        </tr>
-        <tr>
-            <td>name</td>
-            <td>renderfragment</td>
             <td></td>
             <td>Name of choicegroup and choiceoption.</td>
         </tr>
         <tr>
-            <td>ref</td>
-            <td>elementreference</td>
+            <td>OnChange</td>
+            <td>EventCallback&lt;bool&gt;</td>
             <td></td>
-            <td>Access the public methods and properties of the component.</td>
+            <td>Callback for when the option has been changed.</td>
+        </tr>
+        <tr>
+            <td>OnClick</td>
+            <td>EventCallback&lt;MouseEventArgs&gt;</td>
+            <td></td>
+            <td>Callback for when the ChoiceOption clicked.</td>
+        </tr>
+        <tr>
+            <td>OnValueChange</td>
+            <td>EventCallback&lt;string&gt;</td>
+            <td></td>
+            <td>Callback that is called when the value parameter is changed.</td>
         </tr>
         <tr>
             <td>SelectedImageSrc</td>
             <td>string</td>
             <td></td>
-            <td>The src of image for choice field which is selected.</td>
+            <td>The src of image for the selected choice field.</td>
         </tr>
         <tr>
-            <td>styles</td>
+            <td>SelectedKey</td>
             <td>string</td>
             <td></td>
-            <td>Custom styling for individual elements within the choicegroup and choiceoption DOM.</td>
+            <td>Contains the key of the selected item.</td>
         </tr>
         <tr>
-            <td>text</td>
+            <td>SelectedKeyChanged</td>
+            <td>EventCallback&lt;string&gt;</td>
+            <td></td>
+            <td>Callback called when SelectedKey parameter is changed.</td>
+        </tr>
+        <tr>
+            <td>Style</td>
             <td>string</td>
             <td></td>
-            <td>Text of choicegroup and choiceoption.</td>
+            <td>Custom style for the root element of the component.</td>
         </tr>
         <tr>
-            <td>uniqueId</td>
-            <td>guid</td>
-            <td></td>
-            <td>Unique ID to identify the item. Typically a duplicate of key value.</td>
-        </tr>
-        <tr>
-            <td>value</td>
+            <td>Text</td>
             <td>string</td>
             <td></td>
-            <td>Value of choicegroup and choiceoption.</td>
+            <td>Text of ChoiceGroup and ChoiceOption.</td>
+        </tr>
+        <tr>
+            <td>Value</td>
+            <td>string</td>
+            <td></td>
+            <td>Value of ChoiceGroup and Choiception.</td>
+        </tr>
+        <tr>
+            <td>Visibility</td>
+            <td>ComponentVisibility</td>
+            <td></td>
+            <td>Whether the component is visible, hidden, collapsed.</td>
+        </tr>
+    </table>
+    <h4 id="component-visibility">ComponentVisibility</h4>
+    <hr />
+    <table>
+        <tr>
+            <th>Name</th>
+            <th>Value</th>
+            <th>Description</th>
+        </tr>
+        <tr>
+            <td>Visible</td>
+            <td>0</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>Hidden</td>
+            <td>1</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>Collapsed</td>
+            <td>2</td>
+            <td></td>
         </tr>
     </table>
 </div>
