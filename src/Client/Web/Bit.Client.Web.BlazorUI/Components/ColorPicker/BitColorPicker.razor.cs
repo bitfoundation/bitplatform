@@ -20,13 +20,13 @@ namespace Bit.Client.Web.BlazorUI
         public IJSRuntime JSRuntime { get; set; }
 
         /// <summary>
-        /// Displays a slider and text field for editing alpha and transparency values
+        /// Displays a slider and text field for editing alpha and transparency values.
         /// </summary>
         [Parameter]
         public bool ShowAlphaSlider { get; set; } = true;
 
         /// <summary>
-        /// Object or CSS-compatible string to describe the color
+        /// Object or CSS-compatible string to describe the color.
         /// </summary>
         [Parameter]
         public string Color
@@ -48,15 +48,12 @@ namespace Bit.Client.Web.BlazorUI
 
             }
         }
-
-        /// <summary>
-        /// Callback that is called when the color changed
-        /// </summary>
+        
         [Parameter]
         public EventCallback<string> ColorChanged { get; set; }
 
         /// <summary>
-        /// Whether to show color preview box
+        /// Indicates the Hex value.
         /// </summary>
         [Parameter]
         public string Hex
@@ -77,6 +74,10 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter]
         public EventCallback<string> HexChanged { get; set; }
 
+
+        /// <summary>
+        /// Indicates the RGB value.
+        /// </summary>
         [Parameter]
         public string Rgb
         {
@@ -96,6 +97,9 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter]
         public EventCallback<string> RgbChanged { get; set; }
 
+        /// <summary>
+        /// Indicates the Alpha value.
+        /// </summary>
         [Parameter]
         public double Alpha
         {
@@ -112,6 +116,9 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter]
         public EventCallback<double> AlphaChanged { get; set; }
 
+        /// <summary>
+        /// Whether to show color preview box.
+        /// </summary>
         [Parameter]
         public bool ShowPreview { get; set; }
 
