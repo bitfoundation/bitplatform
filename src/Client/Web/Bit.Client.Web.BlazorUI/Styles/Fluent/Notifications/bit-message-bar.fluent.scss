@@ -129,6 +129,14 @@
                 background-color: transparent;
                 flex-shrink: 0;
                 user-select: none;
+
+                & > span {
+                    display: flex;
+                    height: 100%;
+                    flex-wrap: nowrap;
+                    justify-content: center;
+                    align-items: center;
+                }
             }
         }
     }
