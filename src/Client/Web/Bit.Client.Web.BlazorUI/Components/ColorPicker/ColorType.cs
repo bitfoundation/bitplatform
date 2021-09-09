@@ -6,10 +6,9 @@ using System.Threading.Tasks;
 
 namespace Bit.Client.Web.BlazorUI
 {
-    public class Hsv
+    public enum ColorType
     {
-        public double Hue { get; set; }
-        public double Saturation { get; set; }
-        public double Value { get; set; }
+        Hex,
+        Rgb
     }
 }

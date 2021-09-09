@@ -101,72 +101,122 @@
             <th>Description</th>
         </tr>
         <tr>
-            <td>allowZeroStars</td>
+            <td>AllowZeroStars</td>
             <td>bool</td>
             <td>false</td>
             <td>Allow the initial rating value (or updated values passed in through rating) to be 0. Note that a value of 0 still won't be selectable by mouse or keyboard.</td>
-        </tr>
+        </tr>     
         <tr>
-            <td>className</td>
+            <td>AriaLabel</td>
             <td>string</td>
             <td></td>
-            <td>If provided, additional class name to provide on the root element.</td>
+            <td>The aria-label of the control for the benefit of screen readers.</td>
         </tr>
         <tr>
-            <td>icon</td>
+            <td>Class</td>
+            <td>string</td>
+            <td></td>
+            <td>Custom CSS class for the root element of the component.</td>
+        </tr>
+        <tr>
+            <td>HtmlAttributes</td>
+            <td>Dictionary&lt;string, object&gt;</td>
+            <td></td>
+            <td>Capture and render additional attributes in addition to the component's parameters.</td>
+        </tr>
+        <tr>
+            <td>Icon</td>
             <td>string</td>
             <td>FavoriteStarFill</td>
             <td>Custom icon name for selected rating elements.</td>
         </tr>
         <tr>
-            <td>isEnabled</td>
-            <td>boolean</td>
+            <td>IsEnabled</td>
+            <td>bool</td>
             <td>true</td>
             <td>Whether the rating is enabled.</td>
         </tr>
         <tr>
-            <td>isReadonly</td>
-            <td>boolean</td>
+            <td>IsReadonly</td>
+            <td>bool</td>
             <td>false</td>
             <td>Optional flag to mark rating control as readOnly.</td>
         </tr>
         <tr>
-            <td>max</td>
+            <td>Max</td>
             <td>int</td>
             <td>5</td>
             <td>Maximum rating.</td>
-        </tr>
+        </tr>        
         <tr>
-            <td>ref</td>
-            <td>elementreference</td>
+            <td>OnChange</td>
+            <td>EventCallback&lt;int&gt;</td>
             <td></td>
-            <td>Access the public methods and properties of the component.</td>
+            <td>Callback that is called when the rating has changed.</td>
         </tr>
         <tr>
-            <td>size</td>
-            <td>ratingSize</td>
+            <td>Size</td>
+            <td>RatingSize</td>
             <td></td>
             <td>Size of rating.</td>
-        </tr>
+        </tr>  
         <tr>
-            <td>styles</td>
+            <td>Style</td>
             <td>string</td>
             <td></td>
-            <td>Custom styling for individual elements within the label DOM.</td>
+            <td>Custom style for the root element of the component.</td>
         </tr>
         <tr>
-            <td>uniqueId</td>
-            <td>guid</td>
+            <td>Value</td>
+            <td>int</td>
             <td></td>
-            <td>Unique ID to identify the item. Typically a duplicate of key value.</td>
+            <td>Current rating value. Must be a number between min (0 if AllowZeroStars is true, 1 otherwise) and max.</td>
         </tr>
         <tr>
-            <td>unselectedIcon</td>
+            <td>ValueChanged</td>
+            <td>EventCallback&lt;int&gt;</td>
+            <td></td>
+            <td>Callback that is called when the rating value changed.</td>
+        </tr>
+        <tr>
+            <td>Visibility</td>
+            <td>ComponentVisibility</td>
+            <td></td>
+            <td>Whether the component is visible, hidden, collapsed.</td>
+        </tr>
+        <tr>
+            <td>UnselectedIcon</td>
             <td>string</td>
             <td>FavoriteStar</td>
             <td>Custom icon name for unselected rating elements.</td>
         </tr>
     </table>
+    <div>
+        <h4 id="component-visibility">ComponentVisibility</h4>
+        <hr />
+        <table>
+            <tr>
+                <th>Name</th>
+                <th>Value</th>
+                <th>Description</th>
+            </tr>
+            <tr>
+                <td>Visible</td>
+                <td>0</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>Hidden</td>
+                <td>1</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>Collapsed</td>
+                <td>2</td>
+                <td></td>
+            </tr>
+        </table>
+    </div>
     <div>
         <h4>Rating Size</h4>
         <hr />
@@ -177,12 +227,12 @@
                 <th>Description</th>
             </tr>
             <tr>
-                <td>small</td>
+                <td>Small</td>
                 <td>0</td>
                 <td></td>
             </tr>
             <tr>
-                <td>large</td>
+                <td>Large</td>
                 <td>1</td>
                 <td></td>
             </tr>

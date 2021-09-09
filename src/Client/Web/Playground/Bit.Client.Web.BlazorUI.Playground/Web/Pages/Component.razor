@@ -1,4 +1,5 @@
-﻿@page "/component"
+﻿
+@page "/component"
 
 <h1>Bit Components</h1>
 
@@ -757,15 +758,15 @@
     <h2>BitDropDown</h2>
     <br />
     <h3>Single select</h3>
-    <BitDropDown Items="GetDropdownItems()" Placeholder="Select an option">
+    <BitDropDown Label="Single select" Items="GetDropdownItems()" Placeholder="Select an option" Style="width: 300px">
     </BitDropDown>
     <br />
     <h3>Disabled</h3>
-    <BitDropDown IsEnabled="false" Items="GetDropdownItems()" Placeholder="Select an option">
+    <BitDropDown Label="Disabled" IsEnabled="false" Items="GetDropdownItems()" Placeholder="Select an option" Style="width: 300px">
     </BitDropDown>
     <br />
     <h3>Multi select</h3>
-    <BitDropDown IsMultiSelect="true" Items="GetDropdownItems()" Placeholder="Select options">
+    <BitDropDown Label="Multi select" IsMultiSelect="true" Items="GetDropdownItems()" Placeholder="Select options" Style="width: 300px">
     </BitDropDown>
 </div>
 <hr />
@@ -827,6 +828,9 @@
 
     <h3>Shamsi Date picker</h3>
     <BitDatePicker CalendarType="CalendarType.Persian"></BitDatePicker>
+
+    <h3>DatePicker with custom date formatting</h3>
+    <BitDatePicker OnSelectDate="OnDateFormat"></BitDatePicker>
 </div>
 <hr />
 

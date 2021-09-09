@@ -8,14 +8,14 @@ namespace Bit.Client.Web.BlazorUI
     public partial class BitCheckbox
     {
         private bool isIndeterminate;
-        private BoxSide boxSide;
         private bool isChecked;
         private bool IsCheckedHasBeenSet;
         private bool IsIndeterminateHasBeenSet;
-
-        public ElementReference CheckboxElement { get; set; }
+        private BoxSide boxSide;
 
         [Inject] public IJSRuntime? JSRuntime { get; set; }
+        public ElementReference CheckboxElement { get; set; }
+
 
         /// <summary>
         /// Checkbox state, control the checked state at a higher level
@@ -32,6 +32,11 @@ namespace Bit.Client.Web.BlazorUI
                 _ = IsCheckedChanged.InvokeAsync(value);
             }
         }
+
+        /// <summary>
+        /// Custom icon for the check mark rendered by the checkbox instade of default check mark icon
+        /// </summary>
+        [Parameter] public string CheckmarkIconName { get; set; } = "Accept";
 
         /// <summary>
         /// Callback that is called when the IsChecked parameter changed
@@ -113,6 +118,7 @@ namespace Bit.Client.Web.BlazorUI
         protected async Task HandleCheckboxClick(MouseEventArgs args)
         {
             if (IsEnabled is false) return;
+            await OnClick.InvokeAsync(args);
 
             if (IsIndeterminate)
             {
@@ -125,8 +131,6 @@ namespace Bit.Client.Web.BlazorUI
                 IsChecked = !IsChecked;
                 await OnChange.InvokeAsync(IsChecked);
             }
-
-            await OnClick.InvokeAsync(args);
         }
 
         protected override async Task OnAfterRenderAsync(bool firstRender)

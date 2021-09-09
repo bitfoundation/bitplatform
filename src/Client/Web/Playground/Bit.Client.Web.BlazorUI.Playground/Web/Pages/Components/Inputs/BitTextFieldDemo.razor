@@ -238,10 +238,22 @@
             <th>Description</th>
         </tr>
         <tr>
-            <td>canRevealPassword</td>
+            <td>AriaLabel</td>
+            <td>string</td>
+            <td></td>
+            <td>The aria-label of the control for the benefit of screen readers.</td>
+        </tr>
+        <tr>
+            <td>CanRevealPassword</td>
             <td>bool</td>
             <td>false</td>
             <td>Whether to show the reveal password button for input type 'password'. This will be ignored if the type prop is not set to 'password', or if the browser is known to have a built-in reveal button for password inputs.</td>
+        </tr>
+        <tr>
+            <td>Class</td>
+            <td>string</td>
+            <td></td>
+            <td>Custom CSS class for the root element of the component.</td>
         </tr>
         <tr>
             <td>DefaultValue</td>
@@ -268,37 +280,37 @@
             <td>Whether or not the text field is borderless.</td>
         </tr>
         <tr>
-            <td>iconName</td>
+            <td>HtmlAttributes</td>
+            <td>Dictionary&lt;string, object&gt;</td>
+            <td></td>
+            <td>Capture and render additional attributes in addition to the component's parameters.</td>
+        </tr>
+        <tr>
+            <td>IconName</td>
             <td>string</td>
             <td></td>
             <td>Icon name for an optional icon, displayed in the far right end of the text field..</td>
-        </tr>
+        </tr>        
         <tr>
-            <td>IsAriaRequired</td>
-            <td>bool</td>
-            <td>false</td>
-            <td>Add aria-required field to assist screen readers to read out required field.</td>
-        </tr>
-        <tr>
-            <td>isEnabled</td>
+            <td>IsEnabled</td>
             <td>bool</td>
             <td>true</td>
             <td>Whether the textfield is enabled.</td>
         </tr>
         <tr>
-            <td>isMultiLine</td>
+            <td>IsMultiLine</td>
             <td>bool</td>
             <td>false</td>
             <td>Whether or not the text field is a multiline text field.</td>
         </tr>
         <tr>
-            <td>isReadonly</td>
+            <td>IsReadonly</td>
             <td>bool</td>
             <td>false</td>
             <td>If true, the text field is readonly.</td>
         </tr>
         <tr>
-            <td>isRequired</td>
+            <td>IsRequired</td>
             <td>bool</td>
             <td>false</td>
             <td>Whether the associated input is required or not, add an asterisk "*" to its label.</td>
@@ -316,7 +328,7 @@
             <td>Whether or not the text field is underlined.</td>
         </tr>
         <tr>
-            <td>label</td>
+            <td>Label</td>
             <td>string</td>
             <td></td>
             <td>Label displayed above the textfield and read by screen readers.</td>
@@ -328,13 +340,55 @@
             <td>Shows the custom Label for text field.If you don't call default label, ensure that you give your custom label an id and that you set the textfield's aria-labelledby prop to that id.</td>
         </tr>
         <tr>
-            <td>maxLength</td>
+            <td>MaxLength</td>
             <td>int</td>
             <td></td>
             <td>Define max length of text field.</td>
         </tr>
         <tr>
-            <td>placeholder</td>
+            <td>OnChange</td>
+            <td>EventCallback&lt;string?&gt;</td>
+            <td></td>
+            <td>Callback for when the input value changes. This is called on both input and change events.</td>
+        </tr>
+        <tr>
+            <td>OnClick</td>
+            <td>EventCallback&lt;MouseEventArgs&gt;</td>
+            <td></td>
+            <td>Callback for when the input is clicked.</td>
+        </tr>
+        <tr>
+            <td>OnFocus</td>
+            <td>EventCallback&lt;FocusEventArgs&gt;</td>
+            <td></td>
+            <td>Callback for when focus moves into the input.</td>
+        </tr>
+        <tr>
+            <td>OnFocusIn</td>
+            <td>EventCallback&lt;FocusEventArgs&gt;</td>
+            <td></td>
+            <td>Callback for when focus moves into the input.</td>
+        </tr>
+        <tr>
+            <td>OnFocusOut</td>
+            <td>EventCallback&lt;FocusEventArgs&gt;</td>
+            <td></td>
+            <td>Callback for when focus moves out of the input.</td>
+        </tr>
+        <tr>
+            <td>OnKeyDown</td>
+            <td>EventCallback&lt;KeyboardEventArgs&gt;</td>
+            <td></td>
+            <td>Callback for when a keyboard key is pressed.</td>
+        </tr>
+        <tr>
+            <td>OnKeyUp</td>
+            <td>EventCallback&lt;KeyboardEventArgs&gt;</td>
+            <td></td>
+            <td>Callback for When a keyboard key is released.</td>
+        </tr>
+        <tr>
+            <td>Placeholder</td>
             <td>string</td>
             <td></td>
             <td>A text for textfield as placeholder.</td>
@@ -346,24 +400,18 @@
             <td>
                 Prefix displayed before the text field contents. This is not included in the value. Ensure a descriptive label is present to assist screen readers, as the value does not include the prefix.
             </td>
-        </tr>
-        <tr>
-            <td>ref</td>
-            <td>elementreference</td>
-            <td></td>
-            <td>Access the public methods and properties of the component.</td>
-        </tr>
+        </tr>        
         <tr>
             <td>Rows</td>
             <td>int</td>
             <td>3</td>
             <td>For multiline text, Number of rows.</td>
-        </tr>
+        </tr>     
         <tr>
-            <td>styles</td>
+            <td>Style</td>
             <td>string</td>
             <td></td>
-            <td>Custom styling for individual elements within the textfield DOM.</td>
+            <td>Custom style for the root element of the component.</td>
         </tr>
         <tr>
             <td>Suffix</td>
@@ -374,22 +422,28 @@
             </td>
         </tr>
         <tr>
-            <td>type</td>
-            <td>textfieldtype</td>
+            <td>Type</td>
+            <td>TextFieldType</td>
             <td></td>
             <td>Type of textfield, text or password</td>
-        </tr>
+        </tr>        
         <tr>
-            <td>uniqueId</td>
-            <td>guid</td>
-            <td></td>
-            <td>Unique ID to identify the item. Typically a duplicate of key value.</td>
-        </tr>
-        <tr>
-            <td>value</td>
+            <td>Value</td>
             <td>string</td>
             <td></td>
             <td>Current value of the text field.</td>
+        </tr>
+        <tr>
+            <td>ValueChanged</td>
+            <td>EventCallback&lt;string?&gt;</td>
+            <td></td>
+            <td>Callback for when the input value changes.</td>
+        </tr>
+        <tr>
+            <td>Visibility</td>
+            <td>ComponentVisibility</td>
+            <td></td>
+            <td>Whether the component is visible, hidden, collapsed.</td>
         </tr>
     </table>
     <div>
@@ -402,13 +456,39 @@
                 <th>Description</th>
             </tr>
             <tr>
-                <td>text</td>
+                <td>Text</td>
                 <td>0</td>
                 <td></td>
             </tr>
             <tr>
-                <td>password</td>
+                <td>Password</td>
                 <td>1</td>
+                <td></td>
+            </tr>
+        </table>
+    </div>
+    <div>
+        <h4 id="component-visibility">ComponentVisibility</h4>
+        <hr />
+        <table>
+            <tr>
+                <th>Name</th>
+                <th>Value</th>
+                <th>Description</th>
+            </tr>
+            <tr>
+                <td>Visible</td>
+                <td>0</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>Hidden</td>
+                <td>1</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>Collapsed</td>
+                <td>2</td>
                 <td></td>
             </tr>
         </table>

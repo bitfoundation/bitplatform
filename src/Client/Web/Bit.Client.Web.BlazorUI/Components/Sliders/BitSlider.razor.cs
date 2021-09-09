@@ -9,8 +9,8 @@ namespace Bit.Client.Web.BlazorUI
 {
     public partial class BitSlider
     {
-        private double? fisrtInputValue;
-        private double? secoundInputValue;
+        private double? firstInputValue;
+        private double? secondInputValue;
         private double? upperValue;
         private double? lowerValue;
         private double? value;
@@ -31,13 +31,40 @@ namespace Bit.Client.Web.BlazorUI
         private ElementReference ValueLabelRef { get; set; }
 
         [Inject] public IJSRuntime? JSRuntime { get; set; }
+
+        /// <summary>
+        /// The initial upper value of the Slider is ranged is true
+        /// </summary>
         [Parameter] public double? DefaultUpperValue { get; set; }
+
+        /// <summary>
+        /// The initial lower value of the Slider is ranged is true
+        /// </summary>
         [Parameter] public double? DefaultLowerValue { get; set; }
+
+        /// <summary>
+        /// The initial value of the Slider
+        /// </summary>
         [Parameter] public double? DefaultValue { get; set; }
+
+        /// <summary>
+        /// The min value of the Slider
+        /// </summary>
         [Parameter] public double Min { get; set; }
+
+        /// <summary>
+        /// The max value of the Slider
+        /// </summary>
         [Parameter] public double Max { get; set; } = 10;
+
+        /// <summary>
+        /// The difference between the two adjacent values of the Slider
+        /// </summary>
         [Parameter] public double Step { get; set; } = 1;
 
+        /// <summary>
+        /// The initial upper value of the Slider is ranged is true
+        /// </summary>
         [Parameter]
         public double? UpperValue
         {
@@ -53,8 +80,14 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
+        /// <summary>
+        /// Callback for when lower value changed
+        /// </summary>
         [Parameter] public EventCallback<double?> UpperValueChanged { get; set; }
 
+        /// <summary>
+        /// The initial lower value of the Slider is ranged is true
+        /// </summary>
         [Parameter]
         public double? LowerValue
         {
@@ -70,8 +103,14 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
+        /// <summary>
+        /// Callback for when lower value changed
+        /// </summary>
         [Parameter] public EventCallback<double?> LowerValueChanged { get; set; }
 
+        /// <summary>
+        /// The initial value of the Slider
+        /// </summary>
         [Parameter]
         public double? Value
         {
@@ -86,8 +125,14 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
+        /// <summary>
+        /// Callback for when the value changed
+        /// </summary>
         [Parameter] public EventCallback<double?> ValueChanged { get; set; }
 
+        /// <summary>
+        /// The initial range value of the Slider. Use this parameter to set value for both LowerValue and UpperValue
+        /// </summary>
         [Parameter]
         public (double? Lower, double? Upper) RangeValue
         {
@@ -106,16 +151,45 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
+        /// <summary>
+        /// Callback for when range value changed
+        /// </summary>
         [Parameter] public EventCallback<(double? Lower, double? Upper)> RangeValueChanged { get; set; }
 
+        /// <summary>
+        /// Whether to attach the origin of slider to zero
+        /// </summary>
         [Parameter] public bool IsOriginFromZero { get; set; }
-        [Parameter] public string? Label { get; set; }
-        [Parameter] public bool IsRanged { get; set; }
-        [Parameter] public bool ShowValue { get; set; } = true;
-        [Parameter] public bool IsVertical { get; set; }
-        [Parameter] public string? ValueFormat { get; set; }
-        [Parameter] public EventCallback<ChangeEventArgs> OnChange { get; set; }
 
+        /// <summary>
+        /// Description label of the Slider
+        /// </summary>
+        [Parameter] public string? Label { get; set; }
+
+        /// <summary>
+        /// If ranged is true, display two thumbs that allow the lower and upper bounds of a range to be selected
+        /// </summary>
+        [Parameter] public bool IsRanged { get; set; }
+
+        /// <summary>
+        /// Whether to show the value on the right of the Slider
+        /// </summary>
+        [Parameter] public bool ShowValue { get; set; } = true;
+
+        /// <summary>
+        /// Whether to render the slider vertically
+        /// </summary>
+        [Parameter] public bool IsVertical { get; set; }
+
+        /// <summary>
+        /// Custom formatter for the Slider value
+        /// </summary>
+        [Parameter] public string? ValueFormat { get; set; }
+
+        /// <summary>
+        /// Callback when the value has been changed. This will be called on every individual step
+        /// </summary>
+        [Parameter] public EventCallback<ChangeEventArgs> OnChange { get; set; }
 
         /// <summary>
         ///  A text description of the Slider number value for the benefit of screen readers
@@ -124,11 +198,14 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public Func<double, string>? AriaValueText { get; set; }
 
         /// <summary>
-        /// Additional props for the slider box
+        /// Additional parameter for the Slider box
         /// </summary>
         [Parameter]
         public Dictionary<string, object>? SliderBoxHtmlAttributes { get; set; }
 
+        /// <summary>
+        /// Whether to render the Slider as readonly
+        /// </summary>
         [Parameter]
         public bool IsReadonly
         {
@@ -239,22 +316,22 @@ namespace Bit.Client.Web.BlazorUI
                 {
                     if (isFirstInput)
                     {
-                        fisrtInputValue = Convert.ToDouble(e.Value, CultureInfo.InvariantCulture);
+                        firstInputValue = Convert.ToDouble(e.Value, CultureInfo.InvariantCulture);
                     }
                     else
                     {
-                        secoundInputValue = Convert.ToDouble(e.Value, CultureInfo.InvariantCulture);
+                        secondInputValue = Convert.ToDouble(e.Value, CultureInfo.InvariantCulture);
                     }
 
-                    if (fisrtInputValue < secoundInputValue)
+                    if (firstInputValue < secondInputValue)
                     {
-                        lowerValue = fisrtInputValue;
-                        upperValue = secoundInputValue;
+                        lowerValue = firstInputValue;
+                        upperValue = secondInputValue;
                     }
                     else
                     {
-                        lowerValue = secoundInputValue;
-                        upperValue = fisrtInputValue;
+                        lowerValue = secondInputValue;
+                        upperValue = firstInputValue;
                     }
 
                     FillSlider();
@@ -272,7 +349,7 @@ namespace Bit.Client.Web.BlazorUI
         {
             if (IsRanged)
             {
-                styleProgress = $"--l: {fisrtInputValue}; --h: {secoundInputValue}; --min: {Min}; --max: {Max}";
+                styleProgress = $"--l: {firstInputValue}; --h: {secondInputValue}; --min: {Min}; --max: {Max}";
                 if (IsVertical)
                 {
                     styleContainer = $"width: {inputHeight}px; height: {inputHeight}px;";
@@ -301,13 +378,13 @@ namespace Bit.Client.Web.BlazorUI
 
             if (upper > lower)
             {
-                fisrtInputValue = lower;
-                secoundInputValue = upper;
+                firstInputValue = lower;
+                secondInputValue = upper;
             }
             else
             {
-                fisrtInputValue = upper;
-                secoundInputValue = lower;
+                firstInputValue = upper;
+                secondInputValue = lower;
             }
         }
 

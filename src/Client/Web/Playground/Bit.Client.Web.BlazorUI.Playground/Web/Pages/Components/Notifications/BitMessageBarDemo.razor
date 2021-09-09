@@ -40,7 +40,7 @@
                             </BitMessageBar>
                         }
                         <br />
-                        <BitMessageBar MessageBarType="@BitMessageBarType.Success" IsMultiline="false" Truncated="true">
+                        <BitMessageBar MessageBarType="@BitMessageBarType.Success" IsMultiline="false" Truncated="true" IsEnabled="false">
                             <Actions>
                                 <BitButton>Ok</BitButton>
                             </Actions>
@@ -300,45 +300,57 @@
         </tr>
         <tr>
             <td>Actions</td>
-            <td>renderfragment</td>
+            <td>RenderFragment</td>
             <td></td>
             <td>The content of the action to show on the message bar.</td>
-        </tr>
+        </tr>        
         <tr>
-            <td>ClassName</td>
+            <td>AriaLabel</td>
             <td>string</td>
             <td></td>
-            <td>If provided, additional class name to provide on the root element.</td>
+            <td>The aria-label of the control for the benefit of screen readers.</td>
         </tr>
         <tr>
             <td>ChildContent</td>
-            <td>renderfragment</td>
+            <td>RenderFragment</td>
             <td></td>
             <td>The content of message bar.</td>
+        </tr>
+        <tr>
+            <td>Class</td>
+            <td>string</td>
+            <td></td>
+            <td>Custom CSS class for the root element of the component.</td>
         </tr>
         <tr>
             <td>DismissButtonAriaLabel</td>
             <td>string</td>
             <td></td>
-            <td>Aria label on dismiss button if onDismiss is defined</td>
+            <td>Aria label on dismiss button if onDismiss is defined.</td>
         </tr>
         <tr>
             <td>DismissIconName</td>
             <td>string</td>
             <td>Clear</td>
-            <td>Custom Fabric icon name to replace the dismiss icon. If unset, default will be the Fabric Clear icon</td>
+            <td>Custom Fabric icon name to replace the dismiss icon. If unset, default will be the Fabric Clear icon.</td>
+        </tr>
+        <tr>
+            <td>HtmlAttributes</td>
+            <td>Dictionary&lt;string, object&gt;</td>
+            <td></td>
+            <td>Capture and render additional attributes in addition to the component's parameters.</td>
+        </tr>
+        <tr>
+            <td>IsEnabled</td>
+            <td>bool</td>
+            <td></td>
+            <td>Whether or not the component is enabled.</td>
         </tr>
         <tr>
             <td>IsMultiline</td>
-            <td>boolean</td>
+            <td>bool</td>
             <td>false</td>
             <td>Determines if the message bar is multi lined. If false, and the text overflows over buttons or to another line, it is clipped.</td>
-        </tr>
-        <tr>
-            <td>MessageBarIconName</td>
-            <td>string</td>
-            <td></td>
-            <td>Custom icon to replace the message bar icon. If unset, default will be the icon set by messageBarType.</td>
         </tr>
         <tr>
             <td>MessageBarType</td>
@@ -348,39 +360,33 @@
         </tr>
         <tr>
             <td>OnDismiss</td>
-            <td>eventCallback </td>
+            <td>EventCallback </td>
             <td></td>
             <td>Whether the message bar has a dismiss button and its callback. If null, dismiss button won't show.</td>
-        </tr>
+        </tr>        
         <tr>
             <td>OverflowButtonAriaLabel</td>
             <td>string</td>
             <td></td>
-            <td>Aria label on overflow button if truncated is true</td>
+            <td>Aria label on overflow button if truncated is true.</td>
         </tr>
         <tr>
-            <td>Ref</td>
-            <td>elementreference</td>
-            <td></td>
-            <td>Access the public methods and properties of the component.</td>
-        </tr>
-        <tr>
-            <td>Styles</td>
+            <td>Style</td>
             <td>string</td>
             <td></td>
-            <td>Custom styling for individual elements within the message bar DOM.</td>
+            <td>Custom style for the root element of the component.</td>
         </tr>
         <tr>
             <td>Truncated</td>
-            <td>boolean</td>
+            <td>bool</td>
             <td>false</td>
             <td>Determines if the message bar text is truncated. If true, a button will render to toggle between a single line view and multiline view. This parameter is for single line message bars with no buttons only in a limited space scenario.</td>
-        </tr>
+        </tr>        
         <tr>
-            <td>UniqueId</td>
-            <td>guid</td>
+            <td>Visibility</td>
+            <td>ComponentVisibility</td>
             <td></td>
-            <td>Unique ID to identify the item. Typically a duplicate of key value.</td>
+            <td>Whether the component is visible, hidden, collapsed.</td>
         </tr>
     </table>
     <div>
@@ -420,6 +426,32 @@
             <tr>
                 <td>Success</td>
                 <td>5</td>
+                <td></td>
+            </tr>
+        </table>
+    </div>
+    <div>
+        <h4 id="component-visibility">ComponentVisibility</h4>
+        <hr />
+        <table>
+            <tr>
+                <th>Name</th>
+                <th>Value</th>
+                <th>Description</th>
+            </tr>
+            <tr>
+                <td>Visible</td>
+                <td>0</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>Hidden</td>
+                <td>1</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>Collapsed</td>
+                <td>2</td>
                 <td></td>
             </tr>
         </table>
