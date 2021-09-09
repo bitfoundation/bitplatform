@@ -20,7 +20,7 @@ namespace Bit.Client.Web.BlazorUI
         public IJSRuntime JSRuntime { get; set; }
 
         /// <summary>
-        /// Displays a slider and text field for editing alpha and transparency values.
+        /// Whether to show a slider for editing alpha value.
         /// </summary>
         [Parameter]
         public bool ShowAlphaSlider { get; set; } = true;
