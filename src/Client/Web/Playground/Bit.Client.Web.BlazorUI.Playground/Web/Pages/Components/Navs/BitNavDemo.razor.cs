@@ -15,7 +15,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Navs
                 Target = "_blank",
                 IsExpanded = true,
                 CollapseAriaLabel = "Collapse Home section",
-                ExpandAriaLabel= "Expand Home section",
+                ExpandAriaLabel = "Expand Home section",
                 Links = new List<BitNavLinkItem>
                 {
                     new BitNavLinkItem{
@@ -77,7 +77,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Navs
                 Name = "Basic components",
                 Key = "Key1",
                 CollapseAriaLabel = "Collapse Basic components section",
-                IsGroup=true,
+                IsGroup = true,
                 IsExpanded = true,
                 Links = new List<BitNavLinkItem>
                 {
@@ -91,7 +91,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Navs
                 Name = "Extended components",
                 Key = "Key2",
                 CollapseAriaLabel = "Collapse Extended components section",
-                IsGroup=true,
+                IsGroup = true,
                 IsExpanded = true,
                 Links = new List<BitNavLinkItem>
                 {
@@ -105,7 +105,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Navs
                 Name = "Utilities",
                 Key = "Key3",
                 CollapseAriaLabel = "Collapse Utilities section",
-                IsGroup=true,
+                IsGroup = true,
                 IsExpanded = true,
                 Links = new List<BitNavLinkItem>
                 {

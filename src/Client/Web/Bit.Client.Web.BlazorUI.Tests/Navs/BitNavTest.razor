@@ -1,5 +1,6 @@
 ﻿<CascadingValue Value="Visual">
     <BitNav IsEnabled="IsEnabled"
+            InitialSelectedKey="@InitialSelectedKey"
             SelectedKey="@SelectedKey"
             AriaLabel="@AriaLabel"
             IsOnTop="IsOnTop"
@@ -10,6 +11,7 @@
     [Parameter] public Visual Visual { get; set; }
     [Parameter] public bool IsEnabled { get; set; }
     [Parameter] public string SelectedKey { get; set; }
+    [Parameter] public string InitialSelectedKey { get; set; }
     [Parameter] public string AriaLabel { get; set; }
     [Parameter] public bool IsOnTop { get; set; }
     [Parameter] public List<BitNavLinkItem> NavLinkItems { get; set; } = new List<BitNavLinkItem> { new BitNavLinkItem { Name = "Test", Key = "Test" } };
