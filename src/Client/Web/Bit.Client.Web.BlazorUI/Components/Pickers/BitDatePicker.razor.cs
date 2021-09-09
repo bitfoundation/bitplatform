@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.JSInterop;
 
 namespace Bit.Client.Web.BlazorUI
 {
@@ -22,6 +23,11 @@ namespace Bit.Client.Web.BlazorUI
         private int monthLength;
         private int dayOfWeekDifference;
 
+        [Inject] public IJSRuntime? JSRuntime { get; set; }
+
+        /// <summary>
+        /// Whether or not this DatePicker is open
+        /// </summary>
         [Parameter]
         public bool IsOpen
         {
@@ -33,16 +39,52 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
+        /// <summary>
+        /// GoToToday text for the DatePicker
+        /// </summary>
         [Parameter] public string GoToToday { get; set; } = "Go to today";
+
+        /// <summary>
+        /// Placeholder text for the DatePicker
+        /// </summary>
         [Parameter] public string Placeholder { get; set; } = "Select a date...";
+
+        /// <summary>
+        /// Calendar type for the DatePicker
+        /// </summary>
         [Parameter] public CalendarType CalendarType { get; set; } = CalendarType.Gregorian;
 
+        /// <summary>
+        /// Callback for when clicking on DatePicker input
+        /// </summary>
         [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+
+        /// <summary>
+        /// Callback for when focus moves into the DatePicker input
+        /// </summary>
         [Parameter] public EventCallback<FocusEventArgs> OnFocusIn { get; set; }
+
+        /// <summary>
+        /// Callback for when focus moves out the DatePicker input
+        /// </summary>
         [Parameter] public EventCallback<FocusEventArgs> OnFocusOut { get; set; }
+
+        /// <summary>
+        /// Callback for when the month changes
+        /// </summary>
         [Parameter] public EventCallback<int> OnMonthChange { get; set; }
+
+        /// <summary>
+        /// Callback for when the year changes
+        /// </summary>
         [Parameter] public EventCallback<int> OnYearChange { get; set; }
-        [Parameter] public EventCallback<string> OnDateChoose { get; set; }
+
+        /// <summary>
+        /// Callback for when the date changes
+        /// </summary>
+        [Parameter] public EventCallback<string> OnDateSet { get; set; }
+
+        [Parameter] public Func<BitDate,string> OnSelectDate { get; set; }
 
         protected override string RootElementClass { get; } = "bit-dtp";
 
@@ -100,8 +142,9 @@ namespace Bit.Client.Web.BlazorUI
             if (IsEnabled)
             {
                 IsOpen = false;
-                selectedDate = GetSelectedDateString(dayOfWeek, day, month);
-                await OnDateChoose.InvokeAsync(selectedDate);
+                BitDate date = new(currentYear,month,day,dayOfWeek);
+                selectedDate = OnSelectDate is not null ? OnSelectDate.Invoke(date): GetSelectedDateString(date);
+                await OnDateSet.InvokeAsync(selectedDate);
             }
         }
 
@@ -266,8 +309,12 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
-        private string GetSelectedDateString(int dayOfWeek, int day, int month)
+        private string GetSelectedDateString(BitDate date)
         {
+            int year = date.GetYear();
+            int month = date.GetMonth();
+            int day = date.GetDate();
+            int dayOfWeek = date.GetDayOfWeek();
             if (dayOfWeek < 0)
             {
                 dayOfWeek = 7 + dayOfWeek;
@@ -279,13 +326,30 @@ namespace Bit.Client.Web.BlazorUI
             return calendar.GetDayOfWeekShortName(Enum.Parse<DayOfWeek>(dayOfWeek.ToString()))
                    + " " + calendar.GetMonthShortName(month)
                    + " " + day.ToString().PadLeft(2, '0')
-                   + " " + currentYear;
+                   + " " + year;
         }
         
         private void ChangeYearRanges(int fromYear)
         {
             yearRangeFrom = fromYear;
             yearRangeTo = fromYear + 11;
+        }
+
+        [JSInvokable]
+        public void CloseCallout()
+        {
+            IsOpen = false;
+            StateHasChanged();
+        }
+
+        protected async override Task OnAfterRenderAsync(bool firstRender)
+        {
+            if (IsEnabled && firstRender)
+            {
+                _ = JSRuntime?.BitDatePickerRegisterOnDocumentClickEvent(this, "CloseCallout");
+            }
+
+            await base.OnAfterRenderAsync(firstRender);
         }
     }
 }

@@ -5,7 +5,7 @@
      @attributes="HtmlAttributes"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
-    @if (IconName.HasValue() || Label.HasValue())
+    @if (IconName.HasValue() || Label.HasValue() || LabelFragment != null)
     {
         <div class="bit-spb-lbl-wrapper">
             @if (IconName.HasValue())
@@ -22,7 +22,7 @@
             }
             else if (LabelFragment != null)
             {
-                <span>@LabelFragment</span>
+                <label id="@GetLabelId" for="@InputId">@LabelFragment</label>
             }
         </div>
     }
@@ -40,8 +40,8 @@
                aria-labelledby="@GetLabelId"
                aria-valuenow="@GetAriaValueNow"
                aria-valuetext="@GetAriaValueText"
-               aria-valuemin="@Min"
-               aria-valuemax="@Max"
+               aria-valuemin="@min"
+               aria-valuemax="@max"
                aria-describedby="@AriaDescription"
                aria-disabled="@(IsEnabled is false)"
                disabled="@(IsEnabled is false || (ValueHasBeenSet && ValueChanged.HasDelegate is false))"
@@ -58,7 +58,9 @@
                     date-is-focusable="false"
                     tabindex="-1"
                     aria-label="@IncrementButtonAriaLabel"
-                    @onclick="e => HandleButtonClick(BitSpinButtonAction.Increment, e)">
+                    @onmousedown="e => HandleMouseDown(BitSpinButtonAction.Increment, e)"
+                    @onmouseout="HandleMouseUpOrOut"
+                    @onmouseup="HandleMouseUpOrOut">
                 <span>
                     <i class="bit-icon bit-icon--@IncrementButtonIconName bit-icon--s"></i>
                 </span>
@@ -70,7 +72,9 @@
                     date-is-focusable="false"
                     tabindex="-1"
                     aria-label="@DecrementButtonAriaLabel"
-                    @onclick="e => HandleButtonClick(BitSpinButtonAction.Decrement, e)">
+                    @onmousedown="e => HandleMouseDown(BitSpinButtonAction.Decrement, e)"
+                    @onmouseout="HandleMouseUpOrOut"
+                    @onmouseup="HandleMouseUpOrOut">
                 <span>
                     <i class="bit-icon bit-icon--@DecrementButtonIconName bit-icon--s"></i>
                 </span>

@@ -1,14 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 
 namespace Bit.Client.Web.BlazorUI
 {
-    public partial class BitSpinButton
+    public partial class BitSpinButton : IDisposable
     {
+        const int INITIAL_STEP_DELAY = 400;
+        const int STEP_DELAY = 75;
         private double inputValue;
         private BitSpinButtonLabelPosition labelPosition = BitSpinButtonLabelPosition.Left;
         private int precision;
@@ -17,16 +20,12 @@ namespace Bit.Client.Web.BlazorUI
         private string InputId = $"input{Guid.NewGuid()}";
         private string IntermediateValue = String.Empty;
         private bool ValueHasBeenSet;
+        private Timer? timer;
 
         /// <summary>
         /// Detailed description of the input for the benefit of screen readers
         /// </summary>
         [Parameter] public string? AriaDescription { get; set; }
-
-        // <summary>
-        // If true, add an aria-hidden attribute instructing screen readers to ignore the element
-        // </summary>
-        [Parameter] public bool AriaHidden { get; set; }
 
         /// <summary>
         /// The position in the parent set (if in a set)
@@ -73,8 +72,6 @@ namespace Bit.Client.Web.BlazorUI
             {
                 if (value == inputValue) return;
                 inputValue = value;
-                if (inputValue > max) inputValue = max;
-                if (inputValue < min) inputValue = min;
                 _ = ValueChanged.InvokeAsync(value);
             }
         }
@@ -129,6 +126,9 @@ namespace Bit.Client.Web.BlazorUI
         /// </summary>
         [Parameter] public string Label { get; set; } = string.Empty;
 
+        /// <summary>
+        /// Shows the custom Label for spin button. If you don't call default label, ensure that you give your custom label an id and that you set the input's aria-labelledby prop to that id.
+        /// </summary>
         [Parameter] public RenderFragment? LabelFragment { get; set; }
 
         /// <summary>
@@ -220,8 +220,8 @@ namespace Bit.Client.Web.BlazorUI
                 Value = DefaultValue ?? Math.Min(0, min);
             }
 
+            CheckValue();
             IntermediateValue = $"{Value}";
-
             if (ChangeHandler.HasDelegate is false)
             {
                 ChangeHandler = EventCallback.Factory.Create(this, async (BitSpinButtonAction action) =>
@@ -248,6 +248,7 @@ namespace Bit.Client.Web.BlazorUI
                     if (isValid is false) return;
 
                     Value = Normalize(result);
+                    CheckValue();
                     IntermediateValue = $"{Value}";
                     await OnChange.InvokeAsync(Value);
                 });
@@ -256,7 +257,26 @@ namespace Bit.Client.Web.BlazorUI
             await base.OnParametersSetAsync();
         }
 
-        protected virtual void HandleChange(ChangeEventArgs e)
+        private async void HandleMouseDown(BitSpinButtonAction action, MouseEventArgs e)
+        {
+            await HandleMouseDownAction(action, e);
+            timer = new Timer((_) =>
+            {
+                InvokeAsync(async () =>
+                {
+                    await HandleMouseDownAction(action, e);
+                    StateHasChanged();
+                });
+            }, null, INITIAL_STEP_DELAY, STEP_DELAY);
+        }
+
+        private void HandleMouseUpOrOut()
+        {
+            if (timer is null) return;
+            timer.Dispose();
+        }
+
+        private void HandleChange(ChangeEventArgs e)
         {
             if (IsEnabled is false) return;
             if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
@@ -264,7 +284,7 @@ namespace Bit.Client.Web.BlazorUI
             IntermediateValue = $"{e.Value}";
         }
 
-        protected virtual async Task HandleButtonClick(BitSpinButtonAction action, MouseEventArgs e)
+        private async Task HandleMouseDownAction(BitSpinButtonAction action, MouseEventArgs e)
         {
             if (IsEnabled is false) return;
             if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
@@ -287,7 +307,7 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
-        protected virtual async Task HandleKeyDown(KeyboardEventArgs e)
+        private async Task HandleKeyDown(KeyboardEventArgs e)
         {
             if (IsEnabled is false) return;
             if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
@@ -309,6 +329,7 @@ namespace Bit.Client.Web.BlazorUI
                     if (isNumber)
                     {
                         Value = Normalize(numericValue);
+                        CheckValue();
                         await OnChange.InvokeAsync(Value);
                     }
                     else
@@ -340,19 +361,19 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
-        protected virtual async Task HandleBlur(FocusEventArgs e)
+        private async Task HandleBlur(FocusEventArgs e)
         {
             if (IsEnabled is false) return;
+            await OnBlur.InvokeAsync(e);
             if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
-
             if (IntermediateValue == $"{Value}") return;
 
             var isNumber = double.TryParse(IntermediateValue, out var numericValue);
             if (isNumber)
             {
                 Value = Normalize(numericValue);
+                CheckValue();
                 IntermediateValue = $"{Value}";
-                await OnBlur.InvokeAsync(e);
                 await OnChange.InvokeAsync(Value);
             }
             else
@@ -362,7 +383,7 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
-        protected virtual async Task HandleFocus(FocusEventArgs e)
+        private async Task HandleFocus(FocusEventArgs e)
         {
             if (IsEnabled)
             {
@@ -392,10 +413,22 @@ namespace Bit.Client.Web.BlazorUI
             return 0;
         }
 
+        private void CheckValue()
+        {
+            if (Value > max) Value = max;
+            if (Value < min) Value = min;
+        }
+
         private double Normalize(double value) => Math.Round(value, precision);
+
         private double? GetAriaValueNow => AriaValueNow is not null ? AriaValueNow : Suffix.HasNoValue() ? Value : null;
         private string? GetAriaValueText => AriaValueText.HasValue() ? AriaValueText : Suffix.HasValue() ? $"{Normalize(Value)}{Suffix}" : null;
         private string? GetIconRole => IconAriaLabel.HasValue() ? "img" : null;
         private string GetLabelId => Label.HasValue() ? $"label{Guid.NewGuid()}" : String.Empty;
+
+        public void Dispose()
+        {
+            timer?.Dispose();
+        }
     }
 }
