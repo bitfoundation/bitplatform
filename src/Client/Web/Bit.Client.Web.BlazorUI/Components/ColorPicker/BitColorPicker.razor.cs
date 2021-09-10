@@ -26,7 +26,7 @@ namespace Bit.Client.Web.BlazorUI
         public bool ShowAlphaSlider { get; set; } = true;
 
         /// <summary>
-        /// Object or CSS-compatible string to describe the color.
+        /// CSS-compatible string to describe the color.
         /// </summary>
         [Parameter]
         public string Color
