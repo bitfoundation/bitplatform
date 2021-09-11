@@ -1,13 +1,31 @@
 ﻿@namespace Bit.Client.Web.BlazorUI
 @inherits BitComponentBase
 
-<div @ref="RootElement"
-     @attributes="HtmlAttributes"
-     style="@StyleBuilder.Value"
-     class="@ClassBuilder.Value">
+<button @ref="RootElement"
+        @attributes="HtmlAttributes"
+        style="@StyleBuilder.Value"
+        class="@ClassBuilder.Value"
+        @onclick="HandleButtonClick">
+    <span>
+        @if (@IconName.HasValue())
+        {
+            <span>
+                <i class="bit-icon bit-icon--@(IconName)"></i>
+            </span>
+        }
 
-    @if (Pivot?.HeadersOnly is false && Pivot?.Items[Pivot.SelectedKey] == this && this.Visibility != ComponentVisibility.Hidden)
-    {
-        @(ChildContent ?? BodyContent)
-    }
-</div>
+        @if (HeaderContent is not null)
+        {
+            @HeaderContent
+        }
+        else if (HeaderText.HasValue())
+        {
+            <span>@HeaderText</span>
+        }
+
+        @if (ItemCount is not null)
+        {
+            <span>(@ItemCount)</span>
+        }
+    </span>
+</button>

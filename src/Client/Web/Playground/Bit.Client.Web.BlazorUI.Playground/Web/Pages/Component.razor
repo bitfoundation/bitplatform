@@ -537,7 +537,7 @@
 
 <h3>Link pivot with Count and Icon and custom template for icon </h3>
 <div class="pivot-container">
-    <BitPivot OverflowBehavior="@OverflowBehavior.Scroll">
+    <BitPivot OverflowBehavior="@BitOverflowBehavior.Scroll">
         <BitPivotItem HeaderText="Files" IconName="Info"></BitPivotItem>
         <BitPivotItem HeaderText="Shared with me" ItemCount="32"></BitPivotItem>
         <BitPivotItem HeaderText="Recent" IconName="Info" ItemCount="32"></BitPivotItem>
@@ -553,7 +553,7 @@
 
 <h3> Large link pivot</h3>
 <div class="pivot-container">
-    <BitPivot LinkSize="@LinkSize.Large">
+    <BitPivot LinkSize="@BitLinkSize.Large">
         <BitPivotItem HeaderText="File "></BitPivotItem>
         <BitPivotItem HeaderText="Shared with me"></BitPivotItem>
         <BitPivotItem HeaderText="Recent"></BitPivotItem>
@@ -562,7 +562,7 @@
 
 <h3> Pivot tab style</h3>
 <div class="pivot-container">
-    <BitPivot LinkFormat="@LinkFormat.Tabs">
+    <BitPivot LinkFormat="@BitLinkFormat.Tabs">
         <BitPivotItem HeaderText="Foo"></BitPivotItem>
         <BitPivotItem HeaderText="Bar"></BitPivotItem>
         <BitPivotItem HeaderText="Bas"></BitPivotItem>
@@ -572,7 +572,8 @@
 
 <h3> Pivot large tabs</h3>
 <div class="pivot-container">
-    <BitPivot LinkFormat="@LinkFormat.Tabs" LinkSize="@LinkSize.Large">
+    <BitPivot LinkFormat="@BitLinkFormat.Tabs"
+              LinkSize="@BitLinkSize.Large">
         <BitPivotItem HeaderText="Foo">Pivot #1</BitPivotItem>
         <BitPivotItem HeaderText="Bar">Pivot #2</BitPivotItem>
         <BitPivotItem HeaderText="Bas">Pivot #3</BitPivotItem>
@@ -582,7 +583,10 @@
 
 <h3> you can change tabs from outside of component</h3>
 <div class="pivot-container">
-    <BitPivot LinkFormat="@LinkFormat.Tabs" LinkSize="@LinkSize.Large" SelectedKey="@OverridePivotSelectedKey" SelectedKeyChanged="PivotSelectedKeyChanged">
+    <BitPivot LinkFormat="@BitLinkFormat.Tabs"
+              LinkSize="@BitLinkSize.Large"
+              SelectedKey="@OverridePivotSelectedKey"
+              SelectedKeyChanged="PivotSelectedKeyChanged">
         <BitPivotItem HeaderText="samples">Pivot #1</BitPivotItem>
         <BitPivotItem HeaderText="Fiels">Pivot #2</BitPivotItem>
         <BitPivotItem HeaderText="Recent">Pivot #3</BitPivotItem>
@@ -593,35 +597,41 @@
 
 <h3>Render content separately</h3>
 <div class="pivot-container">
-    <BitPivot LinkFormat="@LinkFormat.Tabs" DefaultSelectedKey="Foo" LinkSize="@LinkSize.Large" HeadersOnly="true" OnLinkClick="@(e => SelectedPivotKey = e)">
+    <BitPivot LinkFormat="@BitLinkFormat.Tabs"
+              DefaultSelectedKey="Foo"
+              LinkSize="@BitLinkSize.Large"
+              HeadersOnly="true"
+              OnLinkClick="@(item => SelectedPivotItemKey = item.Key)">
         <BitPivotItem HeaderText="Foo" ItemKey="Foo"></BitPivotItem>
         <BitPivotItem HeaderText="Bar" ItemKey="Bar"></BitPivotItem>
         <BitPivotItem HeaderText="Bas" ItemKey="Bas"></BitPivotItem>
         <BitPivotItem HeaderText="Biz" ItemKey="Biz"></BitPivotItem>
     </BitPivot>
 
-    @if (SelectedPivotKey?.ItemKey == "Foo")
+    @if (SelectedPivotItemKey == "Foo")
     {
-        <div> hello im foo</div>
+        <div> hello I'm foo</div>
     }
-    else if (SelectedPivotKey?.ItemKey == "Bar")
+    else if (SelectedPivotItemKey == "Bar")
     {
-        <div> hello im Bar</div>
+        <div> hello I'm Bar</div>
     }
-    else if (SelectedPivotKey?.ItemKey == "Bas")
+    else if (SelectedPivotItemKey == "Bas")
     {
-        <div> hello im Bas</div>
+        <div> hello I'm Bas</div>
     }
-    else if (SelectedPivotKey?.ItemKey == "Biz")
+    else if (SelectedPivotItemKey == "Biz")
     {
-        <div> hello im Biz</div>
+        <div> hello I'm Biz</div>
     }
 </div>
 
 <h3>Trigger onchange event</h3>
 <div class="pivot-container">
     @BitPivotItem?.HeaderText Clicked
-    <BitPivot LinkFormat="@LinkFormat.Tabs" LinkSize="@LinkSize.Large" OnLinkClick="@(e => BitPivotItem = e)">
+    <BitPivot LinkFormat="@BitLinkFormat.Tabs" 
+              LinkSize="@BitLinkSize.Large" 
+              OnLinkClick="@(e => BitPivotItem = e)">
         <BitPivotItem HeaderText="Foo aaaaaa">Pivot #1</BitPivotItem>
         <BitPivotItem HeaderText="Bar bbbbbb">Pivot #2</BitPivotItem>
         <BitPivotItem HeaderText="Bas cccccc" ItemKey="aaa">Pivot #3</BitPivotItem>
