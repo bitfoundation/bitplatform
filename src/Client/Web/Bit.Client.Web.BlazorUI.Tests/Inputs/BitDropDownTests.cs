@@ -358,17 +358,17 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
         }
 
         [DataTestMethod,
-            DataRow("<div>This is labelTemplate</div>")
+            DataRow("<div>This is labelFragment</div>")
         ]
-        public void BitDropDownLabelTemplateTest(string labelTemplate)
+        public void BitDropDownLabelFragmentTest(string labelFragment)
         {
             var component = RenderComponent<BitDropDownTest>(parameters =>
             {
-                parameters.Add(p => p.LabelFragment, labelTemplate);
+                parameters.Add(p => p.LabelFragment, labelFragment);
             });
 
             var drpLabelChild = component.Find("label").ChildNodes;
-            drpLabelChild.MarkupMatches(labelTemplate);
+            drpLabelChild.MarkupMatches(labelFragment);
         }
 
         [DataTestMethod,
@@ -519,7 +519,8 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
             if (selectedMultipleKeys.Contains(items[3].Value))
             {
                 expectedResult = --initialSelectedKeysCount;
-            } else
+            }
+            else
             {
                 expectedResult = ++initialSelectedKeysCount;
             }
