@@ -18,6 +18,7 @@ namespace Bit.Client.Web.BlazorUI
         private bool SelectedKeyHasBeenSet;
         private bool IsSelectedMultipleKeysChanged = false;
         private List<BitDropDownItem> NormalDropDownItems;
+        private string? text;
 
         /// <summary>
         /// Whether multiple items are allowed to be selected
@@ -149,8 +150,6 @@ namespace Bit.Client.Web.BlazorUI
         /// </summary>
         [Parameter] public RenderFragment? LabelFragment { get; set; }
 
-        private string? Text { get; set; }
-
         public string DropDownId { get; set; } = String.Empty;
         public string? DropdownLabelId { get; set; } = String.Empty;
         public string DropDownOptionId { get; set; } = String.Empty;
@@ -233,26 +232,26 @@ namespace Bit.Client.Web.BlazorUI
                 selectedItem.IsSelected = !selectedItem.IsSelected;
                 if (selectedItem.IsSelected)
                 {
-                    if (Text.HasValue())
+                    if (text.HasValue())
                     {
-                        Text += MultiSelectDelimiter;
+                        text += MultiSelectDelimiter;
                     }
 
-                    Text += selectedItem.Text;
+                    text += selectedItem.Text;
                 }
                 else
                 {
-                    Text = string.Empty;
+                    text = string.Empty;
                     foreach (var item in Items)
                     {
                         if (item.IsSelected)
                         {
-                            if (Text.HasValue())
+                            if (text.HasValue())
                             {
-                                Text += MultiSelectDelimiter;
+                                text += MultiSelectDelimiter;
                             }
 
-                            Text += item.Text;
+                            text += item.Text;
                         }
                     }
                 }
@@ -266,7 +265,7 @@ namespace Bit.Client.Web.BlazorUI
                 var isSameItemSelected = oldSelectedItem == selectedItem;
                 if (oldSelectedItem is not null) oldSelectedItem.IsSelected = false;
                 selectedItem.IsSelected = true;
-                Text = selectedItem.Text;
+                text = selectedItem.Text;
                 SelectedKey = selectedItem.Value;
                 isOpen = false;
 
@@ -291,17 +290,17 @@ namespace Bit.Client.Web.BlazorUI
                     Items.FindAll(i => DefaultSelectedMultipleKeys.Contains(i.Value) && i.ItemType == BitDropDownItemType.Normal).ForEach(i => { i.IsSelected = true; });
                 }
 
-                Text = string.Empty;
+                text = string.Empty;
                 Items.ForEach(i =>
                 {
                     if (i.IsSelected && i.ItemType == BitDropDownItemType.Normal)
                     {
-                        if (Text.HasValue())
+                        if (text.HasValue())
                         {
-                            Text += MultiSelectDelimiter;
+                            text += MultiSelectDelimiter;
                         }
 
-                        Text += i.Text;
+                        text += i.Text;
                     }
                 });
             }
@@ -311,18 +310,18 @@ namespace Bit.Client.Web.BlazorUI
                 {
                     Items.Find(i => i.Value == SelectedKey)!.IsSelected = true;
                     Items.FindAll(i => i.Value != SelectedKey).ForEach(i => { i.IsSelected = false; });
-                    Text = Items.Find(i => i.Value == SelectedKey)!.Text;
+                    text = Items.Find(i => i.Value == SelectedKey)!.Text;
                 }
                 else if (DefaultSelectedKey.HasValue() && Items.Find(i => i.Value == DefaultSelectedKey && i.ItemType == BitDropDownItemType.Normal) is not null)
                 {
                     Items.Find(i => i.Value == DefaultSelectedKey && i.ItemType == BitDropDownItemType.Normal)!.IsSelected = true;
                     Items.FindAll(i => i.Value != DefaultSelectedKey && i.ItemType == BitDropDownItemType.Normal).ForEach(i => { i.IsSelected = false; });
-                    Text = Items.Find(i => i.Value == DefaultSelectedKey && i.ItemType == BitDropDownItemType.Normal)!.Text;
+                    text = Items.Find(i => i.Value == DefaultSelectedKey && i.ItemType == BitDropDownItemType.Normal)!.Text;
                 }
                 else if (Items.FindAll(item => item.IsSelected is true && item.ItemType == BitDropDownItemType.Normal).Count != 0)
                 {
                     var firstSelectedItem = Items.Find(i => i.IsSelected && i.ItemType == BitDropDownItemType.Normal)!;
-                    Text = firstSelectedItem.Text;
+                    text = firstSelectedItem.Text;
                     Items.FindAll(i => i.Value != firstSelectedItem.Value).ForEach(i => { i.IsSelected = false; });
                 }
             }
