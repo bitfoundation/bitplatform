@@ -68,7 +68,7 @@
 	<ItemGroup>
 		<PackageReference Include="SourceLink.Embed.AllSourceFiles" Version="2.8.3" PrivateAssets="all" />
 		<PackageReference Include="SourceLink.Copy.PdbFiles" Version="2.8.3" PrivateAssets="All" />
-		<PackageReference Include="MSBuild.Sdk.Extras" Version="3.0.23" PrivateAssets="All" />
+		<PackageReference Include="MSBuild.Sdk.Extras" Version="3.0.38" PrivateAssets="All" />
 	</ItemGroup>
 
 	<ItemGroup Condition=" '$(TargetFramework)' == 'monoandroid10.0'">

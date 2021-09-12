@@ -95,7 +95,7 @@ namespace Bit.ViewModel
 
                 try
                 {
-                    navUri = NavigationService.GetNavigationUriPath();
+                    navUri = NavigationService.GetNavigationUriPath() ?? GetType().Name;
                 }
                 catch
                 {
