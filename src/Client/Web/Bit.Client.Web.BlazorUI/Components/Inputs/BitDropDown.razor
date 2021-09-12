@@ -37,7 +37,14 @@
               aria-invalid="false">
             @if (text.HasValue())
             {
-                @text
+                @if (TextTemplate is not null)
+                {
+                    @TextTemplate(this)
+                }
+                else
+                {
+                    @text
+                }
             }
             else
             {

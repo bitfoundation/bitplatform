@@ -14,7 +14,6 @@ namespace Bit.Client.Web.BlazorUI
         private bool isOpen = false;
         private bool isMultiSelect = false;
         private bool isRequired = false;
-        private string? text;
         private List<string> selectedMultipleKeys = new();
         private string selectedKey = string.Empty;
         private bool SelectedMultipleKeysHasBeenSet;
@@ -170,6 +169,8 @@ namespace Bit.Client.Web.BlazorUI
         /// Optional custom template for drop-down item
         /// </summary>
         [Parameter] public RenderFragment<BitDropDownItem>? ItemTemplate { get; set; }
+
+        public string? text { get; set; }
 
         public string FocusClass
         {
