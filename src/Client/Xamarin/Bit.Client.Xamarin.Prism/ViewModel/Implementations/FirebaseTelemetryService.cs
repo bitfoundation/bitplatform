@@ -118,7 +118,7 @@ namespace Bit.ViewModel.Implementations
                     foreach (var param in properties)
                     {
                         keys.Add(new Foundation.NSString(param.Key.Length > 40 ? param.Key.Substring(0, 40) : param.Key));
-                        values.Add(new Foundation.NSString(param.Value?.Length > 100 ? param.Value.Substring(0, 100) : param.Value));
+                        values.Add(new Foundation.NSString(param.Value?.Length > 100 ? param.Value.Substring(0, 100) : param.Value ?? "NULL"));
                     }
                 }
 

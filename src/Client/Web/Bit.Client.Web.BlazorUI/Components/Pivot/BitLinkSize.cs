@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Bit.Client.Web.BlazorUI
 {
-    public enum LinkSize
+    public enum BitLinkSize
     {
         /// <summary>
         /// Display Link using normal font size

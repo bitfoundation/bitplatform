@@ -41,7 +41,7 @@ namespace Bit.Client.Web.BlazorUI
                 _ = IsCheckedChanged.InvokeAsync(value);
             }
         }
-        
+                
         [Parameter] public EventCallback<bool> IsCheckedChanged { get; set; }
 
         /// <summary>

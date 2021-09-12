@@ -26,7 +26,7 @@
             margin-right: 4px;
             cursor: pointer;
 
-            .bit-icon--Accept {
+            .bit-chb-checkmark {
                 color: $White;
                 font-size: 11px;
                 transition: 0.1s;
@@ -42,7 +42,7 @@
 
     &:hover > div {
         & > div:first-child {
-            .bit-icon--Accept {
+            .bit-chb-checkmark {
                 opacity: 1;
                 color: $Grey120;
             }
@@ -67,7 +67,7 @@
             border-color: $Primary;
             background-color: $Primary;
 
-            .bit-icon--Accept {
+            .bit-chb-checkmark {
                 opacity: 1;
                 color: $White;
                 width: 20px;
@@ -81,7 +81,7 @@
 
     &:hover > div {
         & > div:first-child {
-            .bit-icon--Accept {
+            .bit-chb-checkmark {
                 border-color: $Dark;
                 background-color: $Dark;
                 color: $White;
@@ -96,7 +96,7 @@
             border-color: $Primary;
             background-color: $White;
 
-            .bit-icon--Accept {
+            .bit-chb-checkmark {
                 display: inline-block;
                 width: 11px;
                 height: 11px;
@@ -116,7 +116,7 @@
             border-color: $Dark;
             background-color: $White;
 
-            .bit-icon--Accept {
+            .bit-chb-checkmark {
                 color: $Dark;
                 background-color: $Dark;
             }
@@ -133,7 +133,7 @@
             border-color: $Grey60;
             background-color: $White;
 
-            .bit-icon--Accept {
+            .bit-chb-checkmark {
                 opacity: 1;
                 color: $White;
                 background-color: $White;
@@ -150,7 +150,7 @@
 .bit-chb-indeterminate-disabled-fluent {
     & > div {
         & > div:first-child {
-            .bit-icon--Accept {
+            .bit-chb-checkmark {
                 background-color: $Grey60;
             }
         }
