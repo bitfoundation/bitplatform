@@ -43,6 +43,7 @@ namespace Bit.Client.Web.BlazorUI
 
                 ColorChanged.InvokeAsync(value);
                 HexChanged.InvokeAsync(MainColor.Hex.ColorCode);
+                RgbChanged.InvokeAsync(MainColor.ToRgbCss());
                 AlphaChanged.InvokeAsync(MainColor.Alpha);
 
             }
@@ -63,7 +64,9 @@ namespace Bit.Client.Web.BlazorUI
                 Hue = MainColor.Hsv.Hue;
                 SaturationPickerBackground = new BitColor(Hue, 1, 1,1);
 
-                HexChanged.InvokeAsync(value);
+                ColorChanged.InvokeAsync(ColorType == ColorType.Hex ? MainColor.Hex.ColorCode : MainColor.ToRgbaCss());
+                RgbChanged.InvokeAsync(MainColor.ToRgbCss());
+                HexChanged.InvokeAsync(MainColor.Hex.ColorCode);
             }
         }
 
@@ -82,7 +85,9 @@ namespace Bit.Client.Web.BlazorUI
                 Hue = MainColor.Hsv.Hue;
                 SaturationPickerBackground = new BitColor(Hue, 1, 1,1);
 
-                RgbChanged.InvokeAsync(value);
+                ColorChanged.InvokeAsync(ColorType == ColorType.Hex ? MainColor.Hex.ColorCode : MainColor.ToRgbaCss());
+                RgbChanged.InvokeAsync(MainColor.ToRgbCss());
+                HexChanged.InvokeAsync(MainColor.Hex.ColorCode);
             }
         }
 
@@ -147,7 +152,7 @@ namespace Bit.Client.Web.BlazorUI
 
                 SaturationPickerThumbPosition = new Position
                 {
-                    Left = Convert.ToInt32(saturationPickerRect.Width),
+                    Left = Convert.ToInt32(saturationPickerRect?.Width),
                     Top = 0
                 };
             }
