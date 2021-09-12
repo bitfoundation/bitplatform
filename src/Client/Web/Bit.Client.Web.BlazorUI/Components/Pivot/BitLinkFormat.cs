@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Bit.Client.Web.BlazorUI
 {
-    public enum LinkFormat
+    public enum BitLinkFormat
     {
         /// <summary>
         /// Display Pivot Links as Tabs
