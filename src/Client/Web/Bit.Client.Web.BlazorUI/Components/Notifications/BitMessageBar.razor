@@ -12,7 +12,7 @@
             <div class=@($"{RootElementClass}-content")>
 
                 <div class=@($"{RootElementClass}-icon")>
-                    <i class=@($"bit-icon bit-icon--{IconMap[MessageBarType]}")></i>
+                    <i class=@($"bit-icon bit-icon--{messageBarIcon}")></i>
                 </div>
 
                 <div class=@($"{RootElementClass}-text")>
@@ -27,8 +27,12 @@
                 @if (HasDismiss)
                 {
                     <div Class=@($"{RootElementClass}-dismiss")>
-                        <button onclick=@OnDismiss>
-                            <i class="bit-icon bit-icon--Clear"></i>
+                        <button onclick=@OnDismiss
+                                title="@(DismissButtonAriaLabel.HasValue() ? DismissButtonAriaLabel : null)"
+                                aria-label="@(DismissButtonAriaLabel.HasValue() ? DismissButtonAriaLabel : null)">
+                            <span>
+                                <i class="bit-icon bit-icon--@DismissIconName"></i>
+                            </span>
                         </button>
                     </div>
                 }
@@ -46,7 +50,7 @@
 
                 @*Icon*@
                 <div class=@($"{RootElementClass}-icon")>
-                    <i class=@($"bit-icon bit-icon--{IconMap[MessageBarType]}")></i>
+                    <i class=@($"bit-icon bit-icon--{messageBarIcon}")></i>
                 </div>
 
                 @*ChildContent*@
@@ -68,7 +72,8 @@
                 else if (Truncated)
                 {
                     <div class=@($"{RootElementClass}-truncate")>
-                        <button @onclick=@ToggleExpandSingleLine>
+                        <button @onclick=@ToggleExpandSingleLine
+                                aria-label="@(OverflowButtonAriaLabel.HasValue()? OverflowButtonAriaLabel : null)">
                             <i class=@($"bit-icon bit-icon--{(ExpandSingleLine ? "DoubleChevronUp" : "DoubleChevronDown")}")></i>
                         </button>
                     </div>
@@ -78,8 +83,12 @@
                 @if (HasDismiss)
                 {
                     <div class=@($"{RootElementClass}-dismiss")>
-                        <button onclick=@OnDismiss>
-                            <i class="bit-icon bit-icon--Clear"></i>
+                        <button onclick=@OnDismiss
+                                title="@(DismissButtonAriaLabel.HasValue() ? DismissButtonAriaLabel : null)"
+                                aria-label="@(DismissButtonAriaLabel.HasValue() ? DismissButtonAriaLabel : null)">
+                            <span>
+                                <i class="bit-icon bit-icon--@DismissIconName"></i>
+                            </span>
                         </button>
                     </div>
                 }

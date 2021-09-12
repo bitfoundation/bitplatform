@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 
 namespace Bit.Client.Web.BlazorUI
@@ -7,14 +8,14 @@ namespace Bit.Client.Web.BlazorUI
     public partial class BitCheckbox
     {
         private bool isIndeterminate;
-        private BoxSide boxSide;
         private bool isChecked;
         private bool IsCheckedHasBeenSet;
         private bool IsIndeterminateHasBeenSet;
-
-        public ElementReference CheckboxElement { get; set; }
+        private BoxSide boxSide;
 
         [Inject] public IJSRuntime? JSRuntime { get; set; }
+        public ElementReference CheckboxElement { get; set; }
+
 
         /// <summary>
         /// Checkbox state, control the checked state at a higher level
@@ -31,6 +32,11 @@ namespace Bit.Client.Web.BlazorUI
                 _ = IsCheckedChanged.InvokeAsync(value);
             }
         }
+
+        /// <summary>
+        /// Custom icon for the check mark rendered by the checkbox instade of default check mark icon
+        /// </summary>
+        [Parameter] public string CheckmarkIconName { get; set; } = "Accept";
 
         /// <summary>
         /// Callback that is called when the IsChecked parameter changed
@@ -75,6 +81,11 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public EventCallback<bool> IsIndeterminateChanged { get; set; }
 
         /// <summary>
+        ///  Callback that is called when the check box is cliced
+        /// </summary>
+        [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+
+        /// <summary>
         /// The content of checkbox, It can be Any custom tag or a text
         /// </summary>
         [Parameter] public RenderFragment? ChildContent { get; set; }
@@ -104,22 +115,22 @@ namespace Bit.Client.Web.BlazorUI
                                         : string.Empty);
         }
 
-        protected async Task HandleCheckboxClick()
+        protected async Task HandleCheckboxClick(MouseEventArgs args)
         {
             if (IsEnabled is false) return;
+            await OnClick.InvokeAsync(args);
 
             if (IsIndeterminate)
             {
-                if (IsCheckedHasBeenSet && IsIndeterminateChanged.HasDelegate is false) return;
+                if (IsIndeterminateHasBeenSet && IsIndeterminateChanged.HasDelegate is false) return;
                 IsIndeterminate = false;
             }
             else
             {
                 if (IsCheckedHasBeenSet && IsCheckedChanged.HasDelegate is false) return;
                 IsChecked = !IsChecked;
+                await OnChange.InvokeAsync(IsChecked);
             }
-
-            await OnChange.InvokeAsync(IsChecked);
         }
 
         protected override async Task OnAfterRenderAsync(bool firstRender)

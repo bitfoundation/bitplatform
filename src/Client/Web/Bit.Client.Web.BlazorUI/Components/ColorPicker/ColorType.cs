@@ -6,10 +6,9 @@ using System.Threading.Tasks;
 
 namespace Bit.Client.Web.BlazorUI
 {
-    public enum LinkSize
+    public enum ColorType
     {
-        Normal,
-        Large
+        Hex,
+        Rgb
     }
-   
 }
