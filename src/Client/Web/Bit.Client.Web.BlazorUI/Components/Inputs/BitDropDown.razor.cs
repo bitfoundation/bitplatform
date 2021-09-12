@@ -148,7 +148,7 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// Optional custom template for label
         /// </summary>
-        [Parameter] public RenderFragment? LabelTemplate { get; set; }
+        [Parameter] public RenderFragment? LabelFragment { get; set; }
 
         /// <summary>
         /// Optional custom template for selected option displayed in after selection
@@ -156,21 +156,21 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public RenderFragment<BitDropDown>? TextTemplate { get; set; }
 
         /// <summary>
-        /// Optional custom template for placeholder text
+        /// Optional custom template for placeholder Text
         /// </summary>
         [Parameter] public RenderFragment<BitDropDown>? PlaceholderTemplate { get; set; }
 
         /// <summary>
         /// Optional custom template for chevron icon
         /// </summary>
-        [Parameter] public RenderFragment? CaretDownTemplate { get; set; }
+        [Parameter] public RenderFragment? CaretDownFragment { get; set; }
 
         /// <summary>
         /// Optional custom template for drop-down item
         /// </summary>
         [Parameter] public RenderFragment<BitDropDownItem>? ItemTemplate { get; set; }
 
-        public string? text { get; set; }
+        public string? Text { get; set; }
 
         public string FocusClass
         {
@@ -284,26 +284,26 @@ namespace Bit.Client.Web.BlazorUI
                 selectedItem.IsSelected = !selectedItem.IsSelected;
                 if (selectedItem.IsSelected)
                 {
-                    if (text.HasValue())
+                    if (Text.HasValue())
                     {
-                        text += MultiSelectDelimiter;
+                        Text += MultiSelectDelimiter;
                     }
 
-                    text += selectedItem.Text;
+                    Text += selectedItem.Text;
                 }
                 else
                 {
-                    text = string.Empty;
+                    Text = string.Empty;
                     foreach (var item in Items)
                     {
                         if (item.IsSelected)
                         {
-                            if (text.HasValue())
+                            if (Text.HasValue())
                             {
-                                text += MultiSelectDelimiter;
+                                Text += MultiSelectDelimiter;
                             }
 
-                            text += item.Text;
+                            Text += item.Text;
                         }
                     }
                 }
@@ -317,7 +317,7 @@ namespace Bit.Client.Web.BlazorUI
                 var isSameItemSelected = oldSelectedItem == selectedItem;
                 if (oldSelectedItem is not null) oldSelectedItem.IsSelected = false;
                 selectedItem.IsSelected = true;
-                text = selectedItem.Text;
+                Text = selectedItem.Text;
                 SelectedKey = selectedItem.Value;
                 isOpen = false;
 
@@ -342,17 +342,17 @@ namespace Bit.Client.Web.BlazorUI
                     Items.FindAll(i => DefaultSelectedMultipleKeys.Contains(i.Value) && i.ItemType == BitDropDownItemType.Normal).ForEach(i => { i.IsSelected = true; });
                 }
 
-                text = string.Empty;
+                Text = string.Empty;
                 Items.ForEach(i =>
                 {
                     if (i.IsSelected && i.ItemType == BitDropDownItemType.Normal)
                     {
-                        if (text.HasValue())
+                        if (Text.HasValue())
                         {
-                            text += MultiSelectDelimiter;
+                            Text += MultiSelectDelimiter;
                         }
 
-                        text += i.Text;
+                        Text += i.Text;
                     }
                 });
             }
@@ -362,18 +362,18 @@ namespace Bit.Client.Web.BlazorUI
                 {
                     Items.Find(i => i.Value == SelectedKey)!.IsSelected = true;
                     Items.FindAll(i => i.Value != SelectedKey).ForEach(i => { i.IsSelected = false; });
-                    text = Items.Find(i => i.Value == SelectedKey)!.Text;
+                    Text = Items.Find(i => i.Value == SelectedKey)!.Text;
                 }
                 else if (DefaultSelectedKey.HasValue() && Items.Find(i => i.Value == DefaultSelectedKey && i.ItemType == BitDropDownItemType.Normal) is not null)
                 {
                     Items.Find(i => i.Value == DefaultSelectedKey && i.ItemType == BitDropDownItemType.Normal)!.IsSelected = true;
                     Items.FindAll(i => i.Value != DefaultSelectedKey && i.ItemType == BitDropDownItemType.Normal).ForEach(i => { i.IsSelected = false; });
-                    text = Items.Find(i => i.Value == DefaultSelectedKey && i.ItemType == BitDropDownItemType.Normal)!.Text;
+                    Text = Items.Find(i => i.Value == DefaultSelectedKey && i.ItemType == BitDropDownItemType.Normal)!.Text;
                 }
                 else if (Items.FindAll(item => item.IsSelected is true && item.ItemType == BitDropDownItemType.Normal).Count != 0)
                 {
                     var firstSelectedItem = Items.Find(i => i.IsSelected && i.ItemType == BitDropDownItemType.Normal)!;
-                    text = firstSelectedItem.Text;
+                    Text = firstSelectedItem.Text;
                     Items.FindAll(i => i.Value != firstSelectedItem.Value).ForEach(i => { i.IsSelected = false; });
                 }
             }

@@ -4,13 +4,13 @@
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      id="@UniqueId.ToString()">
-    @if (Label.HasValue())
+    @if (LabelFragment != null)
+    {
+        <label id="@DropdownLabelId">@LabelFragment</label>
+    }
+    else if (Label.HasValue())
     {
         <label id="@DropdownLabelId">@Label</label>
-    }
-    else if (LabelTemplate != null)
-    {
-        <label id="@DropdownLabelId">@LabelTemplate</label>
     }
 
     @if (isOpen)
@@ -35,7 +35,7 @@
               aria-live="polite"
               aria-atomic="true"
               aria-invalid="false">
-            @if (text.HasValue())
+            @if (Text.HasValue())
             {
                 @if (TextTemplate is not null)
                 {
@@ -43,7 +43,7 @@
                 }
                 else
                 {
-                    @text
+                    @Text
                 }
             }
             else
@@ -59,9 +59,9 @@
             }
         </span>
         <span>
-            @if (CaretDownTemplate is not null)
+            @if (CaretDownFragment is not null)
             {
-                @CaretDownTemplate
+                @CaretDownFragment
             }
             else
             {
@@ -91,11 +91,19 @@
                         <BitCheckbox IsChecked="item.IsSelected"
                                      IsEnabled="item.IsEnabled"
                                      OnClick="(e) => HandleItemClick(item)">
-                            @item.Text
+                            @if (ItemTemplate is not null)
+                            {
+                                @ItemTemplate(item)
+                            }
+                            else
+                            {
+                                @item.Text
+                            }
                         </BitCheckbox>
                     }
                     else
                     {
+
                         <button class="@(Items.Any(prop=>prop.IsSelected && prop.Value.Equals(item.Value))
                                            ?$"{RootElementClass}-slc-{VisualClassRegistrar()}"
                                            :"")"
@@ -108,7 +116,14 @@
                                 aria-selected="@item.IsSelected"
                                 tabindex="@(item.IsEnabled ? 0 : -1)"
                                 @onclick="()=> HandleItemClick(item)">
-                            @item.Text
+                            @if (ItemTemplate is not null)
+                            {
+                                @ItemTemplate(item)
+                            }
+                            else
+                            {
+                                @item.Text
+                            }
                         </button>
                     }
                 }
