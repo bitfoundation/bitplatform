@@ -1,14 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
-using System.Text.Json;
 
 namespace Bit.Client.Web.BlazorUI
 {
@@ -24,9 +19,15 @@ namespace Bit.Client.Web.BlazorUI
         [Inject]
         public IJSRuntime JSRuntime { get; set; }
 
+        /// <summary>
+        /// Whether to show a slider for editing alpha value.
+        /// </summary>
         [Parameter]
         public bool ShowAlphaSlider { get; set; } = true;
 
+        /// <summary>
+        /// CSS-compatible string to describe the color.
+        /// </summary>
         [Parameter]
         public string Color
         {
@@ -47,10 +48,13 @@ namespace Bit.Client.Web.BlazorUI
 
             }
         }
-
+        
         [Parameter]
         public EventCallback<string> ColorChanged { get; set; }
 
+        /// <summary>
+        /// Indicates the Hex value.
+        /// </summary>
         [Parameter]
         public string Hex
         {
@@ -70,6 +74,10 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter]
         public EventCallback<string> HexChanged { get; set; }
 
+
+        /// <summary>
+        /// Indicates the RGB value.
+        /// </summary>
         [Parameter]
         public string Rgb
         {
@@ -89,6 +97,9 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter]
         public EventCallback<string> RgbChanged { get; set; }
 
+        /// <summary>
+        /// Indicates the Alpha value.
+        /// </summary>
         [Parameter]
         public double Alpha
         {
@@ -105,6 +116,9 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter]
         public EventCallback<double> AlphaChanged { get; set; }
 
+        /// <summary>
+        /// Whether to show color preview box.
+        /// </summary>
         [Parameter]
         public bool ShowPreview { get; set; }
 
