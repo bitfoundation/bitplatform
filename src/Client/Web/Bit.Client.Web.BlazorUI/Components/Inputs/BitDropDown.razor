@@ -48,7 +48,14 @@
             }
             else
             {
-                @Placeholder
+                @if (PlaceholderTemplate is not null)
+                {
+                    @PlaceholderTemplate(this)
+                }
+                else
+                {
+                    @Placeholder
+                }
             }
         </span>
         <span>
