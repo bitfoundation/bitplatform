@@ -11,7 +11,7 @@
                   OnFocusIn="HandleFocusIn"
                   OnFocusOut="HandleFocusOut"
                   Placeholder="@Placeholder"
-                  Value="@selectedDate"
+                  @bind-Value="@selectedDate"
                   IsReadonly="true">
     </BitTextField>
     @if (IsOpen)

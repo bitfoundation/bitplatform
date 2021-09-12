@@ -831,6 +831,10 @@
 
     <h3>DatePicker with custom date formatting</h3>
     <BitDatePicker OnSelectDate="OnDateFormat"></BitDatePicker>
+
+	<h3>DatePicker two-way binding</h3>
+	<div>binded: @SelectedDate</div>
+    <BitDatePicker @bind-Value="@SelectedDate"></BitDatePicker>
 </div>
 <hr />
 

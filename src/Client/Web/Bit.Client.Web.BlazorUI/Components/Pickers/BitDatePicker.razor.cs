@@ -39,6 +39,19 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
+        [Parameter]
+        public string Value
+        {
+            get => selectedDate;
+            set
+            {
+                if (value == selectedDate) return;
+                selectedDate = value;
+
+                _ = ValueChanged.InvokeAsync(value);
+            }
+        }
+
         /// <summary>
         /// GoToToday text for the DatePicker
         /// </summary>
@@ -85,6 +98,8 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public EventCallback<string> OnDateSet { get; set; }
 
         [Parameter] public Func<BitDate,string> OnSelectDate { get; set; }
+
+        [Parameter] public EventCallback<string?> ValueChanged { get; set; }
 
         protected override string RootElementClass { get; } = "bit-dtp";
 
@@ -144,6 +159,10 @@ namespace Bit.Client.Web.BlazorUI
                 IsOpen = false;
                 BitDate date = new(currentYear,month,day,dayOfWeek);
                 selectedDate = OnSelectDate is not null ? OnSelectDate.Invoke(date): GetSelectedDateString(date);
+                if (ValueChanged.HasDelegate is true)
+                {
+                    await ValueChanged.InvokeAsync(selectedDate);
+                }
                 await OnDateSet.InvokeAsync(selectedDate);
             }
         }

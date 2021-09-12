@@ -329,6 +329,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
         }
 
         private string? TextValue;
+        private string? SelectedDate;
         private double? BitSliderHorizontalValue = 2;
         private double? BitSliderVerticalValue = 0;
         private double? BitSliderRangedLowerValue = 0;
