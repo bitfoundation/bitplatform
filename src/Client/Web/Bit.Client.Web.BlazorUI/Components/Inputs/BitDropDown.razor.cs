@@ -172,26 +172,6 @@ namespace Bit.Client.Web.BlazorUI
 
         public string? Text { get; set; }
 
-        public string FocusClass
-        {
-            get => focusClass;
-            set
-            {
-                focusClass = value;
-                ClassBuilder.Reset();
-            }
-        }
-
-        public string ExpandClass
-        {
-            get => expandClass;
-            set
-            {
-                expandClass = value;
-                ClassBuilder.Reset();
-            }
-        }
-
         public string DropDownId { get; set; } = String.Empty;
         public string? DropdownLabelId { get; set; } = String.Empty;
         public string DropDownOptionId { get; set; } = String.Empty;
