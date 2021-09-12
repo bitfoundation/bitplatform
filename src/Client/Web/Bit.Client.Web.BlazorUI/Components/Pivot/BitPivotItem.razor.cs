@@ -19,12 +19,12 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// The content of the pivot item header, It can be Any custom tag or a text
         /// </summary>
-        [Parameter] public RenderFragment? HeaderContent { get; set; }
+        [Parameter] public RenderFragment? HeaderFragment { get; set; }
 
         /// <summary>
         /// The content of the pivot item can be Any custom tag or a text, If HeaderContent provided value of this parameter show, otherwise use ChildContent
         /// </summary>
-        [Parameter] public RenderFragment? BodyContent { get; set; }
+        [Parameter] public RenderFragment? BodyFragment { get; set; }
 
         /// <summary>
         /// The text of the pivot item header, The text displayed of each pivot link

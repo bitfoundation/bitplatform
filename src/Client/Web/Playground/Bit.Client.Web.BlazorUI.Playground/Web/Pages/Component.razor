@@ -538,15 +538,18 @@
 <h3>Link pivot with Count and Icon and custom template for icon </h3>
 <div class="pivot-container">
     <BitPivot OverflowBehavior="@BitOverflowBehavior.Scroll">
-        <BitPivotItem HeaderText="Files" IconName="Info"></BitPivotItem>
-        <BitPivotItem HeaderText="Shared with me" ItemCount="32"></BitPivotItem>
-        <BitPivotItem HeaderText="Recent" IconName="Info" ItemCount="32"></BitPivotItem>
-        <BitPivotItem HeaderText="Some tab" IconName="Info" ItemCount="32"></BitPivotItem>
-        <BitPivotItem HeaderText="Latest" IconName="Info" ItemCount="32"></BitPivotItem>
-        <BitPivotItem HeaderText="I also have a custom template for icon" IconName="Info" ItemCount="32">
-            <HeaderContent>
+        <BitPivotItem HeaderText="Files" IconName="Info">Content 1 - Files</BitPivotItem>
+        <BitPivotItem HeaderText="Shared with me" ItemCount="32">Content 2 - Shared with me</BitPivotItem>
+        <BitPivotItem HeaderText="Recent" IconName="Info" ItemCount="32">Content 3 - Recent</BitPivotItem>
+        <BitPivotItem HeaderText="Some tab" IconName="Info" ItemCount="32">Content 4 - Some tab</BitPivotItem>
+        <BitPivotItem HeaderText="Latest" IconName="Info" ItemCount="32">Content 5 - Latest</BitPivotItem>
+        <BitPivotItem IconName="Info" ItemCount="32">
+            <HeaderFragment>
                 <i class="bit-icon bit-icon--HeartFill"></i>
-            </HeaderContent>
+            </HeaderFragment>
+            <BodyFragment>
+                Content 6 - Info
+            </BodyFragment>
         </BitPivotItem>
     </BitPivot>
 </div>

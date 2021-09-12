@@ -146,11 +146,6 @@ namespace Bit.Client.Web.BlazorUI
             return base.OnInitializedAsync();
         }
 
-        protected override Task OnParametersSetAsync()
-        {
-            return base.OnParametersSetAsync();
-        }
-
         protected override string RootElementClass => "bit-pvt";
 
         protected override void RegisterComponentClasses()
