@@ -33,6 +33,7 @@
     box-sizing: border-box;
     cursor: pointer;
     user-select: none;
+    -webkit-font-smoothing: antialiased;
 
     &:hover {
         span:first-child {
@@ -175,6 +176,7 @@
     background-color: $White;
     z-index: 1001;
     overflow: hidden auto;
+    -webkit-font-smoothing: antialiased;
 
     .bit-drp-head-fluent {
         width: 100%;
@@ -189,6 +191,7 @@
         cursor: default;
         text-align: left;
         user-select: none;
+        -webkit-font-smoothing: antialiased;
     }
 
     button {
@@ -213,6 +216,7 @@
         white-space: nowrap;
         cursor: pointer;
         user-select: none;
+        -webkit-font-smoothing: antialiased;
 
         &:hover {
             background-color: $Grey20;

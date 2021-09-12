@@ -35,9 +35,9 @@
               aria-live="polite"
               aria-atomic="true"
               aria-invalid="false">
-            @if (text.HasValue())
+            @if (Text.HasValue())
             {
-                @text
+                @Text
             }
             else
             {
@@ -55,7 +55,7 @@
              tabindex="0"
              role="listbox"
              aria-labelledby="@DropdownLabelId">
-            @foreach ((BitDropDownItem item, Int32 i) in Items.Select((item, i) => (item, i)))
+            @foreach ((BitDropDownItem item, Int32 index) in Items.Select((item, index) => (item, index)))
             {
                 if (item.ItemType == BitDropDownItemType.Header)
                 {
@@ -68,18 +68,16 @@
                 {
                     @if (IsMultiSelect)
                     {
-                        <BitCheckbox Class="@(Items.Any(prop=>prop.IsSelected && prop.Value.Equals(item.Value))
-                                           ?$"{RootElementClass}-slc-{VisualClassRegistrar()}"
-                                           :"")"
+                        <BitCheckbox Class="@(item.IsSelected ? $"{RootElementClass}-slc-{VisualClassRegistrar()}" :"")"
                                      IsChecked="item.IsSelected"
                                      IsEnabled="item.IsEnabled"
                                      OnClick="(e) => HandleItemClick(item)"
-                                     id="@($"{DropDownId}-list{i}")"
+                                     id="@($"{DropDownId}-list{index}")"
                                      type="checkbox"
                                      role="option"
                                      data-is-focusable="@(item.IsEnabled ? "true" : "false")"
                                      disabled=@(!item.IsEnabled)
-                                     data-index="@i"
+                                     data-index="@index"
                                      aria-disabled="@(!item.IsEnabled)"
                                      aria-selected="@(item.IsSelected ? "true" : "false")"
                                      aria-setsize="@NormalDropDownItems.Count"
@@ -90,15 +88,13 @@
                     }
                     else
                     {
-                        <button class="@(Items.Any(prop=>prop.IsSelected && prop.Value.Equals(item.Value))
-                                           ?$"{RootElementClass}-slc-{VisualClassRegistrar()}"
-                                           :"")"
-                                id="@($"{DropDownId}-list{i}")"
+                        <button Class="@(item.IsSelected ? $"{RootElementClass}-slc-{VisualClassRegistrar()}" :"")"
+                                id="@($"{DropDownId}-list{index}")"
                                 type="button"
                                 role="option"
                                 data-is-focusable="@(item.IsEnabled ? "true" : "false")"
                                 disabled=@(!item.IsEnabled)
-                                data-index="@i"
+                                data-index="@index"
                                 aria-disabled="@(!item.IsEnabled)"
                                 aria-selected="@(item.IsSelected ? "true" : "false")"
                                 aria-setsize="@NormalDropDownItems.Count"
