@@ -163,7 +163,7 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// Optional custom template for chevron icon
         /// </summary>
-        [Parameter] public RenderFragment<BitDropDown>? CaretDownTemplate { get; set; }
+        [Parameter] public RenderFragment? CaretDownTemplate { get; set; }
 
         /// <summary>
         /// Optional custom template for drop-down item

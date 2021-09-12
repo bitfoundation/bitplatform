@@ -59,7 +59,14 @@
             }
         </span>
         <span>
-            <i class="bit-icon" aria-hidden="true"></i>
+            @if (CaretDownTemplate is not null)
+            {
+                @CaretDownTemplate
+            }
+            else
+            {
+                <i class="bit-icon" aria-hidden="true"></i>
+            }
         </span>
     </div>
     @if (isOpen)
