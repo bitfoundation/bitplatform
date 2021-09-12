@@ -31,7 +31,8 @@
          aria-controls="@(IsOpen ? $"{DropDownId}-list" : null)"
          title="@Title"
          @onclick="HandleClick">
-        <span id="@DropDownOptionId"
+        <span class="bit-drp-wrapper-txt"
+              id="@DropDownOptionId"
               aria-live="polite"
               aria-atomic="true"
               aria-invalid="false">
@@ -58,7 +59,7 @@
                 }
             }
         </span>
-        <span>
+        <span class="bit-drp-wrapper-ic">
             @if (CaretDownFragment is not null)
             {
                 @CaretDownFragment
@@ -104,7 +105,14 @@
                                      aria-setsize="@NormalDropDownItems.Count"
                                      aria-posinset="@GetItemPosInSet(item)"
                                      tabindex="@(item.IsEnabled ? 0 : -1)">
-                            @item.Text
+                            @if (ItemTemplate is not null)
+                            {
+                                @ItemTemplate(item)
+                            }
+                            else
+                            {
+                                @item.Text
+                            }
                         </BitCheckbox>
                     }
                     else
