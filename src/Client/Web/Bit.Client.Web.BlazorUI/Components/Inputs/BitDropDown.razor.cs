@@ -9,17 +9,16 @@ namespace Bit.Client.Web.BlazorUI
 {
     public partial class BitDropDown
     {
-        private string focusClass = "";
-        private string expandClass = "";
         private bool isOpen = false;
         private bool isMultiSelect = false;
         private bool isRequired = false;
-        private string? text;
         private List<string> selectedMultipleKeys = new();
         private string selectedKey = string.Empty;
         private bool SelectedMultipleKeysHasBeenSet;
         private bool SelectedKeyHasBeenSet;
         private bool IsSelectedMultipleKeysChanged = false;
+        private List<BitDropDownItem> NormalDropDownItems;
+        private string? text;
 
         /// <summary>
         /// Whether multiple items are allowed to be selected
@@ -112,7 +111,7 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public string? DefaultSelectedKey { get; set; }
 
         /// <summary>
-        /// Input placeholder text, Displayed until an option is selected
+        /// Input placeholder Text, Displayed until an option is selected
         /// </summary>
         [Parameter] public string? Placeholder { get; set; }
 
@@ -151,26 +150,6 @@ namespace Bit.Client.Web.BlazorUI
         /// </summary>
         [Parameter] public RenderFragment? LabelFragment { get; set; }
 
-        public string FocusClass
-        {
-            get => focusClass;
-            set
-            {
-                focusClass = value;
-                ClassBuilder.Reset();
-            }
-        }
-
-        public string ExpandClass
-        {
-            get => expandClass;
-            set
-            {
-                expandClass = value;
-                ClassBuilder.Reset();
-            }
-        }
-
         public string DropDownId { get; set; } = String.Empty;
         public string? DropdownLabelId { get; set; } = String.Empty;
         public string DropDownOptionId { get; set; } = String.Empty;
@@ -179,17 +158,9 @@ namespace Bit.Client.Web.BlazorUI
 
         protected override void RegisterComponentClasses()
         {
-            ClassBuilder.Register(() => FocusClass.HasNoValue()
-                ? string.Empty
-                : $"{RootElementClass}-{FocusClass}-{VisualClassRegistrar()}");
-
-            ClassBuilder.Register(() => ExpandClass.HasNoValue()
-                ? string.Empty
-                : $"{RootElementClass}-{ExpandClass}-{VisualClassRegistrar()}");
-
             ClassBuilder.Register(() => Items.Any(prop => prop.IsSelected)
                 ? string.Empty
-                : $"{RootElementClass}-{"hasValue"}-{VisualClassRegistrar()}");
+                : $"{RootElementClass}-{"has-value"}-{VisualClassRegistrar()}");
 
             ClassBuilder.Register(() => IsOpen is false
                 ? string.Empty
@@ -206,12 +177,13 @@ namespace Bit.Client.Web.BlazorUI
             DropDownOptionId = $"{DropDownId}-option";
             DropdownLabelId = Label.HasValue() ? $"{DropDownId}-label" : null;
 
+            NormalDropDownItems = Items.FindAll(i => i.ItemType == BitDropDownItemType.Normal).ToList();
             InitText();
 
             await base.OnParametersSetAsync();
         }
 
-        internal void ChangeAllItemsIsSelected(bool value)
+        private void ChangeAllItemsIsSelected(bool value)
         {
             foreach (var item in Items)
             {
@@ -222,7 +194,6 @@ namespace Bit.Client.Web.BlazorUI
         private void CloseCallout()
         {
             IsOpen = false;
-            FocusClass = "";
             StateHasChanged();
         }
 
@@ -233,12 +204,10 @@ namespace Bit.Client.Web.BlazorUI
                 if (isOpen is false)
                 {
                     isOpen = true;
-                    FocusClass = "focused";
                 }
                 else
                 {
                     isOpen = false;
-                    FocusClass = "";
                 }
                 await OnClick.InvokeAsync(e);
             }
@@ -359,5 +328,6 @@ namespace Bit.Client.Web.BlazorUI
         }
 
         private string GetDropdownAriaLabelledby => Label.HasValue() ? $"{DropDownId}-label {DropDownId}-option" : $"{DropDownId}-option";
+        private int GetItemPosInSet(BitDropDownItem item) => NormalDropDownItems.IndexOf(item) + 1;
     }
 }
