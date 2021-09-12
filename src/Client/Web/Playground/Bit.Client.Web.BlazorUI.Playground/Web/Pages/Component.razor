@@ -632,8 +632,8 @@
 <h3>Trigger onchange event</h3>
 <div class="pivot-container">
     @BitPivotItem?.HeaderText Clicked
-    <BitPivot LinkFormat="@BitLinkFormat.Tabs" 
-              LinkSize="@BitLinkSize.Large" 
+    <BitPivot LinkFormat="@BitLinkFormat.Tabs"
+              LinkSize="@BitLinkSize.Large"
               OnLinkClick="@(e => BitPivotItem = e)">
         <BitPivotItem HeaderText="Foo aaaaaa">Pivot #1</BitPivotItem>
         <BitPivotItem HeaderText="Bar bbbbbb">Pivot #2</BitPivotItem>
@@ -770,16 +770,57 @@
 <div class="drop-container">
     <h2>BitDropDown</h2>
     <br />
-    <h3>Single select</h3>
-    <BitDropDown Label="Single select" Items="GetDropdownItems()" Placeholder="Select an option" Style="width: 300px">
+    <h3>Basic Dropdowns</h3>
+    <BitDropDown Label="Basic uncontrolled example" Items="GetDropdownItems()" Placeholder="Select an option" Style="width: 300px">
     </BitDropDown>
     <br />
-    <h3>Disabled</h3>
-    <BitDropDown Label="Disabled" IsEnabled="false" Items="GetDropdownItems()" Placeholder="Select an option" Style="width: 300px">
+    <BitDropDown Label="Disabled example with defaultSelectedKey" IsEnabled="false" Items="GetDropdownItems()" Placeholder="Select an option" Style="width: 300px">
     </BitDropDown>
     <br />
-    <h3>Multi select</h3>
-    <BitDropDown Label="Multi select" IsMultiSelect="true" Items="GetDropdownItems()" Placeholder="Select options" Style="width: 300px">
+    <BitDropDown Label="Multi-select uncontrolled example" IsMultiSelect="true" Items="GetDropdownItems()" Placeholder="Select options" Style="width: 300px">
+    </BitDropDown>
+    <h3>Customized Dropdown</h3>
+    <BitDropDown Items="GetCustomDropdownItems()"
+                 Placeholder="Select an option"
+                 Label="Custom example"
+                 AriaLabel="Custom dropdown example">
+        <TextTemplate>
+            <div>
+                <i class="bit-icon bit-icon--@((context.Items.Find(i => i.Value == context.SelectedKey).Data as DropDownItemData).IconName)"
+                   aria-hidden="true"
+                   title="@((context.Items.Find(i => i.Value == context.SelectedKey).Data as DropDownItemData).IconName)"></i>
+                <span>@context.Items.Find(i => i.Value == context.SelectedKey).Text</span>
+            </div>
+        </TextTemplate>
+        <PlaceholderTemplate>
+            <div>
+                <i class="bit-icon bit-icon--MessageFill" aria-hidden="true"></i>
+                <span>@context.Placeholder</span>
+            </div>
+        </PlaceholderTemplate>
+        <CaretDownFragment>
+            <i class="bit-icon bit-icon--CirclePlus"></i>
+        </CaretDownFragment>
+        <ItemTemplate>
+            <div>
+                <i class="bit-icon bit-icon--@((context.Data as DropDownItemData).IconName)"
+                   aria-hidden="true"
+                   title="@((context.Data as DropDownItemData).IconName)"></i>
+                <span>@context.Text</span>
+            </div>
+        </ItemTemplate>
+    </BitDropDown>
+    <br />
+    <BitDropDown Items="GetCustomDropdownItems()"
+                 Placeholder="Select an option"
+                 Label="Custom label"
+                 AriaLabel="Custom dropdown label example">
+        <LabelFragment>
+            <label>Custom label</label>
+            <button type="button" title="Info" aria-label="Info" class="custom-drp-lbl-ic">
+                <i class="bit-icon bit-icon--Info"></i>
+            </button>
+        </LabelFragment>
     </BitDropDown>
 </div>
 <hr />

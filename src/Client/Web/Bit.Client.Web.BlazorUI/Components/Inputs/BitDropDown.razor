@@ -3,13 +3,13 @@
 <div @ref="RootElement"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
-    @if (Label.HasValue())
+    @if (LabelFragment is not null)
     {
-        <label class="bit-drp-lbl" id="@DropdownLabelId">@Label</label>
+        <label class="bit-drp-lbl" id="@DropdownLabelId">@LabelFragment</label>
     }
     else if (Label.HasValue())
     {
-        <label class="bit-drp-lbl" id="@DropdownLabelId">@LabelFragment</label>
+        <label class="bit-drp-lbl" id="@DropdownLabelId">@Label</label>
     }
 
     @if (isOpen)
