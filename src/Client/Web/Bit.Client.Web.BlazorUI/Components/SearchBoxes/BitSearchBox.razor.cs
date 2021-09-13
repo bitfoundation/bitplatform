@@ -123,6 +123,12 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public EventCallback<string?> OnChange { get; set; }
 
         /// <summary>
+        /// Callback executed when the user presses escape in the search box.
+        /// </summary>
+        [Parameter] public EventCallback OnEscape { get; set; }
+
+
+        /// <summary>
         /// Callback executed when the user clears the search box by either clicking 'X' or hitting escape
         /// </summary>
         [Parameter] public EventCallback OnClear { get; set; }
@@ -196,9 +202,10 @@ namespace Bit.Client.Web.BlazorUI
             {
                 Value = string.Empty;
                 await InputRef.FocusAsync();
+                await OnEscape.InvokeAsync();
                 await OnClear.InvokeAsync();
             }
-            else
+            else if (eventArgs.Code == "Enter")
             {
                 Value = await JSRuntime.GetProperty(InputRef, "value");
                 await OnSearch.InvokeAsync(Value);
