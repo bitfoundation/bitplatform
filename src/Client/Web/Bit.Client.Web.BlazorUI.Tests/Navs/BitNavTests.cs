@@ -3,11 +3,11 @@ using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.Client.Web.BlazorUI.Tests.Navs
-{ 
+{
     [TestClass]
     public class BitNavTests : BunitTestContext
     {
- 
+
         [DataTestMethod,
            DataRow(Visual.Fluent),
            DataRow(Visual.Cupertino),
@@ -207,6 +207,75 @@ namespace Bit.Client.Web.BlazorUI.Tests.Navs
                 //Assert.IsTrue(hasAttribute);
                 //Assert.IsTrue(hasAttribute ? bitNavLinksItem.GetAttribute("aria-label").Equals(ariaLabel) : true);
             }
+        }
+
+        [DataTestMethod,
+            DataRow(true),
+            DataRow(false)
+        ]
+        public void BitNavShouldRespectGroupItems(bool isGroup)
+        {
+            var navLinkItems = new List<BitNavLinkItem> { new BitNavLinkItem { Name = "test", Key = "key", IsGroup = isGroup, Url = "https://www.google.com/" } };
+            var component = RenderComponent<BitNavTest>(parameters =>
+            {
+                parameters.Add(p => p.NavLinkItems, navLinkItems);
+            });
+
+            var navItem = component.Find(".bit-nav ul > li > div > .bit-nav-has-not-icon-fluent");
+            Assert.AreEqual(isGroup, navItem.ClassList.Contains("bit-nav-isgroup-fluent"));
+        }
+
+        [DataTestMethod,
+            DataRow(true, "CollapseAriaLabel", "ExpandAriaLabel"),
+            DataRow(false, "CollapseAriaLabel", "ExpandAriaLabel")
+        ]
+        public void BitNavShouldRespectGroupItems(bool isExpanded, string collapseAriaLabel, string ExpandAriaLabel)
+        {
+            var navLinkItems = new List<BitNavLinkItem> {
+                new BitNavLinkItem {
+                    Name = "Home",
+                    Key = "key1",
+                    CollapseAriaLabel = collapseAriaLabel,
+                    ExpandAriaLabel=ExpandAriaLabel,
+                    Links = new List < BitNavLinkItem > {
+                        new BitNavLinkItem {
+                            Name = "Activity",
+                            Url = "http://msn.com",
+                            Key = "key1-1",
+                            Title = "Activity"
+                        }
+                    }
+                },
+            };
+
+            var components = RenderComponent<BitNavTest>(parameters =>
+            {
+                parameters.Add(p => p.NavLinkItems, navLinkItems);
+            });
+
+            var navLinksItem = components.Find(".bit-nav button");
+
+            Assert.IsTrue(navLinksItem.HasAttribute("aria-label"));
+            Assert.AreEqual(isExpanded ? ExpandAriaLabel : collapseAriaLabel, navLinksItem.GetAttribute("aria-label"));
+
+            navLinksItem.Click();
+            Assert.AreEqual(isExpanded ? collapseAriaLabel : ExpandAriaLabel, navLinksItem.GetAttribute("aria-label"));
+        }
+
+        [DataTestMethod,
+            DataRow("key"),
+        ]
+        public void BitNav_ShouldRespectInitialSelectedKey(string initialSelectedKey)
+        {
+            var com = RenderComponent<BitNavTest>(parameters =>
+            {
+                parameters.Add(p => p.NavLinkItems, new List<BitNavLinkItem> { new BitNavLinkItem { Name = "Test", Key = "key" } });
+                parameters.Add(p=>p.InitialSelectedKey,initialSelectedKey);
+            });
+
+            var selectedNav = com.Find($".bit-nav-selected-fluent");
+
+            Assert.IsNotNull(selectedNav);
         }
     }
 }

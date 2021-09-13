@@ -9,15 +9,18 @@ namespace Bit.Client.Web.BlazorUI
 {
     public partial class BitNav : IDisposable
     {
+        private string? selectedKey;
+        [Inject] private NavigationManager navigationManager { get; set; }
+        private bool SelectedKeyHasBeenSet;
+
+        /// <summary>
+        /// (Optional) The key of the nav item initially selected.
+        /// </summary>
+        [Parameter] public string? InitialSelectedKey { get; set; }
+
         /// <summary>
         /// The key of the nav item selected by caller
         /// </summary>
-        private string? selectedKey;
-
-        [Inject] private NavigationManager navigationManager { get; set; }
-
-        private bool SelectedKeyHasBeenSet;
-
         [Parameter]
         public string? SelectedKey
         {
@@ -66,9 +69,8 @@ namespace Bit.Client.Web.BlazorUI
 
         protected override async Task OnInitializedAsync()
         {
-
             navigationManager.LocationChanged += OnLocationChanged;
-
+            selectedKey = selectedKey ?? InitialSelectedKey;
 
             await base.OnInitializedAsync();
         }
@@ -115,13 +117,13 @@ namespace Bit.Client.Web.BlazorUI
             var hasUrlClass = navLink.Url.HasNoValue() ? "nourl" : "hasurl";
 
             var mainStyle = $"bit-nav-link-{enabledClass}-{hasUrlClass}-{VisualClassRegistrar()}";
-            var selectedClass = navLink.Key == SelectedKey ? $"bit-nav-selected-{VisualClassRegistrar()}" : "";
+            var selectedClass = navLink.Key == SelectedKey ? $"bit-nav-selected-{VisualClassRegistrar()}" : string.Empty;
             var hasIcon = navLink.Icon.HasNoValue()
                             ? $"bit-nav-has-not-icon-{VisualClassRegistrar()}"
                             : $"bit-nav-has-icon-{VisualClassRegistrar()}";
-            var hasChildren = navLink.Links?.Any() ?? false ? $"bit-nav-haschildren-{VisualClassRegistrar()}" : "";
+            var isGroup = navLink.IsGroup ? $"bit-nav-isgroup-{VisualClassRegistrar()}" : string.Empty;
 
-            return $"{mainStyle} {selectedClass} {hasIcon} {hasChildren}";
+            return $"{mainStyle} {selectedClass} {hasIcon} {isGroup}";
         }
 
         public void Dispose()
