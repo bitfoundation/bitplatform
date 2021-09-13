@@ -5,6 +5,9 @@
         @attributes="HtmlAttributes"
         style="@StyleBuilder.Value"
         class="@ClassBuilder.Value"
+        type="button"
+        role="tab"
+        id="@Pivot?.GetPivotItemId(this)"
         @onclick="HandleButtonClick">
     <span>
         @if (@IconName.HasValue())

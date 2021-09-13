@@ -12,7 +12,9 @@
             @ChildContent
         </div>
     </CascadingValue>
-    <div role="tabpanel">
+    <div role="tabpanel"
+         aria-hidden="false"
+         aria-labelledby="@GetAriaLabelledby">
         @(SelectedItem?.BodyFragment ?? SelectedItem?.ChildContent)
     </div>
 </div>
