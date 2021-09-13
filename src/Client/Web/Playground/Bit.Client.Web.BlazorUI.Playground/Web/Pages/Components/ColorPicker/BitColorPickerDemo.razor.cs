@@ -3,6 +3,5 @@
     public partial class BitColorPickerDemo
     {
         private bool IsToggleChecked = true;
-        private AlphaType AlphaType = AlphaType.Alpha;        
     }
 }
