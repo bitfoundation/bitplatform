@@ -8,6 +8,7 @@
         type="button"
         role="tab"
         id="@Pivot?.GetPivotItemId(this)"
+        aria-selected="@(IsSelected ? "true": "false")"
         @onclick="HandleButtonClick">
     <span>
         @if (@IconName.HasValue())
