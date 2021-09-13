@@ -49,12 +49,15 @@
 
         childTemplate = (navLink) =>
         (
-    @<li role="listitem" @key="navLink.Key">
+    @<li role="listitem"
+         @key="navLink.Key"
+         @onclick="(()=>HandleClick(navLink))">
+
         <div name="@navLink.Name">
             @if (navLink.Links?.Any() ?? false)
             {
                 <button tabindex="0"
-                        @onclick="(() => HandleOnClick(navLink))"
+                        @onclick="(() => OnLinkExpand(navLink))"
                         aria-label="@navLink.CollapseAriaLabel"
                         aria-expanded="@navLink.IsExpanded">
                     <i class="bit-icon bit-icon--ChevronDown @(navLink.IsExpanded ? "bit-nav-expand-fluent" : "")"></i>
@@ -66,7 +69,7 @@
                 <a href="@(navLink.Disabled ? "/" : navLink.Url)"
                    title="@(navLink.Title.HasValue() ? navLink.Title : navLink.Name)"
                    tabindex="-1"
-                   onclick="@HandleOnClick(navLink,false),@(navLink.Disabled ? "return false;" : "")"
+                   @onclick="(()=>HandleLinkClick(navLink))"
                    target="@navLink.Target"
                    style="padding: 0px 20px 0px @(((navLink.Depth * 14)+(navLink.Icon.HasNoValue() ? 27 : 3)).ToString())px;"
                    class="@GetLinkClass(navLink)">
@@ -87,7 +90,7 @@
                     <a class="@GetLinkClass(navLink)"
                        title="@(navLink.Title.HasValue() ? navLink.Title : navLink.Name)"
                        style="padding: 0px 20px 0px @(((navLink.Depth * 14)+27).ToString())px;"
-                       @onclick="(() => Toggle(navLink))">
+                       @onclick="(() => HandleLinkClick(navLink))">
                         <span>
                             <div>@navLink.Name</div>
                         </span>
@@ -96,13 +99,13 @@
                 else
                 {
                     <button class="@GetLinkClass(navLink)"
-                        title="@(navLink.Title.HasValue() ? navLink.Title : navLink.Name)"
-                        style="padding: 0px 20px 0px @(((navLink.Depth * 14)+27).ToString())px;"
-                        @onclick="(() => HandleOnClick(navLink))">
-                    <span>
-                        <div>@navLink.Name</div>
-                    </span>
-                </button>
+                            title="@(navLink.Title.HasValue() ? navLink.Title : navLink.Name)"
+                            style="padding: 0px 20px 0px @(((navLink.Depth * 14)+27).ToString())px;"
+                            @onclick="(() => HandleLinkClick(navLink))">
+                        <span>
+                            <div>@navLink.Name</div>
+                        </span>
+                    </button>
                 }
 
             }

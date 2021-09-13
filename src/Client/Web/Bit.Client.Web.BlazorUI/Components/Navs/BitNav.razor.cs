@@ -97,18 +97,36 @@ namespace Bit.Client.Web.BlazorUI
             StateHasChanged();
         }
 
-        protected async Task HandleOnClick(BitNavLinkItem navLink, bool toggle = true)
+
+        private async Task OnLinkExpand(BitNavLinkItem navLink)
         {
             if (IsEnabled is false || navLink.Disabled) return;
 
-            if (navLink.Links?.Any() ?? false && toggle)
+            if (navLink.Links?.Any() ?? false)
             {
                 navLink.IsExpanded = !navLink.IsExpanded;
             }
 
             await OnLinkExpandClick.InvokeAsync(navLink);
-            await navLink.OnClick.InvokeAsync();
+        }
+
+        private async Task HandleLinkClick(BitNavLinkItem navLink)
+        {
+            if (IsEnabled is false || navLink.Disabled) return;
+
             await OnLinkClick.InvokeAsync(navLink);
+
+            if (navLink.Url.HasNoValue() && navLink.Links.Any())
+            {
+                await OnLinkExpand(navLink);
+            }
+        }
+
+        private async Task HandleClick(BitNavLinkItem navLink)
+        {
+            if (IsEnabled is false || navLink.Disabled) return;
+
+            await navLink.OnClick.InvokeAsync();
         }
 
         protected override void RegisterComponentClasses()
