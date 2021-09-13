@@ -95,6 +95,8 @@ namespace Bit.Client.Web.BlazorUI
 
         internal string GetPivotItemId(BitPivotItem item) => $"Pivot{UniqueId}-Tab{AllItems.FindIndex(i => i == item)}";
 
+        internal int GetPivotItemTabIndex(BitPivotItem item) => item.IsSelected ? 0 : AllItems.FindIndex(i => i == item) == 0 ? 0 : -1;
+
         internal async Task SelectItem(BitPivotItem item)
         {
             if (SelectedKeyHasBeenSet && SelectedKeyChanged.HasDelegate is false) return;
