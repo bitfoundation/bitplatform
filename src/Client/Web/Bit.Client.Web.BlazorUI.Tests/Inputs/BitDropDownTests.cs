@@ -141,7 +141,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                 parameters.Add(p => p.MultiSelectDelimiter, multiSelectDelimiter);
             });
 
-            var textSpan = component.Find(".bit-drp-wrapper > span");
+            var textSpan = component.Find(".bit-drp-wrapper-txt");
             var expectedText = "";
 
             if (isMultiSelect)
@@ -181,7 +181,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                 parameters.Add(p => p.DefaultSelectedKey, defaultSelectedKey);
             });
 
-            var textSpan = component.Find(".bit-drp-wrapper > span");
+            var textSpan = component.Find(".bit-drp-wrapper-txt");
             var expectedText = items.Find(i => i.Value == defaultSelectedKey && i.ItemType == BitDropDownItemType.Normal).Text;
 
             Assert.AreEqual(expectedText, textSpan.InnerHtml);
@@ -202,7 +202,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                 parameters.Add(p => p.DefaultSelectedMultipleKeys, defaultSelectedMultipleKeyList);
             });
 
-            var textSpan = component.Find(".bit-drp-wrapper > span");
+            var textSpan = component.Find(".bit-drp-wrapper-txt");
             var defaultSelectedItems = items.FindAll(i => defaultSelectedMultipleKeyList.Contains(i.Value) && i.ItemType == BitDropDownItemType.Normal);
             var expectedText = "";
 
@@ -236,7 +236,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                 parameters.Add(p => p.SelectedKey, selectedKey);
             });
 
-            var textSpan = component.Find(".bit-drp-wrapper > span");
+            var textSpan = component.Find(".bit-drp-wrapper-txt");
             var expectedText = items.Find(i => i.Value == selectedKey && i.ItemType == BitDropDownItemType.Normal).Text;
 
             Assert.AreEqual(expectedText, textSpan.InnerHtml);
@@ -259,7 +259,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                 parameters.Add(p => p.SelectedMultipleKeys, selectedMultipleKeyList);
             });
 
-            var textSpan = component.Find(".bit-drp-wrapper > span");
+            var textSpan = component.Find(".bit-drp-wrapper-txt");
             var selectedItems = items.FindAll(i => selectedMultipleKeyList.Contains(i.Value) && i.ItemType == BitDropDownItemType.Normal);
             var expectedText = "";
 
@@ -298,7 +298,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                 parameters.Add(p => p.Placeholder, placeholder);
             });
 
-            var targetSpan = component.Find(".bit-drp-wrapper > span");
+            var targetSpan = component.Find(".bit-drp-wrapper-txt");
             var expectedText = "";
 
             if (isMultiSelect)
@@ -358,17 +358,17 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
         }
 
         [DataTestMethod,
-            DataRow("<div>This is labelTemplate</div>")
+            DataRow("<div>This is labelFragment</div>")
         ]
-        public void BitDropDownLabelTemplateTest(string labelTemplate)
+        public void BitDropDownLabelFragmentTest(string labelFragment)
         {
             var component = RenderComponent<BitDropDownTest>(parameters =>
             {
-                parameters.Add(p => p.LabelFragment, labelTemplate);
+                parameters.Add(p => p.LabelFragment, labelFragment);
             });
 
             var drpLabelChild = component.Find("label").ChildNodes;
-            drpLabelChild.MarkupMatches(labelTemplate);
+            drpLabelChild.MarkupMatches(labelFragment);
         }
 
         [DataTestMethod,
@@ -519,7 +519,8 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
             if (selectedMultipleKeys.Contains(items[3].Value))
             {
                 expectedResult = --initialSelectedKeysCount;
-            } else
+            }
+            else
             {
                 expectedResult = ++initialSelectedKeysCount;
             }
