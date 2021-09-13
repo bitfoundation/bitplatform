@@ -147,7 +147,9 @@ namespace Bit.Data.EntityFramework.Implementations
                 if (entityToDelete is IArchivableEntity archivableEntity)
                 {
                     archivableEntity.IsArchived = true;
-                    return await UpdateAsync(entityToDelete, cancellationToken).ConfigureAwait(false);
+                    TEntity updatedEntity = await UpdateAsync(entityToDelete, cancellationToken).ConfigureAwait(false);
+                    DbContext.Entry(updatedEntity).State = EntityState.Detached;
+                    return updatedEntity;
                 }
                 else
                 {
@@ -275,7 +277,9 @@ namespace Bit.Data.EntityFramework.Implementations
                 if (entityToDelete is IArchivableEntity archivableEntity)
                 {
                     archivableEntity.IsArchived = true;
-                    return Update(entityToDelete);
+                    TEntity updatedEntity = Update(entityToDelete);
+                    DbContext.Entry(updatedEntity).State = EntityState.Detached;
+                    return updatedEntity;
                 }
                 else
                 {

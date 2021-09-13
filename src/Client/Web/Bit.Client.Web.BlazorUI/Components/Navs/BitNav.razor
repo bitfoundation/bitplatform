@@ -82,7 +82,20 @@
             }
             else
             {
-                <button class="@GetLinkClass(navLink)"
+                if (navLink.ForceAnchor)
+                {
+                    <a class="@GetLinkClass(navLink)"
+                       title="@(navLink.Title.HasValue() ? navLink.Title : navLink.Name)"
+                       style="padding: 0px 20px 0px @(((navLink.Depth * 14)+27).ToString())px;"
+                       @onclick="(() => Toggle(navLink))">
+                        <span>
+                            <div>@navLink.Name</div>
+                        </span>
+                    </a>
+                }
+                else
+                {
+                    <button class="@GetLinkClass(navLink)"
                         title="@(navLink.Title.HasValue() ? navLink.Title : navLink.Name)"
                         style="padding: 0px 20px 0px @(((navLink.Depth * 14)+27).ToString())px;"
                         @onclick="(() => HandleOnClick(navLink))">
@@ -90,6 +103,8 @@
                         <div>@navLink.Name</div>
                     </span>
                 </button>
+                }
+
             }
         </div>
         @if (@navLink.Links?.Any() != null && navLink.IsExpanded)

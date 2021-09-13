@@ -25,11 +25,11 @@
 		<PackageProjectUrl>https://github.com/bitfoundation/bitframework</PackageProjectUrl>
 		<PackageIconUrl>https://avatars.githubusercontent.com/u/22663390</PackageIconUrl>
 		<PackageReleaseNotes>https://github.com/bitfoundation/bitframework/releases/tag/v7.4.0</PackageReleaseNotes>
-		<PackageVersion>7.6.0</PackageVersion>
+		<PackageVersion>7.7.0</PackageVersion>
 
 		<!-- Version -->
-		<Version>7.6.0</Version>
-		<AssemblyVersion>7.6.0</AssemblyVersion>
+		<Version>7.7.0</Version>
+		<AssemblyVersion>7.7.0</AssemblyVersion>
 
 		<!-- Compile -->
 		<NeutralLanguage>en</NeutralLanguage>
@@ -68,7 +68,7 @@
 	<ItemGroup>
 		<PackageReference Include="SourceLink.Embed.AllSourceFiles" Version="2.8.3" PrivateAssets="all" />
 		<PackageReference Include="SourceLink.Copy.PdbFiles" Version="2.8.3" PrivateAssets="All" />
-		<PackageReference Include="MSBuild.Sdk.Extras" Version="3.0.23" PrivateAssets="All" />
+		<PackageReference Include="MSBuild.Sdk.Extras" Version="3.0.38" PrivateAssets="All" />
 	</ItemGroup>
 
 	<ItemGroup Condition=" '$(TargetFramework)' == 'monoandroid10.0'">
