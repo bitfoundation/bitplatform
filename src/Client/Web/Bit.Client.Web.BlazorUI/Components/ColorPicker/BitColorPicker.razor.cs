@@ -68,22 +68,6 @@ namespace Bit.Client.Web.BlazorUI
                 Hue = MainColor.Hsv.Hue;
                 SaturationPickerBackground = new BitColor(Hue, 1, 1,1);
 
-                HexChanged.InvokeAsync(value);
-            }
-        }
-
-        [Parameter]
-        public string Hex
-        {
-            get => MainColor.Hex.ColorCode;
-            set
-            {
-                var valueAsBitColor = new BitColor(value, MainColor.Alpha);
-                if (valueAsBitColor.Hex.ColorCode == MainColor.Hex.ColorCode) return;
-                MainColor = valueAsBitColor;
-                Hue = MainColor.Hsv.Hue;
-                SaturationPickerBackground = new BitColor(Hue, 1, 1,1);
-
                 ColorChanged.InvokeAsync(ColorType == ColorType.Hex ? MainColor.Hex.ColorCode : MainColor.ToRgbaCss());
                 RgbChanged.InvokeAsync(MainColor.ToRgbCss());
                 HexChanged.InvokeAsync(MainColor.Hex.ColorCode);
