@@ -1,4 +1,4 @@
-﻿@import "../colors.fluent.scss", "../../functions.scss";
+﻿@import '../colors.fluent.scss', '../../functions.scss';
 
 @mixin getFocusedStyle($fixedIcon: false, $hasValue: false) {
     border: 2px solid $Primary;
@@ -116,7 +116,7 @@
             width: 32px;
             height: auto;
             background-color: transparent;
-            color: $Primary;
+            color: $Grey130;
             user-select: none;
         }
 

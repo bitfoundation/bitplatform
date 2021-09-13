@@ -171,7 +171,7 @@ namespace Bit.Client.Web.BlazorUI
             StyleBuilder.Register(() => Width.HasValue() ? $"width: {Width}" : string.Empty);
         }
 
-        protected virtual async Task HandleOnClear()
+        private async Task HandleOnClear()
         {
             if (IsEnabled is false) return;
 
@@ -180,7 +180,7 @@ namespace Bit.Client.Web.BlazorUI
             await OnClear.InvokeAsync();
         }
 
-        protected virtual async Task HandleChange(ChangeEventArgs e)
+        private async Task HandleChange(ChangeEventArgs e)
         {
             if (IsEnabled is false) return;
             if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
