@@ -26,7 +26,7 @@
     padding: 0 rem(8px);
     border-radius: 0;
     height: rem(44px);
-    color: rgb(50, 49, 48);
+    color: $Grey160;
     background-color: transparent;
     line-height: rem(44px);
     margin-right: rem(8px);
@@ -64,7 +64,7 @@
     padding: 0 rem(8px);
     border-radius: 0;
     height: rem(44px);
-    color: rgb(50, 49, 48);
+    color: $Grey160;
     background-color: transparent;
     line-height: rem(44px);
     margin-right: rem(8px);
@@ -99,15 +99,15 @@
 .bit-pvt-links-fluent {
     .bit-pvt-itm-fluent {
         &:hover {
-            color: #201f1e;
-            background-color: #f3f2f1;
+            color: $Grey190;
+            background-color: $Grey20;
             cursor: pointer;
         }
     }
 
     .bit-pvt-itm-selcted-fluent {
         &:before {
-            background-color: rgb(0, 120, 212);
+            background-color: $ThemePrimary;
         }
 
         &:hover {
@@ -140,17 +140,17 @@
         overflow-X: auto;
 
         &::-webkit-scrollbar {
-            height: 5px;
+            height: rem(5px);
         }
         /* Track */
         &::-webkit-scrollbar-track {
-            box-shadow: inset 0 0 5px $Grey90;
-            border-radius: 10px;
+            box-shadow: inset 0 0 rem(5px) $Grey90;
+            border-radius: rem(10px);
         }
         /* Handle */
         &::-webkit-scrollbar-thumb {
             background: $CyanBlue10;
-            border-radius: 10px;
+            border-radius: rem(10px);
         }
         /* Handle on hover */
         &::-webkit-scrollbar-thumb:hover {
