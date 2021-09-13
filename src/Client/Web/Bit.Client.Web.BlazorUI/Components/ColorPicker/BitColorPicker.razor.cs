@@ -71,6 +71,7 @@ namespace Bit.Client.Web.BlazorUI
                 ColorChanged.InvokeAsync(ColorType == ColorType.Hex ? MainColor.Hex.ColorCode : MainColor.ToRgbaCss());
                 RgbChanged.InvokeAsync(MainColor.ToRgbCss());
                 HexChanged.InvokeAsync(MainColor.Hex.ColorCode);
+                AlphaChanged.InvokeAsync(MainColor.Alpha);
             }
         }
 
@@ -92,6 +93,7 @@ namespace Bit.Client.Web.BlazorUI
                 ColorChanged.InvokeAsync(ColorType == ColorType.Hex ? MainColor.Hex.ColorCode : MainColor.ToRgbaCss());
                 RgbChanged.InvokeAsync(MainColor.ToRgbCss());
                 HexChanged.InvokeAsync(MainColor.Hex.ColorCode);
+                AlphaChanged.InvokeAsync(MainColor.Alpha);
             }
         }
 

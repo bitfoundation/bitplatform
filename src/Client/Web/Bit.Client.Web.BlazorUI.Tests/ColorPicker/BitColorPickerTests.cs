@@ -65,7 +65,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.ColorPicker
         [DataTestMethod,
             DataRow("#fc5603", "#fc5603", "rgb(252,86,3)", 1),
             DataRow("rgba(3,98,252,0.3)", "#0362fc", "rgb(3,98,252)", 0.3),
-            DataRow("rgb(252,3,240)", "#fc03f0", "rgb(252,3,240)", 0.8)]
+            DataRow("rgb(252,3,240)", "#fc03f0", "rgb(252,3,240)", 1)]
         public void BitColorPickerMustRespecValueChange(string color, string hex, string rgb, double alpha)
         {
             var cut = RenderComponent<BitColorPickerTest>(parameters =>
