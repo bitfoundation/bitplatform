@@ -7,119 +7,111 @@
     font-size: inherit;
     font-weight: inherit;
 
-    & > div {
+    .bit-chb-lbl {
         display: flex;
+    }
 
-        & div:first-child {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 20px;
-            width: 20px;
-            border: 1px solid $Grey160;
-            border-radius: 2px;
-            box-sizing: border-box;
-            transition-property: background, border, border-color;
-            transition-duration: 200ms;
-            transition-timing-function: cubic-bezier(0.4, 0, 0.23, 1);
-            overflow: hidden;
-            margin-right: 4px;
+    .bit-chb-checkbox {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 20px;
+        width: 20px;
+        border: 1px solid $Grey160;
+        border-radius: 2px;
+        box-sizing: border-box;
+        transition-property: background, border, border-color;
+        transition-duration: 200ms;
+        transition-timing-function: cubic-bezier(0.4, 0, 0.23, 1);
+        overflow: hidden;
+        margin-right: 4px;
+        cursor: pointer;
+    }
+
+    .bit-chb-checkmark {
+        color: $White;
+        font-size: 11px;
+        transition: 0.1s;
+    }
+
+    .bit-chb-txt {
+        label {
             cursor: pointer;
-
-            .bit-chb-checkmark {
-                color: $White;
-                font-size: 11px;
-                transition: 0.1s;
-            }
-        }
-
-        & div:last-child {
-            label {
-                cursor: pointer;
-            }
         }
     }
 
-    &:hover > div {
-        & > div:first-child {
-            .bit-chb-checkmark {
-                opacity: 1;
-                color: $Grey120;
-            }
+    &:hover {
+        .bit-chb-checkmark {
+            opacity: 1;
+            color: $Grey120;
         }
     }
 }
 
 .bit-chb-end-fluent {
-    & > div {
+    .bit-chb-lbl {
         flex-direction: row-reverse;
         justify-content: flex-end;
+    }
 
-        & > div:first-child {
-            margin-left: 8px;
-        }
+    .bit-chb-checkbox {
+        margin-left: 8px;
     }
 }
 
 .bit-chb-checked-fluent {
-    & > div {
-        & > div:first-child {
-            border-color: $Primary;
-            background-color: $Primary;
-
-            .bit-chb-checkmark {
-                opacity: 1;
-                color: $White;
-                width: 20px;
-                height: 20px;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-            }
-        }
+    .bit-chb-checkbox {
+        border-color: $Primary;
+        background-color: $Primary;
     }
 
-    &:hover > div {
-        & > div:first-child {
-            .bit-chb-checkmark {
-                border-color: $Dark;
-                background-color: $Dark;
-                color: $White;
-            }
+    .bit-chb-checkmark {
+        opacity: 1;
+        color: $White;
+        width: 20px;
+        height: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    &:hover {
+        .bit-chb-checkmark {
+            border-color: $Dark;
+            background-color: $Dark;
+            color: $White;
         }
     }
 }
 
 .bit-chb-indeterminate-fluent {
-    & > div {
-        & > div:first-child {
-            border-color: $Primary;
-            background-color: $White;
+    .bit-chb-checkbox {
+        border-color: $Primary;
+        background-color: $White;
+    }
 
-            .bit-chb-checkmark {
-                display: inline-block;
-                width: 11px;
-                height: 11px;
-                color: $Primary;
-                background-color: $Primary;
-                border-radius: 2px;
+    .bit-chb-checkmark {
+        display: inline-block;
+        width: 11px;
+        height: 11px;
+        color: $Primary;
+        background-color: $Primary;
+        border-radius: 2px;
 
-                &:before {
-                    content: '';
-                }
-            }
+        &:before {
+            content: '';
         }
     }
 
-    &:hover > div {
-        & > div:first-child {
+    &:hover {
+        .bit-chb-checkbox {
             border-color: $Dark;
             background-color: $White;
+        }
 
-            .bit-chb-checkmark {
-                color: $Dark;
-                background-color: $Dark;
-            }
+        .bit-chb-checkmark {
+            color: $Dark;
+            background-color: $Dark;
         }
     }
 }
@@ -128,31 +120,25 @@
     pointer-events: none;
     cursor: default;
 
-    & > div {
-        & > div:first-child {
-            border-color: $Grey60;
-            background-color: $White;
+    .bit-chb-checkbox {
+        border-color: $Grey60;
+        background-color: $White;
+    }
 
-            .bit-chb-checkmark {
-                opacity: 1;
-                color: $White;
-                background-color: $White;
-            }
-        }
+    .bit-chb-checkmark {
+        opacity: 1;
+        color: $White;
+        background-color: $White;
+    }
 
-        & > div:last-child {
-            color: $Grey60;
-        }
+    .bit-chb-txt {
+        color: $Grey60;
     }
 }
 
 .bit-chb-checked-disabled-fluent,
 .bit-chb-indeterminate-disabled-fluent {
-    & > div {
-        & > div:first-child {
-            .bit-chb-checkmark {
-                background-color: $Grey60;
-            }
-        }
+    .bit-chb-checkmark {
+        background-color: $Grey60;
     }
 }
