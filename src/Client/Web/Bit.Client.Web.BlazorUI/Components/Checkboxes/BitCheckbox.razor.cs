@@ -11,7 +11,7 @@ namespace Bit.Client.Web.BlazorUI
         private bool isChecked;
         private bool IsCheckedHasBeenSet;
         private bool IsIndeterminateHasBeenSet;
-        private BoxSide boxSide;
+        private BitBoxSide boxSide;
 
         [Inject] public IJSRuntime? JSRuntime { get; set; }
         public ElementReference CheckboxElement { get; set; }
@@ -47,7 +47,7 @@ namespace Bit.Client.Web.BlazorUI
         /// Determines whether the checkbox should be shown before the label (start) or after (end)
         /// </summary>
         [Parameter]
-        public BoxSide BoxSide
+        public BitBoxSide BoxSide
         {
             get => boxSide;
             set
@@ -102,7 +102,7 @@ namespace Bit.Client.Web.BlazorUI
             ClassBuilder.Register(() => IsIndeterminate ? $"{RootElementClass}-indeterminate-{VisualClassRegistrar()}" : string.Empty);
             ClassBuilder.Register(() => IsChecked ? $"{RootElementClass}-checked-{VisualClassRegistrar()}" : string.Empty);
 
-            ClassBuilder.Register(() => BoxSide == BoxSide.End
+            ClassBuilder.Register(() => BoxSide == BitBoxSide.End
                                         ? $"{RootElementClass}-end-{VisualClassRegistrar()}"
                                         : string.Empty);
 
