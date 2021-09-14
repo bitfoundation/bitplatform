@@ -32,7 +32,7 @@
                     <h5>Disabled</h5>
                     <BitRating IsEnabled="false" @bind-Value="RatingReadOnlyValue" />
                     <h5>ReadOnly</h5>
-                    <BitRating IsReadonly="true" @bind-Value="RatingReadOnlyValue" />
+                    <BitRating IsReadOnly="true" @bind-Value="RatingReadOnlyValue" />
                     <h5>Custom icons</h5>
                     <BitRating Icon="HeartFill" UnselectedIcon="Heart" AllowZeroStars="true" @bind-Value="RatingCustomIconValue" />
                 </div>
@@ -51,7 +51,7 @@
                     &lt<span class="dark-green">BitRating IsEnabled</span><span class="light-blue">="false" </span><span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-Value</span><span>="RatingReadOnlyValue"</span><span>/&gt;</span>
                 </p>
                 <p>
-                    &lt<span class="dark-green">BitRating IsReadonly</span><span class="light-blue">="true" </span><span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-Value</span><span>="RatingReadOnlyValue"</span><span>/&gt;</span>
+                    &lt<span class="dark-green">BitRating IsReadOnly</span><span class="light-blue">="true" </span><span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-Value</span><span>="RatingReadOnlyValue"</span><span>/&gt;</span>
                 </p>
                 <p>
                     &lt<span class="dark-green">BitRating Icon</span>="HeartFill"<span class="dark-green"> UnselectedIcon</span>="Heart"<span class="dark-green"> AllowZeroStars</span>="<span class="light-blue">true</span>" <span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-Value</span><span>="RatingOutsideValue"</span><span>/&gt;</span>
@@ -137,7 +137,7 @@
             <td>Whether the rating is enabled.</td>
         </tr>
         <tr>
-            <td>IsReadonly</td>
+            <td>IsReadOnly</td>
             <td>bool</td>
             <td>false</td>
             <td>Optional flag to mark rating control as readOnly.</td>

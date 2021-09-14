@@ -10,7 +10,15 @@
     @for (int item = 0; item < Max; item++)
     {
         var index = item;
-        <button @onclick="() => HandleClick(index + 1)" aria-label="@AriaLabel">
+        <button aria-checked="@(item + 1 == Value ? "true" : "false")"
+                aria-hidden=@(IsReadOnly ? "true" : null)
+                data-is-current="@(item + 1 == Value ? "true" : null)"
+                disabled={@(!IsEnabled|| IsReadOnly)}
+                id="@($" {UniqId("Rating")}-star-{index}")"
+                role="radio"
+                tabindex=@(IsReadOnly ? "0" : "-1" )
+                type="button"
+                @onclick="() => HandleClick(index + 1)">
             <div>
                 <i class="@RatingColorClasses[index] bit-icon bit-icon--@RatingIcons[index]"></i>
             </div>

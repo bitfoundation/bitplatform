@@ -15,6 +15,13 @@ namespace Bit.Client.Web.BlazorUI
         public string[] RatingIcons { get; set; } = Array.Empty<string>();
 
         /// <summary>
+        /// Optional label format for each individual rating star (not the rating control as a whole) that will be read by screen readers. 
+        /// Placeholder {0} is the current rating and placeholder {1} is the max: for example, 
+        /// "Select {0} of {1} stars". (To set the label for the control as a whole, use getAriaLabel or aria-label.)
+        /// </summary>
+        [Parameter] public string? AriaLabelFormat { get; set; }
+
+        /// <summary>
         /// Allow the initial rating value be 0. Note that a value of 0 still won't be selectable by mouse or keyboard
         /// </summary>
         [Parameter] public bool AllowZeroStars { get; set; }
@@ -43,7 +50,7 @@ namespace Bit.Client.Web.BlazorUI
         /// A flag to mark rating control as readOnly
         /// </summary>
         [Parameter]
-        public bool IsReadonly
+        public bool IsReadOnly
         {
             get => isReadOnly;
             set
@@ -89,7 +96,7 @@ namespace Bit.Client.Web.BlazorUI
 
         protected override void RegisterComponentClasses()
         {
-            ClassBuilder.Register(() => IsReadonly
+            ClassBuilder.Register(() => IsReadOnly
                                                 ? $"{RootElementClass}-readonly-{VisualClassRegistrar()}"
                                                 : string.Empty);
             ClassBuilder.Register(() => Size == RatingSize.Large
@@ -114,7 +121,7 @@ namespace Bit.Client.Web.BlazorUI
 
         private async Task HandleClick(int index)
         {
-            if ((_min == 1 && index == 0) || IsReadonly is true || IsEnabled is false || ValueChanged.HasDelegate is false) return;
+            if ((_min == 1 && index == 0) || IsReadOnly is true || IsEnabled is false || ValueChanged.HasDelegate is false) return;
 
             Value = index;
 
@@ -143,6 +150,12 @@ namespace Bit.Client.Web.BlazorUI
         {
             Array.Fill(RatingIcons!, UnselectedIcon);
             Array.Fill(RatingColorClasses!, _colorClass);
+        }
+
+        private string UniqId(string prefix)
+        {
+            string randomNum = new Random().Next(10000, 99999).ToString("D5");
+            return $"{prefix}{randomNum}";
         }
     }
 }
