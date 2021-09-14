@@ -100,7 +100,13 @@ namespace Bit.Client.Web.BlazorUI
         }
 
         /// <summary>
-        /// An indeterminate visual state for checkbox. Setting indeterminate state takes visual precedence over checked given but does not affect on IsChecked state
+        /// Default indeterminate visual state for checkbox
+        /// </summary>
+        [Parameter] public bool? DefaultIsIndeterminate { get; set; }
+
+        /// <summary>
+        /// An indeterminate visual state for checkbox. 
+        /// Setting indeterminate state takes visual precedence over checked given but does not affect on IsChecked state
         /// </summary>
         [Parameter]
         public bool IsIndeterminate
@@ -170,9 +176,14 @@ namespace Bit.Client.Web.BlazorUI
 
         protected override async Task OnParametersSetAsync()
         {
-            if(IsCheckedHasBeenSet is false && DefaultIsChecked is not null)
+            if (IsCheckedHasBeenSet is false && DefaultIsChecked is not null)
             {
                 IsChecked = DefaultIsChecked.Value;
+            }
+
+            if (IsIndeterminateHasBeenSet is false && DefaultIsIndeterminate is not null)
+            {
+                IsIndeterminate = DefaultIsIndeterminate.Value;
             }
 
             InputId = $"checkbox-{UniqueId}";
