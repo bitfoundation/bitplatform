@@ -51,7 +51,7 @@ namespace Bit.Tests.Api.ApiControllers
         [Route("get-custom-data")]
         public virtual string GetCustomData()
         {
-            return UserInformationProvider.GetBitJwtToken().CustomProps["custom-data"];
+            return UserInformationProvider.GetBitJwtToken().Claims["custom-data"];
         }
     }
 

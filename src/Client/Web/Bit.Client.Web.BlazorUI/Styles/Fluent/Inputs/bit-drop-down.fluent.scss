@@ -1,6 +1,7 @@
 ﻿@import "../colors.fluent.scss", "../../functions.scss";
 
 .bit-drp-fluent {
+    width: 100%;
     font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
 
     .bit-drp-lbl {
@@ -36,21 +37,21 @@
     -webkit-font-smoothing: antialiased;
 
     &:hover {
-        span:first-child {
+        .bit-drp-wrapper-txt {
             color: $Grey160;
             border: 1px solid $Grey160;
         }
     }
 
     &:active {
-        span:first-child {
+        .bit-drp-wrapper-txt {
             border-color: $CyanBlue10;
             color: $Grey190;
         }
     }
 
     &:focus {
-        span:first-child {
+        .bit-drp-wrapper-txt {
             color: $Grey160;
         }
     }
@@ -68,7 +69,7 @@
         border-radius: 2px;
     }
 
-    span:first-child {
+    .bit-drp-wrapper-txt {
         height: 32px;
         font-size: rem(14px);
         font-weight: 400;
@@ -87,7 +88,7 @@
         border-radius: rem(2px);
     }
 
-    span:nth-child(2) {
+    .bit-drp-wrapper-ic {
         position: absolute;
         top: 0;
         right: rem(8px);
@@ -107,20 +108,20 @@
         background-color: $Grey20;
         cursor: default;
 
-        span:first-child {
+        .bit-drp-wrapper-txt {
             color: $Grey90;
             border-color: $Grey20;
         }
 
         &:hover {
-            span:first-child {
+            .bit-drp-wrapper-txt {
                 color: $Grey90;
                 border-color: $Grey20;
             }
         }
 
         &:active {
-            span:first-child {
+            .bit-drp-wrapper-txt {
                 color: $Grey90;
                 border-color: $Grey20;
             }
@@ -132,7 +133,7 @@
             border: none;
         }
 
-        span:nth-child(2) {
+        .bit-drp-wrapper-ic {
             i:first-child {
                 color: $Grey90;
             }
@@ -146,7 +147,7 @@
 
 .bit-drp-disabled-fluent.bit-drp-has-value-fluent {
     .bit-drp-wrapper {
-        span:first-child {
+        .bit-drp-wrapper-txt {
             color: $Grey90;
         }
     }
@@ -154,7 +155,7 @@
 
 .bit-drp-has-value-fluent {
     .bit-drp-wrapper {
-        span:first-child {
+        .bit-drp-wrapper-txt {
             color: $Grey190;
         }
     }

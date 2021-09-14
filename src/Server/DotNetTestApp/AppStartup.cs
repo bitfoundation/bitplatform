@@ -31,6 +31,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Reflection;
+using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
@@ -173,10 +174,19 @@ namespace DotNetTestApp
 
     public class TestUserService : UserService
     {
-        public override Task<BitJwtToken> LocalLogin(LocalAuthenticationContext context, CancellationToken cancellationToken)
+        public async override Task<BitJwtToken> LocalLogin(LocalAuthenticationContext context, CancellationToken cancellationToken)
         {
             if (context.UserName == context.Password)
-                return Task.FromResult(new BitJwtToken { UserId = context.UserName });
+            {
+                return new BitJwtToken
+                {
+                    UserId = context.UserName,
+                    Claims = new Dictionary<string, string?>
+                    {
+                        { ClaimTypes.Role, "User" }
+                    }
+                };
+            }
 
             throw new DomainLogicException("LoginFailed");
         }
@@ -294,6 +304,18 @@ namespace DotNetTestApp
                 throw new InvalidOperationException();
 
             return firstNumber + secondNumber;
+        }
+
+        [Function, Authorize(Roles = "User")]
+        public string GetData()
+        {
+            return "Data";
+        }
+
+        [Function, Authorize(Roles = "Admin")]
+        public string GetImportantData()
+        {
+            return "Important data";
         }
     }
 

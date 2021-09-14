@@ -1,0 +1,103 @@
+﻿@page "/components/colorpickers"
+
+<h2>ColorPicker</h2>
+
+<div class="card">
+    <p class="desc">
+        BitColorPicker provides a wide range of colors for users to pick. Users can specify values for different color models including RGB,
+        Hex, HSV. There is even a more straightforward way to do so by browsing through the picker area.
+    </p>
+</div>
+
+<h2>Usage</h2>
+<div class="wrapper">
+    <div class="card">
+        <h3>Basics</h3>
+        <div class="desc">
+            <p>
+                Any user can have their own ColorPicker by using the BitColorPicker component.
+                They can change alpha of the color.
+                There is a property named Color which is an object or CSS-compatible string to describe a color.
+                Moreover, ShowPreview makes it possible to have a preview of the chosen color.
+            </p>
+        </div>
+        <BitPivot>
+            <BitPivotItem HeaderText="Example" IconName="ViewList">
+                <div style="display:inline-flex">
+                    <BitColorPicker ShowPreview="IsToggleChecked">
+                        Default ColorPicker
+                    </BitColorPicker>
+                    <div>
+                        <BitToggle Label="Show preview box"
+                                   @bind-IsChecked="IsToggleChecked"
+                                   IsEnabled="true" />
+                    </div>
+                </div>
+            </BitPivotItem>
+            <BitPivotItem HeaderText="Code"
+                          IconName="Source">
+                <pre>
+                &lt;<span class="light-blue">div</span> <span class="light-blue">style</span>="<span class="light-blue">display</span>:inline-flex"&gt;
+                    &lt;<span class="dark-green">BitColorPicker ShowPreview</span><span>="IsToggleChecked"</span>&gt;
+                    Default ColorPicker
+                    &lt;/<span class="dark-green">BitColorPicker</span>&gt;                    
+                    &lt;<span class="light-blue">div</span>&gt;                 
+                        &lt;<span class="dark-green">BitToggle Label</span>="Show preview box" 
+                            <span class="light-yellow-bg">&#64</span> <span class="dark-green">bind-IsChecked</span>="IsToggleChecked" 
+                            <span class="dark-green">IsEnabled</span>="true" 
+                        /&gt;
+                <span class="light-yellow-bg">&#64code{</span>
+                <span class="light-blue">private bool</span> IsToggleChecked = <span class="light-blue">true</span>;
+                <span class="light-yellow-bg">}</span>
+                    </pre>
+            </BitPivotItem>
+        </BitPivot>
+    </div>
+</div>
+<h2>Implementation</h2>
+<div class="card">
+    <table>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Default value</th>
+            <th>Description</th>
+        </tr>
+        <tr>
+            <td>className</td>
+            <td>string</td>
+            <td></td>
+            <td>If provided, additional class name to provide on the root element.</td>
+        </tr>
+        <tr>
+            <td>color</td>
+            <td>string</td>
+            <td></td>
+            <td>Object or CSS-compatible string to describe the color.</td>
+        </tr>
+        <tr>
+            <td>ref</td>
+            <td>elementreference</td>
+            <td></td>
+            <td>Access the public methods and properties of the component.</td>
+        </tr>
+        <tr>
+            <td>showPreview</td>
+            <td>bool</td>
+            <td></td>
+            <td>Whether to show color preview box.</td>
+        </tr>
+        <tr>
+            <td>styles</td>
+            <td>string</td>
+            <td></td>
+            <td>Custom styling for individual elements within the checkbox DOM.</td>
+        </tr>
+        <tr>
+            <td>uniqueId</td>
+            <td>guid</td>
+            <td></td>
+            <td>Unique ID to identify the item. Typically a duplicate of key value.</td>
+        </tr>
+    </table>
+</div>

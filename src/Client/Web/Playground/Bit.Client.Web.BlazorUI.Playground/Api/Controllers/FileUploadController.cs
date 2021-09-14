@@ -21,12 +21,6 @@ namespace Bit.Client.Web.BlazorUI.Playground.Api.Controllers
             BasePath = Configuration["UploadPath"];
         }
 
-        [HttpGet]
-        public IActionResult Test()
-        {
-            return Ok("test");
-        }
-
         [RequestFormLimits(ValueLengthLimit = int.MaxValue, MultipartBodyLengthLimit = int.MaxValue)]
         [DisableRequestSizeLimit]
         [HttpPost]
