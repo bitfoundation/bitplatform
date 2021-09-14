@@ -5,7 +5,6 @@ using IdentityServer3.Core.Models;
 using IdentityServer3.Core.Services.Default;
 using Microsoft.Owin;
 using System;
-using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
@@ -34,18 +33,6 @@ namespace Bit.IdentityServer.Implementations
             return AuthenticateLocalAsync(context, OwinContext.Request.CallCancelled);
         }
 
-        protected virtual List<Claim> BuildClaimsFromBitJwtToken(BitJwtToken bitJwtToken)
-        {
-            Claim primary_sid = new Claim("primary_sid", BitJwtToken.ToJson(bitJwtToken));
-
-            List<Claim> claims = new List<Claim>
-            {
-                primary_sid
-            };
-
-            return claims;
-        }
-
         public virtual async Task AuthenticateLocalAsync(LocalAuthenticationContext context, CancellationToken cancellationToken)
         {
             if (context == null)
@@ -58,7 +45,7 @@ namespace Bit.IdentityServer.Implementations
                     BitJwtToken bitJwtToken = await LocalLogin(context, cancellationToken).ConfigureAwait(false);
 
                     AuthenticateResult result = new AuthenticateResult(bitJwtToken.UserId, bitJwtToken.UserId,
-                        BuildClaimsFromBitJwtToken(bitJwtToken),
+                        (Claim[])bitJwtToken,
                         authenticationMethod: "custom");
 
                     context.AuthenticateResult = result;
@@ -86,9 +73,7 @@ namespace Bit.IdentityServer.Implementations
             if (context == null)
                 throw new ArgumentNullException(nameof(context));
 
-            BitJwtToken bitJwtToken = BitJwtToken.FromJson(context.Subject.Claims.GetClaimValue("primary_sid") ?? throw new InvalidOperationException("primary_sid could not be found"));
-
-            context.IssuedClaims = BuildClaimsFromBitJwtToken(bitJwtToken);
+            context.IssuedClaims = context.Subject.Claims;
 
             return base.GetProfileDataAsync(context);
         }
@@ -145,10 +130,10 @@ namespace Bit.IdentityServer.Implementations
             {
                 if (context.AuthenticateResult == null)
                 {
-                    BitJwtToken jwtToken = await ExternalLogin(context, cancellationToken).ConfigureAwait(false);
+                    BitJwtToken bitJwtToken = await ExternalLogin(context, cancellationToken).ConfigureAwait(false);
 
-                    AuthenticateResult result = new AuthenticateResult(jwtToken.UserId, jwtToken.UserId,
-                        BuildClaimsFromBitJwtToken(jwtToken),
+                    AuthenticateResult result = new AuthenticateResult(bitJwtToken.UserId, bitJwtToken.UserId,
+                        (Claim[])bitJwtToken,
                         authenticationMethod: context.ExternalIdentity.Provider);
 
                     context.AuthenticateResult = result;

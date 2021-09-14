@@ -62,19 +62,9 @@ namespace Bit.Owin.Implementations
 
         public virtual BitJwtToken GetBitJwtToken()
         {
-            string primary_sid = GetClaims()
-                .ExtendedSingle("Finding primary_sid in claims", claim => string.Equals(claim.Type, "primary_sid", StringComparison.InvariantCultureIgnoreCase))
-                .Value;
+            Claim[] claims = GetClaims().ToArray();
 
-            try
-            {
-                JToken json = JToken.Parse(primary_sid);
-                return json.ToObject<BitJwtToken>()!;
-            }
-            catch (JsonReaderException)
-            {
-                return new BitJwtToken { UserId = primary_sid };
-            }
+            return claims;
         }
     }
 }

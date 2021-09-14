@@ -56,9 +56,9 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web
 
             app.UseEndpoints(endpoints =>
             {
+                endpoints.MapDefaultControllerRoute();
                 endpoints.MapBlazorHub();
                 endpoints.MapFallbackToPage("/_Host");
-                endpoints.MapDefaultControllerRoute();
             });
         }
 #endif
