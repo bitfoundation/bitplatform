@@ -16,10 +16,8 @@
             <i class=@($"{RootElementClass}-checkmark bit-icon bit-icon--{CheckmarkIconName}")></i>
         </div>
 
-        <span class="bit-chb-txt" @onclick="@HandleCheckboxClick">
-            <label class="no-text-select">
-                @(ChildContent)
-            </label>
+        <span class="bit-chb-txt no-text-select" @onclick="@HandleCheckboxClick">
+            @(ChildContent)
         </span>
     </label>
 </div>
