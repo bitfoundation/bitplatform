@@ -295,36 +295,39 @@
 <hr />
 
 <div class="checkboxes-container">
-
     <h2>Checkboxes</h2>
-    <h3>Basics</h3>
-    <BitCheckbox @bind-IsChecked="IsCheckBoxChecked">Basic Checkbox</BitCheckbox>
-    <BitCheckbox IsChecked="true">Checked Checkbox (my value wont changed because im not provided with IsCheckedChanged)</BitCheckbox>
-    <BitCheckbox IsEnabled="false">Disable Checkbox</BitCheckbox>
-    <BitCheckbox IsEnabled="true" OnChange="e => CheckBoxOnChangedValue = e">checkbox with only onchange </BitCheckbox> @(CheckBoxOnChangedValue ? "im checked" : "im not checked")
-    <BitCheckbox IsEnabled="false" IsChecked="true">Disable Checked Checkbox</BitCheckbox>
-    <br />
-    <h3>Indeterminate</h3>
-    <BitCheckbox @bind-IsIndeterminate="IsCheckBoxIndeterminate" @bind-IsChecked="IsCheckBoxChecked">Indeterminated checkbox</BitCheckbox>
-    <BitCheckbox IsIndeterminate="true">Indeterminate checkbox</BitCheckbox>
-    <BitCheckbox IsIndeterminate="true" IsEnabled="false">Disabled indeterminated checkbox</BitCheckbox>
-    <BitCheckbox @bind-IsIndeterminate="IsCheckBoxIndeterminateInCode" @bind-IsChecked="IsCheckBoxChecked">Controlled indeterminated checkbox</BitCheckbox>
-    <BitButton OnClick="() => IsCheckBoxIndeterminateInCode = true">Make Checkbox Indeterminate</BitButton>
-    <br />
-    <h5>Custom Label</h5>
-    <BitCheckbox>
 
-        Custom-rendered label with a link go to
-        <a href='https://github.com/bitfoundation/bitframework'>
+    <h3>Basic Checkboxes</h3>
+    <BitCheckbox Style="margin: 5px">Unchecked checkbox (uncontrolled)</BitCheckbox>
+    <BitCheckbox Style="margin: 5px" DefaultIsChecked="true">Checked checkbox (uncontrolled)</BitCheckbox>
+    <BitCheckbox Style="margin: 5px" IsEnabled="false">Disable checkbox</BitCheckbox>
+    <BitCheckbox Style="margin: 5px" IsEnabled="false" DefaultIsChecked="true">Disable checked checkbox</BitCheckbox>
+
+    <h3>Other Implementation Examples</h3>
+    <BitCheckbox Style="margin: 5px" @bind-IsChecked="IsCheckBoxChecked">Controlled checkbox</BitCheckbox>
+    <BitCheckbox Style="margin: 5px" IsChecked="IsCheckBoxChecked" IsCheckedChanged="HandleIsCheckedChange">Controlled checkbox</BitCheckbox>
+    <BitCheckbox Style="margin: 5px">
+        Custom-rendered label with a link to
+        <BitLink href='https://github.com/bitfoundation/bitframework' HasUnderline="true" Target="_blank">
             bit foundation repository page.
-        </a>
+        </BitLink>
     </BitCheckbox>
-    <h3>Reversed</h3>
-    <BitCheckbox BoxSide="@BitBoxSide.End">Reversed -- Basic Checkbox</BitCheckbox>
-    <BitCheckbox BoxSide="@BitBoxSide.End" IsChecked="true">Reversed -- Checked Checkbox</BitCheckbox>
-    <BitCheckbox BoxSide="@BitBoxSide.End" IsEnabled="false">Reversed -- Disable Checkbox</BitCheckbox>
-    <BitCheckbox BoxSide="@BitBoxSide.End" IsEnabled="false" IsChecked="true">Reversed -- Disable Checked Checkbox</BitCheckbox>
 
+    <h3>Reversed</h3>
+    <BitCheckbox Style="margin: 5px" BoxSide="@BitBoxSide.End">Reversed -- Unchecked checkbox (uncontrolled)</BitCheckbox>
+    <BitCheckbox Style="margin: 5px" BoxSide="@BitBoxSide.End" DefaultIsChecked="true">Reversed -- Checked checkbox (uncontrolled)</BitCheckbox>
+    <BitCheckbox Style="margin: 5px" BoxSide="@BitBoxSide.End" IsEnabled="false">Reversed -- Disable checkbox</BitCheckbox>
+    <BitCheckbox Style="margin: 5px" BoxSide="@BitBoxSide.End" IsEnabled="false" DefaultIsChecked="true">Reversed -- Disable checked checkbox</BitCheckbox>
+
+    <h3>Indeterminate</h3>
+    <BitCheckbox Style="margin: 5px" DefaultIsIndeterminate="true">Indeterminated checkbox (uncontrolled)</BitCheckbox>
+    <BitCheckbox Style="margin: 5px" DefaultIsIndeterminate="true" DefaultIsChecked="true">Indeterminated checkbox which defaults to true when clicked (uncontrolled)</BitCheckbox>
+    <BitCheckbox Style="margin: 5px" @bind-IsIndeterminate="IsCheckBoxIndeterminate">Indeterminated checkbox (uncontrolled)</BitCheckbox>
+    <BitCheckbox Style="margin: 5px" @bind-IsIndeterminate="IsCheckBoxIndeterminate" DefaultIsChecked="true">Indeterminated checkbox which defaults to true when clicked (uncontrolled)</BitCheckbox>
+    <BitCheckbox Style="margin: 5px" @bind-IsIndeterminate="IsCheckBoxIndeterminate" @bind-IsChecked="IsCheckBoxChecked">Indeterminated checkbox (controlled)</BitCheckbox>
+    <BitCheckbox Style="margin: 5px" DefaultIsIndeterminate="true" IsEnabled="false">Disabled indeterminate checkbox</BitCheckbox>
+    <BitCheckbox Style="margin: 5px" @bind-IsIndeterminate="IsCheckBoxIndeterminateInCode" @bind-IsChecked="IsCheckBoxChecked">Indeterminate checkbox which toggles with code (controlled)</BitCheckbox>
+    <BitButton OnClick="() => IsCheckBoxIndeterminateInCode = true">Make Checkbox Indeterminate</BitButton>
     <br />
 </div>
 
