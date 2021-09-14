@@ -6,14 +6,17 @@
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
     <input @ref="CheckboxElement"
+           id="@InputId"
            type="checkbox"
-           checked=@IsChecked
+           checked="@IsChecked"
            disabled="@(IsEnabled is false)"
+           aria-disabled="@(IsEnabled ? null : "true")"
            aria-label="@AriaLabel"
            hidden>
-    <label class="bit-chb-lbl">
+    <label class="bit-chb-lbl" for="@InputId">
         <div class="bit-chb-checkbox" @onclick="@HandleCheckboxClick">
-            <i class=@($"{RootElementClass}-checkmark bit-icon bit-icon--{CheckmarkIconName}")></i>
+            <i class=@($"{RootElementClass}-checkmark bit-icon bit-icon--{CheckmarkIconName}")
+               aria-hidden="true"></i>
         </div>
 
         <span class="bit-chb-txt no-text-select" @onclick="@HandleCheckboxClick">

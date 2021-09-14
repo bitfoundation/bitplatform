@@ -95,6 +95,8 @@ namespace Bit.Client.Web.BlazorUI
         /// </summary>
         [Parameter] public EventCallback<bool> OnChange { get; set; }
 
+        public string InputId { get; set; } = string.Empty;
+
         protected override string RootElementClass => "bit-chb";
 
         protected override void RegisterComponentClasses()
@@ -115,7 +117,23 @@ namespace Bit.Client.Web.BlazorUI
                                         : string.Empty);
         }
 
-        protected async Task HandleCheckboxClick(MouseEventArgs args)
+        protected override async Task OnAfterRenderAsync(bool firstRender)
+        {
+            if (firstRender)
+            {
+                _ = JSRuntime?.SetProperty(CheckboxElement, "indeterminate", IsIndeterminate);
+            }
+
+            await base.OnAfterRenderAsync(firstRender);
+        }
+
+        protected override async Task OnParametersSetAsync()
+        {
+            InputId = $"checkbox-{UniqueId}";
+            await base.OnParametersSetAsync();
+        }
+
+        private async Task HandleCheckboxClick(MouseEventArgs args)
         {
             if (IsEnabled is false) return;
             await OnClick.InvokeAsync(args);
@@ -131,16 +149,6 @@ namespace Bit.Client.Web.BlazorUI
                 IsChecked = !IsChecked;
                 await OnChange.InvokeAsync(IsChecked);
             }
-        }
-
-        protected override async Task OnAfterRenderAsync(bool firstRender)
-        {
-            if (firstRender)
-            {
-                _ = JSRuntime?.SetProperty(CheckboxElement, "indeterminate", IsIndeterminate);
-            }
-
-            await base.OnAfterRenderAsync(firstRender);
         }
     }
 }
