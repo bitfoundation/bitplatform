@@ -98,35 +98,35 @@ namespace Bit.Client.Web.BlazorUI
         }
 
 
-        private async Task ToggleNavLinkItem(BitNavLinkItem navLink)
+        private async Task OnLinkExpand(BitNavLinkItem navLinkItem)
         {
-            if (IsEnabled is false || navLink.Disabled) return;
+            if (IsEnabled is false || navLinkItem.Disabled) return;
 
-            if (navLink.Links?.Any() ?? false)
+            if (navLinkItem.Links?.Any() ?? false)
             {
-                navLink.IsExpanded = !navLink.IsExpanded;
+                navLinkItem.IsExpanded = !navLinkItem.IsExpanded;
             }
 
-            await OnLinkExpandClick.InvokeAsync(navLink);
+            await OnLinkExpandClick.InvokeAsync(navLinkItem);
         }
 
-        private async Task HandleLinkClick(BitNavLinkItem navLink)
+        private async Task HandleLinkClick(BitNavLinkItem navLinkItem)
         {
-            if (IsEnabled is false || navLink.Disabled) return;
+            if (IsEnabled is false || navLinkItem.Disabled) return;
 
-            await OnLinkClick.InvokeAsync(navLink);
+            await OnLinkClick.InvokeAsync(navLinkItem);
 
-            if (navLink.Url.HasNoValue() && (navLink.Links?.Any() ?? false))
+            if (navLinkItem.Url.HasNoValue() && navLinkItem.Links.Any())
             {
-                await ToggleNavLinkItem(navLink);
+                await OnLinkExpand(navLinkItem);
             }
         }
 
-        private async Task HandleClick(BitNavLinkItem navLink)
+        private async Task HandleClick(BitNavLinkItem navLinkItem)
         {
-            if (IsEnabled is false || navLink.Disabled) return;
+            if (IsEnabled is false || navLinkItem.Disabled) return;
 
-            await navLink.OnClick?.InvokeAsync();
+            await navLinkItem.OnClick?.InvokeAsync();
         }
 
         protected override void RegisterComponentClasses()
@@ -136,17 +136,17 @@ namespace Bit.Client.Web.BlazorUI
                                             : $"{RootElementClass}-no-top");
         }
 
-        private string GetLinkClass(BitNavLinkItem navLink)
+        private string GetLinkClass(BitNavLinkItem navLinkItem)
         {
-            var enabledClass = navLink.Disabled ? "disabled" : "enabled";
-            var hasUrlClass = navLink.Url.HasNoValue() ? "nourl" : "hasurl";
+            var enabledClass = navLinkItem.Disabled ? "disabled" : "enabled";
+            var hasUrlClass = navLinkItem.Url.HasNoValue() ? "nourl" : "hasurl";
 
             var mainStyle = $"bit-nav-link-{enabledClass}-{hasUrlClass}-{VisualClassRegistrar()}";
-            var selectedClass = navLink.Key == SelectedKey ? $"bit-nav-selected-{VisualClassRegistrar()}" : string.Empty;
-            var hasIcon = navLink.Icon.HasNoValue()
+            var selectedClass = navLinkItem.Key == SelectedKey ? $"bit-nav-selected-{VisualClassRegistrar()}" : string.Empty;
+            var hasIcon = navLinkItem.Icon.HasNoValue()
                             ? $"bit-nav-has-not-icon-{VisualClassRegistrar()}"
                             : $"bit-nav-has-icon-{VisualClassRegistrar()}";
-            var isGroup = navLink.IsGroup ? $"bit-nav-isgroup-{VisualClassRegistrar()}" : string.Empty;
+            var isGroup = navLinkItem.IsGroup ? $"bit-nav-isgroup-{VisualClassRegistrar()}" : string.Empty;
 
             return $"{mainStyle} {selectedClass} {hasIcon} {isGroup}";
         }
