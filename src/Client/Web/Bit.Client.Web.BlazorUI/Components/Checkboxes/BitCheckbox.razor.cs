@@ -48,6 +48,12 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public string? Title { get; set; }
 
         /// <summary>
+        /// Default checkbox state
+        /// Use this if you want an uncontrolled component, meaning the Checkbox instance maintains its own state.
+        /// </summary>
+        [Parameter] public bool? DefaultIsChecked { get; set; }
+
+        /// <summary>
         /// Checkbox state, control the checked state at a higher level
         /// </summary>
         [Parameter]
@@ -64,6 +70,11 @@ namespace Bit.Client.Web.BlazorUI
         }
 
         /// <summary>
+        /// Callback that is called when the IsChecked parameter changed
+        /// </summary>
+        [Parameter] public EventCallback<bool> IsCheckedChanged { get; set; }
+
+        /// <summary>
         /// Custom icon for the check mark rendered by the checkbox instade of default check mark icon
         /// </summary>
         [Parameter] public string CheckmarkIconName { get; set; } = "Accept";
@@ -72,11 +83,6 @@ namespace Bit.Client.Web.BlazorUI
         /// he aria label of the icon for the benefit of screen readers
         /// </summary>
         [Parameter] public string? CheckmarkIconAriaLabel { get; set; }
-
-        /// <summary>
-        /// Callback that is called when the IsChecked parameter changed
-        /// </summary>
-        [Parameter] public EventCallback<bool> IsCheckedChanged { get; set; }
 
         /// <summary>
         /// Determines whether the checkbox should be shown before the label (start) or after (end)
@@ -164,6 +170,11 @@ namespace Bit.Client.Web.BlazorUI
 
         protected override async Task OnParametersSetAsync()
         {
+            if(IsCheckedHasBeenSet is false && DefaultIsChecked is not null)
+            {
+                IsChecked = DefaultIsChecked.Value;
+            }
+
             InputId = $"checkbox-{UniqueId}";
             await base.OnParametersSetAsync();
         }
