@@ -13,6 +13,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using Xamarin.Essentials.Interfaces;
@@ -246,9 +247,9 @@ namespace Bit.Http.Implementations
 
             var jwtToken = (JwtSecurityToken)handler.ReadToken(token.AccessToken);
 
-            var primary_sid = jwtToken.Claims.First(c => c.Type == "primary_sid").Value;
+            Claim[] claims = jwtToken.Claims.ToArray();
 
-            return BitJwtToken.FromJson(primary_sid);
+            return claims;
         }
 
         public virtual BitJwtToken GetBitJwtToken()
@@ -262,9 +263,9 @@ namespace Bit.Http.Implementations
 
             var jwtToken = (JwtSecurityToken)handler.ReadToken(token.AccessToken);
 
-            var primary_sid = jwtToken.Claims.First(c => c.Type == "primary_sid").Value;
+            Claim[] claims = jwtToken.Claims.ToArray();
 
-            return BitJwtToken.FromJson(primary_sid);
+            return claims;
         }
 
         public async Task<string?> GetUserIdAsync(CancellationToken cancellationToken)

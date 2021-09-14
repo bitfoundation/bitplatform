@@ -179,7 +179,18 @@
         @Log()
         public getCurrentBitJwtToken(): Contracts.BitJwtToken {
             const token = this.getCurrentToken();
-            return JSON.parse(this.parseJwt(token.access_token).primary_sid);
+            const jwtToken = this.parseJwt(token.access_token);
+            if (jwtToken.primary_sid != null) {
+                const bitJwtToken = JSON.parse(jwtToken.primary_sid);
+                bitJwtToken.Claims = bitJwtToken.CustomProps;
+                delete bitJwtToken.CustomProps;
+                return bitJwtToken;
+            }
+            else
+                return {
+                    UserId: jwtToken.sub,
+                    Claims: jwtToken
+                };
         }
 
         private b64DecodeUnicode(input: string): string {
@@ -189,7 +200,7 @@
                 ).join(''));
         }
 
-        private parseJwt(input: string): { primary_sid: string } {
+        private parseJwt(input: string): { primary_sid?: string, sub?: string } & Map<string, string> {
             return JSON.parse(
                 this.b64DecodeUnicode(
                     input.split('.')[1].replace('-', '+').replace('_', '/')
