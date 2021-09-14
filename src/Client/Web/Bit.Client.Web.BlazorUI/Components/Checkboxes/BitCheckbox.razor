@@ -5,21 +5,21 @@
      @attributes="HtmlAttributes"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
-    <input type="checkbox"
-           @ref="CheckboxElement"
+    <input @ref="CheckboxElement"
+           type="checkbox"
            checked=@IsChecked
            disabled="@(IsEnabled is false)"
            aria-label="@AriaLabel"
            hidden>
-    <div>
-        <div @onclick="@HandleCheckboxClick">
-            <i class=@($"{RootElementClass}-checkmark bit-icon bit-icon--{CheckmarkIconName}") ></i>
+    <label class="bit-chb-lbl">
+        <div class="bit-chb-checkbox" @onclick="@HandleCheckboxClick">
+            <i class=@($"{RootElementClass}-checkmark bit-icon bit-icon--{CheckmarkIconName}")></i>
         </div>
 
-        <div @onclick="@HandleCheckboxClick">
+        <span class="bit-chb-txt" @onclick="@HandleCheckboxClick">
             <label class="no-text-select">
                 @(ChildContent)
             </label>
-        </div>
-    </div>
+        </span>
+    </label>
 </div>
