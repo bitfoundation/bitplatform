@@ -98,7 +98,7 @@ namespace Bit.Client.Web.BlazorUI
         }
 
 
-        private async Task OnLinkExpand(BitNavLinkItem navLink)
+        private async Task ToggleNavLinkItem(BitNavLinkItem navLink)
         {
             if (IsEnabled is false || navLink.Disabled) return;
 
@@ -116,9 +116,9 @@ namespace Bit.Client.Web.BlazorUI
 
             await OnLinkClick.InvokeAsync(navLink);
 
-            if (navLink.Url.HasNoValue() && navLink.Links.Any())
+            if (navLink.Url.HasNoValue() && (navLink.Links?.Any() ?? false))
             {
-                await OnLinkExpand(navLink);
+                await ToggleNavLinkItem(navLink);
             }
         }
 
@@ -126,7 +126,7 @@ namespace Bit.Client.Web.BlazorUI
         {
             if (IsEnabled is false || navLink.Disabled) return;
 
-            await navLink.OnClick.InvokeAsync();
+            await navLink.OnClick?.InvokeAsync();
         }
 
         protected override void RegisterComponentClasses()

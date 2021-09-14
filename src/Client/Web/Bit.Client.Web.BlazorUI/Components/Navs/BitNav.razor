@@ -57,7 +57,7 @@
             @if (navLink.Links?.Any() ?? false)
             {
                 <button tabindex="0"
-                        @onclick="(() => OnLinkExpand(navLink))"
+                        @onclick="(() => ToggleNavLinkItem(navLink))"
                         aria-label="@navLink.CollapseAriaLabel"
                         aria-expanded="@navLink.IsExpanded">
                     <i class="bit-icon bit-icon--ChevronDown @(navLink.IsExpanded ? "bit-nav-expand-fluent" : "")"></i>
