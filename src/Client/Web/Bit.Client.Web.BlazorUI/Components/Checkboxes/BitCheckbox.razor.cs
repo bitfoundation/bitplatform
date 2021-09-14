@@ -14,8 +14,38 @@ namespace Bit.Client.Web.BlazorUI
         private BitBoxSide boxSide;
 
         [Inject] public IJSRuntime? JSRuntime { get; set; }
+
         public ElementReference CheckboxElement { get; set; }
 
+        /// <summary>
+        /// Detailed description of the checkbox input for the benefit of screen readers
+        /// </summary>
+        [Parameter] public string? AriaDescription { get; set; }
+
+        /// <summary>
+        /// ID for element that contains label information for the checkbox
+        /// </summary>
+        [Parameter] public string? AriaLabelledby { get; set; }
+
+        /// <summary>
+        /// The position in the parent set (if in a set) for aria-posinset
+        /// </summary>
+        [Parameter] public int? AriaPositionInSet { get; set; }
+
+        /// <summary>
+        /// The total size of the parent set (if in a set) for aria-setsize
+        /// </summary>
+        [Parameter] public int? AriaSetSize { get; set; }
+
+        /// <summary>
+        /// Name for the checkbox input. This is intended for use with forms and NOT displayed in the UI
+        /// </summary>
+        [Parameter] public string? Name { get; set; }
+
+        /// <summary>
+        /// Title text applied to the root element and the hidden checkbox input
+        /// </summary>
+        [Parameter] public string? Title { get; set; }
 
         /// <summary>
         /// Checkbox state, control the checked state at a higher level
@@ -37,6 +67,11 @@ namespace Bit.Client.Web.BlazorUI
         /// Custom icon for the check mark rendered by the checkbox instade of default check mark icon
         /// </summary>
         [Parameter] public string CheckmarkIconName { get; set; } = "Accept";
+
+        /// <summary>
+        /// he aria label of the icon for the benefit of screen readers
+        /// </summary>
+        [Parameter] public string? CheckmarkIconAriaLabel { get; set; }
 
         /// <summary>
         /// Callback that is called when the IsChecked parameter changed
