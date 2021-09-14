@@ -22,6 +22,7 @@ namespace Bit.Client.Web.BlazorUI
         private DayOfWeek weekStartingDay;
         private int monthLength;
         private int dayOfWeekDifference;
+        private bool ValueHasBeenSet;
 
         [Inject] public IJSRuntime? JSRuntime { get; set; }
 
@@ -99,7 +100,7 @@ namespace Bit.Client.Web.BlazorUI
 
         [Parameter] public Func<BitDate,string> OnSelectDate { get; set; }
 
-        [Parameter] public EventCallback<string?> ValueChanged { get; set; }
+        [Parameter] public EventCallback<string> ValueChanged { get; set; }
 
         protected override string RootElementClass { get; } = "bit-dtp";
 
@@ -159,7 +160,7 @@ namespace Bit.Client.Web.BlazorUI
                 IsOpen = false;
                 BitDate date = new(currentYear,month,day,dayOfWeek);
                 selectedDate = OnSelectDate is not null ? OnSelectDate.Invoke(date): GetSelectedDateString(date);
-                if (ValueChanged.HasDelegate is true)
+                if (ValueChanged.HasDelegate is true && ValueHasBeenSet)
                 {
                     await ValueChanged.InvokeAsync(selectedDate);
                 }
