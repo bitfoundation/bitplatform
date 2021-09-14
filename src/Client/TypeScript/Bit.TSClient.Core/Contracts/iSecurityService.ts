@@ -10,7 +10,7 @@
 
     export type BitJwtToken = {
         UserId: string;
-        CustomProps: Map<string, string>;
+        Claims: Map<string, string>;
     }
 
     export interface ISecurityService {
