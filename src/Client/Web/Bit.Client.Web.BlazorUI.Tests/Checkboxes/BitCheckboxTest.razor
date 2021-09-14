@@ -2,7 +2,19 @@
              @bind-IsChecked="@IsChecked"
              @bind-IsIndeterminate="@IsIndeterminate"
              AriaLabel="@AriaLabel"
-             CheckmarkIconName="@CheckmarkIconName">
+             CheckmarkIconName="@CheckmarkIconName"
+             AriaDescription="@AriaDescription"
+             AriaLabelledby="@AriaLabelledby"
+             AriaPositionInSet="@AriaPositionInSet"
+             AriaSetSize="@AriaSetSize"
+             Name="@Name"
+             Title="@Title"
+             DefaultIsChecked="@DefaultIsChecked"
+             CheckmarkIconAriaLabel="@CheckmarkIconAriaLabel"
+             BoxSide="@BoxSide"
+             DefaultIsIndeterminate="@DefaultIsIndeterminate"
+             OnClick="HandleOnClick"
+             OnChange="HandleOnChange">
 </BitCheckbox>
 
 @code {
@@ -12,4 +24,28 @@
     [Parameter] public bool IsIndeterminate { get; set; }
     [Parameter] public string AriaLabel { get; set; }
     [Parameter] public string CheckmarkIconName { get; set; }
+    [Parameter] public string? AriaDescription { get; set; }
+    [Parameter] public string? AriaLabelledby { get; set; }
+    [Parameter] public int? AriaPositionInSet { get; set; }
+    [Parameter] public int? AriaSetSize { get; set; }
+    [Parameter] public string? Name { get; set; }
+    [Parameter] public string? Title { get; set; }
+    [Parameter] public bool? DefaultIsChecked { get; set; }
+    [Parameter] public string? CheckmarkIconAriaLabel { get; set; }
+    [Parameter] public BitBoxSide BoxSide { get; set; }
+    [Parameter] public bool? DefaultIsIndeterminate { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    public int ClickCounter { get; set; } = 0;
+    public bool IsCheckedChanged { get; set; } = false;
+
+    public void HandleOnClick(MouseEventArgs args)
+    {
+        ClickCounter++;
+    }
+
+    public void HandleOnChange(bool isChecked)
+    {
+        IsCheckedChanged = true;
+    }
 }
