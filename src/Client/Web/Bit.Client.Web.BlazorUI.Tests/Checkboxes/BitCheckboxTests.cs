@@ -82,6 +82,29 @@ namespace Bit.Client.Web.BlazorUI.Tests.Checkboxes
         }
 
         [DataTestMethod,
+            DataRow("Detailed description"),
+            DataRow(null)
+        ]
+        public void BitCheckboxAriaDescriptionTest(string? ariaDescription)
+        {
+            var component = RenderComponent<BitCheckboxTest>(parameters =>
+            {
+                parameters.Add(p => p.AriaDescription, ariaDescription);
+            });
+
+            var chbInput = component.Find("input");
+
+            if (ariaDescription is not null)
+            {
+                Assert.IsTrue(chbInput.GetAttribute("aria-describedby").Equals(ariaDescription));
+            }
+            else
+            {
+                Assert.IsNull(chbInput.GetAttribute("aria-describedby"));
+            }
+        }
+
+        [DataTestMethod,
             DataRow("Emoji2")
         ]
         public void BitCheckboxCustomCheckmarkIconTest(string checkmarkIconName)
