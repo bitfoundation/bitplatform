@@ -7,8 +7,8 @@ namespace Bit.Client.Web.BlazorUI
     public partial class BitRating
     {
         private bool isReadOnly;
-        private int ratingValue;
-        private bool ValueHasBeenSet;
+        private double ratingValue;
+        private bool RatingHasBeenSet;
 
         private string[] RatingColorClasses { get; set; } = Array.Empty<string>();
 
@@ -34,7 +34,7 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// Custom icon name for selected rating elements, If unset, default will be the FavoriteStarFill icon
         /// </summary>
-        [Parameter] public string Icon { get; set; } = "FavoriteStarFill";
+        [Parameter] public string IconName { get; set; } = "FavoriteStarFill";
 
         /// <summary>
         /// Custom icon name for unselected rating elements, If unset, default will be the FavoriteStar icon
@@ -64,7 +64,7 @@ namespace Bit.Client.Web.BlazorUI
         /// Current rating value. Must be a number between min (0 if AllowZeroStars is true, 1 otherwise) and max.
         /// </summary>
         [Parameter]
-        public int Value
+        public double Rating
         {
             get => ratingValue;
             set
@@ -75,19 +75,19 @@ namespace Bit.Client.Web.BlazorUI
                 FillRating(ratingValue);
 
                 ClassBuilder.Reset();
-                _ = ValueChanged.InvokeAsync(value);
+                _ = RatingChanged.InvokeAsync(value);
             }
         }
 
         /// <summary>
         /// Callback that is called when the rating value changed
         /// </summary>
-        [Parameter] public EventCallback<int> ValueChanged { get; set; }
+        [Parameter] public EventCallback<double> RatingChanged { get; set; }
 
         /// <summary>
         /// Callback that is called when the rating has changed
         /// </summary>
-        [Parameter] public EventCallback<int> OnChange { get; set; }
+        [Parameter] public EventCallback<double> OnChange { get; set; }
 
         private string? _colorClass;
         private int _min;
@@ -114,21 +114,21 @@ namespace Bit.Client.Web.BlazorUI
             RatingColorClasses = new string[Max + 1];
             RatingIcons = new string[Max + 1];
 
-            FillRating(Value > 0 ? Value : _min);
+            FillRating(Rating > 0 ? Rating : _min);
 
             await base.OnInitializedAsync();
         }
 
         private async Task HandleClick(int index)
         {
-            if ((_min == 1 && index == 0) || IsReadOnly is true || IsEnabled is false || ValueChanged.HasDelegate is false) return;
+            if ((_min == 1 && index == 0) || IsReadOnly is true || IsEnabled is false || RatingChanged.HasDelegate is false) return;
 
-            Value = index;
+            Rating = index;
 
-            await OnChange.InvokeAsync(Value);
+            await OnChange.InvokeAsync(Rating);
         }
 
-        private void FillRating(int index)
+        private void FillRating(double index)
         {
             if (RatingIcons.Length == 0 || RatingColorClasses.Length == 0) return;
 
@@ -141,7 +141,7 @@ namespace Bit.Client.Web.BlazorUI
 
             for (var item = 0; item < index; item++)
             {
-                RatingIcons![item] = Icon;
+                RatingIcons![item] = IconName;
                 RatingColorClasses![item] = _colorClass!;
             }
         }
@@ -152,10 +152,25 @@ namespace Bit.Client.Web.BlazorUI
             Array.Fill(RatingColorClasses!, _colorClass);
         }
 
-        private string UniqId(string prefix)
+        private double GetPercentageOf(int starNumber)
         {
-            string randomNum = new Random().Next(10000, 99999).ToString("D5");
-            return $"{prefix}{randomNum}";
+            double fullRating = Math.Ceiling(Rating);
+            double fullStar = 100;
+
+            if (starNumber == Rating)
+            {
+                fullStar = 100;
+            }
+            else if (starNumber == fullRating)
+            {
+                fullStar = 100 * (Rating % 1);
+            }
+            else if (starNumber > fullRating)
+            {
+                fullStar = 0;
+            }
+
+            return fullStar;
         }
     }
 }

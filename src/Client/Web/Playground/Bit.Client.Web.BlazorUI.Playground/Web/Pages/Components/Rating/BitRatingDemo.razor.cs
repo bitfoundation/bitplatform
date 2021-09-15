@@ -4,11 +4,11 @@
     {
         private string RatingChangedText = string.Empty;
 
-        private int RatingBoundValue = 2;
-        private int RatingLargeValue = 3;
-        private int RatingSmallValue = 0;
-        private int RatingReadOnlyValue = 5;
-        private int RatingCustomIconValue = 5;
-        private int RatingOutsideValue = 0;
+        private double RatingBoundValue = 2;
+        private double RatingLargeValue = 3;
+        private double RatingSmallValue = 0;
+        private double RatingReadOnlyValue = 5;
+        private double RatingCustomIconValue = 5;
+        private double RatingOutsideValue = 0;
     }
 }

@@ -2,38 +2,97 @@
 
 .bit-rating-fluent {
     font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    font-size: rem(14px);
+    font-weight: 400;
 
-    & span {
-        position: absolute;
-        width: rem(1px);
-        height: rem(1px);
-        margin: rem(-1px);
-        padding: 0;
-        border: 0;
-        overflow: hidden;
-        white-space: nowrap;
+    & > div {
+        outline: transparent;
+        position: relative;
+        display: inline-block;
+
+        & > button {
+            outline: transparent;
+            position: relative;
+            background-color: transparent;
+            padding: rem(8px) rem(2px);
+            box-sizing: content-box;
+            margin: 0;
+            border: none;
+            cursor: pointer;
+
+            & > span {
+                position: absolute;
+                width: rem(1px);
+                height: rem(1px);
+                margin: rem(-1px);
+                padding: 0;
+                border: 0;
+                overflow: hidden;
+                white-space: nowrap;
+            }
+
+            & > div {
+                display: inline-block;
+                position: relative;
+                height: inherit;
+            }
+
+            & .ratingStar-back {
+                display: inline-block;
+                -webkit-font-smoothing: antialiased;
+                font-style: normal;
+                font-weight: normal;
+                speak: none;
+                color: $Grey130;
+                width: 100%;
+            }
+
+            & .ratingStar-front {
+                display: inline-block;
+                -webkit-font-smoothing: antialiased;
+                font-style: normal;
+                font-weight: normal;
+                speak: none;
+                position: absolute;
+                left: 0;
+                top: 0;
+                text-align: center;
+                vertical-align: middle;
+                overflow: hidden;
+                color: $Grey160;
+            }
+        }
+    }
+}
+/*
+.bit-rating-disabled-fluent {
+    & button {
+        pointer-events: none;
+        cursor: not-allowed;
+        opacity: 0.65;
     }
 }
 
-.bit-rating-disabled-fluent button {
-    pointer-events: none;
-    cursor: not-allowed;
-    opacity: 0.65;
+.bit-rating-readonly-fluent {
+    & button {
+        cursor: not-allowed;
+        pointer-events: none;
+    }
 }
 
-.bit-rating-readonly-fluent button {
-    cursor: not-allowed;
-    pointer-events: none;
+.bit-rating-small-fluent {
+    & button {
+        font-size: rem(16px);
+        line-height: 16px;
+    }
 }
 
-.bit-rating-small-fluent button {
-    font-size: rem(16px);
-    line-height: 16px;
-}
-
-.bit-rating-large-fluent button {
-    font-size: rem(20px);
-    line-height: 20px;
+.bit-rating-large-fluent {
+    & button {
+        font-size: rem(20px);
+        line-height: 20px;
+    }
 }
 
 .bit-rating button div {
@@ -48,4 +107,4 @@
 
 .bit-rating-dark-fluent {
     color: $Grey180;
-}
+}*/

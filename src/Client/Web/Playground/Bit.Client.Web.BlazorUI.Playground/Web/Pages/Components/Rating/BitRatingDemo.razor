@@ -20,41 +20,41 @@
         <BitPivot>
             <BitPivotItem HeaderText="Example" IconName="ViewList">
                 <h5>Large stars</h5>
-                <BitRating Size="RatingSize.Large" @bind-Value="RatingLargeValue" AriaLabelFormat="Select {0} of {1} stars" />
+                <BitRating Size="RatingSize.Large" @bind-Rating="RatingLargeValue" AriaLabelFormat="Select {0} of {1} stars" />
                 <h5>Small stars, with 0 stars allowed</h5>
-                <BitRating AllowZeroStars="true" @bind-Value="RatingSmallValue" />
+                <BitRating AllowZeroStars="true" @bind-Rating="RatingSmallValue" />
                 <h5>10 small stars</h5>
                 <div>
-                    <BitRating Max="10" OnChange="@(v => RatingChangedText = $"Rating value changed to {v}")" @bind-Value="RatingBoundValue" />
+                    <BitRating Max="10" OnChange="@(v => RatingChangedText = $"Rating value changed to {v}")" @bind-Rating="RatingBoundValue" />
                     <div class="m-t-10">
                         <span>@RatingChangedText</span>
                     </div>
                     <h5>Disabled</h5>
-                    <BitRating IsEnabled="false" @bind-Value="RatingReadOnlyValue" />
+                    <BitRating IsEnabled="false" @bind-Rating="RatingReadOnlyValue" />
                     <h5>ReadOnly</h5>
-                    <BitRating IsReadOnly="true" @bind-Value="RatingReadOnlyValue" />
+                    <BitRating IsReadOnly="true" @bind-Rating="RatingReadOnlyValue" />
                     <h5>Custom icons</h5>
-                    <BitRating Icon="HeartFill" UnselectedIcon="Heart" AllowZeroStars="true" @bind-Value="RatingCustomIconValue" />
+                    <BitRating IconName="HeartFill" UnselectedIcon="Heart" AllowZeroStars="true" @bind-Rating="RatingCustomIconValue" />
                 </div>
             </BitPivotItem>
             <BitPivotItem HeaderText="Code" IconName="Source">
                 <p>
-                    &lt<span class="dark-green">BitRating Size</span>="RatingSize.Large" <span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-Value</span><span>="RatingLargeValue"</span><span class="dark-green">AriaLabelFormat</span><span>="Select {0} of {1} stars"</span><span>/&gt;</span>
+                    &lt<span class="dark-green">BitRating Size</span>="RatingSize.Large" <span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-Rating</span><span>="RatingLargeValue"</span><span class="dark-green">AriaLabelFormat</span><span>="Select {0} of {1} stars"</span><span>/&gt;</span>
                 </p>
                 <p>
-                    &lt<span class="dark-green">BitRating AllowZeroStars</span><span class="light-blue">="true" </span><span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-Value</span><span>="RatingSmallValue"</span><span>/&gt;</span>
+                    &lt<span class="dark-green">BitRating AllowZeroStars</span><span class="light-blue">="true" </span><span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-Rating</span><span>="RatingSmallValue"</span><span>/&gt;</span>
                 </p>
                 <p>
-                    &lt<span class="dark-green">BitRating Max</span>="10"<span class="dark-green"> OnChange</span>="<span class="light-yellow-bg">&#64;</span>(v => RatingChangedText = $"Rating value changed to {v}")" <span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-Value</span><span>="RatingBoundValue"</span><span>/&gt;</span>
+                    &lt<span class="dark-green">BitRating Max</span>="10"<span class="dark-green"> OnChange</span>="<span class="light-yellow-bg">&#64;</span>(v => RatingChangedText = $"Rating value changed to {v}")" <span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-Rating</span><span>="RatingBoundValue"</span><span>/&gt;</span>
                 </p>
                 <p>
-                    &lt<span class="dark-green">BitRating IsEnabled</span><span class="light-blue">="false" </span><span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-Value</span><span>="RatingReadOnlyValue"</span><span>/&gt;</span>
+                    &lt<span class="dark-green">BitRating IsEnabled</span><span class="light-blue">="false" </span><span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-Rating</span><span>="RatingReadOnlyValue"</span><span>/&gt;</span>
                 </p>
                 <p>
-                    &lt<span class="dark-green">BitRating IsReadOnly</span><span class="light-blue">="true" </span><span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-Value</span><span>="RatingReadOnlyValue"</span><span>/&gt;</span>
+                    &lt<span class="dark-green">BitRating IsReadOnly</span><span class="light-blue">="true" </span><span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-Rating</span><span>="RatingReadOnlyValue"</span><span>/&gt;</span>
                 </p>
                 <p>
-                    &lt<span class="dark-green">BitRating Icon</span>="HeartFill"<span class="dark-green"> UnselectedIcon</span>="Heart"<span class="dark-green"> AllowZeroStars</span>="<span class="light-blue">true</span>" <span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-Value</span><span>="RatingOutsideValue"</span><span>/&gt;</span>
+                    &lt<span class="dark-green">BitRating Icon</span>="HeartFill"<span class="dark-green"> UnselectedIcon</span>="Heart"<span class="dark-green"> AllowZeroStars</span>="<span class="light-blue">true</span>" <span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-Rating</span><span>="RatingOutsideValue"</span><span>/&gt;</span>
                 </p>
             </BitPivotItem>
         </BitPivot>
@@ -68,7 +68,7 @@
         </div>
         <BitPivot>
             <BitPivotItem HeaderText="Example" IconName="ViewList">
-                <BitRating Icon="Emoji2" UnselectedIcon="EmojiNeutral" AllowZeroStars="true" @bind-Value="RatingOutsideValue" />
+                <BitRating IconName="Emoji2" UnselectedIcon="EmojiNeutral" AllowZeroStars="true" @bind-Rating="RatingOutsideValue" />
                 <div class="m-t-10">
                     <span>RatingOutsideValue: @RatingOutsideValue</span>
                 </div>
@@ -79,7 +79,7 @@
             </BitPivotItem>
             <BitPivotItem HeaderText="Code" IconName="Source">
                 <p>
-                    &lt<span class="dark-green">BitRating Icon</span>="Emoji2"<span class="dark-green"> UnselectedIcon</span>="EmojiNeutral"<span class="dark-green"> AllowZeroStars</span>="<span class="light-blue">true</span>" <span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-Value</span><span>="RatingOutsideValue"</span><span>/&gt;</span>
+                    &lt<span class="dark-green">BitRating Icon</span>="Emoji2"<span class="dark-green"> UnselectedIcon</span>="EmojiNeutral"<span class="dark-green"> AllowZeroStars</span>="<span class="light-blue">true</span>" <span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-Rating</span><span>="RatingOutsideValue"</span><span>/&gt;</span>
                 </p>
                 <p>
                     &lt<span class="dark-green">BitButton OnClick</span>="() => RatingOutsideValue = 5">Fully satisfied<span>&lt/</span><span class="dark-green">BitButton</span><span>&gt;</span>
