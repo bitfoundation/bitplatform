@@ -20,7 +20,7 @@
         <BitPivot>
             <BitPivotItem HeaderText="Example" IconName="ViewList">
                 <h5>Large stars</h5>
-                <BitRating Size="RatingSize.Large" @bind-Value="RatingLargeValue" />
+                <BitRating Size="RatingSize.Large" @bind-Value="RatingLargeValue" AriaLabelFormat="Select {0} of {1} stars" />
                 <h5>Small stars, with 0 stars allowed</h5>
                 <BitRating AllowZeroStars="true" @bind-Value="RatingSmallValue" />
                 <h5>10 small stars</h5>
@@ -39,7 +39,7 @@
             </BitPivotItem>
             <BitPivotItem HeaderText="Code" IconName="Source">
                 <p>
-                    &lt<span class="dark-green">BitRating Size</span>="RatingSize.Large" <span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-Value</span><span>="RatingLargeValue"</span><span>/&gt;</span>
+                    &lt<span class="dark-green">BitRating Size</span>="RatingSize.Large" <span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-Value</span><span>="RatingLargeValue"</span><span class="dark-green">AriaLabelFormat</span><span>="Select {0} of {1} stars"</span><span>/&gt;</span>
                 </p>
                 <p>
                     &lt<span class="dark-green">BitRating AllowZeroStars</span><span class="light-blue">="true" </span><span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-Value</span><span>="RatingSmallValue"</span><span>/&gt;</span>

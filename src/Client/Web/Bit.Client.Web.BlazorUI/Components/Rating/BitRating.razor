@@ -10,15 +10,17 @@
     @for (int item = 0; item < Max; item++)
     {
         var index = item;
-        <button aria-checked="@(item + 1 == Value ? "true" : "false")"
+        <button aria-checked="@(index + 1 == Value ? "true" : "false")"
                 aria-hidden=@(IsReadOnly ? "true" : null)
-                data-is-current="@(item + 1 == Value ? "true" : null)"
+                data-is-current="@(index + 1 == Value ? "true" : null)"
                 disabled=@(!IsEnabled|| IsReadOnly)
-                id="@($"{UniqId("Rating")}-star-{index}")"
+                id="@($"Rating{UniqueId}-star-{index}")"
                 role="radio"
                 tabindex=@(IsReadOnly ? "0" : "-1" )
                 type="button"
                 @onclick="() => HandleClick(index + 1)">
+
+            <span id="@($"RatingLabel{UniqueId}-{index+1}"))">@(AriaLabelFormat.HasValue()? string.Format(AriaLabelFormat!, index + 1, Max):string.Empty)</span>
             <div>
                 <i class="@RatingColorClasses[index] bit-icon bit-icon--@RatingIcons[index]"></i>
             </div>
