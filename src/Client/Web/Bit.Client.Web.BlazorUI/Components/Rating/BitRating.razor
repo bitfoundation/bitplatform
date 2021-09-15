@@ -8,7 +8,8 @@
      aria-label="@AriaLabel"
      role=@(!IsReadOnly ? "radiogroup" : null)
      id="@($"Rating{@UniqueId}")">
-    <div>
+
+    <div aria-readonly="@(IsReadOnly?"true":null)">
         @for (int item = 1; item <= Max; item++)
         {
             var index = item;
@@ -26,7 +27,6 @@
 
                 <span id="@($"RatingLabel{UniqueId}-{index }"))">@(AriaLabelFormat.HasValue() ? string.Format(AriaLabelFormat!, index , Max) : string.Empty)</span>
                 <div>
-
                     <i aria-hidden="true"
                        class="@($" bit-icon bit-icon--{(percentage > 0 ? IconName : UnselectedIcon)} {(IsEnabled ? "ratingStar-back":"ratingStar-back--disabled"  )}")"></i>
                     @if (IsEnabled)

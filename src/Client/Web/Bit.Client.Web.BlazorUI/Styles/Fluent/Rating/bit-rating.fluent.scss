@@ -73,7 +73,7 @@
         }
     }
 }
-/*
+
 .bit-rating-disabled-fluent {
     & button {
         pointer-events: none;
@@ -84,7 +84,7 @@
 
 .bit-rating-readonly-fluent {
     & button {
-        cursor: not-allowed;
+        cursor: default;
         pointer-events: none;
     }
 }
@@ -92,18 +92,20 @@
 .bit-rating-small-fluent {
     & button {
         font-size: rem(16px);
-        line-height: 16px;
+        line-height: rem(16px);
+        height: rem(16px);
     }
 }
 
 .bit-rating-large-fluent {
     & button {
         font-size: rem(20px);
-        line-height: 20px;
+        line-height: rem(20px);
+        height: rem(20px);
     }
 }
 
-.bit-rating button div {
+/*.bit-rating button div {
     display: flex;
     color: $ThemeLighter;
     cursor: pointer;
