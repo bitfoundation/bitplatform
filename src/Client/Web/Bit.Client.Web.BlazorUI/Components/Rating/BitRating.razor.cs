@@ -7,12 +7,30 @@ namespace Bit.Client.Web.BlazorUI
     public partial class BitRating
     {
         private bool isReadOnly;
-        private double ratingValue;
         private bool RatingHasBeenSet;
+        private int _min;
+        private double ratingValue;
+        private string? _colorClass;
 
-        private string[] RatingColorClasses { get; set; } = Array.Empty<string>();
 
-        public string[] RatingIcons { get; set; } = Array.Empty<string>();
+        /// <summary>
+        /// A flag to mark rating control as readOnly
+        /// </summary>
+        [Parameter]
+        public bool IsReadOnly
+        {
+            get => isReadOnly;
+            set
+            {
+                isReadOnly = value;
+                ClassBuilder.Reset();
+            }
+        }
+
+        /// <summary>
+        /// Allow the initial rating value be 0. Note that a value of 0 still won't be selectable by mouse or keyboard
+        /// </summary>
+        [Parameter] public bool AllowZeroStars { get; set; }
 
         /// <summary>
         /// Optional label format for each individual rating star (not the rating control as a whole) that will be read by screen readers. 
@@ -20,11 +38,6 @@ namespace Bit.Client.Web.BlazorUI
         /// "Select {0} of {1} stars". (To set the label for the control as a whole, use getAriaLabel or aria-label.)
         /// </summary>
         [Parameter] public string? AriaLabelFormat { get; set; }
-
-        /// <summary>
-        /// Allow the initial rating value be 0. Note that a value of 0 still won't be selectable by mouse or keyboard
-        /// </summary>
-        [Parameter] public bool AllowZeroStars { get; set; }
 
         /// <summary>
         /// Maximum rating. Must be >= min (0 if AllowZeroStars is true, 1 otherwise)
@@ -42,25 +55,6 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public string UnselectedIcon { get; set; } = "FavoriteStar";
 
         /// <summary>
-        /// Size of rating
-        /// </summary>
-        [Parameter] public RatingSize Size { get; set; }
-
-        /// <summary>
-        /// A flag to mark rating control as readOnly
-        /// </summary>
-        [Parameter]
-        public bool IsReadOnly
-        {
-            get => isReadOnly;
-            set
-            {
-                isReadOnly = value;
-                ClassBuilder.Reset();
-            }
-        }
-
-        /// <summary>
         /// Current rating value. Must be a number between min (0 if AllowZeroStars is true, 1 otherwise) and max.
         /// </summary>
         [Parameter]
@@ -72,12 +66,15 @@ namespace Bit.Client.Web.BlazorUI
                 if (value == ratingValue) return;
                 ratingValue = value;
 
-                FillRating(ratingValue);
-
                 ClassBuilder.Reset();
                 _ = RatingChanged.InvokeAsync(value);
             }
         }
+
+        /// <summary>
+        /// Size of rating
+        /// </summary>
+        [Parameter] public RatingSize Size { get; set; }
 
         /// <summary>
         /// Callback that is called when the rating value changed
@@ -89,8 +86,15 @@ namespace Bit.Client.Web.BlazorUI
         /// </summary>
         [Parameter] public EventCallback<double> OnChange { get; set; }
 
-        private string? _colorClass;
-        private int _min;
+        protected override async Task OnInitializedAsync()
+        {
+            _colorClass = $"{RootElementClass}-dark-{VisualClassRegistrar()}";
+
+            _min = AllowZeroStars ? 0 : 1;
+            Max = Max > _min ? Max : _min;
+
+            await base.OnInitializedAsync();
+        }
 
         protected override string RootElementClass => "bit-rating";
 
@@ -102,54 +106,6 @@ namespace Bit.Client.Web.BlazorUI
             ClassBuilder.Register(() => Size == RatingSize.Large
                                                 ? $"{RootElementClass}-large-{VisualClassRegistrar()}"
                                                 : $"{RootElementClass}-small-{VisualClassRegistrar()}");
-        }
-
-        protected override async Task OnInitializedAsync()
-        {
-            _colorClass = $"{RootElementClass}-dark-{VisualClassRegistrar()}";
-
-            _min = AllowZeroStars ? 0 : 1;
-            Max = Max > _min ? Max : _min;
-
-            RatingColorClasses = new string[Max + 1];
-            RatingIcons = new string[Max + 1];
-
-            FillRating(Rating > 0 ? Rating : _min);
-
-            await base.OnInitializedAsync();
-        }
-
-        private async Task HandleClick(int index)
-        {
-            if ((_min == 1 && index == 0) || IsReadOnly is true || IsEnabled is false || RatingChanged.HasDelegate is false) return;
-
-            Rating = index;
-
-            await OnChange.InvokeAsync(Rating);
-        }
-
-        private void FillRating(double index)
-        {
-            if (RatingIcons.Length == 0 || RatingColorClasses.Length == 0) return;
-
-            if (AllowZeroStars is false && index == 0)
-            {
-                index = 1;
-            }
-
-            EmptyRating();
-
-            for (var item = 0; item < index; item++)
-            {
-                RatingIcons![item] = IconName;
-                RatingColorClasses![item] = _colorClass!;
-            }
-        }
-
-        private void EmptyRating()
-        {
-            Array.Fill(RatingIcons!, UnselectedIcon);
-            Array.Fill(RatingColorClasses!, _colorClass);
         }
 
         private double GetPercentageOf(int starNumber)
@@ -171,6 +127,15 @@ namespace Bit.Client.Web.BlazorUI
             }
 
             return fullStar;
+        }
+
+        private async Task HandleClick(int index)
+        {
+            if ((_min == 1 && index == 0) || IsReadOnly is true || IsEnabled is false || RatingChanged.HasDelegate is false) return;
+
+            Rating = index;
+
+            await OnChange.InvokeAsync(Rating);
         }
     }
 }
