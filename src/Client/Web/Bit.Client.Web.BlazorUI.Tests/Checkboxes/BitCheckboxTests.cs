@@ -6,27 +6,39 @@ namespace Bit.Client.Web.BlazorUI.Tests.Checkboxes
     [TestClass]
     public class BitCheckboxTests : BunitTestContext
     {
-        [DataTestMethod,
-            DataRow(true, true),
-            DataRow(false, true),
-            DataRow(true, false),
-            DataRow(false, false)
-        ]
-        public void BitCheckboxOnClickShouldWorkIfIsEnabled(bool defaultIsChecked, bool isEnabled)
-        {
-            Context.JSInterop.Mode = JSRuntimeMode.Loose;
+        private bool BitCheckBoxIsChecked;
 
+        [DataTestMethod,
+            DataRow(Visual.Fluent, true, true),
+            DataRow(Visual.Fluent, false, true),
+            DataRow(Visual.Fluent, true, false),
+            DataRow(Visual.Fluent, false, false),
+
+            DataRow(Visual.Cupertino, true, true),
+            DataRow(Visual.Cupertino, false, true),
+            DataRow(Visual.Cupertino, true, false),
+            DataRow(Visual.Cupertino, false, false),
+
+            DataRow(Visual.Material, true, true),
+            DataRow(Visual.Material, false, true),
+            DataRow(Visual.Material, true, false),
+            DataRow(Visual.Material, false, false),
+        ]
+        public void BitCheckboxOnClickShouldWorkIfIsEnabled(Visual visual, bool defaultIsChecked, bool isEnabled)
+        {
             var component = RenderComponent<BitCheckboxTest>(parameters =>
             {
+                parameters.Add(p => p.Visual, visual);
                 parameters.Add(p => p.IsEnabled, isEnabled);
                 parameters.Add(p => p.DefaultIsChecked, defaultIsChecked);
             });
 
             var chb = component.Find(".bit-chb");
             var chbCheckbox = component.Find(".bit-chb-checkbox");
-            chbCheckbox.Click();
+            var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
 
-            Assert.AreEqual(isEnabled, chb.ClassList.Contains("bit-chb-checked-fluent"));
+            Assert.AreEqual(defaultIsChecked, chb.ClassList.Contains($"bit-chb-checked-{visualClass}"));
+            chbCheckbox.Click();
             if (isEnabled)
             {
                 Assert.AreEqual(1, component.Instance.ClickCounter);
@@ -301,6 +313,33 @@ namespace Bit.Client.Web.BlazorUI.Tests.Checkboxes
 
             var chbChildContent = component.Find(".bit-chb-txt").ChildNodes;
             chbChildContent.MarkupMatches(childContent);
+        }
+
+        [DataTestMethod,
+            DataRow(true),
+            DataRow(false)
+        ]
+        public void BitCheckBoxIsCheckedTwoWayBoundWithCustomHandlerTest(bool isChecked)
+        {
+            BitCheckBoxIsChecked = isChecked;
+
+            var component = RenderComponent<BitCheckbox>(parameters =>
+            {
+                parameters.Add(p => p.IsChecked, isChecked);
+                parameters.Add(p => p.IsCheckedChanged, HandleIsCheckedChanged);
+            });
+
+            var chb = component.Find(".bit-chb-checkbox");
+            chb.Click();
+
+            var expectedValue = !isChecked;
+
+            Assert.AreEqual(expectedValue, BitCheckBoxIsChecked);
+        }
+
+        private void HandleIsCheckedChanged(bool isChecked)
+        {
+            BitCheckBoxIsChecked = isChecked;
         }
     }
 }
