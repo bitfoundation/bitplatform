@@ -82,6 +82,11 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public RatingSize Size { get; set; }
 
         /// <summary>
+        /// Optional callback to set the aria-label for rating control in readOnly mode. Also used as a fallback aria-label if ariaLabel prop is not provided.
+        /// </summary>
+        [Parameter] public Func<double, double, string>? GetAriaLabel { get; set; }
+
+        /// <summary>
         /// Callback that is called when the rating value changed
         /// </summary>
         [Parameter] public EventCallback<double> RatingChanged { get; set; }

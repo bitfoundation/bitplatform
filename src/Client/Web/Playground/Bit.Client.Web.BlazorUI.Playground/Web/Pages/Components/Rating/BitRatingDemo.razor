@@ -32,7 +32,7 @@
                     <h5>Disabled</h5>
                     <BitRating IsEnabled="false" @bind-Rating="RatingReadOnlyValue" />
                     <h5>Half star in readOnly mod</h5>
-                    <BitRating IsReadOnly="true" @bind-Rating="RatingReadOnlyValue" />
+                    <BitRating IsReadOnly="true" @bind-Rating="RatingReadOnlyValue" GetAriaLabel="@((value, max) => $"Half star in readOnly mode rating value is {value.ToString()} of {max.ToString()}")" />
                     <h5>Custom icons</h5>
                     <BitRating IconName="HeartFill" UnselectedIcon="Heart" AllowZeroStars="true" @bind-Rating="RatingCustomIconValue" />
                 </div>
@@ -51,7 +51,7 @@
                     &lt<span class="dark-green">BitRating IsEnabled</span><span class="light-blue">="false" </span><span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-Rating</span><span>="RatingReadOnlyValue"</span><span>/&gt;</span>
                 </p>
                 <p>
-                    &lt<span class="dark-green">BitRating IsReadOnly</span><span class="light-blue">="true" </span><span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-Rating</span><span>="RatingReadOnlyValue"</span><span>/&gt;</span>
+                    &lt<span class="dark-green">BitRating IsReadOnly</span><span class="light-blue">="true" </span><span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-Rating</span><span>="RatingReadOnlyValue"</span><span class="dark-green">GetAriaLabel</span>="<span class="light-yellow-bg">&#64;</span><span>((value, max) => $"Half star in readOnly mode rating value is {value.ToString()} of {max.ToString()}")"</span><span>/&gt;</span>
                 </p>
                 <p>
                     &lt<span class="dark-green">BitRating Icon</span>="HeartFill"<span class="dark-green"> UnselectedIcon</span>="Heart"<span class="dark-green"> AllowZeroStars</span>="<span class="light-blue">true</span>" <span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-Rating</span><span>="RatingOutsideValue"</span><span>/&gt;</span>

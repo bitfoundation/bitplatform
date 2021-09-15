@@ -9,7 +9,9 @@
      role=@(!IsReadOnly ? "radiogroup" : null)
      style="@StyleBuilder.Value">
 
-    <div aria-readonly="@(IsReadOnly?"true":null)">
+    <div aria-readonly="@(IsReadOnly?"true":null)"
+         ariaLabel=@(IsReadOnly ? (GetAriaLabel != null ? GetAriaLabel(Rating != -1 ? Rating : 0, Max) : null) : null)
+         ariaReadonly=@(IsReadOnly ? "true" : null)>
         @for (int item = 1; item <= Max; item++)
         {
             var index = item;
