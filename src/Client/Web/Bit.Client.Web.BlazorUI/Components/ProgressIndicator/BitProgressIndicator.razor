@@ -6,22 +6,23 @@
      class="@ClassBuilder.Value">
     @if (Label.HasValue())
     {
-        <div id="@LabelId">
+        <div class="bit-pi-lbl" id="@LabelId">
             @Label
         </div>
     }
 
     @if (IsProgressHidden is false)
     {
-        <div style="@($"height: {BarHeight}px;")">
-            <div></div>
-            <div style="@($"{(PercentCompleteHasBeenSet ? $"width: {percentComplete}%" : string.Empty)};")"></div>
+        <div class="bit-pi-wrapper" style="@($"height: {BarHeight}px;")">
+            <div class="bit-pi-track"></div>
+            <div class="bit-pi-bar" 
+                 style="@($"{(PercentCompleteHasBeenSet ? $"width: {percentComplete}%" : string.Empty)};")"></div>
         </div>
     }
 
     @if (Description.HasValue())
     {
-        <div id="@DescriptionId">
+        <div class="bit-pi-dsc" id="@DescriptionId">
             @Description
         </div>
     }
