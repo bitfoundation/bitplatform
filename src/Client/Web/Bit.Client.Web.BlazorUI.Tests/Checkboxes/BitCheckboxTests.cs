@@ -105,7 +105,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Checkboxes
         }
 
         [DataTestMethod,
-            DataRow("Detailed description"),
+            DataRow("Detailed label"),
             DataRow(null)
         ]
         public void BitCheckboxAriaLabelledbyTest(string? ariaLabelledby)
@@ -124,6 +124,29 @@ namespace Bit.Client.Web.BlazorUI.Tests.Checkboxes
             else
             {
                 Assert.IsNull(chbInput.GetAttribute("aria-labelledby"));
+            }
+        }
+
+        [DataTestMethod,
+            DataRow("Title"),
+            DataRow(null)
+        ]
+        public void BitCheckboxTitleTest(string? title)
+        {
+            var component = RenderComponent<BitCheckboxTest>(parameters =>
+            {
+                parameters.Add(p => p.Title, title);
+            });
+
+            var chbInput = component.Find("input");
+
+            if (title is not null)
+            {
+                Assert.IsTrue(chbInput.GetAttribute("title").Equals(title));
+            }
+            else
+            {
+                Assert.IsNull(chbInput.GetAttribute("title"));
             }
         }
 
