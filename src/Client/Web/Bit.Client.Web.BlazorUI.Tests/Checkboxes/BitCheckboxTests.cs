@@ -7,6 +7,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Checkboxes
     public class BitCheckboxTests : BunitTestContext
     {
         private bool BitCheckBoxIsChecked;
+        private bool BitCheckBoxIsIndeterminate = true;
 
         [DataTestMethod,
             DataRow(Visual.Fluent, true, true),
@@ -337,9 +338,29 @@ namespace Bit.Client.Web.BlazorUI.Tests.Checkboxes
             Assert.AreEqual(expectedValue, BitCheckBoxIsChecked);
         }
 
+        [DataTestMethod]
+        public void BitCheckBoxIsIndeterminateTwoWayBoundWithCustomHandlerTest()
+        {
+            var component = RenderComponent<BitCheckbox>(parameters =>
+            {
+                parameters.Add(p => p.IsIndeterminate, true);
+                parameters.Add(p => p.IsIndeterminateChanged, HandleIsIndeterminateChanged);
+            });
+
+            var chb = component.Find(".bit-chb-checkbox");
+            chb.Click();
+
+            Assert.IsFalse(BitCheckBoxIsIndeterminate);
+        }
+
         private void HandleIsCheckedChanged(bool isChecked)
         {
             BitCheckBoxIsChecked = isChecked;
+        }
+
+        private void HandleIsIndeterminateChanged(bool isIndeterminate)
+        {
+            BitCheckBoxIsIndeterminate = isIndeterminate;
         }
     }
 }
