@@ -2,6 +2,17 @@
 
 .bit-rating-fluent {
     font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+
+    & span {
+        position: absolute;
+        width: rem(1px);
+        height: rem(1px);
+        margin: rem(-1px);
+        padding: 0;
+        border: 0;
+        overflow: hidden;
+        white-space: nowrap;
+    }
 }
 
 .bit-rating-disabled-fluent button {
