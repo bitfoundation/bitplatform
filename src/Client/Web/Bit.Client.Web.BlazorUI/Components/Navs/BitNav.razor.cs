@@ -33,7 +33,7 @@ namespace Bit.Client.Web.BlazorUI
 
                 var currentUrl = NavLinkItems.Where(nli => nli.Links != null)
                     .SelectMany(sli => sli.Links)
-                    .FirstOrDefault(sli => sli.Key.Contains(selectedKey))?.Key ?? string.Empty;
+                    .FirstOrDefault(sli => sli.Key.Contains(selectedKey, StringComparison.InvariantCultureIgnoreCase))?.Url ?? string.Empty;
 
                 if (!string.IsNullOrEmpty(currentUrl) && navigationManager.Uri.Contains(currentUrl))
                 {
@@ -70,7 +70,14 @@ namespace Bit.Client.Web.BlazorUI
         protected override async Task OnInitializedAsync()
         {
             navigationManager.LocationChanged += OnLocationChanged;
-            selectedKey = selectedKey ?? InitialSelectedKey;
+
+            var currrentUrl = navigationManager.Uri.Replace(navigationManager.BaseUri, "/");
+
+            selectedKey = NavLinkItems.Where(nli => nli.Links != null)
+                                      .SelectMany(sli => sli.Links)
+                                      .FirstOrDefault(sli => sli.Url.Contains(currrentUrl, StringComparison.InvariantCultureIgnoreCase))?.Key
+                                      ?? selectedKey
+                                      ?? InitialSelectedKey;
 
             await base.OnInitializedAsync();
         }
@@ -79,7 +86,7 @@ namespace Bit.Client.Web.BlazorUI
         {
             var currentPage = navigationManager.Uri.Replace(navigationManager.BaseUri, string.Empty);
 
-            string currentPageKey = NavLinkItems.Where(nli => nli.Links != null)
+            var currentPageKey = NavLinkItems.Where(nli => nli.Links != null)
                 .SelectMany(nli => nli.Links)
                 .FirstOrDefault(l => l.Url.ToLower()
                     .Contains(currentPage.ToLower())
