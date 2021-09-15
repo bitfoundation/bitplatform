@@ -4,7 +4,7 @@
 <div @ref="RootElement"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
-    <div>
+    <div id="@LabelId">
         @Label
     </div>
     @if (IsProgressHidden is false)
@@ -15,7 +15,7 @@
         </div>
     }
 
-    <div>
+    <div id="@DescriptionId">
         @Description
     </div>
 </div>

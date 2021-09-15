@@ -50,6 +50,16 @@ namespace Bit.Client.Web.BlazorUI
         /// </summary>
         [Parameter] public RenderFragment<BitProgressIndicator>? ProgressTemplate { get; set; }
 
+        public string LabelId { get; set; } = string.Empty;
+        public string DescriptionId { get; set; } = string.Empty;
+
+        protected override async Task OnParametersSetAsync()
+        {
+            LabelId = $"progress-indicator{UniqueId}-label";
+            DescriptionId = $"progress-indicator{UniqueId}-description";
+
+            await base.OnParametersSetAsync();
+        }
         public override async Task SetParametersAsync(ParameterView parameters)
         {
             PercentCompleteHasBeenSet = false;
