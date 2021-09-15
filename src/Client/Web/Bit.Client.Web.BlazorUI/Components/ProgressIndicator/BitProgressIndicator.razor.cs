@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 
@@ -35,8 +33,27 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// Text describing or supplementing the operation
         /// </summary>
-        [Parameter]
-        public string Description { get; set; } = string.Empty;
+        [Parameter] public string Description { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Text alternative of the progress status, used by screen readers for reading the value of the progress
+        /// </summary>
+        [Parameter] public string AriaValueText { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Whether or not to hide the progress state
+        /// </summary>
+        [Parameter] public bool ProgressHidden { get; set; }
+
+        /// <summary>
+        /// A more descriptive title visible on its tooltip
+        /// </summary>
+        [Parameter] public string? Title { get; set; }
+
+        /// <summary>
+        /// A custom template for progress track
+        /// </summary>
+        [Parameter] public RenderFragment<BitProgressIndicator>? ProgressTemplate { get; set; }
 
         public override async Task SetParametersAsync(ParameterView parameters)
         {
