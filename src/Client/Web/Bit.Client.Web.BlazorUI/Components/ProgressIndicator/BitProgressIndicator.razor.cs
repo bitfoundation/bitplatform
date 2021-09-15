@@ -25,7 +25,10 @@ namespace Bit.Client.Web.BlazorUI
         public double? PercentComplete
         {
             get => percentComplete;
-            set => percentComplete = Normalize(value);
+            set
+            {
+                percentComplete = value is not null ? Normalize(value) : null;
+            }
         }
 
         /// <summary>
