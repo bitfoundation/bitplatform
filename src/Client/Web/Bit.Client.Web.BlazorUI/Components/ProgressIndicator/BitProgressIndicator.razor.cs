@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 
@@ -60,34 +59,9 @@ namespace Bit.Client.Web.BlazorUI
 
             await base.OnParametersSetAsync();
         }
-        public override async Task SetParametersAsync(ParameterView parameters)
-        {
-            PercentCompleteHasBeenSet = false;
-
-            var parametersDictionary = parameters.ToDictionary() as Dictionary<string, object>;
-            foreach (var parameter in parametersDictionary!)
-            {
-                switch (parameter.Key)
-                {
-                    case nameof(PercentComplete):
-                        PercentCompleteHasBeenSet = true;
-                        PercentComplete = (double)parameter.Value;
-                        break;
-                    case nameof(Label):
-                        Label = (string)parameter.Value;
-                        break;
-                    case nameof(BarHeight):
-                        BarHeight = (int)parameter.Value;
-                        break;
-                    case nameof(Description):
-                        Description = (string)parameter.Value;
-                        break;
-                }
-            }
-            await base.SetParametersAsync(parameters);
-        }
-
+        
         protected override string RootElementClass => "bit-pi";
+
         protected override void RegisterComponentClasses()
         {
             ClassBuilder.Register(() => PercentCompleteHasBeenSet ? string.Empty

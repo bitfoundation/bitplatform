@@ -4,9 +4,13 @@
 <div @ref="RootElement"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
-    <div id="@LabelId">
-        @Label
-    </div>
+    @if (Label.HasValue())
+    {
+        <div id="@LabelId">
+            @Label
+        </div>
+    }
+
     @if (IsProgressHidden is false)
     {
         <div style="@($"height: {BarHeight}px;")">
@@ -15,7 +19,10 @@
         </div>
     }
 
-    <div id="@DescriptionId">
-        @Description
-    </div>
+    @if (Description.HasValue())
+    {
+        <div id="@DescriptionId">
+            @Description
+        </div>
+    }
 </div>
