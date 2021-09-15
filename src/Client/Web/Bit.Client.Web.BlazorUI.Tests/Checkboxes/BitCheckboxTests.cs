@@ -35,6 +35,37 @@ namespace Bit.Client.Web.BlazorUI.Tests.Checkboxes
         }
 
         [DataTestMethod,
+            DataRow(Visual.Fluent, BitBoxSide.Start),
+            DataRow(Visual.Fluent, BitBoxSide.End),
+
+            DataRow(Visual.Cupertino, BitBoxSide.Start),
+            DataRow(Visual.Cupertino, BitBoxSide.End),
+
+            DataRow(Visual.Material, BitBoxSide.Start),
+            DataRow(Visual.Material, BitBoxSide.End),
+        ]
+        public void BitCheckboxBoxSideTest(Visual visual, BitBoxSide boxSide)
+        {
+            var component = RenderComponent<BitCheckboxTest>(parameters =>
+            {
+                parameters.Add(p => p.Visual, visual);
+                parameters.Add(p => p.BoxSide, boxSide);
+            });
+
+            var chb = component.Find(".bit-chb");
+            var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
+
+            if (boxSide is BitBoxSide.End)
+            {
+                Assert.IsTrue(chb.ClassList.Contains($"bit-chb-end-{visualClass}"));
+            }
+            else
+            {
+                Assert.IsFalse(chb.ClassList.Contains($"bit-chb-end-{visualClass}"));
+            }
+        }
+
+        [DataTestMethod,
             DataRow(true),
             DataRow(false)
         ]
