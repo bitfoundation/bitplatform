@@ -15,8 +15,16 @@
     {
         <div class="bit-pi-wrapper" style="@($"height: {BarHeight}px;")">
             <div class="bit-pi-track"></div>
-            <div class="bit-pi-bar" 
-                 style="@($"{(PercentComplete is not null ? $"width: {percentComplete}%" : string.Empty)};")"></div>
+            <div class="bit-pi-bar"
+                 style="@($"{(PercentComplete is not null ? $"width: {percentComplete}%" : string.Empty)};")"
+                 role="progressbar"
+                 aria-describedby="@DescriptionId"
+                 aria-labelledby="@LabelId"
+                 aria-valuemin="@(PercentComplete is not null ? 0 : null)"
+                 aria-valuemax="@(PercentComplete is not null ? 100 : null)"
+                 aria-valuenow="@(PercentComplete is not null ? Math.Floor(PercentComplete.Value) : null)"
+                 aria-valuetext="@AriaValueText">
+            </div>
         </div>
     }
 
