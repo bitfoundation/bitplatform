@@ -40,6 +40,11 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public string? AriaLabelFormat { get; set; }
 
         /// <summary>
+        /// Default rating. Must be a number between min and max. Only provide this if the Rating is an uncontrolled component; otherwise, use the rating property.
+        /// </summary>
+        [Parameter] public double? DefaultRating { get; set; }
+
+        /// <summary>
         /// Maximum rating. Must be >= min (0 if AllowZeroStars is true, 1 otherwise)
         /// </summary>
         [Parameter] public int Max { get; set; } = 5;
@@ -88,6 +93,10 @@ namespace Bit.Client.Web.BlazorUI
 
         protected override async Task OnInitializedAsync()
         {
+            if (DefaultRating != null)
+            {
+                Rating = (double)DefaultRating;
+            }
             _colorClass = $"{RootElementClass}-dark-{VisualClassRegistrar()}";
 
             _min = AllowZeroStars ? 0 : 1;
