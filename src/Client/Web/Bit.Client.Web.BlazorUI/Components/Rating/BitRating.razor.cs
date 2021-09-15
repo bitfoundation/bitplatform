@@ -39,11 +39,7 @@ namespace Bit.Client.Web.BlazorUI
         /// </summary>
         [Parameter] public string? AriaLabelFormat { get; set; }
 
-        /// <summary>
-        /// Default rating. Must be a number between min and max. Only provide this if the Rating is an uncontrolled component; otherwise, use the rating property.
-        /// </summary>
-        [Parameter] public double? DefaultRating { get; set; }
-
+      
         /// <summary>
         /// Maximum rating. Must be >= min (0 if AllowZeroStars is true, 1 otherwise)
         /// </summary>
@@ -58,6 +54,12 @@ namespace Bit.Client.Web.BlazorUI
         /// Custom icon name for unselected rating elements, If unset, default will be the FavoriteStar icon
         /// </summary>
         [Parameter] public string UnselectedIcon { get; set; } = "FavoriteStar";
+
+        /// <summary>
+        /// Default rating. Must be a number between min and max. 
+        /// Only provide this if the Rating is an uncontrolled component; otherwise, use the rating property.
+        /// </summary>
+        [Parameter] public double? DefaultRating { get; set; }
 
         /// <summary>
         /// Current rating value. Must be a number between min (0 if AllowZeroStars is true, 1 otherwise) and max.
