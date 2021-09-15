@@ -43,7 +43,7 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// Whether or not to hide the progress state
         /// </summary>
-        [Parameter] public bool ProgressHidden { get; set; }
+        [Parameter] public bool IsProgressHidden { get; set; }
 
         /// <summary>
         /// A more descriptive title visible on its tooltip

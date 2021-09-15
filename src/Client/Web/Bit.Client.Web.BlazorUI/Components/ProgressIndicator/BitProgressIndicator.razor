@@ -7,11 +7,13 @@
     <div>
         @Label
     </div>
-
-    <div style="@($"height: {BarHeight}px;")">
-        <div></div>
-        <div style="@($"{(PercentCompleteHasBeenSet ? $"width: {percentComplete}%" : string.Empty)};")"></div>
-    </div>
+    @if (IsProgressHidden is false)
+    {
+        <div style="@($"height: {BarHeight}px;")">
+            <div></div>
+            <div style="@($"{(PercentCompleteHasBeenSet ? $"width: {percentComplete}%" : string.Empty)};")"></div>
+        </div>
+    }
 
     <div>
         @Description
