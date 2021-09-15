@@ -46,11 +46,6 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public bool IsProgressHidden { get; set; }
 
         /// <summary>
-        /// A more descriptive title visible on its tooltip
-        /// </summary>
-        [Parameter] public string? Title { get; set; }
-
-        /// <summary>
         /// A custom template for progress track
         /// </summary>
         [Parameter] public RenderFragment<BitProgressIndicator>? ProgressTemplate { get; set; }
