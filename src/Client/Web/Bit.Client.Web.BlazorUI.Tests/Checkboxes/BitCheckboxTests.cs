@@ -71,26 +71,52 @@ namespace Bit.Client.Web.BlazorUI.Tests.Checkboxes
 
             var chbInput = component.Find("input");
 
-            if(ariaLabel is not null)
+            if (ariaLabel is not null)
             {
                 Assert.IsTrue(chbInput.GetAttribute("aria-label").Equals(ariaLabel));
-            } else
+            }
+            else
             {
                 Assert.IsNull(chbInput.GetAttribute("aria-label"));
             }
         }
 
-        [DataTestMethod, DataRow("Emoji2")]
-        public void BitCheckboxCustomCheckmarkIcon(string checkmarkIconName)
+        [DataTestMethod,
+            DataRow("Emoji2")
+        ]
+        public void BitCheckboxCustomCheckmarkIconTest(string checkmarkIconName)
         {
-            var com = RenderComponent<BitCheckboxTest>(parameters =>
+            var component = RenderComponent<BitCheckboxTest>(parameters =>
             {
                 parameters.Add(p => p.CheckmarkIconName, checkmarkIconName);
             });
 
-            var icon = com.Find(".bit-chb-checkmark");
+            var icon = component.Find(".bit-chb-checkmark");
 
             Assert.IsTrue(icon.ClassList.Contains($"bit-icon--{checkmarkIconName}"));
+        }
+
+        [DataTestMethod,
+            DataRow("Icon aria-label"),
+            DataRow(null)
+        ]
+        public void BitCheckboxCheckmarkIconAriaLabelTest(string? ariaLabel)
+        {
+            var component = RenderComponent<BitCheckboxTest>(parameters =>
+            {
+                parameters.Add(p => p.CheckmarkIconAriaLabel, ariaLabel);
+            });
+
+            var icon = component.Find(".bit-chb-checkmark");
+
+            if (ariaLabel is not null)
+            {
+                Assert.IsTrue(icon.GetAttribute("aria-label").Equals(ariaLabel));
+            }
+            else
+            {
+                Assert.IsNull(icon.GetAttribute("aria-label"));
+            }
         }
     }
 }
