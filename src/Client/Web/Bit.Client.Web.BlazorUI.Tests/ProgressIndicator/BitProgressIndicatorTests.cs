@@ -164,5 +164,38 @@ namespace Bit.Client.Web.BlazorUI.Tests.ProgressIndicator
                 Assert.IsNull(piBar.GetAttribute("aria-describedby"));
             }
         }
+
+        [DataTestMethod,
+            DataRow("Aria Value Text"),
+            DataRow(null),
+        ]
+        public void BitProgressIndicatorAriaValueTextTest(string? txt)
+        {
+            var component = RenderComponent<BitProgressIndicatorTest>(parameters =>
+            {
+                parameters.Add(p => p.AriaValueText, txt);
+            });
+
+            var piBar = component.Find(".bit-pi-bar");
+            if (txt is not null)
+            {
+                Assert.AreEqual(txt, piBar.GetAttribute("aria-valuetext"));
+            }
+            else
+            {
+                Assert.IsNull(piBar.GetAttribute("aria-valuetext"));
+            }
+        }
+
+        [DataTestMethod]
+        public void BitProgressIndicatorIsProgressHiddenTest()
+        {
+            var component = RenderComponent<BitProgressIndicatorTest>(parameters =>
+            {
+                parameters.Add(p => p.IsProgressHidden, true);
+            });
+
+            Assert.ThrowsException<ElementNotFoundException>(() => component.Find(".bit-pi-wrapper"));
+        }
     }
 }
