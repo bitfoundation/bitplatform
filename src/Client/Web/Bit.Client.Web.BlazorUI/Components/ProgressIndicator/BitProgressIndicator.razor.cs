@@ -6,8 +6,7 @@ namespace Bit.Client.Web.BlazorUI
 {
     public partial class BitProgressIndicator
     {
-        private double percentComplete;
-        private bool PercentCompleteHasBeenSet;
+        private double? percentComplete;
 
         /// <summary>
         /// Label to display above the component
@@ -23,7 +22,7 @@ namespace Bit.Client.Web.BlazorUI
         /// Percentage of the operation's completeness, numerically between 0 and 100. If this is not set, the indeterminate progress animation will be shown instead
         /// </summary>
         [Parameter]
-        public double PercentComplete
+        public double? PercentComplete
         {
             get => percentComplete;
             set => percentComplete = Normalize(value);
@@ -59,15 +58,15 @@ namespace Bit.Client.Web.BlazorUI
 
             await base.OnParametersSetAsync();
         }
-        
+
         protected override string RootElementClass => "bit-pi";
 
         protected override void RegisterComponentClasses()
         {
-            ClassBuilder.Register(() => PercentCompleteHasBeenSet ? string.Empty
+            ClassBuilder.Register(() => PercentComplete is not null ? string.Empty
                                                 : $"{RootElementClass}-indeterminate-{VisualClassRegistrar()}");
         }
 
-        private static double Normalize(double value) => Math.Clamp(value, 0, 100);
+        private static double Normalize(double? value) => Math.Clamp(value.Value, 0, 100);
     }
 }

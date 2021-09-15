@@ -16,7 +16,7 @@
         <div class="bit-pi-wrapper" style="@($"height: {BarHeight}px;")">
             <div class="bit-pi-track"></div>
             <div class="bit-pi-bar" 
-                 style="@($"{(PercentCompleteHasBeenSet ? $"width: {percentComplete}%" : string.Empty)};")"></div>
+                 style="@($"{(PercentComplete is not null ? $"width: {percentComplete}%" : string.Empty)};")"></div>
         </div>
     }
 
