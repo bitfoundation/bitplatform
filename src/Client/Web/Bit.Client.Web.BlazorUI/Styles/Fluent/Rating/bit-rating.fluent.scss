@@ -46,6 +46,10 @@
                 speak: none;
                 color: $Grey130;
                 width: 100%;
+
+                &:hover {
+                    color: $Primary
+                }
             }
 
             & .ratingStar-front {
@@ -61,6 +65,10 @@
                 vertical-align: middle;
                 overflow: hidden;
                 color: $Grey160;
+
+                &:hover {
+                    color: $Dark
+                }
             }
         }
     }

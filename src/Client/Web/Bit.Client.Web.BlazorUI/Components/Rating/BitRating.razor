@@ -5,7 +5,9 @@
      @attributes="HtmlAttributes"
      class="@ClassBuilder.Value"
      style="@StyleBuilder.Value"
-     aria-label="@AriaLabel">
+     aria-label="@AriaLabel"
+     role=@(!IsReadOnly ? "radiogroup" : null)
+     id="@($"Rating{@UniqueId}")">
     <div>
         @for (int item = 1; item <= Max; item++)
         {
