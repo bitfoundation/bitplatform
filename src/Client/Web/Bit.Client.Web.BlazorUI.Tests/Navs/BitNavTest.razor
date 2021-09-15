@@ -4,7 +4,10 @@
             SelectedKey="@SelectedKey"
             AriaLabel="@AriaLabel"
             IsOnTop="IsOnTop"
-            NavLinkItems="NavLinkItems">
+            NavLinkItems="NavLinkItems"
+            OnLinkClick="OnlinkClick"
+            OnLinkExpandClick="OnLinkExpandClick"
+            >
     </BitNav>
 </CascadingValue>
 @code {
@@ -15,4 +18,18 @@
     [Parameter] public string AriaLabel { get; set; }
     [Parameter] public bool IsOnTop { get; set; }
     [Parameter] public List<BitNavLinkItem> NavLinkItems { get; set; } = new List<BitNavLinkItem> { new BitNavLinkItem { Name = "Test", Key = "Test" } };
+
+
+
+    public string OnlinkClickValue;
+    public string OnLinkExpandClickValue;
+
+    public void OnlinkClick(BitNavLinkItem navLinkItem) {
+        OnlinkClickValue = navLinkItem.Name;       
+    }
+    public void OnLinkExpandClick(BitNavLinkItem navLinkItem)
+    {
+        OnLinkExpandClickValue = navLinkItem.Key;
+    }
+
 }
