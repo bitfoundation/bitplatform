@@ -174,6 +174,29 @@ namespace Bit.Client.Web.BlazorUI.Tests.Checkboxes
         }
 
         [DataTestMethod,
+            DataRow(3),
+            DataRow(null)
+        ]
+        public void BitCheckboxAriaPostionInSetTest(int? ariaPosInSet)
+        {
+            var component = RenderComponent<BitCheckboxTest>(parameters =>
+            {
+                parameters.Add(p => p.AriaPositionInSet, ariaPosInSet);
+            });
+
+            var chbInput = component.Find("input");
+
+            if (ariaPosInSet is not null)
+            {
+                Assert.IsTrue(chbInput.GetAttribute("aria-posinset").Equals(ariaPosInSet.ToString()));
+            }
+            else
+            {
+                Assert.IsNull(chbInput.GetAttribute("aria-posinset"));
+            }
+        }
+
+        [DataTestMethod,
             DataRow("Emoji2")
         ]
         public void BitCheckboxCustomCheckmarkIconTest(string checkmarkIconName)
