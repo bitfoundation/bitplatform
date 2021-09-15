@@ -59,39 +59,25 @@ namespace Bit.Client.Web.BlazorUI.Tests.Checkboxes
         }
 
         [DataTestMethod,
-            DataRow(true, true, true),
-            DataRow(true, false, true)
+            DataRow("Detailed label"),
+            DataRow(null)
         ]
-        public void IndeterminatedCheckboxWidthIsCheckedValue_OnClick_MeetExpectedValue(bool isIndeterminate, bool isChecked, bool isEnabled)
+        public void BitCheckboxAriaLabelTest(string? ariaLabel)
         {
-            Context.JSInterop.Mode = JSRuntimeMode.Loose;
-
             var component = RenderComponent<BitCheckboxTest>(parameters =>
-            {
-                parameters.Add(p => p.IsIndeterminate, isIndeterminate);
-                parameters.Add(p => p.IsChecked, isChecked);
-            });
-
-            var bitCheckbox = component.Find(".bit-chb-checkbox");
-            bitCheckbox.Click();
-
-            var bitCheckboxContainer = component.Find(".bit-chb-fluent");
-            //Assert.AreEqual(afterClickHasCheckedClass, bitCheckboxContainer.ClassList.Contains("bit-chb-checked-fluent"));
-        }
-
-        [DataTestMethod,
-            DataRow("Detailed label")
-        ]
-        public void BitCheckboxAriaLabelTest(string ariaLabel)
-        {
-            var com = RenderComponent<BitCheckboxTest>(parameters =>
             {
                 parameters.Add(p => p.AriaLabel, ariaLabel);
             });
 
-            var bitCheckbox = com.Find("input");
+            var chbInput = component.Find("input");
 
-            Assert.IsTrue(bitCheckbox.GetAttribute("aria-label").Equals(ariaLabel));
+            if(ariaLabel is not null)
+            {
+                Assert.IsTrue(chbInput.GetAttribute("aria-label").Equals(ariaLabel));
+            } else
+            {
+                Assert.IsNull(chbInput.GetAttribute("aria-label"));
+            }
         }
 
         [DataTestMethod, DataRow("Emoji2")]
