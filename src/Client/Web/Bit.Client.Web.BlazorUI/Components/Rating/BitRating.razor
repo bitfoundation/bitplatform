@@ -28,7 +28,7 @@
                 <span id="@($"RatingLabel{UniqueId}-{index }"))">@(AriaLabelFormat.HasValue() ? string.Format(AriaLabelFormat!, index , Max) : string.Empty)</span>
                 <div>
                     <i aria-hidden="true"
-                       class="@($" bit-icon bit-icon--{(percentage > 0 ? IconName : UnselectedIcon)} {(IsEnabled ? "ratingStar-back":"ratingStar-back--disabled"  )}")"></i>
+                       class="@($" bit-icon bit-icon--{(percentage == 100 ? IconName : UnselectedIcon)} {(IsEnabled ? "ratingStar-back":"ratingStar-back--disabled"  )}")"></i>
                     @if (IsEnabled)
                     {
                         <i aria-hidden="true"
