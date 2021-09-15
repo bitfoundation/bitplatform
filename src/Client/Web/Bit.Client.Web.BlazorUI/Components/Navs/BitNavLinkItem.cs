@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Microsoft.AspNetCore.Components;
 
 namespace Bit.Client.Web.BlazorUI
 {
@@ -68,8 +69,12 @@ namespace Bit.Client.Web.BlazorUI
                 /// <summary>
         /// A list of items to render as children of the current item
         /// </summary>
-        public IEnumerable<BitNavLinkItem>? Links { get; set; }
+        public List<BitNavLinkItem>? Links { get; set; }
 
+        /// <summary>
+        /// Callback invoked when a link in the navigation is clicked
+        /// </summary>
+        public EventCallback? OnClick { get; set; }
         internal int Depth { get; set; }
     }
 }
