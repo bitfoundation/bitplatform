@@ -287,5 +287,20 @@ namespace Bit.Client.Web.BlazorUI.Tests.Checkboxes
                 Assert.IsNull(icon.GetAttribute("aria-label"));
             }
         }
+
+        [DataTestMethod,
+            DataRow("Child with label tag <label>This is the label</label>"),
+            DataRow("BitCheckBox (controlled)")
+        ]
+        public void BitCheckboxCustomChildContentTest(string childContent)
+        {
+            var component = RenderComponent<BitCheckboxTest>(parameters =>
+            {
+                parameters.Add(p => p.ChildContent, childContent);
+            });
+
+            var chbChildContent = component.Find(".bit-chb-txt").ChildNodes;
+            chbChildContent.MarkupMatches(childContent);
+        }
     }
 }
