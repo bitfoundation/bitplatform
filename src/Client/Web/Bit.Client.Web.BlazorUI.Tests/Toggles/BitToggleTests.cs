@@ -195,7 +195,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Toggles
         [DataTestMethod, DataRow("This is label")]
         public void BitToggleLabel(string label)
         {
-            var com = RenderComponent<BitToggleTest>(parameters =>
+            var com = RenderComponent<BitToggle>(parameters =>
             {
                 parameters.Add(p => p.Label, label);
             });
