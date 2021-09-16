@@ -5,6 +5,11 @@ namespace Bit.Client.Web.BlazorUI
     public partial class BitSpinner
     {
         /// <summary>
+        /// Politeness setting for label update announcement.
+        /// </summary>
+        [Parameter] public SpinnerAriaLive AriaLive { get; set; } = SpinnerAriaLive.Polite;
+
+        /// <summary>
         /// The position of the label in regards to the spinner animation
         /// </summary>
         [Parameter] public SpinnerLabelPosition LabelPosition { get; set; }
