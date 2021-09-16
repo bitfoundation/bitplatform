@@ -60,7 +60,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Notifications
             Assert.IsTrue(icon.ClassList.Contains($"bit-icon--{IconMap[messageBarType]}"));
         }
 
-        [DataTestMethod, 
+        [DataTestMethod,
             DataRow("Emoji2")
         ]
         public void BitMessageBarShouldRespectCustomIcon(string iconName)
@@ -117,7 +117,9 @@ namespace Bit.Client.Web.BlazorUI.Tests.Notifications
             Assert.AreEqual(1, component.Instance.CurrentCount);
         }
 
-        [DataTestMethod, DataRow("Emoji2")]
+        [DataTestMethod,
+            DataRow("Emoji2")
+        ]
         public void BitMessageBarShouldRespectCustomDismissIcon(string iconName)
         {
             var component = RenderComponent<BitMessageBarTest>(
@@ -126,7 +128,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Notifications
                     parameters.Add(p => p.DismissIconName, iconName);
                 });
 
-            var icon = component.Find(".bit-msg-bar .bit-msg-bar-dismiss button span i");
+            var icon = component.Find(".bit-msg-bar-dismiss button span i");
             Assert.IsTrue(icon.ClassList.Contains($"bit-icon--{iconName}"));
         }
 
@@ -134,49 +136,55 @@ namespace Bit.Client.Web.BlazorUI.Tests.Notifications
             DataRow("test dismiss aria label", false),
             DataRow("test dismiss aria label", true)
             ]
-        public void BitMessageBarDismissButtonAriaLabel(string areaLabel, bool isMultiline)
+        public void BitMessageBarDismissButtonAriaLabelTest(string ariaLabel, bool isMultiline)
         {
             var component = RenderComponent<BitMessageBarTest>(
                 parameters =>
                 {
                     parameters.Add(p => p.IsMultiline, isMultiline);
-                    parameters.Add(p => p.DismissButtonAriaLabel, areaLabel);
+                    parameters.Add(p => p.DismissButtonAriaLabel, ariaLabel);
                 });
 
-            var dismissButton = component.Find(".bit-msg-bar .bit-msg-bar-dismiss button");
+            var dismissButton = component.Find(".bit-msg-bar-dismiss button");
 
             Assert.IsTrue(dismissButton.HasAttribute("aria-label"));
-            Assert.AreEqual(areaLabel, dismissButton.GetAttribute("aria-label"));
+            Assert.AreEqual(ariaLabel, dismissButton.GetAttribute("aria-label"));
 
             Assert.IsTrue(dismissButton.HasAttribute("title"));
-            Assert.AreEqual(areaLabel, dismissButton.GetAttribute("title"));
+            Assert.AreEqual(ariaLabel, dismissButton.GetAttribute("title"));
         }
 
-        [DataTestMethod, DataRow("test overflow aria label")]
-        public void BitMessageBarOverflowButtonAriaLabel(string areaLabel)
+        [DataTestMethod,
+            DataRow("test overflow aria label")
+        ]
+        public void BitMessageBarOverflowButtonAriaLabelTest(string ariaLabel)
         {
             var component = RenderComponent<BitMessageBarTest>(
                 parameters =>
                 {
                     parameters.Add(p => p.IsMultiline, false);
                     parameters.Add(p => p.Truncated, true);
-                    parameters.Add(p => p.OverflowButtonAriaLabel, areaLabel);
+                    parameters.Add(p => p.OverflowButtonAriaLabel, ariaLabel);
                 });
 
-            var dismissButton = component.Find(".bit-msg-bar .bit-msg-bar-truncate button");
+            var dismissButton = component.Find(".bit-msg-bar-truncate button");
 
             Assert.IsTrue(dismissButton.HasAttribute("aria-label"));
-            Assert.AreEqual(areaLabel, dismissButton.GetAttribute("aria-label"));
+            Assert.AreEqual(ariaLabel, dismissButton.GetAttribute("aria-label"));
         }
 
-        [DataTestMethod]
-        public void BitMessageBarShouldRespectAction()
+        [DataTestMethod,
+            DataRow("<div><button>Action</button></div>")
+        ]
+        public void BitMessageBarShouldRespectAction(string actions)
         {
-            var component = RenderComponent<BitMessageBarTest>();
+            var component = RenderComponent<BitMessageBar>(parameter =>
+            {
+                parameter.Add(p => p.Actions, actions);
+            });
 
-            var bitMessageBarActionContainer = component.Find(".bit-msg-bar:nth-child(2) div div:nth-child(3)");
-            Assert.IsTrue(bitMessageBarActionContainer.ClassList.Contains("bit-msg-bar-actions"));
-            Assert.AreEqual("BUTTON", bitMessageBarActionContainer.FirstElementChild.TagName);
+            var actionsTemplate = component.Find(".bit-msg-bar-actions").ChildNodes;
+            actionsTemplate.MarkupMatches(actions);
         }
     }
 }
