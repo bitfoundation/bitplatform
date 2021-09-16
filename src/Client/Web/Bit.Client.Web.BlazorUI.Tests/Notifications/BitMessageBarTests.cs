@@ -8,68 +8,44 @@ namespace Bit.Client.Web.BlazorUI.Tests.Notifications
     public class BitMessageBarTests : BunitTestContext
     {
         [DataTestMethod,
-            DataRow(Visual.Fluent, true, BitMessageBarType.Info),
-            DataRow(Visual.Fluent, true, BitMessageBarType.Blocked),
-            DataRow(Visual.Fluent, true, BitMessageBarType.Error),
-            DataRow(Visual.Fluent, true, BitMessageBarType.SevereWarning),
-            DataRow(Visual.Fluent, true, BitMessageBarType.Success),
-            DataRow(Visual.Fluent, true, BitMessageBarType.Warning),
+            DataRow(Visual.Fluent, BitMessageBarType.Info),
+            DataRow(Visual.Fluent, BitMessageBarType.Blocked),
+            DataRow(Visual.Fluent, BitMessageBarType.Error),
+            DataRow(Visual.Fluent, BitMessageBarType.SevereWarning),
+            DataRow(Visual.Fluent, BitMessageBarType.Success),
+            DataRow(Visual.Fluent, BitMessageBarType.Warning),
 
-            DataRow(Visual.Fluent, false, BitMessageBarType.Info),
-            DataRow(Visual.Fluent, false, BitMessageBarType.Blocked),
-            DataRow(Visual.Fluent, false, BitMessageBarType.Error),
-            DataRow(Visual.Fluent, false, BitMessageBarType.SevereWarning),
-            DataRow(Visual.Fluent, false, BitMessageBarType.Success),
-            DataRow(Visual.Fluent, false, BitMessageBarType.Warning),
+            DataRow(Visual.Cupertino, BitMessageBarType.Info),
+            DataRow(Visual.Cupertino, BitMessageBarType.Blocked),
+            DataRow(Visual.Cupertino, BitMessageBarType.Error),
+            DataRow(Visual.Cupertino, BitMessageBarType.SevereWarning),
+            DataRow(Visual.Cupertino, BitMessageBarType.Success),
+            DataRow(Visual.Cupertino, BitMessageBarType.Warning),
 
-            DataRow(Visual.Cupertino, true, BitMessageBarType.Info),
-            DataRow(Visual.Cupertino, true, BitMessageBarType.Blocked),
-            DataRow(Visual.Cupertino, true, BitMessageBarType.Error),
-            DataRow(Visual.Cupertino, true, BitMessageBarType.SevereWarning),
-            DataRow(Visual.Cupertino, true, BitMessageBarType.Success),
-            DataRow(Visual.Cupertino, true, BitMessageBarType.Warning),
-
-            DataRow(Visual.Cupertino, false, BitMessageBarType.Info),
-            DataRow(Visual.Cupertino, false, BitMessageBarType.Blocked),
-            DataRow(Visual.Cupertino, false, BitMessageBarType.Error),
-            DataRow(Visual.Cupertino, false, BitMessageBarType.SevereWarning),
-            DataRow(Visual.Cupertino, false, BitMessageBarType.Success),
-            DataRow(Visual.Cupertino, false, BitMessageBarType.Warning),
-
-            DataRow(Visual.Material, true, BitMessageBarType.Info),
-            DataRow(Visual.Material, true, BitMessageBarType.Blocked),
-            DataRow(Visual.Material, true, BitMessageBarType.Error),
-            DataRow(Visual.Material, true, BitMessageBarType.SevereWarning),
-            DataRow(Visual.Material, true, BitMessageBarType.Success),
-            DataRow(Visual.Material, true, BitMessageBarType.Warning),
-
-            DataRow(Visual.Material, false, BitMessageBarType.Info),
-            DataRow(Visual.Material, false, BitMessageBarType.Blocked),
-            DataRow(Visual.Material, false, BitMessageBarType.SevereWarning),
-            DataRow(Visual.Material, false, BitMessageBarType.Warning),
-            DataRow(Visual.Material, false, BitMessageBarType.Success),
-            DataRow(Visual.Material, false, BitMessageBarType.Warning)
+            DataRow(Visual.Material, BitMessageBarType.Info),
+            DataRow(Visual.Material, BitMessageBarType.Blocked),
+            DataRow(Visual.Material, BitMessageBarType.Error),
+            DataRow(Visual.Material, BitMessageBarType.SevereWarning),
+            DataRow(Visual.Material, BitMessageBarType.Success),
+            DataRow(Visual.Material, BitMessageBarType.Warning)
         ]
-        public void BitMessageBarShouldTakeCorrectTypeAndVisual(Visual visual, bool isEnabled, BitMessageBarType messageBarType)
+        public void BitMessageBarShouldTakeCorrectTypeAndVisual(Visual visual, BitMessageBarType messageBarType)
         {
             var component = RenderComponent<BitMessageBarTest>(
                 parameters =>
                 {
                     parameters.Add(p => p.Visual, visual);
-                    parameters.Add(p => p.IsEnabled, isEnabled);
                     parameters.Add(p => p.MessageBarType, messageBarType);
                 });
 
             var bitMessageBar = component.Find(".bit-msg-bar");
 
-            var isEnabledClass = isEnabled ? "enabled" : "disabled";
             var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
             var messageBarTypeClass = messageBarType == BitMessageBarType.SevereWarning ? "severe-warning" : messageBarType.ToString().ToLower();
 
-            Assert.IsTrue(bitMessageBar.ClassList.Contains($"bit-msg-bar-{isEnabledClass}-{visualClass}"));
-            Assert.AreEqual(isEnabled, bitMessageBar.ClassList.Contains($"bit-msg-bar-{messageBarTypeClass}-{visualClass}"));
+            Assert.IsTrue(bitMessageBar.ClassList.Contains($"bit-msg-bar-{messageBarTypeClass}-{visualClass}"));
 
-            var icon = component.Find(".bit-msg-bar .bit-msg-bar-icon");
+            var icon = component.Find(".bit-msg-bar-icon > i");
 
             Dictionary<BitMessageBarType, string> IconMap = new()
             {
@@ -80,7 +56,8 @@ namespace Bit.Client.Web.BlazorUI.Tests.Notifications
                 [BitMessageBarType.SevereWarning] = "Warning",
                 [BitMessageBarType.Success] = "Completed"
             };
-            Assert.IsTrue(icon.FirstElementChild.ClassList.Contains($"bit-icon--{IconMap[messageBarType]}"));
+
+            Assert.IsTrue(icon.ClassList.Contains($"bit-icon--{IconMap[messageBarType]}"));
         }
 
         [DataTestMethod, DataRow("Emoji2")]
@@ -130,17 +107,10 @@ namespace Bit.Client.Web.BlazorUI.Tests.Notifications
             }
         }
 
-        [DataTestMethod,
-            DataRow(true),
-            DataRow(false)
-        ]
-        public void BitMessageBarDismissButtonShouldWorksFine(bool isEnabled)
+        [DataTestMethod]
+        public void BitMessageBarDismissButtonShouldWorksFine()
         {
-            var component = RenderComponent<BitMessageBarTest>(
-                parameters =>
-                {
-                    parameters.Add(p => p.IsEnabled, isEnabled);
-                });
+            var component = RenderComponent<BitMessageBarTest>();
 
             var dismissButton = component.Find(".bit-msg-bar div div.bit-msg-bar-dismiss button");
 
@@ -201,17 +171,10 @@ namespace Bit.Client.Web.BlazorUI.Tests.Notifications
             Assert.AreEqual(areaLabel, dismissButton.GetAttribute("aria-label"));
         }
 
-        [DataTestMethod,
-            DataRow(true),
-            DataRow(false),
-        ]
-        public void BitMessageBarShouldRespectAction(bool isEnabled)
+        [DataTestMethod]
+        public void BitMessageBarShouldRespectAction()
         {
-            var component = RenderComponent<BitMessageBarTest>(
-                parameters =>
-                {
-                    parameters.Add(p => p.IsEnabled, isEnabled);
-                });
+            var component = RenderComponent<BitMessageBarTest>();
 
             var bitMessageBarActionContainer = component.Find(".bit-msg-bar:nth-child(2) div div:nth-child(3)");
             Assert.IsTrue(bitMessageBarActionContainer.ClassList.Contains("bit-msg-bar-actions"));
