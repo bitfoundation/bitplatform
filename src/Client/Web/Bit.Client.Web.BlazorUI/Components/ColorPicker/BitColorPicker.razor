@@ -18,13 +18,13 @@
                 <input type="range" min="0" max="360" value="@Hue" @oninput="PickMainColor">
             </div>
 
-            <div style=@($"display: {(ShowAlphaSlider ? "block" : "none")};")>
+            <div class="alpha-slider" style=@($"display: {(ShowAlphaSlider ? "block" : "none")};")>
                 <div style=@($"background:linear-gradient(to left,{SaturationPickerBackground.ToRgbCss()} 0%, transparent 100%)")>
                     <input type="range" min="0" max="100" value="@(MainColor.Alpha * 100)" @oninput="PickAlphaColor">
                 </div>
             </div>
         </div>
-        <div style=@($"background: {MainColor.ToRgbaCss()}; display: {(ShowPreview ? "block" : "none")}")>
+        <div class="preview-box" style=@($"background: {MainColor.ToRgbaCss()}; display: {(ShowPreview ? "block" : "none")}")>
         </div>
     </div>
 </div>

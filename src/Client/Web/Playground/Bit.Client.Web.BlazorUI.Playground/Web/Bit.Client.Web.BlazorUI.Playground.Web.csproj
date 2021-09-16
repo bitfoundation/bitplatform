@@ -1,27 +1,27 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
-  <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
-    <BlazorEnableTimeZoneSupport>false</BlazorEnableTimeZoneSupport>
-    <BlazorWebAssemblyPreserveCollationData>false</BlazorWebAssemblyPreserveCollationData>
-    <InvariantGlobalization>true</InvariantGlobalization>
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>net5.0</TargetFramework>
+        <BlazorEnableTimeZoneSupport>false</BlazorEnableTimeZoneSupport>
+        <BlazorWebAssemblyPreserveCollationData>false</BlazorWebAssemblyPreserveCollationData>
+        <InvariantGlobalization>true</InvariantGlobalization>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <Content Condition=" '$(BlazorMode)' == 'Client' " Remove="appsettings.json" />
-    <Content Condition=" '$(BlazorMode)' == 'Client' " Remove="Pages\_Host.cshtml" />
-  </ItemGroup>
+    <ItemGroup>
+        <Content Condition=" '$(BlazorMode)' == 'Client' " Remove="appsettings.json" />
+        <Content Condition=" '$(BlazorMode)' == 'Client' " Remove="Pages\_Host.cshtml" />
+        <Compile Condition=" '$(BlazorMode)' == 'Server' " Include="..\Api\Controllers\FileUploadController.cs" Link="Controllers\FileUploadController.cs" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="LibSassBuilder" Version="1.6.4" />
-    <PackageReference Condition=" '$(BlazorMode)' == 'Client' " Include="Microsoft.AspNetCore.Components.WebAssembly" Version="5.0.9" />
-    <PackageReference Condition=" '$(BlazorMode)' == 'Client' " Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="5.0.9" PrivateAssets="all" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="LibSassBuilder" Version="1.6.4" />
+        <PackageReference Condition=" '$(BlazorMode)' == 'Client' " Include="Microsoft.AspNetCore.Components.WebAssembly" Version="5.0.9" />
+        <PackageReference Condition=" '$(BlazorMode)' == 'Client' " Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="5.0.9" PrivateAssets="all" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\Bit.Client.Web.BlazorUI\Bit.Client.Web.BlazorUI.csproj" />
-    <ProjectReference Include="..\Shared\Bit.Client.Web.BlazorUI.Playground.Shared.csproj" />
-  </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\..\..\Bit.Client.Web.BlazorUI\Bit.Client.Web.BlazorUI.csproj" />
+        <ProjectReference Include="..\Shared\Bit.Client.Web.BlazorUI.Playground.Shared.csproj" />
+    </ItemGroup>
 
 </Project>
- 

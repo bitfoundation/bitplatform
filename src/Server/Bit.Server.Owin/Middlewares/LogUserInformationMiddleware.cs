@@ -2,6 +2,7 @@
 using Bit.Core.Models;
 using Microsoft.Owin;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Bit.Owin.Middlewares
@@ -27,6 +28,8 @@ namespace Bit.Owin.Middlewares
             return Next.Invoke(context);
         }
 
+        private static readonly string[] toBeLogIgnoredClaims = new[] { "nbf", "exp", "iss", "aud", "client_id", "scope", "auth_time", "idp", "name", "jti", "amr", "sub" };
+
         public static void LogUserInformation(ILogger logger, IUserInformationProvider userInformationProvider)
         {
             if (userInformationProvider == null)
@@ -39,11 +42,12 @@ namespace Bit.Owin.Middlewares
             {
                 BitJwtToken bitJwtToken = userInformationProvider.GetBitJwtToken();
                 logger.AddLogData("UserId", bitJwtToken.UserId);
-                if (bitJwtToken.CustomProps != null)
+                if (bitJwtToken.Claims != null)
                 {
-                    foreach (var keyVal in bitJwtToken.CustomProps)
+                    foreach (var keyVal in bitJwtToken.Claims)
                     {
-                        logger.AddLogData(keyVal.Key, keyVal.Value);
+                        if (!toBeLogIgnoredClaims.Contains(keyVal.Key))
+                            logger.AddLogData(keyVal.Key, keyVal.Value);
                     }
                 }
                 logger.AddLogData("AuthenticationType", userInformationProvider.GetAuthenticationType());

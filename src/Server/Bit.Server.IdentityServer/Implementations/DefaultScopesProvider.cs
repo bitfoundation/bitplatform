@@ -21,10 +21,6 @@ namespace Bit.IdentityServer.Implementations
                 {
                     Claims = new List<ScopeClaim>
                     {
-                        new ScopeClaim("primary_sid", true)
-                        {
-                            Description = "Primary SID"
-                        },
                         new ScopeClaim("upn", true)
                         {
                             Description = "User Principal Name"

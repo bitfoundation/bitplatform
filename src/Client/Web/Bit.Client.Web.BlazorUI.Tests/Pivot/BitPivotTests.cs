@@ -7,18 +7,18 @@ namespace Bit.Client.Web.BlazorUI.Tests.Pivot
     public class BitPivotTests : BunitTestContext
     {
         [DataTestMethod,
-         DataRow(Visual.Fluent, LinkFormat.Links, LinkSize.Large, OverflowBehavior.None),
-         DataRow(Visual.Fluent, LinkFormat.Tabs, LinkSize.Normal, OverflowBehavior.Scroll),
-         DataRow(Visual.Fluent, LinkFormat.Tabs, LinkSize.Normal, OverflowBehavior.Menu),
+         DataRow(Visual.Fluent, BitLinkFormat.Links, BitLinkSize.Large, BitOverflowBehavior.None),
+         DataRow(Visual.Fluent, BitLinkFormat.Tabs, BitLinkSize.Normal, BitOverflowBehavior.Scroll),
+         DataRow(Visual.Fluent, BitLinkFormat.Tabs, BitLinkSize.Normal, BitOverflowBehavior.Menu),
 
-         DataRow(Visual.Cupertino, LinkFormat.Links, LinkSize.Large, OverflowBehavior.None),
-         DataRow(Visual.Cupertino, LinkFormat.Tabs, LinkSize.Normal, OverflowBehavior.Scroll),
-         DataRow(Visual.Cupertino, LinkFormat.Tabs, LinkSize.Normal, OverflowBehavior.Menu),
+         DataRow(Visual.Cupertino, BitLinkFormat.Links, BitLinkSize.Large, BitOverflowBehavior.None),
+         DataRow(Visual.Cupertino, BitLinkFormat.Tabs, BitLinkSize.Normal, BitOverflowBehavior.Scroll),
+         DataRow(Visual.Cupertino, BitLinkFormat.Tabs, BitLinkSize.Normal, BitOverflowBehavior.Menu),
 
-         DataRow(Visual.Material, LinkFormat.Links, LinkSize.Large, OverflowBehavior.None),
-         DataRow(Visual.Material, LinkFormat.Tabs, LinkSize.Normal, OverflowBehavior.Scroll),
-         DataRow(Visual.Material, LinkFormat.Tabs, LinkSize.Normal, OverflowBehavior.Menu)]
-        public void BitPivotShouldRepectLinkFormatClasses(Visual visual, LinkFormat linkFormat, LinkSize linkSize, OverflowBehavior overflowBehavior)
+         DataRow(Visual.Material, BitLinkFormat.Links, BitLinkSize.Large, BitOverflowBehavior.None),
+         DataRow(Visual.Material, BitLinkFormat.Tabs, BitLinkSize.Normal, BitOverflowBehavior.Scroll),
+         DataRow(Visual.Material, BitLinkFormat.Tabs, BitLinkSize.Normal, BitOverflowBehavior.Menu)]
+        public void BitPivotShouldRepectLinkFormatClasses(Visual visual, BitLinkFormat linkFormat, BitLinkSize linkSize, BitOverflowBehavior overflowBehavior)
         {
             var component = RenderComponent<BitPivotTest>(parameters =>
             {
@@ -55,7 +55,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Pivot
             });
 
             //component.FindAll(".bit-pvt > div:first-child > div")[1].Click();
-            
+
             //TODO: bypassed - BUnit 2-way bound parameters issue
             //Assert.AreEqual(component.FindAll(".bit-pvt > div:first-child > div")[1].ClassList.Contains("selected-item"), expectedResult);
         }

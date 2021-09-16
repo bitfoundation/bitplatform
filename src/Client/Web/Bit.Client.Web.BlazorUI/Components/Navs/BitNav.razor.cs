@@ -9,15 +9,18 @@ namespace Bit.Client.Web.BlazorUI
 {
     public partial class BitNav : IDisposable
     {
+        private string? selectedKey;
+        [Inject] private NavigationManager navigationManager { get; set; }
+        private bool SelectedKeyHasBeenSet;
+
+        /// <summary>
+        /// (Optional) The key of the nav item initially selected.
+        /// </summary>
+        [Parameter] public string? InitialSelectedKey { get; set; }
+
         /// <summary>
         /// The key of the nav item selected by caller
         /// </summary>
-        private string? selectedKey;
-
-        [Inject] private NavigationManager navigationManager { get; set; }
-
-        private bool SelectedKeyHasBeenSet;
-
         [Parameter]
         public string? SelectedKey
         {
@@ -52,9 +55,14 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public ICollection<BitNavLinkItem> NavLinkItems { get; set; } = new List<BitNavLinkItem>();
 
         /// <summary>
-        /// Callback invoked when a link in the navigation is clicked
+        /// Function callback invoked when the chevron on a link is clicked
         /// </summary>
-        [Parameter] public EventCallback<BitNavLinkItem> OnClick { get; set; }
+        [Parameter] public EventCallback<BitNavLinkItem> OnLinkExpandClick { get; set; }
+
+        /// <summary>
+        /// Function callback invoked when a link in the navigation is clicked
+        /// </summary>
+        [Parameter] public EventCallback<BitNavLinkItem> OnLinkClick { get; set; }
 
         /// <summary>
         /// The template of the header for each nav item, which is a generic RenderFramgment that accepts a BitNavLinItem as input
@@ -66,9 +74,8 @@ namespace Bit.Client.Web.BlazorUI
 
         protected override async Task OnInitializedAsync()
         {
-
             navigationManager.LocationChanged += OnLocationChanged;
-
+            selectedKey = selectedKey ?? InitialSelectedKey;
 
             await base.OnInitializedAsync();
         }
@@ -90,16 +97,36 @@ namespace Bit.Client.Web.BlazorUI
             StateHasChanged();
         }
 
-        private async Task Toggle(BitNavLinkItem navLink)
-        {
-            if (IsEnabled is false || navLink.Disabled) return;
 
-            if (navLink.Links?.Any() ?? false)
+        private async Task OnLinkExpand(BitNavLinkItem navLinkItem)
+        {
+            if (IsEnabled is false || navLinkItem.Disabled) return;
+
+            if (navLinkItem.Links?.Any() ?? false)
             {
-                navLink.IsExpanded = !navLink.IsExpanded;
+                navLinkItem.IsExpanded = !navLinkItem.IsExpanded;
             }
 
-            await OnClick.InvokeAsync(navLink);
+            await OnLinkExpandClick.InvokeAsync(navLinkItem);
+        }
+
+        private async Task HandleLinkClick(BitNavLinkItem navLinkItem)
+        {
+            if (IsEnabled is false || navLinkItem.Disabled) return;
+
+            await OnLinkClick.InvokeAsync(navLinkItem);
+
+            if (navLinkItem.Url.HasNoValue() && navLinkItem.Links.Any())
+            {
+                await OnLinkExpand(navLinkItem);
+            }
+        }
+
+        private async Task HandleClick(BitNavLinkItem navLinkItem)
+        {
+            if (IsEnabled is false || navLinkItem.Disabled) return;
+
+            await navLinkItem.OnClick?.InvokeAsync();
         }
 
         protected override void RegisterComponentClasses()
@@ -109,19 +136,19 @@ namespace Bit.Client.Web.BlazorUI
                                             : $"{RootElementClass}-no-top");
         }
 
-        private string GetLinkClass(BitNavLinkItem navLink)
+        private string GetLinkClass(BitNavLinkItem navLinkItem)
         {
-            var enabledClass = navLink.Disabled ? "disabled" : "enabled";
-            var hasUrlClass = navLink.Url.HasNoValue() ? "nourl" : "hasurl";
+            var enabledClass = navLinkItem.Disabled ? "disabled" : "enabled";
+            var hasUrlClass = navLinkItem.Url.HasNoValue() ? "nourl" : "hasurl";
 
             var mainStyle = $"bit-nav-link-{enabledClass}-{hasUrlClass}-{VisualClassRegistrar()}";
-            var selectedClass = navLink.Key == SelectedKey ? $"bit-nav-selected-{VisualClassRegistrar()}" : "";
-            var hasIcon = navLink.Icon.HasNoValue()
+            var selectedClass = navLinkItem.Key == SelectedKey ? $"bit-nav-selected-{VisualClassRegistrar()}" : string.Empty;
+            var hasIcon = navLinkItem.Icon.HasNoValue()
                             ? $"bit-nav-has-not-icon-{VisualClassRegistrar()}"
                             : $"bit-nav-has-icon-{VisualClassRegistrar()}";
-            var hasChildren = navLink.Links?.Any() ?? false ? $"bit-nav-haschildren-{VisualClassRegistrar()}" : "";
+            var isGroup = navLinkItem.IsGroup ? $"bit-nav-isgroup-{VisualClassRegistrar()}" : string.Empty;
 
-            return $"{mainStyle} {selectedClass} {hasIcon} {hasChildren}";
+            return $"{mainStyle} {selectedClass} {hasIcon} {isGroup}";
         }
 
         public void Dispose()

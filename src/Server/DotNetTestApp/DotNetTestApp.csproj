@@ -21,7 +21,7 @@
 		<ProjectReference Include="..\Bit.Server.OData\Bit.Server.OData.csproj" />
 		<ProjectReference Include="..\Bit.Server.Owin\Bit.Server.Owin.csproj" />
 		<ProjectReference Include="..\Bit.Server.Signalr\Bit.Server.Signalr.csproj" />
-		<PackageReference Include="Swashbuckle.AspNetCore" Version="6.1.5" />
+		<PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.1" />
 	</ItemGroup>
 
 </Project>

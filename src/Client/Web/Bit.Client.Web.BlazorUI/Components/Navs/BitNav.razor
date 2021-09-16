@@ -12,9 +12,9 @@
         <div>
             <div>
                 <ul role="list">
-                    @foreach (var navLink in NavLinkItems)
+                    @foreach (var navLinkItem in NavLinkItems)
                         if (childTemplate is not null)
-                            @childTemplate(navLink)
+                            @childTemplate(navLinkItem)
                 </ul>
             </div>
         </div>
@@ -47,59 +47,77 @@
     {
         base.OnParametersSet();
 
-        childTemplate = (navLink) =>
+        childTemplate = (navLinkItem) =>
         (
-    @<li role="listitem" @key="navLink.Key">
-        <div name="@navLink.Name">
-            @if (navLink.Links?.Any() ?? false)
+    @<li role="listitem"
+         @key="navLinkItem.Key"
+         @onclick="(()=>HandleClick(navLinkItem))">
+
+        <div name="@navLinkItem.Name">
+            @if (navLinkItem.Links?.Any() ?? false)
             {
                 <button tabindex="0"
-                        @onclick="(() => Toggle(navLink))"
-                        aria-label="@navLink.CollapseAriaLabel"
-                        aria-expanded="@navLink.IsExpanded">
-                    <i class="bit-icon bit-icon--ChevronDown @(navLink.IsExpanded ? "bit-nav-expand-fluent" : "")"></i>
+                        @onclick="(() => OnLinkExpand(navLinkItem))"
+                        aria-label="@navLinkItem.CollapseAriaLabel"
+                        aria-expanded="@navLinkItem.IsExpanded">
+                    <i class="bit-icon bit-icon--ChevronDown @(navLinkItem.IsExpanded ? "bit-nav-expand-fluent" : "")"></i>
                 </button>
             }
 
-            @if (navLink.Url.HasValue())
+            @if (navLinkItem.Url.HasValue())
             {
-                <a href="@(navLink.Disabled ? "/" : navLink.Url)"
-                   title="@(navLink.Title.HasValue() ? navLink.Title : navLink.Name)"
+                <a href="@(navLinkItem.Disabled ? "/" : navLinkItem.Url)"
+                   title="@(navLinkItem.Title.HasValue() ? navLinkItem.Title : navLinkItem.Name)"
                    tabindex="-1"
-                   onclick="@(navLink.Disabled ? "return false;" : "")"
-                   target="@navLink.Target"
-                   style="padding: 0px 20px 0px @(((navLink.Depth * 14)+(navLink.Icon.HasNoValue() ? 27 : 3)).ToString())px;"
-                   class="@GetLinkClass(navLink)">
+                   @onclick="(()=>HandleLinkClick(navLinkItem))"
+                   target="@navLinkItem.Target"
+                   style="padding: 0px 20px 0px @(((navLinkItem.Depth * 14)+(navLinkItem.Icon.HasNoValue() ? 27 : 3)).ToString())px;"
+                   class="@GetLinkClass(navLinkItem)">
 
                     <span>
-                        @if (navLink.Icon.HasValue())
+                        @if (navLinkItem.Icon.HasValue())
                         {
-                            <i class=@($"bit-icon bit-icon--{navLink.Icon}")></i>
+                            <i class=@($"bit-icon bit-icon--{navLinkItem.Icon}")></i>
                         }
-                        <div>@navLink.Name</div>
+                        <div>@navLinkItem.Name</div>
                     </span>
                 </a>
             }
             else
             {
-                <button class="@GetLinkClass(navLink)"
-                        title="@(navLink.Title.HasValue() ? navLink.Title : navLink.Name)"
-                        style="padding: 0px 20px 0px @(((navLink.Depth * 14)+27).ToString())px;"
-                        @onclick="(() => Toggle(navLink))">
-                    <span>
-                        <div>@navLink.Name</div>
-                    </span>
-                </button>
+                if (navLinkItem.ForceAnchor)
+                {
+                    <a class="@GetLinkClass(navLinkItem)"
+                       title="@(navLinkItem.Title.HasValue() ? navLinkItem.Title : navLinkItem.Name)"
+                       style="padding: 0px 20px 0px @(((navLinkItem.Depth * 14)+27).ToString())px;"
+                       @onclick="(() => HandleLinkClick(navLinkItem))">
+                        <span>
+                            <div>@navLinkItem.Name</div>
+                        </span>
+                    </a>
+                }
+                else
+                {
+                    <button class="@GetLinkClass(navLinkItem)"
+                            title="@(navLinkItem.Title.HasValue() ? navLinkItem.Title : navLinkItem.Name)"
+                            style="padding: 0px 20px 0px @(((navLinkItem.Depth * 14)+27).ToString())px;"
+                            @onclick="(() => HandleLinkClick(navLinkItem))">
+                        <span>
+                            <div>@navLinkItem.Name</div>
+                        </span>
+                    </button>
+                }
+
             }
         </div>
-        @if (@navLink.Links?.Any() != null && navLink.IsExpanded)
+        @if (navLinkItem.Links?.Any() != null && navLinkItem.IsExpanded)
         {
             <ul role="list">
-                @foreach (var childLink in navLink.Links)
+                @foreach (var childLinkItem in navLinkItem.Links)
                 {
-                    childLink.Depth = navLink.Depth + 1;
+                    childLinkItem.Depth = navLinkItem.Depth + 1;
                     if (childTemplate is not null)
-                        @childTemplate(childLink)
+                        @childTemplate(childLinkItem)
                     }
             </ul>
         }

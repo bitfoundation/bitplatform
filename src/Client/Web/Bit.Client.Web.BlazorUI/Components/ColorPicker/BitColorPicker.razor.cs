@@ -1,14 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
-using System.Text.Json;
 
 namespace Bit.Client.Web.BlazorUI
 {
@@ -24,9 +19,15 @@ namespace Bit.Client.Web.BlazorUI
         [Inject]
         public IJSRuntime JSRuntime { get; set; }
 
+        /// <summary>
+        /// Whether to show a slider for editing alpha value.
+        /// </summary>
         [Parameter]
         public bool ShowAlphaSlider { get; set; } = true;
 
+        /// <summary>
+        /// CSS-compatible string to describe the color.
+        /// </summary>
         [Parameter]
         public string Color
         {
@@ -43,14 +44,18 @@ namespace Bit.Client.Web.BlazorUI
 
                 ColorChanged.InvokeAsync(value);
                 HexChanged.InvokeAsync(MainColor.Hex.ColorCode);
+                RgbChanged.InvokeAsync(MainColor.ToRgbCss());
                 AlphaChanged.InvokeAsync(MainColor.Alpha);
 
             }
         }
-
+        
         [Parameter]
         public EventCallback<string> ColorChanged { get; set; }
 
+        /// <summary>
+        /// Indicates the Hex value.
+        /// </summary>
         [Parameter]
         public string Hex
         {
@@ -63,7 +68,10 @@ namespace Bit.Client.Web.BlazorUI
                 Hue = MainColor.Hsv.Hue;
                 SaturationPickerBackground = new BitColor(Hue, 1, 1,1);
 
-                HexChanged.InvokeAsync(value);
+                ColorChanged.InvokeAsync(ColorType == ColorType.Hex ? MainColor.Hex.ColorCode : MainColor.ToRgbaCss());
+                RgbChanged.InvokeAsync(MainColor.ToRgbCss());
+                HexChanged.InvokeAsync(MainColor.Hex.ColorCode);
+                AlphaChanged.InvokeAsync(MainColor.Alpha);
             }
         }
 
@@ -82,7 +90,10 @@ namespace Bit.Client.Web.BlazorUI
                 Hue = MainColor.Hsv.Hue;
                 SaturationPickerBackground = new BitColor(Hue, 1, 1,1);
 
-                RgbChanged.InvokeAsync(value);
+                ColorChanged.InvokeAsync(ColorType == ColorType.Hex ? MainColor.Hex.ColorCode : MainColor.ToRgbaCss());
+                RgbChanged.InvokeAsync(MainColor.ToRgbCss());
+                HexChanged.InvokeAsync(MainColor.Hex.ColorCode);
+                AlphaChanged.InvokeAsync(MainColor.Alpha);
             }
         }
 
@@ -147,7 +158,7 @@ namespace Bit.Client.Web.BlazorUI
 
                 SaturationPickerThumbPosition = new Position
                 {
-                    Left = Convert.ToInt32(saturationPickerRect.Width),
+                    Left = Convert.ToInt32(saturationPickerRect?.Width),
                     Top = 0
                 };
             }
@@ -171,6 +182,13 @@ namespace Bit.Client.Web.BlazorUI
 
 
             MainColor = new BitColor(Hue, SelectedSaturation, SelectedValue, MainColor.Alpha);
+
+            SaturationPickerBackground = new BitColor(Hue, 1, 1, 1);
+
+            await ColorChanged.InvokeAsync(ColorType == ColorType.Hex ? MainColor.Hex.ColorCode : MainColor.ToRgbaCss());
+            await RgbChanged.InvokeAsync(MainColor.ToRgbCss());
+            await HexChanged.InvokeAsync(MainColor.Hex.ColorCode);
+            await AlphaChanged.InvokeAsync(MainColor.Alpha);
 
             SaturationPickerBackground = new BitColor(Hue, 1, 1, 1);
 

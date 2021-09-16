@@ -1,6 +1,7 @@
 ﻿using Bit.Core.Contracts;
 using Bit.Core.Exceptions;
 using Bit.Core.Models;
+using Bit.Http.Implementations;
 using Bit.IdentityServer.Implementations;
 using IdentityServer3.Core.Models;
 using System;
@@ -46,8 +47,14 @@ namespace Bit.Tests.IdentityServer.Implementations
             if (user == null)
                 throw new DomainLogicException("LoginFailed");
 
-            BitJwtToken jwtToken = new BitJwtToken { UserId = user.UserId };
-            jwtToken.CustomProps.Add("custom-data", "test");
+            BitJwtToken jwtToken = new BitJwtToken
+            {
+                UserId = user.UserId,
+                Claims = new Dictionary<string, string?>
+                {
+                    { "custom-data", "test" }
+                }
+            };
             return jwtToken;
         }
 

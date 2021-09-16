@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Bit.Client.Web.BlazorUI
 {
-    public enum OverflowBehavior
+    public enum BitOverflowBehavior
     {
         /// <summary>
         /// Pivot links will overflow the container and may not be visible
