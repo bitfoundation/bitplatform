@@ -1,10 +1,10 @@
 ﻿<CascadingValue Value="Visual">
     <BitRating AllowZeroStars="AllowZeroStars"
                Max="Max"
-               Icon="@Icon"
+               IconName="@IconName"
                UnselectedIcon="@UnselectedIcon"
                Size="Size"
-               IsReadonly="IsReadonly"
+               IsReadOnly="IsReadOnly"
                IsEnabled="IsEnabled"
                @bind-Value="Value"
                AriaLabel="@AriaLabel"/>
@@ -14,10 +14,10 @@
     [Parameter] public Visual Visual { get; set; }
     [Parameter] public bool AllowZeroStars { get; set; }
     [Parameter] public int Max { get; set; }
-    [Parameter] public string Icon { get; set; } = "FavoriteStarFill";
+    [Parameter] public string IconName { get; set; } = "FavoriteStarFill";
     [Parameter] public string UnselectedIcon { get; set; } = "FavoriteStar";
     [Parameter] public RatingSize Size { get; set; }
-    [Parameter] public bool IsReadonly { get; set; }
+    [Parameter] public bool IsReadOnly { get; set; }
     [Parameter] public bool IsEnabled { get; set; }
     [Parameter] public int Value { get; set; }
     [Parameter] public string AriaLabel { get; set; }

@@ -39,7 +39,7 @@ namespace Bit.Client.Web.BlazorUI
         /// </summary>
         [Parameter] public string? AriaLabelFormat { get; set; }
 
-      
+
         /// <summary>
         /// Maximum rating. Must be >= min (0 if AllowZeroStars is true, 1 otherwise)
         /// </summary>
@@ -104,10 +104,8 @@ namespace Bit.Client.Web.BlazorUI
             {
                 Rating = (double)DefaultRating;
             }
-            _colorClass = $"{RootElementClass}-dark-{VisualClassRegistrar()}";
 
-            _min = AllowZeroStars ? 0 : 1;
-            Max = Max > _min ? Max : _min;
+            Rating = Math.Min(Math.Max(Rating, (AllowZeroStars ? 0 : 1)), Max);
 
             await base.OnInitializedAsync();
         }
