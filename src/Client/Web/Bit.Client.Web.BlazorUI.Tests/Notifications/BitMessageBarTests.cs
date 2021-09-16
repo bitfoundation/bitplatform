@@ -60,7 +60,9 @@ namespace Bit.Client.Web.BlazorUI.Tests.Notifications
             Assert.IsTrue(icon.ClassList.Contains($"bit-icon--{IconMap[messageBarType]}"));
         }
 
-        [DataTestMethod, DataRow("Emoji2")]
+        [DataTestMethod, 
+            DataRow("Emoji2")
+        ]
         public void BitMessageBarShouldRespectCustomIcon(string iconName)
         {
             var component = RenderComponent<BitMessageBarTest>(
@@ -69,11 +71,9 @@ namespace Bit.Client.Web.BlazorUI.Tests.Notifications
                     parameters.Add(p => p.MessageBarIconName, iconName);
                 });
 
-            var icon = component.Find(".bit-msg-bar .bit-msg-bar-icon i");
+            var icon = component.Find(".bit-msg-bar-icon > i");
             Assert.IsTrue(icon.ClassList.Contains($"bit-icon--{iconName}"));
         }
-
-
 
         [DataTestMethod,
             DataRow(true, true),
@@ -97,7 +97,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Notifications
 
             if (!isMultiline && truncated)
             {
-                var truncateButton = component.Find(".bit-msg-bar .bit-msg-bar-truncate button");
+                var truncateButton = component.Find(".bit-msg-bar-truncate > button");
 
                 Assert.IsTrue(truncateButton.FirstElementChild.ClassList.Contains("bit-icon--DoubleChevronDown"));
                 truncateButton.Click();
@@ -108,15 +108,13 @@ namespace Bit.Client.Web.BlazorUI.Tests.Notifications
         }
 
         [DataTestMethod]
-        public void BitMessageBarDismissButtonShouldWorksFine()
+        public void BitMessageBarDismissButtonShouldWorkCorrect()
         {
             var component = RenderComponent<BitMessageBarTest>();
 
-            var dismissButton = component.Find(".bit-msg-bar div div.bit-msg-bar-dismiss button");
-
+            var dismissButton = component.Find(".bit-msg-bar-dismiss > button");
             dismissButton.Click();
-            //TODO: bypassed - componenet disabled issue
-            //Assert.AreEqual(isEnabled ? 1 : 0, component.Instance.CurrentCount);
+            Assert.AreEqual(1, component.Instance.CurrentCount);
         }
 
         [DataTestMethod, DataRow("Emoji2")]

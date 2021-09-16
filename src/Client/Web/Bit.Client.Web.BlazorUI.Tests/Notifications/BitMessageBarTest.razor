@@ -6,24 +6,8 @@
                    Truncated="Truncated"
                    DismissButtonAriaLabel="@DismissButtonAriaLabel"
                    OverflowButtonAriaLabel="@OverflowButtonAriaLabel"
-                   OnDismiss="IncrementCount">
+                   OnDismiss="@IncrementCount">
         @ChildContentString
-    </BitMessageBar>
-
-    <BitMessageBar IsMultiline="IsMultiline"
-                   MessageBarType="MessageBarType"
-                   DismissIconName="@DismissIconName"
-                   MessageBarIconName="@MessageBarIconName"
-                   Truncated="Truncated"
-                   DismissButtonAriaLabel="@DismissButtonAriaLabel"
-                   OverflowButtonAriaLabel="@OverflowButtonAriaLabel"
-                   OnDismiss="IncrementCount">
-        <ChildContent>
-            @ChildContentString
-        </ChildContent>
-        <Actions>
-            <BitButton>Ok</BitButton>
-        </Actions>
     </BitMessageBar>
 </CascadingValue>
 
@@ -39,7 +23,7 @@
     [Parameter] public string? DismissButtonAriaLabel { get; set; }
     [Parameter] public string? OverflowButtonAriaLabel { get; set; }
 
-    public int CurrentCount;
+    public int CurrentCount = 0;
     public void IncrementCount()
     {
         CurrentCount++;
