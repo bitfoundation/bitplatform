@@ -7,16 +7,17 @@
      class="@ClassBuilder.Value">
     <div>
 
-        @if (Label.HasValue())
+        @if (LabelFragment != null)
+        {
+            <span>@LabelFragment</span>
+        }
+        else if (Label.HasValue())
         {
             <label for="@InputId">
                 @Label
             </label>
         }
-        else if (LabelFragment != null)
-        {
-            <span>@LabelFragment</span>
-        }
+
 
         <div>
             @if (Prefix is not null)
