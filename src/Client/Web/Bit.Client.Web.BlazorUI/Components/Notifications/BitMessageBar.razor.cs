@@ -35,19 +35,9 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public string DismissIconName { get; set; } = "Clear";
 
         /// <summary>
-        /// The aria label of the dismiss icon for the benefit of screen readers
-        /// </summary>
-        [Parameter] public string? DismissIconAriaLabel { get; set; }
-
-        /// <summary>
         /// Custom icon to replace the message bar icon. If unset, default will be the icon set by messageBarType.
         /// </summary>
         [Parameter] public string? MessageBarIconName { get; set; }
-
-        /// <summary>
-        /// The aria label of the message bar icon for the benefit of screen readers
-        /// </summary>
-        [Parameter] public string? MessageBarIconAriaLabel { get; set; }
 
         /// <summary>
         /// Determines if the message bar text is truncated. If true, a button will render to toggle between a single line view and multiline view. This parameter is for single line message bars with no buttons only in a limited space scenario
