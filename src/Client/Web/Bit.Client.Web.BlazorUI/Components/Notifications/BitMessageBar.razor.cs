@@ -8,6 +8,7 @@ namespace Bit.Client.Web.BlazorUI
     {
         private BitMessageBarType messageBarType = BitMessageBarType.Info;
         private string? messageBarIcon;
+        private bool ExpandSingleLine;
 
         /// <summary>
         /// Determines if the message bar is multi lined. If false, and the text overflows over buttons or to another line, it is clipped
@@ -68,10 +69,6 @@ namespace Bit.Client.Web.BlazorUI
         /// </summary>
         [Parameter] public EventCallback OnDismiss { get; set; }
 
-        private bool HasDismiss { get => (OnDismiss.HasDelegate); }
-
-        private bool ExpandSingleLine { get; set; }
-
         protected override string RootElementClass => "bit-msg-bar";
 
         protected override void RegisterComponentClasses()
@@ -84,6 +81,12 @@ namespace Bit.Client.Web.BlazorUI
                                         : MessageBarType == BitMessageBarType.Blocked ? $"{RootElementClass}-blocked-{VisualClassRegistrar()}"
                                         : MessageBarType == BitMessageBarType.SevereWarning ? $"{RootElementClass}-severe-warning-{VisualClassRegistrar()}"
                                         : $"{RootElementClass}-success-{VisualClassRegistrar()}");
+        }
+
+        protected override Task OnParametersSetAsync()
+        {
+            messageBarIcon = MessageBarIconName.HasValue() ? MessageBarIconName : IconMap[MessageBarType];
+            return base.OnParametersSetAsync();
         }
 
         private void ToggleExpandSingleLine()
@@ -101,10 +104,30 @@ namespace Bit.Client.Web.BlazorUI
             [BitMessageBarType.Success] = "Completed"
         };
 
-        protected override Task OnParametersSetAsync()
+        private string GetRole(BitMessageBarType type)
         {
-            messageBarIcon = MessageBarIconName.HasValue() ? MessageBarIconName : IconMap[MessageBarType];
-            return base.OnParametersSetAsync();
+            switch (type)
+            {
+                case BitMessageBarType.Blocked:
+                case BitMessageBarType.Error:
+                case BitMessageBarType.SevereWarning:
+                    return "alert";
+            }
+            return "status";
         }
+
+        private string GetAnnouncementPriority(BitMessageBarType type)
+        {
+            switch (type)
+            {
+                case BitMessageBarType.Blocked:
+                case BitMessageBarType.Error:
+                case BitMessageBarType.SevereWarning:
+                    return "assertive";
+            }
+            return "polite";
+        }
+
+        private bool HasDismiss { get => (OnDismiss.HasDelegate); }
     }
 }
