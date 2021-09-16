@@ -35,9 +35,19 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public string DismissIconName { get; set; } = "Clear";
 
         /// <summary>
+        /// The aria label of the dismiss icon for the benefit of screen readers
+        /// </summary>
+        [Parameter] public string? DismissIconAriaLabel { get; set; }
+
+        /// <summary>
         /// Custom icon to replace the message bar icon. If unset, default will be the icon set by messageBarType.
         /// </summary>
         [Parameter] public string? MessageBarIconName { get; set; }
+
+        /// <summary>
+        /// The aria label of the message bar icon for the benefit of screen readers
+        /// </summary>
+        [Parameter] public string? MessageBarIconAriaLabel { get; set; }
 
         /// <summary>
         /// Determines if the message bar text is truncated. If true, a button will render to toggle between a single line view and multiline view. This parameter is for single line message bars with no buttons only in a limited space scenario
@@ -65,9 +75,16 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public string? OverflowButtonAriaLabel { get; set; }
 
         /// <summary>
+        /// Custom role to apply to the message bar
+        /// </summary>
+        [Parameter] public string? Role { get; set; }
+
+        /// <summary>
         /// Whether the message bar has a dismiss button and its callback. If null, dismiss button won't show
         /// </summary>
         [Parameter] public EventCallback OnDismiss { get; set; }
+
+        public string LabelId { get; set; } = string.Empty;
 
         protected override string RootElementClass => "bit-msg-bar";
 
@@ -86,6 +103,8 @@ namespace Bit.Client.Web.BlazorUI
         protected override Task OnParametersSetAsync()
         {
             messageBarIcon = MessageBarIconName.HasValue() ? MessageBarIconName : IconMap[MessageBarType];
+            LabelId = $"MessageBar{UniqueId}";
+
             return base.OnParametersSetAsync();
         }
 
@@ -104,9 +123,9 @@ namespace Bit.Client.Web.BlazorUI
             [BitMessageBarType.Success] = "Completed"
         };
 
-        private string GetRole(BitMessageBarType type)
+        private string GetTextRole()
         {
-            switch (type)
+            switch (messageBarType)
             {
                 case BitMessageBarType.Blocked:
                 case BitMessageBarType.Error:
@@ -116,9 +135,9 @@ namespace Bit.Client.Web.BlazorUI
             return "status";
         }
 
-        private string GetAnnouncementPriority(BitMessageBarType type)
+        private string GetAnnouncementPriority()
         {
-            switch (type)
+            switch (messageBarType)
             {
                 case BitMessageBarType.Blocked:
                 case BitMessageBarType.Error:
@@ -129,5 +148,7 @@ namespace Bit.Client.Web.BlazorUI
         }
 
         private bool HasDismiss { get => (OnDismiss.HasDelegate); }
+        private string? GetAriaDescribedby => Actions is not null || HasDismiss ? LabelId : null;
+        private string? GetRootElementRole => Actions is not null || HasDismiss ? "region" : null;
     }
 }
