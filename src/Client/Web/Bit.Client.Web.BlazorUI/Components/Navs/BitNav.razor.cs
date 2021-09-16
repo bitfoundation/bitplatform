@@ -124,7 +124,7 @@ namespace Bit.Client.Web.BlazorUI
 
         private async Task HandleClick(BitNavLinkItem navLinkItem)
         {
-            if (IsEnabled is false || navLinkItem.Disabled) return;
+            if (IsEnabled is false || navLinkItem.Disabled || navLinkItem.OnClick is null) return;
 
             await navLinkItem.OnClick?.InvokeAsync();
         }
