@@ -6,6 +6,7 @@
                    Truncated="Truncated"
                    DismissButtonAriaLabel="@DismissButtonAriaLabel"
                    OverflowButtonAriaLabel="@OverflowButtonAriaLabel"
+                   Role="@Role"
                    OnDismiss="@IncrementCount">
         @ChildContentString
     </BitMessageBar>
@@ -22,6 +23,7 @@
     [Parameter] public bool Truncated { get; set; }
     [Parameter] public string? DismissButtonAriaLabel { get; set; }
     [Parameter] public string? OverflowButtonAriaLabel { get; set; }
+    [Parameter] public string? Role { get; set; }
 
     public int CurrentCount = 0;
     public void IncrementCount()

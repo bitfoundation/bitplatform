@@ -186,5 +186,45 @@ namespace Bit.Client.Web.BlazorUI.Tests.Notifications
             var actionsTemplate = component.Find(".bit-msg-bar-actions").ChildNodes;
             actionsTemplate.MarkupMatches(actions);
         }
+
+        [DataTestMethod,
+            DataRow("alert", BitMessageBarType.Info),
+            DataRow("alert", BitMessageBarType.Error),
+            DataRow("alert", BitMessageBarType.SevereWarning),
+            DataRow("alert", BitMessageBarType.Success),
+            DataRow("alert", BitMessageBarType.Warning),
+            DataRow("alert", BitMessageBarType.Blocked),
+
+            DataRow(null, BitMessageBarType.Info),
+            DataRow(null, BitMessageBarType.Blocked),
+            DataRow(null, BitMessageBarType.Error),
+            DataRow(null, BitMessageBarType.SevereWarning),
+            DataRow(null, BitMessageBarType.Success),
+            DataRow(null, BitMessageBarType.Warning),
+        ]
+        public void BitMessageBarRoleTest(string role, BitMessageBarType type)
+        {
+            var component = RenderComponent<BitMessageBarTest>(parameter =>
+            {
+                parameter.Add(p => p.Role, role);
+                parameter.Add(p => p.MessageBarType, type);
+            });
+
+            var textEl = component.Find(".bit-msg-bar-text");
+            var expectedRole = role is not null ? role : GetRole(type);
+            Assert.AreEqual(expectedRole, textEl.GetAttribute("role"));
+        }
+
+        private string GetRole(BitMessageBarType type)
+        {
+            switch (type)
+            {
+                case BitMessageBarType.Blocked:
+                case BitMessageBarType.Error:
+                case BitMessageBarType.SevereWarning:
+                    return "alert";
+            }
+            return "status";
+        }
     }
 }
