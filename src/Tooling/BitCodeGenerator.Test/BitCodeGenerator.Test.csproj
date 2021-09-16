@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>net5.0</TargetFrameworks>
+        <TargetFrameworks>net6.0</TargetFrameworks>
         <AutoGenerateBindingRedirects>True</AutoGenerateBindingRedirects>
         <IsPackable>false</IsPackable>
         <Nullable>disable</Nullable>
@@ -18,7 +18,7 @@
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.11.0" />
         <PackageReference Include="MSTest.TestAdapter" Version="2.2.7" />
         <PackageReference Include="MSTest.TestFramework" Version="2.2.7" />
-        <PackageReference Include="NuGet.Frameworks" Version="5.0.0" ExcludeAssets="All">
+        <PackageReference Include="NuGet.Frameworks" Version="6.0.0-preview.3" ExcludeAssets="All">
             <IncludeAssets>none</IncludeAssets>
         </PackageReference>
         <Reference Include="NuGet.Frameworks">
