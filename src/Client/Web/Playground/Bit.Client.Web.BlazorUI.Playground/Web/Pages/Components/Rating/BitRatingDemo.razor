@@ -34,7 +34,7 @@
                     <h5>Half star in readOnly mod</h5>
                     <BitRating IsReadOnly="true" @bind-Rating="RatingReadOnlyValue" GetAriaLabel="@((value, max) => $"Half star in readOnly mode rating value is {value.ToString()} of {max.ToString()}")" />
                     <h5>Custom icons</h5>
-                    <BitRating IconName="HeartFill" UnselectedIcon="Heart" AllowZeroStars="true" @bind-Rating="RatingCustomIconValue" />
+                    <BitRating Icon="HeartFill" UnselectedIcon="Heart" AllowZeroStars="true" @bind-Rating="RatingCustomIconValue" />
                 </div>
             </BitPivotItem>
             <BitPivotItem HeaderText="Code" IconName="Source">
@@ -68,7 +68,7 @@
         </div>
         <BitPivot>
             <BitPivotItem HeaderText="Example" IconName="ViewList">
-                <BitRating IconName="Emoji2" UnselectedIcon="EmojiNeutral" AllowZeroStars="true" @bind-Rating="RatingOutsideValue" />
+                <BitRating Icon="Emoji2" UnselectedIcon="EmojiNeutral" AllowZeroStars="true" @bind-Rating="RatingOutsideValue" />
                 <div class="m-t-10">
                     <span>RatingOutsideValue: @RatingOutsideValue</span>
                 </div>
@@ -147,7 +147,7 @@
             <td>Capture and render additional attributes in addition to the component's parameters.</td>
         </tr>
         <tr>
-            <td>IconName</td>
+            <td>Icon</td>
             <td>string</td>
             <td>FavoriteStarFill</td>
             <td>Custom icon name for selected rating elements.</td>

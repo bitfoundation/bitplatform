@@ -10,8 +10,6 @@ namespace Bit.Client.Web.BlazorUI
         private bool RatingHasBeenSet;
         private int _min;
         private double ratingValue;
-        private string? _colorClass;
-
 
         /// <summary>
         /// A flag to mark rating control as readOnly
@@ -48,7 +46,7 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// Custom icon name for selected rating elements, If unset, default will be the FavoriteStarFill icon
         /// </summary>
-        [Parameter] public string IconName { get; set; } = "FavoriteStarFill";
+        [Parameter] public string Icon { get; set; } = "FavoriteStarFill";
 
         /// <summary>
         /// Custom icon name for unselected rating elements, If unset, default will be the FavoriteStar icon
