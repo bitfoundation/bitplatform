@@ -5,21 +5,33 @@
      @attributes="HtmlAttributes"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
-    <div>
-        <i class="bit-icon bit-icon--@IconName"></i>
+    <div aria-hidden="true">
+        <i class="bit-icon bit-icon--@IconName" aria-hidden="true"></i>
     </div>
-    <input type="text" @ref="InputRef" class="search-input"
+    <input type="text"
+           aria-label="@AriaLabel"
+           class="search-input"
+           disabled="@(IsEnabled is false)"
            placeholder="@Placeholder"
+           role="searchbox"
            value="@Value"
+           @ref="InputRef"
            @onkeydown="@((k) => HandleOnKeyDown(k))"
            @onfocusin="HandleInputFocusIn"
            @onfocusout="HandleInputFocusOut"
-           @oninput="@HandleChange"
-           aria-label="@AriaLabel"
-           disabled="@(IsEnabled is false)" />
-    <div>
-        <button type="button" disabled="@(!Value.HasValue())" @onclick="HandleOnClear">
-            <i class="bit-icon bit-icon--Clear"></i>
-        </button>
-    </div>
+           @oninput="@HandleChange" />
+    @if (Value.HasValue())
+    {
+        <div>
+            <button aria-label="Clear text"
+                    aria-hidden="true"
+                    disabled="@(Value.HasNoValue())"
+                    type="button"
+                    @onclick="HandleOnClear">
+                <span>
+                    <i class="bit-icon bit-icon--Clear"></i>
+                </span>
+            </button>
+        </div>
+    }
 </div>
