@@ -89,7 +89,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Rating
         {
             var component = RenderComponent<BitRatingTest>(parameters =>
             {
-                parameters.Add(p => p.IconName, icon);
+                parameters.Add(p => p.Icon, icon);
                 parameters.Add(p => p.UnselectedIcon, unselectedIcon);
                 parameters.Add(p => p.Max, max);
                 parameters.Add(p => p.AllowZeroStars, allowZeroStars);
