@@ -157,13 +157,11 @@ namespace Bit.Client.Web.BlazorUI
         {
             if (IsEnabled)
             {
+                if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
                 IsOpen = false;
                 BitDate date = new(currentYear,month,day,dayOfWeek);
                 selectedDate = OnSelectDate is not null ? OnSelectDate.Invoke(date): GetSelectedDateString(date);
-                if (ValueChanged.HasDelegate is true && ValueHasBeenSet)
-                {
-                    await ValueChanged.InvokeAsync(selectedDate);
-                }
+                await ValueChanged.InvokeAsync(selectedDate);
                 await OnDateSet.InvokeAsync(selectedDate);
             }
         }
