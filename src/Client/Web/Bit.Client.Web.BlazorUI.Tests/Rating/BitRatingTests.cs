@@ -20,7 +20,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Rating
         {
             var component = RenderComponent<BitRatingTest>(parameters =>
             {
-                parameters.Add(p => p.IsReadonly, isReadonly);
+                parameters.Add(p => p.IsReadOnly, isReadonly);
                 parameters.Add(p => p.Visual, visual);
             });
             var bitRating = component.Find("div");
@@ -84,7 +84,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Rating
         [DataTestMethod,
             DataRow("HeartFill", "Heart", 10, false),
             DataRow("HeartFill", "Heart", 10, true),
-            DataRow("HeartFill", "Heart", 10, false)]
+            ]
         public void BitRatingShouldRespectCustomIcon(string icon, string unselectedIcon, int max, bool allowZeroStars)
         {
             var component = RenderComponent<BitRatingTest>(parameters =>
@@ -120,7 +120,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Rating
             {
                 parameters.Add(p => p.Max, max);
                 parameters.Add(p => p.IsEnabled, isEnabled);
-                parameters.Add(p => p.IsReadonly, isReadonly);
+                parameters.Add(p => p.IsReadOnly, isReadonly);
             });
 
             var bitRatingButtons = component.FindAll("button");
@@ -152,7 +152,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Rating
                 parameters.Add(p => p.AriaLabel, ariaLabel);
             });
 
-            var bitRatings = com.FindAll(".bit-rating, .bit-rating button");
+            var bitRatings = com.FindAll(".bit-rating");
 
             foreach (var bitRating in bitRatings)
             {
