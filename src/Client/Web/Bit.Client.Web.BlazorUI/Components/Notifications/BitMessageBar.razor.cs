@@ -121,8 +121,9 @@ namespace Bit.Client.Web.BlazorUI
                 case BitMessageBarType.Error:
                 case BitMessageBarType.SevereWarning:
                     return "alert";
+                default:
+                    return "status";
             }
-            return "status";
         }
 
         private string GetAnnouncementPriority()
@@ -133,8 +134,9 @@ namespace Bit.Client.Web.BlazorUI
                 case BitMessageBarType.Error:
                 case BitMessageBarType.SevereWarning:
                     return "assertive";
+                default:
+                    return "polite";
             }
-            return "polite";
         }
 
         private bool HasDismiss { get => (OnDismiss.HasDelegate); }
