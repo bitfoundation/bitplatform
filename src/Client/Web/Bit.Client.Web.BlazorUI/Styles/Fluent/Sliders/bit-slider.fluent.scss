@@ -5,6 +5,14 @@ $BgTrack: $Grey130;
 $BgHover: $BlizzardBlue;
 $BgTrackHover: $DarkAlt;
 
+.bit-slider-title {
+    box-sizing: border-box;
+    box-shadow: none;
+    margin: 0;
+    display: block;
+    padding: 0;
+    overflow-wrap: break-word;
+}
 
 .bit-slider-disabled-fluent {
     pointer-events: none;
@@ -199,16 +207,7 @@ $BgTrackHover: $DarkAlt;
     background: $BgTrackHover;
 }
 
-.bit-slider label.title {
-    box-sizing: border-box;
-    box-shadow: none;
-    margin: 0;
-    display: block;
-    padding: 0;
-    overflow-wrap: break-word;
-}
-
-.bit-slider label.valueLabel {
+.bit-slider-value {
     box-sizing: border-box;
     box-shadow: none;
     margin: 0 8px;
@@ -219,8 +218,8 @@ $BgTrackHover: $DarkAlt;
     white-space: nowrap;
 }
 
-.bit-slider.bit-slider-vertical label.valueLabel,
-.bit-slider.bit-slider-ranged-vertical label.valueLabel {
+.bit-slider-vertical .bit-slider-value,
+.bit-slider-ranged-vertical .bit-slider-value {
     text-align: center;
 }
 

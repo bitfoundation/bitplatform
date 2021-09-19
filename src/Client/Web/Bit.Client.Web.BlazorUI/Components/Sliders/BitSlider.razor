@@ -7,7 +7,7 @@
      style="@StyleBuilder.Value">
     @if (Label.HasValue())
     {
-        <label class="title" @ref="TitleRef">@Label</label>
+        <label class="bit-slider-title" @ref="TitleRef">@Label</label>
     }
 
     @if (IsRanged)
@@ -15,7 +15,7 @@
         @if (ShowValue && IsVertical)
         {
             <label @ref="ValueLabelRef"
-                   class="valueLabel"
+                   class="bit-slider-value"
                    for="@sliderBoxId">
                 @GetValueDisplay(upperValue.GetValueOrDefault())
             </label>
@@ -26,7 +26,7 @@
              style="@(IsVertical ? styleContainer : null)">
             @if (ShowValue && IsVertical is false)
             {
-                <label class="valueLabel">@GetValueDisplay(lowerValue.GetValueOrDefault())</label>
+                <label class="bit-slider-value">@GetValueDisplay(lowerValue.GetValueOrDefault())</label>
             }
             <div id="@sliderBoxId"
                  class="bit-slider-box"
@@ -74,13 +74,13 @@
             </div>
             @if (ShowValue && IsVertical is false)
             {
-                <label class="valueLabel">@GetValueDisplay(upperValue.GetValueOrDefault())</label>
+                <label class="bit-slider-value">@GetValueDisplay(upperValue.GetValueOrDefault())</label>
             }
         </div>
 
         @if (ShowValue && IsVertical)
         {
-            <label class="valueLabel">@GetValueDisplay(lowerValue.GetValueOrDefault())</label>
+            <label class="bit-slider-value">@GetValueDisplay(lowerValue.GetValueOrDefault())</label>
         }
     }
     else
@@ -103,12 +103,12 @@
 
             @if (ShowValue && IsVertical is false)
             {
-                <label class="valueLabel">@GetValueDisplay(Value.GetValueOrDefault())</label>
+                <label class="bit-slider-value">@GetValueDisplay(Value.GetValueOrDefault())</label>
             }
         </div>
         @if (ShowValue && IsVertical)
         {
-            <label class="valueLabel">@GetValueDisplay(Value.GetValueOrDefault())</label>
+            <label class="bit-slider-value">@GetValueDisplay(Value.GetValueOrDefault())</label>
         }
     }
 </div>
