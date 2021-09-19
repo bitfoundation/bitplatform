@@ -141,11 +141,6 @@ $BgTrackHover: $DarkAlt;
     text-align: center;
 }
 
-/*Horizontal*/
-.bit-slider-horizontal input {
-    width: 100%;
-}
-
 /*Ranged*/
 .bit-slider-ranged-horizontal .bit-slider-container {
     display: flex;
@@ -217,7 +212,8 @@ $BgTrackHover: $DarkAlt;
 }
 
 .bit-slider input::-webkit-slider-runnable-track,
-.bit-slider input::-webkit-slider-thumb, .bit-slider input {
+.bit-slider input::-webkit-slider-thumb, 
+.bit-slider input {
     -webkit-appearance: none;
 }
 
@@ -272,11 +268,6 @@ input::-moz-range-thumb {
 
 .bit-slider-enabled-fluent input:hover .zero-tick {
     background: $BgTrackHover;
-}
-
-.bit-slider-horizontal .zero-tick {
-    width: rem(1px);
-    height: rem(14px);
 }
 
 .bit-slider-ranged-vertical .zero-tick {
@@ -378,5 +369,16 @@ input::-moz-range-thumb {
         width: rem(14px);
         height: rem(1px);
         margin-left: rem(18px);
+    }
+}
+
+.bit-slider-horizontal {
+    input {
+        width: 100%;
+    }
+
+    .zero-tick {
+        width: rem(1px);
+        height: rem(14px);
     }
 }
