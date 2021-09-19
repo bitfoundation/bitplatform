@@ -87,32 +87,32 @@ namespace Bit.Client.Web.BlazorUI.Tests.Navs
         }
 
         [DataTestMethod,
-          DataRow(Visual.Fluent, true, true),
-          DataRow(Visual.Fluent, true, false),
           DataRow(Visual.Fluent, false, true),
           DataRow(Visual.Fluent, false, false),
+          DataRow(Visual.Fluent, true, true),
+          DataRow(Visual.Fluent, true, false),
 
-          DataRow(Visual.Cupertino, true, true),
-          DataRow(Visual.Cupertino, true, false),
           DataRow(Visual.Cupertino, false, true),
           DataRow(Visual.Cupertino, false, false),
+          DataRow(Visual.Cupertino, true, true),
+          DataRow(Visual.Cupertino, true, false),
 
-          DataRow(Visual.Material, true, true),
-          DataRow(Visual.Material, true, false),
           DataRow(Visual.Material, false, true),
           DataRow(Visual.Material, false, false),
+          DataRow(Visual.Material, true, true),
+          DataRow(Visual.Material, true, false),
       ]
-        public void BitNavChildrenTest(Visual visual, bool disabled, bool hasUrl)
+        public void BitNavChildrenTest(Visual visual, bool isEnabled, bool hasUrl)
         {
             string url = hasUrl ? "https://www.google.com/" : null;
-            var navLinkItems = new List<BitNavLinkItem> { new BitNavLinkItem { Name = "test", Key = "key", Disabled = disabled, Url = url } };
+            var navLinkItems = new List<BitNavLinkItem> { new BitNavLinkItem { Name = "test", Key = "key", IsEnabled = isEnabled, Url = url } };
             var com = RenderComponent<BitNavTest>(parameters =>
             {
                 parameters.Add(p => p.NavLinkItems, navLinkItems);
                 parameters.Add(p => p.Visual, visual);
             });
 
-            var enabledClass = disabled ? "disabled" : "enabled";
+            var enabledClass = isEnabled ? "enabled" : "disabled";
             var hasUrlClass = hasUrl ? "hasurl" : "nourl";
             var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
             var element = com.Find($".bit-nav-link-{enabledClass}-{hasUrlClass}-{visualClass}");
@@ -169,7 +169,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Navs
                     Name = "Home",
                     Key = "key1",
                     CollapseAriaLabel = ariaLabel,
-                    Links = new()
+                    Links = new List<BitNavLinkItem>()
                     {
                         new()
                         {
@@ -187,7 +187,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Navs
                     Url = "http://example.com",
                     Key = "key2",
                     CollapseAriaLabel = ariaLabel,
-                    Links = new()
+                    Links = new List<BitNavLinkItem>()
                     {
                         new()
                         {
@@ -247,7 +247,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Navs
                     Key = "key1",
                     CollapseAriaLabel = collapseAriaLabel,
                     ExpandAriaLabel = ExpandAriaLabel,
-                    Links = new()
+                    Links = new List<BitNavLinkItem>()
                     {
                         new()
                         {
@@ -291,12 +291,12 @@ namespace Bit.Client.Web.BlazorUI.Tests.Navs
         }
 
         [DataTestMethod,
-            DataRow(true, true),
             DataRow(true, false),
-            DataRow(false, true),
-            DataRow(false, false)
+            DataRow(true, true),
+            DataRow(false, false),
+            DataRow(false, true)
         ]
-        public void BitNavShoulRespondToClickEvents(bool isEnabled, bool itemDisabled)
+        public void BitNavShoulRespondToClickEvents(bool isEnabled, bool itemIsEnabled)
         {
             var componenet = RenderComponent<BitNavTest>(parameters =>
             {
@@ -306,15 +306,15 @@ namespace Bit.Client.Web.BlazorUI.Tests.Navs
                     {
                         Name = "Test1",
                         Key = "key1",
-                        Disabled = itemDisabled,
-                        Links = new() { new() { Name = "Test2", Key = "key2" } }
+                        IsEnabled = itemIsEnabled,
+                        Links = new List<BitNavLinkItem>() { new() { Name = "Test2", Key = "key2" } }
                     }
                 });
                 parameters.Add(p => p.IsEnabled, isEnabled);
             });
 
-            var navItem = componenet.Find($".bit-nav .bit-nav-link-{(itemDisabled ? "disabled" : "enabled")}-nourl-fluent");
-            
+            var navItem = componenet.Find($".bit-nav .bit-nav-link-{(itemIsEnabled ? "enabled" : "disabled")}-nourl-fluent");
+
             //TODO: bypassed - BUnit or Blazor issue
             //navItem.Click();
             //Assert.AreEqual(isEnabled && !itemDisabled ? "Test1" : null, componenet.Instance.OnlinkClickValue);

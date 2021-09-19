@@ -57,6 +57,7 @@
             @if (navLinkItem.Links?.Any() ?? false)
             {
                 <button tabindex="0"
+                        style="margin-left: @((navLinkItem.Depth * 14).ToString())px;"
                         @onclick="(() => OnLinkExpand(navLinkItem))"
                         aria-label="@navLinkItem.CollapseAriaLabel"
                         aria-expanded="@navLinkItem.IsExpanded">
@@ -66,12 +67,12 @@
 
             @if (navLinkItem.Url.HasValue())
             {
-                <a href="@(navLinkItem.Disabled ? "/" : navLinkItem.Url)"
+                <a href="@(navLinkItem.IsEnabled ? navLinkItem.Url : "/")"
+                   style="padding: 0 20px 0 @(((navLinkItem.Depth * 14) + 27).ToString())px;"
                    title="@(navLinkItem.Title.HasValue() ? navLinkItem.Title : navLinkItem.Name)"
                    tabindex="-1"
                    @onclick="(()=>HandleLinkClick(navLinkItem))"
                    target="@navLinkItem.Target"
-                   style="padding: 0px 20px 0px @(((navLinkItem.Depth * 14)+(navLinkItem.Icon.HasNoValue() ? 27 : 3)).ToString())px;"
                    class="@GetLinkClass(navLinkItem)">
 
                     <span>
@@ -88,8 +89,8 @@
                 if (navLinkItem.ForceAnchor)
                 {
                     <a class="@GetLinkClass(navLinkItem)"
+                       style="padding: 0 20px 0 @(((navLinkItem.Depth * 14) + 27).ToString())px;"
                        title="@(navLinkItem.Title.HasValue() ? navLinkItem.Title : navLinkItem.Name)"
-                       style="padding: 0px 20px 0px @(((navLinkItem.Depth * 14)+27).ToString())px;"
                        @onclick="(() => HandleLinkClick(navLinkItem))">
                         <span>
                             <div>@navLinkItem.Name</div>
@@ -100,7 +101,7 @@
                 {
                     <button class="@GetLinkClass(navLinkItem)"
                             title="@(navLinkItem.Title.HasValue() ? navLinkItem.Title : navLinkItem.Name)"
-                            style="padding: 0px 20px 0px @(((navLinkItem.Depth * 14)+27).ToString())px;"
+                            style="padding: 0 20px 0 @(((navLinkItem.Depth * 14) + 27).ToString())px;"
                             @onclick="(() => HandleLinkClick(navLinkItem))">
                         <span>
                             <div>@navLinkItem.Name</div>
@@ -110,7 +111,7 @@
 
             }
         </div>
-        @if (navLinkItem.Links?.Any() != null && navLinkItem.IsExpanded)
+        @if (navLinkItem.Links.Any() && navLinkItem.IsExpanded)
         {
             <ul role="list">
                 @foreach (var childLinkItem in navLinkItem.Links)

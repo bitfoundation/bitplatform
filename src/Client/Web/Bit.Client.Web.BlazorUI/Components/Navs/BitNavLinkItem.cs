@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Components;
 
 namespace Bit.Client.Web.BlazorUI
@@ -33,7 +34,9 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// URL to navigate to for this link
         /// </summary>
+#pragma warning disable CA1056 // URI-like properties should not be strings
         public string? Url { get; set; }
+#pragma warning restore CA1056 // URI-like properties should not be strings
 
         /// <summary>
         /// Aria label when group is collapsed and can be expanded.
@@ -58,7 +61,7 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// Whether or not the link is disabled
         /// </summary>
-        public bool Disabled { get; set; }
+        public bool IsEnabled { get; set; } = true;
 
         /// <summary>
         /// Link target, specifies how to open the link
@@ -66,15 +69,16 @@ namespace Bit.Client.Web.BlazorUI
         public string? Target { get; set; }
 
 
-                /// <summary>
+        /// <summary>
         /// A list of items to render as children of the current item
         /// </summary>
-        public List<BitNavLinkItem>? Links { get; set; }
+        public IEnumerable<BitNavLinkItem> Links { get; set; } = new List<BitNavLinkItem>();
 
         /// <summary>
         /// Callback invoked when a link in the navigation is clicked
         /// </summary>
-        public EventCallback? OnClick { get; set; }
+        public Action<BitNavLinkItem>? OnClick { get; set; }
+
         internal int Depth { get; set; }
     }
 }
