@@ -137,7 +137,6 @@ $BgTrackHover: $DarkAlt;
     white-space: nowrap;
 }
 
-.bit-slider-vertical .bit-slider-value,
 .bit-slider-ranged-vertical .bit-slider-value {
     text-align: center;
 }
@@ -145,26 +144,6 @@ $BgTrackHover: $DarkAlt;
 /*Horizontal*/
 .bit-slider-horizontal input {
     width: 100%;
-}
-
-/*Vertical*/
-.bit-slider-vertical .bit-slider-container {
-    width: rem(50px);
-    height: 100%;
-    padding: 0;
-    margin-left: 0;
-    display: block;
-}
-
-.bit-slider-vertical {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.bit-slider-vertical input {
-    transform-origin: left;
-    margin: 0 rem(25px);
 }
 
 /*Ranged*/
@@ -295,12 +274,6 @@ input::-moz-range-thumb {
     background: $BgTrackHover;
 }
 
-.bit-slider-vertical .zero-tick {
-    width: rem(14px);
-    height: rem(1px);
-    margin-left: rem(18px);
-}
-
 .bit-slider-horizontal .zero-tick {
     width: rem(1px);
     height: rem(14px);
@@ -319,7 +292,6 @@ input::-moz-range-thumb {
     height: rem(14px);
     margin-top: rem(-5px);
 }
-
 
 .bit-slider-enabled-fluent {
     input::-webkit-slider-thumb:hover,
@@ -377,5 +349,34 @@ input::-moz-range-thumb {
     .bit-slider-box:hover::before,
     .bit-slider-box:hover::after {
         background: $BgTrackHover;
+    }
+}
+
+.bit-slider-vertical {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    .bit-slider-value {
+        text-align: center;
+    }
+
+    .bit-slider-container {
+        width: rem(50px);
+        height: 100%;
+        padding: 0;
+        margin-left: 0;
+        display: block;
+    }
+
+    input {
+        transform-origin: left;
+        margin: 0 rem(25px);
+    }
+
+    .zero-tick {
+        width: rem(14px);
+        height: rem(1px);
+        margin-left: rem(18px);
     }
 }
