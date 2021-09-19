@@ -20,41 +20,11 @@ $BgTrackHover: $DarkAlt;
     opacity: 0.65;
 }
 
-.bit-slider .bit-slider-container {
+.bit-slider-container {
     display: flex;
     align-items: center;
     padding: 0;
-}
-
-.bit-slider .zeroTick {
-    position: absolute;
-    background: $BgTrack;
-}
-
-.bit-slider-enabled-fluent input[type=range]:hover .zeroTick {
-    background: $BgTrackHover;
-}
-
-/*Horizontal*/
-.bit-slider.bit-slider-horizontal .zeroTick,
-.bit-slider.bit-slider-ranged-horizontal .zeroTick {
-    width: 1px;
-    height: 14px;
-}
-
-
-/*Vertical*/
-.bit-slider.bit-slider-vertical .zeroTick,
-.bit-slider.bit-slider-ranged-vertical .zeroTick {
-    width: 14px;
-    height: 1px;
-    margin-left: 18px;
-    z-index: 9999;
-}
-
-.bit-slider.bit-slider-ranged-vertical .zeroTick {
-    transform: rotate(270deg);
-    margin-top: 1px;
+    position: relative;
 }
 
 .bit-slider input[type=range] {
@@ -235,7 +205,6 @@ $BgTrackHover: $DarkAlt;
     padding: 0;
     margin-left: 0;
     display: block;
-    position: relative;
 }
 
 .bit-slider-vertical {
@@ -311,16 +280,6 @@ $BgTrackHover: $DarkAlt;
     width: calc((var(--l) - var(--h))/var(--dif)*100%);
 }
 
-.bit-slider.bit-slider-ranged-horizontal .zeroTick {
-    z-index: 2;
-    margin-top: -5px;
-}
-
-.bit-slider.bit-slider-ranged-vertical .zeroTick {
-    z-index: 2;
-    margin-left: -5px;
-}
-
 .bit-slider [id=multi-lbl] {
     grid-column: 1/span 2;
 }
@@ -383,4 +342,40 @@ input[type=range]::-moz-range-thumb {
 .bit-slider.bit-slider-ranged-vertical input[type=range]:focus {
     z-index: 2;
     outline: dotted 1px currentcolor;
+}
+
+//ZeroTick
+.zero-tick {
+    position: absolute;
+    background: $BgTrack;
+    z-index: 9999;
+}
+
+.bit-slider-enabled-fluent input:hover .zero-tick {
+    background: $BgTrackHover;
+}
+
+.bit-slider-vertical .zero-tick {
+    width: rem(14px);
+    height: rem(1px);
+    margin-left: rem(18px);
+}
+
+.bit-slider-horizontal .zero-tick {
+    width: rem(1px);
+    height: rem(14px);
+}
+
+.bit-slider-ranged-vertical .zero-tick {
+    width: rem(14px);
+    height: rem(1px);
+    margin-top: rem(1px);
+    margin-left: rem(18px);
+    transform: rotate(270deg);
+}
+
+.bit-slider-ranged-horizontal .zero-tick {
+    width: rem(1px);
+    height: rem(14px);
+    margin-top: rem(-5px);
 }

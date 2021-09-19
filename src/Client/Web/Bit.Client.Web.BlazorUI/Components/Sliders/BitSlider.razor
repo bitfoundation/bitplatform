@@ -34,7 +34,7 @@
                  @attributes="@SliderBoxHtmlAttributes">
                 @if (IsOriginFromZero)
                 {
-                    <span class="zeroTick" style="left: calc(50% - 1px);"></span>
+                    <span class="zero-tick" style="left: calc(50% - 1px);"></span>
                 }
 
                 <input id="@($"min-{sliderBoxId}")"
@@ -89,7 +89,7 @@
              class="bit-slider-container">
             @if (IsOriginFromZero)
             {
-                <span class="zeroTick" style="@(IsVertical ? "top: calc(50% - -2px);" : "left: calc(50% - 29px);")"></span>
+                <span class="zero-tick" style="@(IsVertical ? "top: calc(50% - -2px);" : "left: calc(50% - 29px);")"></span>
             }
 
             <input type="range"
