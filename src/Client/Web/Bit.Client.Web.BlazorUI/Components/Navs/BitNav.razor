@@ -68,7 +68,7 @@
             @if (navLinkItem.Url.HasValue())
             {
                 <a href="@(navLinkItem.IsEnabled ? navLinkItem.Url : "/")"
-                   style="padding: 0px 20px 0px @(((navLinkItem.Depth * 14) + 27).ToString())px;"
+                   style="padding: 0 20px 0 @(((navLinkItem.Depth * 14) + 27).ToString())px;"
                    title="@(navLinkItem.Title.HasValue() ? navLinkItem.Title : navLinkItem.Name)"
                    tabindex="-1"
                    @onclick="(()=>HandleLinkClick(navLinkItem))"
@@ -89,7 +89,7 @@
                 if (navLinkItem.ForceAnchor)
                 {
                     <a class="@GetLinkClass(navLinkItem)"
-                       style="padding: 0px 20px 0px @(((navLinkItem.Depth * 14) + 27).ToString())px;"
+                       style="padding: 0 20px 0 @(((navLinkItem.Depth * 14) + 27).ToString())px;"
                        title="@(navLinkItem.Title.HasValue() ? navLinkItem.Title : navLinkItem.Name)"
                        @onclick="(() => HandleLinkClick(navLinkItem))">
                         <span>
@@ -101,7 +101,7 @@
                 {
                     <button class="@GetLinkClass(navLinkItem)"
                             title="@(navLinkItem.Title.HasValue() ? navLinkItem.Title : navLinkItem.Name)"
-                            style="padding: 0px 20px 0px @(((navLinkItem.Depth * 14) + 27).ToString())px;"
+                            style="padding: 0 20px 0 @(((navLinkItem.Depth * 14) + 27).ToString())px;"
                             @onclick="(() => HandleLinkClick(navLinkItem))">
                         <span>
                             <div>@navLinkItem.Name</div>
