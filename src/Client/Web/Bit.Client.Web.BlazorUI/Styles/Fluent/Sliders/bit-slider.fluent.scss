@@ -66,28 +66,8 @@ $BgTrackHover: $DarkAlt;
     box-shadow: none;
 }
 
-.bit-slider-enabled-fluent input::-webkit-slider-thumb:hover,
-.bit-slider-enabled-fluent input::-webkit-slider-thumb:active,
-.bit-slider-enabled-fluent input:hover::-webkit-slider-thumb,
-.bit-slider-enabled-fluent input:active::-webkit-slider-thumb {
-    border-color: $BgTrackHover;
-}
-
-.bit-slider-enabled-fluent input:hover::-webkit-slider-runnable-track {
-    background: $BgTrackHover;
-}
-
-.bit-slider-enabled-fluent input:active::-webkit-slider-runnable-track {
-    background: $BgTrackHover;
-}
-
 .bit-slider input::-webkit-slider-runnable-track {
     background: linear-gradient($BgTrack, $BgTrack) 0/var(--sx) 100% no-repeat, $BgDefult;
-}
-
-.bit-slider-enabled-fluent input:hover::-webkit-slider-runnable-track,
-.bit-slider-enabled-fluent input:active::-webkit-slider-runnable-track {
-    background: linear-gradient($BgTrackHover, $BgTrackHover) 0/var(--sx) 100% no-repeat, $BgHover;
 }
 
 /*mozilla*/
@@ -108,20 +88,8 @@ $BgTrackHover: $DarkAlt;
     box-shadow: none;
 }
 
-.bit-slider-enabled-fluent input::-moz-range-thumb:hover,
-.bit-slider-enabled-fluent input:hover::-moz-range-track,
-.bit-slider-enabled-fluent input::-moz-range-thumb:active,
-.bit-slider-enabled-fluent input:active::-moz-range-track {
-    border-color: $BgTrackHover;
-}
-
 .bit-slider input::-moz-range-track {
     background: linear-gradient($BgTrack, $BgTrack) 0/var(--sx) 100% no-repeat, $BgDefult;
-}
-
-.bit-slider-enabled-fluent input:hover::-moz-range-track,
-.bit-slider-enabled-fluent input:active::-moz-range-track {
-    background: linear-gradient($BgTrackHover, $BgTrackHover) 0/var(--sx) 100% no-repeat, $BgHover;
 }
 
 /*ms*/
@@ -152,23 +120,11 @@ $BgTrackHover: $DarkAlt;
     box-shadow: none;
 }
 
-.bit-slider-enabled-fluent input::-ms-thumb:hover,
-.bit-slider-enabled-fluent input:hover::-ms-thumb,
-.bit-slider-enabled-fluent input::-ms-thumb:active,
-.bit-slider-enabled-fluent input:active::-ms-thumb {
-    border-color: $BgTrackHover;
-}
-
 .bit-slider input::-ms-fill-lower {
     height: rem(4px);
     border-radius: rem(4px);
     background: $BgDefult;
     box-shadow: none;
-}
-
-.bit-slider-enabled-fluent input:hover::-ms-fill-lower,
-.bit-slider-enabled-fluent input:active::-ms-fill-lower {
-    background: $BgTrackHover;
 }
 
 .bit-slider-value {
@@ -232,11 +188,6 @@ $BgTrackHover: $DarkAlt;
     background: linear-gradient(0deg, $BgDefult rem(4px), transparent 0);
 }
 
-.bit-slider-enabled-fluent.bit-slider-ranged-horizontal .bit-slider-box:hover,
-.bit-slider-enabled-fluent.bit-slider-ranged-vertical .bit-slider-box:hover {
-    background: linear-gradient(0deg, $BgHover rem(4px), transparent 0);
-}
-
 .bit-slider-ranged-vertical {
     display: flex;
     flex-direction: column;
@@ -254,11 +205,6 @@ $BgTrackHover: $DarkAlt;
     grid-row: 3;
     background: $BgTrack;
     content: "";
-}
-
-.bit-slider-enabled-fluent.bit-slider-ranged-horizontal .bit-slider-box:hover::before, .bit-slider-enabled-fluent.bit-slider-ranged-horizontal .bit-slider-box:hover::after,
-.bit-slider-enabled-fluent.bit-slider-ranged-vertical .bit-slider-box:hover::before, .bit-slider-enabled-fluent.bit-slider-ranged-vertical .bit-slider-box:hover::after {
-    background: $BgTrackHover;
 }
 
 .bit-slider-ranged-horizontal .bit-slider-box::before,
@@ -291,7 +237,7 @@ $BgTrackHover: $DarkAlt;
     pointer-events: none;
 }
 
-.bit-slider input::-webkit-slider-runnable-track, 
+.bit-slider input::-webkit-slider-runnable-track,
 .bit-slider input::-webkit-slider-thumb, .bit-slider input {
     -webkit-appearance: none;
 }
@@ -372,4 +318,64 @@ input::-moz-range-thumb {
     width: rem(1px);
     height: rem(14px);
     margin-top: rem(-5px);
+}
+
+
+.bit-slider-enabled-fluent {
+    input::-webkit-slider-thumb:hover,
+    input::-webkit-slider-thumb:active,
+    input:hover::-webkit-slider-thumb,
+    input:active::-webkit-slider-thumb {
+        border-color: $BgTrackHover;
+    }
+
+    input:hover::-webkit-slider-runnable-track {
+        background: $BgTrackHover;
+    }
+
+    input:active::-webkit-slider-runnable-track {
+        background: $BgTrackHover;
+    }
+
+    input:hover::-webkit-slider-runnable-track,
+    input:active::-webkit-slider-runnable-track {
+        background: linear-gradient($BgTrackHover, $BgTrackHover) 0/var(--sx) 100% no-repeat, $BgHover;
+    }
+
+    input::-moz-range-thumb:hover,
+    input:hover::-moz-range-track,
+    input::-moz-range-thumb:active,
+    input:active::-moz-range-track {
+        border-color: $BgTrackHover;
+    }
+
+    input:hover::-moz-range-track,
+    input:active::-moz-range-track {
+        background: linear-gradient($BgTrackHover, $BgTrackHover) 0/var(--sx) 100% no-repeat, $BgHover;
+    }
+
+
+    input::-ms-thumb:hover,
+    input:hover::-ms-thumb,
+    input::-ms-thumb:active,
+    input:active::-ms-thumb {
+        border-color: $BgTrackHover;
+    }
+
+    input:hover::-ms-fill-lower,
+    input:active::-ms-fill-lower {
+        background: $BgTrackHover;
+    }
+}
+
+.bit-slider-enabled-fluent.bit-slider-ranged-horizontal,
+.bit-slider-enabled-fluent.bit-slider-ranged-vertical {
+    .bit-slider-box:hover {
+        background: linear-gradient(0deg, $BgHover rem(4px), transparent 0);
+    }
+
+    .bit-slider-box:hover::before,
+    .bit-slider-box:hover::after {
+        background: $BgTrackHover;
+    }
 }
