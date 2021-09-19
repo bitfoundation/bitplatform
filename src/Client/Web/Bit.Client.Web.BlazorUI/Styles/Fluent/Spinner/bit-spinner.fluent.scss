@@ -23,11 +23,23 @@
             animation: bit-spn-fluent 1.3s linear infinite;
         }
 
-        &:last-child {
+        &:nth-child(2) {
             font-size: rem(12px);
             color: $Primary;
             margin: rem(2px) rem(8px);
             text-align: center;
+        }
+
+        &[role="status"] {
+            & > div {
+                position: absolute;
+                width: 1px;
+                height: 1px;
+                margin: -1px;
+                padding: 0px;
+                border: 0px;
+                overflow: hidden;
+            }
         }
     }
 }
@@ -37,7 +49,7 @@
     align-items: center;
 
     & > div {
-        &:last-child {
+        &:nth-child(2) {
             margin: 0 0 rem(8px);
         }
     }
@@ -48,7 +60,7 @@
     align-items: center;
 
     & > div {
-        &:last-child {
+        &:nth-child(2) {
             margin: rem(8px) 0 0;
         }
     }
@@ -59,7 +71,7 @@
     align-items: center;
 
     & > div {
-        &:last-child {
+        &:nth-child(2) {
             margin: 0 0 0 rem(8px);
         }
     }
