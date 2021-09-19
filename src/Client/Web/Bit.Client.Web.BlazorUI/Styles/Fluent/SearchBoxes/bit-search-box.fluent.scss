@@ -1,11 +1,11 @@
-﻿@import "../colors.fluent.scss", "../../functions.scss";
+﻿@import '../colors.fluent.scss', '../../functions.scss';
 
 @mixin getFocusedStyle($fixedIcon: false, $hasValue: false) {
     border: 2px solid $Primary;
 
     & > div:first-child {
         @if $fixedIcon == false {
-            width: 0px;
+            width: 0;
 
             & i.bit-icon {
                 opacity: 0;
@@ -16,7 +16,7 @@
     @if $hasValue = true {
         & > div:last-child {
             opacity: 1;
-            flex-basis: 0px;
+            flex-basis: 0;
 
             & i {
                 opacity: 1;
@@ -31,8 +31,8 @@
     font-size: 14px;
     font-weight: 400;
     box-shadow: none;
-    margin: 0px;
-    padding: 1px 0px 1px 4px;
+    margin: 0;
+    padding: 1px 0 1px 4px;
     box-sizing: border-box;
     color: $Grey160;
     background-color: $White;
@@ -68,15 +68,15 @@
 
     input {
         box-shadow: none;
-        margin: 0px;
-        padding: 0px 0px 0.5px;
+        margin: 0;
+        padding: 0 0 0.5px;
         box-sizing: border-box;
         background-color: transparent;
         border: none;
         outline: none;
         color: $Grey160;
-        flex: 1 1 0px;
-        min-width: 0px;
+        flex: 1 1 0;
+        min-width: 0;
         overflow: hidden;
         text-overflow: ellipsis;
     }
@@ -86,10 +86,10 @@
         flex-direction: row;
         align-items: stretch;
         cursor: pointer;
-        flex-basis: 0px;
+        flex-basis: 0;
         flex-shrink: 0;
-        padding: 0px;
-        margin: -1px 0px;
+        padding: 0;
+        margin: -1px 0;
         width: 32px;
         opacity: 0;
         transition: opacity 0.167s ease 0s;
@@ -111,12 +111,12 @@
             align-items: center;
             text-decoration: none;
             cursor: pointer;
-            padding: 0px 4px;
+            padding: 0 4px;
             border-radius: 2px;
             width: 32px;
             height: auto;
             background-color: transparent;
-            color: $Primary;
+            color: $Grey130;
             user-select: none;
         }
 
@@ -129,7 +129,7 @@
 .bit-sch-box-has-value-fluent {
     & > div:last-child {
         opacity: 1;
-        flex-basis: 0px;
+        flex-basis: 0;
 
         & i {
             opacity: 1;
@@ -137,7 +137,7 @@
     }
 
     &:hover > div:first-child {
-        width: 0px;
+        width: 0;
 
         & i {
             opacity: 0;
@@ -148,7 +148,7 @@
 .bit-sch-box-fixed-icon-has-value-fluent {
     & > div:last-child {
         opacity: 1;
-        flex-basis: 0px;
+        flex-basis: 0;
 
         & i {
             opacity: 1;
@@ -160,7 +160,7 @@
     @include getFocusedStyle();
 }
 
-.bit-sch-box-fixde-icon-focused-fluent {
+.bit-sch-box-fixed-icon-focused-fluent {
     @include getFocusedStyle($fixedIcon: true);
 }
 
@@ -188,7 +188,7 @@
     border-bottom: 1px solid $Grey130;
     padding-left: 12px;
 
-    &.focused {
+    &.bit-sch-box-focused-fluent {
         border-bottom: 2px solid $Primary;
     }
 }
