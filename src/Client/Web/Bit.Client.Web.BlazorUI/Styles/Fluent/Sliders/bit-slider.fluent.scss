@@ -172,13 +172,12 @@ $BgTrackHover: $DarkAlt;
 }
 
 .bit-slider-value {
+    width: rem(40px);
+    margin: 0 rem(8px);
+    padding: rem(5px) 0;
     box-sizing: border-box;
     box-shadow: none;
-    margin: 0 8px;
-    padding: 5px 0;
     overflow-wrap: break-word;
-    flex-shrink: 1;
-    width: 40px;
     white-space: nowrap;
 }
 
@@ -194,8 +193,8 @@ $BgTrackHover: $DarkAlt;
 
 /*Vertical*/
 .bit-slider-vertical .bit-slider-container {
+    width: rem(50px);
     height: 100%;
-    width: 50px;
     padding: 0;
     margin-left: 0;
     display: block;
@@ -209,7 +208,7 @@ $BgTrackHover: $DarkAlt;
 
 .bit-slider-vertical input {
     transform-origin: left;
-    margin: 0 25px;
+    margin: 0 rem(25px);
 }
 
 /*Ranged*/
@@ -230,12 +229,12 @@ $BgTrackHover: $DarkAlt;
     position: relative;
     margin: 1em auto;
     width: 100%;
-    background: linear-gradient(0deg, $BgDefult 4px, transparent 0);
+    background: linear-gradient(0deg, $BgDefult rem(4px), transparent 0);
 }
 
 .bit-slider-enabled-fluent.bit-slider-ranged-horizontal .bit-slider-box:hover,
 .bit-slider-enabled-fluent.bit-slider-ranged-vertical .bit-slider-box:hover {
-    background: linear-gradient(0deg, $BgHover 4px, transparent 0);
+    background: linear-gradient(0deg, $BgHover rem(4px), transparent 0);
 }
 
 .bit-slider-ranged-vertical {
@@ -250,9 +249,9 @@ $BgTrackHover: $DarkAlt;
 
 .bit-slider-ranged-horizontal .bit-slider-box::before, .bit-slider-ranged-horizontal .bit-slider-box::after,
 .bit-slider-ranged-vertical .bit-slider-box::before, .bit-slider-ranged-vertical .bit-slider-box::after {
+    height: rem(4px);
     grid-column: 1/span 2;
     grid-row: 3;
-    height: 4px;
     background: $BgTrack;
     content: "";
 }
@@ -264,14 +263,14 @@ $BgTrackHover: $DarkAlt;
 
 .bit-slider-ranged-horizontal .bit-slider-box::before,
 .bit-slider-ranged-vertical .bit-slider-box::before {
-    margin-left: calc((var(--l) - var(--min))/var(--dif)*100%);
     width: calc((var(--h) - var(--l))/var(--dif)*100%);
+    margin-left: calc((var(--l) - var(--min))/var(--dif)*100%);
 }
 
 .bit-slider-ranged-horizontal .bit-slider-box::after,
 .bit-slider-ranged-vertical .bit-slider-box::after {
-    margin-left: calc((var(--h) - var(--min))/var(--dif)*100%);
     width: calc((var(--l) - var(--h))/var(--dif)*100%);
+    margin-left: calc((var(--h) - var(--min))/var(--dif)*100%);
 }
 
 .bit-slider [id=multi-lbl] {
@@ -292,7 +291,8 @@ $BgTrackHover: $DarkAlt;
     pointer-events: none;
 }
 
-.bit-slider input::-webkit-slider-runnable-track, .bit-slider input::-webkit-slider-thumb, .bit-slider input {
+.bit-slider input::-webkit-slider-runnable-track, 
+.bit-slider input::-webkit-slider-thumb, .bit-slider input {
     -webkit-appearance: none;
 }
 
@@ -311,31 +311,31 @@ $BgTrackHover: $DarkAlt;
 }
 
 input::-webkit-slider-thumb {
+    width: 2rem;
+    height: 4rem;
     border: none;
     /* get rid of Firefox thumb border */
-    width: 2em;
-    height: 4em;
     border-radius: 0;
     /* get rid of Firefox corner rounding */
-    background: linear-gradient(90deg, #fff 2px, transparent 0) calc(1em - 1px), radial-gradient(circle, var(--col) calc(1em - 1px), transparent 1em);
+    background: linear-gradient(90deg, $White rem(2px), transparent 0) calc(1rem - 1px), radial-gradient(circle, var(--col) calc(1rem - 1px), transparent 1rem);
     pointer-events: auto;
 }
 
 input::-moz-range-thumb {
+    width: 2rem;
+    height: 4rem;
     border: none;
     /* get rid of Firefox thumb border */
-    width: 2em;
-    height: 4em;
     border-radius: 0;
     /* get rid of Firefox corner rounding */
-    background: linear-gradient(90deg, #fff 2px, transparent 0) calc(1em - 1px), radial-gradient(circle, var(--col) calc(1em - 1px), transparent 1em);
+    background: linear-gradient(90deg, $White rem(2px), transparent 0) calc(1rem - 1px), radial-gradient(circle, var(--col) calc(1rem - 1px), transparent 1rem);
     pointer-events: auto;
 }
 
 .bit-slider.bit-slider-ranged-horizontal input:focus
 .bit-slider.bit-slider-ranged-vertical input:focus {
     z-index: 2;
-    outline: dotted 1px currentcolor;
+    outline: dotted rem(1px) currentcolor;
 }
 
 //ZeroTick
