@@ -14,6 +14,11 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public string Label { get; set; } = string.Empty;
 
         /// <summary>
+        /// Custom label template to display above the component
+        /// </summary>
+        [Parameter] public RenderFragment? LabelFragment { get; set; }
+
+        /// <summary>
         /// Height of the ProgressIndicator
         /// </summary>
         [Parameter] public int BarHeight { get; set; } = 2;
@@ -35,6 +40,11 @@ namespace Bit.Client.Web.BlazorUI
         /// Text describing or supplementing the operation
         /// </summary>
         [Parameter] public string Description { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Custom template for describing or supplementing the operation
+        /// </summary>
+        [Parameter] public RenderFragment? DescriptionFragment { get; set; }
 
         /// <summary>
         /// Text alternative of the progress status, used by screen readers for reading the value of the progress
