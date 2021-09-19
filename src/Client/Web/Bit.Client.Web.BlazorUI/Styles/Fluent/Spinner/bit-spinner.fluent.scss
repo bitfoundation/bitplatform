@@ -17,6 +17,7 @@
     & > div {
         &:first-child {
             animation: bit-spn-fluent 1.3s linear infinite;
+            animation-timing-function: cubic-bezier(0.53, 0.21, 0.29, 0.67);
             border: rem(16px) solid $Grey60;
             border-top: rem(16px) solid $Primary;
             border-radius: 50%;
