@@ -169,7 +169,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Navs
                     Name = "Home",
                     Key = "key1",
                     CollapseAriaLabel = ariaLabel,
-                    Links = new()
+                    Links = new List<BitNavLinkItem>()
                     {
                         new()
                         {
@@ -187,7 +187,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Navs
                     Url = "http://example.com",
                     Key = "key2",
                     CollapseAriaLabel = ariaLabel,
-                    Links = new()
+                    Links = new List<BitNavLinkItem>()
                     {
                         new()
                         {
@@ -247,7 +247,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Navs
                     Key = "key1",
                     CollapseAriaLabel = collapseAriaLabel,
                     ExpandAriaLabel = ExpandAriaLabel,
-                    Links = new()
+                    Links = new List<BitNavLinkItem>()
                     {
                         new()
                         {
@@ -307,7 +307,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Navs
                         Name = "Test1",
                         Key = "key1",
                         Disabled = itemDisabled,
-                        Links = new() { new() { Name = "Test2", Key = "key2" } }
+                        Links = new List<BitNavLinkItem>() { new() { Name = "Test2", Key = "key2" } }
                     }
                 });
                 parameters.Add(p => p.IsEnabled, isEnabled);
