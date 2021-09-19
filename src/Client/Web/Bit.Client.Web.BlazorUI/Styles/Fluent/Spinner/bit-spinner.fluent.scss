@@ -16,37 +16,37 @@
 
     & > div {
         &:first-child {
+            animation: bit-spn-fluent 1.3s linear infinite;
             border: rem(16px) solid $Grey60;
             border-top: rem(16px) solid $Primary;
             border-radius: 50%;
             border-width: rem(1.5px);
-            animation: bit-spn-fluent 1.3s linear infinite;
         }
 
         &:nth-child(2) {
-            font-size: rem(12px);
             color: $Primary;
+            font-size: rem(12px);
             margin: rem(2px) rem(8px);
             text-align: center;
         }
 
         &[role="status"] {
             & > div {
-                position: absolute;
-                width: 1px;
+                border: 0px;
                 height: 1px;
                 margin: -1px;
-                padding: 0px;
-                border: 0px;
                 overflow: hidden;
+                padding: 0px;
+                position: absolute;
+                width: 1px;
             }
         }
     }
 }
 
 .bit-spn-bottom-fluent {
-    flex-direction: column-reverse;
     align-items: center;
+    flex-direction: column-reverse;
 
     & > div {
         &:nth-child(2) {
@@ -56,8 +56,8 @@
 }
 
 .bit-spn-top-fluent {
-    flex-direction: column;
     align-items: center;
+    flex-direction: column;
 
     & > div {
         &:nth-child(2) {
@@ -67,8 +67,8 @@
 }
 
 .bit-spn-left-fluent {
-    flex-direction: row;
     align-items: center;
+    flex-direction: row;
 
     & > div {
         &:nth-child(2) {
@@ -78,8 +78,8 @@
 }
 
 .bit-spn-right-fluent {
-    flex-direction: row-reverse;
     align-items: center;
+    flex-direction: row-reverse;
 
     & > div {
         &:last-child {
@@ -91,8 +91,8 @@
 .bit-spn-large-fluent {
     & > div {
         &:first-child {
-            width: rem(28px);
             height: rem(28px);
+            width: rem(28px);
         }
     }
 }
@@ -100,8 +100,8 @@
 .bit-spn-medium-fluent {
     & > div {
         &:first-child {
-            width: rem(20px);
             height: rem(20px);
+            width: rem(20px);
         }
     }
 }
@@ -109,8 +109,8 @@
 .bit-spn-small-fluent {
     & > div {
         &:first-child {
-            width: rem(16px);
             height: rem(16px);
+            width: rem(16px);
         }
     }
 }
@@ -118,8 +118,8 @@
 .bit-spn-xSmall-fluent {
     & > div {
         &:first-child {
-            width: rem(12px);
             height: rem(12px);
+            width: rem(12px);
         }
     }
 }
