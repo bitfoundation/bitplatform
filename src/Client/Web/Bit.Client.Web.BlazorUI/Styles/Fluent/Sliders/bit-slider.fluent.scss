@@ -172,12 +172,8 @@ input::-moz-range-thumb {
 //ZeroTick
 .zero-tick {
     position: absolute;
-    background: $BgTrack;
+    background-color: $Grey20;
     z-index: 9999;
-}
-
-.bit-slider-enabled-fluent input:hover .zero-tick {
-    background: $BgTrackHover;
 }
 
 .bit-slider-vertical {
@@ -217,7 +213,7 @@ input::-moz-range-thumb {
 
     .zero-tick {
         width: rem(1px);
-        height: rem(14px);
+        height: rem(16px);
     }
 }
 
@@ -291,7 +287,7 @@ input::-moz-range-thumb {
     }
 
     .zero-tick {
-        width: rem(14px);
+        width: rem(16px);
         height: rem(1px);
         margin-top: rem(1px);
         margin-left: rem(18px);
@@ -361,7 +357,7 @@ input::-moz-range-thumb {
 
     .zero-tick {
         width: rem(1px);
-        height: rem(14px);
+        height: rem(16px);
         margin-top: rem(-5px);
     }
 }
@@ -370,6 +366,14 @@ input::-moz-range-thumb {
     .bit-slider-title,
     .bit-slider-value {
         color: $Grey160;
+    }
+
+    .zero-tick {
+        background-color: $Grey60;
+    }
+
+    input:hover .zero-tick {
+        background-color: $ThemeLighter;
     }
 
     input::-webkit-slider-thumb:hover,
@@ -403,7 +407,6 @@ input::-moz-range-thumb {
     input:active::-moz-range-track {
         background: linear-gradient($BgTrackHover, $BgTrackHover) 0/var(--sx) 100% no-repeat, $BgHover;
     }
-
 
     input::-ms-thumb:hover,
     input:hover::-ms-thumb,
