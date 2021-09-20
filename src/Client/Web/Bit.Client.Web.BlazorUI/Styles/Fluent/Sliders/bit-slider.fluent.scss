@@ -5,6 +5,10 @@ $BgTrack: $Grey130;
 $BgHover: $BlizzardBlue;
 $BgTrackHover: $DarkAlt;
 
+.bit-slider-fluent {
+    font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+}
+
 .bit-slider-title {
     display: block;
     margin: 0;
@@ -12,6 +16,10 @@ $BgTrackHover: $DarkAlt;
     box-sizing: border-box;
     box-shadow: none;
     overflow-wrap: break-word;
+    -webkit-font-smoothing: antialiased;
+    font-size: rem(14px);
+    font-weight: 600;
+    color: $Grey90;
 }
 
 .bit-slider-disabled-fluent {
@@ -25,15 +33,6 @@ $BgTrackHover: $DarkAlt;
     align-items: center;
     padding: 0;
     position: relative;
-}
-
-.bit-slider input {
-    -webkit-appearance: none;
-}
-
-/*Horizontal*/
-.bit-slider-horizontal input {
-    flex-grow: 1;
 }
 
 /*progress support*/
@@ -178,6 +177,47 @@ input::-moz-range-thumb {
 
 .bit-slider-enabled-fluent input:hover .zero-tick {
     background: $BgTrackHover;
+}
+
+.bit-slider-vertical {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    .bit-slider-value {
+        text-align: center;
+    }
+
+    .bit-slider-container {
+        width: rem(50px);
+        height: 100%;
+        padding: 0;
+        margin-left: 0;
+        display: block;
+    }
+
+    input {
+        transform-origin: left;
+        margin: 0 rem(25px);
+    }
+
+    .zero-tick {
+        width: rem(14px);
+        height: rem(1px);
+        margin-left: rem(18px);
+    }
+}
+
+.bit-slider-horizontal {
+    input {
+        width: 100%;
+        flex-grow: 1;
+    }
+
+    .zero-tick {
+        width: rem(1px);
+        height: rem(14px);
+    }
 }
 
 .bit-slider-ranged-vertical {
@@ -326,6 +366,10 @@ input::-moz-range-thumb {
 }
 
 .bit-slider-enabled-fluent {
+    .bit-slider-title {
+        color: $Grey160;
+    }
+
     input::-webkit-slider-thumb:hover,
     input::-webkit-slider-thumb:active,
     input:hover::-webkit-slider-thumb,
@@ -381,45 +425,5 @@ input::-moz-range-thumb {
     .bit-slider-box:hover::before,
     .bit-slider-box:hover::after {
         background: $BgTrackHover;
-    }
-}
-
-.bit-slider-vertical {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-
-    .bit-slider-value {
-        text-align: center;
-    }
-
-    .bit-slider-container {
-        width: rem(50px);
-        height: 100%;
-        padding: 0;
-        margin-left: 0;
-        display: block;
-    }
-
-    input {
-        transform-origin: left;
-        margin: 0 rem(25px);
-    }
-
-    .zero-tick {
-        width: rem(14px);
-        height: rem(1px);
-        margin-left: rem(18px);
-    }
-}
-
-.bit-slider-horizontal {
-    input {
-        width: 100%;
-    }
-
-    .zero-tick {
-        width: rem(1px);
-        height: rem(14px);
     }
 }
