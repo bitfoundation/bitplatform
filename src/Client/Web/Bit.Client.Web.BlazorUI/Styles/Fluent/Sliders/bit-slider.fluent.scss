@@ -129,13 +129,18 @@ $BgTrackHover: $DarkAlt;
 }
 
 .bit-slider-value {
+    display: block;
     width: rem(40px);
     margin: 0 rem(8px);
     padding: rem(5px) 0;
     box-sizing: border-box;
     box-shadow: none;
+    font-size: rem(14px);
+    font-weight: 600;
+    color: $Grey90;
     overflow-wrap: break-word;
     white-space: nowrap;
+    -webkit-font-smoothing: antialiased;
 }
 
 .bit-slider [id=multi-lbl] {
@@ -362,7 +367,8 @@ input::-moz-range-thumb {
 }
 
 .bit-slider-enabled-fluent {
-    .bit-slider-title {
+    .bit-slider-title,
+    .bit-slider-value {
         color: $Grey160;
     }
 
