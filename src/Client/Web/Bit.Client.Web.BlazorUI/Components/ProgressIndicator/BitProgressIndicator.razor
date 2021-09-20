@@ -4,7 +4,13 @@
 <div @ref="RootElement"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
-    @if (Label.HasValue())
+    @if (LabelFragment is not null)
+    {
+        <div class="bit-pi-lbl" id="@LabelId">
+            @LabelFragment
+        </div>
+    }
+    else if (Label.HasValue())
     {
         <div class="bit-pi-lbl" id="@LabelId">
             @Label
@@ -35,7 +41,13 @@
         }
     }
 
-    @if (Description.HasValue())
+    @if (DescriptionFragment is not null)
+    {
+        <div class="bit-pi-dsc" id="@DescriptionId">
+            @DescriptionFragment
+        </div>
+    }
+    else if (Description.HasValue())
     {
         <div class="bit-pi-dsc" id="@DescriptionId">
             @Description

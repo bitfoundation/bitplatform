@@ -197,5 +197,33 @@ namespace Bit.Client.Web.BlazorUI.Tests.ProgressIndicator
 
             Assert.ThrowsException<ElementNotFoundException>(() => component.Find(".bit-pi-wrapper"));
         }
+
+        [DataTestMethod,
+            DataRow("<h1>this is a custom label</h1>")
+        ]
+        public void BitProgressIndicatorLabelFragmentTest(string? labelFragment)
+        {
+            var component = RenderComponent<BitProgressIndicator>(parameters =>
+            {
+                parameters.Add(p => p.LabelFragment, labelFragment);
+            });
+
+            var labelChildNodes = component.Find(".bit-pi-lbl").ChildNodes;
+            labelChildNodes.MarkupMatches(labelFragment);
+        }
+
+        [DataTestMethod,
+            DataRow("<h1>this is a custom description</h1>"),
+        ]
+        public void BitProgressIndicatorDescriptionFragmentTest(string? descriptionFragment)
+        {
+            var component = RenderComponent<BitProgressIndicator>(parameters =>
+            {
+                parameters.Add(p => p.DescriptionFragment, descriptionFragment);
+            });
+
+            var descriptionChildNodes = component.Find(".bit-pi-dsc").ChildNodes;
+            descriptionChildNodes.MarkupMatches(descriptionFragment);
+        }
     }
 }
