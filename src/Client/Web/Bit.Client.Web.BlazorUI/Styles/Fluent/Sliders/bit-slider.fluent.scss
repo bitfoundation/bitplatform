@@ -7,6 +7,99 @@ $BgTrackHover: $DarkAlt;
 
 .bit-slider-fluent {
     font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+
+    input {
+        --range: calc(var(--max) - var(--min));
+        --ratio: calc((var(--value) - var(--min))/var(--range));
+        --sx: calc(.5*2rem + var(--ratio)*(100% - 2rem));
+
+        &:focus {
+            outline: none;
+        }
+    }
+    /*webkit*/
+    input::-webkit-slider-thumb {
+        width: rem(16px);
+        height: rem(16px);
+        margin-top: rem(-6px);
+        border: rem(2px) solid $BgTrack;
+        border-radius: rem(10px);
+        box-sizing: border-box;
+        background: $White;
+        -webkit-appearance: none;
+    }
+
+    input::-webkit-slider-runnable-track {
+        height: rem(4px);
+        border-radius: rem(4px);
+        background: $BgDefult;
+        box-shadow: none;
+    }
+
+    input::-webkit-slider-runnable-track {
+        background: linear-gradient($BgTrack, $BgTrack) 0/var(--sx) 100% no-repeat, $BgDefult;
+    }
+    /*mozilla*/
+    input::-moz-range-thumb {
+        width: rem(16px);
+        height: rem(16px);
+        margin-top: calc(max((1rem - 1px - 0px)*.5,0px) - 2rem*.5);
+        border: rem(2px) solid $BgTrack;
+        border-radius: rem(10px);
+        box-sizing: border-box;
+        background: $White;
+    }
+
+    input::-moz-range-track {
+        height: rem(4px);
+        border-radius: rem(4px);
+        background: $BgDefult;
+        box-shadow: none;
+    }
+
+    input::-moz-range-track {
+        background: linear-gradient($BgTrack, $BgTrack) 0/var(--sx) 100% no-repeat, $BgDefult;
+    }
+    /*ms*/
+    input::-ms-fill-upper {
+        background: transparent;
+        border-color: transparent;
+    }
+
+    input::-ms-fill-lower {
+        background: transparent;
+        border-color: transparent;
+    }
+
+    input::-ms-thumb {
+        width: rem(16px);
+        height: rem(16px);
+        margin-top: calc(max((1rem - 1px - 0px)*.5,0px) - 2rem*.5);
+        border: rem(2px) solid $BgTrack;
+        border-radius: rem(10px);
+        box-sizing: border-box;
+        background: $White;
+    }
+
+    input::-ms-track {
+        height: rem(4px);
+        border-radius: rem(4px);
+        background: $BgDefult;
+        box-shadow: none;
+    }
+
+    input::-ms-fill-lower {
+        height: rem(4px);
+        border-radius: rem(4px);
+        background: $BgDefult;
+        box-shadow: none;
+    }
+
+    input::-webkit-slider-runnable-track,
+    input::-webkit-slider-thumb,
+    input {
+        -webkit-appearance: none;
+    }
 }
 
 .bit-slider-title {
@@ -35,97 +128,6 @@ $BgTrackHover: $DarkAlt;
     position: relative;
 }
 
-/*progress support*/
-.bit-slider input {
-    --range: calc(var(--max) - var(--min));
-    --ratio: calc((var(--value) - var(--min))/var(--range));
-    --sx: calc(.5*2rem + var(--ratio)*(100% - 2rem));
-}
-
-.bit-slider input:focus {
-    outline: none;
-}
-
-/*webkit*/
-.bit-slider input::-webkit-slider-thumb {
-    width: rem(16px);
-    height: rem(16px);
-    margin-top: rem(-6px);
-    border: rem(2px) solid $BgTrack;
-    border-radius: rem(10px);
-    box-sizing: border-box;
-    background: $White;
-    -webkit-appearance: none;
-}
-
-.bit-slider input::-webkit-slider-runnable-track {
-    height: rem(4px);
-    border-radius: rem(4px);
-    background: $BgDefult;
-    box-shadow: none;
-}
-
-.bit-slider input::-webkit-slider-runnable-track {
-    background: linear-gradient($BgTrack, $BgTrack) 0/var(--sx) 100% no-repeat, $BgDefult;
-}
-
-/*mozilla*/
-.bit-slider input::-moz-range-thumb {
-    width: rem(16px);
-    height: rem(16px);
-    margin-top: calc(max((1rem - 1px - 0px)*.5,0px) - 2rem*.5);
-    border: rem(2px) solid $BgTrack;
-    border-radius: rem(10px);
-    box-sizing: border-box;
-    background: $White;
-}
-
-.bit-slider input::-moz-range-track {
-    height: rem(4px);
-    border-radius: rem(4px);
-    background: $BgDefult;
-    box-shadow: none;
-}
-
-.bit-slider input::-moz-range-track {
-    background: linear-gradient($BgTrack, $BgTrack) 0/var(--sx) 100% no-repeat, $BgDefult;
-}
-
-/*ms*/
-.bit-slider input::-ms-fill-upper {
-    background: transparent;
-    border-color: transparent;
-}
-
-.bit-slider input::-ms-fill-lower {
-    background: transparent;
-    border-color: transparent;
-}
-
-.bit-slider input::-ms-thumb {
-    width: rem(16px);
-    height: rem(16px);
-    margin-top: calc(max((1rem - 1px - 0px)*.5,0px) - 2rem*.5);
-    border: rem(2px) solid $BgTrack;
-    border-radius: rem(10px);
-    box-sizing: border-box;
-    background: $White;
-}
-
-.bit-slider input::-ms-track {
-    height: rem(4px);
-    border-radius: rem(4px);
-    background: $BgDefult;
-    box-shadow: none;
-}
-
-.bit-slider input::-ms-fill-lower {
-    height: rem(4px);
-    border-radius: rem(4px);
-    background: $BgDefult;
-    box-shadow: none;
-}
-
 .bit-slider-value {
     width: rem(40px);
     margin: 0 rem(8px);
@@ -138,12 +140,6 @@ $BgTrackHover: $DarkAlt;
 
 .bit-slider [id=multi-lbl] {
     grid-column: 1/span 2;
-}
-
-.bit-slider input::-webkit-slider-runnable-track,
-.bit-slider input::-webkit-slider-thumb,
-.bit-slider input {
-    -webkit-appearance: none;
 }
 
 input::-webkit-slider-thumb {
