@@ -81,6 +81,11 @@ namespace Bit.Client.Web.BlazorUI
         /// </summary>
         [Parameter] public RenderFragment<BitNavLinkItem>? HeaderTemplate { get; set; }
 
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
 
         protected override string RootElementClass => "bit-nav";
 
@@ -97,6 +102,14 @@ namespace Bit.Client.Web.BlazorUI
             selectedKey ??= InitialSelectedKey;
 
             await base.OnInitializedAsync();
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                NavigationManager.LocationChanged -= OnLocationChanged;
+            }
         }
 
         private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
@@ -170,18 +183,18 @@ namespace Bit.Client.Web.BlazorUI
             return $"{mainStyle} {selectedClass} {hasIcon} {isGroup}";
         }
 
-        public void Dispose()
+        private string? GetExpandButtonAriaLabel(BitNavLinkItem link)
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposing)
+            var finalExpandBtnAriaLabel = "";
+            if (link.Links.Any())
             {
-                NavigationManager.LocationChanged -= OnLocationChanged;
+                if (link.CollapseAriaLabel.HasValue() || link.ExpandAriaLabel.HasValue())
+                {
+                    finalExpandBtnAriaLabel = link.IsExpanded ? link.CollapseAriaLabel : link.ExpandAriaLabel;
+                }
             }
+
+            return finalExpandBtnAriaLabel;
         }
     }
 }

@@ -57,15 +57,18 @@
          @key="navLinkItem.Key"
          @onclick="(()=>HandleClick(navLinkItem))">
 
-        <div name="@navLinkItem.Name">
+        <div class="bit-nav-composite-link"
+             name="@navLinkItem.Name">
             @if (navLinkItem.Links?.Any() ?? false)
             {
-                <button tabindex="0"
+                <button class="bit-nav-chevron-btn"
                         style="margin-left: @((navLinkItem.Depth * 14).ToString())px;"
-                        @onclick="(() => OnLinkExpand(navLinkItem))"
-                        aria-label="@navLinkItem.CollapseAriaLabel"
-                        aria-expanded="@navLinkItem.IsExpanded">
-                    <i class="bit-icon bit-icon--ChevronDown @(navLinkItem.IsExpanded ? "bit-nav-expand-fluent" : "")"></i>
+                        tabindex="0"
+                        aria-label="@GetExpandButtonAriaLabel(navLinkItem)"
+                        aria-expanded="@(navLinkItem.IsExpanded ? "true" : "false")"
+                        @onclick="(() => OnLinkExpand(navLinkItem))">
+                    <i class="bit-icon bit-icon--ChevronDown @(navLinkItem.IsExpanded ? "bit-nav-expand-fluent" : "")"
+                       aria-hidden="true"></i>
                 </button>
             }
 
