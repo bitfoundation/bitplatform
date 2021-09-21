@@ -35,19 +35,29 @@ namespace Bit.Client.Web.BlazorUI.Tests.Rating
             Assert.AreEqual("radiogroup", bitRating.GetAttribute("role"));
         }
 
-        [DataTestMethod,
-            DataRow(true),
-            DataRow(false),
-        ]
-        public void BitRatingShouldRespectIsReadonly(bool isReadonly)
+        [DataTestMethod]
+        public void BitRatingShouldRespectIsReadonly()
         {
             var component = RenderComponent<BitRatingTest>(parameters =>
             {
-                parameters.Add(p => p.IsReadOnly, isReadonly);
+                parameters.Add(p => p.IsReadOnly, true);
             });
+
             var bitRating = component.Find(".bit-rating");
 
-            Assert.AreEqual(bitRating.ClassList.Contains($"bit-rating-readonly-fluent"), isReadonly);
+            Assert.IsTrue(bitRating.ClassList.Contains($"bit-rating-readonly-fluent"));
+            Assert.IsTrue(bitRating.HasAttribute("aria-readonly"));
+            Assert.AreEqual("true", bitRating.GetAttribute("aria-readonly"));
+
+            var buttons = component.FindAll(".bit-rating button");
+
+            foreach (var button in buttons)
+            {
+                Assert.IsTrue(button.HasAttribute("aria-hidden"));
+                Assert.AreEqual("true", button.GetAttribute("aria-hidden"));
+                Assert.IsTrue(button.HasAttribute("disabled"));
+            }
+
         }
 
         [DataTestMethod,
