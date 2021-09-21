@@ -70,7 +70,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Rating
             {
                 parameters.Add(p => p.Max, max);
             });
-            
+
             var buttons = component.FindAll(".bit-rating button");
 
             Assert.AreEqual(max, buttons.Count);
@@ -93,6 +93,21 @@ namespace Bit.Client.Web.BlazorUI.Tests.Rating
             var sizeClass = size == RatingSize.Large ? "large" : "small";
 
             Assert.IsTrue(bitRating.ClassList.Contains($"bit-rating-{sizeClass}-fluent"));
+        }
+
+        [DataTestMethod,
+            DataRow(true),
+            DataRow(false)
+        ]
+        public void BitRatingShouldRespectAllowZeroStars(bool allowZeroStars)
+        {
+            var component = RenderComponent<BitRatingTest>(parameters =>
+            {
+                parameters.Add(p => p.AllowZeroStars, allowZeroStars);
+            });
+
+            var firstButton = component.Find(".bit-rating button");
+            Assert.AreEqual(!allowZeroStars, bool.Parse(firstButton.GetAttribute("aria-checked")));
         }
 
         [DataTestMethod,
