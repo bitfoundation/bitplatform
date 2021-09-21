@@ -72,9 +72,21 @@ namespace Bit.Client.Web.BlazorUI.Tests.Rating
                 parameters.Add(p => p.Max, max);
             });
 
-            var buttons = component.FindAll(".bit-rating button");
+            var button = component.FindAll(".bit-rating button");
 
-            Assert.AreEqual(max, buttons.Count);
+            Assert.AreEqual(max, button.Count);
+        }
+
+        [DataTestMethod,
+            DataRow("Select {0} of {1} stars")]
+        public void BitRatingShouldTakeCorrectAriaLabelFormat(string ariaLabelFormat)
+        {
+            var component = RenderComponent<BitRatingTest>(parameters =>
+               {
+                   parameters.Add(p => p.AriaLabelFormat, ariaLabelFormat);
+               });
+            var span = component.Find(".bit-rating button span");
+            Assert.AreEqual(string.Format(ariaLabelFormat, 1, 5), span.TextContent);
         }
 
 
