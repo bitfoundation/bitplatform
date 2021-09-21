@@ -56,6 +56,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Rating
                 Assert.IsTrue(button.HasAttribute("aria-hidden"));
                 Assert.AreEqual("true", button.GetAttribute("aria-hidden"));
                 Assert.IsTrue(button.HasAttribute("disabled"));
+                Assert.AreEqual("0", button.GetAttribute("tabindex"));
             }
 
         }
