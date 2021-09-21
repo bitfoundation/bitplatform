@@ -1,41 +1,37 @@
 ﻿@import "../colors.fluent.scss", "../../functions.scss";
 
 @mixin getLinkStyle($hasUrl: true, $enabled: true) {
-    outline: transparent;
     position: relative;
-    font-size: 14px;
-    font-weight: 400;
-    box-sizing: border-box;
-    border: 1px solid transparent;
     display: block;
+    width: 100%;
+    height: rem(44px);
+    border: rem(1px) solid transparent;
+    border-radius: rem(2px);
+    outline: transparent;
+    box-sizing: border-box;
+    font-size: rem(14px);
+    font-weight: 400;
     text-decoration: none;
     text-align: center;
-    cursor: pointer;
-    border-radius: 2px;
-    height: 44px;
-    width: 100%;
     text-overflow: ellipsis;
     overflow: hidden;
     user-select: none;
 
     @if $enabled {
-        color: $Black;
+        color: $Grey160;
 
         &:hover {
-            background-color: $Grey20;
-            color: $Primary !important;
+            color: $Primary;
         }
 
         @if $hasUrl {
-            &:focus {
-                background-color: $Grey30;
+            &:active {
                 color: $Black;
-                font-weight: 600;
             }
         }
     }
     @else {
-        color: $Grey60;
+        color: $Grey90;
         pointer-events: none;
     }
 }
@@ -96,6 +92,12 @@
 .bit-nav-composite-link {
     display: block;
     position: relative;
+    color: $Grey160;
+    cursor: pointer;
+
+    &:hover {
+        background-color: $Grey20;
+    }
 
     button {
         background-color: transparent;
@@ -125,6 +127,12 @@
             flex-shrink: 0;
             color: $Primary;
         }
+    }
+}
+
+.bit-nav-disabled-composite-link {
+    &:hover {
+        background-color: transparent;
     }
 }
 

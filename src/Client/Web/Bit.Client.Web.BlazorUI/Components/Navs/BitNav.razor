@@ -57,7 +57,7 @@
          @key="navLinkItem.Key"
          @onclick="(()=>HandleClick(navLinkItem))">
 
-        <div class="bit-nav-composite-link"
+        <div class="bit-nav-composite-link @(!navLinkItem.IsEnabled ? "bit-nav-disabled-composite-link" : "")"
              name="@navLinkItem.Name">
             @if (navLinkItem.Links?.Any() ?? false)
             {
