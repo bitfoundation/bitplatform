@@ -30,6 +30,9 @@ namespace Bit.Client.Web.BlazorUI.Tests.Rating
             var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
 
             Assert.IsTrue(bitRating.ClassList.Contains($"bit-rating-{isEnabledClass}-{visualClass}"));
+
+            Assert.IsTrue(bitRating.HasAttribute("role"));
+            Assert.AreEqual("radiogroup", bitRating.GetAttribute("role"));
         }
 
         [DataTestMethod,
