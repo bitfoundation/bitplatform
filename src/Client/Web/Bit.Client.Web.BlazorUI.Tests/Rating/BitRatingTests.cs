@@ -61,6 +61,23 @@ namespace Bit.Client.Web.BlazorUI.Tests.Rating
         }
 
         [DataTestMethod,
+            DataRow(5),
+            DataRow(8)
+        ]
+        public void BitRatingShouldShowCorrectMax(int max)
+        {
+            var component = RenderComponent<BitRatingTest>(parameters =>
+            {
+                parameters.Add(p => p.Max, max);
+            });
+            
+            var buttons = component.FindAll(".bit-rating button");
+
+            Assert.AreEqual(max, buttons.Count);
+        }
+
+
+        [DataTestMethod,
             DataRow(null),
             DataRow(RatingSize.Small),
             DataRow(RatingSize.Large)
