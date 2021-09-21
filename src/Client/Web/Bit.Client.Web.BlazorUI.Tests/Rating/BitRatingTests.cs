@@ -24,7 +24,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Rating
                 parameters.Add(p => p.IsEnabled, isEnabled);
                 parameters.Add(p => p.Visual, visual);
             });
-            var bitRating = component.Find("div");
+            var bitRating = component.Find(".bit-rating");
 
             var isEnabledClass = isEnabled ? "enabled" : "disabled";
             var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
@@ -42,7 +42,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Rating
             {
                 parameters.Add(p => p.IsReadOnly, isReadonly);
             });
-            var bitRating = component.Find("div");
+            var bitRating = component.Find(".bit-rating");
 
             Assert.AreEqual(bitRating.ClassList.Contains($"bit-rating-readonly-fluent"), isReadonly);
         }
@@ -58,7 +58,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Rating
             {
                 parameters.Add(p => p.Size, size);
             });
-            var bitRating = component.Find("div");
+            var bitRating = component.Find(".bit-rating");
 
             var sizeClass = size == RatingSize.Large ? "large" : "small";
 
@@ -81,8 +81,8 @@ namespace Bit.Client.Web.BlazorUI.Tests.Rating
 
             int defaultRating = allowZeroStars ? 0 : 1;
 
-            var bitRating = component.FindAll("button");
-            var bitRatingIcon = component.FindAll("i");
+            var bitRating = component.FindAll(".bit-rating button");
+            var bitRatingIcon = component.FindAll(".bit-rating i");
 
             var filledBitRatingIconCount = bitRatingIcon.Where(r => r.ClassList.Contains($"bit-icon--{icon}")).Count();
             var unselectedBitRatingIconCount = bitRatingIcon.Where(r => r.ClassList.Contains($"bit-icon--{unselectedIcon}")).Count();
@@ -109,7 +109,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Rating
                 parameters.Add(p => p.IsReadOnly, isReadonly);
             });
 
-            var bitRatingButtons = component.FindAll("button");
+            var bitRatingButtons = component.FindAll(".bit-rating button");
 
             if (clickedIndex <= 0)
             {
