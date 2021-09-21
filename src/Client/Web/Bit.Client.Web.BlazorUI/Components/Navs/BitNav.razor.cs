@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
@@ -206,5 +207,13 @@ namespace Bit.Client.Web.BlazorUI
             [BitNavLinkItemAriaCurrent.Date] = "date",
             [BitNavLinkItemAriaCurrent.True] = "true"
         };
+
+        private bool IsRelativeUrl(string url)
+        {
+            var regex = new Regex(@"!/^[a-z0-9+-.]+:\/\//i");
+            return regex.IsMatch(url);
+        }
+
+        private string? GetNavLinkItemRel(BitNavLinkItem link) => link.Url.HasValue() && link.Target.HasValue() && !IsRelativeUrl(link.Url!) ? "noopener noreferrer" : null;
     }
 }

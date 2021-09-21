@@ -83,6 +83,7 @@
                    aria-label="@navLinkItem.AriaLabel"
                    aria-current="@(navLinkItem.Key == SelectedKey ? AriaCurrentMap[navLinkItem.AriaCurrent] : null)"
                    tabindex="-1"
+                   rel="@GetNavLinkItemRel(navLinkItem)"
                    @onclick="(()=>HandleLinkClick(navLinkItem))">
 
                     <span class="bit-nav-link-txt">
@@ -107,6 +108,7 @@
                        aria-label="@navLinkItem.AriaLabel"
                        aria-current="@(navLinkItem.Key == SelectedKey ? AriaCurrentMap[navLinkItem.AriaCurrent] : null)"
                        tabindex="-1"
+                       rel="@GetNavLinkItemRel(navLinkItem)"
                        title="@(navLinkItem.Title.HasValue() ? navLinkItem.Title : navLinkItem.Name)"
                        @onclick="(() => HandleLinkClick(navLinkItem))">
                         <span class="bit-nav-link-txt">
