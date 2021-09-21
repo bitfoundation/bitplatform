@@ -196,5 +196,15 @@ namespace Bit.Client.Web.BlazorUI
 
             return finalExpandBtnAriaLabel;
         }
+
+        private static Dictionary<BitNavLinkItemAriaCurrent, string> AriaCurrentMap = new()
+        {
+            [BitNavLinkItemAriaCurrent.Page] = "page",
+            [BitNavLinkItemAriaCurrent.Step] = "step",
+            [BitNavLinkItemAriaCurrent.Location] = "location",
+            [BitNavLinkItemAriaCurrent.Time] = "time",
+            [BitNavLinkItemAriaCurrent.Date] = "date",
+            [BitNavLinkItemAriaCurrent.True] = "true"
+        };
     }
 }

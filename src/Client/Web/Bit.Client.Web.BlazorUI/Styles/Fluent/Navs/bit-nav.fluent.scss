@@ -102,31 +102,27 @@
     button {
         background-color: transparent;
     }
+}
 
-    span {
-        display: flex;
-        height: 100%;
-        flex-wrap: nowrap;
-        justify-content: flex-start;
-        align-items: center;
+.bit-nav-link-txt {
+    height: 100%;
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: flex-start;
+    align-items: center;
+    margin: 0 rem(4px);
+    overflow: hidden;
+    text-align: left;
+    text-overflow: ellipsis;
 
-        div {
-            margin: 0px 4px;
-            overflow: hidden;
-            vertical-align: middle;
-            text-align: left;
-            text-overflow: ellipsis;
-        }
-
-        i {
-            font-size: 16px;
-            margin: 0px 4px;
-            height: 16px;
-            line-height: 16px;
-            text-align: center;
-            flex-shrink: 0;
-            color: $Primary;
-        }
+    i {
+        font-size: rem(16px);
+        margin: 0 rem(4px);
+        height: rem(16px);
+        line-height: rem(16px);
+        text-align: center;
+        flex-shrink: 0;
+        color: $Primary;
     }
 }
 
