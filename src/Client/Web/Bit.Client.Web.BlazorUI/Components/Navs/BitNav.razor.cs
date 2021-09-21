@@ -133,7 +133,7 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
-        private async Task OnLinkExpand(BitNavLinkItem navLinkItem)
+        private async Task HandleLinkExpand(BitNavLinkItem navLinkItem)
         {
             if (IsEnabled is false || navLinkItem.IsEnabled is false || navLinkItem.Links.Any() is false) return;
 
@@ -150,7 +150,7 @@ namespace Bit.Client.Web.BlazorUI
 
             if (navLinkItem.Url.HasNoValue() && navLinkItem.Links.Any())
             {
-                await OnLinkExpand(navLinkItem);
+                await HandleLinkExpand(navLinkItem);
             }
         }
 
@@ -160,7 +160,6 @@ namespace Bit.Client.Web.BlazorUI
 
             navLinkItem.OnClick?.Invoke(navLinkItem);
         }
-
 
         private string GetLinkClass(BitNavLinkItem navLinkItem)
         {

@@ -66,7 +66,7 @@
                         tabindex="0"
                         aria-label="@GetExpandButtonAriaLabel(navLinkItem)"
                         aria-expanded="@(navLinkItem.IsExpanded ? "true" : "false")"
-                        @onclick="(() => OnLinkExpand(navLinkItem))">
+                        @onclick="(() => HandleLinkExpand(navLinkItem))">
                     <i class="bit-icon bit-icon--ChevronDown @(navLinkItem.IsExpanded ? "bit-nav-expand-fluent" : "")"
                        aria-hidden="true"></i>
                 </button>
