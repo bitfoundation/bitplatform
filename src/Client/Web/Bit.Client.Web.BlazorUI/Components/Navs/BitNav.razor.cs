@@ -82,6 +82,11 @@ namespace Bit.Client.Web.BlazorUI
         /// </summary>
         [Parameter] public RenderFragment<BitNavLinkItem>? HeaderTemplate { get; set; }
 
+        /// <summary>
+        /// Used to customize how content inside the link tag is rendered
+        /// </summary>
+        [Parameter] public RenderFragment<BitNavLinkItem>? LinkTemplate { get; set; }
+
         public void Dispose()
         {
             Dispose(true);

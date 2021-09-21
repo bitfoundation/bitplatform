@@ -92,7 +92,14 @@
                             <i class=@($"bit-icon bit-icon--{navLinkItem.Icon}") aria-hidden="true"></i>
                         }
 
-                        <div class="bit-nav-link-txt">@navLinkItem.Name</div>
+                        @if (LinkTemplate is not null)
+                        {
+                            @LinkTemplate(navLinkItem)
+                        }
+                        else
+                        {
+                            <div class="bit-nav-link-txt">@navLinkItem.Name</div>
+                        }
                     </span>
                 </a>
             }
@@ -112,7 +119,14 @@
                             <i class=@($"bit-icon bit-icon--{navLinkItem.Icon}") aria-hidden="true"></i>
                         }
 
-                        <div class="bit-nav-link-txt">@navLinkItem.Name</div>
+                        @if (LinkTemplate is not null)
+                        {
+                            @LinkTemplate(navLinkItem)
+                        }
+                        else
+                        {
+                            <div class="bit-nav-link-txt">@navLinkItem.Name</div>
+                        }
                     </span>
                 </button>
             }
