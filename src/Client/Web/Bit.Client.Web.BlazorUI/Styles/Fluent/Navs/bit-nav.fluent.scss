@@ -64,7 +64,7 @@
     @include getBaseNavStyle();
 }
 
-.bit-nav-fluent > div {
+.bit-nav-grp {
     margin: 0;
     padding: 0;
     border: 0;
@@ -72,94 +72,94 @@
     font: inherit;
     vertical-align: baseline;
     text-decoration: none;
+}
 
-    & > div {
+.bit-nav-grp-content {
+    display: block;
+    margin-bottom: 40px;
+    animation-name: css-0, css-13;
+    animation-duration: 0.367s;
+    animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
+    animation-fill-mode: both;
+}
+
+.bit-nav-list {
+    list-style-type: none;
+    padding: 0px;
+    margin: 0px;
+}
+
+.bit-nav-item {
+    padding: 0px;
+
+    div {
         display: block;
-        margin-bottom: 40px;
-        animation-name: css-0, css-13;
-        animation-duration: 0.367s;
-        animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
-        animation-fill-mode: both;
+        position: relative;
 
-        ul {
-            list-style-type: none;
-            padding: 0px;
-            margin: 0px;
+        button {
+            background-color: transparent;
 
-            li {
+            &:first-child {
+                outline: transparent;
+                position: absolute;
+                font-size: 12px;
+                font-weight: 400;
+                display: block;
+                text-align: left;
+                line-height: 44px;
+                margin: 0px;
                 padding: 0px;
+                border: none;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                overflow: hidden;
+                cursor: pointer;
+                width: 26px;
+                height: 42px;
+                top: 1px;
+                left: 1px;
+                z-index: 1;
 
-                div {
-                    display: block;
-                    position: relative;
-
-                    button {
-                        background-color: transparent;
-
-                        &:first-child {
-                            outline: transparent;
-                            position: absolute;
-                            font-size: 12px;
-                            font-weight: 400;
-                            display: block;
-                            text-align: left;
-                            line-height: 44px;
-                            margin: 0px;
-                            padding: 0px;
-                            border: none;
-                            text-overflow: ellipsis;
-                            white-space: nowrap;
-                            overflow: hidden;
-                            cursor: pointer;
-                            width: 26px;
-                            height: 42px;
-                            top: 1px;
-                            left: 1px;
-                            z-index: 1;
-
-                            & > i {
-                                display: inline-block;
-                                font-style: normal;
-                                font-weight: normal;
-                                speak: none;
-                                position: absolute;
-                                left: 8px;
-                                height: 44px;
-                                line-height: 44px;
-                                font-size: 12px;
-                                transition: transform 0.1s linear 0s;
-                                top: 0px;
-                            }
-                        }
-                    }
-
-
-                    span {
-                        display: flex;
-                        height: 100%;
-                        flex-wrap: nowrap;
-                        justify-content: flex-start;
-                        align-items: center;
-
-                        div {
-                            margin: 0px 4px;
-                            overflow: hidden;
-                            vertical-align: middle;
-                            text-align: left;
-                            text-overflow: ellipsis;
-                        }
-
-                        i {
-                            font-size: 16px;
-                            margin: 0px 4px;
-                            height: 16px;
-                            line-height: 16px;
-                            text-align: center;
-                            flex-shrink: 0;
-                            color: $Primary;
-                        }
-                    }
+                & > i {
+                    display: inline-block;
+                    font-style: normal;
+                    font-weight: normal;
+                    speak: none;
+                    position: absolute;
+                    left: 8px;
+                    height: 44px;
+                    line-height: 44px;
+                    font-size: 12px;
+                    transition: transform 0.1s linear 0s;
+                    top: 0px;
                 }
+            }
+        }
+
+
+        span {
+            display: flex;
+            height: 100%;
+            flex-wrap: nowrap;
+            justify-content: flex-start;
+            align-items: center;
+
+            div {
+                margin: 0px 4px;
+                overflow: hidden;
+                vertical-align: middle;
+                text-align: left;
+                text-overflow: ellipsis;
+            }
+
+            i {
+                font-size: 16px;
+                margin: 0px 4px;
+                height: 16px;
+                line-height: 16px;
+                text-align: center;
+                flex-shrink: 0;
+                color: $Primary;
             }
         }
     }
@@ -181,7 +181,7 @@
     transform: rotate(-180deg);
 }
 
-.bit-nav-has-icon-fluent span i {
+.bit-nav-with-icon-fluent span i {
     font-size: 16px;
     margin: 0px 4px;
     height: 16px;

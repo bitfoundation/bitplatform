@@ -155,16 +155,16 @@ namespace Bit.Client.Web.BlazorUI
 
             var mainStyle = $"bit-nav-link-{enabledClass}-{hasUrlClass}-{VisualClassRegistrar()}";
 
-            var selectedClass = navLinkItem.Key == SelectedKey 
-                                    ? $"bit-nav-selected-{VisualClassRegistrar()}" 
+            var selectedClass = navLinkItem.Key == SelectedKey
+                                    ? $"bit-nav-selected-{VisualClassRegistrar()}"
                                     : string.Empty;
 
             var hasIcon = navLinkItem.Icon.HasNoValue()
-                            ? $"bit-nav-has-not-icon-{VisualClassRegistrar()}"
-                            : $"bit-nav-has-icon-{VisualClassRegistrar()}";
+                            ? string.Empty
+                            : $"bit-nav-with-icon-{VisualClassRegistrar()}";
 
-            var isGroup = navLinkItem.IsGroup 
-                            ? $"bit-nav-isgroup-{VisualClassRegistrar()}" 
+            var isGroup = navLinkItem.IsGroup
+                            ? $"bit-nav-isgroup-{VisualClassRegistrar()}"
                             : string.Empty;
 
             return $"{mainStyle} {selectedClass} {hasIcon} {isGroup}";

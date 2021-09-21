@@ -9,9 +9,10 @@
      aria-label="@AriaLabel">
     @if (HeaderTemplate is null)
     {
-        <div>
-            <div>
-                <ul role="list">
+        <div class="bit-nav-grp">
+            <div class="bit-nav-grp-content">
+                <ul class="bit-nav-list"
+                    role="list">
                     @foreach (var navLinkItem in NavLinkItems)
                         if (childTemplate is not null)
                             @childTemplate(navLinkItem)
@@ -23,12 +24,14 @@
     {
         @foreach (var navLink in NavLinkItems)
         {
-            <div>
+            <div class="bit-nav-grp">
                 @HeaderTemplate(navLink)
+
                 @if (navLink.Links?.Any() ?? false)
                 {
-                    <div>
-                        <ul role="list">
+                    <div class="bit-nav-grp-content">
+                        <ul class="bit-nav-list"
+                            role="list">
                             @foreach (var child in navLink.Links)
                                 if (childTemplate is not null)
                                     @childTemplate(child)
@@ -49,7 +52,8 @@
 
         childTemplate = (navLinkItem) =>
         (
-    @<li role="listitem"
+    @<li class="bit-nav-item"
+         role="listitem"
          @key="navLinkItem.Key"
          @onclick="(()=>HandleClick(navLinkItem))">
 
@@ -113,7 +117,8 @@
         </div>
         @if (navLinkItem.Links.Any() && navLinkItem.IsExpanded)
         {
-            <ul role="list">
+            <ul class="bit-nav-list"
+                role="list">
                 @foreach (var childLinkItem in navLinkItem.Links)
                 {
                     childLinkItem.Depth = navLinkItem.Depth + 1;
