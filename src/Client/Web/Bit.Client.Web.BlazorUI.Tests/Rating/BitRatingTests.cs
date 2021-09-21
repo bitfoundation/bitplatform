@@ -7,7 +7,6 @@ namespace Bit.Client.Web.BlazorUI.Tests.Rating
     [TestClass]
     public class BitRatingTests : BunitTestContext
     {
-
         [DataTestMethod,
             DataRow(Visual.Fluent, true),
             DataRow(Visual.Fluent, false),
@@ -34,53 +33,36 @@ namespace Bit.Client.Web.BlazorUI.Tests.Rating
         }
 
         [DataTestMethod,
-            DataRow(Visual.Fluent, true),
-            DataRow(Visual.Fluent, false),
-
-            DataRow(Visual.Cupertino, true),
-            DataRow(Visual.Cupertino, false),
-
-            DataRow(Visual.Material, true),
-            DataRow(Visual.Material, false)]
-        public void BitRatingShouldRespectIsReadonly(Visual visual, bool isReadonly)
+            DataRow(true),
+            DataRow(false),
+        ]
+        public void BitRatingShouldRespectIsReadonly(bool isReadonly)
         {
             var component = RenderComponent<BitRatingTest>(parameters =>
             {
                 parameters.Add(p => p.IsReadOnly, isReadonly);
-                parameters.Add(p => p.Visual, visual);
             });
             var bitRating = component.Find("div");
 
-            var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
-
-            Assert.AreEqual(bitRating.ClassList.Contains($"bit-rating-readonly-{visualClass}"), isReadonly);
+            Assert.AreEqual(bitRating.ClassList.Contains($"bit-rating-readonly-fluent"), isReadonly);
         }
 
         [DataTestMethod,
-            DataRow(Visual.Fluent, null),
-            DataRow(Visual.Fluent, RatingSize.Small),
-            DataRow(Visual.Fluent, RatingSize.Large),
-
-            DataRow(Visual.Cupertino, null),
-            DataRow(Visual.Cupertino, RatingSize.Small),
-            DataRow(Visual.Cupertino, RatingSize.Large),
-
-            DataRow(Visual.Material, null),
-            DataRow(Visual.Material, RatingSize.Small),
-            DataRow(Visual.Material, RatingSize.Large)]
-        public void BitRatingShouldRespectSize(Visual visual, RatingSize size)
+            DataRow(null),
+            DataRow(RatingSize.Small),
+            DataRow(RatingSize.Large)
+        ]
+        public void BitRatingShouldRespectSize(RatingSize size)
         {
             var component = RenderComponent<BitRatingTest>(parameters =>
             {
                 parameters.Add(p => p.Size, size);
-                parameters.Add(p => p.Visual, visual);
             });
             var bitRating = component.Find("div");
 
             var sizeClass = size == RatingSize.Large ? "large" : "small";
-            var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
 
-            Assert.IsTrue(bitRating.ClassList.Contains($"bit-rating-{sizeClass}-{visualClass}"));
+            Assert.IsTrue(bitRating.ClassList.Contains($"bit-rating-{sizeClass}-fluent"));
         }
 
         [DataTestMethod,
