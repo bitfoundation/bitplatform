@@ -86,13 +86,13 @@
                    rel="@GetNavLinkItemRel(navLinkItem)"
                    @onclick="(()=>HandleLinkClick(navLinkItem))">
 
-                    <span class="bit-nav-link-txt">
+                    <span class="bit-nav-link-container">
                         @if (navLinkItem.Icon.HasValue())
                         {
                             <i class=@($"bit-icon bit-icon--{navLinkItem.Icon}") aria-hidden="true"></i>
                         }
 
-                        @navLinkItem.Name
+                        <div class="bit-nav-link-txt">@navLinkItem.Name</div>
                     </span>
                 </a>
             }
@@ -106,13 +106,13 @@
                         aria-current="@(navLinkItem.Key == SelectedKey ? AriaCurrentMap[navLinkItem.AriaCurrent] : null)"
                         tabindex="-1"
                         @onclick="(() => HandleLinkClick(navLinkItem))">
-                    <span class="bit-nav-link-txt">
+                    <span class="bit-nav-link-container">
                         @if (navLinkItem.Icon.HasValue())
                         {
                             <i class=@($"bit-icon bit-icon--{navLinkItem.Icon}") aria-hidden="true"></i>
                         }
 
-                        @navLinkItem.Name
+                        <div class="bit-nav-link-txt">@navLinkItem.Name</div>
                     </span>
                 </button>
             }

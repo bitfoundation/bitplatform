@@ -15,6 +15,7 @@
     text-align: center;
     text-overflow: ellipsis;
     overflow: hidden;
+    cursor: pointer;
     user-select: none;
 
     @if $enabled {
@@ -24,9 +25,11 @@
             color: $Primary;
         }
 
-        @if $hasUrl {
-            &:active {
-                color: $Black;
+        &:active {
+            color: $Black;
+
+            i {
+                color: $ThemeDarker;
             }
         }
     }
@@ -104,16 +107,12 @@
     }
 }
 
-.bit-nav-link-txt {
-    height: 100%;
+.bit-nav-link-container {
     display: flex;
+    height: 100%;
     flex-flow: row nowrap;
     justify-content: flex-start;
     align-items: center;
-    margin: 0 rem(4px);
-    overflow: hidden;
-    text-align: left;
-    text-overflow: ellipsis;
 
     i {
         font-size: rem(16px);
@@ -123,6 +122,14 @@
         text-align: center;
         flex-shrink: 0;
         color: $Primary;
+    }
+
+    .bit-nav-link-txt {
+        margin: 0 rem(4px);
+        overflow: hidden;
+        vertical-align: middle;
+        text-align: left;
+        text-overflow: ellipsis;
     }
 }
 
@@ -166,18 +173,6 @@
     }
 }
 
-.bit-nav-selected-fluent {
-    background-color: $Grey30;
-
-    &:after {
-        border-left: rem(2px) solid $Primary;
-        content: "";
-        position: absolute;
-        inset: 0;
-        pointer-events: none;
-    }
-}
-
 .bit-nav-expand-fluent {
     transform: rotate(-180deg);
 }
@@ -200,4 +195,22 @@
 
 .bit-nav-isgroup-fluent {
     border-bottom: rem(1px) solid $Grey30;
+}
+
+.bit-nav-selected-fluent {
+    background-color: $Grey30;
+    font-weight: 600;
+    color: $Black;
+
+    &:after {
+        border-left: rem(2px) solid $Primary;
+        content: "";
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+    }
+
+    &:hover {
+        background-color: $Grey20;
+    }
 }
