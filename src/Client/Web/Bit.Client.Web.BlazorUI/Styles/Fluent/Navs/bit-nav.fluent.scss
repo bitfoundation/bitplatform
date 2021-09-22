@@ -206,10 +206,6 @@
     @include getLinkStyle($hasUrl: false, $enabled: false)
 }
 
-.bit-nav-isgroup-fluent {
-    border-bottom: rem(1px) solid $Grey30;
-}
-
 .bit-nav-selected-fluent {
     background-color: $Grey30;
     font-weight: 600;

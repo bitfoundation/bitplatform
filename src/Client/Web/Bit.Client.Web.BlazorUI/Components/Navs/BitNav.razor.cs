@@ -193,11 +193,7 @@ namespace Bit.Client.Web.BlazorUI
                                     ? $"bit-nav-selected-{VisualClassRegistrar()}"
                                     : string.Empty;
 
-            var isGroup = navLinkItem.IsGroup
-                            ? $"bit-nav-isgroup-{VisualClassRegistrar()}"
-                            : string.Empty;
-
-            return $"{mainStyle} {selectedClass} {isGroup}";
+            return $"{mainStyle} {selectedClass}";
         }
 
         private static string? GetExpandButtonAriaLabel(BitNavLinkItem link)
