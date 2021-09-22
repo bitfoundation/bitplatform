@@ -107,12 +107,6 @@ namespace Bit.Client.Web.BlazorUI
             NavigationManager.LocationChanged += OnLocationChanged;
             selectedKey ??= InitialSelectedKey;
 
-            foreach (var item in NavLinkItems)
-            {
-                if (item.IsGroup && item.IsCollapseByDefault is not null)
-                    item.IsExpanded = !item.IsCollapseByDefault.Value;
-            }
-
             await base.OnInitializedAsync();
         }
 
@@ -174,8 +168,6 @@ namespace Bit.Client.Web.BlazorUI
 
         private async Task HandleGroupHeaderClick(BitNavLinkItem navLinkItem)
         {
-            navLinkItem.OnHeaderClick?.Invoke(navLinkItem.IsExpanded);
-
             if (navLinkItem.Links.Any())
             {
                 await HandleLinkExpand(navLinkItem);
@@ -209,16 +201,6 @@ namespace Bit.Client.Web.BlazorUI
 
             return finalExpandBtnAriaLabel;
         }
-
-        private static Dictionary<BitNavLinkItemAriaCurrent, string> AriaCurrentMap = new()
-        {
-            [BitNavLinkItemAriaCurrent.Page] = "page",
-            [BitNavLinkItemAriaCurrent.Step] = "step",
-            [BitNavLinkItemAriaCurrent.Location] = "location",
-            [BitNavLinkItemAriaCurrent.Time] = "time",
-            [BitNavLinkItemAriaCurrent.Date] = "date",
-            [BitNavLinkItemAriaCurrent.True] = "true"
-        };
 
         private static bool IsRelativeUrl(string url)
         {

@@ -95,8 +95,6 @@
                    target="@navLinkItem.Target"
                    title="@(navLinkItem.Title is not null ? navLinkItem.Title : navLinkItem.Name)"
                    disabled="@(navLinkItem.IsEnabled is false)"
-                   aria-label="@navLinkItem.AriaLabel"
-                   aria-current="@(navLinkItem.Key == SelectedKey ? AriaCurrentMap[navLinkItem.AriaCurrent] : null)"
                    tabindex="-1"
                    rel="@GetNavLinkItemRel(navLinkItem)"
                    @onclick="(()=>HandleLinkClick(navLinkItem))">
@@ -124,8 +122,6 @@
                         style="padding: 0 20px 0 @(((navLinkItem.Depth * 14) + 27).ToString() + "px");"
                         title="@(navLinkItem.Title is not null ? navLinkItem.Title : navLinkItem.Name)"
                         disabled="@(navLinkItem.IsEnabled is false)"
-                        aria-label="@navLinkItem.AriaLabel"
-                        aria-current="@(navLinkItem.Key == SelectedKey ? AriaCurrentMap[navLinkItem.AriaCurrent] : null)"
                         tabindex="-1"
                         @onclick="(() => HandleLinkClick(navLinkItem))">
                     <span class="bit-nav-link-container">
