@@ -107,6 +107,12 @@ namespace Bit.Client.Web.BlazorUI
             NavigationManager.LocationChanged += OnLocationChanged;
             selectedKey ??= InitialSelectedKey;
 
+            foreach (var item in NavLinkItems)
+            {
+                if (item.IsGroup && item.IsCollapseByDefault is not null)
+                    item.IsExpanded = !item.IsCollapseByDefault.Value;
+            }
+
             await base.OnInitializedAsync();
         }
 
@@ -164,6 +170,16 @@ namespace Bit.Client.Web.BlazorUI
             if (navLinkItem.IsEnabled is false) return;
 
             navLinkItem.OnClick?.Invoke(navLinkItem);
+        }
+
+        private async Task HandleGroupHeaderClick(BitNavLinkItem navLinkItem)
+        {
+            navLinkItem.OnHeaderClick?.Invoke(navLinkItem.IsExpanded);
+
+            if (navLinkItem.Links.Any())
+            {
+                await HandleLinkExpand(navLinkItem);
+            }
         }
 
         private string GetLinkClass(BitNavLinkItem navLinkItem)

@@ -13,7 +13,7 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// If true, the group should render collapsed by default
         /// </summary>
-        public bool IsCollapseByDefault { get; set; }
+        public bool? IsCollapseByDefault { get; set; }
 
         /// <summary>
         /// (Optional) By default, any link with onClick defined will render as a button. Set this property to true to override that behavior. (Links without onClick defined will render as anchors by default.)
@@ -93,6 +93,11 @@ namespace Bit.Client.Web.BlazorUI
         /// Callback invoked when a link in the navigation is clicked
         /// </summary>
         public Action<BitNavLinkItem>? OnClick { get; set; }
+
+        /// <summary>
+        /// Callback invoked when a group header is clicked
+        /// </summary>
+        public Action<bool>? OnHeaderClick { get; set; }
 
         internal int Depth { get; set; }
     }

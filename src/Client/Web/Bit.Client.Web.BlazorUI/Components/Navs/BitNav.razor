@@ -20,9 +20,9 @@
                 {
                     <button class="bit-nav-chevron-btn bit-nav-grp-chevron-btn"
                             tabindex="0"
-                            aria-label="@GetExpandButtonAriaLabel(navLink)"
+                            aria-label="@(navLink.IsExpanded ? navLink.CollapseAriaLabel : navLink.ExpandAriaLabel)"
                             aria-expanded="@(navLink.IsExpanded ? "true" : "false")"
-                            @onclick="(() => HandleLinkExpand(navLink))">
+                            @onclick="(() => HandleGroupHeaderClick(navLink))">
                         <i class="bit-icon bit-icon--ChevronDown @(navLink.IsExpanded ? "bit-nav-expand-fluent" : "")"
                            aria-hidden="true"></i>
                         @navLink.Name
