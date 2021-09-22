@@ -220,8 +220,30 @@ namespace Bit.Client.Web.BlazorUI.Tests.Rating
             var unselectedBitRatingIconCount = buttons.Where(s => s.ClassList.Contains($"bit-icon--{unselectedIcon}")).Count();
 
             Assert.AreEqual(filledBitRatingIconCount, rating);
-            Assert.AreEqual(unselectedBitRatingIconCount, max-rating);
+            Assert.AreEqual(unselectedBitRatingIconCount, max - rating);
         }
 
+        [DataTestMethod,
+             DataRow(5, 2, "HeartFill", "Heart"),
+             DataRow(5, 3, "HeartFill", "Heart"),
+             DataRow(5, 1.25, "HeartFill", "Heart"),
+             DataRow(5, 2.5, "HeartFill", "Heart")
+       ]
+        public void BitRatingShouldRespectDefaultRatingValue(int max, double defaultRating, string icon, string unselectedIcon)
+        {
+            var component = RenderComponent<BitRatingTest>(parameters =>
+            {
+                parameters.Add(p => p.DefaultRating, defaultRating);
+                parameters.Add(p => p.Max, max);
+            });
+
+            var buttons = component.FindAll(".bit-rating button i:nth-child(2)");
+
+            var filledBitRatingIconCount = buttons.Where(s => s.ClassList.Contains($"bit-icon--{icon}")).Count();
+            var unselectedBitRatingIconCount = buttons.Where(s => s.ClassList.Contains($"bit-icon--{unselectedIcon}")).Count();
+
+            Assert.AreEqual(filledBitRatingIconCount, defaultRating);
+            Assert.AreEqual(unselectedBitRatingIconCount, max - defaultRating);
+        }
     }
 }
