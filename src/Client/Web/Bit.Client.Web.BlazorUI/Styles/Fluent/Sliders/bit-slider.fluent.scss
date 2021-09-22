@@ -5,6 +5,115 @@ $BgTrack: $Grey130;
 $BgHover: $BlizzardBlue;
 $BgTrackHover: $DarkAlt;
 
+.bit-slider-fluent {
+    font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+
+    input {
+        --range: calc(var(--max) - var(--min));
+        --ratio: calc((var(--value) - var(--min))/var(--range));
+        --sx: calc(.5*2rem + var(--ratio)*(100% - 2rem));
+
+        &:focus {
+            outline: none;
+        }
+    }
+    /*webkit*/
+    input::-webkit-slider-thumb {
+        width: rem(16px);
+        height: rem(16px);
+        margin-top: rem(-6px);
+        border: rem(2px) solid $BgTrack;
+        border-radius: rem(10px);
+        box-sizing: border-box;
+        background: $White;
+        -webkit-appearance: none;
+    }
+
+    input::-webkit-slider-runnable-track {
+        height: rem(4px);
+        border-radius: rem(4px);
+        background: $BgDefult;
+        box-shadow: none;
+    }
+
+    input::-webkit-slider-runnable-track {
+        background: linear-gradient($BgTrack, $BgTrack) 0/var(--sx) 100% no-repeat, $BgDefult;
+    }
+    /*mozilla*/
+    input::-moz-range-thumb {
+        width: rem(16px);
+        height: rem(16px);
+        margin-top: calc(max((1rem - 1px - 0px)*.5,0px) - 2rem*.5);
+        border: rem(2px) solid $BgTrack;
+        border-radius: rem(10px);
+        box-sizing: border-box;
+        background: $White;
+    }
+
+    input::-moz-range-track {
+        height: rem(4px);
+        border-radius: rem(4px);
+        background: $BgDefult;
+        box-shadow: none;
+    }
+
+    input::-moz-range-track {
+        background: linear-gradient($BgTrack, $BgTrack) 0/var(--sx) 100% no-repeat, $BgDefult;
+    }
+    /*ms*/
+    input::-ms-fill-upper {
+        background: transparent;
+        border-color: transparent;
+    }
+
+    input::-ms-fill-lower {
+        background: transparent;
+        border-color: transparent;
+    }
+
+    input::-ms-thumb {
+        width: rem(16px);
+        height: rem(16px);
+        margin-top: calc(max((1rem - 1px - 0px)*.5,0px) - 2rem*.5);
+        border: rem(2px) solid $BgTrack;
+        border-radius: rem(10px);
+        box-sizing: border-box;
+        background: $White;
+    }
+
+    input::-ms-track {
+        height: rem(4px);
+        border-radius: rem(4px);
+        background: $BgDefult;
+        box-shadow: none;
+    }
+
+    input::-ms-fill-lower {
+        height: rem(4px);
+        border-radius: rem(4px);
+        background: $BgDefult;
+        box-shadow: none;
+    }
+
+    input::-webkit-slider-runnable-track,
+    input::-webkit-slider-thumb,
+    input {
+        -webkit-appearance: none;
+    }
+}
+
+.bit-slider-title {
+    display: block;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    box-shadow: none;
+    overflow-wrap: break-word;
+    -webkit-font-smoothing: antialiased;
+    font-size: rem(14px);
+    font-weight: 600;
+    color: $Grey90;
+}
 
 .bit-slider-disabled-fluent {
     pointer-events: none;
@@ -12,376 +121,314 @@ $BgTrackHover: $DarkAlt;
     opacity: 0.65;
 }
 
-.bit-slider .bit-slider-container {
+.bit-slider-container {
     display: flex;
     align-items: center;
     padding: 0;
+    position: relative;
 }
 
-.bit-slider .zeroTick {
-    position: absolute;
-    background: $BgTrack;
-}
-
-.bit-slider-enabled-fluent input[type=range]:hover .zeroTick {
-    background: $BgTrackHover;
-}
-
-/*Horizontal*/
-.bit-slider.bit-slider-horizontal .zeroTick,
-.bit-slider.bit-slider-ranged-horizontal .zeroTick {
-    width: 1px;
-    height: 14px;
-}
-
-
-/*Vertical*/
-.bit-slider.bit-slider-vertical .zeroTick,
-.bit-slider.bit-slider-ranged-vertical .zeroTick {
-    width: 14px;
-    height: 1px;
-    margin-left: 18px;
-    z-index: 9999;
-}
-
-.bit-slider.bit-slider-ranged-vertical .zeroTick {
-    transform: rotate(270deg);
-    margin-top: 1px;
-}
-
-.bit-slider input[type=range] {
-    -webkit-appearance: none;
-}
-
-/*Horizontal*/
-.bit-slider.bit-slider-horizontal input[type=range] {
-    flex-grow: 1;
-}
-
-/*progress support*/
-.bit-slider input[type=range] {
-    --range: calc(var(--max) - var(--min));
-    --ratio: calc((var(--value) - var(--min))/var(--range));
-    --sx: calc(.5*2em + var(--ratio)*(100% - 2em));
-}
-
-.bit-slider input[type=range]:focus {
-    outline: none;
-}
-
-/*webkit*/
-.bit-slider input[type=range]::-webkit-slider-thumb {
-    border-width: 2px;
-    border-style: solid;
-    border-color: $BgTrack;
-    border-radius: 10px;
-    box-sizing: border-box;
-    background: #fff;
-    width: 16px;
-    height: 16px;
-    margin-top: -6px;
-    -webkit-appearance: none;
-}
-
-.bit-slider input[type=range]::-webkit-slider-runnable-track {
-    height: 4px;
-    border-radius: 4px;
-    background: $BgDefult;
-    box-shadow: none;
-}
-
-.bit-slider-enabled-fluent input[type=range]::-webkit-slider-thumb:hover,
-.bit-slider-enabled-fluent input[type=range]::-webkit-slider-thumb:active,
-.bit-slider-enabled-fluent input[type=range]:hover::-webkit-slider-thumb,
-.bit-slider-enabled-fluent input[type=range]:active::-webkit-slider-thumb {
-    border-color: $BgTrackHover;
-}
-
-.bit-slider-enabled-fluent input[type=range]:hover::-webkit-slider-runnable-track {
-    background: $BgTrackHover;
-}
-
-.bit-slider-enabled-fluent input[type=range]:active::-webkit-slider-runnable-track {
-    background: $BgTrackHover;
-}
-
-.bit-slider input[type=range]::-webkit-slider-runnable-track {
-    background: linear-gradient($BgTrack,$BgTrack) 0/var(--sx) 100% no-repeat,$BgDefult;
-}
-
-.bit-slider-enabled-fluent input[type=range]:hover::-webkit-slider-runnable-track,
-.bit-slider-enabled-fluent input[type=range]:active::-webkit-slider-runnable-track {
-    background: linear-gradient($BgTrackHover,$BgTrackHover) 0/var(--sx) 100% no-repeat,$BgHover;
-}
-
-/*mozilla*/
-.bit-slider input[type=range]::-moz-range-thumb {
-    border-width: 2px;
-    border-style: solid;
-    border-color: $BgTrack;
-    border-radius: 10px;
-    box-sizing: border-box;
-    background: #fff;
-    width: 16px;
-    height: 16px;
-    margin-top: calc(max((1em - 1px - 0px)*.5,0px) - 2em*.5);
-}
-
-.bit-slider input[type=range]::-moz-range-track {
-    height: 4px;
-    border-radius: 4px;
-    background: $BgDefult;
-    box-shadow: none;
-}
-
-.bit-slider-enabled-fluent input[type=range]::-moz-range-thumb:hover,
-.bit-slider-enabled-fluent input[type=range]:hover::-moz-range-track,
-.bit-slider-enabled-fluent input[type=range]::-moz-range-thumb:active,
-.bit-slider-enabled-fluent input[type=range]:active::-moz-range-track {
-    border-color: $BgTrackHover;
-}
-
-.bit-slider input[type=range]::-moz-range-track {
-    background: linear-gradient($BgTrack,$BgTrack) 0/var(--sx) 100% no-repeat,$BgDefult;
-}
-
-.bit-slider-enabled-fluent input[type=range]:hover::-moz-range-track,
-.bit-slider-enabled-fluent input[type=range]:active::-moz-range-track {
-    background: linear-gradient($BgTrackHover,$BgTrackHover) 0/var(--sx) 100% no-repeat,$BgHover;
-}
-
-/*ms*/
-.bit-slider input[type=range]::-ms-fill-upper {
-    background: transparent;
-    border-color: transparent;
-}
-
-.bit-slider input[type=range]::-ms-fill-lower {
-    background: transparent;
-    border-color: transparent;
-}
-
-.bit-slider input[type=range]::-ms-thumb {
-    border-width: 2px;
-    border-style: solid;
-    border-color: $BgTrack;
-    border-radius: 10px;
-    box-sizing: border-box;
-    background: #fff;
-    width: 16px;
-    height: 16px;
-    margin-top: calc(max((1em - 1px - 0px)*.5,0px) - 2em*.5);
-}
-
-.bit-slider input[type=range]::-ms-track {
-    height: 4px;
-    border-radius: 4px;
-    background: $BgDefult;
-    box-shadow: none;
-}
-
-.bit-slider-enabled-fluent input[type=range]::-ms-thumb:hover,
-.bit-slider-enabled-fluent input[type=range]:hover::-ms-thumb,
-.bit-slider-enabled-fluent input[type=range]::-ms-thumb:active,
-.bit-slider-enabled-fluent input[type=range]:active::-ms-thumb {
-    border-color: $BgTrackHover;
-}
-
-.bit-slider input[type=range]::-ms-fill-lower {
-    height: 4px;
-    border-radius: 4px;
-    background: $BgDefult;
-    box-shadow: none;
-}
-
-.bit-slider-enabled-fluent input[type=range]:hover::-ms-fill-lower,
-.bit-slider-enabled-fluent input[type=range]:active::-ms-fill-lower {
-    background: $BgTrackHover;
-}
-
-.bit-slider label.title {
-    box-sizing: border-box;
-    box-shadow: none;
-    margin: 0;
+.bit-slider-value {
     display: block;
-    padding: 0;
-    overflow-wrap: break-word;
-}
-
-.bit-slider label.valueLabel {
+    width: rem(40px);
+    margin: 0 rem(8px);
+    padding: rem(5px) 0;
     box-sizing: border-box;
     box-shadow: none;
-    margin: 0 8px;
-    padding: 5px 0;
+    font-size: rem(14px);
+    font-weight: 600;
+    color: $Grey90;
     overflow-wrap: break-word;
-    flex-shrink: 1;
-    width: 40px;
     white-space: nowrap;
-}
-
-.bit-slider.bit-slider-vertical label.valueLabel,
-.bit-slider.bit-slider-ranged-vertical label.valueLabel {
-    text-align: center;
-}
-
-/*Horizontal*/
-.bit-slider-horizontal input[type=range] {
-    width: 100%;
-}
-
-/*Vertical*/
-.bit-slider-vertical .bit-slider-container {
-    height: 100%;
-    width: 50px;
-    padding: 0;
-    margin-left: 0;
-    display: block;
-    position: relative;
-}
-
-.bit-slider-vertical {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.bit-slider-vertical input[type=range] {
-    transform-origin: left;
-    margin: 0 25px;
-}
-
-/*Ranged*/
-.bit-slider.bit-slider-ranged-horizontal .bit-slider-container {
-    display: flex;
-}
-
-.bit-slider.bit-slider-ranged-vertical {
-    width: 100%;
-}
-
-.bit-slider-ranged-horizontal .bit-slider-box,
-.bit-slider-ranged-vertical .bit-slider-box {
-    --dif: calc(var(--max) - var(--min));
-    display: grid;
-    grid-template: repeat(2, -webkit-max-content) 4px/1fr 1fr;
-    grid-template: repeat(2, max-content) 4px/1fr 1fr;
-    position: relative;
-    margin: 1em auto;
-    width: 100%;
-    background: linear-gradient(0deg, $BgDefult 4px, transparent 0);
-}
-
-.bit-slider-enabled-fluent.bit-slider-ranged-horizontal .bit-slider-box:hover,
-.bit-slider-enabled-fluent.bit-slider-ranged-vertical .bit-slider-box:hover {
-    background: linear-gradient(0deg, $BgHover 4px, transparent 0);
-}
-
-.bit-slider-ranged-vertical {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.bit-slider-ranged-vertical .bit-slider-container {
-    transform: rotate(270deg);
-}
-
-.bit-slider-ranged-horizontal .bit-slider-box::before, .bit-slider-ranged-horizontal .bit-slider-box::after,
-.bit-slider-ranged-vertical .bit-slider-box::before, .bit-slider-ranged-vertical .bit-slider-box::after {
-    grid-column: 1/span 2;
-    grid-row: 3;
-    height: 4px;
-    background: $BgTrack;
-    content: "";
-}
-
-.bit-slider-enabled-fluent.bit-slider-ranged-horizontal .bit-slider-box:hover::before, .bit-slider-enabled-fluent.bit-slider-ranged-horizontal .bit-slider-box:hover::after,
-.bit-slider-enabled-fluent.bit-slider-ranged-vertical .bit-slider-box:hover::before, .bit-slider-enabled-fluent.bit-slider-ranged-vertical .bit-slider-box:hover::after {
-    background: $BgTrackHover;
-}
-
-.bit-slider-ranged-horizontal .bit-slider-box::before,
-.bit-slider-ranged-vertical .bit-slider-box::before {
-    margin-left: calc((var(--l) - var(--min))/var(--dif)*100%);
-    width: calc((var(--h) - var(--l))/var(--dif)*100%);
-}
-
-.bit-slider-ranged-horizontal .bit-slider-box::after,
-.bit-slider-ranged-vertical .bit-slider-box::after {
-    margin-left: calc((var(--h) - var(--min))/var(--dif)*100%);
-    width: calc((var(--l) - var(--h))/var(--dif)*100%);
-}
-
-.bit-slider.bit-slider-ranged-horizontal .zeroTick {
-    z-index: 2;
-    margin-top: -5px;
-}
-
-.bit-slider.bit-slider-ranged-vertical .zeroTick {
-    z-index: 2;
-    margin-left: -5px;
+    -webkit-font-smoothing: antialiased;
 }
 
 .bit-slider [id=multi-lbl] {
     grid-column: 1/span 2;
 }
 
-.bit-slider.bit-slider-ranged-horizontal input[type=range],
-.bit-slider.bit-slider-ranged-vertical input[type=range] {
-    grid-column: 1/span 2;
-    grid-row: 3;
-    z-index: 1;
-    top: 0;
-    left: 0;
-    margin: 0;
-    background: none;
-    /* get rid of white Chrome background */
-    --col: #000;
-    pointer-events: none;
-}
-
-.bit-slider input[type=range]::-webkit-slider-runnable-track, .bit-slider input[type=range]::-webkit-slider-thumb, .bit-slider input[type=range] {
-    -webkit-appearance: none;
-}
-
-.bit-slider.bit-slider-ranged-horizontal input[type=range]::-webkit-slider-runnable-track,
-.bit-slider.bit-slider-ranged-vertical input[type=range]::-webkit-slider-runnable-track {
-    width: 100%;
-    height: 100%;
-    background: none;
-}
-
-.bit-slider.bit-slider-ranged-horizontal input[type=range]::-moz-range-track,
-.bit-slider.bit-slider-ranged-vertical input[type=range]::-moz-range-track {
-    width: 100%;
-    height: 100%;
-    background: none;
-}
-
-input[type=range]::-webkit-slider-thumb {
+input::-webkit-slider-thumb {
+    width: 2rem;
+    height: 4rem;
     border: none;
     /* get rid of Firefox thumb border */
-    width: 2em;
-    height: 4em;
     border-radius: 0;
     /* get rid of Firefox corner rounding */
-    background: linear-gradient(90deg, #fff 2px, transparent 0) calc(1em - 1px), radial-gradient(circle, var(--col) calc(1em - 1px), transparent 1em);
+    background: linear-gradient(90deg, $White rem(2px), transparent 0) calc(1rem - 1px), radial-gradient(circle, var(--col) calc(1rem - 1px), transparent 1rem);
     pointer-events: auto;
 }
 
-input[type=range]::-moz-range-thumb {
+input::-moz-range-thumb {
+    width: 2rem;
+    height: 4rem;
     border: none;
     /* get rid of Firefox thumb border */
-    width: 2em;
-    height: 4em;
     border-radius: 0;
     /* get rid of Firefox corner rounding */
-    background: linear-gradient(90deg, #fff 2px, transparent 0) calc(1em - 1px), radial-gradient(circle, var(--col) calc(1em - 1px), transparent 1em);
+    background: linear-gradient(90deg, $White rem(2px), transparent 0) calc(1rem - 1px), radial-gradient(circle, var(--col) calc(1rem - 1px), transparent 1rem);
     pointer-events: auto;
 }
 
-.bit-slider.bit-slider-ranged-horizontal input[type=range]:focus
-.bit-slider.bit-slider-ranged-vertical input[type=range]:focus {
-    z-index: 2;
-    outline: dotted 1px currentcolor;
+//ZeroTick
+.zero-tick {
+    position: absolute;
+    background-color: $Grey20;
+    z-index: 9999;
+}
+
+.bit-slider-vertical {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    .bit-slider-value {
+        text-align: center;
+    }
+
+    .bit-slider-container {
+        width: rem(50px);
+        height: 100%;
+        padding: 0;
+        margin-left: 0;
+        display: block;
+    }
+
+    input {
+        transform-origin: left;
+        margin: 0 rem(25px);
+    }
+
+    .zero-tick {
+        width: rem(14px);
+        height: rem(1px);
+        margin-left: rem(18px);
+    }
+}
+
+.bit-slider-horizontal {
+    input {
+        width: 100%;
+        flex-grow: 1;
+    }
+
+    .zero-tick {
+        width: rem(1px);
+        height: rem(16px);
+    }
+}
+
+.bit-slider-ranged-vertical {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    .bit-slider-value {
+        text-align: center;
+    }
+
+    .bit-slider-box {
+        --dif: calc(var(--max) - var(--min));
+        display: grid;
+        grid-template: repeat(2, -webkit-max-content) 4px/1fr 1fr;
+        grid-template: repeat(2, max-content) 4px/1fr 1fr;
+        position: relative;
+        margin: 1em auto;
+        width: 100%;
+        background: linear-gradient(0deg, $BgDefult rem(4px), transparent 0);
+    }
+
+    .bit-slider-box::before,
+    .bit-slider-box::after {
+        height: rem(4px);
+        grid-column: 1/span 2;
+        grid-row: 3;
+        background: $BgTrack;
+        content: "";
+    }
+
+    .bit-slider-box::before {
+        width: calc((var(--h) - var(--l))/var(--dif)*100%);
+        margin-left: calc((var(--l) - var(--min))/var(--dif)*100%);
+    }
+
+    .bit-slider-box::after {
+        width: calc((var(--l) - var(--h))/var(--dif)*100%);
+        margin-left: calc((var(--h) - var(--min))/var(--dif)*100%);
+    }
+
+    .bit-slider-container {
+        transform: rotate(270deg);
+    }
+
+    input {
+        grid-column: 1/span 2;
+        grid-row: 3;
+        z-index: 1;
+        top: 0;
+        left: 0;
+        margin: 0;
+        background: none;
+        /* get rid of white Chrome background */
+        --col: #000;
+        pointer-events: none;
+    }
+
+    input::-webkit-slider-runnable-track {
+        width: 100%;
+        height: 100%;
+        background: none;
+    }
+
+    input::-moz-range-track {
+        width: 100%;
+        height: 100%;
+        background: none;
+    }
+
+    .zero-tick {
+        width: rem(16px);
+        height: rem(1px);
+        margin-top: rem(1px);
+        margin-left: rem(18px);
+        transform: rotate(270deg);
+    }
+}
+
+.bit-slider-ranged-horizontal {
+    .bit-slider-container {
+        display: flex;
+    }
+
+    .bit-slider-box {
+        --dif: calc(var(--max) - var(--min));
+        display: grid;
+        grid-template: repeat(2, -webkit-max-content) 4px/1fr 1fr;
+        grid-template: repeat(2, max-content) 4px/1fr 1fr;
+        position: relative;
+        margin: 1em auto;
+        width: 100%;
+        background: linear-gradient(0deg, $BgDefult rem(4px), transparent 0);
+    }
+
+    .bit-slider-box::before,
+    .bit-slider-box::after {
+        height: rem(4px);
+        grid-column: 1/span 2;
+        grid-row: 3;
+        background: $BgTrack;
+        content: "";
+    }
+
+    .bit-slider-box::before {
+        width: calc((var(--h) - var(--l))/var(--dif)*100%);
+        margin-left: calc((var(--l) - var(--min))/var(--dif)*100%);
+    }
+
+    .bit-slider-box::after {
+        width: calc((var(--l) - var(--h))/var(--dif)*100%);
+        margin-left: calc((var(--h) - var(--min))/var(--dif)*100%);
+    }
+
+    input {
+        grid-column: 1/span 2;
+        grid-row: 3;
+        z-index: 1;
+        top: 0;
+        left: 0;
+        margin: 0;
+        background: none;
+        /* get rid of white Chrome background */
+        --col: #000;
+        pointer-events: none;
+    }
+
+    input::-webkit-slider-runnable-track {
+        width: 100%;
+        height: 100%;
+        background: none;
+    }
+
+    input::-moz-range-track {
+        width: 100%;
+        height: 100%;
+        background: none;
+    }
+
+    .zero-tick {
+        width: rem(1px);
+        height: rem(16px);
+        margin-top: rem(-5px);
+    }
+}
+
+.bit-slider-enabled-fluent {
+    .bit-slider-title,
+    .bit-slider-value {
+        color: $Grey160;
+    }
+
+    .zero-tick {
+        background-color: $Grey60;
+    }
+
+    input:hover .zero-tick {
+        background-color: $ThemeLighter;
+    }
+
+    input::-webkit-slider-thumb:hover,
+    input::-webkit-slider-thumb:active,
+    input:hover::-webkit-slider-thumb,
+    input:active::-webkit-slider-thumb {
+        border-color: $BgTrackHover;
+    }
+
+    input:hover::-webkit-slider-runnable-track {
+        background: $BgTrackHover;
+    }
+
+    input:active::-webkit-slider-runnable-track {
+        background: $BgTrackHover;
+    }
+
+    input:hover::-webkit-slider-runnable-track,
+    input:active::-webkit-slider-runnable-track {
+        background: linear-gradient($BgTrackHover, $BgTrackHover) 0/var(--sx) 100% no-repeat, $BgHover;
+    }
+
+    input::-moz-range-thumb:hover,
+    input:hover::-moz-range-track,
+    input::-moz-range-thumb:active,
+    input:active::-moz-range-track {
+        border-color: $BgTrackHover;
+    }
+
+    input:hover::-moz-range-track,
+    input:active::-moz-range-track {
+        background: linear-gradient($BgTrackHover, $BgTrackHover) 0/var(--sx) 100% no-repeat, $BgHover;
+    }
+
+    input::-ms-thumb:hover,
+    input:hover::-ms-thumb,
+    input::-ms-thumb:active,
+    input:active::-ms-thumb {
+        border-color: $BgTrackHover;
+    }
+
+    input:hover::-ms-fill-lower,
+    input:active::-ms-fill-lower {
+        background: $BgTrackHover;
+    }
+}
+
+.bit-slider-enabled-fluent.bit-slider-ranged-horizontal,
+.bit-slider-enabled-fluent.bit-slider-ranged-vertical {
+    .bit-slider-box:hover {
+        background: linear-gradient(0deg, $BgHover rem(4px), transparent 0);
+    }
+
+    .bit-slider-box:hover::before,
+    .bit-slider-box:hover::after {
+        background: $BgTrackHover;
+    }
 }
