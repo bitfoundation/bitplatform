@@ -7,26 +7,30 @@
      class="@ClassBuilder.Value"
      role="navigation"
      aria-label="@AriaLabel">
-    @if (NavLinkItems.Any(i => i.IsGroup))
+    @if (RenderType == BitNavRenderType.Grouped)
     {
         @foreach (var navLink in NavLinkItems)
         {
             <div class="bit-nav-grp">
-                @if (HeaderTemplate is not null)
+                @*GroupHeader*@
+                @if (navLink.Name.HasValue())
                 {
-                    @HeaderTemplate(navLink)
-                }
-                else
-                {
-                    <button class="bit-nav-chevron-btn bit-nav-grp-chevron-btn"
-                            tabindex="0"
-                            aria-label="@(navLink.IsExpanded ? navLink.CollapseAriaLabel : navLink.ExpandAriaLabel)"
-                            aria-expanded="@(navLink.IsExpanded ? "true" : "false")"
-                            @onclick="(() => HandleGroupHeaderClick(navLink))">
-                        <i class="bit-icon bit-icon--ChevronDown @(navLink.IsExpanded ? "bit-nav-expand-fluent" : "")"
-                           aria-hidden="true"></i>
-                        @navLink.Name
-                    </button>
+                    @if (HeaderTemplate is not null)
+                    {
+                        @HeaderTemplate(navLink)
+                    }
+                    else
+                    {
+                        <button class="bit-nav-chevron-btn bit-nav-grp-chevron-btn"
+                                tabindex="0"
+                                aria-label="@(navLink.IsExpanded ? navLink.CollapseAriaLabel : navLink.ExpandAriaLabel)"
+                                aria-expanded="@(navLink.IsExpanded ? "true" : "false")"
+                                @onclick="(() => HandleGroupHeaderClick(navLink))">
+                            <i class="bit-icon bit-icon--ChevronDown @(navLink.IsExpanded ? "bit-nav-expand-fluent" : "")"
+                               aria-hidden="true"></i>
+                            @navLink.Name
+                        </button>
+                    }
                 }
 
                 @if (navLink.Links.Any() && navLink.IsExpanded)

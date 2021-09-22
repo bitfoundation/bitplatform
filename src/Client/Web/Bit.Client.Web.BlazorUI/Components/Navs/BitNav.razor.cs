@@ -22,6 +22,11 @@ namespace Bit.Client.Web.BlazorUI
         private string? selectedKey;
 
         /// <summary>
+        /// The way to render nav links 
+        /// </summary>
+        [Parameter] public BitNavRenderType RenderType { get; set; } = BitNavRenderType.Normal;
+
+        /// <summary>
         /// (Optional) The key of the nav item initially selected.
         /// </summary>
         [Parameter] public string? InitialSelectedKey { get; set; }
