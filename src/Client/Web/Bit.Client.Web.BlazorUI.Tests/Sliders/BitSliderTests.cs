@@ -129,7 +129,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Sliders
             });
 
             // Find fisrt label with valueLabel css class
-            var label = com.Find(".bit-slider label.valueLabel");
+            var label = com.Find(".bit-slider-value");
 
             Assert.AreEqual(label.TextContent, defaultLowerValue.GetValueOrDefault().ToString());
         }
@@ -155,7 +155,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Sliders
             });
 
             // Find labels with valueLabel css class
-            var labels = com.FindAll(".bit-slider label.valueLabel");
+            var labels = com.FindAll(".bit-slider-value");
 
             Assert.AreEqual(labels.Count, 2);
             Assert.AreEqual(labels.Last().TextContent, defaultUpperValue.GetValueOrDefault().ToString());
@@ -182,7 +182,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Sliders
                 parameters.Add(p => p.Ranged, true);
             });
 
-            var label = com.Find(".bit-slider label.valueLabel");
+            var label = com.Find(".bit-slider-value");
 
             Assert.AreEqual(label.TextContent, lowerValue.GetValueOrDefault().ToString());
         }
@@ -208,7 +208,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Sliders
             });
 
             // Find labels with valueLabel css class
-            var labels = com.FindAll(".bit-slider label.valueLabel");
+            var labels = com.FindAll(".bit-slider-value");
 
             Assert.AreEqual(labels.Count, 2);
             Assert.AreEqual(labels.Last().TextContent, defaultUpperValue.GetValueOrDefault().ToString());
@@ -241,7 +241,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Sliders
             });
 
             // Find labels with valueLabel css class
-            var labels = com.FindAll(".bit-slider label.valueLabel");
+            var labels = com.FindAll(".bit-slider-value");
 
             Assert.AreEqual(labels.Count, 2);
             Assert.AreEqual(labels.First().TextContent, lowerValue.GetValueOrDefault().ToString());
@@ -268,7 +268,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Sliders
             });
 
             // Find fisrt label with valueLabel css class
-            var label = com.Find(".bit-slider label.valueLabel");
+            var label = com.Find(".bit-slider-value");
 
             Assert.AreEqual(label.TextContent, defaultValue.GetValueOrDefault().ToString());
         }
@@ -294,7 +294,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Sliders
             });
 
             // Find fisrt label with valueLabel css class
-            var label = com.Find(".bit-slider label.valueLabel");
+            var label = com.Find(".bit-slider-value");
 
             Assert.AreEqual(label.TextContent, defaultValue.GetValueOrDefault().ToString());
         }
@@ -319,7 +319,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Sliders
             });
 
             // Find fisrt label with valueLabel css class
-            var label = com.Find(".bit-slider label.valueLabel");
+            var label = com.Find(".bit-slider-value");
 
             Assert.AreEqual(label.TextContent, value.GetValueOrDefault().ToString());
         }
@@ -345,7 +345,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Sliders
             });
 
             // Find fisrt label with valueLabel css class
-            var label = com.Find(".bit-slider label.valueLabel");
+            var label = com.Find(".bit-slider-value");
 
             Assert.AreEqual(label.TextContent, value.GetValueOrDefault().ToString());
         }
@@ -437,7 +437,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Sliders
 
             // Find all labels with title css class
             // Method 'FindAll' is used because if the component does not have a label, the element will not be rendered. 
-            var labelElements = com.FindAll(".bit-slider label.title");
+            var labelElements = com.FindAll(".bit-slider-title");
             var labelElement = labelElements.SingleOrDefault();
 
             if (label.HasValue())
@@ -476,7 +476,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Sliders
                 parameters.Add(p => p.ShowValue, showValue);
             });
 
-            var labels = com.FindAll(".bit-slider label.valueLabel");
+            var labels = com.FindAll(".bit-slider-value");
 
             if (showValue)
             {
@@ -514,7 +514,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Sliders
                 parameters.Add(p => p.OriginFromZero, originFromZero);
             });
 
-            var spans = com.FindAll(".bit-slider span.zeroTick");
+            var spans = com.FindAll(".zero-tick");
 
             Assert.AreEqual(spans.Count, originFromZero ? 1 : 0);
         }
@@ -545,7 +545,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Sliders
                 parameters.Add(p => p.ValueFormat, valueFormat);
             });
 
-            var labels = com.FindAll(".bit-slider label.valueLabel");
+            var labels = com.FindAll(".bit-slider-value");
 
             if (string.IsNullOrEmpty(valueFormat))
             {
