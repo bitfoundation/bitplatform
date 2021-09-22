@@ -225,6 +225,13 @@ p {
     }
 }
 
+.bit-nav-wrapped-link {
+    a {
+        white-space: normal;
+        line-height: inherit
+    }
+}
+
 .spinner-container, spinner-positioning {
     & > div {
         & label {

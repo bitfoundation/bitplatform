@@ -1,16 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Components;
 
 namespace Bit.Client.Web.BlazorUI
 {
     public class BitNavLinkItem
     {
-        /// <summary>
-        /// determin if the item is group or not to seperate it by showing the underline 
-        /// </summary>
-        public bool IsGroup { get; set; }
-
         /// <summary>
         /// (Optional) By default, any link with onClick defined will render as a button. Set this property to true to override that behavior. (Links without onClick defined will render as anchors by default.)
         /// </summary>
@@ -67,7 +61,6 @@ namespace Bit.Client.Web.BlazorUI
         /// Link target, specifies how to open the link
         /// </summary>
         public string? Target { get; set; }
-
 
         /// <summary>
         /// A list of items to render as children of the current item

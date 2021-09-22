@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
@@ -19,6 +20,11 @@ namespace Bit.Client.Web.BlazorUI
 #pragma warning restore CA1823 // Avoid unused private fields
 
         private string? selectedKey;
+
+        /// <summary>
+        /// The way to render nav links 
+        /// </summary>
+        [Parameter] public BitNavRenderType RenderType { get; set; } = BitNavRenderType.Normal;
 
         /// <summary>
         /// (Optional) The key of the nav item initially selected.
@@ -77,10 +83,20 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public EventCallback<BitNavLinkItem> OnLinkClick { get; set; }
 
         /// <summary>
-        /// The template of the header for each nav item, which is a generic RenderFramgment that accepts a BitNavLinItem as input
+        /// Used to customize how content inside the group header is rendered
         /// </summary>
         [Parameter] public RenderFragment<BitNavLinkItem>? HeaderTemplate { get; set; }
 
+        /// <summary>
+        /// Used to customize how content inside the link tag is rendered
+        /// </summary>
+        [Parameter] public RenderFragment<BitNavLinkItem>? LinkTemplate { get; set; }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
 
         protected override string RootElementClass => "bit-nav";
 
@@ -97,6 +113,14 @@ namespace Bit.Client.Web.BlazorUI
             selectedKey ??= InitialSelectedKey;
 
             await base.OnInitializedAsync();
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                NavigationManager.LocationChanged -= OnLocationChanged;
+            }
         }
 
         private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
@@ -119,9 +143,9 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
-        private async Task OnLinkExpand(BitNavLinkItem navLinkItem)
+        private async Task HandleLinkExpand(BitNavLinkItem navLinkItem)
         {
-            if (IsEnabled is false || navLinkItem.IsEnabled is false || navLinkItem.Links.Any() is false) return;
+            if (navLinkItem.IsEnabled is false || navLinkItem.Links.Any() is false) return;
 
             navLinkItem.IsExpanded = !navLinkItem.IsExpanded;
 
@@ -130,23 +154,30 @@ namespace Bit.Client.Web.BlazorUI
 
         private async Task HandleLinkClick(BitNavLinkItem navLinkItem)
         {
-            if (IsEnabled is false || navLinkItem.IsEnabled is false) return;
+            if (navLinkItem.IsEnabled is false) return;
 
             await OnLinkClick.InvokeAsync(navLinkItem);
 
             if (navLinkItem.Url.HasNoValue() && navLinkItem.Links.Any())
             {
-                await OnLinkExpand(navLinkItem);
+                await HandleLinkExpand(navLinkItem);
             }
         }
 
         private void HandleClick(BitNavLinkItem navLinkItem)
         {
-            if (IsEnabled is false || navLinkItem.IsEnabled is false) return;
+            if (navLinkItem.IsEnabled is false) return;
 
             navLinkItem.OnClick?.Invoke(navLinkItem);
         }
 
+        private async Task HandleGroupHeaderClick(BitNavLinkItem navLinkItem)
+        {
+            if (navLinkItem.Links.Any())
+            {
+                await HandleLinkExpand(navLinkItem);
+            }
+        }
 
         private string GetLinkClass(BitNavLinkItem navLinkItem)
         {
@@ -155,33 +186,33 @@ namespace Bit.Client.Web.BlazorUI
 
             var mainStyle = $"bit-nav-link-{enabledClass}-{hasUrlClass}-{VisualClassRegistrar()}";
 
-            var selectedClass = navLinkItem.Key == SelectedKey 
-                                    ? $"bit-nav-selected-{VisualClassRegistrar()}" 
+            var selectedClass = navLinkItem.Key == SelectedKey
+                                    ? $"bit-nav-selected-{VisualClassRegistrar()}"
                                     : string.Empty;
 
-            var hasIcon = navLinkItem.Icon.HasNoValue()
-                            ? $"bit-nav-has-not-icon-{VisualClassRegistrar()}"
-                            : $"bit-nav-has-icon-{VisualClassRegistrar()}";
-
-            var isGroup = navLinkItem.IsGroup 
-                            ? $"bit-nav-isgroup-{VisualClassRegistrar()}" 
-                            : string.Empty;
-
-            return $"{mainStyle} {selectedClass} {hasIcon} {isGroup}";
+            return $"{mainStyle} {selectedClass}";
         }
 
-        public void Dispose()
+        private static string? GetExpandButtonAriaLabel(BitNavLinkItem link)
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposing)
+            var finalExpandBtnAriaLabel = "";
+            if (link.Links.Any())
             {
-                NavigationManager.LocationChanged -= OnLocationChanged;
+                if (link.CollapseAriaLabel.HasValue() || link.ExpandAriaLabel.HasValue())
+                {
+                    finalExpandBtnAriaLabel = link.IsExpanded ? link.CollapseAriaLabel : link.ExpandAriaLabel;
+                }
             }
+
+            return finalExpandBtnAriaLabel;
         }
+
+        private static bool IsRelativeUrl(string url)
+        {
+            var regex = new Regex(@"!/^[a-z0-9+-.]+:\/\//i");
+            return regex.IsMatch(url);
+        }
+
+        private static string? GetNavLinkItemRel(BitNavLinkItem link) => link.Url.HasValue() && link.Target.HasValue() && !IsRelativeUrl(link.Url!) ? "noopener noreferrer" : null;
     }
 }
