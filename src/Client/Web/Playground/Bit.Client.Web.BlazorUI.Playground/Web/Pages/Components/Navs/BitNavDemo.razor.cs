@@ -56,7 +56,6 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Navs
                 Name = "Basic components",
                 CollapseAriaLabel = "Collapse Basic components section",
                 IsExpanded = true,
-                IsGroup = true,
                 Links = new List<BitNavLinkItem>
                 {
                     new BitNavLinkItem { Name= "ActivityItem", Key = "ActivityItem", Url = "#/examples/activityitem" },
@@ -69,7 +68,6 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Navs
                 Name = "Extended components",
                 CollapseAriaLabel = "Collapse Extended components section",
                 IsExpanded = true,
-                IsGroup = true,
                 Links = new List<BitNavLinkItem>
                 {
                     new BitNavLinkItem { Name = "ColorPicker", Key = "ColorPicker", Url ="#/examples/colorpicker" },
@@ -82,7 +80,6 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Navs
                 Name = "Utilities",
                 CollapseAriaLabel = "Collapse Utilities section",
                 IsExpanded = true,
-                IsGroup = true,
                 Links = new List<BitNavLinkItem>
                 {
                     new BitNavLinkItem { Name = "FocusTrapZone", Key = "FocusTrapZone", Url = "#/examples/focustrapzone" },
@@ -138,7 +135,6 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Navs
             new BitNavLinkItem
             {
                 Name = "Pages",
-                IsGroup = true,
                 IsExpanded = true,
                 Links = new List<BitNavLinkItem>
                 {
@@ -149,7 +145,6 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Navs
             new BitNavLinkItem
             {
                 Name = "More pages",
-                IsGroup = true,
                 IsExpanded = true,
                 Links = new List<BitNavLinkItem>
                 {

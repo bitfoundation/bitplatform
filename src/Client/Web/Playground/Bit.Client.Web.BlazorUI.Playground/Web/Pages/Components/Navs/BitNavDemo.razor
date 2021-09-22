@@ -231,6 +231,7 @@
             <BitPivotItem HeaderText="Example" IconName="ViewList">
                 <BitNav Style="width: 300px;"
                         NavLinkItems="BasicNoUrlNavLinks"
+                        RenderType="BitNavRenderType.Grouped"
                         AriaLabel="Nav example similar to one found in this demo page">
                 </BitNav>
             </BitPivotItem>
@@ -455,6 +456,7 @@
         <BitPivot>
             <BitPivotItem HeaderText="Example" IconName="ViewList">
                 <BitNav NavLinkItems="CustomHeaderLinks"
+                        RenderType="BitNavRenderType.Grouped"
                         AriaLabel="Nav with custom group header">
                     <HeaderTemplate Context="link">
                         <h3> @link.Name </h3>

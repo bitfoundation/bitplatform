@@ -170,18 +170,19 @@ namespace Bit.Client.Web.BlazorUI.Tests.Navs
         }
 
         [DataTestMethod,
-            DataRow(true),
-            DataRow(false)
+            DataRow(BitNavRenderType.Grouped),
+            DataRow(BitNavRenderType.Normal)
         ]
-        public void BitNavShouldRespectGroupItems(bool isGroup)
+        public void BitNavShouldRespectGroupItems(BitNavRenderType type)
         {
-            List<BitNavLinkItem> navLinkItems = new() { new() { Name = "test", Key = "key", IsGroup = isGroup, Url = "https://www.google.com/" } };
+            List<BitNavLinkItem> navLinkItems = new() { new() { Name = "test", Key = "key", Url = "https://www.google.com/" } };
             var component = RenderComponent<BitNavTest>(parameters =>
             {
                 parameters.Add(p => p.NavLinkItems, navLinkItems);
+                parameters.Add(p => p.RenderType, type);
             });
 
-            if (isGroup)
+            if (type == BitNavRenderType.Grouped)
             {
                 Assert.IsNotNull(component.Find(".bit-nav-grp-chevron-btn"));
             }
