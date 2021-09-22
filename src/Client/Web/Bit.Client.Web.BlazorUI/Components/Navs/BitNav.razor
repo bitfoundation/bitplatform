@@ -7,27 +7,29 @@
      class="@ClassBuilder.Value"
      role="navigation"
      aria-label="@AriaLabel">
-    @if (HeaderTemplate is null)
-    {
-        <div class="bit-nav-grp">
-            <div class="bit-nav-grp-content">
-                <ul class="bit-nav-list"
-                    role="list">
-                    @foreach (var navLinkItem in NavLinkItems)
-                        if (childTemplate is not null)
-                            @childTemplate(navLinkItem)
-                </ul>
-            </div>
-        </div>
-    }
-    else
+    @if (NavLinkItems.Any(i => i.IsGroup))
     {
         @foreach (var navLink in NavLinkItems)
         {
             <div class="bit-nav-grp">
-                @HeaderTemplate(navLink)
+                @if (HeaderTemplate is not null)
+                {
+                    @HeaderTemplate(navLink)
+                }
+                else
+                {
+                    <button class="bit-nav-chevron-btn bit-nav-grp-chevron-btn"
+                            tabindex="0"
+                            aria-label="@GetExpandButtonAriaLabel(navLink)"
+                            aria-expanded="@(navLink.IsExpanded ? "true" : "false")"
+                            @onclick="(() => HandleLinkExpand(navLink))">
+                        <i class="bit-icon bit-icon--ChevronDown @(navLink.IsExpanded ? "bit-nav-expand-fluent" : "")"
+                           aria-hidden="true"></i>
+                        @navLink.Name
+                    </button>
+                }
 
-                @if (navLink.Links?.Any() ?? false)
+                @if (navLink.Links.Any() && navLink.IsExpanded)
                 {
                     <div class="bit-nav-grp-content">
                         <ul class="bit-nav-list"
@@ -40,6 +42,19 @@
                 }
             </div>
         }
+    }
+    else
+    {
+        <div class="bit-nav-grp">
+            <div class="bit-nav-grp-content">
+                <ul class="bit-nav-list"
+                    role="list">
+                    @foreach (var navLinkItem in NavLinkItems)
+                        if (childTemplate is not null)
+                            @childTemplate(navLinkItem)
+                </ul>
+            </div>
+        </div>
     }
 </nav>
 

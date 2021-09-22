@@ -165,12 +165,25 @@
         top: 0;
         left: rem(8px);
         display: inline-block;
-        height: rem(44p)x;
+        height: rem(44px);
         font-size: rem(12px);
         line-height: rem(44px);
         speak: none;
-        transition: transform 0.1s linear 0;
+        transition: transform 0.1s linear 0s;
     }
+}
+
+.bit-nav-grp-chevron-btn {
+    position: relative;
+    width: 100%;
+    height: rem(44px);
+    font-size: rem(18px);
+    margin: rem(5px) 0;
+    padding-left: rem(28px);
+    border-bottom: rem(1px) solid rgb(237, 235, 233);
+    -webkit-font-smoothing: antialiased;
+    color: $Grey160;
+    background-color: transparent;
 }
 
 .bit-nav-expand-fluent {

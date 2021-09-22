@@ -78,7 +78,7 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public EventCallback<BitNavLinkItem> OnLinkClick { get; set; }
 
         /// <summary>
-        /// The template of the header for each nav item, which is a generic RenderFramgment that accepts a BitNavLinItem as input
+        /// Used to customize how content inside the group header is rendered
         /// </summary>
         [Parameter] public RenderFragment<BitNavLinkItem>? HeaderTemplate { get; set; }
 
