@@ -15,6 +15,19 @@ namespace Bit.Tests.Api.ApiControllers
             return null;
         }
 
+        [Function]
+        public virtual async Task<NestedComplex3[]> GetComplexObjects2()
+        {
+            return new[] 
+            {
+                new NestedComplex3 { Name = "A" },
+                new NestedComplex3 { Name = "A" },
+                new NestedComplex3 { Name = "A" },
+                new NestedComplex3 { Name = "B" },
+                new NestedComplex3 { Name = "B" }
+            };
+        }
+
         public class SomeActionArgs
         {
             public NestedComplex3 Test4 { get; set; }
