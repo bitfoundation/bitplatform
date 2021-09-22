@@ -6,149 +6,90 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Navs
     {
         private readonly List<BitNavLinkItem> BasicNavLinks = new()
         {
-            new()
+            new BitNavLinkItem
             {
                 Name = "Home",
                 Url = "http://example.com",
-                Key = "key1",
-                Title = "Home",
-                Target = "_blank",
-                IsExpanded = true,
-                CollapseAriaLabel = "Collapse Home section",
                 ExpandAriaLabel = "Expand Home section",
-                Links = new List<BitNavLinkItem>()
+                CollapseAriaLabel = "Collapse Home section",
+                IsExpanded = true,
+                Links = new List<BitNavLinkItem>
                 {
-                    new()
-                    {
-                        Name = "Activity",
-                        Url = "http://msn.com",
-                        Key = "key1-1",
-                        Title = "Activity",
-                        Links = new List<BitNavLinkItem>()
-                        {
-                            new() { Name = "Activity", Title = "Activity", Url = "http://msn.com", Key = "key1-1-1" },
-                            new() { Name = "MSN", Title = "MSN", Url = "http://msn.com", Key = "key1-1-2", IsEnabled = false }
-                        }
-                    },
-                    new() { Name = "MSN", Title = "MSN", Url = "http://msn.com", Key = "key1-2", IsEnabled = false },
+                    new BitNavLinkItem { Name = "Activity", Url = "http://msn.com", Key = "key1", Target="_blank" },
+                    new BitNavLinkItem { Name = "MSN", Url = "http://msn.com", Key = "key2", IsEnabled = false, Target = "_blank" }
                 }
             },
-            new() { Name = "Documents", Title = "Documents", Url = "http://example.com", Key = "key2", Target = "_blank", IsExpanded = true },
-            new() { Name = "Pages", Title = "Pages", Url = "http://msn.com", Key = "key3", Target = "_parent" },
-            new() { Name = "Notebook", Title = "Notebook", Url = "http://msn.com", Key = "key4", IsEnabled = false },
-            new() { Name = "Communication and Media", Title = "Communication and Media", Url = "http://msn.com", Key = "key5", Target = "_top" },
-            new()
-            {
-                Name = "News with children",
-                Title = "News with children",
-                Url = "http://msn.com",
-                Key = "key6",
-                Icon = "News",
-                Target = "_self",
-                Links = new List<BitNavLinkItem>()
-                {
-                    new()
-                    {
-                        Name = "News Activity",
-                        Url = "http://msn.com",
-                        Key = "key6-1",
-                        Title = "News Activity",
-                        Links = new List<BitNavLinkItem>()
-                        {
-                            new() { Name = "Activity of News", Title = "Activity of News", Url = "http://msn.com", Key = "key6-1-1" },
-                            new() { Name = "MSN of News", Title = "MSN of News", Url = "http://msn.com", Key = "key6-1-2", IsEnabled = false }
-                        }
-                    },
-                    new() { Name = "News MSN", Title = "News MSN", Url = "http://msn.com", Key = "key6-2", IsEnabled = false },
-                }
-            },
-            new()
-            {
-                Name = "News",
-                Title = "News",
-                Url = "http://msn.com",
-                Key = "key6",
-                Icon = "News",
-                Target = "_self",
-            },
+            new BitNavLinkItem { Name = "Documents", Url = "http://example.com", Key = "key3", Target = "_blank", IsExpanded = true },
+            new BitNavLinkItem { Name = "Pages", Url = "http://msn.com", Key = "key4", Target = "_parent" },
+            new BitNavLinkItem { Name = "Notebook", Url = "http://msn.com", Key = "key5", IsEnabled = false },
+            new BitNavLinkItem { Name = "Communication and Media", Url = "http://msn.com", Key = "key6", Target = "_top" },
+            new BitNavLinkItem { Name = "News", Title = "News", Url = "http://msn.com", Key = "key7", Icon = "News", Target = "_self" },
         };
 
         private readonly List<BitNavLinkItem> BasicNoToolTipNavLinks = new()
         {
-            new()
+            new BitNavLinkItem
             {
                 Name = "Home",
                 Url = "http://example.com",
-                Key = "key1",
-                Target = "_blank",
+                Title = "",
                 IsExpanded = true,
                 CollapseAriaLabel = "Collapse Home section",
+                ExpandAriaLabel = "Expand Home section",
                 Links = new List<BitNavLinkItem>
                 {
-                    new (){
-                        Name = "Activity",
-                        Url = "http://msn.com",
-                        Key = "key1-1",
-                        Links = new List<BitNavLinkItem>()
-                        {
-                            new () { Name = "Activity", Url = "http://msn.com", Key = "key1-1-1" },
-                            new () { Name = "MSN", Url = "http://msn.com", Key = "key1-1-2", IsEnabled = false }
-                        }
-                    },
-                    new () { Name = "MSN", Url = "http://msn.com", Key = "key1-2", IsEnabled = false },
+                    new BitNavLinkItem { Name = "Activity", Url = "http://msn.com", Key = "key1", Target="_blank", Title = "" },
+                    new BitNavLinkItem { Name = "MSN", Url = "http://msn.com", Key = "key2", IsEnabled = false, Target = "_blank", Title = "" }
                 }
             },
-            new() { Name = "Shared Documents and Files", Url = "http://example.com", Key = "key2", Target = "_blank", IsExpanded = true },
-            new() { Name = "Pages", Url = "http://msn.com", Key = "key3", Target = "_parent" },
-            new() { Name = "Notebook", Url = "http://msn.com", Key = "key4", IsEnabled = false },
-            new() { Name = "Communication and Media", Url = "http://msn.com", Key = "key5", Target = "_top" },
-            new() { Name = "News", Url = "http://msn.com", Key = "key6", Icon = "News", Target = "_self" },
+            new BitNavLinkItem { Name = "Shared Documents and Files", Url = "http://example.com", Key = "key3", Target = "_blank", Title = "" },
+            new BitNavLinkItem { Name = "Pages", Url = "http://msn.com", Key = "key4", Target = "_parent", Title = "" },
+            new BitNavLinkItem { Name = "Notebook", Url = "http://msn.com", Key = "key5", IsEnabled = false, Title = "" },
+            new BitNavLinkItem { Name = "Communication and Media", Url = "http://msn.com", Key = "key6", Target = "_top", Title = "" },
+            new BitNavLinkItem { Name = "News", Key = "key7", Url = "http://cnn.com", Icon = "News", Target = "_self", Title = "" }
         };
 
         private readonly List<BitNavLinkItem> BasicNoUrlNavLinks = new()
         {
-            new()
+            new BitNavLinkItem
             {
                 Name = "Basic components",
-                Key = "Key1",
                 CollapseAriaLabel = "Collapse Basic components section",
-                IsGroup = true,
                 IsExpanded = true,
-                Links = new List<BitNavLinkItem>()
+                IsGroup = true,
+                Links = new List<BitNavLinkItem>
                 {
-                    new() { Name = "ActivityItem", Key = "ActivityItem", Url = "#/examples/activityitem" },
-                    new() { Name = "Breadcrumb", Key = "Breadcrumb", Url = "#/examples/breadcrumb" },
-                    new() { Name = "Button", Key = "Button", Url = "#/examples/button" }
+                    new BitNavLinkItem { Name= "ActivityItem", Key = "ActivityItem", Url = "#/examples/activityitem" },
+                    new BitNavLinkItem { Name= "Breadcrumb", Key = "Breadcrumb", Url = "#/examples/breadcrumb" },
+                    new BitNavLinkItem { Name= "Button", Key = "Button", Url = "#/examples/button" }
                 }
             },
-            new()
+            new BitNavLinkItem
             {
                 Name = "Extended components",
-                Key = "Key2",
                 CollapseAriaLabel = "Collapse Extended components section",
-                IsGroup = true,
                 IsExpanded = true,
-                Links = new List<BitNavLinkItem>()
+                IsGroup = true,
+                Links = new List<BitNavLinkItem>
                 {
-                    new() { Name = "ColorPicker", Key = "ColorPicker", Url = "#/examples/colorpicker" },
-                    new() { Name = "ExtendedPeoplePicker", Key = "ExtendedPeoplePicker", Url = "#/examples/extendedpeoplepicker" },
-                    new() { Name = "GroupedList", Key = "GroupedList", Url = "#/examples/groupedlist" }
+                    new BitNavLinkItem { Name = "ColorPicker", Key = "ColorPicker", Url ="#/examples/colorpicker" },
+                    new BitNavLinkItem { Name = "ExtendedPeoplePicker", Key = "ExtendedPeoplePicker", Url ="#/examples/extendedpeoplepicker" },
+                    new BitNavLinkItem { Name = "GroupedList", Key = "GroupedList", Url ="#/examples/groupedlist" }
                 }
             },
-            new()
+            new BitNavLinkItem
             {
                 Name = "Utilities",
-                Key = "Key3",
                 CollapseAriaLabel = "Collapse Utilities section",
-                IsGroup = true,
                 IsExpanded = true,
-                Links = new List<BitNavLinkItem>()
+                IsGroup = true,
+                Links = new List<BitNavLinkItem>
                 {
-                    new() { Name = "FocusTrapZone", Key = "FocusTrapZone", Url = "#/examples/focustrapzone" },
-                    new() { Name = "FocusZone", Key = "FocusZone", Url = "#/examples/focuszone" },
-                    new() { Name = "MarqueeSelection", Key = "MarqueeSelection", Url = "#/examples/marqueeselection" }
+                    new BitNavLinkItem { Name = "FocusTrapZone", Key = "FocusTrapZone", Url = "#/examples/focustrapzone" },
+                    new BitNavLinkItem { Name = "FocusZone", Key = "FocusZone", Url = "#/examples/focuszone" },
+                    new BitNavLinkItem { Name = "MarqueeSelection", Key = "MarqueeSelection", Url = "#/examples/marqueeselection" }
                 }
-            },
+            }
         };
 
         private readonly List<BitNavLinkItem> NestedLinks = new()
@@ -194,22 +135,26 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Navs
 
         private readonly List<BitNavLinkItem> CustomHeaderLinks = new()
         {
-            new()
+            new BitNavLinkItem
             {
                 Name = "Pages",
-                Links = new List<BitNavLinkItem>()
+                IsGroup = true,
+                IsExpanded = true,
+                Links = new List<BitNavLinkItem>
                 {
-                    new() { Name = "Activity", Url = "http://msn.com", Key = "Key1-1", Title = "Activity" },
-                    new() { Name = "News", Title = "News", Url = "http://msn.com", Key = "Key1-2" },
+                    new BitNavLinkItem { Name = "Activity", Url = "http://msn.com", Key = "Key1-1", Title = "Activity" },
+                    new BitNavLinkItem { Name = "News", Title = "News", Url = "http://msn.com", Key = "Key1-2" },
                 }
             },
-            new()
+            new BitNavLinkItem
             {
                 Name = "More pages",
-                Links = new List<BitNavLinkItem>()
+                IsGroup = true,
+                IsExpanded = true,
+                Links = new List<BitNavLinkItem>
                 {
-                    new() { Name = "Settings", Title = "Settings", Url = "http://example.com", Key = "Key2-1" },
-                    new() { Name = "Notes", Title = "Notes", Url = "http://example.com", Key = "Key2-1" }
+                    new BitNavLinkItem { Name= "Settings", Title = "Settings", Url = "http://example.com", Key = "Key2-1" },
+                    new BitNavLinkItem { Name= "Notes", Title = "Notes", Url = "http://example.com", Key = "Key2-1" }
                 }
             }
         };
