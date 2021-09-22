@@ -93,7 +93,7 @@
                    style="padding: 0 20px 0 @(((navLinkItem.Depth * 14) + 27).ToString() + "px");"
                    href="@(navLinkItem.IsEnabled ? navLinkItem.Url : null)"
                    target="@navLinkItem.Target"
-                   title="@(navLinkItem.Title.HasValue() ? navLinkItem.Title : navLinkItem.Name)"
+                   title="@(navLinkItem.Title is not null ? navLinkItem.Title : navLinkItem.Name)"
                    disabled="@(navLinkItem.IsEnabled is false)"
                    aria-label="@navLinkItem.AriaLabel"
                    aria-current="@(navLinkItem.Key == SelectedKey ? AriaCurrentMap[navLinkItem.AriaCurrent] : null)"
@@ -122,7 +122,7 @@
             {
                 <button class="@GetLinkClass(navLinkItem)"
                         style="padding: 0 20px 0 @(((navLinkItem.Depth * 14) + 27).ToString() + "px");"
-                        title="@(navLinkItem.Title.HasValue() ? navLinkItem.Title : navLinkItem.Name)"
+                        title="@(navLinkItem.Title is not null ? navLinkItem.Title : navLinkItem.Name)"
                         disabled="@(navLinkItem.IsEnabled is false)"
                         aria-label="@navLinkItem.AriaLabel"
                         aria-current="@(navLinkItem.Key == SelectedKey ? AriaCurrentMap[navLinkItem.AriaCurrent] : null)"

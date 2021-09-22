@@ -73,9 +73,9 @@ p {
 
 .side {
     flex: 5%;
-    background-color: $LightGray;    
+    background-color: $LightGray;
     position: fixed;
-    width: 255px;    
+    width: 255px;
     height: 100vh;
 }
 
@@ -150,7 +150,7 @@ p {
     color: $DarkYellow;
 }
 
-.dark-cyan{
+.dark-cyan {
     color: $DarkCyan;
 }
 
@@ -222,5 +222,12 @@ p {
     &:hover {
         color: #106EBE;
         background-color: #f3f2f1;
+    }
+}
+
+.bit-nav-wrapped-link {
+    a {
+        white-space: normal;
+        line-height: inherit
     }
 }
