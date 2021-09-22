@@ -140,7 +140,7 @@ namespace Bit.Client.Web.BlazorUI
 
         private async Task HandleLinkExpand(BitNavLinkItem navLinkItem)
         {
-            if (IsEnabled is false || navLinkItem.IsEnabled is false || navLinkItem.Links.Any() is false) return;
+            if (navLinkItem.IsEnabled is false || navLinkItem.Links.Any() is false) return;
 
             navLinkItem.IsExpanded = !navLinkItem.IsExpanded;
 
@@ -149,7 +149,7 @@ namespace Bit.Client.Web.BlazorUI
 
         private async Task HandleLinkClick(BitNavLinkItem navLinkItem)
         {
-            if (IsEnabled is false || navLinkItem.IsEnabled is false) return;
+            if (navLinkItem.IsEnabled is false) return;
 
             await OnLinkClick.InvokeAsync(navLinkItem);
 
@@ -161,7 +161,7 @@ namespace Bit.Client.Web.BlazorUI
 
         private void HandleClick(BitNavLinkItem navLinkItem)
         {
-            if (IsEnabled is false || navLinkItem.IsEnabled is false) return;
+            if (navLinkItem.IsEnabled is false) return;
 
             navLinkItem.OnClick?.Invoke(navLinkItem);
         }
@@ -184,7 +184,7 @@ namespace Bit.Client.Web.BlazorUI
             return $"{mainStyle} {selectedClass} {isGroup}";
         }
 
-        private string? GetExpandButtonAriaLabel(BitNavLinkItem link)
+        private static string? GetExpandButtonAriaLabel(BitNavLinkItem link)
         {
             var finalExpandBtnAriaLabel = "";
             if (link.Links.Any())
@@ -208,12 +208,12 @@ namespace Bit.Client.Web.BlazorUI
             [BitNavLinkItemAriaCurrent.True] = "true"
         };
 
-        private bool IsRelativeUrl(string url)
+        private static bool IsRelativeUrl(string url)
         {
             var regex = new Regex(@"!/^[a-z0-9+-.]+:\/\//i");
             return regex.IsMatch(url);
         }
 
-        private string? GetNavLinkItemRel(BitNavLinkItem link) => link.Url.HasValue() && link.Target.HasValue() && !IsRelativeUrl(link.Url!) ? "noopener noreferrer" : null;
+        private static string? GetNavLinkItemRel(BitNavLinkItem link) => link.Url.HasValue() && link.Target.HasValue() && !IsRelativeUrl(link.Url!) ? "noopener noreferrer" : null;
     }
 }
