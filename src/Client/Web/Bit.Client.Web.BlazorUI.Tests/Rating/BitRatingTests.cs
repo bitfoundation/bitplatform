@@ -30,9 +30,15 @@ namespace Bit.Client.Web.BlazorUI.Tests.Rating
             var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
 
             Assert.IsTrue(bitRating.ClassList.Contains($"bit-rating-{isEnabledClass}-{visualClass}"));
-
             Assert.IsTrue(bitRating.HasAttribute("role"));
             Assert.AreEqual("radiogroup", bitRating.GetAttribute("role"));
+
+
+            var button = component.Find(".bit-rating button");
+
+            var ratingId = bitRating.GetAttribute("id");
+            Assert.AreEqual($"{ratingId}-star-1", button.GetAttribute("id"));
+            Assert.AreEqual(!isEnabled, button.HasAttribute("disabled"));
         }
 
         [DataTestMethod]
@@ -88,7 +94,6 @@ namespace Bit.Client.Web.BlazorUI.Tests.Rating
             var span = component.Find(".bit-rating button span");
             Assert.AreEqual(string.Format(ariaLabelFormat, 1, 5), span.TextContent);
         }
-
 
         [DataTestMethod,
             DataRow(null),
