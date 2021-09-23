@@ -176,89 +176,43 @@ namespace Bit.Client.Web.BlazorUI.Tests.Navs
         }
 
         [DataTestMethod,
-            DataRow(true, "CollapseAriaLabel", "ExpandAriaLabel"),
-            DataRow(false, "CollapseAriaLabel", "ExpandAriaLabel")
+         DataRow(Visual.Fluent, "key1"),
+         DataRow(Visual.Cupertino, "key2"),
+         DataRow(Visual.Material, "key3"),
         ]
-        public void BitNavShouldRespectGroupItems(bool isExpanded, string collapseAriaLabel, string ExpandAriaLabel)
+        public void BitNavInitialSelectedKeyTest(Visual visual, string initialSelectedKey)
         {
-            List<BitNavLinkItem> navLinkItems = new()
+            var component = RenderComponent<BitNavTest>(parameters =>
             {
-                new()
-                {
-                    Name = "Home",
-                    Key = "key1",
-                    CollapseAriaLabel = collapseAriaLabel,
-                    ExpandAriaLabel = ExpandAriaLabel,
-                    Links = new List<BitNavLinkItem>()
-                    {
-                        new()
-                        {
-                            Name = "Activity",
-                            Url = "http://msn.com",
-                            Key = "key1-1",
-                            Title = "Activity"
-                        }
-                    }
-                },
-            };
-
-            var components = RenderComponent<BitNavTest>(parameters =>
-            {
-                parameters.Add(p => p.NavLinkItems, navLinkItems);
-            });
-
-            var navLinksItem = components.Find(".bit-nav button");
-
-            Assert.IsTrue(navLinksItem.HasAttribute("aria-label"));
-            Assert.AreEqual(isExpanded ? ExpandAriaLabel : collapseAriaLabel, navLinksItem.GetAttribute("aria-label"));
-
-            navLinksItem.Click();
-            Assert.AreEqual(isExpanded ? collapseAriaLabel : ExpandAriaLabel, navLinksItem.GetAttribute("aria-label"));
-        }
-
-        [DataTestMethod,
-            DataRow("key"),
-        ]
-        public void BitNav_ShouldRespectInitialSelectedKey(string initialSelectedKey)
-        {
-            var com = RenderComponent<BitNavTest>(parameters =>
-            {
-                parameters.Add(p => p.NavLinkItems, new() { new() { Name = "Test", Key = "key" } });
+                parameters.Add(p => p.NavLinkItems, BasicNavLinks);
+                parameters.Add(p => p.Visual, visual);
                 parameters.Add(p => p.InitialSelectedKey, initialSelectedKey);
             });
 
-            var selectedNav = com.Find($".bit-nav-selected-fluent");
-
-            Assert.IsNotNull(selectedNav);
+            var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
+            var selectedItemTxt = component.Find($".bit-nav-selected-{visualClass} > .bit-nav-link-container > .bit-nav-link-txt");
+            var expectedResult = BasicNavLinks.Find(i => i.Key == initialSelectedKey).Name;
+            Assert.AreEqual(expectedResult, selectedItemTxt.TextContent);
         }
 
-        [DataTestMethod,
-            DataRow(true),
-            DataRow(false),
-        ]
-        public void BitNavShoulRespondToClickEvents(bool itemIsEnabled)
+        [DataTestMethod]
+        public void BitNavOnLinkExpandClickTest()
         {
+            var items = new List<BitNavLinkItem>()
+            {
+                new() { Name = "Test1", Key = "key1", Links = new List<BitNavLinkItem>() { new() { Name = "Test2", Key = "key2" } } }
+            };
+
             var componenet = RenderComponent<BitNavTest>(parameters =>
             {
-                parameters.Add(p => p.NavLinkItems, new()
-                {
-                    new()
-                    {
-                        Name = "Test1",
-                        Key = "key1",
-                        IsEnabled = itemIsEnabled,
-                        Links = new List<BitNavLinkItem>() { new() { Name = "Test2", Key = "key2" } }
-                    }
-                });
+                parameters.Add(p => p.NavLinkItems, items);
             });
 
-            var navItem = componenet.Find($".bit-nav .bit-nav-link-{(itemIsEnabled ? "enabled" : "disabled")}-nourl-fluent");
+            var button = componenet.Find(".bit-nav-chevron-btn");
 
             //TODO: bypassed - BUnit or Blazor issue
-            //navItem.Click();
-            //Assert.AreEqual(isEnabled && !itemDisabled ? "Test1" : null, componenet.Instance.OnlinkClickValue);
-            //Assert.AreEqual(isEnabled && !itemDisabled ? "key1" : null, componenet.Instance.OnLinkExpandClickValue);
-
+            //button.Click();
+            //Assert.AreEqual(items[0].Key, componenet.Instance.OnLinkExpandClickValue);
         }
 
         private readonly List<BitNavLinkItem> BasicNavLinks = new()
