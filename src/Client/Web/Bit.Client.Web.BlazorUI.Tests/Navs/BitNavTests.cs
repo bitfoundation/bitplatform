@@ -15,12 +15,12 @@ namespace Bit.Client.Web.BlazorUI.Tests.Navs
         ]
         public void BitNavVisualClassTest(Visual visual)
         {
-            var com = RenderComponent<BitNavTest>(parameters =>
+            var component = RenderComponent<BitNavTest>(parameters =>
             {
                 parameters.Add(p => p.Visual, visual);
             });
 
-            var bitNav = com.Find(".bit-nav");
+            var bitNav = component.Find(".bit-nav");
             var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
 
             Assert.IsTrue(bitNav.ClassList.Contains($"bit-nav-{visualClass}"));
@@ -32,35 +32,35 @@ namespace Bit.Client.Web.BlazorUI.Tests.Navs
         ]
         public void BitNavIsOnTopTest(bool isOnTop)
         {
-            var com = RenderComponent<BitNavTest>(parameters =>
+            var component = RenderComponent<BitNavTest>(parameters =>
             {
                 parameters.Add(p => p.IsOnTop, isOnTop);
             });
 
-            var bitNav = com.Find(".bit-nav");
+            var bitNav = component.Find(".bit-nav");
             var isOnTopClass = isOnTop ? "top" : "no-top";
 
             Assert.IsTrue(bitNav.ClassList.Contains($"bit-nav-{isOnTopClass}"));
         }
 
         [DataTestMethod,
-         DataRow(Visual.Fluent, "key"),
-         DataRow(Visual.Cupertino, "key"),
-         DataRow(Visual.Material, "key"),
+         DataRow(Visual.Fluent, "key1"),
+         DataRow(Visual.Cupertino, "key2"),
+         DataRow(Visual.Material, "key3"),
         ]
         public void BitNavSelectedKeyTest(Visual visual, string selectedKey)
         {
-            var com = RenderComponent<BitNavTest>(parameters =>
+            var component = RenderComponent<BitNavTest>(parameters =>
             {
-                parameters.Add(p => p.NavLinkItems, new List<BitNavLinkItem> { new BitNavLinkItem { Name = "Test", Key = "key" } });
+                parameters.Add(p => p.NavLinkItems, BasicNavLinks);
                 parameters.Add(p => p.Visual, visual);
                 parameters.Add(p => p.SelectedKey, selectedKey);
             });
 
             var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
-            var selectedItem = com.Find($".bit-nav-selected-{visualClass}");
-
-            Assert.IsNotNull(selectedItem);
+            var selectedItemTxt = component.Find($".bit-nav-selected-{visualClass} > .bit-nav-link-container > .bit-nav-link-txt");
+            var expectedResult = BasicNavLinks.Find(i => i.Key == selectedKey).Name;
+            Assert.AreEqual(expectedResult, selectedItemTxt.TextContent);
         }
 
         [DataTestMethod,
@@ -277,5 +277,16 @@ namespace Bit.Client.Web.BlazorUI.Tests.Navs
             //Assert.AreEqual(isEnabled && !itemDisabled ? "key1" : null, componenet.Instance.OnLinkExpandClickValue);
 
         }
+
+        private readonly List<BitNavLinkItem> BasicNavLinks = new()
+        {
+            new BitNavLinkItem { Name = "Activity", Url = "http://msn.com", Key = "key1", Target = "_blank" },
+            new BitNavLinkItem { Name = "MSN", Url = "http://msn.com", Key = "key2", IsEnabled = false, Target = "_blank" },
+            new BitNavLinkItem { Name = "Documents", Url = "http://example.com", Key = "key3", Target = "_blank", IsExpanded = true },
+            new BitNavLinkItem { Name = "Pages", Url = "http://msn.com", Key = "key4", Target = "_parent" },
+            new BitNavLinkItem { Name = "Notebook", Url = "http://msn.com", Key = "key5", IsEnabled = false },
+            new BitNavLinkItem { Name = "Communication and Media", Url = "http://msn.com", Key = "key6", Target = "_top" },
+            new BitNavLinkItem { Name = "News", Title = "News", Url = "http://msn.com", Key = "key7", Icon = "News", Target = "_self" },
+        };
     }
 }
