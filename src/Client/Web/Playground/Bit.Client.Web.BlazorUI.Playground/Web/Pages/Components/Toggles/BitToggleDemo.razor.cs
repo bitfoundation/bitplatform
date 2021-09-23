@@ -4,5 +4,6 @@
     {
         private bool IsToggleChecked = true;
         private bool IsToggleUnChecked = false;
+        private bool BindedIsToggleUnChecked;
     }
 }
