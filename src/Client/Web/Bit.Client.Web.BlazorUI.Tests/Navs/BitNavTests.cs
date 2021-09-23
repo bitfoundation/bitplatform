@@ -79,12 +79,12 @@ namespace Bit.Client.Web.BlazorUI.Tests.Navs
           DataRow(Visual.Material, true, true),
           DataRow(Visual.Material, true, false),
       ]
-        public void BitNavChildrenTest(Visual visual, bool isEnabled, bool hasUrl)
+        public void BitNavLinkItemMainClassTest(Visual visual, bool isEnabled, bool hasUrl)
         {
             string url = hasUrl ? "https://www.google.com/" : null;
             var navLinkItems = new List<BitNavLinkItem> { new BitNavLinkItem { Name = "test", Key = "key", IsEnabled = isEnabled, Url = url } };
 
-            var com = RenderComponent<BitNavTest>(parameters =>
+            var component = RenderComponent<BitNavTest>(parameters =>
             {
                 parameters.Add(p => p.NavLinkItems, navLinkItems);
                 parameters.Add(p => p.Visual, visual);
@@ -93,9 +93,17 @@ namespace Bit.Client.Web.BlazorUI.Tests.Navs
             var enabledClass = isEnabled ? "enabled" : "disabled";
             var hasUrlClass = hasUrl ? "hasurl" : "nourl";
             var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
-            var element = com.Find($".bit-nav-link-{enabledClass}-{hasUrlClass}-{visualClass}");
 
-            Assert.IsNotNull(element);
+            if (hasUrl)
+            {
+                var element = component.Find("a");
+                Assert.IsTrue(element.ClassList.Contains($"bit-nav-link-{enabledClass}-{hasUrlClass}-{visualClass}"));
+            }
+            else
+            {
+                var element = component.Find("button");
+                Assert.IsTrue(element.ClassList.Contains($"bit-nav-link-{enabledClass}-{hasUrlClass}-{visualClass}"));
+            }
         }
 
         [DataTestMethod, DataRow("Detailed label")]
