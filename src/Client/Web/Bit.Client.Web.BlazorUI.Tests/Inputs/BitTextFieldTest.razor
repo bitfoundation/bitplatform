@@ -1,6 +1,6 @@
 ﻿<CascadingValue Value="Visual">
     <BitTextField MaxLength="MaxLength"
-                  IsMultiLine="IsMultiLine"
+                  IsMultiline="IsMultiline"
                   Type="Type"
                   Placeholder="@Placeholder"
                   IsReadonly="IsReadOnly"
@@ -17,7 +17,16 @@
                   OnKeyDown="HandleKeyDown"
                   OnKeyUp="HandleKeyUp"
                   AriaLabel="@AriaLabel"
-                  Label="@Label">
+                  Label="@Label"
+                  IsUnderlined="IsUnderlined"
+                  HasBorder="HasBorder"
+                  DefaultValue="@DefaultValue"
+                  Description="@Description"
+                  Prefix="@Prefix"
+                  Suffix="@Suffix"
+                  Rows="Rows"
+                  IsAriaRequired="IsAriaRequired"
+                  IsResizable="IsResizable">
     </BitTextField>
 </CascadingValue>
 
@@ -25,8 +34,9 @@
     [Parameter] public int MaxLength { get; set; } = -1;
     [Parameter] public string? IconName { get; set; }
     [Parameter] public Visual Visual { get; set; }
-    [Parameter] public bool IsMultiLine { get; set; } = false;
-    [Parameter] public bool IsEnabled { get; set; }
+    [Parameter] public bool IsAriaRequired { get; set; }
+    [Parameter] public bool IsMultiline { get; set; }
+    [Parameter] public bool IsEnabled { get; set; } = true;
     [Parameter] public bool IsReadOnly { get; set; }
     [Parameter] public bool IsRequired { get; set; }
     [Parameter] public string Placeholder { get; set; }
@@ -35,6 +45,15 @@
     [Parameter] public TextFieldType Type { get; set; }
     [Parameter] public string AriaLabel { get; set; }
     [Parameter] public string Label { get; set; }
+    [Parameter] public string? Prefix { get; set; }
+    [Parameter] public string? Suffix { get; set; }
+    [Parameter] public string? DefaultValue { get; set; }
+    [Parameter] public string? Description { get; set; }
+    [Parameter] public string? ErrorMessage { get; set; }
+    [Parameter] public bool IsUnderlined { get; set; }
+    [Parameter] public bool HasBorder { get; set; }
+    [Parameter] public bool IsResizable { get; set; }
+    [Parameter] public int Rows { get; set; }
 
     public void HandleKeyDown(KeyboardEventArgs e)
     {
@@ -56,7 +75,7 @@
     {
         FocusedOutValue++;
     }
-    public void HandleChange(ChangeEventArgs e)
+    public void HandleChange(string e)
     {
         CurrentCount++;
     }
@@ -64,6 +83,7 @@
     {
         CurrentCount++;
     }
+
     public int CurrentCount { get; set; }
     public int FocusedValue { get; set; }
     public int FocusedOutValue { get; set; }

@@ -16,62 +16,75 @@
 
     & > div {
         &:first-child {
-            border: 16px solid $Grey60;
-            border-top: 16px solid $Primary;
-            border-radius: 50%;
-            border-width: 1.5px;
             animation: bit-spn-fluent 1.3s linear infinite;
+            animation-timing-function: cubic-bezier(0.53, 0.21, 0.29, 0.67);
+            border: rem(16px) solid $Grey60;
+            border-top: rem(16px) solid $Primary;
+            border-radius: 50%;
+            border-width: rem(1.5px);
         }
 
-        &:last-child {
-            font-size: rem(12px);
+        &:nth-child(2) {
             color: $Primary;
-            margin: 2px 8px;
+            font-size: rem(12px);
+            margin: rem(2px) rem(8px);
             text-align: center;
+        }
+
+        &[role="status"] {
+            & > div {
+                border: 0px;
+                height: 1px;
+                margin: -1px;
+                overflow: hidden;
+                padding: 0px;
+                position: absolute;
+                width: 1px;
+            }
         }
     }
 }
 
 .bit-spn-bottom-fluent {
-    flex-direction: column-reverse;
     align-items: center;
+    flex-direction: column-reverse;
 
     & > div {
-        &:last-child {
-            margin: 0px 0px 8px;
+        &:nth-child(2) {
+            margin: 0 0 rem(8px);
         }
     }
 }
 
 .bit-spn-top-fluent {
-    flex-direction: column;
     align-items: center;
+    flex-direction: column;
 
     & > div {
-        &:last-child {
-            margin: 8px 0px 0px;
+        &:nth-child(2) {
+            margin: rem(8px) 0 0;
         }
     }
 }
 
 .bit-spn-left-fluent {
-    flex-direction: row;
     align-items: center;
+    flex-direction: row;
 
     & > div {
-        &:last-child {
-            margin: 0px 0px 0px 8px;
+        &:nth-child(2) {
+            margin: 0 0 0 rem(8px);
         }
     }
 }
 
 .bit-spn-right-fluent {
-    flex-direction: row-reverse;
     align-items: center;
+    flex-direction: row-reverse;
 
     & > div {
         &:last-child {
-            margin: 0px 8px 0px 0px;
+            margin: 0 rem(8px) 0 0;
         }
     }
 }
@@ -79,8 +92,8 @@
 .bit-spn-large-fluent {
     & > div {
         &:first-child {
-            width: 28px;
-            height: 28px;
+            height: rem(28px);
+            width: rem(28px);
         }
     }
 }
@@ -88,8 +101,8 @@
 .bit-spn-medium-fluent {
     & > div {
         &:first-child {
-            width: 20px;
-            height: 20px;
+            height: rem(20px);
+            width: rem(20px);
         }
     }
 }
@@ -97,8 +110,8 @@
 .bit-spn-small-fluent {
     & > div {
         &:first-child {
-            width: 16px;
-            height: 16px;
+            height: rem(16px);
+            width: rem(16px);
         }
     }
 }
@@ -106,8 +119,8 @@
 .bit-spn-xSmall-fluent {
     & > div {
         &:first-child {
-            width: 12px;
-            height: 12px;
+            height: rem(12px);
+            width: rem(12px);
         }
     }
 }

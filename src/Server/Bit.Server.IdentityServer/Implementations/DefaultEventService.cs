@@ -62,7 +62,7 @@ namespace Bit.IdentityServer.Implementations
             Logger.AddLogData("ClientId", signInMessage.ClientId);
 
             if (signInMessage.AcrValues != null && signInMessage.AcrValues.Any())
-                Logger.AddLogData("AcrValues", signInMessage.AcrValues);
+                Logger.AddLogData("AcrValues", string.Join(" ", signInMessage.AcrValues));
 
             if (signInMessage.ReturnUrl != null)
                 Logger.AddLogData("ReturnUrl", signInMessage.ReturnUrl);

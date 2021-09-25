@@ -1,8 +1,10 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Net.Http.Headers;
 
 namespace Bit.Client.Web.BlazorUI.Playground.Api.Controllers
@@ -12,12 +14,11 @@ namespace Bit.Client.Web.BlazorUI.Playground.Api.Controllers
     public class FileUploadController : ControllerBase
     {
         private const int BoundaryLengthLimit = int.MaxValue;
-        private const string BasePath = "D:\\UploadFiles\\";
-
-        [HttpGet]
-        public IActionResult Test()
+        private readonly string BasePath;
+        
+        public FileUploadController(IConfiguration Configuration)
         {
-            return Ok("test");
+            BasePath = Configuration["UploadPath"];
         }
 
         [RequestFormLimits(ValueLengthLimit = int.MaxValue, MultipartBodyLengthLimit = int.MaxValue)]

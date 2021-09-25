@@ -5,62 +5,108 @@
      @attributes="HtmlAttributes"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
-    <label for="@InputId">
-        @Label
-    </label>
     <div>
-        @if (IsMultiLine && Type == TextFieldType.Text)
+
+        @if (LabelFragment != null)
         {
-            <textarea id="@InputId"
-                      rows="3"
-                      disabled=@(!IsEnabled)
-                      readonly=@IsReadonly
-                      required=@IsRequired
-                      placeholder="@Placeholder"
-                      maxlength="@MaxLength"
-                      aria-label="@AriaLabel"
-                      @onclick="@HandleClick"
-                      @onfocusin="@HandleFocusIn"
-                      @onfocusout="@HandleFocusOut"
-                      @onfocus="@HandleFocus"
-                      @oninput="@HandleChange"
-                      @onkeydown="@HandleKeyDown"
-                      @onkeyup="@HandleKeyUp">
-            @Value
-        </textarea>
+            <span>@LabelFragment</span>
         }
-        else
+        else if (Label.HasValue())
         {
-            <input id="@InputId"
-                   disabled=@(!IsEnabled)
-                   readonly=@IsReadonly
-                   required=@IsRequired
-                   type="@ElementType"
-                   value="@Value"
-                   placeholder="@Placeholder"
-                   maxlength="@MaxLength"
-                   aria-label="@AriaLabel"
-                   @onclick="@HandleClick"
-                   @onfocusin="@HandleFocusIn"
-                   @onfocusout="@HandleFocusOut"
-                   @onfocus="@HandleFocus"
-                   @oninput="@HandleChange"
-                   @onkeydown="@HandleKeyDown"
-                   @onkeyup="@HandleKeyUp" />
+            <label for="@InputId">
+                @Label
+            </label>
         }
 
-        @if (CanRevealPassword && Type == TextFieldType.Password)
-        {
-            <span class="clickable" @onclick="TogglePasswordRevealIcon">
-                <i class="bit-icon bit-icon--@(ElementType == TextFieldType.Text ? "Hide" : "RedEye")"></i>
-            </span>
-        }
 
-        @if (IconName is not null)
-        {
-            <span>
-                <i class="bit-icon bit-icon--@IconName"></i>
-            </span>
-        }
+        <div>
+            @if (Prefix is not null)
+            {
+                <div>
+                    <span>@Prefix</span>
+                </div>
+            }
+            @if (IsMultiline && Type == TextFieldType.Text)
+            {
+                <textarea id="@InputId"
+                          rows="@Rows"
+                          disabled=@(!IsEnabled)
+                          readonly=@IsReadonly
+                          required=@IsRequired
+                          placeholder="@Placeholder"
+                          maxlength="@MaxLength"
+                          aria-label="@AriaLabel"
+                          aria-labelledby="@(Label.HasValue() ? InputId : null)"
+                          aria-invalid="false"
+                          @onclick="@HandleClick"
+                          @onfocusin="@HandleFocusIn"
+                          @onfocusout="@HandleFocusOut"
+                          @onfocus="@HandleFocus"
+                          @oninput="@HandleChange"
+                          @onchange="@HandleChange"
+                          @onkeydown="@HandleKeyDown"
+                          @onkeyup="@HandleKeyUp">
+                    @Value
+                </textarea>
+            }
+            else
+            {
+                <input id="@InputId"
+                       disabled=@(!IsEnabled)
+                       readonly=@IsReadonly
+                       required=@IsRequired
+                       type="@ElementType"
+                       value="@Value"
+                       placeholder="@Placeholder"
+                       maxlength="@MaxLength"
+                       aria-label="@AriaLabel"
+                       aria-labelledby="@(Label.HasValue() ? InputId : null)"
+                       aria-invalid="false"
+                       @onclick="@HandleClick"
+                       @onfocusin="@HandleFocusIn"
+                       @onfocusout="@HandleFocusOut"
+                       @onfocus="@HandleFocus"
+                       @oninput="@HandleChange"
+                       @onchange="@HandleChange"
+                       @onkeydown="@HandleKeyDown"
+                       @onkeyup="@HandleKeyUp" />
+            }
+
+            @if (CanRevealPassword && Type == TextFieldType.Password)
+            {
+                <button class="clickable" @onclick="TogglePasswordRevealIcon" aria-pressed="@(ElementType == TextFieldType.Text ? "true" : "false")">
+                    <span>
+                        <i class="bit-icon bit-icon--@(ElementType == TextFieldType.Text ? "Hide" : "RedEye")"></i>
+                    </span>
+                </button>
+            }
+
+            @if (IconName is not null)
+            {
+                <span>
+                    <i class="bit-icon bit-icon--@IconName"></i>
+                </span>
+            }
+
+            @if (Suffix is not null)
+            {
+                <div>
+                    <span>@Suffix</span>
+                </div>
+            }
+
+        </div>
     </div>
+    @if (Description.HasValue() || DescriptionFragment is not null)
+    {
+        <span>
+            @if (DescriptionFragment is not null)
+            {
+                @DescriptionFragment
+            }
+            else if (Description.HasValue())
+            {
+                <span>@Description</span>
+            }
+        </span>}
 </div>

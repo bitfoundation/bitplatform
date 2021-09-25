@@ -11,6 +11,7 @@ body {
 }
 
 table {
+    table-layout: fixed;
     border-collapse: collapse;
     width: 100%;
 }
@@ -21,6 +22,7 @@ th, td {
     padding: 8px;
     text-align: left;
     border-bottom: 1px solid $Grey;
+    overflow-wrap: break-word;
 }
 
 p {
@@ -72,9 +74,9 @@ p {
 .side {
     flex: 5%;
     background-color: $LightGray;
-    padding: 20px;
     position: fixed;
     width: 255px;
+    height: 100vh;
 }
 
 .card {
@@ -148,6 +150,14 @@ p {
     color: $DarkYellow;
 }
 
+.dark-cyan {
+    color: $DarkCyan;
+}
+
+.light-purple {
+    color: $LightPurple;
+}
+
 .light-yellow-bg {
     background-color: $LightYellow;
 }
@@ -172,4 +182,69 @@ p {
 .custom-button {
     background-color: $DarkRed;
     border-color: $DarkRed;
+}
+
+.custom-spb {
+    .bit-spb-wrapper {
+        & span {
+            & button:first-child:active {
+                color: rgb(50, 49, 48);
+                background-color: green;
+            }
+
+            & button:nth-child(2):active {
+                color: rgb(50, 49, 48);
+                background-color: red;
+            }
+        }
+    }
+}
+
+.custom-drp-lbl-ic {
+    width: 32px;
+    height: 32px;
+    outline: transparent;
+    font-size: 14px;
+    font-weight: 400;
+    box-sizing: border-box;
+    border: none;
+    display: inline-block;
+    text-decoration: none;
+    text-align: center;
+    cursor: pointer;
+    padding: 0 4px;
+    border-radius: 2px;
+    background-color: transparent;
+    color: #0078d4;
+    margin-bottom: -8px;
+    user-select: none;
+
+    &:hover {
+        color: #106EBE;
+        background-color: #f3f2f1;
+    }
+}
+
+.bit-nav-wrapped-link {
+    a {
+        white-space: normal;
+        line-height: inherit
+    }
+}
+
+.spinner-container, spinner-positioning {
+    & > div {
+        & label {
+            font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+            -webkit-font-smoothing: antialiased;
+            font-size: 14px;
+            font-weight: 600;
+            color: rgb(50, 49, 48);
+            box-sizing: border-box;
+            box-shadow: none;
+            display: block;
+            padding: 5px 0px;
+            overflow-wrap: break-word;
+        }
+    }
 }

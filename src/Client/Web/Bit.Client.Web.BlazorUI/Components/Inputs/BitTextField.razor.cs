@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -7,43 +9,31 @@ namespace Bit.Client.Web.BlazorUI
 {
     public partial class BitTextField
     {
-        private bool isMultiLine;
+        private bool isMultiline;
         private bool isReadonly;
         private bool isRequired;
+        private bool isUnderlined;
+        private bool hasBorder = true;
         private string focusClass = "";
         private TextFieldType type = TextFieldType.Text;
         private Guid InputId = Guid.NewGuid();
+        private string? textValue;
+        private bool ValueHasBeenSet;
+        private bool isResizable = true;
 
         /// <summary>
-        /// Specifies the maximum number of characters allowed in the input
-        /// </summary>
-        [Parameter] public int MaxLength { get; set; } = -1;
-
-        /// <summary>
-        /// The icon name for the icon shown in the far right end of the text field
-        /// </summary>
-        [Parameter] public string? IconName { get; set; }
-
-        /// <summary>
-        /// Current value of the text field
-        /// </summary>
-        [Parameter] public string? Value { get; set; }
-
-        /// <summary>
-        /// Input placeholder text
-        /// </summary>
-        [Parameter] public string? Placeholder { get; set; }
-
-        /// <summary>
-        /// Label displayed above the text field and read by screen readers
-        /// </summary>
-        [Parameter] public string? Label { get; set; }
-
-        /// <summary>
-        /// Whether to show the reveal password button for input type 'password'
+        /// Whether or not the text field is a Multiline text field
         /// </summary>
         [Parameter]
-        public bool CanRevealPassword { get; set; }
+        public bool IsMultiline
+        {
+            get => isMultiline;
+            set
+            {
+                isMultiline = value;
+                ClassBuilder.Reset();
+            }
+        }
 
         /// <summary>
         /// If true, the text field is readonly
@@ -74,6 +64,136 @@ namespace Bit.Client.Web.BlazorUI
         }
 
         /// <summary>
+        /// Whether or not the text field is underlined
+        /// </summary>
+        [Parameter]
+        public bool IsUnderlined
+        {
+            get => isUnderlined;
+            set
+            {
+                isUnderlined = value;
+                ClassBuilder.Reset();
+            }
+        }
+
+        /// <summary>
+        /// For multiline text fields, whether or not the field is resizable.
+        /// </summary>
+        [Parameter]
+        public bool IsResizable
+        {
+            get => isResizable;
+            set
+            {
+                isResizable = value;
+                ClassBuilder.Reset();
+            }
+        }
+
+        /// <summary>
+        /// Whether or not the text field is borderless
+        /// </summary>
+        [Parameter]
+        public bool HasBorder
+        {
+            get => hasBorder;
+            set
+            {
+                hasBorder = value;
+                ClassBuilder.Reset();
+            }
+        }
+
+        /// <summary>
+        /// Current value of the text field
+        /// </summary>
+        [Parameter]
+        public string? Value
+        {
+            get => textValue;
+            set
+            {
+                if (value == textValue) return;
+                textValue = value;
+
+                _ = ValueChanged.InvokeAsync(value);
+            }
+        }
+
+        /// <summary>
+        /// Callback for when the input value changes
+        /// </summary>
+        [Parameter] public EventCallback<string?> ValueChanged { get; set; }
+
+        /// <summary>
+        /// Callback for when the input value changes. This is called on both input and change events. 
+        /// </summary>
+        [Parameter] public EventCallback<string?> OnChange { get; set; }
+
+        /// <summary>
+        /// Default value of the text field. Only provide this if the text field is an uncontrolled component; otherwise, use the value property
+        /// </summary>
+        [Parameter] public string? DefaultValue { get; set; }
+
+        /// <summary>
+        /// Input placeholder text
+        /// </summary>
+        [Parameter] public string? Placeholder { get; set; }
+
+        /// <summary>
+        /// Label displayed above the text field and read by screen readers
+        /// </summary>
+        [Parameter] public string? Label { get; set; }
+
+        /// <summary>
+        /// Shows the custom Label for text field.If you don't call default label, ensure that you give your custom label an id and that you set the textfield's aria-labelledby prop to that id.
+        /// </summary>
+        [Parameter] public RenderFragment? LabelFragment { get; set; }
+
+        /// <summary>
+        /// Description displayed below the text field to provide additional details about what text to enter.
+        /// </summary>
+        [Parameter] public string? Description { get; set; }
+
+        /// <summary>
+        /// Shows the custom description for text field.
+        /// </summary>
+        [Parameter] public RenderFragment? DescriptionFragment { get; set; }
+
+        /// <summary>
+        /// Specifies the maximum number of characters allowed in the input
+        /// </summary>
+        [Parameter] public int MaxLength { get; set; } = -1;
+
+        /// <summary>
+        /// For multiline text, Number of rows
+        /// </summary>
+        [Parameter] public int Rows { get; set; } = 3;
+
+        /// <summary>
+        /// The icon name for the icon shown in the far right end of the text field
+        /// </summary>
+        [Parameter] public string? IconName { get; set; }
+
+        /// <summary>
+        /// Prefix displayed before the text field contents. This is not included in the value.
+        /// Ensure a descriptive label is present to assist screen readers, as the value does not include the prefix.
+        /// </summary>
+        [Parameter] public string? Prefix { get; set; }
+
+        /// <summary>
+        /// Suffix displayed after the text field contents. This is not included in the value. 
+        /// Ensure a descriptive label is present to assist screen readers, as the value does not include the suffix.
+        /// </summary>
+        [Parameter] public string? Suffix { get; set; }
+
+        /// <summary>
+        /// Whether to show the reveal password button for input type 'password'
+        /// </summary>
+        [Parameter] public bool CanRevealPassword { get; set; }
+
+        /// <summary>
         /// Input type
         /// </summary>
         [Parameter]
@@ -84,22 +204,6 @@ namespace Bit.Client.Web.BlazorUI
             {
                 type = value;
                 ElementType = value;
-                ClassBuilder.Reset();
-            }
-        }
-
-        public TextFieldType ElementType { get; set; }
-
-        /// <summary>
-        /// Whether or not the text field is a multiline text field
-        /// </summary>
-        [Parameter]
-        public bool IsMultiLine
-        {
-            get => isMultiLine;
-            set
-            {
-                isMultiLine = value;
                 ClassBuilder.Reset();
             }
         }
@@ -120,11 +224,6 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public EventCallback<FocusEventArgs> OnFocus { get; set; }
 
         /// <summary>
-        /// Callback for when the input value changes
-        /// </summary>
-        [Parameter] public EventCallback<ChangeEventArgs> OnChange { get; set; }
-
-        /// <summary>
         /// Callback for when a keyboard key is pressed
         /// </summary>
         [Parameter] public EventCallback<KeyboardEventArgs> OnKeyDown { get; set; }
@@ -138,6 +237,8 @@ namespace Bit.Client.Web.BlazorUI
         /// Callback for when the input clicked
         /// </summary>
         [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+
+        public TextFieldType ElementType { get; set; }
 
         public string FocusClass
         {
@@ -153,11 +254,8 @@ namespace Bit.Client.Web.BlazorUI
 
         protected override void RegisterComponentClasses()
         {
-            ClassBuilder.Register(() => IsMultiLine && Type == TextFieldType.Text
-                                        ? $"{RootElementClass}-multiline-{VisualClassRegistrar()}" : string.Empty);
-
-            ClassBuilder.Register(() => IsEnabled is false
-                                        ? $"{RootElementClass}-disabled-{VisualClassRegistrar()}" : string.Empty);
+            ClassBuilder.Register(() => IsMultiline && Type == TextFieldType.Text
+                                        ? $"{RootElementClass}-multiline-{(IsResizable is false ? "fix-" : string.Empty)}{VisualClassRegistrar()}" : string.Empty);
 
             ClassBuilder.Register(() => IsEnabled && IsReadonly
                                         ? $"{RootElementClass}-readonly-{VisualClassRegistrar()}" : string.Empty);
@@ -165,8 +263,14 @@ namespace Bit.Client.Web.BlazorUI
             ClassBuilder.Register(() => IsEnabled && IsRequired
                                         ? $"{RootElementClass}-required-{VisualClassRegistrar()}" : string.Empty);
 
+            ClassBuilder.Register(() => IsUnderlined
+                                       ? $"{RootElementClass}-underlined-{(IsEnabled is false ? "disabled-" : string.Empty)}{VisualClassRegistrar()}" : string.Empty);
+
+            ClassBuilder.Register(() => HasBorder is false
+                                       ? $"{RootElementClass}-no-border-{VisualClassRegistrar()}" : string.Empty);
+
             ClassBuilder.Register(() => FocusClass.HasValue()
-                                        ? $"{RootElementClass}-{FocusClass}-{VisualClassRegistrar()}" : string.Empty);
+                                        ? $"{RootElementClass}-{(IsUnderlined ? "underlined-" : "")}{FocusClass}-{VisualClassRegistrar()}" : string.Empty);
         }
 
         protected virtual async Task HandleFocusIn(FocusEventArgs e)
@@ -198,10 +302,10 @@ namespace Bit.Client.Web.BlazorUI
 
         protected virtual async Task HandleChange(ChangeEventArgs e)
         {
-            if (IsEnabled)
-            {
-                await OnChange.InvokeAsync(e);
-            }
+            if (IsEnabled is false) return;
+            if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+            Value = e.Value?.ToString();
+            await OnChange.InvokeAsync(Value);
         }
 
         protected virtual async Task HandleKeyDown(KeyboardEventArgs e)
@@ -231,6 +335,15 @@ namespace Bit.Client.Web.BlazorUI
         public void TogglePasswordRevealIcon()
         {
             ElementType = ElementType == TextFieldType.Text ? TextFieldType.Password : TextFieldType.Text;
+        }
+
+        protected override Task OnInitializedAsync()
+        {
+            if (DefaultValue.HasValue())
+            {
+                Value = DefaultValue;
+            }
+            return base.OnInitializedAsync();
         }
     }
 }

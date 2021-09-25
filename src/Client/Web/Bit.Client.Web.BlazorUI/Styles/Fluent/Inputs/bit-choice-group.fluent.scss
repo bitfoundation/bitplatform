@@ -1,0 +1,28 @@
+﻿@import "../colors.fluent.scss", "../../functions.scss";
+
+.bit-chg-fluent {
+
+    & > label {
+        font-size: 14px;
+        font-weight: 600;
+        color: $Grey160;
+        box-sizing: border-box;
+        box-shadow: none;
+        margin: 0px;
+        display: block;
+        padding: 5px 0px;
+        overflow-wrap: break-word;
+    }
+}
+
+.bit-chg-required-fluent {
+
+    & > label {
+
+        &::after {
+            content: "*";
+            color: $Red20;
+            margin-left: em(5px);
+        }
+    }
+}

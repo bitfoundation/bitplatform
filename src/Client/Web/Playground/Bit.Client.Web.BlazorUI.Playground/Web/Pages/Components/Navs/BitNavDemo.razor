@@ -1,0 +1,695 @@
+﻿@page "/components/nav"
+
+<h2>Nav</h2>
+
+<div class="card">
+    <p class="desc">A navigation pane (Nav) provides links to the main areas of an app or site.</p>
+</div>
+
+<h2>Usage</h2>
+<div class="wrapper">
+    <div class="card">
+        <h3>Basic nav with sample links</h3>
+        <BitPivot>
+            <BitPivotItem HeaderText="Example" IconName="ViewList">
+                <BitNav Style="width: 208px;
+                   height: 350px;
+                   box-sizing: border-box;
+                   border: 1px solid #eee;
+                   overflow-y: auto;"
+                        NavLinkItems="BasicNavLinks"
+                        AriaLabel="Nav basic example"
+                        SelectedKey="key3">
+                </BitNav>
+            </BitPivotItem>
+            <BitPivotItem HeaderText="Code" IconName="Source">
+                <p>
+                    &lt<span class="dark-green">BitNav Style</span>="width: 208px;
+                    <br />
+                    <span class="m-l-30">height: 350px;</span>
+                    <br />
+                    <span class="m-l-30">box-sizing: border-box;</span>
+                    <br />
+                    <span class="m-l-30">border: 1px solid #eee;</span>
+                    <br />
+                    <span class="m-l-30">overflow-y: auto;"</span>
+                    <br />
+                    <span class="dark-green m-l-45">Class</span>="bit-nav-simple-link"
+                    <br />
+                    <span class="dark-green m-l-45">NavLinkItems</span>="BasicNavLinks"
+                    <br />
+                    <span class="dark-green m-l-45">AriaLabel</span>="Nav basic example"
+                    <br />
+                    <span class="dark-green m-l-45">SelectedKey</span>="key3">
+                    <br />
+                    <span>&lt/</span><span class="dark-green">BitNav</span><span>&gt;</span>
+                </p>
+                <div>
+                    <span class="light-yellow-bg">&#64;code {</span>
+                    <p>
+                        <span>private readonly <span class="dark-green">List&ltBitNavLinkItem></span> BasicNavLinks = <span class=light-blue>new</span>()</span>
+                        <br />
+                        <span class="light-yellow-bg">{</span>
+                        <br />
+                        <span class="m-l-30"><span class="light-blue">new </span><span class="dark-green">BitNavLinkItem</span></span>
+                        <br />
+                        <span class="m-l-30">{</span>
+                        <br />
+                        <span class="m-l-45">Name = <span class="dark-orange">"Home"</span>,</span>
+                        <br />
+                        <span class="m-l-45">Url = <span class="light-blue">"http://example.com"</span>,</span>
+                        <br />
+                        <span class="m-l-45">Key = <span class="dark-orange">"key1"</span>,</span>
+                        <br />
+                        <span class="m-l-45">Title = <span class="dark-orange">"Home"</span>,</span>
+                        <br />
+                        <span class="m-l-45">Target = <span class="dark-orange">"_blank"</span>,</span>
+                        <br />
+                        <span class="m-l-45">IsExpanded = <span class="light-blue">true</span>,</span>
+                        <br />
+                        <span class="m-l-45">CollapseAriaLabel = <span class="dark-orange">"Collapse Home section"</span>,</span>
+                        <br />
+                        <span class="m-l-45">ExpandAriaLabel = <span class="dark-orange">"Expand Home section"</span>,</span>
+                        <br />
+                        <span class="m-l-45">Links = <span class="light-blue">new</span><span class="dark-green"> List&ltBitNavLinkItem></span></span>
+                        <br />
+                        <span class="m-l-45">{</span>
+                        <br />
+                        <span class=" m-l-60"><span class="light-blue">new </span><span class="dark-green"> List&ltBitNavLinkItem></span> {</span>
+                        <br />
+                        <span class="m-l-75">Name = <span class="dark-orange">"Activity"</span>,</span>
+                        <br />
+                        <span class="m-l-75">Url = <span class="light-blue">"http://msn.com"</span>,</span>
+                        <br />
+                        <span class="m-l-75">Key = <span class="dark-orange">"key1-1"</span>,</span>
+                        <br />
+                        <span class="m-l-75">Title = <span class="dark-orange">"Activity"</span>,</span>
+                        <br />
+                        <span class="m-l-75">Links = <span class="light-blue">new</span><span class="dark-green"> List&ltBitNavLinkItem></span></span>
+                        <br />
+                        <span class="m-l-75">{</span>
+                        <br />
+                        <span class="m-l-90"><span class="light-blue">new </span><span class="dark-green"> List&ltBitNavLinkItem></span><span> { Name = </span><span class="dark-orange">"Activity"</span><span>, Title = </span><span class="dark-orange">"Activity"</span><span>, Url = "</span><span class="light-blue">http://msn.com</span>" , <span>Key = </span><span class="dark-orange">"key1-1-1"</span> },</span>
+                        <br />
+                        <span class="m-l-90"><span class="light-blue">new </span><span class="dark-green"> List&ltBitNavLinkItem></span><span> { Name = </span><span class="dark-orange">"MSN"</span><span>, Title = </span><span class="dark-orange">"MSN"</span><span>, Url = "</span><span class="light-blue">http://msn.com</span>" , <span>Key = </span><span class="dark-orange">"key1-1-2"</span> , <span>IsEnabled = </span><span class="light-blue">false</span> }</span>
+                        <br />
+                        <span class="m-l-75">}</span>
+                        <br />
+                        <span class="m-l-60">},</span>
+                        <br />
+                        <span class="m-l-60"><span class="light-blue">new </span><span class="dark-green"> List&ltBitNavLinkItem></span><span> { Name = </span><span class="dark-orange">"MSN"</span><span>, Title = </span><span class="dark-orange">"MSN"</span><span>, Url = "</span><span class="light-blue">http://msn.com</span>" , <span>Key = </span><span class="dark-orange">"key1-2"</span> , <span>IsEnabled = </span><span class="light-blue">false</span> }</span>
+                        <br />
+                        <span class="m-l-45">}</span>
+                        <br />
+                        <span class="m-l-30">},</span>
+                        <br />
+                        <span class="m-l-30"><span class="light-blue">new </span><span class="dark-green"> List&ltBitNavLinkItem></span><span> { Name = </span><span class="dark-orange">"Documents"</span><span>, Title = </span><span class="dark-orange">"Documents"</span><span>, Url = "</span><span class="light-blue">http://example.com</span>" , <span>Key = </span><span class="dark-orange">"key2"</span> , <span>Target = </span><span class="dark-orange">"_blank"</span> , <span>IsExpanded = </span><span class="light-blue">true</span> },</span>
+                        <br />
+                        <span class="m-l-30"><span class="light-blue">new </span><span class="dark-green"> List&ltBitNavLinkItem></span><span> { Name = </span><span class="dark-orange">"Pages"</span><span>, Title = </span><span class="dark-orange">"Pages"</span><span>, Url = "</span><span class="light-blue">http://msn.com</span>" , <span>Key = </span><span class="dark-orange">"key3"</span> , <span>Target = </span><span class="dark-orange">"_parent"</span> },</span>
+                        <br />
+                        <span class="m-l-30"><span class="light-blue">new </span><span class="dark-green"> List&ltBitNavLinkItem></span><span> { Name = </span><span class="dark-orange">"Notebook"</span><span>, Title = </span><span class="dark-orange">"Notebook"</span><span>, Url = "</span><span class="light-blue">http://msn.com</span>" , <span>Key = </span><span class="dark-orange">"key4"</span> , <span>IsEnabled = </span><span class="light-blue">false</span> },</span>
+                        <br />
+                        <span class="m-l-30"><span class="light-blue">new </span><span class="dark-green"> List&ltBitNavLinkItem></span><span> { Name = </span><span class="dark-orange">"Communication and Media"</span><span>, Title = </span><span class="dark-orange">"Communication and Media"</span><span>, Url = "</span><span class="light-blue">http://msn.com</span>" , <span>Key = </span><span class="dark-orange">"key5"</span> , <span>Target = </span><span class="dark-orange">"_top"</span> },</span>
+                        <br />
+                        <span class="m-l-30"><span class="light-blue">new </span><span class="dark-green"> List&ltBitNavLinkItem></span><span> { Name = </span><span class="dark-orange">"News"</span><span>, Title = </span><span class="dark-orange">"News"</span><span>, Url = "</span><span class="light-blue">http://msn.com</span>" , <span>Key = </span><span class="dark-orange">"key6"</span> , <span>Target = </span><span class="dark-orange">"_self"</span> , <span>Icon = </span><span class="dark-orange">News</span> }</span>
+                        <br />
+                        <span>};</span>
+                    </p>
+                </div>
+            </BitPivotItem>
+        </BitPivot>
+    </div>
+    <div class="card">
+        <h3>Nav with wrapped link text and no tooltips</h3>
+        <BitPivot>
+            <BitPivotItem HeaderText="Example" IconName="ViewList">
+                <BitNav Style="width: 208px;
+                   height: 350px;
+                   box-sizing: border-box;
+                   border: 1px solid #eee;
+                   overflow-y: auto;"
+                        Class="bit-nav-wrapped-link"
+                        SelectedKey="key6"
+                        AriaLabel="Nav example with wrapped link text"
+                        NavLinkItems="BasicNoToolTipNavLinks">
+                </BitNav>
+            </BitPivotItem>
+            <BitPivotItem HeaderText="Code" IconName="Source">
+                <p>
+                    &lt<span class="dark-green">BitNav Style</span>="width: 208px;
+                    <br />
+                    <span class="m-l-30">height: 350px;</span>
+                    <br />
+                    <span class="m-l-30">box-sizing: border-box;</span>
+                    <br />
+                    <span class="m-l-30">border: 1px solid #eee;</span>
+                    <br />
+                    <span class="m-l-30">overflow-y: auto;"</span>
+                    <br />
+                    <span class="dark-green m-l-45">Class</span>="bit-nav-wrapped-link"
+                    <br />
+                    <span class="dark-green m-l-45">NavLinkItems</span>="BasicNoToolTipNavLinks"
+                    <br />
+                    <span class="dark-green m-l-45">AriaLabel</span>="Nav example with wrapped link text"
+                    <br />
+                    <span class="dark-green m-l-45">SelectedKey</span>="key5">
+                    <br />
+                    <span>&lt/</span><span class="dark-green">BitNav</span><span>&gt;</span>
+                </p>
+                <div>
+                    <span class="light-yellow-bg">&#64;code {</span>
+                    <p>
+                        <span>private readonly <span class="dark-green">List&ltBitNavLinkItem></span> BasicNoToolTipNavLinks = <span class=light-blue>new</span>()</span>
+                        <br />
+                        <span class="light-yellow-bg">{</span>
+                        <br />
+                        <span class="m-l-30"><span class="light-blue">new </span><span class="dark-green">BitNavLinkItem</span></span>
+                        <br />
+                        <span class="m-l-30">{</span>
+                        <br />
+                        <span class="m-l-45">Name = <span class="dark-orange">"Home"</span>,</span>
+                        <br />
+                        <span class="m-l-45">Url = <span class="light-blue">"http://example.com"</span>,</span>
+                        <br />
+                        <span class="m-l-45">Key = <span class="dark-orange">"key1"</span>,</span>
+                        <br />
+                        <span class="m-l-45">Target = <span class="dark-orange">"_blank"</span>,</span>
+                        <br />
+                        <span class="m-l-45">IsExpanded = <span class="light-blue">true</span>,</span>
+                        <br />
+                        <span class="m-l-45">CollapseAriaLabel = <span class="dark-orange">"Collapse Home section"</span>,</span>
+                        <br />
+                        <span class="m-l-45">Links = <span class="light-blue">new</span><span class="dark-green"> List&ltBitNavLinkItem></span></span>
+                        <br />
+                        <span class="m-l-45">{</span>
+                        <br />
+                        <span class=" m-l-60"><span class="light-blue">new </span><span class="dark-green"> List&ltBitNavLinkItem></span> {</span>
+                        <br />
+                        <span class="m-l-75">Name = <span class="dark-orange">"Activity"</span>,</span>
+                        <br />
+                        <span class="m-l-75">Url = <span class="light-blue">"http://msn.com"</span>,</span>
+                        <br />
+                        <span class="m-l-75">Key = <span class="dark-orange">"key1-1"</span>,</span>
+                        <br />
+                        <span class="m-l-75">Links = <span class="light-blue">new</span><span class="dark-green"> List&ltBitNavLinkItem></span></span>
+                        <br />
+                        <span class="m-l-75">{</span>
+                        <br />
+                        <span class="m-l-90"><span class="light-blue">new </span><span class="dark-green"> List&ltBitNavLinkItem></span><span> { Name = </span><span class="dark-orange">"Activity"</span><span class="light-blue">http://msn.com</span>" , <span>Key = </span><span class="dark-orange">"key1-1-1"</span> },</span>
+                        <br />
+                        <span class="m-l-90"><span class="light-blue">new </span><span class="dark-green"> List&ltBitNavLinkItem></span><span> { Name = </span><span class="dark-orange">"MSN"</span><span>, Url = "</span><span class="light-blue">http://msn.com</span>" , <span>Key = </span><span class="dark-orange">"key1-1-2"</span> }</span>
+                        <br />
+                        <span class="m-l-75">}</span>
+                        <br />
+                        <span class="m-l-60">},</span>
+                        <br />
+                        <span class="m-l-60"><span class="light-blue">new </span><span class="dark-green"> List&ltBitNavLinkItem></span><span> { Name = </span><span class="dark-orange">"MSN"</span><span>, Url = "</span><span class="light-blue">http://msn.com</span>" , <span>Key = </span><span class="dark-orange">"key1-2"</span> , <span>IsEnabled = </span><span class="light-blue">false</span> }</span>
+                        <br />
+                        <span class="m-l-45">}</span>
+                        <br />
+                        <span class="m-l-30">},</span>
+                        <br />
+                        <span class="m-l-30"><span class="light-blue">new </span><span class="dark-green"> List&ltBitNavLinkItem></span><span> { Name = </span><span class="dark-orange">"Shared Documents and Files"</span><span>, Url = "</span><span class="light-blue">http://example.com</span>" , <span>Key = </span><span class="dark-orange">"key2"</span> , <span>Target = </span><span class="dark-orange">"_blank"</span> , <span>IsExpanded = </span><span class="light-blue">true</span> },</span>
+                        <br />
+                        <span class="m-l-30"><span class="light-blue">new </span><span class="dark-green"> List&ltBitNavLinkItem></span><span> { Name = </span><span class="dark-orange">"Pages"</span><span>, Url = "</span><span class="light-blue">http://msn.com</span>" , <span>Key = </span><span class="dark-orange">"key3"</span> , <span>Target = </span><span class="dark-orange">"_parent"</span> },</span>
+                        <br />
+                        <span class="m-l-30"><span class="light-blue">new </span><span class="dark-green"> List&ltBitNavLinkItem></span><span> { Name = </span><span class="dark-orange">"Notebook"</span><span>, Url = "</span><span class="light-blue">http://msn.com</span>" , <span>Key = </span><span class="dark-orange">"key4"</span> , <span>IsEnabled = </span><span class="light-blue">false</span> },</span>
+                        <br />
+                        <span class="m-l-30"><span class="light-blue">new </span><span class="dark-green"> List&ltBitNavLinkItem></span><span> { Name = </span><span class="dark-orange">"Communication and Media"</span><span>, Url = "</span><span class="light-blue">http://msn.com</span>" , <span>Key = </span><span class="dark-orange">"key5"</span> , <span>Target = </span><span class="dark-orange">"_top"</span> },</span>
+                        <br />
+                        <span class="m-l-30"><span class="light-blue">new </span><span class="dark-green"> List&ltBitNavLinkItem></span><span> { Name = </span><span class="dark-orange">"News"</span><span>, Url = "</span><span class="light-blue">http://msn.com</span>" , <span>Key = </span><span class="dark-orange">"key6"</span> , <span>Target = </span><span class="dark-orange">"_self"</span> , <span>Icon = </span><span class="dark-orange">News</span> }</span>
+                        <br />
+                        <span>};</span>
+                    </p>
+                </div>
+            </BitPivotItem>
+        </BitPivot>
+    </div>
+    <div class="card">
+        <h3>Nav similar to the one in this demo app</h3>
+        <BitPivot>
+            <BitPivotItem HeaderText="Example" IconName="ViewList">
+                <BitNav Style="width: 300px;"
+                        NavLinkItems="BasicNoUrlNavLinks"
+                        RenderType="BitNavRenderType.Grouped"
+                        AriaLabel="Nav example similar to one found in this demo page">
+                </BitNav>
+            </BitPivotItem>
+            <BitPivotItem HeaderText="Code" IconName="Source">
+                <p>
+                    &lt<span class="dark-green">BitNav Style</span><span>="width: 300px;"</span>
+                    <br />
+                    <span class="dark-green m-l-45">NavLinkItems</span>="BasicNoUrlNavLinks"
+                    <br />
+                    <span class="dark-green m-l-45">AriaLabel</span>="Nav example similar to one found in this demo page"
+                    <br />
+                    <span>&lt/</span><span class="dark-green">BitNav</span><span>&gt;</span>
+                </p>
+                <div>
+                    <span class="light-yellow-bg">&#64;code {</span>
+                    <p>
+                        <span>private readonly <span class="dark-green">List&ltBitNavLinkItem></span> BasicNoUrlNavLinks = <span class=light-blue>new</span>()</span>
+                        <br />
+                        <span class="light-yellow-bg">{</span>
+                        <br />
+                        <span class="m-l-30"><span class="light-blue">new </span><span class="dark-green">BitNavLinkItem</span></span>
+                        <br />
+                        <span class="m-l-30">{</span>
+                        <br />
+                        <span class="m-l-45">Name = <span class="dark-orange">"Basic components"</span>,</span>
+                        <br />
+                        <span class="m-l-45">Key = <span class="dark-orange">"key1"</span>,</span>
+                        <br />
+                        <span class="m-l-45">IsGroup = <span class="light-blue">true</span>,</span>
+                        <br />
+                        <span class="m-l-45">IsExpanded = <span class="light-blue">true</span>,</span>
+                        <br />
+                        <span class="m-l-45">CollapseAriaLabel = <span class="dark-orange">"Collapse Basic components section"</span>,</span>
+                        <br />
+                        <span class="m-l-45">Links = <span class="light-blue">new</span><span class="dark-green"> List&ltBitNavLinkItem></span></span>
+                        <br />
+                        <span class="m-l-45">{</span>
+                        <br />
+                        <span class=" m-l-60"><span class="light-blue">new </span><span class="dark-green"> List&ltBitNavLinkItem></span> {</span>
+                        <br />
+                        <span class="m-l-75"><span class="light-blue">new </span><span class="dark-green"> List&ltBitNavLinkItem></span><span> { Name = </span><span class="dark-orange">"ActivityItem"</span><span>, Url = "</span><span class="dark-orange">#/examples/activityitem</span>" , <span>Key = </span><span class="dark-orange">"ActivityItem"</span> },</span>
+                        <br />
+                        <span class="m-l-75"><span class="light-blue">new </span><span class="dark-green"> List&ltBitNavLinkItem></span><span> { Name = </span><span class="dark-orange">"Breadcrumb"</span><span>, Url = "</span><span class="dark-orange">#/examples/breadcrumb</span>" , <span>Key = </span><span class="dark-orange">"Breadcrumb"</span> },</span>
+                        <br />
+                        <span class="m-l-75"><span class="light-blue">new </span><span class="dark-green"> List&ltBitNavLinkItem></span><span> { Name = </span><span class="dark-orange">"Button"</span><span>, Url = "</span><span class="dark-orange">#/examples/button</span>" , <span>Key = </span><span class="dark-orange">"Button"</span> }</span>
+                        <br />
+                        <span class="m-l-60">}</span>
+                        <br />
+                        <span class="m-l-45">},</span>
+                        <br />
+                        <span class="m-l-30"><span class="light-blue">new </span><span class="dark-green">BitNavLinkItem</span></span>
+                        <br />
+                        <span class="m-l-30">{</span>
+                        <br />
+                        <span class="m-l-45">Name = <span class="dark-orange">"Extended components"</span>,</span>
+                        <br />
+                        <span class="m-l-45">Key = <span class="dark-orange">"key2"</span>,</span>
+                        <br />
+                        <span class="m-l-45">IsGroup = <span class="light-blue">true</span>,</span>
+                        <br />
+                        <span class="m-l-45">IsExpanded = <span class="light-blue">true</span>,</span>
+                        <br />
+                        <span class="m-l-45">CollapseAriaLabel = <span class="dark-orange">"Collapse Extended components section"</span>,</span>
+                        <br />
+                        <span class="m-l-45">Links = <span class="light-blue">new</span><span class="dark-green"> List&ltBitNavLinkItem></span></span>
+                        <br />
+                        <span class="m-l-45">{</span>
+                        <br />
+                        <span class=" m-l-60"><span class="light-blue">new </span><span class="dark-green"> List&ltBitNavLinkItem></span> {</span>
+                        <br />
+                        <span class="m-l-75"><span class="light-blue">new </span><span class="dark-green"> List&ltBitNavLinkItem></span><span> { Name = </span><span class="dark-orange">"ColorPicker"</span><span>, Url = "</span><span class="dark-orange">#/examples/colorpicker</span>" , <span>Key = </span><span class="dark-orange">"ColorPicker"</span> },</span>
+                        <br />
+                        <span class="m-l-75"><span class="light-blue">new </span><span class="dark-green"> List&ltBitNavLinkItem></span><span> { Name = </span><span class="dark-orange">"ExtendedPeoplePicker"</span><span>, Url = "</span><span class="dark-orange">#/examples/extendedpeoplepicker</span>" , <span>Key = </span><span class="dark-orange">"ExtendedPeoplePicker"</span> },</span>
+                        <br />
+                        <span class="m-l-75"><span class="light-blue">new </span><span class="dark-green"> List&ltBitNavLinkItem></span><span> { Name = </span><span class="dark-orange">"GroupedList"</span><span>, Url = "</span><span class="dark-orange">#/examples/groupedlist</span>" , <span>Key = </span><span class="dark-orange">"GroupedList"</span> }</span>
+                        <br />
+                        <span class="m-l-60">}</span>
+                        <br />
+                        <span class="m-l-45">},</span>
+                        <br />
+                        <span class="m-l-30"><span class="light-blue">new </span><span class="dark-green">BitNavLinkItem</span></span>
+                        <br />
+                        <span class="m-l-30">{</span>
+                        <br />
+                        <span class="m-l-45">Name = <span class="dark-orange">"Utilities"</span>,</span>
+                        <br />
+                        <span class="m-l-45">Key = <span class="dark-orange">"key3"</span>,</span>
+                        <br />
+                        <span class="m-l-45">IsGroup = <span class="light-blue">true</span>,</span>
+                        <br />
+                        <span class="m-l-45">IsExpanded = <span class="light-blue">true</span>,</span>
+                        <br />
+                        <span class="m-l-45">CollapseAriaLabel = <span class="dark-orange">"Collapse Utilities section"</span>,</span>
+                        <br />
+                        <span class="m-l-45">Links = <span class="light-blue">new</span><span class="dark-green"> List&ltBitNavLinkItem></span></span>
+                        <br />
+                        <span class="m-l-45">{</span>
+                        <br />
+                        <span class=" m-l-60"><span class="light-blue">new </span><span class="dark-green"> List&ltBitNavLinkItem></span> {</span>
+                        <br />
+                        <span class="m-l-75"><span class="light-blue">new </span><span class="dark-green"> List&ltBitNavLinkItem></span><span> { Name = </span><span class="dark-orange">"FocusTrapZone"</span><span>, Url = "</span><span class="dark-orange">#/examples/focustrapzone</span>" , <span>Key = </span><span class="dark-orange">"FocusTrapZone"</span> },</span>
+                        <br />
+                        <span class="m-l-75"><span class="light-blue">new </span><span class="dark-green"> List&ltBitNavLinkItem></span><span> { Name = </span><span class="dark-orange">"FocusZone"</span><span>, Url = "</span><span class="dark-orange">#/examples/focuszone</span>" , <span>Key = </span><span class="dark-orange">"FocusZone"</span> },</span>
+                        <br />
+                        <span class="m-l-75"><span class="light-blue">new </span><span class="dark-green"> List&ltBitNavLinkItem></span><span> { Name = </span><span class="dark-orange">"MarqueeSelection"</span><span>, Url = "</span><span class="dark-orange">#/examples/marqueeselection</span>" , <span>Key = </span><span class="dark-orange">"MarqueeSelection"</span> }</span>
+                        <br />
+                        <span class="m-l-60">}</span>
+                        <br />
+                        <span class="m-l-45">},</span>
+                        <br />
+                        <span>};</span>
+                    </p>
+                </div>
+            </BitPivotItem>
+        </BitPivot>
+    </div>
+    <div class="card">
+        <h3>Nav with nested links</h3>
+        <BitPivot>
+            <BitPivotItem HeaderText="Example" IconName="ViewList">
+                <BitNav NavLinkItems="NestedLinks"
+                        AriaLabel="Nav example with nested links">
+                </BitNav>
+            </BitPivotItem>
+            <BitPivotItem HeaderText="Code" IconName="Source">
+                <p>
+                    &lt<span class="dark-green">BitNav NavLinkItems</span>="NestedLinks"
+                    <br />
+                    <span class="dark-green m-l-45">AriaLabel</span>="Nav example with nested links"
+                    <br />
+                    <span>&lt/</span><span class="dark-green">BitNav</span><span>&gt;</span>
+                </p>
+                <div>
+                    <span class="light-yellow-bg">&#64;code {</span>
+                    <p>
+                        <span>private readonly <span class="dark-green">List&ltBitNavLinkItem></span> NestedLinks = <span class=light-blue>new</span>()</span>
+                        <br />
+                        <span class="light-yellow-bg">{</span>
+                        <br />
+                        <span class="m-l-30"><span class="light-blue">new </span><span class="dark-green">BitNavLinkItem</span></span>
+                        <br />
+                        <span class="m-l-30">{</span>
+                        <br />
+                        <span class="m-l-45">Name = <span class="dark-orange">"Parent link 1"</span>,</span>
+                        <br />
+                        <span class="m-l-45">Url = <span class="dark-orange">"http://example.com"</span>,</span>
+                        <br />
+                        <span class="m-l-45">Key = <span class="dark-orange">"key1"</span>,</span>
+                        <br />
+                        <span class="m-l-45">Title = <span class="dark-orange">"Parent link 1"</span>,</span>
+                        <br />
+                        <span class="m-l-45">CollapseAriaLabel = <span class="dark-orange">"Collapse Parent link 1"</span>,</span>
+                        <br />
+                        <span class="m-l-45">Links = <span class="light-blue">new</span><span class="dark-green"> List&ltBitNavLinkItem></span></span>
+                        <br />
+                        <span class="m-l-45">{</span>
+                        <br />
+                        <span class=" m-l-60"><span class="light-blue">new </span><span class="dark-green"> List&ltBitNavLinkItem></span> {</span>
+                        <br />
+                        <span class="m-l-75">Name = <span class="dark-orange">"Child link 1"</span>,</span>
+                        <br />
+                        <span class="m-l-75">Url = <span class="light-blue">"http://msn.com"</span>,</span>
+                        <br />
+                        <span class="m-l-75">Key = <span class="dark-orange">"key1-1"</span>,</span>
+                        <br />
+                        <span class="m-l-75">Title = <span class="dark-orange">"Child link 1"</span>,</span>
+                        <br />
+                        <span class="m-l-75">Links = <span class="light-blue">new</span><span class="dark-green"> List&ltBitNavLinkItem></span></span>
+                        <br />
+                        <span class="m-l-75">{</span>
+                        <br />
+                        <span class="m-l-90"><span class="light-blue">new </span><span class="dark-green"> List&ltBitNavLinkItem></span><span> { Name = </span><span class="dark-orange">"3rd level link 1"</span><span>, Url = "</span><span class="dark-orange">http://msn.com</span>" , <span>Title = </span><span class="dark-orange">"3rd level link 1"</span> , <span>Key = </span><span class="dark-orange">"Key1-1-1"</span> },</span>
+                        <br />
+                        <span class="m-l-90"><span class="light-blue">new </span><span class="dark-green"> List&ltBitNavLinkItem></span><span> { Name = </span><span class="dark-orange">"3rd level link 2"</span><span>, Url = "</span><span class="dark-orange">http://msn.com</span>" , <span>Title = </span><span class="dark-orange">"3rd level link 2"</span> , <span>Key = </span><span class="dark-orange">"Key1-1-2"</span> , <span>IsEnabled = "</span><span class="light-blue">false</span>" },</span>
+                        <br />
+                        <span class="m-l-75">}</span>
+                        <br />
+                        <span class="m-l-60">},</span>
+                        <br />
+                        <span class="m-l-60"><span class="light-blue">new </span><span class="dark-green"> List&ltBitNavLinkItem></span><span> { Name = </span><span class="dark-orange">"3rd level link 2"</span><span>, Url = "</span><span class="dark-orange">http://msn.com</span>" , <span>Title = </span><span class="dark-orange">"3rd level link 2"</span> , <span>Key = </span><span class="dark-orange">"Key1-2"</span> },</span>
+                        <br />
+                        <span class="m-l-60"><span class="light-blue">new </span><span class="dark-green"> List&ltBitNavLinkItem></span><span> { Name = </span><span class="dark-orange">"3rd level link 3"</span><span>, Url = "</span><span class="dark-orange">http://msn.com</span>" , <span>Title = </span><span class="dark-orange">"3rd level link 3"</span> , <span>Key = </span><span class="dark-orange">"Key1-3"</span> , <span>IsEnabled = "</span><span class="light-blue">false</span>" },</span>
+                        <br />
+                        <span class="m-l-45">}</span>
+                        <br />
+                        <span class="m-l-30">},</span>
+                        <br />
+                        <span class="m-l-30"><span class="light-blue">new </span><span class="dark-green">BitNavLinkItem</span></span>
+                        <br />
+                        <span class="m-l-30">{</span>
+                        <br />
+                        <span class="m-l-45">Name = <span class="dark-orange">"Parent link 2"</span>,</span>
+                        <br />
+                        <span class="m-l-45">Key = <span class="dark-orange">"key2"</span>,</span>
+                        <br />
+                        <span class="m-l-45">Title = <span class="dark-orange">Parent link 2</span>,</span>
+                        <br />
+                        <span class="m-l-45">Url = <span class="light-blue">http://example.com</span>,</span>
+                        <br />
+                        <span class="m-l-45">CollapseAriaLabel = <span class="dark-orange">"Collapse Parent link 2"</span>,</span>
+                        <br />
+                        <span class="m-l-45">Links = <span class="light-blue">new</span><span class="dark-green"> List&ltBitNavLinkItem></span></span>
+                        <br />
+                        <span class="m-l-45">{</span>
+                        <br />
+                        <span class=" m-l-60"><span class="light-blue">new </span><span class="dark-green"> List&ltBitNavLinkItem></span> {</span>
+                        <br />
+                        <span class="m-l-60"><span class="light-blue">new </span><span class="dark-green"> List&ltBitNavLinkItem></span><span> { Name = </span><span class="dark-orange">"Child link 4"</span><span>, Title = </span><span class="dark-orange">"Child link 4"</span><span>, Url = "</span><span class="light-blue">http://example.com</span>" , <span>Key = </span><span class="dark-orange">"Key2-1"</span> }</span>
+                        <br />
+                        <span class="m-l-60">}</span>
+                        <br />
+                        <span class="m-l-45">},</span>
+                        <br />
+                        <span>};</span>
+                    </p>
+                </div>
+            </BitPivotItem>
+        </BitPivot>
+    </div>
+    <div class="card">
+        <h3>Nav with custom group header</h3>
+        <BitPivot>
+            <BitPivotItem HeaderText="Example" IconName="ViewList">
+                <BitNav NavLinkItems="CustomHeaderLinks"
+                        RenderType="BitNavRenderType.Grouped"
+                        AriaLabel="Nav with custom group header">
+                    <HeaderTemplate Context="link">
+                        <h3> @link.Name </h3>
+                    </HeaderTemplate>
+                </BitNav>
+            </BitPivotItem>
+            <BitPivotItem HeaderText="Code" IconName="Source">
+                <p>
+                    &lt<span class="dark-green">BitNav NavLinkItems</span>="CustomHeaderLinks"
+                    <br />
+                    <span class="dark-green m-l-45">AriaLabel</span>="Nav with custom group header"
+                    <br />
+                    <span>&lt/</span><span class="dark-green">BitNav</span><span>&gt;</span>
+                </p>
+                <div>
+                    <span class="light-yellow-bg">&#64;code {</span>
+                    <p>
+                        <span>private readonly <span class="dark-green">List&ltBitNavLinkItem></span> CustomHeaderLinks = <span class=light-blue>new</span>()</span>
+                        <br />
+                        <span class="light-yellow-bg">{</span>
+                        <br />
+                        <span class="m-l-30"><span class="light-blue">new </span><span class="dark-green">BitNavLinkItem</span></span>
+                        <br />
+                        <span class="m-l-30">{</span>
+                        <br />
+                        <span class="m-l-45">Name = <span class="dark-orange">"Pages"</span>,</span>
+                        <br />
+                        <span class="m-l-45">Links = <span class="light-blue">new</span><span class="dark-green"> List&ltBitNavLinkItem></span></span>
+                        <br />
+                        <span class="m-l-45">{</span>
+                        <br />
+                        <span class="m-l-60"><span class="light-blue">new </span><span class="dark-green"> List&ltBitNavLinkItem></span><span> { Name = </span><span class="dark-orange">"Activity"</span><span> , Title = </span><span class="dark-orange">"Activity"</span><span>, Url = "</span><span class="dark-orange">http://msn.com</span>" , <span>Key = </span><span class="dark-orange">"Key2-1"</span> },</span>
+                        <br />
+                        <span class="m-l-60"><span class="light-blue">new </span><span class="dark-green"> List&ltBitNavLinkItem></span><span> { Name = </span><span class="dark-orange">"News"</span><span> , Title = </span><span class="dark-orange">"News"</span><span> Url = "</span><span class="dark-orange">http://msn.com</span>" , <span>Key = </span><span class="dark-orange">"Key2-1"</span> } </span>
+                        <br />
+                        <span class="m-l-45">}</span>
+                        <br />
+                        <span class="m-l-30">},</span>
+                        <br />
+                        <span class="m-l-30"><span class="light-blue">new </span><span class="dark-green">BitNavLinkItem</span></span>
+                        <br />
+                        <span class="m-l-30">{</span>
+                        <br />
+                        <span class="m-l-45">Name = <span class="dark-orange">"More pages"</span>,</span>
+                        <br />
+                        <span class="m-l-45">Links = <span class="light-blue">new</span><span class="dark-green"> List&ltBitNavLinkItem></span></span>
+                        <br />
+                        <span class="m-l-45">{</span>
+                        <br />
+                        <span class="m-l-60"><span class="light-blue">new </span><span class="dark-green"> List&ltBitNavLinkItem></span><span> { Name = </span><span class="dark-orange">"Settings"</span><span> , Title = </span><span class="dark-orange">"Settings"</span><span>, Url = "</span><span class="dark-orange">http://example.com</span>" , <span>Key = </span><span class="dark-orange">"Key2-1"</span> },</span>
+                        <br />
+                        <span class="m-l-60"><span class="light-blue">new </span><span class="dark-green"> List&ltBitNavLinkItem></span><span> { Name = </span><span class="dark-orange">"Notes"</span><span> , Title = </span><span class="dark-orange">"Notes"</span><span> Url = "</span><span class="dark-orange">http://example.com</span>" , <span>Key = </span><span class="dark-orange">"Key2-1"</span> } </span>
+                        <br />
+                        <span class="m-l-45">}</span>
+                        <br />
+                        <span class="m-l-30">},</span>
+                        <br />
+                        <span>};</span>
+                    </p>
+                </div>
+            </BitPivotItem>
+        </BitPivot>
+    </div>
+</div>
+<h2>Implementation</h2>
+<div class="card">
+    <table>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Default value</th>
+            <th>Description</th>
+        </tr>
+        <tr>
+            <td>AriaLabel</td>
+            <td>string</td>
+            <td></td>
+            <td>The aria-label of the control for the benefit of screen readers.</td>
+        </tr>
+        <tr>
+            <td>Class</td>
+            <td>string</td>
+            <td></td>
+            <td>Custom CSS class for the root element of the component.</td>
+        </tr>
+        <tr>
+            <td>HeaderTemplate</td>
+            <td>RenderFragment&lt;BitNavLinkItem&gt;</td>
+            <td></td>
+            <td>The template of the header for each nav item, which is a generic RenderFramgment that accepts a BitNavLinItem as input.</td>
+        </tr>
+        <tr>
+            <td>HtmlAttributes</td>
+            <td>Dictionary&lt;string, object&gt;</td>
+            <td></td>
+            <td>Capture and render additional attributes in addition to the component's parameters.</td>
+        </tr>
+        <tr>
+            <td>IsEnabled</td>
+            <td>bool</td>
+            <td></td>
+            <td>Whether or not the component is enabled.</td>
+        </tr>
+        <tr>
+            <td>IsOnTop</td>
+            <td>bool</td>
+            <td>false</td>
+            <td>Indicates whether the navigation component renders on top of other content in the UI.</td>
+        </tr>
+        <tr>
+            <td>NavLinkItems</td>
+            <td>ICollection&lt;BitNavLinkItem&gt;</td>
+            <td></td>
+            <td>A collection of link items to display in the navigation bar.</td>
+        </tr>
+        <tr>
+            <td>OnClick</td>
+            <td>EventCallback&lt;BitNavLinkItem&gt;</td>
+            <td></td>
+            <td>Callback invoked when a link in the navigation is clicked.</td>
+        </tr>
+        <tr>
+            <td>SelectedKey</td>
+            <td>string</td>
+            <td></td>
+            <td>The key of the nav item selected by caller.</td>
+        </tr>
+        <tr>
+            <td>Style</td>
+            <td>string</td>
+            <td></td>
+            <td>Custom style for the root element of the component.</td>
+        </tr>
+        <tr>
+            <td>Visibility</td>
+            <td>ComponentVisibility</td>
+            <td></td>
+            <td>Whether the component is visible, hidden, collapsed.</td>
+        </tr>
+    </table>
+    <h4>BitNavLinkItem</h4>
+    <table>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Default value</th>
+            <th>Description</th>
+        </tr>
+        <tr>
+            <td>CollapseAriaLabel</td>
+            <td>string</td>
+            <td></td>
+            <td>ARIA label when items is collapsed and can be expanded.</td>
+        </tr>
+        <tr>
+            <td>IsEnabled</td>
+            <td>bool</td>
+            <td></td>
+            <td>Whether or not the link is enabled.</td>
+        </tr>
+        <tr>
+            <td>Icon</td>
+            <td>string</td>
+            <td></td>
+            <td>Name of an icon to render next to this link button.</td>
+        </tr>
+        <tr>
+            <td>IsExpanded</td>
+            <td>bool</td>
+            <td></td>
+            <td>Whether or not the link is in an expanded state.</td>
+        </tr>
+        <tr>
+            <td>Key</td>
+            <td>string</td>
+            <td></td>
+            <td>A unique value to use as a key or id of the item, used when rendering the list of links and for tracking the currently selected link.</td>
+        </tr>
+        <tr>
+            <td>Links</td>
+            <td>ienumerable of bitNavLinkItem</td>
+            <td></td>
+            <td>A list of items to render as children of the current item.</td>
+        </tr>
+        <tr>
+            <td>Name</td>
+            <td>string</td>
+            <td></td>
+            <td>Text to render for this link.</td>
+        </tr>
+        <tr>
+            <td>Target</td>
+            <td>string</td>
+            <td></td>
+            <td>Link target, specifies how to open the link.</td>
+        </tr>
+        <tr>
+            <td>Title</td>
+            <td>string</td>
+            <td></td>
+            <td>Text for title tooltip.</td>
+        </tr>
+        <tr>
+            <td>Url</td>
+            <td>string</td>
+            <td></td>
+            <td>URL to navigate to for this link.</td>
+        </tr>
+    </table>
+    <div>
+        <h4 id="component-visibility">ComponentVisibility</h4>
+        <hr />
+        <table>
+            <tr>
+                <th>Name</th>
+                <th>Value</th>
+                <th>Description</th>
+            </tr>
+            <tr>
+                <td>Visible</td>
+                <td>0</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>Hidden</td>
+                <td>1</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>Collapsed</td>
+                <td>2</td>
+                <td></td>
+            </tr>
+        </table>
+    </div>
+</div>

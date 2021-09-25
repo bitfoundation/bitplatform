@@ -13,11 +13,13 @@ using Bit.OData.ActionFilters;
 using Bit.OData.Contracts;
 using Bit.OData.Implementations;
 using Bit.OData.ODataControllers;
+using Bit.Owin;
 using Bit.Owin.Implementations;
 using DotNetTestApp;
 using IdentityServer3.Core.Models;
 using Microsoft.AspNet.OData.Builder;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -29,6 +31,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Reflection;
+using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
@@ -38,6 +41,39 @@ using System.Web.Http;
 
 namespace DotNetTestApp
 {
+    public class AppStartup : AspNetCoreAppStartup
+    {
+        public override void ConfigureMiddlewares(IApplicationBuilder aspNetCoreApp)
+        {
+            aspNetCoreApp.Map("/xyz", innerAspNetCoreApp =>
+            {
+                innerAspNetCoreApp.Run(async cntx =>
+                {
+                    await cntx.Response.WriteAsync(cntx.RequestServices.GetRequiredService<ITest>().GetVal());
+                });
+            });
+
+            base.ConfigureMiddlewares(aspNetCoreApp);
+        }
+
+        public override void ConfigureServices(IServiceCollection services)
+        {
+            services.AddScoped<ITest, Test>();
+
+            base.ConfigureServices(services);
+        }
+    }
+
+    public interface ITest
+    {
+        string GetVal();
+    }
+
+    public class Test : ITest
+    {
+        public string GetVal() => "!";
+    }
+
     public class DotNetTestAppModule : IAppModule, IAppModulesProvider
     {
         public IEnumerable<IAppModule> GetAppModules()
@@ -138,10 +174,19 @@ namespace DotNetTestApp
 
     public class TestUserService : UserService
     {
-        public override Task<BitJwtToken> LocalLogin(LocalAuthenticationContext context, CancellationToken cancellationToken)
+        public async override Task<BitJwtToken> LocalLogin(LocalAuthenticationContext context, CancellationToken cancellationToken)
         {
             if (context.UserName == context.Password)
-                return Task.FromResult(new BitJwtToken { UserId = context.UserName });
+            {
+                return new BitJwtToken
+                {
+                    UserId = context.UserName,
+                    Claims = new Dictionary<string, string?>
+                    {
+                        { ClaimTypes.Role, "User" }
+                    }
+                };
+            }
 
             throw new DomainLogicException("LoginFailed");
         }
@@ -259,6 +304,18 @@ namespace DotNetTestApp
                 throw new InvalidOperationException();
 
             return firstNumber + secondNumber;
+        }
+
+        [Function, Authorize(Roles = "User")]
+        public string GetData()
+        {
+            return "Data";
+        }
+
+        [Function, Authorize(Roles = "Admin")]
+        public string GetImportantData()
+        {
+            return "Important data";
         }
     }
 

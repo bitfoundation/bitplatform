@@ -11,11 +11,23 @@ namespace Bit.Client.Web.BlazorUI
         private int? tabIndex;
         private bool isChecked;
 
-        [Parameter] public bool AllowDisabledFocus { get; set; } = true;
-        [Parameter] public string? AriaDescription { get; set; }
-        [Parameter] public bool AriaHidden { get; set; }
         /// <summary>
-        /// determine if the button is checked state, default is true
+        /// Whether the toggle button can have focus in disabled mode.
+        /// </summary>
+        [Parameter] public bool AllowDisabledFocus { get; set; } = true;
+
+        /// <summary>
+        /// Detailed description of the toggle button for the benefit of screen readers.
+        /// </summary>
+        [Parameter] public string? AriaDescription { get; set; }
+
+        /// <summary>
+        /// If true, add an aria-hidden attribute instructing screen readers to ignore the element.
+        /// </summary>
+        [Parameter] public bool AriaHidden { get; set; }
+
+        /// <summary>
+        /// Determine if the button is in checked state, default is true.
         /// </summary>        
         [Parameter]
         public bool IsChecked
@@ -29,17 +41,47 @@ namespace Bit.Client.Web.BlazorUI
                 _ = IsCheckedChanged.InvokeAsync(value);
             }
         }
+                
         [Parameter] public EventCallback<bool> IsCheckedChanged { get; set; }
+
         /// <summary>
-        /// the icon that shows in the button
+        /// The icon that shows in the button.
         /// </summary>
         [Parameter] public string? IconName { get; set; }
+
         /// <summary>
-        /// the text that shows in the label
+        /// The text that shows in the label.
         /// </summary>
         [Parameter] public string? Label { get; set; }
+
+        /// <summary>
+        /// URL the link points to, if provided, button renders as an anchor.
+        /// </summary>
+        [Parameter] public string? Href { get; set; }
+
+        /// <summary>
+        /// If Href provided, specifies how to open the link.
+        /// </summary>
+        [Parameter] public string? Target { get; set; }
+
+        /// <summary>
+        /// The title to show when the mouse is placed on the button.
+        /// </summary>
+        [Parameter] public string? Title { get; set; }
+
+        /// <summary>
+        /// Callback that is called when the button is clicked.
+        /// </summary>
         [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+
+        /// <summary>
+        /// Callback that is called when the IsChecked value has changed.
+        /// </summary>
         [Parameter] public EventCallback<bool> OnChange { get; set; }
+
+        /// <summary>
+        /// The style of compound button, Possible values: Primary | Standard.
+        /// </summary>
         [Parameter]
         public ButtonStyle ButtonStyle
         {
@@ -67,13 +109,18 @@ namespace Bit.Client.Web.BlazorUI
         protected override void RegisterComponentClasses()
         {
             ClassBuilder.Register(() => IsEnabled is false
-                                           ? string.Empty
-                                           : ButtonStyle == ButtonStyle.Primary
-                                               ? $"{RootElementClass}-primary-{VisualClassRegistrar()}"
-                                               : $"{RootElementClass}-standard-{VisualClassRegistrar()}");
+                                       ? ButtonStyle == ButtonStyle.Primary
+                                           ? $"{RootElementClass}-primary-disabled-{VisualClassRegistrar()}"
+                                           : $"{RootElementClass}-standard-disabled-{VisualClassRegistrar()}"
+                                       : ButtonStyle == ButtonStyle.Primary
+                                           ? $"{RootElementClass}-primary-{VisualClassRegistrar()}"
+                                           : $"{RootElementClass}-standard-{VisualClassRegistrar()}");
+
             ClassBuilder.Register(() => IsChecked is false
                                             ? string.Empty
-                                            : $"{RootElementClass}-checked");
+                                            : ButtonStyle == ButtonStyle.Primary
+                                               ? $"{RootElementClass}-primary-checked-{VisualClassRegistrar()}"
+                                               : $"{RootElementClass}-standard-checked-{VisualClassRegistrar()}");
         }
 
         protected override async Task OnInitializedAsync()

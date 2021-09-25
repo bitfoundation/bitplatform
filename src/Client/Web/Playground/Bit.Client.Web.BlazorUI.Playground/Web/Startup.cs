@@ -1,4 +1,4 @@
-#if BlazorServer
+﻿#if BlazorServer
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.ResponseCompression;
@@ -56,6 +56,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web
 
             app.UseEndpoints(endpoints =>
             {
+                endpoints.MapDefaultControllerRoute();
                 endpoints.MapBlazorHub();
                 endpoints.MapFallbackToPage("/_Host");
             });

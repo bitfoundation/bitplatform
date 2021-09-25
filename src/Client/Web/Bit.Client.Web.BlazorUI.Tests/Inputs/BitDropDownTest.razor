@@ -1,31 +1,55 @@
 ﻿<CascadingValue Value="Visual">
-	<BitDropDown IsEnabled="IsEnabled"
-				 IsMultiSelect="IsMultiSelect"
-				 Items="Items"
-				 OnClick="ClickEvent"
-				 OnSelectItem="ChangeEvent">
-	</BitDropDown>
+    <BitDropDown IsEnabled="IsEnabled"
+                 OnClick="HandleClick"
+                 IsMultiSelect="IsMultiSelect"
+                 IsOpen="IsOpen"
+                 Items="Items"
+                 MultiSelectDelimiter="@MultiSelectDelimiter"
+                 DefaultSelectedMultipleKeys="DefaultSelectedMultipleKeys"
+                 DefaultSelectedKey="@DefaultSelectedKey"
+                 Placeholder="@Placeholder"
+                 Label="@Label"
+                 Title="@Title"
+                 NotifyOnReselect="NotifyOnReselect"
+                 OnSelectItem="HandleSelectItem"
+                 @bind-SelectedMultipleKeys="SelectedMultipleKeys"
+                 @bind-SelectedKey="@SelectedKey"
+                 IsRequired="IsRequired">
+        <LabelFragment>
+            @LabelFragment
+        </LabelFragment>
+    </BitDropDown>
 </CascadingValue>
 @code {
-	[Parameter] public Visual Visual { get; set; }
-	[Parameter] public string Value { get; set; }
-	[Parameter] public bool IsEnabled { get; set; } = true;
-	[Parameter] public bool ItemIsEnabled { get; set; } = true;
-	[Parameter] public bool IsMultiSelect { get; set; } = false;
-	[Parameter] public List<DropDownItem> Items { get; set; } = new List<DropDownItem>();
+    [Parameter] public Visual Visual { get; set; }
+    [Parameter] public bool IsMultiSelect { get; set; }
+    [Parameter] public bool IsEnabled { get; set; }
+    [Parameter] public bool IsRequired { get; set; }
+    [Parameter] public bool IsOpen { get; set; }
+    [Parameter] public List<BitDropDownItem> Items { get; set; } = new List<BitDropDownItem>();
+    [Parameter] public List<string> SelectedMultipleKeys { get; set; } = new List<string>();
+    [Parameter] public string SelectedKey { get; set; }
+    [Parameter] public List<string> DefaultSelectedMultipleKeys { get; set; } = new List<string>();
+    [Parameter] public string? DefaultSelectedKey { get; set; }
+    [Parameter] public string? Placeholder { get; set; }
+    [Parameter] public string? Label { get; set; }
+    [Parameter] public string? Title { get; set; }
+    [Parameter] public string MultiSelectDelimiter { get; set; } = ", ";
+    [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+    [Parameter] public EventCallback<BitDropDownItem> OnSelectItem { get; set; }
+    [Parameter] public bool NotifyOnReselect { get; set; } = false;
+    [Parameter] public RenderFragment? LabelFragment { get; set; }
 
-	public void ChangeEvent(DropDownItem e)
-	{
-		IncrementCount();
-	}
-	public void ClickEvent(MouseEventArgs e)
-	{
-		IncrementCount();
-	}
-	public int CurrentCount { get; set; }
-	public void IncrementCount()
-	{
-		CurrentCount++;
-		Value = CurrentCount.ToString();
-	}
+    public int Counter = 0;
+    public int SelectItemCounter = 0;
+
+    public void HandleClick(MouseEventArgs args)
+    {
+        Counter++;
+    }
+
+    public void HandleSelectItem(BitDropDownItem item)
+    {
+        SelectItemCounter++;
+    }
 }
