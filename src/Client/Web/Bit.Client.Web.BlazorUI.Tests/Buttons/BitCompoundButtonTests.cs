@@ -8,22 +8,22 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
     public class BitCompoundButtonTests : BunitTestContext
     {
         [DataTestMethod,
-            DataRow(Visual.Fluent, true, ButtonStyle.Primary),
-            DataRow(Visual.Fluent, true, ButtonStyle.Standard),
-            DataRow(Visual.Fluent, false, ButtonStyle.Primary),
-            DataRow(Visual.Fluent, false, ButtonStyle.Standard),
+            DataRow(Visual.Fluent, true, BitButtonStyle.Primary),
+            DataRow(Visual.Fluent, true, BitButtonStyle.Standard),
+            DataRow(Visual.Fluent, false, BitButtonStyle.Primary),
+            DataRow(Visual.Fluent, false, BitButtonStyle.Standard),
 
-            DataRow(Visual.Cupertino, true, ButtonStyle.Primary),
-            DataRow(Visual.Cupertino, true, ButtonStyle.Standard),
-            DataRow(Visual.Cupertino, false, ButtonStyle.Primary),
-            DataRow(Visual.Cupertino, false, ButtonStyle.Standard),
+            DataRow(Visual.Cupertino, true, BitButtonStyle.Primary),
+            DataRow(Visual.Cupertino, true, BitButtonStyle.Standard),
+            DataRow(Visual.Cupertino, false, BitButtonStyle.Primary),
+            DataRow(Visual.Cupertino, false, BitButtonStyle.Standard),
 
-            DataRow(Visual.Material, true, ButtonStyle.Primary),
-            DataRow(Visual.Material, true, ButtonStyle.Standard),
-            DataRow(Visual.Material, false, ButtonStyle.Primary),
-            DataRow(Visual.Material, false, ButtonStyle.Standard)
+            DataRow(Visual.Material, true, BitButtonStyle.Primary),
+            DataRow(Visual.Material, true, BitButtonStyle.Standard),
+            DataRow(Visual.Material, false, BitButtonStyle.Primary),
+            DataRow(Visual.Material, false, BitButtonStyle.Standard)
         ]
-        public void BitCompoundButtonTest(Visual visual, bool isEnabled, ButtonStyle style)
+        public void BitCompoundButtonTest(Visual visual, bool isEnabled, BitButtonStyle style)
         {
             var com = RenderComponent<BitCompoundButtonTest>(parameters =>
                 {
@@ -44,12 +44,12 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
         }
 
         [DataTestMethod,
-            DataRow(true, ButtonStyle.Primary, false, false),
-            DataRow(true, ButtonStyle.Standard, true, false),
-            DataRow(false, ButtonStyle.Primary, false, true),
-            DataRow(false, ButtonStyle.Standard, true, false),
+            DataRow(true, BitButtonStyle.Primary, false, false),
+            DataRow(true, BitButtonStyle.Standard, true, false),
+            DataRow(false, BitButtonStyle.Primary, false, true),
+            DataRow(false, BitButtonStyle.Standard, true, false),
         ]
-        public void BitCompoundButtonDisabledFocusTest(bool isEnabled, ButtonStyle style, bool allowDisabledFocus, bool expectedResult)
+        public void BitCompoundButtonDisabledFocusTest(bool isEnabled, BitButtonStyle style, bool allowDisabledFocus, bool expectedResult)
         {
             var com = RenderComponent<BitCompoundButtonTest>(parameters =>
             {
@@ -130,14 +130,14 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
         }
 
         [DataTestMethod,
-            DataRow(Visual.Fluent, ButtonStyle.Primary, false),
-            DataRow(Visual.Fluent, ButtonStyle.Standard, false),
-            DataRow(Visual.Cupertino, ButtonStyle.Primary, false),
-            DataRow(Visual.Cupertino, ButtonStyle.Standard, false),
-            DataRow(Visual.Material, ButtonStyle.Primary, false),
-            DataRow(Visual.Material, ButtonStyle.Standard, false)
+            DataRow(Visual.Fluent, BitButtonStyle.Primary, false),
+            DataRow(Visual.Fluent, BitButtonStyle.Standard, false),
+            DataRow(Visual.Cupertino, BitButtonStyle.Primary, false),
+            DataRow(Visual.Cupertino, BitButtonStyle.Standard, false),
+            DataRow(Visual.Material, BitButtonStyle.Primary, false),
+            DataRow(Visual.Material, BitButtonStyle.Standard, false)
         ]
-        public void BitCompoundButtonShouldHaveCorrectDisabledClassBasedOnButtonStyle(Visual visual, ButtonStyle buttonStyle, bool isEnabled)
+        public void BitCompoundButtonShouldHaveCorrectDisabledClassBasedOnButtonStyle(Visual visual, BitButtonStyle buttonStyle, bool isEnabled)
         {
             var component = RenderComponent<BitCompoundButtonTest>(parameters =>
             {
@@ -149,7 +149,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
             var bitCompoundButton = component.Find(".bit-cmp-btn");
 
             var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
-            var buttonStyleStr = buttonStyle == ButtonStyle.Primary ? "primary" : "standard";
+            var buttonStyleStr = buttonStyle == BitButtonStyle.Primary ? "primary" : "standard";
             Assert.IsTrue(bitCompoundButton.ClassList.Contains($"bit-cmp-btn-{buttonStyleStr}-disabled-{visualClass}"));
         }
     }

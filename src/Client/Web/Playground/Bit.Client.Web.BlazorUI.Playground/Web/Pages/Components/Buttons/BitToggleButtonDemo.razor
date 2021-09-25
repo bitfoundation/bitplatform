@@ -16,13 +16,13 @@
                     <BitToggleButton @bind-IsChecked="TogglePrimaryButtonChecked"
                                      Label="@(TogglePrimaryButtonChecked ? "Primary Mute":"Primary Unmute")"
                                      IconName=@(TogglePrimaryButtonChecked ? "MicOff" : "Microphone")
-                                     ButtonStyle="ButtonStyle.Primary">
+                                     ButtonStyle="BitButtonStyle.Primary">
                     </BitToggleButton>
 
                     <BitToggleButton @bind-IsChecked="ToggleStandardButtonChecked"
                                      Label="@(ToggleStandardButtonChecked ? "Standard Mute":"Standard Unmute")"
                                      IconName=@(ToggleStandardButtonChecked ? "MicOff" : "Microphone")
-                                     ButtonStyle="ButtonStyle.Standard">
+                                     ButtonStyle="BitButtonStyle.Standard">
                     </BitToggleButton>
 
                     <BitToggleButton @bind-IsChecked="ToggleDisabledButtonChecked"
@@ -191,8 +191,8 @@
             <BitPivot>
                 <BitPivotItem HeaderText="Example" IconName="ViewList">
                     <div>
-                        <BitButton ButtonStyle="ButtonStyle.Standard" OnClick="()=>ToggleButtonTwoWayValue2=false">Set Unmute</BitButton>
-                        <BitButton ButtonStyle="ButtonStyle.Standard" OnClick="()=>ToggleButtonTwoWayValue2=true">Set Mute</BitButton>
+                        <BitButton ButtonStyle="BitButtonStyle.Standard" OnClick="()=>ToggleButtonTwoWayValue2=false">Set Unmute</BitButton>
+                        <BitButton ButtonStyle="BitButtonStyle.Standard" OnClick="()=>ToggleButtonTwoWayValue2=true">Set Mute</BitButton>
                         <div class="m-t-10">
                             <BitToggleButton @bind-IsChecked="ToggleButtonTwoWayValue2"
                                              Label="@(ToggleButtonTwoWayValue2 ? "Mute" : "Unmute")"

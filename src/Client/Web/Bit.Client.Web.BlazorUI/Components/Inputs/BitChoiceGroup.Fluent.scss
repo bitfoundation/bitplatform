@@ -1,7 +1,6 @@
-﻿@import "../colors.fluent.scss", "../../functions.scss";
+﻿@import "../../Styles/Fluent/colors.fluent.scss", "../../Styles/functions.scss";
 
 .bit-chg-fluent {
-
     & > label {
         font-size: 14px;
         font-weight: 600;
@@ -16,9 +15,7 @@
 }
 
 .bit-chg-required-fluent {
-
     & > label {
-
         &::after {
             content: "*";
             color: $Red20;

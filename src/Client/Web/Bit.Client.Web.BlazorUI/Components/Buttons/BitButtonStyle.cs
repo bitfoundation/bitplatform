@@ -1,6 +1,6 @@
 ﻿namespace Bit.Client.Web.BlazorUI
 {
-    public enum ButtonStyle
+    public enum BitButtonStyle
     {
         /// <summary>
         /// The button with white text on a blue background
