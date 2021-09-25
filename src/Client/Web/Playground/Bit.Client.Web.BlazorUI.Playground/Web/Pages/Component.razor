@@ -31,7 +31,7 @@
     <BitButton IsEnabled="true">
         Primary
     </BitButton>
-    <BitButton ButtonStyle="ButtonStyle.Standard" IsEnabled="true">
+    <BitButton ButtonStyle="BitButtonStyle.Standard" IsEnabled="true">
         Standard
     </BitButton>
     <BitButton IsEnabled="false">
@@ -58,7 +58,7 @@
                        Text="Standard"
                        AriaHidden="true"
                        SecondaryText="This Button is compound button"
-                       ButtonStyle="ButtonStyle.Standard">
+                       ButtonStyle="BitButtonStyle.Standard">
     </BitCompoundButton>
     <BitCompoundButton IsEnabled="false"
                        AllowDisabledFocus="false"
@@ -105,7 +105,7 @@
     <BitButton Title="Primary" Target="_blank" Href="https://github.com/bitfoundation/bitframework">
         Open Bit Foundation In New Tab
     </BitButton>
-    <BitButton Title="Standard" Href="https://github.com/bitfoundation/bitframework" ButtonStyle="ButtonStyle.Standard">
+    <BitButton Title="Standard" Href="https://github.com/bitfoundation/bitframework" ButtonStyle="BitButtonStyle.Standard">
         Go To Bit Foundation
     </BitButton>
     <BitButton Target="_self" Href="https://github.com/bitfoundation/bitframework" IsEnabled="false">
@@ -149,13 +149,13 @@
         <BitToggleButton @bind-IsChecked="TogleButtonChecked"
                          Label="@(TogleButtonChecked?"Button checked":"Button unchecked")"
                          IconName=@(TogleButtonChecked?"Emoji2" :"EmojiNeutral")
-                         ButtonStyle="ButtonStyle.Standard"></BitToggleButton>
+                         ButtonStyle="BitButtonStyle.Standard"></BitToggleButton>
 
         <h4>Toggle Button with Primary style</h4>
         <BitToggleButton @bind-IsChecked="TogleButtonChecked"
                          Label="@(TogleButtonChecked?"Button checked":"Button unchecked")"
                          IconName=@(TogleButtonChecked?"Emoji2" :"EmojiNeutral")
-                         ButtonStyle="ButtonStyle.Primary"></BitToggleButton>
+                         ButtonStyle="BitButtonStyle.Primary"></BitToggleButton>
 
         <h4>Disabeled Toggle Buttons</h4>
         <BitToggleButton @bind-IsChecked="TogleButtonChecked"
