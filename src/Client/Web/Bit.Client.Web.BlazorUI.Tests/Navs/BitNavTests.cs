@@ -215,6 +215,48 @@ namespace Bit.Client.Web.BlazorUI.Tests.Navs
             //Assert.AreEqual(items[0].Key, componenet.Instance.OnLinkExpandClickValue);
         }
 
+        [DataTestMethod,
+            DataRow(true),
+            DataRow(false)
+        ]
+        public void BitNavIsCollapsedByDefaultTest(bool isCollapseByDefault)
+        {
+            var items = new List<BitNavLinkItem>()
+            {
+                new() {
+                    Name = "Test1",
+                    Key = "key1",
+                    IsExpanded = true,
+                    IsCollapseByDefault = isCollapseByDefault,
+                    Links = new List<BitNavLinkItem>()
+                        { new() { Name = "Test2", Key = "key2" } } }
+            };
+
+            var componenet = RenderComponent<BitNavTest>(parameters =>
+            {
+                parameters.Add(p => p.NavLinkItems, items);
+                parameters.Add(p => p.RenderType, BitNavRenderType.Grouped);
+            });
+
+            var groupHeaderBtn = componenet.Find(".bit-nav-grp-chevron-btn");
+            var groupHeaderBtnIcon = componenet.Find(".bit-nav-grp-chevron-btn > i");
+
+            if (isCollapseByDefault)
+            {
+                Assert.AreEqual("false", groupHeaderBtn.GetAttribute("aria-expanded"));
+                Assert.IsFalse(groupHeaderBtnIcon.ClassList.Contains("bit-nav-expand-fluent"));
+            }
+            else
+            {
+                Assert.AreEqual("true", groupHeaderBtn.GetAttribute("aria-expanded"));
+                Assert.IsTrue(groupHeaderBtnIcon.ClassList.Contains("bit-nav-expand-fluent"));
+            }
+
+            //TODO: bypassed - BUnit or Blazor issue
+            //button.Click();
+            //Assert.AreEqual(items[0].Key, componenet.Instance.OnLinkExpandClickValue);
+        }
+
         private readonly List<BitNavLinkItem> BasicNavLinks = new()
         {
             new BitNavLinkItem { Name = "Activity", Url = "http://msn.com", Key = "key1", Target = "_blank" },
