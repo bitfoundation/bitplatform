@@ -1,6 +1,6 @@
 ﻿namespace Bit.Client.Web.BlazorUI
 {
-    public enum CalendarType
+    public enum BitCalendarType
     {
         /// <summary>
         /// Show DatePicker in Gregorian calendar
