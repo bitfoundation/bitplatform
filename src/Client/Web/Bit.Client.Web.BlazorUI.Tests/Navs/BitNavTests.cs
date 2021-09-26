@@ -251,10 +251,6 @@ namespace Bit.Client.Web.BlazorUI.Tests.Navs
                 Assert.AreEqual("true", groupHeaderBtn.GetAttribute("aria-expanded"));
                 Assert.IsTrue(groupHeaderBtnIcon.ClassList.Contains("bit-nav-expand-fluent"));
             }
-
-            //TODO: bypassed - BUnit or Blazor issue
-            //button.Click();
-            //Assert.AreEqual(items[0].Key, componenet.Instance.OnLinkExpandClickValue);
         }
 
         private readonly List<BitNavLinkItem> BasicNavLinks = new()
