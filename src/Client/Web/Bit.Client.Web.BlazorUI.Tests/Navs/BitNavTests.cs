@@ -253,6 +253,38 @@ namespace Bit.Client.Web.BlazorUI.Tests.Navs
             }
         }
 
+        [DataTestMethod,
+            DataRow(true),
+            DataRow(false)
+        ]
+        public void BitNavForceAnchorTest(bool isForced)
+        {
+            var items = new List<BitNavLinkItem>()
+            {
+                new() {
+                    Name = "Test1",
+                    Key = "key1",
+                    IsExpanded = true,
+                    Links = new List<BitNavLinkItem>()
+                        { new() { Name = "Test2", Key = "key2", ForceAnchor = isForced } } }
+            };
+
+            var componenet = RenderComponent<BitNavTest>(parameters =>
+            {
+                parameters.Add(p => p.NavLinkItems, items);
+            });
+
+            if (isForced)
+            {
+                var anchorTag = componenet.Find("a");
+                Assert.IsNotNull(anchorTag);
+            }
+            else
+            {
+                Assert.ThrowsException<ElementNotFoundException>(() => componenet.Find("a"));
+            }
+        }
+
         private readonly List<BitNavLinkItem> BasicNavLinks = new()
         {
             new BitNavLinkItem { Name = "Activity", Url = "http://msn.com", Key = "key1", Target = "_blank" },
