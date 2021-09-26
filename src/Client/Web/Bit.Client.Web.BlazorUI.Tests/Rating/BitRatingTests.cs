@@ -97,10 +97,10 @@ namespace Bit.Client.Web.BlazorUI.Tests.Rating
 
         [DataTestMethod,
             DataRow(null),
-            DataRow(RatingSize.Small),
-            DataRow(RatingSize.Large)
+            DataRow(BitRatingSize.Small),
+            DataRow(BitRatingSize.Large)
         ]
-        public void BitRatingShouldRespectSize(RatingSize size)
+        public void BitRatingShouldRespectSize(BitRatingSize size)
         {
             var component = RenderComponent<BitRatingTest>(parameters =>
             {
@@ -108,7 +108,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Rating
             });
             var bitRating = component.Find(".bit-rating");
 
-            var sizeClass = size == RatingSize.Large ? "large" : "small";
+            var sizeClass = size == BitRatingSize.Large ? "large" : "small";
 
             Assert.IsTrue(bitRating.ClassList.Contains($"bit-rating-{sizeClass}-fluent"));
         }
