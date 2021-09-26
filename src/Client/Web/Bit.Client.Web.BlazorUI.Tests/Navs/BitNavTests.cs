@@ -219,7 +219,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Navs
             DataRow(true),
             DataRow(false)
         ]
-        public void BitNavIsCollapsedByDefaultTest(bool isCollapseByDefault)
+        public void BitNavLinkItemIsCollapsedByDefaultTest(bool isCollapseByDefault)
         {
             var items = new List<BitNavLinkItem>()
             {
@@ -257,7 +257,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Navs
             DataRow(true),
             DataRow(false)
         ]
-        public void BitNavForceAnchorTest(bool isForced)
+        public void BitNavLinkItemForceAnchorTest(bool isForced)
         {
             var items = new List<BitNavLinkItem>()
             {
@@ -282,6 +282,35 @@ namespace Bit.Client.Web.BlazorUI.Tests.Navs
             else
             {
                 Assert.ThrowsException<ElementNotFoundException>(() => componenet.Find("a"));
+            }
+        }
+
+        [DataTestMethod,
+            DataRow(null, "name"),
+            DataRow("", "name"),
+            DataRow("title", "name")
+        ]
+        public void BitNavLinkItemTitleTest(string? title, string name)
+        {
+            var items = new List<BitNavLinkItem>()
+            {
+                new() { Name = name, Title = title, Key = "key1", IsExpanded = true }
+            };
+
+            var componenet = RenderComponent<BitNavTest>(parameters =>
+            {
+                parameters.Add(p => p.NavLinkItems, items);
+            });
+
+            var navLinkItem = componenet.Find(".bit-nav-link-enabled-nourl-fluent");
+
+            if (title is null)
+            {
+                Assert.AreEqual(name, navLinkItem.GetAttribute("title"));
+            }
+            else
+            {
+                Assert.AreEqual(title, navLinkItem.GetAttribute("title"));
             }
         }
 
