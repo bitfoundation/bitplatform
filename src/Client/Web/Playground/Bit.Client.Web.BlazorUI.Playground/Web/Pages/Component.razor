@@ -31,7 +31,7 @@
     <BitButton IsEnabled="true">
         Primary
     </BitButton>
-    <BitButton ButtonStyle="ButtonStyle.Standard" IsEnabled="true">
+    <BitButton ButtonStyle="BitButtonStyle.Standard" IsEnabled="true">
         Standard
     </BitButton>
     <BitButton IsEnabled="false">
@@ -58,7 +58,7 @@
                        Text="Standard"
                        AriaHidden="true"
                        SecondaryText="This Button is compound button"
-                       ButtonStyle="ButtonStyle.Standard">
+                       ButtonStyle="BitButtonStyle.Standard">
     </BitCompoundButton>
     <BitCompoundButton IsEnabled="false"
                        AllowDisabledFocus="false"
@@ -105,7 +105,7 @@
     <BitButton Title="Primary" Target="_blank" Href="https://github.com/bitfoundation/bitframework">
         Open Bit Foundation In New Tab
     </BitButton>
-    <BitButton Title="Standard" Href="https://github.com/bitfoundation/bitframework" ButtonStyle="ButtonStyle.Standard">
+    <BitButton Title="Standard" Href="https://github.com/bitfoundation/bitframework" ButtonStyle="BitButtonStyle.Standard">
         Go To Bit Foundation
     </BitButton>
     <BitButton Target="_self" Href="https://github.com/bitfoundation/bitframework" IsEnabled="false">
@@ -149,13 +149,13 @@
         <BitToggleButton @bind-IsChecked="TogleButtonChecked"
                          Label="@(TogleButtonChecked?"Button checked":"Button unchecked")"
                          IconName=@(TogleButtonChecked?"Emoji2" :"EmojiNeutral")
-                         ButtonStyle="ButtonStyle.Standard"></BitToggleButton>
+                         ButtonStyle="BitButtonStyle.Standard"></BitToggleButton>
 
         <h4>Toggle Button with Primary style</h4>
         <BitToggleButton @bind-IsChecked="TogleButtonChecked"
                          Label="@(TogleButtonChecked?"Button checked":"Button unchecked")"
                          IconName=@(TogleButtonChecked?"Emoji2" :"EmojiNeutral")
-                         ButtonStyle="ButtonStyle.Primary"></BitToggleButton>
+                         ButtonStyle="BitButtonStyle.Primary"></BitToggleButton>
 
         <h4>Disabeled Toggle Buttons</h4>
         <BitToggleButton @bind-IsChecked="TogleButtonChecked"
@@ -295,36 +295,39 @@
 <hr />
 
 <div class="checkboxes-container">
-
     <h2>Checkboxes</h2>
-    <h3>Basics</h3>
-    <BitCheckbox @bind-IsChecked="IsCheckBoxChecked">Basic Checkbox</BitCheckbox>
-    <BitCheckbox IsChecked="true">Checked Checkbox (my value wont changed because im not provided with IsCheckedChanged)</BitCheckbox>
-    <BitCheckbox IsEnabled="false">Disable Checkbox</BitCheckbox>
-    <BitCheckbox IsEnabled="true" OnChange="e => CheckBoxOnChangedValue = e">checkbox with only onchange </BitCheckbox> @(CheckBoxOnChangedValue ? "im checked" : "im not checked")
-    <BitCheckbox IsEnabled="false" IsChecked="true">Disable Checked Checkbox</BitCheckbox>
-    <br />
-    <h3>Indeterminate</h3>
-    <BitCheckbox @bind-IsIndeterminate="IsCheckBoxIndeterminate" @bind-IsChecked="IsCheckBoxChecked">Indeterminated checkbox</BitCheckbox>
-    <BitCheckbox IsIndeterminate="true">Indeterminate checkbox</BitCheckbox>
-    <BitCheckbox IsIndeterminate="true" IsEnabled="false">Disabled indeterminated checkbox</BitCheckbox>
-    <BitCheckbox @bind-IsIndeterminate="IsCheckBoxIndeterminateInCode" @bind-IsChecked="IsCheckBoxChecked">Controlled indeterminated checkbox</BitCheckbox>
-    <BitButton OnClick="() => IsCheckBoxIndeterminateInCode = true">Make Checkbox Indeterminate</BitButton>
-    <br />
-    <h5>Custom Label</h5>
-    <BitCheckbox>
 
-        Custom-rendered label with a link go to
-        <a href='https://github.com/bitfoundation/bitframework'>
+    <h3>Basic Checkboxes</h3>
+    <BitCheckbox Style="margin: 5px">Unchecked checkbox (uncontrolled)</BitCheckbox>
+    <BitCheckbox Style="margin: 5px" DefaultIsChecked="true">Checked checkbox (uncontrolled)</BitCheckbox>
+    <BitCheckbox Style="margin: 5px" IsEnabled="false">Disable checkbox</BitCheckbox>
+    <BitCheckbox Style="margin: 5px" IsEnabled="false" DefaultIsChecked="true">Disable checked checkbox</BitCheckbox>
+
+    <h3>Other Implementation Examples</h3>
+    <BitCheckbox Style="margin: 5px" @bind-IsChecked="IsCheckBoxChecked">Controlled checkbox</BitCheckbox>
+    <BitCheckbox Style="margin: 5px" IsChecked="IsCheckBoxChecked" IsCheckedChanged="HandleIsCheckedChange">Controlled checkbox</BitCheckbox>
+    <BitCheckbox Style="margin: 5px">
+        Custom-rendered label with a link to
+        <BitLink href='https://github.com/bitfoundation/bitframework' HasUnderline="true" Target="_blank">
             bit foundation repository page.
-        </a>
+        </BitLink>
     </BitCheckbox>
-    <h3>Reversed</h3>
-    <BitCheckbox BoxSide="@BoxSide.End">Reversed -- Basic Checkbox</BitCheckbox>
-    <BitCheckbox BoxSide="@BoxSide.End" IsChecked="true">Reversed -- Checked Checkbox</BitCheckbox>
-    <BitCheckbox BoxSide="@BoxSide.End" IsEnabled="false">Reversed -- Disable Checkbox</BitCheckbox>
-    <BitCheckbox BoxSide="@BoxSide.End" IsEnabled="false" IsChecked="true">Reversed -- Disable Checked Checkbox</BitCheckbox>
 
+    <h3>Reversed</h3>
+    <BitCheckbox Style="margin: 5px" BoxSide="@BitBoxSide.End">Reversed -- Unchecked checkbox (uncontrolled)</BitCheckbox>
+    <BitCheckbox Style="margin: 5px" BoxSide="@BitBoxSide.End" DefaultIsChecked="true">Reversed -- Checked checkbox (uncontrolled)</BitCheckbox>
+    <BitCheckbox Style="margin: 5px" BoxSide="@BitBoxSide.End" IsEnabled="false">Reversed -- Disable checkbox</BitCheckbox>
+    <BitCheckbox Style="margin: 5px" BoxSide="@BitBoxSide.End" IsEnabled="false" DefaultIsChecked="true">Reversed -- Disable checked checkbox</BitCheckbox>
+
+    <h3>Indeterminate</h3>
+    <BitCheckbox Style="margin: 5px" DefaultIsIndeterminate="true">Indeterminated checkbox (uncontrolled)</BitCheckbox>
+    <BitCheckbox Style="margin: 5px" DefaultIsIndeterminate="true" DefaultIsChecked="true">Indeterminated checkbox which defaults to true when clicked (uncontrolled)</BitCheckbox>
+    <BitCheckbox Style="margin: 5px" @bind-IsIndeterminate="IsCheckBoxIndeterminate">Indeterminated checkbox (uncontrolled)</BitCheckbox>
+    <BitCheckbox Style="margin: 5px" @bind-IsIndeterminate="IsCheckBoxIndeterminate" DefaultIsChecked="true">Indeterminated checkbox which defaults to true when clicked (uncontrolled)</BitCheckbox>
+    <BitCheckbox Style="margin: 5px" @bind-IsIndeterminate="IsCheckBoxIndeterminate" @bind-IsChecked="IsCheckBoxChecked">Indeterminated checkbox (controlled)</BitCheckbox>
+    <BitCheckbox Style="margin: 5px" DefaultIsIndeterminate="true" IsEnabled="false">Disabled indeterminate checkbox</BitCheckbox>
+    <BitCheckbox Style="margin: 5px" @bind-IsIndeterminate="IsCheckBoxIndeterminateInCode" @bind-IsChecked="IsCheckBoxChecked">Indeterminate checkbox which toggles with code (controlled)</BitCheckbox>
+    <BitButton OnClick="() => IsCheckBoxIndeterminateInCode = true">Make Checkbox Indeterminate</BitButton>
     <br />
 </div>
 
@@ -648,16 +651,16 @@
 <hr />
 
 <div class="nav-container">
-    <h1>Bit Navs</h1>
+    <h1>BitNav</h1>
     <h2>Basic nav with sample links</h2>
     <BitNav Style="width: 208px;
                    height: 350px;
                    box-sizing: border-box;
                    border: 1px solid #eee;
                    overflow-y: auto;"
-            Class="bit-nav-simple-link"
             NavLinkItems="BasicNavLinks"
-            AriaLabel="Nav basic example">
+            AriaLabel="Nav basic example"
+            SelectedKey="key3">
     </BitNav>
 
     <br />
@@ -668,7 +671,7 @@
                    border: 1px solid #eee;
                    overflow-y: auto;"
             Class="bit-nav-wrapped-link"
-            SelectedKey="component"
+            SelectedKey="key6"
             AriaLabel="Nav example with wrapped link text"
             NavLinkItems="BasicNoToolTipNavLinks">
     </BitNav>
@@ -677,6 +680,7 @@
     <h2>Nav similar to the one in this demo app</h2>
     <BitNav Style="width: 300px;"
             NavLinkItems="BasicNoUrlNavLinks"
+            RenderType="BitNavRenderType.Grouped"
             AriaLabel="Nav example similar to one found in this demo page">
     </BitNav>
 
@@ -689,6 +693,7 @@
     <br />
     <h2>Nav with custom group header</h2>
     <BitNav NavLinkItems="CustomHeaderLinks"
+            RenderType="BitNavRenderType.Grouped"
             AriaLabel="Nav with custom group header">
         <HeaderTemplate Context="link">
             <h3> @link.Name </h3>
@@ -824,7 +829,7 @@
     </BitDropDown>
 </div>
 <hr />
-<h3>Bit Progress Indicator</h3>
+<h3>BitProgressIndicator</h3>
 <div class="pi-container">
     <h4>Default Progress Indicator</h4>
     <BitProgressIndicator Label="Example title" Description="@description" PercentComplete="@CompletedPercent" BarHeight="50"></BitProgressIndicator>
@@ -885,6 +890,10 @@
 
     <h3>DatePicker with custom date formatting</h3>
     <BitDatePicker OnSelectDate="OnDateFormat"></BitDatePicker>
+
+    <h3>DatePicker two-way binding</h3>
+    <div>binded: @SelectedDate</div>
+    <BitDatePicker @bind-Value="@SelectedDate"></BitDatePicker>
 </div>
 <hr />
 

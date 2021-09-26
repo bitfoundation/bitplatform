@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
 
 namespace Bit.Client.Web.BlazorUI
 {
@@ -9,6 +8,7 @@ namespace Bit.Client.Web.BlazorUI
     {
         private BitMessageBarType messageBarType = BitMessageBarType.Info;
         private string? messageBarIcon;
+        private bool ExpandSingleLine;
 
         /// <summary>
         /// Determines if the message bar is multi lined. If false, and the text overflows over buttons or to another line, it is clipped
@@ -65,13 +65,16 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public string? OverflowButtonAriaLabel { get; set; }
 
         /// <summary>
+        /// Custom role to apply to the message bar
+        /// </summary>
+        [Parameter] public string? Role { get; set; }
+
+        /// <summary>
         /// Whether the message bar has a dismiss button and its callback. If null, dismiss button won't show
         /// </summary>
         [Parameter] public EventCallback OnDismiss { get; set; }
 
-        private bool HasDismiss { get => (OnDismiss.HasDelegate); }
-
-        private bool ExpandSingleLine { get; set; }
+        public string LabelId { get; set; } = string.Empty;
 
         protected override string RootElementClass => "bit-msg-bar";
 
@@ -85,6 +88,14 @@ namespace Bit.Client.Web.BlazorUI
                                         : MessageBarType == BitMessageBarType.Blocked ? $"{RootElementClass}-blocked-{VisualClassRegistrar()}"
                                         : MessageBarType == BitMessageBarType.SevereWarning ? $"{RootElementClass}-severe-warning-{VisualClassRegistrar()}"
                                         : $"{RootElementClass}-success-{VisualClassRegistrar()}");
+        }
+
+        protected override Task OnParametersSetAsync()
+        {
+            messageBarIcon = MessageBarIconName.HasValue() ? MessageBarIconName : IconMap[MessageBarType];
+            LabelId = $"MessageBar{UniqueId}";
+
+            return base.OnParametersSetAsync();
         }
 
         private void ToggleExpandSingleLine()
@@ -102,10 +113,34 @@ namespace Bit.Client.Web.BlazorUI
             [BitMessageBarType.Success] = "Completed"
         };
 
-        protected override Task OnParametersSetAsync()
+        private string GetTextRole()
         {
-            messageBarIcon = MessageBarIconName.HasValue() ? MessageBarIconName : IconMap[MessageBarType];
-            return base.OnParametersSetAsync();
+            switch (messageBarType)
+            {
+                case BitMessageBarType.Blocked:
+                case BitMessageBarType.Error:
+                case BitMessageBarType.SevereWarning:
+                    return "alert";
+                default:
+                    return "status";
+            }
         }
+
+        private string GetAnnouncementPriority()
+        {
+            switch (messageBarType)
+            {
+                case BitMessageBarType.Blocked:
+                case BitMessageBarType.Error:
+                case BitMessageBarType.SevereWarning:
+                    return "assertive";
+                default:
+                    return "polite";
+            }
+        }
+
+        private bool HasDismiss { get => (OnDismiss.HasDelegate); }
+        private string? GetAriaDescribedby => Actions is not null || HasDismiss ? LabelId : null;
+        private string? GetRootElementRole => Actions is not null || HasDismiss ? "region" : null;
     }
 }

@@ -7,10 +7,15 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
 {
     public partial class Component
     {
-        private bool CheckBoxOnChangedValue = false;
-        private bool IsCheckBoxChecked = false;
+        private bool IsCheckBoxChecked = true;
         private bool IsCheckBoxIndeterminate = true;
         private bool IsCheckBoxIndeterminateInCode = true;
+
+        private void HandleIsCheckedChange(bool isChecked)
+        {
+            IsCheckBoxChecked = isChecked;
+        }
+
         private bool IsToggleChecked = true;
         private bool IsToggleUnChecked = false;
 
@@ -66,32 +71,20 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
             {
                 Name = "Home",
                 Url = "http://example.com",
-                Key = "key1",
-                Title = "Home",
-                Target = "_blank",
-                IsExpanded = true,
+                ExpandAriaLabel = "Expand Home section",
                 CollapseAriaLabel = "Collapse Home section",
+                IsExpanded = true,
                 Links = new List<BitNavLinkItem>
-                        {
-                            new BitNavLinkItem{
-                                Name= "Activity",
-                                Url= "http://msn.com",
-                                Key= "key1-1",
-                                Title="Activity",
-                                Links=new List<BitNavLinkItem>
-                                {
-                                    new BitNavLinkItem{ Name= "Activity",Title= "Activity",Url= "http://msn.com",Key= "key1-1-1"},
-                                    new BitNavLinkItem{ Name= "MSN",Title= "MSN", Url= "http://msn.com", Key= "key1-1-2",Disabled=true}
-                                }
-                            },
-                            new BitNavLinkItem{Name= "MSN",Title="MSN", Url= "http://msn.com", Key= "key1-2",Disabled=true },
-                        }
+                {
+                    new BitNavLinkItem { Name = "Activity", Url = "http://msn.com", Key = "key1", Target="_blank" },
+                    new BitNavLinkItem { Name = "MSN", Url = "http://msn.com", Key = "key2", IsEnabled = false, Target = "_blank" }
+                }
             },
-            new BitNavLinkItem { Name = "Documents", Title = "Documents", Url = "http://example.com", Key = "key2", Target = "_blank", IsExpanded = true },
-            new BitNavLinkItem { Name = "Pages", Title = "Pages", Url = "http://msn.com", Key = "key3", Target = "_parent" },
-            new BitNavLinkItem { Name = "Notebook", Title = "Notebook", Url = "http://msn.com", Key = "key4", Disabled = true },
-            new BitNavLinkItem { Name = "Communication and Media", Title = "Communication and Media", Url = "http://msn.com", Key = "key5", Target = "_top" },
-            new BitNavLinkItem { Name = "News", Title = "News", Url = "http://msn.com", Key = "key6", Icon = "News", Target = "_self" },
+            new BitNavLinkItem { Name = "Documents", Url = "http://example.com", Key = "key3", Target = "_blank", IsExpanded = true },
+            new BitNavLinkItem { Name = "Pages", Url = "http://msn.com", Key = "key4", Target = "_parent" },
+            new BitNavLinkItem { Name = "Notebook", Url = "http://msn.com", Key = "key5", IsEnabled = false },
+            new BitNavLinkItem { Name = "Communication and Media", Url = "http://msn.com", Key = "key6", Target = "_top" },
+            new BitNavLinkItem { Name = "News", Title = "News", Url = "http://msn.com", Key = "key7", Icon = "News", Target = "_self" },
         };
 
         private readonly List<BitNavLinkItem> BasicNoToolTipNavLinks = new()
@@ -100,31 +93,21 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
             {
                 Name = "Home",
                 Url = "http://example.com",
-                Key = "key1",
-                Target = "_blank",
+                Title = "",
                 IsExpanded = true,
                 CollapseAriaLabel = "Collapse Home section",
+                ExpandAriaLabel = "Expand Home section",
                 Links = new List<BitNavLinkItem>
-                        {
-                            new BitNavLinkItem{
-                                Name= "Activity",
-                                Url= "http://msn.com",
-                                Key= "key1-1",
-                                Links=new List<BitNavLinkItem>
-                                {
-                                    new BitNavLinkItem{Name= "Activity",Url= "http://msn.com",Key= "key1-1-1" },
-                                    new BitNavLinkItem{Name= "MSN", Url= "http://msn.com", Key= "key1-1-2",Disabled=true }
-                                } },
-                            new BitNavLinkItem{Name= "MSN", Url= "http://msn.com", Key= "key1-2",Disabled=true },
-                        }
+                {
+                    new BitNavLinkItem { Name = "Activity", Url = "http://msn.com", Key = "key1", Target="_blank", Title = "" },
+                    new BitNavLinkItem { Name = "MSN", Url = "http://msn.com", Key = "key2", IsEnabled = false, Target = "_blank", Title = "" }
+                }
             },
-            new BitNavLinkItem { Name = "Shared Documents and Files", Url = "http://example.com", Key = "key2", Target = "_blank", IsExpanded = true },
-            new BitNavLinkItem { Name = "Pages", Url = "http://msn.com", Key = "key3", Target = "_parent" },
-            new BitNavLinkItem { Name = "Notebook", Url = "http://msn.com", Key = "key4", Disabled = true },
-            new BitNavLinkItem { Name = "Communication and Media", Key = "key5", Target = "_top" },
-            new BitNavLinkItem { Name = "News", Key = "key6", Icon = "News", Target = "_self" },
-            new BitNavLinkItem { Name = "Component", Url = "component", Key = "component", Icon = "News", Target = "_self" },
-
+            new BitNavLinkItem { Name = "Shared Documents and Files", Url = "http://example.com", Key = "key3", Target = "_blank", Title = "" },
+            new BitNavLinkItem { Name = "Pages", Url = "http://msn.com", Key = "key4", Target = "_parent", Title = "" },
+            new BitNavLinkItem { Name = "Notebook", Url = "http://msn.com", Key = "key5", IsEnabled = false, Title = "" },
+            new BitNavLinkItem { Name = "Communication and Media", Url = "http://msn.com", Key = "key6", Target = "_top", Title = "" },
+            new BitNavLinkItem { Name = "News", Key = "key7", Url = "http://cnn.com", Icon = "News", Target = "_self", Title = "" }
         };
 
         private readonly List<BitNavLinkItem> BasicNoUrlNavLinks = new()
@@ -132,42 +115,39 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
             new BitNavLinkItem
             {
                 Name = "Basic components",
-                Key = "Key1",
                 CollapseAriaLabel = "Collapse Basic components section",
                 IsExpanded = true,
                 Links = new List<BitNavLinkItem>
-                        {
-                            new BitNavLinkItem{Name= "ActivityItem", Key= "ActivityItem",Url="#/examples/activityitem" },
-                            new BitNavLinkItem{Name= "Breadcrumb", Key= "Breadcrumb",Url="#/examples/breadcrumb" },
-                            new BitNavLinkItem{Name= "Button", Key= "Button",Url="#/examples/button" }
-                        }
+                {
+                    new BitNavLinkItem { Name= "ActivityItem", Key = "ActivityItem", Url = "#/examples/activityitem" },
+                    new BitNavLinkItem { Name= "Breadcrumb", Key = "Breadcrumb", Url = "#/examples/breadcrumb" },
+                    new BitNavLinkItem { Name= "Button", Key = "Button", Url = "#/examples/button" }
+                }
             },
             new BitNavLinkItem
             {
                 Name = "Extended components",
-                Key = "Key2",
                 CollapseAriaLabel = "Collapse Extended components section",
                 IsExpanded = true,
                 Links = new List<BitNavLinkItem>
-                        {
-                            new BitNavLinkItem{Name= "ColorPicker", Key= "ColorPicker",Url="#/examples/colorpicker" },
-                            new BitNavLinkItem{Name= "ExtendedPeoplePicker", Key= "ExtendedPeoplePicker",Url="#/examples/extendedpeoplepicker" },
-                            new BitNavLinkItem{Name= "GroupedList", Key= "GroupedList",Url="#/examples/groupedlist" }
-                        }
+                {
+                    new BitNavLinkItem { Name = "ColorPicker", Key = "ColorPicker", Url ="#/examples/colorpicker" },
+                    new BitNavLinkItem { Name = "ExtendedPeoplePicker", Key = "ExtendedPeoplePicker", Url ="#/examples/extendedpeoplepicker" },
+                    new BitNavLinkItem { Name = "GroupedList", Key = "GroupedList", Url ="#/examples/groupedlist" }
+                }
             },
             new BitNavLinkItem
             {
                 Name = "Utilities",
-                Key = "Key3",
                 CollapseAriaLabel = "Collapse Utilities section",
                 IsExpanded = true,
                 Links = new List<BitNavLinkItem>
-                        {
-                            new BitNavLinkItem{Name= "FocusTrapZone", Key= "FocusTrapZone",Url="#/examples/focustrapzone" },
-                            new BitNavLinkItem{Name= "FocusZone", Key= "FocusZone",Url="#/examples/focuszone" },
-                            new BitNavLinkItem{Name= "MarqueeSelection", Key= "MarqueeSelection",Url="#/examples/marqueeselection" }
-                        }
-            },
+                {
+                    new BitNavLinkItem { Name = "FocusTrapZone", Key = "FocusTrapZone", Url = "#/examples/focustrapzone" },
+                    new BitNavLinkItem { Name = "FocusZone", Key = "FocusZone", Url = "#/examples/focuszone" },
+                    new BitNavLinkItem { Name = "MarqueeSelection", Key = "MarqueeSelection", Url = "#/examples/marqueeselection" }
+                }
+            }
         };
 
         private readonly List<BitNavLinkItem> NestedLinks = new()
@@ -183,18 +163,18 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
                 {
                     new BitNavLinkItem
                     {
-                        Name= "Child link 1",
-                        Url= "http://msn.com",
-                        Key= "Key1-1",
-                        Title="Child link 1",
-                        Links=new List<BitNavLinkItem>
+                        Name = "Child link 1",
+                        Url = "http://msn.com",
+                        Key = "Key1-1",
+                        Title = "Child link 1",
+                        Links = new List<BitNavLinkItem>
                         {
-                            new BitNavLinkItem{Name= "3rd level link 1",Title="3rd level link 1",Url= "http://msn.com",Key= "Key1-1-1" },
-                            new BitNavLinkItem{Name= "3rd level link 2",Title="3rd level link 2", Url= "http://msn.com", Key= "Key1-1-2",Disabled=true }
+                            new BitNavLinkItem { Name = "3rd level link 1", Title = "3rd level link 1", Url = "http://msn.com", Key = "Key1-1-1" },
+                            new BitNavLinkItem { Name = "3rd level link 2", Title = "3rd level link 2", Url = "http://msn.com", Key = "Key1-1-2", IsEnabled = false }
                         }
                     },
-                    new BitNavLinkItem{Name = "Child link 2", Title = "Child link 2", Url = "http://msn.com", Key = "Key1-2" },
-                    new BitNavLinkItem{Name = "Child link 3", Title = "Child link 3", Url = "http://msn.com", Key = "Key1-3", Disabled = true },
+                    new BitNavLinkItem { Name = "Child link 2", Title = "Child link 2", Url = "http://msn.com", Key = "Key1-2" },
+                    new BitNavLinkItem { Name = "Child link 3", Title = "Child link 3", Url = "http://msn.com", Key = "Key1-3", IsEnabled = false },
                 }
             },
             new BitNavLinkItem
@@ -206,7 +186,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
                 CollapseAriaLabel = "Collapse Parent link 2",
                 Links = new List<BitNavLinkItem>
                 {
-                    new BitNavLinkItem{Name= "Child link 4", Title= "Child link 4", Url= "http://example.com", Key= "Key2-1" }
+                    new BitNavLinkItem { Name = "Child link 4", Title = "Child link 4", Url = "http://example.com", Key = "Key2-1" }
                 }
             }
         };
@@ -216,19 +196,21 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
             new BitNavLinkItem
             {
                 Name = "Pages",
+                IsExpanded = true,
                 Links = new List<BitNavLinkItem>
                 {
-                    new BitNavLinkItem{Name= "Activity", Url= "http://msn.com", Key= "Key1-1", Title="Activity" },
-                    new BitNavLinkItem{Name= "News",Title="News", Url= "http://msn.com", Key= "Key1-2" },
+                    new BitNavLinkItem { Name = "Activity", Url = "http://msn.com", Key = "Key1-1", Title = "Activity" },
+                    new BitNavLinkItem { Name = "News", Title = "News", Url = "http://msn.com", Key = "Key1-2" },
                 }
             },
             new BitNavLinkItem
             {
                 Name = "More pages",
+                IsExpanded = true,
                 Links = new List<BitNavLinkItem>
                 {
-                    new BitNavLinkItem{Name= "Settings", Title= "Settings", Url= "http://example.com", Key= "Key2-1" },
-                    new BitNavLinkItem{Name= "Notes", Title= "Notes", Url= "http://example.com", Key= "Key2-1" }
+                    new BitNavLinkItem { Name= "Settings", Title = "Settings", Url = "http://example.com", Key = "Key2-1" },
+                    new BitNavLinkItem { Name= "Notes", Title = "Notes", Url = "http://example.com", Key = "Key2-1" }
                 }
             }
         };
@@ -451,6 +433,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
         }
 
         private string? TextValue;
+        private string? SelectedDate;
         private double? BitSliderHorizontalValue = 2;
         private double? BitSliderVerticalValue = 0;
         private double? BitSliderRangedLowerValue = 0;

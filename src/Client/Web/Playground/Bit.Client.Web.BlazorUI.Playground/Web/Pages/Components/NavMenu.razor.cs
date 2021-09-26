@@ -11,7 +11,6 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components
                 Name = "Basic Inputs",
                 Key = "Inputs",
                 IsExpanded = true,
-                IsGroup = true,
                 Links = new List<BitNavLinkItem>
                 {
                      new BitNavLinkItem { Name= "Button", Key = "Button", Url = "/components/button"},
@@ -37,7 +36,6 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components
             {
                 Name = "Galleries & Pickers",
                 Key = "Pickers",
-                IsGroup = true,
                 Links = new List<BitNavLinkItem>
                 {
                     new BitNavLinkItem { Name = "DatePicker", Key = "DatePicker", Url="/components/datepicker" }
@@ -47,7 +45,6 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components
             {
                 Name = "Items & Lists",
                 Key = "Lists",
-                IsGroup = true,
                 Links = new List<BitNavLinkItem>
                 {
                     new BitNavLinkItem { Name = "Basic List", Key = "BasicList", Url="/components/basiclist" }
@@ -57,7 +54,6 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components
             {
                 Name = "Commands, Menus & Navs",
                 Key = "Navigations",
-                IsGroup = true,
                 Links = new List<BitNavLinkItem>
                 {
                     new BitNavLinkItem { Name = "Nav", Key = "Nav", Url = "/components/nav" },
@@ -68,7 +64,6 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components
             {
                 Name = "Notification & Engagement",
                 Key = "Notifications",
-                IsGroup = true,
                 Links = new List<BitNavLinkItem>
                 {
                     new BitNavLinkItem { Name = "MessageBar", Key = "MessageBar", Url="/components/messagebar" }
@@ -78,7 +73,6 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components
             {
                 Name = "Progress",
                 Key = "Progress",
-                IsGroup = true,
                 Links = new List<BitNavLinkItem>
                 {
                     new BitNavLinkItem{ Name = "Spinner", Key = "Spinner", Url = "/components/spinner" },
