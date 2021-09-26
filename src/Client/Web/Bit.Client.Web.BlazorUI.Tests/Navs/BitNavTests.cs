@@ -263,13 +263,12 @@ namespace Bit.Client.Web.BlazorUI.Tests.Navs
                     {
                         Name = "Test1",
                         Key = "key1",
+                        Url = "example.com",
                         IsEnabled = itemIsEnabled,
-                        Links = new List<BitNavLinkItem>() { new() { Name = "Test2", Key = "key2" } }
+                        Links = new List<BitNavLinkItem>() { new() { Name = "Test2", Key = "key2", Url = "example.com" } }
                     }
                 });
             });
-
-            var navItem = componenet.Find($".bit-nav .bit-nav-link-{(itemIsEnabled ? "enabled" : "disabled")}-nourl-fluent");
 
             //TODO: bypassed - BUnit or Blazor issue
             //navItem.Click();

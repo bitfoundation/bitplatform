@@ -111,7 +111,7 @@ namespace Bit.Client.Web.BlazorUI
 
             selectedKey = NavLinkItems.Where(navLink => navLink.Links != null)
                                       .SelectMany(navLinkItem => navLinkItem.Links)
-                                      .FirstOrDefault(item => item.Url.Equals(currrentUrl, StringComparison.Ordinal))?.Key
+                                      .FirstOrDefault(item => item.Url!.Equals(currrentUrl, StringComparison.Ordinal))?.Key
                                       ?? selectedKey
                                       ?? InitialSelectedKey;
 
