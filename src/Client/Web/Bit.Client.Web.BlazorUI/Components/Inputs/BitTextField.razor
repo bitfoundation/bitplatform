@@ -6,7 +6,6 @@
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
     <div>
-
         @if (LabelFragment != null)
         {
             <span>@LabelFragment</span>
@@ -18,7 +17,6 @@
             </label>
         }
 
-
         <div>
             @if (Prefix is not null)
             {
@@ -26,6 +24,7 @@
                     <span>@Prefix</span>
                 </div>
             }
+
             @if (IsMultiline && Type == TextFieldType.Text)
             {
                 <textarea id="@InputId"
@@ -108,5 +107,6 @@
             {
                 <span>@Description</span>
             }
-        </span>}
+        </span>
+    }
 </div>
