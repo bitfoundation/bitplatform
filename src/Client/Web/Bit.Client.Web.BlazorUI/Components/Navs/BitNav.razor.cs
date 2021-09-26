@@ -48,7 +48,7 @@ namespace Bit.Client.Web.BlazorUI
                 if (selectedKey is null) return;
 
                 var selectedNavLinkItem = NavLinkItems.SelectMany(item => item.Links)
-                                                     .FirstOrDefault(item => (item.Key?.Equals(selectedKey, StringComparison.Ordinal)) ?? false);
+                                                     .FirstOrDefault(item => item.Key == selectedKey);
 
                 if (selectedNavLinkItem is null) return;
 
@@ -111,7 +111,7 @@ namespace Bit.Client.Web.BlazorUI
 
             selectedKey = NavLinkItems.Where(navLink => navLink.Links != null)
                                       .SelectMany(navLinkItem => navLinkItem.Links)
-                                      .FirstOrDefault(item => item.Url!.Equals(currrentUrl, StringComparison.Ordinal))?.Key
+                                      .FirstOrDefault(item => item.Url == currrentUrl)?.Key
                                       ?? selectedKey
                                       ?? InitialSelectedKey;
 
@@ -142,8 +142,7 @@ namespace Bit.Client.Web.BlazorUI
 
             Func<BitNavLinkItem, bool> CreateComparer(string currentPage)
             {
-                return item => (item.Url ?? "").ToLower(Thread.CurrentThread.CurrentCulture)
-                                               .Equals(currentPage.ToLower(Thread.CurrentThread.CurrentCulture), StringComparison.Ordinal);
+                return item => (item.Url ?? "").ToLower(Thread.CurrentThread.CurrentCulture) == currentPage.ToLower(Thread.CurrentThread.CurrentCulture);
             }
         }
 
