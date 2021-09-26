@@ -9,14 +9,6 @@
       "OutputMode": "SingleLine",
       "IndentSize": 2
     },
-    "Javascript": {
-      "RenameLocals": false,
-      "PreserveImportantComments": true,
-      "EvalTreatment": "Ignore",
-      "TermSemicolons": true,
-      "OutputMode": "SingleLine",
-      "IndentSize": 2
-    }
   },
   "Autoprefix": {
     "Enabled": false,
