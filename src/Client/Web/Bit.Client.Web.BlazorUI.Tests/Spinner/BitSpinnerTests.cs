@@ -7,22 +7,22 @@ namespace Bit.Client.Web.BlazorUI.Tests.Spinner
     public class BitSpinnerTests : BunitTestContext
     {
         [DataTestMethod,
-            DataRow(Visual.Fluent, SpinnerSize.Large),
-            DataRow(Visual.Cupertino, SpinnerSize.Large),
-            DataRow(Visual.Material, SpinnerSize.Large),
+            DataRow(Visual.Fluent, BitSpinnerSize.Large),
+            DataRow(Visual.Cupertino, BitSpinnerSize.Large),
+            DataRow(Visual.Material, BitSpinnerSize.Large),
 
-            DataRow(Visual.Fluent, SpinnerSize.Medium),
-            DataRow(Visual.Cupertino, SpinnerSize.Medium),
-            DataRow(Visual.Material, SpinnerSize.Medium),
+            DataRow(Visual.Fluent, BitSpinnerSize.Medium),
+            DataRow(Visual.Cupertino, BitSpinnerSize.Medium),
+            DataRow(Visual.Material, BitSpinnerSize.Medium),
 
-            DataRow(Visual.Fluent, SpinnerSize.Small),
-            DataRow(Visual.Cupertino, SpinnerSize.Small),
-            DataRow(Visual.Material, SpinnerSize.Small),
+            DataRow(Visual.Fluent, BitSpinnerSize.Small),
+            DataRow(Visual.Cupertino, BitSpinnerSize.Small),
+            DataRow(Visual.Material, BitSpinnerSize.Small),
 
-            DataRow(Visual.Fluent, SpinnerSize.XSmall),
-            DataRow(Visual.Cupertino, SpinnerSize.XSmall),
-            DataRow(Visual.Material, SpinnerSize.XSmall)]
-        public void BitSpinnerShouldRespectSize(Visual visual, SpinnerSize size)
+            DataRow(Visual.Fluent, BitSpinnerSize.XSmall),
+            DataRow(Visual.Cupertino, BitSpinnerSize.XSmall),
+            DataRow(Visual.Material, BitSpinnerSize.XSmall)]
+        public void BitSpinnerShouldRespectSize(Visual visual, BitSpinnerSize size)
         {
             var component = RenderComponent<BitSpinnerTest>(parameters =>
             {
@@ -30,7 +30,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Spinner
                 parameters.Add(p => p.Size, size);
             });
 
-            var sizeClass = size == SpinnerSize.Large ? "large" : size == SpinnerSize.Medium ? "medium" : size == SpinnerSize.Small ? "small" : "xSmall";
+            var sizeClass = size == BitSpinnerSize.Large ? "large" : size == BitSpinnerSize.Medium ? "medium" : size == BitSpinnerSize.Small ? "small" : "xSmall";
             var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
 
             var bitSpinner = component.Find($".bit-spn-{visualClass}");

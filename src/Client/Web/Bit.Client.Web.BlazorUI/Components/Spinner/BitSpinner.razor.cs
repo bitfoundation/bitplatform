@@ -17,7 +17,7 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// The size of spinner to render
         /// </summary>
-        [Parameter] public SpinnerSize Size { get; set; }
+        [Parameter] public BitSpinnerSize Size { get; set; }
 
         /// <summary>
         /// The label to show next to the spinner. Label updates will be announced to the screen readers
@@ -38,19 +38,19 @@ namespace Bit.Client.Web.BlazorUI
 
             switch (Size)
             {
-                case SpinnerSize.XSmall:
+                case BitSpinnerSize.XSmall:
                     classSize = "xSmall";
                     break;
 
-                case SpinnerSize.Small:
+                case BitSpinnerSize.Small:
                     classSize = "small";
                     break;
 
-                case SpinnerSize.Medium:
+                case BitSpinnerSize.Medium:
                     classSize = "medium";
                     break;
 
-                case SpinnerSize.Large:
+                case BitSpinnerSize.Large:
                     classSize = "large";
                     break;
             }
@@ -61,7 +61,6 @@ namespace Bit.Client.Web.BlazorUI
         private string GetClassLabelPosition()
         {
             string classLabelPosition = string.Empty;
-
             switch (LabelPosition)
             {
                 case SpinnerLabelPosition.Top:
