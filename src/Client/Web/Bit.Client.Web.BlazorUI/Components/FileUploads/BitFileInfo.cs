@@ -16,7 +16,7 @@ namespace Bit.Client.Web.BlazorUI
         public string ContentType { get; set; } = String.Empty;
 
         [JsonIgnore]
-        public UploadStatus UploadStatus { get; set; }
+        public BitUploadStatus UploadStatus { get; set; }
 
         public int ChunkCount { get; set; }
         public IList<long> ChunkesUpLoadedSize { get; } = new List<long>();

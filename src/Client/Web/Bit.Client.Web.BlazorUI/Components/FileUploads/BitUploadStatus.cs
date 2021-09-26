@@ -1,6 +1,6 @@
 ﻿namespace Bit.Client.Web.BlazorUI
 {
-    public enum UploadStatus
+    public enum BitUploadStatus
     {
         /// <summary>
         /// File uploading progress is pended because the server cannot be contacted
