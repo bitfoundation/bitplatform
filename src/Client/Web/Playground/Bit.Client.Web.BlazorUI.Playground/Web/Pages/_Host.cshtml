@@ -22,8 +22,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Blazor UI Playground</title>
     <base href="~/" />
+    <link rel="stylesheet" href="_content/Bit.Client.Web.BlazorUI/styles/bit.blazorui.min.css" asp-append-version="true" />
     <link rel="stylesheet" href="Bit.Client.Web.BlazorUI.Playground.Web.styles.css" asp-append-version="true" />
-    <link rel="stylesheet" href="_content/Bit.Client.Web.BlazorUI/styles/styles.min.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/styles/styles.css" asp-append-version="true" />
 </head>
 <body>
@@ -33,11 +33,8 @@
                    render-mode="@(isBlazorServer ? RenderMode.ServerPrerendered : RenderMode.Static)" />
     </app>
 
-    <script src="_content/Bit.Client.Web.BlazorUI/scripts/bit.client.web.js" asp-append-version="true"></script>
-    <script src="_content/Bit.Client.Web.BlazorUI/scripts/bit.client.web.file-upload.js" asp-append-version="true"></script>
-    <script src="_content/Bit.Client.Web.BlazorUI/scripts/bit.client.web.colorpicker.js" asp-append-version="true"></script>
-	<script src="_content/Bit.Client.Web.BlazorUI/scripts/bit.client.web.date-picker.js" asp-append-version="true"></script>
-    
+    <script src="_content/Bit.Client.Web.BlazorUI/scripts/bit.blazorui.min.js" asp-append-version="true"></script>
+
     @if (isBlazorServer)
     {
         <script src="_framework/blazor.server.js" asp-append-version="true"></script>

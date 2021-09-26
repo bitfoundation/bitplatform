@@ -86,13 +86,13 @@
                         </LabelFragment>
                     </BitToggle>
                     <br />
-                    <BitToggle @bind-IsChecked="IsToggleUnChecked" IsEnabled="true" OnText="On" OffText="Off" IsInlineLabel="true">
+                    <BitToggle @bind-IsChecked="BindedIsToggleUnChecked" IsEnabled="true" OnText="On" OffText="Off" IsInlineLabel="true">
                         <LabelFragment>
                             Custom inline label
                         </LabelFragment>
                     </BitToggle>
                     <br />
-                    <BitButton OnClick="() => IsToggleChecked = true">Make Toggle Check</BitButton>
+                    <BitButton OnClick="() => BindedIsToggleUnChecked = true">Make Toggle Check</BitButton>
                 </div>
             </BitPivotItem>
             <BitPivotItem HeaderText="Code" IconName="Source">
@@ -108,7 +108,7 @@
                     <span>&lt/</span><span class="dark-green">BitToggle</span><span>&gt;</span>
                 </p>
                 <p>
-                    &lt<span class="dark-green">BitToggle </span><span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-IsChecked="</span><span>IsToggleUnChecked" </span><span class="dark-green">IsEnabled=</span>"<span class="light-blue">true</span>" <span class="dark-green"> OnText</span>="On"<span class="dark-green"> OffText</span>="Off" <span class="dark-green">IsInlineLabel=</span>"<span class="light-blue">true</span>">
+                    &lt<span class="dark-green">BitToggle </span><span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-IsChecked="</span><span>BindedIsToggleUnChecked" </span><span class="dark-green">IsEnabled=</span>"<span class="light-blue">true</span>" <span class="dark-green"> OnText</span>="On"<span class="dark-green"> OffText</span>="Off" <span class="dark-green">IsInlineLabel=</span>"<span class="light-blue">true</span>">
                     <br />
                     <span class="m-l-30">&lt<span class="dark-green">LabelFragment></span></span>
                     <br />
@@ -119,13 +119,13 @@
                     <span>&lt/</span><span class="dark-green">BitToggle</span><span>&gt;</span>
                 </p>
                 <p>
-                    &lt<span class="dark-green">BitButton OnClick</span>="() => IsToggleChecked = <span class="light-blue">true</span>">Make Toggle Check<span>&lt/</span><span class="dark-green">BitButton</span><span>&gt;</span>
+                    &lt<span class="dark-green">BitButton OnClick</span>="() => BindedIsToggleUnChecked = <span class="light-blue">true</span>">Make Toggle Check<span>&lt/</span><span class="dark-green">BitButton</span><span>&gt;</span>
                 </p>
                 <br />
                 <div class="code m-t-10">
                     <span class="light-yellow-bg">&#64;code {</span>
                     <p>
-                        private bool IsToggleChecked = true;
+                        private bool BindedIsToggleUnChecked = false;
                         <br />
                         private bool IsToggleUnChecked = false;
                     </p>

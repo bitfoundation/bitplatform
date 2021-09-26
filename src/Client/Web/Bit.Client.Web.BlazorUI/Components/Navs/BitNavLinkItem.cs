@@ -6,6 +6,11 @@ namespace Bit.Client.Web.BlazorUI
     public class BitNavLinkItem
     {
         /// <summary>
+        /// If true, the group should render collapsed by default
+        /// </summary>
+        public bool? IsCollapseByDefault { get; set; }
+
+        /// <summary>
         /// (Optional) By default, any link with onClick defined will render as a button. Set this property to true to override that behavior. (Links without onClick defined will render as anchors by default.)
         /// </summary>
         public bool ForceAnchor { get; set; }
@@ -33,6 +38,12 @@ namespace Bit.Client.Web.BlazorUI
 #pragma warning restore CA1056 // URI-like properties should not be strings
 
         /// <summary>
+        /// Aria-current token for active nav links 
+        /// Must be a valid token value, and defaults to 'page'
+        /// </summary>
+        public BitNavLinkItemAriaCurrent AriaCurrent { get; set; } = BitNavLinkItemAriaCurrent.Page;
+
+        /// <summary>
         /// Aria label when group is collapsed and can be expanded.
         /// </summary>
         public string? ExpandAriaLabel { get; set; }
@@ -41,6 +52,12 @@ namespace Bit.Client.Web.BlazorUI
         /// ARIA label when items is collapsed and can be expanded
         /// </summary>
         public string? CollapseAriaLabel { get; set; }
+
+        /// <summary>
+        /// Aria label for nav link.
+        /// Ignored if collapseAriaLabel or expandAriaLabel is provided
+        /// </summary>
+        public string? AriaLabel { get; set; }
 
         /// <summary>
         /// Name of an icon to render next to this link button
@@ -71,6 +88,11 @@ namespace Bit.Client.Web.BlazorUI
         /// Callback invoked when a link in the navigation is clicked
         /// </summary>
         public Action<BitNavLinkItem>? OnClick { get; set; }
+
+        /// <summary>
+        /// Callback invoked when a group header is clicked
+        /// </summary>
+        public Action<bool>? OnHeaderClick { get; set; }
 
         internal int Depth { get; set; }
     }

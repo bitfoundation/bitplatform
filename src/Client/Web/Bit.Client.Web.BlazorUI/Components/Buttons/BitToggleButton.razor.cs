@@ -6,7 +6,7 @@ namespace Bit.Client.Web.BlazorUI
 {
     public partial class BitToggleButton
     {
-        private ButtonStyle buttonStyle = ButtonStyle.Primary;
+        private BitButtonStyle buttonStyle = BitButtonStyle.Primary;
 
         private int? tabIndex;
         private bool isChecked;
@@ -83,7 +83,7 @@ namespace Bit.Client.Web.BlazorUI
         /// The style of compound button, Possible values: Primary | Standard.
         /// </summary>
         [Parameter]
-        public ButtonStyle ButtonStyle
+        public BitButtonStyle ButtonStyle
         {
             get => buttonStyle;
             set
@@ -109,16 +109,16 @@ namespace Bit.Client.Web.BlazorUI
         protected override void RegisterComponentClasses()
         {
             ClassBuilder.Register(() => IsEnabled is false
-                                       ? ButtonStyle == ButtonStyle.Primary
+                                       ? ButtonStyle == BitButtonStyle.Primary
                                            ? $"{RootElementClass}-primary-disabled-{VisualClassRegistrar()}"
                                            : $"{RootElementClass}-standard-disabled-{VisualClassRegistrar()}"
-                                       : ButtonStyle == ButtonStyle.Primary
+                                       : ButtonStyle == BitButtonStyle.Primary
                                            ? $"{RootElementClass}-primary-{VisualClassRegistrar()}"
                                            : $"{RootElementClass}-standard-{VisualClassRegistrar()}");
 
             ClassBuilder.Register(() => IsChecked is false
                                             ? string.Empty
-                                            : ButtonStyle == ButtonStyle.Primary
+                                            : ButtonStyle == BitButtonStyle.Primary
                                                ? $"{RootElementClass}-primary-checked-{VisualClassRegistrar()}"
                                                : $"{RootElementClass}-standard-checked-{VisualClassRegistrar()}");
         }

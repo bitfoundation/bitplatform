@@ -92,12 +92,6 @@ namespace Bit.Client.Web.BlazorUI
         /// </summary>
         [Parameter] public RenderFragment<BitNavLinkItem>? LinkTemplate { get; set; }
 
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
         protected override string RootElementClass => "bit-nav";
 
         protected override void RegisterComponentClasses()
@@ -112,15 +106,16 @@ namespace Bit.Client.Web.BlazorUI
             NavigationManager.LocationChanged += OnLocationChanged;
             selectedKey ??= InitialSelectedKey;
 
-            await base.OnInitializedAsync();
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposing)
+            if (RenderType == BitNavRenderType.Grouped)
             {
-                NavigationManager.LocationChanged -= OnLocationChanged;
+                foreach (var link in NavLinkItems)
+                {
+                    if (link.IsCollapseByDefault is not null)
+                        link.IsExpanded = !link.IsCollapseByDefault.Value;
+                }
             }
+
+            await base.OnInitializedAsync();
         }
 
         private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
@@ -173,6 +168,8 @@ namespace Bit.Client.Web.BlazorUI
 
         private async Task HandleGroupHeaderClick(BitNavLinkItem navLinkItem)
         {
+            navLinkItem.OnHeaderClick?.Invoke(navLinkItem.IsExpanded);
+
             if (navLinkItem.Links.Any())
             {
                 await HandleLinkExpand(navLinkItem);
@@ -214,5 +211,29 @@ namespace Bit.Client.Web.BlazorUI
         }
 
         private static string? GetNavLinkItemRel(BitNavLinkItem link) => link.Url.HasValue() && link.Target.HasValue() && !IsRelativeUrl(link.Url!) ? "noopener noreferrer" : null;
+
+        private static Dictionary<BitNavLinkItemAriaCurrent, string> AriaCurrentMap = new()
+        {
+            [BitNavLinkItemAriaCurrent.Page] = "page",
+            [BitNavLinkItemAriaCurrent.Step] = "step",
+            [BitNavLinkItemAriaCurrent.Location] = "location",
+            [BitNavLinkItemAriaCurrent.Time] = "time",
+            [BitNavLinkItemAriaCurrent.Date] = "date",
+            [BitNavLinkItemAriaCurrent.True] = "true"
+        };
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                NavigationManager.LocationChanged -= OnLocationChanged;
+            }
+        }
     }
 }

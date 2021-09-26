@@ -1,0 +1,305 @@
+﻿@import "../../Styles/Fluent/colors.fluent.scss", "../../Styles/functions.scss";
+
+.bit-drp-fluent {
+    width: 100%;
+    font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+
+    .bit-drp-lbl {
+        font-size: rem(14px);
+        font-weight: 600;
+        color: $Grey160;
+        box-sizing: border-box;
+        margin: 0;
+        padding: rem(5px) 0;
+        z-index: 999;
+        position: relative;
+        display: block;
+    }
+}
+
+.bit-drp-overlay {
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 999;
+    background-color: transparent;
+}
+
+.bit-drp-wrapper {
+    position: relative;
+    z-index: 1000;
+    outline: none;
+    box-sizing: border-box;
+    cursor: pointer;
+    user-select: none;
+    -webkit-font-smoothing: antialiased;
+
+    &:hover {
+        .bit-drp-wrapper-txt {
+            color: $Grey160;
+            border: 1px solid $Grey160;
+        }
+    }
+
+    &:active {
+        .bit-drp-wrapper-txt {
+            border-color: $CyanBlue10;
+            color: $Grey190;
+        }
+    }
+
+    &:focus {
+        .bit-drp-wrapper-txt {
+            color: $Grey160;
+        }
+    }
+
+    &:focus::after {
+        pointer-events: none;
+        content: "";
+        position: absolute;
+        box-sizing: border-box;
+        top: 0px;
+        left: 0px;
+        width: 100%;
+        height: 100%;
+        border: 2px solid $Primary;
+        border-radius: 2px;
+    }
+
+    .bit-drp-wrapper-txt {
+        height: 32px;
+        font-size: rem(14px);
+        font-weight: 400;
+        color: $Grey130;
+        position: relative;
+        margin: 0;
+        padding: 0 rem(28px) 0 rem(8px);
+        box-sizing: border-box;
+        display: block;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        line-height: rem(30px);
+        outline: none;
+        border: 1px solid $Grey130;
+        border-radius: rem(2px);
+    }
+
+    .bit-drp-wrapper-ic {
+        position: absolute;
+        top: 0;
+        right: rem(8px);
+        height: 100%;
+        display: flex;
+        align-items: center;
+
+        i:first-child {
+            display: inline-block;
+            font-size: rem(12px);
+        }
+    }
+}
+
+.bit-drp-disabled-fluent {
+    .bit-drp-wrapper {
+        background-color: $Grey20;
+        cursor: default;
+
+        .bit-drp-wrapper-txt {
+            color: $Grey90;
+            border-color: $Grey20;
+        }
+
+        &:hover {
+            .bit-drp-wrapper-txt {
+                color: $Grey90;
+                border-color: $Grey20;
+            }
+        }
+
+        &:active {
+            .bit-drp-wrapper-txt {
+                color: $Grey90;
+                border-color: $Grey20;
+            }
+        }
+
+        &:focus::after {
+            width: 0;
+            height: 0;
+            border: none;
+        }
+
+        .bit-drp-wrapper-ic {
+            i:first-child {
+                color: $Grey90;
+            }
+        }
+    }
+
+    .bit-drp-lbl {
+        color: $Grey90;
+    }
+}
+
+.bit-drp-disabled-fluent.bit-drp-has-value-fluent {
+    .bit-drp-wrapper {
+        .bit-drp-wrapper-txt {
+            color: $Grey90;
+        }
+    }
+}
+
+.bit-drp-has-value-fluent {
+    .bit-drp-wrapper {
+        .bit-drp-wrapper-txt {
+            color: $Grey190;
+        }
+    }
+}
+
+.bit-drp-items-wrapper {
+    position: absolute;
+    width: inherit;
+    max-height: 744px;
+    font-size: rem(14px);
+    font-weight: 400;
+    box-sizing: border-box;
+    border-radius: 0 0 rem(2px) rem(2px);
+    box-shadow: #00000021 0 rem(3.2px) rem(7.2px) 0,#0000001C 0 rem(0.6px) rem(1.8px) 0;
+    animation-name: opacity, trans;
+    animation-duration: 0.367s;
+    animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
+    animation-fill-mode: both;
+    background-color: $White;
+    z-index: 1001;
+    overflow: hidden auto;
+    -webkit-font-smoothing: antialiased;
+
+    .bit-drp-head-fluent {
+        width: 100%;
+        height: 36px;
+        padding: 0 rem(8px);
+        box-sizing: border-box;
+        font-size: rem(15px);
+        font-weight: 600;
+        line-height: 36px;
+        color: $Primary;
+        background: none transparent;
+        cursor: default;
+        text-align: left;
+        user-select: none;
+        -webkit-font-smoothing: antialiased;
+    }
+
+    button {
+        width: 100%;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        position: relative;
+        font-size: rem(15px);
+        text-align: left;
+        line-height: rem(20px);
+        font-weight: 400;
+        box-sizing: border-box;
+        outline: transparent;
+        border: 1px solid transparent;
+        text-decoration: none;
+        padding: 0 rem(8px);
+        color: $Grey160;
+        background-color: transparent;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        cursor: pointer;
+        user-select: none;
+        -webkit-font-smoothing: antialiased;
+
+        &:hover {
+            background-color: $Grey20;
+        }
+    }
+
+    button[disabled] {
+        cursor: default;
+        color: $Grey90;
+
+        &:hover {
+            background-color: transparent;
+        }
+    }
+
+    .bit-drp-slc-fluent {
+        background-color: $Grey30;
+
+        &:hover {
+            background-color: $Grey30;
+        }
+    }
+
+    .bit-drp-div-fluent {
+        width: 100%;
+        height: 1px;
+        background-color: $Grey30;
+    }
+
+    .bit-chb-fluent {
+        width: 100%;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        box-sizing: border-box;
+        padding: 0 rem(8px);
+        margin: 0;
+        line-height: rem(20px);
+        border: 1px solid transparent;
+        text-align: left;
+        color: $Grey190;
+        background-color: transparent;
+        cursor: pointer;
+        position: relative;
+
+        > div {
+            width: 100%;
+            align-items: center;
+
+            > div:nth-child(2) {
+                width: 100%;
+            }
+        }
+    }
+
+    .bit-chb-fluent.bit-drp-slc-fluent {
+        background-color: $Grey30;
+
+        &:hover {
+            background-color: $Grey30;
+        }
+    }
+}
+
+@keyframes opacity {
+    0% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+@keyframes trans {
+    0% {
+        transform: translate3d(10px, 0px, 0px);
+        pointer-events: none;
+    }
+
+    100% {
+        transform: translate3d(0px, 0px, 0px);
+        pointer-events: auto;
+    }
+}

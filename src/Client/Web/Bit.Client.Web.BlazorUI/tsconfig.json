@@ -3,6 +3,6 @@
     "compilerOptions": {
         "strict": true,
         "lib": [ "DOM", "ESNext" ],
-        "outDir": "wwwroot/scripts/"
+        "outFile": "wwwroot/scripts/bit.blazorui.js"
     }
 }
