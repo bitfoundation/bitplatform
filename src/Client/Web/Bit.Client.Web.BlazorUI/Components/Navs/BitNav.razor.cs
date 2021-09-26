@@ -47,16 +47,18 @@ namespace Bit.Client.Web.BlazorUI
 
                 if (selectedKey is null) return;
 
-                var currentNavLinkItem = NavLinkItems.SelectMany(item => item.Links)
-                                                     .FirstOrDefault(item => (item.Key?.Contains(selectedKey, StringComparison.Ordinal)) ?? false);
+                var selectedNavLinkItem = NavLinkItems.SelectMany(item => item.Links)
+                                                     .FirstOrDefault(item => item.Key == selectedKey);
 
-                if (currentNavLinkItem is null) return;
+                if (selectedNavLinkItem is null) return;
 
-                var currentUrl = currentNavLinkItem.Url;
+                var selectedUrl = selectedNavLinkItem.Url;
+                var currrentUrl = NavigationManager.Uri.Replace(NavigationManager.BaseUri, "/", StringComparison.Ordinal);
 
-                if (currentUrl.HasNoValue()) return;
+                if (selectedUrl != currrentUrl) return;
+                if (selectedUrl.HasNoValue()) return;
 
-                NavigationManager.NavigateTo(currentUrl!);
+                NavigationManager.NavigateTo(selectedUrl!);
             }
         }
 
@@ -104,7 +106,14 @@ namespace Bit.Client.Web.BlazorUI
         protected override async Task OnInitializedAsync()
         {
             NavigationManager.LocationChanged += OnLocationChanged;
-            selectedKey ??= InitialSelectedKey;
+
+            var currrentUrl = NavigationManager.Uri.Replace(NavigationManager.BaseUri, "/", StringComparison.Ordinal);
+
+            selectedKey = NavLinkItems.Where(navLink => navLink.Links != null)
+                                      .SelectMany(navLinkItem => navLinkItem.Links)
+                                      .FirstOrDefault(item => item.Url == currrentUrl)?.Key
+                                      ?? selectedKey
+                                      ?? InitialSelectedKey;
 
             if (RenderType == BitNavRenderType.Grouped)
             {
@@ -120,7 +129,7 @@ namespace Bit.Client.Web.BlazorUI
 
         private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
         {
-            var currentPage = NavigationManager.Uri.Replace(NavigationManager.BaseUri, string.Empty, StringComparison.Ordinal);
+            var currentPage = NavigationManager.Uri.Replace(NavigationManager.BaseUri, "/", StringComparison.Ordinal);
 
             var currentItem = NavLinkItems.SelectMany(item => item.Links).FirstOrDefault(CreateComparer(currentPage));
             string currentPageKey = currentItem?.Key ?? string.Empty;
@@ -133,8 +142,7 @@ namespace Bit.Client.Web.BlazorUI
 
             Func<BitNavLinkItem, bool> CreateComparer(string currentPage)
             {
-                return item => (item.Url ?? "").ToLower(Thread.CurrentThread.CurrentCulture)
-                                               .Contains(currentPage.ToLower(Thread.CurrentThread.CurrentCulture), StringComparison.Ordinal);
+                return item => (item.Url ?? "").ToLower(Thread.CurrentThread.CurrentCulture) == currentPage.ToLower(Thread.CurrentThread.CurrentCulture);
             }
         }
 
