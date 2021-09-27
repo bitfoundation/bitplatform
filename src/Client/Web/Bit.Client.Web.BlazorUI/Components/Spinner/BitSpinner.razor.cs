@@ -12,7 +12,7 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// The position of the label in regards to the spinner animation
         /// </summary>
-        [Parameter] public SpinnerLabelPosition LabelPosition { get; set; }
+        [Parameter] public BitSpinnerLabelPosition LabelPosition { get; set; }
 
         /// <summary>
         /// The size of spinner to render
@@ -63,19 +63,19 @@ namespace Bit.Client.Web.BlazorUI
             string classLabelPosition = string.Empty;
             switch (LabelPosition)
             {
-                case SpinnerLabelPosition.Top:
+                case BitSpinnerLabelPosition.Top:
                     classLabelPosition = "top";
                     break;
 
-                case SpinnerLabelPosition.Left:
+                case BitSpinnerLabelPosition.Left:
                     classLabelPosition = "left";
                     break;
 
-                case SpinnerLabelPosition.Right:
+                case BitSpinnerLabelPosition.Right:
                     classLabelPosition = "right";
                     break;
 
-                case SpinnerLabelPosition.Bottom:
+                case BitSpinnerLabelPosition.Bottom:
                     classLabelPosition = "bottom";
                     break;
             }

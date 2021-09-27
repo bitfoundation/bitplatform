@@ -39,22 +39,22 @@ namespace Bit.Client.Web.BlazorUI.Tests.Spinner
         }
 
         [DataTestMethod,
-            DataRow(Visual.Fluent, SpinnerLabelPosition.Top),
-            DataRow(Visual.Cupertino, SpinnerLabelPosition.Top),
-            DataRow(Visual.Material, SpinnerLabelPosition.Top),
+            DataRow(Visual.Fluent, BitSpinnerLabelPosition.Top),
+            DataRow(Visual.Cupertino, BitSpinnerLabelPosition.Top),
+            DataRow(Visual.Material, BitSpinnerLabelPosition.Top),
 
-            DataRow(Visual.Fluent, SpinnerLabelPosition.Right),
-            DataRow(Visual.Cupertino, SpinnerLabelPosition.Right),
-            DataRow(Visual.Material, SpinnerLabelPosition.Right),
+            DataRow(Visual.Fluent, BitSpinnerLabelPosition.Right),
+            DataRow(Visual.Cupertino, BitSpinnerLabelPosition.Right),
+            DataRow(Visual.Material, BitSpinnerLabelPosition.Right),
 
-            DataRow(Visual.Fluent, SpinnerLabelPosition.Left),
-            DataRow(Visual.Cupertino, SpinnerLabelPosition.Left),
-            DataRow(Visual.Material, SpinnerLabelPosition.Left),
+            DataRow(Visual.Fluent, BitSpinnerLabelPosition.Left),
+            DataRow(Visual.Cupertino, BitSpinnerLabelPosition.Left),
+            DataRow(Visual.Material, BitSpinnerLabelPosition.Left),
 
-            DataRow(Visual.Fluent, SpinnerLabelPosition.Bottom),
-            DataRow(Visual.Cupertino, SpinnerLabelPosition.Bottom),
-            DataRow(Visual.Material, SpinnerLabelPosition.Bottom)]
-        public void BitSpinnerShouldRespectPosition(Visual visual, SpinnerLabelPosition position)
+            DataRow(Visual.Fluent, BitSpinnerLabelPosition.Bottom),
+            DataRow(Visual.Cupertino, BitSpinnerLabelPosition.Bottom),
+            DataRow(Visual.Material, BitSpinnerLabelPosition.Bottom)]
+        public void BitSpinnerShouldRespectPosition(Visual visual, BitSpinnerLabelPosition position)
         {
             var component = RenderComponent<BitSpinnerTest>(parameters =>
             {
@@ -62,7 +62,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Spinner
                 parameters.Add(p => p.LabelPosition, position);
             });
 
-            var positionClass = position == SpinnerLabelPosition.Top ? "top" : position == SpinnerLabelPosition.Right ? "right" : position == SpinnerLabelPosition.Left ? "left" : "bottom";
+            var positionClass = position == BitSpinnerLabelPosition.Top ? "top" : position == BitSpinnerLabelPosition.Right ? "right" : position == BitSpinnerLabelPosition.Left ? "left" : "bottom";
             var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
 
             var bitSpinner = component.Find($".bit-spn-{visualClass}");
