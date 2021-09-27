@@ -2,7 +2,7 @@
 {
     public partial class BitTextFieldDemo
     {
-        private TextFieldType InputType = TextFieldType.Password;
+        private BitTextFieldType InputType = BitTextFieldType.Password;
         private string? TextValue;
     }
 }

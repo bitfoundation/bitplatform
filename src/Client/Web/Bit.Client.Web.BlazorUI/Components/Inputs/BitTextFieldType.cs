@@ -1,6 +1,6 @@
 ﻿namespace Bit.Client.Web.BlazorUI
 {
-    public enum TextFieldType
+    public enum BitTextFieldType
     {
         /// <summary>
         /// The TextField characters are shown as text
