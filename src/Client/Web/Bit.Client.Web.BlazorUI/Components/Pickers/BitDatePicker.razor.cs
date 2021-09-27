@@ -154,9 +154,33 @@ namespace Bit.Client.Web.BlazorUI
         {
             if (IsEnabled)
             {
+                bool shouldRecreateCalendar = false;
+                if (month == 13)
+                {
+                    currentYear++;
+                    month = 1;
+                    currentMonth = 1;
+                    shouldRecreateCalendar = true;
+                }
+                else if (month == 0)
+                {
+                    currentYear--;
+                    month = 12;
+                    currentMonth = 12;
+                    shouldRecreateCalendar = true;
+                }
+                else if(currentMonth != month)
+                {
+                    currentMonth = month;
+                    shouldRecreateCalendar = true;
+                }
+                if (shouldRecreateCalendar)
+                {
+                    CreateMonthCalendar(currentYear, currentMonth);
+                }
                 if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
                 IsOpen = false;
-                BitDate date = new(currentYear, month, day, dayOfWeek);
+                BitDate date = new(currentYear, currentMonth, day, dayOfWeek);
                 selectedDate = OnSelectDate is not null ? OnSelectDate.Invoke(date) : GetSelectedDateString(date);
                 await ValueChanged.InvokeAsync(selectedDate);
                 await OnDateSet.InvokeAsync(selectedDate);
