@@ -15,7 +15,7 @@ using Bit.OData.Implementations;
 using Bit.OData.ODataControllers;
 using Bit.Owin;
 using Bit.Owin.Implementations;
-using DotNetTestApp;
+using Bit.SampleServer;
 using IdentityServer3.Core.Models;
 using Microsoft.AspNet.OData.Builder;
 using Microsoft.AspNetCore.Builder;
@@ -37,9 +37,9 @@ using System.Threading.Tasks;
 using System.Web.Http;
 
 [assembly: ODataModule("Test")]
-[assembly: AppModule(typeof(DotNetTestAppModule))]
+[assembly: AppModule(typeof(SampleServerModule))]
 
-namespace DotNetTestApp
+namespace Bit.SampleServer
 {
     public class AppStartup : AspNetCoreAppStartup
     {
@@ -74,7 +74,7 @@ namespace DotNetTestApp
         public string GetVal() => "!";
     }
 
-    public class DotNetTestAppModule : IAppModule, IAppModulesProvider
+    public class SampleServerModule : IAppModule, IAppModulesProvider
     {
         public IEnumerable<IAppModule> GetAppModules()
         {
@@ -98,13 +98,13 @@ namespace DotNetTestApp
             dependencyManager.RegisterAspNetCoreMiddlewareUsing(aspNetCoreApp =>
             {
                 aspNetCoreApp.UseSwagger();
-                aspNetCoreApp.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "DotNetTestApp v1"));
+                aspNetCoreApp.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "SampleServer v1"));
                 aspNetCoreApp.UseSerilogRequestLogging();
             });
 
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "DotNetTestApp", Version = "v1" });
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "SampleServer", Version = "v1" });
             });
 
             dependencyManager.RegisterAspNetCoreMiddlewareUsing(aspNetCoreApp => aspNetCoreApp.UseRouting());

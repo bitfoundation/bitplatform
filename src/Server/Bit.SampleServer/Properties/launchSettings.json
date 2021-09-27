@@ -1,6 +1,6 @@
 {
   "profiles": {
-    "DotNetTestApp": {
+    "SampleServer": {
       "commandName": "Project",
       "launchBrowser": true,
       "launchUrl": "odata/swagger/",

@@ -8,7 +8,7 @@ using Serilog.Formatting.Compact;
 using System;
 using System.Threading.Tasks;
 
-namespace DotNetTestApp
+namespace Bit.SampleServer
 {
     public class Program
     {
