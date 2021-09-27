@@ -1,6 +1,6 @@
 ﻿namespace Bit.Client.Web.BlazorUI
 {
-    public enum SpinnerLabelPosition
+    public enum BitSpinnerLabelPosition
     {
         /// <summary>
         /// The label shows on the top of the spinner

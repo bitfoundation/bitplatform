@@ -1,6 +1,6 @@
 ﻿namespace Bit.Client.Web.BlazorUI
 {
-    public enum SpinnerSize
+    public enum BitSpinnerSize
     {
         /// <summary>
         /// 20px Spinner diameter

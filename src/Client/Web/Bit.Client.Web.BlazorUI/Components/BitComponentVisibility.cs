@@ -1,6 +1,6 @@
 ﻿namespace Bit.Client.Web.BlazorUI
 {
-    public enum ComponentVisibility
+    public enum BitComponentVisibility
     {
         /// <summary>
         /// Show content of the component

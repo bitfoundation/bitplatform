@@ -12,7 +12,7 @@ namespace Bit.Client.Web.BlazorUI
         private string? style;
         private string? @class;
         private bool isEnabled = true;
-        private ComponentVisibility visibility;
+        private BitComponentVisibility visibility;
 
         protected bool Rendered { get; private set; }
 
@@ -81,7 +81,7 @@ namespace Bit.Client.Web.BlazorUI
         /// Whether the component is visible, hidden, collapsed
         /// </summary>
         [Parameter]
-        public ComponentVisibility Visibility
+        public BitComponentVisibility Visibility
         {
             get => visibility;
             set
@@ -138,7 +138,7 @@ namespace Bit.Client.Web.BlazorUI
                         break;
 
                     case nameof(Visibility):
-                        Visibility = (ComponentVisibility)parameter.Value;
+                        Visibility = (BitComponentVisibility)parameter.Value;
                         parametersDictionary.Remove(parameter.Key);
                         break;
 
@@ -160,8 +160,8 @@ namespace Bit.Client.Web.BlazorUI
             RegisterComponentStyles();
             StyleBuilder
                 .Register(() => Style)
-                .Register(() => Visibility == ComponentVisibility.Hidden ? "visibility:hidden" :
-                                Visibility == ComponentVisibility.Collapsed ? "display:none" :
+                .Register(() => Visibility == BitComponentVisibility.Hidden ? "visibility:hidden" :
+                                Visibility == BitComponentVisibility.Collapsed ? "display:none" :
                                 string.Empty);
 
             ClassBuilder
@@ -199,7 +199,7 @@ namespace Bit.Client.Web.BlazorUI
         {
         }
 
-        protected virtual void OnComponentVisibilityChanged(ComponentVisibility visibility)
+        protected virtual void OnComponentVisibilityChanged(BitComponentVisibility visibility)
         {
         }
     }

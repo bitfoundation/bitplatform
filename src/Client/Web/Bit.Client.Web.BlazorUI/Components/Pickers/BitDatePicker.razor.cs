@@ -65,7 +65,7 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// Calendar type for the DatePicker
         /// </summary>
-        [Parameter] public CalendarType CalendarType { get; set; } = CalendarType.Gregorian;
+        [Parameter] public BitCalendarType CalendarType { get; set; } = BitCalendarType.Gregorian;
 
         /// <summary>
         /// Callback for when clicking on DatePicker input
@@ -114,14 +114,15 @@ namespace Bit.Client.Web.BlazorUI
 
         protected override async Task OnInitializedAsync()
         {
-            if (CalendarType == CalendarType.Gregorian)
+            if (CalendarType == BitCalendarType.Gregorian)
             {
                 calendar = new GregorianCalendar();
             }
-            else if (CalendarType == CalendarType.Persian)
+            else if (CalendarType == BitCalendarType.Persian)
             {
                 calendar = new PersianCalendar();
             }
+
             CreateMonthCalendar();
         }
 
@@ -215,6 +216,7 @@ namespace Bit.Client.Web.BlazorUI
                         currentMonth--;
                     }
                 }
+
                 CreateMonthCalendar(currentYear, currentMonth);
                 await OnMonthChange.InvokeAsync(currentMonth);
             }
@@ -261,6 +263,7 @@ namespace Bit.Client.Web.BlazorUI
                 {
                     currentYear--;
                 }
+
                 CreateMonthCalendar(currentYear, currentMonth);
                 await OnYearChange.InvokeAsync(currentYear);
             }
@@ -297,7 +300,7 @@ namespace Bit.Client.Web.BlazorUI
             monthLength = calendar?.GetDaysInMonth(year, month) ?? 29;
             var firstDay = calendar?.ToDateTime(year, month, 1, 0, 0, 0, 0) ?? DateTime.Now;
             var currentDay = 1;
-            dayOfWeekDifference = CalendarType == CalendarType.Persian ? -1 : 0;
+            dayOfWeekDifference = CalendarType == BitCalendarType.Persian ? -1 : 0;
             var isCalendarEnded = false;
             monthWeeks = new int[6, 7];
             for (int weekIndex = 0; weekIndex < monthWeeks.GetLength(0); weekIndex++)
@@ -331,16 +334,19 @@ namespace Bit.Client.Web.BlazorUI
                         monthWeeks[weekIndex, dayIndex] = currentDay;
                         currentDay++;
                     }
+
                     if (currentDay > monthLength && dayIndex != 6)
                     {
                         currentDay = 1;
                         isCalendarEnded = true;
                     }
+
                     if (dayIndex == 6)
                     {
                         break;
                     }
                 }
+
                 if (isCalendarEnded)
                 {
                     break;
@@ -358,10 +364,12 @@ namespace Bit.Client.Web.BlazorUI
             {
                 dayOfWeek = 7 + dayOfWeek;
             }
+
             if (dayOfWeek > 7)
             {
                 dayOfWeek = -1 + dayOfWeek;
             }
+
             return calendar?.GetDayOfWeekShortName(Enum.Parse<DayOfWeek>(dayOfWeek.ToString()))
                    + " " + calendar?.GetMonthShortName(month)
                    + " " + day.ToString().PadLeft(2, '0')

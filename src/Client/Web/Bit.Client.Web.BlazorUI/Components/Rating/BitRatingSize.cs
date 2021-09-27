@@ -1,6 +1,6 @@
 ﻿namespace Bit.Client.Web.BlazorUI
 {
-    public enum RatingSize
+    public enum BitRatingSize
     {
         /// <summary>
         /// Display rating icon using small size

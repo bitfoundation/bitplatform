@@ -6,7 +6,6 @@
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
     <div>
-
         @if (LabelFragment != null)
         {
             <span>@LabelFragment</span>
@@ -18,7 +17,6 @@
             </label>
         }
 
-
         <div>
             @if (Prefix is not null)
             {
@@ -26,7 +24,8 @@
                     <span>@Prefix</span>
                 </div>
             }
-            @if (IsMultiline && Type == TextFieldType.Text)
+
+            @if (IsMultiline && Type == BitTextFieldType.Text)
             {
                 <textarea id="@InputId"
                           rows="@Rows"
@@ -72,11 +71,11 @@
                        @onkeyup="@HandleKeyUp" />
             }
 
-            @if (CanRevealPassword && Type == TextFieldType.Password)
+            @if (CanRevealPassword && Type == BitTextFieldType.Password)
             {
-                <button class="clickable" @onclick="TogglePasswordRevealIcon" aria-pressed="@(ElementType == TextFieldType.Text ? "true" : "false")">
+                <button class="clickable" @onclick="TogglePasswordRevealIcon" aria-pressed="@(ElementType == BitTextFieldType.Text ? "true" : "false")">
                     <span>
-                        <i class="bit-icon bit-icon--@(ElementType == TextFieldType.Text ? "Hide" : "RedEye")"></i>
+                        <i class="bit-icon bit-icon--@(ElementType == BitTextFieldType.Text ? "Hide" : "RedEye")"></i>
                     </span>
                 </button>
             }
@@ -108,5 +107,6 @@
             {
                 <span>@Description</span>
             }
-        </span>}
+        </span>
+    }
 </div>

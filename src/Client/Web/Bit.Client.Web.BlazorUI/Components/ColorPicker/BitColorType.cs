@@ -1,6 +1,6 @@
 ﻿namespace Bit.Client.Web.BlazorUI
 {
-    public enum ColorType
+    public enum BitColorType
     {
         Hex,
         Rgb
