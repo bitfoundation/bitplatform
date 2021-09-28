@@ -1,17 +1,16 @@
-﻿using Microsoft.JSInterop;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Globalization;
-using Xamarin.Essentials.Interfaces;
+using Microsoft.JSInterop;
 
-namespace Bit.Client.Web.Wasm.Implementation
+namespace Bit.Client.Web.Blazor.Implementation
 {
-    public class WebAssemblyPreferences : IPreferences
+    public class WebPreferences
     {
         private readonly IJSInProcessRuntime? _wasm_js_runtime;
         private static readonly ConcurrentDictionary<string, object> _keyValues = new ConcurrentDictionary<string, object>(); // to make server side blazor work! just for testing/debugging purposes!
 
-        public WebAssemblyPreferences(IJSRuntime jSRuntime)
+        public WebPreferences(IJSRuntime jSRuntime)
         {
             _wasm_js_runtime = jSRuntime as IJSInProcessRuntime;
         }
