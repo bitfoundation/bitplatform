@@ -19,15 +19,16 @@
     [Parameter] public BitNavRenderType RenderType { get; set; }
     [Parameter] public List<BitNavLinkItem> NavLinkItems { get; set; } = new List<BitNavLinkItem> { new BitNavLinkItem { Name = "Test", Key = "Test" } };
 
-    public string OnlinkClickValue;
-    public string OnLinkExpandClickValue;
+    public string OnLinkClickValue = string.Empty;
+    public string OnLinkExpandClickValue = string.Empty;
 
-    public void OnlinkClick(BitNavLinkItem navLinkItem) {
-        OnlinkClickValue = navLinkItem.Name;
+    public void OnlinkClick(BitNavLinkItem navLinkItem)
+    {
+        OnLinkClickValue = navLinkItem.Name;
     }
+
     public void OnLinkExpandClick(BitNavLinkItem navLinkItem)
     {
         OnLinkExpandClickValue = navLinkItem.Key;
     }
-
 }

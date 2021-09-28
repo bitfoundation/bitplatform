@@ -44,7 +44,7 @@
                                 <table role="grid">
                                     <tbody>
                                         <tr>
-                                            @if (CalendarType is CalendarType.Gregorian)
+                                            @if (CalendarType is BitCalendarType.Gregorian)
                                             {
                                                 <th scope="col"
 													title="@calendar?.GetDayOfWeekName(DayOfWeek.Sunday)">
@@ -75,7 +75,7 @@
                                                     @calendar?.GetDayOfWeekName(DayOfWeek.Saturday)[0]
                                                 </th>
                                             }
-                                            else if (CalendarType is CalendarType.Persian)
+                                            else if (CalendarType is BitCalendarType.Persian)
                                             {
                                                 <th scope="col"
 													title="@calendar?.GetDayOfWeekName(DayOfWeek.Saturday)">
@@ -133,11 +133,6 @@
                                                             currentMonthIsStarted = true;
                                                         }
                                                         if (currentMonthIsStarted
-                                                        && monthWeeks[localWeekIndex, localDayIndex] == monthLength)
-                                                        {
-                                                            currentMonthIsFinished = true;
-                                                        }
-                                                        if (currentMonthIsStarted
                                                         && !currentMonthIsFinished)
                                                         {
                                                             string todayClass = "";
@@ -186,6 +181,11 @@
                                                                     <span>@monthWeeks[localWeekIndex, localDayIndex]</span>
                                                                 </button>
                                                             </td>
+                                                        }
+                                                        if (currentMonthIsStarted
+                                                        && monthWeeks[localWeekIndex, localDayIndex] == monthLength)
+                                                        {
+                                                            currentMonthIsFinished = true;
                                                         }
                                                     }
                                                 </tr>

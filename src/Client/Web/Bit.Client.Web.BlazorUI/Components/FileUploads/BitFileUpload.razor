@@ -15,7 +15,7 @@
                id="@UniqueId"
                accept="@(string.Join(",",AcceptedExtensions))"
                @onchange="@(() => HandleOnChange())"
-			   disabled=@(!IsEnabled) />
+               disabled=@(!IsEnabled) />
     </div>
 
     @if (Files is not null)
@@ -40,27 +40,27 @@
                     uploadedPercent = (int)(file.ChunkesUpLoadedSize.Sum() / (float)file.Size * 100);
                     uploadedSize = file.ChunkesUpLoadedSize.Sum();
                 }
-                if (file.UploadStatus != UploadStatus.Removed)
+                if (file.UploadStatus != BitUploadStatus.Removed)
                 {
                     var statusClass = "inprogress";
                     var message = "";
-                    if (file.UploadStatus == UploadStatus.Completed)
+                    if (file.UploadStatus == BitUploadStatus.Completed)
                     {
                         statusClass = "uploaded";
                         message = SuccessfulUploadedResultMessage;
                     }
-                    else if (file.UploadStatus == UploadStatus.Failed)
+                    else if (file.UploadStatus == BitUploadStatus.Failed)
                     {
 
                         statusClass = "failed";
                         message = FailedUploadedResultMessage;
                     }
-                    else if (file.UploadStatus == UploadStatus.Unaccepted)
+                    else if (file.UploadStatus == BitUploadStatus.Unaccepted)
                     {
                         statusClass = "failed";
                         message = MaxSizeMessage;
                     }
-                    else if (file.UploadStatus == UploadStatus.Paused)
+                    else if (file.UploadStatus == BitUploadStatus.Paused)
                     {
                         statusClass = "paused";
                     }
@@ -78,7 +78,7 @@
                                 <span>@($"{uploadedSize.Humanize()}/{file.Size.Humanize()}")</span>
                                 <span>@uploadedPercent%</span>
                             </div>
-                            @if (file.UploadStatus == UploadStatus.InProgress || file.UploadStatus == UploadStatus.Paused)
+                            @if (file.UploadStatus == BitUploadStatus.InProgress || file.UploadStatus == BitUploadStatus.Paused)
                             {
                                 <div class="progress">
                                     <div></div>
@@ -91,39 +91,37 @@
                                 <div class="status">@message</div>
                             }
                         </div>
-
                         <div>
-
-                            @if (file.UploadStatus == UploadStatus.Pending || file.UploadStatus == UploadStatus.Paused)
+                            @if (file.UploadStatus == BitUploadStatus.Pending || file.UploadStatus == BitUploadStatus.Paused)
                             {
                                 <span title="upload" class="bit-icon bit-icon--Play"
-                                    @onclick="@(() =>Upload(index))">
+                                      @onclick="@(() =>Upload(index))">
                                 </span>
                             }
-                            @if (file.UploadStatus == UploadStatus.InProgress)
+
+                            @if (file.UploadStatus == BitUploadStatus.InProgress)
                             {
                                 <span title="pause" class="bit-icon bit-icon--Pause"
-                                    @onclick="@(() =>RequestToPause(index))">
+                                      @onclick="@(() =>RequestToPause(index))">
                                 </span>
                             }
-                            @if (file.UploadStatus == UploadStatus.InProgress || file.UploadStatus == UploadStatus.Paused)
+
+                            @if (file.UploadStatus == BitUploadStatus.InProgress || file.UploadStatus == BitUploadStatus.Paused)
                             {
                                 <span title="cancel" class="bit-icon bit-icon--Cancel"
-                                    @onclick="@(() =>RequestToCancel(index))">
+                                      @onclick="@(() =>RequestToCancel(index))">
                                 </span>
                             }
                             else
                             {
                                 <span title="remove" class="bit-icon bit-icon--Delete"
-                                    @onclick="@(() =>Remove(index))">
+                                      @onclick="@(() =>Remove(index))">
                                 </span>
                             }
                         </div>
                     </li>
-
                 }
             }
         </ul>
-
     }
 </div>

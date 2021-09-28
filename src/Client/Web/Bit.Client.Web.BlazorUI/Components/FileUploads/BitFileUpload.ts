@@ -83,6 +83,7 @@ class BitFileUpload {
         this.request.open('POST', this.uploadEndpointUrl, true);
         this.request.send(data);
     }
+
     pause(): void {
         this.request.abort();
     }

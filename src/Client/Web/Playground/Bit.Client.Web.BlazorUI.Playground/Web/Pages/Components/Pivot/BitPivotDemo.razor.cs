@@ -5,7 +5,7 @@
         private string SelectedKey = "Foo";
         private BitPivotItem SelectedPivotItem;
         private string OverridePivotSelectedKey = "1";
-        private ComponentVisibility PivotItemVisibility;
+        private BitComponentVisibility PivotItemVisibility;
 
         private void PivotSelectedKeyChanged(string key)
         {
@@ -14,7 +14,7 @@
 
         private void TogglePivotItemVisobility()
         {
-            PivotItemVisibility = PivotItemVisibility == ComponentVisibility.Visible ? ComponentVisibility.Collapsed : ComponentVisibility.Visible;
+            PivotItemVisibility = PivotItemVisibility == BitComponentVisibility.Visible ? BitComponentVisibility.Collapsed : BitComponentVisibility.Visible;
         }
     }
 }
