@@ -39,30 +39,12 @@
     }
 }
 
-@mixin getBaseNavStyle($isOnTop: false) {
+.bit-nav-fluent {
     font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
     -webkit-font-smoothing: antialiased;
     font-size: inherit;
     font-weight: inherit;
     user-select: none;
-    background-color: $White;
-
-    @if($isOnTop) {
-        position: absolute;
-        z-index: 1000;
-        animation-name: nav-top-animation;
-        animation-duration: 0.367s;
-        animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
-        animation-fill-mode: both;
-    }
-}
-
-.bit-nav-top {
-    @include getBaseNavStyle($isOnTop:true);
-}
-
-.bit-nav-no-top {
-    @include getBaseNavStyle();
 }
 
 .bit-nav-grp {

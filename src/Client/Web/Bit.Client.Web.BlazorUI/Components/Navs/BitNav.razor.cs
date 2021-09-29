@@ -65,11 +65,6 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public EventCallback<string> SelectedKeyChanged { get; set; }
 
         /// <summary>
-        /// Indicates whether the navigation component renders on top of other content in the UI
-        /// </summary>
-        [Parameter] public bool IsOnTop { get; set; }
-
-        /// <summary>
         /// A collection of link items to display in the navigation bar
         /// </summary>
         [Parameter] public IEnumerable<BitNavLinkItem> NavLinkItems { get; set; } = new List<BitNavLinkItem>();
@@ -98,9 +93,7 @@ namespace Bit.Client.Web.BlazorUI
 
         protected override void RegisterComponentClasses()
         {
-            ClassBuilder.Register(() => IsOnTop
-                                            ? $"{RootElementClass}-top"
-                                            : $"{RootElementClass}-no-top");
+            ClassBuilder.Register(() => $"{RootElementClass}-{VisualClassRegistrar()}");
         }
 
         protected override async Task OnInitializedAsync()
