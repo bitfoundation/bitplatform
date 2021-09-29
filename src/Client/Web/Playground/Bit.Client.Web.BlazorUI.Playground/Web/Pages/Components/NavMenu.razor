@@ -2,15 +2,17 @@
     <BitSearchBox Placeholder="Search Controls"
                   IconName="Search"
                   IsUnderlined="true"
-                  OnChange="@HandleChange"
+                  Value="@searchText"
+                  ValueChanged="@HandleChange"
                   OnClear="@HandleClear"
                   Style="margin: 5px 20px 12px 5px; background-color: #fbfbfb;" />
 
     <BitNav Class="nav-link"
             Style="height: calc(100% - 130px); overflow: auto; padding: 0 20px 20px 20px; "
-            NavLinkItems="NavLinks"
-            RenderType="BitNavRenderType.Grouped"
+            NavLinkItems="navLinks"
+            RenderType="renderType"
             AriaLabel="Bit Component Nav"
-            SelectedKey="Button">
+            SelectedKey="Button"
+            OnLinkClick="HandleLinkClick">
     </BitNav>
 </div>
