@@ -20,7 +20,6 @@ namespace Bit.Client.Web.BlazorUI
 #pragma warning restore CA1823 // Avoid unused private fields
 
         private string? selectedKey;
-        private List<BitNavLinkItem> flatNavLinkItems = new List<BitNavLinkItem>();
 
         /// <summary>
         /// The way to render nav links 
@@ -48,7 +47,7 @@ namespace Bit.Client.Web.BlazorUI
 
                 if (selectedKey is null) return;
 
-                var selectedNavLinkItem = flatNavLinkItems.FirstOrDefault(item => item.Key == selectedKey);
+                var selectedNavLinkItem = Flatten(NavLinkItems).ToList().FirstOrDefault(item => item.Key == selectedKey);
 
                 if (selectedNavLinkItem is null) return;
 
@@ -111,7 +110,7 @@ namespace Bit.Client.Web.BlazorUI
                 SetParentKeys(navLink, null);
             };
 
-            flatNavLinkItems = Flatten(NavLinkItems).ToList();
+            var flatNavLinkItems = Flatten(NavLinkItems).ToList();
             var currrentUrl = NavigationManager.Uri.Replace(NavigationManager.BaseUri, "/", StringComparison.Ordinal);
             selectedKey = flatNavLinkItems.FirstOrDefault(item => item.Url == currrentUrl)?.Key
                                       ?? selectedKey
@@ -151,7 +150,7 @@ namespace Bit.Client.Web.BlazorUI
         {
             if (item.ParentKey is null) return;
 
-            var parentItem = flatNavLinkItems.Find(i => i.Key == item.ParentKey)!;
+            var parentItem = Flatten(NavLinkItems).ToList().Find(i => i.Key == item.ParentKey)!;
             parentItem.IsExpanded = true;
 
             if (parentItem.ParentKey is null) return;
@@ -163,7 +162,7 @@ namespace Bit.Client.Web.BlazorUI
         {
             var currentPage = NavigationManager.Uri.Replace(NavigationManager.BaseUri, "/", StringComparison.Ordinal);
 
-            var currentItem = flatNavLinkItems.FirstOrDefault(CreateComparer(currentPage));
+            var currentItem = Flatten(NavLinkItems).ToList().FirstOrDefault(CreateComparer(currentPage));
             string currentPageKey = currentItem?.Key ?? string.Empty;
 
             if (currentPageKey.HasNoValue()) return;
