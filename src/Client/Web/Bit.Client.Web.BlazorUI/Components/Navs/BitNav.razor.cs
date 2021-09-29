@@ -119,7 +119,8 @@ namespace Bit.Client.Web.BlazorUI
 
             //To expand all the parent links of the selected item
             var selectedItem = flatNavLinkItems.Find(i => i.Key == selectedKey)!;
-            ExpandSelectedNavLinkItemParents(selectedItem);
+            if (selectedItem is not null)
+                ExpandSelectedNavLinkItemParents(selectedItem);
 
             if (RenderType == BitNavRenderType.Grouped)
             {
