@@ -13,7 +13,6 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components
             {
                 Name = "Basic Inputs",
                 Key = "Inputs",
-                IsExpanded = true,
                 Links = new List<BitNavLinkItem>
                 {
                      new BitNavLinkItem { Name= "Button", Key = "Button", Url = "/components/button"},
