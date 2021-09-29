@@ -1,9 +1,16 @@
 ﻿<div class="side">
+    <BitSearchBox Placeholder="Search Controls"
+                  IconName="Search"
+                  IsUnderlined="true"
+                  OnChange="@HandleChange"
+                  OnClear="@HandleClear"
+                  Style="margin: 5px 20px 12px 5px; background-color: #fbfbfb;" />
+
     <BitNav Class="nav-link"
-            Style="height:100%; overflow:auto; padding:20px;"
+            Style="height: calc(100% - 130px); overflow: auto; padding: 0 20px 20px 20px; "
             NavLinkItems="NavLinks"
             RenderType="BitNavRenderType.Grouped"
-            AriaLabel="Bit Component Nav"  
+            AriaLabel="Bit Component Nav"
             SelectedKey="Button">
     </BitNav>
 </div>

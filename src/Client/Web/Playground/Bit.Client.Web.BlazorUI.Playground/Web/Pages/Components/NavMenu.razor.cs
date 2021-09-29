@@ -1,10 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.Json;
 
 namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components
 {
     public partial class NavMenu
     {
-        private readonly List<BitNavLinkItem> NavLinks = new()
+        private readonly List<BitNavLinkItem> InitialNavLinks = new()
         {
             new BitNavLinkItem
             {
@@ -80,5 +83,31 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components
                 },
             },
         };
+        private List<BitNavLinkItem> NavLinks;
+        private List<BitNavLinkItem> FlatNavLinkList;
+
+        protected override void OnInitialized()
+        {
+            FlatNavLinkList = Flatten(InitialNavLinks).ToList().FindAll(link => !string.IsNullOrEmpty(link.Url));
+            HandleClear();
+            base.OnInitialized();
+        }
+
+        private void HandleClear()
+        {
+            var jsonOfObject = JsonSerializer.Serialize(InitialNavLinks);
+            NavLinks = JsonSerializer.Deserialize<List<BitNavLinkItem>>(jsonOfObject);
+        }
+
+        private void HandleChange(string text)
+        {
+            HandleClear();
+
+            if (string.IsNullOrEmpty(text)) return;
+
+            NavLinks = FlatNavLinkList.FindAll(link => link.Name.Contains(text, StringComparison.InvariantCultureIgnoreCase));
+        }
+
+        private static IEnumerable<BitNavLinkItem> Flatten(IEnumerable<BitNavLinkItem> e) => e.SelectMany(c => Flatten(c.Links)).Concat(e);
     }
 }
