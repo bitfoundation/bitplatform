@@ -47,8 +47,7 @@ namespace Bit.Client.Web.BlazorUI
 
                 if (selectedKey is null) return;
 
-                var selectedNavLinkItem = NavLinkItems.SelectMany(item => item.Links)
-                                                     .FirstOrDefault(item => item.Key == selectedKey);
+                var selectedNavLinkItem = Flatten(NavLinkItems).ToList().FirstOrDefault(item => item.Key == selectedKey);
 
                 if (selectedNavLinkItem is null) return;
 
@@ -106,14 +105,21 @@ namespace Bit.Client.Web.BlazorUI
         protected override async Task OnInitializedAsync()
         {
             NavigationManager.LocationChanged += OnLocationChanged;
+            foreach (var navLink in NavLinkItems)
+            {
+                SetParentKeys(navLink, null);
+            };
 
+            var flatNavLinkItems = Flatten(NavLinkItems).ToList();
             var currrentUrl = NavigationManager.Uri.Replace(NavigationManager.BaseUri, "/", StringComparison.Ordinal);
-
-            selectedKey = NavLinkItems.Where(navLink => navLink.Links != null)
-                                      .SelectMany(navLinkItem => navLinkItem.Links)
-                                      .FirstOrDefault(item => item.Url == currrentUrl)?.Key
+            selectedKey = flatNavLinkItems.FirstOrDefault(item => item.Url == currrentUrl)?.Key
                                       ?? selectedKey
                                       ?? InitialSelectedKey;
+
+            //To expand all the parent links of the selected item
+            var selectedItem = flatNavLinkItems.Find(i => i.Key == selectedKey)!;
+            if (selectedItem is not null)
+                ExpandSelectedNavLinkItemParents(selectedItem);
 
             if (RenderType == BitNavRenderType.Grouped)
             {
@@ -127,11 +133,36 @@ namespace Bit.Client.Web.BlazorUI
             await base.OnInitializedAsync();
         }
 
+        private static IEnumerable<BitNavLinkItem> Flatten(IEnumerable<BitNavLinkItem> e) => e.SelectMany(c => Flatten(c.Links)).Concat(e);
+
+        private void SetParentKeys(BitNavLinkItem navLink, string? parentKey)
+        {
+            navLink.ParentKey = parentKey;
+            if (navLink.Links.Any() is false) return;
+
+            foreach (var item in navLink.Links)
+            {
+                SetParentKeys(item, navLink.Key);
+            }
+        }
+
+        private void ExpandSelectedNavLinkItemParents(BitNavLinkItem item)
+        {
+            if (item.ParentKey is null) return;
+
+            var parentItem = Flatten(NavLinkItems).ToList().Find(i => i.Key == item.ParentKey)!;
+            parentItem.IsExpanded = true;
+
+            if (parentItem.ParentKey is null) return;
+
+            ExpandSelectedNavLinkItemParents(parentItem);
+        }
+
         private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
         {
             var currentPage = NavigationManager.Uri.Replace(NavigationManager.BaseUri, "/", StringComparison.Ordinal);
 
-            var currentItem = NavLinkItems.SelectMany(item => item.Links).FirstOrDefault(CreateComparer(currentPage));
+            var currentItem = Flatten(NavLinkItems).ToList().FirstOrDefault(CreateComparer(currentPage));
             string currentPageKey = currentItem?.Key ?? string.Empty;
 
             if (currentPageKey.HasNoValue()) return;
