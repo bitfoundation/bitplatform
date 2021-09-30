@@ -91,11 +91,6 @@ namespace Bit.Client.Web.BlazorUI
 
         protected override string RootElementClass => "bit-nav";
 
-        protected override void RegisterComponentClasses()
-        {
-            ClassBuilder.Register(() => $"{RootElementClass}-{VisualClassRegistrar()}");
-        }
-
         protected override async Task OnInitializedAsync()
         {
             NavigationManager.LocationChanged += OnLocationChanged;
