@@ -85,7 +85,6 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components
         private List<BitNavLinkItem> filteredNavLinks;
         private BitNavRenderType renderType = BitNavRenderType.Grouped;
         private string searchText = string.Empty;
-        private string selectedKey = "Button";
 
         protected override void OnInitialized()
         {
@@ -114,7 +113,6 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components
         {
             searchText = string.Empty;
             HandleClear();
-            selectedKey = item.Key;
         }
 
         private static IEnumerable<BitNavLinkItem> Flatten(IEnumerable<BitNavLinkItem> e) => e.SelectMany(c => Flatten(c.Links)).Concat(e);

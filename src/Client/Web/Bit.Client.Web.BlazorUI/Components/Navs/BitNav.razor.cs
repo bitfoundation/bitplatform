@@ -169,6 +169,9 @@ namespace Bit.Client.Web.BlazorUI
 
             SelectedKey = currentPageKey;
 
+            //To expand all the parent links of the selected item
+            ExpandSelectedNavLinkItemParents(currentItem!);
+
             StateHasChanged();
 
             Func<BitNavLinkItem, bool> CreateComparer(string currentPage)
