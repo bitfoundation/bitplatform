@@ -6,7 +6,8 @@
             RenderType="@RenderType"
             NavLinkItems="NavLinkItems"
             OnLinkClick="OnlinkClick"
-            OnLinkExpandClick="OnLinkExpandClick">
+            OnLinkExpandClick="OnLinkExpandClick"
+            Mode="@Mode">
     </BitNav>
 </CascadingValue>
 
@@ -18,6 +19,7 @@
     [Parameter] public bool IsOnTop { get; set; }
     [Parameter] public BitNavRenderType RenderType { get; set; }
     [Parameter] public List<BitNavLinkItem> NavLinkItems { get; set; } = new List<BitNavLinkItem> { new BitNavLinkItem { Name = "Test", Key = "Test" } };
+    [Parameter] public BitNavMode Mode { get; set; } = BitNavMode.Automatic;
 
     public string OnLinkClickValue = string.Empty;
     public string OnLinkExpandClickValue = string.Empty;
