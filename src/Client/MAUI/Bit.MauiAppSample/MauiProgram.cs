@@ -61,9 +61,8 @@ namespace Bit.MauiAppSample
             {
                 HostUri = new Uri((Device.RuntimePlatform == Device.Android && DeviceInfo.DeviceType == DeviceType.Virtual) ? "http://10.0.2.2" : Device.RuntimePlatform == Device.UWP ? "http://127.0.0.1" : $"http://{developerMachineIp}"),
                 Environment = "Development",
-                ODataRoute = "odata/Redemption",
-                AppName = "Test",
-                OAuthRedirectUri = new Uri(@"management-app-oauth://"),
+                ODataRoute = "odata/Test",
+                AppName = "Test"
             }, lifeCycle: DependencyLifeCycle.SingleInstance);
 
             services.AddBlazorWebView();

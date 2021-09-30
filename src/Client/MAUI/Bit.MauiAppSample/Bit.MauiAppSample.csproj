@@ -60,10 +60,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <None Remove="Linker.xml" />
-    </ItemGroup>
-
-    <ItemGroup>
       <LinkDescription Include="Linker.xml" />
     </ItemGroup>
 
