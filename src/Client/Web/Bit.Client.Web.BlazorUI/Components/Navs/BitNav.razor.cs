@@ -22,12 +22,18 @@ namespace Bit.Client.Web.BlazorUI
         private string? selectedKey;
 
         /// <summary>
+        /// Determines how the navigation will be handled
+        /// The default value is Automatic
+        /// </summary>
+        [Parameter] public BitNavMode Mode { get; set; } = BitNavMode.Automatic;
+
+        /// <summary>
         /// The way to render nav links 
         /// </summary>
         [Parameter] public BitNavRenderType RenderType { get; set; } = BitNavRenderType.Normal;
 
         /// <summary>
-        /// (Optional) The key of the nav item initially selected.
+        /// (Optional) The key of the nav item initially selected in manual mode
         /// </summary>
         [Parameter] public string? InitialSelectedKey { get; set; }
 
@@ -41,23 +47,14 @@ namespace Bit.Client.Web.BlazorUI
             set
             {
                 if (value == selectedKey) return;
+                if (Mode == BitNavMode.Automatic)
+                {
+                    SelectedKeyChanged.InvokeAsync(selectedKey);
+                    return;
+                }
 
                 selectedKey = value;
-                SelectedKeyChanged.InvokeAsync(selectedKey);
-
-                if (selectedKey is null) return;
-
-                var selectedNavLinkItem = Flatten(NavLinkItems).ToList().FirstOrDefault(item => item.Key == selectedKey);
-
-                if (selectedNavLinkItem is null) return;
-
-                var selectedUrl = selectedNavLinkItem.Url;
-                var currrentUrl = NavigationManager.Uri.Replace(NavigationManager.BaseUri, "/", StringComparison.Ordinal);
-
-                if (selectedUrl != currrentUrl) return;
-                if (selectedUrl.HasNoValue()) return;
-
-                NavigationManager.NavigateTo(selectedUrl!);
+                SelectedKeyChanged.InvokeAsync(value);
             }
         }
 
@@ -158,7 +155,7 @@ namespace Bit.Client.Web.BlazorUI
             ExpandSelectedNavLinkItemParents(parentItem);
         }
 
-        private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
+        private async void OnLocationChanged(object? sender, LocationChangedEventArgs args)
         {
             var currentPage = NavigationManager.Uri.Replace(NavigationManager.BaseUri, "/", StringComparison.Ordinal);
 
@@ -167,11 +164,14 @@ namespace Bit.Client.Web.BlazorUI
 
             if (currentPageKey.HasNoValue()) return;
 
-            SelectedKey = currentPageKey;
+            if (Mode == BitNavMode.Manual)
+            {
+                await SelectedKeyChanged.InvokeAsync(currentPageKey);
+                return;
+            }
 
-            //To expand all the parent links of the selected item
+            selectedKey = currentPageKey;
             ExpandSelectedNavLinkItemParents(currentItem!);
-
             StateHasChanged();
 
             Func<BitNavLinkItem, bool> CreateComparer(string currentPage)
@@ -193,8 +193,11 @@ namespace Bit.Client.Web.BlazorUI
         {
             if (navLinkItem.IsEnabled is false) return;
 
-            await OnLinkClick.InvokeAsync(navLinkItem);
+            if (Mode == BitNavMode.Automatic)
+                selectedKey = navLinkItem.Key;
 
+            await SelectedKeyChanged.InvokeAsync(selectedKey);
+            await OnLinkClick.InvokeAsync(navLinkItem);
             if (navLinkItem.Url.HasNoValue() && navLinkItem.Links.Any())
             {
                 await HandleLinkExpand(navLinkItem);
