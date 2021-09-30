@@ -103,21 +103,9 @@ namespace Bit.Http.Implementations
 #if Xamarin
                 request.Headers.Add("Client-App-Version", Xamarin.Essentials.AppInfo.VersionString);
                 request.Headers.Add("Client-Platform", Xamarin.Essentials.DeviceInfo.Platform.ToString());
-                await Xamarin.Essentials.MainThread.InvokeOnMainThreadAsync(() =>
-                {
-                    request.Headers.Add("Client-Theme", Xamarin.Essentials.AppInfo.RequestedTheme.ToString());
-                    if (Xamarin.Essentials.DeviceInfo.Idiom != Xamarin.Essentials.DeviceIdiom.Unknown)
-                        request.Headers.Add("Client-Screen-Size", Xamarin.Essentials.DeviceInfo.Idiom == Xamarin.Essentials.DeviceIdiom.Phone ? "MobileAndPhablet" : "DesktopAndTablet");
-                }).ConfigureAwait(false);
 #elif Maui
                 request.Headers.Add("Client-App-Version", Microsoft.Maui.Essentials.AppInfo.VersionString);
                 request.Headers.Add("Client-Platform", Microsoft.Maui.Essentials.DeviceInfo.Platform.ToString());
-                await Microsoft.Maui.Essentials.MainThread.InvokeOnMainThreadAsync(() =>
-                {
-                    request.Headers.Add("Client-Theme", Microsoft.Maui.Essentials.AppInfo.RequestedTheme.ToString());
-                    if (Microsoft.Maui.Essentials.DeviceInfo.Idiom != Microsoft.Maui.Essentials.DeviceIdiom.Unknown)
-                        request.Headers.Add("Client-Screen-Size", Microsoft.Maui.Essentials.DeviceInfo.Idiom == Microsoft.Maui.Essentials.DeviceIdiom.Phone ? "MobileAndPhablet" : "DesktopAndTablet");
-                }).ConfigureAwait(false);
 #endif
 
                 request.Headers.Add("Client-Debug-Mode", (_clientAppProfile.Environment == "Development").ToString(CultureInfo.InvariantCulture));
