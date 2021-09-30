@@ -133,20 +133,6 @@ namespace Bit.Client.Web.BlazorUI
             await base.OnInitializedAsync();
         }
 
-        protected override void OnAfterRender(bool firstRender)
-        {
-            foreach (var navLink in NavLinkItems)
-            {
-                SetParentKeys(navLink, null);
-            };
-
-            var selectedItem = Flatten(NavLinkItems).ToList().Find(i => i.Key == selectedKey)!;
-            if (selectedItem is not null)
-                ExpandSelectedNavLinkItemParents(selectedItem);
-
-            base.OnAfterRender(firstRender);
-        }
-
         private static IEnumerable<BitNavLinkItem> Flatten(IEnumerable<BitNavLinkItem> e) => e.SelectMany(c => Flatten(c.Links)).Concat(e);
 
         private void SetParentKeys(BitNavLinkItem navLink, string? parentKey)

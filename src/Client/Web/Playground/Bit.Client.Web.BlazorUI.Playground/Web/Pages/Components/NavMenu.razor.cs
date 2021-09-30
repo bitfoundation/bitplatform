@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json;
 
 namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components
 {
     public partial class NavMenu
     {
-        private readonly List<BitNavLinkItem> initialNavLinks = new()
+        private readonly List<BitNavLinkItem> allNavLinks = new()
         {
             new BitNavLinkItem
             {
@@ -83,9 +82,10 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components
             },
         };
 
-        private List<BitNavLinkItem> navLinks;
+        private List<BitNavLinkItem> filteredNavLinks;
         private BitNavRenderType renderType = BitNavRenderType.Grouped;
         private string searchText = string.Empty;
+        private string selectedKey = "Button";
 
         protected override void OnInitialized()
         {
@@ -96,8 +96,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components
         private void HandleClear()
         {
             renderType = BitNavRenderType.Grouped;
-            var jsonOfObject = JsonSerializer.Serialize(initialNavLinks);
-            navLinks = JsonSerializer.Deserialize<List<BitNavLinkItem>>(jsonOfObject);
+            filteredNavLinks = allNavLinks;
         }
 
         private void HandleChange(string text)
@@ -107,14 +106,15 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components
             if (string.IsNullOrEmpty(text)) return;
 
             renderType = BitNavRenderType.Normal;
-            var flatNavLinkList = Flatten(initialNavLinks).ToList().FindAll(link => !string.IsNullOrEmpty(link.Url));
-            navLinks = flatNavLinkList.FindAll(link => link.Name.Contains(text, StringComparison.InvariantCultureIgnoreCase));
+            var flatNavLinkList = Flatten(allNavLinks).ToList().FindAll(link => !string.IsNullOrEmpty(link.Url));
+            filteredNavLinks = flatNavLinkList.FindAll(link => link.Name.Contains(text, StringComparison.InvariantCultureIgnoreCase));
         }
 
         private void HandleLinkClick(BitNavLinkItem item)
         {
             searchText = string.Empty;
             HandleClear();
+            selectedKey = item.Key;
         }
 
         private static IEnumerable<BitNavLinkItem> Flatten(IEnumerable<BitNavLinkItem> e) => e.SelectMany(c => Flatten(c.Links)).Concat(e);
