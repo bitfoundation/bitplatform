@@ -3,7 +3,7 @@
     public enum BitNavMode
     {
         /// <summary>
-        /// selected key changes will be handled inside the component
+        /// the value of selected key will change using NavigationManager and the current url inside the component
         /// </summary>
         Automatic,
 

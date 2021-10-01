@@ -54,7 +54,6 @@ namespace Bit.Client.Web.BlazorUI
                 }
 
                 selectedKey = value;
-                SelectedKeyChanged.InvokeAsync(value);
             }
         }
 
@@ -101,7 +100,11 @@ namespace Bit.Client.Web.BlazorUI
 
         protected override async Task OnInitializedAsync()
         {
-            NavigationManager.LocationChanged += OnLocationChanged;
+            if (Mode == BitNavMode.Automatic)
+            {
+                NavigationManager.LocationChanged += OnLocationChanged;
+            }
+
             foreach (var navLink in NavLinkItems)
             {
                 SetParentKeys(navLink, null);
@@ -157,18 +160,14 @@ namespace Bit.Client.Web.BlazorUI
 
         private async void OnLocationChanged(object? sender, LocationChangedEventArgs args)
         {
+            if (Mode == BitNavMode.Manual) return;
+
             var currentPage = NavigationManager.Uri.Replace(NavigationManager.BaseUri, "/", StringComparison.Ordinal);
 
             var currentItem = Flatten(NavLinkItems).ToList().FirstOrDefault(CreateComparer(currentPage));
             string currentPageKey = currentItem?.Key ?? string.Empty;
 
             if (currentPageKey.HasNoValue()) return;
-
-            if (Mode == BitNavMode.Manual)
-            {
-                await SelectedKeyChanged.InvokeAsync(currentPageKey);
-                return;
-            }
 
             selectedKey = currentPageKey;
             ExpandSelectedNavLinkItemParents(currentItem!);
@@ -193,10 +192,12 @@ namespace Bit.Client.Web.BlazorUI
         {
             if (navLinkItem.IsEnabled is false) return;
 
-            if (Mode == BitNavMode.Automatic)
+            if (Mode == BitNavMode.Manual)
+            {
                 selectedKey = navLinkItem.Key;
+                await SelectedKeyChanged.InvokeAsync(selectedKey);
+            }
 
-            await SelectedKeyChanged.InvokeAsync(selectedKey);
             await OnLinkClick.InvokeAsync(navLinkItem);
             if (navLinkItem.Url.HasNoValue() && navLinkItem.Links.Any())
             {
@@ -275,7 +276,7 @@ namespace Bit.Client.Web.BlazorUI
 
         protected virtual void Dispose(bool disposing)
         {
-            if (disposing)
+            if (disposing && Mode == BitNavMode.Automatic)
             {
                 NavigationManager.LocationChanged -= OnLocationChanged;
             }
