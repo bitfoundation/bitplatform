@@ -27,23 +27,6 @@ namespace Bit.Client.Web.BlazorUI.Tests.Navs
             Assert.IsTrue(bitNav.ClassList.Contains($"bit-nav-{visualClass}"));
         }
 
-        [DataTestMethod,
-          DataRow(true),
-          DataRow(false),
-        ]
-        public void BitNavIsOnTopTest(bool isOnTop)
-        {
-            var component = RenderComponent<BitNavTest>(parameters =>
-            {
-                parameters.Add(p => p.IsOnTop, isOnTop);
-            });
-
-            var bitNav = component.Find(".bit-nav");
-            var isOnTopClass = isOnTop ? "top" : "no-top";
-
-            Assert.IsTrue(bitNav.ClassList.Contains($"bit-nav-{isOnTopClass}"));
-        }
-
         [DataTestMethod]
         public void BitNavSelectedKeyTwoWayBindTest()
         {
