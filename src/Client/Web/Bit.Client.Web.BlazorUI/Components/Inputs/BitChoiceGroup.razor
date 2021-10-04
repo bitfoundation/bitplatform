@@ -6,16 +6,17 @@
      class="@ClassBuilder.Value">
 
 
-    @if (Label.HasValue())
-    {
-        <label>
-            @Label
-        </label>
-    }
-    else if (LabelFragment != null)
+    @if (LabelFragment != null)
     {
         <span>@LabelFragment</span>
     }
+    else if (Label.HasValue())
+    {
+    <label>
+        @Label
+    </label>
+    }
+    
     <CascadingValue Value="this"
                     IsFixed="true">
         @ChildContent

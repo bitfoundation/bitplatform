@@ -48,6 +48,9 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
+        /// <summary>
+        /// Requires the end user to select an item in the dropdown.
+        /// </summary>
         [Parameter]
         public bool IsRequired
         {

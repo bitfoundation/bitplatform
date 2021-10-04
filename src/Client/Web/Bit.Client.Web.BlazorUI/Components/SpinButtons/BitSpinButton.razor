@@ -7,24 +7,25 @@
      class="@ClassBuilder.Value">
     @if (IconName.HasValue() || Label.HasValue() || LabelFragment != null)
     {
-        <div class="bit-spb-lbl-wrapper">
-            @if (IconName.HasValue())
-            {
-                <i class="bit-icon bit-icon--@IconName bit-icon--l"
-                   aria-hidden="true"
-                   role="@GetIconRole"
-                   aria-label="@IconAriaLabel"></i>
-            }
+    <div class="bit-spb-lbl-wrapper">
+        @if (IconName.HasValue())
+        {
+            <i class="bit-icon bit-icon--@IconName bit-icon--l"
+               aria-hidden="true"
+               role="@GetIconRole"
+               aria-label="@IconAriaLabel"></i>
+        }
 
-            @if (Label.HasValue())
-            {
-                <label id="@GetLabelId" for="@InputId">@Label</label>
-            }
-            else if (LabelFragment != null)
-            {
-                <label id="@GetLabelId" for="@InputId">@LabelFragment</label>
-            }
-        </div>
+        @if (LabelFragment != null)
+        {
+            <label id="@GetLabelId" for="@InputId">@LabelFragment</label>
+        }
+        else if (Label.HasValue())
+        {
+            <label id="@GetLabelId" for="@InputId">@Label</label>
+        }
+
+    </div>
     }
 
     <div class="bit-spb-wrapper"

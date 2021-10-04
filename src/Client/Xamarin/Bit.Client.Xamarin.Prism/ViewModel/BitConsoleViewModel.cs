@@ -2,7 +2,7 @@
 using Bit.ViewModel.Implementations;
 using Rg.Plugins.Popup.Contracts;
 using System.Threading.Tasks;
-using Xamarin.Essentials.Interfaces;
+using Xamarin.Essentials;
 
 namespace Bit.ViewModel
 {
@@ -11,8 +11,6 @@ namespace Bit.ViewModel
         public LocalTelemetryService LocalTelemetryService { get; set; } = default!;
 
         public IPopupNavigation PopupNavigation { get; set; } = default!;
-
-        public IClipboard Clipboard { get; set; } = default!;
 
         public BitDelegateCommand<TrackedThing> CopyCommand { get; set; }
 

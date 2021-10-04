@@ -5,14 +5,19 @@ namespace Bit.Client.Web.BlazorUI
     public partial class BitSpinner
     {
         /// <summary>
+        /// Politeness setting for label update announcement.
+        /// </summary>
+        [Parameter] public BitSpinnerAriaLive AriaLive { get; set; } = BitSpinnerAriaLive.Polite;
+
+        /// <summary>
         /// The position of the label in regards to the spinner animation
         /// </summary>
-        [Parameter] public SpinnerLabelPosition LabelPosition { get; set; }
+        [Parameter] public BitSpinnerLabelPosition LabelPosition { get; set; }
 
         /// <summary>
         /// The size of spinner to render
         /// </summary>
-        [Parameter] public SpinnerSize Size { get; set; }
+        [Parameter] public BitSpinnerSize Size { get; set; }
 
         /// <summary>
         /// The label to show next to the spinner. Label updates will be announced to the screen readers
@@ -33,19 +38,19 @@ namespace Bit.Client.Web.BlazorUI
 
             switch (Size)
             {
-                case SpinnerSize.XSmall:
+                case BitSpinnerSize.XSmall:
                     classSize = "xSmall";
                     break;
 
-                case SpinnerSize.Small:
+                case BitSpinnerSize.Small:
                     classSize = "small";
                     break;
 
-                case SpinnerSize.Medium:
+                case BitSpinnerSize.Medium:
                     classSize = "medium";
                     break;
 
-                case SpinnerSize.Large:
+                case BitSpinnerSize.Large:
                     classSize = "large";
                     break;
             }
@@ -56,22 +61,21 @@ namespace Bit.Client.Web.BlazorUI
         private string GetClassLabelPosition()
         {
             string classLabelPosition = string.Empty;
-
             switch (LabelPosition)
             {
-                case SpinnerLabelPosition.Top:
+                case BitSpinnerLabelPosition.Top:
                     classLabelPosition = "top";
                     break;
 
-                case SpinnerLabelPosition.Left:
+                case BitSpinnerLabelPosition.Left:
                     classLabelPosition = "left";
                     break;
 
-                case SpinnerLabelPosition.Right:
+                case BitSpinnerLabelPosition.Right:
                     classLabelPosition = "right";
                     break;
 
-                case SpinnerLabelPosition.Bottom:
+                case BitSpinnerLabelPosition.Bottom:
                     classLabelPosition = "bottom";
                     break;
             }

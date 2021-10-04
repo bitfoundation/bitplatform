@@ -69,7 +69,7 @@ namespace Autofac
         }
 
         public static IHttpClientBuilder RegisterHttpClient<THttpMessageHandler>(this IDependencyManager dependencyManager)
-            where THttpMessageHandler : HttpMessageHandler, new()
+            where THttpMessageHandler : HttpMessageHandler
         {
             dependencyManager.RegisterHttpMessageHandler<THttpMessageHandler>();
 
@@ -98,7 +98,7 @@ namespace Autofac
         }
 
         public static void RegisterHttpMessageHandler<THttpMessageHandler>(this IDependencyManager dependencyManager)
-            where THttpMessageHandler : HttpMessageHandler, new()
+            where THttpMessageHandler : HttpMessageHandler
         {
             if (dependencyManager == null)
                 throw new ArgumentNullException(nameof(dependencyManager));
@@ -107,7 +107,6 @@ namespace Autofac
 
             containerBuilder.RegisterType<THttpMessageHandler>()
                 .Named<HttpMessageHandler>(ContractKeys.DefaultHttpMessageHandler)
-                .PropertiesAutowired(PropertyWiringOptions.PreserveSetValues)
                 .SingleInstance()
                 .PreserveExistingDefaults();
 

@@ -21,7 +21,7 @@
                                    Text="Standard"
                                    AriaHidden="true"
                                    SecondaryText="This Button is compound button"
-                                   ButtonStyle="ButtonStyle.Standard">
+                                   ButtonStyle="BitButtonStyle.Standard">
                 </BitCompoundButton>
                 <BitCompoundButton IsEnabled="false"
                                    AllowDisabledFocus="false"
@@ -55,7 +55,7 @@
                 <BitPivotItem HeaderText="Example" IconName="ViewList">
                     <div>
                         <BitCompoundButton Style="background-color:#32385b;border-color:#32385b" Text="Styled" SecondaryText="This is styled compound button"></BitCompoundButton>
-                        <BitCompoundButton ButtonStyle="ButtonStyle.Standard" Class="custom-button" Text="Classed" SecondaryText="This is classed compound button"></BitCompoundButton>
+                        <BitCompoundButton ButtonStyle="BitButtonStyle.Standard" Class="custom-button" Text="Classed" SecondaryText="This is classed compound button"></BitCompoundButton>
                     </div>
                 </BitPivotItem>
                 <BitPivotItem HeaderText="Code" IconName="Source">
@@ -95,11 +95,11 @@
             <BitPivot>
                 <BitPivotItem HeaderText="Example" IconName="ViewList">
                     <div>
-                        <BitCompoundButton Visibility="ComponentVisibility.Visible" Text="Visible" SecondaryText="This Button is a visible compound button"></BitCompoundButton>
+                        <BitCompoundButton Visibility="BitComponentVisibility.Visible" Text="Visible" SecondaryText="This Button is a visible compound button"></BitCompoundButton>
                         <br />
-                        <span>Hidden Button: </span>[<BitCompoundButton Text="Hidden" SecondaryText="This Button is a hidden compound button" Visibility="ComponentVisibility.Hidden"></BitCompoundButton>]
+                        <span>Hidden Button: </span>[<BitCompoundButton Text="Hidden" SecondaryText="This Button is a hidden compound button" Visibility="BitComponentVisibility.Hidden"></BitCompoundButton>]
                         <br />
-                        <span>Collapsed Button: </span>[<BitCompoundButton Text="Collapsed" SecondaryText="This Button is a collapsed compound button" Visibility="ComponentVisibility.Collapsed"></BitCompoundButton>]
+                        <span>Collapsed Button: </span>[<BitCompoundButton Text="Collapsed" SecondaryText="This Button is a collapsed compound button" Visibility="BitComponentVisibility.Collapsed"></BitCompoundButton>]
                     </div>
                 </BitPivotItem>
                 <BitPivotItem HeaderText="Code" IconName="Source">
@@ -125,7 +125,7 @@
             <BitPivot>
                 <BitPivotItem HeaderText="Example" IconName="ViewList">
                     <div>
-                        <BitCompoundButton ButtonStyle="ButtonStyle.Standard" Text="AriaDescription" SecondaryText="This is a compound button with aria description" AriaDescription="Button with Aria Description"></BitCompoundButton>
+                        <BitCompoundButton ButtonStyle="BitButtonStyle.Standard" Text="AriaDescription" SecondaryText="This is a compound button with aria description" AriaDescription="Button with Aria Description"></BitCompoundButton>
                         <BitCompoundButton Text="AriaHidden" SecondaryText="This is a compound button with aria hidden" AriaHidden="true"></BitCompoundButton>
                     </div>
                 </BitPivotItem>
@@ -150,7 +150,7 @@
                 <BitPivotItem HeaderText="Example" IconName="ViewList">
                     <div class="m-t-10">
                         <BitCompoundButton Target="_blank" Href="https://github.com/bitfoundation/bitframework" Text="Open the site" SecondaryText="Open Bit Foundation In New Tab"></BitCompoundButton>
-                        <BitCompoundButton Href="https://github.com/bitfoundation/bitframework" ButtonStyle="ButtonStyle.Standard" Text="Open the site" SecondaryText="Go To Bit Foundation"></BitCompoundButton>
+                        <BitCompoundButton Href="https://github.com/bitfoundation/bitframework" ButtonStyle="BitButtonStyle.Standard" Text="Open the site" SecondaryText="Go To Bit Foundation"></BitCompoundButton>
                         <BitCompoundButton Target="_self" Href="https://github.com/bitfoundation/bitframework" IsEnabled="false" Text="Open the site" SecondaryText="Go To Bit Foundation"></BitCompoundButton>
                     </div>
                 </BitPivotItem>

@@ -73,9 +73,9 @@ p {
 
 .side {
     flex: 5%;
-    background-color: $LightGray;    
+    background-color: $LightGray;
     position: fixed;
-    width: 255px;    
+    width: 255px;
     height: 100vh;
 }
 
@@ -150,7 +150,7 @@ p {
     color: $DarkYellow;
 }
 
-.dark-cyan{
+.dark-cyan {
     color: $DarkCyan;
 }
 
@@ -222,5 +222,29 @@ p {
     &:hover {
         color: #106EBE;
         background-color: #f3f2f1;
+    }
+}
+
+.bit-nav-wrapped-link {
+    a {
+        white-space: normal;
+        line-height: inherit
+    }
+}
+
+.spinner-container, spinner-positioning {
+    & > div {
+        & label {
+            font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+            -webkit-font-smoothing: antialiased;
+            font-size: 14px;
+            font-weight: 600;
+            color: rgb(50, 49, 48);
+            box-sizing: border-box;
+            box-shadow: none;
+            display: block;
+            padding: 5px 0px;
+            overflow-wrap: break-word;
+        }
     }
 }

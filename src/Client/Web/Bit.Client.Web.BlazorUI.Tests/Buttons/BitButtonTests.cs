@@ -8,22 +8,22 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
     public class BitButtonTests : BunitTestContext
     {
         [DataTestMethod,
-            DataRow(Visual.Fluent, true, ButtonStyle.Primary, "title"),
-            DataRow(Visual.Fluent, true, ButtonStyle.Standard, "title"),
-            DataRow(Visual.Fluent, false, ButtonStyle.Primary, "title"),
-            DataRow(Visual.Fluent, false, ButtonStyle.Standard, "title"),
+            DataRow(Visual.Fluent, true, BitButtonStyle.Primary, "title"),
+            DataRow(Visual.Fluent, true, BitButtonStyle.Standard, "title"),
+            DataRow(Visual.Fluent, false, BitButtonStyle.Primary, "title"),
+            DataRow(Visual.Fluent, false, BitButtonStyle.Standard, "title"),
 
-            DataRow(Visual.Cupertino, true, ButtonStyle.Primary, "title"),
-            DataRow(Visual.Cupertino, true, ButtonStyle.Standard, "title"),
-            DataRow(Visual.Cupertino, false, ButtonStyle.Primary, "title"),
-            DataRow(Visual.Cupertino, false, ButtonStyle.Standard, "title"),
+            DataRow(Visual.Cupertino, true, BitButtonStyle.Primary, "title"),
+            DataRow(Visual.Cupertino, true, BitButtonStyle.Standard, "title"),
+            DataRow(Visual.Cupertino, false, BitButtonStyle.Primary, "title"),
+            DataRow(Visual.Cupertino, false, BitButtonStyle.Standard, "title"),
 
-            DataRow(Visual.Material, true, ButtonStyle.Primary, "title"),
-            DataRow(Visual.Material, true, ButtonStyle.Standard, "title"),
-            DataRow(Visual.Material, false, ButtonStyle.Primary, "title"),
-            DataRow(Visual.Material, false, ButtonStyle.Standard, "title"),
+            DataRow(Visual.Material, true, BitButtonStyle.Primary, "title"),
+            DataRow(Visual.Material, true, BitButtonStyle.Standard, "title"),
+            DataRow(Visual.Material, false, BitButtonStyle.Primary, "title"),
+            DataRow(Visual.Material, false, BitButtonStyle.Standard, "title"),
         ]
-        public void BitButtonTest(Visual visual, bool isEnabled, ButtonStyle style, string title)
+        public void BitButtonTest(Visual visual, bool isEnabled, BitButtonStyle style, string title)
         {
             var com = RenderComponent<BitButtonTest>(parameters =>
             {
@@ -48,12 +48,12 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
         }
 
         [DataTestMethod,
-            DataRow(true, ButtonStyle.Primary, false, false),
-            DataRow(true, ButtonStyle.Standard, true, false),
-            DataRow(false, ButtonStyle.Primary, false, true),
-            DataRow(false, ButtonStyle.Standard, true, false),
+            DataRow(true, BitButtonStyle.Primary, false, false),
+            DataRow(true, BitButtonStyle.Standard, true, false),
+            DataRow(false, BitButtonStyle.Primary, false, true),
+            DataRow(false, BitButtonStyle.Standard, true, false),
         ]
-        public void BitButtonDisabledFocusTest(bool isEnabled, ButtonStyle style, bool allowDisabledFocus, bool expectedResult)
+        public void BitButtonDisabledFocusTest(bool isEnabled, BitButtonStyle style, bool allowDisabledFocus, bool expectedResult)
         {
             var com = RenderComponent<BitButtonTest>(parameters =>
             {
@@ -75,22 +75,22 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
         }
 
         [DataTestMethod,
-             DataRow(Visual.Fluent, true, ButtonStyle.Primary, "https://github.com/bitfoundation", "bit", "_blank"),
-             DataRow(Visual.Fluent, true, ButtonStyle.Standard, "https://github.com/bitfoundation", "bit", "_blank"),
-             DataRow(Visual.Fluent, false, ButtonStyle.Primary, "https://github.com/bitfoundation", "bit", "_blank"),
-             DataRow(Visual.Fluent, false, ButtonStyle.Standard, "https://github.com/bitfoundation", "bit", "_blank"),
+             DataRow(Visual.Fluent, true, BitButtonStyle.Primary, "https://github.com/bitfoundation", "bit", "_blank"),
+             DataRow(Visual.Fluent, true, BitButtonStyle.Standard, "https://github.com/bitfoundation", "bit", "_blank"),
+             DataRow(Visual.Fluent, false, BitButtonStyle.Primary, "https://github.com/bitfoundation", "bit", "_blank"),
+             DataRow(Visual.Fluent, false, BitButtonStyle.Standard, "https://github.com/bitfoundation", "bit", "_blank"),
 
-             DataRow(Visual.Cupertino, true, ButtonStyle.Primary, "https://github.com/bitfoundation", "bit", "_blank"),
-             DataRow(Visual.Cupertino, true, ButtonStyle.Standard, "https://github.com/bitfoundation", "bit", "_blank"),
-             DataRow(Visual.Cupertino, false, ButtonStyle.Primary, "https://github.com/bitfoundation", "bit", "_blank"),
-             DataRow(Visual.Cupertino, false, ButtonStyle.Standard, "https://github.com/bitfoundation", "bit", "_blank"),
+             DataRow(Visual.Cupertino, true, BitButtonStyle.Primary, "https://github.com/bitfoundation", "bit", "_blank"),
+             DataRow(Visual.Cupertino, true, BitButtonStyle.Standard, "https://github.com/bitfoundation", "bit", "_blank"),
+             DataRow(Visual.Cupertino, false, BitButtonStyle.Primary, "https://github.com/bitfoundation", "bit", "_blank"),
+             DataRow(Visual.Cupertino, false, BitButtonStyle.Standard, "https://github.com/bitfoundation", "bit", "_blank"),
 
-             DataRow(Visual.Material, true, ButtonStyle.Primary, "https://github.com/bitfoundation", "bit", "_blank"),
-             DataRow(Visual.Material, true, ButtonStyle.Standard, "https://github.com/bitfoundation", "bit", "_blank"),
-             DataRow(Visual.Material, false, ButtonStyle.Primary, "https://github.com/bitfoundation", "bit", "_blank"),
-             DataRow(Visual.Material, false, ButtonStyle.Standard, "https://github.com/bitfoundation", "bit", "_blank"),
+             DataRow(Visual.Material, true, BitButtonStyle.Primary, "https://github.com/bitfoundation", "bit", "_blank"),
+             DataRow(Visual.Material, true, BitButtonStyle.Standard, "https://github.com/bitfoundation", "bit", "_blank"),
+             DataRow(Visual.Material, false, BitButtonStyle.Primary, "https://github.com/bitfoundation", "bit", "_blank"),
+             DataRow(Visual.Material, false, BitButtonStyle.Standard, "https://github.com/bitfoundation", "bit", "_blank"),
         ]
-        public void BitAnchorButtonTest(Visual visual, bool isEnabled, ButtonStyle style, string href, string title, string target)
+        public void BitAnchorButtonTest(Visual visual, bool isEnabled, BitButtonStyle style, string href, string title, string target)
         {
             var com = RenderComponent<BitButtonTest>(parameters =>
             {

@@ -18,7 +18,6 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Xamarin.Essentials.Interfaces;
 
 namespace Bit.Sync.ODataEntityFrameworkCore.Implementations
 {
@@ -29,7 +28,6 @@ namespace Bit.Sync.ODataEntityFrameworkCore.Implementations
         public HttpClient HttpClient { get; set; } = default!;
         public IODataClient ODataClient { get; set; } = default!;
         public IExceptionHandler ExceptionHandler { get; set; } = default!;
-        public IConnectivity Connectivity { get; set; } = default!;
 
 
         private readonly List<DtoSetSyncConfig> _configs = new List<DtoSetSyncConfig> { };
@@ -44,8 +42,13 @@ namespace Bit.Sync.ODataEntityFrameworkCore.Implementations
             if (dtoSetNames == null)
                 throw new ArgumentNullException(nameof(dtoSetNames));
 
-            if (Connectivity.NetworkAccess == Xamarin.Essentials.NetworkAccess.None)
+#if Xamarin
+            if (Xamarin.Essentials.Connectivity.NetworkAccess == Xamarin.Essentials.NetworkAccess.None)
                 return;
+#elif Maui
+            if (Microsoft.Maui.Essentials.Connectivity.NetworkAccess ==Microsoft.Maui.Essentials.NetworkAccess.None)
+                return;
+#endif
 
             DtoSetSyncConfig[] toServerDtoSetSyncMaterials = _configs.Where(c => c.ToServerSync == true && c.ToServerSyncFunc() == true && dtoSetNames.Any(n => n == c.DtoSetName)).ToArray();
 

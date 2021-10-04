@@ -23,7 +23,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Xamarin.Essentials.Interfaces;
+using Xamarin.Essentials;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 
@@ -76,8 +76,6 @@ namespace Bit
                 IEnumerable<ITelemetryService> allTelemetryServices = Container.Resolve<IEnumerable<ITelemetryService>>();
                 ISecurityServiceBase securityService = Container.Resolve<ISecurityServiceBase>();
                 IMessageReceiver? messageReceiver = Container.Resolve<ILifetimeScope>().ResolveOptional<IMessageReceiver>();
-                IConnectivity connectivity = Container.Resolve<IConnectivity>();
-                IVersionTracking versionTracking = Container.Resolve<IVersionTracking>();
                 IDeviceService deviceService = Container.Resolve<IDeviceService>();
 
                 bool isLoggedIn = await securityService.IsLoggedInAsync().ConfigureAwait(false);
@@ -94,9 +92,6 @@ namespace Bit
 
                     if (messageReceiver != null)
                         telemetryService.MessageReceiver = messageReceiver;
-
-                    telemetryService.Connectivity = connectivity;
-                    telemetryService.VersionTracking = versionTracking;
                 }
 
                 if (BitExceptionHandler.Current is BitExceptionHandler exceptionHandler)
@@ -117,7 +112,7 @@ namespace Bit
 
         protected virtual Task OnInitializedAsync()
         {
-            Container.Resolve<IConnectivity>().ConnectivityChanged += (sender, e) =>
+            Connectivity.ConnectivityChanged += (sender, e) =>
             {
                 _eventAggregator.Value.GetEvent<ConnectivityChangedEvent>()
                     .Publish(new ConnectivityChangedEvent { IsConnected = e.NetworkAccess != Xamarin.Essentials.NetworkAccess.None });

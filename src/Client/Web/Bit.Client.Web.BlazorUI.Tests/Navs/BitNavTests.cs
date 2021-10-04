@@ -13,207 +13,243 @@ namespace Bit.Client.Web.BlazorUI.Tests.Navs
            DataRow(Visual.Cupertino),
            DataRow(Visual.Material),
         ]
-        public void BitNav_BaseTest(Visual visual)
+        public void BitNavVisualClassTest(Visual visual)
         {
-            var com = RenderComponent<BitNavTest>(parameters =>
+            var component = RenderComponent<BitNavTest>(parameters =>
             {
                 parameters.Add(p => p.Visual, visual);
             });
 
-            var bitNav = com.Find(".bit-nav");
+            var bitNav = component.Find(".bit-nav");
             var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
 
-            Assert.IsTrue(bitNav.ClassList.Contains($"bit-nav-{visualClass}") && bitNav.ClassList.Contains($"bit-nav"));
-        }
-
-        [DataTestMethod,
-           DataRow(Visual.Fluent, true),
-           DataRow(Visual.Fluent, false),
-           DataRow(Visual.Cupertino, true),
-           DataRow(Visual.Cupertino, false),
-           DataRow(Visual.Material, true),
-           DataRow(Visual.Material, false),
-        ]
-        public void BitNav_IsEnableTest(Visual visual, bool isEnabled)
-        {
-            var com = RenderComponent<BitNavTest>(parameters =>
-            {
-                parameters.Add(p => p.Visual, visual);
-                parameters.Add(p => p.IsEnabled, isEnabled);
-            });
-
-            var bitNav = com.Find(".bit-nav");
-            var isEnabledClass = isEnabled ? "enabled" : "disabled";
-            var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
-
-            Assert.IsTrue(bitNav.ClassList.Contains($"bit-nav-{isEnabledClass}-{visualClass}"));
+            Assert.IsTrue(bitNav.ClassList.Contains($"bit-nav-{visualClass}"));
         }
 
         [DataTestMethod,
           DataRow(true),
           DataRow(false),
         ]
-        public void BitNav_IsOnTopTest(bool isOnTop)
+        public void BitNavIsOnTopTest(bool isOnTop)
         {
-            var com = RenderComponent<BitNavTest>(parameters =>
+            var component = RenderComponent<BitNavTest>(parameters =>
             {
                 parameters.Add(p => p.IsOnTop, isOnTop);
             });
 
-            var bitNav = com.Find(".bit-nav");
+            var bitNav = component.Find(".bit-nav");
             var isOnTopClass = isOnTop ? "top" : "no-top";
 
             Assert.IsTrue(bitNav.ClassList.Contains($"bit-nav-{isOnTopClass}"));
         }
 
         [DataTestMethod,
-         DataRow(Visual.Fluent, "key"),
-         DataRow(Visual.Cupertino, "key"),
-         DataRow(Visual.Material, "key"),
+         DataRow(Visual.Fluent, "key1"),
+         DataRow(Visual.Cupertino, "key2"),
+         DataRow(Visual.Material, "key3"),
         ]
-        public void BitNav_SelectedKeyTest(Visual visual, string selectedKey)
+        public void BitNavSelectedKeyTest(Visual visual, string selectedKey)
         {
-            var com = RenderComponent<BitNavTest>(parameters =>
+            var component = RenderComponent<BitNavTest>(parameters =>
             {
-                parameters.Add(p => p.NavLinkItems, new List<BitNavLinkItem> { new BitNavLinkItem { Name = "Test", Key = "key" } });
+                parameters.Add(p => p.NavLinkItems, BasicNavLinks);
                 parameters.Add(p => p.Visual, visual);
                 parameters.Add(p => p.SelectedKey, selectedKey);
             });
 
             var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
-            var selectedNav = com.Find($".bit-nav-selected-{visualClass}");
-
-            Assert.IsNotNull(selectedNav);
+            var selectedItemTxt = component.Find($".bit-nav-selected-{visualClass} > .bit-nav-link-container > .bit-nav-link-txt");
+            var expectedResult = BasicNavLinks.Find(i => i.Key == selectedKey).Name;
+            Assert.AreEqual(expectedResult, selectedItemTxt.TextContent);
         }
 
         [DataTestMethod,
-          DataRow(Visual.Fluent, true, true),
-          DataRow(Visual.Fluent, true, false),
           DataRow(Visual.Fluent, false, true),
           DataRow(Visual.Fluent, false, false),
+          DataRow(Visual.Fluent, true, true),
+          DataRow(Visual.Fluent, true, false),
 
-          DataRow(Visual.Cupertino, true, true),
-          DataRow(Visual.Cupertino, true, false),
           DataRow(Visual.Cupertino, false, true),
           DataRow(Visual.Cupertino, false, false),
+          DataRow(Visual.Cupertino, true, true),
+          DataRow(Visual.Cupertino, true, false),
 
-          DataRow(Visual.Material, true, true),
-          DataRow(Visual.Material, true, false),
           DataRow(Visual.Material, false, true),
           DataRow(Visual.Material, false, false),
+          DataRow(Visual.Material, true, true),
+          DataRow(Visual.Material, true, false),
       ]
-        public void BitNavChildrenTest(Visual visual, bool disabled, bool hasUrl)
+        public void BitNavLinkItemMainClassTest(Visual visual, bool isEnabled, bool hasUrl)
         {
             string url = hasUrl ? "https://www.google.com/" : null;
-            var navLinkItems = new List<BitNavLinkItem> { new BitNavLinkItem { Name = "test", Key = "key", Disabled = disabled, Url = url } };
-            var com = RenderComponent<BitNavTest>(parameters =>
+            var navLinkItems = new List<BitNavLinkItem> { new BitNavLinkItem { Name = "test", Key = "key", IsEnabled = isEnabled, Url = url } };
+
+            var component = RenderComponent<BitNavTest>(parameters =>
             {
                 parameters.Add(p => p.NavLinkItems, navLinkItems);
                 parameters.Add(p => p.Visual, visual);
             });
 
-            var enabledClass = disabled ? "disabled" : "enabled";
+            var enabledClass = isEnabled ? "enabled" : "disabled";
             var hasUrlClass = hasUrl ? "hasurl" : "nourl";
             var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
-            var element = com.Find($".bit-nav-link-{enabledClass}-{hasUrlClass}-{visualClass}");
 
-            Assert.IsNotNull(element);
-        }
-
-        [DataTestMethod,
-          DataRow(Visual.Fluent, true),
-          DataRow(Visual.Fluent, false),
-          DataRow(Visual.Cupertino, true),
-          DataRow(Visual.Cupertino, false),
-          DataRow(Visual.Material, true),
-          DataRow(Visual.Material, false),
-        ]
-        public void BitNavChildren_HasIconTest(Visual visual, bool hasIcon)
-        {
-            string icon = hasIcon ? "News" : null;
-            List<BitNavLinkItem> navLinkItems = new() { new() { Name = "test", Key = "key", Icon = icon } };
-
-            var com = RenderComponent<BitNavTest>(parameters =>
+            if (hasUrl)
             {
-                parameters.Add(p => p.NavLinkItems, navLinkItems);
-                parameters.Add(p => p.Visual, visual);
-            });
-
-            var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
-            var hasIconClass = hasIcon ? "has-icon" : "has-not-icon";
-            var element = com.Find($".bit-nav-{hasIconClass}-{visualClass}");
-
-            Assert.IsNotNull(element);
+                var element = component.Find("a");
+                Assert.IsTrue(element.ClassList.Contains($"bit-nav-link-{enabledClass}-{hasUrlClass}-{visualClass}"));
+            }
+            else
+            {
+                var element = component.Find("button");
+                Assert.IsTrue(element.ClassList.Contains($"bit-nav-link-{enabledClass}-{hasUrlClass}-{visualClass}"));
+            }
         }
 
         [DataTestMethod, DataRow("Detailed label")]
         public void BitNavAriaLabelTest(string ariaLabel)
         {
-            var com = RenderComponent<BitNavTest>(parameters =>
+            var component = RenderComponent<BitNavTest>(parameters =>
             {
                 parameters.Add(p => p.AriaLabel, ariaLabel);
             });
 
-            var bitNav = com.Find(".bit-nav");
+            var bitNav = component.Find(".bit-nav");
 
             Assert.IsTrue(bitNav.GetAttribute("aria-label").Equals(ariaLabel));
         }
 
-        [DataTestMethod, DataRow("Detailed label")]
-        public void BitNavLinkItemsAriaLabelTest(string ariaLabel)
+        [DataTestMethod,
+            DataRow("collapseAriaLabel", "expandAriaLabel", false),
+            DataRow("collapseAriaLabel", "expandAriaLabel", true)
+        ]
+        public void BitNavLinkItemAriaLabelTest(string collapseAriaLabel, string expandAriaLabel, bool isExpanded)
         {
             List<BitNavLinkItem> navLinkItems = new()
             {
-                new()
+                new BitNavLinkItem()
                 {
                     Name = "Home",
                     Key = "key1",
-                    CollapseAriaLabel = ariaLabel,
-                    Links = new()
+                    CollapseAriaLabel = collapseAriaLabel,
+                    ExpandAriaLabel = expandAriaLabel,
+                    IsExpanded = isExpanded,
+                    Links = new List<BitNavLinkItem>()
                     {
-                        new()
-                        {
-                            Name = "Activity",
-                            Url = "http://msn.com",
-                            Key = "key1-1",
-                            Title = "Activity"
-                        }
-                    }
-                },
-                new()
-                {
-                    Name = "Documents",
-                    Title = "Documents",
-                    Url = "http://example.com",
-                    Key = "key2",
-                    CollapseAriaLabel = ariaLabel,
-                    Links = new()
-                    {
-                        new()
-                        {
-                            Name = "Activity",
-                            Url = "http://example.com",
-                            Key = "key2-1",
-                            Title = "Activity"
-                        }
+                        new BitNavLinkItem() { Name = "Activity", Url = "http://msn.com", Key = "key1-1", Title = "Activity" }
                     }
                 }
             };
 
-            var com = RenderComponent<BitNavTest>(parameters =>
+            var component = RenderComponent<BitNavTest>(parameters =>
             {
                 parameters.Add(p => p.NavLinkItems, navLinkItems);
-                parameters.Add(p => p.AriaLabel, ariaLabel);
             });
 
-            var bitNavLinksItems = com.FindAll(".bit-nav button");
+            var button = component.Find("button");
+            var expectedResult = isExpanded ? collapseAriaLabel : expandAriaLabel;
 
-            foreach (var bitNavLinksItem in bitNavLinksItems)
+            Assert.AreEqual(expectedResult, button.GetAttribute("aria-label"));
+        }
+
+        [DataTestMethod,
+            DataRow(BitNavRenderType.Grouped),
+            DataRow(BitNavRenderType.Normal)
+        ]
+        public void BitNavShouldRespectGroupItems(BitNavRenderType type)
+        {
+            List<BitNavLinkItem> navLinkItems = new() { new() { Name = "test", Key = "key", Url = "https://www.google.com/" } };
+            var component = RenderComponent<BitNavTest>(parameters =>
             {
-                var hasAttribute = bitNavLinksItem.HasAttribute("aria-label");
-                //TODO: This part of the code has been commented on due to a GitHub pipeline problem.
-                //Assert.IsTrue(hasAttribute);
-                //Assert.IsTrue(hasAttribute ? bitNavLinksItem.GetAttribute("aria-label").Equals(ariaLabel) : true);
+                parameters.Add(p => p.NavLinkItems, navLinkItems);
+                parameters.Add(p => p.RenderType, type);
+            });
+
+            if (type == BitNavRenderType.Grouped)
+            {
+                Assert.IsNotNull(component.Find(".bit-nav-grp-chevron-btn"));
+            }
+            else
+            {
+                Assert.ThrowsException<ElementNotFoundException>(() => component.Find(".bit-nav-grp-chevron-btn"));
+            }
+        }
+
+        [DataTestMethod,
+         DataRow(Visual.Fluent, "key1"),
+         DataRow(Visual.Cupertino, "key2"),
+         DataRow(Visual.Material, "key3"),
+        ]
+        public void BitNavInitialSelectedKeyTest(Visual visual, string initialSelectedKey)
+        {
+            var component = RenderComponent<BitNavTest>(parameters =>
+            {
+                parameters.Add(p => p.NavLinkItems, BasicNavLinks);
+                parameters.Add(p => p.Visual, visual);
+                parameters.Add(p => p.InitialSelectedKey, initialSelectedKey);
+            });
+
+            var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
+            var selectedItemTxt = component.Find($".bit-nav-selected-{visualClass} > .bit-nav-link-container > .bit-nav-link-txt");
+            var expectedResult = BasicNavLinks.Find(i => i.Key == initialSelectedKey).Name;
+            Assert.AreEqual(expectedResult, selectedItemTxt.TextContent);
+        }
+
+        [DataTestMethod]
+        public void BitNavOnLinkExpandClickTest()
+        {
+            var items = new List<BitNavLinkItem>()
+            {
+                new() { Name = "Test1", Key = "key1", Links = new List<BitNavLinkItem>() { new() { Name = "Test2", Key = "key2" } } }
+            };
+
+            var componenet = RenderComponent<BitNavTest>(parameters =>
+            {
+                parameters.Add(p => p.NavLinkItems, items);
+            });
+
+            var button = componenet.Find(".bit-nav-chevron-btn");
+
+            //TODO: bypassed - BUnit or Blazor issue
+            //button.Click();
+            //Assert.AreEqual(items[0].Key, componenet.Instance.OnLinkExpandClickValue);
+        }
+
+        [DataTestMethod,
+            DataRow(true),
+            DataRow(false)
+        ]
+        public void BitNavLinkItemIsCollapsedByDefaultTest(bool isCollapseByDefault)
+        {
+            var items = new List<BitNavLinkItem>()
+            {
+                new() {
+                    Name = "Test1",
+                    Key = "key1",
+                    IsExpanded = true,
+                    IsCollapseByDefault = isCollapseByDefault,
+                    Links = new List<BitNavLinkItem>()
+                        { new() { Name = "Test2", Key = "key2" } } }
+            };
+
+            var componenet = RenderComponent<BitNavTest>(parameters =>
+            {
+                parameters.Add(p => p.NavLinkItems, items);
+                parameters.Add(p => p.RenderType, BitNavRenderType.Grouped);
+            });
+
+            var groupHeaderBtn = componenet.Find(".bit-nav-grp-chevron-btn");
+            var groupHeaderBtnIcon = componenet.Find(".bit-nav-grp-chevron-btn > i");
+
+            if (isCollapseByDefault)
+            {
+                Assert.AreEqual("false", groupHeaderBtn.GetAttribute("aria-expanded"));
+                Assert.IsFalse(groupHeaderBtnIcon.ClassList.Contains("bit-nav-expand-fluent"));
+            }
+            else
+            {
+                Assert.AreEqual("true", groupHeaderBtn.GetAttribute("aria-expanded"));
+                Assert.IsTrue(groupHeaderBtnIcon.ClassList.Contains("bit-nav-expand-fluent"));
             }
         }
 
@@ -221,105 +257,72 @@ namespace Bit.Client.Web.BlazorUI.Tests.Navs
             DataRow(true),
             DataRow(false)
         ]
-        public void BitNavShouldRespectGroupItems(bool isGroup)
+        public void BitNavLinkItemForceAnchorTest(bool isForced)
         {
-            List<BitNavLinkItem> navLinkItems = new() { new() { Name = "test", Key = "key", IsGroup = isGroup, Url = "https://www.google.com/" } };
-            var component = RenderComponent<BitNavTest>(parameters =>
+            var items = new List<BitNavLinkItem>()
             {
-                parameters.Add(p => p.NavLinkItems, navLinkItems);
-            });
-
-            var navItem = component.Find(".bit-nav ul > li > div > .bit-nav-has-not-icon-fluent");
-            Assert.AreEqual(isGroup, navItem.ClassList.Contains("bit-nav-isgroup-fluent"));
-        }
-
-        [DataTestMethod,
-            DataRow(true, "CollapseAriaLabel", "ExpandAriaLabel"),
-            DataRow(false, "CollapseAriaLabel", "ExpandAriaLabel")
-        ]
-        public void BitNavShouldRespectGroupItems(bool isExpanded, string collapseAriaLabel, string ExpandAriaLabel)
-        {
-            List<BitNavLinkItem> navLinkItems = new()
-            {
-                new()
-                {
-                    Name = "Home",
+                new() {
+                    Name = "Test1",
                     Key = "key1",
-                    CollapseAriaLabel = collapseAriaLabel,
-                    ExpandAriaLabel = ExpandAriaLabel,
-                    Links = new()
-                    {
-                        new()
-                        {
-                            Name = "Activity",
-                            Url = "http://msn.com",
-                            Key = "key1-1",
-                            Title = "Activity"
-                        }
-                    }
-                },
+                    IsExpanded = true,
+                    Links = new List<BitNavLinkItem>()
+                        { new() { Name = "Test2", Key = "key2", ForceAnchor = isForced } } }
             };
 
-            var components = RenderComponent<BitNavTest>(parameters =>
-            {
-                parameters.Add(p => p.NavLinkItems, navLinkItems);
-            });
-
-            var navLinksItem = components.Find(".bit-nav button");
-
-            Assert.IsTrue(navLinksItem.HasAttribute("aria-label"));
-            Assert.AreEqual(isExpanded ? ExpandAriaLabel : collapseAriaLabel, navLinksItem.GetAttribute("aria-label"));
-
-            navLinksItem.Click();
-            Assert.AreEqual(isExpanded ? collapseAriaLabel : ExpandAriaLabel, navLinksItem.GetAttribute("aria-label"));
-        }
-
-        [DataTestMethod,
-            DataRow("key"),
-        ]
-        public void BitNav_ShouldRespectInitialSelectedKey(string initialSelectedKey)
-        {
-            var com = RenderComponent<BitNavTest>(parameters =>
-            {
-                parameters.Add(p => p.NavLinkItems, new() { new() { Name = "Test", Key = "key" } });
-                parameters.Add(p => p.InitialSelectedKey, initialSelectedKey);
-            });
-
-            var selectedNav = com.Find($".bit-nav-selected-fluent");
-
-            Assert.IsNotNull(selectedNav);
-        }
-
-        [DataTestMethod,
-            DataRow(true, true),
-            DataRow(true, false),
-            DataRow(false, true),
-            DataRow(false, false)
-        ]
-        public void BitNavShoulRespondToClickEvents(bool isEnabled, bool itemDisabled)
-        {
             var componenet = RenderComponent<BitNavTest>(parameters =>
             {
-                parameters.Add(p => p.NavLinkItems, new()
-                {
-                    new()
-                    {
-                        Name = "Test1",
-                        Key = "key1",
-                        Disabled = itemDisabled,
-                        Links = new() { new() { Name = "Test2", Key = "key2" } }
-                    }
-                });
-                parameters.Add(p => p.IsEnabled, isEnabled);
+                parameters.Add(p => p.NavLinkItems, items);
             });
 
-            var navItem = componenet.Find($".bit-nav .bit-nav-link-{(itemDisabled ? "disabled" : "enabled")}-nourl-fluent");
-            
-            //TODO: bypassed - BUnit or Blazor issue
-            //navItem.Click();
-            //Assert.AreEqual(isEnabled && !itemDisabled ? "Test1" : null, componenet.Instance.OnlinkClickValue);
-            //Assert.AreEqual(isEnabled && !itemDisabled ? "key1" : null, componenet.Instance.OnLinkExpandClickValue);
-
+            if (isForced)
+            {
+                var anchorTag = componenet.Find("a");
+                Assert.IsNotNull(anchorTag);
+            }
+            else
+            {
+                Assert.ThrowsException<ElementNotFoundException>(() => componenet.Find("a"));
+            }
         }
+
+        [DataTestMethod,
+            DataRow(null, "name"),
+            DataRow("", "name"),
+            DataRow("title", "name")
+        ]
+        public void BitNavLinkItemTitleTest(string? title, string name)
+        {
+            var items = new List<BitNavLinkItem>()
+            {
+                new() { Name = name, Title = title, Key = "key1", IsExpanded = true }
+            };
+
+            var componenet = RenderComponent<BitNavTest>(parameters =>
+            {
+                parameters.Add(p => p.NavLinkItems, items);
+            });
+
+            var navLinkItem = componenet.Find(".bit-nav-link-enabled-nourl-fluent");
+
+            if (title is null)
+            {
+                Assert.AreEqual(name, navLinkItem.GetAttribute("title"));
+            }
+            else
+            {
+                Assert.AreEqual(title, navLinkItem.GetAttribute("title"));
+            }
+        }
+
+        private readonly List<BitNavLinkItem> BasicNavLinks = new()
+        {
+            new BitNavLinkItem { Name = "Activity", Url = "http://msn.com", Key = "key1", Target = "_blank" },
+            new BitNavLinkItem { Name = "MSN", Url = "http://msn.com", Key = "key2", IsEnabled = false, Target = "_blank" },
+            new BitNavLinkItem { Name = "Documents", Url = "http://example.com", Key = "key3", Target = "_blank", IsExpanded = true },
+            new BitNavLinkItem { Name = "Pages", Url = "http://msn.com", Key = "key4", Target = "_parent" },
+            new BitNavLinkItem { Name = "Notebook", Url = "http://msn.com", Key = "key5", IsEnabled = false },
+            new BitNavLinkItem { Name = "Communication and Media", Url = "http://msn.com", Key = "key6", Target = "_top" },
+            new BitNavLinkItem { Name = "News", Title = "News", Url = "http://msn.com", Key = "key7", Icon = "News", Target = "_self" },
+        };
     }
 }

@@ -13,7 +13,7 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using Xamarin.Essentials.Interfaces;
+using Xamarin.Essentials;
 using Xamarin.Forms;
 
 namespace Bit.ViewModel.Implementations
@@ -151,14 +151,8 @@ namespace Bit.ViewModel.Implementations
                             { "CurrentUICulture", CultureInfo.CurrentUICulture.Name }
                         };
 
-                        IContainerProvider? container = ((PrismApplication)Application.Current).Container;
-
-                        if (container != null)
-                        {
-                            IVersionTracking versionTracking = container.Resolve<IVersionTracking>();
-                            items.Add("VersionHistory", string.Join(",", versionTracking.VersionHistory.OrderByDescending(vh => vh)));
-                            items.Add("Version", string.Join(",", versionTracking.CurrentVersion));
-                        }
+                        items.Add("VersionHistory", string.Join(",", VersionTracking.VersionHistory.OrderByDescending(vh => vh)));
+                        items.Add("Version", string.Join(",", VersionTracking.CurrentVersion));
 #if XamarinEssentials
                         else
                         {

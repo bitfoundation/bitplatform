@@ -1,35 +1,34 @@
 ﻿<CascadingValue Value="Visual">
-    <BitNav IsEnabled="IsEnabled"
-            InitialSelectedKey="@InitialSelectedKey"
+    <BitNav InitialSelectedKey="@InitialSelectedKey"
             SelectedKey="@SelectedKey"
             AriaLabel="@AriaLabel"
             IsOnTop="IsOnTop"
+            RenderType="@RenderType"
             NavLinkItems="NavLinkItems"
             OnLinkClick="OnlinkClick"
-            OnLinkExpandClick="OnLinkExpandClick"
-            >
+            OnLinkExpandClick="OnLinkExpandClick">
     </BitNav>
 </CascadingValue>
+
 @code {
     [Parameter] public Visual Visual { get; set; }
-    [Parameter] public bool IsEnabled { get; set; }
     [Parameter] public string SelectedKey { get; set; }
     [Parameter] public string InitialSelectedKey { get; set; }
     [Parameter] public string AriaLabel { get; set; }
     [Parameter] public bool IsOnTop { get; set; }
+    [Parameter] public BitNavRenderType RenderType { get; set; }
     [Parameter] public List<BitNavLinkItem> NavLinkItems { get; set; } = new List<BitNavLinkItem> { new BitNavLinkItem { Name = "Test", Key = "Test" } };
 
+    public string OnLinkClickValue = string.Empty;
+    public string OnLinkExpandClickValue = string.Empty;
 
-
-    public string OnlinkClickValue;
-    public string OnLinkExpandClickValue;
-
-    public void OnlinkClick(BitNavLinkItem navLinkItem) {
-        OnlinkClickValue = navLinkItem.Name;       
+    public void OnlinkClick(BitNavLinkItem navLinkItem)
+    {
+        OnLinkClickValue = navLinkItem.Name;
     }
+
     public void OnLinkExpandClick(BitNavLinkItem navLinkItem)
     {
         OnLinkExpandClickValue = navLinkItem.Key;
     }
-
 }

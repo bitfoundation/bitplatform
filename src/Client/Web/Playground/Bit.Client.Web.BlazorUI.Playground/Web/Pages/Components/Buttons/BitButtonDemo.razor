@@ -22,7 +22,7 @@
                     <BitButton IsEnabled="true">
                         Primary
                     </BitButton>
-                    <BitButton Style="margin-right: 2px;"  ButtonStyle="ButtonStyle.Standard" IsEnabled="true">
+                    <BitButton Style="margin-right: 2px;"  ButtonStyle="BitButtonStyle.Standard" IsEnabled="true">
                         Standard
                     </BitButton>
                     <BitButton IsEnabled="false" AllowDisabledFocus="false">
@@ -86,11 +86,11 @@
             <BitPivot>
                 <BitPivotItem HeaderText="Example" IconName="ViewList">
                     <div>
-                        <BitButton Visibility="ComponentVisibility.Visible">Visible Button</BitButton>
+                        <BitButton Visibility="BitComponentVisibility.Visible">Visible Button</BitButton>
                         <br />
-                        <span>Hidden Button: </span>[<BitButton Visibility="ComponentVisibility.Hidden">Hidden Button</BitButton>]
+                        <span>Hidden Button: </span>[<BitButton Visibility="BitComponentVisibility.Hidden">Hidden Button</BitButton>]
                         <br />
-                        <span>Collapsed Button: </span>[<BitButton Visibility="ComponentVisibility.Collapsed">Collapsed Button</BitButton>]
+                        <span>Collapsed Button: </span>[<BitButton Visibility="BitComponentVisibility.Collapsed">Collapsed Button</BitButton>]
                     </div>
                 </BitPivotItem>
                 <BitPivotItem HeaderText="Code" IconName="Source">
@@ -119,7 +119,7 @@
                         <BitButton Style="margin-right: 2px;" Title="Primary" Target="_blank" Href="https://github.com/bitfoundation/bitframework">
                             Open Bit Foundation In New Tab
                         </BitButton>
-                        <BitButton Style="margin-right: 2px;" Title="Standard" Href="https://github.com/bitfoundation/bitframework" ButtonStyle="ButtonStyle.Standard">
+                        <BitButton Style="margin-right: 2px;" Title="Standard" Href="https://github.com/bitfoundation/bitframework" ButtonStyle="BitButtonStyle.Standard">
                             Go To Bit Foundation
                         </BitButton>
                         <BitButton Target="_self" Href="https://github.com/bitfoundation/bitframework" IsEnabled="false">
