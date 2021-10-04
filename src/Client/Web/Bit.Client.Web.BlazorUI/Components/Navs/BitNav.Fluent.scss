@@ -39,28 +39,12 @@
     }
 }
 
-@mixin getBaseNavStyle($isOnTop: false) {
+.bit-nav-fluent {
     font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
     -webkit-font-smoothing: antialiased;
     font-size: inherit;
     font-weight: inherit;
     user-select: none;
-
-    @if($isOnTop) {
-        position: absolute;
-        animation-name: css-0, css-4;
-        animation-duration: 0.367s;
-        animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
-        animation-fill-mode: both;
-    }
-}
-
-.bit-nav-top {
-    @include getBaseNavStyle($isOnTop:true);
-}
-
-.bit-nav-no-top {
-    @include getBaseNavStyle();
 }
 
 .bit-nav-grp {
@@ -221,5 +205,19 @@
 
     &:hover {
         background-color: $Grey20;
+    }
+}
+
+@keyframes nav-top-animation {
+    0% {
+        opacity: 0;
+        transform: translate3d(rem(-40px), 0, 0);
+        pointer-events: none;
+    }
+
+    100% {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+        pointer-events: auto;
     }
 }

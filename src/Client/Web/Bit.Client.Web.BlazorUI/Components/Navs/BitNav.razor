@@ -74,7 +74,7 @@
     @<li class="bit-nav-item"
          role="listitem"
          @key="navLinkItem.Key"
-         @onclick="(()=>HandleClick(navLinkItem))">
+         @onclick="(() => HandleClick(navLinkItem))">
 
         <div class="bit-nav-composite-link @(!navLinkItem.IsEnabled ? "bit-nav-disabled-composite-link" : "")"
              name="@navLinkItem.Name">

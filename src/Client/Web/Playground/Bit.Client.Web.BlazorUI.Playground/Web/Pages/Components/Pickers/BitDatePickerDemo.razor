@@ -12,7 +12,7 @@
         <h3>BitDatePicker</h3>
         <BitPivot>
             <BitPivotItem HeaderText="Example" IconName="ViewList">
-                 <BitDatePicker></BitDatePicker>
+                <BitDatePicker></BitDatePicker>
             </BitPivotItem>
             <BitPivotItem HeaderText="Code" IconName="Source">
                 <p>
@@ -25,7 +25,7 @@
         <h3>Date picker disabled</h3>
         <BitPivot>
             <BitPivotItem HeaderText="Example" IconName="ViewList">
-                 <BitDatePicker IsEnabled="false"></BitDatePicker>
+                <BitDatePicker IsEnabled="false"></BitDatePicker>
             </BitPivotItem>
             <BitPivotItem HeaderText="Code" IconName="Source">
                 <p>
@@ -38,11 +38,64 @@
         <h3>Shamsi Date picker</h3>
         <BitPivot>
             <BitPivotItem HeaderText="Example" IconName="ViewList">
-                 <BitDatePicker CalendarType="BitCalendarType.Persian"></BitDatePicker>
+                <BitDatePicker CalendarType="BitCalendarType.Persian"></BitDatePicker>
             </BitPivotItem>
             <BitPivotItem HeaderText="Code" IconName="Source">
                 <p>
                     &lt<span class="dark-green">BitDatePicker CalendarType</span>="<span class="light-green">CalendarType</span>.Persian"><span class="dark-green">&lt/BitDatePicker></span>
+                </p>
+            </BitPivotItem>
+        </BitPivot>
+    </div>
+    <div class="card">
+        <h3>Value two-way binding</h3>
+        <BitPivot>
+            <BitPivotItem HeaderText="Example" IconName="ViewList">
+                <BitDatePicker @bind-Value="@selectedDate"></BitDatePicker>
+                <BitLabel>this is selected date: @selectedDate</BitLabel>
+            </BitPivotItem>
+            <BitPivotItem HeaderText="Code" IconName="Source">
+                <p>
+                    <span class="dark-green">
+                        &ltBitDatePicker
+                        <span class="light-yellow-bg">&#64</span>
+                        <span class="dark-green">bind-Value</span>
+                    </span>="selectedDate"<span class="dark-green">>&lt/BitDatePicker></span>
+                    <br />
+                    <span class="light-yellow-bg">&#64code{</span>
+                    <br />
+                    <span class="light-blue">private string</span> selectedDate = <span class="light-blue">"";s</span>
+                    <br />                                                              
+                    <span class="light-yellow-bg">}</span>
+                </p>
+            </BitPivotItem>
+        </BitPivot>
+    </div>
+    <div class="card">
+        <h3>DatePicker with custom date formatting</h3>
+        <BitPivot>
+            <BitPivotItem HeaderText="Example" IconName="ViewList">
+                <BitDatePicker OnSelectDate="OnDateFormat"></BitDatePicker>
+            </BitPivotItem>
+            <BitPivotItem HeaderText="Code" IconName="Source">
+                <p>
+                    <span class="dark-green">
+                        &ltBitDatePicker
+                        <span class="dark-green">OnSelectDate</span>
+                    </span>="OnDateFormat"
+                    <span class="dark-green">>&lt/BitDatePicker></span>
+                    <br />
+                    <span class="light-yellow-bg">&#64code{</span>
+                    <br />
+                    <span class="light-blue">private <span class="dark-green">string</span></span> <span class="dark-yellow">OnDateFormat</span>
+                    <span class="light-blue">(<span class="dark-green">BitDate</span> date) =></span>
+                    <span class="m-l-30">
+                        <br />
+                        $<span class="light-blue">"</span>{date.GetDate()}/{date.GetMonth()}/{date.GetYear()}
+                        <span class="light-blue">";</span>
+                    </span>
+                    <br />
+                    <span class="light-yellow-bg">}</span>
                 </p>
             </BitPivotItem>
         </BitPivot>
@@ -68,7 +121,7 @@
             <td>CalendarType</td>
             <td>CalendarType.Gregorian</td>
             <td>Calendar type for the DatePicker.</td>
-        </tr>        
+        </tr>
         <tr>
             <td>Class</td>
             <td>string</td>
@@ -105,7 +158,7 @@
             <td></td>
             <td>Callback for when clicking on DatePicker input.</td>
         </tr>
-          <tr>
+        <tr>
             <td>OnDateChoose</td>
             <td>EventCallback&lt;int&gt;</td>
             <td></td>
@@ -140,7 +193,7 @@
             <td>string</td>
             <td>Select a date...</td>
             <td>Placeholder text for the DatePicker.</td>
-        </tr> 
+        </tr>
         <tr>
             <td>Style</td>
             <td>string</td>
@@ -154,7 +207,7 @@
             <td>Whether the component is visible, hidden, collapsed.</td>
         </tr>
     </table>
-       <h4>CalendarType</h4>
+    <h4>CalendarType</h4>
     <hr />
     <table>
         <tr>

@@ -95,5 +95,7 @@ namespace Bit.Client.Web.BlazorUI
         public Action<bool>? OnHeaderClick { get; set; }
 
         internal int Depth { get; set; }
+
+        internal string? ParentKey { get; set; }
     }
 }
