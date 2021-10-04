@@ -16,7 +16,7 @@
     <PackageReference Include="Refit" Version="6.0.94" />
       <PackageReference Include="Selenium.Support" Version="3.141.0" />
       <PackageReference Include="Selenium.WebDriver" Version="3.141.0" />
-      <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="94.0.4606.4101" />
+      <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="94.0.4606.6100" />
     <PackageReference Include="Simple.OData.V4.Client" Version="5.24.0" />
   </ItemGroup>
 
