@@ -120,7 +120,37 @@ html {
     margin-left: 52px;
 }
 
+/*----------------------------------from-scratch-----------------------------*/
+.from-scratch {
+    margin-bottom: 300px !important;
+}
 
+.from-scratch-container {
+    max-width: 1065px;
+    margin: auto;
+    background-image: url('/images/index/components-frame.png');
+    background-position: right;
+    background-repeat: no-repeat;
+}
+
+.from-scratch-title {
+    width: 254px;
+    color: #141414;
+    text-decoration: underline;
+    text-decoration-color: #ef9c00;
+    text-decoration-thickness: 10px;
+}
+
+.from-scratch .start-with-btn {
+    font-weight: bold;
+    font-size: 18px;
+    line-height: 176%;
+    background: #FFFFFF;
+    border: 1px solid #5C2D91;
+    box-sizing: border-box;
+    border-radius: 4px;
+    padding: 11px 43px;
+}
 /* ----------------------------bit-Frequent-updates------------------------------- */
 
 .bit-Frequent-updates {
@@ -339,4 +369,12 @@ footer .footer-link {
     margin-left: 45px;
     color: white;
     text-decoration: none;
+}
+
+.violet {
+    color: #5c2d91;
+}
+
+.bg-violet {
+    background-color: #5c2d91;
 }
