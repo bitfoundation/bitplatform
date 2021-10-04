@@ -15,7 +15,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Watch Include="..\Web\**\*.razor;..\Web\**\*.scss;..\Web\**\*.cs;..\Web\**\*.cshtml" />
+	  <Watch Include="..\Web\**\*.razor;..\Web\**\*.scss;..\Web\**\*.css;..\Web\**\*.cs;..\Web\**\*.cshtml" />
 	</ItemGroup>
 
 </Project>

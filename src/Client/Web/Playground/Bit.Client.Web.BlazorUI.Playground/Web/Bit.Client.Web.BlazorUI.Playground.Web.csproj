@@ -19,6 +19,13 @@
         <PackageReference Condition=" '$(BlazorMode)' == 'Client' " Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="6.0.0-rc.1.21452.15" PrivateAssets="all" />
     </ItemGroup>
 
+    <!--<PropertyGroup>
+        <LibSassOutputStyle>compressed</LibSassOutputStyle>
+        <LibSassOutputStyle Condition="'$(Configuration)' == 'Debug'">expanded</LibSassOutputStyle>
+        <LibSassOutputLevel>verbose</LibSassOutputLevel>
+        <LibSassMessageLevel>High</LibSassMessageLevel>
+    </PropertyGroup>-->
+
     <ItemGroup>
         <ProjectReference Include="..\..\..\Bit.Client.Web.BlazorUI\Bit.Client.Web.BlazorUI.csproj" />
         <ProjectReference Include="..\Shared\Bit.Client.Web.BlazorUI.Playground.Shared.csproj" />
