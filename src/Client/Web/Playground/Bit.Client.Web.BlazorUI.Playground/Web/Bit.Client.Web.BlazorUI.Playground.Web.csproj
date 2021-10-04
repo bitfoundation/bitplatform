@@ -14,12 +14,19 @@
     </ItemGroup>
 
     <ItemGroup>
-        <!--<PackageReference Include="LibSassBuilder" Version="1.6.4" />-->
+        <PackageReference Include="LibSassBuilder" Version="1.6.4" />
         <!--<PackageReference Include="Delegate.SassBuilder" Version="1.4.0" />-->
-        <PackageReference Include="CssBuilder" Version="0.1.8" />
+        <!--<PackageReference Include="CssBuilder" Version="0.1.8" />-->
         <PackageReference Condition=" '$(BlazorMode)' == 'Client' " Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.0-rc.1.21452.15" />
         <PackageReference Condition=" '$(BlazorMode)' == 'Client' " Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="6.0.0-rc.1.21452.15" PrivateAssets="all" />
     </ItemGroup>
+
+    <PropertyGroup>
+        <LibSassOutputStyle>compressed</LibSassOutputStyle>
+        <LibSassOutputStyle Condition="'$(Configuration)' == 'Debug'">expanded</LibSassOutputStyle>
+        <LibSassOutputLevel>verbose</LibSassOutputLevel>
+        <LibSassMessageLevel>High</LibSassMessageLevel>
+    </PropertyGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\..\..\Bit.Client.Web.BlazorUI\Bit.Client.Web.BlazorUI.csproj" />
