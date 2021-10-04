@@ -30,7 +30,7 @@ In this file we have:
         <BlazorMode>Client</BlazorMode>
         <DefineConstants Condition=" '$(BlazorMode)' == 'Client' ">$(DefineConstants);BlazorClient</DefineConstants>
         <DefineConstants Condition=" '$(BlazorMode)' == 'Server' ">$(DefineConstants);BlazorServer</DefineConstants>
-        <LangVersion>8.0</LangVersion>
+        <LangVersion>preview</LangVersion>
       </PropertyGroup>
     </Project>
 

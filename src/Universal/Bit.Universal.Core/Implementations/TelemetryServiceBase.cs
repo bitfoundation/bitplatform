@@ -5,17 +5,12 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using Xamarin.Essentials.Interfaces;
 
 namespace Bit.Core.Implementations
 {
     public abstract class TelemetryServiceBase : ITelemetryService
     {
         public IMessageReceiver? MessageReceiver { get; set; }
-
-        public IVersionTracking? VersionTracking { get; set; }
-
-        public IConnectivity? Connectivity { get; set; }
 
         public virtual IDictionary<string, string?> PopulateProperties(IDictionary<string, string?>? initialProps)
         {
@@ -27,48 +22,36 @@ namespace Bit.Core.Implementations
             if (!initialProps.ContainsKey("CurrentUICulture"))
                 initialProps.Add("CurrentUICulture", CultureInfo.CurrentUICulture.Name);
 
-            if (VersionTracking != null)
-            {
-                if (!initialProps.ContainsKey("VersionHistory"))
-                    initialProps.Add("VersionHistory", string.Join(",", VersionTracking.VersionHistory.OrderByDescending(vh => vh)));
+#if Xamarin
+            if (!initialProps.ContainsKey("NetworkAccess"))
+                initialProps.Add("NetworkAccess", Xamarin.Essentials.Connectivity.NetworkAccess.ToString());
 
-                if (!initialProps.ContainsKey("Version"))
-                    initialProps.Add("Version", string.Join(",", VersionTracking.CurrentVersion));
+            if (!initialProps.ContainsKey("VersionHistory"))
+                initialProps.Add("VersionHistory", string.Join(",", Xamarin.Essentials.VersionTracking.VersionHistory.OrderByDescending(vh => vh)));
 
-                if (!initialProps.ContainsKey("IsFirstLaunchEver"))
-                    initialProps.Add("IsFirstLaunchEver", VersionTracking.IsFirstLaunchEver.ToString(CultureInfo.InvariantCulture));
+            if (!initialProps.ContainsKey("Version"))
+                initialProps.Add("Version", string.Join(",", Xamarin.Essentials.VersionTracking.CurrentVersion));
 
-                if (!initialProps.ContainsKey("IsFirstLaunchForCurrentVersion"))
-                    initialProps.Add("IsFirstLaunchForCurrentVersion", VersionTracking.IsFirstLaunchForCurrentVersion.ToString(CultureInfo.InvariantCulture));
-            }
-#if XamarinEssentials
-            else
-            {
-                if (!initialProps.ContainsKey("VersionHistory"))
-                    initialProps.Add("VersionHistory", string.Join(",", Xamarin.Essentials.VersionTracking.VersionHistory.OrderByDescending(vh => vh)));
+            if (!initialProps.ContainsKey("IsFirstLaunchEver"))
+                initialProps.Add("IsFirstLaunchEver", Xamarin.Essentials.VersionTracking.IsFirstLaunchEver.ToString(CultureInfo.InvariantCulture));
 
-                if (!initialProps.ContainsKey("Version"))
-                    initialProps.Add("Version", string.Join(",", Xamarin.Essentials.VersionTracking.CurrentVersion));
+            if (!initialProps.ContainsKey("IsFirstLaunchForCurrentVersion"))
+                initialProps.Add("IsFirstLaunchForCurrentVersion", Xamarin.Essentials.VersionTracking.IsFirstLaunchForCurrentVersion.ToString(CultureInfo.InvariantCulture));
+#elif Maui
+            if (!initialProps.ContainsKey("NetworkAccess"))
+                initialProps.Add("NetworkAccess", Microsoft.Maui.Essentials.Connectivity.NetworkAccess.ToString());
 
-                if (!initialProps.ContainsKey("IsFirstLaunchEver"))
-                    initialProps.Add("IsFirstLaunchEver", Xamarin.Essentials.VersionTracking.IsFirstLaunchEver.ToString(CultureInfo.InvariantCulture));
+            if (!initialProps.ContainsKey("VersionHistory"))
+                initialProps.Add("VersionHistory", string.Join(",", Microsoft.Maui.Essentials.VersionTracking.VersionHistory.OrderByDescending(vh => vh)));
 
-                if (!initialProps.ContainsKey("IsFirstLaunchForCurrentVersion"))
-                    initialProps.Add("IsFirstLaunchForCurrentVersion", Xamarin.Essentials.VersionTracking.IsFirstLaunchForCurrentVersion.ToString(CultureInfo.InvariantCulture));
-            }
-#endif
+            if (!initialProps.ContainsKey("Version"))
+                initialProps.Add("Version", string.Join(",", Microsoft.Maui.Essentials.VersionTracking.CurrentVersion));
 
-            if (Connectivity != null)
-            {
-                if (!initialProps.ContainsKey("NetworkAccess"))
-                    initialProps.Add("NetworkAccess", Connectivity.NetworkAccess.ToString());
-            }
-#if XamarinEssentials
-            else
-            {
-                if (!initialProps.ContainsKey("NetworkAccess"))
-                    initialProps.Add("NetworkAccess", Xamarin.Essentials.Connectivity.NetworkAccess.ToString());
-            }
+            if (!initialProps.ContainsKey("IsFirstLaunchEver"))
+                initialProps.Add("IsFirstLaunchEver", Microsoft.Maui.Essentials.VersionTracking.IsFirstLaunchEver.ToString(CultureInfo.InvariantCulture));
+
+            if (!initialProps.ContainsKey("IsFirstLaunchForCurrentVersion"))
+                initialProps.Add("IsFirstLaunchForCurrentVersion", Microsoft.Maui.Essentials.VersionTracking.IsFirstLaunchForCurrentVersion.ToString(CultureInfo.InvariantCulture));
 #endif
 
             if (MessageReceiver != null && !initialProps.ContainsKey("MessageReceiverWasConnected"))
@@ -84,7 +67,7 @@ namespace Bit.Core.Implementations
             if (!initialProps.ContainsKey("BitVersion"))
                 initialProps.Add("BitVersion", typeof(TelemetryServiceBase).Assembly.GetName().Version!.ToString());
 
-#if Android || iOS
+#if (Android || iOS) && !Maui
             if (!initialProps.ContainsKey("Mono"))
                 initialProps.Add("Mono", Mono.Runtime.GetDisplayName());
 #endif

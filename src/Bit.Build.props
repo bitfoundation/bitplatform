@@ -25,11 +25,11 @@
 		<PackageProjectUrl>https://github.com/bitfoundation/bitframework</PackageProjectUrl>
 		<PackageIconUrl>https://avatars.githubusercontent.com/u/22663390</PackageIconUrl>
 		<PackageReleaseNotes>https://github.com/bitfoundation/bitframework/releases/tag/v7.4.0</PackageReleaseNotes>
-		<PackageVersion>7.8.0</PackageVersion>
+		<PackageVersion>8.2.3-alpha</PackageVersion>
 
 		<!-- Version -->
-		<Version>7.8.0</Version>
-		<AssemblyVersion>7.8.0</AssemblyVersion>
+		<Version>8.2.3</Version>
+		<AssemblyVersion>8.2.3</AssemblyVersion>
 
 		<!-- Compile -->
 		<NeutralLanguage>en</NeutralLanguage>
@@ -40,15 +40,16 @@
 		<DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
 		<EmbedAllSources>True</EmbedAllSources>
 		<DebugType>portable</DebugType>
-		<DefineConstants Condition=" '$(TargetFramework)' == 'monoandroid10.0' ">$(DefineConstants);Android</DefineConstants>
-		<DefineConstants Condition=" '$(TargetFramework)' == 'monoandroid10.0'">$(DefineConstants);Android10</DefineConstants>
-		<DefineConstants Condition=" '$(TargetFramework)' == 'Xamarin.iOS10' ">$(DefineConstants);iOS</DefineConstants>
-		<DefineConstants Condition=" '$(TargetFramework)' == 'net5.0' ">$(DefineConstants);DotNet</DefineConstants>
-		<DefineConstants Condition=" '$(TargetFramework)' == 'uap10.0.17763' ">$(DefineConstants);UWP</DefineConstants>
+		<DefineConstants Condition=" '$(TargetFramework)' == 'monoandroid10.0' OR '$(TargetFramework)' == 'net6.0-android' ">$(DefineConstants);Android</DefineConstants>
+		<DefineConstants Condition=" '$(TargetFramework)' == 'Xamarin.iOS10' OR '$(TargetFramework)' == 'net6.0-ios' ">$(DefineConstants);iOS</DefineConstants>
+		<DefineConstants Condition=" '$(TargetFramework)' == 'net6.0' ">$(DefineConstants);DotNet</DefineConstants>
+		<DefineConstants Condition=" '$(TargetFramework)' == 'uap10.0.17763' OR '$(TargetFramework)' == 'net6.0-windows10.0.19041' ">$(DefineConstants);UWP</DefineConstants>
 		<DefineConstants Condition=" '$(TargetFramework)' == 'netstandard2.0' ">$(DefineConstants);DotNetStandard;DotNetStandard2_0</DefineConstants>
 		<DefineConstants Condition=" '$(TargetFramework)' == 'netstandard2.1' ">$(DefineConstants);DotNetStandard;DotNetStandard2_1</DefineConstants>
-		<DefineConstants Condition=" '$(TargetFramework)' == 'monoandroid10.0' OR '$(TargetFramework)' == 'Xamarin.iOS10' OR '$(TargetFramework)' == 'uap10.0.17763' ">$(DefineConstants);XamarinEssentials</DefineConstants>
-		<GenerateLibraryLayout Condition=" '$(TargetFramework)' == 'uap10.0.17763' ">true</GenerateLibraryLayout>
+        <DefineConstants Condition=" '$(TargetFramework)' == 'monoandroid10.0' OR '$(TargetFramework)' == 'Xamarin.iOS10' OR '$(TargetFramework)' == 'uap10.0.17763' ">$(DefineConstants);Xamarin</DefineConstants>
+        <DefineConstants Condition=" '$(TargetFramework)' == 'net6.0-android' OR '$(TargetFramework)' == 'net6.0-ios' OR '$(TargetFramework)' == 'net6.0-windows10.0.19041' ">$(DefineConstants);Maui</DefineConstants>
+        <UseMaui Condition=" '$(TargetFramework)' == 'net6.0-android' OR '$(TargetFramework)' == 'net6.0-ios' OR '$(TargetFramework)' == 'net6.0-windows10.0.19041' ">true</UseMaui>
+		<GenerateLibraryLayout Condition=" '$(TargetFramework)' == 'uap10.0.17763' OR '$(TargetFramework)' == 'net6.0-windows10.0.19041' ">true</GenerateLibraryLayout>
 		<DesignTimeBuild>True</DesignTimeBuild>
 		<AndroidResgenFile>False</AndroidResgenFile>
 		<AndroidUseIntermediateDesignerFile>False</AndroidUseIntermediateDesignerFile>

@@ -78,6 +78,7 @@ namespace Bit.Tooling.CodeGenerator.Implementations
 
                         ODataOperation operation = new ODataOperation
                         {
+                            Controller = dtoController,
                             Method = methodSymbol,
                             Kind = operationAttribute.AttributeClass.Name == "ActionAttribute" ? ODataOperationKind.Action : ODataOperationKind.Function,
                             ReturnType = methodSymbol.ReturnType

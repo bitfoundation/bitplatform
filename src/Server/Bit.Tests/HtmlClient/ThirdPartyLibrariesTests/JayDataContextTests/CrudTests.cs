@@ -76,6 +76,24 @@ namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.JayDataContextTests
         }
 
         [TestMethod]
+        public virtual async Task TestComplexTypeGetWithCount()
+        {
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs { UseRealServer = true }))
+            {
+                Token token = await testEnvironment.Server.LoginWithCredentials("ValidUserName", "ValidPassword", clientId: "TestResOwner");
+
+                ODataFeedAnnotations annotations = new ODataFeedAnnotations();
+
+                var result = (await testEnvironment.BuildTestODataClient(token).NestedObjects().GetComplexObjects2()
+                    .Take(2)
+                    .FindEntriesAsync(annotations)).ToList();
+
+                Assert.AreEqual(5, annotations.Count);
+                Assert.AreEqual(2, result.Count);
+            }
+        }
+
+        [TestMethod]
         [TestCategory("HtmlClient"), TestCategory("JayDataContextOData")]
         public virtual async Task SimpleArrayValuesTest()
         {

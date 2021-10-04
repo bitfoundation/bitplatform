@@ -60,9 +60,6 @@ namespace Bit.Test.Implementations
             if (_args.ClientArgs.DesiredTimeZone != null && !request.Headers.Any(h => h.Key == "Desired-Time-Zone"))
                 request.Headers.Add("Desired-Time-Zone", _args.ClientArgs.DesiredTimeZone);
 
-            if (!request.Headers.Any(h => h.Key == "Client-Screen-Size"))
-                request.Headers.Add("Client-Screen-Size", _args.ClientArgs.ClientScreenSize);
-
             if (!request.Headers.Any(h => h.Key == "Client-Debug-Mode"))
                 request.Headers.Add("Client-Debug-Mode", true.ToString(CultureInfo.InvariantCulture));
 

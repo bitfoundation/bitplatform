@@ -7,7 +7,6 @@ using Prism.Events;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Xamarin.Essentials.Interfaces;
 
 namespace Bit.Signalr.Implementations
 {
@@ -24,10 +23,6 @@ namespace Bit.Signalr.Implementations
         public IHubConnectionFactory HubConnectionFactory { get; set; } = default!;
 
         public IClientTransportFactory ClientTransportFactory { get; set; } = default!;
-
-        public IConnectivity Connectivity { get; set; } = default!;
-
-        public IMainThread MainThread { get; set; } = default!;
 
         private bool _IsConnected;
         public virtual bool IsConnected
@@ -81,7 +76,11 @@ namespace Bit.Signalr.Implementations
 
                 DependencyDelegates.Current.StartTimer?.Invoke(TimeSpan.FromSeconds(5), OnSchedule);
 
-                Connectivity.ConnectivityChanged += OnConnectivityChanged;
+#if Xamarin
+                Xamarin.Essentials.Connectivity.ConnectivityChanged += OnConnectivityChanged;
+#elif Maui
+                Microsoft.Maui.Essentials.Connectivity.ConnectivityChanged += OnConnectivityChanged;
+#endif
             }
 
             EnsureReNewTransport();
@@ -111,7 +110,8 @@ namespace Bit.Signalr.Implementations
         {
             if (IsConnected != isConnected)
             {
-                MainThread.BeginInvokeOnMainThread(() =>
+#if Xamarin
+                Xamarin.Essentials.MainThread.BeginInvokeOnMainThread(() =>
                 {
                     IsConnected = isConnected;
 
@@ -122,6 +122,28 @@ namespace Bit.Signalr.Implementations
                             IsConnected = IsConnected
                         });
                 });
+#elif Maui
+                Microsoft.Maui.Essentials.MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    IsConnected = isConnected;
+
+                    EventAggregator
+                        .GetEvent<ServerConnectivityChangedEvent>()
+                        .Publish(new ServerConnectivityChangedEvent
+                        {
+                            IsConnected = IsConnected
+                        });
+                });
+#else
+                IsConnected = isConnected;
+
+                EventAggregator
+                    .GetEvent<ServerConnectivityChangedEvent>()
+                    .Publish(new ServerConnectivityChangedEvent
+                    {
+                        IsConnected = IsConnected
+                    });
+#endif
             }
         }
 
@@ -192,11 +214,19 @@ namespace Bit.Signalr.Implementations
             ReportStatus(isConnected: false);
         }
 
+#if Xamarin
         void OnConnectivityChanged(object? sender, Xamarin.Essentials.ConnectivityChangedEventArgs e)
         {
             if (e.NetworkAccess != Xamarin.Essentials.NetworkAccess.Internet)
                 ReportStatus(isConnected: false);
         }
+#elif Maui
+        void OnConnectivityChanged(object? sender, Microsoft.Maui.Essentials.ConnectivityChangedEventArgs e)
+        {
+            if (e.NetworkAccess != Microsoft.Maui.Essentials.NetworkAccess.Internet)
+                ReportStatus(isConnected: false);
+        }
+#endif
 
         public async Task Stop(CancellationToken cancellationToken)
         {
@@ -225,7 +255,11 @@ namespace Bit.Signalr.Implementations
             }
 
 
-            Connectivity.ConnectivityChanged -= OnConnectivityChanged;
+#if Xamarin
+                Xamarin.Essentials.Connectivity.ConnectivityChanged -= OnConnectivityChanged;
+#elif Maui
+                Microsoft.Maui.Essentials.Connectivity.ConnectivityChanged -= OnConnectivityChanged;
+#endif
 
             _listener?.Dispose();
             _serverSentEventsTransport?.Dispose();

@@ -54,7 +54,7 @@ namespace Bit.Tooling.CodeGenerator.Test.Helpers
 
             MSBuildWorkspace workspace = MSBuildWorkspace.Create(new Dictionary<string, string>()
             {
-                { "TargetFramework", "net5.0" }
+                { "TargetFramework", "net6.0" }
             });
 
             workspace.WorkspaceFailed += Workspace_WorkspaceFailed;
