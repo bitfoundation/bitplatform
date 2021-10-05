@@ -24,8 +24,4 @@
         <ProjectReference Include="..\Shared\Bit.Client.Web.BlazorUI.Playground.Shared.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <None Include="wwwroot\fonts\Axiforma\Axiforma\www.dfonts.org.url" />
-    </ItemGroup>
-
 </Project>

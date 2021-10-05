@@ -3,8 +3,7 @@ html {
     margin: 0;
     padding: 0;
     width: 100%;
-    color: #2f455a;
-    font-family: "Axiforma";
+    color: #2f455a;    
 }
 
 .header {
@@ -105,18 +104,23 @@ html {
 
 /* -----------------------bit short description------------------------------ */
 
-.bit-product-describ {
-    margin-bottom: 300px !important;
+.bit-product-describe {
+    margin-bottom: 300px ;
+    justify-content:center;
+
+    & .row{
+        width:100%;
+    }
 }
 
-.product-describ-img {
+.product-describe-img {
     background-image: url("/images/index/Based-on-Microsoft-Fluent-Design.png");
     background-repeat: no-repeat;
     background-position-x: center;
     background-size: contain;
 }
 
-.product-describ-container {
+.product-describe-container {
     margin-left: 52px;
 }
 
