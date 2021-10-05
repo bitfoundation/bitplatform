@@ -1,5 +1,5 @@
-﻿@import "colors.scss";
-
+﻿@import 'colors.scss';
+@import 'fonts.scss';
 * {
     //todo this code is added because due to latest changes our index page has no font right now
     //after finding a cool font for our websites this will be redundant
@@ -356,10 +356,6 @@ p {
 }
 
 /*----------------------------------------Typography---------------------------------------------------*/
-@font-face {
-    src: url("/fonts/Axiforma/Axiforma Regular.otf");
-}
-
 h1 {
     font-style: normal;
     font-weight: 500;
