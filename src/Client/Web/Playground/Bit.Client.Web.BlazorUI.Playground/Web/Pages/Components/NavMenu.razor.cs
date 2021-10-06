@@ -25,7 +25,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components
                      new BitNavLinkItem { Name= "DropDown", Key = "DropDown", Url = "/components/dropdown" },
                      new BitNavLinkItem { Name= "FileUpload", Key= "FileUpload", Url = "/components/fileuploads"},
                      new BitNavLinkItem { Name= "Label", Key = "Label",  Url = "/components/labels" },
-                     new BitNavLinkItem { Name= "Link", Key = "Link", Url = "/components/links" },
+                     new BitNavLinkItem { Name= "Link", Key = "Link", Url = "/components/links" },                     
                      new BitNavLinkItem { Name= "Rating", Key = "Rating", Url = "/components/rating" },
                      new BitNavLinkItem { Name= "SearchBox", Key = "SearchBox", Url = "/components/searchbox" },
                      new BitNavLinkItem { Name= "SpinButton", Key = "SpinButton", Url = "/components/spinbuttons"},
@@ -69,7 +69,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components
                 {
                     new BitNavLinkItem { Name = "MessageBar", Key = "MessageBar", Url="/components/messagebar" }
                 }
-            },
+            },            
             new BitNavLinkItem
             {
                 Name = "Progress",
@@ -78,6 +78,15 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components
                 {
                     new BitNavLinkItem{ Name = "Spinner", Key = "Spinner", Url = "/components/spinner" },
                     new BitNavLinkItem{ Name = "Progressindicator", Key = "Progressindicator", Url = "/components/progressindicator" }
+                },
+            },
+            new BitNavLinkItem
+            {
+                Name = "Surfaces",
+                Key = "Surfaces",
+                Links = new List<BitNavLinkItem>
+                {
+                    new BitNavLinkItem { Name = "Modal", Key = "Modal", Url = "/components/modal" },
                 },
             },
         };

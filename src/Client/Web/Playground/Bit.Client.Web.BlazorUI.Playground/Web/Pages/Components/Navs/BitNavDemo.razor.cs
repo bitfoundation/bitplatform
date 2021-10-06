@@ -26,6 +26,27 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Navs
             new BitNavLinkItem { Name = "News", Title = "News", Url = "http://msn.com", Key = "key7", Icon = "News", Target = "_self" },
         };
 
+        private readonly List<BitNavLinkItem> BasicNavLinksWithoutURL = new()
+        {
+            new BitNavLinkItem
+            {
+                Name = "Home",
+                ExpandAriaLabel = "Expand Home section",
+                CollapseAriaLabel = "Collapse Home section",
+                IsExpanded = true,
+                Links = new List<BitNavLinkItem>
+                {
+                    new BitNavLinkItem { Name = "Activity", Key = "key1", Target="_blank" },
+                    new BitNavLinkItem { Name = "MSN", Key = "key2", IsEnabled = false, Target = "_blank" }
+                }
+            },
+            new BitNavLinkItem { Name = "Documents", Key = "key3", Target = "_blank", IsExpanded = true },
+            new BitNavLinkItem { Name = "Pages", Key = "key4", Target = "_parent" },
+            new BitNavLinkItem { Name = "Notebook", Key = "key5", IsEnabled = false },
+            new BitNavLinkItem { Name = "Communication and Media", Key = "key6", Target = "_top" },
+            new BitNavLinkItem { Name = "News", Title = "News", Key = "key7", Icon = "News", Target = "_self" },
+        };
+
         private readonly List<BitNavLinkItem> BasicNoToolTipNavLinks = new()
         {
             new BitNavLinkItem
@@ -153,5 +174,12 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Navs
                 }
             }
         };
+
+        private string BitNavManualModeSelectedKey = "key3";
+
+        private void HandleSelectedKeyChange(string selectedKey)
+        {
+            BitNavManualModeSelectedKey = selectedKey;
+        }
     }
 }

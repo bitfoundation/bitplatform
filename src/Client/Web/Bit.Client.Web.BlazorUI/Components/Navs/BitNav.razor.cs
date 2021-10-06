@@ -180,7 +180,7 @@ namespace Bit.Client.Web.BlazorUI
         {
             if (navLinkItem.IsEnabled is false) return;
 
-            if (Mode == BitNavMode.Manual)
+            if (Mode == BitNavMode.Manual && navLinkItem.Links.Any() is false)
             {
                 selectedKey = navLinkItem.Key;
                 await SelectedKeyChanged.InvokeAsync(selectedKey);
