@@ -52,7 +52,7 @@
     
     <PropertyGroup Condition="$(TargetFramework.Contains('-android'))">
         <AndroidLinkMode Condition="'$(Configuration)' == 'Release'">Full</AndroidLinkMode>
-        <RuntimeIdentifiers>android-arm64</RuntimeIdentifiers>
+        <RuntimeIdentifiers Condition="'$(Configuration)' == 'Release'">android-arm64</RuntimeIdentifiers>
     </PropertyGroup>
 
     <ItemGroup>
