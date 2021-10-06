@@ -47,7 +47,7 @@ namespace Bit.View
 
         public static void UseBitPopupNavigation()
         {
-#if Android || iOS || Windows
+#if Android || iOS || UWP
             if (!(PopupNavigation.Instance is BitPopupNavigation))
             {
                 PopupNavigation.SetInstance(new BitPopupNavigation
