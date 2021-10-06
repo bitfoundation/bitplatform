@@ -1,7 +1,10 @@
-﻿using Bit.Core.Implementations;
+﻿using Autofac;
+using Bit.Core.Contracts;
+using Bit.Core.Implementations;
 using Bit.ViewModel.Implementations;
 using Microsoft.AppCenter.Analytics;
 using Microsoft.AppCenter.Crashes;
+using Microsoft.Extensions.DependencyInjection;
 using Prism.Ioc;
 
 namespace Bit.CSharpClientSample.UWP
@@ -24,9 +27,9 @@ namespace Bit.CSharpClientSample.UWP
 
     public class UwpInitializer : BitPlatformInitializer
     {
-        public override void RegisterTypes(IContainerRegistry containerRegistry)
+        public override void RegisterTypes(IDependencyManager dependencyManager, IContainerRegistry containerRegistry, ContainerBuilder containerBuilder, IServiceCollection services)
         {
-            base.RegisterTypes(containerRegistry);
+            base.RegisterTypes(dependencyManager, containerRegistry, containerBuilder, services);
         }
     }
 }

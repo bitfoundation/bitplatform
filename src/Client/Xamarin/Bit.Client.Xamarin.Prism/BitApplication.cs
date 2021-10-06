@@ -38,9 +38,10 @@ using Xamarin.Forms.Xaml;
 
 namespace Bit
 {
-    public abstract class BitApplication : PrismApplication
+    public abstract class BitApplication : PrismApplication, IAsyncDisposable
     {
         private readonly Lazy<IEventAggregator> _eventAggregator = default!;
+        private readonly TaskCompletionSource<object?> _isReadyTaskCompletionSource = new TaskCompletionSource<object?>();
 
         /// <summary>
         /// To be called in shared/net-standard project.
@@ -51,11 +52,13 @@ namespace Bit
 
         }
 
+#if !Android && !iOS && !UWP
         public BitApplication()
             : this(null)
         {
 
         }
+#endif
 
         protected BitApplication(IPlatformInitializer? platformInitializer = null)
             : base(platformInitializer)
@@ -100,24 +103,30 @@ namespace Bit
                 DependencyDelegates.Current.StartTimer = (interval, callback) => deviceService.StartTimer(interval, () => callback());
                 DependencyDelegates.Current.GetNavigationUriPath = () => Current?.NavigationService?.CurrentPageNavService?.GetNavigationUriPath() ?? "?";
 
+                if (Device.RuntimePlatform == Device.UWP || Device.RuntimePlatform == Device.iOS || Device.RuntimePlatform == Device.Android)
+                {
+                    Connectivity.ConnectivityChanged += (sender, e) =>
+                    {
+                        _eventAggregator.Value.GetEvent<ConnectivityChangedEvent>()
+                            .Publish(new ConnectivityChangedEvent { IsConnected = e.NetworkAccess != Xamarin.Essentials.NetworkAccess.None });
+                    };
+                }
+
                 await OnInitializedAsync();
 
                 await Task.Yield();
+
+                _isReadyTaskCompletionSource.SetResult(null);
             }
             catch (Exception exp)
             {
+                _isReadyTaskCompletionSource.SetException(exp);
                 BitExceptionHandler.Current.OnExceptionReceived(exp);
             }
         }
 
         protected virtual Task OnInitializedAsync()
         {
-            Connectivity.ConnectivityChanged += (sender, e) =>
-            {
-                _eventAggregator.Value.GetEvent<ConnectivityChangedEvent>()
-                    .Publish(new ConnectivityChangedEvent { IsConnected = e.NetworkAccess != Xamarin.Essentials.NetworkAccess.None });
-            };
-
             return Task.CompletedTask;
         }
 
@@ -130,15 +139,8 @@ namespace Bit
         protected sealed override void RegisterTypes(IContainerRegistry containerRegistry)
         {
             ContainerBuilder containerBuilder = containerRegistry.GetBuilder();
-
-            IServiceCollection services = new BitServiceCollection();
-
-            containerBuilder.Properties[nameof(services)] = services;
-            containerBuilder.Properties[nameof(containerRegistry)] = containerRegistry;
-
-            AutofacDependencyManager dependencyManager = new AutofacDependencyManager();
-            dependencyManager.UseContainerBuilder(containerBuilder);
-            ((IServiceCollectionAccessor)dependencyManager).ServiceCollection = services;
+            AutofacDependencyManager dependencyManager = (AutofacDependencyManager)containerBuilder.Properties[nameof(dependencyManager)]!;
+            IServiceCollection services = (IServiceCollection)containerBuilder.Properties[nameof(services)]!;
 
             RegisterTypes(dependencyManager, containerRegistry, containerBuilder, services);
 
@@ -177,6 +179,17 @@ namespace Bit
 
             //containerRegistry.RegisterPopupDialogService();
             containerRegistry.RegisterForNav<PageWhichWeStayThereUntilRegionsAreDisposedPage>("PageWhichWeStayThereUntilRegionsAreDisposed");
+        }
+
+        public virtual async ValueTask DisposeAsync()
+        {
+            await NavigationService.NavigateAsync("/PageWhichWeStayThereUntilRegionsAreDisposed");
+            await Container.GetContainer().DisposeAsync();
+        }
+
+        public Task Ready()
+        {
+            return _isReadyTaskCompletionSource.Task;
         }
     }
 
