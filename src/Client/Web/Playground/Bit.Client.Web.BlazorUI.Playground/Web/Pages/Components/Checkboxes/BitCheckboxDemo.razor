@@ -162,10 +162,28 @@
             <th>Description</th>
         </tr>
         <tr>
-            <td>AriaLabel</td>
+            <td>AriaDescription</td>
             <td>string</td>
             <td></td>
-            <td>The aria-label of the control for the benefit of screen readers.</td>
+            <td>Detailed description of the checkbox input for the benefit of screen readers.</td>
+        </tr>
+        <tr>
+            <td>AriaLabelledby</td>
+            <td>string</td>
+            <td></td>
+            <td>ID for element that contains label information for the checkbox.</td>
+        </tr>
+        <tr>
+            <td>AriaPositionInSet</td>
+            <td>int</td>
+            <td></td>
+            <td>The position in the parent set (if in a set) for aria-posinset.</td>
+        </tr>
+        <tr>
+            <td>AriaSetSize</td>
+            <td>int</td>
+            <td></td>
+            <td>The total size of the parent set (if in a set) for aria-setsize.</td>
         </tr>
         <tr>
             <td>BoxSide</td>
@@ -180,16 +198,46 @@
             <td>Custom CSS class for the root element of the component.</td>
         </tr>
         <tr>
+            <td>CheckmarkIconAriaLabel</td>
+            <td>string</td>
+            <td></td>
+            <td>The aria label of the icon for the benefit of screen readers.</td>
+        </tr>
+        <tr>
+            <td>CheckmarkIconName</td>
+            <td>string</td>
+            <td>Accept</td>
+            <td>Custom icon for the check mark rendered by the checkbox instade of default check mark icon.</td>
+        </tr>
+        <tr>
             <td>ChildContent</td>
             <td>RenderFragment</td>
             <td></td>
-            <td>Any custom tag or label the developer wishes to associate with the checkbox.</td>
+            <td>The content of checkbox, It can be Any custom tag or text.</td>
+        </tr>
+        <tr>
+            <td>DefaultIsChecked</td>
+            <td>bool</td>
+            <td></td>
+            <td>Default checkbox state. Use this if you want an uncontrolled component, meaning the Checkbox instance maintains its own state.</td>        
+        </tr>
+        <tr>
+            <td>DefaultIsIndeterminate</td>
+            <td>bool</td>
+            <td></td>
+            <td>Default indeterminate visual state for checkbox.</td>        
         </tr>
         <tr>
             <td>HtmlAttributes</td>
             <td>Dictionary&lt;string, object&gt;</td>
             <td></td>
             <td>Capture and render additional attributes in addition to the component's parameters.</td>
+        </tr>
+        <tr>
+            <td>IsIndeterminate</td>
+            <td>bool</td>
+            <td></td>
+            <td>An indeterminate visual state for checkbox. Setting indeterminate state takes visual precedence over checked given but does not affect on IsChecked state</td>                
         </tr>
         <tr>
             <td>IsEnabled</td>
@@ -201,25 +249,19 @@
             <td>IsChecked</td>
             <td>bool</td>
             <td></td>
-            <td>Checked state. Use this if you control the checked state at a higher level and plan to pass in the correct value.</td>
-        </tr>
-        <tr>
-            <td>IsCheckedChanged</td>
-            <td>EventCallback&lt;bool&gt;</td>
-            <td></td>
-            <td>Callback that is called when the IsChecked parameter changed.</td>
-        </tr>
+            <td>Checkbox state, control the checked state at a higher level.</td>
+        </tr>        
         <tr>
             <td>IsIndeterminate</td>
             <td>bool</td>
             <td></td>
             <td>Optional controlled indeterminate visual state for checkbox. Setting indeterminate state takes visual precedence over ischecked attribute given but does not affect ischecked state. On initialize, the checkbox will receive indeterminate visual state.</td>
-        </tr>
+        </tr>        
         <tr>
-            <td>IsIndeterminateChanged</td>
-            <td>EventCallback&lt;bool&gt;</td>
+            <td>Name</td>
+            <td>string</td>
             <td></td>
-            <td>Callback that is called when the IsIndeterminate parameter changed.</td>
+            <td>Name for the checkbox input. This is intended for use with forms and NOT displayed in the UI.</td>
         </tr>
         <tr>
             <td>OnChange</td>
@@ -228,10 +270,22 @@
             <td>Callback that is called when the checked value has changed.</td>
         </tr>
         <tr>
+            <td>OnClick</td>
+            <td>EventCallbac&lt;MouseEventArgs&gt;</td>
+            <td></td>
+            <td>Callback that is called when the check box is clicked.</td>
+        </tr>
+        <tr>
             <td>Style</td>
             <td>string</td>
             <td></td>
             <td>Custom style for the root element of the component.</td>
+        </tr>
+        <tr>
+            <td>Title</td>
+            <td>string</td>
+            <td></td>
+            <td>Title text applied to the root element and the hidden checkbox input.</td>
         </tr>
         <tr>
             <td>Visibility</td>
