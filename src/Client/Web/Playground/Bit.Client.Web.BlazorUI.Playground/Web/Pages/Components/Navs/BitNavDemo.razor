@@ -661,6 +661,132 @@
             </BitPivotItem>
         </BitPivot>
     </div>
+    <div class="card">
+        <h3>Basic nav with manual mode</h3>
+        <BitPivot>
+            <BitPivotItem HeaderText="Example" IconName="ViewList">
+                <BitNav Style="width: 208px;
+                   height: 350px;
+                   box-sizing: border-box;
+                   border: 1px solid #eee;
+                   overflow-y: auto;"
+                        NavLinkItems="BasicNavLinksWithoutURL"
+                        Mode="BitNavMode.Manual"
+                        AriaLabel="Nav manual mode example"
+                        SelectedKey="@BitNavManualModeSelectedKey"
+                        SelectedKeyChanged="HandleSelectedKeyChange">
+                </BitNav>
+            </BitPivotItem>
+            <BitPivotItem HeaderText="Code" IconName="Source">
+                <p>
+                    &lt<span class="dark-green">BitNav Style</span>="width: 208px;
+                    <br />
+                    <span class="m-l-30">height: 350px;</span>
+                    <br />
+                    <span class="m-l-30">box-sizing: border-box;</span>
+                    <br />
+                    <span class="m-l-30">border: 1px solid #eee;</span>
+                    <br />
+                    <span class="m-l-30">overflow-y: auto;"</span>
+                    <br />
+                    <span class="dark-green m-l-45">Class</span>="bit-nav-simple-link"
+                    <br />
+                    <span class="dark-green m-l-45">NavLinkItems</span>="BasicNavLinksWithoutURL"
+                    <br />
+                    <span class="dark-green m-l-45">AriaLabel</span>="Nav manual mode example"
+                    <br />
+                    <span class="dark-green m-l-45">Mode</span>="BitNavMode.Manual">
+                    <br />
+                    <span class="dark-green m-l-45">SelectedKey</span>="@($"@BitNavManualModeSelectedKey")">
+                    <br />
+                    <span class="dark-green m-l-45">SelectedKeyChanged</span>="HandleSelectedKeyChange">
+                    <br />
+                    <span>&lt/</span><span class="dark-green">BitNav</span><span>&gt;</span>
+                </p>
+                <div>
+                    <span class="light-yellow-bg">&#64;code {</span>
+                    <p>
+                        <span>private readonly <span class="dark-green">List&ltBitNavLinkItem></span> BasicNavLinksWithoutURL = <span class=light-blue>new</span>()</span>
+                        <br />
+                        <span class="light-yellow-bg">{</span>
+                        <br />
+                        <span class="m-l-30"><span class="light-blue">new </span><span class="dark-green">BitNavLinkItem</span></span>
+                        <br />
+                        <span class="m-l-30">{</span>
+                        <br />
+                        <span class="m-l-45">Name = <span class="dark-orange">"Home"</span>,</span>
+                        <br />
+                        <span class="m-l-45">Key = <span class="dark-orange">"key1"</span>,</span>
+                        <br />
+                        <span class="m-l-45">Title = <span class="dark-orange">"Home"</span>,</span>
+                        <br />
+                        <span class="m-l-45">Target = <span class="dark-orange">"_blank"</span>,</span>
+                        <br />
+                        <span class="m-l-45">IsExpanded = <span class="light-blue">true</span>,</span>
+                        <br />
+                        <span class="m-l-45">CollapseAriaLabel = <span class="dark-orange">"Collapse Home section"</span>,</span>
+                        <br />
+                        <span class="m-l-45">ExpandAriaLabel = <span class="dark-orange">"Expand Home section"</span>,</span>
+                        <br />
+                        <span class="m-l-45">Links = <span class="light-blue">new</span><span class="dark-green"> List&ltBitNavLinkItem></span></span>
+                        <br />
+                        <span class="m-l-45">{</span>
+                        <br />
+                        <span class=" m-l-60"><span class="light-blue">new </span><span class="dark-green"> List&ltBitNavLinkItem></span> {</span>
+                        <br />
+                        <span class="m-l-75">Name = <span class="dark-orange">"Activity"</span>,</span>
+                        <br />
+                        <span class="m-l-75">Key = <span class="dark-orange">"key1-1"</span>,</span>
+                        <br />
+                        <span class="m-l-75">Title = <span class="dark-orange">"Activity"</span>,</span>
+                        <br />
+                        <span class="m-l-75">Links = <span class="light-blue">new</span><span class="dark-green"> List&ltBitNavLinkItem></span></span>
+                        <br />
+                        <span class="m-l-75">{</span>
+                        <br />
+                        <span class="m-l-90"><span class="light-blue">new </span><span class="dark-green"> List&ltBitNavLinkItem></span><span> { Name = </span><span class="dark-orange">"Activity"</span><span>, Title = </span><span class="dark-orange">"Activity"</span>, <span>Key = </span><span class="dark-orange">"key1-1-1"</span> },</span>
+                        <br />
+                        <span class="m-l-90"><span class="light-blue">new </span><span class="dark-green"> List&ltBitNavLinkItem></span><span> { Name = </span><span class="dark-orange">"MSN"</span><span>, Title = </span><span class="dark-orange">"MSN"</span>, <span>Key = </span><span class="dark-orange">"key1-1-2"</span> , <span>IsEnabled = </span><span class="light-blue">false</span> }</span>
+                        <br />
+                        <span class="m-l-75">}</span>
+                        <br />
+                        <span class="m-l-60">},</span>
+                        <br />
+                        <span class="m-l-60"><span class="light-blue">new </span><span class="dark-green"> List&ltBitNavLinkItem></span><span> { Name = </span><span class="dark-orange">"MSN"</span><span>, Title = </span><span class="dark-orange">"MSN"</span>, <span>Key = </span><span class="dark-orange">"key1-2"</span> , <span>IsEnabled = </span><span class="light-blue">false</span> }</span>
+                        <br />
+                        <span class="m-l-45">}</span>
+                        <br />
+                        <span class="m-l-30">},</span>
+                        <br />
+                        <span class="m-l-30"><span class="light-blue">new </span><span class="dark-green"> List&ltBitNavLinkItem></span><span> { Name = </span><span class="dark-orange">"Documents"</span><span>, Title = </span><span class="dark-orange">"Documents"</span>, <span>Key = </span><span class="dark-orange">"key2"</span> , <span>Target = </span><span class="dark-orange">"_blank"</span> , <span>IsExpanded = </span><span class="light-blue">true</span> },</span>
+                        <br />
+                        <span class="m-l-30"><span class="light-blue">new </span><span class="dark-green"> List&ltBitNavLinkItem></span><span> { Name = </span><span class="dark-orange">"Pages"</span><span>, Title = </span><span class="dark-orange">"Pages"</span>, <span>Key = </span><span class="dark-orange">"key3"</span> , <span>Target = </span><span class="dark-orange">"_parent"</span> },</span>
+                        <br />
+                        <span class="m-l-30"><span class="light-blue">new </span><span class="dark-green"> List&ltBitNavLinkItem></span><span> { Name = </span><span class="dark-orange">"Notebook"</span><span>, Title = </span><span class="dark-orange">"Notebook"</span>, <span>Key = </span><span class="dark-orange">"key4"</span> , <span>IsEnabled = </span><span class="light-blue">false</span> },</span>
+                        <br />
+                        <span class="m-l-30"><span class="light-blue">new </span><span class="dark-green"> List&ltBitNavLinkItem></span><span> { Name = </span><span class="dark-orange">"Communication and Media"</span><span>, Title = </span><span class="dark-orange">"Communication and Media"</span>, <span>Key = </span><span class="dark-orange">"key5"</span> , <span>Target = </span><span class="dark-orange">"_top"</span> },</span>
+                        <br />
+                        <span class="m-l-30"><span class="light-blue">new </span><span class="dark-green"> List&ltBitNavLinkItem></span><span> { Name = </span><span class="dark-orange">"News"</span><span>, Title = </span><span class="dark-orange">"News"</span>, <span>Key = </span><span class="dark-orange">"key6"</span> , <span>Target = </span><span class="dark-orange">"_self"</span> , <span>Icon = </span><span class="dark-orange">News</span> }</span>
+                        <br />
+                        <span>};</span>
+                        <br />
+                        <br />
+                        <span>private <span class="dark-green">string</span> BitNavManualModeSelectedKey = "key3";</span>
+                        <br />
+                        <br />
+                        <span>private <span class="dark-green">void</span> HandleSelectedKeyChange(string selectedKey)</span>
+                        <br />
+                        <span class="light-yellow-bg">{</span>
+                        <br />
+                        <span class="m-l-30">BitNavManualModeSelectedKey = selectedKey;</span>
+                        <br />
+                        <span class="light-yellow-bg">}</span>
+                        <br />
+                    </p>
+                </div>
+            </BitPivotItem>
+        </BitPivot>
+    </div>
 </div>
 <h2>Implementation</h2>
 <div class="card">
