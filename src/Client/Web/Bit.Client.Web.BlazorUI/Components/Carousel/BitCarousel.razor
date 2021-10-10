@@ -1,0 +1,16 @@
+﻿@namespace Bit.Client.Web.BlazorUI
+@inherits BitComponentBase
+
+<div @ref="RootElement"
+     @attributes="HtmlAttributes"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value">
+    
+     
+     <CascadingValue Value="this"
+                    IsFixed="true">
+        <div class="bit-carousel-item">
+            @ChildContent
+        </div>
+    </CascadingValue>
+</div>
