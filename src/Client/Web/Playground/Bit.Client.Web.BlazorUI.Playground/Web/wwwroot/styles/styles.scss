@@ -1,4 +1,6 @@
-﻿@import "colors.scss";
+﻿@import 'fonts.scss';
+@import "colors.scss";
+@import '../../Styles/_shared.scss';
 
 * {
     //todo this code is added because due to latest changes our index page has no font right now
@@ -8,6 +10,7 @@
 
 body {
     margin: 0;
+    padding: 0;
 }
 
 table {
@@ -35,21 +38,6 @@ p {
     margin: 22px;
 }
 
-.navbar {
-    display: flex;
-    justify-content: space-between;
-    z-index: 9999;
-    height: 80px;
-    overflow: hidden;
-    background-color: $DarkBlue;
-    position: sticky;
-    top: 0;
-
-    .active > a {
-        background-color: $DarkRed;
-    }
-}
-
 .links {
     padding-top: 29px;
 
@@ -66,19 +54,6 @@ p {
     }
 }
 
-.row {
-    display: flex;
-    flex-wrap: wrap;
-}
-
-.side {
-    flex: 5%;
-    background-color: $LightGray;
-    position: fixed;
-    width: 255px;
-    height: 100vh;
-}
-
 .card {
     padding: 10px 10px 20px 10px;
     border: 1px solid $VeryLightPink;
@@ -88,39 +63,6 @@ p {
     .desc {
         font-size: 16px;
     }
-}
-
-.main {
-    background-color: $White;
-    padding: 20px;
-    width: calc(100% - 325px);
-    margin-left: auto;
-}
-
-.container {
-    display: flex;
-
-    .box-left {
-        padding: 10px 10px 20px 10px;
-        border-right: 1px solid $VeryLightPink;
-        width: 47%;
-    }
-
-    .box-right {
-        padding: 10px 10px 20px 10px;
-        border-left: 1px solid $VeryLightPink;
-        width: 53%;
-    }
-}
-
-.wrapper {
-    margin-top: 20px;
-}
-
-.footer {
-    padding: 20px;
-    text-align: center;
-    background-color: $LightGray;
 }
 
 .dark-green {
@@ -247,4 +189,303 @@ p {
             overflow-wrap: break-word;
         }
     }
+}
+
+/* Header */
+
+.header-container {
+    align-items: center;
+    background: $Gray04;
+    box-shadow: 0 rem(4px) rem(20px) $Shadow02;
+    display: flex;
+    height: rem(160px);
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+
+    @include lg {
+        height: rem(120px);
+    }
+
+    @include md {
+        height: rem(110px);
+    }
+
+    @include lt-md {
+        height: rem(120px);
+        display: block;
+    }
+
+    .logo {
+        display: flex;
+        align-items: center;
+
+        @include lt-md {
+            border-bottom: rem(1px) solid $Gray03;
+        }
+    }
+
+    .logo-title {
+        display: none;
+
+        @include lt-md {
+            display: block;
+            font-size: rem(14px);
+            color: $DarkBlue;
+        }
+    }
+
+    img {
+        height: rem(90px);
+        margin-left: rem(350px);
+        width: rem(90px);
+
+        @include lg {
+            height: rem(70px);
+            margin-left: rem(120px);
+            width: rem(70px);
+        }
+
+        @include md {
+            height: rem(40px);
+            margin-left: rem(32px);
+            width: rem(40px);
+        }
+
+        @include lt-md {
+            height: rem(40px);
+            margin: rem(14px) rem(16px);
+            width: rem(40px);
+        }
+    }
+}
+
+.header-menu {
+    display: flex;
+    list-style-type: none;
+    padding-left: rem(29px);
+
+    @include lt-md {
+        margin-left: rem(11px);
+    }
+
+    a, a:hover, a:visited {
+        color: $DarkBlue;
+        font-size: rem(28px);
+        font-weight: 500;
+        padding: 0 rem(19px) 0 rem(19px);
+        text-decoration: none;
+
+        @include lg {
+            padding: 0 rem(12px) 0 rem(12px);
+            font-size: rem(20px);
+        }
+
+        @include md {
+            padding: 0 rem(12px) 0 rem(12px);
+            font-size: rem(18px);
+        }
+
+        @include lt-md {
+            padding: 0 rem(15px) 0 rem(15px);
+            font-size: rem(16px);
+        }
+    }
+
+    .active {
+        text-decoration-line: underline;
+        text-underline-offset: rem(16px);
+    }
+}
+
+/* -- Footer -- */
+
+footer {
+    border-top: rem(6px) solid $Green;
+    display: flex;
+    align-items: center;
+    padding-left: rem(440px);
+    height: rem(84px);
+    background: $DarkBlue;
+    position: relative;
+
+    @include lg {
+        padding-left: rem(98px);
+        height: rem(64px);
+    }
+
+    @include md {
+        padding-left: rem(15px);
+        height: rem(38px);
+    }
+
+    @include lt-md {
+        padding-left: rem(7px);
+        height: rem(32px);
+    }
+
+    span {
+        padding: rem(20px);
+        font-size: rem(20px);
+        color: $White;
+
+        @include lg {
+            font-size: rem(16px);
+        }
+
+        @include lt-lg {
+            font-size: rem(12px);
+        }
+    }
+
+    a:hover, a:visited {
+        text-decoration: none !important;
+        color: $White !important;
+    }
+}
+
+/* Nav Menu */
+
+.main-container {
+    display: flex;
+    flex-wrap: wrap;
+    position: relative;
+    margin-top: rem(160px);
+
+    @include md {
+        margin-top: rem(112px);
+    }
+
+    .content {
+        width: calc(100% - 440px);
+        margin-left: auto;
+    }
+
+    .navbar {
+        background-color: $Gray04;
+        padding-top: rem(33px);
+        width: rem(360px);
+        flex: 17%;
+        position: fixed;
+        height: 100vh;
+        overflow-y: scroll;
+
+        @include lg {
+            padding-top: 0;
+        }
+
+        @include md {
+            height: 117vh;
+            width: rem(272px);
+            padding-top: rem(33px);
+        }
+
+        @include lt-md {
+            padding-top: rem(40px);
+            display: none;
+        }
+
+        .search-box {
+            width: 82%;
+            position: relative;
+            margin-left: rem(30px);
+            height: rem(40px);
+            background: $White;
+            border: rem(1px) solid $DarkBlue;
+            box-sizing: border-box;
+            border-radius: rem(2px);
+
+            & > div {
+                background-image: url("/images/icon/search-icon.svg");
+                width: rem(20px);
+                height: rem(20px);
+                margin: rem(8px) 0 0 rem(4px);
+            }
+
+            @include md {
+                margin-left: rem(25px);
+            }
+        }
+
+        .nav-link {
+            padding-top: rem(8px);
+
+            .bit-nav-grp:first-child i {
+                display: none;
+            }
+
+            .bit-icon--ChevronDown {
+                transform: rotate(-90deg);
+            }
+
+            .bit-nav-expand-fluent {
+                transform: rotate(0deg);
+            }
+
+            .bit-nav-grp-chevron-btn {
+                border: none;
+            }
+
+            .bit-nav-chevron-btn {
+                color: $DarkBlue;
+                font-weight: 600;
+                font-size: rem(18px);
+                margin-left: rem(15px)
+            }
+
+            .bit-nav-link-container {
+                margin-left: rem(41px);
+            }
+
+            .bit-nav-link-enabled-hasurl-fluent {
+                color: $DarkBlue;
+                font-size: rem(18px);
+            }
+
+            .bit-nav-link-enabled-hasurl-fluent:hover, .bit-nav-selected-fluent {
+                color: $Violet;
+                background-color: $Gray03;
+            }
+
+            .bit-nav-selected-fluent:hover {
+                background-color: $Gray03;
+            }
+
+            .bit-nav-selected-fluent:after {
+                border-left: rem(4px) solid $Violet;
+            }
+
+            .bit-nav-grp-content {
+                margin-bottom: 0;
+            }
+        }
+    }
+
+    .border-top {
+        border-bottom: rem(1px) solid $Gray03;
+        padding-top: rem(30px);
+    }
+}
+
+.bit-sch-box-fluent > div:last-child button {
+    background-color: $White;
+}
+
+.bit-sch-box-fluent input {
+    padding-left: rem(8px);
+}
+
+.bit-icon--Clear {
+    padding-right: rem(20px);
+}
+
+input::-webkit-input-placeholder {
+    color: $DarkBlue;
+    font-size: rem(14px);
+    font-weight: 500;
+}
+
+::-webkit-scrollbar {
+    width: 0;
 }
