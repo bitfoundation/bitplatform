@@ -270,7 +270,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Navs
             DataRow("", "name"),
             DataRow("title", "name")
         ]
-        public void BitNavLinkItemTitleTest(string? title, string name)
+        public void BitNavLinkItemTitleTest(string title, string name)
         {
             var items = new List<BitNavLinkItem>()
             {

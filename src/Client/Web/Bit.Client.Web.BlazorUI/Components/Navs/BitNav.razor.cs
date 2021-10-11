@@ -146,7 +146,7 @@ namespace Bit.Client.Web.BlazorUI
             ExpandSelectedNavLinkItemParents(parentItem);
         }
 
-        private async void OnLocationChanged(object? sender, LocationChangedEventArgs args)
+        private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
         {
             if (Mode == BitNavMode.Manual) return;
 

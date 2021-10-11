@@ -399,7 +399,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
             DataRow(true, null),
             DataRow(false, null)
         ]
-        public void BitTextFieldAriaLabelledbyTest(bool isMultiline, string? lable)
+        public void BitTextFieldAriaLabelledbyTest(bool isMultiline, string lable)
         {
             var component = RenderComponent<BitTextFieldTest>(parameters =>
             {

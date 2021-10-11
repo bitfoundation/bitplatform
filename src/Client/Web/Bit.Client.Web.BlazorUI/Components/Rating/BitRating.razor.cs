@@ -7,8 +7,12 @@ namespace Bit.Client.Web.BlazorUI
     public partial class BitRating
     {
         private bool isReadOnly;
+
+#pragma warning disable CA1823 // Avoid unused private fields
         private bool RatingHasBeenSet;
-        private int _min;
+#pragma warning restore CA1823 // Avoid unused private fields
+
+
         private double ratingValue;
 
         /// <summary>
@@ -142,7 +146,10 @@ namespace Bit.Client.Web.BlazorUI
 
         private async Task HandleClick(int index)
         {
-            if ((_min == 1 && index == 0) || IsReadOnly is true || IsEnabled is false || RatingChanged.HasDelegate is false) return;
+            if ((AllowZeroStars is false && index == 0) || 
+                IsReadOnly is true || 
+                IsEnabled is false || 
+                RatingChanged.HasDelegate is false) return;
 
             Rating = index;
             await OnChange.InvokeAsync(Rating);

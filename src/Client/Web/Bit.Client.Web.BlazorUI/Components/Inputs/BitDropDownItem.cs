@@ -5,12 +5,12 @@
         /// <summary>
         /// Text to render for this item
         /// </summary>
-        public string? Text { get; set; }
+        public string Text { get; set; } = string.Empty;
 
         /// <summary>
         /// Value of this item
         /// </summary>
-        public string Value { get; set; }
+        public string Value { get; set; } = string.Empty;
 
         /// <summary>
         /// Whether or not this item is enabled

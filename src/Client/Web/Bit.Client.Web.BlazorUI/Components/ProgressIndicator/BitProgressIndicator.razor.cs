@@ -80,6 +80,6 @@ namespace Bit.Client.Web.BlazorUI
                                                 : $"{RootElementClass}-indeterminate-{VisualClassRegistrar()}");
         }
 
-        private static double Normalize(double? value) => Math.Clamp(value.Value, 0, 100);
+        private static double Normalize(double? value) => Math.Clamp(value ?? 0, 0, 100);
     }
 }

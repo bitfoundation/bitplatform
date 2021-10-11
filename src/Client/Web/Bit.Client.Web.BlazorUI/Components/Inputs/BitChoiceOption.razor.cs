@@ -14,9 +14,9 @@ namespace Bit.Client.Web.BlazorUI
         private bool IsCheckedHasBeenSet;
 
         /// <summary>
-        /// A required key to uniquely identify the option.
+        /// A key to uniquely identify the option.
         /// </summary>
-        [Parameter] public string Key { get; set; }
+        [Parameter] public string? Key { get; set; }
 
         /// <summary>
         /// Image src to display with this option.
