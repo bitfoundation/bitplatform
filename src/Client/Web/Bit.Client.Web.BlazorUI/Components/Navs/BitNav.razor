@@ -150,7 +150,7 @@
                 </button>
             }
         </div>
-        @if (navLinkItem.Links.Any() && navLinkItem.IsExpanded)
+        @if (navLinkItem.Links?.Any() ?? false && navLinkItem.IsExpanded)
         {
             <ul class="bit-nav-list"
                 role="list">

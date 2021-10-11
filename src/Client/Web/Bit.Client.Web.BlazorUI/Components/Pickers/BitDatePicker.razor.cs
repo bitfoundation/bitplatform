@@ -112,7 +112,7 @@ namespace Bit.Client.Web.BlazorUI
                 ? $"{RootElementClass}-open-{VisualClassRegistrar()}" : string.Empty);
         }
 
-        protected override async Task OnInitializedAsync()
+        protected override Task OnInitializedAsync()
         {
             if (CalendarType == BitCalendarType.Gregorian)
             {
@@ -124,6 +124,8 @@ namespace Bit.Client.Web.BlazorUI
             }
 
             CreateMonthCalendar();
+
+            return base.OnInitializedAsync();
         }
 
         public async Task HandleClick(MouseEventArgs eventArgs)

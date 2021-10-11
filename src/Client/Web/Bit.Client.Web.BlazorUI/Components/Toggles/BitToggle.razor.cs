@@ -7,8 +7,11 @@ namespace Bit.Client.Web.BlazorUI
 {
     public partial class BitToggle
     {
-        private bool isChecked;
+#pragma warning disable CA1823 // Avoid unused private fields
         private bool IsCheckedHasBeenSet;
+#pragma warning restore CA1823 // Avoid unused private fields
+
+        private bool isChecked;
         private Guid Id = Guid.NewGuid();
         private string? LabelledById;
         private string? StateText;
