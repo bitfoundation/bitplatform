@@ -3,6 +3,6 @@
     public partial class BitTextFieldDemo
     {
         private BitTextFieldType InputType = BitTextFieldType.Password;
-        private string? TextValue;
+        private string TextValue;
     }
 }
