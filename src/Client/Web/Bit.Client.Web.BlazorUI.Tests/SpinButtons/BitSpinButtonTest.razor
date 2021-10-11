@@ -51,17 +51,17 @@
     [Parameter] public string Suffix { get; set; } = string.Empty;
     [Parameter] public string IconName { get; set; }
     [Parameter] public string Label { get; set; } = string.Empty;
-    [Parameter] public Dictionary<string, object>? InputHtmlAttributes { get; set; } = null;
-    [Parameter] public string? Title { get; set; }
+    [Parameter] public Dictionary<string, object> InputHtmlAttributes { get; set; } = null;
+    [Parameter] public string Title { get; set; }
     [Parameter] public int? Precision { get; set; }
-    [Parameter] public string? DecrementButtonIconName { get; set; }
-    [Parameter] public string? IncrementButtonIconName { get; set; }
+    [Parameter] public string DecrementButtonIconName { get; set; }
+    [Parameter] public string IncrementButtonIconName { get; set; }
     [Parameter] public double DefaultValue { get; set; }
     [Parameter] public string IconAriaLabel { get; set; } = string.Empty;
-    [Parameter] public string? DecrementButtonAriaLabel { get; set; }
-    [Parameter] public string? IncrementButtonAriaLabel { get; set; }
+    [Parameter] public string DecrementButtonAriaLabel { get; set; }
+    [Parameter] public string IncrementButtonAriaLabel { get; set; }
     [Parameter] public bool IsEnabled { get; set; } = true;
-    [Parameter] public RenderFragment? LabelFragment { get; set; }
+    [Parameter] public RenderFragment LabelFragment { get; set; }
 
     public int OnIncrementEventCounter { get; set; } = 0;
     public int OnBlurEventCounter { get; set; } = 0;

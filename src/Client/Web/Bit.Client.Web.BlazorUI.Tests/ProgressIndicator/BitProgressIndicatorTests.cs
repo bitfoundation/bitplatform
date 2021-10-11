@@ -119,7 +119,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.ProgressIndicator
             DataRow("Label"),
             DataRow(null),
         ]
-        public void BitProgressIndicatorLabelTest(string? label)
+        public void BitProgressIndicatorLabelTest(string label)
         {
             var component = RenderComponent<BitProgressIndicatorTest>(parameters =>
             {
@@ -144,7 +144,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.ProgressIndicator
             DataRow("Description"),
             DataRow(null),
         ]
-        public void BitProgressIndicatorDescriptionTest(string? description)
+        public void BitProgressIndicatorDescriptionTest(string description)
         {
             var component = RenderComponent<BitProgressIndicatorTest>(parameters =>
             {
@@ -169,7 +169,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.ProgressIndicator
             DataRow("Aria Value Text"),
             DataRow(null),
         ]
-        public void BitProgressIndicatorAriaValueTextTest(string? txt)
+        public void BitProgressIndicatorAriaValueTextTest(string txt)
         {
             var component = RenderComponent<BitProgressIndicatorTest>(parameters =>
             {
@@ -201,7 +201,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.ProgressIndicator
         [DataTestMethod,
             DataRow("<h1>this is a custom label</h1>")
         ]
-        public void BitProgressIndicatorLabelFragmentTest(string? labelFragment)
+        public void BitProgressIndicatorLabelFragmentTest(string labelFragment)
         {
             var component = RenderComponent<BitProgressIndicator>(parameters =>
             {
@@ -215,7 +215,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.ProgressIndicator
         [DataTestMethod,
             DataRow("<h1>this is a custom description</h1>"),
         ]
-        public void BitProgressIndicatorDescriptionFragmentTest(string? descriptionFragment)
+        public void BitProgressIndicatorDescriptionFragmentTest(string descriptionFragment)
         {
             var component = RenderComponent<BitProgressIndicator>(parameters =>
             {
