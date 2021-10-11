@@ -1,0 +1,86 @@
+﻿@import '_function.scss';
+
+/* Global Mixins */
+
+@mixin create-btn($color) {
+    display: inline-block;
+    text-align: center;
+    border-radius: 3px;
+    width: 76px;
+    height: 22px;
+    float: right;
+    background: $color;
+}
+
+/* Media Queries */
+
+/// https://github.com/Necromancerx/media-queries-scss-mixins
+
+$screen-md-min: em(768px);
+$screen-lg-min: em(1024px);
+$screen-xl-min: em(1440px);
+
+$screen-sm-max: em(767px);
+$screen-md-max: em(1023px);
+$screen-lg-max: em(1439px);
+$screen-xl-max: em(5000px);
+
+@mixin sm {
+    @media screen and (max-width: #{$screen-sm-max}) {
+        @content;
+    }
+}
+
+@mixin md {
+    @media screen and (min-width: #{$screen-md-min}) and (max-width: #{$screen-md-max}) {
+        @content;
+    }
+}
+
+@mixin lg {
+    @media screen and (min-width: #{$screen-lg-min}) and (max-width: #{$screen-lg-max}) {
+        @content;
+    }
+}
+
+@mixin xl {
+    @media screen and (min-width: #{$screen-xl-min}) and (max-width: #{$screen-xl-max}) {
+        @content;
+    }
+}
+
+@mixin lt-md {
+    @media screen and (max-width: #{$screen-sm-max}) {
+        @content;
+    }
+}
+
+@mixin lt-lg {
+    @media screen and (max-width: #{$screen-md-max}) {
+        @content;
+    }
+}
+
+@mixin lt-xl {
+    @media screen and (max-width: #{$screen-lg-max}) {
+        @content;
+    }
+}
+
+@mixin gt-sm {
+    @media screen and (min-width: #{$screen-md-min}) {
+        @content;
+    }
+}
+
+@mixin gt-md {
+    @media screen and (min-width: #{$screen-lg-min}) {
+        @content;
+    }
+}
+
+@mixin gt-lg {
+    @media screen and (min-width: #{$screen-xl-min}) {
+        @content;
+    }
+}
