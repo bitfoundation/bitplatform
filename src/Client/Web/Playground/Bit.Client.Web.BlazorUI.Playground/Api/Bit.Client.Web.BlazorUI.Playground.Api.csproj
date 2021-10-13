@@ -1,12 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
 	<PropertyGroup>
-		<TargetFramework>net5.0</TargetFramework>
+		<TargetFramework>net6.0</TargetFramework>
 	</PropertyGroup>
 
 	<ItemGroup>
 		<Content Condition=" '$(BlazorMode)' == 'Client' " Include="..\Web\Pages\_Host.cshtml" Link="Pages\_Host.cshtml" />
-		<PackageReference Condition=" '$(BlazorMode)' == 'Client' " Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="5.0.9" />
+		<PackageReference Condition=" '$(BlazorMode)' == 'Client' " Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="6.0.0-rc.1.21452.15" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -15,7 +15,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Watch Include="..\Web\**\*.razor;..\Web\**\*.scss;..\Web\**\*.cs;..\Web\**\*.cshtml" />
+	  <Watch Include="..\Web\**\*.razor;..\Web\**\*.scss;..\Web\**\*.css;..\Web\**\*.cs;..\Web\**\*.cshtml" />
 	</ItemGroup>
 
 </Project>

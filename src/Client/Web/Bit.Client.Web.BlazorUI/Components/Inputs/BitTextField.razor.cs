@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -15,7 +13,7 @@ namespace Bit.Client.Web.BlazorUI
         private bool isUnderlined;
         private bool hasBorder = true;
         private string focusClass = "";
-        private TextFieldType type = TextFieldType.Text;
+        private BitTextFieldType type = BitTextFieldType.Text;
         private Guid InputId = Guid.NewGuid();
         private string? textValue;
         private bool ValueHasBeenSet;
@@ -197,7 +195,7 @@ namespace Bit.Client.Web.BlazorUI
         /// Input type
         /// </summary>
         [Parameter]
-        public TextFieldType Type
+        public BitTextFieldType Type
         {
             get => type;
             set
@@ -238,7 +236,7 @@ namespace Bit.Client.Web.BlazorUI
         /// </summary>
         [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
-        public TextFieldType ElementType { get; set; }
+        public BitTextFieldType ElementType { get; set; }
 
         public string FocusClass
         {
@@ -254,7 +252,7 @@ namespace Bit.Client.Web.BlazorUI
 
         protected override void RegisterComponentClasses()
         {
-            ClassBuilder.Register(() => IsMultiline && Type == TextFieldType.Text
+            ClassBuilder.Register(() => IsMultiline && Type == BitTextFieldType.Text
                                         ? $"{RootElementClass}-multiline-{(IsResizable is false ? "fix-" : string.Empty)}{VisualClassRegistrar()}" : string.Empty);
 
             ClassBuilder.Register(() => IsEnabled && IsReadonly
@@ -334,7 +332,7 @@ namespace Bit.Client.Web.BlazorUI
 
         public void TogglePasswordRevealIcon()
         {
-            ElementType = ElementType == TextFieldType.Text ? TextFieldType.Password : TextFieldType.Text;
+            ElementType = ElementType == BitTextFieldType.Text ? BitTextFieldType.Password : BitTextFieldType.Text;
         }
 
         protected override Task OnInitializedAsync()

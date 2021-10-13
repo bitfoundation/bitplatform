@@ -1,4 +1,5 @@
 ﻿using Autofac;
+using Bit.Client.Web.Blazor.Implementation;
 using Bit.Core.Implementations;
 using Bit.ViewModel;
 using Prism.Events;
@@ -6,7 +7,6 @@ using Prism.Ioc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Xamarin.Essentials.Interfaces;
 
 namespace Bit.Core.Contracts
 {
@@ -17,7 +17,7 @@ namespace Bit.Core.Contracts
             if (dependencyManager == null)
                 throw new ArgumentNullException(nameof(dependencyManager));
 
-            dependencyManager.RegisterXamarinEssentials();
+            dependencyManager.Register<WebPreferences>(lifeCycle: DependencyLifeCycle.SingleInstance);
 
             dependencyManager.Register<IEventAggregator, EventAggregator>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
 
@@ -39,15 +39,11 @@ namespace Bit.Core.Contracts
             dependencyManager.GetContainerBuilder().RegisterBuildCallback(container =>
             {
                 IMessageReceiver? messageReceiver = container.ResolveOptional<IMessageReceiver>();
-                IConnectivity connectivity = container.Resolve<IConnectivity>();
-                IVersionTracking versionTracking = container.Resolve<IVersionTracking>();
 
                 foreach (TelemetryServiceBase telemetryService in container.Resolve<IEnumerable<ITelemetryService>>().OfType<TelemetryServiceBase>())
                 {
                     if (messageReceiver != null)
                         telemetryService.MessageReceiver = messageReceiver;
-                    telemetryService.Connectivity = connectivity;
-                    telemetryService.VersionTracking = versionTracking;
                 }
             });
 

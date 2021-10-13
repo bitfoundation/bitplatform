@@ -36,7 +36,6 @@ namespace Bit.Client.Web.BlazorUI
                 : hue >= 240 && hue < 300 ? (x, 0, c)
                 : (c, 0, x);
 
-
             Math.Floor((color.r + m) * 255);
             Math.Floor((color.g + m) * 255);
             Math.Floor((color.b + m) * 255);
@@ -83,6 +82,7 @@ namespace Bit.Client.Web.BlazorUI
             var myColor = Color.FromArgb(Convert.ToInt32(Rgb.Red), Convert.ToInt32(Rgb.Green), Convert.ToInt32(Rgb.Blue));
             return new Hex() { ColorCode = $"#{myColor.Name.Remove(0, 2)}" };
         }
+
         public string ToRgbCss()
         {
             return $"rgb({rgb.Red},{rgb.Green},{rgb.Blue})";
@@ -145,7 +145,6 @@ namespace Bit.Client.Web.BlazorUI
                     rgb = defaultColor;
                 }
             }
-
             catch (Exception exp)
             {
                 rgb = defaultColor;

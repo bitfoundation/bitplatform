@@ -2,5 +2,11 @@
 {
     public partial class BitDatePickerDemo
     {
+        private string selectedDate = "";
+
+        private string OnDateFormat(BitDate date)
+        {
+            return $"{date.GetDate()}/{date.GetMonth()}/{date.GetYear()}";
+        }
     }
 }

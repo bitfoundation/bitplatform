@@ -1,17 +1,18 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-	<Import Project="../../../Bit.Build.props" />
+    <Import Project="../../../Bit.Build.props" />
 
-	<PropertyGroup>
-		<TargetFramework>net5.0</TargetFramework>
-	</PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+    </PropertyGroup>
 
-	<ItemGroup>
-	  <PackageReference Include="Microsoft.AspNetCore.Components" Version="5.0.9" />
-	</ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Components" Version="6.0.0-rc.1.21452.15" />
+        <PackageReference Include="Microsoft.JSInterop" Version="6.0.0-rc.1.21452.15" />
+    </ItemGroup>
 
-	<ItemGroup>
-	  <ProjectReference Include="..\Bit.Client.Web.Wasm\Bit.Client.Web.Wasm.csproj" />
-	</ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\..\..\Universal\Bit.Universal.Http\Bit.Universal.Http.csproj" />
+    </ItemGroup>
 
 </Project>

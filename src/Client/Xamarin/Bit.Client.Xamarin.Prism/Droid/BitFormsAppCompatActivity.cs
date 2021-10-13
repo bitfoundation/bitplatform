@@ -18,9 +18,6 @@ using Xamarin.Forms.Platform.Android;
 
 namespace Bit.Android
 {
-#if Android9
-    [Obsolete("Bit is going to drop support for Android 9 Sdk. It's recommended to use Android 10 Sdk.")]
-#endif
     public class BitFormsAppCompatActivity : FormsAppCompatActivity
     {
         private bool _useDefaultConfiguration = false;

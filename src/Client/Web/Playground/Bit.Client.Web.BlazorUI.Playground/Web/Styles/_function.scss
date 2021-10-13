@@ -1,9 +1,13 @@
-﻿@mixin create-btn($color) {
-    display: inline-block;
-    text-align: center;
-    border-radius: 3px;
-    width: 76px;
-    height: 22px;
-    float: right;
-    background: $color;
+﻿$html-font-size: 16px;
+
+@function stripUnit($value) {
+    @return $value / ($value * 0 + 1);
+}
+
+@function em($pxValue, $base-font-size: $html-font-size) {
+    @return #{stripUnit($pxValue) / stripUnit($base-font-size)}em;
+}
+
+@function rem($pxValue) {
+    @return #{stripUnit($pxValue) / stripUnit($html-font-size)}rem;
 }

@@ -1,7 +1,7 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
 
     <PropertyGroup>
-        <TargetFramework>net5.0</TargetFramework>
+        <TargetFramework>net6.0</TargetFramework>
         <BlazorEnableTimeZoneSupport>false</BlazorEnableTimeZoneSupport>
         <BlazorWebAssemblyPreserveCollationData>false</BlazorWebAssemblyPreserveCollationData>
         <InvariantGlobalization>true</InvariantGlobalization>
@@ -15,9 +15,16 @@
 
     <ItemGroup>
         <PackageReference Include="LibSassBuilder" Version="1.6.4" />
-        <PackageReference Condition=" '$(BlazorMode)' == 'Client' " Include="Microsoft.AspNetCore.Components.WebAssembly" Version="5.0.9" />
-        <PackageReference Condition=" '$(BlazorMode)' == 'Client' " Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="5.0.9" PrivateAssets="all" />
+        <PackageReference Condition=" '$(BlazorMode)' == 'Client' " Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.0-rc.1.21452.15" />
+        <PackageReference Condition=" '$(BlazorMode)' == 'Client' " Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="6.0.0-rc.1.21452.15" PrivateAssets="all" />
     </ItemGroup>
+
+    <!--<PropertyGroup>
+        <LibSassOutputStyle>compressed</LibSassOutputStyle>
+        <LibSassOutputStyle Condition="'$(Configuration)' == 'Debug'">expanded</LibSassOutputStyle>
+        <LibSassOutputLevel>verbose</LibSassOutputLevel>
+        <LibSassMessageLevel>High</LibSassMessageLevel>
+    </PropertyGroup>-->
 
     <ItemGroup>
         <ProjectReference Include="..\..\..\Bit.Client.Web.BlazorUI\Bit.Client.Web.BlazorUI.csproj" />

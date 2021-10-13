@@ -1,20 +1,20 @@
 ﻿<Project Sdk="MSBuild.Sdk.Extras/2.1.2">
 
-  <Import Project="../../Bit.Build.props" />
+    <Import Project="../../Bit.Build.props" />
 
-  <PropertyGroup>
-    <TargetFrameworks>net5.0;monoandroid10.0;Xamarin.iOS10;uap10.0.17763;netstandard2.0;netstandard2.1;</TargetFrameworks>
-    <PackageTags>$(PackageTags) OData</PackageTags>
-    <RootNamespace>Bit.OData</RootNamespace>
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFrameworks>net6.0;monoandroid10.0;Xamarin.iOS10;uap10.0.17763;netstandard2.0;netstandard2.1;net6.0-ios;net6.0-android;net6.0-maccatalyst;net6.0-windows10.0.19041;</TargetFrameworks>
+        <PackageTags>$(PackageTags) OData</PackageTags>
+        <RootNamespace>Bit.OData</RootNamespace>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Simple.OData.V4.Client" Version="5.24.0" />
-    <PackageReference Include="Microsoft.OData.Core" Version="7.9.0" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Simple.OData.V4.Client" Version="5.24.0" />
+        <PackageReference Include="Microsoft.OData.Core" Version="7.9.0" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Bit.Universal.Http\Bit.Universal.Http.csproj" />
-  </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\Bit.Universal.Http\Bit.Universal.Http.csproj" />
+    </ItemGroup>
 
 </Project>

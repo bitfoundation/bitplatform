@@ -137,7 +137,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                 parameters =>
                 {
                     parameters.Add(p => p.IsEnabled, isEnabled);
-                    parameters.Add(p => p.Type, TextFieldType.Password);
+                    parameters.Add(p => p.Type, BitTextFieldType.Password);
                     parameters.Add(p => p.CanRevealPassword, true);
                 });
 
@@ -399,7 +399,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
             DataRow(true, null),
             DataRow(false, null)
         ]
-        public void BitTextFieldAriaLabelledbyTest(bool isMultiline, string? lable)
+        public void BitTextFieldAriaLabelledbyTest(bool isMultiline, string lable)
         {
             var component = RenderComponent<BitTextFieldTest>(parameters =>
             {

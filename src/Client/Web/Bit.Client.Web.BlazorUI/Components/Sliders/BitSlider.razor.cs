@@ -21,10 +21,12 @@ namespace Bit.Client.Web.BlazorUI
         private int inputHeight;
         private readonly string sliderBoxId = $"Slider{Guid.NewGuid()}";
 
+#pragma warning disable CA1823 // Avoid unused private fields
         private bool ValueHasBeenSet;
         private bool UpperValueHasBeenSet;
         private bool LowerValueHasBeenSet;
         private bool RangeValueHasBeenSet;
+#pragma warning restore CA1823 // Avoid unused private fields
 
         private ElementReference ContainerRef { get; set; }
         private ElementReference TitleRef { get; set; }

@@ -18,6 +18,20 @@ namespace Bit.Tooling.CodeGenerator.Implementations.CSharpODataMetadataGenerator
     {
         readonly string escapeStr = new string(new[] { '\\', '"' });
 
+        static bool ShouldGetsIgnored(IPropertySymbol p)
+        {
+            return p.GetAttributes().Any(att => att.AttributeClass.Name == "NotMappedAttribute")
+                || p.IsOverride;
+        }
+
+        static bool IsNavProp(ITypeSymbol t)
+        {
+            if (t.IsCollectionType() || t.IsQueryableType())
+                t = t.GetElementType();
+
+            return t.IsDto();
+        }
+
         protected virtual string GetMetadata(IList<Dto> dtos, IList<Core.Model.EnumType> enumTypes, IList<DtoController> controllers, BitCodeGeneratorMapping mapping)
         {
             var schemas = new List<Schema>();
@@ -36,12 +50,6 @@ namespace Bit.Tooling.CodeGenerator.Implementations.CSharpODataMetadataGenerator
 
                 foreach (var dto in g.OfType<Dto>())
                 {
-                    static bool ShouldGetsIgnored(IPropertySymbol p)
-                    {
-                        return p.GetAttributes().Any(att => att.AttributeClass.Name == "NotMappedAttribute")
-                            || p.IsOverride;
-                    }
-
                     if (dto.DtoSymbol.IsComplexType())
                     {
                         schema.ComplexTypes.Add(new ComplexType
@@ -58,14 +66,6 @@ namespace Bit.Tooling.CodeGenerator.Implementations.CSharpODataMetadataGenerator
                     else
                     {
                         var keys = dto.Properties.Where(p => p.IsKey()).ToArray();
-
-                        static bool IsNavProp(ITypeSymbol t)
-                        {
-                            if (t.IsCollectionType() || t.IsQueryableType())
-                                t = t.GetElementType();
-
-                            return t.IsDto();
-                        }
 
                         schema.EntityTypes.Add(new EntityType
                         {
@@ -175,7 +175,12 @@ namespace Bit.Tooling.CodeGenerator.Implementations.CSharpODataMetadataGenerator
                 EntitySets = controllers.Select(c => new EntitySet
                 {
                     EntityType = c.ModelSymbol.ToDisplayString(topLevelNullability: NullableFlowState.None),
-                    Name = c.Name
+                    Name = c.Name,
+                    NavigationPropertyBindings = c.ModelSymbol.GetMembers().OfType<IPropertySymbol>().Where(p => !ShouldGetsIgnored(p) && IsNavProp(p.Type) && controllers.Any(_c => SymbolEqualityComparer.Default.Equals(_c.ModelSymbol, p.Type.IsCollectionType() ? p.Type.GetElementType() : p.Type))).Select(p => new NavigationPropertyBinding
+                    {
+                        Path = p.Name,
+                        Target = controllers.First(_c => SymbolEqualityComparer.Default.Equals(_c.ModelSymbol, p.Type.IsCollectionType() ? p.Type.GetElementType() : p.Type)).Name
+                    }).ToList()
                 }).ToList()
             };
 

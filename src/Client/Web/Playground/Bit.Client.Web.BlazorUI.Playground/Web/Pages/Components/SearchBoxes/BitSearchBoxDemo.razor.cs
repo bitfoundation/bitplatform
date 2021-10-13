@@ -2,6 +2,6 @@
 {
     public partial class BitSearchBoxDemo
     {
-        private string? TextValue;
+        private string TextValue;
     }
 }

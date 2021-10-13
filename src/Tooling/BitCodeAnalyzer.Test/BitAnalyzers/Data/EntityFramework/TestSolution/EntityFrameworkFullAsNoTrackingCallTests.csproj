@@ -2,11 +2,11 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Bit.Tooling.CodeAnalyzer" Version="7.8.0" />
+    <PackageReference Include="Bit.Tooling.CodeAnalyzer" Version="8.3.0" />
     <PackageReference Include="EntityFramework" Version="6.4.4" />
   </ItemGroup>
 

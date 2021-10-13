@@ -7,8 +7,12 @@ namespace Bit.Client.Web.BlazorUI
     public partial class BitRating
     {
         private bool isReadOnly;
+
+#pragma warning disable CA1823 // Avoid unused private fields
         private bool RatingHasBeenSet;
-        private int _min;
+#pragma warning restore CA1823 // Avoid unused private fields
+
+
         private double ratingValue;
 
         /// <summary>
@@ -79,7 +83,7 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// Size of rating
         /// </summary>
-        [Parameter] public RatingSize Size { get; set; }
+        [Parameter] public BitRatingSize Size { get; set; }
 
         /// <summary>
         /// Optional callback to set the aria-label for rating control in readOnly mode. Also used as a fallback aria-label if ariaLabel prop is not provided.
@@ -104,7 +108,6 @@ namespace Bit.Client.Web.BlazorUI
             }
 
             Rating = Math.Min(Math.Max(Rating, (AllowZeroStars ? 0 : 1)), Max);
-
             await base.OnInitializedAsync();
         }
 
@@ -115,7 +118,7 @@ namespace Bit.Client.Web.BlazorUI
             ClassBuilder.Register(() => IsReadOnly
                                                 ? $"{RootElementClass}-readonly-{VisualClassRegistrar()}"
                                                 : string.Empty);
-            ClassBuilder.Register(() => Size == RatingSize.Large
+            ClassBuilder.Register(() => Size == BitRatingSize.Large
                                                 ? $"{RootElementClass}-large-{VisualClassRegistrar()}"
                                                 : $"{RootElementClass}-small-{VisualClassRegistrar()}");
         }
@@ -143,10 +146,12 @@ namespace Bit.Client.Web.BlazorUI
 
         private async Task HandleClick(int index)
         {
-            if ((_min == 1 && index == 0) || IsReadOnly is true || IsEnabled is false || RatingChanged.HasDelegate is false) return;
+            if ((AllowZeroStars is false && index == 0) || 
+                IsReadOnly is true || 
+                IsEnabled is false || 
+                RatingChanged.HasDelegate is false) return;
 
             Rating = index;
-
             await OnChange.InvokeAsync(Rating);
         }
     }

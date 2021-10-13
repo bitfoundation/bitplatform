@@ -8,12 +8,11 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Xamarin.Essentials.Interfaces;
 
 namespace Bit.Http.Implementations
 {
     public class BitHttpClientHandler :
-#if Android
+#if Android && !Maui
         Xamarin.Android.Net.AndroidClientHandler
 #elif iOS
         NSUrlSessionHandler
@@ -21,10 +20,20 @@ namespace Bit.Http.Implementations
         HttpClientHandler
 #endif
     {
+        public BitHttpClientHandler(IEnumerable<ITelemetryService> telemetryServices, IDateTimeProvider dateTimeProvider, IClientAppProfile clientAppProfile)
+        {
+            _clientAppProfile = clientAppProfile;
+            _dateTimeProvider = dateTimeProvider;
+            _telemetryServices = telemetryServices;
+        }
 
-        public IClientAppProfile ClientAppProfile { get; set; } = default!;
+        private readonly IEnumerable<ITelemetryService> _telemetryServices = default!;
 
-#if Android
+        private readonly IDateTimeProvider _dateTimeProvider = default!;
+
+        private readonly IClientAppProfile _clientAppProfile = default!;
+
+#if Android && !Maui
         protected override async Task WriteRequestContentToOutput(HttpRequestMessage request, Java.Net.HttpURLConnection httpConnection, CancellationToken cancellationToken)
         {
             if (request == null)
@@ -69,15 +78,13 @@ namespace Bit.Http.Implementations
 #else           
                 request.Headers.Add("Client-Type", "Xamarin");
 #endif
-                request.Headers.Add("Client-Date-Time", DateTimeProvider.GetCurrentUtcDateTime().UtcDateTime.ToString("o", CultureInfo.InvariantCulture));
+                request.Headers.Add("Client-Date-Time", _dateTimeProvider.GetCurrentUtcDateTime().UtcDateTime.ToString("o", CultureInfo.InvariantCulture));
 
                 xCorrelationID = Guid.NewGuid();
 
                 request.Headers.Add("X-Correlation-ID", xCorrelationID.ToString());
 
                 request.Headers.Add("Bit-Client-Type", "CS-Client");
-
-                request.Headers.Add("Client-App-Version", AppInfo.VersionString);
 
                 request.Headers.Add("Client-Culture", CultureInfo.CurrentUICulture.Name);
 
@@ -91,27 +98,24 @@ namespace Bit.Http.Implementations
                 }
                 catch { }
 
-                request.Headers.Add("Client-Platform", DeviceInfo.Platform.ToString());
-
                 request.Headers.Add("Current-Time-Zone", TimeZoneInfo.Local.Id);
 
-#if Android || iOS || UWP
-                await MainThread.InvokeOnMainThreadAsync(() =>
-                {
-                    request.Headers.Add("Client-Theme", AppInfo.RequestedTheme.ToString());
-                    if (DeviceInfo.Idiom != Xamarin.Essentials.DeviceIdiom.Unknown)
-                        request.Headers.Add("Client-Screen-Size", DeviceInfo.Idiom == Xamarin.Essentials.DeviceIdiom.Phone ? "MobileAndPhablet" : "DesktopAndTablet");
-                }).ConfigureAwait(false);
+#if Xamarin
+                request.Headers.Add("Client-App-Version", Xamarin.Essentials.AppInfo.VersionString);
+                request.Headers.Add("Client-Platform", Xamarin.Essentials.DeviceInfo.Platform.ToString());
+#elif Maui
+                request.Headers.Add("Client-App-Version", Microsoft.Maui.Essentials.AppInfo.VersionString);
+                request.Headers.Add("Client-Platform", Microsoft.Maui.Essentials.DeviceInfo.Platform.ToString());
 #endif
 
-                request.Headers.Add("Client-Debug-Mode", (ClientAppProfile.Environment == "Development").ToString(CultureInfo.InvariantCulture));
+                request.Headers.Add("Client-Debug-Mode", (_clientAppProfile.Environment == "Development").ToString(CultureInfo.InvariantCulture));
             }
             else
             {
                 xCorrelationID = Guid.Parse(request.Headers.ExtendedSingle("Finding X-Correlation-ID", h => h.Key == "X-Correlation-ID").Value.ExtendedSingle("Getting X-Correlation-ID value"));
             }
 
-            DateTimeOffset startDate = DateTimeProvider.GetCurrentUtcDateTime();
+            DateTimeOffset startDate = _dateTimeProvider.GetCurrentUtcDateTime();
 
             HttpResponseMessage? response = null;
 
@@ -152,18 +156,8 @@ namespace Bit.Http.Implementations
 
                 TimeSpan duration = DateTimeOffset.Now - startDate;
 
-                TelemetryServices.All().TrackRequest(request.RequestUri.LocalPath, startDate, duration, response?.StatusCode.ToString() ?? "UnknownStatusCode", response?.IsSuccessStatusCode ?? false, request.RequestUri, request.Method.ToString(), properties);
+                _telemetryServices.All().TrackRequest(request.RequestUri.LocalPath, startDate, duration, response?.StatusCode.ToString() ?? "UnknownStatusCode", response?.IsSuccessStatusCode ?? false, request.RequestUri, request.Method.ToString(), properties);
             }
         }
-
-        public IEnumerable<ITelemetryService> TelemetryServices { get; set; } = default!;
-
-        public IDateTimeProvider DateTimeProvider { get; set; } = default!;
-
-        public IDeviceInfo DeviceInfo { get; set; } = default!;
-
-        public IAppInfo AppInfo { get; set; } = default!;
-
-        public IMainThread MainThread { get; set; } = default!;
     }
 }

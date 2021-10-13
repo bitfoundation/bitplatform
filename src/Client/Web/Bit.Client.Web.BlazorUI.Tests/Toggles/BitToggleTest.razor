@@ -14,8 +14,6 @@
 </CascadingValue>
 
 @code {
-    private string AriaLabelledById;
-    private string AriaChecked;
     [Parameter] public Visual Visual { get; set; }
     [Parameter] public bool IsEnabled { get; set; }
     [Parameter] public bool IsChecked { get; set; }
@@ -26,5 +24,5 @@
     [Parameter] public string AriaLabel { get; set; }
     [Parameter] public string Role { get; set; }
     [Parameter] public string Label { get; set; }
-    [Parameter] public RenderFragment? LabelFragment { get; set; }
+    [Parameter] public RenderFragment LabelFragment { get; set; }
 }

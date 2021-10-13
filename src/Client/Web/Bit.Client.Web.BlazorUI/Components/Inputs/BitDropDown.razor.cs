@@ -17,8 +17,7 @@ namespace Bit.Client.Web.BlazorUI
         private bool SelectedMultipleKeysHasBeenSet;
         private bool SelectedKeyHasBeenSet;
         private bool IsSelectedMultipleKeysChanged = false;
-        private List<BitDropDownItem> NormalDropDownItems;
-        private string? text;
+        private List<BitDropDownItem> NormalDropDownItems = new List<BitDropDownItem>();
 
         /// <summary>
         /// Whether multiple items are allowed to be selected

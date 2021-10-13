@@ -26,6 +26,8 @@ namespace Bit.Tooling.Core.Model
 
         public virtual ITypeSymbol ReturnType { get; set; } = default!;
 
+        public virtual DtoController Controller { get; set; } = default!;
+
         public virtual ICollection<ODataOperationParameter> Parameters { get; set; } = new Collection<ODataOperationParameter>();
 
         public virtual string ParametersUri
@@ -45,6 +47,15 @@ namespace Bit.Tooling.Core.Model
             if (parameter.Type.Name == nameof(String))
                 return $"'{{{parameter.Name}}}'";
             return $"{{{parameter.Name}}}";
+        }
+
+        public ITypeSymbol GetODataClientFunctionReturnType()
+        {
+            var returnType = ReturnType.IsCollectionType() ? ReturnType.GetElementType() : ReturnType.GetUnderlyingTypeSymbol();
+            if (returnType.IsComplexType() || returnType.IsDto())
+                return returnType;
+            else
+                return Controller.ModelSymbol;
         }
     }
 }

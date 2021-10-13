@@ -1,9 +1,15 @@
-﻿<div class="side">
+﻿<div class="navbar">
+    <BitSearchBox Placeholder="Search"
+                  Class="search-box"
+                  IconName=""
+                  Value="@searchText"
+                  ValueChanged="@HandleChange"
+                  OnClear="@HandleClear" />
+    <div class="border-top"></div>
     <BitNav Class="nav-link"
-            Style="height:100%; overflow:auto; padding:20px;"
-            NavLinkItems="NavLinks"
-            RenderType="BitNavRenderType.Grouped"
-            AriaLabel="Bit Component Nav"  
-            SelectedKey="Button">
+            NavLinkItems="filteredNavLinks"
+            RenderType="renderType"
+            AriaLabel="Bit Component Nav"
+            OnLinkClick="HandleLinkClick">
     </BitNav>
 </div>

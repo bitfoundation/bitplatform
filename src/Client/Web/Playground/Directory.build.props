@@ -1,7 +1,7 @@
 <Project>
 
     <PropertyGroup>
-        <BlazorMode>Server</BlazorMode>
+        <BlazorMode>Client</BlazorMode>
         <!-- You can use either Server or Client, for example: <BlazorMode>Server</BlazorMode>-->
         <DefineConstants Condition=" '$(BlazorMode)' == 'Client' ">$(DefineConstants);BlazorClient</DefineConstants>
         <DefineConstants Condition=" '$(BlazorMode)' == 'Server' ">$(DefineConstants);BlazorServer</DefineConstants>

@@ -1,16 +1,23 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components
 {
     public partial class NavMenu
     {
-        private readonly List<BitNavLinkItem> NavLinks = new()
+        private readonly List<BitNavLinkItem> allNavLinks = new()
         {
+            new BitNavLinkItem
+            {
+                Name = "Components",
+                Key = "Components",
+                Url = "#",
+            },
             new BitNavLinkItem
             {
                 Name = "Basic Inputs",
                 Key = "Inputs",
-                IsExpanded = true,
                 Links = new List<BitNavLinkItem>
                 {
                      new BitNavLinkItem { Name= "Button", Key = "Button", Url = "/components/button"},
@@ -24,7 +31,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components
                      new BitNavLinkItem { Name= "DropDown", Key = "DropDown", Url = "/components/dropdown" },
                      new BitNavLinkItem { Name= "FileUpload", Key= "FileUpload", Url = "/components/fileuploads"},
                      new BitNavLinkItem { Name= "Label", Key = "Label",  Url = "/components/labels" },
-                     new BitNavLinkItem { Name= "Link", Key = "Link", Url = "/components/links" },
+                     new BitNavLinkItem { Name= "Link", Key = "Link", Url = "/components/links" },                     
                      new BitNavLinkItem { Name= "Rating", Key = "Rating", Url = "/components/rating" },
                      new BitNavLinkItem { Name= "SearchBox", Key = "SearchBox", Url = "/components/searchbox" },
                      new BitNavLinkItem { Name= "SpinButton", Key = "SpinButton", Url = "/components/spinbuttons"},
@@ -68,7 +75,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components
                 {
                     new BitNavLinkItem { Name = "MessageBar", Key = "MessageBar", Url="/components/messagebar" }
                 }
-            },
+            },            
             new BitNavLinkItem
             {
                 Name = "Progress",
@@ -79,6 +86,50 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components
                     new BitNavLinkItem{ Name = "Progressindicator", Key = "Progressindicator", Url = "/components/progressindicator" }
                 },
             },
+            new BitNavLinkItem
+            {
+                Name = "Surfaces",
+                Key = "Surfaces",
+                Links = new List<BitNavLinkItem>
+                {
+                    new BitNavLinkItem { Name = "Modal", Key = "Modal", Url = "/components/modal" },
+                },
+            },
         };
+
+        private List<BitNavLinkItem> filteredNavLinks;
+        private BitNavRenderType renderType = BitNavRenderType.Grouped;
+        private string searchText = string.Empty;
+
+        protected override void OnInitialized()
+        {
+            HandleClear();
+            base.OnInitialized();
+        }
+
+        private void HandleClear()
+        {
+            renderType = BitNavRenderType.Grouped;
+            filteredNavLinks = allNavLinks;
+        }
+
+        private void HandleChange(string text)
+        {
+            HandleClear();
+            searchText = text;
+            if (string.IsNullOrEmpty(text)) return;
+
+            renderType = BitNavRenderType.Normal;
+            var flatNavLinkList = Flatten(allNavLinks).ToList().FindAll(link => !string.IsNullOrEmpty(link.Url));
+            filteredNavLinks = flatNavLinkList.FindAll(link => link.Name.Contains(text, StringComparison.InvariantCultureIgnoreCase));
+        }
+
+        private void HandleLinkClick(BitNavLinkItem item)
+        {
+            searchText = string.Empty;
+            HandleClear();
+        }
+
+        private static IEnumerable<BitNavLinkItem> Flatten(IEnumerable<BitNavLinkItem> e) => e.SelectMany(c => Flatten(c.Links)).Concat(e);
     }
 }

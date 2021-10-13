@@ -18,6 +18,7 @@
 
         return controller.id;
     }
+
     static registerOnWindowMouseMoveEvent(dotnetHelper: any, callback: string): string {
         const controller = new BitAbortController();
 
@@ -37,7 +38,6 @@
     }
 
     static toMouseEventArgsMapper(e: MouseEvent): object {
-
         return {
             altKey: e.altKey,
             button: e.button,

@@ -1,7 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
     <PropertyGroup>
-        <TargetFramework>net5.0</TargetFramework>
+        <TargetFramework>net6.0</TargetFramework>
+        <ResolveStaticWebAssetsInputsDependsOn>WebCompiler</ResolveStaticWebAssetsInputsDependsOn>
         <DisableFastUpToDateCheck>true</DisableFastUpToDateCheck>
         <LangVersion>preview</LangVersion>
     </PropertyGroup>
@@ -68,7 +69,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="5.0.9" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="6.0.0-rc.1.21452.15" />
         <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.4.2">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

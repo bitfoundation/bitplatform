@@ -106,7 +106,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Checkboxes
             DataRow("Detailed label"),
             DataRow(null)
         ]
-        public void BitCheckboxAriaLabelTest(string? ariaLabel)
+        public void BitCheckboxAriaLabelTest(string ariaLabel)
         {
             var component = RenderComponent<BitCheckboxTest>(parameters =>
             {
@@ -129,7 +129,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Checkboxes
             DataRow("Detailed description"),
             DataRow(null)
         ]
-        public void BitCheckboxAriaDescriptionTest(string? ariaDescription)
+        public void BitCheckboxAriaDescriptionTest(string ariaDescription)
         {
             var component = RenderComponent<BitCheckboxTest>(parameters =>
             {
@@ -152,7 +152,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Checkboxes
             DataRow("Detailed label"),
             DataRow(null)
         ]
-        public void BitCheckboxAriaLabelledbyTest(string? ariaLabelledby)
+        public void BitCheckboxAriaLabelledbyTest(string ariaLabelledby)
         {
             var component = RenderComponent<BitCheckboxTest>(parameters =>
             {
@@ -175,7 +175,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Checkboxes
             DataRow("Title"),
             DataRow(null)
         ]
-        public void BitCheckboxTitleTest(string? title)
+        public void BitCheckboxTitleTest(string title)
         {
             var component = RenderComponent<BitCheckboxTest>(parameters =>
             {
@@ -198,7 +198,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Checkboxes
             DataRow("Name"),
             DataRow(null)
         ]
-        public void BitCheckboxNameTest(string? name)
+        public void BitCheckboxNameTest(string name)
         {
             var component = RenderComponent<BitCheckboxTest>(parameters =>
             {
@@ -282,7 +282,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Checkboxes
             DataRow("Icon aria-label"),
             DataRow(null)
         ]
-        public void BitCheckboxCheckmarkIconAriaLabelTest(string? ariaLabel)
+        public void BitCheckboxCheckmarkIconAriaLabelTest(string ariaLabel)
         {
             var component = RenderComponent<BitCheckboxTest>(parameters =>
             {

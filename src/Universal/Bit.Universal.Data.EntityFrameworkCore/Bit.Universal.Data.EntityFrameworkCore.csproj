@@ -3,19 +3,19 @@
     <Import Project="../../Bit.Build.props" />
 
     <PropertyGroup>
-        <TargetFrameworks>net5.0;monoandroid10.0;Xamarin.iOS10;uap10.0.17763;netstandard2.0;netstandard2.1;</TargetFrameworks>
+        <TargetFrameworks>net6.0;monoandroid10.0;Xamarin.iOS10;uap10.0.17763;netstandard2.0;netstandard2.1;net6.0-ios;net6.0-android;net6.0-maccatalyst;net6.0-windows10.0.19041;</TargetFrameworks>
         <PackageTags>$(PackageTags) entity-framework-core EF Data O/RM</PackageTags>
         <RootNamespace>Bit.Data.EntityFrameworkCore</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Condition=" '$(TargetFramework)' == 'net5.0' " Include="Microsoft.EntityFrameworkCore.Sqlite" Version="5.0.9" />
-        <PackageReference Condition=" '$(TargetFramework)' != 'net5.0' " Include="Microsoft.EntityFrameworkCore.Sqlite" Version="3.1.18" />
-        <PackageReference Condition=" '$(TargetFramework)' == 'net5.0' " Include="Microsoft.EntityFrameworkCore" Version="5.0.9" />
-        <PackageReference Condition=" '$(TargetFramework)' != 'net5.0' " Include="Microsoft.EntityFrameworkCore" Version="3.1.18" />
-        <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="5.0.0" />
-        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="5.0.0" />
-        <PackageReference Include="System.Text.Json" Version="5.0.2" />
+        <PackageReference Condition=" '$(TargetFramework)' == 'net6.0' " Include="Microsoft.EntityFrameworkCore.Sqlite" Version="6.0.0-rc.1.21452.10" />
+        <PackageReference Condition=" '$(TargetFramework)' != 'net6.0' " Include="Microsoft.EntityFrameworkCore.Sqlite" Version="3.1.19" />
+        <PackageReference Condition=" '$(TargetFramework)' == 'net6.0' " Include="Microsoft.EntityFrameworkCore" Version="6.0.0-rc.1.21452.10" />
+        <PackageReference Condition=" '$(TargetFramework)' != 'net6.0' " Include="Microsoft.EntityFrameworkCore" Version="3.1.19" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="6.0.0-rc.1.21451.13" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.0-rc.1.21451.13" />
+        <PackageReference Include="System.Text.Json" Version="6.0.0-rc.1.21451.13" />
         <ProjectReference Include="..\Bit.Universal.Data\Bit.Universal.Data.csproj" />
     </ItemGroup>
 

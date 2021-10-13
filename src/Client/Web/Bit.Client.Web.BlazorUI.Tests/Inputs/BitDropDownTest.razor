@@ -30,15 +30,15 @@
     [Parameter] public List<string> SelectedMultipleKeys { get; set; } = new List<string>();
     [Parameter] public string SelectedKey { get; set; }
     [Parameter] public List<string> DefaultSelectedMultipleKeys { get; set; } = new List<string>();
-    [Parameter] public string? DefaultSelectedKey { get; set; }
-    [Parameter] public string? Placeholder { get; set; }
-    [Parameter] public string? Label { get; set; }
-    [Parameter] public string? Title { get; set; }
+    [Parameter] public string DefaultSelectedKey { get; set; }
+    [Parameter] public string Placeholder { get; set; }
+    [Parameter] public string Label { get; set; }
+    [Parameter] public string Title { get; set; }
     [Parameter] public string MultiSelectDelimiter { get; set; } = ", ";
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
     [Parameter] public EventCallback<BitDropDownItem> OnSelectItem { get; set; }
     [Parameter] public bool NotifyOnReselect { get; set; } = false;
-    [Parameter] public RenderFragment? LabelFragment { get; set; }
+    [Parameter] public RenderFragment LabelFragment { get; set; }
 
     public int Counter = 0;
     public int SelectItemCounter = 0;

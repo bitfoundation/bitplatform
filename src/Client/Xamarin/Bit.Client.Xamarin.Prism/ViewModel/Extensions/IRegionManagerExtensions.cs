@@ -22,9 +22,7 @@ namespace Prism.Regions
 
         static INavigationParameters ConvertToINavigationParameters(INavigationParameters parentParameters, params (string key, object value)[] parameters)
         {
-            INavigationParameters navigationParameters = new NavigationParameters();
-
-            ((INavigationParametersInternal)navigationParameters).Add("__NavigationMode", NavigationMode.New);
+            INavigationParameters navigationParameters = new NavigationParameters().SetNavigationMode(NavigationMode.New);
 
             foreach ((string key, object value) parameter in parameters)
             {
