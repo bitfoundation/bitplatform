@@ -66,11 +66,9 @@ namespace BitChangeSetManager
             }).Configure<GzipCompressionProviderOptions>(options =>
             {
                 options.Level = CompressionLevel.Fastest;
-            });
-
-            dependencyManager.RegisterAspNetCoreMiddlewareUsing(aspNetCoreApp =>
+            }).Configure<BrotliCompressionProviderOptions>(options =>
             {
-                aspNetCoreApp.UseResponseCompression();
+                options.Level = CompressionLevel.Fastest;
             });
 
             services.AddCors();
@@ -79,9 +77,14 @@ namespace BitChangeSetManager
                 aspNetCoreApp.UseCors(c => c.AllowAnyOrigin());
             });
 
-            dependencyManager.RegisterAspNetCoreMiddleware<AspNetCoreStaticFilesMiddlewareConfiguration>();
             dependencyManager.RegisterMinimalAspNetCoreMiddlewares();
             dependencyManager.RegisterAspNetCoreSingleSignOnClient();
+
+            dependencyManager.RegisterAspNetCoreMiddlewareUsing(aspNetCoreApp =>
+            {
+                aspNetCoreApp.UseResponseCompression();
+            });
+            dependencyManager.RegisterAspNetCoreMiddleware<AspNetCoreStaticFilesMiddlewareConfiguration>();
 
             dependencyManager.RegisterMetadata();
 
