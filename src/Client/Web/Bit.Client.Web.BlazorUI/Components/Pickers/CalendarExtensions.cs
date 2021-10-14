@@ -37,7 +37,7 @@ namespace Bit.Client.Web.BlazorUI
                         return "December";
                 }
             }
-            if (calendar is PersianCalendar)
+            else if (calendar is PersianCalendar)
             {
                 switch (month)
                 {
@@ -67,8 +67,10 @@ namespace Bit.Client.Web.BlazorUI
                         return "Esfand";
                 }
             }
+
             return "";
         }
+
         public static string GetMonthShortName(this Calendar calendar, int month)
         {
             if (calendar is GregorianCalendar)
@@ -101,7 +103,7 @@ namespace Bit.Client.Web.BlazorUI
                         return "Dec";
                 }
             }
-            if (calendar is PersianCalendar)
+            else if (calendar is PersianCalendar)
             {
                 switch (month)
                 {
@@ -131,8 +133,10 @@ namespace Bit.Client.Web.BlazorUI
                         return "Esf";
                 }
             }
+
             return "";
         }
+
         public static string GetDayOfWeekName(this Calendar calendar, DayOfWeek dayOfWeek)
         {
             if (calendar is GregorianCalendar)
@@ -157,7 +161,7 @@ namespace Bit.Client.Web.BlazorUI
                         throw new ArgumentOutOfRangeException(nameof(dayOfWeek), dayOfWeek, null);
                 }
             }
-            if (calendar is PersianCalendar)
+            else if (calendar is PersianCalendar)
             {
                 switch (dayOfWeek)
                 {
@@ -179,8 +183,10 @@ namespace Bit.Client.Web.BlazorUI
                         throw new ArgumentOutOfRangeException(nameof(dayOfWeek), dayOfWeek, null);
                 }
             }
+
             return "";
         }
+
         public static string GetDayOfWeekShortName(this Calendar calendar, DayOfWeek dayOfWeek)
         {
             if (calendar is GregorianCalendar)
@@ -205,7 +211,7 @@ namespace Bit.Client.Web.BlazorUI
                         throw new ArgumentOutOfRangeException(nameof(dayOfWeek), dayOfWeek, null);
                 }
             }
-            if (calendar is PersianCalendar)
+            else if (calendar is PersianCalendar)
             {
                 switch (dayOfWeek)
                 {
@@ -227,6 +233,7 @@ namespace Bit.Client.Web.BlazorUI
                         throw new ArgumentOutOfRangeException(nameof(dayOfWeek), dayOfWeek, null);
                 }
             }
+
             return "";
         }
     }
