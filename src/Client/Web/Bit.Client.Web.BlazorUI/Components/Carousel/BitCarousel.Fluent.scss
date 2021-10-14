@@ -1,8 +1,32 @@
 ﻿.bit-crsl-fluent {
+    max-width: 90%;
+    min-height:150px;
     position: relative;
+    margin: auto;
 }
 
 .bit-crsl-buttons {
-    position: absolute;
     top: 50%;
+
+    & .bit-crsl-next-btn, .bit-crsl-previuse-btn {
+        cursor: pointer;
+        position: absolute;
+        width: auto;
+        margin-top: -22px;
+        padding: 11px 16px;
+        color: white;
+        font-weight: bold;
+        font-size: 18px;
+        transition: 0.6s ease;
+        border-radius: 50%;
+        user-select: none;
+    }
+
+    & .bit-crsl-next-btn {
+        right: 0;
+    }
+
+    & .bit-crsl-next-btn:hover, .bit-crsl-previuse-btn:hover {
+        background-color: rgba(0,0,0,0.8);
+    }
 }
