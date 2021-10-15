@@ -1,16 +1,35 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 
 namespace Bit.Client.Web.BlazorUI
 {
     public partial class BitCarousel
     {
+        private BitCarouselItem? SelectedItem;
         private List<BitCarouselItem> AllCarouselItems = new();
+        private string? selectedKey;
+        private bool SelectedKeyHasBeenSet;
 
         [Parameter] public RenderFragment? ChildContent { get; set; }
 
-        protected override string RootElementClass => "bit-crsl";
+        [Parameter]
+        public string? SelectedKey
+        {
+            get => selectedKey;
+            set
+            {
+                if (value == selectedKey) return;
 
+                SelectItemByKey(value);
+            }
+        }
+
+        [Parameter] public EventCallback<string?> SelectedKeyChanged { get; set; }
+
+        protected override string RootElementClass => "bit-crsl";
 
         internal void RegisterItem(BitCarouselItem carouselItem)
         {
@@ -18,12 +37,59 @@ namespace Bit.Client.Web.BlazorUI
             {
                 carouselItem.IsEnabled = false;
             }
+
+            if (SelectedKey == carouselItem.Key)
+            {
+                carouselItem.SetState(true);
+                SelectedItem = carouselItem;
+            }
             AllCarouselItems.Add(carouselItem);
         }
 
         internal void UnregisterItem(BitCarouselItem carouselItem)
         {
             AllCarouselItems.Remove(carouselItem);
+        }
+
+        internal async Task SelectItem(BitCarouselItem item)
+        {
+            if (SelectedKeyHasBeenSet && SelectedKeyChanged.HasDelegate is false) return;
+
+            SelectedItem?.SetState(false);
+            item.SetState(true);
+
+            SelectedItem = item;
+            selectedKey = item.Key;
+
+            await SelectedKeyChanged.InvokeAsync(selectedKey);
+        }
+
+        private void SelectItemByKey(string? key)
+        {
+            if (key == string.Empty) return;
+
+            var newItem = AllCarouselItems.FirstOrDefault(i => i.Key == key);
+
+            if (newItem == null || newItem == SelectedItem || newItem.IsEnabled is false)
+            {
+                _ = SelectedKeyChanged.InvokeAsync(selectedKey);
+                return;
+            }
+
+            _ = SelectItem(newItem);
+        }
+
+        private void SelectItemByIndex(int index)
+        {
+            Console.WriteLine(index);
+            var newItem = AllCarouselItems.ElementAt(index);
+
+            if (newItem == null || newItem == SelectedItem || newItem.IsEnabled is false)
+            {
+                return;
+            }
+
+            _ = SelectItem(newItem);
         }
     }
 }
