@@ -10,12 +10,20 @@ button {
 }
 
 .header-element-container {
-    height: rem(970px);
     background-image: url("/images/index/header-bg.png");
     background-repeat: no-repeat;
     background-position-x: right;
     background-size: contain;
     position: relative;
+
+    @include lg {
+        height: rem(774px);
+        background-size: rem(617px);
+    }
+
+    @include xl {
+        height: rem(980px);
+    }
 }
 
 .header-menu {
@@ -26,9 +34,27 @@ button {
     margin: auto;
 }
 
+.header-menu img {
+    @include lg {
+        max-width: rem(70px);
+    }
+
+    @include xl {
+        max-width: rem(90px);
+    }
+}
+
 .menu-header-link {
     text-decoration: none;
     padding: 0;
+
+    @include lg {
+        margin-left: rem(47px);
+    }
+
+    @include xl {
+        margin-left: rem(72px);
+    }
 }
 
 .menu-header-link:active {
@@ -42,6 +68,16 @@ button {
     display: flex;
     flex-flow: column nowrap;
     justify-content: center;
+
+    @include lg {
+        max-width: rem(593px);
+        margin-left: calc(8% + 70px);
+    }
+
+    @include xl {
+        max-width: rem(688px);
+        margin-left: calc(17% + 90px);
+    }
 }
 
 .header-description-container .buttons-container {
@@ -52,10 +88,6 @@ button {
 .get-start-btn {
     color: white;
     padding: rem(11px) rem(32px);
-    font-weight: 600;
-    font-style: normal;
-    font-size: rem(24px);
-    line-height: rem(39.6px);
     background: #5c2d91;
     border-radius: rem(4px);
     margin-right: rem(12px);
@@ -68,10 +100,6 @@ button {
     box-sizing: border-box;
     border-radius: rem(4px);
     color: #5c2d91;
-    font-style: normal;
-    font-weight: 600;
-    font-size: rem(24px);
-    line-height: 165%;
     padding: rem(11px) rem(43px);
 }
 
@@ -86,6 +114,10 @@ button {
 
 .header-text-description {
     margin: 0;
+
+    @include lg {
+        width: rem( 389px);
+    }
 }
 
 .header .logos-container img {
@@ -373,45 +405,4 @@ footer .footer-link {
 
 .bg-violet {
     background-color: #5c2d91;
-}
-
-//extra large screen
-
-//large screen
-@media (min-width: 1200px) {
-    .header-element-container {
-        height: rem(774px);
-    }
-
-    .header-description-container {
-        max-width: rem(593px);
-        margin-left: calc(8% + 70px);
-    }
-
-    .header-menu img {
-        max-width: rem(70px);
-    }
-
-    .menu-header-link {
-        margin-left: rem(47px);
-    }
-}
-
-@media (min-width: 1400px) {
-    .header-element-container {
-        height: rem(980px);
-    }
-
-    .header-description-container {
-        max-width: rem(688px);
-        margin-left: calc(17% + 90px);
-    }
-
-    .header-menu img {
-        max-width: rem(90px);
-    }
-
-    .menu-header-link {
-        margin-left: rem(72px);
-    }
 }
