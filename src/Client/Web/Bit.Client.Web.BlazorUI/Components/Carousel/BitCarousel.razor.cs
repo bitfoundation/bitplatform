@@ -38,12 +38,14 @@ namespace Bit.Client.Web.BlazorUI
                 carouselItem.IsEnabled = false;
             }
 
-            if (SelectedKey == carouselItem.Key)
+            AllCarouselItems.Add(carouselItem);
+
+            if (AllCarouselItems.Count == 1 || SelectedKey.HasValue() && SelectedKey == carouselItem.Key)
             {
                 carouselItem.SetState(true);
                 SelectedItem = carouselItem;
             }
-            AllCarouselItems.Add(carouselItem);
+            StateHasChanged();
         }
 
         internal void UnregisterItem(BitCarouselItem carouselItem)
@@ -66,7 +68,7 @@ namespace Bit.Client.Web.BlazorUI
 
         private void SelectItemByKey(string? key)
         {
-            if (key == string.Empty) return;
+            if (key.HasNoValue()) return;
 
             var newItem = AllCarouselItems.FirstOrDefault(i => i.Key == key);
 
@@ -81,7 +83,6 @@ namespace Bit.Client.Web.BlazorUI
 
         private void SelectItemByIndex(int index)
         {
-            Console.WriteLine(index);
             var newItem = AllCarouselItems.ElementAt(index);
 
             if (newItem == null || newItem == SelectedItem || newItem.IsEnabled is false)

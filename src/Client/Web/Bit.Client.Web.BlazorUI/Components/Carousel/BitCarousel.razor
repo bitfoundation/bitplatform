@@ -11,9 +11,9 @@
         @ChildContent
     </CascadingValue>
     <div class="bit-crsl-dots">
-        @for (int i = 0; i < 5; i++)
+        @for (int i = 0; i < AllCarouselItems.Count; i++)
         {
-            <div @onclick="(()=>SelectItemByIndex(i))">@i</div>
+            <div @onclick="(()=>SelectItemByIndex(i))"></div>
         }
     </div>
     <div class="bit-crsl-buttons">
