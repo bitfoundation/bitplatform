@@ -23,8 +23,6 @@ namespace Bit.Client.Web.BlazorUI
         private int dayOfWeekDifference;
         private bool ValueHasBeenSet;
 
-        [Inject] public IJSRuntime? JSRuntime { get; set; }
-
         /// <summary>
         /// Whether or not this DatePicker is open
         /// </summary>
@@ -101,6 +99,45 @@ namespace Bit.Client.Web.BlazorUI
 
         [Parameter] public EventCallback<string> ValueChanged { get; set; }
 
+        /// <summary>
+        /// Label for the DatePicker
+        /// </summary>
+        [Parameter] public string Label { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Determines if the DatePicker has a border.
+        /// </summary>
+        [Parameter] public bool HasBorder { get; set; } = true;
+
+        /// <summary>
+        /// Whether or not the Textfield of the DatePicker is underlined.
+        /// </summary>
+        [Parameter] public bool IsUnderlined { get; set; } = false;
+
+        /// <summary>
+        /// The tabIndex of the TextField
+        /// </summary>
+        [Parameter] public int TabIndex { get; set; } = 0;
+
+        /// <summary>
+        /// Whether the DatePicker allows input a date string directly or not
+        /// </summary>
+        [Parameter] public bool AllowTextInput { get; set; } = false;
+
+        /// <summary>
+        /// Whether the month picker is shown beside the day picker or hidden.
+        /// </summary>
+        [Parameter] public bool IsMonthPickerVisible { get; set; } = true;
+
+        /// <summary>
+        /// Show month picker on top of date picker when visible.
+        /// </summary>
+        [Parameter] public bool ShowMonthPickerAsOverlay { get; set; } = false;
+
+        public string CalloutId { get; set; } = string.Empty;
+        public string MonthAndYearId { get; set; } = Guid.NewGuid().ToString();
+        public string ActiveDescendantId { get; set; } = Guid.NewGuid().ToString();
+
         protected override string RootElementClass { get; } = "bit-dtp";
 
         protected override void RegisterComponentClasses()
@@ -124,6 +161,7 @@ namespace Bit.Client.Web.BlazorUI
             }
 
             CreateMonthCalendar();
+            CalloutId = $"DatePicker-Callout{UniqueId}";
 
             return base.OnInitializedAsync();
         }
@@ -384,21 +422,10 @@ namespace Bit.Client.Web.BlazorUI
             yearRangeTo = fromYear + 11;
         }
 
-        [JSInvokable]
-        public void CloseCallout()
+        private void CloseCallout()
         {
             IsOpen = false;
             StateHasChanged();
-        }
-
-        protected async override Task OnAfterRenderAsync(bool firstRender)
-        {
-            if (IsEnabled && firstRender)
-            {
-                _ = JSRuntime?.BitDatePickerRegisterOnDocumentClickEvent(this, "CloseCallout");
-            }
-
-            await base.OnAfterRenderAsync(firstRender);
         }
     }
 }

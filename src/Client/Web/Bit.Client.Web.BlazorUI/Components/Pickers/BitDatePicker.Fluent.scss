@@ -1,6 +1,6 @@
 ﻿@import "../../Styles/Fluent/colors.fluent.scss", "../../Styles/functions.scss";
 
-.bit-dtp {
+.bit-dtp-fluent {
     font-family: FluentFont;
     -webkit-font-smoothing: antialiased;
     font-size: 18px;
@@ -9,450 +9,448 @@
     margin: em(0px);
     padding: em(0px);
     box-sizing: border-box;
+}
 
-    .bit-txt-focused-fluent {
-        > div {
-            > div {
-                border-color: $Primary;
-            }
-        }
+.bit-dtp-callout {
+    -webkit-font-smoothing: antialiased;
+    font-size: 14px;
+    font-weight: 400;
+    position: absolute;
+    box-sizing: border-box;
+    border-radius: 2px;
+    box-shadow: rgba(0,0,0, 0.13) 0px 6.4px 14.4px 0px, rgba(0,0,0, 0.11) 0px 1.2px 3.6px 0px;
+    outline: transparent;
+    z-index: 1;
+}
+
+.bit-dtp-callout-main {
+    background-color: $White;
+    overflow: hidden auto;
+    position: relative;
+    border-radius: 2px;
+}
+
+.bit-dtp-group {
+    background-color: $White;
+    overflow: hidden auto;
+    position: relative;
+    border-radius: 2px;
+    box-shadow: none;
+    margin: 0px;
+    padding: 0px;
+    box-sizing: border-box;
+    display: flex;
+    outline: none;
+    max-height: 341px;
+    animation-name: fadeIn, slideDown;
+    animation-duration: 167ms;
+    animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
+    animation-fill-mode: both;
+
+    > div:first-child {
+        border: em(0px);
+        height: em(1px);
+        margin: em(-1px);
+        overflow: hidden;
+        padding: em(0px);
+        width: em(1px);
+        position: absolute;
+    }
+}
+
+.day-picker-wrapper {
+    box-shadow: none;
+    margin: 0px;
+    padding: 12px;
+    box-sizing: content-box;
+    width: 196px;
+    display: flex;
+    flex-direction: column;
+
+    table {
+        text-align: center;
+        border-collapse: collapse;
+        border-spacing: em(0px);
+        table-layout: fixed;
+        font-size: inherit;
+        margin-top: em(4px);
+        width: em(196px);
+        position: relative;
+        margin-bottom: em(10px);
     }
 
-    > div:nth-child(2) {
-        -webkit-font-smoothing: antialiased;
-        font-size: 14px;
-        font-weight: 400;
-        position: absolute;
-        box-sizing: border-box;
-        border-radius: 2px;
-        box-shadow: rgba(0,0,0, 0.13) 0px 6.4px 14.4px 0px, rgba(0,0,0, 0.11) 0px 1.2px 3.6px 0px;
-        outline: transparent;
-        z-index: 1;
+    tbody {
+        tr:first-child {
+            th {
+                margin: em(0px);
+                padding: em(0px);
+                width: 28px;
+                height: 28px;
+                line-height: 28px;
+                text-align: center;
+                font-size: 14px;
+                font-weight: 400;
+                color: $Grey160;
+                cursor: pointer;
+                position: relative;
+                animation-name: fadeIn;
+                animation-duration: 0.267s;
+                animation-timing-function: cubic-bezier(0.1, 0.25, 0.75, 0.9);
+                animation-fill-mode: both;
+                border: none;
+            }
+        }
 
-        > div {
-            background-color: $White;
-            overflow: hidden auto;
-            position: relative;
-            border-radius: 2px;
+        tr[role=presentation] {
+            position: absolute;
+            opacity: 0;
+            width: 0px;
+            height: 0px;
+            overflow: hidden;
+            animation-name: css-147;
 
-            > div {
-                > div:nth-child(2) {
-                    background-color: $White;
-                    overflow: hidden auto;
+            td {
+                color: $Grey130;
+                font-weight: 400;
+                margin: em(0px);
+                padding: em(0px);
+                width: 28px;
+                height: 28px;
+                line-height: 28px;
+                text-align: center;
+                font-size: em(12px);
+                font-weight: 400;
+                color: $Grey160;
+                cursor: pointer;
+                position: relative;
+
+                &:hover {
+                    background-color: $Grey30;
+                }
+
+
+                > button {
+                    outline: transparent;
                     position: relative;
-                    border-radius: 2px;
-                    box-shadow: none;
-                    margin: 0px;
-                    padding: 0px;
-                    box-sizing: border-box;
-                    display: flex;
-                    outline: none;
-                    max-height: 341px;
-                    animation-name: fadeIn, slideDown;
-                    animation-duration: 167ms;
-                    animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
-                    animation-fill-mode: both;
+                    width: em(24px);
+                    height: em(24px);
+                    line-height: em(24px);
+                    font-size: em(12px);
+                    font-weight: inherit;
+                    border-radius: em(2px);
+                    border: none;
+                    padding: em(0px);
+                    color: inherit;
+                    background-color: transparent;
+                    cursor: pointer;
+                    overflow: visible;
 
-                    > div:first-child {
-                        border: em(0px);
-                        height: em(1px);
-                        margin: em(-1px);
-                        overflow: hidden;
-                        padding: em(0px);
-                        width: em(1px);
-                        position: absolute;
+                    span {
+                        height: inherit;
+                        line-height: inherit;
                     }
+                }
+            }
+        }
 
-                    > div:nth-child(2) {
-                        box-shadow: none;
-                        margin: 0px;
-                        padding: 12px;
-                        box-sizing: content-box;
-                        width: 196px;
-                        display: flex;
-                        flex-direction: column;
-
-                        > div:first-child {
-                            position: relative;
-                            display: inline-flex;
-                            height: em(28px);
-                            line-height: em(44px);
-                            width: 100%;
-
-                            > div:first-child {
-                                outline: transparent;
-                                position: relative;
-                                animation-name: opacity;
-                                animation-duration: 0.267s;
-                                animation-timing-function: cubic-bezier(0.1, 0.25, 0.75, 0.9);
-                                animation-fill-mode: both;
-                                align-items: center;
-                                font-size: em(14px);
-                                font-family: inherit;
-                                color: $Grey160;
-                                display: inline-block;
-                                flex-grow: 1;
-                                font-weight: 600;
-                                border: none;
-                                background-color: transparent;
-                                border-radius: em(2px);
-                                line-height: em(28px);
-                                overflow: hidden;
-                                white-space: nowrap;
-                                text-align: left;
-                                text-overflow: ellipsis;
-
-                                span {
-                                    padding-left: 10px;
-                                }
-                            }
-
-                            > div:nth-child(2) {
-                                display: inline-flex;
-                                align-self: flex-start;
-                                justify-content: flex-end;
-                                width: 65px;
-
-                                > button {
-                                    outline: transparent;
-                                    position: relative;
-                                    width: 28px;
-                                    height: 28px;
-                                    line-height: 28px;
-                                    display: block;
-                                    text-align: center;
-                                    font-size: em(14px);
-                                    color: $Grey160;
-                                    border-radius: em(2px);
-                                    background-color: transparent;
-                                    border: none;
-                                    padding: em(0px);
-                                    overflow: visible;
-                                    cursor: pointer;
-
-                                    &:hover {
-                                        background-color: $Grey30;
-                                    }
-
-                                    i {
-                                        display: inline-block;
-                                        -webkit-font-smoothing: antialiased;
-                                        font-style: normal;
-                                        font-weight: normal;
-                                        speak: none;
-                                    }
-                                }
-                            }
-                        }
-
-                        > div:nth-child(2) {
-                            padding-bottom: em(10px);
-
-                            > table {
-                                text-align: center;
-                                border-collapse: collapse;
-                                border-spacing: em(0px);
-                                table-layout: fixed;
-                                font-size: inherit;
-                                margin-top: em(4px);
-                                width: em(196px);
-                                position: relative;
-                                padding-bottom: em(10px);
-
-                                > tbody {
-                                    tr:first-child {
-                                        th {
-                                            margin: em(0px);
-                                            padding: em(0px);
-                                            width: 28px;
-                                            height: 28px;
-                                            line-height: 28px;
-                                            text-align: center;
-                                            font-size: 14px;
-                                            font-weight: 400;
-                                            color: $Grey160;
-                                            cursor: pointer;
-                                            position: relative;
-                                            animation-name: fadeIn;
-                                            animation-duration: 0.267s;
-                                            animation-timing-function: cubic-bezier(0.1, 0.25, 0.75, 0.9);
-                                            animation-fill-mode: both;
-                                            border: none;
-                                        }
-                                    }
-
-                                    tr[role=presentation] {
-                                        position: absolute;
-                                        opacity: 0;
-                                        width: 0px;
-                                        height: 0px;
-                                        overflow: hidden;
-                                        animation-name: css-147;
-
-                                        td {
-                                            color: $Grey130;
-                                            font-weight: 400;
-                                            margin: em(0px);
-                                            padding: em(0px);
-                                            width: 28px;
-                                            height: 28px;
-                                            line-height: 28px;
-                                            text-align: center;
-                                            font-size: em(12px);
-                                            font-weight: 400;
-                                            color: $Grey160;
-                                            cursor: pointer;
-                                            position: relative;
-
-                                            &:hover {
-                                                background-color: $Grey30;
-                                            }
+        tr:not([role]):nth-child(n+1) {
+            td {
+                border-radius: 2px;
+                font-weight: 400;
+                margin: em(0px);
+                padding: em(0px);
+                width: 28px;
+                height: 28px;
+                line-height: 28px;
+                text-align: center;
+                font-size: 14px;
+                font-weight: 400;
+                color: $Grey160;
+                cursor: pointer;
+                position: relative;
+                border: none;
 
 
-                                            > button {
-                                                outline: transparent;
-                                                position: relative;
-                                                width: em(24px);
-                                                height: em(24px);
-                                                line-height: em(24px);
-                                                font-size: em(12px);
-                                                font-weight: inherit;
-                                                border-radius: em(2px);
-                                                border: none;
-                                                padding: em(0px);
-                                                color: inherit;
-                                                background-color: transparent;
-                                                cursor: pointer;
-                                                overflow: visible;
+                &:hover {
+                    background-color: $Grey30;
+                }
 
-                                                span {
-                                                    height: inherit;
-                                                    line-height: inherit;
-                                                }
-                                            }
-                                        }
-                                    }
+                > button {
+                    outline: transparent;
+                    position: relative;
+                    width: 24px;
+                    height: 24px;
+                    line-height: em(24px);
+                    font-size: em(12px);
+                    font-weight: inherit;
+                    border-radius: em(2px);
+                    border: none;
+                    padding: em(0px);
+                    color: inherit;
+                    background-color: transparent;
+                    cursor: pointer;
+                    overflow: visible;
+                }
 
-                                    tr:not([role]):nth-child(n+1) {
-                                        td {
-                                            border-radius: 2px;
-                                            font-weight: 400;
-                                            margin: em(0px);
-                                            padding: em(0px);
-                                            width: 28px;
-                                            height: 28px;
-                                            line-height: 28px;
-                                            text-align: center;
-                                            font-size: 14px;
-                                            font-weight: 400;
-                                            color: $Grey160;
-                                            cursor: pointer;
-                                            position: relative;
-                                            border: none;
-
-
-                                            &:hover {
-                                                background-color: $Grey30;
-                                            }
-
-                                            > button {
-                                                outline: transparent;
-                                                position: relative;
-                                                width: 24px;
-                                                height: 24px;
-                                                line-height: em(24px);
-                                                font-size: em(12px);
-                                                font-weight: inherit;
-                                                border-radius: em(2px);
-                                                border: none;
-                                                padding: em(0px);
-                                                color: inherit;
-                                                background-color: transparent;
-                                                cursor: pointer;
-                                                overflow: visible;
-                                            }
-
-                                            &.bit-dtp-today {
-                                                > button {
-                                                    border-radius: 100%;
-                                                    background-color: $CyanBlue10;
-                                                    color: $White;
-                                                    font-weight: 600;
-                                                }
-                                            }
-
-                                            &.bit-dtp-selected {
-                                                border: 0.5px solid $Grey130;
-                                                background-color: $Grey30;
-                                            }
-
-                                            &.bit-dtp-out-month {
-                                                > button {
-                                                    color: $Grey130;
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                &.bit-dtp-today {
+                    > button {
+                        border-radius: 100%;
+                        background-color: $CyanBlue10;
+                        color: $White;
+                        font-weight: 600;
                     }
+                }
 
-                    > div:nth-child(3) {
-                        top: em(0px);
-                        border-right: em(1px) solid $Grey30;
-                        border-top-color: $Grey30;
-                        border-bottom-color: $Grey30;
-                        border-left-color: $Grey30;
-                    }
+                &.bit-dtp-selected {
+                    border: 0.5px solid $Grey130;
+                    background-color: $Grey30;
+                }
 
-                    > div:nth-child(4) {
-                        display: flex;
-                        flex-direction: column;
-
-                        > div {
-                            box-shadow: none;
-                            margin: em(0px);
-                            padding: em(12px);
-                            box-sizing: content-box;
-                            width: 208px;
-                            overflow: hidden;
-                            flex: 1;
-
-                            > div:first-child {
-                                display: flex;
-
-                                > button {
-                                    outline: transparent;
-                                    position: relative;
-                                    font-size: px(14px);
-                                    font-weight: 600;
-                                    font-family: inherit;
-                                    text-align: left;
-                                    background-color: transparent;
-                                    flex-grow: 1;
-                                    padding: px(0px) px(4px) px(0px) px(10px);
-                                    border: none;
-                                    overflow: visible;
-                                    cursor: pointer;
-
-                                    &:hover {
-                                        background-color: $Grey30;
-                                    }
-                                }
-
-                                > div {
-                                    display: flex;
-                                    align-items: center;
-
-                                    > button {
-                                        outline: transparent;
-                                        position: relative;
-                                        font-family: inherit;
-                                        width: em(28px);
-                                        min-width: em(28px);
-                                        height: em(28px);
-                                        min-height: em(28px);
-                                        display: block;
-                                        text-align: center;
-                                        line-height: em(28px);
-                                        font-size: em(14px);
-                                        color: $Grey160;
-                                        border-radius: em(2px);
-                                        background-color: transparent;
-                                        border: none;
-                                        padding: em(0px);
-                                        overflow: visible;
-                                        cursor: pointer;
-
-                                        &:hover {
-                                            background-color: $Grey30;
-                                        }
-
-                                        i {
-                                            display: inline-block;
-                                            -webkit-font-smoothing: antialiased;
-                                            font-style: normal;
-                                            font-weight: normal;
-                                            speak: none;
-                                        }
-                                    }
-                                }
-                            }
-
-                            > div:nth-child(2) {
-                                > div {
-                                    margin-top: em(4px);
-
-                                    > div {
-                                        margin-bottom: em(16px);
-
-                                        > button {
-                                            outline: transparent;
-                                            position: relative;
-                                            width: 40px;
-                                            height: 40px;
-                                            min-width: 40px;
-                                            min-height: 40px;
-                                            line-height: 40px;
-                                            font-size: 12px;
-                                            font-family: inherit;
-                                            padding: em(0px);
-                                            margin: 0px 12px 0px 0px;
-                                            color: $Grey160;
-                                            background-color: transparent;
-                                            border: none;
-                                            border-radius: em(2px);
-                                            overflow: visible;
-                                            cursor: pointer;
-
-                                            &:hover {
-                                                background-color: $Grey30;
-                                            }
-                                        }
-
-                                        > button:last-child {
-                                            margin: 0px;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        > button {
-                            outline: transparent;
-                            position: relative;
-                            bottom: 0px;
-                            color: rgb(50, 49, 48);
-                            height: 30px;
-                            line-height: 30px;
-                            background-color: transparent;
-                            border: none;
-                            box-sizing: content-box;
-                            padding: 0px 4px;
-                            align-self: flex-end;
-                            margin-right: 16px;
-                            margin-top: 3px;
-                            font-size: 12px;
-                            font-family: inherit;
-                            overflow: visible;
-
-                            &:hover {
-                                color: $CyanBlue10;
-                                background-color: transparent;
-                                cursor: pointer;
-                            }
-                        }
-
-                        > button[disabled] {
-                            color: $Grey60;
-                            pointer-events: none;
-                        }
+                &.bit-dtp-out-month {
+                    > button {
+                        color: $Grey130;
                     }
                 }
             }
         }
     }
+}
+
+.picker-header {
+    position: relative;
+    display: inline-flex;
+    height: em(28px);
+    line-height: em(44px);
+    width: 100%;
+
+    .month-and-year {
+        outline: transparent;
+        position: relative;
+        animation-name: opacity;
+        animation-duration: 0.267s;
+        animation-timing-function: cubic-bezier(0.1, 0.25, 0.75, 0.9);
+        animation-fill-mode: both;
+        align-items: center;
+        font-size: em(14px);
+        font-family: inherit;
+        color: $Grey160;
+        display: inline-block;
+        flex-grow: 1;
+        font-weight: 600;
+        border: none;
+        background-color: transparent;
+        border-radius: em(2px);
+        line-height: em(28px);
+        overflow: hidden;
+        white-space: nowrap;
+        text-align: left;
+        text-overflow: ellipsis;
+    }
+
+    .month-change-btn-group {
+        display: inline-flex;
+        align-self: flex-start;
+        justify-content: flex-end;
+        width: 65px;
+    }
+
+    .header-icon-btn {
+        outline: transparent;
+        position: relative;
+        width: 28px;
+        height: 28px;
+        line-height: 28px;
+        display: block;
+        text-align: center;
+        font-size: em(14px);
+        color: $Grey160;
+        border-radius: em(2px);
+        background-color: transparent;
+        border: none;
+        padding: em(0px);
+        overflow: visible;
+        cursor: pointer;
+
+        &:hover {
+            background-color: $Grey30;
+        }
+
+        i {
+            display: inline-block;
+            -webkit-font-smoothing: antialiased;
+            font-style: normal;
+            font-weight: normal;
+            speak: none;
+        }
+    }
+}
+
+.divider {
+    width: rem(1px);
+    height: 100%;
+    background-color: $Grey30;
+}
+
+.month-picker-wrapper {
+    display: flex;
+    flex-direction: column;
+
+    > div {
+        box-shadow: none;
+        margin: em(0px);
+        padding: em(12px);
+        box-sizing: content-box;
+        width: 208px;
+        overflow: hidden;
+        flex: 1;
+
+        > div:first-child {
+            display: flex;
+
+            > button {
+                outline: transparent;
+                position: relative;
+                font-size: px(14px);
+                font-weight: 600;
+                font-family: inherit;
+                text-align: left;
+                background-color: transparent;
+                flex-grow: 1;
+                padding: px(0px) px(4px) px(0px) px(10px);
+                border: none;
+                overflow: visible;
+                cursor: pointer;
+
+                &:hover {
+                    background-color: $Grey30;
+                }
+            }
+
+            > div {
+                display: flex;
+                align-items: center;
+
+                > button {
+                    outline: transparent;
+                    position: relative;
+                    font-family: inherit;
+                    width: em(28px);
+                    min-width: em(28px);
+                    height: em(28px);
+                    min-height: em(28px);
+                    display: block;
+                    text-align: center;
+                    line-height: em(28px);
+                    font-size: em(14px);
+                    color: $Grey160;
+                    border-radius: em(2px);
+                    background-color: transparent;
+                    border: none;
+                    padding: em(0px);
+                    overflow: visible;
+                    cursor: pointer;
+
+                    &:hover {
+                        background-color: $Grey30;
+                    }
+
+                    i {
+                        display: inline-block;
+                        -webkit-font-smoothing: antialiased;
+                        font-style: normal;
+                        font-weight: normal;
+                        speak: none;
+                    }
+                }
+            }
+        }
+
+        > div:nth-child(2) {
+            > div {
+                margin-top: em(4px);
+
+                > div {
+                    margin-bottom: em(16px);
+
+                    > button {
+                        outline: transparent;
+                        position: relative;
+                        width: 40px;
+                        height: 40px;
+                        min-width: 40px;
+                        min-height: 40px;
+                        line-height: 40px;
+                        font-size: 12px;
+                        font-family: inherit;
+                        padding: em(0px);
+                        margin: 0px 12px 0px 0px;
+                        color: $Grey160;
+                        background-color: transparent;
+                        border: none;
+                        border-radius: em(2px);
+                        overflow: visible;
+                        cursor: pointer;
+
+                        &:hover {
+                            background-color: $Grey30;
+                        }
+                    }
+
+                    > button:last-child {
+                        margin: 0px;
+                    }
+                }
+            }
+        }
+    }
+
+    > button {
+        outline: transparent;
+        position: relative;
+        bottom: 0px;
+        color: rgb(50, 49, 48);
+        height: 30px;
+        line-height: 30px;
+        background-color: transparent;
+        border: none;
+        box-sizing: content-box;
+        padding: 0px 4px;
+        align-self: flex-end;
+        margin-right: 16px;
+        margin-top: 3px;
+        font-size: 12px;
+        font-family: inherit;
+        overflow: visible;
+
+        &:hover {
+            color: $CyanBlue10;
+            background-color: transparent;
+            cursor: pointer;
+        }
+    }
+
+    > button[disabled] {
+        color: $Grey60;
+        pointer-events: none;
+    }
+}
+
+.bit-txt-focused-fluent {
+    > div {
+        > div {
+            border-color: $Primary;
+        }
+    }
+}
+
+.bit-dtp-overlay {
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 999;
+    background-color: transparent;
 }
 
 @keyframes opacity {
