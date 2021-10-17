@@ -6,8 +6,11 @@
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      id="@UniqueId.ToString()">
-    <div class="bit-dtp-wrapper" aria-owns="@(IsOpen ? CalloutId : null)">
-        <BitTextField IsEnabled="IsEnabled"
+    <div class="bit-dtp-wrapper"
+         aria-owns="@(IsOpen ? CalloutId : null)"
+         @onclick="HandleClick">
+        <BitTextField Class="@(AllowTextInput ? "editable-input" : "")"
+                      IsEnabled="IsEnabled"
                       role="combobox"
                       Label="@Label"
                       aria-expanded="@(IsOpen ? "true" : "false")"
@@ -17,11 +20,10 @@
                       Placeholder="@Placeholder"
                       HasBorder="@HasBorder"
                       IsUnderlined="@IsUnderlined"
-                      tab-index="@TabIndex"
-                      IsReadonly="@AllowTextInput"
+                      tabindex="@TabIndex"
+                      IsReadonly="@(!AllowTextInput)"
                       IconName="CalendarMirrored"
                       IsMultiline="false"
-                      OnClick="HandleClick"
                       OnFocusIn="HandleFocusIn"
                       OnFocusOut="HandleFocusOut"
                       @bind-Value="@selectedDate">
