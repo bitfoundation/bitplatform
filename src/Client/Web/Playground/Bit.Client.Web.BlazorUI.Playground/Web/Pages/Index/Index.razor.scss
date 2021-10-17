@@ -1,5 +1,9 @@
 ﻿@import "../../Styles/_shared.scss";
 
+button {
+    cursor: pointer;
+}
+
 .header {
     width: 100%;
     margin-bottom: rem(320px);
@@ -375,4 +379,25 @@ footer .footer-link {
 
 .bg-violet {
     background-color: #5c2d91;
+}
+
+//
+@media (min-width: 1400px) {
+    .header-element-container {
+        height: rem(980px);
+    }
+
+    .header-description-container {
+        max-width: rem(688px);
+    }
+}
+
+@media (min-width: 1200px) {
+    .header-element-container {
+        height: rem(774px);
+    }
+
+    .header-description-container {
+        max-width: rem( 593px);
+    }
 }

@@ -601,76 +601,169 @@ input::-webkit-input-placeholder {
 h1 {
     font-style: normal;
     font-weight: 500;
-    font-size: 76px;
-    line-height: 116%;
 }
 
 h2 {
     font-style: normal;
     font-weight: bold;
-    font-size: 58px;
-    line-height: 138%;
 }
 
 h3 {
     font-style: italic;
     font-weight: 800;
-    font-size: 58px;
-    line-height: 164%;
 }
 
 h4 {
     font-style: normal;
     font-weight: bold;
-    font-size: 52px;
-    line-height: 153%;
 }
 
 h5 {
     font-style: normal;
     font-weight: bold;
-    font-size: 32px;
-    line-height: 136%;
 }
 
 h6 {
     font-weight: 600;
-    font-size: 18px;
-    line-height: 132%;
 }
 
-.txt-xl-bd2-md {
+.txt-bd2-md {
     font-family: Axiforma;
     font-style: normal;
     font-weight: 500;
-    font-size: 24px;
-    line-height: 165%;
 }
 
-.txt-xl-bd1-md {
+.txt-bd1-md {
     font-style: normal;
     font-weight: 500;
-    font-size: 28px;
-    line-height: 142%;
 }
 
-.subtitle1-xl-regular {
+.subtitle1-regular {
     font-style: normal;
     font-weight: normal;
-    font-size: 24px;
-    line-height: 165%;
 }
 
-.subtitle2-xl-regular {
+.subtitle2-regular {
     font-style: normal;
     font-weight: normal;
-    font-size: 18px;
-    line-height: 175%;
 }
 
 .txt-xl-caption1 {
     font-style: normal;
     font-weight: 500;
-    font-size: 16px;
-    line-height: 148%;
+}
+
+
+@media (min-width: 1400px) {
+    h1 {
+        font-size: rem(76px);
+        line-height: 116%;
+    }
+
+    h2 {
+        font-size: rem(58px);
+        line-height: 138%;
+    }
+
+    h3 {
+        font-size: rem(58px);
+        line-height: 164%;
+    }
+
+    h4 {
+        font-size: rem(52px);
+        line-height: 153%;
+    }
+
+    h5 {
+        font-size: rem(32px);
+        line-height: 136%;
+    }
+
+    h6 {
+        font-size: rem(18px);
+        line-height: 132%;
+    }
+
+    .txt-bd2-md {
+        font-size: rem(24px);
+        line-height: 165%;
+    }
+
+    .txt-bd1-md {
+        font-size: rem(28px);
+        line-height: 142%;
+    }
+
+    .subtitle1-regular {
+        font-size: rem(24px);
+        line-height: 165%;
+    }
+
+    .subtitle2-regular {
+        font-size: rem(18px);
+        line-height: 175%;
+    }
+
+    .txt-xl-caption1 {
+        font-size: rem(16px);
+        line-height: 148%;
+    }
+}
+
+@media (min-width: 1200px) {
+    h1 {
+        font-size: rem(60px);
+        line-height: 134%;
+    }
+
+    h2 {
+        font-size: rem(54px);
+        line-height: 148%;
+    }
+
+    h3 {
+        font-size: rem(54px);
+        line-height: 149%;
+    }
+
+    h4 {
+        font-size: rem(40px);
+        line-height: 160%;
+    }
+
+    h5 {
+        font-size: rem(28px);
+        line-height: 144%;
+    }
+
+    h6 {
+        font-size: rem(16px);
+        line-height: 147%;
+    }
+
+    .txt-bd2-md {
+        font-size: rem(20px);
+        line-height: 158%;
+    }
+
+    .txt-bd1-md {
+        font-size: rem(24px);
+        line-height: 165%;
+    }
+
+    .subtitle1-regular {
+        font-size: rem(18px);
+        line-height: 132%;
+    }
+
+    .subtitle2-regular {
+        font-size: rem(16px);
+        line-height: 150%;
+    }
+
+    .txt-xl-caption1 {
+        font-size: rem(14px);
+        line-height: 117%;
+    }
 }
