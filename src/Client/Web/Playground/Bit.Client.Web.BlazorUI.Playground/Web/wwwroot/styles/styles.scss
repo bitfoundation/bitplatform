@@ -5,7 +5,7 @@
 * {
     //todo this code is added because due to latest changes our index page has no font right now
     //after finding a cool font for our websites this will be redundant
-    font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+    font-family: "Axiforma";
 }
 
 body {
@@ -486,6 +486,191 @@ input::-webkit-input-placeholder {
     font-weight: 500;
 }
 
-::-webkit-scrollbar {
+/*::-webkit-scrollbar {
     width: 0;
+    }
+}*/
+
+
+/*------------------------common styles-----------------------------------*/
+.container {
+    margin: auto;
+    flex-wrap: inherit;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding-right: var(--bs-gutter-x, 0.75rem);
+    padding-left: var(--bs-gutter-x, 0.75rem);
+    margin-right: auto;
+    margin-left: auto;
+}
+
+.row {
+    --bs-gutter-x: 1.5rem;
+    --bs-gutter-y: 0;
+    display: flex;
+    flex-wrap: wrap;
+    margin-top: calc(var(--bs-gutter-y) * -1);
+    margin-right: calc(var(--bs-gutter-x) * -0.5);
+    margin-left: calc(var(--bs-gutter-x) * -0.5);
+}
+
+@media (min-width: 1200px) {
+    .container {
+        max-width: 1140px;
+    }
+
+    .col-xl-2 {
+        flex: 0 0 auto;
+        width: 16.66666667%;
+    }
+
+    .col-xl-3 {
+        flex: 0 0 auto;
+        width: 25%;
+    }
+
+    .col-xl-4 {
+        flex: 0 0 auto;
+        width: 33.33333333%;
+    }
+
+    .col-xl-5 {
+        flex: 0 0 auto;
+        width: 41.66666667%;
+    }
+
+    .col-xl-6 {
+        flex: 0 0 auto;
+        width: 50%;
+    }
+
+    .col-xl-7 {
+        flex: 0 0 auto;
+        width: 58.33333333%;
+    }
+
+    .col-xl-8 {
+        flex: 0 0 auto;
+        width: 66.66666667%;
+    }
+}
+
+@media (min-width: 1400px) {
+    .container {
+        max-width: 1320px;
+    }
+
+    .col-xxl-2 {
+        flex: 0 0 auto;
+        width: 16.66666667%;
+    }
+
+    .col-xxl-3 {
+        flex: 0 0 auto;
+        width: 25%;
+    }
+
+    .col-xxl-4 {
+        flex: 0 0 auto;
+        width: 33.33333333%;
+    }
+
+    .col-xxl-5 {
+        flex: 0 0 auto;
+        width: 41.66666667%;
+    }
+
+    .col-xxl-6 {
+        flex: 0 0 auto;
+        width: 50%;
+    }
+
+    .col-xxl-7 {
+        flex: 0 0 auto;
+        width: 58.33333333%;
+    }
+
+    .col-xxl-8 {
+        flex: 0 0 auto;
+        width: 66.66666667%;
+    }
+}
+
+/*----------------------------------------Typography---------------------------------------------------*/
+h1 {
+    font-style: normal;
+    font-weight: 500;
+    font-size: 76px;
+    line-height: 116%;
+}
+
+h2 {
+    font-style: normal;
+    font-weight: bold;
+    font-size: 58px;
+    line-height: 138%;
+}
+
+h3 {
+    font-style: italic;
+    font-weight: 800;
+    font-size: 58px;
+    line-height: 164%;
+}
+
+h4 {
+    font-style: normal;
+    font-weight: bold;
+    font-size: 52px;
+    line-height: 153%;
+}
+
+h5 {
+    font-style: normal;
+    font-weight: bold;
+    font-size: 32px;
+    line-height: 136%;
+}
+
+h6 {
+    font-weight: 600;
+    font-size: 18px;
+    line-height: 132%;
+}
+
+.txt-xl-bd2-md {
+    font-family: Axiforma;
+    font-style: normal;
+    font-weight: 500;
+    font-size: 24px;
+    line-height: 165%;
+}
+
+.txt-xl-bd1-md {
+    font-style: normal;
+    font-weight: 500;
+    font-size: 28px;
+    line-height: 142%;
+}
+
+.subtitle1-xl-regular {
+    font-style: normal;
+    font-weight: normal;
+    font-size: 24px;
+    line-height: 165%;
+}
+
+.subtitle2-xl-regular {
+    font-style: normal;
+    font-weight: normal;
+    font-size: 18px;
+    line-height: 175%;
+}
+
+.txt-xl-caption1 {
+    font-style: normal;
+    font-weight: 500;
+    font-size: 16px;
+    line-height: 148%;
 }
