@@ -144,9 +144,6 @@ namespace Bit.Client.Web.BlazorUI
         {
             ClassBuilder.Register(() => IsEnabled is false
                 ? $"{RootElementClass}-disabled-{VisualClassRegistrar()}" : string.Empty);
-
-            ClassBuilder.Register(() => IsOpen is false
-                ? $"{RootElementClass}-open-{VisualClassRegistrar()}" : string.Empty);
         }
 
         protected override Task OnInitializedAsync()
@@ -193,39 +190,34 @@ namespace Bit.Client.Web.BlazorUI
 
         public async Task HandleDateChoose(int dayOfWeek, int day, int month)
         {
-            if (IsEnabled)
+            if (IsEnabled is false) return;
+            if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+
+            if (month == 13)
             {
-                bool shouldRecreateCalendar = false;
-                if (month == 13)
-                {
-                    currentYear++;
-                    month = 1;
-                    currentMonth = 1;
-                    shouldRecreateCalendar = true;
-                }
-                else if (month == 0)
-                {
-                    currentYear--;
-                    month = 12;
-                    currentMonth = 12;
-                    shouldRecreateCalendar = true;
-                }
-                else if(currentMonth != month)
-                {
-                    currentMonth = month;
-                    shouldRecreateCalendar = true;
-                }
-                if (shouldRecreateCalendar)
-                {
-                    CreateMonthCalendar(currentYear, currentMonth);
-                }
-                if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
-                IsOpen = false;
-                BitDate date = new(currentYear, currentMonth, day, dayOfWeek);
-                selectedDate = OnSelectDate is not null ? OnSelectDate.Invoke(date) : GetSelectedDateString(date);
-                await ValueChanged.InvokeAsync(selectedDate);
-                await OnDateSet.InvokeAsync(selectedDate);
+                currentYear++;
+                month = 1;
+                currentMonth = 1; 
+                CreateMonthCalendar(currentYear, currentMonth);
             }
+            else if (month == 0)
+            {
+                currentYear--;
+                month = 12;
+                currentMonth = 12; 
+                CreateMonthCalendar(currentYear, currentMonth);
+            }
+            else if (currentMonth != month)
+            {
+                currentMonth = month; 
+                CreateMonthCalendar(currentYear, currentMonth);
+            }
+            
+            IsOpen = false;
+            BitDate date = new(currentYear, currentMonth, day, dayOfWeek);
+            selectedDate = OnSelectDate is not null ? OnSelectDate.Invoke(date) : GetSelectedDateString(date);
+            await ValueChanged.InvokeAsync(selectedDate);
+            await OnDateSet.InvokeAsync(selectedDate);
         }
 
         public async Task HandleMonthChange(bool nextMonth)
@@ -264,23 +256,21 @@ namespace Bit.Client.Web.BlazorUI
 
         public async Task HandleMonthChange(int month)
         {
-            if (IsEnabled)
-            {
-                currentMonth = month;
-                CreateMonthCalendar(currentYear, currentMonth);
-                await OnMonthChange.InvokeAsync(currentMonth);
-            }
+            if (IsEnabled is false) return;
+
+            currentMonth = month;
+            CreateMonthCalendar(currentYear, currentMonth);
+            await OnMonthChange.InvokeAsync(currentMonth);
         }
 
         public async Task HandleYearChanged(int year)
         {
-            if (IsEnabled)
-            {
-                currentYear = year;
-                ChangeYearRanges(currentYear - 1);
-                CreateMonthCalendar(currentYear, currentMonth);
-                await OnYearChange.InvokeAsync(currentYear);
-            }
+            if (IsEnabled is false) return;
+
+            currentYear = year;
+            ChangeYearRanges(currentYear - 1);
+            CreateMonthCalendar(currentYear, currentMonth);
+            await OnYearChange.InvokeAsync(currentYear);
         }
 
         public void HandleMonthsShownChanged(MouseEventArgs eventArgs)
@@ -293,20 +283,19 @@ namespace Bit.Client.Web.BlazorUI
 
         public async Task HandleYearChanged(bool nextYear)
         {
-            if (IsEnabled)
-            {
-                if (nextYear)
-                {
-                    currentYear++;
-                }
-                else
-                {
-                    currentYear--;
-                }
+            if (IsEnabled is false) return;
 
-                CreateMonthCalendar(currentYear, currentMonth);
-                await OnYearChange.InvokeAsync(currentYear);
+            if (nextYear)
+            {
+                currentYear++;
             }
+            else
+            {
+                currentYear--;
+            }
+
+            CreateMonthCalendar(currentYear, currentMonth);
+            await OnYearChange.InvokeAsync(currentYear);
         }
 
         public void HandleYearRangeChanged(int fromYear)
