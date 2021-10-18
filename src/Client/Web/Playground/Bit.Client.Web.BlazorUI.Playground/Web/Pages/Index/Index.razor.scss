@@ -6,7 +6,13 @@ button {
 
 .header {
     width: 100%;
-    margin-bottom: rem(320px);
+    @include lg{
+        margin-bottom:rem(200px);
+    }
+
+    @include xl{
+            margin-bottom: rem(320px);
+    }
 }
 
 .header-element-container {
@@ -17,7 +23,7 @@ button {
     position: relative;
 
     @include lg {
-        height: rem(774px);
+        height: rem(726px);
         background-size: rem(617px);
     }
 
@@ -63,13 +69,14 @@ button {
 }
 
 .header-description-container {
-    height: rem(805px);
     margin: auto;
+    height: rem(805px);
     display: flex;
     flex-flow: column nowrap;
     justify-content: center;
 
     @include lg {
+        height: rem(765px);
         max-width: rem(593px);
         margin-left: calc(8% + 70px);
     }
@@ -81,8 +88,15 @@ button {
 }
 
 .header-description-container .buttons-container {
-    margin-top: rem(80px);
-    margin-bottom: rem(80px);
+    @include lg {
+        margin-top: rem(75px);
+        margin-bottom: rem(80px);
+    }
+
+    @include xl {
+        margin-top: rem(80px);
+        margin-bottom: rem(80px);
+    }
 }
 
 .get-start-btn {
@@ -108,7 +122,14 @@ button {
 }
 
 .header-title-container {
-    margin-top: rem(110px);
+    @include lg {
+        margin-top: 0;
+    }
+
+    @include xl {
+        margin-top: rem(110px);
+    }
+
     margin-bottom: 0;
 }
 
@@ -121,7 +142,14 @@ button {
 }
 
 .header .logos-container img {
-    max-height: rem(40px);
+    @include lg {
+        max-height: rem(35px);
+    }
+
+    @include xl {
+        max-height: rem(40px);
+    }
+
     margin-right: rem(46px);
 }
 
