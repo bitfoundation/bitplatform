@@ -6,12 +6,13 @@ button {
 
 .header {
     width: 100%;
-    @include lg{
-        margin-bottom:rem(200px);
+
+    @include lg {
+        margin-bottom: rem(200px);
     }
 
-    @include xl{
-            margin-bottom: rem(320px);
+    @include xl {
+        margin-bottom: rem(320px);
     }
 }
 
@@ -157,8 +158,15 @@ button {
 /* -----------------------bit short description------------------------------ */
 
 .bit-product-describe {
-    margin-bottom: rem(300px);
     justify-content: center;
+
+    @include lg {
+        margin-bottom: rem(200px)
+    }
+
+    @include xl {
+        margin-bottom: rem(300px);
+    }
 
     & .row {
         width: 100%;
@@ -170,6 +178,14 @@ button {
     background-repeat: no-repeat;
     background-position-x: center;
     background-size: contain;
+
+    @include lg {
+        height: rem(440px);
+    }
+
+    @include xl {
+        height: rem(512px);
+    }
 }
 
 .product-describe-container {
@@ -178,7 +194,13 @@ button {
 
 /*----------------------------------from-scratch-----------------------------*/
 .from-scratch {
-    margin-bottom: rem(300px) !important;
+    @include lg {
+        margin-bottom: rem(200px) !important;
+    }
+
+    @include xl {
+        margin-bottom: rem(300px) !important;
+    }
 }
 
 .from-scratch-container {
@@ -187,6 +209,14 @@ button {
     background-image: url('/images/index/components-frame.png');
     background-position: right;
     background-repeat: no-repeat;
+
+    @include lg {
+        background-size: rem(688px);
+    }
+
+    @include xl {
+        background-size: rem(724px);
+    }
 }
 
 .from-scratch-title {
