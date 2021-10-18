@@ -82,8 +82,8 @@
                                     @if (CalendarType == BitCalendarType.Persian)
                                     {
                                         <th class="week-day-label" scope="col"
-                                    title="@calendar?.GetDayOfWeekName(DayOfWeek.Sunday)">
-                                            @calendar?.GetDayOfWeekName(DayOfWeek.Sunday)[0]
+                                    title="@calendar?.GetDayOfWeekName(DayOfWeek.Saturday)">
+                                            @calendar?.GetDayOfWeekName(DayOfWeek.Saturday)[0]
                                         </th>
                                     }
                                     <th class="week-day-label" scope="col"
@@ -110,10 +110,6 @@
                                     title="@calendar?.GetDayOfWeekName(DayOfWeek.Friday)">
                                         @calendar?.GetDayOfWeekName(DayOfWeek.Friday)[0]
                                     </th>
-                                    <th class="week-day-label" scope="col"
-                                    title="@calendar?.GetDayOfWeekName(DayOfWeek.Saturday)">
-                                        @calendar?.GetDayOfWeekName(DayOfWeek.Saturday)[0]
-                                    </th>
                                     @if (CalendarType is BitCalendarType.Gregorian)
                                     {
                                         <th class="week-day-label" scope="col"
@@ -138,9 +134,9 @@
                                     @onclick="() => HandleDateChoose(localDay, monthWeeks[localWeek, localDay], currentMonth)">
                                                 <button role="gridcell"
                                             type="button"
-                                            tabindex="@(IsDateSelected() ? 0 : -1)"
-                                            aria-label="@GetDateAriaLabel()"
-                                            aria-selected="@(IsDateSelected() ? "true" : "false")"
+                                            tabindex="@(IsDateSelected(localWeek, localDay, monthWeeks[localWeek, localDay]) ? 0 : -1)"
+                                            aria-label="@GetDateAriaLabel(localWeek, localDay)"
+                                            aria-selected="@(IsDateSelected(localWeek, localDay, monthWeeks[localWeek, localDay]) ? "true" : "false")"
                                             aria-readonly="true"
                                             aria-disabled="false">
                                                     <span aria-hidden="true">@monthWeeks[localWeek, localDay]</span>

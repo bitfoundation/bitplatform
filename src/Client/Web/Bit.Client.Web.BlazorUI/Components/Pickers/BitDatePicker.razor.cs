@@ -419,21 +419,10 @@ namespace Bit.Client.Web.BlazorUI
         private string GetDateElClass(int day, int week)
         {
             var className = "";
-
             var todayYear = calendar?.GetYear(DateTime.Now) ?? 1;
             var todayMonth = calendar?.GetMonth(DateTime.Now) ?? 1;
             var todayDay = calendar?.GetDayOfMonth(DateTime.Now) ?? 1;
             var currentDay = monthWeeks[week, day];
-            BitDate currentDate;
-            if (IsInCurrentMonth(week, day))
-            {
-                currentDate = new(currentYear, currentMonth, currentDay, day + dayOfWeekDifference);
-            }
-            else
-            {
-                var localmonth = week >= 4 ? currentMonth + 1 : currentMonth - 1;
-                currentDate = new(currentYear, localmonth, currentDay, day + dayOfWeekDifference);
-            }
 
             if (IsInCurrentMonth(week, day) is false)
             {
@@ -445,7 +434,7 @@ namespace Bit.Client.Web.BlazorUI
                 className = "date-cell--today";
             }
 
-            if (selectedDate.HasValue() && selectedDate == GetSelectedDateString(currentDate))
+            if (IsDateSelected(week, day, currentDay))
             {
                 className += className.Length == 0 ? "date-cell--selected" : " date-cell--selected";
             }
@@ -460,13 +449,49 @@ namespace Bit.Client.Web.BlazorUI
             return true;
         }
 
-        private string GetDateAriaLabel()
+        private int GetCorrectTargetMonth(int week, int day)
         {
-            return "";
+            int month = currentMonth;
+            if (IsInCurrentMonth(week, day) is false)
+            {
+                if (week >= 4)
+                {
+                    month = currentMonth + 1 == 13 ? 1 : currentMonth + 1;
+                }
+                else
+                {
+                    month = currentMonth - 1 == 0 ? 12 : currentMonth - 1;
+                }
+            }
+
+            return month;
         }
 
-        private bool IsDateSelected()
+        private string GetDateAriaLabel(int week, int day)
         {
+            int month = GetCorrectTargetMonth(week, day);
+            int year = currentYear;
+            if (IsInCurrentMonth(week, day) is false)
+            {
+                if (currentMonth == 12 && month == 1)
+                {
+                    year++;
+                }
+                else if (currentMonth == 1 && month == 12)
+                {
+                    year--;
+                }
+            }
+
+            return $"{monthWeeks[week, day]}, {calendar?.GetMonthName(month)}, {year}";
+        }
+
+        private bool IsDateSelected(int week, int day, int currentDay)
+        {
+            int month = GetCorrectTargetMonth(week, day);
+            BitDate currentDate = new(currentYear, month, currentDay, day + dayOfWeekDifference);
+            if (selectedDate.HasValue() && selectedDate == GetSelectedDateString(currentDate)) return true;
+
             return false;
         }
 
