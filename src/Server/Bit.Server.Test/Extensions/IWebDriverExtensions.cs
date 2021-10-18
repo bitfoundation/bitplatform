@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 
 namespace OpenQA.Selenium
 {
-    public static class IRemoteWebDriverExtensions
+    public static class IWebDriverExtensions
     {
-        public static Task NavigateToRoute(this RemoteWebDriver driver, string route)
+        public static Task NavigateToRoute(this WebDriver driver, string route)
         {
             if (driver == null)
                 throw new ArgumentNullException(nameof(driver));
@@ -24,20 +24,25 @@ namespace OpenQA.Selenium
             return Task.Delay(2500);
         }
 
+        public static IWebElement FindElementByName(this WebDriver driver, string name)
+        {
+            return driver.FindElement(By.Name(name));
+        }
+
         [DebuggerNonUserCode]
-        public static IWebElement GetElementById(this RemoteWebDriver driver, string id)
+        public static IWebElement GetElementById(this WebDriver driver, string id)
         {
             if (driver == null)
                 throw new ArgumentNullException(nameof(driver));
 
             new WebDriverWait(driver, TimeSpan.FromSeconds(2.5))
-                .Until(ExpectedConditions.ElementExists(By.Id(id)));
+                .Until(driver => driver.FindElement(By.Id(id)) != null);
 
-            return driver.FindElementById(id);
+            return driver.FindElement(By.Id(id));
         }
 
         [DebuggerNonUserCode]
-        public static async Task ExecuteTest(this RemoteWebDriver driver, string testScript, params object[] args)
+        public static async Task ExecuteTest(this WebDriver driver, string testScript, params object[] args)
         {
             if (driver == null)
                 throw new ArgumentNullException(nameof(driver));
@@ -76,7 +81,7 @@ namespace OpenQA.Selenium
         }
 
         [DebuggerNonUserCode]
-        public static async Task WaitForCondition(this RemoteWebDriver driver, Func<RemoteWebDriver, bool> condition)
+        public static async Task WaitForCondition(this WebDriver driver, Func<WebDriver, bool> condition)
         {
             if (driver == null)
                 throw new ArgumentNullException(nameof(driver));

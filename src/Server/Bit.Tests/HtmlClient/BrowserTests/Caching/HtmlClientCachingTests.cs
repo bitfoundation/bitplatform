@@ -7,6 +7,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium.Remote;
 using System.Linq;
 using System.Threading.Tasks;
+using OpenQA.Selenium;
 
 namespace Bit.Tests.HtmlClient.BrowserTests.Caching
 {
@@ -21,7 +22,7 @@ namespace Bit.Tests.HtmlClient.BrowserTests.Caching
             {
                 Token token = await testEnvironment.Server.LoginWithCredentials("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
-                using (RemoteWebDriver driver = testEnvironment.Server.BuildWebDriver(new RemoteWebDriverOptions { Token = token }))
+                using (WebDriver driver = testEnvironment.Server.BuildWebDriver(new WebDriverOptions { Token = token }))
                 {
                     driver.Navigate().Refresh();
                 }
@@ -38,7 +39,7 @@ namespace Bit.Tests.HtmlClient.BrowserTests.Caching
             {
                 Token token = await testEnvironment.Server.LoginWithCredentials("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
-                using (RemoteWebDriver driver = testEnvironment.Server.BuildWebDriver(new RemoteWebDriverOptions { Token = token }))
+                using (WebDriver driver = testEnvironment.Server.BuildWebDriver(new WebDriverOptions { Token = token }))
                 {
                     await Task.Delay(1000);
 
