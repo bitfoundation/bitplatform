@@ -448,7 +448,14 @@ button {
 /* --------------------------------menu footer------------------------------------ */
 
 .menu-footer {
-    height: rem(1261.72px);
+
+    @include lg {
+        height: rem(1005px);
+    }
+
+    @include xl {
+        height: rem(1261.72px);
+    }
 }
 
 .menu-footer-title {
@@ -456,7 +463,14 @@ button {
     text-decoration: underline;
     text-decoration-color: #14a38b;
     text-decoration-thickness: rem(8px);
-    margin-top: rem(191px);
+
+    @include lg {
+        margin-top: rem(136px);
+    }
+
+    @include xl {
+        margin-top: rem(191px);
+    }
 }
 
 .menu-footer-container {
@@ -467,7 +481,14 @@ button {
 .menu-footer-column {
     display: flex;
     flex-flow: column;
-    width: rem(336px);
+
+    @include lg {
+        width: rem(285px);
+    }
+
+    @include xl {
+        width: rem(336px);
+    }
 }
 
 .menu-footer-category {
@@ -498,10 +519,19 @@ button {
 }
 
 footer {
-    height: rem(74px);
     background-color: #2f455a;
-    border-top: rem(4px) #14a38b solid;
+    border-top: #14a38b solid;
     display: flex;
+
+    @include lg {
+        height: rem(62px);
+        border-width: rem(5px)
+    }
+
+    @include xl {
+        height: rem(74px);
+        border-width: rem(8px)
+    }
 }
 
 .footer-link-container {
