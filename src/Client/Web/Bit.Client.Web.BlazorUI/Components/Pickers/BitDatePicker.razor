@@ -81,62 +81,62 @@
                                 <tr>
                                     @if (CalendarType is BitCalendarType.Gregorian)
                                     {
-                                        <th scope="col"
+                                        <th class="week-day-label" scope="col"
                                     title="@calendar?.GetDayOfWeekName(DayOfWeek.Sunday)">
                                             @calendar?.GetDayOfWeekName(DayOfWeek.Sunday)[0]
                                         </th>
-                                        <th scope="col"
+                                        <th class="week-day-label" scope="col"
                                     title="@calendar?.GetDayOfWeekName(DayOfWeek.Monday)">
                                             @calendar?.GetDayOfWeekName(DayOfWeek.Monday)[0]
                                         </th>
-                                        <th scope="col"
+                                        <th class="week-day-label" scope="col"
                                     title="@calendar?.GetDayOfWeekName(DayOfWeek.Tuesday)">
                                             @calendar?.GetDayOfWeekName(DayOfWeek.Tuesday)[0]
                                         </th>
-                                        <th scope="col"
+                                        <th class="week-day-label" scope="col"
                                     title="@calendar?.GetDayOfWeekName(DayOfWeek.Wednesday)">
                                             @calendar?.GetDayOfWeekName(DayOfWeek.Wednesday)[0]
                                         </th>
-                                        <th scope="col"
+                                        <th class="week-day-label" scope="col"
                                     title="@calendar?.GetDayOfWeekName(DayOfWeek.Thursday)">
                                             @calendar?.GetDayOfWeekName(DayOfWeek.Thursday)[0]
                                         </th>
-                                        <th scope="col"
+                                        <th class="week-day-label" scope="col"
                                     title="@calendar?.GetDayOfWeekName(DayOfWeek.Friday)">
                                             @calendar?.GetDayOfWeekName(DayOfWeek.Friday)[0]
                                         </th>
-                                        <th scope="col"
+                                        <th class="week-day-label" scope="col"
                                     title="@calendar?.GetDayOfWeekName(DayOfWeek.Saturday)">
                                             @calendar?.GetDayOfWeekName(DayOfWeek.Saturday)[0]
                                         </th>
                                     }
                                     else if (CalendarType is BitCalendarType.Persian)
                                     {
-                                        <th scope="col"
+                                        <th class="week-day-label" scope="col"
                                     title="@calendar?.GetDayOfWeekName(DayOfWeek.Saturday)">
                                             @calendar?.GetDayOfWeekName(DayOfWeek.Saturday)[0]
                                         </th>
-                                        <th scope="col"
+                                        <th class="week-day-label" scope="col"
                                     title="@calendar?.GetDayOfWeekName(DayOfWeek.Sunday)">
                                             @calendar?.GetDayOfWeekName(DayOfWeek.Sunday)[0]
                                         </th>
-                                        <th scope="col"
+                                        <th class="week-day-label" scope="col"
                                     title="@calendar?.GetDayOfWeekName(DayOfWeek.Monday)">
                                             @calendar?.GetDayOfWeekName(DayOfWeek.Monday)[0]
                                         </th>
-                                        <th scope="col"
+                                        <th class="week-day-label" scope="col"
                                     title="@calendar?.GetDayOfWeekName(DayOfWeek.Tuesday)">
                                             @calendar?.GetDayOfWeekName(DayOfWeek.Tuesday)[0]
                                         </th>
-                                        <th scope="col"
+                                        <th class="week-day-label" scope="col"
                                     title="@calendar?.GetDayOfWeekName(DayOfWeek.Wednesday)">
                                             @calendar?.GetDayOfWeekName(DayOfWeek.Wednesday)[0]
                                         </th>
-                                        <th scope="col"
+                                        <th class="week-day-label" scope="col"
                                     title="@calendar?.GetDayOfWeekName(DayOfWeek.Thursday)">
                                             @calendar?.GetDayOfWeekName(DayOfWeek.Thursday)[0]
                                         </th>
-                                        <th scope="col"
+                                        <th class="week-day-label" scope="col"
                                     title="@calendar?.GetDayOfWeekName(DayOfWeek.Friday)">
                                             @calendar?.GetDayOfWeekName(DayOfWeek.Friday)[0]
                                         </th>
@@ -154,10 +154,16 @@
                                         {
                                             var localWeek = week;
                                             var localDay = day;
-                                            <td class="@GetDateElClass(localDay,localWeek)"
+                                            <td class="@GetDateElClass(localDay,localWeek)" role="presentation"
                                     @onclick="() => HandleDateChoose(localDay, monthWeeks[localWeek, localDay], currentMonth)">
-                                                <button>
-                                                    <span>@monthWeeks[localWeek, localDay]</span>
+                                                <button role="gridcell"
+                                            type="button"
+                                            tabindex="@(IsDateSelected() ? 0 : -1)"
+                                            aria-label="@GetDateAriaLabel()"
+                                            aria-selected="@(IsDateSelected() ? "true" : "false")"
+                                            aria-readonly="true"
+                                            aria-disabled="false">
+                                                    <span aria-hidden="true">@monthWeeks[localWeek, localDay]</span>
                                                 </button>
                                             </td>
                                         }
@@ -181,40 +187,40 @@
     weekindex < monthweeks.getlength(0);
     weekindex++)
     {
-        //if (monthweeks[weekindex, 0] == 0)
-        //{
-        //    weekindex = 0;
-        //    break;
-        //}
-        <tr>
-            @for (int dayindex = 0; dayindex < monthweeks.getlength(1); dayindex++)
-            {
-                string selectclass = "";
-                if (monthweeks[weekindex, dayindex] == 1)
-                {
-                    currentmonthisstarted = true;
-                }
-                if (currentmonthisstarted
-                && !currentmonthisfinished)
-                {
-
-                }
-                else
-                {
-                    int localmonth = weekindex >= 4 ? currentmonth + 1 : currentmonth - 1;
-                    <td class="@selectclass bit-dtp-out-month"
-            @onclick="() => handledatechoose(dayindex + dayofweekdifference, monthweeks[weekindex, dayindex], localmonth)">
-                        <button>
-                            <span>@monthweeks[weekindex, dayindex]</span>
-                        </button>
-                    </td>
-                }
-                if (currentmonthisstarted
-                && monthweeks[weekindex, dayindex] == monthlength)
-                {
-                    currentmonthisfinished = true;
-                }
-            }
-        </tr>
+    //if (monthweeks[weekindex, 0] == 0)
+    //{
+    //    weekindex = 0;
+    //    break;
+    //}
+    <tr>
+    @for (int dayindex = 0; dayindex < monthweeks.getlength(1); dayindex++)
+    {
+    string selectclass = "";
+    if (monthweeks[weekindex, dayindex] == 1)
+    {
+    currentmonthisstarted = true;
     }
-}*@
+    if (currentmonthisstarted
+    && !currentmonthisfinished)
+    {
+
+    }
+    else
+    {
+    int localmonth = weekindex >= 4 ? currentmonth + 1 : currentmonth - 1;
+    <td class="@selectclass bit-dtp-out-month"
+    @onclick="() => handledatechoose(dayindex + dayofweekdifference, monthweeks[weekindex, dayindex], localmonth)">
+    <button>
+    <span>@monthweeks[weekindex, dayindex]</span>
+    </button>
+    </td>
+    }
+    if (currentmonthisstarted
+    && monthweeks[weekindex, dayindex] == monthlength)
+    {
+    currentmonthisfinished = true;
+    }
+    }
+    </tr>
+    }
+    }*@

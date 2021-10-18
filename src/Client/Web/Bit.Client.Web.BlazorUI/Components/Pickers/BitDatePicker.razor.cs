@@ -447,7 +447,7 @@ namespace Bit.Client.Web.BlazorUI
 
             if (todayYear == currentYear && todayMonth == currentMonth && todayDay == currentDay)
             {
-                className = "bit-dtp-today";
+                className = "date-cell--today";
             }
 
             if (selectedDate.HasValue() && selectedDate == GetSelectedDateString(currentDate))
@@ -455,10 +455,10 @@ namespace Bit.Client.Web.BlazorUI
                 className += className.Length == 0 ? "bit-dtp-selected" : " bit-dtp-selected";
             }
 
-            if (!isCurrentMonthStarted || isCurrentMonthFinished)
-            {
-                className += className.Length == 0 ? "bit-dtp-out-month" : " bit-dtp-out-month";
-            }
+            //if (!isCurrentMonthStarted || isCurrentMonthFinished)
+            //{
+            //    className += className.Length == 0 ? "bit-dtp-out-month" : " bit-dtp-out-month";
+            //}
 
             if (isCurrentMonthStarted && monthWeeks[week, day] == monthLength)
             {
@@ -466,6 +466,16 @@ namespace Bit.Client.Web.BlazorUI
             }
 
             return className;
+        }
+
+        private string GetDateAriaLabel()
+        {
+            return "";
+        }
+
+        private bool IsDateSelected()
+        {
+            return false;
         }
 
         private int dayOfWeekDifference => CalendarType == BitCalendarType.Persian ? -1 : 0;

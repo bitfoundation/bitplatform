@@ -20,148 +20,155 @@
 }
 
 .bit-dtp-fluent {
+    margin: 0;
+    padding: 0;
+    box-shadow: none;
+    box-sizing: border-box;
+    font-size: rem(18px);
+    font-weight: 400;
     font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
     -webkit-font-smoothing: antialiased;
-    font-size: 18px;
-    font-weight: 400;
-    box-shadow: none;
-    margin: em(0px);
-    padding: em(0px);
-    box-sizing: border-box;
 }
 
 .bit-dtp-callout {
-    -webkit-font-smoothing: antialiased;
-    font-size: 14px;
-    font-weight: 400;
     position: absolute;
-    box-sizing: border-box;
-    border-radius: 2px;
+    z-index: 1000;
+    border-radius: rem(2px);
     box-shadow: rgba(0,0,0, 0.13) 0px 6.4px 14.4px 0px, rgba(0,0,0, 0.11) 0px 1.2px 3.6px 0px;
     outline: transparent;
-    z-index: 1000;
+    box-sizing: border-box;
+    font-size: rem(14px);
+    font-weight: 400;
+    font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+    -webkit-font-smoothing: antialiased;
 }
 
 .bit-dtp-callout-main {
+    position: relative;
+    border-radius: rem(2px);
+    outline: none;
     background-color: $White;
     overflow: hidden auto;
-    position: relative;
-    border-radius: 2px;
 }
 
 .bit-dtp-group {
-    background-color: $White;
-    overflow: hidden auto;
-    position: relative;
-    border-radius: 2px;
-    box-shadow: none;
-    margin: 0px;
-    padding: 0px;
-    box-sizing: border-box;
     display: flex;
+    box-shadow: none;
     outline: none;
-    max-height: 341px;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
     animation-name: fadeIn, slideDown;
     animation-duration: 167ms;
     animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
     animation-fill-mode: both;
 
     > div:first-child {
-        border: em(0px);
-        height: em(1px);
-        margin: em(-1px);
-        overflow: hidden;
-        padding: em(0px);
-        width: em(1px);
         position: absolute;
+        width: rem(1px);
+        height: 0;
+        border: 0;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
     }
 }
 
 .day-picker-wrapper {
+    width: rem(196px);
+    margin: 0;
+    padding: rem(12px);
     box-shadow: none;
-    margin: 0px;
-    padding: 12px;
     box-sizing: content-box;
-    width: 196px;
-    display: flex;
-    flex-direction: column;
 
     table {
+        position: relative;
+        width: rem(196px);
         text-align: center;
         border-collapse: collapse;
-        border-spacing: em(0px);
+        border-spacing: 0;
         table-layout: fixed;
         font-size: inherit;
-        margin-top: em(4px);
-        width: em(196px);
-        position: relative;
-        margin-bottom: em(10px);
+        margin-top: rem(4px);
+        margin-bottom: rem(10px);
     }
 
-    th {
-        margin: em(0px);
-        padding: em(0px);
-        width: 28px;
-        height: 28px;
-        line-height: 28px;
-        text-align: center;
-        font-size: 14px;
+    .week-day-label {
+        position: relative;
+        width: rem(28px);
+        height: rem(28px);
+        margin: 0;
+        padding: 0;
+        border: none;
         font-weight: 400;
+        font-size: rem(12px);
+        line-height: rem(28px);
+        text-align: center;
         color: $Grey160;
         cursor: pointer;
-        position: relative;
         animation-name: fadeIn;
         animation-duration: 0.267s;
         animation-timing-function: cubic-bezier(0.1, 0.25, 0.75, 0.9);
         animation-fill-mode: both;
-        border: none;
+    }
+
+    tr {
+        width: 100%;
+        display: flex;
+        flex-flow: row nowrap;
     }
 
     td {
-        border-radius: 2px;
+        position: relative;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: rem(28px);
+        min-width: rem(28px);
+        height: rem(28px);
+        border-radius: rem(2px);
+        border: none;
+        margin: 0;
+        padding: 0;
+        font-size: rem(12px);
         font-weight: 400;
-        margin: em(0px);
-        padding: em(0px);
-        width: 28px;
-        height: 28px;
-        line-height: 28px;
+        line-height: rem(28px);
         text-align: center;
-        font-size: 14px;
-        font-weight: 400;
         color: $Grey160;
         cursor: pointer;
-        position: relative;
-        border: none;
-
 
         &:hover {
             background-color: $Grey30;
         }
 
         button {
-            outline: transparent;
             position: relative;
-            width: 24px;
-            height: 24px;
-            line-height: em(24px);
-            font-size: em(12px);
-            font-weight: inherit;
-            border-radius: em(2px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: rem(24px);
+            height: rem(24px);
+            padding: 0 rem(1px) 0 0;
+            border-radius: rem(2px);
+            outline: transparent;
             border: none;
-            padding: em(0px);
+            box-sizing: border-box;
+            line-height: rem(24px);
+            font-size: rem(12px);
+            font-weight: inherit;
             color: inherit;
             background-color: transparent;
-            cursor: pointer;
             overflow: visible;
+            cursor: pointer;
         }
     }
 
-    .bit-dtp-today {
+    .date-cell--today {
         button {
-            border-radius: 100%;
-            background-color: $CyanBlue10;
-            color: $White;
+            border-radius: 50%;
             font-weight: 600;
+            color: $White;
+            background-color: $CyanBlue10;
         }
     }
 
@@ -175,7 +182,6 @@
             color: $Grey130;
         }
     }
-
     //tr[role=presentation] {
     //    position: absolute;
     //    opacity: 0;
@@ -183,7 +189,6 @@
     //    height: 0px;
     //    overflow: hidden;
     //    animation-name: css-147;
-
     //    td {
     //        color: $Grey130;
     //        font-weight: 400;
@@ -198,12 +203,10 @@
     //        color: $Grey160;
     //        cursor: pointer;
     //        position: relative;
-
     //        &:hover {
     //            background-color: $Grey30;
     //        }
     //    }
-
     //    button {
     //        outline: transparent;
     //        position: relative;
@@ -219,7 +222,6 @@
     //        background-color: transparent;
     //        cursor: pointer;
     //        overflow: visible;
-
     //        span {
     //            height: inherit;
     //            line-height: inherit;
@@ -231,55 +233,53 @@
 .picker-header {
     position: relative;
     display: inline-flex;
-    height: em(28px);
-    line-height: em(44px);
     width: 100%;
+    height: rem(28px);
+    line-height: rem(44px);
 
     .month-and-year {
-        outline: transparent;
         position: relative;
+        display: inline-block;
+        align-items: center;
+        flex-grow: 1;
+        padding: 0 rem(4px) 0 rem(10px);
+        outline: transparent;
+        border: none;
+        border-radius: rem(2px);
+        font-size: rem(14px);
+        font-weight: 600;
+        line-height: rem(28px);
+        white-space: nowrap;
+        text-align: left;
+        text-overflow: ellipsis;
+        color: $Grey160;
+        background-color: transparent;
+        overflow: hidden;
         animation-name: opacity;
         animation-duration: 0.267s;
         animation-timing-function: cubic-bezier(0.1, 0.25, 0.75, 0.9);
         animation-fill-mode: both;
-        align-items: center;
-        font-size: em(14px);
-        font-family: inherit;
-        color: $Grey160;
-        display: inline-block;
-        flex-grow: 1;
-        font-weight: 600;
-        border: none;
-        background-color: transparent;
-        border-radius: em(2px);
-        line-height: em(28px);
-        overflow: hidden;
-        white-space: nowrap;
-        text-align: left;
-        text-overflow: ellipsis;
     }
 
     .month-change-btn-group {
         display: inline-flex;
-        align-self: flex-start;
-        justify-content: flex-end;
-        width: 65px;
+        align-self: flex-end;
     }
 
     .header-icon-btn {
-        outline: transparent;
         position: relative;
-        width: 28px;
-        height: 28px;
-        line-height: 28px;
         display: block;
-        text-align: center;
-        font-size: em(14px);
-        color: $Grey160;
-        border-radius: em(2px);
-        background-color: transparent;
+        width: rem(28px);
+        height: rem(28px);
+        padding: 0;
+        border-radius: rem(2px);
         border: none;
-        padding: em(0px);
+        outline: transparent;
+        font-size: rem(14px);
+        line-height: rem(28px);
+        text-align: center;
+        color: $Grey160;
+        background-color: transparent;
         overflow: visible;
         cursor: pointer;
 
@@ -289,10 +289,8 @@
 
         i {
             display: inline-block;
-            -webkit-font-smoothing: antialiased;
-            font-style: normal;
-            font-weight: normal;
             speak: none;
+            -webkit-font-smoothing: antialiased;
         }
     }
 }
