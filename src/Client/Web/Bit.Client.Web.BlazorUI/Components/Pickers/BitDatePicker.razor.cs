@@ -20,8 +20,6 @@ namespace Bit.Client.Web.BlazorUI
         private bool isMonthsShown = true;
         private int monthLength;
         private bool ValueHasBeenSet;
-        private bool isCurrentMonthStarted = false;
-        private bool isCurrentMonthFinished = false;
 
         /// <summary>
         /// Whether or not this DatePicker is open
@@ -327,8 +325,6 @@ namespace Bit.Client.Web.BlazorUI
 
         private void CreateMonthCalendar(int year, int month)
         {
-            isCurrentMonthStarted = false;
-            isCurrentMonthFinished = false;
             monthTitle = $"{calendar?.GetMonthName(month) ?? ""} {year}";
             monthLength = calendar?.GetDaysInMonth(year, month) ?? 29;
             var firstDay = calendar?.ToDateTime(year, month, 1, 0, 0, 0, 0) ?? DateTime.Now;
@@ -423,27 +419,26 @@ namespace Bit.Client.Web.BlazorUI
         private string GetDateElClass(int day, int week)
         {
             var className = "";
-            int todayYear = calendar?.GetYear(DateTime.Now) ?? 1;
-            int todayMonth = calendar?.GetMonth(DateTime.Now) ?? 1;
-            int todayDay = calendar?.GetDayOfMonth(DateTime.Now) ?? 1;
-            int currentDay = monthWeeks[week, day];
-            int month = 0;
 
-            if (monthWeeks[week, day] == 1)
+            var todayYear = calendar?.GetYear(DateTime.Now) ?? 1;
+            var todayMonth = calendar?.GetMonth(DateTime.Now) ?? 1;
+            var todayDay = calendar?.GetDayOfMonth(DateTime.Now) ?? 1;
+            var currentDay = monthWeeks[week, day];
+            BitDate currentDate;
+            if (IsInCurrentMonth(week, day))
             {
-                isCurrentMonthStarted = true;
-            }
-
-            if (isCurrentMonthStarted && !isCurrentMonthFinished)
-            {
-                month = currentMonth;
+                currentDate = new(currentYear, currentMonth, currentDay, day + dayOfWeekDifference);
             }
             else
             {
-                month = week >= 4 ? currentMonth + 1 : currentMonth - 1;
+                var localmonth = week >= 4 ? currentMonth + 1 : currentMonth - 1;
+                currentDate = new(currentYear, localmonth, currentDay, day + dayOfWeekDifference);
             }
 
-            BitDate currentDate = new(currentYear, month, currentDay, day + dayOfWeekDifference);
+            if (IsInCurrentMonth(week, day) is false)
+            {
+                className += className.Length == 0 ? "date-cell--outside-month" : " date-cell--outside-month";
+            }
 
             if (todayYear == currentYear && todayMonth == currentMonth && todayDay == currentDay)
             {
@@ -452,20 +447,17 @@ namespace Bit.Client.Web.BlazorUI
 
             if (selectedDate.HasValue() && selectedDate == GetSelectedDateString(currentDate))
             {
-                className += className.Length == 0 ? "bit-dtp-selected" : " bit-dtp-selected";
-            }
-
-            //if (!isCurrentMonthStarted || isCurrentMonthFinished)
-            //{
-            //    className += className.Length == 0 ? "bit-dtp-out-month" : " bit-dtp-out-month";
-            //}
-
-            if (isCurrentMonthStarted && monthWeeks[week, day] == monthLength)
-            {
-                isCurrentMonthFinished = true;
+                className += className.Length == 0 ? "date-cell--selected" : " date-cell--selected";
             }
 
             return className;
+        }
+
+        private bool IsInCurrentMonth(int week, int day)
+        {
+            if ((week == 0 || week == 1) && monthWeeks[week, day] > 20) return false;
+            if ((week == 4 || week == 5) && monthWeeks[week, day] < 7) return false;
+            return true;
         }
 
         private string GetDateAriaLabel()

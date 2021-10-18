@@ -172,16 +172,23 @@
         }
     }
 
-    .bit-dtp-selected {
-        border: 0.5px solid $Grey130;
+    .date-cell--selected {
         background-color: $Grey30;
+
+        &::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border: rem(1px) solid $Grey130;
+        }
     }
 
-    .bit-dtp-out-month {
+    .date-cell--outside-month {
         button {
             color: $Grey130;
         }
     }
+
     //tr[role=presentation] {
     //    position: absolute;
     //    opacity: 0;
