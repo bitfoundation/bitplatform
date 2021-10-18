@@ -142,14 +142,79 @@
                                         </th>
                                     }
                                 </tr>
+                                @for (var week = 0; week < 6; week++)
+                                {
+                                    @*if (monthWeeks[week, 0] == 0)
+                                        {
+                                        week = 0;
+                                        break;
+                                        }*@
+                                    <tr>
+                                        @for (var day = 0; day < 7; day++)
+                                        {
+                                            var localWeek = week;
+                                            var localDay = day;
+                                            <td class="@GetDateElClass(localDay,localWeek)"
+                                    @onclick="() => HandleDateChoose(localDay, monthWeeks[localWeek, localDay], currentMonth)">
+                                                <button>
+                                                    <span>@monthWeeks[localWeek, localDay]</span>
+                                                </button>
+                                            </td>
+                                        }
+                                    </tr>
+                                }
                             </tbody>
                         </table>
                     </div>
                     <div class="divider"></div>
                 </div>
-                <div aria-hidden="true" tabindex="0" data-is-visible="true" style="pointer-events: none; position: fixed;"></div>
+                <div aria-hidden="true" tabindex="0" style="pointer-events: none; position: fixed;"></div>
             </div>
         </div>
     }
 </div>
 
+@*@{
+    bool currentmonthisstarted = false;
+    bool currentmonthisfinished = false;
+    @for (int weekindex = 0;
+    weekindex < monthweeks.getlength(0);
+    weekindex++)
+    {
+        //if (monthweeks[weekindex, 0] == 0)
+        //{
+        //    weekindex = 0;
+        //    break;
+        //}
+        <tr>
+            @for (int dayindex = 0; dayindex < monthweeks.getlength(1); dayindex++)
+            {
+                string selectclass = "";
+                if (monthweeks[weekindex, dayindex] == 1)
+                {
+                    currentmonthisstarted = true;
+                }
+                if (currentmonthisstarted
+                && !currentmonthisfinished)
+                {
+
+                }
+                else
+                {
+                    int localmonth = weekindex >= 4 ? currentmonth + 1 : currentmonth - 1;
+                    <td class="@selectclass bit-dtp-out-month"
+            @onclick="() => handledatechoose(dayindex + dayofweekdifference, monthweeks[weekindex, dayindex], localmonth)">
+                        <button>
+                            <span>@monthweeks[weekindex, dayindex]</span>
+                        </button>
+                    </td>
+                }
+                if (currentmonthisstarted
+                && monthweeks[weekindex, dayindex] == monthlength)
+                {
+                    currentmonthisfinished = true;
+                }
+            }
+        </tr>
+    }
+}*@

@@ -3,7 +3,6 @@ using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
-using Microsoft.JSInterop;
 
 namespace Bit.Client.Web.BlazorUI
 {
@@ -20,8 +19,9 @@ namespace Bit.Client.Web.BlazorUI
         private string selectedDate = "";
         private bool isMonthsShown = true;
         private int monthLength;
-        private int dayOfWeekDifference;
         private bool ValueHasBeenSet;
+        private bool isCurrentMonthStarted = false;
+        private bool isCurrentMonthFinished = false;
 
         /// <summary>
         /// Whether or not this DatePicker is open
@@ -190,6 +190,8 @@ namespace Bit.Client.Web.BlazorUI
 
         public async Task HandleDateChoose(int dayOfWeek, int day, int month)
         {
+            dayOfWeek += dayOfWeekDifference;
+
             if (IsEnabled is false) return;
             if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
 
@@ -197,22 +199,22 @@ namespace Bit.Client.Web.BlazorUI
             {
                 currentYear++;
                 month = 1;
-                currentMonth = 1; 
+                currentMonth = 1;
                 CreateMonthCalendar(currentYear, currentMonth);
             }
             else if (month == 0)
             {
                 currentYear--;
                 month = 12;
-                currentMonth = 12; 
+                currentMonth = 12;
                 CreateMonthCalendar(currentYear, currentMonth);
             }
             else if (currentMonth != month)
             {
-                currentMonth = month; 
+                currentMonth = month;
                 CreateMonthCalendar(currentYear, currentMonth);
             }
-            
+
             IsOpen = false;
             BitDate date = new(currentYear, currentMonth, day, dayOfWeek);
             selectedDate = OnSelectDate is not null ? OnSelectDate.Invoke(date) : GetSelectedDateString(date);
@@ -325,13 +327,14 @@ namespace Bit.Client.Web.BlazorUI
 
         private void CreateMonthCalendar(int year, int month)
         {
+            isCurrentMonthStarted = false;
+            isCurrentMonthFinished = false;
             monthTitle = $"{calendar?.GetMonthName(month) ?? ""} {year}";
             monthLength = calendar?.GetDaysInMonth(year, month) ?? 29;
             var firstDay = calendar?.ToDateTime(year, month, 1, 0, 0, 0, 0) ?? DateTime.Now;
             var currentDay = 1;
-            dayOfWeekDifference = CalendarType == BitCalendarType.Persian ? -1 : 0;
+
             var isCalendarEnded = false;
-            monthWeeks = new int[6, 7];
             for (int weekIndex = 0; weekIndex < monthWeeks.GetLength(0); weekIndex++)
             {
                 for (int dayIndex = 0; dayIndex < monthWeeks.GetLength(1); dayIndex++)
@@ -416,5 +419,55 @@ namespace Bit.Client.Web.BlazorUI
             IsOpen = false;
             StateHasChanged();
         }
+
+        private string GetDateElClass(int day, int week)
+        {
+            var className = "";
+            int todayYear = calendar?.GetYear(DateTime.Now) ?? 1;
+            int todayMonth = calendar?.GetMonth(DateTime.Now) ?? 1;
+            int todayDay = calendar?.GetDayOfMonth(DateTime.Now) ?? 1;
+            int currentDay = monthWeeks[week, day];
+            int month = 0;
+
+            if (monthWeeks[week, day] == 1)
+            {
+                isCurrentMonthStarted = true;
+            }
+
+            if (isCurrentMonthStarted && !isCurrentMonthFinished)
+            {
+                month = currentMonth;
+            }
+            else
+            {
+                month = week >= 4 ? currentMonth + 1 : currentMonth - 1;
+            }
+
+            BitDate currentDate = new(currentYear, month, currentDay, day + dayOfWeekDifference);
+
+            if (todayYear == currentYear && todayMonth == currentMonth && todayDay == currentDay)
+            {
+                className = "bit-dtp-today";
+            }
+
+            if (selectedDate.HasValue() && selectedDate == GetSelectedDateString(currentDate))
+            {
+                className += className.Length == 0 ? "bit-dtp-selected" : " bit-dtp-selected";
+            }
+
+            if (!isCurrentMonthStarted || isCurrentMonthFinished)
+            {
+                className += className.Length == 0 ? "bit-dtp-out-month" : " bit-dtp-out-month";
+            }
+
+            if (isCurrentMonthStarted && monthWeeks[week, day] == monthLength)
+            {
+                isCurrentMonthFinished = true;
+            }
+
+            return className;
+        }
+
+        private int dayOfWeekDifference => CalendarType == BitCalendarType.Persian ? -1 : 0;
     }
 }
