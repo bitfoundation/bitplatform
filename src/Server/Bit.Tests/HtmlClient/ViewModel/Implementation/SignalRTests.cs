@@ -22,7 +22,7 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
             {
                 Token token = await testEnvironment.Server.LoginWithCredentials("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
-                using (RemoteWebDriver driver = testEnvironment.Server.BuildWebDriver(new RemoteWebDriverOptions { Token = token }))
+                using (WebDriver driver = testEnvironment.Server.BuildWebDriver(new WebDriverOptions { Token = token }))
                 {
                     await driver.ExecuteTest("testSignalRConnection");
                 }
@@ -42,7 +42,7 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
             {
                 Token token = await testEnvironment.Server.LoginWithCredentials("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
-                using (testEnvironment.Server.BuildWebDriver(new RemoteWebDriverOptions { Token = token }))
+                using (testEnvironment.Server.BuildWebDriver(new WebDriverOptions { Token = token }))
                 {
 
                 }

@@ -24,10 +24,10 @@ namespace Bit.Tests.IdentityServer
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs { UseRealServer = true }))
             {
-                using (RemoteWebDriver driver = testEnvironment.Server.BuildWebDriver(new RemoteWebDriverOptions { Uri = testEnvironment.Server.GetLoginUrl(), ClientSideTest = false }))
+                using (WebDriver driver = testEnvironment.Server.BuildWebDriver(new WebDriverOptions { Uri = testEnvironment.Server.GetLoginUrl(), ClientSideTest = false }))
                 {
                     new WebDriverWait(driver, TimeSpan.FromSeconds(3))
-                        .Until(ExpectedConditions.ElementExists(By.Name("loginForm")));
+                        .Until(driver => driver.FindElement(By.Name("loginForm")) != null);
 
                     driver.FindElementByName("username").SendKeys("ValidUserName");
 
@@ -60,21 +60,21 @@ namespace Bit.Tests.IdentityServer
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs { UseRealServer = true }))
             {
-                using (RemoteWebDriver driver = testEnvironment.Server.BuildWebDriver(new RemoteWebDriverOptions
+                using (WebDriver driver = testEnvironment.Server.BuildWebDriver(new WebDriverOptions
                 {
                     Uri = testEnvironment.Server.GetLoginUrl(acr_values: new Dictionary<string, string> { { "x", "1" }, { "y", "2" } }),
                     ClientSideTest = false
                 }))
                 {
                     new WebDriverWait(driver, TimeSpan.FromSeconds(3))
-                    .Until(ExpectedConditions.ElementExists(By.Name("loginForm")));
+                    .Until(driver => driver.FindElement(By.Name("loginForm")) != null);
 
                     driver.FindElementByName("username").SendKeys("InValidUserName");
                     driver.FindElementByName("password").SendKeys("InValidPassword");
                     driver.FindElementByName("login").Click();
 
                     new WebDriverWait(driver, TimeSpan.FromSeconds(3))
-                        .Until(ExpectedConditions.ElementExists(By.Name("error")));
+                        .Until(driver => driver.FindElement(By.Name("error")) != null);
 
                     Assert.AreEqual("Login failed", driver.FindElementByName("error").GetAttribute("innerText"));
                 }

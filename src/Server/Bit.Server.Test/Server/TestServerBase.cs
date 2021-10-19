@@ -99,10 +99,10 @@ namespace Bit.Test.Server
 
         public abstract void Dispose();
 
-        public virtual RemoteWebDriver BuildWebDriver(RemoteWebDriverOptions? options = null)
+        public virtual WebDriver BuildWebDriver(WebDriverOptions? options = null)
         {
             if (options == null)
-                options = new RemoteWebDriverOptions();
+                options = new WebDriverOptions();
 
             //FirefoxDriver driver = new FirefoxDriver();
 
