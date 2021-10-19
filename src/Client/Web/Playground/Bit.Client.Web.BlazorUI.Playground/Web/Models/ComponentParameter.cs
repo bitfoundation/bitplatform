@@ -6,5 +6,13 @@
         public string Type { get; set; }
         public string DefaultValue { get; set; }
         public string Description { get; set; }
+        public LinkType LinkType { get; set; }
+        public string Href { get; set; }
+    }
+
+    public enum LinkType
+    {
+        Normal,
+        Link
     }
 }

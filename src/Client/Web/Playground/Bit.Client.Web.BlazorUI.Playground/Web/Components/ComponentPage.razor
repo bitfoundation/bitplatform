@@ -1,25 +1,20 @@
 ﻿@using Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components
+@using Pages.Components.ComponentDemoBase
 
 <div class="component-container">
     <div class="component-content">
-        <section class="overview">
+        <section id="overview-section" class="overview">
             <h1 class="name">@ComponentName</h1>
             <p class="description">
                 @OverviewDesc
             </p>
         </section>
-        <section class="usage">
+        <section id="usage-section" class="usage">
             <div class="title">Usage</div>
-            <h5>@($"Bit{ComponentName}")</h5>
-            <p class="how-to-use">
-                To create a button you can use a BitButton component. You can set ButtonStyle attribute and change button style,
-                you can also enable and disable the button by changing the IsEnabled attribute and also there is an attribute can allow you to focus on button when it is disabled.
-                In addition to text for the button, you can insert an element with a special style.
-            </p>
-            <CodeSample />
+            @ChildContent
         </section>
         <section class="implementation">
-            <div class="title">Implementation</div>
+            <div id="implementation-section" class="title">Implementation</div>
             <table class="table">
                 <tr>
                     <th>Name</th>
@@ -31,19 +26,50 @@
                 {
                     <tr>
                         <td>@param.Name</td>
-                        <td>@param.Type</td>
+                        <td>
+                            @if (param.LinkType == LinkType.Link)
+                            {
+                                <BitLink HasUnderline="true" Href="@param.Href">@param.Type</BitLink>
+                            }
+                            else
+                            {
+                                @param.Type
+                            }
+                        </td>
                         <td>@param.DefaultValue</td>
                         <td>@param.Description</td>
                     </tr>
                 }
             </table>
+            @foreach (var param in EnumParameters)
+            {
+                <div id="@param.Id" class="enums">
+                    <div class="title">@param.Title</div>
+                    <table class="table">
+                        <tr>
+                            <th>Name</th>
+                            <th>Value</th>
+                            <th></th>
+                            <th>Description</th>
+                        </tr>
+                        @foreach (var item in param.EnumList)
+                        {
+                            <tr>
+                                <td>@item.Name</td>
+                                <td>@item.Value</td>
+                                <td>@item.Description</td>
+                            </tr>
+                        }
+                    </table>
+                </div>
+            }
         </section>
     </div>
     <div class="component-siderail">
         <ul class="link-container">
-            <li><BitLink Class="link" OnClick="@HandleClick">Overview</BitLink></li>
-            <li><BitLink Class="link" OnClick="@HandleClick">Usage</BitLink></li>
-            <li><BitLink Class="link" OnClick="@HandleClick">Implementation</BitLink></li>
+            <li><BitLink Href="#overview-section">Overview</BitLink></li>
+            <li><BitLink Href="#usage-section">Usage</BitLink></li>
+            <li><BitLink Href="#implementation-section">Implementation</BitLink></li>
         </ul>
     </div>
 </div>

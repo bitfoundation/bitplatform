@@ -16,20 +16,25 @@ ul {
 th {
     border-bottom: 1px solid $Violet;
 
-    @include subtitle1-xl;
+    @include caption1-xl;
     @include table-content($Violet);
 
     @include lg {
-        @include subtitle1-lg;
+        @include caption1-lg;
     }
 
     @include md {
-        @include subtitle1-md;
+        @include caption1-md;
+    }
+
+    @include sm {
+        @include caption1-sm;
     }
 }
 
 td {
     line-height: 197%;
+
     @include caption2-xl;
     @include table-content($Black01);
 
@@ -39,6 +44,10 @@ td {
 
     @include md {
         @include caption2-md;
+    }
+
+    @include sm {
+        @include caption2-sm;
     }
 }
 
@@ -62,20 +71,25 @@ tr:last-child {
         max-width: 70%;
         padding: 0 rem(12px) 0 rem(80px);
 
+        @include lt-xl {
+            max-width: 85%;
+            padding: 0 rem(75px) 0 rem(75px);
+        }
+
+        @include lt-md {
+            max-width: 100%;
+            padding: 0 rem(90px) 0 rem(90px);
+        }
+
+        @include sm {
+            max-width: 90%;
+            padding: 0 rem(21px) 0 rem(21px);
+        }
+
         .overview {
             .name {
                 color: $Violet;
                 line-height: 0;
-
-                @include h1-xl;
-
-                @include lg {
-                    @include h1-lg;
-                }
-
-                @include md {
-                    @include h1-md;
-                }
             }
 
             .description {
@@ -87,6 +101,10 @@ tr:last-child {
 
                 @include md {
                     @include subtitle1-md;
+                }
+
+                @include sm {
+                    @include subtitle1-sm;
                 }
             }
         }
@@ -105,6 +123,10 @@ tr:last-child {
                 @include h1-md;
             }
 
+            @include sm {
+                @include h1-sm;
+            }
+
             .title {
                 color: $Violet;
                 border-bottom: 4px solid $Gray02;
@@ -119,25 +141,16 @@ tr:last-child {
                 @include md {
                     @include body1-md;
                 }
-            }
 
-            .how-to-use {
-                text-justify: auto;
-                color: $Black01;
-
-                @include subtitle2-xl;
-
-                @include lg {
-                    @include subtitle2-lg;
-                }
-
-                @include md {
-                    @include subtitle2-md;
+                @include sm {
+                    @include body1-sm;
                 }
             }
         }
 
         .implementation {
+            margin: rem(50px) 0 rem(80px);
+
             .title {
                 color: $Violet;
                 border-bottom: 4px solid $Gray02;
@@ -152,14 +165,17 @@ tr:last-child {
                 @include md {
                     @include body1-md;
                 }
+
+                @include sm {
+                    @include body1-sm;
+                }
             }
 
             .table {
                 table-layout: fixed;
                 border-collapse: collapse;
                 width: 100%;
-                margin-top: rem(16px);
-                margin-bottom: rem(160px);
+                margin: rem(16px) 0 rem(80px);
             }
         }
     }
@@ -169,11 +185,7 @@ tr:last-child {
         width: 30%;
         margin-top: rem(127px);
 
-        @include md {
-            display: none;
-        }
-
-        @include lt-md {
+        @include lt-xl {
             display: none;
         }
 

@@ -1,4 +1,8 @@
 ﻿<div class="sample-container">
+    <h5>@Title</h5>
+    <p class="how-to-use">
+        @Description
+    </p>
     <BitToggleButton @bind-IsChecked="ShowCode"
                      Label="@(ShowCode ? "</> Hide code":"</> Show code")"
                      Class="@(ShowCode ? "hide-code-btn":"show-code-btn")">
@@ -8,20 +12,20 @@
         @if (!ShowCode)
         {
             <div class="sample">
-                @SampleFragment
+                @SampleContent
             </div>
         }
         else
         {
             <div class="code" @ref=CodeReference>
                 <BitActionButton Class="copy-btn"
-                             OnClick=HandleCopyClicked
+                             OnClick=HandleOnCopyClick
                              IconName="Copy">
                     Copy
                 </BitActionButton>
-                <pre class="razor-code">
-                    @CodeSampleFragment
-                </pre>
+                <div class="razor-code">
+                    @CodeSampleContent
+                </div>
             </div>
         }
     </div>

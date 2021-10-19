@@ -8,25 +8,31 @@
         padding: rem(15px) 0 rem(15px);
         margin-top: rem(5px)
     }
+}
 
-    .show-code-btn {
-        @include code-button;
-        background-color: $Violet;
-    }
+.code {
+    height: rem(252px);
+    padding: rem(15px);
+    border: 1px solid $Gray03;
+    overflow: scroll;
 
-    .hide-code-btn {
-        @include code-button;
-        background-color: $White;
-        color: $Violet;
-    }
+    .razor-code {
+        @include subtitle2-xl;
 
-    .code {
-        height: rem(320px);
-        border: 1px solid $Gray03;
-        overflow: scroll;
-    }
+        @include lg {
+            @include subtitle2-lg;
+        }
 
-    .razor-code:hover {
-        cursor: url("/images/main/cursor.png");
+        @include md {
+            @include subtitle2-md;
+        }
+
+        @include sm {
+            @include subtitle2-sm;
+        }
     }
+}
+
+.razor-code:hover {
+    cursor: url("/images/main/cursor.png");
 }
