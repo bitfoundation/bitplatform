@@ -1,0 +1,49 @@
+﻿@using Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components
+
+<div class="component-container">
+    <div class="component-content">
+        <section class="overview">
+            <h1 class="name">@ComponentName</h1>
+            <p class="description">
+                @OverviewDesc
+            </p>
+        </section>
+        <section class="usage">
+            <div class="title">Usage</div>
+            <h5>@($"Bit{ComponentName}")</h5>
+            <p class="how-to-use">
+                To create a button you can use a BitButton component. You can set ButtonStyle attribute and change button style,
+                you can also enable and disable the button by changing the IsEnabled attribute and also there is an attribute can allow you to focus on button when it is disabled.
+                In addition to text for the button, you can insert an element with a special style.
+            </p>
+            <CodeSample />
+        </section>
+        <section class="implementation">
+            <div class="title">Implementation</div>
+            <table class="table">
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Default Value</th>
+                    <th>Description</th>
+                </tr>
+                @foreach (var param in ComponentParameters)
+                {
+                    <tr>
+                        <td>@param.Name</td>
+                        <td>@param.Type</td>
+                        <td>@param.DefaultValue</td>
+                        <td>@param.Description</td>
+                    </tr>
+                }
+            </table>
+        </section>
+    </div>
+    <div class="component-siderail">
+        <ul class="link-container">
+            <li><BitLink Class="link" OnClick="@HandleClick">Overview</BitLink></li>
+            <li><BitLink Class="link" OnClick="@HandleClick">Usage</BitLink></li>
+            <li><BitLink Class="link" OnClick="@HandleClick">Implementation</BitLink></li>
+        </ul>
+    </div>
+</div>

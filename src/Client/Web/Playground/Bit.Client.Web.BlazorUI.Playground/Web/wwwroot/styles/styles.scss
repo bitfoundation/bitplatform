@@ -13,7 +13,45 @@ body {
     padding: 0;
 }
 
-table {
+/* Headers */
+
+h1 {
+    @include h1-xl;
+
+    @include lg {
+        @include h1-lg;
+    }
+
+    @include md {
+        @include h1-md;
+    }
+}
+
+h2 {
+    @include h2-xl;
+
+    @include lg {
+        @include h2-lg;
+    }
+
+    @include md {
+        @include h2-md;
+    }
+}
+
+h3 {
+    @include h3-xl;
+
+    @include lg {
+        @include h3-lg;
+    }
+
+    @include md {
+        @include h3-md;
+    }
+}
+
+/*table {
     table-layout: fixed;
     border-collapse: collapse;
     width: 100%;
@@ -24,13 +62,12 @@ th, td {
     font-size: 14px;
     padding: 8px;
     text-align: left;
-    border-bottom: 1px solid $Grey;
     overflow-wrap: break-word;
 }
 
 p {
     font-size: 14px;
-}
+}*/
 
 .header-title {
     color: $White;
@@ -45,7 +82,6 @@ p {
         color: $White;
         text-align: center;
         padding: 30px;
-        text-decoration: none;
 
         &:hover {
             text-decoration: none;
@@ -114,11 +150,6 @@ p {
 
 .p-l-20 {
     padding-left: 20px;
-}
-
-.link {
-    color: $LightBlue;
-    text-decoration: underline;
 }
 
 .custom-button {
@@ -299,7 +330,7 @@ p {
     }
 }
 
-/* -- Footer -- */
+/* Footer */
 
 footer {
     border-top: rem(6px) solid $Green;
@@ -358,13 +389,13 @@ footer {
     }
 
     .content {
-        width: calc(100% - 440px);
+        width: calc(100% - 360px);
         margin-left: auto;
     }
 
     .navbar {
         background-color: $Gray04;
-        padding-top: rem(33px);
+        padding-top: rem(48px);
         width: rem(360px);
         flex: 17%;
         position: fixed;
@@ -468,6 +499,48 @@ footer {
     }
 }
 
+/* Demo Page */
+
+.component-siderail .bit-lnk-fluent button {
+    color: $Gray01;
+
+    @include subtitle2-xl;
+
+    @include lg {
+        @include subtitle2-lg;
+    }
+
+    @include md {
+        @include subtitle2-md;
+    }
+}
+
+.copy-btn {
+    color: $Violet;
+    padding: 0 rem(5px);
+    margin: rem(15px);
+    border: 1px dashed;
+
+    @include subtitle2-xl;
+
+    @include lg {
+        @include subtitle2-lg;
+    }
+
+    @include md {
+        @include subtitle2-md;
+    }
+
+    .bit-icon--Copy {
+        color: $Violet !important;
+    }
+}
+
+.copy-btn:hover {
+    color: $Violet;
+}
+
+/* General */
 .bit-sch-box-fluent > div:last-child button {
     background-color: $White;
 }

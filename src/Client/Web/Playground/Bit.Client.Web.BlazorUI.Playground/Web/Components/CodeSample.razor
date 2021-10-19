@@ -1,0 +1,29 @@
+﻿<div class="sample-container">
+    <BitToggleButton @bind-IsChecked="ShowCode"
+                     Label="@(ShowCode ? "</> Hide code":"</> Show code")"
+                     Class="@(ShowCode ? "hide-code-btn":"show-code-btn")">
+    </BitToggleButton>
+
+    <div class="box">
+        @if (!ShowCode)
+        {
+            <div class="sample">
+                @SampleFragment
+            </div>
+        }
+        else
+        {
+            <div class="code" @ref=CodeReference>
+                <BitActionButton Class="copy-btn"
+                             OnClick=HandleCopyClicked
+                             IconName="Copy">
+                    Copy
+                </BitActionButton>
+                <pre class="razor-code">
+                    @CodeSampleFragment
+                </pre>
+            </div>
+        }
+    </div>
+</div>
+

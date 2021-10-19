@@ -1,0 +1,32 @@
+﻿@import '../Styles/_shared.scss';
+
+.sample-container {
+    margin-top: rem(35px);
+
+    .box {
+        border-top: 1px solid $Gray02;
+        padding: rem(15px) 0 rem(15px);
+        margin-top: rem(5px)
+    }
+
+    .show-code-btn {
+        @include code-button;
+        background-color: $Violet;
+    }
+
+    .hide-code-btn {
+        @include code-button;
+        background-color: $White;
+        color: $Violet;
+    }
+
+    .code {
+        height: rem(320px);
+        border: 1px solid $Gray03;
+        overflow: scroll;
+    }
+
+    .razor-code:hover {
+        cursor: url("/images/main/cursor.png");
+    }
+}
