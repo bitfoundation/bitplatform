@@ -9,9 +9,12 @@ namespace Bit.Client.Web.BlazorUI
     public partial class BitCarousel
     {
         private BitCarouselItem? SelectedItem;
+        private int CurrentIndex = 0;
         private List<BitCarouselItem> AllCarouselItems = new();
         private string? selectedKey;
         private bool SelectedKeyHasBeenSet;
+
+        [Parameter] public bool IsSlideShow { get; set; }
 
         [Parameter] public RenderFragment? ChildContent { get; set; }
 
@@ -38,6 +41,8 @@ namespace Bit.Client.Web.BlazorUI
                 carouselItem.IsEnabled = false;
             }
 
+            carouselItem.Index = AllCarouselItems.Count;
+
             AllCarouselItems.Add(carouselItem);
 
             if (AllCarouselItems.Count == 1 || SelectedKey.HasValue() && SelectedKey == carouselItem.Key)
@@ -62,6 +67,7 @@ namespace Bit.Client.Web.BlazorUI
 
             SelectedItem = item;
             selectedKey = item.Key;
+            CurrentIndex = item.Index;
 
             await SelectedKeyChanged.InvokeAsync(selectedKey);
         }
@@ -83,6 +89,27 @@ namespace Bit.Client.Web.BlazorUI
 
         private void SelectItemByIndex(int index)
         {
+            if (index < 0)
+                if (!IsSlideShow)
+                {
+                    index = AllCarouselItems.Count - 1;
+                }
+                else
+                {
+                    index = 0;
+                }
+            else if (index >= AllCarouselItems.Count)
+            {
+                if (!IsSlideShow)
+                {
+                    index = 0;
+                }
+                else
+                {
+                    index = AllCarouselItems.Count - 1;
+                }
+            }
+
             var newItem = AllCarouselItems.ElementAt(index);
 
             if (newItem == null || newItem == SelectedItem || newItem.IsEnabled is false)

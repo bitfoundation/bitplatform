@@ -7,6 +7,7 @@ namespace Bit.Client.Web.BlazorUI
     {
         private bool isCurrent;
         private bool IsCurrentHasBeenSet;
+        public int Index;
 
         [Parameter]
         public bool IsCurrent
