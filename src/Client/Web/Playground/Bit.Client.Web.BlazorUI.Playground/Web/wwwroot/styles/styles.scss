@@ -515,9 +515,70 @@ input::-webkit-input-placeholder {
     margin-left: calc(var(--bs-gutter-x) * -0.5);
 }
 
-@media (min-width: 1200px) {
+@media (min-width: 1024px) {
     .container {
         max-width: 1140px;
+    }
+
+    .col-lg-2 {
+        flex: 0 0 auto;
+        width: 16.66666667%;
+    }
+
+    .col-lg-3 {
+        flex: 0 0 auto;
+        width: 25%;
+    }
+
+    .col-lg-4 {
+        flex: 0 0 auto;
+        width: 33.33333333%;
+    }
+
+    .col-lg-5 {
+        flex: 0 0 auto;
+        width: 41.66666667%;
+    }
+
+    .col-lg-6 {
+        flex: 0 0 auto;
+        width: 50%;
+    }
+
+    .col-lg-7 {
+        flex: 0 0 auto;
+        width: 58.33333333%;
+    }
+
+    .col-lg-8 {
+        flex: 0 0 auto;
+        width: 66.66666667%;
+    }
+
+    .col-xl-9 {
+        flex: 0 0 auto;
+        width: 75%;
+    }
+
+    .col-lg-10 {
+        flex: 0 0 auto;
+        width: 83.33333333%;
+    }
+
+    .col-lg-11 {
+        flex: 0 0 auto;
+        width: 91.66666667%;
+    }
+
+    .col-lg-12 {
+        flex: 0 0 auto;
+        width: 100%;
+    }
+}
+
+@media (min-width: 1400px) {
+    .container {
+        max-width: 1320px;
     }
 
     .col-xl-2 {
@@ -554,123 +615,336 @@ input::-webkit-input-placeholder {
         flex: 0 0 auto;
         width: 66.66666667%;
     }
-}
 
-@media (min-width: 1400px) {
-    .container {
-        max-width: 1320px;
+    .col-xl-9 {
+        flex: 0 0 auto;
+        width: 75%;
     }
 
-    .col-xxl-2 {
+    .col-xl-10 {
         flex: 0 0 auto;
-        width: 16.66666667%;
+        width: 83.33333333%;
     }
 
-    .col-xxl-3 {
+    .col-xl-11 {
         flex: 0 0 auto;
-        width: 25%;
+        width: 91.66666667%;
     }
 
-    .col-xxl-4 {
+    .col-xl-12 {
         flex: 0 0 auto;
-        width: 33.33333333%;
-    }
-
-    .col-xxl-5 {
-        flex: 0 0 auto;
-        width: 41.66666667%;
-    }
-
-    .col-xxl-6 {
-        flex: 0 0 auto;
-        width: 50%;
-    }
-
-    .col-xxl-7 {
-        flex: 0 0 auto;
-        width: 58.33333333%;
-    }
-
-    .col-xxl-8 {
-        flex: 0 0 auto;
-        width: 66.66666667%;
+        width: 100%;
     }
 }
 
 /*----------------------------------------Typography---------------------------------------------------*/
 h1 {
-    font-style: normal;
-    font-weight: 500;
-    font-size: 76px;
-    line-height: 116%;
-}
-
-h2 {
-    font-style: normal;
-    font-weight: bold;
-    font-size: 58px;
-    line-height: 138%;
-}
-
-h3 {
-    font-style: italic;
-    font-weight: 800;
-    font-size: 58px;
-    line-height: 164%;
-}
-
-h4 {
-    font-style: normal;
-    font-weight: bold;
-    font-size: 52px;
-    line-height: 153%;
-}
-
-h5 {
-    font-style: normal;
-    font-weight: bold;
-    font-size: 32px;
-    line-height: 136%;
-}
-
-h6 {
-    font-weight: 600;
-    font-size: 18px;
-    line-height: 132%;
-}
-
-.txt-xl-bd2-md {
     font-family: Axiforma;
     font-style: normal;
     font-weight: 500;
-    font-size: 24px;
-    line-height: 165%;
+
+    @include sm {
+        font-size: 30px;
+        line-height: 108%;
+    }
+
+    @include md {
+        font-size: 36px;
+        line-height: 155%;
+    }
+
+    @include lg {
+        font-size: rem(60px);
+        line-height: 134%;
+    }
+
+    @include xl {
+        font-size: rem(76px);
+        line-height: 116%;
+    }
 }
 
-.txt-xl-bd1-md {
+h2 {
+    font-family: Axiforma;
+    font-style: normal;
+    font-weight: bold;
+
+    @include sm {
+        font-size: 24px;
+        line-height: 132%;
+    }
+
+    @include md {
+        font-size: 32px;
+        line-height: 150%;
+    }
+
+    @include lg {
+        font-size: 54px;
+        line-height: 148%;
+    }
+
+    @include xl {
+        font-size: 58px;
+        line-height: 138%;
+    }
+}
+
+h3 {
+    font-family: Axiforma;
+    font-style: italic;
+    font-weight: 800;
+
+    @include sm {
+        font-size: 24px;
+        line-height: 100%;
+    }
+
+    @include md {
+        font-size: 32px;
+        line-height: 150%;
+    }
+
+    @include lg {
+        font-size: 54px;
+        line-height: 149%;
+    }
+
+    @include xl {
+        font-size: 58px;
+        line-height: 164%;
+    }
+}
+
+h4 {
+    font-family: Axiforma;
+    font-style: normal;
+    font-weight: bold;
+
+    @include sm {
+        font-size: 20px;
+        line-height: 160%;
+    }
+
+    @include md {
+        font-size: 24px;
+        line-height: 165%;
+    }
+
+    @include lg {
+        font-size: 40px;
+        line-height: 160%;
+    }
+
+    @include xl {
+        font-size: 52px;
+        line-height: 153%;
+    }
+}
+
+h5 {
+    font-family: Axiforma;
+    font-style: normal;
+    font-weight: bold;
+
+    @include sm {
+        font-size: 18px;
+        line-height: 154%;
+    }
+
+    @include md {
+        font-size: 18px;
+        line-height: 136%;
+    }
+
+    @include lg {
+        font-size: 28px;
+        line-height: 144%;
+    }
+
+    @include xl {
+        font-size: 32px;
+        line-height: 136%
+    }
+}
+
+h6 {
+    font-family: Axiforma;
+    font-weight: 600;
+
+    @include sm {
+        font-size: 18px;
+        line-height: 132%;
+    }
+
+    @include md {
+        font-size: 20px;
+        line-height: 160%;
+    }
+
+    @include lg {
+        font-size: 16px;
+        line-height: 147%;
+    }
+
+    @include xl {
+        font-size: 18px;
+        line-height: 132%;
+    }
+}
+
+.txt-bd1-md {
+    font-family: Axiforma;
     font-style: normal;
     font-weight: 500;
-    font-size: 28px;
-    line-height: 142%;
+
+    @include sm {
+        font-size: 14px;
+        line-height: 168%;
+    }
+
+    @include md {
+        font-size: 16px;
+        line-height: 150%;
+    }
+
+    @include lg {
+        font-size: 24px;
+        line-height: 165%;
+    }
+
+    @include xl {
+        font-size: 28px;
+        line-height: 142%;
+    }
 }
 
-.subtitle1-xl-regular {
+.txt-bd2-md {
+    font-family: Axiforma;
     font-style: normal;
-    font-weight: normal;
-    font-size: 24px;
-    line-height: 165%;
+    font-weight: 500;
+
+    @include sm {
+        font-size: 12px;
+        line-height: 170%;
+    }
+
+    @include md {
+        font-size: 14px;
+        line-height: 170%;
+    }
+
+    @include lg {
+        font-size: 20px;
+        line-height: 158%;
+    }
+
+    @include xl {
+        font-size: 24px;
+        line-height: 165%;
+    }
 }
 
-.subtitle2-xl-regular {
+.subtitle1-regular {
+    font-family: Axiforma;
     font-style: normal;
     font-weight: normal;
-    font-size: 18px;
-    line-height: 175%;
+
+    @include sm {
+        font-size: 16px;
+        line-height: 198%;
+    }
+
+    @include md {
+        font-size: 16px;
+        line-height: 150%;
+    }
+
+    @include lg {
+        font-size: 18px;
+        line-height: 132%;
+    }
+
+    @include xl {
+        font-size: rem(24px);
+        line-height: 165%;
+    }
+}
+
+.subtitle2-regular {
+    font-family: Axiforma;
+    font-style: normal;
+    font-weight: normal;
+
+    @include sm {
+        font-size: 14px;
+        line-height: 168%;
+    }
+
+    @include md {
+        font-size: 12px;
+        line-height: 135%;
+    }
+
+    @include lg {
+        font-size: 16px;
+        line-height: 150%;
+    }
+
+    @include xl {
+        font-size: rem(18px);
+        line-height: 175%;
+    }
 }
 
 .txt-xl-caption1 {
+    font-family: Axiforma;
     font-style: normal;
     font-weight: 500;
-    font-size: 16px;
-    line-height: 148%;
+
+    @include sm {
+        font-size: 12px;
+        line-height: 136%;
+    }
+
+    @include md {
+        font-size: 12px;
+        line-height: 130%;
+    }
+
+    @include lg {
+        font-size: 14px;
+        line-height: 117%;
+    }
+
+    @include xl {
+        font-size: rem(16px);
+        line-height: 148%;
+    }
+}
+
+.btn1-SemiBold {
+    font-family: Axiforma;
+    font-style: normal;
+    font-weight: 600;
+
+    @include sm {
+        font-size: 16px;
+        line-height: 148%;
+    }
+
+    @include md {
+        font-size: 14px;
+        line-height: 170%;
+    }
+
+    @include lg {
+        font-size: 24px;
+        line-height: 165%;
+    }
+
+    @include xl {
+        font-size: 24px;
+        line-height: 165%;
+    }
 }
