@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Components;
+﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 
 namespace Bit.Client.Web.BlazorUI
@@ -59,13 +60,14 @@ namespace Bit.Client.Web.BlazorUI
         protected override string RootElementClass => "bit-mdl";
         private bool IsAlertRole { get; set; }
         
-        private void CloseCallout()
+        private async Task CloseCallout(MouseEventArgs e)
         {
             if (IsBlocking == false)
             {
                 IsOpen = false;
+                await OnDismiss.InvokeAsync(e);
                 StateHasChanged();
-            }            
+            }
         }
     }
 }
