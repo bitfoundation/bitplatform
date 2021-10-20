@@ -130,7 +130,7 @@ namespace Bit.OData.ActionFilters
                         return;
                     }
 
-                    if (currentOdataQueryOptions.Count?.Value == true && takeCount != null && isSingleResult == false)
+                    if (currentOdataQueryOptions.Count?.Value == true && takeCount != null && isSingleResult == false && !actionExecutedContext.Request.Properties.ContainsKey("Microsoft.AspNet.OData.TotalCountFunc"))
                     {
                         long count = await (Task<long>)
                             getCountAsyncMethodsCache.GetOrAdd(queryElementType, t => typeof(ODataEnableQueryAttribute).GetMethod(nameof(GetCountAsync))!.MakeGenericMethod(t))
@@ -161,10 +161,11 @@ namespace Bit.OData.ActionFilters
                             firstAsyncMethodsCache.GetOrAdd(queryElementType, t => typeof(ODataEnableQueryAttribute).GetMethod(nameof(FirstAsync))!.MakeGenericMethod(t))
                             .Invoke(this, new[] { objContent.Value, dataProviderSpecificMethodsProvider, cancellationToken })!;
 
-                        actionExecutedContext.Request.Properties["Microsoft.AspNet.OData.TotalCountFunc"] = new Func<long>(() => 1);
+                        if (!actionExecutedContext.Request.Properties.ContainsKey("Microsoft.AspNet.OData.TotalCountFunc"))
+                            actionExecutedContext.Request.Properties["Microsoft.AspNet.OData.TotalCountFunc"] = new Func<long>(() => 1);
                     }
 
-                    if (currentOdataQueryOptions.Count?.Value == true && takeCount == null && isSingleResult == false)
+                    if (currentOdataQueryOptions.Count?.Value == true && takeCount == null && isSingleResult == false && !actionExecutedContext.Request.Properties.ContainsKey("Microsoft.AspNet.OData.TotalCountFunc"))
                     {
                         // We've no paging because there is no global config for max top and there is no top specified by the client's request, so the returned result of query's length is equivalent to total count of the query
                         long count = ((IList)objContent.Value).Count;

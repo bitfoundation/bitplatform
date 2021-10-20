@@ -112,7 +112,10 @@ namespace Bit.OData.ODataControllers
 
     public abstract class DtoController : ODataController
     {
-
+        protected void SetODataTotalCount(long count)
+        {
+            Request.Properties["Microsoft.AspNet.OData.TotalCountFunc"] = new Func<long>(() => count);
+        }
     }
 
     public class DtoController<TDto> : DtoController
