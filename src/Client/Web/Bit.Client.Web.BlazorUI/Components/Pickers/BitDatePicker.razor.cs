@@ -495,6 +495,17 @@ namespace Bit.Client.Web.BlazorUI
             return false;
         }
 
+        private bool IsMonthSelected(int month)
+        {
+            return (month == currentMonth);
+        }
+
+        private bool IsGoTodayDisabeld()
+        {
+            var todayMonth = calendar?.GetMonth(DateTime.Now) ?? 1;
+            return (todayMonth == currentMonth);
+        }
+
         private int dayOfWeekDifference => CalendarType == BitCalendarType.Persian ? -1 : 0;
     }
 }

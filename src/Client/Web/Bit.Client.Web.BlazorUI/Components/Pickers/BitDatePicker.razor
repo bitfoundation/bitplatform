@@ -45,26 +45,26 @@
                         <div class="picker-header">
                             @if (ShowMonthPickerAsOverlay)
                             {
-                                <button class="month-and-year" aria-label="@($"{monthTitle}, change month")"
+                                <button class="header-title" aria-label="@($"{monthTitle}, change month")"
                                 aria-live="polite" aria-atomic="true" tabindex="0" type="button">
                                     <span id="@MonthAndYearId">@monthTitle</span>
                                 </button>
                             }
                             else
                             {
-                                <div class="month-and-year"
+                                <div class="header-title"
                              aria-live="polite" aria-atomic="true" tabindex="-1">
                                     <span id="@MonthAndYearId">@monthTitle</span>
                                 </div>
                             }
-                            <div class="month-change-btn-group">
-                                <button class="header-icon-btn"
+                            <div class="navigation-btn-container">
+                                <button class="navigation-btn"
                                     title="@($"Go to previous month")"
                                     aria-disabled="false"
                                     @onclick="() => HandleMonthChange(false)">
                                     <i class="bit-icon" aria-hidden="true"></i>
                                 </button>
-                                <button class="header-icon-btn"
+                                <button class="navigation-btn"
                                     title="@($"Go to next month")"
                                     aria-disabled="false"
                                     @onclick="() => HandleMonthChange(true)">
@@ -149,6 +149,63 @@
                         </table>
                     </div>
                     <div class="divider"></div>
+                    <div class="month-picker-wrapper">
+                        <div class="picker-header">
+                            <button class="header-title"
+                                aria-label="@($"{currentYear}, change year")"
+                                tabindex="0"
+                                type="button"
+                                aria-atomic="true"
+                                aria-live="polite"
+                                @onclick="HandleMonthsShownChanged">
+                                @currentYear
+                            </button>
+                            <div class="navigation-btn-container">
+                                <button class="navigation-btn"
+                                    aria-disabled="false"
+                                    type="button"
+                                    title="Go to previous year @(currentYear - 1)"
+                                    @onclick="() => HandleYearChanged(false)">
+                                    <i class="bit-icon" aria-hidden="true"></i>
+                                </button>
+                                <button class="navigation-btn"
+                                    aria-disabled="false"
+                                    type="button"
+                                    title="Go to previous year @(currentYear + 1)"
+                                    @onclick="() => HandleYearChanged(true)">
+                                    <i class="bit-icon" aria-hidden="true"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="grid-container"
+                         role="grid"
+                         aria-label="@currentYear">
+                            @for (var rowIndex = 0; rowIndex <= 2; rowIndex++)
+                            {
+                                <div class="btn-row" role="row">
+                                    @for (var cellIndex = 1; cellIndex <= 4; cellIndex++)
+                                    {
+                                        var monthIndex = (rowIndex * 4) + cellIndex;
+                                        <button role="gridcell"
+                                                aria-selected="@(IsMonthSelected(monthIndex) ? "true" : "false")"
+                                                aria-readonly="true"
+                                                tabindex="0"
+                                                type="button"
+                                                aria-label="@calendar?.GetMonthName(monthIndex)"
+                                                @onclick="() => HandleMonthChange(monthIndex)">
+                                            <span aria-hidden="true">@calendar?.GetMonthShortName(monthIndex)</span>
+                                        </button>
+                                    }
+                                </div>
+                            }
+                        </div>
+                        <button class="go-today-btn"
+                            type="button"
+                            disabled="@IsGoTodayDisabeld()"
+                            @onclick="HandleGoToToday">
+                            @GoToToday
+                        </button>
+                    </div>
                 </div>
                 <div aria-hidden="true" tabindex="0" style="pointer-events: none; position: fixed;"></div>
             </div>

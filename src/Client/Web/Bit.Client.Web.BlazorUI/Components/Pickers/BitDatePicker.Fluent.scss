@@ -244,12 +244,13 @@
     height: rem(28px);
     line-height: rem(44px);
 
-    .month-and-year {
+    .header-title {
         position: relative;
         display: inline-block;
         align-items: center;
         flex-grow: 1;
         padding: 0 rem(4px) 0 rem(10px);
+        margin: 0;
         outline: transparent;
         border: none;
         border-radius: rem(2px);
@@ -262,27 +263,39 @@
         color: $Grey160;
         background-color: transparent;
         overflow: hidden;
+        cursor: text;
         animation-name: opacity;
         animation-duration: 0.267s;
         animation-timing-function: cubic-bezier(0.1, 0.25, 0.75, 0.9);
         animation-fill-mode: both;
     }
 
-    .month-change-btn-group {
-        display: inline-flex;
+    button.header-title {
+        cursor: pointer;
+
+        &:hover {
+            background-color: $Grey30;
+        }
+    }
+
+    .navigation-btn-container {
+        display: flex;
+        align-items: center;
         align-self: flex-end;
     }
 
-    .header-icon-btn {
+    .navigation-btn {
         position: relative;
         display: block;
         width: rem(28px);
         height: rem(28px);
+        min-width: rem(28px);
+        min-height: rem(28px);
         padding: 0;
         border-radius: rem(2px);
         border: none;
         outline: transparent;
-        font-size: rem(14px);
+        font-size: rem(12px);
         line-height: rem(28px);
         text-align: center;
         color: $Grey160;
@@ -303,140 +316,74 @@
 }
 
 .divider {
-    width: rem(1px);
-    height: 100%;
-    background-color: $Grey30;
+    top: 0;
+    border-right: rem(1px) solid $Grey30;
 }
 
 .month-picker-wrapper {
     display: flex;
-    flex-direction: column;
+    flex-flow: column nowrap;
+    box-shadow: none;
+    margin: em(0px);
+    padding: em(12px);
+    box-sizing: content-box;
+    width: 208px;
+    overflow: hidden;
 
-    > div {
-        box-shadow: none;
-        margin: em(0px);
-        padding: em(12px);
-        box-sizing: content-box;
-        width: 208px;
-        overflow: hidden;
-        flex: 1;
+    .grid-container {
+        margin-top: rem(4px);
+        margin-bottom: rem(12px);
+    }
 
-        > div:first-child {
-            display: flex;
+    .btn-row {
+        margin-bottom: rem(16px);
 
-            > button {
-                outline: transparent;
-                position: relative;
-                font-size: px(14px);
-                font-weight: 600;
-                font-family: inherit;
-                text-align: left;
-                background-color: transparent;
-                flex-grow: 1;
-                padding: px(0px) px(4px) px(0px) px(10px);
-                border: none;
-                overflow: visible;
-                cursor: pointer;
+        button {
+            position: relative;
+            width: rem(40px);
+            height: rem(40px);
+            min-width: rem(40px);
+            min-height: rem(40px);
+            margin: 0 rem(12px) 0 0;
+            padding: 0;
+            outline: transparent;
+            border: none;
+            border-radius: rem(2px);
+            font-size: rem(12px);
+            line-height: rem(40px);
+            color: $Grey160;
+            background-color: transparent;
+            overflow: visible;
+            cursor: pointer;
 
-                &:hover {
-                    background-color: $Grey30;
-                }
+            &:hover {
+                background-color: $Grey30;
             }
 
-            > div {
-                display: flex;
-                align-items: center;
-
-                > button {
-                    outline: transparent;
-                    position: relative;
-                    font-family: inherit;
-                    width: em(28px);
-                    min-width: em(28px);
-                    height: em(28px);
-                    min-height: em(28px);
-                    display: block;
-                    text-align: center;
-                    line-height: em(28px);
-                    font-size: em(14px);
-                    color: $Grey160;
-                    border-radius: em(2px);
-                    background-color: transparent;
-                    border: none;
-                    padding: em(0px);
-                    overflow: visible;
-                    cursor: pointer;
-
-                    &:hover {
-                        background-color: $Grey30;
-                    }
-
-                    i {
-                        display: inline-block;
-                        -webkit-font-smoothing: antialiased;
-                        font-style: normal;
-                        font-weight: normal;
-                        speak: none;
-                    }
-                }
+            &:last-child {
+                margin: 0;
             }
         }
 
-        > div:nth-child(2) {
-            > div {
-                margin-top: em(4px);
-
-                > div {
-                    margin-bottom: em(16px);
-
-                    > button {
-                        outline: transparent;
-                        position: relative;
-                        width: 40px;
-                        height: 40px;
-                        min-width: 40px;
-                        min-height: 40px;
-                        line-height: 40px;
-                        font-size: 12px;
-                        font-family: inherit;
-                        padding: em(0px);
-                        margin: 0px 12px 0px 0px;
-                        color: $Grey160;
-                        background-color: transparent;
-                        border: none;
-                        border-radius: em(2px);
-                        overflow: visible;
-                        cursor: pointer;
-
-                        &:hover {
-                            background-color: $Grey30;
-                        }
-                    }
-
-                    > button:last-child {
-                        margin: 0px;
-                    }
-                }
-            }
+        &:last-child {
+            margin: 0;
         }
     }
 
-    > button {
-        outline: transparent;
+    .go-today-btn {
         position: relative;
-        bottom: 0px;
-        color: rgb(50, 49, 48);
-        height: 30px;
-        line-height: 30px;
-        background-color: transparent;
-        border: none;
-        box-sizing: content-box;
-        padding: 0px 4px;
+        bottom: 0;
         align-self: flex-end;
-        margin-right: 16px;
-        margin-top: 3px;
-        font-size: 12px;
-        font-family: inherit;
+        height: rem(30px);
+        padding: 0 rem(4px);
+        margin: rem(3px) rem(4px) 0 0;
+        border: none;
+        outline: transparent;
+        box-sizing: content-box;
+        font-size: rem(12px);
+        line-height: rem(30px);
+        color: $Grey160;
+        background-color: transparent;
         overflow: visible;
 
         &:hover {
@@ -444,11 +391,11 @@
             background-color: transparent;
             cursor: pointer;
         }
-    }
 
-    > button[disabled] {
-        color: $Grey60;
-        pointer-events: none;
+        &:disabled {
+            color: $Grey60;
+            pointer-events: none;
+        }
     }
 }
 
