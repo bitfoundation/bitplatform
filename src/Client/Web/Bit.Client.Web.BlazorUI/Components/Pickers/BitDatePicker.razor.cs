@@ -17,7 +17,7 @@ namespace Bit.Client.Web.BlazorUI
         private int yearRangeTo;
         private string monthTitle = "";
         private string selectedDate = "";
-        private bool isMonthsShown = true;
+        private bool showMonthPicker = true;
         private int monthLength;
         private bool ValueHasBeenSet;
 
@@ -273,12 +273,11 @@ namespace Bit.Client.Web.BlazorUI
             await OnYearChange.InvokeAsync(currentYear);
         }
 
-        public void HandleMonthsShownChanged(MouseEventArgs eventArgs)
+        public void ToggleBetweenMonthAndYearPicker()
         {
-            if (IsEnabled)
-            {
-                isMonthsShown = !isMonthsShown;
-            }
+            if (IsEnabled is false) return;
+
+            showMonthPicker = !showMonthPicker;
         }
 
         public async Task HandleYearChanged(bool nextYear)
@@ -500,10 +499,16 @@ namespace Bit.Client.Web.BlazorUI
             return (month == currentMonth);
         }
 
+        private bool IsYearSelected(int year)
+        {
+            return (year == currentYear);
+        }
+
         private bool IsGoTodayDisabeld()
         {
             var todayMonth = calendar?.GetMonth(DateTime.Now) ?? 1;
-            return (todayMonth == currentMonth);
+            var todayYear = calendar?.GetYear(DateTime.Now) ?? 1;
+            return (todayMonth == currentMonth && todayYear == currentYear);
         }
 
         private int dayOfWeekDifference => CalendarType == BitCalendarType.Persian ? -1 : 0;

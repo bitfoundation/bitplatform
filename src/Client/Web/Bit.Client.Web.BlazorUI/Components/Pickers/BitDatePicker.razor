@@ -150,55 +150,106 @@
                     </div>
                     <div class="divider"></div>
                     <div class="month-picker-wrapper">
-                        <div class="picker-header">
-                            <button class="header-title"
+                        @if (showMonthPicker)
+                        {
+                            <div class="picker-header">
+                                <button class="header-title"
                                 aria-label="@($"{currentYear}, change year")"
                                 tabindex="0"
                                 type="button"
                                 aria-atomic="true"
                                 aria-live="polite"
-                                @onclick="HandleMonthsShownChanged">
-                                @currentYear
-                            </button>
-                            <div class="navigation-btn-container">
-                                <button class="navigation-btn"
+                                @onclick="ToggleBetweenMonthAndYearPicker">
+                                    @currentYear
+                                </button>
+                                <div class="navigation-btn-container">
+                                    <button class="navigation-btn"
                                     aria-disabled="false"
                                     type="button"
                                     title="Go to previous year @(currentYear - 1)"
                                     @onclick="() => HandleYearChanged(false)">
-                                    <i class="bit-icon" aria-hidden="true"></i>
-                                </button>
-                                <button class="navigation-btn"
+                                        <i class="bit-icon" aria-hidden="true"></i>
+                                    </button>
+                                    <button class="navigation-btn"
                                     aria-disabled="false"
                                     type="button"
                                     title="Go to previous year @(currentYear + 1)"
                                     @onclick="() => HandleYearChanged(true)">
-                                    <i class="bit-icon" aria-hidden="true"></i>
-                                </button>
+                                        <i class="bit-icon" aria-hidden="true"></i>
+                                    </button>
+                                </div>
                             </div>
-                        </div>
-                        <div class="grid-container"
+                            <div class="grid-container"
                          role="grid"
                          aria-label="@currentYear">
-                            @for (var rowIndex = 0; rowIndex <= 2; rowIndex++)
-                            {
-                                <div class="btn-row" role="row">
-                                    @for (var cellIndex = 1; cellIndex <= 4; cellIndex++)
-                                    {
-                                        var monthIndex = (rowIndex * 4) + cellIndex;
-                                        <button role="gridcell"
-                                                aria-selected="@(IsMonthSelected(monthIndex) ? "true" : "false")"
-                                                aria-readonly="true"
-                                                tabindex="0"
-                                                type="button"
-                                                aria-label="@calendar?.GetMonthName(monthIndex)"
-                                                @onclick="() => HandleMonthChange(monthIndex)">
-                                            <span aria-hidden="true">@calendar?.GetMonthShortName(monthIndex)</span>
-                                        </button>
-                                    }
+                                @for (var rowIndex = 0; rowIndex <= 2; rowIndex++)
+                                {
+                                    <div class="btn-row" role="row">
+                                        @for (var cellIndex = 1; cellIndex <= 4; cellIndex++)
+                                        {
+                                            var monthIndex = (rowIndex * 4) + cellIndex;
+                                            <button role="gridcell"
+                                    aria-selected="@(IsMonthSelected(monthIndex) ? "true" : "false")"
+                                    aria-readonly="true"
+                                    tabindex="@(IsMonthSelected(monthIndex) ? 0 : -1)"
+                                    type="button"
+                                    aria-label="@calendar?.GetMonthName(monthIndex)"
+                                    @onclick="() => HandleMonthChange(monthIndex)">
+                                                <span aria-hidden="true">@calendar?.GetMonthShortName(monthIndex)</span>
+                                            </button>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="picker-header">
+                                <button class="header-title"
+                                aria-label="@($"{yearRangeFrom} - {yearRangeTo}, change month")"
+                                type="button"
+                                aria-atomic="true"
+                                aria-live="polite"
+                                @onclick="ToggleBetweenMonthAndYearPicker">
+                                    @yearRangeFrom - @yearRangeTo
+                                </button>
+                                <div class="navigation-btn-container">
+                                    <button class="navigation-btn"
+                                    type="button"
+                                    title="previous year range @(yearRangeFrom - 12) - @(yearRangeFrom - 1)"
+                                    @onclick="() => HandleYearRangeChanged(yearRangeFrom - 12)">
+                                        <i class="bit-icon" aria-hidden="true"></i>
+                                    </button>
+                                    <button class="navigation-btn"
+                                    type="button"
+                                    title="next year range @(yearRangeFrom + 12) - @(yearRangeTo + 12)"
+                                    @onclick="() => HandleYearRangeChanged(yearRangeFrom + 12)">
+                                        <i class="bit-icon" aria-hidden="true"></i>
+                                    </button>
                                 </div>
-                            }
-                        </div>
+                            </div>
+                            <div class="grid-container"
+                         role="grid"
+                         aria-label="@yearRangeFrom - @yearRangeTo">
+                                @for (var rowIndex = 0; rowIndex <= 2; rowIndex++)
+                                {
+                                    <div class="btn-row" role="row">
+                                        @for (var cellIndex = 0; cellIndex <= 3; cellIndex++)
+                                        {
+                                            var year = yearRangeFrom + (rowIndex * 4) + cellIndex;
+                                            <button role="gridcell"
+                                    aria-selected="@(IsYearSelected(year) ? "true" : "false")"
+                                    aria-readonly="true"
+                                    tabindex="@(IsYearSelected(year) ? 0 : -1)"
+                                    type="button"
+                                    @onclick="() => HandleYearChanged(year)">
+                                                <span aria-hidden="true">@year</span>
+                                            </button>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        }
                         <button class="go-today-btn"
                             type="button"
                             disabled="@IsGoTodayDisabeld()"
