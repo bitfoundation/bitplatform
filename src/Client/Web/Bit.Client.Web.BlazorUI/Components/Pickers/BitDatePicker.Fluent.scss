@@ -140,31 +140,31 @@
         &:hover {
             background-color: $Grey30;
         }
+    }
 
-        button {
-            position: relative;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            width: rem(24px);
-            height: rem(24px);
-            padding: 0 rem(1px) 0 0;
-            border-radius: rem(2px);
-            outline: transparent;
-            border: none;
-            box-sizing: border-box;
-            line-height: rem(24px);
-            font-size: rem(12px);
-            font-weight: inherit;
-            color: inherit;
-            background-color: transparent;
-            overflow: visible;
-            cursor: pointer;
-        }
+    .day-btn {
+        position: relative;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: rem(24px);
+        height: rem(24px);
+        padding: 0 rem(1px) 0 0;
+        border-radius: rem(2px);
+        outline: transparent;
+        border: none;
+        box-sizing: border-box;
+        line-height: rem(24px);
+        font-size: rem(12px);
+        font-weight: inherit;
+        color: inherit;
+        background-color: transparent;
+        overflow: visible;
+        cursor: pointer;
     }
 
     .date-cell--today {
-        button {
+        .day-btn {
             border-radius: 50%;
             font-weight: 600;
             color: $White;
@@ -184,11 +184,10 @@
     }
 
     .date-cell--outside-month {
-        button {
+        .day-btn {
             color: $Grey130;
         }
     }
-
     //tr[role=presentation] {
     //    position: absolute;
     //    opacity: 0;
