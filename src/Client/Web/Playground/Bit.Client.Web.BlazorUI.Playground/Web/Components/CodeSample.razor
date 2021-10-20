@@ -1,0 +1,33 @@
+﻿<div class="sample-container">
+    <h5>@Title</h5>
+    <p class="how-to-use">
+        @Description
+    </p>
+    <BitToggleButton @bind-IsChecked="ShowCode"
+                     Label="@(ShowCode ? "</> Hide code":"</> Show code")"
+                     Class="@(ShowCode ? "hide-code-btn":"show-code-btn")">
+    </BitToggleButton>
+
+    <div class="box">
+        @if (!ShowCode)
+        {
+            <div class="sample">
+                @SampleContent
+            </div>
+        }
+        else
+        {
+            <div class="code" @ref=CodeReference>
+                <BitActionButton Class="copy-btn"
+                             OnClick=HandleOnCopyClick
+                             IconName="Copy">
+                    Copy
+                </BitActionButton>
+                <div class="razor-code">
+                    @CodeSampleContent
+                </div>
+            </div>
+        }
+    </div>
+</div>
+

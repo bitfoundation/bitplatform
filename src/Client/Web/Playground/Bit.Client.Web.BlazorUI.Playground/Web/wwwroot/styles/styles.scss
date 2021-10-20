@@ -1,5 +1,4 @@
 ﻿@import 'fonts.scss';
-@import "colors.scss";
 @import '../../Styles/_shared.scss';
 
 * {
@@ -13,70 +12,99 @@ body {
     padding: 0;
 }
 
-table {
-    table-layout: fixed;
-    border-collapse: collapse;
-    width: 100%;
-}
+/* Headers */
 
-th, td {
-    width: 0;
-    font-size: 14px;
-    padding: 8px;
-    text-align: left;
-    border-bottom: 1px solid $Grey;
-    overflow-wrap: break-word;
-}
+h1 {
+    @include h1-xl;
 
-p {
-    font-size: 14px;
-}
+    @include lg {
+        @include h1-lg;
+    }
 
-.header-title {
-    color: $White;
-    font-size: 23px;
-    margin: 22px;
-}
+    @include md {
+        @include h1-md;
+    }
 
-.links {
-    padding-top: 29px;
-
-    .bit-lnk > a {
-        color: $White;
-        text-align: center;
-        padding: 30px;
-        text-decoration: none;
-
-        &:hover {
-            text-decoration: none;
-            color: $White;
-        }
+    @include sm {
+        @include h1-sm;
     }
 }
 
-.card {
-    padding: 10px 10px 20px 10px;
-    border: 1px solid $VeryLightPink;
-    background-color: $White;
-    box-shadow: 10px 10px 5px $White;
+h2 {
+    @include h2-xl;
 
-    .desc {
-        font-size: 16px;
+    @include lg {
+        @include h2-lg;
+    }
+
+    @include md {
+        @include h2-md;
+    }
+
+    @include sm {
+        @include h2-sm;
     }
 }
+
+h3 {
+    @include h3-xl;
+
+    @include lg {
+        @include h3-lg;
+    }
+
+    @include md {
+        @include h3-md;
+    }
+
+    @include sm {
+        @include h3-sm;
+    }
+}
+
+h4 {
+    @include h4-xl;
+
+    @include lg {
+        @include h4-lg;
+    }
+
+    @include md {
+        @include h4-md;
+    }
+
+    @include sm {
+        @include h4-sm;
+    }
+}
+
+h5 {
+    @include h5-xl;
+
+    @include lg {
+        @include h5-lg;
+    }
+
+    @include md {
+        @include h5-md;
+    }
+
+    @include sm {
+        @include h5-sm;
+    }
+}
+
+/* Code Colors */
 
 .dark-green {
-    font-weight: bold;
     color: $DarkGreen;
 }
 
 .light-green {
-    font-weight: bold;
     color: $LightGreen;
 }
 
 .light-blue {
-    font-weight: bold;
     color: $LightBlue;
 }
 
@@ -104,24 +132,9 @@ p {
     background-color: $LightYellow;
 }
 
-.m-t-15 {
-    margin-top: 20px;
-}
+/* Custom Style */
 
-.m-t-10 {
-    margin-top: 10px;
-}
-
-.p-l-20 {
-    padding-left: 20px;
-}
-
-.link {
-    color: $LightBlue;
-    text-decoration: underline;
-}
-
-.custom-button {
+.custom-button, .custom-button:hover {
     background-color: $DarkRed;
     border-color: $DarkRed;
 }
@@ -299,7 +312,7 @@ p {
     }
 }
 
-/* -- Footer -- */
+/* Footer */
 
 footer {
     border-top: rem(6px) solid $Green;
@@ -353,36 +366,35 @@ footer {
     position: relative;
     margin-top: rem(160px);
 
-    @include md {
+    @include lt-lg {
         margin-top: rem(112px);
     }
 
+    @include sm {
+        margin-top: rem(96px);
+    }
+
     .content {
-        width: calc(100% - 440px);
+        width: calc(100% - 360px);
         margin-left: auto;
+
+        @include lt-xl {
+            width: 100%;
+        }
     }
 
     .navbar {
         background-color: $Gray04;
-        padding-top: rem(33px);
+        margin-top: rem(48px);
         width: rem(360px);
         flex: 17%;
         position: fixed;
         height: 100vh;
+        padding-top: 0;
         overflow-y: scroll;
 
-        @include lg {
-            padding-top: 0;
-        }
-
-        @include md {
-            height: 117vh;
-            width: rem(272px);
-            padding-top: rem(33px);
-        }
-
-        @include lt-md {
-            padding-top: rem(40px);
+        @include lt-xl {
+            margin-top: rem(40px);
             display: none;
         }
 
@@ -434,8 +446,9 @@ footer {
                 margin-left: rem(15px)
             }
 
-            .bit-nav-link-container {
-                margin-left: rem(41px);
+            .bit-nav-link-enabled-hasurl-fluent:hover, .bit-nav-selected-fluent, .bit-nav-selected-fluent:hover {
+                background-color: $Gray03;
+                color: $Violet;
             }
 
             .bit-nav-link-enabled-hasurl-fluent {
@@ -443,21 +456,8 @@ footer {
                 font-size: rem(18px);
             }
 
-            .bit-nav-link-enabled-hasurl-fluent:hover, .bit-nav-selected-fluent {
-                color: $Violet;
-                background-color: $Gray03;
-            }
-
-            .bit-nav-selected-fluent:hover {
-                background-color: $Gray03;
-            }
-
-            .bit-nav-selected-fluent:after {
-                border-left: rem(4px) solid $Violet;
-            }
-
-            .bit-nav-grp-content {
-                margin-bottom: 0;
+            .bit-nav-link-container {
+                margin-left: rem(41px);
             }
         }
     }
@@ -466,6 +466,160 @@ footer {
         border-bottom: rem(1px) solid $Gray03;
         padding-top: rem(30px);
     }
+}
+
+/* Demo Page */
+
+.component-siderail {
+    ul.bit-nav-list:before {
+        position: absolute;
+        content: "";
+        width: 1px;
+        height: rem(370px);
+        background: $Gray02;
+        top: rem(-20px);
+        left: 0;
+    }
+
+    .bit-lnk-fluent a {
+        color: $Gray01;
+
+        @include subtitle2-xl;
+
+        @include lg {
+            @include subtitle2-lg;
+        }
+
+        @include md {
+            @include subtitle2-md;
+        }
+
+        @include sm {
+            @include subtitle2-sm;
+        }
+    }
+
+    .bit-lnk-fluent a:hover {
+        text-decoration: none;
+        color: $Violet;
+    }
+
+    .link-container li:hover {
+        background-color: $Gray04;
+    }
+
+    .bit-nav-link-container .bit-nav-link-txt {
+        margin-left: rem(-20px);
+    }
+
+    .bit-nav-link-enabled-hasurl-fluent {
+        margin-left: rem(15px);
+    }
+
+    .bit-nav-composite-link:hover {
+        background-color: transparent;
+    }
+}
+
+.how-to-use {
+    text-justify: auto;
+    color: $Black01;
+
+    @include subtitle2-xl;
+
+    @include lg {
+        @include subtitle2-lg;
+    }
+
+    @include md {
+        @include subtitle2-md;
+    }
+
+    @include sm {
+        @include subtitle2-sm;
+    }
+}
+
+.copy-btn {
+    color: $Violet;
+    border: 1px dashed;
+
+    @include subtitle2-xl;
+
+    @include lg {
+        @include subtitle2-lg;
+    }
+
+    @include md {
+        @include subtitle2-md;
+    }
+
+    @include sm {
+        @include subtitle2-sm;
+    }
+
+    .bit-icon--Copy {
+        color: $Violet !important;
+    }
+}
+
+.copy-btn:hover {
+    color: $Violet;
+}
+
+.show-code-btn, .show-code-btn:hover {
+    @include code-button;
+    background-color: $Violet;
+}
+
+.hide-code-btn, .hide-code-btn:hover {
+    @include code-button;
+    background-color: $White;
+    color: $Violet;
+}
+
+.table .bit-lnk > a {
+    color: $Violet;
+}
+
+.razor-code p {
+    white-space: nowrap;
+}
+
+.disable-btn {
+    @include md {
+        margin-top: rem(10px);
+        width: rem(241px);
+    }
+
+    @include sm {
+        margin-top: rem(10px);
+        width: rem(241px);
+    }
+}
+
+.label-btn {
+    @include sm {
+        margin-top: rem(10px);
+        width: rem(284px);
+    }
+}
+
+.lnk-btn {
+    @include sm {
+        margin-top: rem(10px);
+        width: rem(240px);
+    }
+}
+
+/* General */
+
+.bit-nav-selected-fluent:after {
+    border-left: rem(4px) solid $Violet;
+}
+
+.bit-nav-grp-content {
+    margin-bottom: 0;
 }
 
 .bit-sch-box-fluent > div:last-child button {
@@ -486,12 +640,9 @@ input::-webkit-input-placeholder {
     font-weight: 500;
 }
 
-/*::-webkit-scrollbar {
+::-webkit-scrollbar {
     width: 0;
-    }
-}*/
-
-
+}
 /*------------------------common styles-----------------------------------*/
 .container {
     margin: auto;
@@ -636,7 +787,6 @@ input::-webkit-input-placeholder {
         width: 100%;
     }
 }
-
 /*----------------------------------------Typography---------------------------------------------------*/
 h1 {
     font-family: Axiforma;
