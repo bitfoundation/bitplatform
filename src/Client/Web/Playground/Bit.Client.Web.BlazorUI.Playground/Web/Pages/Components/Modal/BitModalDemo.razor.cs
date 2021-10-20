@@ -1,7 +1,4 @@
-﻿using Microsoft.AspNetCore.Components;
-using Microsoft.JSInterop;
-
-namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Modal
+﻿namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Modal
 {
     public partial class BitModalDemo
     {
