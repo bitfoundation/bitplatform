@@ -1,0 +1,75 @@
+﻿@using Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components
+@using Pages.Components.ComponentDemoBase
+
+<div class="component-container">
+    <div class="component-content">
+        <section id="overview-section" class="overview">
+            <h1 class="name">@ComponentName</h1>
+            <p class="description">
+                @OverviewDesc
+            </p>
+        </section>
+        <section id="usage-section" class="usage">
+            <div class="title">Usage</div>
+            @ChildContent
+        </section>
+        <section class="implementation">
+            <div id="implementation-section" class="title">Implementation</div>
+            <table class="table">
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Default Value</th>
+                    <th>Description</th>
+                </tr>
+                @foreach (var param in ComponentParameters)
+                {
+                    <tr>
+                        <td>@param.Name</td>
+                        <td>
+                            @if (param.LinkType == LinkType.Link)
+                            {
+                                <BitLink HasUnderline="true" Href="@param.Href">@param.Type</BitLink>
+                            }
+                            else
+                            {
+                                @param.Type
+                            }
+                        </td>
+                        <td>@param.DefaultValue</td>
+                        <td>@param.Description</td>
+                    </tr>
+                }
+            </table>
+            @foreach (var param in EnumParameters)
+            {
+                <div id="@param.Id" class="enums">
+                    <div class="title">@param.Title</div>
+                    <table class="table">
+                        <tr>
+                            <th>Name</th>
+                            <th>Value</th>
+                            <th></th>
+                            <th>Description</th>
+                        </tr>
+                        @foreach (var item in param.EnumList)
+                        {
+                            <tr>
+                                <td>@item.Name</td>
+                                <td>@item.Value</td>
+                                <td>@item.Description</td>
+                            </tr>
+                        }
+                    </table>
+                </div>
+            }
+        </section>
+    </div>
+    <div class="component-siderail">
+        <ul class="link-container">
+            <li><BitLink Href="#overview-section">Overview</BitLink></li>
+            <li><BitLink Href="#usage-section">Usage</BitLink></li>
+            <li><BitLink Href="#implementation-section">Implementation</BitLink></li>
+        </ul>
+    </div>
+</div>

@@ -2,6 +2,8 @@
 {
     public partial class BitModalDemo
     {
+        private int DismissCount = 0;
+
         private bool IsOpen = false;
     }
 }

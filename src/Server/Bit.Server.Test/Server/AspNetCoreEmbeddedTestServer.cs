@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using OpenQA.Selenium;
 using OpenQA.Selenium.Remote;
 using System;
 using System.Linq;
@@ -98,7 +99,7 @@ namespace Bit.Test.Server
             return new TestHttpClientHandler(_server!.CreateHandler(), _args);
         }
 
-        public override RemoteWebDriver BuildWebDriver(RemoteWebDriverOptions? options = null)
+        public override WebDriver BuildWebDriver(WebDriverOptions? options = null)
         {
             throw new NotSupportedException();
         }

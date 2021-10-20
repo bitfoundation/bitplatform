@@ -1,0 +1,38 @@
+﻿@import '../Styles/_shared.scss';
+
+.sample-container {
+    margin-top: rem(35px);
+
+    .box {
+        border-top: 1px solid $Gray02;
+        padding: rem(15px) 0 rem(15px);
+        margin-top: rem(5px)
+    }
+}
+
+.code {
+    height: rem(252px);
+    padding: rem(15px);
+    border: 1px solid $Gray03;
+    overflow: scroll;
+
+    .razor-code {
+        @include subtitle2-xl;
+
+        @include lg {
+            @include subtitle2-lg;
+        }
+
+        @include md {
+            @include subtitle2-md;
+        }
+
+        @include sm {
+            @include subtitle2-sm;
+        }
+    }
+}
+
+.razor-code:hover {
+    cursor: url("/images/main/cursor.png");
+}

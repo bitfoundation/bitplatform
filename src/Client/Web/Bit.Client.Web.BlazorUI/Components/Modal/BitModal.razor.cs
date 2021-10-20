@@ -1,15 +1,18 @@
-﻿using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
+﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 
 namespace Bit.Client.Web.BlazorUI
 {
     public partial class BitModal
     {
+        private bool isOpen;
+        private bool IsOpenHasBeenSet { get; set; }
+
         /// <summary>
         /// Determines the ARIA role of the dialog (alertdialog/dialog). If this is set, it will override the ARIA role determined by IsBlocking and IsModeless.
         /// </summary>
-        [Parameter] public bool? IsAlert 
+        [Parameter]
+        public bool? IsAlert
         {
             get => IsAlertRole;
             set
@@ -21,7 +24,7 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// Whether the dialog can be light dismissed by clicking outside the dialog (on the overlay).
         /// </summary>
-        [Parameter] public bool IsBlocking { get; set; } = false;
+        [Parameter] public bool IsBlocking { get; set; }
 
         /// <summary>
         /// Whether the dialog should be modeless (e.g. not dismiss when focusing/clicking outside of the dialog). if true: IsBlocking is ignored, there will be no overlay.
@@ -31,7 +34,19 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// Whether the dialog is displayed.
         /// </summary>
-        [Parameter] public bool IsOpen { get; set; } = false;
+        [Parameter]
+        public bool IsOpen
+        {
+            get => isOpen;
+            set
+            {
+                if (value == isOpen) return;
+                isOpen = value;
+                _ = IsOpenChanged.InvokeAsync(value);
+            }
+        }
+        [Parameter] public EventCallback<bool> IsOpenChanged { get; set; }
+
 
         /// <summary>
         /// The content of the Modal, it can be any custom tag or text.
@@ -57,16 +72,16 @@ namespace Bit.Client.Web.BlazorUI
         /// ARIA id for the title of the Modal, if any.
         /// </summary>
         [Parameter] public string TitleAriaId { get; set; } = string.Empty;
+
         protected override string RootElementClass => "bit-mdl";
         private bool IsAlertRole { get; set; }
-        
-        private async Task CloseCallout(MouseEventArgs e)
+
+        private void CloseCallout(MouseEventArgs e)
         {
             if (IsBlocking == false)
             {
                 IsOpen = false;
-                await OnDismiss.InvokeAsync(e);
-                StateHasChanged();
+                _ = OnDismiss.InvokeAsync(e);
             }
         }
     }

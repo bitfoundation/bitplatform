@@ -1,17 +1,36 @@
 ﻿@import "../../Styles/_shared.scss";
 
+button {
+    cursor: pointer;
+}
+
 .header {
     width: 100%;
-    margin-bottom: rem(320px);
+
+    @include lg {
+        margin-bottom: rem(200px);
+    }
+
+    @include xl {
+        margin-bottom: rem(320px);
+    }
 }
 
 .header-element-container {
-    height: rem(970px);
     background-image: url("/images/index/header-bg.png");
     background-repeat: no-repeat;
     background-position-x: right;
     background-size: contain;
     position: relative;
+
+    @include lg {
+        height: rem(726px);
+        background-size: rem(617px);
+    }
+
+    @include xl {
+        height: rem(980px);
+    }
 }
 
 .header-menu {
@@ -22,9 +41,27 @@
     margin: auto;
 }
 
+.header-menu img {
+    @include lg {
+        max-width: rem(70px);
+    }
+
+    @include xl {
+        max-width: rem(90px);
+    }
+}
+
 .menu-header-link {
     text-decoration: none;
-    margin-left: rem(72px);
+    padding: 0;
+
+    @include lg {
+        margin-left: rem(47px);
+    }
+
+    @include xl {
+        margin-left: rem(72px);
+    }
 }
 
 .menu-header-link:active {
@@ -32,32 +69,40 @@
     color: #2f455a;
 }
 
-.header-menu img {
-    max-width: rem(90px);
-}
-
 .header-description-container {
-    max-width: rem(688px);
-    height: rem(805px);
     margin: auto;
-    margin-left: calc(17% + 90px);
+    height: rem(805px);
     display: flex;
     flex-flow: column nowrap;
     justify-content: center;
+
+    @include lg {
+        height: rem(765px);
+        max-width: rem(593px);
+        margin-left: calc(8% + 70px);
+    }
+
+    @include xl {
+        max-width: rem(688px);
+        margin-left: calc(17% + 90px);
+    }
 }
 
 .header-description-container .buttons-container {
-    margin-top: rem(80px);
-    margin-bottom: rem(80px);
+    @include lg {
+        margin-top: rem(75px);
+        margin-bottom: rem(80px);
+    }
+
+    @include xl {
+        margin-top: rem(80px);
+        margin-bottom: rem(80px);
+    }
 }
 
 .get-start-btn {
     color: white;
     padding: rem(11px) rem(32px);
-    font-weight: 600;
-    font-style: normal;
-    font-size: rem(24px);
-    line-height: rem(39.6px);
     background: #5c2d91;
     border-radius: rem(4px);
     margin-right: rem(12px);
@@ -70,10 +115,6 @@
     box-sizing: border-box;
     border-radius: rem(4px);
     color: #5c2d91;
-    font-style: normal;
-    font-weight: 600;
-    font-size: rem(24px);
-    line-height: 165%;
     padding: rem(11px) rem(43px);
 }
 
@@ -82,16 +123,34 @@
 }
 
 .header-title-container {
-    margin-top: rem(110px);
+    @include lg {
+        margin-top: 0;
+    }
+
+    @include xl {
+        margin-top: rem(110px);
+    }
+
     margin-bottom: 0;
 }
 
 .header-text-description {
     margin: 0;
+
+    @include lg {
+        width: rem( 389px);
+    }
 }
 
 .header .logos-container img {
-    max-height: rem(40px);
+    @include lg {
+        max-height: rem(35px);
+    }
+
+    @include xl {
+        max-height: rem(40px);
+    }
+
     margin-right: rem(46px);
 }
 
@@ -99,8 +158,15 @@
 /* -----------------------bit short description------------------------------ */
 
 .bit-product-describe {
-    margin-bottom: rem(300px);
     justify-content: center;
+
+    @include lg {
+        margin-bottom: rem(200px)
+    }
+
+    @include xl {
+        margin-bottom: rem(300px);
+    }
 
     & .row {
         width: 100%;
@@ -110,25 +176,48 @@
 .product-describe-img {
     background-image: url("/images/index/Based-on-Microsoft-Fluent-Design.png");
     background-repeat: no-repeat;
-    background-position-x: center;
     background-size: contain;
+
+    @include lg {
+        height: rem(440px);
+    }
+
+    @include xl {
+        height: rem(512px);
+        background-position-x: center;
+    }
 }
 
 .product-describe-container {
-    margin-left: rem(52px);
+    @include xl {
+        margin-left: rem(52px);
+    }
 }
 
 /*----------------------------------from-scratch-----------------------------*/
 .from-scratch {
-    margin-bottom: rem(300px) !important;
+    @include lg {
+        margin-bottom: rem(200px) !important;
+    }
+
+    @include xl {
+        margin-bottom: rem(300px) !important;
+    }
 }
 
 .from-scratch-container {
-    max-width: rem(1065px);
     margin: auto;
     background-image: url('/images/index/components-frame.png');
     background-position: right;
     background-repeat: no-repeat;
+
+    @include lg {
+        background-size: rem(688px);
+    }
+
+    @include xl {
+        background-size: rem(724px);
+    }
 }
 
 .from-scratch-title {
@@ -153,13 +242,19 @@
 
 .bit-Frequent-updates {
     width: 100%;
-    height: rem(676px);
     color: white;
     background: url(/images/index/Frequent-updates-bg.png);
-    background-size: contain;
-    background-position: right;
+    background-size: cover;
     background-repeat: no-repeat;
     box-shadow: inset 0 0 0 rem(1000px) #55456699;
+
+    @include lg {
+        height: rem(520px);
+    }
+
+    @include xl {
+        height: rem(676px);
+    }
 }
 
 .bit-Frequent-updates > * {
@@ -169,15 +264,35 @@
 }
 
 .bit-Frequent-updates-img {
-    max-width: rem(170px);
+
+    @include lg {
+        max-width: rem(130px);
+    }
+
+    @include xl {
+        max-width: rem(170px);
+    }
 }
 
 .bit-Frequent-updates img {
-    margin-top: rem(170px);
+
+    @include lg {
+        margin-top: rem(150px);
+    }
+
+    @include xl {
+        margin-top: rem(170px);
+    }
 }
 
 .bit-Frequent-updates h4 {
-    margin-top: rem(80px);
+    @include lg {
+        margin-top: rem(40px);
+    }
+
+    @include xl {
+        margin-top: rem(80px);
+    }
 }
 
 .bit-Frequent-updates .txt-xl-bd1-md {
@@ -190,10 +305,17 @@
 
 .bit-ease-of-use {
     width: 100%;
-    height: rem(546px);
     background: url(/images/index/ease-of-use-bg.png) center center no-repeat;
     background-size: contain;
     background-position-x: right;
+
+    @include lg {
+        height: rem(420px);
+    }
+
+    @include xl {
+        height: rem(546px);
+    }
 }
 
 .bit-ease-of-use > div {
@@ -216,8 +338,15 @@
 
 .customers-opinions {
     background-color: #f7f7f7;
-    height: rem(546px);
     width: 100%;
+
+    @include lg {
+        height: rem(520px);
+    }
+
+    @include xl {
+        height: rem(546px);
+    }
 }
 
 .inner-opinion-container {
@@ -233,22 +362,38 @@
 }
 
 .text-opinion-container {
-    width: rem(561.99px);
-    height: rem(250px);
     border-radius: rem(25px);
     color: #141414;
     margin: auto;
+
+    @include lg {
+        width: rem(520.47px);
+        height: rem(220px);
+    }
+
+    @include xl {
+        width: rem(561.99px);
+        height: rem(250px);
+    }
 }
 
 .customer-opinion-container .opinion-div-border {
-    width: rem(586px);
     height: rem(122px);
     border: rem(4px) solid #141414;
     border-radius: rem(26px) rem(26px) 0 0;
     border-bottom: 0;
     position: absolute;
     top: rem(26px);
-    margin-left: rem(3px);
+
+    @include lg {
+        width: rem(542px);
+        left: 4%;
+    }
+
+    @include xl {
+        margin-left: rem(3px);
+        width: rem(586px);
+    }
 }
 
 .customer-opinion-container .text-opinion-container > p {
@@ -268,9 +413,9 @@
 }
 
 .customers-opinions .customer-img-container {
-    max-width: rem(600px);
     position: absolute;
     top: rem(31px);
+    left: 7%;
 }
 
 .customers-opinions .customer-img-container .customer-img {
@@ -282,6 +427,7 @@
     position: absolute;
     left: rem(-22px);
     top: rem(12px);
+    width: rem(60px);
 }
 
 .customers-opinions .inner-opinion-container .customer-intro {
@@ -292,7 +438,6 @@
 
 .customers-opinions .customer-intro > p {
     margin: rem(8px);
-    text-align: center;
 }
 
 .customers-opinions .customer-intro .customer-name {
@@ -303,7 +448,14 @@
 /* --------------------------------menu footer------------------------------------ */
 
 .menu-footer {
-    height: rem(1261.72px);
+
+    @include lg {
+        height: rem(1005px);
+    }
+
+    @include xl {
+        height: rem(1261.72px);
+    }
 }
 
 .menu-footer-title {
@@ -311,7 +463,14 @@
     text-decoration: underline;
     text-decoration-color: #14a38b;
     text-decoration-thickness: rem(8px);
-    margin-top: rem(191px);
+
+    @include lg {
+        margin-top: rem(136px);
+    }
+
+    @include xl {
+        margin-top: rem(191px);
+    }
 }
 
 .menu-footer-container {
@@ -322,7 +481,14 @@
 .menu-footer-column {
     display: flex;
     flex-flow: column;
-    width: rem(336px);
+
+    @include lg {
+        width: rem(285px);
+    }
+
+    @include xl {
+        width: rem(336px);
+    }
 }
 
 .menu-footer-category {
@@ -353,10 +519,19 @@
 }
 
 footer {
-    height: rem(74px);
     background-color: #2f455a;
-    border-top: rem(4px) #14a38b solid;
+    border-top: #14a38b solid;
     display: flex;
+
+    @include lg {
+        height: rem(62px);
+        border-width: rem(5px)
+    }
+
+    @include xl {
+        height: rem(74px);
+        border-width: rem(8px)
+    }
 }
 
 .footer-link-container {
