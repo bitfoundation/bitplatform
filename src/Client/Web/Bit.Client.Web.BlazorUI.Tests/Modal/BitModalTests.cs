@@ -44,7 +44,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Modal
         ]
         public void BitModalIsBlockingTest(Visual visual, bool isBlocking)
         {
-            var com = RenderComponent<BitModalTest>(parameters =>
+            var com = RenderComponent<BitModal>(parameters =>
             {
                 parameters.Add(p => p.Visual, visual);
                 parameters.Add(p => p.IsBlocking, isBlocking);
@@ -54,8 +54,8 @@ namespace Bit.Client.Web.BlazorUI.Tests.Modal
             var bitModel = com.FindAll(".bit-mdl");
             Assert.AreEqual(bitModel.Count, 1);
 
-            var btnClose = com.Find(".bit-mdl > div > div.bit-mdl-modal > div.bit-mdl-overlay");
-            btnClose.Click();
+            var overlayElement = com.Find(".bit-mdl-overlay");
+            overlayElement.Click();
 
             bitModel = com.FindAll(".bit-mdl");
             Assert.AreEqual(bitModel.Count, isBlocking ? 1 : 0);
@@ -83,7 +83,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Modal
             var element = com.Find(".bit-mdl > div");
             Assert.AreEqual(element.Attributes["aria-model"].Value, (!isModeless).ToString());
 
-            var elementOverlay = com.FindAll(".bit-mdl > div > div.bit-mdl-modal > div.bit-mdl-overlay");
+            var elementOverlay = com.FindAll(".bit-mdl-overlay");
             Assert.AreEqual(elementOverlay.Count, isModeless ? 0 : 1);
         }
 
@@ -200,7 +200,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Modal
                 parameters.Add(p => p.IsOpen, true);
             });
 
-            var elementContent = com.Find(".bit-mdl > div > div.bit-mdl-modal > div.bit-mdl-container > div.bit-mdl-scrl-cnt");
+            var elementContent = com.Find(".bit-mdl-scrl-cnt");
 
             elementContent.MarkupMatches("<div class=\"bit-mdl-scrl-cnt\"><div>Test Content</div></div>");
         }
@@ -212,9 +212,9 @@ namespace Bit.Client.Web.BlazorUI.Tests.Modal
 
             DataRow(Visual.Material),
         ]
-        public void BitModalCloseButtonTest(Visual visual)
+        public void BitModalCloseWhenClickOutOfModalTest(Visual visual)
         {
-            var com = RenderComponent<BitModalTest>(parameters =>
+            var com = RenderComponent<BitModal>(parameters =>
             {
                 parameters.Add(p => p.Visual, visual);
                 parameters.Add(p => p.IsOpen, true);
@@ -223,8 +223,8 @@ namespace Bit.Client.Web.BlazorUI.Tests.Modal
             var bitModel = com.FindAll(".bit-mdl");
             Assert.AreEqual(bitModel.Count, 1);
 
-            var btnClose = com.Find(".bit-mdl > div > div.bit-mdl-modal > div.bit-mdl-overlay");
-            btnClose.Click();
+            var overlayElement = com.Find(".bit-mdl-overlay");
+            overlayElement.Click();
 
             bitModel = com.FindAll(".bit-mdl");
             Assert.AreEqual(bitModel.Count, 0);
@@ -237,7 +237,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Modal
 
             DataRow(Visual.Material),
         ]
-        public void BitModalDismissButtonShouldWorkCorrect(Visual visual)
+        public void BitModalOnDismissShouldWorkCorrect(Visual visual)
         {
             var com = RenderComponent<BitModalTest>(parameters =>
             {
@@ -245,8 +245,8 @@ namespace Bit.Client.Web.BlazorUI.Tests.Modal
                 parameters.Add(p => p.IsOpen, true);
             });
 
-            var dismissButton = com.Find(".bit-mdl > div > div.bit-mdl-modal > div.bit-mdl-overlay");
-            dismissButton.Click();
+            var overlayElement = com.Find(".bit-mdl-overlay");
+            overlayElement.Click();
             Assert.AreEqual(1, com.Instance.CurrentCount);
         }
     }
