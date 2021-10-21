@@ -1,4 +1,20 @@
-﻿.custom-button {
-    background-color: cornflowerblue;
-    color: white;
+﻿@import "../../../Styles/_shared.scss";
+
+.sample-btn {
+    text-justify: auto;
+    color: $Black01;
+
+    @include subtitle2-xl;
+
+    @include lg {
+        @include subtitle2-lg;
+    }
+
+    @include md {
+        @include subtitle2-md;
+    }
+
+    @include sm {
+        @include subtitle2-sm;
+    }
 }
