@@ -1014,3 +1014,30 @@ h6 {
         line-height: 165%;
     }
 }
+
+
+.btn2-bold {
+    font-family: Axiforma;
+    font-style: normal;
+    font-weight: bold;
+
+    @include sm {
+        font-size: 14px;
+        line-height: 168%;
+    }
+
+    @include md {
+        font-size: 12px;
+        line-height: 135%;
+    }
+
+    @include lg {
+        font-size: 18px;
+        line-height: 176%;
+    }
+
+    @include xl {
+        font-size: 18px;
+        line-height: 176%;
+    }
+}
