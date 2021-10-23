@@ -134,11 +134,6 @@ h5 {
 
 /* Custom Style */
 
-.custom-button, .custom-button:hover {
-    background-color: $DarkRed;
-    border-color: $DarkRed;
-}
-
 .custom-spb {
     .bit-spb-wrapper {
         & span {
@@ -616,6 +611,11 @@ footer {
     margin-bottom: rem(10px);
 }
 
+.custom-button, .custom-button:hover {
+    text-decoration: underline;
+    font-weight: bolder;
+}
+
 /* General */
 .bit-nav-selected-fluent:after {
     border-left: rem(4px) solid $Violet;
@@ -646,6 +646,7 @@ input::-webkit-input-placeholder {
 ::-webkit-scrollbar {
     width: 0;
 }
+
 /*------------------------common styles-----------------------------------*/
 .container {
     margin: auto;
