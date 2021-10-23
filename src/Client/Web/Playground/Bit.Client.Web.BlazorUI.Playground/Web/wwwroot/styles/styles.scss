@@ -612,8 +612,11 @@ footer {
     }
 }
 
-/* General */
+.chk-box .bit-chb-lbl {
+    margin-bottom: rem(10px);
+}
 
+/* General */
 .bit-nav-selected-fluent:after {
     border-left: rem(4px) solid $Violet;
 }
