@@ -1,376 +1,265 @@
 ﻿@namespace Bit.Client.Web.BlazorUI
 @inherits BitComponentBase
+
 <div @ref="RootElement"
+     @attributes="HtmlAttributes"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
-	 id="@UniqueId.ToString()">
-    <BitTextField IsEnabled="IsEnabled"
-                  IsMultiLine="false"
-                  IconName="CalendarMirrored"
-                  OnClick="HandleClick"
-                  OnFocusIn="HandleFocusIn"
-                  OnFocusOut="HandleFocusOut"
-                  Placeholder="@Placeholder"
-                  @bind-Value="@selectedDate"
-                  IsReadonly="true">
-    </BitTextField>
+     id="@UniqueId.ToString()">
+    <div class="bit-dtp-wrapper"
+         aria-owns="@(IsOpen ? CalloutId : null)"
+         @onclick="HandleClick">
+        <BitTextField Class="@(AllowTextInput ? "editable-input" : "")"
+                      IsEnabled="IsEnabled"
+                      role="combobox"
+                      Label="@Label"
+                      aria-expanded="@(IsOpen ? "true" : "false")"
+                      AriaLabel="@AriaLabel"
+                      aria-haspopup="dialog"
+                      aria-controls="@(IsOpen ? CalloutId : null)"
+                      Placeholder="@Placeholder"
+                      HasBorder="@HasBorder"
+                      IsUnderlined="@IsUnderlined"
+                      tabindex="@TabIndex"
+                      IsReadonly="@(!AllowTextInput)"
+                      IconName="CalendarMirrored"
+                      IsMultiline="false"
+                      OnFocusIn="HandleFocusIn"
+                      OnFocusOut="HandleFocusOut"
+                      @bind-Value="@selectedDate">
+        </BitTextField>
+    </div>
     @if (IsOpen)
     {
-        <div>
-            <div role="dialog">
-                <div>
-                    <div aria-hidden="true" tabindex="0" data-is-visible="true" style="pointer-events: none; position: fixed;"></div>
-                    <div class="bit-dtp-cal" role="group">
-                        <div aria-live="polite" aria-atomic="true">
-                            Selected date @selectedDate
-                        </div>
-                        <div>
-                            <div>
-                                <div class="bit-dtp-cal">
-                                    <span>@monthTitle</span>
-                                </div>
-                                <div>
-                                    <button class="bit-dtp-cal"
-											title="Go to previous month" @onclick="() => HandleMonthChange(false)">
-                                        <i class="bit-icon"></i>
-                                    </button>
-                                    <button class="bit-dtp-cal"
-											title="Go to next month" @onclick="() => HandleMonthChange(true)">
-                                        <i class="bit-icon"></i>
-                                    </button>
-                                </div>
-                            </div>
-                            <div>
-                                <table role="grid">
-                                    <tbody>
-                                        <tr>
-                                            @if (CalendarType is BitCalendarType.Gregorian)
-                                            {
-                                                <th scope="col"
-													title="@calendar?.GetDayOfWeekName(DayOfWeek.Sunday)">
-                                                    @calendar?.GetDayOfWeekName(DayOfWeek.Sunday)[0]
-                                                </th>
-                                                <th scope="col" 
-													title="@calendar?.GetDayOfWeekName(DayOfWeek.Monday)">
-                                                    @calendar?.GetDayOfWeekName(DayOfWeek.Monday)[0]
-                                                </th>
-                                                <th scope="col"		
-													title="@calendar?.GetDayOfWeekName(DayOfWeek.Tuesday)">
-                                                    @calendar?.GetDayOfWeekName(DayOfWeek.Tuesday)[0]
-                                                </th>
-                                                <th scope="col" 
-													title="@calendar?.GetDayOfWeekName(DayOfWeek.Wednesday)">
-                                                    @calendar?.GetDayOfWeekName(DayOfWeek.Wednesday)[0]
-                                                </th>
-                                                <th scope="col" 
-													title="@calendar?.GetDayOfWeekName(DayOfWeek.Thursday)">
-                                                    @calendar?.GetDayOfWeekName(DayOfWeek.Thursday)[0]
-                                                </th>
-                                                <th scope="col"
-													title="@calendar?.GetDayOfWeekName(DayOfWeek.Friday)">
-                                                    @calendar?.GetDayOfWeekName(DayOfWeek.Friday)[0]
-                                                </th>
-                                                <th scope="col" 
-													title="@calendar?.GetDayOfWeekName(DayOfWeek.Saturday)">
-                                                    @calendar?.GetDayOfWeekName(DayOfWeek.Saturday)[0]
-                                                </th>
-                                            }
-                                            else if (CalendarType is BitCalendarType.Persian)
-                                            {
-                                                <th scope="col"
-													title="@calendar?.GetDayOfWeekName(DayOfWeek.Saturday)">
-                                                    @calendar?.GetDayOfWeekName(DayOfWeek.Saturday)[0]
-                                                </th>
-                                                <th scope="col" 
-													title="@calendar?.GetDayOfWeekName(DayOfWeek.Sunday)">
-                                                    @calendar?.GetDayOfWeekName(DayOfWeek.Sunday)[0]
-                                                </th>
-                                                <th scope="col"
-													title="@calendar?.GetDayOfWeekName(DayOfWeek.Monday)">
-                                                    @calendar?.GetDayOfWeekName(DayOfWeek.Monday)[0]
-                                                </th>
-                                                <th scope="col"
-													title="@calendar?.GetDayOfWeekName(DayOfWeek.Tuesday)">
-                                                    @calendar?.GetDayOfWeekName(DayOfWeek.Tuesday)[0]
-                                                </th>
-                                                <th scope="col" 
-													title="@calendar?.GetDayOfWeekName(DayOfWeek.Wednesday)">
-                                                    @calendar?.GetDayOfWeekName(DayOfWeek.Wednesday)[0]
-                                                </th>
-                                                <th scope="col" 
-													title="@calendar?.GetDayOfWeekName(DayOfWeek.Thursday)">
-                                                    @calendar?.GetDayOfWeekName(DayOfWeek.Thursday)[0]
-                                                </th>
-                                                <th scope="col" 
-													title="@calendar?.GetDayOfWeekName(DayOfWeek.Friday)">
-                                                    @calendar?.GetDayOfWeekName(DayOfWeek.Friday)[0]
-                                                </th>
-                                            }
-                                        </tr>
-                                        @{
-                                            bool currentMonthIsStarted = false;
-                                            bool currentMonthIsFinished = false;
-                                            int todayYear = calendar?.GetYear(DateTime.Now) ?? 1;
-                                            int todayMonth = calendar?.GetMonth(DateTime.Now) ?? 1;
-                                            int todayDay = calendar?.GetDayOfMonth(DateTime.Now) ?? 1;
-                                            @for (int weekIndex = 0;
-                                      weekIndex < monthWeeks.GetLength(0);
-                                      weekIndex++)
-                                            {
-                                                int localWeekIndex = weekIndex;
-                                                if (monthWeeks[weekIndex, 0] == 0)
-                                                {
-                                                    weekIndex = 0;
-                                                    break;
-                                                }
-                                                <tr>
-                                                    @for (int dayIndex = 0; dayIndex < monthWeeks.GetLength(1); dayIndex++)
-                                                    {
-                                                        string selectClass = "";
-                                                        int localDayIndex = dayIndex;
-                                                        if (monthWeeks[localWeekIndex, localDayIndex] == 1)
-                                                        {
-                                                            currentMonthIsStarted = true;
-                                                        }
-                                                        if (currentMonthIsStarted
-                                                        && !currentMonthIsFinished)
-                                                        {
-                                                            string todayClass = "";
-                                                            if (todayYear == currentYear
-                                                            && todayMonth == currentMonth
-                                                            && todayDay == monthWeeks[localWeekIndex, localDayIndex])
-                                                            {
-                                                                todayClass = "bit-dtp-today";
-                                                            }
-                                                            if (selectedDate.HasValue())
-                                                            {
-                                                                BitDate date = new(currentYear, currentMonth, monthWeeks[localWeekIndex, localDayIndex], localDayIndex + dayOfWeekDifference);
-                                                                if (selectedDate == GetSelectedDateString(date))
-                                                                {
-                                                                    selectClass = "bit-dtp-selected";
-                                                                }
-                                                            }
-                                                            else
-                                                            {
-                                                                if (todayClass.HasValue())
-                                                                {
-                                                                    selectClass = "bit-dtp-selected";
-                                                                }
-                                                            }
-                                                            <td class="@todayClass @selectClass"
-                                                                @onclick="() => HandleDateChoose(localDayIndex + dayOfWeekDifference, monthWeeks[localWeekIndex, localDayIndex], currentMonth)">
-                                                                <button>
-                                                                    <span>@monthWeeks[localWeekIndex, localDayIndex]</span>
-                                                                </button>
-                                                            </td>
-                                                        }
-                                                        else
-                                                        {
-                                                            int localMonth = weekIndex >= 4 ? currentMonth + 1 : currentMonth - 1;
-                                                            if (selectedDate.HasValue())
-                                                            {
-                                                                BitDate date = new(currentYear, localMonth, monthWeeks[localWeekIndex, localDayIndex], localDayIndex + dayOfWeekDifference);
-                                                                if (selectedDate == GetSelectedDateString(date))
-                                                                {
-                                                                    selectClass = "bit-dtp-selected";
-                                                                }
-                                                            }
-                                                            <td class="@selectClass bit-dtp-out-month"
-                                                                @onclick="() => HandleDateChoose(localDayIndex + dayOfWeekDifference, monthWeeks[localWeekIndex, localDayIndex], localMonth)">
-                                                                <button>
-                                                                    <span>@monthWeeks[localWeekIndex, localDayIndex]</span>
-                                                                </button>
-                                                            </td>
-                                                        }
-                                                        if (currentMonthIsStarted
-                                                        && monthWeeks[localWeekIndex, localDayIndex] == monthLength)
-                                                        {
-                                                            currentMonthIsFinished = true;
-                                                        }
-                                                    }
-                                                </tr>
-                                            }
-                                        }
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                        <div></div>
-                        <div>
-                            @if (isMonthsShown)
+        <div class="bit-dtp-overlay"
+         @onclick="CloseCallout"></div>
+
+        <div class="bit-dtp-callout">
+            <div class="bit-dtp-callout-main" role="dialog">
+                <div aria-hidden="true" tabindex="0" data-is-visible="true" style="pointer-events: none; position: fixed;"></div>
+                <div class="bit-dtp-group"
+                 role="group"
+                 aria-label="">
+                    <div aria-live="polite" aria-atomic="true">Selected date @selectedDate</div>
+                    <div class="day-picker-wrapper">
+                        <div class="picker-header">
+                            @if (ShowMonthPickerAsOverlay)
                             {
-                                <div class="bit-dtp-cal">
-                                    <div>
-                                        <button class="bit-dtp-cal"
-												type="button"
-                                                @onclick="HandleMonthsShownChanged">
-                                            @currentYear
-                                        </button>
-                                        <div>
-                                            <button class="bit-dtp-cal"
-													title="Go to previous year @(currentYear - 1)"
-                                                    @onclick="() => HandleYearChanged(false)">
-                                                <i class="bit-icon"></i>
-                                            </button>
-                                            <button class="bit-dtp-cal"
-													title="Go to previous year @(currentYear + 1)"
-                                                    @onclick="() => HandleYearChanged(true)">
-                                                <i class="bit-icon"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div role="grid">
-                                            <div role="row">
-                                                <button class="bit-dtp-cal"
-														type="button"
-                                                        aria-label="@calendar?.GetMonthName(1)"
-                                                        @onclick="() => HandleMonthChange(1)">
-                                                    <span aria-hidden="true">@calendar?.GetMonthShortName(1)</span>
-                                                </button>
-                                                <button class="bit-dtp-cal"
-														type="button"
-                                                        aria-label="@calendar?.GetMonthName(2)"
-                                                        @onclick="() => HandleMonthChange(2)">
-                                                    <span aria-hidden="true">@calendar?.GetMonthShortName(2)</span>
-                                                </button>
-                                                <button class="bit-dtp-cal"
-														type="button"
-                                                        aria-label="@calendar?.GetMonthName(3)"
-                                                        @onclick="() => HandleMonthChange(3)">
-                                                    <span aria-hidden="true">@calendar?.GetMonthShortName(3)</span>
-                                                </button>
-                                                <button class="bit-dtp-cal"
-														type="button"
-                                                        aria-label="@calendar?.GetMonthName(4)"
-                                                        @onclick="() => HandleMonthChange(4)">
-                                                    <span aria-hidden="true">@calendar?.GetMonthShortName(4)</span>
-                                                </button>
-                                            </div>
-                                            <div role="row">
-                                                <button class="bit-dtp-cal"
-														type="button"
-                                                        aria-label="@calendar?.GetMonthName(5)"
-                                                        @onclick="() => HandleMonthChange(5)">
-                                                    <span aria-hidden="true">@calendar?.GetMonthShortName(5)</span>
-                                                </button>
-                                                <button class="bit-dtp-cal"
-														type="button"
-                                                        aria-label="@calendar?.GetMonthName(6)"
-                                                        @onclick="() => HandleMonthChange(6)">
-                                                    <span aria-hidden="true">@calendar?.GetMonthShortName(6)</span>
-                                                </button>
-                                                <button class="bit-dtp-cal"
-														type="button"
-                                                        aria-label="@calendar?.GetMonthName(7)"
-                                                        @onclick="() => HandleMonthChange(7)">
-                                                    <span aria-hidden="true">@calendar?.GetMonthShortName(7)</span>
-                                                </button>
-                                                <button class="bit-dtp-cal"
-														type="button"
-                                                        aria-label="@calendar?.GetMonthName(8)"
-                                                        @onclick="() => HandleMonthChange(8)">
-                                                    <span aria-hidden="true">@calendar?.GetMonthShortName(8)</span>
-                                                </button>
-                                            </div>
-                                            <div role="row">
-                                                <button class="bit-dtp-cal"
-														type="button"
-                                                        aria-label="@calendar?.GetMonthName(9)"
-                                                        @onclick="() => HandleMonthChange(9)">
-                                                    <span aria-hidden="true">@calendar?.GetMonthShortName(9)</span>
-                                                </button>
-                                                <button class="bit-dtp-cal"
-														type="button"
-                                                        aria-label="@calendar?.GetMonthName(10)"
-                                                        @onclick="() => HandleMonthChange(10)">
-                                                    <span aria-hidden="true">@calendar?.GetMonthShortName(10)</span>
-                                                </button>
-                                                <button class="bit-dtp-cal"
-														type="button"
-                                                        aria-label="@calendar?.GetMonthName(11)"
-                                                        @onclick="() => HandleMonthChange(11)">
-                                                    <span aria-hidden="true">@calendar?.GetMonthShortName(11)</span>
-                                                </button>
-                                                <button class="bit-dtp-cal"
-														type="button"
-                                                        aria-label="@calendar?.GetMonthName(12)"
-                                                        @onclick="() => HandleMonthChange(12)">
-                                                    <span aria-hidden="true">@calendar?.GetMonthShortName(12)</span>
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+                                <button class="header-title" aria-label="@($"{monthTitle}, change month")"
+                                aria-live="polite" aria-atomic="true" tabindex="0" type="button">
+                                    <span id="@MonthAndYearId">@monthTitle</span>
+                                </button>
                             }
                             else
                             {
-                                <div>
-                                    <div>
-                                        <button class="bit-dtp-cal"
-												type="button"
-                                                @onclick="HandleMonthsShownChanged">
-                                            @yearRangeFrom - @yearRangeTo
-                                        </button>
-                                        <div>
-                                            <button class="bit-dtp-cal"
-													title="Previous year range @(yearRangeFrom - 12) - @(yearRangeFrom - 1)"
-                                                    @onclick="() => HandleYearRangeChanged(yearRangeFrom-12)">
-                                                <i class="bit-icon"></i>
-                                            </button>
-                                            <button class="bit-dtp-cal"
-													title="Next year range @(yearRangeFrom + 12) - @(yearRangeTo + 12)"
-                                                    @onclick="() => HandleYearRangeChanged(yearRangeFrom+12)">
-                                                <i class="bit-icon"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div role="grid">
-                                            @for (int yearIndex = yearRangeFrom; yearIndex <= yearRangeTo; yearIndex++)
-                                            {
-                                                int localYearIndex = yearIndex;
-                                                <div role="row">
-                                                    <button class="bit-dtp-cal"
-															type="button"
-                                                            aria-label="@localYearIndex"
-                                                            @onclick="() => HandleYearChanged(localYearIndex)">
-                                                        <span aria-hidden="true">@localYearIndex</span>
-                                                    </button>
-                                                    <button class="bit-dtp-cal"
-															type="button"
-                                                            aria-label="@(yearIndex+1)"
-                                                            @onclick="() => HandleYearChanged(localYearIndex+1)">
-                                                        <span aria-hidden="true">@(localYearIndex + 1)</span>
-                                                    </button>
-                                                    <button class="bit-dtp-cal"
-															type="button"
-                                                            aria-label="@(localYearIndex+2)"
-                                                            @onclick="() => HandleYearChanged(localYearIndex+2)">
-                                                        <span aria-hidden="true">@(localYearIndex + 2)</span>
-                                                    </button>
-                                                    <button class="bit-dtp-cal"
-															type="button"
-                                                            aria-label="@(localYearIndex+3)"
-                                                            @onclick="() => HandleYearChanged(localYearIndex+3)">
-                                                        <span aria-hidden="true">@(localYearIndex + 3)</span>
-                                                    </button>
-                                                </div>
-                                                yearIndex = yearIndex + 3;
-                                            }
-                                        </div>
-                                    </div>
+                                <div class="header-title"
+                             aria-live="polite" aria-atomic="true" tabindex="-1">
+                                    <span id="@MonthAndYearId">@monthTitle</span>
                                 </div>
                             }
-                            <button class="bit-dtp-cal"
-									type="button"
-                                    @onclick="HandleGoToToday">
-                                @GoToToday
-                            </button>
+                            <div class="navigation-btn-container">
+                                <button class="navigation-btn"
+                                    title="@($"Go to previous month")"
+                                    aria-disabled="false"
+                                    @onclick="() => HandleMonthChange(false)">
+                                    <i class="bit-icon" aria-hidden="true"></i>
+                                </button>
+                                <button class="navigation-btn"
+                                    title="@($"Go to next month")"
+                                    aria-disabled="false"
+                                    @onclick="() => HandleMonthChange(true)">
+                                    <i class="bit-icon" aria-hidden="true"></i>
+                                </button>
+                            </div>
                         </div>
+                        <table role="grid"
+                           aria-readonly="true"
+                           aria-multiselectable="false"
+                           aria-labelledby="@MonthAndYearId"
+                           aria-activedescendant="@ActiveDescendantId">
+                            <tbody>
+                                <tr>
+                                    @if (CalendarType == BitCalendarType.Persian)
+                                    {
+                                        <th class="week-day-label" scope="col"
+                                    title="@calendar?.GetDayOfWeekName(DayOfWeek.Saturday)">
+                                            @calendar?.GetDayOfWeekName(DayOfWeek.Saturday)[0]
+                                        </th>
+                                    }
+                                    <th class="week-day-label" scope="col"
+                                    title="@calendar?.GetDayOfWeekName(DayOfWeek.Sunday)">
+                                        @calendar?.GetDayOfWeekName(DayOfWeek.Sunday)[0]
+                                    </th>
+                                    <th class="week-day-label" scope="col"
+                                    title="@calendar?.GetDayOfWeekName(DayOfWeek.Monday)">
+                                        @calendar?.GetDayOfWeekName(DayOfWeek.Monday)[0]
+                                    </th>
+                                    <th class="week-day-label" scope="col"
+                                    title="@calendar?.GetDayOfWeekName(DayOfWeek.Tuesday)">
+                                        @calendar?.GetDayOfWeekName(DayOfWeek.Tuesday)[0]
+                                    </th>
+                                    <th class="week-day-label" scope="col"
+                                    title="@calendar?.GetDayOfWeekName(DayOfWeek.Wednesday)">
+                                        @calendar?.GetDayOfWeekName(DayOfWeek.Wednesday)[0]
+                                    </th>
+                                    <th class="week-day-label" scope="col"
+                                    title="@calendar?.GetDayOfWeekName(DayOfWeek.Thursday)">
+                                        @calendar?.GetDayOfWeekName(DayOfWeek.Thursday)[0]
+                                    </th>
+                                    <th class="week-day-label" scope="col"
+                                    title="@calendar?.GetDayOfWeekName(DayOfWeek.Friday)">
+                                        @calendar?.GetDayOfWeekName(DayOfWeek.Friday)[0]
+                                    </th>
+                                    @if (CalendarType is BitCalendarType.Gregorian)
+                                    {
+                                        <th class="week-day-label" scope="col"
+                                    title="@calendar?.GetDayOfWeekName(DayOfWeek.Saturday)">
+                                            @calendar?.GetDayOfWeekName(DayOfWeek.Saturday)[0]
+                                        </th>
+                                    }
+                                </tr>
+                                @for (var week = 0; week < 6; week++)
+                                {
+                                    if (monthWeeks[week, 0] == 0)
+                                    {
+                                        week = 0;
+                                        break;
+                                    }
+                                    <tr>
+                                        @for (var day = 0; day < 7; day++)
+                                        {
+                                            var localWeek = week;
+                                            var localDay = day;
+                                            <td class="@GetDateElClass(localDay,localWeek)" role="presentation"
+                                    @onclick="() => HandleDateChoose(localDay, monthWeeks[localWeek, localDay], currentMonth)">
+                                                <button class="day-btn"
+                                                role="gridcell"
+                                            type="button"
+                                            tabindex="@(IsDateSelected(localWeek, localDay, monthWeeks[localWeek, localDay]) ? 0 : -1)"
+                                            aria-label="@GetDateAriaLabel(localWeek, localDay)"
+                                            aria-selected="@(IsDateSelected(localWeek, localDay, monthWeeks[localWeek, localDay]) ? "true" : "false")"
+                                            aria-readonly="true"
+                                            aria-disabled="false">
+                                                    <span aria-hidden="true">@monthWeeks[localWeek, localDay]</span>
+                                                </button>
+                                            </td>
+                                        }
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
                     </div>
-                    <div aria-hidden="true" tabindex="0" data-is-visible="true" style="pointer-events: none; position: fixed;"></div>
+                    <div class="divider"></div>
+                    <div class="month-picker-wrapper">
+                        @if (showMonthPicker)
+                        {
+                            <div class="picker-header">
+                                <button class="header-title"
+                                aria-label="@($"{currentYear}, change year")"
+                                tabindex="0"
+                                type="button"
+                                aria-atomic="true"
+                                aria-live="polite"
+                                @onclick="ToggleBetweenMonthAndYearPicker">
+                                    @currentYear
+                                </button>
+                                <div class="navigation-btn-container">
+                                    <button class="navigation-btn"
+                                    aria-disabled="false"
+                                    type="button"
+                                    title="Go to previous year @(currentYear - 1)"
+                                    @onclick="() => HandleYearChanged(false)">
+                                        <i class="bit-icon" aria-hidden="true"></i>
+                                    </button>
+                                    <button class="navigation-btn"
+                                    aria-disabled="false"
+                                    type="button"
+                                    title="Go to previous year @(currentYear + 1)"
+                                    @onclick="() => HandleYearChanged(true)">
+                                        <i class="bit-icon" aria-hidden="true"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="grid-container"
+                         role="grid"
+                         aria-label="@currentYear">
+                                @for (var rowIndex = 0; rowIndex <= 2; rowIndex++)
+                                {
+                                    <div class="btn-row" role="row">
+                                        @for (var cellIndex = 1; cellIndex <= 4; cellIndex++)
+                                        {
+                                            var monthIndex = (rowIndex * 4) + cellIndex;
+                                            <button role="gridcell"
+                                    aria-selected="@(IsMonthSelected(monthIndex) ? "true" : "false")"
+                                    aria-readonly="true"
+                                    tabindex="@(IsMonthSelected(monthIndex) ? 0 : -1)"
+                                    type="button"
+                                    aria-label="@calendar?.GetMonthName(monthIndex)"
+                                    @onclick="() => HandleMonthChange(monthIndex)">
+                                                <span aria-hidden="true">@calendar?.GetMonthShortName(monthIndex)</span>
+                                            </button>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="picker-header">
+                                <button class="header-title"
+                                aria-label="@($"{yearRangeFrom} - {yearRangeTo}, change month")"
+                                type="button"
+                                aria-atomic="true"
+                                aria-live="polite"
+                                @onclick="ToggleBetweenMonthAndYearPicker">
+                                    @yearRangeFrom - @yearRangeTo
+                                </button>
+                                <div class="navigation-btn-container">
+                                    <button class="navigation-btn"
+                                    type="button"
+                                    title="previous year range @(yearRangeFrom - 12) - @(yearRangeFrom - 1)"
+                                    @onclick="() => HandleYearRangeChanged(yearRangeFrom - 12)">
+                                        <i class="bit-icon" aria-hidden="true"></i>
+                                    </button>
+                                    <button class="navigation-btn"
+                                    type="button"
+                                    title="next year range @(yearRangeFrom + 12) - @(yearRangeTo + 12)"
+                                    @onclick="() => HandleYearRangeChanged(yearRangeFrom + 12)">
+                                        <i class="bit-icon" aria-hidden="true"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="grid-container"
+                         role="grid"
+                         aria-label="@yearRangeFrom - @yearRangeTo">
+                                @for (var rowIndex = 0; rowIndex <= 2; rowIndex++)
+                                {
+                                    <div class="btn-row" role="row">
+                                        @for (var cellIndex = 0; cellIndex <= 3; cellIndex++)
+                                        {
+                                            var year = yearRangeFrom + (rowIndex * 4) + cellIndex;
+                                            <button role="gridcell"
+                                    aria-selected="@(IsYearSelected(year) ? "true" : "false")"
+                                    aria-readonly="true"
+                                    tabindex="@(IsYearSelected(year) ? 0 : -1)"
+                                    type="button"
+                                    @onclick="() => HandleYearChanged(year)">
+                                                <span aria-hidden="true">@year</span>
+                                            </button>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        }
+                        <button class="go-today-btn"
+                            type="button"
+                            disabled="@IsGoTodayDisabeld()"
+                            @onclick="HandleGoToToday">
+                            @GoToToday
+                        </button>
+                    </div>
                 </div>
+                <div aria-hidden="true" tabindex="0" style="pointer-events: none; position: fixed;"></div>
             </div>
         </div>
     }

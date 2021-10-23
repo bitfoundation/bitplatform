@@ -3,7 +3,6 @@ using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
-using Microsoft.JSInterop;
 
 namespace Bit.Client.Web.BlazorUI
 {
@@ -18,12 +17,9 @@ namespace Bit.Client.Web.BlazorUI
         private int yearRangeTo;
         private string monthTitle = "";
         private string selectedDate = "";
-        private bool isMonthsShown = true;
+        private bool showMonthPicker = true;
         private int monthLength;
-        private int dayOfWeekDifference;
         private bool ValueHasBeenSet;
-
-        [Inject] public IJSRuntime? JSRuntime { get; set; }
 
         /// <summary>
         /// Whether or not this DatePicker is open
@@ -101,15 +97,51 @@ namespace Bit.Client.Web.BlazorUI
 
         [Parameter] public EventCallback<string> ValueChanged { get; set; }
 
+        /// <summary>
+        /// Label for the DatePicker
+        /// </summary>
+        [Parameter] public string Label { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Determines if the DatePicker has a border.
+        /// </summary>
+        [Parameter] public bool HasBorder { get; set; } = true;
+
+        /// <summary>
+        /// Whether or not the Textfield of the DatePicker is underlined.
+        /// </summary>
+        [Parameter] public bool IsUnderlined { get; set; } = false;
+
+        /// <summary>
+        /// The tabIndex of the TextField
+        /// </summary>
+        [Parameter] public int TabIndex { get; set; } = 0;
+
+        /// <summary>
+        /// Whether the DatePicker allows input a date string directly or not
+        /// </summary>
+        [Parameter] public bool AllowTextInput { get; set; } = false;
+
+        /// <summary>
+        /// Whether the month picker is shown beside the day picker or hidden.
+        /// </summary>
+        [Parameter] public bool IsMonthPickerVisible { get; set; } = true;
+
+        /// <summary>
+        /// Show month picker on top of date picker when visible.
+        /// </summary>
+        [Parameter] public bool ShowMonthPickerAsOverlay { get; set; } = false;
+
+        public string CalloutId { get; set; } = string.Empty;
+        public string MonthAndYearId { get; set; } = Guid.NewGuid().ToString();
+        public string ActiveDescendantId { get; set; } = Guid.NewGuid().ToString();
+
         protected override string RootElementClass { get; } = "bit-dtp";
 
         protected override void RegisterComponentClasses()
         {
             ClassBuilder.Register(() => IsEnabled is false
                 ? $"{RootElementClass}-disabled-{VisualClassRegistrar()}" : string.Empty);
-
-            ClassBuilder.Register(() => IsOpen is false
-                ? $"{RootElementClass}-open-{VisualClassRegistrar()}" : string.Empty);
         }
 
         protected override Task OnInitializedAsync()
@@ -124,6 +156,7 @@ namespace Bit.Client.Web.BlazorUI
             }
 
             CreateMonthCalendar();
+            CalloutId = $"DatePicker-Callout{UniqueId}";
 
             return base.OnInitializedAsync();
         }
@@ -155,39 +188,36 @@ namespace Bit.Client.Web.BlazorUI
 
         public async Task HandleDateChoose(int dayOfWeek, int day, int month)
         {
-            if (IsEnabled)
+            dayOfWeek += dayOfWeekDifference;
+
+            if (IsEnabled is false) return;
+            if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+
+            if (month == 13)
             {
-                bool shouldRecreateCalendar = false;
-                if (month == 13)
-                {
-                    currentYear++;
-                    month = 1;
-                    currentMonth = 1;
-                    shouldRecreateCalendar = true;
-                }
-                else if (month == 0)
-                {
-                    currentYear--;
-                    month = 12;
-                    currentMonth = 12;
-                    shouldRecreateCalendar = true;
-                }
-                else if(currentMonth != month)
-                {
-                    currentMonth = month;
-                    shouldRecreateCalendar = true;
-                }
-                if (shouldRecreateCalendar)
-                {
-                    CreateMonthCalendar(currentYear, currentMonth);
-                }
-                if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
-                IsOpen = false;
-                BitDate date = new(currentYear, currentMonth, day, dayOfWeek);
-                selectedDate = OnSelectDate is not null ? OnSelectDate.Invoke(date) : GetSelectedDateString(date);
-                await ValueChanged.InvokeAsync(selectedDate);
-                await OnDateSet.InvokeAsync(selectedDate);
+                currentYear++;
+                month = 1;
+                currentMonth = 1;
+                CreateMonthCalendar(currentYear, currentMonth);
             }
+            else if (month == 0)
+            {
+                currentYear--;
+                month = 12;
+                currentMonth = 12;
+                CreateMonthCalendar(currentYear, currentMonth);
+            }
+            else if (currentMonth != month)
+            {
+                currentMonth = month;
+                CreateMonthCalendar(currentYear, currentMonth);
+            }
+
+            IsOpen = false;
+            BitDate date = new(currentYear, currentMonth, day, dayOfWeek);
+            selectedDate = OnSelectDate is not null ? OnSelectDate.Invoke(date) : GetSelectedDateString(date);
+            await ValueChanged.InvokeAsync(selectedDate);
+            await OnDateSet.InvokeAsync(selectedDate);
         }
 
         public async Task HandleMonthChange(bool nextMonth)
@@ -226,49 +256,45 @@ namespace Bit.Client.Web.BlazorUI
 
         public async Task HandleMonthChange(int month)
         {
-            if (IsEnabled)
-            {
-                currentMonth = month;
-                CreateMonthCalendar(currentYear, currentMonth);
-                await OnMonthChange.InvokeAsync(currentMonth);
-            }
+            if (IsEnabled is false) return;
+
+            currentMonth = month;
+            CreateMonthCalendar(currentYear, currentMonth);
+            await OnMonthChange.InvokeAsync(currentMonth);
         }
 
         public async Task HandleYearChanged(int year)
         {
-            if (IsEnabled)
-            {
-                currentYear = year;
-                ChangeYearRanges(currentYear - 1);
-                CreateMonthCalendar(currentYear, currentMonth);
-                await OnYearChange.InvokeAsync(currentYear);
-            }
+            if (IsEnabled is false) return;
+
+            currentYear = year;
+            ChangeYearRanges(currentYear - 1);
+            CreateMonthCalendar(currentYear, currentMonth);
+            await OnYearChange.InvokeAsync(currentYear);
         }
 
-        public void HandleMonthsShownChanged(MouseEventArgs eventArgs)
+        public void ToggleBetweenMonthAndYearPicker()
         {
-            if (IsEnabled)
-            {
-                isMonthsShown = !isMonthsShown;
-            }
+            if (IsEnabled is false) return;
+
+            showMonthPicker = !showMonthPicker;
         }
 
         public async Task HandleYearChanged(bool nextYear)
         {
-            if (IsEnabled)
-            {
-                if (nextYear)
-                {
-                    currentYear++;
-                }
-                else
-                {
-                    currentYear--;
-                }
+            if (IsEnabled is false) return;
 
-                CreateMonthCalendar(currentYear, currentMonth);
-                await OnYearChange.InvokeAsync(currentYear);
+            if (nextYear)
+            {
+                currentYear++;
             }
+            else
+            {
+                currentYear--;
+            }
+
+            CreateMonthCalendar(currentYear, currentMonth);
+            await OnYearChange.InvokeAsync(currentYear);
         }
 
         public void HandleYearRangeChanged(int fromYear)
@@ -302,9 +328,8 @@ namespace Bit.Client.Web.BlazorUI
             monthLength = calendar?.GetDaysInMonth(year, month) ?? 29;
             var firstDay = calendar?.ToDateTime(year, month, 1, 0, 0, 0, 0) ?? DateTime.Now;
             var currentDay = 1;
-            dayOfWeekDifference = CalendarType == BitCalendarType.Persian ? -1 : 0;
+
             var isCalendarEnded = false;
-            monthWeeks = new int[6, 7];
             for (int weekIndex = 0; weekIndex < monthWeeks.GetLength(0); weekIndex++)
             {
                 for (int dayIndex = 0; dayIndex < monthWeeks.GetLength(1); dayIndex++)
@@ -384,21 +409,108 @@ namespace Bit.Client.Web.BlazorUI
             yearRangeTo = fromYear + 11;
         }
 
-        [JSInvokable]
-        public void CloseCallout()
+        private void CloseCallout()
         {
             IsOpen = false;
             StateHasChanged();
         }
 
-        protected async override Task OnAfterRenderAsync(bool firstRender)
+        private string GetDateElClass(int day, int week)
         {
-            if (IsEnabled && firstRender)
+            var className = "";
+            var todayYear = calendar?.GetYear(DateTime.Now) ?? 1;
+            var todayMonth = calendar?.GetMonth(DateTime.Now) ?? 1;
+            var todayDay = calendar?.GetDayOfMonth(DateTime.Now) ?? 1;
+            var currentDay = monthWeeks[week, day];
+
+            if (IsInCurrentMonth(week, day) is false)
             {
-                _ = JSRuntime?.BitDatePickerRegisterOnDocumentClickEvent(this, "CloseCallout");
+                className += className.Length == 0 ? "date-cell--outside-month" : " date-cell--outside-month";
             }
 
-            await base.OnAfterRenderAsync(firstRender);
+            if (todayYear == currentYear && todayMonth == currentMonth && todayDay == currentDay)
+            {
+                className = "date-cell--today";
+            }
+
+            if (IsDateSelected(week, day, currentDay))
+            {
+                className += className.Length == 0 ? "date-cell--selected" : " date-cell--selected";
+            }
+
+            return className;
         }
+
+        private bool IsInCurrentMonth(int week, int day)
+        {
+            if ((week == 0 || week == 1) && monthWeeks[week, day] > 20) return false;
+            if ((week == 4 || week == 5) && monthWeeks[week, day] < 7) return false;
+            return true;
+        }
+
+        private int GetCorrectTargetMonth(int week, int day)
+        {
+            int month = currentMonth;
+            if (IsInCurrentMonth(week, day) is false)
+            {
+                if (week >= 4)
+                {
+                    month = currentMonth + 1 == 13 ? 1 : currentMonth + 1;
+                }
+                else
+                {
+                    month = currentMonth - 1 == 0 ? 12 : currentMonth - 1;
+                }
+            }
+
+            return month;
+        }
+
+        private string GetDateAriaLabel(int week, int day)
+        {
+            int month = GetCorrectTargetMonth(week, day);
+            int year = currentYear;
+            if (IsInCurrentMonth(week, day) is false)
+            {
+                if (currentMonth == 12 && month == 1)
+                {
+                    year++;
+                }
+                else if (currentMonth == 1 && month == 12)
+                {
+                    year--;
+                }
+            }
+
+            return $"{monthWeeks[week, day]}, {calendar?.GetMonthName(month)}, {year}";
+        }
+
+        private bool IsDateSelected(int week, int day, int currentDay)
+        {
+            int month = GetCorrectTargetMonth(week, day);
+            BitDate currentDate = new(currentYear, month, currentDay, day + dayOfWeekDifference);
+            if (selectedDate.HasValue() && selectedDate == GetSelectedDateString(currentDate)) return true;
+
+            return false;
+        }
+
+        private bool IsMonthSelected(int month)
+        {
+            return (month == currentMonth);
+        }
+
+        private bool IsYearSelected(int year)
+        {
+            return (year == currentYear);
+        }
+
+        private bool IsGoTodayDisabeld()
+        {
+            var todayMonth = calendar?.GetMonth(DateTime.Now) ?? 1;
+            var todayYear = calendar?.GetYear(DateTime.Now) ?? 1;
+            return (todayMonth == currentMonth && todayYear == currentYear);
+        }
+
+        private int dayOfWeekDifference => CalendarType == BitCalendarType.Persian ? -1 : 0;
     }
 }
