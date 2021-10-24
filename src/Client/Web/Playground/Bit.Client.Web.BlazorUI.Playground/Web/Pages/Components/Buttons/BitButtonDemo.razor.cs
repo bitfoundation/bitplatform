@@ -88,7 +88,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Buttons
                     {
                         Name= "primary",
                         Description="",
-                        Value="primary = 1",
+                        Value="primary = 0",
                     },
                     new EnumItem()
                     {
