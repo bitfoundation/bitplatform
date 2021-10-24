@@ -8,7 +8,7 @@
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
         <div role=@(IsAlertRole ? "alertdialog": "dialog")
-         aria-model=@(!IsModeless)   
+         aria-model="@((!IsModeless).ToString())"  
          aria-labelledby=@TitleAriaId
          aria-describedby=@SubtitleAriaId
          style="outline:none;">

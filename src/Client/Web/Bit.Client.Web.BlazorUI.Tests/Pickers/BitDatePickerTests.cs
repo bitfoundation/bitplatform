@@ -10,23 +10,22 @@ namespace Bit.Client.Web.BlazorUI.Tests.Pickers
     public class BitDatePickerTests : BunitTestContext
     {
         [DataTestMethod,
-          DataRow(Visual.Fluent, true, true),
-          DataRow(Visual.Fluent, false, false),
+          DataRow(Visual.Fluent, true),
+          DataRow(Visual.Fluent, false),
 
-          DataRow(Visual.Cupertino, true, true),
-          DataRow(Visual.Cupertino, false, false),
+          DataRow(Visual.Cupertino, true),
+          DataRow(Visual.Cupertino, false),
 
-          DataRow(Visual.Material, true, true),
-          DataRow(Visual.Material, false, false)
+          DataRow(Visual.Material, true),
+          DataRow(Visual.Material, false)
       ]
-        public void BitDatePickerShouldTakeCorrectVisual(Visual visual, bool isEnabled, bool isCalloutOpen)
+        public void BitDatePickerShouldTakeCorrectVisual(Visual visual, bool isEnabled)
         {
             var component = RenderComponent<BitDatePickerTest>(
                 parameters =>
                 {
                     parameters.Add(p => p.Visual, visual);
                     parameters.Add(p => p.IsEnabled, isEnabled);
-                    parameters.Add(p => p.IsOpen, isCalloutOpen);
                 });
 
             var bitDatePicker = component.Find(".bit-dtp");
@@ -34,7 +33,6 @@ namespace Bit.Client.Web.BlazorUI.Tests.Pickers
             var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
 
             Assert.IsTrue(bitDatePicker.ClassList.Contains($"bit-dtp-{datePickerIsEnabledClass}-{visualClass}"));
-            Assert.IsTrue(bitDatePicker.Children.Count().Equals(isCalloutOpen ? 2 : 1));
         }
 
         [DataTestMethod, DataRow("go to today text")]
@@ -47,9 +45,9 @@ namespace Bit.Client.Web.BlazorUI.Tests.Pickers
                     parameters.Add(p => p.IsOpen, true);
                 });
 
-            var goToTodayButton = component.Find(".bit-dtp>div:nth-child(2)>div>div>div:nth-child(2)>div:nth-child(4)>button");
+            var goToTodayButton = component.Find(".go-today-btn");
 
-            goToTodayButton.MarkupMatches($"<button class=\"bit-dtp-cal\" type=\"button\">{goToToday}</button>");
+            Assert.AreEqual(goToToday, goToTodayButton.TextContent);
         }
 
         [DataTestMethod,
@@ -83,7 +81,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Pickers
                    parameters.Add(p => p.IsEnabled, isEnabled);
                });
           
-            var dateItems = component.FindAll(".bit-dtp>div:nth-child(2)>div>div>div:nth-child(2)>div:nth-child(2)>div:nth-child(2)>table>tbody tr:not([role]):nth-child(n+1) td");
+            var dateItems = component.FindAll(".day-btn");
             
             Random random = new();
             int randomNumber = random.Next(0, dateItems.Count -1);

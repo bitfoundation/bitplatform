@@ -12,7 +12,7 @@
         <h3>BitDatePicker</h3>
         <BitPivot>
             <BitPivotItem HeaderText="Example" IconName="ViewList">
-                <BitDatePicker></BitDatePicker>
+                <BitDatePicker Style="width: 300px"></BitDatePicker>
             </BitPivotItem>
             <BitPivotItem HeaderText="Code" IconName="Source">
                 <p>
@@ -25,7 +25,7 @@
         <h3>Date picker disabled</h3>
         <BitPivot>
             <BitPivotItem HeaderText="Example" IconName="ViewList">
-                <BitDatePicker IsEnabled="false"></BitDatePicker>
+                <BitDatePicker IsEnabled="false" Style="width: 300px"></BitDatePicker>
             </BitPivotItem>
             <BitPivotItem HeaderText="Code" IconName="Source">
                 <p>
@@ -38,7 +38,7 @@
         <h3>Shamsi Date picker</h3>
         <BitPivot>
             <BitPivotItem HeaderText="Example" IconName="ViewList">
-                <BitDatePicker CalendarType="BitCalendarType.Persian"></BitDatePicker>
+                <BitDatePicker CalendarType="BitCalendarType.Persian" Style="width: 300px"></BitDatePicker>
             </BitPivotItem>
             <BitPivotItem HeaderText="Code" IconName="Source">
                 <p>
@@ -51,7 +51,7 @@
         <h3>Value two-way binding</h3>
         <BitPivot>
             <BitPivotItem HeaderText="Example" IconName="ViewList">
-                <BitDatePicker @bind-Value="@selectedDate"></BitDatePicker>
+                <BitDatePicker @bind-Value="@selectedDate" Style="width: 300px"></BitDatePicker>
                 <BitLabel>this is selected date: @selectedDate</BitLabel>
             </BitPivotItem>
             <BitPivotItem HeaderText="Code" IconName="Source">
@@ -75,7 +75,7 @@
         <h3>DatePicker with custom date formatting</h3>
         <BitPivot>
             <BitPivotItem HeaderText="Example" IconName="ViewList">
-                <BitDatePicker OnSelectDate="OnDateFormat"></BitDatePicker>
+                <BitDatePicker OnSelectDate="OnDateFormat" Style="width: 300px"></BitDatePicker>
             </BitPivotItem>
             <BitPivotItem HeaderText="Code" IconName="Source">
                 <p>
