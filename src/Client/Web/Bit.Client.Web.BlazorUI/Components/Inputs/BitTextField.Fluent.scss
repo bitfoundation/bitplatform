@@ -34,17 +34,17 @@
         }
     }
 
-    .bit-txt-field-grp {
-        border: none;
-        flex: 1 1 0px;
-        text-align: left;
-    }
-
     .bit-txt-label {
         height: rem(32px);
         padding: rem(5px) 0 rem(5px) rem(12px);
         margin: 0 rem(8px) 0 0;
         line-height: rem(22px);
+    }
+
+    .bit-txt-field-grp {
+        border: none;
+        flex: 1 1 0px;
+        text-align: left;
     }
 }
 
@@ -94,16 +94,18 @@
     min-width: 0;
     height: 100%;
     border: none;
-    padding: 0 rem(8px);
-    outline: none;
     border-radius: 0;
+    outline: 0;
+    padding: 0 rem(8px);
+    margin: 0;
     box-shadow: none;
     box-sizing: border-box;
-    font-size: inherit;
-    font-weight: inherit;
-    font-family: inherit;
-    text-overflow: ellipsis;
     background: none transparent;
+    font-size: rem(14px);
+    font-weight: 400;
+    color: $Grey160;
+    text-overflow: ellipsis;
+    font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
     -webkit-font-smoothing: antialiased;
 }
 
@@ -213,6 +215,10 @@
         cursor: default;
         border: none $Grey20;
         background: none $Grey20;
+    }
+
+    .txt-field {
+        color: $Grey90;
     }
 
     .txt-prefix,
