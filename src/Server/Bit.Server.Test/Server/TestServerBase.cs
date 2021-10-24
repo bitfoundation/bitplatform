@@ -3,15 +3,13 @@ using Bit.Core.Implementations;
 using Bit.Http.Contracts;
 using Bit.Http.Implementations;
 using Bit.OData.Implementations;
-using Bit.Owin.Metadata;
 using Bit.Signalr;
 using Bit.Signalr.Implementations;
 using Microsoft.AspNet.SignalR.Client;
 using Microsoft.AspNet.SignalR.Client.Transports;
 using Newtonsoft.Json;
 using OpenQA.Selenium;
-using OpenQA.Selenium.Chrome;
-using OpenQA.Selenium.Remote;
+using OpenQA.Selenium.Edge;
 using Refit;
 using Simple.OData.Client;
 using System;
@@ -19,9 +17,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Threading.Tasks;
-using System.Web.Http;
 
 namespace Bit.Test.Server
 {
@@ -106,14 +102,14 @@ namespace Bit.Test.Server
 
             //FirefoxDriver driver = new FirefoxDriver();
 
-            ChromeOptions chromeOptions = new ChromeOptions
+            EdgeOptions edgeOptions = new EdgeOptions
             {
 
             };
 
             //chromeOptions.AddArguments("--lang=fa");
 
-            ChromeDriver driver = new ChromeDriver(chromeOptions);
+            EdgeDriver driver = new EdgeDriver(edgeOptions);
 
             //InternetExplorerDriver driver = new InternetExplorerDriver();
 

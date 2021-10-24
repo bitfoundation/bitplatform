@@ -1,306 +1,127 @@
 ﻿@page "/components/actionbutton"
 
-<h2>Action Button</h2>
+@using Bit.Client.Web.BlazorUI.Playground.Web.Components
 
-<div class="card">
-    <p class="desc">BitActionButton component is a button like a link.</p>
-</div>
-<h2>Usage</h2>
-<div class="wrapper">
-    <div class="card">
-        <h3>BitActionButton</h3>
-        <div class="desc">
+<ComponentPage ComponentName="Action Button" OverviewDesc="Buttons give people a way to trigger an action. They’re typically found in forms, dialog panels, and dialogs.
+    Some buttons are specialized for particular tasks, such as navigation, repeated actions, or presenting menus."
+               ComponentParameters="componentParameters">
+    <CodeSample Title="BitActionButton" Description="BitActionButton component is a button that acts as a link.">
+        <SampleContent>
+            <div>
+                <BitActionButton IconName="AddFriend">Create account</BitActionButton>
+                <BitActionButton AllowDisabledFocus="false" IsEnabled="false" IconName="UserRemove">Remove user</BitActionButton>
+            </div>
+        </SampleContent>
+        <CodeSampleContent>
+            <div>
+                <p>
+                    &lt<span class="dark-green">BitActionButton IconName=</span>"AddFriend">Create account<span>&lt/</span><span class="dark-green">BitActionButton</span><span>&gt;</span>
+                </p>
+                <p>
+                    &lt<span class="dark-green">BitActionButton IconName=</span>"UserRemove" <span class="dark-green">AllowDisabledFocus=</span><span class="light-blue">"false"</span><span class="dark-green"> IsEnabled=</span><span class="light-blue">"false"></span>Remove user<span>&lt/</span><span class="dark-green">BitActionButton</span><span>&gt;</span>
+                </p>
+            </div>
+        </CodeSampleContent>
+    </CodeSample>
+    <CodeSample Title="Style & Class" Description="BitActionButton can directly get css class or inline style.">
+        <SampleContent>
+            <div>
+                <BitActionButton Style="color:red">
+                    Styled Action Button
+                </BitActionButton>
+                <BitActionButton Class="custom-button">
+                    Classed Action Button
+                </BitActionButton>
+            </div>
+        </SampleContent>
+        <CodeSampleContent>
+            <div>
+                <p>
+                    &lt<span class="dark-green">BitActionButton Style=</span><span>"color:red"</span><span>></span>Styled Action Button<span>&lt/</span><span class="dark-green">BitActionButton</span><span>&gt;</span>
+                </p>
+                <p>
+                    &lt<span class="dark-green">BitActionButton Class=</span><span>"custom-button"</span><span>></span>Classed Action Button<span>&lt/</span><span class="dark-green">BitActionButton</span><span>&gt;</span>
+                </p>
+                <p>&lt<span class="light-blue">style></span></p>
+                <p><span class="m-l-30 dark-yellow">.custom-button</span> {</p>
+                <p><span class="m-l-45"><span class="light-blue">text-decoration</span> : underline;</span></p>
+                <p><span class="m-l-45"><span class="light-blue">font-weight</span> : bolder;</span></p>
+                <p><span class="m-l-45"><span class="light-blue">color</span> : #FFFFFF;</span></p>
+                <p><span class="m-l-45"><span class="light-blue">background-color</span> : #823535;</span></p>
+                <p><span class="m-l-45"><span class="light-blue">border-color</span> : #823535;</span></p>
+                <p><span class="m-l-30">}</span></p>
+                <p><span>&lt/</span><span class="light-blue">style</span><span>&gt;</span></p>
+            </div>
+        </CodeSampleContent>
+    </CodeSample>
+    <CodeSample Title="Visibility" Description="By setting Visibility attribute, BitActionButton can be Visible, Hidden or Collapsed.">
+        <SampleContent>
+            <div class="sample-btn">
+                <BitActionButton IconName="AddEvent" Visibility="BitComponentVisibility.Visible">Add Event</BitActionButton>
+               
+                <div><span>Hidden Button: </span>[<BitActionButton Visibility="BitComponentVisibility.Hidden">Hidden Action Button</BitActionButton>]</div>
+              
+                <div><span>Collapsed Button: </span>[<BitActionButton Visibility="BitComponentVisibility.Collapsed">Collapsed Action Button</BitActionButton>]</div>
+            </div>
+        </SampleContent>
+        <CodeSampleContent>
+            <div>
+                <p>
+                    &lt<span class="dark-green">BitActionButton Visibility=</span>"<span class="light-green">ComponentVisibility</span>.Visible<span>"<span class="dark-green"> IconName=</span>"AddEvent"></span><span>Add Event</span><span>&lt/</span><span class="dark-green">BitActionButton</span><span>&gt;</span>
+                </p>
+                <p>
+                    &lt<span class="dark-green">BitActionButton Hidden=</span>"<span class="light-green">ComponentHidden</span>.Hidden<span>"></span><span>Hidden Action Button</span><span>&lt/</span><span class="dark-green">BitActionButton</span><span>&gt;</span>
+                </p>
+                <p>
+                    &lt<span class="dark-green">BitActionButton Visibility=</span>"<span class="light-green">ComponentVisibility</span>.Collapsed<span>"></span><span>Collapsed Action Button</span><span>&lt/</span><span class="dark-green">BitActionButton</span><span>&gt;</span>
+                </p>
+            </div>
+        </CodeSampleContent>
+    </CodeSample>
+    <CodeSample Title="Arias for Screen Reader" Description="Aria attribues can also set for a BitActionButton.">
+        <SampleContent>
+            <div>
+                <BitActionButton IconName="Library" AriaDescription="Detailed description used for screen reader.">
+                    Action Button with Aria Description
+                </BitActionButton>
+                <BitActionButton IconName="Library" AriaHidden="true">
+                    Action Button with Aria Hidden
+                </BitActionButton>
+            </div>
+        </SampleContent>
+        <CodeSampleContent>
             <p>
-                You can have button like link and also set icon on BitActionButton component.
+                &lt<span class="dark-green">BitActionButton AriaDescription=</span><span>"Detailed description used for screen reader." <span class="dark-green"> IconName=</span>"Library">Action Button with Aria Description</span><span>&lt/</span><span class="dark-green">BitActionButton</span><span>&gt;</span>
             </p>
-        </div>
-        <BitPivot>
-            <BitPivotItem HeaderText="Example" IconName="ViewList">
-                <div>
-                    <BitActionButton IconName="AddFriend">Create account</BitActionButton>
-                    <BitActionButton AllowDisabledFocus="false" IsEnabled="false" IconName="UserRemove">Remove user</BitActionButton>
-                </div>
-            </BitPivotItem>
-            <BitPivotItem HeaderText="Code" IconName="Source">
-                <p>
-                    &lt<span class="dark-green">BitActionButton IconName="</span>AddFriend">Create account<span>&lt/</span><span class="dark-green">BitActionButton</span><span>&gt;</span>
-                </p>
-                <p>
-                    &lt<span class="dark-green">BitActionButton IconName="</span>UserRemove" <span class="dark-green">AllowDisabledFocus="</span><span class="light-blue">false"</span><span class="dark-green"> IsEnabled="</span><span class="light-blue">false"></span>Remove user<span>&lt/</span><span class="dark-green">BitActionButton</span><span>&gt;</span>
-                </p>
-            </BitPivotItem>
-        </BitPivot>
-        <div class="card">
-            <h3>Style & Class</h3>
-            <div class="desc">
-                <p>
-                    BitActionButton can directly get css class or inline style.
-                </p>
+            <p>
+                &lt<span class="dark-green">BitActionButton AriaHidden=</span><span class="light-blue">"true"</span><span class="dark-green"> IconName=</span>"Library">Action Button with Aria Hidden<span>&lt/</span><span class="dark-green">BitActionButton</span><span>&gt;</span>
+            </p>
+        </CodeSampleContent>
+    </CodeSample>
+    <CodeSample Title="ActionButton-like Anchor" Description="BitActionButton can act as a link by setting Href and Target attribute, you define how to open your link.">
+        <SampleContent>
+            <div class="m-t-10">
+                <BitActionButton IconName="Website" Target="_blank" Href="https://github.com/bitfoundation/bitframework">
+                    Open Bit Foundation In New Tab
+                </BitActionButton>
+                <BitActionButton IconName="Website" Href="https://github.com/bitfoundation/bitframework" ButtonStyle="ButtonStyle.Standard">
+                    Go To Bit Foundation
+                </BitActionButton>
+                <BitActionButton IconName="Website" Target="_self" Href="https://github.com/bitfoundation/bitframework" IsEnabled="false">
+                    <span>Bit Foundation From Span</span>
+                </BitActionButton>
             </div>
-            <BitPivot>
-                <BitPivotItem  HeaderText="Example" IconName="ViewList">
-                    <div>
-                        <BitActionButton Style="color:red">
-                            Styled Action Button
-                        </BitActionButton>
-                        <BitActionButton Class="custom-button">
-                            Classed Action Button
-                        </BitActionButton>
-                    </div>
-                </BitPivotItem>
-                <BitPivotItem HeaderText="Code" IconName="Source">
-                    <p>
-                        &lt<span class="dark-green">BitActionButton Style="</span><span>color:red"</span><span>></span>Styled Action Button<span>&lt/</span><span class="dark-green">BitActionButton</span><span>&gt;</span>
-                    </p>
-                    <p>
-                        &lt<span class="dark-green">BitActionButton Class="</span><span>custom-button"</span><span>></span>Classed Action Button<span>&lt/</span><span class="dark-green">BitActionButton</span><span>&gt;</span>
-                    </p>
-                    <div>
-                        <p>
-                            &lt<span class="light-blue">style></span>
-                            <br />
-                            <span class="m-l-30 dark-yellow">.custom-button</span> {
-                            <br />
-                            <span class="m-l-45"><span class="light-blue">text-decoration</span> : underline;</span>
-                            <br />
-                            <span class="m-l-45"><span class="light-blue">font-weight</span> : bolder;</span>>
-                            <br />
-                            <span class="m-l-30">}</span>
-                            <br />
-                            <span>&lt/</span><span class="light-blue">style</span><span>&gt;</span>
-                        </p>
-                    </div>
-                </BitPivotItem>
-            </BitPivot>
-        </div>
-        <div class="card">
-            <h3>Visibility</h3>
-            <div class="desc">
-                <p>
-                    By setting Visibility attribute, BitActionButton can be Visible, Hidden or Collapsed.
-                </p>
-            </div>
-            <BitPivot>
-                <BitPivotItem HeaderText="Example" IconName="ViewList">
-                    <div>
-                        <BitActionButton IconName="AddEvent" Visibility="BitComponentVisibility.Visible">Add Event</BitActionButton>
-                        <br />
-                        <span>Hidden Button: </span>[<BitActionButton Visibility="BitComponentVisibility.Hidden">Hidden Action Button</BitActionButton>]
-                        <br />
-                        <span>Collapsed Button: </span>[<BitActionButton Visibility="BitComponentVisibility.Collapsed">Collapsed Action Button</BitActionButton>]
-                    </div>
-                </BitPivotItem>
-                <BitPivotItem HeaderText="Code" IconName="Source">
-                    <p>
-                        &lt<span class="dark-green">BitActionButton Visibility="</span><span class="light-green">ComponentVisibility</span>.Visible"<span><span class="dark-green"> IconName="</span>AddEvent"></span><span>Add Event</span><span>&lt/</span><span class="dark-green">BitActionButton</span><span>&gt;</span>
-                    </p>
-                    <p>
-                        &lt<span class="dark-green">BitActionButton Hidden="</span><span class="light-green">ComponentHidden</span>.Hidden"<span>></span><span>Hidden Action Button</span><span>&lt/</span><span class="dark-green">BitActionButton</span><span>&gt;</span>
-                    </p>
-                    <p>
-                        &lt<span class="dark-green">BitActionButton Visibility="</span><span class="light-green">ComponentVisibility</span>.Collapsed"<span>></span><span>Collapsed Action Button</span><span>&lt/</span><span class="dark-green">BitActionButton</span><span>&gt;</span>
-                    </p>
-                </BitPivotItem>
-            </BitPivot>
-        </div>
-        <div class="card">
-            <h3>Arias for Screen Reader</h3>
-            <div class="desc">
-                <p>
-                    Aria attribues can also set for a BitActionButton.
-                </p>
-            </div>
-            <BitPivot>
-                <BitPivotItem HeaderText="Example" IconName="ViewList">
-                    <div>
-                        <BitActionButton IconName="Library" AriaDescription="Detailed description used for screen reader.">
-                            Action Button with Aria Description
-                        </BitActionButton>
-                        <BitActionButton IconName="Library" AriaHidden="true">
-                            Action Button with Aria Hidden
-                        </BitActionButton>
-                    </div>
-                </BitPivotItem>
-                <BitPivotItem HeaderText="Code" IconName="Source">
-                    <p>
-                        &lt<span class="dark-green">BitActionButton AriaDescription="</span><span>Detailed description used for screen reader." <span class="dark-green"> IconName="</span>Library">Action Button with Aria Description</span><span>&lt/</span><span class="dark-green">BitActionButton</span><span>&gt;</span>
-                    </p>
-                    <p>
-                        &lt<span class="dark-green">BitActionButton AriaHidden="</span><span class="light-blue">true"</span><span class="dark-green"> IconName="</span>Library">Action Button with Aria Hidden<span>&lt/</span><span class="dark-green">BitActionButton</span><span>&gt;</span>
-                    </p>
-                </BitPivotItem>
-            </BitPivot>
-        </div>
-        <div class="card">
-            <h3>ActionButton-like Anchor</h3>
-            <div class="desc">
-                <p>
-                    BitActionButton can act as a link by setting Href and Target attribute, you define how to open your link.
-                </p>
-            </div>
-            <BitPivot>
-                <BitPivotItem HeaderText="Example" IconName="ViewList">
-                    <div class="m-t-10">
-                        <BitActionButton IconName="Website" Target="_blank" Href="https://github.com/bitfoundation/bitframework">
-                            Open Bit Foundation In New Tab
-                        </BitActionButton>
-                        <BitActionButton IconName="Website" Href="https://github.com/bitfoundation/bitframework" ButtonStyle="ButtonStyle.Standard">
-                            Go To Bit Foundation
-                        </BitActionButton>
-                        <BitActionButton IconName="Website" Target="_self" Href="https://github.com/bitfoundation/bitframework" IsEnabled="false">
-                            <span>Bit Foundation From Span</span>
-                        </BitActionButton>
-                    </div>
-                </BitPivotItem>
-                <BitPivotItem HeaderText="Code" IconName="Source">
-                    <p>
-                        &lt<span class="dark-green">BitActionButton</span><span class="dark-green"> IconName="</span>Website"<span class="dark-green"> Target="</span><span>_blank"</span><span class="dark-green"> Href=</span><span class="light-blue">"https://github.com/bitfoundation/bitframework"></span>Open Bit Foundation In New Tab<span>&lt/</span><span class="dark-green">BitActionButton</span><span>&gt;</span>
-                    </p>
-                    <p>
-                        &lt<span class="dark-green">BitActionButton</span><span class="dark-green"> IconName="</span>Website"<span class="dark-green"> ButtonStyle="</span><span class="light-green">ButtonStyle</span><span>.Standard"</span><span class="dark-green"> Href=</span><span class="light-blue">"https://github.com/bitfoundation/bitframework"></span>Go To Bit Foundation<span>&lt/</span><span class="dark-green">BitActionButton</span><span>&gt;</span>
-                    </p>
-                    <p>
-                        &lt<span class="dark-green">BitActionButton Target="</span><span>_self"</span><span class="dark-green"> IconName="</span>Website"<span class="dark-green"> Href=</span><span class="light-blue">"https://github.com/bitfoundation/bitframework"</span><span class="dark-green"> IsEnabled="</span><span class="light-blue">false"&lt</span><span class="light-blue">span></span>Bit Foundation From Span<span class="light-blue">&ltspan></span><span>&lt/</span><span class="dark-green">BitActionButton</span><span>&gt;</span>
-                    </p>
-                </BitPivotItem>
-            </BitPivot>
-        </div>
-    </div>
-</div>
-<h2>Implementation</h2>
-<div class="card">
-    <table>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Default value</th>
-            <th>Description</th>
-        </tr>
-        <tr>
-            <td>AllowDisabledFocus</td>
-            <td>bool</td>
-            <td>false</td>
-            <td>Whether the button can have focus in disabled mode.</td>
-        </tr>
-        <tr>
-            <td>AriaDescription</td>
-            <td>string</td>
-            <td></td>
-            <td>Detailed description of the action button for the benefit of screen readers.</td>
-        </tr>
-        <tr>
-            <td>AriaHidden</td>
-            <td>bool</td>
-            <td></td>
-            <td>If true, add an aria-hidden attribute instructing screen readers to ignore the element.</td>
-        </tr>
-        <tr>
-            <td>AriaLabel</td>
-            <td>string</td>
-            <td></td>
-            <td>The aria-label of the control for the benefit of screen readers.</td>
-        </tr>
-        <tr>
-            <td>ChildContent</td>
-            <td>RenderFragment</td>
-            <td></td>
-            <td>Any custom tag or text the developer wishes to associate with the action button.</td>
-        </tr>       
-        <tr>
-            <td>Class</td>
-            <td>string</td>
-            <td></td>
-            <td>Custom CSS class for the root element of the component.</td>
-        </tr>
-        <tr>
-            <td>Href</td>
-            <td>string</td>
-            <td></td>
-            <td>If provided, this component will be rendered as an anchor.</td>
-        </tr>
-        <tr>
-            <td>HtmlAttributes</td>
-            <td>Dictionary&lt;string, object&gt;</td>
-            <td></td>
-            <td>Capture and render additional attributes in addition to the component's parameters.</td>
-        </tr>
-        <tr>
-            <td>IconName</td>
-            <td>string</td>
-            <td></td>
-            <td>The attribute for the icon shown in the action button.</td>
-        </tr>
-        <tr>
-            <td>IsEnabled</td>
-            <td>bool</td>
-            <td></td>
-            <td>Whether or not the component is enabled.</td>
-        </tr>
-        <tr>
-            <td>OnClick</td>
-            <td>EventCallback&lt;MouseEventArgs&gt;</td>
-            <td></td>
-            <td>Callback for when the button clicked.</td>
-        </tr>
-        <tr>
-            <td>Style</td>
-            <td>string</td>
-            <td></td>
-            <td>Custom style for the root element of the component.</td>
-        </tr>
-        <tr>
-            <td>Target</td>
-            <td>string</td>
-            <td></td>
-            <td>Target of an anchor.</td>
-        </tr>
-        <tr>
-            <td>Theme</td>
-            <td>Theme</td>
-            <td></td>
-            <td></td>
-        </tr>
-        <tr>
-            <td>Title</td>
-            <td>string</td>
-            <td></td>
-            <td>Optional title for this action button.</td>
-        </tr>
-        <tr>
-            <td>Visibility</td>
-            <td>ComponentVisibility</td>
-            <td>Visible</td>
-            <td>Whether the action button is visible, hidden, collapsed.</td>
-        </tr>
-        <tr>
-            <td>Visual</td>
-            <td>Visual</td>
-            <td></td>
-            <td></td>
-        </tr>
-    </table>
-    <h4 id="component-visibility">ComponentVisibility</h4>
-    <hr />
-    <table>
-        <tr>
-            <th>Name</th>
-            <th>Value</th>
-            <th>Description</th>
-        </tr>
-        <tr>
-            <td>Visible</td>
-            <td>0</td>
-            <td></td>
-        </tr>
-        <tr>
-            <td>Hidden</td>
-            <td>1</td>
-            <td></td>
-        </tr>
-        <tr>
-            <td>Collapsed</td>
-            <td>2</td>
-            <td></td>
-        </tr>
-    </table>
-</div>
+        </SampleContent>
+        <CodeSampleContent>
+            <p>
+                &lt<span class="dark-green">BitActionButton</span><span class="dark-green"> IconName=</span>"Website"<span class="dark-green"> Target=</span><span>"_blank"</span><span class="dark-green"> Href=</span><span class="light-blue">"https://github.com/bitfoundation/bitframework"></span>Open Bit Foundation In New Tab<span>&lt/</span><span class="dark-green">BitActionButton</span><span>&gt;</span>
+            </p>
+            <p>
+                &lt<span class="dark-green">BitActionButton</span><span class="dark-green"> IconName=</span>"Website"<span class="dark-green"> ButtonStyle=</span>"<span class="light-green">ButtonStyle</span><span>.Standard"</span><span class="dark-green"> Href=</span><span class="light-blue">"https://github.com/bitfoundation/bitframework"></span>Go To Bit Foundation<span>&lt/</span><span class="dark-green">BitActionButton</span><span>&gt;</span>
+            </p>
+            <p>
+                &lt<span class="dark-green">BitActionButton Target=</span><span>"_self"</span><span class="dark-green"> IconName=</span>"Website"<span class="dark-green"> Href=</span><span class="light-blue">"https://github.com/bitfoundation/bitframework"</span><span class="dark-green"> IsEnabled=</span><span class="light-blue">"false"&lt</span><span class="light-blue">span></span>Bit Foundation From Span<span class="light-blue">&ltspan></span><span>&lt/</span><span class="dark-green">BitActionButton</span><span>&gt;</span>
+            </p>
+        </CodeSampleContent>
+    </CodeSample>
+</ComponentPage>
