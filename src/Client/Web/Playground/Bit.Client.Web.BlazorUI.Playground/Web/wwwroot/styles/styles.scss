@@ -615,8 +615,11 @@ footer {
     font-weight: bolder;
 }
 
-/* General */
+.sample .bit-drp-lbl {
+    padding-bottom: rem(20px);
+}
 
+/* General */
 .bit-nav-selected-fluent:after {
     border-left: rem(4px) solid $Violet;
 }
@@ -671,7 +674,7 @@ input::-webkit-input-placeholder {
 }
 
 @media(min-width:768px) {
-    .container{
+    .container {
         max-width: 720px;
     }
 
