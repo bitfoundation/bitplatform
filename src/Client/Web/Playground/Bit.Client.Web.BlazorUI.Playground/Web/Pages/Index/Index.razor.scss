@@ -7,6 +7,10 @@ button {
 .header {
     width: 100%;
 
+    @include md {
+        margin-bottom: rem(160px);
+    }
+
     @include lg {
         margin-bottom: rem(200px);
     }
@@ -22,6 +26,11 @@ button {
     background-position-x: right;
     background-size: contain;
     position: relative;
+
+    @include md {
+        height: rem(460px);
+        background-size: rem(381px);
+    }
 
     @include lg {
         height: rem(726px);
@@ -42,18 +51,26 @@ button {
 }
 
 .header-menu img {
+    @include md {
+        width: rem(40px);
+    }
+
     @include lg {
-        max-width: rem(70px);
+        width: rem(70px);
     }
 
     @include xl {
-        max-width: rem(90px);
+        width: rem(90px);
     }
 }
 
 .menu-header-link {
     text-decoration: none;
     padding: 0;
+
+    @include md {
+        margin-left: rem(51px);
+    }
 
     @include lg {
         margin-left: rem(47px);
@@ -71,10 +88,15 @@ button {
 
 .header-description-container {
     margin: auto;
-    height: rem(805px);
     display: flex;
     flex-flow: column nowrap;
     justify-content: center;
+
+    @include md {
+        height: rem(380px);
+        max-width: rem(386px);
+        margin-left: 4.5%;
+    }
 
     @include lg {
         height: rem(765px);
@@ -84,11 +106,18 @@ button {
 
     @include xl {
         max-width: rem(688px);
+        height: rem(805px);
+        margin: auto;
         margin-left: calc(17% + 90px);
     }
 }
 
 .header-description-container .buttons-container {
+    @include md {
+        margin-top: rem(46px);
+        margin-bottom: rem(46px);
+    }
+
     @include lg {
         margin-top: rem(75px);
         margin-bottom: rem(80px);
@@ -107,22 +136,34 @@ button {
     border-radius: rem(4px);
     margin-right: rem(12px);
     border: none;
+
+    @include md {
+        padding: rem(8px) rem(32px);
+    }
 }
 
 .demo-btn {
+    padding: rem(10px) rem(43px);
     background-color: white;
     border: rem(1px) solid #5c2d91;
     box-sizing: border-box;
     border-radius: rem(4px);
     color: #5c2d91;
-    padding: rem(11px) rem(43px);
+
+    @include md {
+        padding: rem(7px) rem(32px);
+    }
 }
 
 .header-description-container {
-    margin-bottom: rem(5px);
+    @include lg {
+        margin-bottom: rem(5px);
+    }
 }
 
 .header-title-container {
+    margin-bottom: 0;
+
     @include lg {
         margin-top: 0;
     }
@@ -130,12 +171,14 @@ button {
     @include xl {
         margin-top: rem(110px);
     }
-
-    margin-bottom: 0;
 }
 
 .header-text-description {
     margin: 0;
+
+    @include md {
+        width: rem(273px);
+    }
 
     @include lg {
         width: rem( 389px);
@@ -143,6 +186,13 @@ button {
 }
 
 .header .logos-container img {
+    margin-right: rem(46px);
+
+    @include md {
+        margin-right: rem(26px);
+        max-height: rem(24px);
+    }
+
     @include lg {
         max-height: rem(35px);
     }
@@ -150,8 +200,6 @@ button {
     @include xl {
         max-height: rem(40px);
     }
-
-    margin-right: rem(46px);
 }
 
 
@@ -159,6 +207,10 @@ button {
 
 .bit-product-describe {
     justify-content: center;
+
+    @include md {
+        margin-bottom: rem(160px)
+    }
 
     @include lg {
         margin-bottom: rem(200px)
@@ -178,6 +230,12 @@ button {
     background-repeat: no-repeat;
     background-size: contain;
 
+    @include md {
+        height: rem(274px);
+        width: rem(274px);
+        margin: auto;
+    }
+
     @include lg {
         height: rem(440px);
     }
@@ -189,6 +247,10 @@ button {
 }
 
 .product-describe-container {
+    @include md {
+        margin-left: rem(24px);
+    }
+
     @include xl {
         margin-left: rem(52px);
     }
@@ -196,6 +258,10 @@ button {
 
 /*----------------------------------from-scratch-----------------------------*/
 .from-scratch {
+    @include md {
+        margin-bottom: rem(160px) !important;
+    }
+
     @include lg {
         margin-bottom: rem(200px) !important;
     }
@@ -211,6 +277,10 @@ button {
     background-position: right;
     background-repeat: no-repeat;
 
+    @include md {
+        background-size: rem(472px);
+    }
+
     @include lg {
         background-size: rem(688px);
     }
@@ -221,17 +291,25 @@ button {
 }
 
 .from-scratch-title {
-    width: rem(254px);
     color: #141414;
     text-decoration: underline;
     text-decoration-color: #ef9c00;
     text-decoration-thickness: rem(10px);
+
+    @include md {
+        width: rem(175px);
+    }
+
+    @include lg {
+        width: rem(254px);
+    }
+
+    @include xl {
+        width: rem(254px);
+    }
 }
 
 .from-scratch .start-with-btn {
-    font-weight: bold;
-    font-size: rem(18px);
-    line-height: 176%;
     background: #FFFFFF;
     border: rem(1px) solid #5C2D91;
     box-sizing: border-box;
@@ -247,6 +325,10 @@ button {
     background-size: cover;
     background-repeat: no-repeat;
     box-shadow: inset 0 0 0 rem(1000px) #55456699;
+
+    @include md {
+        height: rem(302px);
+    }
 
     @include lg {
         height: rem(520px);
@@ -265,27 +347,27 @@ button {
 
 .bit-Frequent-updates-img {
 
-    @include lg {
-        max-width: rem(130px);
+    @include md {
+        width: rem(76px);
+        margin-top: rem(88px);
     }
 
-    @include xl {
-        max-width: rem(170px);
-    }
-}
-
-.bit-Frequent-updates img {
-
     @include lg {
+        width: rem(130px);
         margin-top: rem(150px);
     }
 
     @include xl {
+        width: rem(170px);
         margin-top: rem(170px);
     }
 }
 
 .bit-Frequent-updates h4 {
+    @include lg {
+        margin-top: rem(32px);
+    }
+
     @include lg {
         margin-top: rem(40px);
     }
@@ -308,6 +390,10 @@ button {
     background: url(/images/index/ease-of-use-bg.png) center center no-repeat;
     background-size: contain;
     background-position-x: right;
+
+    @include md {
+        height: rem(364px);
+    }
 
     @include lg {
         height: rem(420px);
@@ -340,6 +426,10 @@ button {
     background-color: #f7f7f7;
     width: 100%;
 
+    @include md {
+        height: rem(375px);
+    }
+
     @include lg {
         height: rem(520px);
     }
@@ -353,18 +443,31 @@ button {
     margin: auto;
     position: relative;
     max-width: rem(1257.99px);
+
+    @include md {
+        max-width: 95%;
+    }
 }
 
 .customer-opinion-container {
     width: rem(600px);
     margin: auto;
     transform: translateY(130px);
+
+    @include md {
+        width: rem(392px);
+    }
 }
 
 .text-opinion-container {
     border-radius: rem(25px);
     color: #141414;
     margin: auto;
+
+    @include md {
+        width: rem(345px);
+        height: rem(144px);
+    }
 
     @include lg {
         width: rem(520.47px);
@@ -385,6 +488,13 @@ button {
     position: absolute;
     top: rem(26px);
 
+    @include md {
+        height: rem(79.85px);
+        width: rem(354px);
+        left: 4%;
+        top: rem(17px);
+    }
+
     @include lg {
         width: rem(542px);
         left: 4%;
@@ -402,6 +512,10 @@ button {
     transform: translateY(-50%);
     margin: auto;
     text-align: center;
+
+    @include md {
+        margin: auto rem(13px);
+    }
 }
 
 .customers-opinions .text-opinion-container:nth-child(odd) {
@@ -421,6 +535,13 @@ button {
 .customers-opinions .customer-img-container .customer-img {
     border-radius: rem(10px);
     margin-top: rem(32px);
+    width: rem(160px);
+    height: rem(160px);
+
+    @include md {
+        width: rem(94px);
+        height: rem(94px);
+    }
 }
 
 .customers-opinions .customer-img-container .attach-img {
@@ -428,12 +549,22 @@ button {
     left: rem(-22px);
     top: rem(12px);
     width: rem(60px);
+
+    @include md {
+        left: rem(-14px);
+        top: rem(20px);
+        width: rem(30px);
+    }
 }
 
 .customers-opinions .inner-opinion-container .customer-intro {
     width: rem(336px);
     float: right;
     transform: translateY(rem(172px));
+
+    @include md {
+        transform: translateY(rem(145px));
+    }
 }
 
 .customers-opinions .customer-intro > p {
@@ -481,6 +612,10 @@ button {
 .menu-footer-column {
     display: flex;
     flex-flow: column;
+
+    @include md {
+        margin-left: 5%;
+    }
 
     @include lg {
         width: rem(285px);
