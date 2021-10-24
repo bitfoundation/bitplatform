@@ -608,6 +608,9 @@ footer {
 }
 
 .custom-button, .custom-button:hover {
+    background-color: $DarkRed;
+    border-color: $DarkRed;
+    color: $White;
     text-decoration: underline;
     font-weight: bolder;
 }
