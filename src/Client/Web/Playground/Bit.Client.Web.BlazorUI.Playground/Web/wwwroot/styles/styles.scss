@@ -615,6 +615,20 @@ footer {
     font-weight: bolder;
 }
 
+.disable-cmp-btn {
+    @include md {
+        margin-top: rem(10px);
+        width: rem(214px);
+    }
+}
+
+.bit-cmp-btn {
+    @include sm {
+        margin-top: rem(10px);
+        width: rem(278px);
+    }
+}
+
 /* General */
 
 .bit-nav-selected-fluent:after {

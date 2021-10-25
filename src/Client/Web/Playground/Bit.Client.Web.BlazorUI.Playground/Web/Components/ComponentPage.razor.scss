@@ -90,6 +90,7 @@ tr:last-child {
             .name {
                 color: $Violet;
                 line-height: 0;
+                white-space: nowrap;
             }
 
             .description {
