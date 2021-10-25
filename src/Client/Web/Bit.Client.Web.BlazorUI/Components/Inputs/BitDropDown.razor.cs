@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.JSInterop;
 
 namespace Bit.Client.Web.BlazorUI
 {
@@ -14,10 +15,13 @@ namespace Bit.Client.Web.BlazorUI
         private bool isRequired = false;
         private List<string> selectedMultipleKeys = new();
         private string selectedKey = string.Empty;
+        private int wrapperMarginLeft = 0;
+        private int wrapperMarginBottom = 0;
         private bool SelectedMultipleKeysHasBeenSet;
         private bool SelectedKeyHasBeenSet;
         private bool IsSelectedMultipleKeysChanged = false;
         private List<BitDropDownItem> NormalDropDownItems = new List<BitDropDownItem>();
+        [Inject] public IJSRuntime? JSRuntime { get; set; }
 
         /// <summary>
         /// Whether multiple items are allowed to be selected
@@ -353,5 +357,22 @@ namespace Bit.Client.Web.BlazorUI
 
         private string GetDropdownAriaLabelledby => Label.HasValue() ? $"{DropDownId}-label {DropDownId}-option" : $"{DropDownId}-option";
         private int GetItemPosInSet(BitDropDownItem item) => NormalDropDownItems.IndexOf(item) + 1;
+
+        [JSInvokable]
+        public void ChangeCalloutPosition(int heightDiff, int widthDiff)
+        {
+            wrapperMarginLeft = widthDiff;
+            wrapperMarginBottom = heightDiff;
+        }
+
+        protected async override Task OnAfterRenderAsync(bool firstRender)
+        {
+            if (IsEnabled && firstRender)
+            {
+                _ = JSRuntime?.BitDropDownRegisterOnScrollEvent(this, $"{DropDownId}-list", "ChangeCalloutPosition");
+            }
+
+            await base.OnAfterRenderAsync(firstRender);
+        }
     }
 }

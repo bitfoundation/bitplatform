@@ -70,6 +70,12 @@ namespace Microsoft.JSInterop
             await jsRuntime.InvokeAsync<string>("BitDatePicker.registerOnDocumentClickEvent", DotNetObjectReference.Create(dontetHelper),
                 dontetHelper.UniqueId.ToString(), callbackName);
         }
+
+        public static async Task BitDropDownRegisterOnScrollEvent(this IJSRuntime jsRuntime, BitComponentBase dontetHelper, string itemsWrapperId, string callbackName)
+        {
+            await jsRuntime.InvokeAsync<string>("BitDropDown.registerOnScrollEvent", DotNetObjectReference.Create(dontetHelper),
+                itemsWrapperId, callbackName);
+        }
     }
 
     public class BoundingClientRect
