@@ -93,6 +93,17 @@ h5 {
         @include h5-sm;
     }
 }
+pre {
+    margin-left: rem(-70px);
+
+    @include md {
+        margin-left: rem(-52px);
+    }
+
+    @include sm {
+        margin-left: rem(-48px);
+    }
+}
 
 /* Code Colors */
 
@@ -607,6 +618,10 @@ footer {
     }
 }
 
+.chk-box .bit-chb-lbl {
+    margin-bottom: rem(10px);
+}
+
 .custom-button, .custom-button:hover {
     background-color: $DarkRed;
     border-color: $DarkRed;
@@ -615,8 +630,21 @@ footer {
     font-weight: bolder;
 }
 
-/* General */
+.disable-cmp-btn {
+    @include md {
+        margin-top: rem(10px);
+        width: rem(214px);
+    }
+}
 
+.bit-cmp-btn {
+    @include sm {
+        margin-top: rem(10px);
+        width: rem(278px);
+    }
+}
+
+/* General */
 .bit-nav-selected-fluent:after {
     border-left: rem(4px) solid $Violet;
 }
