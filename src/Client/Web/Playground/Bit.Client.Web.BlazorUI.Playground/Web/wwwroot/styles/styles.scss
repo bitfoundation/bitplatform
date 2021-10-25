@@ -665,6 +665,10 @@ footer {
     }
 }
 
+.p-12 .bit-tgl label {
+    padding-bottom: rem(15px);
+}
+
 /* General */
 .bit-nav-selected-fluent:after {
     border-left: rem(4px) solid $Violet;
