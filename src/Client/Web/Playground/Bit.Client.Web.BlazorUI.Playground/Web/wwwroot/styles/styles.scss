@@ -93,6 +93,17 @@ h5 {
         @include h5-sm;
     }
 }
+pre {
+    margin-left: rem(-70px);
+
+    @include md {
+        margin-left: rem(-52px);
+    }
+
+    @include sm {
+        margin-left: rem(-48px);
+    }
+}
 
 /* Code Colors */
 
@@ -607,12 +618,30 @@ footer {
     }
 }
 
+.chk-box .bit-chb-lbl {
+    margin-bottom: rem(10px);
+}
+
 .custom-button, .custom-button:hover {
     background-color: $DarkRed;
     border-color: $DarkRed;
     color: $White;
     text-decoration: underline;
     font-weight: bolder;
+}
+
+.disable-cmp-btn {
+    @include md {
+        margin-top: rem(10px);
+        width: rem(214px);
+    }
+}
+
+.bit-cmp-btn {
+    @include sm {
+        margin-top: rem(10px);
+        width: rem(278px);
+    }
 }
 
 .tgl-btn {
@@ -681,6 +710,72 @@ input::-webkit-input-placeholder {
     margin-top: calc(var(--bs-gutter-y) * -1);
     margin-right: calc(var(--bs-gutter-x) * -0.5);
     margin-left: calc(var(--bs-gutter-x) * -0.5);
+}
+
+@media(min-width:768px) {
+    .container{
+        max-width: 720px;
+    }
+
+    .col-md-1 {
+        flex: 0 0 auto;
+        width: 8.33333333%;
+    }
+
+    .col-md-2 {
+        flex: 0 0 auto;
+        width: 16.66666667%;
+    }
+
+    .col-md-3 {
+        flex: 0 0 auto;
+        width: 25%;
+    }
+
+    .col-md-4 {
+        flex: 0 0 auto;
+        width: 33.33333333%;
+    }
+
+    .col-md-5 {
+        flex: 0 0 auto;
+        width: 41.66666667%;
+    }
+
+    .col-md-6 {
+        flex: 0 0 auto;
+        width: 50%;
+    }
+
+    .col-md-7 {
+        flex: 0 0 auto;
+        width: 58.33333333%;
+    }
+
+    .col-md-8 {
+        flex: 0 0 auto;
+        width: 66.66666667%;
+    }
+
+    .col-md-9 {
+        flex: 0 0 auto;
+        width: 75%;
+    }
+
+    .col-md-10 {
+        flex: 0 0 auto;
+        width: 83.33333333%;
+    }
+
+    .col-md-11 {
+        flex: 0 0 auto;
+        width: 91.66666667%;
+    }
+
+    .col-md-12 {
+        flex: 0 0 auto;
+        width: 100%;
+    }
 }
 
 @media (min-width: 1024px) {
@@ -1113,5 +1208,32 @@ h6 {
     @include xl {
         font-size: 24px;
         line-height: 165%;
+    }
+}
+
+
+.btn2-bold {
+    font-family: Axiforma;
+    font-style: normal;
+    font-weight: bold;
+
+    @include sm {
+        font-size: 14px;
+        line-height: 168%;
+    }
+
+    @include md {
+        font-size: 12px;
+        line-height: 135%;
+    }
+
+    @include lg {
+        font-size: 18px;
+        line-height: 176%;
+    }
+
+    @include xl {
+        font-size: 18px;
+        line-height: 176%;
     }
 }
