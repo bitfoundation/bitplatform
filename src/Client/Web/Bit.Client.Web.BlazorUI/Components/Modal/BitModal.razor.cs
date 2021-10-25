@@ -59,11 +59,6 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public EventCallback<MouseEventArgs> OnDismiss { get; set; }
 
         /// <summary>
-        /// A callback function which is called after the Modal is dismissed and the animation is complete.
-        /// </summary>
-        [Parameter] public EventCallback OnDismissed { get; set; }
-
-        /// <summary>
         /// ARIA id for the subtitle of the Modal, if any.
         /// </summary>
         [Parameter] public string SubtitleAriaId { get; set; } = string.Empty;
