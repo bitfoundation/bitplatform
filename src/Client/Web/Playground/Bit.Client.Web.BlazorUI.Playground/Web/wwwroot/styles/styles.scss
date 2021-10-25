@@ -607,6 +607,10 @@ footer {
     }
 }
 
+.chk-box .bit-chb-lbl {
+    margin-bottom: rem(10px);
+}
+
 .custom-button, .custom-button:hover {
     background-color: $DarkRed;
     border-color: $DarkRed;
@@ -630,7 +634,6 @@ footer {
 }
 
 /* General */
-
 .bit-nav-selected-fluent:after {
     border-left: rem(4px) solid $Violet;
 }
