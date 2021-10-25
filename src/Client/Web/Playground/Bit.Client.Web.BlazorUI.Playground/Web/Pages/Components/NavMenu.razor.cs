@@ -12,7 +12,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components
             {
                 Name = "Components",
                 Key = "Components",
-                Url = "#",
+                Url = "/components/overview",
             },
             new BitNavLinkItem
             {
