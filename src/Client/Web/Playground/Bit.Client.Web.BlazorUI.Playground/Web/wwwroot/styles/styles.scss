@@ -358,9 +358,9 @@ footer {
         }
     }
 
-    a:hover, a:visited {
-        text-decoration: none !important;
-        color: $White !important;
+    .bit-lnk-fluent > a:active, .bit-lnk-fluent > a:hover, .bit-lnk-fluent > a:visited {
+        text-decoration: none;
+        color: $White;
     }
 }
 
@@ -471,6 +471,13 @@ footer {
     .border-top {
         border-bottom: rem(1px) solid $Gray03;
         padding-top: rem(30px);
+    }
+}
+
+.box {
+    .bit-lnk-fluent > a:active, .bit-lnk-fluent > a:hover, .bit-lnk-fluent > a:visited {
+        text-decoration: none;
+        color: $White;
     }
 }
 
@@ -651,6 +658,20 @@ footer {
 
     .bit-chg label {
         padding-bottom: rem(20px);
+    }
+}
+
+.tgl-btn {
+    @include sm {
+        margin-top: rem(10px);
+        width: rem(195px);
+    }
+}
+
+.aria-hidden-tgl-btn{
+    @include sm {
+        margin-top: rem(10px);
+        width: rem(239px);
     }
 }
 
