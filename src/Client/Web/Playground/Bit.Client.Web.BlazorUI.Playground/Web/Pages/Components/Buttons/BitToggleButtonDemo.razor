@@ -1,392 +1,160 @@
 ﻿@page "/components/togglebutton"
 
-<h2>BitToggleButton</h2>
+@using Bit.Client.Web.BlazorUI.Playground.Web.Components
 
-<div class="card">
-    <p class="desc">BitToggleButton component represents a button as a checkbox and can use in form pages.</p>
-</div>
+<ComponentPage ComponentName="Toggle Button" OverviewDesc="Buttons give people a way to trigger an action. They’re typically found in forms, dialog panels, and dialogs.
+    Some buttons are specialized for particular tasks, such as navigation, repeated actions, or presenting menus."
+               ComponentParameters="componentParameters" EnumParameters="enumParameters">
+    <CodeSample Title="BitToggleButton" Description="BitToggleButton component represents a button as a checkbox and can use in form pages.">
+        <SampleContent>
+            <div>
+                <BitToggleButton @bind-IsChecked="TogglePrimaryButtonChecked"
+                                 Class="tgl-btn"
+                                 Label="@(TogglePrimaryButtonChecked ? "Primary Mute":"Primary Unmute")"
+                                 IconName=@(TogglePrimaryButtonChecked ? "MicOff" : "Microphone")
+                                 ButtonStyle="BitButtonStyle.Primary">
+                </BitToggleButton>
 
-<h2>Usage</h2>
-<div class="wrapper">
-    <div class="card">
-        <h3>BitToggleButton</h3>
-        <BitPivot>
-            <BitPivotItem HeaderText="Example" IconName="ViewList">
-                <div>
-                    <BitToggleButton @bind-IsChecked="TogglePrimaryButtonChecked"
-                                     Label="@(TogglePrimaryButtonChecked ? "Primary Mute":"Primary Unmute")"
-                                     IconName=@(TogglePrimaryButtonChecked ? "MicOff" : "Microphone")
-                                     ButtonStyle="BitButtonStyle.Primary">
-                    </BitToggleButton>
+                <BitToggleButton @bind-IsChecked="ToggleStandardButtonChecked"
+                                 Class="tgl-btn"
+                                 Label="@(ToggleStandardButtonChecked ? "Standard Mute":"Standard Unmute")"
+                                 IconName=@(ToggleStandardButtonChecked ? "MicOff" : "Microphone")
+                                 ButtonStyle="BitButtonStyle.Standard">
+                </BitToggleButton>
 
-                    <BitToggleButton @bind-IsChecked="ToggleStandardButtonChecked"
-                                     Label="@(ToggleStandardButtonChecked ? "Standard Mute":"Standard Unmute")"
-                                     IconName=@(ToggleStandardButtonChecked ? "MicOff" : "Microphone")
-                                     ButtonStyle="BitButtonStyle.Standard">
-                    </BitToggleButton>
-
-                    <BitToggleButton @bind-IsChecked="ToggleDisabledButtonChecked"
-                                     IsEnabled="false"
-                                     Label="@(ToggleDisabledButtonChecked ? "Disabled Mute" : "Disabled Unmute")"
-                                     IconName=@(ToggleDisabledButtonChecked ? "MicOff" : "Microphone")>
-                    </BitToggleButton>
+                <BitToggleButton @bind-IsChecked="ToggleDisabledButtonChecked"
+                                 Class="tgl-btn"
+                                 IsEnabled="false"
+                                 Label="@(ToggleDisabledButtonChecked ? "Disabled Mute" : "Disabled Unmute")"
+                                 IconName=@(ToggleDisabledButtonChecked ? "MicOff" : "Microphone")>
+                </BitToggleButton>
+            </div>
+        </SampleContent>
+        <CodeSampleContent>
+            <div>
+                <p>&lt<span class="dark-green">BitToggleButton </span><span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-IsChecked</span>="TogglePrimaryButtonChecked" </p>
+                <p><span class="m-l-120"><span class="dark-green">Label</span>="<span class="light-yellow-bg">&#64;(</span>TogglePrimaryButtonChecked ? <span class="dark-orange">"Primary Mute"</span> : <span class="dark-orange">"Primary Unmute"</span><span class="light-yellow-bg">)</span>"</span></p>
+                <p><span class="m-l-120"><span class="dark-green">IconName</span>="<span class="light-yellow-bg">&#64;(</span>TogglePrimaryButtonChecked ? <span class="dark-orange">"MicOff"</span> : <span class="dark-orange">"Microphone"</span><span class="light-yellow-bg">)</span>"</span></p>
+                <p><span class="m-l-120"><span class="dark-green">ButtonStyle</span>="ButtonStyle.Primary"></span></p>
+                <p><span>&lt/</span><span class="dark-green">BitToggleButton</span><span>&gt;</span></p>
+                <p>&lt<span class="dark-green">BitToggleButton </span><span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-IsChecked</span>="ToggleStandardButtonChecked"</p>
+                <p><span class="m-l-120"><span class="dark-green">Label</span>="<span class="light-yellow-bg">&#64;(</span>ToggleStandardButtonChecked ? <span class="dark-orange">"Standard Mute"</span> : <span class="dark-orange">"Standard Unmute"</span><span class="light-yellow-bg">)</span>"</span></p>
+                <p><span class="m-l-120"><span class="dark-green">IconName</span>="<span class="light-yellow-bg">&#64;(</span>ToggleStandardButtonChecked ? <span class="dark-orange">"MicOff"</span> : <span class="dark-orange">"Microphone"</span><span class="light-yellow-bg">)</span>"</span></p>
+                <p><span class="m-l-120"><span class="dark-green">ButtonStyle</span>="ButtonStyle.Standard"></span></p>
+                <p><span>&lt/</span><span class="dark-green">BitToggleButton</span><span>&gt;</span></p>
+                <p>&lt<span class="dark-green">BitToggleButton </span><span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-IsChecked</span>="ToggleDisabledButtonChecked"</p>
+                <p><span class="m-l-120"><span class="dark-green">Label</span>="<span class="light-yellow-bg">&#64;(</span>ToggleDisabledButtonChecked ? <span class="dark-orange">"Disabled Mute"</span> : <span class="dark-orange">"Disabled Unmute"</span><span class="light-yellow-bg">)</span>"</span></p>
+                <p><span class="m-l-120"><span class="dark-green">IconName</span>="<span class="light-yellow-bg">&#64;(</span>ToggleDisabledButtonChecked ? <span class="dark-orange">"MicOff"</span> : <span class="dark-orange">"Microphone"</span><span class="light-yellow-bg">)</span>"</span></p>
+                <p><span class="m-l-120"><span class="dark-green">IsEnabled</span>="<span class="light-blue">false</span>"</span></p>
+                <p><span>&lt/</span><span class="dark-green">BitToggleButton</span><span>&gt;</span></p>
+                <div class="code m-t-10">
+                    <span class="light-yellow-bg">&#64;code {</span>
+                    <p class="m-l-70"><span class="light-blue">private bool</span> TogglePrimaryButtonChecked = <span class="light-blue">false</span>;</p>
+                    <p class="m-l-70"><span class="light-blue">private bool</span> ToggleStandardButtonChecked = <span class="light-blue"> false</span>;</p>
+                    <p class="m-l-70"><span class="light-blue">private bool</span> ToggleDisabledButtonChecked = <span class="light-blue">false</span>;</p>
+                    <span class="light-yellow-bg">}</span>
                 </div>
-            </BitPivotItem>
-            <BitPivotItem HeaderText="Code" IconName="Source">
+            </div>
+        </CodeSampleContent>
+    </CodeSample>
+    <CodeSample Title="Toggle Button with OnChange event" Description="">
+        <SampleContent>
+            <div>
+                <BitToggleButton @bind-IsChecked="ToggleButtonForOnChange"
+                                 Label="@(ToggleButtonForOnChange ? "Mute" : "Unmute")"
+                                 IconName=@(ToggleButtonForOnChange ? "MicOff" : "Microphone")
+                                 OnChange="ToggleButtonChanged">
+                </BitToggleButton>
+                <span class="checkbox-status">Check status is: @OnToggleButtonChanged</span>
+            </div>
+        </SampleContent>
+        <CodeSampleContent>
+            <div>
+                <p>&lt<span class="dark-green">BitToggleButton </span><span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-IsChecked</span>="ToggleButtonForOnChange"</p>
+                <p><span class="m-l-120"><span class="dark-green">Label</span>="<span class="light-yellow-bg">&#64;(</span>ToggleButtonForOnChange ? <span class="dark-orange">"Mute"</span> : <span class="dark-orange">"Unmute"</span><span class="light-yellow-bg">)</span>"</span></p>
+                <p><span class="m-l-120"><span class="dark-green">IconName</span>="<span class="light-yellow-bg">&#64;(</span>ToggleButtonForOnChange ? <span class="dark-orange">"MicOff"</span> : <span class="dark-orange">"Microphone"</span><span class="light-yellow-bg">)</span>"</span></p>
+                <p><span class="m-l-120"><span class="dark-green">OnChange</span>="ToggleButtonChanged"&gt;</span></p>
+                <p><span>&lt/</span><span class="dark-green">BitToggleButton</span><span>&gt;</span></p>
                 <p>
-                    &lt<span class="dark-green">BitToggleButton </span><span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-IsChecked</span>="TogglePrimaryButtonChecked"
-                    <br /><span class="m-l-120"><span class="dark-green">Label</span>="<span class="light-yellow-bg">&#64;(</span>TogglePrimaryButtonChecked ? <span class="dark-orange">"Primary Mute"</span> : <span class="dark-orange">"Primary Unmute"</span><span class="light-yellow-bg">)</span>"</span>
-                    <br /><span class="m-l-120"><span class="dark-green">IconName</span>="<span class="light-yellow-bg">&#64;(</span>TogglePrimaryButtonChecked ? <span class="dark-orange">"MicOff"</span> : <span class="dark-orange">"Microphone"</span><span class="light-yellow-bg">)</span>"</span>
-                    <br /><span class="m-l-120"><span class="dark-green">ButtonStyle</span>="ButtonStyle.Primary"></span>
-                    <br /><span>&lt/</span><span class="dark-green">BitToggleButton</span><span>&gt;</span>
-                </p>
-                <p>
-                    &lt<span class="dark-green">BitToggleButton </span><span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-IsChecked</span>="ToggleStandardButtonChecked"
-                    <br /><span class="m-l-120"><span class="dark-green">Label</span>="<span class="light-yellow-bg">&#64;(</span>ToggleStandardButtonChecked ? <span class="dark-orange">"Standard Mute"</span> : <span class="dark-orange">"Standard Unmute"</span><span class="light-yellow-bg">)</span>"</span>
-                    <br /><span class="m-l-120"><span class="dark-green">IconName</span>="<span class="light-yellow-bg">&#64;(</span>ToggleStandardButtonChecked ? <span class="dark-orange">"MicOff"</span> : <span class="dark-orange">"Microphone"</span><span class="light-yellow-bg">)</span>"</span>
-                    <br /><span class="m-l-120"><span class="dark-green">ButtonStyle</span>="ButtonStyle.Standard"></span>
-                    <br /><span>&lt/</span><span class="dark-green">BitToggleButton</span><span>&gt;</span>
-                </p>
-                <p>
-                    &lt<span class="dark-green">BitToggleButton </span><span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-IsChecked</span>="ToggleDisabledButtonChecked"
-                    <br /><span class="m-l-120"><span class="dark-green">Label</span>="<span class="light-yellow-bg">&#64;(</span>ToggleDisabledButtonChecked ? <span class="dark-orange">"Disabled Mute"</span> : <span class="dark-orange">"Disabled Unmute"</span><span class="light-yellow-bg">)</span>"</span>
-                    <br /><span class="m-l-120"><span class="dark-green">IconName</span>="<span class="light-yellow-bg">&#64;(</span>ToggleDisabledButtonChecked ? <span class="dark-orange">"MicOff"</span> : <span class="dark-orange">"Microphone"</span><span class="light-yellow-bg">)</span>"</span>
-                    <br /><span class="m-l-120"><span class="dark-green">IsEnabled</span>="<span class="light-blue">false</span>"</span>
-                    <br /><span>&lt/</span><span class="dark-green">BitToggleButton</span><span>&gt;</span>
+                    &lt<span class="light-blue">span></span><span>Check status is: <span class="light-yellow-bg">&#64;</span>OnToggleButtonChanged</span><span class="light-blue">&lt/span></span>
                 </p>
                 <div class="code m-t-10">
                     <span class="light-yellow-bg">&#64;code {</span>
-                    <p>
-                        private bool TogglePrimaryButtonChecked = false;
-                        <br />
-                        private bool ToggleStandardButtonChecked = false;
-                        <br />
-                        private bool ToggleDisabledButtonChecked = false;
+                    <p class="m-l-70"><span class="light-blue">private bool</span> ToggleButtonForOnChange = <span class="light-blue">true;</span></p>
+                    <p class="m-l-70"><span class="light-blue">private bool</span> OnToggleButtonChanged = <span class="light-blue">true;</span></p>
+                    <span class="light-yellow-bg">}</span>
+                </div>
+            </div>
+        </CodeSampleContent>
+    </CodeSample>
+    <CodeSample Title="Toggle Button with two way binding" Description="">
+        <SampleContent>
+            <div>
+                <input type=checkbox id="BitToggleButtonTwoWayValue" @bind="ToggleButtonTwoWayValue">
+                <label class="checkbox-status" for="BitToggleButtonTwoWayValue">Checked Toggle Button</label>
+                <div class="m-t-10">
+                    <BitToggleButton @bind-IsChecked="ToggleButtonTwoWayValue"
+                                     Label="@(ToggleButtonTwoWayValue ? "Mute" : "Unmute")"
+                                     IconName=@(ToggleButtonTwoWayValue ? "MicOff" : "Microphone")>
+                    </BitToggleButton>
+                </div>
+            </div>
+        </SampleContent>
+        <CodeSampleContent>
+            <div>
+                <p>&lt<span class="light-blue">input</span> type=checkbox id="BitTogleButtonTwoWayValue" <span class="light-yellow-bg">&#64;</span><span class="dark-green">bind</span><span>="TogleButtonTwoWayValue"></span></p>
+                <p>&lt<span class="light-blue">label</span> for="BitTogleButtonTwoWayValue">Checked Toggle Button<span>&lt/</span><span class="light-blue">label</span><span>&gt;</span></p>
+                <p>&lt<span class="dark-green">BitToggleButton </span><span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-IsChecked</span>="TogleButtonTwoWayValue"</p>
+                <p><span class="m-l-120"><span class="dark-green">Label</span>="<span class="light-yellow-bg">&#64;(</span>TogleButtonTwoWayValue ? <span class="dark-orange">"Mute"</span> : <span class="dark-orange">"Unmute"</span><span class="light-yellow-bg">)</span>"</span></p>
+                <p><span class="m-l-120"><span class="dark-green">IconName</span>="<span class="light-yellow-bg">&#64;(</span>TogleButtonTwoWayValue ? <span class="dark-orange">"MicOff"</span> : <span class="dark-orange">"Microphone"</span><span class="light-yellow-bg">)</span>"</span></p>
+                <p><span>&lt/</span><span class="dark-green">BitToggleButton</span><span>&gt;</span></p>
+                <p>
+                    &lt<span class="light-blue">span></span><span>Check status is: <span class="light-yellow-bg">&#64;</span>OnToggleButtonChanged</span><span class="light-blue">&lt/span></span>
+                </p>
+                <div class="code m-t-10">
+                    <span class="light-yellow-bg">&#64;code {</span>
+                    <p class="m-l-70">
+                        <span class="light-blue">private bool</span> ToggleButtonTwoWayValue = <span class="light-blue">true</span>;
                     </p>
                     <span class="light-yellow-bg">}</span>
                 </div>
-            </BitPivotItem>
-        </BitPivot>
-        <div class="card">
-            <h3>Toggle Button with Aria for Screen Reader</h3>
-            <BitPivot>
-                <BitPivotItem HeaderText="Example" IconName="ViewList">
-                    <div>
-                        <BitToggleButton @bind-IsChecked="ToggleButtonChecked"
-                                         Label="@(ToggleButtonChecked ? "Aria Description Mute" : "Aria Description Unmute")"
-                                         IconName=@(ToggleButtonChecked ? "MicOff" : "Microphone")
-                                         AriaDescription="Detailed description used for screen reader">
-                        </BitToggleButton>
-                        <BitToggleButton @bind-IsChecked="ToggleButtonChecked"
-                                         Label="@(ToggleButtonChecked ? "Aria Hidden Mute" : "Aria Hidden Unmute")"
-                                         IconName=@(ToggleButtonChecked ? "MicOff" : "Microphone")
-                                         AriaHidden="true">
-                        </BitToggleButton>
-                    </div>
-                </BitPivotItem>
-                <BitPivotItem HeaderText="Code" IconName="Source">
-                    <p>
-                        &lt<span class="dark-green">BitToggleButton </span><span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-IsChecked</span>="ToggleButtonChecked"
-                        <br /><span class="m-l-120"><span class="dark-green">Label</span>="<span class="light-yellow-bg">&#64;(</span>ToggleButtonChecked ? <span class="dark-orange">"Aria Description Mute"</span> : <span class="dark-orange">"Aria Description Unmute"</span><span class="light-yellow-bg">)</span>"</span>
-                        <br /><span class="m-l-120"><span class="dark-green">IconName</span>="<span class="light-yellow-bg">&#64;(</span>ToggleButtonChecked ? <span class="dark-orange">"MicOff"</span> : <span class="dark-orange">"Microphone"</span><span class="light-yellow-bg">)</span>"</span>
-                        <br /><span class="m-l-120"><span class="dark-green">AriaDescription</span>="Detailed description used for screen reader"&gt;</span>
-                        <br /><span>&lt/</span><span class="dark-green">BitToggleButton</span><span>&gt;</span>
-                    </p>
-                    <p>
-                        &lt<span class="dark-green">BitToggleButton </span><span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-IsChecked</span>="ToggleButtonChecked"
-                        <br /><span class="m-l-120"><span class="dark-green">Label</span>="<span class="light-yellow-bg">&#64;(</span>ToggleButtonChecked ? <span class="dark-orange">"Aria Hidden Mute"</span> : <span class="dark-orange">"Aria Hidden Unmute"</span><span class="light-yellow-bg">)</span>"</span>
-                        <br /><span class="m-l-120"><span class="dark-green">IconName</span>="<span class="light-yellow-bg">&#64;(</span>ToggleButtonChecked ? <span class="dark-orange">"MicOff"</span> : <span class="dark-orange">"Microphone"</span><span class="light-yellow-bg">)</span>"</span>
-                        <br /><span class="m-l-120"><span class="dark-green">AriaHidden</span>="<span class="light-blue">true</span>"&gt;</span>
-                        <br /><span>&lt/</span><span class="dark-green">BitToggleButton</span><span>&gt;</span>
-                    </p>
-                    <div class="code m-t-10">
-                        <span class="light-yellow-bg">&#64;code {</span>
-                        <p>
-                            private bool ToggleButtonChecked = false;
-                        </p>
-                        <span class="light-yellow-bg">}</span>
-                    </div>
-                </BitPivotItem>
-            </BitPivot>
-        </div>
-        <div class="card">
-            <h3>Toggle Button with OnChange event</h3>
-            <BitPivot>
-                <BitPivotItem HeaderText="Example" IconName="ViewList">
-                    <div>
-                        <BitToggleButton @bind-IsChecked="ToggleButtonForOnChange"
-                                         Label="@(ToggleButtonForOnChange ? "Mute" : "Unmute")"
-                                         IconName=@(ToggleButtonForOnChange ? "MicOff" : "Microphone")
-                                         OnChange="ToggleButtonChanged">
-                        </BitToggleButton>
-                        <span class="p-l-20">Check status is: @OnToggleButtonChanged</span>
-                    </div>
-                </BitPivotItem>
-                <BitPivotItem HeaderText="Code" IconName="Source">
-                    <p>
-                        &lt<span class="dark-green">BitToggleButton </span><span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-IsChecked</span>="ToggleButtonForOnChange"
-                        <br /><span class="m-l-120"><span class="dark-green">Label</span>="<span class="light-yellow-bg">&#64;(</span>ToggleButtonForOnChange ? <span class="dark-orange">"Mute"</span> : <span class="dark-orange">"Unmute"</span><span class="light-yellow-bg">)</span>"</span>
-                        <br /><span class="m-l-120"><span class="dark-green">IconName</span>="<span class="light-yellow-bg">&#64;(</span>ToggleButtonForOnChange ? <span class="dark-orange">"MicOff"</span> : <span class="dark-orange">"Microphone"</span><span class="light-yellow-bg">)</span>"</span>
-                        <br /><span class="m-l-120"><span class="dark-green">OnChange</span>="ToggleButtonChanged"&gt;</span>
-                        <br /><span>&lt/</span><span class="dark-green">BitToggleButton</span><span>&gt;</span>
-                    </p>
-                    <p>
-                        &lt<span class="light-blue">span></span><span>Check status is: <span class="light-yellow-bg">&#64;</span>OnToggleButtonChanged</span><span class="light-blue">&lt/span></span>
-                    </p>
-                    <div class="code m-t-10">
-                        <span class="light-yellow-bg">&#64;code {</span>
-                        <p>
-                            private bool ToggleButtonForOnChange = true;
-                            <br>
-                            private bool OnToggleButtonChanged = true;
-                        </p>
-                        <span class="light-yellow-bg">}</span>
-                    </div>
-                </BitPivotItem>
-            </BitPivot>
-        </div>
-        <div class="card">
-            <h3>Toggle Button with two way binding</h3>
-            <BitPivot>
-                <BitPivotItem HeaderText="Example" IconName="ViewList">
-                    <div>
-                        <input type=checkbox id="BitToggleButtonTwoWayValue" @bind="ToggleButtonTwoWayValue">
-                        <label for="BitToggleButtonTwoWayValue">Checked Toggle Button</label>
-
-                        <div class="m-t-10">
-                            <BitToggleButton @bind-IsChecked="ToggleButtonTwoWayValue"
-                                             Label="@(ToggleButtonTwoWayValue ? "Mute" : "Unmute")"
-                                             IconName=@(ToggleButtonTwoWayValue ? "MicOff" : "Microphone")>
-                            </BitToggleButton>
-                        </div>
-                    </div>
-                </BitPivotItem>
-                <BitPivotItem HeaderText="Code" IconName="Source">
-                    <p>
-                        &lt<span class="light-blue">input</span> type=checkbox id="BitTogleButtonTwoWayValue" <span class="light-yellow-bg">&#64;</span><span class="dark-green">bind</span><span>="TogleButtonTwoWayValue"></span>
-                    </p>
-                    <p>
-                        &lt<span class="light-blue">label</span> for="BitTogleButtonTwoWayValue">Checked Toggle Button<span>&lt/</span><span class="light-blue">label</span><span>&gt;</span>
-                    </p>
-                    <p>
-                        &lt<span class="dark-green">BitToggleButton </span><span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-IsChecked</span>="TogleButtonTwoWayValue"
-                        <br /><span class="m-l-120"><span class="dark-green">Label</span>="<span class="light-yellow-bg">&#64;(</span>TogleButtonTwoWayValue ? <span class="dark-orange">"Mute"</span> : <span class="dark-orange">"Unmute"</span><span class="light-yellow-bg">)</span>"</span>
-                        <br /><span class="m-l-120"><span class="dark-green">IconName</span>="<span class="light-yellow-bg">&#64;(</span>TogleButtonTwoWayValue ? <span class="dark-orange">"MicOff"</span> : <span class="dark-orange">"Microphone"</span><span class="light-yellow-bg">)</span>"</span>
-                        <br /><span>&lt/</span><span class="dark-green">BitToggleButton</span><span>&gt;</span>
-                    </p>
-                    <p>
-                        &lt<span class="light-blue">span></span><span>Check status is: <span class="light-yellow-bg">&#64;</span>OnToggleButtonChanged</span><span class="light-blue">&lt/span></span>
-                    </p>
-                    <div class="code m-t-10">
-                        <span class="light-yellow-bg">&#64;code {</span>
-                        <p>
-                            private bool ToggleButtonTwoWayValue = true;
-                        </p>
-                        <span class="light-yellow-bg">}</span>
-                    </div>
-                </BitPivotItem>
-            </BitPivot>
-        </div>
-        <div class="card">
-            <BitPivot>
-                <BitPivotItem HeaderText="Example" IconName="ViewList">
-                    <div>
-                        <BitButton ButtonStyle="BitButtonStyle.Standard" OnClick="()=>ToggleButtonTwoWayValue2=false">Set Unmute</BitButton>
-                        <BitButton ButtonStyle="BitButtonStyle.Standard" OnClick="()=>ToggleButtonTwoWayValue2=true">Set Mute</BitButton>
-                        <div class="m-t-10">
-                            <BitToggleButton @bind-IsChecked="ToggleButtonTwoWayValue2"
-                                             Label="@(ToggleButtonTwoWayValue2 ? "Mute" : "Unmute")"
-                                             IconName=@(ToggleButtonTwoWayValue2 ? "MicOff" : "Microphone")>
-                            </BitToggleButton>
-                        </div>
-                    </div>
-                </BitPivotItem>
-                <BitPivotItem HeaderText="Code" IconName="Source">
-                    <p>
-                        &lt<span class="dark-green">BitToggleButton </span><span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-IsChecked</span>="ToggleButtonTwoWayValue2"
-                        <br /><span class="m-l-120"><span class="dark-green">Label</span>="<span class="light-yellow-bg">&#64;(</span>ToggleButtonTwoWayValue2 ? <span class="dark-orange">"Mute"</span> : <span class="dark-orange">"Unmute"</span><span class="light-yellow-bg">)</span>"</span>
-                        <br /><span class="m-l-120"><span class="dark-green">IconName</span>="<span class="light-yellow-bg">&#64;(</span>ToggleButtonTwoWayValue2 ? <span class="dark-orange">"MicOff"</span> : <span class="dark-orange">"Microphone"</span><span class="light-yellow-bg">)</span>"</span>
-                        <br /><span>&lt/</span><span class="dark-green">BitToggleButton</span><span>&gt;</span>
-                    </p>
-                    <p>
-                        &lt<span class="dark-green">BitButton ButtonStyle</span>="ButtonStyle.Standard" <span class="dark-green">OnClick</span><span>="()=>ToggleButtonTwoWayValue2=true">Set Mute</span><span>&lt/</span><span class="dark-green">BitButton</span><span>&gt;</span>
-                    </p>
-                    <p>
-                        &lt<span class="dark-green">BitButton ButtonStyle</span>="ButtonStyle.Standard" <span class="dark-green">OnClick</span><span>="()=>ToggleButtonTwoWayValue2=false">Set Unmute</span><span>&lt/</span><span class="dark-green">BitButton</span><span>&gt;</span>
-                    </p>
-                    <div class="code m-t-10">
-                        <span class="light-yellow-bg">&#64;code {</span>
-                        <p>
-                            private bool ToggleButtonTwoWayValue2 = true;
-                        </p>
-                        <span class="light-yellow-bg">}</span>
-                    </div>
-                </BitPivotItem>
-            </BitPivot>
-        </div>
-    </div>
-</div>
-<h2>Implementation</h2>
-<div class="card">
-    <table>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Default value</th>
-            <th>Description</th>
-        </tr>
-        <tr>
-            <td>AllowDisabledFocus</td>
-            <td>bool</td>
-            <td>false</td>
-            <td>Whether the toggle button can have focus in disabled mode.</td>
-        </tr>
-        <tr>
-            <td>AriaDescription</td>
-            <td>string</td>
-            <td></td>
-            <td>Detailed description of the toggle button for the benefit of screen readers.</td>
-        </tr>
-        <tr>
-            <td>AriaHidden</td>
-            <td>bool</td>
-            <td></td>
-            <td>If true, add an aria-hidden attribute instructing screen readers to ignore the element.</td>
-        </tr>
-        <tr>
-            <td>AriaLabel</td>
-            <td>string</td>
-            <td></td>
-            <td>The aria-label of the control for the benefit of screen readers.</td>
-        </tr>
-        <tr>
-            <td>ButtonStyle</td>
-            <td>ButtonStyle</td>
-            <td>Primary</td>
-            <td>The style of toggle button.</td>
-        </tr>       
-        <tr>
-            <td>Class</td>
-            <td>string</td>
-            <td></td>
-            <td>Custom CSS class for the root element of the component.</td>
-        </tr>
-        <tr>
-            <td>Href</td>
-            <td>string</td>
-            <td></td>
-            <td>URL the link points to, if provided, button renders as an anchor.</td>
-        </tr>
-        <tr>
-            <td>HtmlAttributes</td>
-            <td>Dictionary&lt;string, object&gt;</td>
-            <td></td>
-            <td>Capture and render additional attributes in addition to the component's parameters.</td>
-        </tr>
-        <tr>
-            <td>IconName</td>
-            <td>string</td>
-            <td></td>
-            <td>The attribute for the icon shown in the toggle button.</td>
-        </tr>
-        <tr>
-            <td>IsChecked</td>
-            <td>bool</td>
-            <td>false</td>
-            <td>Checked state of the toggle button.</td>
-        </tr>        
-        <tr>
-            <td>IsEnabled</td>
-            <td>bool</td>
-            <td>true</td>
-            <td>Whether the toggle button is enabled.</td>
-        </tr>
-        <tr>
-            <td>Label</td>
-            <td>string</td>
-            <td></td>
-            <td>A label for the toggle button.</td>
-        </tr>
-        <tr>
-            <td>OnChange</td>
-            <td>EventCallback&lt;bool&gt;</td>
-            <td></td>
-            <td>Callback that is called when the IsChecked value has changed.</td>
-        </tr>
-        <tr>
-            <td>OnClick</td>
-            <td>EventCallback&lt;MouseEventArgs&gt;</td>
-            <td></td>
-            <td>Callback that is called when the button is clicked.</td>
-        </tr>
-        <tr>
-            <td>Style</td>
-            <td>string</td>
-            <td></td>
-            <td>Custom style for the root element of the component.</td>
-        </tr>
-        <tr>
-            <td>Target</td>
-            <td>string</td>
-            <td></td>
-            <td>If Href provided, specifies how to open the link.</td>
-        </tr>
-        <tr>
-            <td>Title</td>
-            <td>string</td>
-            <td></td>
-            <td>The title to show when the mouse is placed on the button.</td>
-        </tr>        
-        <tr>
-            <td>Visibility</td>
-            <td>ComponentVisibility</td>
-            <td>Visible</td>
-            <td>Whether the toggle button is visible, hidden, collapsed.</td>
-        </tr>
-    </table>
-    <div id="button-style">
-        <h4>ButtonStyle</h4>
-        <hr />
-        <table>
-            <tr>
-                <th>Name</th>
-                <th>Value</th>
-                <th>Description</th>
-            </tr>
-            <tr>
-                <td>Primary</td>
-                <td>0</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>Standard</td>
-                <td>1</td>
-                <td></td>
-            </tr>
-        </table>
-    </div>
-    <h4 id="component-visibility">ComponentVisibility</h4>
-    <hr />
-    <table>
-        <tr>
-            <th>Name</th>
-            <th>Value</th>
-            <th>Description</th>
-        </tr>
-        <tr>
-            <td>Visible</td>
-            <td>0</td>
-            <td></td>
-        </tr>
-        <tr>
-            <td>Hidden</td>
-            <td>1</td>
-            <td></td>
-        </tr>
-        <tr>
-            <td>Collapsed</td>
-            <td>2</td>
-            <td></td>
-        </tr>
-    </table>
-</div>
+            </div>
+        </CodeSampleContent>
+    </CodeSample>
+    <CodeSample Title="Arias for Screen Reader" Description="Aria attribues can also set for a BitToggleButton.">
+        <SampleContent>
+            <div>
+                <BitToggleButton @bind-IsChecked="ToggleButtonChecked"
+                                 Label="@(ToggleButtonChecked ? "Aria Description Mute" : "Aria Description Unmute")"
+                                 IconName=@(ToggleButtonChecked ? "MicOff" : "Microphone")
+                                 AriaDescription="Detailed description used for screen reader">
+                </BitToggleButton>
+                <BitToggleButton @bind-IsChecked="ToggleButtonChecked"
+                                 Class="aria-hidden-tgl-btn"
+                                 Label="@(ToggleButtonChecked ? "Aria Hidden Mute" : "Aria Hidden Unmute")"
+                                 IconName=@(ToggleButtonChecked ? "MicOff" : "Microphone")
+                                 AriaHidden="true">
+                </BitToggleButton>
+            </div>
+        </SampleContent>
+        <CodeSampleContent>
+            <div>
+                <p>&lt<span class="dark-green">BitToggleButton </span><span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-IsChecked</span>="ToggleButtonChecked"</p>
+                <p><span class="m-l-120"><span class="dark-green">Label</span>="<span class="light-yellow-bg">&#64;(</span>ToggleButtonChecked ? <span class="dark-orange">"Aria Description Mute"</span> : <span class="dark-orange">"Aria Description Unmute"</span><span class="light-yellow-bg">)</span>"</span></p>
+                <p><span class="m-l-120"><span class="dark-green">IconName</span>="<span class="light-yellow-bg">&#64;(</span>ToggleButtonChecked ? <span class="dark-orange">"MicOff"</span> : <span class="dark-orange">"Microphone"</span><span class="light-yellow-bg">)</span>"</span></p>
+                <p><span class="m-l-120"><span class="dark-green">AriaDescription</span>="Detailed description used for screen reader"&gt;</span></p>
+                <p><span>&lt/</span><span class="dark-green">BitToggleButton</span><span>&gt;</span></p>
+                <p>&lt<span class="dark-green">BitToggleButton </span><span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-IsChecked</span>="ToggleButtonChecked"</p>
+                <p><span class="m-l-120"><span class="dark-green">Label</span>="<span class="light-yellow-bg">&#64;(</span>ToggleButtonChecked ? <span class="dark-orange">"Aria Hidden Mute"</span> : <span class="dark-orange">"Aria Hidden Unmute"</span><span class="light-yellow-bg">)</span>"</span></p>
+                <p><span class="m-l-120"><span class="dark-green">IconName</span>="<span class="light-yellow-bg">&#64;(</span>ToggleButtonChecked ? <span class="dark-orange">"MicOff"</span> : <span class="dark-orange">"Microphone"</span><span class="light-yellow-bg">)</span>"</span></p>
+                <p><span class="m-l-120"><span class="dark-green">AriaHidden</span>="<span class="light-blue">true</span>"&gt;</span></p>
+                <p><span>&lt/</span><span class="dark-green">BitToggleButton</span><span>&gt;</span></p>
+                <div class="code m-t-10">
+                    <span class="light-yellow-bg">&#64;code {</span>
+                    <p class="m-l-70"><span class="light-blue">private bool</span> ToggleButtonChecked = <span class="light-blue">false</span>;</p>
+                    <span class="light-yellow-bg">}</span>
+                </div>
+            </div>
+        </CodeSampleContent>
+    </CodeSample>
+</ComponentPage>
