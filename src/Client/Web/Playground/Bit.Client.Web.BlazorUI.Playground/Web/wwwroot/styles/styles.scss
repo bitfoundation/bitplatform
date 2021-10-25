@@ -651,6 +651,20 @@ footer {
     }
 }
 
+.tgl-btn {
+    @include sm {
+        margin-top: rem(10px);
+        width: rem(195px);
+    }
+}
+
+.aria-hidden-tgl-btn{
+    @include sm {
+        margin-top: rem(10px);
+        width: rem(239px);
+    }
+}
+
 /* General */
 .bit-nav-selected-fluent:after {
     border-left: rem(4px) solid $Violet;
