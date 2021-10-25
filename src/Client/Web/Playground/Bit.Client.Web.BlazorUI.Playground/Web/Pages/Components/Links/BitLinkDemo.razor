@@ -1,169 +1,28 @@
 ﻿@page "/components/links"
 
-<h2>Link</h2>
+@using Bit.Client.Web.BlazorUI.Playground.Web.Components
 
-<div class="card">
-    <p class="desc">BitLink lead to another part of an app, other pages, or help articles. They can also be used to initiate commands.</p>
-</div>
-
-<h2>Usage</h2>
-<div class="wrapper">
-    <div class="card">
-        <h3>BitLink</h3>
-        <div class="desc">
-            <p>
-                To create a link you can use a BitLink component. You can enable and disable the link by changing the IsEnabled attribute.
-                by setting Href attribute, you can define where link should lead you and by Target attribute, can define how to open your page and also HasUnderline attribute define whether the link is styled with an underline or not.
-            </p>
-        </div>
-        <BitPivot>
-            <BitPivotItem HeaderText="Example" IconName="ViewList">
-                <p>
+<ComponentPage ComponentName="Link" OverviewDesc="Links lead to another part of an app, other pages, or help articles. They can also be used to initiate commands."
+               ComponentParameters="componentParameters">
+    <CodeSample Title="BitLink" Description="To create a link you can use a BitLink component.">
+        <SampleContent>
+            <div>
+                <p class="how-to-use">
                     When a link has an href, <BitLink Href="https://github.com/bitfoundation/bitframework" Target="_blank" HasUnderline="true">it renders as an anchor tag</BitLink>. Without an href, <BitLink HasUnderline="true">the link is rendered as a button</BitLink>.
                     You can also use the disabled attribute to create a <BitLink Href="https://github.com/bitfoundation/bitframework" IsEnabled="false" HasUnderline="true">disabled link</BitLink>. It's not recommended to use Links with imgs because
                     Links are meant to render textual inline content. Buttons are inline-block or in the case of imgs, block. However, it is possible to create a linked image button by making a button with an unstyled variant and adding the img content and href source to that.
                 </p>
-            </BitPivotItem>
-            <BitPivotItem HeaderText="Code" IconName="Source">
+            </div>
+        </SampleContent>
+        <CodeSampleContent>
+            <div>
                 <p>
-                    When a link has an href,<span>&lt</span><span class="dark-green">BitLink Href="</span><span class="link">https://github.com/bitfoundation/bitframework</span>"<span class="dark-green"> Target</span>="_blank"><span class="dark-green">HasUnderline</span>="<span class="light-blue">true</span>"> it renders as an anchor tag<span>&lt/</span>
-                    <span class="dark-green">BitLink</span><span>&gt;</span>Without an href, &lt<span class="dark-green">BitLink HasUnderline</span>="<span class="light-blue">true</span>">"the link is rendered as a button.<span>&lt/</span>
-                    <span class="dark-green">BitLink</span><span>&gt;</span>You can also use the disabled attribute to create a &lt<span class="dark-green">BitLink Href</span>="<span class="link">https://github.com/bitfoundation/bitframework</span>"<span class="dark-green"> IsEnabled</span><span class="light-blue">="false"</span><span class="dark-green"> HasUnderline</span>="<span class="light-blue">true</span>">"disabled link.<span>&lt/</span><span class="dark-green">BitLink</span><span>&gt;</span>It's not recommended to use Links with imgs because
+                    When a link has an href,<span>&lt</span><span class="dark-green">BitLink Href="</span><span class="link">https://github.com/bitfoundation/bitframework</span>"<span class="dark-green"> Target</span>="_blank"><span class="dark-green">HasUnderline</span>=<span class="light-blue">"true"</span>> it renders as an anchor tag<span>&lt/</span>
+                    <span class="dark-green">BitLink</span><span>&gt;</span>Without an href, &lt<span class="dark-green">BitLink HasUnderline</span>=<span class="light-blue">"true"</span>>"the link is rendered as a button.<span>&lt/</span>
+                    <span class="dark-green">BitLink</span><span>&gt;</span>You can also use the disabled attribute to create a &lt<span class="dark-green">BitLink Href</span>="<span class="link">https://github.com/bitfoundation/bitframework</span>"<span class="dark-green"> IsEnabled</span><span class="light-blue">="false"</span><span class="dark-green"> HasUnderline</span>=<span class="light-blue">"true"</span>>"disabled link.<span>&lt/</span><span class="dark-green">BitLink</span><span>&gt;</span>It's not recommended to use Links with imgs because
                     Links are meant to render textual inline content. Buttons are inline-block or in the case of imgs, block. However, it is possible to create a linked image button by making a button with an unstyled variant and adding the img content and href source to that.
                 </p>
-            </BitPivotItem>
-        </BitPivot>
-    </div>
-</div>
-<h2>Implementation</h2>
-<div class="card">
-    <table>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Default value</th>
-            <th>Description</th>
-        </tr>        
-        <tr>
-            <td>AriaLabel</td>
-            <td>string</td>
-            <td></td>
-            <td>The aria-label of the control for the benefit of screen readers.</td>
-        </tr>
-        <tr>
-            <td>ChildContent</td>
-            <td>RenderFragment</td>
-            <td></td>
-            <td>Any custom tag or text the developer wishes to associate with the link.</td>
-        </tr>
-        <tr>
-            <td>Class</td>
-            <td>string</td>
-            <td></td>
-            <td>Custom CSS class for the root element of the component.</td>
-        </tr>
-        <tr>
-            <td>Href</td>
-            <td>string</td>
-            <td></td>
-            <td>If provided, this component will be rendered as an anchor.</td>
-        </tr>   
-        <tr>
-            <td>HasUnderline</td>
-            <td>bool</td>
-            <td></td>
-            <td>Whether the link is styled with an underline or not. Should be used when the link is placed alongside other text content.</td>
-        </tr>
-        <tr>
-            <td>HtmlAttributes</td>
-            <td>Dictionary&lt;string, object&gt;</td>
-            <td></td>
-            <td>Capture and render additional attributes in addition to the component's parameters.</td>
-        </tr>
-        <tr>
-            <td>IsEnabled</td>
-            <td>bool</td>
-            <td>true</td>
-            <td>Whether the link is enabled.</td>
-        </tr>        
-        <tr>
-            <td>OnClick</td>
-            <td>EventCallback&lt;MouseEventArgs&gt;</td>
-            <td></td>
-            <td>Callback for when the link clicked.</td>
-        </tr>
-        <tr>
-            <td>Style</td>
-            <td>string</td>
-            <td></td>
-            <td>Custom style for the root element of the component.</td>
-        </tr>
-        <tr>
-            <td>Target</td>
-            <td>string</td>
-            <td></td>
-            <td>target of an anchor.</td>
-        </tr>        
-        <tr>
-            <td>Visibility</td>
-            <td>ComponentVisibility</td>
-            <td></td>
-            <td>Whether the component is visible, hidden, collapsed.</td>
-        </tr>
-    </table>
-       <h4>Target</h4>
-    <hr />
-    <table>
-        <tr>
-            <th>Name</th>
-            <th>Value</th>
-            <th>Description</th>
-        </tr>
-        <tr>
-            <td>Blank</td>
-            <td>_blank</td>
-            <td>Opens the linked document in a new window or tab.</td>
-        </tr>
-        <tr>
-            <td>Self</td>
-            <td>_self</td>
-            <td>Opens the linked document in the same frame as it was clicked.</td>
-        </tr>
-        <tr>
-            <td>Parent</td>
-            <td>_parent</td>
-            <td>Opens the linked document in the parent frame.</td>
-        </tr>
-         <tr>
-            <td>Top</td>
-            <td>_top</td>
-            <td>Opens the linked document in the full body of the window.</td>
-        </tr>
-    </table>
-    <div>
-        <h4 id="component-visibility">ComponentVisibility</h4>
-        <hr />
-        <table>
-            <tr>
-                <th>Name</th>
-                <th>Value</th>
-                <th>Description</th>
-            </tr>
-            <tr>
-                <td>Visible</td>
-                <td>0</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>Hidden</td>
-                <td>1</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>Collapsed</td>
-                <td>2</td>
-                <td></td>
-            </tr>
-        </table>
-    </div>
-</div>
+            </div>
+        </CodeSampleContent>
+    </CodeSample>
+</ComponentPage>
