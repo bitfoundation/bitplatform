@@ -93,6 +93,17 @@ h5 {
         @include h5-sm;
     }
 }
+pre {
+    margin-left: rem(-70px);
+
+    @include md {
+        margin-left: rem(-52px);
+    }
+
+    @include sm {
+        margin-left: rem(-48px);
+    }
+}
 
 /* Code Colors */
 
