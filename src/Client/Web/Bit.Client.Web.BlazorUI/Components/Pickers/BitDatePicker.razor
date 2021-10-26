@@ -120,7 +120,7 @@
                                 </tr>
                                 @for (var week = 0; week < 6; week++)
                                 {
-                                    if (monthWeeks[week, 0] == 0)
+                                    if (currentMonthCalendar[week, 0] == 0)
                                     {
                                         week = 0;
                                         break;
@@ -131,16 +131,16 @@
                                             var localWeek = week;
                                             var localDay = day;
                                             <td class="@GetDateElClass(localDay,localWeek)" role="presentation"
-                                    @onclick="() => HandleDateChoose(localDay, monthWeeks[localWeek, localDay], currentMonth)">
+                                    @onclick="() => HandleDateChoose(localDay, currentMonthCalendar[localWeek, localDay], currentMonth)">
                                                 <button class="day-btn"
                                                 role="gridcell"
                                             type="button"
-                                            tabindex="@(IsDateSelected(localWeek, localDay, monthWeeks[localWeek, localDay]) ? 0 : -1)"
+                                            tabindex="@(IsDateSelected(localWeek, localDay, currentMonthCalendar[localWeek, localDay]) ? 0 : -1)"
                                             aria-label="@GetDateAriaLabel(localWeek, localDay)"
-                                            aria-selected="@(IsDateSelected(localWeek, localDay, monthWeeks[localWeek, localDay]) ? "true" : "false")"
+                                            aria-selected="@(IsDateSelected(localWeek, localDay, currentMonthCalendar[localWeek, localDay]) ? "true" : "false")"
                                             aria-readonly="true"
                                             aria-disabled="false">
-                                                    <span aria-hidden="true">@monthWeeks[localWeek, localDay]</span>
+                                                    <span aria-hidden="true">@currentMonthCalendar[localWeek, localDay]</span>
                                                 </button>
                                             </td>
                                         }
