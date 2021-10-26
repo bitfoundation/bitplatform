@@ -120,11 +120,12 @@
                                 </tr>
                                 @for (var week = 0; week < 6; week++)
                                 {
-                                    if (currentMonthCalendar[week, 0] == 0)
+                                    //to ignore the last empty week out of month || to ignore the first whole week out of month
+                                    if (currentMonthCalendar[week, 0] == 0 || (week == 0 && currentMonthCalendar[week, 6] > 20))
                                     {
-                                        week = 0;
-                                        break;
+                                        continue;
                                     }
+
                                     <tr>
                                         @for (var day = 0; day < 7; day++)
                                         {

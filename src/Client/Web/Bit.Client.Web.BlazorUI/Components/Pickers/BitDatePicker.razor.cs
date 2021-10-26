@@ -330,6 +330,7 @@ namespace Bit.Client.Web.BlazorUI
             monthLength = calendar?.GetDaysInMonth(year, month) ?? 29;
             var firstDay = calendar?.ToDateTime(year, month, 1, 0, 0, 0, 0) ?? DateTime.Now;
             var currentDay = 1;
+            ResetCalendar();
 
             var isCalendarEnded = false;
             for (int weekIndex = 0; weekIndex < DEFAULT_WEEK_COUNT; weekIndex++)
@@ -356,29 +357,34 @@ namespace Bit.Client.Web.BlazorUI
                     }
                     else
                     {
-                        if (currentDay > calendar?.GetDaysInMonth(year, month))
+                        if (currentDay <= monthLength)
                         {
-                            continue;
+                            currentMonthCalendar[weekIndex, dayIndex] = currentDay;
+                            currentDay++;
                         }
-                        currentMonthCalendar[weekIndex, dayIndex] = currentDay;
-                        currentDay++;
                     }
 
-                    if (currentDay > monthLength && dayIndex != 6)
+                    if (currentDay > monthLength)
                     {
                         currentDay = 1;
                         isCalendarEnded = true;
-                    }
-
-                    if (dayIndex == 6)
-                    {
-                        break;
                     }
                 }
 
                 if (isCalendarEnded)
                 {
                     break;
+                }
+            }
+        }
+
+        private void ResetCalendar()
+        {
+            for (int weekIndex = 0; weekIndex < DEFAULT_WEEK_COUNT; weekIndex++)
+            {
+                for (int dayIndex = 0; dayIndex < DEFAULT_DAY_COUNT_PER_WEEK; dayIndex++)
+                {
+                    currentMonthCalendar[weekIndex, dayIndex] = 0;
                 }
             }
         }
