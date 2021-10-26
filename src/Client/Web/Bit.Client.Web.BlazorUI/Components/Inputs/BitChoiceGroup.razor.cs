@@ -48,11 +48,10 @@ namespace Bit.Client.Web.BlazorUI
             set
             {
                 if (value == selectedKey) return;
-
                 SelectOptionByKey(value);
             }
         }
-        
+
         [Parameter] public EventCallback<string?> SelectedKeyChanged { get; set; }
 
         /// <summary>
@@ -106,6 +105,11 @@ namespace Bit.Client.Web.BlazorUI
             if (IsRequired)
             {
                 option.IsRequired = true;
+            }
+
+            if (option.Key.HasNoValue())
+            {
+                option.Key = AllOptions.Count.ToString();
             }
 
             if (SelectedKey == option.Key)

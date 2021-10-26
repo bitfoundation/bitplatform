@@ -80,7 +80,7 @@ namespace {namespaceName}
             }
             else
             {
-                source.AppendLine("            return base.SetParametersAsync(ParameterView.FromDictionary(parametersDictionary));");
+                source.AppendLine("            return base.SetParametersAsync(ParameterView.FromDictionary(parametersDictionary as IDictionary<string, object?>));");
             }
 
             source.AppendLine("        }");

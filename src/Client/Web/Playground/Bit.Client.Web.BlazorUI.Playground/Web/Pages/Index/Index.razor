@@ -2,226 +2,146 @@
 @namespace Bit.Client.Web.BlazorUI.Playground.Web
 
 <div id="main">
-    <div class="bg-orange">
-        <div class="header">
-            <nav>
-                <ul>
-                    <li><a class="active" href="#home">Home</a></li>
-                    <li><a href="/components/button">Components</a></li>
-                </ul>
-            </nav>
-            <div class="row logo">
-                <div></div>
-                <span>Bit Component</span>
+    <section class="header">
+        <div class="header-element-container">
+            <div class="header-menu col-xl-8 col-lg-10 col-md-11">
+                <img src="/images/index/bit-logo.png" alt="Alternate Text" />
+                <a href="#" class="menu-header-link txt-bd1-md">Home</a>
+                <a href="/components/button" class="menu-header-link txt-bd1-md">Demo</a>
+                <a href="#" class="menu-header-link txt-bd1-md">Get Started</a>
             </div>
-        </div>
-        <div class="container-part-one">
-            <img src="/images/main/orange-vertical-wave.png" />
-            <div>
-                <h1>BIT Blazor Component</h1>
-                <h4>For faster and easier web development</h4>
-            </div>
-        </div>
-    </div>
-    <div class="container-part-two">
-        <div class="companies">
-            <div class="line"></div>
-            <div class="row">
-                <img src="/images/main/airbnb-logo.png" />
-                <img src="/images/main/hubspot-logo.png" />
-                <img src="/images/main/google-logo.png" />
-                <img src="/images/main/microsoft-logo.png" />
-                <img src="/images/main/walmart-logo.png" />
-                <img src="/images/main/fedex-logo.png" />
-            </div>
-            <div class="line"></div>
-        </div>
-        <img src="/images/main/blue-wave.png" />
-    </div>
-    <div class="container-part-three">
-        <div class="description">
-            <h5>Chart</h5>
-            <p>Charts to give sense to data, enabling end-users to analyze volumes of complex information. Choose from a rich set of series including: Area, Bar, Column, Pie, Donut, Line.</p>
-            <a href="#">more about chart</a>
-        </div>
-        <div class="image">
-            <img src="/images/main/chart.png" />
-        </div>
-    </div>
-    <div class="container-part-four">
-        <div>
-            <div class="image">
-                <img src="/images/main/quota-sign.png" />
-            </div>
-            <div class="stories">
-                <div class="col-1">
-                    <div>
-                        <h3>Real Stories from Real Customers</h3>
-                        <span class="sub-title">Get inspired by these stories.</span>
-                    </div>
-                    <div class="card">
-                        <img src="/images/main/microsoft-logo-large.png" />
-                        <div class="quota">
-                            <img src="/images/main/quota-sign-small.png" />
-                            <div>
-                                <p>I'm excited to see partners like BIT creating custom UI controls for Blazor. The BIT UI controls make building beautiful web apps with lots of rich functionality sooooo easy!</p>
-                                <div class="author">
-                                    <span class="name">18 Roth</span>
-                                    <span class="position">PROGRAM MANAGER, MICROSOFT</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+            <div class="header-description-container">
+                <h2 class="header-title-container violet">Free and open source</h2>
+                <p class="header-text-description txt-bd2-md">
+                    Every component is fine-tuned to work with a high valume of data.
+                </p>
+                <div class="buttons-container">
+                    <button class="get-start-btn btn1-SemiBold">Get started</button>
+                    <button class="demo-btn btn1-SemiBold">Demo</button>
                 </div>
-                <div class="col-2">
-                    <div class="card">
-                        <img src="/images/main/airbnb-logo-large.png" />
-                        <div class="quota">
-                            <img src="/images/main/quota-sign-small.png" />
-                            <div>
-                                <p>“An artisan-crafted product out of the box for a developer with less time to do with the UI and other details. Just focus on your logic, the rest is handled very well.”</p>
-                                <div class="author">
-                                    <span class="name">Evlv Digital</span>
-                                    <span class="position">DEV, AIRBNB</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card">
-                        <img src="/images/main/book-my-show-logo-large.png" />
-                        <div class="quota">
-                            <img src="/images/main/quota-sign-small.png" />
-                            <div>
-                                <p>Landify saved our time in designing my company page.</p>
-                                <div class="author">
-                                    <span class="name">Kristin Watson</span>
-                                    <span class="position">Co-Founder, BookMyShow</span>
-                                </div>
-                            </div>
-                        </div>
+                <div class="logos-container">
+                    <img src="/images/index/Google-logo.png" alt="Google" />
+                    <img src="/images/index/microsoft-logo.png" alt="Microsoft" />
+                    <img src="/images/index/walmart-logo.png" alt="Walmart" />
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="bit-product-describe container">
+        <div class="row">
+            <div class="col col-xl-6 col-lg-6 col-md-4 product-describe-img">
+            </div>
+            <div class="col col-xl-6 col-lg-6 col-md-7">
+                <div class="product-describe-container">
+                    <h5>Based on Microsoft Fluent Design System</h5>
+                    <div class="txt-bd2-md">
+                        <p>Lorem Ipsum is simply dummy text of the printing and typesetting industry.</p>
+                        <p>Lorem Ipsum has been the industry's standard dummy text ever</p>
+                        <p>since the 1500s, when an unknown printer took a galley of type and </p>
+                        <p>scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap intp electronic typesetting.</p>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-    <div class="container-part-five bg-orange">
-        <img src="/images/main/orange-horizontal-wave.png" />
-        <div class="features">
-            <h3>Blazor UI Components Key Features</h3>
-            <div class="feature-list">
-                <div>
-                    <img src="/images/main/open-source.png" />
-                    <h5>Free and open source</h5>
-                    <p>Set of 60+ native Blazor UI controls.</p>
+    </section>
+
+    <section class="from-scratch">
+        <div class="from-scratch-container container">
+            <h3 class="from-scratch-title ">
+                Don’t
+                Start
+                From
+                Scratch!
+            </h3>
+            <button class="violet start-with-btn btn2-bold">
+                Start With BitComponent
+            </button>
+        </div>
+    </section>
+
+    <section class="bit-Frequent-updates">
+        <div class="img-container">
+            <img class="bit-Frequent-updates-img" src="/images/index/Frame107.png" alt="Alternate Text" />
+        </div>
+        <h4>Frequent updates</h4>
+        <p class="txt-bd1-md">
+            Get minor improvements and bug fixes every week to stay up to date
+        </p>
+    </section>
+
+    <section class="bit-ease-of-use">
+        <div class="container">
+            <h4>Ease of use</h4>
+            <p class="txt-bd1-md">
+                Easy integration of tools to blend Syncfusion Blazor components with your project.
+            </p>
+        </div>
+    </section>
+
+    <section class="customers-opinions">
+        <div class="inner-opinion-container container">
+            <div class="customer-opinion-container">
+                <div class="text-opinion-container">
+                    <p class="txt-bd2-md">
+                        BIT Blazor Components makes our work very easy and recommend it to you :)
+                    </p>
                 </div>
-                <div>
-                    <img src="/images/main/performance.png" />
-                    <h5>Performance</h5>
-                    <p>Every component is fine-tuned to work with a high volume of data.</p>
-                </div>
-                <div>
-                    <img src="/images/main/updates.png" />
-                    <h5>Frequent updates</h5>
-                    <p>Get minor improvements and bug fixes every week to stay up to date.</p>
-                </div>
-                <div>
-                    <img src="/images/main/usage.png" />
-                    <h5>Ease of use</h5>
-                    <p>Easy integration of tools to blend Syncfusion Blazor components with your project.</p>
-                </div>
+                <div class="opinion-div-border"></div>
+            </div>
+
+            <div class="customer-img-container">
+                <img class="attach-img" src="/images/index/attach-orange-icon.png" />
+                <img class="customer-img" src="/images/index/person1.png" />
+            </div>
+
+            <div class="customer-intro">
+                <p class="txt-bd1-md customer-comp">Evlv Digital</p>
+                <p class="txt-bd2-md customer-name">DEV,AIRBNB</p>
             </div>
         </div>
-    </div>
-    <footer>
-        <div class="header">
-            <img src="/images/main/component-list.png" />
-            <h2>Component List</h2>
+
+    </section>
+
+    <section class="menu-footer">
+        <h1 class="menu-footer-title">Components</h1>
+        <div class="row menu-footer-container">
+            <div class="menu-footer-column txt-bd2-md">
+                <p class="menu-footer-category txt-bd2-md">Basic input</p>
+                <a href="#" class="menu-footer-link subtitle2-regular">Button</a>
+                <a href="#" class="menu-footer-link subtitle2-regular">
+                    ChoiceGroup
+                    <div class="tag-link new-link txt-xl-caption1">New</div>
+                </a>
+                <a href="#" class="menu-footer-link subtitle2-regular">DropDown</a>
+                <a href="#" class="menu-footer-link subtitle2-regular">Label</a>
+                <a href="#" class="menu-footer-link subtitle2-regular">Link</a>
+                <a href="#" class="menu-footer-link subtitle2-regular">Rating</a>
+                <a href="#" class="menu-footer-link subtitle2-regular">
+                    SearchBox
+                    <div class="tag-link update-link txt-xl-caption1">Upd</div>
+                </a>
+                <a href="#" class="menu-footer-link subtitle2-regular">TextField</a>
+                <a href="#" class="menu-footer-link subtitle2-regular">Toggle</a>
+                <p class="menu-footer-category txt-bd2-md">Progress</p>
+                <a href="#" class="menu-footer-link subtitle2-regular">Spinner</a>
+            </div>
+            <div class="menu-footer-column">
+                <p class="menu-footer-category txt-bd2-md">Command ,menu & Nav</p>
+                <a href="#" class="menu-footer-link subtitle2-regular">Nav</a>
+                <a href="#" class="menu-footer-link subtitle2-regular">Pivot</a>
+
+            </div>
+            <div class="menu-footer-column txt-xl-bd2-md">
+                <p class="menu-footer-category txt-bd2-md">Notification & Engagement</p>
+                <a href="#" class="menu-footer-link subtitle2-regular">Message Bar</a>
+            </div>
         </div>
-        <div class="container-part-six">
-            <nav>
-                <ul>
-                    <li>Buttons</li>
-                    <li><a href="#">Button</a></li>
-                    <li><a href="#">Button Group</a></li>
-                    <li>
-                        <a href="#">Dropdown Menu</a>
-                        <div class="btn-new"><span>New</span></div>
-                    </li>
-                    <li><a href="#">Split Button</a></li>
-                    <li>
-                        <a href="#">Chips</a>
-                        <div class="btn-update"><span>Update</span></div>
-                    </li>
-                </ul>
-                <ul>
-                    <li>DropDowns</li>
-                    <li><a href="#">AutoComplete</a></li>
-                    <li><a href="#">ListBox</a></li>
-                    <li><a href="#">ComboBox</a></li>
-                    <li><a href="#">Dropdown List</a></li>
-                    <li><a href="#">MultiSelect Dropdown</a></li>
-                </ul>
-                <ul>
-                    <li>Grids</li>
-                    <li><a href="#">DataGrid</a></li>
-                    <li><a href="#">Pivot Table</a></li>
-                    <li><a href="#">Tree Grid</a></li>
-                </ul>
-                <ul>
-                    <li>Buttons</li>
-                    <li><a href="#">Button</a></li>
-                    <li><a href="#">Button Group</a></li>
-                    <li><a href="#">Dropdown Menu</a></li>
-                    <li><a href="#">Split Button</a></li>
-                    <li><a href="#">Chips</a></li>
-                </ul>
-                <ul>
-                    <li>Calenders</li>
-                    <li><a href="#">Scheduler</a></li>
-                    <li><a href="#">Calendar</a></li>
-                    <li><a href="#">DatePicker</a></li>
-                    <li>
-                        <a href="#">DateRangePicker</a>
-                        <div class="btn-new"><span>New</span></div>
-                    </li>
-                    <li><a href="#">DateTime Picker</a></li>
-                </ul>
-                <ul>
-                    <li>Buttons</li>
-                    <li><a href="#">Button</a></li>
-                    <li><a href="#">Button Group</a></li>
-                    <li><a href="#">Dropdown Menu</a></li>
-                    <li><a href="#">Split Button</a></li>
-                    <li><a href="#">Chips</a></li>
-                </ul>  <ul>
-                    <li>Calenders</li>
-                    <li><a href="#">Scheduler</a></li>
-                    <li>
-                        <a href="#">Calendar</a>
-                        <div class="btn-update"><span>Update</span></div>
-                    </li>
-                    <li><a href="#">DatePicker</a></li>
-                    <li><a href="#">DateRangePicker</a></li>
-                    <li><a href="#">DateTime Picker</a></li>
-                </ul>
-                <ul>
-                    <li>Buttons</li>
-                    <li><a href="#">Button</a></li>
-                    <li><a href="#">Button Group</a></li>
-                    <li><a href="#">Dropdown Menu</a></li>
-                    <li><a href="#">Split Button</a></li>
-                    <li><a href="#">Chips</a></li>
-                </ul>
-                <ul>
-                    <li>Grids</li>
-                    <li><a href="#">DataGrid</a></li>
-                    <li>
-                        <a href="#">Pivot Table</a>
-                        <div class="btn-new"><span>New</span></div>
-                    </li>
-                    <li><a href="#">Tree Grid</a></li>
-                </ul>
-            </nav>
-        </div>
-    </footer>
+    </section>
 </div>
+<footer>
+    <div class="col-xl-7 col-lg-7 footer-link-container">
+        <a href="#" class="footer-link subtitle2-regular">Terms of use</a>
+        <a href="#" class="footer-link subtitle2-regular">Privacy & Policy</a>
+    </div>
+</footer>

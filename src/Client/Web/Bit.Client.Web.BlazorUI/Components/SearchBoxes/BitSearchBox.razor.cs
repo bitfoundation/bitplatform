@@ -26,6 +26,7 @@ namespace Bit.Client.Web.BlazorUI
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         [Inject] public IJSRuntime JSRuntime { get; set; }
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
         public ElementReference InputRef { get; set; }
 
@@ -81,7 +82,6 @@ namespace Bit.Client.Web.BlazorUI
         /// </summary>
         [Parameter] public string IconName { get; set; } = "Search";
 
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         /// <summary>
         /// Placeholder for the search box
         /// </summary>

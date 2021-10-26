@@ -34,16 +34,16 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                 });
 
             var bitTextField = component.Find(".bit-txt");
-            var containerDiv = component.Find(".bit-txt > div > div");
+            var textField = component.Find(".txt-field");
 
             var isEnabledClass = isEnabled ? "enabled" : "disabled";
             var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
 
             Assert.IsTrue(bitTextField.ClassList.Contains($"bit-txt-{isEnabledClass}-{visualClass}"));
 
-            Assert.AreEqual(isMultiline ? "TEXTAREA" : "INPUT", containerDiv.FirstElementChild.TagName);
+            Assert.AreEqual(isMultiline ? "TEXTAREA" : "INPUT", textField.TagName);
 
-            Assert.AreEqual(isRequired, containerDiv.FirstElementChild.HasAttribute("required"));
+            Assert.AreEqual(isRequired, textField.HasAttribute("required"));
             Assert.AreEqual(bitTextField.ClassList.Contains($"bit-txt-required-{visualClass}"), isRequired);
         }
 
@@ -60,7 +60,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                     parameters.Add(p => p.IsMultiline, isMultiline);
                 });
 
-            var bitTextField = isMultiline ? component.Find(".bit-txt textarea") : component.Find(".bit-txt input");
+            var bitTextField = component.Find(".txt-field");
 
             if (isMultiline)
             {
@@ -80,7 +80,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                 parameters.Add(p => p.Label, label);
             });
 
-            var bitTextFieldLabel = com.Find(".bit-txt label").TextContent;
+            var bitTextFieldLabel = com.Find(".bit-txt-label").TextContent;
 
             Assert.AreEqual(label, bitTextFieldLabel);
         }
@@ -102,7 +102,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                     parameters.Add(p => p.IsReadOnly, isReadOnly);
                 });
 
-            var bitTextField = isMultiline ? component.Find(".bit-txt textarea") : component.Find(".bit-txt input");
+            var bitTextField = component.Find(".txt-field");
 
             Assert.IsTrue(bitTextField.HasAttribute("maxlength"));
             Assert.AreEqual(bitTextField.GetAttribute("maxlength"), maxLength.ToString());
@@ -122,7 +122,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                     parameters.Add(p => p.IconName, iconName);
                 });
 
-            var bitTextFieldIcon = component.Find(".bit-txt span i");
+            var bitTextFieldIcon = component.Find(".txt-field + .bit-icon");
 
             Assert.IsTrue(bitTextFieldIcon.ClassList.Contains($"bit-icon--{iconName}"));
         }
@@ -142,16 +142,17 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                 });
 
             var bitTextField = component.Find(".bit-txt");
-            var containerDiv = component.Find(".bit-txt > div > div");
-            var bitTextFieldRevealPassword = component.Find(".bit-txt > div > div > button > span");
+            var textField = component.Find(".txt-field");
+            var revealPasswordBtn = component.Find(".password-reveal-btn");
+            var revealPasswordIcon = component.Find(".password-reveal-btn > span > i");
 
-            Assert.AreEqual("Password", containerDiv.FirstElementChild.GetAttribute("type"));
-            Assert.IsTrue(bitTextFieldRevealPassword.FirstElementChild.ClassList.Contains($"bit-icon--RedEye"));
+            Assert.AreEqual("Password", textField.GetAttribute("type"));
+            Assert.IsTrue(revealPasswordIcon.ClassList.Contains($"bit-icon--RedEye"));
 
-            bitTextFieldRevealPassword.Click();
+            revealPasswordBtn.Click();
 
-            Assert.AreEqual("Text", containerDiv.FirstElementChild.GetAttribute("type"));
-            Assert.IsTrue(bitTextFieldRevealPassword.FirstElementChild.ClassList.Contains($"bit-icon--Hide"));
+            Assert.AreEqual("Text", textField.GetAttribute("type"));
+            Assert.IsTrue(revealPasswordIcon.ClassList.Contains($"bit-icon--Hide"));
         }
 
         [DataTestMethod,
@@ -169,7 +170,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                     parameters.Add(p => p.IsMultiline, isMultiline);
                 });
 
-            var bitTextField = isMultiline ? component.Find(".bit-txt textarea") : component.Find(".bit-txt input");
+            var bitTextField = component.Find(".txt-field");
 
             bitTextField.Click();
 
@@ -191,7 +192,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                     parameters.Add(p => p.IsMultiline, isMultiline);
                 });
 
-            var bitTextField = isMultiline ? component.Find(".bit-txt textarea") : component.Find(".bit-txt input");
+            var bitTextField = component.Find(".txt-field");
 
             bitTextField.Focus();
             Assert.AreEqual(isEnabled ? 1 : 0, component.Instance.FocusedValue);
@@ -218,7 +219,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                     parameters.Add(p => p.IsMultiline, isMultiline);
                 });
 
-            var bitTextField = isMultiline ? component.Find(".bit-txt textarea") : component.Find(".bit-txt input");
+            var bitTextField = component.Find(".txt-field");
 
             bitTextField.KeyDown(keyDownValue);
             Assert.AreEqual(isEnabled ? keyDownValue : null, component.Instance.KeyDownedValue);
@@ -242,7 +243,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                     parameters.Add(p => p.IsMultiline, isMultiline);
                 });
 
-            var bitTextField = isMultiline ? component.Find(".bit-txt textarea") : component.Find(".bit-txt input");
+            var bitTextField = component.Find(".txt-field");
 
             bitTextField.KeyDown("a");
 
@@ -259,7 +260,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                     parameters.Add(p => p.Prefix, prefix);
                 });
 
-            var bitTextFieldPrefix = component.Find(".bit-txt-fluent > div > div > div > span");
+            var bitTextFieldPrefix = component.Find(".txt-prefix > span");
             Assert.AreEqual(prefix, bitTextFieldPrefix.TextContent);
         }
 
@@ -272,7 +273,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                     parameters.Add(p => p.Suffix, suffix);
                 });
 
-            var bitTextFieldSuffix = component.Find(".bit-txt-fluent > div > div > div > span");
+            var bitTextFieldSuffix = component.Find(".txt-suffix > span");
             Assert.AreEqual(suffix, bitTextFieldSuffix.TextContent);
         }
 
@@ -289,7 +290,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                     parameters.Add(p => p.IsMultiline, isMultiline);
                 });
 
-            var bitTextField = isMultiline ? component.Find(".bit-txt textarea") : component.Find(".bit-txt input");
+            var bitTextField = component.Find(".txt-field");
 
             if (isMultiline)
             {
@@ -310,7 +311,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                     parameters.Add(p => p.Description, description);
                 });
 
-            var bitTextFieldDescription = component.Find(".bit-txt-fluent > span > span");
+            var bitTextFieldDescription = component.Find(".txt-desc > span");
             Assert.AreEqual(description, bitTextFieldDescription.TextContent);
         }
 
@@ -386,10 +387,10 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                 parameters.Add(p => p.IsMultiline, isMultiline);
             });
 
-            var input = isMultiline ? component.Find(".bit-txt textarea") : component.Find(".bit-txt input");
+
+            var input = component.Find(".txt-field");
 
             Assert.IsTrue(input.HasAttribute("aria-label"));
-
             Assert.AreEqual(input.GetAttribute("aria-label"), ariaLabel);
         }
 
@@ -399,17 +400,16 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
             DataRow(true, null),
             DataRow(false, null)
         ]
-        public void BitTextFieldAriaLabelledbyTest(bool isMultiline, string? lable)
+        public void BitTextFieldAriaLabelledbyTest(bool isMultiline, string label)
         {
             var component = RenderComponent<BitTextFieldTest>(parameters =>
             {
-                parameters.Add(p => p.Label, lable);
+                parameters.Add(p => p.Label, label);
                 parameters.Add(p => p.IsMultiline, isMultiline);
             });
 
-            var input = isMultiline ? component.Find(".bit-txt textarea") : component.Find(".bit-txt input");
-
-            Assert.AreEqual(lable.HasValue(), input.HasAttribute("aria-labelledby"));
+            var input = component.Find(".txt-field");
+            Assert.AreEqual(label.HasValue(), input.HasAttribute("aria-labelledby"));
         }
     }
 }

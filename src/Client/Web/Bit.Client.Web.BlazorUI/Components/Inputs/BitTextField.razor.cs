@@ -14,7 +14,6 @@ namespace Bit.Client.Web.BlazorUI
         private bool hasBorder = true;
         private string focusClass = "";
         private BitTextFieldType type = BitTextFieldType.Text;
-        private Guid InputId = Guid.NewGuid();
         private string? textValue;
         private bool ValueHasBeenSet;
         private bool isResizable = true;
@@ -145,7 +144,7 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public string? Label { get; set; }
 
         /// <summary>
-        /// Shows the custom Label for text field.If you don't call default label, ensure that you give your custom label an id and that you set the textfield's aria-labelledby prop to that id.
+        /// Shows the custom label for text field
         /// </summary>
         [Parameter] public RenderFragment? LabelFragment { get; set; }
 
@@ -155,7 +154,7 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public string? Description { get; set; }
 
         /// <summary>
-        /// Shows the custom description for text field.
+        /// Shows the custom description for text field
         /// </summary>
         [Parameter] public RenderFragment? DescriptionFragment { get; set; }
 
@@ -181,15 +180,30 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public string? Prefix { get; set; }
 
         /// <summary>
+        /// Shows the custom prefix for text field
+        /// </summary>
+        [Parameter] public RenderFragment? PrefixFragment { get; set; }
+
+        /// <summary>
         /// Suffix displayed after the text field contents. This is not included in the value. 
         /// Ensure a descriptive label is present to assist screen readers, as the value does not include the suffix.
         /// </summary>
         [Parameter] public string? Suffix { get; set; }
 
         /// <summary>
+        /// Shows the custom suffix for text field
+        /// </summary>
+        [Parameter] public RenderFragment? SuffixFragment { get; set; }
+
+        /// <summary>
         /// Whether to show the reveal password button for input type 'password'
         /// </summary>
         [Parameter] public bool CanRevealPassword { get; set; }
+
+        /// <summary>
+        /// Aria label for the reveal password button
+        /// </summary>
+        [Parameter] public string? RevealPasswordAriaLabel { get; set; }
 
         /// <summary>
         /// Input type
@@ -248,6 +262,10 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
+        public string TextFieldId { get; set; } = string.Empty;
+        public string LabelId { get; set; } = string.Empty;
+        public string DescriptionId { get; set; } = string.Empty;
+
         protected override string RootElementClass => "bit-txt";
 
         protected override void RegisterComponentClasses()
@@ -271,7 +289,21 @@ namespace Bit.Client.Web.BlazorUI
                                         ? $"{RootElementClass}-{(IsUnderlined ? "underlined-" : "")}{FocusClass}-{VisualClassRegistrar()}" : string.Empty);
         }
 
-        protected virtual async Task HandleFocusIn(FocusEventArgs e)
+        protected override Task OnInitializedAsync()
+        {
+            if (DefaultValue.HasValue())
+            {
+                Value = DefaultValue;
+            }
+
+            TextFieldId = $"TextField{UniqueId}";
+            LabelId = $"TextFieldLabel{UniqueId}";
+            DescriptionId = $"TextFieldDescription{UniqueId}";
+
+            return base.OnInitializedAsync();
+        }
+
+        private async Task HandleFocusIn(FocusEventArgs e)
         {
             if (IsEnabled)
             {
@@ -280,7 +312,7 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
-        protected virtual async Task HandleFocusOut(FocusEventArgs e)
+        private async Task HandleFocusOut(FocusEventArgs e)
         {
             if (IsEnabled)
             {
@@ -289,7 +321,7 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
-        protected virtual async Task HandleFocus(FocusEventArgs e)
+        private async Task HandleFocus(FocusEventArgs e)
         {
             if (IsEnabled)
             {
@@ -298,7 +330,7 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
-        protected virtual async Task HandleChange(ChangeEventArgs e)
+        private async Task HandleChange(ChangeEventArgs e)
         {
             if (IsEnabled is false) return;
             if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
@@ -306,7 +338,7 @@ namespace Bit.Client.Web.BlazorUI
             await OnChange.InvokeAsync(Value);
         }
 
-        protected virtual async Task HandleKeyDown(KeyboardEventArgs e)
+        private async Task HandleKeyDown(KeyboardEventArgs e)
         {
             if (IsEnabled)
             {
@@ -314,7 +346,7 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
-        protected virtual async Task HandleKeyUp(KeyboardEventArgs e)
+        private async Task HandleKeyUp(KeyboardEventArgs e)
         {
             if (IsEnabled)
             {
@@ -322,7 +354,7 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
-        protected virtual async Task HandleClick(MouseEventArgs e)
+        private async Task HandleClick(MouseEventArgs e)
         {
             if (IsEnabled)
             {
@@ -333,15 +365,6 @@ namespace Bit.Client.Web.BlazorUI
         public void TogglePasswordRevealIcon()
         {
             ElementType = ElementType == BitTextFieldType.Text ? BitTextFieldType.Password : BitTextFieldType.Text;
-        }
-
-        protected override Task OnInitializedAsync()
-        {
-            if (DefaultValue.HasValue())
-            {
-                Value = DefaultValue;
-            }
-            return base.OnInitializedAsync();
         }
     }
 }

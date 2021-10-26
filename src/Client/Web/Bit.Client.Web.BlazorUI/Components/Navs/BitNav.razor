@@ -9,65 +9,71 @@
      aria-label="@AriaLabel">
     @if (RenderType == BitNavRenderType.Grouped)
     {
-        @foreach (var navLink in NavLinkItems)
+        @foreach (var navLinkItem in NavLinkItems)
         {
-            <div class="bit-nav-grp">
-                @*GroupHeader*@
-                @if (navLink.Name.HasValue())
-                {
-                    @if (HeaderTemplate is not null)
+            @if (navLinkItem is not null)
+            {
+                <div class="bit-nav-grp">
+                    @*GroupHeader*@
+                    @if (navLinkItem.Name.HasValue())
                     {
-                        @HeaderTemplate(navLink)
+                        @if (HeaderTemplate is not null)
+                        {
+                            @HeaderTemplate(navLinkItem)
+                        }
+                        else
+                        {
+                            <button class="bit-nav-chevron-btn bit-nav-grp-chevron-btn"
+                tabindex="0"
+                aria-label="@(navLinkItem.IsExpanded ? navLinkItem.CollapseAriaLabel : navLinkItem.ExpandAriaLabel)"
+                aria-expanded="@(navLinkItem.IsExpanded ? "true" : "false")"
+                @onclick="(() => HandleGroupHeaderClick(navLinkItem))">
+                                <i class="bit-icon bit-icon--ChevronDown @(navLinkItem.IsExpanded ? "bit-nav-expand-fluent" : "")"
+               aria-hidden="true"></i>
+                                @navLinkItem.Name
+                            </button>
+                        }
                     }
-                    else
-                    {
-                        <button class="bit-nav-chevron-btn bit-nav-grp-chevron-btn"
-                                tabindex="0"
-                                aria-label="@(navLink.IsExpanded ? navLink.CollapseAriaLabel : navLink.ExpandAriaLabel)"
-                                aria-expanded="@(navLink.IsExpanded ? "true" : "false")"
-                                @onclick="(() => HandleGroupHeaderClick(navLink))">
-                            <i class="bit-icon bit-icon--ChevronDown @(navLink.IsExpanded ? "bit-nav-expand-fluent" : "")"
-                               aria-hidden="true"></i>
-                            @navLink.Name
-                        </button>
-                    }
-                }
 
-                @if (navLink.Links.Any() && navLink.IsExpanded)
-                {
-                    <div class="bit-nav-grp-content">
-                        <ul class="bit-nav-list"
-                            role="list">
-                            @foreach (var child in navLink.Links)
-                                if (childTemplate is not null)
-                                    @childTemplate(child)
-                        </ul>
-                    </div>
-                }
-            </div>
+                    @if ((navLinkItem.Links?.Any() ?? false) && navLinkItem.IsExpanded)
+                    {
+                        <div class="bit-nav-grp-content">
+                            <ul class="bit-nav-list" role="list">
+                                @foreach (var childNavLinkItem in navLinkItem.Links)
+                                {
+                                    @childTemplate(childNavLinkItem)
+                                }
+                            </ul>
+                        </div>
+                    }
+                </div>
+            }
         }
     }
     else
     {
         <div class="bit-nav-grp">
             <div class="bit-nav-grp-content">
-                <ul class="bit-nav-list"
-                    role="list">
+                <ul class="bit-nav-list" role="list">
                     @foreach (var navLinkItem in NavLinkItems)
-                        if (childTemplate is not null)
-                            @childTemplate(navLinkItem)
+                    {
+                        @if (navLinkItem is not null)
+                        {
+                            @childTemplate!(navLinkItem)
+                        }
+                    }
                 </ul>
             </div>
         </div>
     }
 </nav>
 
-@code{
+@code {
     public RenderFragment<BitNavLinkItem>? childTemplate { get; set; }
 
-    protected override void OnParametersSet()
+    protected override void OnInitialized()
     {
-        base.OnParametersSet();
+        base.OnInitialized();
 
         childTemplate = (navLinkItem) =>
         (
@@ -150,7 +156,7 @@
                 </button>
             }
         </div>
-        @if (navLinkItem.Links.Any() && navLinkItem.IsExpanded)
+        @if ((navLinkItem.Links?.Any() ?? false) && navLinkItem.IsExpanded)
         {
             <ul class="bit-nav-list"
                 role="list">

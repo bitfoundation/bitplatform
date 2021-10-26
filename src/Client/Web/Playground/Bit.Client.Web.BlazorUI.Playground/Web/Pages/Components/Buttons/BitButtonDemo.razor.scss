@@ -1,4 +1,37 @@
-﻿.custom-button {
-    background-color: lightblue;
-    border-color: lightblue;
+﻿@import "../../../Styles/_shared.scss";
+
+.sample-lnk-btn {
+    display: block;
+
+    @include lt-md {
+        display: flex;
+        flex-wrap: wrap;
+    }
+}
+
+.sample-btn {
+    text-justify: auto;
+    color: $Black01;
+
+    @include subtitle2-xl;
+
+    @include lg {
+        @include subtitle2-lg;
+    }
+
+    @include md {
+        @include subtitle2-md;
+    }
+
+    @include sm {
+        @include subtitle2-sm;
+    }
+}
+
+.m-l-30 {
+    margin-left: rem(30px);
+}
+
+.m-l-45 {
+    margin-left: rem(45px);
 }

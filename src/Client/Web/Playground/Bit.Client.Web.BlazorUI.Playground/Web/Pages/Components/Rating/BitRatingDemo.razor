@@ -1,231 +1,61 @@
 ﻿@page "/components/rating"
 
-<h2>Rating</h2>
+@using Bit.Client.Web.BlazorUI.Playground.Web.Components
 
-<div class="card">
-    <p class="desc">Ratings show people’s opinions of a product, helping others make more informed purchasing decisions. People can also rate products they’ve purchased.</p>
-</div>
-
-<h2>Usage</h2>
-<div class="wrapper">
-    <div class="card">
-        <h3>BitRating</h3>
-        <div class="desc">
-            <p>
-                To show people’s opinions or getting it, you can use a BitRating component. You can enable and disable rating by changing the IsEnabled attribute and by using IsReadonly determine whether rating value can change or not.
-                In BitRating component you can easily use your custom icon for selected and unselected states (by default it uses star).
-                By setting Max and Size attributes, you can change max of stars (by default is 5) and size of it (by default is small), In AllowZeroStars attribute you can determine rating starts with 0 or not.
-            </p>
-        </div>
-        <BitPivot>
-            <BitPivotItem HeaderText="Example" IconName="ViewList">
-                <h5>Large stars</h5>
+<ComponentPage ComponentName="Rating" OverviewDesc="Ratings show people’s opinions of a product, helping others make more informed purchasing decisions. People can also rate products they’ve purchased."
+               ComponentParameters="componentParameters" EnumParameters="enumParameters">
+    <CodeSample Title="BitRating" Description="">
+        <SampleContent>
+            <div class="how-to-use">
+                <div>Large stars</div>
                 <BitRating Size="BitRatingSize.Large" @bind-Rating="RatingLargeValue" AriaLabelFormat="Select {0} of {1} stars" />
-                <h5>Small stars, with 0 stars allowed</h5>
+                <div>Small stars, with 0 stars allowed</div>
                 <BitRating AllowZeroStars="true" @bind-Rating="RatingSmallValue" />
-                <h5>10 small stars</h5>
+                <div>10 small stars</div>
                 <div>
                     <BitRating Max="10" OnChange="@(v => RatingChangedText = $"Rating value changed to {v}")" @bind-Rating="RatingBoundValue" />
                     <div class="m-t-10">
                         <span>@RatingChangedText</span>
                     </div>
-                    <h5>Disabled</h5>
+                    <div>Disabled</div>
                     <BitRating IsEnabled="false" @bind-Rating="RatingReadOnlyValue" />
-                    <h5>Half star in readOnly mod</h5>
+                    <div>Half star in readOnly mod</div>
                     <BitRating IsReadOnly="true" @bind-Rating="RatingReadOnlyValue" GetAriaLabel="@((value, max) => $"Half star in readOnly mode rating value is {value.ToString()} of {max.ToString()}")" />
-                    <h5>Custom icons</h5>
+                    <div>Custom icons</div>
                     <BitRating Icon="HeartFill" UnselectedIcon="Heart" AllowZeroStars="true" @bind-Rating="RatingCustomIconValue" />
                 </div>
-            </BitPivotItem>
-            <BitPivotItem HeaderText="Code" IconName="Source">
-                <p>
-                    &lt<span class="dark-green">BitRating Size</span>="RatingSize.Large" <span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-Rating</span><span>="RatingLargeValue"</span><span class="dark-green">AriaLabelFormat</span><span>="Select {0} of {1} stars"</span><span>/&gt;</span>
-                </p>
-                <p>
-                    &lt<span class="dark-green">BitRating AllowZeroStars</span><span class="light-blue">="true" </span><span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-Rating</span><span>="RatingSmallValue"</span><span>/&gt;</span>
-                </p>
-                <p>
-                    &lt<span class="dark-green">BitRating Max</span>="10"<span class="dark-green"> OnChange</span>="<span class="light-yellow-bg">&#64;</span>(v => RatingChangedText = $"Rating value changed to {v}")" <span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-Rating</span><span>="RatingBoundValue"</span><span>/&gt;</span>
-                </p>
-                <p>
-                    &lt<span class="dark-green">BitRating IsEnabled</span><span class="light-blue">="false" </span><span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-Rating</span><span>="RatingReadOnlyValue"</span><span>/&gt;</span>
-                </p>
-                <p>
-                    &lt<span class="dark-green">BitRating IsReadOnly</span><span class="light-blue">="true" </span><span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-Rating</span><span>="RatingReadOnlyValue"</span><span class="dark-green">GetAriaLabel</span>="<span class="light-yellow-bg">&#64;</span><span>((value, max) => $"Half star in readOnly mode rating value is {value.ToString()} of {max.ToString()}")"</span><span>/&gt;</span>
-                </p>
-                <p>
-                    &lt<span class="dark-green">BitRating Icon</span>="HeartFill"<span class="dark-green"> UnselectedIcon</span>="Heart"<span class="dark-green"> AllowZeroStars</span>="<span class="light-blue">true</span>" <span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-Rating</span><span>="RatingOutsideValue"</span><span>/&gt;</span>
-                </p>
-            </BitPivotItem>
-        </BitPivot>
-    </div>
-    <div class="card">
-        <h3>Button-controlled rating</h3>
-        <div class="desc">
-            <p>
-                BitRating component support two-way binding as well.
-            </p>
-        </div>
-        <BitPivot>
-            <BitPivotItem HeaderText="Example" IconName="ViewList">
+            </div>
+        </SampleContent>
+        <CodeSampleContent>
+            <pre>
+               &lt<span class="dark-green">BitRating Size</span>="<span class="neon-yellow">BitRatingSize</span>.Large" <span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-Rating</span><span>="RatingLargeValue" </span><span class="dark-green">AriaLabelFormat</span><span>="Select {0} of {1} stars"</span><span>/&gt;</span>
+               &lt<span class="dark-green">BitRating AllowZeroStars</span><span class="light-blue">="true" </span><span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-Rating</span><span>="RatingSmallValue"</span><span>/&gt;</span>
+               &lt<span class="dark-green">BitRating Max</span>="10"<span class="dark-green"> OnChange</span>="<span class="light-yellow-bg">&#64;</span>(v => RatingChangedText = $"Rating value changed to {v}")" <span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-Rating</span><span>="RatingBoundValue"</span><span>/&gt;</span>
+               &lt<span class="dark-green">BitRating IsEnabled</span><span class="light-blue">="false" </span><span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-Rating</span><span>="RatingReadOnlyValue"</span><span>/&gt;</span>
+               &lt<span class="dark-green">BitRating IsReadOnly</span><span class="light-blue">="true" </span><span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-Rating</span><span>="RatingReadOnlyValue" </span><span class="dark-green">GetAriaLabel</span>="<span class="light-yellow-bg">&#64;</span><span>((value, max) => $"Half star in readOnly mode rating value is {value.ToString()} of {max.ToString()}")"</span><span>/&gt;</span>
+               &lt<span class="dark-green">BitRating Icon</span>="HeartFill"<span class="dark-green"> UnselectedIcon</span>="Heart"<span class="dark-green"> AllowZeroStars</span>=<span class="light-blue">"true"</span> <span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-Rating</span><span>="RatingOutsideValue"</span><span>/&gt;</span>
+            </pre>
+        </CodeSampleContent>
+    </CodeSample>
+    <CodeSample Title="Button-controlled rating" Description="BitRating component support two-way binding as well.">
+        <SampleContent>
+            <div class="how-to-use">
                 <BitRating Icon="Emoji2" UnselectedIcon="EmojiNeutral" AllowZeroStars="true" @bind-Rating="RatingOutsideValue" />
-                <div class="m-t-10">
+                <div>
                     <span>RatingOutsideValue: @RatingOutsideValue</span>
                 </div>
-                <div class="m-t-10">
+                <div>
                     <BitButton OnClick="() => RatingOutsideValue = 5">Fully satisfied</BitButton>
                     <BitButton OnClick="() => RatingOutsideValue = 0">Have no idea</BitButton>
                 </div>
-            </BitPivotItem>
-            <BitPivotItem HeaderText="Code" IconName="Source">
-                <p>
-                    &lt<span class="dark-green">BitRating Icon</span>="Emoji2"<span class="dark-green"> UnselectedIcon</span>="EmojiNeutral"<span class="dark-green"> AllowZeroStars</span>="<span class="light-blue">true</span>" <span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-Rating</span><span>="RatingOutsideValue"</span><span>/&gt;</span>
-                </p>
-                <p>
-                    &lt<span class="dark-green">BitButton OnClick</span>="() => RatingOutsideValue = 5">Fully satisfied<span>&lt/</span><span class="dark-green">BitButton</span><span>&gt;</span>
-                </p>
-                <p>
-                    &lt<span class="dark-green">BitButton OnClick</span>="() => RatingOutsideValue = 0">Have no idea<span>&lt/</span><span class="dark-green">BitButton</span><span>&gt;</span>
-                </p>
-            </BitPivotItem>
-        </BitPivot>
-    </div>
-</div>
-<h2>Implementation</h2>
-<div class="card">
-    <table>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Default value</th>
-            <th>Description</th>
-        </tr>
-        <tr>
-            <td>AllowZeroStars</td>
-            <td>bool</td>
-            <td>false</td>
-            <td>Allow the initial rating value (or updated values passed in through rating) to be 0. Note that a value of 0 still won't be selectable by mouse or keyboard.</td>
-        </tr>
-        <tr>
-            <td>AriaLabel</td>
-            <td>string</td>
-            <td></td>
-            <td>The aria-label of the control for the benefit of screen readers.</td>
-        </tr>
-        <tr>
-            <td>AriaLabelFormat</td>
-            <td>string</td>
-            <td></td>
-            <td>
-                Optional label format for each individual rating star (not the rating control as a whole) that will be read by screen readers.
-                Placeholder {0} is the current rating and placeholder {1} is the max: for example,
-                "Select {0} of {1} stars". (To set the label for the control as a whole, use getAriaLabel or aria-label.)
-            </td>
-        </tr>
-        <tr>
-            <td>Class</td>
-            <td>string</td>
-            <td></td>
-            <td>Custom CSS class for the root element of the component.</td>
-        </tr>
-        <tr>
-            <td>DefaultRating</td>
-            <td>double</td>
-            <td></td>
-            <td>Default rating. Must be a number between min and max. Only provide this if the Rating is an uncontrolled component; otherwise, use the rating property.</td>
-        </tr>
-        <tr>
-            <td>GetAriaLabel</td>
-            <td> Func&#60;double, double, string &#62;</td>
-            <td></td>
-            <td>Optional callback to set the aria-label for rating control in readOnly mode. Also used as a fallback aria-label if ariaLabel prop is not provided.</td>
-        </tr>
-        <tr>
-            <td>HtmlAttributes</td>
-            <td>Dictionary&lt;string, object&gt;</td>
-            <td></td>
-            <td>Capture and render additional attributes in addition to the component's parameters.</td>
-        </tr>
-        <tr>
-            <td>Icon</td>
-            <td>string</td>
-            <td>FavoriteStarFill</td>
-            <td>Custom icon name for selected rating elements.</td>
-        </tr>
-        <tr>
-            <td>IsEnabled</td>
-            <td>bool</td>
-            <td>true</td>
-            <td>Whether the rating is enabled.</td>
-        </tr>
-        <tr>
-            <td>IsReadOnly</td>
-            <td>bool</td>
-            <td>false</td>
-            <td>Optional flag to mark rating control as readOnly.</td>
-        </tr>
-        <tr>
-            <td>Max</td>
-            <td>int</td>
-            <td>5</td>
-            <td>Maximum rating.</td>
-        </tr>
-        <tr>
-            <td>OnChange</td>
-            <td>EventCallback&lt;int&gt;</td>
-            <td></td>
-            <td>Callback that is called when the rating has changed.</td>
-        </tr>
-        <tr>
-            <td>Rating</td>
-            <td>double</td>
-            <td></td>
-            <td>Current rating value. Must be a number between min (0 if AllowZeroStars is true, 1 otherwise) and max.</td>
-        </tr>
-        <tr>
-            <td>Size</td>
-            <td>RatingSize</td>
-            <td></td>
-            <td>Size of rating.</td>
-        </tr>
-        <tr>
-            <td>Style</td>
-            <td>string</td>
-            <td></td>
-            <td>Custom style for the root element of the component.</td>
-        </tr>
-        <tr>
-            <td>UnselectedIcon</td>
-            <td>string</td>
-            <td>FavoriteStar</td>
-            <td>Custom icon name for unselected rating elements.</td>
-        </tr>
-        <tr>
-            <td>ValueChanged</td>
-            <td>EventCallback&lt;int&gt;</td>
-            <td></td>
-            <td>Callback that is called when the rating value changed.</td>
-        </tr>
-    </table>
-    <div>
-        <h4>Rating Size</h4>
-        <hr />
-        <table>
-            <tr>
-                <th>Name</th>
-                <th>Value</th>
-                <th>Description</th>
-            </tr>
-            <tr>
-                <td>Small</td>
-                <td>0</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>Large</td>
-                <td>1</td>
-                <td></td>
-            </tr>
-        </table>
-    </div>
-</div>
+            </div>
+        </SampleContent>
+        <CodeSampleContent>
+            <pre>
+              &lt<span class="dark-green">BitRating Icon</span>="Emoji2"<span class="dark-green"> UnselectedIcon</span>="EmojiNeutral"<span class="dark-green"> AllowZeroStars</span>=<span class="light-blue">"true"</span> <span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-Rating</span><span>="RatingOutsideValue"</span><span>/&gt;</span>
+              &lt<span class="dark-green">BitButton OnClick</span>="() => RatingOutsideValue = 5">Fully satisfied<span>&lt/</span><span class="dark-green">BitButton</span><span>&gt;</span>
+              &lt<span class="dark-green">BitButton OnClick</span>="() => RatingOutsideValue = 0">Have no idea<span>&lt/</span><span class="dark-green">BitButton</span><span>&gt;</span>
+            </pre>
+        </CodeSampleContent>
+    </CodeSample>
+</ComponentPage>
