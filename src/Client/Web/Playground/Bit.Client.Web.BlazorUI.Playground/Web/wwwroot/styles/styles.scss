@@ -651,6 +651,16 @@ footer {
     }
 }
 
+.sample {
+    .ch-group .bit-txt {
+        margin-bottom: rem(25px);
+    }
+
+    .bit-chg label {
+        padding-bottom: rem(20px);
+    }
+}
+
 .tgl-btn {
     @include sm {
         margin-top: rem(10px);
@@ -663,6 +673,10 @@ footer {
         margin-top: rem(10px);
         width: rem(239px);
     }
+}
+
+.p-12 .bit-tgl label {
+    padding-bottom: rem(15px);
 }
 
 .sample .bit-drp-lbl {
@@ -724,7 +738,7 @@ input::-webkit-input-placeholder {
 }
 
 @media(min-width:768px) {
-    .container {
+    .container{
         max-width: 720px;
     }
 
