@@ -77,6 +77,9 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter]
         public EventCallback<string> HexChanged { get; set; }
 
+        /// <summary>
+        /// Indicates the Rgb value.
+        /// </summary>
         [Parameter]
         public string Rgb
         {
@@ -99,6 +102,9 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter]
         public EventCallback<string> RgbChanged { get; set; }
 
+        /// <summary>
+        /// Indicates the Alpha value.
+        /// </summary>
         [Parameter]
         public double Alpha
         {
@@ -115,6 +121,9 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter]
         public EventCallback<double> AlphaChanged { get; set; }
 
+        /// <summary>
+        /// Whether to show color preview box.
+        /// </summary>
         [Parameter]
         public bool ShowPreview { get; set; }
 
