@@ -93,6 +93,7 @@ h5 {
         @include h5-sm;
     }
 }
+
 pre {
     margin-left: rem(-70px);
 
@@ -358,9 +359,9 @@ footer {
         }
     }
 
-    a:hover, a:visited {
-        text-decoration: none !important;
-        color: $White !important;
+    .bit-lnk-fluent > a:active, .bit-lnk-fluent > a:hover, .bit-lnk-fluent > a:visited {
+        text-decoration: none;
+        color: $White;
     }
 }
 
@@ -426,6 +427,10 @@ footer {
             }
         }
 
+        .bit-sch-box-fluent input {
+            padding-left: rem(8px);
+        }
+
         .nav-link {
             padding-top: rem(8px);
 
@@ -471,6 +476,13 @@ footer {
     .border-top {
         border-bottom: rem(1px) solid $Gray03;
         padding-top: rem(30px);
+    }
+}
+
+.box {
+    .bit-lnk-fluent > a:active, .bit-lnk-fluent > a:hover, .bit-lnk-fluent > a:visited {
+        text-decoration: none;
+        color: $White;
     }
 }
 
@@ -644,6 +656,42 @@ footer {
     }
 }
 
+.sample {
+    .ch-group .bit-txt {
+        margin-bottom: rem(25px);
+    }
+
+    .bit-chg label {
+        padding-bottom: rem(20px);
+    }
+
+    .bit-sch-box {
+        margin-bottom: rem(12px);
+    }
+}
+
+.tgl-btn {
+    @include sm {
+        margin-top: rem(10px);
+        width: rem(195px);
+    }
+}
+
+.aria-hidden-tgl-btn {
+    @include sm {
+        margin-top: rem(10px);
+        width: rem(239px);
+    }
+}
+
+.p-12 .bit-tgl label {
+    padding-bottom: rem(15px);
+}
+
+.sample .bit-drp-lbl {
+    padding-bottom: rem(20px);
+}
+
 /* General */
 .bit-nav-selected-fluent:after {
     border-left: rem(4px) solid $Violet;
@@ -657,12 +705,16 @@ footer {
     background-color: $White;
 }
 
-.bit-sch-box-fluent input {
-    padding-left: rem(8px);
-}
-
 .bit-icon--Clear {
     padding-right: rem(20px);
+}
+
+input.search-input {
+    padding-top: rem(5px);
+}
+
+.bit-icon {
+    height: 0;
 }
 
 input::-webkit-input-placeholder {
@@ -699,7 +751,7 @@ input::-webkit-input-placeholder {
 }
 
 @media(min-width:768px) {
-    .container{
+    .container {
         max-width: 720px;
     }
 

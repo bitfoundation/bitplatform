@@ -8,9 +8,11 @@ namespace Bit.Client.Web.BlazorUI
 {
     public partial class BitDatePicker
     {
+        private const int DEFAULT_WEEK_COUNT = 6;
+        private const int DEFAULT_DAY_COUNT_PER_WEEK = 7;
         private bool isOpen;
         private Calendar? calendar;
-        private int[,] monthWeeks = new int[6, 7];
+        private int[,] currentMonthCalendar = new int[DEFAULT_WEEK_COUNT, DEFAULT_DAY_COUNT_PER_WEEK];
         private int currentYear;
         private int currentMonth;
         private int yearRangeFrom;
@@ -186,34 +188,38 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
-        public async Task HandleDateChoose(int dayOfWeek, int day, int month)
+        public async Task SelectDate(int dayOfWeek, int day, int week)
         {
-            dayOfWeek += dayOfWeekDifference;
-
             if (IsEnabled is false) return;
             if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
 
-            if (month == 13)
+            var selectedMonth = GetCorrectTargetMonth(week, dayOfWeek);
+            if (selectedMonth < currentMonth && currentMonth == 12 && IsInCurrentMonth(week, dayOfWeek) is false)
             {
                 currentYear++;
-                month = 1;
-                currentMonth = 1;
-                CreateMonthCalendar(currentYear, currentMonth);
             }
-            else if (month == 0)
+
+            if (selectedMonth > currentMonth && currentMonth == 1 && IsInCurrentMonth(week, dayOfWeek) is false)
             {
                 currentYear--;
-                month = 12;
-                currentMonth = 12;
-                CreateMonthCalendar(currentYear, currentMonth);
-            }
-            else if (currentMonth != month)
-            {
-                currentMonth = month;
-                CreateMonthCalendar(currentYear, currentMonth);
             }
 
             IsOpen = false;
+            currentMonth = selectedMonth;
+            CreateMonthCalendar(currentYear, currentMonth);
+
+            dayOfWeek += dayOfWeekDifference;
+
+            if (dayOfWeek < 0)
+            {
+                dayOfWeek = 7 + dayOfWeek;
+            }
+
+            if (dayOfWeek > 7)
+            {
+                dayOfWeek = -1 + dayOfWeek;
+            }
+
             BitDate date = new(currentYear, currentMonth, day, dayOfWeek);
             selectedDate = OnSelectDate is not null ? OnSelectDate.Invoke(date) : GetSelectedDateString(date);
             await ValueChanged.InvokeAsync(selectedDate);
@@ -328,11 +334,12 @@ namespace Bit.Client.Web.BlazorUI
             monthLength = calendar?.GetDaysInMonth(year, month) ?? 29;
             var firstDay = calendar?.ToDateTime(year, month, 1, 0, 0, 0, 0) ?? DateTime.Now;
             var currentDay = 1;
+            ResetCalendar();
 
             var isCalendarEnded = false;
-            for (int weekIndex = 0; weekIndex < monthWeeks.GetLength(0); weekIndex++)
+            for (int weekIndex = 0; weekIndex < DEFAULT_WEEK_COUNT; weekIndex++)
             {
-                for (int dayIndex = 0; dayIndex < monthWeeks.GetLength(1); dayIndex++)
+                for (int dayIndex = 0; dayIndex < DEFAULT_DAY_COUNT_PER_WEEK; dayIndex++)
                 {
                     if (weekIndex == 0
                         && currentDay == 1
@@ -350,33 +357,38 @@ namespace Bit.Client.Web.BlazorUI
                             previousMonth = month - 1;
                             previousMonthDaysCount = calendar?.GetDaysInMonth(year, previousMonth) ?? 29;
                         }
-                        monthWeeks[weekIndex, dayIndex] = previousMonthDaysCount - ((int)firstDay.DayOfWeek - (dayIndex + dayOfWeekDifference)) + 1;
+                        currentMonthCalendar[weekIndex, dayIndex] = previousMonthDaysCount - ((int)firstDay.DayOfWeek - (dayIndex + dayOfWeekDifference)) + 1;
                     }
                     else
                     {
-                        if (currentDay > calendar?.GetDaysInMonth(year, month))
+                        if (currentDay <= monthLength)
                         {
-                            continue;
+                            currentMonthCalendar[weekIndex, dayIndex] = currentDay;
+                            currentDay++;
                         }
-                        monthWeeks[weekIndex, dayIndex] = currentDay;
-                        currentDay++;
                     }
 
-                    if (currentDay > monthLength && dayIndex != 6)
+                    if (currentDay > monthLength)
                     {
                         currentDay = 1;
                         isCalendarEnded = true;
-                    }
-
-                    if (dayIndex == 6)
-                    {
-                        break;
                     }
                 }
 
                 if (isCalendarEnded)
                 {
                     break;
+                }
+            }
+        }
+
+        private void ResetCalendar()
+        {
+            for (int weekIndex = 0; weekIndex < DEFAULT_WEEK_COUNT; weekIndex++)
+            {
+                for (int dayIndex = 0; dayIndex < DEFAULT_DAY_COUNT_PER_WEEK; dayIndex++)
+                {
+                    currentMonthCalendar[weekIndex, dayIndex] = 0;
                 }
             }
         }
@@ -421,14 +433,14 @@ namespace Bit.Client.Web.BlazorUI
             var todayYear = calendar?.GetYear(DateTime.Now) ?? 1;
             var todayMonth = calendar?.GetMonth(DateTime.Now) ?? 1;
             var todayDay = calendar?.GetDayOfMonth(DateTime.Now) ?? 1;
-            var currentDay = monthWeeks[week, day];
+            var currentDay = currentMonthCalendar[week, day];
 
             if (IsInCurrentMonth(week, day) is false)
             {
                 className += className.Length == 0 ? "date-cell--outside-month" : " date-cell--outside-month";
             }
 
-            if (todayYear == currentYear && todayMonth == currentMonth && todayDay == currentDay)
+            if (IsInCurrentMonth(week, day) && todayYear == currentYear && todayMonth == currentMonth && todayDay == currentDay)
             {
                 className = "date-cell--today";
             }
@@ -443,8 +455,8 @@ namespace Bit.Client.Web.BlazorUI
 
         private bool IsInCurrentMonth(int week, int day)
         {
-            if ((week == 0 || week == 1) && monthWeeks[week, day] > 20) return false;
-            if ((week == 4 || week == 5) && monthWeeks[week, day] < 7) return false;
+            if ((week == 0 || week == 1) && currentMonthCalendar[week, day] > 20) return false;
+            if ((week == 4 || week == 5) && currentMonthCalendar[week, day] < 7) return false;
             return true;
         }
 
@@ -482,7 +494,7 @@ namespace Bit.Client.Web.BlazorUI
                 }
             }
 
-            return $"{monthWeeks[week, day]}, {calendar?.GetMonthName(month)}, {year}";
+            return $"{currentMonthCalendar[week, day]}, {calendar?.GetMonthName(month)}, {year}";
         }
 
         private bool IsDateSelected(int week, int day, int currentDay)

@@ -1,288 +1,267 @@
 ﻿@page "/components/dropdown"
 
-<h2>DropDown</h2>
+@using Bit.Client.Web.BlazorUI.Playground.Web.Components
 
-<div class="card">
-    <p class="desc">A dropdown is a list in which the selected item is always visible while other items are visible on demand by clicking a dropdown button. Dropdowns are typically used for forms.</p>
-</div>
-
-<h2>Usage</h2>
-<div class="wrapper">
-    <div class="card">
-        <h3>Basic Dropdowns</h3>
-        <BitPivot>
-            <BitPivotItem HeaderText="Example" IconName="ViewList">
-                <BitDropDown Label="Basic uncontrolled example"
+<ComponentPage ComponentName="Dropdown" OverviewDesc="A dropdown is a list in which the selected item is always visible while other items are visible on demand by clicking a dropdown button. Dropdowns are typically used for forms."
+               ComponentParameters="componentParameters">
+    <CodeSample Title="BitDropDown" Description="To create a dropdown you can use a BitDropDown component.">
+        <SampleContent>
+            <div>
+                <BitDropDown Label="Basic uncontrolled"
                              Items="GetDropdownItems()"
                              Placeholder="Select an option"
-                             Style="width: 300px; margin: 20px 0 20px 0">
+                             Style="width: 290px; margin: 20px 0 20px 0">
                 </BitDropDown>
-                <BitDropDown Label="Disabled example with defaultSelectedKey"
+                <BitDropDown Label="Disabled with defaultSelectedKey"
                              Items="GetDropdownItems()"
                              Placeholder="Select an option"
                              IsEnabled="false"
                              DefaultSelectedKey="Broccoli"
-                             Style="width: 300px; margin-bottom: 20px;">
+                             Style="width: 290px; margin-bottom: 20px;">
                 </BitDropDown>
-                <BitDropDown Label="Multi-select uncontrolled example"
+                <BitDropDown Label="Multi-select uncontrolled"
                              Items="GetDropdownItems()"
                              Placeholder="Select options"
                              IsMultiSelect="true"
-                             Style="width: 300px; margin-bottom: 20px;">
+                             Style="width: 290px; margin-bottom: 20px;">
                 </BitDropDown>
-            </BitPivotItem>
-            <BitPivotItem HeaderText="Code" IconName="Source">
-                <pre>
-                   &lt<span class="dark-green">BitDropDown Label</span>="Basic uncontrolled example"
-                             <span class="dark-green">Items</span>="<span class="dark-yellow">GetDropdownItems</span>()" 
-                             <span class="dark-green">Placeholder</span>="Select an option">
-                             <span class="dark-green">Style</span>="width: 300px; margin: 20px 0 20px 0">
-                   &lt;/<span class="dark-green">BitDropDown</span>&gt;
-                   &lt<span class="dark-green">BitDropDown Label</span>="Disabled example with defaultSelectedKey"
-                             <span class="dark-green">Items</span>="<span class="dark-yellow">GetDropdownItems</span>()" 
-                             <span class="dark-green">Placeholder</span>="Select an option">
-                             <span class="dark-green">IsEnabled</span>="<span class="dark-cyan">false</span>"
-                             <span class="dark-green">DefaultSelectedKey</span>="Broccoli"
-                             <span class="dark-green">Style</span>="width: 300px; margin-bottom: 20px;">
-                   &lt;/<span class="dark-green">BitDropDown</span>&gt;
-                   &lt<span class="dark-green">BitDropDown Label</span>="Multi-select uncontrolled example"
-                             <span class="dark-green">Items</span>="<span class="dark-yellow">GetDropdownItems</span>()" 
-                             <span class="dark-green">Placeholder</span>="Select options">
-                             <span class="dark-green">IsMultiSelect</span>="<span class="dark-cyan">true</span>"                             
-                             <span class="dark-green">Style</span>="width: 300px; margin-bottom: 20px;">
-                   &lt;/<span class="dark-green">BitDropDown</span>&gt;
-                
-                    <span class="light-yellow-bg">&#64;code {</span>
-                    private <span class="dark-green">List&ltdropdownitem></span><span class="dark-yellow"> GetDropdownItems</span> ()
-                    {
-                        <span class="dark-green">List&ltdropdownitem></span> items = <span class="light-blue">new</span>();
-                
-                        items.<span>Add</span>(<span class="light-blue">new</span><span class="dark-green"> DropDownItem</span>()
-                        {
-                            <span>ItemType = </span><span class="neon-yellow"> DropDownItemType</span><span>.Header,</span>
-                            Text = <span class="dark-orange">"Fruits"</span>
-                        });
-
-                        items.<span>Add</span>(<span class="light-blue">new</span><span class="dark-green"> DropDownItem</span>()
-                        {
-                            <span>ItemType = </span><span class="neon-yellow"> DropDownItemType</span><span>.Normal,</span>
-                            Text = <span class="dark-orange">"Apple"</span>
-                            Value = <span class="dark-orange">"f-app"</span>
-                        });
-
-                        items.<span>Add</span>(<span class="light-blue">new</span><span class="dark-green"> DropDownItem</span>()
-                        {
-                            <span>ItemType = </span><span class="neon-yellow"> DropDownItemType</span><span>.Normal,</span>
-                            Text = <span class="dark-orange">"Orange"</span>
-                            Value = <span class="dark-orange">"f-ora"</span>
-                            IsEnabled = <span class="light-blue">"false"</span>
-                        });
-
-                        items.<span>Add</span>(<span class="light-blue">new</span><span class="dark-green"> DropDownItem</span>()
-                        {
-                            <span>ItemType = </span><span class="neon-yellow"> DropDownItemType</span><span>.Normal,</span>
-                            Text = <span class="dark-orange">"Banana"</span>
-                            Value = <span class="dark-orange">"f-ban"</span>
-                        });
-
-                        items.<span>Add</span>(<span class="light-blue">new</span><span class="dark-green"> DropDownItem</span>()
-                        {
-                            <span>ItemType = </span><span class="neon-yellow"> DropDownItemType</span><span>.Divider,</span>
-                        });
-
-                        items.<span>Add</span>(<span class="light-blue">new</span><span class="dark-green"> DropDownItem</span>()
-                        {
-                            <span>ItemType = </span><span class="neon-yellow"> DropDownItemType</span><span>.Header,</span>
-                            Text = <span class="dark-orange">"Vegetables"</span>
-                        });
-
-                        items.<span>Add</span>(<span class="light-blue">new</span><span class="dark-green"> DropDownItem</span>()
-                        {
-                            <span>ItemType = </span><span class="neon-yellow"> DropDownItemType</span><span>.Normal,</span>
-                            Text = <span class="dark-orange">"Broccoli"</span>
-                            Value = <span class="dark-orange">"v-bro"</span>
-                        });
-                    <span class="light-yellow-bg">}</span>                
-                </pre>                
-            </BitPivotItem>
-        </BitPivot>
-    </div>        
-    <div class="card">
-        <h3>Controlled single-select Dropdown</h3>
-        <BitPivot>
-            <BitPivotItem HeaderText="Example" IconName="ViewList">
-                <BitDropDown 
-                                Label="Controlled example"
-                                Items="GetDropdownItems()"
-                                Placeholder="Select an option"                                
-                                @bind-SelectedKey="ControlledSelectedKey"                                
-                                Style="width: 300px; margin: 20px 0 20px 0">
+            </div>
+        </SampleContent>
+        <CodeSampleContent>
+            <div>
+                <p>
+                    &lt<span class="dark-green">BitDropDown Label</span>="Basic uncontrolled"
+                    <span class="dark-green">Items</span>="<span class="dark-yellow">GetDropdownItems</span>()"
+                    <span class="dark-green">Placeholder</span>="Select an option"
+                    <span class="light-blue">Style</span>="width: 290px; margin: 20px 0 20px 0">
+                    &lt;/<span class="dark-green">BitDropDown</span>&gt;
+                </p>
+                <p>
+                    &lt<span class="dark-green">BitDropDown Label</span>="Disabled  with defaultSelectedKey"
+                    <span class="dark-green">Items</span>="<span class="dark-yellow">GetDropdownItems</span>()"
+                    <span class="dark-green">Placeholder</span>="Select an option">
+                    <span class="dark-green">IsEnabled</span>="<span class="light-blue">false</span>"
+                    <span class="dark-green">DefaultSelectedKey</span>="Broccoli"
+                    <span class="light-blue">Style</span>="width: 290px; margin-bottom: 20px;">
+                    &lt;/<span class="dark-green">BitDropDown</span>&gt;
+                </p>
+                <p>
+                    &lt<span class="dark-green">BitDropDown Label</span>="Multi-select uncontrolled "
+                    <span class="dark-green">Items</span>="<span class="dark-yellow">GetDropdownItems</span>()"
+                    <span class="dark-green">Placeholder</span>="Select options">
+                    <span class="dark-green">IsMultiSelect</span>="<span class="light-blue">true</span>"
+                    <span class="light-blue">Style</span>="width: 290px; margin-bottom: 20px;">
+                    &lt;/<span class="dark-green">BitDropDown</span>&gt;
+                </p>
+                <p><span class="light-yellow-bg">&#64;code {</span></p>
+                <p><span class="light-blue">private </span><span class="dark-green">List&ltdropdownitem></span><span class="dark-yellow"> GetDropdownItems</span> ()</p>
+                <p>{</p>
+                <p class="m-l-30"><span class="dark-green">List&ltdropdownitem></span> items = <span class="light-blue">new</span>();</p>
+                <p class="m-l-30">items.<span>Add</span>(<span class="light-blue">new</span><span class="dark-green"> DropDownItem</span>()</p>
+                <p class="m-l-30">{</p>
+                <p class="m-l-45"><span>ItemType = </span><span class="neon-yellow"> DropDownItemType</span><span>.Header,</span></p>
+                <p class="m-l-45">Text = <span class="dark-orange">"Fruits"</span></p>
+                <p class="m-l-30">});</p>
+                <p class="m-l-30">items.<span>Add</span>(<span class="light-blue">new</span><span class="dark-green"> DropDownItem</span>()</p>
+                <p class="m-l-30">{</p>
+                <p class="m-l-45"><span>ItemType = </span><span class="neon-yellow"> DropDownItemType</span><span>.Normal,</span></p>
+                <p class="m-l-45">Text = <span class="dark-orange">"Apple"</span></p>
+                <p class="m-l-45">Value = <span class="dark-orange">"f-app"</span></p>
+                <p class="m-l-30">});</p>
+                <p class="m-l-30">items.<span>Add</span>(<span class="light-blue">new</span><span class="dark-green"> DropDownItem</span>()</p>
+                <p class="m-l-30">{</p>
+                <p class="m-l-45"><span>ItemType = </span><span class="neon-yellow"> DropDownItemType</span><span>.Normal,</span></p>
+                <p class="m-l-45">Text = <span class="dark-orange">"Orange"</span></p>
+                <p class="m-l-45">Value = <span class="dark-orange">"f-ora"</span></p>
+                <p class="m-l-45">IsEnabled = <span class="light-blue">"false"</span></p>
+                <p class="m-l-30">});</p>
+                <p class="m-l-30">items.<span>Add</span>(<span class="light-blue">new</span><span class="dark-green"> DropDownItem</span>()</p>
+                <p class="m-l-30">{</p>
+                <p class="m-l-45"><span>ItemType = </span><span class="neon-yellow"> DropDownItemType</span><span>.Normal,</span></p>
+                <p class="m-l-45">Text = <span class="dark-orange">"Banana"</span></p>
+                <p class="m-l-45">Value = <span class="dark-orange">"f-ban"</span></p>
+                <p class="m-l-30">});</p>
+                <p class="m-l-30">items.<span>Add</span>(<span class="light-blue">new</span><span class="dark-green"> DropDownItem</span>()</p>
+                <p class="m-l-30">{</p>
+                <p class="m-l-45"><span>ItemType = </span><span class="neon-yellow"> DropDownItemType</span><span>.Divider,</span></p>
+                <p class="m-l-30">});</p>
+                <p class="m-l-30">items.<span>Add</span>(<span class="light-blue">new</span><span class="dark-green"> DropDownItem</span>()</p>
+                <p class="m-l-30">{</p>
+                <p class="m-l-45"><span>ItemType = </span><span class="neon-yellow"> DropDownItemType</span><span>.Header,</span></p>
+                <p class="m-l-45">Text = <span class="dark-orange">"Vegetables"</span></p>
+                <p class="m-l-30">});</p>
+                <p class="m-l-30">items.<span>Add</span>(<span class="light-blue">new</span><span class="dark-green"> DropDownItem</span>()</p>
+                <p class="m-l-30">{</p>
+                <p class="m-l-45"><span>ItemType = </span><span class="neon-yellow"> DropDownItemType</span><span>.Normal,</span></p>
+                <p class="m-l-45">Text = <span class="dark-orange">"Broccoli"</span></p>
+                <p class="m-l-45">Value = <span class="dark-orange">"v-bro"</span></p>
+                <p class="m-l-30">});</p>
+                <p>}</p>
+                <p><span class="light-yellow-bg">}</span></p>
+            </div>
+        </CodeSampleContent>
+    </CodeSample>
+    <CodeSample Title="Controlled single-select" Description="">
+        <SampleContent>
+            <div>
+                <BitDropDown Label="Controlled "
+                             Items="GetDropdownItems()"
+                             Placeholder="Select an option"
+                             @bind-SelectedKey="ControlledSelectedKey"
+                             Style="width: 290px; margin: 20px 0 20px 0">
                 </BitDropDown>
-            </BitPivotItem>
-            <BitPivotItem HeaderText="Code" IconName="Source">
-                <pre>
-                   &lt<span class="dark-green">BitDropDown Label</span>="Controlled example"
-                             <span class="dark-green">Items</span>="<span class="dark-yellow">GetDropdownItems</span>()" 
-                             <span class="dark-green">Placeholder</span>="Select an option">
-                             <span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-SelectedKey</span>="ControlledSelectedKey"                             
-                             <span class="dark-green">Style</span>="width: 300px; margin: 20px 0 20px 0">
-                   &lt;/<span class="dark-green">BitDropDown</span>&gt;
-                
-                   <span class="light-yellow-bg">&#64;code {</span>
-
-                        private <span class="dark-blue">string</span> ControlledSelectedKey = <span class="dark-orange">"Apple"</span>;
-
-                        private <span class="dark-green">List&ltdropdownitem></span><span class="dark-yellow"> GetDropdownItems</span> ()
-                        {
-                            <span class="dark-green">List&ltdropdownitem></span> items = <span class="light-blue">new</span>();
-                    
-                            items.<span>Add</span>(<span class="light-blue">new</span><span class="dark-green"> DropDownItem</span>()
-                            {
-                                <span>ItemType = </span><span class="neon-yellow"> DropDownItemType</span><span>.Header,</span>
-                                Text = <span class="dark-orange">"Fruits"</span>
-                            });
-
-                            items.<span>Add</span>(<span class="light-blue">new</span><span class="dark-green"> DropDownItem</span>()
-                            {
-                                <span>ItemType = </span><span class="neon-yellow"> DropDownItemType</span><span>.Normal,</span>
-                                Text = <span class="dark-orange">"Apple"</span>
-                                Value = <span class="dark-orange">"f-app"</span>
-                            });
-
-                            items.<span>Add</span>(<span class="light-blue">new</span><span class="dark-green"> DropDownItem</span>()
-                            {
-                                <span>ItemType = </span><span class="neon-yellow"> DropDownItemType</span><span>.Normal,</span>
-                                Text = <span class="dark-orange">"Orange"</span>
-                                Value = <span class="dark-orange">"f-ora"</span>
-                                IsEnabled = <span class="light-blue">"false"</span>
-                            });
-
-                            items.<span>Add</span>(<span class="light-blue">new</span><span class="dark-green"> DropDownItem</span>()
-                            {
-                                <span>ItemType = </span><span class="neon-yellow"> DropDownItemType</span><span>.Normal,</span>
-                                Text = <span class="dark-orange">"Banana"</span>
-                                Value = <span class="dark-orange">"f-ban"</span>
-                            });
-
-                            items.<span>Add</span>(<span class="light-blue">new</span><span class="dark-green"> DropDownItem</span>()
-                            {
-                                <span>ItemType = </span><span class="neon-yellow"> DropDownItemType</span><span>.Divider,</span>
-                            });
-
-                            items.<span>Add</span>(<span class="light-blue">new</span><span class="dark-green"> DropDownItem</span>()
-                            {
-                                <span>ItemType = </span><span class="neon-yellow"> DropDownItemType</span><span>.Header,</span>
-                                Text = <span class="dark-orange">"Vegetables"</span>
-                            });
-
-                            items.<span>Add</span>(<span class="light-blue">new</span><span class="dark-green"> DropDownItem</span>()
-                            {
-                                <span>ItemType = </span><span class="neon-yellow"> DropDownItemType</span><span>.Normal,</span>
-                                Text = <span class="dark-orange">"Broccoli"</span>
-                                Value = <span class="dark-orange">"v-bro"</span>
-                            });
-                    <span class="light-yellow-bg">}</span>
-                </pre>                
-            </BitPivotItem>
-        </BitPivot>
-    </div>
-    <div class="card">
-        <h3>Controlled multi-select Dropdown</h3>
-        <BitPivot>
-            <BitPivotItem HeaderText="Example" IconName="ViewList">
-                <BitDropDown
-                                Label="Multi-select controlled example"
-                                Items="GetDropdownItems()"
-                                Placeholder="Select options"                               
-                                @bind-SelectedMultipleKeys ="ControlledSelectedMultipleKeys"                                
-                                IsMultiSelect="true"
-                                Style="width:300px; margin:20px 0 20px 0">
+            </div>
+        </SampleContent>
+        <CodeSampleContent>
+            <div>
+                <p>
+                    &lt<span class="dark-green">BitDropDown Label</span>="Controlled "
+                    <span class="dark-green">Items</span>="<span class="dark-yellow">GetDropdownItems</span>()"
+                    <span class="dark-green">Placeholder</span>="Select an option">
+                    <span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-SelectedKey</span>="ControlledSelectedKey"
+                    <span class="light-blue">Style</span>="width: 290px; margin: 20px 0 20px 0">
+                    &lt;/<span class="dark-green">BitDropDown</span>&gt;>
+                </p>
+                <p><span class="light-yellow-bg">&#64;code {</span></p>
+                <p><span class="light-blue">private </span><span class="dark-blue">string</span> ControlledSelectedKey = <span class="dark-orange">"Apple"</span>;</p>
+                <p><span class="light-blue">private </span><span class="dark-green">List&ltdropdownitem></span><span class="dark-yellow"> GetDropdownItems</span> ()</p>
+                <p>{</p>
+                <p class="m-l-30"><span class="dark-green">List&ltdropdownitem></span> items = <span class="light-blue">new</span>();</p>
+                <p class="m-l-30">items.<span>Add</span>(<span class="light-blue">new</span><span class="dark-green"> DropDownItem</span>()</p>
+                <p class="m-l-30">{</p>
+                <p class="m-l-45"><span>ItemType = </span><span class="neon-yellow"> DropDownItemType</span><span>.Header,</span></p>
+                <p class="m-l-45">Text = <span class="dark-orange">"Fruits"</span></p>
+                <p class="m-l-30">});</p>
+                <p class="m-l-30">items.<span>Add</span>(<span class="light-blue">new</span><span class="dark-green"> DropDownItem</span>()</p>
+                <p class="m-l-30">{</p>
+                <p class="m-l-45"><span>ItemType = </span><span class="neon-yellow"> DropDownItemType</span><span>.Normal,</span></p>
+                <p class="m-l-45">Text = <span class="dark-orange">"Apple"</span></p>
+                <p class="m-l-45">Value = <span class="dark-orange">"f-app"</span></p>
+                <p class="m-l-30">});</p>
+                <p class="m-l-30">items.<span>Add</span>(<span class="light-blue">new</span><span class="dark-green"> DropDownItem</span>()</p>
+                <p class="m-l-30">{</p>
+                <p class="m-l-45"><span>ItemType = </span><span class="neon-yellow"> DropDownItemType</span><span>.Normal,</span></p>
+                <p class="m-l-45">Text = <span class="dark-orange">"Orange"</span></p>
+                <p class="m-l-45">Value = <span class="dark-orange">"f-ora"</span></p>
+                <p class="m-l-45">IsEnabled = <span class="light-blue">"false"</span></p>
+                <p class="m-l-30">});</p>
+                <p class="m-l-30">items.<span>Add</span>(<span class="light-blue">new</span><span class="dark-green"> DropDownItem</span>()</p>
+                <p class="m-l-30">{</p>
+                <p class="m-l-45"><span>ItemType = </span><span class="neon-yellow"> DropDownItemType</span><span>.Normal,</span></p>
+                <p class="m-l-45">Text = <span class="dark-orange">"Banana"</span></p>
+                <p class="m-l-45">Value = <span class="dark-orange">"f-ban"</span></p>
+                <p class="m-l-30">});</p>
+                <p class="m-l-30">items.<span>Add</span>(<span class="light-blue">new</span><span class="dark-green"> DropDownItem</span>()</p>
+                <p class="m-l-30">{</p>
+                <p class="m-l-45"><span>ItemType = </span><span class="neon-yellow"> DropDownItemType</span><span>.Divider,</span></p>
+                <p class="m-l-30">});</p>
+                <p class="m-l-30">items.<span>Add</span>(<span class="light-blue">new</span><span class="dark-green"> DropDownItem</span>()</p>
+                <p class="m-l-30">{</p>
+                <p class="m-l-45"><span>ItemType = </span><span class="neon-yellow"> DropDownItemType</span><span>.Header,</span></p>
+                <p class="m-l-45">Text = <span class="dark-orange">"Vegetables"</span></p>
+                <p class="m-l-30">});</p>
+                <p class="m-l-30">items.<span>Add</span>(<span class="light-blue">new</span><span class="dark-green"> DropDownItem</span>()</p>
+                <p class="m-l-30">{</p>
+                <p class="m-l-45"><span>ItemType = </span><span class="neon-yellow"> DropDownItemType</span><span>.Normal,</span></p>
+                <p class="m-l-45">Text = <span class="dark-orange">"Broccoli"</span></p>
+                <p class="m-l-45">Value = <span class="dark-orange">"v-bro"</span></p>
+                <p class="m-l-30">});</p>
+                <p>}</p>
+                <p><span class="light-yellow-bg">}</span></p>
+            </div>
+        </CodeSampleContent>
+    </CodeSample>
+    <CodeSample Title="Controlled multi-select" Description="">
+        <SampleContent>
+            <div>
+                <BitDropDown Label="Multi-select controlled "
+                             Items="GetDropdownItems()"
+                             Placeholder="Select options"
+                             @bind-SelectedMultipleKeys="ControlledSelectedMultipleKeys"
+                             IsMultiSelect="true"
+                             Style="width:290px; margin:20px 0 20px 0">
                 </BitDropDown>
-            </BitPivotItem>
-            <BitPivotItem HeaderText="Code" IconName="Source">
-                <pre>
-                    &lt<span class="dark-green">BitDropDown Label</span>="Multi-select controlled example"
-                             <span class="dark-green">Items</span>="<span class="dark-yellow">GetDropdownItems</span>()" 
-                             <span class="dark-green">Placeholder</span>="Select options">
-                             <span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-SelectedMultipleKeys</span>="ControlledSelectedMultipleKeys"                             
-                             <span class="dark-green">IsMultiSelect</span>="<span class="dark-blue">true</span>"
-                             <span class="dark-green">Style</span>="width: 300px; margin: 20px 0 20px 0">
-                    &lt;/<span class="dark-green">BitDropDown</span>&gt; 
-                                
-                    <span class="light-yellow-bg">&#64;code {</span>
-
-                        private <span class="dark-blue">string</span> ControlledSelectedMultipleKeys = new List&lt;<span class="dark-blue">string</span>&gt;(){<span class="dark-orange">"Apple"</span>, <span class="dark-orange">"Banana"</span>, <span class="dark-orange">"Grape"</span>};
-
-                        private <span class="dark-green">List&ltdropdownitem></span><span class="dark-yellow"> GetDropdownItems</span> ()
-                        {
-                            <span class="dark-green">List&ltdropdownitem></span> items = <span class="light-blue">new</span>();
-                    
-                            items.<span>Add</span>(<span class="light-blue">new</span><span class="dark-green"> DropDownItem</span>()
-                            {
-                                <span>ItemType = </span><span class="neon-yellow"> DropDownItemType</span><span>.Header,</span>
-                                Text = <span class="dark-orange">"Fruits"</span>
-                            });
-
-                            items.<span>Add</span>(<span class="light-blue">new</span><span class="dark-green"> DropDownItem</span>()
-                            {
-                                <span>ItemType = </span><span class="neon-yellow"> DropDownItemType</span><span>.Normal,</span>
-                                Text = <span class="dark-orange">"Apple"</span>
-                                Value = <span class="dark-orange">"f-app"</span>
-                            });
-
-                            items.<span>Add</span>(<span class="light-blue">new</span><span class="dark-green"> DropDownItem</span>()
-                            {
-                                <span>ItemType = </span><span class="neon-yellow"> DropDownItemType</span><span>.Normal,</span>
-                                Text = <span class="dark-orange">"Orange"</span>
-                                Value = <span class="dark-orange">"f-ora"</span>
-                                IsEnabled = <span class="light-blue">"false"</span>
-                            });
-
-                            items.<span>Add</span>(<span class="light-blue">new</span><span class="dark-green"> DropDownItem</span>()
-                            {
-                                <span>ItemType = </span><span class="neon-yellow"> DropDownItemType</span><span>.Normal,</span>
-                                Text = <span class="dark-orange">"Banana"</span>
-                                Value = <span class="dark-orange">"f-ban"</span>
-                            });
-
-                            items.<span>Add</span>(<span class="light-blue">new</span><span class="dark-green"> DropDownItem</span>()
-                            {
-                                <span>ItemType = </span><span class="neon-yellow"> DropDownItemType</span><span>.Divider,</span>
-                            });
-
-                            items.<span>Add</span>(<span class="light-blue">new</span><span class="dark-green"> DropDownItem</span>()
-                            {
-                                <span>ItemType = </span><span class="neon-yellow"> DropDownItemType</span><span>.Header,</span>
-                                Text = <span class="dark-orange">"Vegetables"</span>
-                            });
-
-                            items.<span>Add</span>(<span class="light-blue">new</span><span class="dark-green"> DropDownItem</span>()
-                            {
-                                <span>ItemType = </span><span class="neon-yellow"> DropDownItemType</span><span>.Normal,</span>
-                                Text = <span class="dark-orange">"Broccoli"</span>
-                                Value = <span class="dark-orange">"v-bro"</span>
-                            });
-
-                      <span class="dark-blue">return</span> items;
-                    <span class="light-yellow-bg">}</span>
-                </pre>
-            </BitPivotItem>
-        </BitPivot>
-    </div>
-    <div class="card">
-        <h3>Customized Dropdown</h3>
-        <BitPivot>
-            <BitPivotItem HeaderText="Example" IconName="ViewList">
-                <BitDropDown Label="Custom example"
+            </div>
+        </SampleContent>
+        <CodeSampleContent>
+            <div>
+                <p>
+                    &lt<span class="dark-green">BitDropDown Label</span>="Multi-select controlled "
+                    <span class="dark-green">Items</span>="<span class="dark-yellow">GetDropdownItems</span>()"
+                    <span class="dark-green">Placeholder</span>="Select options">
+                    <span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-SelectedMultipleKeys</span>="ControlledSelectedMultipleKeys"
+                    <span class="dark-green">IsMultiSelect</span>="<span class="light-blue">true</span>"
+                    <span class="light-blue">Style</span>="width: 290px; margin: 20px 0 20px 0">
+                    &lt;/<span class="dark-green">BitDropDown</span>&gt;
+                </p>
+                <p><span class="light-yellow-bg">&#64;code {</span></p>
+                <p><span class="light-blue">private </span><span class="dark-blue">string</span> ControlledSelectedMultipleKeys = new List&lt;<span class="dark-blue">string</span>&gt;()</p>
+                <p>{</p>
+                <p class="m-l-30"><span class="dark-orange">"Apple"</span>,</p>
+                <p class="m-l-30"><span class="dark-orange">"Banana"</span>,</p>
+                <p class="m-l-30"><span class="dark-orange">"Grape"</span></p>
+                <p>};</p>
+                <p><span class="light-blue">private </span><span class="dark-green">List&ltdropdownitem></span><span class="dark-yellow"> GetDropdownItems</span> ()</p>
+                <p>{</p>
+                <p class="m-l-30"><span class="dark-green">List&ltdropdownitem></span> items = <span class="light-blue">new</span>();</p>
+                <p class="m-l-30">items.<span>Add</span>(<span class="light-blue">new</span><span class="dark-green"> DropDownItem</span>()</p>
+                <p class="m-l-30">{</p>
+                <p class="m-l-45"><span>ItemType = </span><span class="neon-yellow"> DropDownItemType</span><span>.Header,</span></p>
+                <p class="m-l-45">Text = <span class="dark-orange">"Fruits"</span></p>
+                <p class="m-l-30">});</p>
+                <p class="m-l-30">items.<span>Add</span>(<span class="light-blue">new</span><span class="dark-green"> DropDownItem</span>()</p>
+                <p class="m-l-30">{</p>
+                <p class="m-l-45"><span>ItemType = </span><span class="neon-yellow"> DropDownItemType</span><span>.Normal,</span></p>
+                <p class="m-l-45">Text = <span class="dark-orange">"Apple"</span></p>
+                <p class="m-l-45">Value = <span class="dark-orange">"f-app"</span></p>
+                <p class="m-l-30">});</p>
+                <p class="m-l-30">items.<span>Add</span>(<span class="light-blue">new</span><span class="dark-green"> DropDownItem</span>()</p>
+                <p class="m-l-30">{</p>
+                <p class="m-l-45"><span>ItemType = </span><span class="neon-yellow"> DropDownItemType</span><span>.Normal,</span></p>
+                <p class="m-l-45">Text = <span class="dark-orange">"Orange"</span></p>
+                <p class="m-l-45">Value = <span class="dark-orange">"f-ora"</span></p>
+                <p class="m-l-45">IsEnabled = <span class="light-blue">"false"</span></p>
+                <p class="m-l-30">});</p>
+                <p class="m-l-30">items.<span>Add</span>(<span class="light-blue">new</span><span class="dark-green"> DropDownItem</span>()</p>
+                <p class="m-l-30">{</p>
+                <p class="m-l-45"><span>ItemType = </span><span class="neon-yellow"> DropDownItemType</span><span>.Normal,</span></p>
+                <p class="m-l-45">Text = <span class="dark-orange">"Banana"</span></p>
+                <p class="m-l-45">Value = <span class="dark-orange">"f-ban"</span></p>
+                <p class="m-l-30">});</p>
+                <p class="m-l-30">items.<span>Add</span>(<span class="light-blue">new</span><span class="dark-green"> DropDownItem</span>()</p>
+                <p class="m-l-30">{</p>
+                <p class="m-l-45"><span>ItemType = </span><span class="neon-yellow"> DropDownItemType</span><span>.Divider,</span></p>
+                <p class="m-l-30">});</p>
+                <p class="m-l-30">items.<span>Add</span>(<span class="light-blue">new</span><span class="dark-green"> DropDownItem</span>()</p>
+                <p class="m-l-30">{</p>
+                <p class="m-l-45"><span>ItemType = </span><span class="neon-yellow"> DropDownItemType</span><span>.Header,</span></p>
+                <p class="m-l-45">Text = <span class="dark-orange">"Vegetables"</span></p>
+                <p class="m-l-30">});</p>
+                <p class="m-l-30">items.<span>Add</span>(<span class="light-blue">new</span><span class="dark-green"> DropDownItem</span>()</p>
+                <p class="m-l-30">{</p>
+                <p class="m-l-45"><span>ItemType = </span><span class="neon-yellow"> DropDownItemType</span><span>.Normal,</span></p>
+                <p class="m-l-45">Text = <span class="dark-orange">"Broccoli"</span></p>
+                <p class="m-l-45">Value = <span class="dark-orange">"v-bro"</span></p>
+                <p class="m-l-30">});</p>
+                <p class="m-l-30"><span class="light-blue">return</span> items;</p>
+                <p>}</p>
+                <p><span class="light-yellow-bg">}</span></p>
+            </div>
+        </CodeSampleContent>
+    </CodeSample>
+    <CodeSample Title="Customized Dropdown" Description="">
+        <SampleContent>
+            <div>
+                <BitDropDown Label="Custom "
                              Items="GetCustomDropdownItems()"
-                             Placeholder="Select an option"                                
-                             AriaLabel="Custom dropdown example"
-                             Style="width:300px; margin:20px 0 20px 0">
+                             Placeholder="Select an option"
+                             AriaLabel="Custom dropdown "
+                             Style="width:290px; margin:20px 0 20px 0">
                     <TextTemplate>
                         <div>
                             <i class="bit-icon bit-icon--@((context.Items.Find(i => i.Value == context.SelectedKey).Data as DropDownItemData).IconName)"
-                                aria-hidden="true"
-                                title="@((context.Items.Find(i => i.Value == context.SelectedKey).Data as DropDownItemData).IconName)"></i>
+                               aria-hidden="true"
+                               title="@((context.Items.Find(i => i.Value == context.SelectedKey).Data as DropDownItemData).IconName)"></i>
                             <span>@context.Items.Find(i => i.Value == context.SelectedKey).Text</span>
                         </div>
                     </TextTemplate>
@@ -298,17 +277,17 @@
                     <ItemTemplate>
                         <div>
                             <i class="bit-icon bit-icon--@((context.Data as DropDownItemData).IconName)"
-                                aria-hidden="true"
-                                title="@((context.Data as DropDownItemData).IconName)"></i>
+                               aria-hidden="true"
+                               title="@((context.Data as DropDownItemData).IconName)"></i>
                             <span>@context.Text</span>
                         </div>
                     </ItemTemplate>
                 </BitDropDown>
                 <BitDropDown Items="GetCustomDropdownItems()"
-                                Placeholder="Select an option"
-                                Label="Custom label"
-                                AriaLabel="Custom dropdown label example"
-                                Style="width:300px">
+                             Placeholder="Select an option"
+                             Label="Custom label"
+                             AriaLabel="Custom dropdown label "
+                             Style="width:290px">
                     <LabelFragment>
                         <label>Custom label</label>
                         <button type="button" title="Info" aria-label="Info" class="custom-drp-lbl-ic">
@@ -316,454 +295,181 @@
                         </button>
                     </LabelFragment>
                 </BitDropDown>
-            </BitPivotItem>
-            <BitPivotItem HeaderText="Code" IconName="Source">
-                <pre>
-                &lt;<span class="dark-green">BitDropDown Label</span>="Custom example"
-                             <span class="dark-green">Items</span>="<span class="dark-yellow">GetCustomDropdownItems()</span>"
-                             <span class="dark-green">Placeholder</span>="Select an option"
-                             <span class="dark-green">AriaLabel</span>="Custom dropdown example"
-                             <span class="dark-green">Style</span>="width:300px; margin:20px 0 20px 0"&gt;
-                             &lt;<span class="dark-green">TextTemplate</span>&gt;
-                                 &lt;div&gt;
-                                    &lt;i class="bit-icon bit-icon--<span class="light-yellow-bg">&#64;(</span>(context.Items.Find(i => i.Value == context.SelectedKey).Data as DropDownItemData).IconName<span class="light-yellow-bg">)</span>
-                                    aria-hidden="true"
-                                    title="<span class="light-yellow-bg">&#64;(</span>(context.Items.Find(i => i.Value == context.SelectedKey).Data as DropDownItemData).IconName)">&lt;/i&gt;
-                                    &lt;span&gt;<span class="light-yellow-bg">&#64;</span>context.Items.Find(i => i.Value == context.SelectedKey).Text&lt;/span&gt;
-                                 &lt;/div&gt;
-                             &lt;/<span class="dark-green">TextTemplate</span>&gt;
-                             &lt;<span class="dark-green">PlaceholderTemplate</span>&gt;
-                                      &lt;div&gt;
-                                          &lt;i class="bit-icon bit-icon--MessageFill" aria-hidden="true"&gt;&lt;/i&gt;
-                                          &lt;span&gt;<span class="light-yellow-bg">&#64;</span>context.Placeholder&lt;/span&gt;
-                                      &lt;/div&gt;
-                             &lt;/<span class="dark-green">PlaceholderTemplate</span>&gt;
-                             &lt;<span class="dark-green">CaretDownFragment</span>&gt;
-                                      &lt;class="bit-icon bit-icon--CirclePlus"&gt;&lt;/i&gt;
-                             &lt;/<span class="dark-green">CaretDownFragment</span>&gt;
-                             &lt;<span class="dark-green">ItemTemplate</span>&gt;
-                                      &lt;div&gt;
-                                          &lt;i class="bit-icon bit-icon--<span class="light-yellow-bg">&#64;(</span>(context.Data as DropDownItemData).IconName)"
-                                              aria-hidden="true"
-                                              title="<span class="light-yellow-bg">&#64;(</span>(context.Data as DropDownItemData).IconName)">&lt;/i&gt;
-                                          &lt;span&gt;<span class="light-yellow-bg">&#64;</span>context.Text&lt;/span&gt;
-                                      &lt;/div&gt;
-                             &lt;/<span class="dark-green">ItemTemplate</span>&gt;
-                &lt;/<span class="dark-green">BitDropDown</span>&gt;
-                &lt;<span class="dark-green">BitDropDown Items</span>="<span class="dark-yellow">GetCustomDropdownItems()</span>"
-                             <span class="dark-green">Placeholder</span>="Select an option"
-                             <span class="dark-green">Label</span>="Custom label"
-                             <span class="dark-green">AriaLabel</span>="Custom dropdown label example"
-                             <span class="dark-green">Style</span>="width:300px"&gt;
-                             &lt;<span class="dark-green">LabelFragment</span>&gt;
-                             &lt;label&gt;Custom label&lt;/label&gt;
-                             &lt;button type="button" title="Info" aria-label="Info" class="custom-drp-lbl-ic"&gt;
-                                 &lt;class="bit-icon bit-icon--Info"&gt;&lt;/i&gt;
-                             &lt;/button&gt;
-                             &lt;/<span class="dark-green">LabelFragment</span>&gt;
-                &lt;/<span class="dark-green">BitDropDown</span>&gt;
-                                                
-                <span class="light-yellow-bg">&#64;code {</span>
-
-                    private <span class="dark-green">List&ltdropdownitem></span><span class="dark-yellow"> GetCustomDropdownItems</span>()
-                    {
-
-                    <span class="dark-green">List&ltdropdownitem></span> items = <span class="light-blue">new</span>();
-                    
-                    items.<span>Add</span>(<span class="light-blue">new</span><span class="dark-green"> DropDownItem</span>()
-                    {
-                        <span>ItemType = </span><span class="neon-yellow"> DropDownItemType</span><span>.Header,</span>
-                        Text = <span class="dark-orange">"Options"</span>
-                        Value = <span class="dark-orange">"Header"</span>
-                    });
-
-                    items.<span>Add</span>(<span class="light-blue">new</span><span class="dark-green"> DropDownItem</span>()
-                    {
-                        <span>ItemType = </span><span class="neon-yellow"> DropDownItemType</span><span>.Normal,</span>
-                        Text = <span class="dark-orange">"Option a"</span>
-                        Value = <span class="dark-orange">"A"</span>
-                        Data = <span class="dark-blue">new</span><span class="dark-green">DropDownItemData</span>()
-                        {
-                            IconName= <span class="dark-orange">"Memo"</span>
-                        }
-                    });
-
-                    items.<span>Add</span>(<span class="light-blue">new</span><span class="dark-green"> DropDownItem</span>()
-                    {
-                        <span>ItemType = </span><span class="neon-yellow"> DropDownItemType</span><span>.Normal,</span>
-                        Text = <span class="dark-orange">"Option b"</span>
-                        Value = <span class="dark-orange">"B"</span>
-                        Data = <span class="dark-blue">new</span><span class="dark-green">DropDownItemData</span>()
-                        {
-                            IconName= <span class="dark-orange">"Print"</span>
-                        }
-                    });
-
-                    items.<span>Add</span>(<span class="light-blue">new</span><span class="dark-green"> DropDownItem</span>()
-                    {
-                        <span>ItemType = </span><span class="neon-yellow"> DropDownItemType</span><span>.Normal,</span>
-                        Text = <span class="dark-orange">"Option c"</span>
-                        Value = <span class="dark-orange">"C"</span>
-                        Data = <span class="dark-blue">new</span><span class="dark-green">DropDownItemData</span>()
-                        {
-                            IconName= <span class="dark-orange">"ShoppingCart"</span>
-                        }
-                    });
-
-                    items.<span>Add</span>(<span class="light-blue">new</span><span class="dark-green"> DropDownItem</span>()
-                    {
-                        <span>ItemType = </span><span class="neon-yellow"> DropDownItemType</span><span>.Normal,</span>
-                        Text = <span class="dark-orange">"Option d"</span>
-                        Value = <span class="dark-orange">"D"</span>
-                        Data = <span class="dark-blue">new</span><span class="dark-green">DropDownItemData</span>()
-                        {
-                            IconName= <span class="dark-orange">"Train"</span>
-                        }
-                    });
-
-                    items.<span>Add</span>(<span class="light-blue">new</span><span class="dark-green"> DropDownItem</span>()
-                    {
-                        <span>ItemType = </span><span class="neon-yellow"> DropDownItemType</span><span>.Normal,</span>
-                        Text = <span class="dark-orange">"Option e"</span>
-                        Value = <span class="dark-orange">"E"</span>
-                        Data = <span class="dark-blue">new</span><span class="dark-green">DropDownItemData</span>()
-                        {
-                            IconName= <span class="dark-orange">"Repair"</span>
-                        }
-                    });
-
-                    items.<span>Add</span>(<span class="light-blue">new</span><span class="dark-green"> DropDownItem</span>()
-                    {
-                        <span>ItemType = </span><span class="neon-yellow"> DropDownItemType</span><span>.Divider,</span>
-                    });
-
-                    items.<span>Add</span>(<span class="light-blue">new</span><span class="dark-green"> DropDownItem</span>()
-                    {
-                        <span>ItemType = </span><span class="neon-yellow"> DropDownItemType</span><span>.Header,</span>
-                        Text = <span class="dark-orange">"More options"</span>
-                        Value = <span class="dark-orange">"Header2"</span>
-                    });
-
-                    items.<span>Add</span>(<span class="light-blue">new</span><span class="dark-green"> DropDownItem</span>()
-                    {
-                        <span>ItemType = </span><span class="neon-yellow"> DropDownItemType</span><span>.Normal,</span>
-                        Text = <span class="dark-orange">"Option f"</span>
-                        Value = <span class="dark-orange">"F"</span>
-                        Data = <span class="dark-blue">new</span><span class="dark-green">DropDownItemData</span>()
-                        {
-                            IconName= <span class="dark-orange">"Running"</span>
-                        }
-                    });
-
-                    items.<span>Add</span>(<span class="light-blue">new</span><span class="dark-green"> DropDownItem</span>()
-                    {
-                        <span>ItemType = </span><span class="neon-yellow"> DropDownItemType</span><span>.Normal,</span>
-                        Text = <span class="dark-orange">"Option g"</span>
-                        Value = <span class="dark-orange">"G"</span>
-                        Data = <span class="dark-blue">new</span><span class="dark-green">DropDownItemData</span>()
-                        {
-                            IconName= <span class="dark-orange">"EmoijNeutral"</span>
-                        }
-                    });
-
-                    items.<span>Add</span>(<span class="light-blue">new</span><span class="dark-green"> DropDownItem</span>()
-                    {
-                        <span>ItemType = </span><span class="neon-yellow"> DropDownItemType</span><span>.Normal,</span>
-                        Text = <span class="dark-orange">"Option h"</span>
-                        Value = <span class="dark-orange">"H"</span>
-                        Data = <span class="dark-blue">new</span><span class="dark-green">DropDownItemData</span>()
-                        {
-                            IconName= <span class="dark-orange">"ChatInviteFriend"</span>
-                        }
-                    });
-
-                    items.<span>Add</span>(<span class="light-blue">new</span><span class="dark-green"> DropDownItem</span>()
-                    {
-                        <span>ItemType = </span><span class="neon-yellow"> DropDownItemType</span><span>.Normal,</span>
-                        Text = <span class="dark-orange">"Option i"</span>
-                        Value = <span class="dark-orange">"I"</span>
-                        Data = <span class="dark-blue">new</span><span class="dark-green">DropDownItemData</span>()
-                        {
-                            IconName= <span class="dark-orange">"SecurityGroup"</span>
-                        }
-                    });
-
-                    items.<span>Add</span>(<span class="light-blue">new</span><span class="dark-green"> DropDownItem</span>()
-                    {
-                        <span>ItemType = </span><span class="neon-yellow"> DropDownItemType</span><span>.Normal,</span>
-                        Text = <span class="dark-orange">"Option j"</span>
-                        Value = <span class="dark-orange">"J"</span>
-                        Data = <span class="dark-blue">new</span><span class="dark-green">DropDownItemData</span>()
-                        {
-                            IconName= <span class="dark-orange">"AddGroup"</span>
-                        }
-                    });
-
-                    <span class="dark-blue">return</span> items;
-                    <span class="light-yellow-bg">}</span>                
-                </pre>
-            </BitPivotItem>
-        </BitPivot>
-    </div>        
-</div>
-<h2>Implementation</h2>
-<div class="card">
-    <table>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Default value</th>
-            <th>Description</th>
-        </tr>
-        <tr>
-            <td>AriaLabel</td>
-            <td>string</td>
-            <td></td>
-            <td>The aria-label of the control for the benefit of screen readers.</td>
-        </tr>
-        <tr>
-            <td>CaretDownFragment</td>
-            <td>RenderFragment</td>
-            <td></td>
-            <td>Optional custom template for chevron icon.</td>
-        </tr>
-        <tr>
-            <td>Class</td>
-            <td>string</td>
-            <td></td>
-            <td>Custom CSS class for the root element of the component.</td>
-        </tr>
-        <tr>
-            <td>DefaultSelectedKey</td>
-            <td>string</td>
-            <td></td>
-            <td>Key that will be initially used to set selected item.</td>
-        </tr>
-        <tr>
-            <td>DefaultSelectedMultipleKeys</td>
-            <td>List&lt;string&gt;</td>
-            <td></td>
-            <td>Keys that will be initially used to set selected items for multiSelect scenarios.</td>
-        </tr>
-        <tr>
-            <td>HtmlAttributes</td>
-            <td>Dictionary&lt;string, object&gt;</td>
-            <td></td>
-            <td>Capture and render additional attributes in addition to the component's parameters.</td>
-        </tr>
-        <tr>
-            <td>IsEnabled</td>
-            <td>bool</td>
-            <td>true</td>
-            <td>Whether the dropdown is enabled.</td>
-        </tr>
-        <tr>
-            <td>IsMultiSelect</td>
-            <td>bool</td>
-            <td></td>
-            <td>Whether user can select multi options in dropdown.</td>
-        </tr>
-        <tr>
-            <td>IsOpen</td>
-            <td>bool</td>
-            <td></td>
-            <td>Whether dropdown should open or not.</td>
-        </tr>
-        <tr>
-            <td>IsRequired</td>
-            <td>bool</td>
-            <td></td>
-            <td>Requires the end user to select an item in the dropdown.</td>
-        </tr>
-        <tr>
-            <td>Items</td>
-            <td>List&lt;DropDownItem&gt;</td>
-            <td>false</td>
-            <td>List of items should show on dropdown.</td>
-        </tr>
-        <tr>
-            <td>ItemTemplate</td>
-            <td>RenderFragment&lt;BitDropDownItem&gt;</td>
-            <td></td>
-            <td>Optional custom template for drop-down item.</td>
-        </tr>
-        <tr>
-            <td>Label</td>
-            <td>string</td>
-            <td></td>
-            <td>The label associated with the dropdown.</td>
-        </tr>
-        <tr>
-            <td>LabelFragment</td>
-            <td>RenderFragment</td>
-            <td></td>
-            <td>Optional custom template for label.</td>
-        </tr>
-        <tr>
-            <td>MultiSelectDelimiter</td>
-            <td>string</td>
-            <td>, </td>
-            <td>When multiple items are selected, this still will be used to separate values in the dropdown title.</td>
-        </tr>
-        <tr>
-            <td>NotifyOnReselect</td>
-            <td>bool</td>
-            <td>false</td>
-            <td>Optional preference to have OnSelectItem still be called when an already selected item is clicked in single select mode.</td>
-        </tr>
-        <tr>
-            <td>OnClick</td>
-            <td>EventCallback&lt;MouseEventArgs&gt;</td>
-            <td></td>
-            <td>Callback for when the dropdown clicked.</td>
-        </tr>
-        <tr>
-            <td>OnSelectItem</td>
-            <td>EventCallback&lt;DropDownItem&gt;</td>
-            <td></td>
-            <td>Callback for when an item is selected.</td>
-        </tr>
-        <tr>
-            <td>Placeholder</td>
-            <td>string</td>
-            <td></td>
-            <td>Input placeholder text. Displayed until option is selected.</td>
-        </tr>
-        <tr>
-            <td>PlaceholderTemplate</td>
-            <td>RenderFragment&lt;BitDropDown&gt;</td>
-            <td></td>
-            <td>Optional custom template for placeholder Text.</td>
-        </tr>
-        <tr>
-            <td>SelectedKey</td>
-            <td>string</td>
-            <td></td>
-            <td>
-                Key of the selected item.
-                If you provide this, you must maintain selection state by observing onChange events and passing a new value in when changed.
-            </td>
-        </tr>
-        <tr>
-            <td>SelectedMultipleKeys</td>
-            <td>List&lt;string&gt;</td>
-            <td></td>
-            <td>
-                Keys of the selected items for multiSelect scenarios.
-                If you provide this, you must maintain selection state by observing onChange events and passing a new value in when changed.
-            </td>
-        </tr>
-        <tr>
-            <td>Style</td>
-            <td>string</td>
-            <td></td>
-            <td>Custom style for the root element of the component.</td>
-        </tr>
-        <tr>
-            <td>TextTemplate</td>
-            <td>RenderFragment&lt;BitDropDown&gt;</td>
-            <td></td>
-            <td>Optional custom template for selected option displayed in after selection.</td>
-        </tr>
-        <tr>
-            <td>Title</td>
-            <td>string</td>
-            <td></td>
-            <td>The title to show when the mouse is placed on the drop down.</td>
-        </tr>
-        <tr>
-            <td>Visibility</td>
-            <td>ComponentVisibility</td>
-            <td></td>
-            <td>Whether the component is visible, hidden, collapsed.</td>
-        </tr>
-    </table>
-    <div>
-        <h4 id="component-visibility">ComponentVisibility</h4>
-        <hr />
-        <table>
-            <tr>
-                <th>Name</th>
-                <th>Value</th>
-                <th>Description</th>
-            </tr>
-            <tr>
-                <td>Visible</td>
-                <td>0</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>Hidden</td>
-                <td>1</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>Collapsed</td>
-                <td>2</td>
-                <td></td>
-            </tr>
-        </table>
-    </div>
-    <div>
-        <h4>DropDownItem</h4>
-        <hr />
-        <table>
-            <tr>
-                <th>Name</th>
-                <th>Type</th>
-                <th>Value</th>
-            </tr>
-            <tr>
-                <td>IsEnabled</td>
-                <td>bool</td>
-                <td>true</td>
-            </tr>
-            <tr>
-                <td>IsSelected</td>
-                <td>bool</td>
-                <td>false</td>
-            </tr>
-            <tr>
-                <td>ItemType</td>
-                <td>DropDownItemType</td>
-                <td>Normal</td>
-            </tr>
-            <tr>
-                <td>Text</td>
-                <td>string</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>Value</td>
-                <td>string</td>
-                <td></td>
-            </tr>
-        </table>
-    </div>
-    <div>
-        <h4>DropDownItemType</h4>
-        <hr />
-        <table>
-            <tr>
-                <th>Name</th>
-                <th>Value</th>
-                <th>Description</th>
-            </tr>
-            <tr>
-                <td>Normal</td>
-                <td>0</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>Header</td>
-                <td>1</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>Divider</td>
-                <td>2</td>
-                <td></td>
-            </tr>
-        </table>
-    </div>
-</div>
+            </div>
+        </SampleContent>
+        <CodeSampleContent>
+            <div>
+                <p>
+                    &lt;<span class="dark-green">BitDropDown Label</span>="Custom "
+                    <span class="dark-green">Items</span>="<span class="dark-yellow">GetCustomDropdownItems()</span>"
+                    <span class="dark-green">Placeholder</span>="Select an option"
+                    <span class="dark-green">AriaLabel</span>="Custom dropdown "
+                    <span class="light-blue">Style</span>="width:290px; margin:20px 0 20px 0"&gt;
+                </p>
+                <p>&lt;<span class="dark-green">TextTemplate</span>&gt;</p>
+                <p class="m-l-30">&lt;<span class="light-blue">div</span>&gt;</p>
+                <p class="m-l-45">&lt;<span class="light-blue">i class</span>="bit-icon bit-icon--<span class="light-yellow-bg">&#64;(</span>(context.Items.Find(i => i.Value == context.SelectedKey).Data as DropDownItemData).IconName<span class="light-yellow-bg">)</span>&lt;/<span class="light-blue">i</span>&gt;</p>
+                <p class="m-l-60"><span class="light-blue">aria-hidden</span>=<span class="light-blue">"true"</span></p>
+                <p class="m-l-60"><span class="light-blue">title</span>="<span class="light-yellow-bg">&#64;(</span>(context.Items.Find(i => i.Value == context.SelectedKey).Data as DropDownItemData).IconName)">&lt;/i&gt;</p>
+                <p class="m-l-45">&lt;<span class="light-blue">span</span>&gt;<span class="light-yellow-bg">&#64;</span>context.Items.Find(i => i.Value == context.SelectedKey).Text&lt;/<span class="light-blue">span</span>&gt;</p>
+                <p class="m-l-30">&lt;/<span class="light-blue">div</span>&gt;</p>
+                <p>&lt;/<span class="dark-green">TextTemplate</span>&gt;</p>
+                <p>&lt;<span class="dark-green">PlaceholderTemplate</span>&gt;</p>
+                <p class="m-l-30">&lt;<span class="light-blue">div</span>&gt;</p>
+                <p class="m-l-45">&lt;<span class="light-blue">i class</span>="bit-icon bit-icon--MessageFill" <span class="light-blue">aria-hidden</span>=<span class="light-blue">"true"</span>&gt;&lt;/<span class="light-blue">i</span>&gt;</p>
+                <p class="m-l-45">&lt;<span class="light-blue">span</span>&gt;<span class="light-yellow-bg">&#64;</span>context.Placeholder&lt;/<span class="light-blue">span</span>&gt;</p>
+                <p class="m-l-30">&lt;/<span class="light-blue">div</span>&gt;</p>
+                <p>&lt;/<span class="dark-green">PlaceholderTemplate</span>&gt;</p>
+                <p>&lt;<span class="dark-green">CaretDownFragment</span>&gt;</p>
+                <p class="m-l-45">&lt;<span class="light-blue">i class</span>="bit-icon bit-icon--CirclePlus"&gt;&lt;/<span class="light-blue">i</span>&gt;</p>
+                <p>&lt;/<span class="dark-green">CaretDownFragment</span>&gt;</p>
+                <p>&lt;<span class="dark-green">ItemTemplate</span>&gt;</p>
+                <p class="m-l-30">&lt;<span class="light-blue">div</span>&gt;</p>
+                <p class="m-l-45">&lt;<span class="light-blue">i class</span>="bit-icon bit-icon--<span class="light-yellow-bg">&#64;(</span>(context.Data as DropDownItemData).IconName)"<span class="light-blue">i</span>&gt;</p>
+                <p class="m-l-45"><span class="light-blue">aria-hidden</span>=<span class="light-blue">"true"</span></p>
+                <p class="m-l-45"><span class="light-blue">title</span>="<span class="light-yellow-bg">&#64;(</span>(context.Data as DropDownItemData).IconName)">&lt;/i&gt;</p>
+                <p class="m-l-45">&lt;<span class="light-blue">span</span>&gt;<span class="light-yellow-bg">&#64;</span>context.Text&lt;/<span class="light-blue">span</span>&gt;</p>
+                <p class="m-l-30">&lt;/<span class="light-blue">div</span>&gt;</p>
+                <p>&lt;/<span class="dark-green">ItemTemplate</span>&gt;</p>
+                <p>
+                    &lt;/<span class="dark-green">BitDropDown</span>&gt;
+                    &lt;<span class="dark-green">BitDropDown Items</span>="<span class="dark-yellow">GetCustomDropdownItems()</span>"
+                    <span class="dark-green">Placeholder</span>="Select an option"
+                    <span class="dark-green">Label</span>="Custom label"
+                    <span class="dark-green">AriaLabel</span>="Custom dropdown label "
+                    <span class="light-blue">Style</span>="width:290px"&gt;
+                </p>
+                <p class="m-l-30">&lt;<span class="dark-green">LabelFragment</span>&gt;</p>
+                <p class="m-l-45">&lt;<span class="light-blue">label</span>&gt;Custom label&lt;/<span class="light-blue">label</span>&gt;</p>
+                <p class="m-l-45">&lt;<span class="light-blue">button type</span>="button" <span class="light-blue">title</span>="Info" <span class="light-blue">aria-label</span>="Info" <span class="light-blue">class</span>="custom-drp-lbl-ic"&gt;</p>
+                <p class="m-l-60">&lt;<span class="light-blue">i class</span>="bit-icon bit-icon--Info"&gt;&lt;/<span class="light-blue">i</span>&gt;</p>
+                <p class="m-l-45">&lt;/<span class="light-blue">button</span>&gt;</p>
+                <p class="m-l-30">&lt;/<span class="dark-green">LabelFragment</span>&gt;</p>
+                <p>&lt;/<span class="dark-green">BitDropDown</span>&gt;</p>
+                <p><span class="light-yellow-bg">&#64;code {</span></p>
+                <p><span class="light-blue">private </span><span class="dark-green">List&ltdropdownitem></span><span class="dark-yellow"> GetCustomDropdownItems</span>()</p>
+                <p>{</p>
+                <p class="m-l-30"><span class="dark-green">List&ltdropdownitem></span> items = <span class="light-blue">new</span>();</p>
+                <p class="m-l-30">items.<span>Add</span>(<span class="light-blue">new</span><span class="dark-green"> DropDownItem</span>()</p>
+                <p class="m-l-30">{</p>
+                <p class="m-l-45"><span>ItemType = </span><span class="neon-yellow"> DropDownItemType</span><span>.Header,</span></p>
+                <p class="m-l-45">Text = <span class="dark-orange">"Options"</span></p>
+                <p class="m-l-45">Value = <span class="dark-orange">"Header"</span></p>
+                <p class="m-l-30">});</p>
+                <p class="m-l-30">items.<span>Add</span>(<span class="light-blue">new</span><span class="dark-green"> DropDownItem</span>()</p>
+                <p class="m-l-30">{</p>
+                <p class="m-l-45"><span>ItemType = </span><span class="neon-yellow"> DropDownItemType</span><span>.Normal,</span></p>
+                <p class="m-l-45">Text = <span class="dark-orange">"Option a"</span></p>
+                <p class="m-l-45">Value = <span class="dark-orange">"A"</span></p>
+                <p class="m-l-45">Data = <span class="dark-blue">new</span><span class="dark-green">DropDownItemData</span>()</p>
+                <p class="m-l-45">{</p>
+                <p class="m-l-60">IconName= <span class="dark-orange">"Memo"</span></p>
+                <p class="m-l-45">}</p>
+                <p class="m-l-30">});</p>
+                <p class="m-l-30">items.<span>Add</span>(<span class="light-blue">new</span><span class="dark-green"> DropDownItem</span>()</p>
+                <p class="m-l-30">{</p>
+                <p class="m-l-45"><span>ItemType = </span><span class="neon-yellow"> DropDownItemType</span><span>.Normal,</span></p>
+                <p class="m-l-45">Text = <span class="dark-orange">"Option b"</span></p>
+                <p class="m-l-45">Value = <span class="dark-orange">"B"</span></p>
+                <p class="m-l-45">Data = <span class="dark-blue">new</span><span class="dark-green">DropDownItemData</span>()</p>
+                <p class="m-l-45">{</p>
+                <p class="m-l-60">IconName= <span class="dark-orange">"Print"</span></p>
+                <p class="m-l-45">}</p>
+                <p class="m-l-30">});</p>
+                <p class="m-l-30">items.<span>Add</span>(<span class="light-blue">new</span><span class="dark-green"> DropDownItem</span>()</p>
+                <p class="m-l-30">{</p>
+                <p class="m-l-45"><span>ItemType = </span><span class="neon-yellow"> DropDownItemType</span><span>.Normal,</span></p>
+                <p class="m-l-45">Text = <span class="dark-orange">"Option c"</span></p>
+                <p class="m-l-45">Value = <span class="dark-orange">"C"</span></p>
+                <p class="m-l-45">Data = <span class="dark-blue">new</span><span class="dark-green">DropDownItemData</span>()</p>
+                <p class="m-l-45">{</p>
+                <p class="m-l-60">IconName= <span class="dark-orange">"ShoppingCart"</span></p>
+                <p class="m-l-45">}</p>
+                <p class="m-l-30">});</p>
+                <p class="m-l-30">items.<span>Add</span>(<span class="light-blue">new</span><span class="dark-green"> DropDownItem</span>()</p>
+                <p class="m-l-30">{</p>
+                <p class="m-l-45"><span>ItemType = </span><span class="neon-yellow"> DropDownItemType</span><span>.Normal,</span></p>
+                <p class="m-l-45">Text = <span class="dark-orange">"Option d"</span></p>
+                <p class="m-l-45">Value = <span class="dark-orange">"D"</span></p>
+                <p class="m-l-45">Data = <span class="dark-blue">new</span><span class="dark-green">DropDownItemData</span>()</p>
+                <p class="m-l-45">{</p>
+                <p class="m-l-30">IconName= <span class="dark-orange">"Train"</span></p>
+                <p class="m-l-45">}</p>
+                <p class="m-l-30">});</p>
+                <p class="m-l-30">items.<span>Add</span>(<span class="light-blue">new</span><span class="dark-green"> DropDownItem</span>()</p>
+                <p class="m-l-30">{</p>
+                <p class="m-l-45"><span>ItemType = </span><span class="neon-yellow"> DropDownItemType</span><span>.Normal,</span></p>
+                <p class="m-l-45">Text = <span class="dark-orange">"Option e"</span></p>
+                <p class="m-l-45">Value = <span class="dark-orange">"E"</span></p>
+                <p class="m-l-45">Data = <span class="dark-blue">new</span><span class="dark-green">DropDownItemData</span>()</p>
+                <p class="m-l-45">{</p>
+                <p class="m-l-60">IconName= <span class="dark-orange">"Repair"</span></p>
+                <p class="m-l-45">}</p>
+                <p class="m-l-30">});</p>
+                <p class="m-l-30">items.<span>Add</span>(<span class="light-blue">new</span><span class="dark-green"> DropDownItem</span>()</p>
+                <p class="m-l-30">{</p>
+                <p class="m-l-45"><span>ItemType = </span><span class="neon-yellow"> DropDownItemType</span><span>.Divider,</span></p>
+                <p class="m-l-30">});</p>
+                <p class="m-l-30">items.<span>Add</span>(<span class="light-blue">new</span><span class="dark-green"> DropDownItem</span>()</p>
+                <p class="m-l-30">{</p>
+                <p class="m-l-45"><span>ItemType = </span><span class="neon-yellow"> DropDownItemType</span><span>.Header,</span></p>
+                <p class="m-l-45">Text = <span class="dark-orange">"More options"</span></p>
+                <p class="m-l-45">Value = <span class="dark-orange">"Header2"</span></p>
+                <p class="m-l-30">});</p>
+                <p class="m-l-30">items.<span>Add</span>(<span class="light-blue">new</span><span class="dark-green"> DropDownItem</span>()</p>
+                <p class="m-l-30">{</p>
+                <p class="m-l-45"><span>ItemType = </span><span class="neon-yellow"> DropDownItemType</span><span>.Normal,</span></p>
+                <p class="m-l-45">Text = <span class="dark-orange">"Option f"</span></p>
+                <p class="m-l-45">Value = <span class="dark-orange">"F"</span></p>
+                <p class="m-l-45">Data = <span class="dark-blue">new</span><span class="dark-green">DropDownItemData</span>()</p>
+                <p class="m-l-45">{</p>
+                <p class="m-l-60">IconName= <span class="dark-orange">"Running"</span></p>
+                <p class="m-l-45">}</p>
+                <p class="m-l-30">});</p>
+                <p class="m-l-30">items.<span>Add</span>(<span class="light-blue">new</span><span class="dark-green"> DropDownItem</span>()</p>
+                <p class="m-l-30">{</p>
+                <p class="m-l-45"><span>ItemType = </span><span class="neon-yellow"> DropDownItemType</span><span>.Normal,</span></p>
+                <p class="m-l-45">Text = <span class="dark-orange">"Option g"</span></p>
+                <p class="m-l-45">Value = <span class="dark-orange">"G"</span></p>
+                <p class="m-l-45">Data = <span class="dark-blue">new</span><span class="dark-green">DropDownItemData</span>()</p>
+                <p class="m-l-45">{</p>
+                <p class="m-l-60">IconName= <span class="dark-orange">"EmoijNeutral"</span></p>
+                <p class="m-l-45">}</p>
+                <p class="m-l-30">});</p>
+                <p class="m-l-30">items.<span>Add</span>(<span class="light-blue">new</span><span class="dark-green"> DropDownItem</span>()</p>
+                <p class="m-l-30">{</p>
+                <p class="m-l-45"><span>ItemType = </span><span class="neon-yellow"> DropDownItemType</span><span>.Normal,</span></p>
+                <p class="m-l-45">Text = <span class="dark-orange">"Option h"</span></p>
+                <p class="m-l-45">Value = <span class="dark-orange">"H"</span></p>
+                <p class="m-l-45">Data = <span class="dark-blue">new</span><span class="dark-green">DropDownItemData</span>()</p>
+                <p class="m-l-45">{</p>
+                <p class="m-l-60">IconName= <span class="dark-orange">"ChatInviteFriend"</span></p>
+                <p class="m-l-45">}</p>
+                <p class="m-l-30">});</p>
+                <p class="m-l-30">items.<span>Add</span>(<span class="light-blue">new</span><span class="dark-green"> DropDownItem</span>()</p>
+                <p class="m-l-30">{</p>
+                <p class="m-l-45"><span>ItemType = </span><span class="neon-yellow"> DropDownItemType</span><span>.Normal,</span></p>
+                <p class="m-l-45">Text = <span class="dark-orange">"Option i"</span></p>
+                <p class="m-l-45">Value = <span class="dark-orange">"I"</span></p>
+                <p class="m-l-45">Data = <span class="dark-blue">new</span><span class="dark-green">DropDownItemData</span>()</p>
+                <p class="m-l-45">{</p>
+                <p class="m-l-60">IconName= <span class="dark-orange">"SecurityGroup"</span></p>
+                <p class="m-l-45">}</p>
+                <p class="m-l-30">});</p>
+                <p class="m-l-30">items.<span>Add</span>(<span class="light-blue">new</span><span class="dark-green"> DropDownItem</span>()</p>
+                <p class="m-l-30">{</p>
+                <p class="m-l-45"><span>ItemType = </span><span class="neon-yellow"> DropDownItemType</span><span>.Normal,</span></p>
+                <p class="m-l-45">Text = <span class="dark-orange">"Option j"</span></p>
+                <p class="m-l-45">Value = <span class="dark-orange">"J"</span></p>
+                <p class="m-l-45">Data = <span class="dark-blue">new</span><span class="dark-green">DropDownItemData</span>()</p>
+                <p class="m-l-45">{</p>
+                <p class="m-l-60">IconName= <span class="dark-orange">"AddGroup"</span></p>
+                <p class="m-l-45">}</p>
+                <p class="m-l-30">});</p>
+                <p class="m-l-30"><span class="dark-blue">return</span> items;</p>
+                <p>}</p>
+                <p><span class="light-yellow-bg">}</span></p>
+            </div>
+        </CodeSampleContent>
+    </CodeSample>
+</ComponentPage>

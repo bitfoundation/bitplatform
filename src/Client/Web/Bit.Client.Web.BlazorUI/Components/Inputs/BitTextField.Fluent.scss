@@ -1,33 +1,30 @@
 ﻿@import "../../Styles/Fluent/colors.fluent.scss", "../../Styles/functions.scss";
 
 @mixin getMultilineStyle($isResizable: true) {
-    & > div {
+    .bit-txt-field-grp {
+        align-items: stretch;
+        height: auto;
+        min-height: rem(60px);
+    }
 
-        & > div {
-            min-height: rem(60);
-            align-items: stretch;
-            height: auto;
-        }
+    textarea.txt-field {
+        flex-grow: 1;
+        min-height: inherit;
+        padding: rem(6px) rem(8px);
+        line-height: rem(17);
+        overflow: auto;
 
-        textarea {
-            padding: em(6px) em(8px);
-            line-height: rem(17);
-            flex-grow: 1;
-            overflow: auto;
-            min-height: inherit;
-
-            @if $isResizable == false {
-                resize: none;
-            }
+        @if $isResizable == false {
+            resize: none;
         }
     }
 }
 
 @mixin getUnderlineStyle($isEnabel: true) {
-    & > div {
+    .bit-txt-wrapper {
         display: flex;
-        border-bottom: 1px solid;
         width: 100%;
+        border-bottom: rem(1px) solid;
 
         @if($isEnabel == true) {
             border-bottom-color: $Grey130;
@@ -35,166 +32,143 @@
         @else {
             border-bottom-color: $Grey20;
         }
+    }
 
-        & > div {
-            border: none;
-            flex: 1 1 0px;
-            text-align: left;
-        }
+    .bit-txt-label {
+        height: rem(32px);
+        padding: rem(5px) 0 rem(5px) rem(12px);
+        margin: 0 rem(8px) 0 0;
+        line-height: rem(22px);
+    }
 
-        label {
-            padding: 5px 0px 5px 12px;
-            line-height: 22px;
-            height: 32px;
-            margin: 0px 8px 0px 0px;
-        }
+    .bit-txt-field-grp {
+        border: none;
+        flex: 1 1 0px;
+        text-align: left;
     }
 }
 
 .bit-txt-fluent {
-    font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
-    font-size: rem(14px);
-    font-weight: 400;
-    box-shadow: none;
+    position: relative;
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    box-shadow: none;
+    font-size: rem(14px);
+    font-weight: 400;
+    font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+}
+
+.bit-txt-label {
+    display: block;
+    padding: rem(5px) 0;
+    margin: 0;
+    box-sizing: border-box;
+    box-shadow: none;
+    font-size: rem(14px);
+    line-height: rem(20px);
+    font-weight: 600;
+    color: $Grey160;
+    overflow-wrap: break-word;
+    -webkit-font-smoothing: antialiased;
+}
+
+.bit-txt-field-grp {
     position: relative;
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: stretch;
+    height: rem(32px);
+    margin: 0;
+    padding: 0;
+    box-shadow: none;
+    border-radius: rem(2px);
+    border: rem(1px) solid $Grey130;
+    box-sizing: border-box;
+    background-color: $White;
+    cursor: text;
+}
 
-    & > div {
+.txt-field {
+    width: 100%;
+    min-width: 0;
+    height: 100%;
+    border: none;
+    border-radius: 0;
+    outline: 0;
+    padding: 0 rem(8px);
+    margin: 0;
+    box-shadow: none;
+    box-sizing: border-box;
+    background: none transparent;
+    font-size: rem(14px);
+    font-weight: 400;
+    color: $Grey160;
+    text-overflow: ellipsis;
+    font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
 
-        & > div {
-            box-shadow: none;
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            border: 1px solid $Grey130;
-            border-radius: 2px;
-            background: $White;
-            cursor: text;
-            height: rem(32px);
-            display: flex;
-            flex-direction: row;
-            align-items: stretch;
-            position: relative;
-            ///prefix & suffix
-            & > div {
-                background: $Grey20;
-                color: $Grey130;
-                display: flex;
-                align-items: center;
-                padding: 0px 10px;
-                line-height: 1px;
-                white-space: nowrap;
-                flex-shrink: 0;
+.bit-icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: rem(32px);
+    height: 100%;
+    font-size: rem(16);
+    color: $Grey160;
+}
 
-                & > span {
-                    padding-bottom: 1px;
-                    font-size: 14px;
-                }
-            }
-        }
+.password-reveal-btn {
+    position: relative;
+    width: rem(32px);
+    height: 100%;
+    padding: 0 rem(4px);
+    outline: transparent;
+    border: none;
+    color: $Primary;
+    background-color: transparent;
+    cursor: pointer;
 
-        label {
-            font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
-            -webkit-font-smoothing: antialiased;
-            font-size: rem(14px);
-            font-weight: 600;
-            line-height: em(20px);
-            color: $Grey160;
-            box-sizing: border-box;
-            box-shadow: none;
-            margin: 0;
-            display: block;
-            padding: em(5px) em(0);
-            overflow-wrap: break-word;
-        }
-
-        input, textarea {
-            background: none transparent;
-            border: none;
-            width: 100%;
-            height: 100%;
-            font-size: inherit;
-            font-weight: inherit;
-            font-family: inherit;
-            padding: em(0) em(8px);
-            outline: none;
-            -webkit-font-smoothing: antialiased;
-            box-shadow: none;
-            box-sizing: border-box;
-            border-radius: 0;
-            min-width: 0;
-            text-overflow: ellipsis;
-        }
-
-        & > div {
-            /* reveal password button*/
-            & button {
-                height: 100%;
-                width: rem(32px);
-                outline: transparent;
-                position: relative;
-                border: none;
-                padding: 0px 4px;
-                background-color: transparent;
-                color: rgb(0, 120, 212);
-
-                & > span {
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    font-size: rem(16);
-                }
-            }
-
-            & > span {
-                height: 100%;
-                width: rem(32px);
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                font-size: rem(16);
-            }
-        }
+    &:hover {
+        background-color: $Grey30;
     }
 
-    & > span {
-        //description
-        & > span {
-            color: $Grey130;
-            font-size: 10px;
-        }
-
-        & > div {
-
-            & > p {
-                animation-name: css-0, css-13;
-                animation-duration: 0.367s;
-                animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
-                animation-fill-mode: both;
-                -webkit-font-smoothing: antialiased;
-                font-size: 12px;
-                font-weight: 400;
-                color: $Red20;
-                margin: 0px;
-                padding-top: 5px;
-                display: flex;
-                align-items: center;
-            }
-        }
+    span {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: rem(16);
     }
 
-    .clickable {
-        color: $CyanBlue10;
-        cursor: pointer;
-
-        &:hover {
-            background: $Grey30;
-        }
+    .bit-icon {
+        color: $Primary;
     }
 }
 
+.txt-desc {
+    span {
+        color: $Grey130;
+        font-size: rem(10px);
+    }
+}
+
+.txt-prefix,
+.txt-suffix {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    padding: 0 rem(10px);
+    line-height: rem(1px);
+    white-space: nowrap;
+    color: $Grey130;
+    background: $Grey20;
+
+    span {
+        padding-bottom: rem(1px);
+        font-size: rem(14px);
+    }
+}
 
 .bit-txt-multiline-fluent {
     @include getMultilineStyle();
@@ -205,20 +179,13 @@
 }
 
 .bit-txt-focused-fluent {
-
-    & > div {
-
-        & > div {
-
-            ::after {
-                border: 2px solid $Primary;
-                position: absolute;
-                inset: -1px;
-                border-radius: 2px;
-                content: "";
-                pointer-events: none;
-            }
-        }
+    .bit-txt-field-grp::after {
+        position: absolute;
+        inset: rem(-1px);
+        border: rem(2px) solid $Primary;
+        border-radius: rem(2px);
+        content: "";
+        pointer-events: none;
     }
 }
 
@@ -227,39 +194,36 @@
 }
 
 .bit-txt-underlined-focused-fluent {
-
-    & > div {
-
-        &::after {
-            border-bottom: 2px solid $Primary;
-            position: absolute;
-            inset: 32px 0;
-            content: "";
-            pointer-events: none;
-        }
+    .bit-txt-wrapper::after {
+        position: absolute;
+        border-bottom: rem(2px) solid $Primary;
+        inset: rem(32px) 0;
+        content: "";
+        pointer-events: none;
     }
 }
 
 .bit-txt-disabled-fluent {
+    .bit-txt-label {
+        color: $Grey90;
+    }
 
-    & > div {
+    .bit-txt-field-grp {
+        border: rem(1px) solid $Grey20;
+        background: $White;
+        color: $Grey90;
+        cursor: default;
+        border: none $Grey20;
+        background: none $Grey20;
+    }
 
-        label {
-            color: $Grey90;
-        }
+    .txt-field {
+        color: $Grey90;
+    }
 
-        & > div {
-            border: 1px solid $Grey20;
-            background: $White;
-            color: $Grey90;
-            cursor: default;
-            border: none $Grey20;
-            background: none $Grey20;
-
-            & > div {
-                color: $Grey90;
-            }
-        }
+    .txt-prefix,
+    .txt-suffix {
+        color: $Grey90;
     }
 }
 
@@ -268,26 +232,15 @@
 }
 
 .bit-txt-required-fluent {
-
-    & > div {
-
-        label {
-
-            &::after {
-                content: "*";
-                color: $Red20;
-                margin-left: em(5px);
-            }
-        }
+    .bit-txt-label::after {
+        content: "*";
+        margin-left: rem(5px);
+        color: $Red20;
     }
 }
 
 .bit-txt-no-border-fluent {
-
-    & > div {
-
-        & > div {
-            border: none;
-        }
+    .bit-txt-field-grp {
+        border: none;
     }
 }

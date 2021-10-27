@@ -9,6 +9,7 @@
                   IconName="@IconName"
                   Value="@Value"
                   CanRevealPassword="CanRevealPassword"
+                  RevealPasswordAriaLabel="@RevealPasswordAriaLabel"
                   OnClick="HandleClick"
                   OnChange="HandleChange"
                   OnFocus="HandleFocus"
@@ -42,6 +43,7 @@
     [Parameter] public string Placeholder { get; set; }
     [Parameter] public string Value { get; set; }
     [Parameter] public bool CanRevealPassword { get; set; }
+    [Parameter] public string RevealPasswordAriaLabel { get; set; }
     [Parameter] public BitTextFieldType Type { get; set; }
     [Parameter] public string AriaLabel { get; set; }
     [Parameter] public string Label { get; set; }
@@ -55,39 +57,45 @@
     [Parameter] public bool IsResizable { get; set; }
     [Parameter] public int Rows { get; set; }
 
-    public void HandleKeyDown(KeyboardEventArgs e)
-    {
-        KeyDownedValue = e.Key;
-    }
-    public void HandleKeyUp(KeyboardEventArgs e)
-    {
-        KeyUpedValue = e.Key;
-    }
-    public void HandleFocus(FocusEventArgs e)
-    {
-        FocusedValue++;
-    }
-    public void HandleFocusIn(FocusEventArgs e)
-    {
-        FocusedInValue++;
-    }
-    public void HandleFocusOut(FocusEventArgs e)
-    {
-        FocusedOutValue++;
-    }
-    public void HandleChange(string e)
-    {
-        CurrentCount++;
-    }
-    public void HandleClick(MouseEventArgs e)
-    {
-        CurrentCount++;
-    }
-
     public int CurrentCount { get; set; }
     public int FocusedValue { get; set; }
     public int FocusedOutValue { get; set; }
     public int FocusedInValue { get; set; }
     public string KeyDownedValue { get; set; }
     public string KeyUpedValue { get; set; }
+    
+    public void HandleKeyDown(KeyboardEventArgs e)
+    {
+        KeyDownedValue = e.Key;
+    }
+
+    public void HandleKeyUp(KeyboardEventArgs e)
+    {
+        KeyUpedValue = e.Key;
+    }
+
+    public void HandleFocus(FocusEventArgs e)
+    {
+        FocusedValue++;
+    }
+
+    public void HandleFocusIn(FocusEventArgs e)
+    {
+        FocusedInValue++;
+    }
+
+    public void HandleFocusOut(FocusEventArgs e)
+    {
+        FocusedOutValue++;
+    }
+
+    public void HandleChange(string e)
+    {
+        CurrentCount++;
+    }
+
+    public void HandleClick(MouseEventArgs e)
+    {
+        CurrentCount++;
+    }
 }
