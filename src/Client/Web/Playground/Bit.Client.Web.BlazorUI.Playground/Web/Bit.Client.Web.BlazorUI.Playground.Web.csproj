@@ -15,7 +15,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <None Include="compilerconfig.json" />
+        <None Include="compilerconfig.json" />
     </ItemGroup>
 
     <ItemGroup>
@@ -35,9 +35,4 @@
         <ProjectReference Include="..\..\..\Bit.Client.Web.BlazorUI\Bit.Client.Web.BlazorUI.csproj" />
         <ProjectReference Include="..\Shared\Bit.Client.Web.BlazorUI.Playground.Shared.csproj" />
     </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="Pages\Components\Carousel\" />
-    </ItemGroup>
-
 </Project>
