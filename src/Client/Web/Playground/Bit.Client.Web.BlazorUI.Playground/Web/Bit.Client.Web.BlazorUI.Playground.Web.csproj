@@ -36,4 +36,8 @@
         <ProjectReference Include="..\Shared\Bit.Client.Web.BlazorUI.Playground.Shared.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Pages\Components\Carousel\" />
+    </ItemGroup>
+
 </Project>

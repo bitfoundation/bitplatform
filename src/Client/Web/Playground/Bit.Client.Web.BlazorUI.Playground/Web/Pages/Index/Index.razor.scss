@@ -354,6 +354,10 @@ button {
 
 /*----------------------------------from-scratch-----------------------------*/
 .from-scratch {
+    @include sm {
+        margin-bottom: rem(160px) !important;
+    }
+
     @include md {
         margin-bottom: rem(160px) !important;
     }
@@ -372,6 +376,15 @@ button {
     background-image: url('/images/index/components-frame.png');
     background-position: right;
     background-repeat: no-repeat;
+
+    @include sm {
+        padding: rem(16px);
+        box-sizing: border-box;
+        background-size: rem(332px);
+        background-position: center;
+        height: rem(410px);
+        position: relative;
+    }
 
     @include md {
         background-size: rem(472px);
@@ -415,6 +428,12 @@ button {
     box-sizing: border-box;
     border-radius: rem(4px);
     padding: rem(11px) rem(43px);
+
+    @include sm {
+        position: absolute;
+        bottom: 0;
+        left: calc(50% - 142.5px );
+    }
 }
 /* ----------------------------bit-Frequent-updates------------------------------- */
 
@@ -425,6 +444,10 @@ button {
     background-size: cover;
     background-repeat: no-repeat;
     box-shadow: inset 0 0 0 rem(1000px) #55456699;
+
+    @include sm {
+        height: rem(302px)
+    }
 
     @include md {
         height: rem(302px);
@@ -446,6 +469,10 @@ button {
 }
 
 .bit-Frequent-updates-img {
+    @include sm {
+        width: rem(60px);
+        margin-top: rem(60px);
+    }
 
     @include md {
         width: rem(76px);
@@ -464,7 +491,11 @@ button {
 }
 
 .bit-Frequent-updates h4 {
-    @include lg {
+    @include sm {
+        margin-top: rem(50px);
+    }
+
+    @include md {
         margin-top: rem(32px);
     }
 
@@ -477,9 +508,13 @@ button {
     }
 }
 
-.bit-Frequent-updates .txt-xl-bd1-md {
+.bit-Frequent-updates .txt-bd1-md {
     margin-top: rem(8px);
     color: white;
+
+    @include sm {
+        width: rem(328px);
+    }
 }
 
 
@@ -490,6 +525,10 @@ button {
     background: url(/images/index/ease-of-use-bg.png) center center no-repeat;
     background-size: contain;
     background-position-x: right;
+
+    @include sm {
+        height: rem(248px);
+    }
 
     @include md {
         height: rem(364px);
@@ -509,6 +548,14 @@ button {
     top: 50%;
     transform: translateY(-50%);
     margin: auto;
+
+    @include sm {
+        top: 34%;
+        text-align: center;
+        transform: inherit;
+        padding: rem(16px);
+        box-sizing: border-box;
+    }
 }
 
 .bit-ease-of-use > div > h4 {
@@ -517,6 +564,11 @@ button {
 
 .bit-ease-of-use > div > p {
     margin-top: rem(8px);
+
+    @include sm {
+        max-width: rem(328px);
+        margin: auto;
+    }
 }
 
 
@@ -525,6 +577,10 @@ button {
 .customers-opinions {
     background-color: #f7f7f7;
     width: 100%;
+
+    @include sm {
+        height: rem(400px);
+    }
 
     @include md {
         height: rem(375px);
@@ -563,6 +619,11 @@ button {
     border-radius: rem(25px);
     color: #141414;
     margin: auto;
+
+    @include sm {
+        width: rem(312px);
+        height: rem(130px);
+    }
 
     @include md {
         width: rem(345px);
@@ -613,6 +674,7 @@ button {
     margin: auto;
     text-align: center;
 
+
     @include md {
         margin: auto rem(13px);
     }
@@ -630,6 +692,11 @@ button {
     position: absolute;
     top: rem(31px);
     left: 7%;
+
+    @include sm {
+        position: unset;
+        text-align: center;
+    }
 }
 
 .customers-opinions .customer-img-container .customer-img {
@@ -637,6 +704,11 @@ button {
     margin-top: rem(32px);
     width: rem(160px);
     height: rem(160px);
+
+    @include sm {
+        width: rem(60px);
+        height: rem(60px);
+    }
 
     @include md {
         width: rem(94px);
@@ -650,6 +722,9 @@ button {
     top: rem(12px);
     width: rem(60px);
 
+    @include sm{
+        display:none;
+    }
     @include md {
         left: rem(-14px);
         top: rem(20px);
@@ -661,6 +736,14 @@ button {
     width: rem(336px);
     float: right;
     transform: translateY(rem(172px));
+
+    @include sm {
+        z-index: 99;
+        transform: unset;
+        float: unset;
+        text-align: center;
+        margin:auto;
+    }
 
     @include md {
         transform: translateY(rem(145px));
