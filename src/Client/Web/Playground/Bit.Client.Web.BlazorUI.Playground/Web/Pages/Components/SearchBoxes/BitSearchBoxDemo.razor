@@ -1,283 +1,76 @@
 ﻿@page "/components/searchbox"
 
-<h2>SearchBox</h2>
+@using Bit.Client.Web.BlazorUI.Playground.Web.Components
 
-<div class="card">
-    <p class="desc">A search box provides an input field for searching content within a site or app to find specific items.</p>
-</div>
-
-<h2>Usage</h2>
-<div class="wrapper">
-    <div class="card">
-        <h3>BitSearchBox</h3>
-        <div class="desc">
-            <p>
-                To create a searchbox you can use a BitSearchbox component. By DisableAnimation attribute, you can disable searchbox animation.
-            </p>
-        </div>
-        <BitPivot>
-            <BitPivotItem HeaderText="Example" IconName="ViewList">
-                <div>
-                    <BitSearchBox Placeholder="Search"></BitSearchBox>
-                </div>
-
-                <div class="m-t-10">
-                    <BitSearchBox Placeholder="Search" DefaultValue="this is default value"></BitSearchBox>
-                </div>
-                <div class="m-t-10">
-                    <BitSearchBox Placeholder="Search with Binded value" @bind-Value="@TextValue"></BitSearchBox>
-                    <BitLabel>The value you are looking for: @TextValue</BitLabel>
-                </div>
-                <br />
-                <div class="m-t-10">
-                    <BitSearchBox Placeholder="Search with no animation" DisableAnimation=true></BitSearchBox>
-                </div>
-                <div class="m-t-10">
-                    <BitSearchBox Placeholder="SearchBox with fixed icon" ShowIcon="true"></BitSearchBox>
-                </div>
-            </BitPivotItem>
-            <BitPivotItem HeaderText="Code" IconName="Source">
-                <p>
-                    &lt<span class="dark-green">BitSearchBox Placeholder="</span>Search"><span>&lt/</span><span class="dark-green">BitSearchBox</span><span>&gt;</span>
-                </p>
-                <p>
-                    &lt<span class="dark-green">BitSearchBox DefaultValue="</span>this is default value">&lt/<span class="dark-green">BitSearchBox</span><span>&gt;</span>
-                </p>
-                <p>
-                    &lt<span class="dark-green">BitSearchBox Placeholder="</span>Search with Binded value"<span class="dark-green">&nbsp;@@bind-Value</span>="<span class="light-blue">@@TextValue</span>">&lt/<span class="dark-green">BitSearchBox</span><span>&gt;</span>
-                </p>
-                <p>
-                    &lt<span class="dark-green">BitSearchBox Placeholder="</span>Search with no animation"<span class="dark-green"> DisableAnimation</span>="<span class="light-blue">true</span>">&lt/<span class="dark-green">BitSearchBox</span><span>&gt;</span>
-                </p> 
-                <p>
-                    &lt<span class="dark-green">BitSearchBox Placeholder="</span>SearchBox with fixed icon"<span class="dark-green"> ShowIcon</span>="<span class="light-blue">true</span>">&lt/<span class="dark-green">BitSearchBox</span><span>&gt;</span>
-                </p>
-            </BitPivotItem>
-        </BitPivot>
-        <div class="card">
-            <h3>Underlined SearchBox</h3>
-            <div class="desc">
-                <p>
-                    BitSearchBox component can be like an underline.
-                </p>
+<ComponentPage ComponentName="SearchBox" OverviewDesc="A search box (SearchBox) provides an input field for searching content within a site or app to find specific items."
+               ComponentParameters="componentParameters">
+    <CodeSample Title="BitSearchBox" Description="To create a searchbox you can use a BitSearchbox component.">
+        <SampleContent>
+            <div>
+                <BitSearchBox Placeholder="Search"></BitSearchBox>
+                <BitSearchBox Placeholder="Search" DefaultValue="this is default value"></BitSearchBox>
+                <BitSearchBox Placeholder="Search with no animation" DisableAnimation=true></BitSearchBox>
+                <BitSearchBox Placeholder="SearchBox with fixed icon" ShowIcon="true"></BitSearchBox>
+                <BitSearchBox Placeholder="Search with Binded value" @bind-Value="@TextValue"></BitSearchBox>
+                <BitLabel>The value you are looking for: @TextValue</BitLabel>
             </div>
-            <BitPivot>
-                <BitPivotItem HeaderText="Example" IconName="ViewList">
-                    <div>
-                        <BitSearchBox Placeholder="Search" IsUnderlined=true></BitSearchBox>
-                    </div>
-                </BitPivotItem>
-                <BitPivotItem HeaderText="Code" IconName="Source">
-                    <p>
-                        &lt<span class="dark-green">BitSearchBox Placeholder="</span>Search"<span class="dark-green"> IsUnderlined</span>="<span class="light-blue">true</span>">&lt/<span class="dark-green">BitSearchBox</span><span>&gt;</span>
-                    </p>
-                </BitPivotItem>
-            </BitPivot>
-        </div>
-        <div class="card">
-            <h3>SearchBox with custom icon</h3>
-            <div class="desc">
-                <p>
-                    BitSeachBox component also can get a custom icon.
-                </p>
+        </SampleContent>
+        <CodeSampleContent>
+            <pre>
+                &lt<span class="dark-green">BitSearchBox Placeholder="</span>Search"><span>&lt/</span><span class="dark-green">BitSearchBox</span><span>&gt;</span>
+                &lt<span class="dark-green">BitSearchBox DefaultValue="</span>This is default value">&lt/<span class="dark-green">BitSearchBox</span><span>&gt;</span>
+                &lt<span class="dark-green">BitSearchBox Placeholder="</span>Search with no animation"<span class="dark-green"> DisableAnimation</span>=<span class="light-blue">"true"</span>>&lt/<span class="dark-green">BitSearchBox</span><span>&gt;</span>
+                &lt<span class="dark-green">BitSearchBox Placeholder="</span>SearchBox with fixed icon"<span class="dark-green"> ShowIcon</span>=<span class="light-blue">"true"</span>>&lt/<span class="dark-green">BitSearchBox</span><span>&gt;</span>
+                &lt<span class="dark-green">BitSearchBox Placeholder="</span>Search with Binded value" <span class="dark-green"><span class="light-yellow-bg">&#64</span>bind-Value</span>=<span><span class="light-yellow-bg">&#64</span>TextValue</span>>&lt/<span class="dark-green">BitSearchBox</span><span>&gt;</span>
+            </pre>
+        </CodeSampleContent>
+    </CodeSample>
+    <CodeSample Title="Underlined SearchBox" Description="BitSearchBox component can be like an underline.">
+        <SampleContent>
+            <div>
+                <BitSearchBox Placeholder="Search" IsUnderlined="true"></BitSearchBox>
             </div>
-            <BitPivot>
-                <BitPivotItem HeaderText="Example" IconName="ViewList">
-                    <div>
-                        <BitSearchBox Placeholder="Filter" IconName="Filter"></BitSearchBox>
-                    </div>
-                </BitPivotItem>
-                <BitPivotItem HeaderText="Code" IconName="Source">
-                    <p>
-                        &lt<span class="dark-green">BitSearchBox Placeholder="</span>Filter" <span class="dark-green">IconName</span>="Filter"><span>&lt/</span><span class="dark-green">BitSearchBox</span><span>&gt;</span>
-                    </p>
-                </BitPivotItem>
-            </BitPivot>
-        </div>
-        <div class="card">
-            <h3>SearchBox with fixed width</h3>
-            <div class="desc">
-                <p>
-                    You can set width of searchbox by Width attribute.
-                </p>
+        </SampleContent>
+        <CodeSampleContent>
+            <pre>
+               &lt<span class="dark-green">BitSearchBox Placeholder="</span>Search"<span class="dark-green"> IsUnderlined</span>=<span class="light-blue">"true"</span>>&lt/<span class="dark-green">BitSearchBox</span><span>&gt;</span>
+            </pre>
+        </CodeSampleContent>
+    </CodeSample>
+    <CodeSample Title="SearchBox with custom icon" Description="BitSeachBox component also can get a custom icon.">
+        <SampleContent>
+            <div>
+                <BitSearchBox Placeholder="Filter" IconName="Filter"></BitSearchBox>
             </div>
-            <BitPivot>
-                <BitPivotItem HeaderText="Example" IconName="ViewList">
-                    <div>
-                        <BitSearchBox Placeholder="Search" Width="250px"></BitSearchBox>
-                    </div>
-                </BitPivotItem>
-                <BitPivotItem HeaderText="Code" IconName="Source">
-                    <p>
-                        &lt<span class="dark-green">BitSearchBox Placeholder="</span>Search" <span class="dark-green">Width</span>="250px"><span>&lt/</span><span class="dark-green">BitSearchBox</span><span>&gt;</span>
-                    </p>
-                </BitPivotItem>
-            </BitPivot>
-        </div>
-        <div class="card">
-            <h3>Disabled SearchBox</h3>
-            <div class="desc">
-                <p>
-                    BitSearchBox can be disabled or enabled by setting IsEnabled attribute.
-                </p>
+        </SampleContent>
+        <CodeSampleContent>
+            <pre>
+               &lt<span class="dark-green">BitSearchBox Placeholder="</span>Filter" <span class="dark-green">IconName</span>="Filter"><span>&lt/</span><span class="dark-green">BitSearchBox</span><span>&gt;</span>
+            </pre>
+        </CodeSampleContent>
+    </CodeSample>
+    <CodeSample Title="SearchBox with fixed width" Description="You can set width of searchbox by Width attribute.">
+        <SampleContent>
+            <div>
+                <BitSearchBox Placeholder="Search" Width="250px"></BitSearchBox>
             </div>
-            <BitPivot>
-                <BitPivotItem HeaderText="Example" IconName="ViewList">
-                    <div>
-                        <BitSearchBox Placeholder="Search" IsEnabled=false></BitSearchBox>
-                    </div>
-                </BitPivotItem>
-                <BitPivotItem HeaderText="Code" IconName="Source">
-                    <p>
-                        &lt<span class="dark-green">BitSearchBox Placeholder="</span>Search"<span class="dark-green"> IsEnabled</span>="<span class="light-blue">false</span>">&lt/<span class="dark-green">BitSearchBox</span><span>&gt;</span>
-                    </p>
-                </BitPivotItem>
-            </BitPivot>
-        </div>
-    </div>
-</div>
-<h2>Implementation</h2>
-<div class="card">
-    <table>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Default value</th>
-            <th>Description</th>
-        </tr>
-        <tr>
-            <td>AriaLabel</td>
-            <td>string</td>
-            <td></td>
-            <td>The aria-label of the control for the benefit of screen readers.</td>
-        </tr>
-        <tr>
-            <td>Class</td>
-            <td>string</td>
-            <td></td>
-            <td>Custom CSS class for the root element of the component.</td>
-        </tr>
-        <tr>
-            <td>DefaultValue</td>
-            <td>string</td>
-            <td></td>
-            <td>The default value of the text in the SearchBox, in the case of an uncontrolled component.</td>
-        </tr>
-        <tr>
-            <td>DisableAnimation</td>
-            <td>bool</td>
-            <td>false</td>
-            <td>Whether or not to animate the SearchBox icon on focus.</td>
-        </tr>
-        <tr>
-            <td>HtmlAttributes</td>
-            <td>Dictionary&lt;string, object&gt;</td>
-            <td></td>
-            <td>Capture and render additional attributes in addition to the component's parameters.</td>
-        </tr>
-        <tr>
-            <td>IconName</td>
-            <td>string</td>
-            <td></td>
-            <td>IconName for showing on searchbox.</td>
-        </tr>
-        <tr>
-            <td>IsEnabled</td>
-            <td>bool</td>
-            <td>true</td>
-            <td>Whether the searchbox is enabled.</td>
-        </tr>
-        <tr>
-            <td>IsUnderlined</td>
-            <td>bool</td>
-            <td></td>
-            <td>Whether or not the SearchBox is underlined.</td>
-        </tr>
-        <tr>
-            <td>OnChange</td>
-            <td>EventCallback&lt;string?&gt;</td>
-            <td></td>
-            <td>Callback for when the input value changes.</td>
-        </tr>
-        <tr>
-            <td>OnClear</td>
-            <td>EventCallback</td>
-            <td></td>
-            <td>Callback executed when the user clears the search box by either clicking 'X' or hitting escape.</td>
-        </tr>
-        <tr>
-            <td>OnSearch</td>
-            <td>EventCallback&lt;string&gt;</td>
-            <td></td>
-            <td>Callback executed when the user presses enter in the search box.</td>
-        </tr>
-        <tr>
-            <td>Placeholder</td>
-            <td>string</td>
-            <td></td>
-            <td>Placeholder for the search box.</td>
-        </tr>
-        <tr>
-            <td>ShowIcon</td>
-            <td>bool</td>
-            <td></td>
-            <td>Whether or not to make the icon be always visible (it hides by default when the search box is focused).</td>
-        </tr>
-        <tr>
-            <td>Style</td>
-            <td>string</td>
-            <td></td>
-            <td>Custom style for the root element of the component.</td>
-        </tr>
-        <tr>
-            <td>Underlined</td>
-            <td>string</td>
-            <td></td>
-            <td>Whether or not the SearchBox is underlined.</td>
-        </tr>
-        <tr>
-            <td>Value</td>
-            <td>string</td>
-            <td></td>
-            <td>The value of the text in the search box.</td>
-        </tr>        
-        <tr>
-            <td>Visibility</td>
-            <td>ComponentVisibility</td>
-            <td></td>
-            <td>Whether the component is visible, hidden, collapsed.</td>
-        </tr>
-        <tr>
-            <td>Width</td>
-            <td>string</td>
-            <td></td>
-            <td>Specifies the width of the search box.</td>
-        </tr>
-    </table>
-    <div>
-        <h4 id="component-visibility">ComponentVisibility</h4>
-        <hr />
-        <table>
-            <tr>
-                <th>Name</th>
-                <th>Value</th>
-                <th>Description</th>
-            </tr>
-            <tr>
-                <td>Visible</td>
-                <td>0</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>Hidden</td>
-                <td>1</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>Collapsed</td>
-                <td>2</td>
-                <td></td>
-            </tr>
-        </table>
-    </div>
-</div>
+        </SampleContent>
+        <CodeSampleContent>
+            <pre>
+                &lt<span class="dark-green">BitSearchBox Placeholder="</span>Search" <span class="dark-green">Width</span>="250px"><span>&lt/</span><span class="dark-green">BitSearchBox</span><span>&gt;</span>
+            </pre>
+        </CodeSampleContent>
+    </CodeSample>
+    <CodeSample Title="Disabled SearchBox" Description="BitSearchBox can be disabled or enabled by setting IsEnabled attribute.">
+        <SampleContent>
+            <div>
+                <BitSearchBox Placeholder="Search" IsEnabled=false></BitSearchBox>
+            </div>
+        </SampleContent>
+        <CodeSampleContent>
+            <pre>
+                &lt<span class="dark-green">BitSearchBox Placeholder="</span>Search"<span class="dark-green"> IsEnabled</span>=<span class="light-blue">"false"</span>>&lt/<span class="dark-green">BitSearchBox</span><span>&gt;</span>
+            </pre>
+        </CodeSampleContent>
+    </CodeSample>
+</ComponentPage>
