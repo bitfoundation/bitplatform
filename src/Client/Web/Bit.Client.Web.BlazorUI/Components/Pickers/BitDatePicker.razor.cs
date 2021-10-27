@@ -348,10 +348,10 @@ namespace Bit.Client.Web.BlazorUI
                 {
                     if (weekIndex == 0
                         && currentDay == 1
-                        && (int)firstDay.DayOfWeek > dayIndex + dayOfWeekDifference)
+                        && (int)firstDay.DayOfWeek > dayIndex + GetValueForComparison((int)firstDay.DayOfWeek))
                     {
-                        var previousMonth = 0;
-                        var previousMonthDaysCount = 0;
+                        int previousMonth;
+                        int previousMonthDaysCount;
                         if (month - 1 == 0)
                         {
                             previousMonth = 12;
@@ -362,7 +362,15 @@ namespace Bit.Client.Web.BlazorUI
                             previousMonth = month - 1;
                             previousMonthDaysCount = calendar?.GetDaysInMonth(year, previousMonth) ?? 29;
                         }
-                        currentMonthCalendar[weekIndex, dayIndex] = previousMonthDaysCount - ((int)firstDay.DayOfWeek - (dayIndex + dayOfWeekDifference)) + 1;
+
+                        if ((int)firstDay.DayOfWeek > (int)FirstDayOfWeek)
+                        {
+                            currentMonthCalendar[weekIndex, dayIndex] = previousMonthDaysCount + dayIndex - (int)firstDay.DayOfWeek + 1 + (int)FirstDayOfWeek;
+                        }
+                        else
+                        {
+                            currentMonthCalendar[weekIndex, dayIndex] = previousMonthDaysCount + dayIndex - (7 + (int)firstDay.DayOfWeek - 1 - (int)FirstDayOfWeek);
+                        }
                     }
                     else
                     {
@@ -536,5 +544,7 @@ namespace Bit.Client.Web.BlazorUI
         }
 
         private int dayOfWeekDifference => CalendarType == BitCalendarType.Persian ? -1 : 0;
+
+        private int GetValueForComparison(int firstDay) => firstDay > (int)FirstDayOfWeek ? (int)FirstDayOfWeek : (int)FirstDayOfWeek - 7;
     }
 }
