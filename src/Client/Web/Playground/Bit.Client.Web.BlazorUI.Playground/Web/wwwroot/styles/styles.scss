@@ -93,6 +93,7 @@ h5 {
         @include h5-sm;
     }
 }
+
 pre {
     margin-left: rem(-70px);
 
@@ -426,6 +427,10 @@ footer {
             }
         }
 
+        .bit-sch-box-fluent input {
+            padding-left: rem(8px);
+        }
+
         .nav-link {
             padding-top: rem(8px);
 
@@ -659,6 +664,10 @@ footer {
     .bit-chg label {
         padding-bottom: rem(20px);
     }
+
+    .bit-sch-box {
+        margin-bottom: rem(12px);
+    }
 }
 
 .tgl-btn {
@@ -668,7 +677,7 @@ footer {
     }
 }
 
-.aria-hidden-tgl-btn{
+.aria-hidden-tgl-btn {
     @include sm {
         margin-top: rem(10px);
         width: rem(239px);
@@ -692,12 +701,16 @@ footer {
     background-color: $White;
 }
 
-.bit-sch-box-fluent input {
-    padding-left: rem(8px);
-}
-
 .bit-icon--Clear {
     padding-right: rem(20px);
+}
+
+input.search-input {
+    padding-top: rem(5px);
+}
+
+.bit-icon {
+    height: 0;
 }
 
 input::-webkit-input-placeholder {
@@ -734,7 +747,7 @@ input::-webkit-input-placeholder {
 }
 
 @media(min-width:768px) {
-    .container{
+    .container {
         max-width: 720px;
     }
 
