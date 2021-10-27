@@ -668,6 +668,18 @@ footer {
     .bit-sch-box {
         margin-bottom: rem(12px);
     }
+
+    .bit-tgl > div {
+        margin-top: rem(10px);
+    }
+
+    .bit-tgl > div label {
+        margin-top: rem(12px);
+    }
+
+    .bit-tgl-inline-fluent > div {
+        margin-top: 0;
+    }
 }
 
 .tgl-btn {
