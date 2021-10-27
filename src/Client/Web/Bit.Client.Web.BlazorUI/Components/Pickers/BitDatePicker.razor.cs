@@ -134,6 +134,11 @@ namespace Bit.Client.Web.BlazorUI
         /// </summary>
         [Parameter] public bool ShowMonthPickerAsOverlay { get; set; } = false;
 
+        /// <summary>
+        /// The first day of the week for your locale
+        /// </summary>
+        [Parameter] public DayOfWeek FirstDayOfWeek { get; set; } = DayOfWeek.Sunday;
+
         public string CalloutId { get; set; } = string.Empty;
         public string MonthAndYearId { get; set; } = Guid.NewGuid().ToString();
         public string ActiveDescendantId { get; set; } = Guid.NewGuid().ToString();
@@ -521,6 +526,13 @@ namespace Bit.Client.Web.BlazorUI
             var todayMonth = calendar?.GetMonth(DateTime.Now) ?? 1;
             var todayYear = calendar?.GetYear(DateTime.Now) ?? 1;
             return (todayMonth == currentMonth && todayYear == currentYear);
+        }
+
+        private DayOfWeek GetDayOfWeek(int index)
+        {
+            int dayOfWeek = (int)FirstDayOfWeek + index;
+            if (dayOfWeek > 6) dayOfWeek = dayOfWeek - 7;
+            return (DayOfWeek)dayOfWeek;
         }
 
         private int dayOfWeekDifference => CalendarType == BitCalendarType.Persian ? -1 : 0;

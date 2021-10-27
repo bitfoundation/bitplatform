@@ -79,42 +79,10 @@
                            aria-activedescendant="@ActiveDescendantId">
                             <tbody>
                                 <tr>
-                                    @if (CalendarType == BitCalendarType.Persian)
+                                    @for (var index = 0; index < 7; index++)
                                     {
-                                        <th class="week-day-label" scope="col"
-                                    title="@calendar?.GetDayOfWeekName(DayOfWeek.Saturday)">
-                                            @calendar?.GetDayOfWeekName(DayOfWeek.Saturday)[0]
-                                        </th>
-                                    }
-                                    <th class="week-day-label" scope="col"
-                                    title="@calendar?.GetDayOfWeekName(DayOfWeek.Sunday)">
-                                        @calendar?.GetDayOfWeekName(DayOfWeek.Sunday)[0]
-                                    </th>
-                                    <th class="week-day-label" scope="col"
-                                    title="@calendar?.GetDayOfWeekName(DayOfWeek.Monday)">
-                                        @calendar?.GetDayOfWeekName(DayOfWeek.Monday)[0]
-                                    </th>
-                                    <th class="week-day-label" scope="col"
-                                    title="@calendar?.GetDayOfWeekName(DayOfWeek.Tuesday)">
-                                        @calendar?.GetDayOfWeekName(DayOfWeek.Tuesday)[0]
-                                    </th>
-                                    <th class="week-day-label" scope="col"
-                                    title="@calendar?.GetDayOfWeekName(DayOfWeek.Wednesday)">
-                                        @calendar?.GetDayOfWeekName(DayOfWeek.Wednesday)[0]
-                                    </th>
-                                    <th class="week-day-label" scope="col"
-                                    title="@calendar?.GetDayOfWeekName(DayOfWeek.Thursday)">
-                                        @calendar?.GetDayOfWeekName(DayOfWeek.Thursday)[0]
-                                    </th>
-                                    <th class="week-day-label" scope="col"
-                                    title="@calendar?.GetDayOfWeekName(DayOfWeek.Friday)">
-                                        @calendar?.GetDayOfWeekName(DayOfWeek.Friday)[0]
-                                    </th>
-                                    @if (CalendarType is BitCalendarType.Gregorian)
-                                    {
-                                        <th class="week-day-label" scope="col"
-                                    title="@calendar?.GetDayOfWeekName(DayOfWeek.Saturday)">
-                                            @calendar?.GetDayOfWeekName(DayOfWeek.Saturday)[0]
+                                        <th class="week-day-label" scope="col" title="@calendar?.GetDayOfWeekName(GetDayOfWeek(index))">
+                                            @calendar?.GetDayOfWeekName(GetDayOfWeek(index))[0]
                                         </th>
                                     }
                                 </tr>
