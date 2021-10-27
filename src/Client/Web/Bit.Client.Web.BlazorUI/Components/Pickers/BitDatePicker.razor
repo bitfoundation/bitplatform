@@ -120,27 +120,28 @@
                                 </tr>
                                 @for (var week = 0; week < 6; week++)
                                 {
-                                    if (monthWeeks[week, 0] == 0)
+                                    //to ignore the last empty week out of month || to ignore the first whole week out of month
+                                    if (currentMonthCalendar[week, 0] == 0 || (week == 0 && currentMonthCalendar[week, 6] > 20))
                                     {
-                                        week = 0;
-                                        break;
+                                        continue;
                                     }
+
                                     <tr>
                                         @for (var day = 0; day < 7; day++)
                                         {
                                             var localWeek = week;
                                             var localDay = day;
                                             <td class="@GetDateElClass(localDay,localWeek)" role="presentation"
-                                    @onclick="() => HandleDateChoose(localDay, monthWeeks[localWeek, localDay], currentMonth)">
+                                    @onclick="() => SelectDate(localDay, currentMonthCalendar[localWeek, localDay], localWeek)">
                                                 <button class="day-btn"
-                                                role="gridcell"
+                                            role="gridcell"
                                             type="button"
-                                            tabindex="@(IsDateSelected(localWeek, localDay, monthWeeks[localWeek, localDay]) ? 0 : -1)"
+                                            tabindex="@(IsDateSelected(localWeek, localDay, currentMonthCalendar[localWeek, localDay]) ? 0 : -1)"
                                             aria-label="@GetDateAriaLabel(localWeek, localDay)"
-                                            aria-selected="@(IsDateSelected(localWeek, localDay, monthWeeks[localWeek, localDay]) ? "true" : "false")"
+                                            aria-selected="@(IsDateSelected(localWeek, localDay, currentMonthCalendar[localWeek, localDay]) ? "true" : "false")"
                                             aria-readonly="true"
                                             aria-disabled="false">
-                                                    <span aria-hidden="true">@monthWeeks[localWeek, localDay]</span>
+                                                    <span aria-hidden="true">@currentMonthCalendar[localWeek, localDay]</span>
                                                 </button>
                                             </td>
                                         }
