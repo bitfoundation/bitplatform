@@ -7,8 +7,12 @@ button {
 .header {
     width: 100%;
 
+    @include sm {
+        margin-bottom: rem(150px);
+    }
+
     @include md {
-        margin-bottom: rem(160px);
+        margin-bottom: rem(40px);
     }
 
     @include lg {
@@ -27,9 +31,15 @@ button {
     background-size: contain;
     position: relative;
 
+    @include sm {
+        height: rem(793px);
+        background-image: url("/images/index/header-small-bg.png");
+        background-size: 100% rem(490px)
+    }
+
     @include md {
-        height: rem(460px);
-        background-size: rem(381px);
+        height: rem(793px);
+        background-size: rem(460px);
     }
 
     @include lg {
@@ -51,6 +61,10 @@ button {
 }
 
 .header-menu img {
+    @include sm {
+        width: rem(40px);
+    }
+
     @include md {
         width: rem(40px);
     }
@@ -65,8 +79,17 @@ button {
 }
 
 .menu-header-link {
+    padding: 0;
     text-decoration: none;
     padding: 0;
+
+    &:hover {
+        padding: 0 !important;
+    }
+
+    @include sm {
+        margin-left: rem(42px);
+    }
 
     @include md {
         margin-left: rem(51px);
@@ -92,6 +115,11 @@ button {
     flex-flow: column nowrap;
     justify-content: center;
 
+    @include sm {
+        margin-top: 385px;
+        max-width: rem(385px);
+    }
+
     @include md {
         height: rem(380px);
         max-width: rem(386px);
@@ -113,6 +141,13 @@ button {
 }
 
 .header-description-container .buttons-container {
+
+    @include sm {
+        text-align: center;
+        margin-top: rem(45px);
+        margin-bottom: rem(60px);
+    }
+
     @include md {
         margin-top: rem(46px);
         margin-bottom: rem(46px);
@@ -137,6 +172,10 @@ button {
     margin-right: rem(12px);
     border: none;
 
+    @include sm {
+        padding: rem(8px) rem(32px);
+    }
+
     @include md {
         padding: rem(8px) rem(32px);
     }
@@ -149,6 +188,10 @@ button {
     box-sizing: border-box;
     border-radius: rem(4px);
     color: #5c2d91;
+
+    @include sm {
+        padding: rem(7px) rem(32px);
+    }
 
     @include md {
         padding: rem(7px) rem(32px);
@@ -164,6 +207,10 @@ button {
 .header-title-container {
     margin-bottom: 0;
 
+    @include sm {
+        text-align: center;
+    }
+
     @include lg {
         margin-top: 0;
     }
@@ -176,6 +223,13 @@ button {
 .header-text-description {
     margin: 0;
 
+    @include sm {
+        margin: auto;
+        margin-top: rem(18px);
+        width: rem(261px);
+        text-align: center;
+    }
+
     @include md {
         width: rem(273px);
     }
@@ -185,8 +239,19 @@ button {
     }
 }
 
+.logos-container {
+    @include sm {
+        text-align: center;
+    }
+}
+
 .header .logos-container img {
     margin-right: rem(46px);
+
+    @include sm {
+        margin-right: rem(26px);
+        max-height: rem(20px);
+    }
 
     @include md {
         margin-right: rem(26px);
@@ -208,6 +273,10 @@ button {
 .bit-product-describe {
     justify-content: center;
 
+    @include sm {
+        margin-bottom: rem(160px)
+    }
+
     @include md {
         margin-bottom: rem(160px)
     }
@@ -225,10 +294,29 @@ button {
     }
 }
 
-.product-describe-img {
+.product-describe-img, .product-describe-img-2 {
     background-image: url("/images/index/Based-on-Microsoft-Fluent-Design.png");
     background-repeat: no-repeat;
     background-size: contain;
+}
+
+.product-describe-img-2 {
+    display: none;
+
+    @include sm {
+        display: block;
+        height: rem(274px);
+        width: rem(274px);
+        margin: auto;
+        margin-top: rem( 55px);
+        margin-bottom: rem(60px);
+    }
+}
+
+.product-describe-img {
+    @include sm {
+        display: none;
+    }
 
     @include md {
         height: rem(274px);
@@ -247,12 +335,20 @@ button {
 }
 
 .product-describe-container {
+    @include sm {
+        padding: rem(16px);
+    }
+
     @include md {
         margin-left: rem(24px);
     }
 
     @include xl {
         margin-left: rem(52px);
+    }
+
+    h5 {
+        text-align: center;
     }
 }
 
@@ -295,6 +391,10 @@ button {
     text-decoration: underline;
     text-decoration-color: #ef9c00;
     text-decoration-thickness: rem(10px);
+
+    @include sm {
+        text-align: center;
+    }
 
     @include md {
         width: rem(175px);

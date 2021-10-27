@@ -9,8 +9,13 @@
 
     <ItemGroup>
         <Content Condition=" '$(BlazorMode)' == 'Client' " Remove="appsettings.json" />
+        <Content Remove="compilerconfig.json" />
         <Content Condition=" '$(BlazorMode)' == 'Client' " Remove="Pages\_Host.cshtml" />
         <Compile Condition=" '$(BlazorMode)' == 'Server' " Include="..\Api\Controllers\FileUploadController.cs" Link="Controllers\FileUploadController.cs" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Include="compilerconfig.json" />
     </ItemGroup>
 
     <ItemGroup>
