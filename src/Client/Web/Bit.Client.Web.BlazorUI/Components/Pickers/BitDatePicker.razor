@@ -99,14 +99,14 @@
                                         {
                                             var localWeek = week;
                                             var localDay = day;
-                                            <td class="@GetDateElClass(localDay,localWeek)" role="presentation"
-                                    @onclick="() => SelectDate(localDay, currentMonthCalendar[localWeek, localDay], localWeek)">
+                                            <td class="@GetDateElClass(localDay, localWeek)" role="presentation"
+                                    @onclick="() => SelectDate(localDay, localWeek)">
                                                 <button class="day-btn"
                                             role="gridcell"
                                             type="button"
-                                            tabindex="@(IsDateSelected(localWeek, localDay, currentMonthCalendar[localWeek, localDay]) ? 0 : -1)"
+                                            tabindex="@(IsDateSelected(localWeek, localDay) ? 0 : -1)"
                                             aria-label="@GetDateAriaLabel(localWeek, localDay)"
-                                            aria-selected="@(IsDateSelected(localWeek, localDay, currentMonthCalendar[localWeek, localDay]) ? "true" : "false")"
+                                            aria-selected="@(IsDateSelected(localWeek, localDay) ? "true" : "false")"
                                             aria-readonly="true"
                                             aria-disabled="false">
                                                     <span aria-hidden="true">@currentMonthCalendar[localWeek, localDay]</span>
