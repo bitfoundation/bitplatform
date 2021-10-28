@@ -8,7 +8,15 @@
     <CodeSample Title="BitDatePicker" Description="">
         <SampleContent>
             <div>
-                <BitDatePicker Style="width: 300px"></BitDatePicker>
+                <BitDatePicker Style="width: 300px"
+                               FirstDayOfWeek="firstDayOfWeek">
+                </BitDatePicker>
+                <BitDropDown Style="width: 300px"
+                             Items="@GetFirstDayOfWeekDropdownItems()"
+                             Label="Select the first day of the week"
+                             DefaultSelectedKey="0"
+                             OnSelectItem="@SelectFirstDayOfWeek">
+                </BitDropDown>
             </div>
         </SampleContent>
         <CodeSampleContent>
@@ -20,7 +28,10 @@
     <CodeSample Title="Shamsi Date picker" Description="">
         <SampleContent>
             <div>
-                <BitDatePicker CalendarType="BitCalendarType.Persian" Style="width: 300px"></BitDatePicker>
+                <BitDatePicker CalendarType="BitCalendarType.Persian"
+                               Style="width: 300px"
+                               FirstDayOfWeek="DayOfWeek.Saturday">
+                </BitDatePicker>
             </div>
         </SampleContent>
         <CodeSampleContent>
@@ -39,9 +50,9 @@
         <CodeSampleContent>
             <pre>
                 &lt<span class="dark-green">BitDatePicker <span class="light-yellow-bg">&#64</span><span class="dark-green">bind-Value</span></span>="selectedDate"<span class="dark-green">>&lt/BitDatePicker></span>
-                <span class="light-yellow-bg">&#64code {</span>
-                      <span class="light-blue">private string</span> selectedDate ="";
-                <span class="light-yellow-bg">}</span>
+            <span class="light-yellow-bg">&#64code {</span>
+            <span class="light-blue">private string</span> selectedDate ="";
+            <span class="light-yellow-bg">}</span>
             </pre>
         </CodeSampleContent>
     </CodeSample>
@@ -54,9 +65,9 @@
         <CodeSampleContent>
             <pre>
                 &lt<span class="dark-green">BitDatePicker<span class="dark-green"> OnSelectDate</span> </span>="OnDateFormat"<span class="dark-green">>&lt/BitDatePicker></span>
-                <span class="light-yellow-bg">&#64code {</span>
-                      <span class="light-blue">private string</span> <span class="dark-yellow"> OnDateFormat</span><span class="light-blue">(<span class="dark-green">BitDate</span> date) =></span>$"{date.GetDate()}/{date.GetMonth()}/{date.GetYear()}";
-                <span class="light-yellow-bg">}</span>
+            <span class="light-yellow-bg">&#64code {</span>
+            <span class="light-blue">private string</span> <span class="dark-yellow"> OnDateFormat</span><span class="light-blue">(<span class="dark-green">BitDate</span> date) =></span>$"{date.GetDate()}/{date.GetMonth()}/{date.GetYear()}";
+            <span class="light-yellow-bg">}</span>
                 </pre>
         </CodeSampleContent>
     </CodeSample>
