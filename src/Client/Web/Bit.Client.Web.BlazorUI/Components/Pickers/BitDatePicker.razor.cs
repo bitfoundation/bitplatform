@@ -153,6 +153,12 @@ namespace Bit.Client.Web.BlazorUI
 
         protected override Task OnInitializedAsync()
         {
+            CalloutId = $"DatePicker-Callout{UniqueId}";
+            return base.OnInitializedAsync();
+        }
+
+        protected override Task OnParametersSetAsync()
+        {
             if (CalendarType == BitCalendarType.Gregorian)
             {
                 calendar = new GregorianCalendar();
@@ -163,9 +169,8 @@ namespace Bit.Client.Web.BlazorUI
             }
 
             CreateMonthCalendar();
-            CalloutId = $"DatePicker-Callout{UniqueId}";
 
-            return base.OnInitializedAsync();
+            return base.OnParametersSetAsync();
         }
 
         public async Task HandleClick(MouseEventArgs eventArgs)
