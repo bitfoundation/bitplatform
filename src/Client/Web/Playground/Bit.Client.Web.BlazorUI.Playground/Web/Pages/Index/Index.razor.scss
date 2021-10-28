@@ -58,25 +58,55 @@ button {
     flex-wrap: nowrap;
     padding: rem(35px) 0;
     margin: auto;
-}
 
-.header-menu img {
     @include sm {
-        width: rem(40px);
-    }
-
-    @include md {
-        width: rem(40px);
-    }
-
-    @include lg {
-        width: rem(70px);
-    }
-
-    @include xl {
-        width: rem(90px);
+        display: block;
+        padding-top: rem(4px);
     }
 }
+
+
+.header-menu {
+    .menu-logo-container {
+        img {
+            @include sm {
+                width: rem(40px);
+            }
+
+            @include md {
+                width: rem(40px);
+            }
+
+            @include lg {
+                width: rem(70px);
+            }
+
+            @include xl {
+                width: rem(90px);
+            }
+        }
+
+        div {
+            display: none;
+
+            @include sm {
+                display: inline-block;
+                margin-left: rem(12px);
+                color: $White;
+            }
+        }
+
+        @include sm {
+            display: flex;
+            align-items: center;
+            border-bottom: rem(1px) solid #DDDDDD;
+            padding: rem(16px);
+            box-sizing: border-box;
+            margin-bottom: rem(16px);
+        }
+    }
+}
+
 
 .menu-header-link {
     padding: 0;
@@ -89,7 +119,7 @@ button {
 
     @include sm {
         margin-left: rem(42px);
-        color:$White !important;
+        color: $White !important;
     }
 
     @include md {
@@ -243,6 +273,8 @@ button {
 .logos-container {
     @include sm {
         text-align: center;
+        display: flex;
+        justify-content: space-around;
     }
 }
 
