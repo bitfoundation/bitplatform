@@ -89,6 +89,7 @@ button {
 
     @include sm {
         margin-left: rem(42px);
+        color:$White !important;
     }
 
     @include md {
@@ -106,7 +107,7 @@ button {
 
 .menu-header-link:active {
     border-bottom: rem(3px) #2f455a solid;
-    color: #2f455a;
+    color: #2f455a !important;
 }
 
 .header-description-container {
@@ -528,6 +529,7 @@ button {
 
     @include sm {
         height: rem(248px);
+        background-size: cover;
     }
 
     @include md {
@@ -610,6 +612,13 @@ button {
     margin: auto;
     transform: translateY(130px);
 
+    @include sm {
+        position: absolute;
+        left: calc(50% - 171px );
+        width: rem(328px);
+        top: 70px;
+    }
+
     @include md {
         width: rem(392px);
     }
@@ -649,6 +658,13 @@ button {
     position: absolute;
     top: rem(26px);
 
+    @include sm {
+        width: rem(324px);
+        height: rem(72px);
+        border-width: rem(2px);
+        top: rem(15px);
+    }
+
     @include md {
         height: rem(79.85px);
         width: rem(354px);
@@ -674,6 +690,9 @@ button {
     margin: auto;
     text-align: center;
 
+    @include sm {
+        width: rem(265px);
+    }
 
     @include md {
         margin: auto rem(13px);
@@ -722,9 +741,10 @@ button {
     top: rem(12px);
     width: rem(60px);
 
-    @include sm{
-        display:none;
+    @include sm {
+        display: none;
     }
+
     @include md {
         left: rem(-14px);
         top: rem(20px);
@@ -742,7 +762,7 @@ button {
         transform: unset;
         float: unset;
         text-align: center;
-        margin:auto;
+        margin: auto;
     }
 
     @include md {
@@ -763,6 +783,11 @@ button {
 
 .menu-footer {
 
+    @include sm {
+        padding: rem(16px);
+        box-sizing: border-box;
+    }
+
     @include lg {
         height: rem(1005px);
     }
@@ -778,6 +803,13 @@ button {
     text-decoration-color: #14a38b;
     text-decoration-thickness: rem(8px);
 
+    @include sm {
+        text-decoration: none;
+        margin-top: rem(130px);
+        text-align: left;
+        margin-bottom: rem(68px);
+    }
+
     @include lg {
         margin-top: rem(136px);
     }
@@ -790,11 +822,21 @@ button {
 .menu-footer-container {
     margin: auto;
     justify-content: center;
+
+    @include sm {
+        display: block;
+        margin-bottom: rem(192px);
+    }
 }
 
 .menu-footer-column {
     display: flex;
     flex-flow: column;
+
+    @include sm {
+        width: 90%;
+        margin-bottom: rem(40px);
+    }
 
     @include md {
         margin-left: 5%;
