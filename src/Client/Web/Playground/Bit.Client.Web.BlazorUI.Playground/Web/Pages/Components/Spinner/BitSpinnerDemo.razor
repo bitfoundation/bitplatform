@@ -1,258 +1,67 @@
 ﻿@page "/components/spinner"
 
-<h2>Spinner</h2>
+@using Bit.Client.Web.BlazorUI.Playground.Web.Components
 
-<div class="card">
-    <p class="desc">BitSpinner is an outline of a circle which animates around itself indicating to the user that things are processing. A Spinner is shown when it's unsure how long a task will take making it the indeterminate version of a ProgressIndicator. They can be various sizes, located inline with content or centered. They generally appear after an action is being processed or committed. They are subtle and generally do not take up much space, but are transitions from the completed task.</p>
-</div>
-
-<h2>Usage</h2>
-<div class="wrapper">
-    <div class="card">
-        <h3>BitSpinner</h3>
-        <div class="desc">
-            <p>
-                To create a spinner, you can use a BitSpinner component. Label attribute use for a text you wish show beside of spinner, You can also set Size attribute and change spinner size.
-            </p>
-        </div>
-        <BitPivot>
-            <BitPivotItem HeaderText="Example" IconName="ViewList">
-                <div class="spinner-container">
-                    <div>
-                        <label>Extra small spinner</label>
-                        <BitSpinner Size="BitSpinnerSize.XSmall" />
-                    </div>
-                    <div>
-                        <label>Small spinner</label>
-                        <BitSpinner Size="BitSpinnerSize.Small" />
-                    </div>
-                    <div>
-                        <label>Medium spinner</label>
-                        <BitSpinner Size="BitSpinnerSize.Medium" />
-                    </div>
-                    <div>
-                        <label>Large spinner</label>
-                        <BitSpinner Size="BitSpinnerSize.Large" />
-                    </div>
+<ComponentPage ComponentName="Spinner" OverviewDesc="BitSpinner is an outline of a circle which animates around itself indicating to the user that things are processing. A Spinner is shown when it's unsure how long a task will take making it the indeterminate version of a ProgressIndicator. They can be various sizes, located inline with content or centered. They generally appear after an action is being processed or committed. They are subtle and generally do not take up much space, but are transitions from the completed task."
+               ComponentParameters="componentParameters" EnumParameters="enumParameters">
+    <CodeSample Title="BitSpinner" Description="To create a spinner, you can use a BitSpinner component.">
+        <SampleContent>
+            <div class="spinner-container">
+                <div class="m-b-15">
+                    <label>Extra small spinner</label>
+                    <BitSpinner Size="BitSpinnerSize.XSmall" />
                 </div>
-            </BitPivotItem>
-            <BitPivotItem HeaderText="Code" IconName="Source">
-                <p>
-                    &lt<span class="dark-green">BitSpinner Size="</span><span class="light-green">SpinnerSize</span><span>.XSmall"></span><span>&lt/</span><span class="dark-green">BitSpinner</span><span>&gt;</span>
-                </p>
-                <p>
-                    &lt<span class="dark-green">BitSpinner Size="</span><span class="light-green">SpinnerSize</span><span>.Small"></span><span>&lt/</span><span class="dark-green">BitSpinner</span><span>&gt;</span>
-                </p>
-                <p>
-                    &lt<span class="dark-green">BitSpinner Size="</span><span class="light-green">SpinnerSize</span><span>.Medium"></span><span>&lt/</span><span class="dark-green">BitSpinner</span><span>&gt;</span>
-                </p>
-                <p>
-                    &lt<span class="dark-green">BitSpinner Size="</span><span class="light-green">SpinnerSize</span><span>.Large"></span><span>&lt/</span><span class="dark-green">BitSpinner</span><span>&gt;</span>
-                </p>
-            </BitPivotItem>
-        </BitPivot>
-        <div class="card">
-            <h4>Label positioning</h4>
-            <div class="desc">
-                <p>
-                    By setting LabelPosition attribute, change position of spinner to bottom, top, left or right.
-                </p>
+                <div class="m-b-15">
+                    <label>Small spinner</label>
+                    <BitSpinner Size="BitSpinnerSize.Small" />
+                </div>
+                <div class="m-b-15">
+                    <label>Medium spinner</label>
+                    <BitSpinner Size="BitSpinnerSize.Medium" />
+                </div>
+                <div>
+                    <label>Large spinner</label>
+                    <BitSpinner Size="BitSpinnerSize.Large" />
+                </div>
             </div>
-            <BitPivot>
-                <BitPivotItem HeaderText="Example" IconName="ViewList">
-                    <div class="spinner-positioning">
-                        <div>
-                            <label>Spinner with label positioned below</label>
-                            <BitSpinner class="m-t-10" LabelPosition="BitSpinnerLabelPosition.Top" Label="I am definitely loading..." />
-                        </div>
-                        <div>
-                            <label>Spinner with label positioned above</label>
-                            <BitSpinner class="m-t-10" LabelPosition="BitSpinnerLabelPosition.Bottom" Label="Seriously, still loading..." />
-                        </div>
-                        <div>
-                            <label>Spinner with label positioned to right</label>
-                            <BitSpinner class="m-t-10" LabelPosition="BitSpinnerLabelPosition.Left" Label="Wait, wait..." />
-                        </div>
-                        <div>
-                            <label>Spinner with label positioned to left</label>
-                            <BitSpinner class="m-t-10" LabelPosition="BitSpinnerLabelPosition.Right" Label="Nope, still loading..." />
-                        </div>
-                    </div>
-                </BitPivotItem>
-                <BitPivotItem HeaderText="Code" IconName="Source">
-                    <p>
-                        &lt<span class="dark-green">BitSpinner LabelPosition="</span><span class="light-green">SpinnerLabelPosition</span><span>.Bottom"</span><span class="dark-green"> Label</span>="I am definitely loading..."><span>&lt/</span><span class="dark-green">BitSpinner</span><span>&gt;</span>
-                    </p>
-                    <p>
-                        &lt<span class="dark-green">BitSpinner LabelPosition="</span><span class="light-green">SpinnerLabelPosition</span><span>.Top"</span><span class="dark-green"> Label</span>="Seriously, still loading..."><span>&lt/</span><span class="dark-green">BitSpinner</span><span>&gt;</span>
-                    </p>
-                    <p>
-                        &lt<span class="dark-green">BitSpinner LabelPosition="</span><span class="light-green">SpinnerLabelPosition</span><span>.Right"</span><span class="dark-green"> Label</span>="Wait, wait..."><span>&lt/</span><span class="dark-green">BitSpinner</span><span>&gt;</span>
-                    </p>
-                    <p>
-                        &lt<span class="dark-green">BitSpinner LabelPosition="</span><span class="light-green">SpinnerLabelPosition</span><span>.Left"</span><span class="dark-green"> Label</span>="Nope, still loading..."><span>&lt/</span><span class="dark-green">BitSpinner</span><span>&gt;</span>
-                    </p>
-                </BitPivotItem>
-            </BitPivot>
-        </div>
-    </div>
-</div>
-<h2>Implementation</h2>
-<div class="card">
-    <table>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Default value</th>
-            <th>Description</th>
-        </tr>
-        <tr>
-            <td>AriaLabel</td>
-            <td>string</td>
-            <td></td>
-            <td>The aria-label of the control for the benefit of screen readers.</td>
-        </tr>
-        <tr>
-            <td>AriaLive</td>
-            <td>BitSpinnerAriaLive</td>
-            <td>Polite</td>
-            <td>Politeness setting for label update announcement.</td>
-        </tr>
-        <tr>
-            <td>Class</td>
-            <td>string</td>
-            <td></td>
-            <td>Custom CSS class for the root element of the component.</td>
-        </tr>
-        <tr>
-            <td>HtmlAttributes</td>
-            <td>Dictionary&lt;string, object&gt;</td>
-            <td></td>
-            <td>Capture and render additional attributes in addition to the component's parameters.</td>
-        </tr>
-        <tr>
-            <td>IsEnabled</td>
-            <td>bool</td>
-            <td></td>
-            <td>Whether or not the component is enabled.</td>
-        </tr>
-        <tr>
-            <td>Label</td>
-            <td>string</td>
-            <td></td>
-            <td>The label to show next to the Spinner.</td>
-        </tr>
-        <tr>
-            <td>LabelPosition</td>
-            <td>SpinnerLabelPosition</td>
-            <td>Top</td>
-            <td>The position of the label in regards of the spinner animation.</td>
-        </tr>
-        <tr>
-            <td>Size</td>
-            <td>SpinnerSize</td>
-            <td>Medium</td>
-            <td>The size of Spinner to render.</td>
-        </tr>
-        <tr>
-            <td>Style</td>
-            <td>string</td>
-            <td></td>
-            <td>Custom style for the root element of the component.</td>
-        </tr>
-        <tr>
-            <td>Visibility</td>
-            <td>ComponentVisibility</td>
-            <td></td>
-            <td>Whether the component is visible, hidden, collapsed.</td>
-        </tr>
-    </table>
-    <div>
-        <h4 id="component-visibility">ComponentVisibility</h4>
-        <hr />
-        <table>
-            <tr>
-                <th>Name</th>
-                <th>Value</th>
-                <th>Description</th>
-            </tr>
-            <tr>
-                <td>Visible</td>
-                <td>0</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>Hidden</td>
-                <td>1</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>Collapsed</td>
-                <td>2</td>
-                <td></td>
-            </tr>
-        </table>
-    </div>
-    <div>
-        <h4>SpinnerSize</h4>
-        <hr />
-        <table>
-            <tr>
-                <th>Name</th>
-                <th>Value</th>
-                <th>Description</th>
-            </tr>
-            <tr>
-                <td>Medium</td>
-                <td>0</td>
-                <td>20px Spinner diameter</td>
-            </tr>
-            <tr>
-                <td>Large</td>
-                <td>1</td>
-                <td>28px Spinner diameter</td>
-            </tr>
-            <tr>
-                <td>Small</td>
-                <td>2</td>
-                <td>16px Spinner diameter</td>
-            </tr>
-            <tr>
-                <td>XSmall</td>
-                <td>3</td>
-                <td>12px Spinner diameter</td>
-            </tr>
-        </table>
-    </div>
-     <div>
-        <h4>SpinnerLabelPosition</h4>
-        <hr />
-        <table>
-            <tr>
-                <th>Name</th>
-                <th>Value</th>
-                <th>Description</th>
-            </tr>
-            <tr>
-                <td>Top</td>
-                <td>0</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>Right</td>
-                <td>1</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>Bottom</td>
-                <td>2</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>Left</td>
-                <td>3</td>
-                <td></td>
-            </tr>
-        </table>
-    </div>
-</div>
+        </SampleContent>
+        <CodeSampleContent>
+            <pre>
+               &lt<span class="dark-green">BitSpinner Size=</span><span class="light-green">"SpinnerSize</span><span>.XSmall"></span><span>&lt/</span><span class="dark-green">BitSpinner</span><span>&gt;</span>
+               &lt<span class="dark-green">BitSpinner Size=</span><span class="light-green">"SpinnerSize</span><span>.Small"></span><span>&lt/</span><span class="dark-green">BitSpinner</span><span>&gt;</span>
+               &lt<span class="dark-green">BitSpinner Size=</span><span class="light-green">"SpinnerSize</span><span>.Medium"></span><span>&lt/</span><span class="dark-green">BitSpinner</span><span>&gt;</span>
+               &lt<span class="dark-green">BitSpinner Size=</span><span class="light-green">"SpinnerSize</span><span>.Large"></span><span>&lt/</span><span class="dark-green">BitSpinner</span><span>&gt;</span>
+            </pre>
+        </CodeSampleContent>
+    </CodeSample>
+    <CodeSample Title="Label positioning" Description="By setting LabelPosition attribute, change position of spinner to bottom, top, left or right..">
+        <SampleContent>
+            <div class="spinner-positioning">
+                <div>
+                    <label>Spinner with label positioned below</label>
+                    <BitSpinner class="m-t-10" LabelPosition="BitSpinnerLabelPosition.Top" Label="I am definitely loading..." />
+                </div>
+                <div>
+                    <label>Spinner with label positioned above</label>
+                    <BitSpinner class="m-t-10" LabelPosition="BitSpinnerLabelPosition.Bottom" Label="Seriously, still loading..." />
+                </div>
+                <div>
+                    <label>Spinner with label positioned to right</label>
+                    <BitSpinner class="m-t-10" LabelPosition="BitSpinnerLabelPosition.Left" Label="Wait, wait..." />
+                </div>
+                <div>
+                    <label>Spinner with label positioned to left</label>
+                    <BitSpinner class="m-t-10" LabelPosition="BitSpinnerLabelPosition.Right" Label="Nope, still loading..." />
+                </div>
+            </div>
+        </SampleContent>
+        <CodeSampleContent>
+            <pre>
+               &lt<span class="dark-green">BitSpinner LabelPosition=</span><span class="light-green">"SpinnerLabelPosition</span><span>.Bottom"</span><span class="dark-green"> Label</span>="I am definitely loading..."><span>&lt/</span><span class="dark-green">BitSpinner</span><span>&gt;</span>
+               &lt<span class="dark-green">BitSpinner LabelPosition=</span><span class="light-green">"SpinnerLabelPosition</span><span>.Top"</span><span class="dark-green"> Label</span>="Seriously, still loading..."><span>&lt/</span><span class="dark-green">BitSpinner</span><span>&gt;</span>
+               &lt<span class="dark-green">BitSpinner LabelPosition=</span><span class="light-green">"SpinnerLabelPosition</span><span>.Right"</span><span class="dark-green"> Label</span>="Wait, wait..."><span>&lt/</span><span class="dark-green">BitSpinner</span><span>&gt;</span>
+               &lt<span class="dark-green">BitSpinner LabelPosition=</span><span class="light-green">"SpinnerLabelPosition</span><span>.Left"</span><span class="dark-green"> Label</span>="Nope, still loading..."><span>&lt/</span><span class="dark-green">BitSpinner</span><span>&gt;</span>
+            </pre>
+        </CodeSampleContent>
+    </CodeSample>
+</ComponentPage>

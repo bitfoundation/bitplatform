@@ -1,14 +1,19 @@
-﻿.spinner-container,
-.spinner-positioning {
+﻿@import "../../../Styles/_shared.scss";
+
+.m-b-15 {
+    margin-bottom: rem(15px);
+}
+
+.spinner-container, .spinner-positioning {
     label {
-        padding: 5px 0px;
-        font-size: 14px;
+        padding: rem(16px) 0;
+        font-size: rem(16px);
     }
 }
 
 .spinner-container {
     label {
-        margin-right: 20px;
+        margin-right: rem(20px);
     }
 
     > div {
@@ -17,7 +22,7 @@
         align-items: center;
 
         > div {
-            margin-left: 20px;
+            margin-left: rem(20px);
         }
     }
 }
@@ -33,7 +38,7 @@
         align-items: center;
 
         &:not(:first-child) {
-            margin-top: 20px;
+            margin-top: rem(20px);
         }
     }
 }
