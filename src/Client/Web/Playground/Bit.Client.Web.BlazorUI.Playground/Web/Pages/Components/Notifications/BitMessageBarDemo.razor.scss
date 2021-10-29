@@ -1,8 +1,8 @@
-﻿.m-l-30 {
-    margin-left: 30px;
+﻿@import "../../../Styles/_shared.scss";
+
+.m-b-10 {
+    margin-bottom: rem(10px);
 }
-.m-l-45 {
-    margin-left: 45px;
-}
+
 
 
