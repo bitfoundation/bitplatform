@@ -684,65 +684,70 @@ footer {
     .bit-tgl-inline-fluent > div {
         margin-top: 0;
     }
-}
 
-.tgl-btn {
-    @include sm {
-        margin-top: rem(10px);
-        width: rem(195px);
+    .bit-pvt {
+        margin-bottom: rem(20px);
+
+        div:nth-child(2) {
+            margin-top: rem(25px);
+        }
     }
-}
 
-.aria-hidden-tgl-btn {
-    @include sm {
-        margin-top: rem(10px);
-        width: rem(239px);
+    .tgl-btn {
+        @include sm {
+            margin-top: rem(10px);
+            width: rem(195px);
+        }
     }
-}
 
-.p-12 .bit-tgl label {
-    padding-bottom: rem(15px);
-}
+    .aria-hidden-tgl-btn {
+        @include sm {
+            margin-top: rem(10px);
+            width: rem(239px);
+        }
+    }
 
-.sample .bit-drp-lbl {
-    padding-bottom: rem(20px);
-}
+    .p-12 .bit-tgl label {
+        padding-bottom: rem(15px);
+    }
 
-/* General */
-.bit-nav-selected-fluent:after {
-    border-left: rem(4px) solid $Violet;
-}
+    .sample .bit-drp-lbl {
+        padding-bottom: rem(20px);
+    }
+    /* General */
+    .bit-nav-selected-fluent:after {
+        border-left: rem(4px) solid $Violet;
+    }
 
-.bit-nav-grp-content {
-    margin-bottom: 0;
-}
+    .bit-nav-grp-content {
+        margin-bottom: 0;
+    }
 
-.bit-sch-box-fluent > div:last-child button {
-    background-color: $White;
-}
+    .bit-sch-box-fluent > div:last-child button {
+        background-color: $White;
+    }
 
-.bit-icon--Clear {
-    padding-right: rem(20px);
-}
+    .bit-icon--Clear {
+        padding-right: rem(20px);
+    }
 
-input.search-input {
-    padding-top: rem(5px);
-}
+    input.search-input {
+        padding-top: rem(5px);
+    }
 
-.bit-icon {
-    height: 0;
-}
+    .bit-icon {
+        height: 0;
+    }
 
-input::-webkit-input-placeholder {
-    color: $DarkBlue;
-    font-size: rem(14px);
-    font-weight: 500;
-}
+    input::-webkit-input-placeholder {
+        color: $DarkBlue;
+        font-size: rem(14px);
+        font-weight: 500;
+    }
 
-::-webkit-scrollbar {
+    ::-webkit-scrollbar {
     width: 0;
 }
-
 /*------------------------common styles-----------------------------------*/
 .container {
     margin: auto;
