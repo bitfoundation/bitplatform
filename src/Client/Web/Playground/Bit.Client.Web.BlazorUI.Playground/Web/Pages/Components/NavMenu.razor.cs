@@ -46,7 +46,8 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components
                 Links = new List<BitNavLinkItem>
                 {
                     new BitNavLinkItem { Name = "DatePicker", Key = "DatePicker", Url="/components/datepicker" },
-                    new BitNavLinkItem { Name= "ColorPicker", Key = "ColorPicker", Url = "/components/colorpickers" }
+                    new BitNavLinkItem { Name= "ColorPicker", Key = "ColorPicker", Url = "/components/colorpickers" },
+                    new BitNavLinkItem { Name= "Carousel", Key = "Carousel", Url = "/components/carousel" }
                 }
             },
             new BitNavLinkItem

@@ -1,0 +1,146 @@
+﻿@page "/components/carousel"
+
+
+<h2>Carousel</h2>
+
+<div class="card">
+    <p class="desc">Carousel (Carousel slide-show) let people sehow their items in seperate slides from two or more items.</p>
+</div>
+
+<h2>Usage</h2>
+<div class="wrapper">
+    <div class="card">
+        <h3>Caroulse & Carousel Item</h3>
+        <div class="desc">
+            <p>
+                To create a Carousel you can use a Carousel component.
+            </p>
+        </div>
+
+        <BitPivot>
+            <BitPivotItem HeaderText="Example" IconName="ViewList">
+                <div>
+                    <br />
+                    <BitCarousel>
+                        <BitCarouselItem>
+                            <div class="numbertext">1 / 4</div>
+                            <img src="/images/carousel/img1.jpg" style="width:100%">
+                            <div class="text">Aurora</div>
+                        </BitCarouselItem>
+                        <BitCarouselItem>
+                            <div class="numbertext">2 / 4</div>
+                            <img src="/images/carousel/img2.jpg" style="width:100%">
+                            <div class="text">Beautiful mountain</div>
+                        </BitCarouselItem> <BitCarouselItem>
+                            <div class="numbertext">3 / 4</div>
+                            <img src="/images/carousel/img3.jpg" style="width:100%">
+                            <div class="text">Forest in the valley</div>
+                        </BitCarouselItem> <BitCarouselItem>
+                            <div class="numbertext">4 / 4</div>
+                            <img src="/images/carousel/img4.jpg" style="width:100%">
+                            <div class="text">Road among the mountains</div>
+                        </BitCarouselItem>
+                    </BitCarousel>
+                </div>
+            </BitPivotItem>
+            <BitPivotItem HeaderText="Code" IconName="Source">
+                <div>
+                    <div>
+                        <p>&lt<span class="dark-green">BitCarouselItem</span>></p>
+                        <div>&lt<span>div</span> class="numbertext">1/4 &lt/<span>div</span>></div>
+                        <p class="p-l-20">&lt<span>img </span><span>src</span>="/images/carousel/img1.jpg"<span> style</span>="width:100%" /></p>
+                        <div>&lt<span>div</span> class="text">Aurora &lt/<span>div</span>></div>
+                        <p class="p-l-20">&lt/<span class="dark-green">BitCarouselItem</span>></p>
+                    </div>
+                   <div>
+                        <p>&lt<span class="dark-green">BitCarouselItem</span>></p>
+                        <div>&lt<span>div</span> class="numbertext">2/4 &lt/<span>div</span>></div>
+                        <p class="p-l-20">&lt<span>img </span><span>src</span>="/images/carousel/img2.jpg"<span> style</span>="width:100%" /></p>
+                        <div>&lt<span>div</span> class="text">Beautiful mountain &lt<span>/div</span>></div>
+                        <p class="p-l-20">&lt/<span class="dark-green">BitCarouselItem</span>></p>
+                    </div>
+                    <div>
+                        <p>&lt<span class="dark-green">BitCarouselItem</span>></p>
+                        <div>&lt<span>div</span> class="numbertext">3/4 &lt/<span>div</span>></div>
+                        <p class="p-l-20">&lt<span>img </span><span>src</span>="/images/carousel/img3.jpg"<span> style</span>="width:100%" /></p>
+                        <div>&lt<span>div</span> class="text">Forest in the valley &lt/<span>div</span>></div>
+                        <p class="p-l-20">&lt/<span class="dark-green">BitCarouselItem</span>></p>
+                    </div>
+                    <div>
+                        <p>&lt<span class="dark-green">BitCarouselItem</span>></p>
+                        <div>&lt<span>div</span> class="numbertext">4/4 &lt/<span>div</span>></div>
+                        <p class="p-l-20">&lt<span>img </span><span>src</span>="/images/carousel/img4.jpg"<span> style</span>="width:100%" /></p>
+                        <div>&lt<span>div</span> class="text">Road among the mountains &lt/<span>div</span>></div>
+                        <p class="p-l-20">&lt/<span class="dark-green">BitCarouselItem</span>></p>
+                    </div>
+                    <p> &lt/<span class="dark-green">BitCarousel</span>></p>
+                </div>
+            </BitPivotItem>
+        </BitPivot>
+    </div>
+</div>
+<h2>Implementation</h2>
+<div class="card">
+    <table>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Default value</th>
+            <th>Description</th>
+        </tr>
+        <tr>
+            <td>AriaLabel</td>
+            <td>string</td>
+            <td></td>
+            <td>The aria-label of the control for the benefit of screen readers.</td>
+        </tr>
+        <tr>
+            <td>Class</td>
+            <td>string</td>
+            <td></td>
+            <td>Custom CSS class for the root element of the component.</td>
+        </tr>
+        <tr>
+            <td>IsSlideShow</td>
+            <td>bool</td>
+            <td>false</td>
+            <td>If set to true the carousel item after last one show the first item.</td>
+        </tr>
+        <tr>
+            <td>ChildContent</td>
+            <td>BitCarouselItem</td>
+            <td></td>
+            <td>Item in each slide in carousel.</td>
+        </tr>
+        <tr>
+            <td>SelectedKey</td>
+            <td>string</td>
+            <td></td>
+            <td>The selected key of carousel item. selected key show as first item</td>
+        </tr>
+    </table>
+    <h4 id="component-visibility">ComponentVisibility</h4>
+    <hr />
+    <table>
+        <tr>
+            <th>Name</th>
+            <th>Value</th>
+            <th>Description</th>
+        </tr>
+        <tr>
+            <td>Visible</td>
+            <td>0</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>Hidden</td>
+            <td>1</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>Collapsed</td>
+            <td>2</td>
+            <td></td>
+        </tr>
+    </table>
+</div>
