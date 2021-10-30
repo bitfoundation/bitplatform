@@ -1,569 +1,252 @@
 ﻿@page "/components/basiclist"
 
-<h2>Basic List</h2>
+@using Bit.Client.Web.BlazorUI.Playground.Web.Components
 
-<div class="card">
-    <p class="desc">BitBasicList provides a base component for rendering large sets of items. It’s agnostic of layout, the tile component used, and selection management.</p>
-</div>
-
-<h2>Usage</h2>
-<div class="wrapper">
-    <div class="card">
-        <h3>Basic List using virtualization</h3>
-        <BitPivot>
-            <BitPivotItem HeaderText="Example" IconName="ViewList">
-                <BitBasicList Items="People[0]" Virtualize="true" Style="border: 1px #a19f9d solid; border-radius: 3px; width: 90%; margin: auto;">
-                    <RowTemplate Context="person">
-                        <div style="border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;">
-                            <img src="https://picsum.photos/100/100?random=@(person.Id)">
-                            <div style="margin-left:3%; display: inline-block;">
-                                <p>Id: <strong>@person.Id</strong></p>
-                                <p>Full Name: <strong>@person.FirstName @person.LastName</strong></p>
-                                <p>Job: <strong>@person.Job</strong></p>
-                            </div>
-                        </div>
-                    </RowTemplate>
-                </BitBasicList>
-            </BitPivotItem>
-            <BitPivotItem HeaderText="Code" IconName="Source">
-                <p>
-                    &lt<span class="dark-green">BitBasicList Items</span>="People[0]" <span class="dark-green">Virtualize</span>="<span class="light-blue">true</span>" <span class="dark-green">Style</span>="border: 1px #a19f9d solid; border-radius: 3px; width: 90%; margin: auto;">
-                    <br />
-                    <span class="m-l-30">&lt<span class="dark-green">RowTemplate Context</span>="person"></span>
-                    <br />
-                    <span class="m-l-45">&lt<span class="light-blue">div style</span>="margin-left:3%; display: inline-block;"></span>
-                    <br />
-                    <span class="m-l-60">&lt<span class="light-blue">img src</span>="<span class="light-blue">https://picsum.photos/100/100?random=<span class="light-yellow-bg">&#64;</span>(person.Id)</span>"></span>
-                    <br />
-                    <span class="m-l-60">&lt<span class="light-blue">div style</span>="margin-left:3%; display: inline-block;"></span>
-                    <br />
-                    <span class="m-l-75">&lt<span class="light-blue">p</span>>Id: &lt<span class="light-blue">strong</span>><span class="light-yellow-bg">&#64;</span>person.Id<span>&lt/</span><span class="light-blue">strong</span>><span>&lt/</span><span class="light-blue">p</span><span>&gt;</span></span>
-                    <br />
-                    <span class="m-l-75">&lt<span class="light-blue">p</span>>Full Name: &lt<span class="light-blue">strong</span>><span class="light-yellow-bg">&#64;</span>person.FirstName <span class="light-yellow-bg">&#64;</span>person.LastName<span>&lt/</span><span class="light-blue">strong</span>><span>&lt/</span><span class="light-blue">p</span><span>&gt;</span></span>
-                    <br />
-                    <span class="m-l-75">&lt<span class="light-blue">p</span>>Job: &lt<span class="light-blue">strong</span>><span class="light-yellow-bg">&#64;</span>person.Job<span>&lt/</span><span class="light-blue">strong</span>><span>&lt/</span><span class="light-blue">p</span><span>&gt;</span></span>
-                    <br />
-                    <span class="m-l-60">&lt<span class="light-blue">div</span><span>&gt;</span></span>
-                    <br />
-                    <span class="m-l-30"><span>&lt/</span><span class="dark-green">RowTemplate</span><span>&gt;</span></span>
-                    <br />
-                    <span>&lt/</span><span class="dark-green">BitBasicList</span><span>&gt;</span>
-                </p>
-                <div>
-                    <span class="light-yellow-bg">&#64;code {</span>
-                    <p>
-                        <span>private readonly <span class="light-green">List&ltPerson></span>[] People = <span class="light-blue">new </span><span class="dark-green">List&ltPerson></span>[2];</span>
-                    </p>
-                    <div class="m-t-10">
-                        <span class="light-blue">protected override void </span><span class="dark-yellow">OnInitialized</span>()
-                        <br />
-                        <span>{</span>
-                        <br />
-                        <span class="m-l-30"><span class="light-green">Person</span><span class="light-blue"> person</span> = <span class=light-blue>new</span>();</span>
-                        <br /><br />
-                        <span class="m-l-30">People[0] = <span class="light-blue">person</span>.<span class="dark-yellow">GetPeople</span>(8000);</span>
-                        <br />
-                        <span class="m-l-30">People[1] = <span class="light-blue">person</span>.<span class="dark-yellow">GetPeople</span>(100);</span>
-                        <br /><br />
-                        <span class="m-l-30"><span class="light-blue">base</span>.<span class="dark-yellow">OnInitialized</span>();</span>
-                        <br />
-                        <span>}</span>
-                    </div>
-                    <div class="m-t-10">
-                        <span class="light-blue">public class </span><span class="light-green">Person</span>()
-                        <br />
-                        <span>{</span>
-                        <br />
-                        <span class="m-l-30"><span class="light-blue">public int</span> Id {<span class="light-blue"> get</span>; <span class=light-blue> set</span>; }</span>
-                        <br />
-                        <span class="m-l-30"><span class="light-blue">public int</span> FirstName {<span class=light-blue> get</span>; <span class=light-blue> set</span>; }</span>
-                        <br />
-                        <span class="m-l-30"><span class="light-blue">public int</span> LastName {<span class=light-blue> get</span>; <span class=light-blue> set</span>; }</span>
-                        <br />
-                        <span class="m-l-30"><span class="light-blue">public int</span> Job {<span class=light-blue> get</span>; <span class=light-blue> set</span>; }</span>
-                        <br />
-                        <span>}</span>
-                    </div>
-                    <div class="m-t-10">
-                        <span class="light-blue">public </span><span class="light-green"> List&ltPerson></span><span class="dark-yellow"> GetPeople </span>(<span class="light-blue">int </span>itemCount)
-                        <br />
-                        <span>{</span>
-                        <br />
-                        <span class="m-l-30"><span class="light-green">List&ltPerson></span><span class="light-blue"> person</span> = <span class=light-blue>new</span>();</span>
-                        <br /><br />
-                        <span class="m-l-30"><span class="light-purple">for </span>(<span class="light-blue">int</span> i = 0; i &lt itemCount; i++)</span>
-                        <br />
-                        <span class="m-l-30">{</span>
-                        <br />
-                        <span class="m-l-45"><span class="light-blue">people</span>.<span class="dark-yellow">Add</span> (<span class="light-blue">new </span><span class="light-green">Person</span></span>
-                        <br />
-                        <span class="m-l-45">{</span>
-                        <br />
-                        <span class="m-l-60">Id = i + 1,</span>
-                        <br />
-                        <span class="m-l-60">FirstName = <span class="dark-orange">$"Person</span> {i + 1}<span class="dark-orange">"</span>,</span>
-                        <br />
-                        <span class="m-l-60">LastName = <span class="dark-orange">$"Person Family</span> {i + 1}<span class="dark-orange">"</span>,</span>
-                        <br />
-                        <span class="m-l-60">Job = <span class="dark-orange">$"Programmer</span> {i + 1}<span class="dark-orange">"</span></span>
-                        <br />
-                        <span class="m-l-45">});</span>
-                        <br />
-                        <span class="m-l-30">}</span>
-                        <br />
-                        <span>}</span>
-                    </div>
-                </div>
-            </BitPivotItem>
-        </BitPivot>
-    </div>
-    <div class="card">
-        <h3>Basic List without virtualization</h3>
-        <BitPivot>
-            <BitPivotItem HeaderText="Example" IconName="ViewList">
-                <BitBasicList Items="People[1]" Virtualize="false" Style="border: 1px #a19f9d solid; border-radius: 3px; width: 90%; margin: auto;">
-                    <RowTemplate Context="person">
-                        <div style="border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;">
+<ComponentPage ComponentName="Basic List" OverviewDesc="BitBasicList provides a base component for rendering large sets of items. It’s agnostic of layout, the tile component used, and selection management."
+               ComponentParameters="componentParameters">
+    <CodeSample Title="BitBasicList" Description="">
+        <SampleContent>
+            <BitBasicList Class="how-to-use" Items="People[0]" Virtualize="true" Style="border: 1px #a19f9d solid; border-radius: 3px; width: 90%; margin: auto;">
+                <RowTemplate Context="person">
+                    <div style="border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;">
+                        <img src="https://picsum.photos/100/100?random=@(person.Id)">
+                        <div style="margin-left:3%; display: inline-block;">
                             <p>Id: <strong>@person.Id</strong></p>
                             <p>Full Name: <strong>@person.FirstName @person.LastName</strong></p>
                             <p>Job: <strong>@person.Job</strong></p>
                         </div>
-                    </RowTemplate>
-                </BitBasicList>
-            </BitPivotItem>
-            <BitPivotItem HeaderText="Code" IconName="Source">
-                <p>
-                    &lt<span class="dark-green">BitBasicList Items</span>="People[1]" <span class="dark-green">Virtualize</span>="<span class="light-blue">false</span>" <span class="dark-green">Style</span>="border: 1px #a19f9d solid; border-radius: 3px; width: 90%; margin: auto;">
-                    <br />
-                    <span class="m-l-30">&lt<span class="dark-green">RowTemplate Context</span>="person"></span>
-                    <br />
-                    <span class="m-l-45">&lt<span class="light-blue">div style</span>="border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;"></span>
-                    <br />
-                    <span class="m-l-60">&lt<span class="light-blue">div style</span>="margin-left:3%; display: inline-block;"></span>
-                    <br />
-                    <span class="m-l-75">&lt<span class="light-blue">p</span>>Id: &lt<span class="light-blue">strong</span>><span class="light-yellow-bg">&#64;</span>person.Id<span>&lt/</span><span class="light-blue">strong</span>><span>&lt/</span><span class="light-blue">p</span><span>&gt;</span></span>
-                    <br />
-                    <span class="m-l-75">&lt<span class="light-blue">p</span>>Full Name: &lt<span class="light-blue">strong</span>><span class="light-yellow-bg">&#64;</span>person.FirstName <span class="light-yellow-bg">&#64;</span>person.LastName<span>&lt/</span><span class="light-blue">strong</span>><span>&lt/</span><span class="light-blue">p</span><span>&gt;</span></span>
-                    <br />
-                    <span class="m-l-75">&lt<span class="light-blue">p</span>>Job: &lt<span class="light-blue">strong</span>><span class="light-yellow-bg">&#64;</span>person.Job<span>&lt/</span><span class="light-blue">strong</span>><span>&lt/</span><span class="light-blue">p</span><span>&gt;</span></span>
-                    <br />
-                    <span class="m-l-60">&lt<span class="light-blue">div</span><span>&gt;</span></span>
-                    <br />
-                    <span class="m-l-30"><span>&lt/</span><span class="dark-green">RowTemplate</span><span>&gt;</span></span>
-                    <br />
-                    <span>&lt/</span><span class="dark-green">BitBasicList</span><span>&gt;</span>
-                </p>
-                <div>
-                    <span class="light-yellow-bg">&#64;code {</span>
-                    <p>
-                        <span>private readonly <span class="light-green">List&ltPerson></span>[] People = <span class="light-blue">new </span><span class="dark-green">List&ltPerson></span>[2];</span>
-                    </p>
-                    <div class="m-t-10">
-                        <span class="light-blue">protected override void </span><span class="dark-yellow">OnInitialized</span>()
-                        <br />
-                        <span>{</span>
-                        <br />
-                        <span class="m-l-30"><span class="light-green">Person</span><span class="light-blue"> person</span> = <span class=light-blue>new</span>();</span>
-                        <br /><br />
-                        <span class="m-l-30">People[0] = <span class="light-blue">person</span>.<span class="dark-yellow">GetPeople</span>(8000);</span>
-                        <br />
-                        <span class="m-l-30">People[1] = <span class="light-blue">person</span>.<span class="dark-yellow">GetPeople</span>(100);</span>
-                        <br /><br />
-                        <span class="m-l-30"><span class="light-blue">base</span>.<span class="dark-yellow">OnInitialized</span>();</span>
-                        <br />
-                        <span>}</span>
                     </div>
-                    <div class="m-t-10">
-                        <span class="light-blue">public class </span><span class="light-green">Person</span>()
-                        <br />
-                        <span>{</span>
-                        <br />
-                        <span class="m-l-30"><span class="light-blue">public int</span> Id {<span class="light-blue"> get</span>; <span class=light-blue> set</span>; }</span>
-                        <br />
-                        <span class="m-l-30"><span class="light-blue">public int</span> FirstName {<span class=light-blue> get</span>; <span class=light-blue> set</span>; }</span>
-                        <br />
-                        <span class="m-l-30"><span class="light-blue">public int</span> LastName {<span class=light-blue> get</span>; <span class=light-blue> set</span>; }</span>
-                        <br />
-                        <span class="m-l-30"><span class="light-blue">public int</span> Job {<span class=light-blue> get</span>; <span class=light-blue> set</span>; }</span>
-                        <br />
-                        <span>}</span>
+                </RowTemplate>
+            </BitBasicList>
+        </SampleContent>
+        <CodeSampleContent>
+            <pre>
+                &lt<span class="dark-green">BitBasicList Items</span>="People[0]" <span class="dark-green">Virtualize</span>="<span class="light-blue">true</span>" <span class="dark-green">Style</span>="border: 1px #a19f9d solid; border-radius: 3px; width: 90%; margin: auto;">
+                <span>&lt<span class="dark-green">RowTemplate Context</span>="person"></span>
+                <span>&lt<span class="light-blue">div style</span>="margin-left:3%; display: inline-block;"></span>
+                <span>&lt<span class="light-blue">img src</span>="<span class="light-blue">https://picsum.photos/100/100?random=<span class="light-yellow-bg">&#64;</span>(person.Id)</span>"></span>
+                <span>&lt<span class="light-blue">div style</span>="margin-left:3%; display: inline-block;"></span>
+                <span>&lt<span class="light-blue">p</span>>Id: &lt<span class="light-blue">strong</span>><span class="light-yellow-bg">&#64;</span>person.Id<span>&lt/</span><span class="light-blue">strong</span>><span>&lt/</span><span class="light-blue">p</span><span>&gt;</span></span>
+                <span>&lt<span class="light-blue">p</span>>Full Name: &lt<span class="light-blue">strong</span>><span class="light-yellow-bg">&#64;</span>person.FirstName <span class="light-yellow-bg">&#64;</span>person.LastName<span>&lt/</span><span class="light-blue">strong</span>><span>&lt/</span><span class="light-blue">p</span><span>&gt;</span></span>
+                <span>&lt<span class="light-blue">p</span>>Job: &lt<span class="light-blue">strong</span>><span class="light-yellow-bg">&#64;</span>person.Job<span>&lt/</span><span class="light-blue">strong</span>><span>&lt/</span><span class="light-blue">p</span><span>&gt;</span></span>
+                <span>&lt<span class="light-blue">div</span><span>&gt;</span></span>
+                <span><span>&lt/</span><span class="dark-green">RowTemplate</span><span>&gt;</span></span>
+                <span>&lt/</span><span class="dark-green">BitBasicList</span><span>&gt;</span>
+                <span class="light-yellow-bg">&#64;code {</span>
+                <span>private readonly <span class="light-green">List&ltPerson></span>[] People = <span class="light-blue">new </span><span class="dark-green">List&ltPerson></span>[2];</span>
+                <span class="light-blue">protected override void </span><span class="dark-yellow">OnInitialized</span>()
+                <span>{</span>
+                <span><span class="light-green">Person</span><span class="light-blue"> person</span> = <span class=light-blue>new</span>();</span>
+                <span>People[0] = <span class="light-blue">person</span>.<span class="dark-yellow">GetPeople</span>(8000);</span>
+                <span>People[1] = <span class="light-blue">person</span>.<span class="dark-yellow">GetPeople</span>(100);</span>
+                <span><span class="light-blue">base</span>.<span class="dark-yellow">OnInitialized</span>();</span>
+                <span>}</span>
+                <span class="light-blue">public class </span><span class="light-green">Person</span>()
+                <span>{</span>
+                <span><span class="light-blue">public int</span> Id {<span class="light-blue"> get</span>; <span class=light-blue> set</span>; }</span>
+                <span><span class="light-blue">public int</span> FirstName {<span class=light-blue> get</span>; <span class=light-blue> set</span>; }</span>
+                <span><span class="light-blue">public int</span> LastName {<span class=light-blue> get</span>; <span class=light-blue> set</span>; }</span>
+                <span><span class="light-blue">public int</span> Job {<span class=light-blue> get</span>; <span class=light-blue> set</span>; }</span>
+                <span>}</span>
+                <span class="light-blue">public </span><span class="light-green"> List&ltPerson></span><span class="dark-yellow"> GetPeople </span>(<span class="light-blue">int </span>itemCount)
+                <span>{</span>
+                <span><span class="light-green">List&ltPerson></span><span class="light-blue"> person</span> = <span class=light-blue>new</span>();</span>
+                <span><span class="light-purple">for </span>(<span class="light-blue">int</span> i = 0; i &lt itemCount; i++)</span>
+                <span>{</span>
+                <span><span class="light-blue">people</span>.<span class="dark-yellow">Add</span> (<span class="light-blue">new </span><span class="light-green">Person</span></span>
+                <span>{</span>
+                <span>Id = i + 1,</span>
+                <span>FirstName = <span class="dark-orange">$"Person</span> {i + 1}<span class="dark-orange">"</span>,</span>
+                <span>LastName = <span class="dark-orange">$"Person Family</span> {i + 1}<span class="dark-orange">"</span>,</span>
+                <span>Job = <span class="dark-orange">$"Programmer</span> {i + 1}<span class="dark-orange">"</span></span>
+                <span>});</span>
+                <span>}</span>
+                <span>}</span>
+            </pre>
+        </CodeSampleContent>
+    </CodeSample>
+    <CodeSample Title="Basic List without virtualization" Description="">
+        <SampleContent>
+            <BitBasicList Class="how-to-use" Items="People[1]" Virtualize="false" Style="border: 1px #a19f9d solid; border-radius: 3px; width: 90%; margin: auto;">
+                <RowTemplate Context="person">
+                    <div style="border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;">
+                        <p>Id: <strong>@person.Id</strong></p>
+                        <p>Full Name: <strong>@person.FirstName @person.LastName</strong></p>
+                        <p>Job: <strong>@person.Job</strong></p>
                     </div>
-                    <div class="m-t-10">
-                        <span class="light-blue">public </span><span class="light-green"> List&ltPerson></span><span class="dark-yellow"> GetPeople </span>(<span class="light-blue">int </span>itemCount)
-                        <br />
-                        <span>{</span>
-                        <br />
-                        <span class="m-l-30"><span class="light-green">List&ltPerson></span><span class="light-blue"> person</span> = <span class=light-blue>new</span>();</span>
-                        <br /><br />
-                        <span class="m-l-30"><span class="light-purple">for </span>(<span class="light-blue">int</span> i = 0; i &lt itemCount; i++)</span>
-                        <br />
-                        <span class="m-l-30">{</span>
-                        <br />
-                        <span class="m-l-45"><span class="light-blue">people</span>.<span class="dark-yellow">Add</span> (<span class="light-blue">new </span><span class="light-green">Person</span></span>
-                        <br />
-                        <span class="m-l-45">{</span>
-                        <br />
-                        <span class="m-l-60">Id = i + 1,</span>
-                        <br />
-                        <span class="m-l-60">FirstName = <span class="dark-orange">$"Person</span> {i + 1}<span class="dark-orange">"</span>,</span>
-                        <br />
-                        <span class="m-l-60">LastName = <span class="dark-orange">$"Person Family</span> {i + 1}<span class="dark-orange">"</span>,</span>
-                        <br />
-                        <span class="m-l-60">Job = <span class="dark-orange">$"Programmer</span> {i + 1}<span class="dark-orange">"</span></span>
-                        <br />
-                        <span class="m-l-45">});</span>
-                        <br />
-                        <span class="m-l-30">}</span>
-                        <br />
-                        <span>}</span>
+                </RowTemplate>
+            </BitBasicList>
+        </SampleContent>
+        <CodeSampleContent>
+            <pre>
+                &lt<span class="dark-green">BitBasicList Items</span>="People[1]" <span class="dark-green">Virtualize</span>="<span class="light-blue">false</span>" <span class="dark-green">Style</span>="border: 1px #a19f9d solid; border-radius: 3px; width: 90%; margin: auto;">
+                <span>&lt<span class="dark-green">RowTemplate Context</span>="person"></span>
+                <span>&lt<span class="light-blue">div style</span>="border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;"></span>
+                <span>&lt<span class="light-blue">div style</span>="margin-left:3%; display: inline-block;"></span>
+                <span>&lt<span class="light-blue">p</span>>Id: &lt<span class="light-blue">strong</span>><span class="light-yellow-bg">&#64;</span>person.Id<span>&lt/</span><span class="light-blue">strong</span>><span>&lt/</span><span class="light-blue">p</span><span>&gt;</span></span>
+                <span>&lt<span class="light-blue">p</span>>Full Name: &lt<span class="light-blue">strong</span>><span class="light-yellow-bg">&#64;</span>person.FirstName <span class="light-yellow-bg">&#64;</span>person.LastName<span>&lt/</span><span class="light-blue">strong</span>><span>&lt/</span><span class="light-blue">p</span><span>&gt;</span></span>
+                <span>&lt<span class="light-blue">p</span>>Job: &lt<span class="light-blue">strong</span>><span class="light-yellow-bg">&#64;</span>person.Job<span>&lt/</span><span class="light-blue">strong</span>><span>&lt/</span><span class="light-blue">p</span><span>&gt;</span></span>
+                <span>&lt<span class="light-blue">div</span><span>&gt;</span></span>
+                <span><span>&lt/</span><span class="dark-green">RowTemplate</span><span>&gt;</span></span>
+                <span>&lt/</span><span class="dark-green">BitBasicList</span><span>&gt;</span>
+                <span class="light-yellow-bg">&#64;code {</span>
+                <span>private readonly <span class="light-green">List&ltPerson></span>[] People = <span class="light-blue">new </span><span class="dark-green">List&ltPerson></span>[2];</span>
+                <span class="light-blue">protected override void </span><span class="dark-yellow">OnInitialized</span>()
+                <span>{</span>
+                <span><span class="light-green">Person</span><span class="light-blue"> person</span> = <span class=light-blue>new</span>();</span>
+                <span>People[0] = <span class="light-blue">person</span>.<span class="dark-yellow">GetPeople</span>(8000);</span>
+                <span>People[1] = <span class="light-blue">person</span>.<span class="dark-yellow">GetPeople</span>(100);</span>
+                <span><span class="light-blue">base</span>.<span class="dark-yellow">OnInitialized</span>();</span>
+                <span>}</span>
+                <span class="light-blue">public class </span><span class="light-green">Person</span>()
+                <span>{</span>
+                <span><span class="light-blue">public int</span> Id {<span class="light-blue"> get</span>; <span class=light-blue> set</span>; }</span>
+                <span><span class="light-blue">public int</span> FirstName {<span class=light-blue> get</span>; <span class=light-blue> set</span>; }</span>
+                <span><span class="light-blue">public int</span> LastName {<span class=light-blue> get</span>; <span class=light-blue> set</span>; }</span>
+                <span><span class="light-blue">public int</span> Job {<span class=light-blue> get</span>; <span class=light-blue> set</span>; }</span>
+                <span>}</span>
+                <span class="light-blue">public </span><span class="light-green"> List&ltPerson></span><span class="dark-yellow"> GetPeople </span>(<span class="light-blue">int </span>itemCount)
+                <span>{</span>
+                <span><span class="light-green">List&ltPerson></span><span class="light-blue"> person</span> = <span class=light-blue>new</span>();</span>
+                <span><span class="light-purple">for </span>(<span class="light-blue">int</span> i = 0; i &lt itemCount; i++)</span>
+                <span>{</span>
+                <span><span class="light-blue">people</span>.<span class="dark-yellow">Add</span> (<span class="light-blue">new </span><span class="light-green">Person</span></span>
+                <span>{</span>
+                <span>Id = i + 1,</span>
+                <span>FirstName = <span class="dark-orange">$"Person</span> {i + 1}<span class="dark-orange">"</span>,</span>
+                <span>LastName = <span class="dark-orange">$"Person Family</span> {i + 1}<span class="dark-orange">"</span>,</span>
+                <span>Job = <span class="dark-orange">$"Programmer</span> {i + 1}<span class="dark-orange">"</span></span>
+                <span>});</span>
+                <span>}</span>
+                <span>}</span>
+            </pre>
+        </CodeSampleContent>
+    </CodeSample>
+    <CodeSample Title="Basic List with custom role and class" Description="">
+        <SampleContent>
+            <BitBasicList Items="People[0]" Virtualize="true" Role="list" Class="lst-custom-style how-to-use" Style="border: 1px #a19f9d solid; border-radius: 3px; width: 90%; margin: auto;">
+                <RowTemplate Context="person">
+                    <div class="lst3-list-item">
+                        <span>Id: <strong>@person.Id</strong></span>
+                        <span>Full Name: <strong>@person.FirstName</strong></span>
+                        <span>Job: <strong>@person.Job</strong></span>
                     </div>
-                </div>
-            </BitPivotItem>
-        </BitPivot>
-    </div>
-    <div class="card">
-        <h3>Basic List with custom role and class</h3>
-        <BitPivot>
-            <BitPivotItem HeaderText="Example" IconName="ViewList">
-                <BitBasicList Items="People[0]" Virtualize="true" Role="list" Class="lst-custom-style" Style="border: 1px #a19f9d solid; border-radius: 3px; width: 90%; margin: auto;">
-                    <RowTemplate Context="person">
-                        <div class="lst3-list-item">
-                            <span>Id: <strong>@person.Id</strong></span>
-                            <span>Full Name: <strong>@person.FirstName</strong></span>
-                            <span>Job: <strong>@person.Job</strong></span>
-                        </div>
-                    </RowTemplate>
-                </BitBasicList>
-            </BitPivotItem>
-            <BitPivotItem HeaderText="Code" IconName="Source">
-                <p>
-                    &lt<span class="dark-green">BitBasicList Items</span>="People[0]" <span class="dark-green">Virtualize</span>="<span class="light-blue">true</span>" <span class="dark-green">Role</span>="list" <span class="dark-green">Class</span>="lst-custom-style" <span class="dark-green">Style</span>="border: 1px #a19f9d solid; border-radius: 3px; width: 90%; margin: auto;">
-                    <br />
-                    <span class="m-l-30">&lt<span class="dark-green">RowTemplate Context</span>="person"></span>
-                    <br />
-                    <span class="m-l-45">&lt<span class="light-blue">div class</span>="lst3-list-item"></span>
-                    <br />
-                    <span class="m-l-60">&lt<span class="light-blue">span</span>>Id: &lt<span class="light-blue">strong</span>><span class="light-yellow-bg">&#64;</span>person.Id<span>&lt/</span><span class="light-blue">strong</span>><span>&lt/</span><span class="light-blue">span</span><span>&gt;</span></span>
-                    <br />
-                    <span class="m-l-60">&lt<span class="light-blue">span</span>>Full Name: &lt<span class="light-blue">strong</span>><span class="light-yellow-bg">&#64;</span>person.FirstName <span class="light-yellow-bg">&#64;</span>person.LastName<span>&lt/</span><span class="light-blue">strong</span>><span>&lt/</span><span class="light-blue">span</span><span>&gt;</span></span>
-                    <br />
-                    <span class="m-l-60">&lt<span class="light-blue">span</span>>Job: &lt<span class="light-blue">strong</span>><span class="light-yellow-bg">&#64;</span>person.Job<span>&lt/</span><span class="light-blue">strong</span>><span>&lt/</span><span class="light-blue">span</span><span>&gt;</span></span>
-                    <br />
-                    <span class="m-l-45">&lt<span class="light-blue">div</span><span>&gt;</span></span>
-                    <br />
-                    <span class="m-l-30"><span>&lt/</span><span class="dark-green">RowTemplate</span><span>&gt;</span></span>
-                    <br />
-                    <span>&lt/</span><span class="dark-green">BitBasicList</span><span>&gt;</span>
-                </p>
-                <div>
-                    <span class="light-yellow-bg">&#64;code {</span>
-                    <p>
-                        <span>private readonly <span class="light-green">List&ltPerson></span>[] People = <span class="light-blue">new </span><span class="dark-green">List&ltPerson></span>[2];</span>
-                    </p>
-                    <div class="m-t-10">
-                        <span class="light-blue">protected override void </span><span class="dark-yellow">OnInitialized</span>()
-                        <br />
-                        <span>{</span>
-                        <br />
-                        <span class="m-l-30"><span class="light-green">Person</span><span class="light-blue"> person</span> = <span class=light-blue>new</span>();</span>
-                        <br /><br />
-                        <span class="m-l-30">People[0] = <span class="light-blue">person</span>.<span class="dark-yellow">GetPeople</span>(8000);</span>
-                        <br />
-                        <span class="m-l-30">People[1] = <span class="light-blue">person</span>.<span class="dark-yellow">GetPeople</span>(100);</span>
-                        <br /><br />
-                        <span class="m-l-30"><span class="light-blue">base</span>.<span class="dark-yellow">OnInitialized</span>();</span>
-                        <br />
-                        <span>}</span>
+                </RowTemplate>
+            </BitBasicList>
+        </SampleContent>
+        <CodeSampleContent>
+            <pre>
+                &lt<span class="dark-green">BitBasicList Items</span>="People[0]" <span class="dark-green">Virtualize</span>="<span class="light-blue">true</span>" <span class="dark-green">Role</span>="list" <span class="dark-green">Class</span>="lst-custom-style" <span class="dark-green">Style</span>="border: 1px #a19f9d solid; border-radius: 3px; width: 90%; margin: auto;">
+                <span>&lt<span class="dark-green">RowTemplate Context</span>="person"></span>
+                <span>&lt<span class="light-blue">div class</span>="lst3-list-item"></span>
+                <span>&lt<span class="light-blue">span</span>>Id: &lt<span class="light-blue">strong</span>><span class="light-yellow-bg">&#64;</span>person.Id<span>&lt/</span><span class="light-blue">strong</span>><span>&lt/</span><span class="light-blue">span</span><span>&gt;</span></span>
+                <span>&lt<span class="light-blue">span</span>>Full Name: &lt<span class="light-blue">strong</span>><span class="light-yellow-bg">&#64;</span>person.FirstName <span class="light-yellow-bg">&#64;</span>person.LastName<span>&lt/</span><span class="light-blue">strong</span>><span>&lt/</span><span class="light-blue">span</span><span>&gt;</span></span>
+                <span>&lt<span class="light-blue">span</span>>Job: &lt<span class="light-blue">strong</span>><span class="light-yellow-bg">&#64;</span>person.Job<span>&lt/</span><span class="light-blue">strong</span>><span>&lt/</span><span class="light-blue">span</span><span>&gt;</span></span>
+                <span>&lt<span class="light-blue">div</span><span>&gt;</span></span>
+                <span><span>&lt/</span><span class="dark-green">RowTemplate</span><span>&gt;</span></span>
+                <span>&lt/</span><span class="dark-green">BitBasicList</span><span>&gt;</span>
+                <span class="light-yellow-bg">&#64;code {</span>
+                <span>private readonly <span class="light-green">List&ltPerson></span>[] People = <span class="light-blue">new </span><span class="dark-green">List&ltPerson></span>[2];</span>
+                <span class="light-blue">protected override void </span><span class="dark-yellow">OnInitialized</span>()
+                <span>{</span>
+                <span><span class="light-green">Person</span><span class="light-blue"> person</span> = <span class=light-blue>new</span>();</span>
+                <span>People[0] = <span class="light-blue">person</span>.<span class="dark-yellow">GetPeople</span>(8000);</span>
+                <span>People[1] = <span class="light-blue">person</span>.<span class="dark-yellow">GetPeople</span>(100);</span>
+                <span><span class="light-blue">base</span>.<span class="dark-yellow">OnInitialized</span>();</span>
+                <span>}</span>
+                <span class="light-blue">public class </span><span class="light-green">Person</span>()
+                <span>{</span>
+                <span><span class="light-blue">public int</span> Id {<span class="light-blue"> get</span>; <span class=light-blue> set</span>; }</span>
+                <span><span class="light-blue">public int</span> FirstName {<span class=light-blue> get</span>; <span class=light-blue> set</span>; }</span>
+                <span><span class="light-blue">public int</span> LastName {<span class=light-blue> get</span>; <span class=light-blue> set</span>; }</span>
+                <span><span class="light-blue">public int</span> Job {<span class=light-blue> get</span>; <span class=light-blue> set</span>; }</span>
+                <span>}</span>
+                <span class="light-blue">public </span><span class="light-green"> List&ltPerson></span><span class="dark-yellow"> GetPeople </span>(<span class="light-blue">int </span>itemCount)
+                <span>{</span>
+                <span><span class="light-green">List&ltPerson></span><span class="light-blue"> person</span> = <span class=light-blue>new</span>();</span>
+                <span><span class="light-purple">for </span>(<span class="light-blue">int</span> i = 0; i &lt itemCount; i++)</span>
+                <span>{</span>
+                <span><span class="light-blue">people</span>.<span class="dark-yellow">Add</span> (<span class="light-blue">new </span><span class="light-green">Person</span></span>
+                <span>{</span>
+                <span>Id = i + 1,</span>
+                <span>FirstName = <span class="dark-orange">$"Person</span> {i + 1}<span class="dark-orange">"</span>,</span>
+                <span>LastName = <span class="dark-orange">$"Person Family</span> {i + 1}<span class="dark-orange">"</span>,</span>
+                <span>Job = <span class="dark-orange">$"Programmer</span> {i + 1}<span class="dark-orange">"</span></span>
+                <span>});</span>
+                <span>}</span>
+                <span>}</span>
+                <span class="light-yellow-bg">}</span>
+                 &lt<span class="light-blue">style></span>
+                <span class="m-l-30 dark-yellow">.lst-custom-style</span> {
+                <span><span class="dark-yellow">.lst3-list-item </span>{</span>
+                <span><span class="light-blue">padding</span> : 16px 20px;</span>
+                <span><span class="light-blue">background-color</span> : #f2f2f2;</span>
+                <span><span class="light-blue">margin</span> : 10px 10px;</span>
+                <span><span class="light-blue">width</span> : 200px;</span>
+                <span><span class="light-blue">height</span> : 143px;</span>
+                <span><span class="light-blue">display</span> : inline-grid;</span>
+                <span><span class="light-blue">justify-content</span> : center;</span>
+                <span><span class="light-blue">align-items</span> : center;</span>
+                <span>}</span>
+                <span>}</span>
+                <span>&lt/</span><span class="light-blue">style</span><span>&gt;</span>
+            </pre>
+        </CodeSampleContent>
+    </CodeSample>
+    <CodeSample Title="Basic List with overscan count" Description="">
+        <SampleContent>
+            <BitBasicList Class="how-to-use" Items="People[0]" Virtualize="true" OverscanCount="5" ItemSize="300" Style="border: 1px #a19f9d solid; border-radius: 3px; width: 90%; margin: auto;">
+                <RowTemplate Context="person">
+                    <div style="border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;">
+                        <p>Id: <strong>@person.Id</strong></p>
+                        <p>Full Name: <strong>@person.FirstName @person.LastName</strong></p>
+                        <p>Job: <strong>@person.Job</strong></p>
                     </div>
-                    <div class="m-t-10">
-                        <span class="light-blue">public class </span><span class="light-green">Person</span>()
-                        <br />
-                        <span>{</span>
-                        <br />
-                        <span class="m-l-30"><span class="light-blue">public int</span> Id {<span class="light-blue"> get</span>; <span class=light-blue> set</span>; }</span>
-                        <br />
-                        <span class="m-l-30"><span class="light-blue">public int</span> FirstName {<span class=light-blue> get</span>; <span class=light-blue> set</span>; }</span>
-                        <br />
-                        <span class="m-l-30"><span class="light-blue">public int</span> LastName {<span class=light-blue> get</span>; <span class=light-blue> set</span>; }</span>
-                        <br />
-                        <span class="m-l-30"><span class="light-blue">public int</span> Job {<span class=light-blue> get</span>; <span class=light-blue> set</span>; }</span>
-                        <br />
-                        <span>}</span>
-                    </div>
-                    <div class="m-t-10">
-                        <span class="light-blue">public </span><span class="light-green"> List&ltPerson></span><span class="dark-yellow"> GetPeople </span>(<span class="light-blue">int </span>itemCount)
-                        <br />
-                        <span>{</span>
-                        <br />
-                        <span class="m-l-30"><span class="light-green">List&ltPerson></span><span class="light-blue"> person</span> = <span class=light-blue>new</span>();</span>
-                        <br /><br />
-                        <span class="m-l-30"><span class="light-purple">for </span>(<span class="light-blue">int</span> i = 0; i &lt itemCount; i++)</span>
-                        <br />
-                        <span class="m-l-30">{</span>
-                        <br />
-                        <span class="m-l-45"><span class="light-blue">people</span>.<span class="dark-yellow">Add</span> (<span class="light-blue">new </span><span class="light-green">Person</span></span>
-                        <br />
-                        <span class="m-l-45">{</span>
-                        <br />
-                        <span class="m-l-60">Id = i + 1,</span>
-                        <br />
-                        <span class="m-l-60">FirstName = <span class="dark-orange">$"Person</span> {i + 1}<span class="dark-orange">"</span>,</span>
-                        <br />
-                        <span class="m-l-60">LastName = <span class="dark-orange">$"Person Family</span> {i + 1}<span class="dark-orange">"</span>,</span>
-                        <br />
-                        <span class="m-l-60">Job = <span class="dark-orange">$"Programmer</span> {i + 1}<span class="dark-orange">"</span></span>
-                        <br />
-                        <span class="m-l-45">});</span>
-                        <br />
-                        <span class="m-l-30">}</span>
-                        <br />
-                        <span>}</span>
-                    </div>
-                    <span class="light-yellow-bg">}</span>
-                </div>
-                <div>
-                    <p>
-                        &lt<span class="light-blue">style></span>
-                        <br />
-                        <span class="m-l-30 dark-yellow">.lst-custom-style</span> {
-                        <br />
-                        <span class="m-l-45"><span class="dark-yellow">.lst3-list-item </span>{</span>
-                        <br />
-                        <span class="m-l-60"><span class="light-blue">padding</span> : 16px 20px;</span>
-                        <br />
-                        <span class="m-l-60"><span class="light-blue">background-color</span> : #f2f2f2;</span>
-                        <br />
-                        <span class="m-l-60"><span class="light-blue">margin</span> : 10px 10px;</span>
-                        <br />
-                        <span class="m-l-60"><span class="light-blue">width</span> : 200px;</span>
-                        <br />
-                        <span class="m-l-60"><span class="light-blue">height</span> : 143px;</span>
-                        <br />
-                        <span class="m-l-60"><span class="light-blue">display</span> : inline-grid;</span>
-                        <br />
-                        <span class="m-l-60"><span class="light-blue">justify-content</span> : center;</span>
-                        <br />
-                        <span class="m-l-60"><span class="light-blue">align-items</span> : center;</span>
-                        <br />
-                        <span class="m-l-45">}</span>
-                        <br />
-                        <span>}</span>
-                        <br />
-                        <span>&lt/</span><span class="light-blue">style</span><span>&gt;</span>
-                    </p>
-                </div>
-            </BitPivotItem>
-        </BitPivot>
-    </div>
-    <div class="card">
-        <h3>Basic List with overscan count</h3>
-        <BitPivot>
-            <BitPivotItem HeaderText="Example" IconName="ViewList">
-                <BitBasicList Items="People[0]" Virtualize="true" OverscanCount="5" ItemSize="300" Style="border: 1px #a19f9d solid; border-radius: 3px; width: 90%; margin: auto;">
-                    <RowTemplate Context="person">
-                        <div style="border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;">
-                            <p>Id: <strong>@person.Id</strong></p>
-                            <p>Full Name: <strong>@person.FirstName @person.LastName</strong></p>
-                            <p>Job: <strong>@person.Job</strong></p>
-                        </div>
-                    </RowTemplate>
-                </BitBasicList>
-            </BitPivotItem>
-            <BitPivotItem HeaderText="Code" IconName="Source">
-                <p>
-                    &lt<span class="dark-green">BitBasicList Items</span>="People[0]" <span class="dark-green">Virtualize</span>="<span class="light-blue">true</span>" <span class="dark-green">OverscanCount</span>="5" <span class="dark-green">ItemSize</span>="300" <span class="dark-green">Style</span>="border: 1px #a19f9d solid; border-radius: 3px; width: 90%; margin: auto;">
-                    <br />
-                    <span class="m-l-30">&lt<span class="dark-green">RowTemplate Context</span>="person"></span>
-                    <br />
-                    <span class="m-l-45">&lt<span class="light-blue">div style</span>="border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;"></span>
-                    <br />
-                    <span class="m-l-60">&lt<span class="light-blue">span</span>>Id: &lt<span class="light-blue">strong</span>><span class="light-yellow-bg">&#64;</span>person.Id<span>&lt/</span><span class="light-blue">strong</span>><span>&lt/</span><span class="light-blue">span</span><span>&gt;</span></span>
-                    <br />
-                    <span class="m-l-60">&lt<span class="light-blue">span</span>>Full Name: &lt<span class="light-blue">strong</span>><span class="light-yellow-bg">&#64;</span>person.FirstName <span class="light-yellow-bg">&#64;</span>person.LastName<span>&lt/</span><span class="light-blue">strong</span>><span>&lt/</span><span class="light-blue">span</span><span>&gt;</span></span>
-                    <br />
-                    <span class="m-l-60">&lt<span class="light-blue">span</span>>Job: &lt<span class="light-blue">strong</span>><span class="light-yellow-bg">&#64;</span>person.Job<span>&lt/</span><span class="light-blue">strong</span>><span>&lt/</span><span class="light-blue">span</span><span>&gt;</span></span>
-                    <br />
-                    <span class="m-l-45">&lt<span class="light-blue">div</span><span>&gt;</span></span>
-                    <br />
-                    <span class="m-l-30"><span>&lt/</span><span class="dark-green">RowTemplate</span><span>&gt;</span></span>
-                    <br />
-                    <span>&lt/</span><span class="dark-green">BitBasicList</span><span>&gt;</span>
-                </p>
-                <div>
-                    <span class="light-yellow-bg">&#64;code {</span>
-                    <p>
-                        <span>private readonly <span class="light-green">List&ltPerson></span>[] People = <span class="light-blue">new </span><span class="dark-green">List&ltPerson></span>[2];</span>
-                    </p>
-                    <div class="m-t-10">
-                        <span class="light-blue">protected override void </span><span class="dark-yellow">OnInitialized</span>()
-                        <br />
-                        <span>{</span>
-                        <br />
-                        <span class="m-l-30"><span class="light-green">Person</span><span class="light-blue"> person</span> = <span class=light-blue>new</span>();</span>
-                        <br /><br />
-                        <span class="m-l-30">People[0] = <span class="light-blue">person</span>.<span class="dark-yellow">GetPeople</span>(8000);</span>
-                        <br />
-                        <span class="m-l-30">People[1] = <span class="light-blue">person</span>.<span class="dark-yellow">GetPeople</span>(100);</span>
-                        <br /><br />
-                        <span class="m-l-30"><span class="light-blue">base</span>.<span class="dark-yellow">OnInitialized</span>();</span>
-                        <br />
-                        <span>}</span>
-                    </div>
-                    <div class="m-t-10">
-                        <span class="light-blue">public class </span><span class="light-green">Person</span>()
-                        <br />
-                        <span>{</span>
-                        <br />
-                        <span class="m-l-30"><span class="light-blue">public int</span> Id {<span class="light-blue"> get</span>; <span class=light-blue> set</span>; }</span>
-                        <br />
-                        <span class="m-l-30"><span class="light-blue">public int</span> FirstName {<span class=light-blue> get</span>; <span class=light-blue> set</span>; }</span>
-                        <br />
-                        <span class="m-l-30"><span class="light-blue">public int</span> LastName {<span class=light-blue> get</span>; <span class=light-blue> set</span>; }</span>
-                        <br />
-                        <span class="m-l-30"><span class="light-blue">public int</span> Job {<span class=light-blue> get</span>; <span class=light-blue> set</span>; }</span>
-                        <br />
-                        <span>}</span>
-                    </div>
-                    <div class="m-t-10">
-                        <span class="light-blue">public </span><span class="light-green"> List&ltPerson></span><span class="dark-yellow"> GetPeople </span>(<span class="light-blue">int </span>itemCount)
-                        <br />
-                        <span>{</span>
-                        <br />
-                        <span class="m-l-30"><span class="light-green">List&ltPerson></span><span class="light-blue"> person</span> = <span class=light-blue>new</span>();</span>
-                        <br /><br />
-                        <span class="m-l-30"><span class="light-purple">for </span>(<span class="light-blue">int</span> i = 0; i &lt itemCount; i++)</span>
-                        <br />
-                        <span class="m-l-30">{</span>
-                        <br />
-                        <span class="m-l-45"><span class="light-blue">people</span>.<span class="dark-yellow">Add</span> (<span class="light-blue">new </span><span class="light-green">Person</span></span>
-                        <br />
-                        <span class="m-l-45">{</span>
-                        <br />
-                        <span class="m-l-60">Id = i + 1,</span>
-                        <br />
-                        <span class="m-l-60">FirstName = <span class="dark-orange">$"Person</span> {i + 1}<span class="dark-orange">"</span>,</span>
-                        <br />
-                        <span class="m-l-60">LastName = <span class="dark-orange">$"Person Family</span> {i + 1}<span class="dark-orange">"</span>,</span>
-                        <br />
-                        <span class="m-l-60">Job = <span class="dark-orange">$"Programmer</span> {i + 1}<span class="dark-orange">"</span></span>
-                        <br />
-                        <span class="m-l-45">});</span>
-                        <br />
-                        <span class="m-l-30">}</span>
-                        <br />
-                        <span>}</span>
-                    </div>
-                </div>
-            </BitPivotItem>
-        </BitPivot>
-    </div>
-</div>
-<h2>Implementation</h2>
-<div class="card">
-    <table>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Default value</th>
-            <th>Description</th>
-        </tr>        
-        <tr>
-            <td>AriaLabel</td>
-            <td>string</td>
-            <td></td>
-            <td>The aria-label of the control for the benefit of screen readers.</td>
-        </tr>
-        <tr>
-            <td>Class</td>
-            <td>string</td>
-            <td></td>
-            <td>Custom CSS class for the root element of the component.</td>
-        </tr>
-        <tr>
-            <td>HtmlAttributes</td>
-            <td>Dictionary&lt;string, object&gt;</td>
-            <td></td>
-            <td>Capture and render additional attributes in addition to the component's parameters.</td>
-        </tr>
-        <tr>
-            <td>IsEnabled</td>
-            <td>bool</td>
-            <td></td>
-            <td>Whether or not the component is enabled.</td>
-        </tr>
-        <tr>
-            <td>Items</td>
-            <td>ICollection&ltTItem></td>
-            <td></td>
-            <td>List of items that want to render.</td>
-        </tr>
-        <tr>
-            <td>ItemSize</td>
-            <td>int</td>
-            <td>50</td>
-            <td>The height of each item in pixels.</td>
-        </tr>
-        <tr>
-            <td>OverscanCount</td>
-            <td>int</td>
-            <td>3</td>
-            <td>Determines how many additional items are rendered before and after the visible region.</td>
-        </tr>     
-        <tr>
-            <td>Role</td>
-            <td>string</td>
-            <td></td>
-            <td>Role of the BasicList.</td>
-        </tr>
-        <tr>
-            <td>RowTemplate</td>
-            <td>RenderFragment&ltTItem></td>
-            <td></td>
-            <td>Content of each item. it should determin with context attribute.</td>
-        </tr>
-        <tr>
-            <td>Style</td>
-            <td>string</td>
-            <td></td>
-            <td>Custom style for the root element of the component.</td>
-        </tr>
-        <tr>
-            <td>Virtualize</td>
-            <td>bool</td>
-            <td>false</td>
-            <td>Virtualize rendering the list. UI rendering to just the parts that are currently visible.</td>
-        </tr>
-        <tr>
-            <td>Visibility</td>
-            <td>ComponentVisibility</td>
-            <td></td>
-            <td>Whether the component is visible, hidden, collapsed.</td>
-        </tr>
-    </table>
-    <div>
-        <h4 id="component-visibility">ComponentVisibility</h4>
-        <hr />
-        <table>
-            <tr>
-                <th>Name</th>
-                <th>Value</th>
-                <th>Description</th>
-            </tr>
-            <tr>
-                <td>Visible</td>
-                <td>0</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>Hidden</td>
-                <td>1</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>Collapsed</td>
-                <td>2</td>
-                <td></td>
-            </tr>
-        </table>
-    </div>
-</div>
+                </RowTemplate>
+            </BitBasicList>
+        </SampleContent>
+        <CodeSampleContent>
+            <pre>
+                &lt<span class="dark-green">BitBasicList Items</span>="People[0]" <span class="dark-green">Virtualize</span>="<span class="light-blue">true</span>" <span class="dark-green">OverscanCount</span>="5" <span class="dark-green">ItemSize</span>="300" <span class="dark-green">Style</span>="border: 1px #a19f9d solid; border-radius: 3px; width: 90%; margin: auto;">
+                <span>&lt<span class="dark-green">RowTemplate Context</span>="person"></span>
+                <span>&lt<span class="light-blue">div style</span>="border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;"></span>
+                <span>&lt<span class="light-blue">span</span>>Id: &lt<span class="light-blue">strong</span>><span class="light-yellow-bg">&#64;</span>person.Id<span>&lt/</span><span class="light-blue">strong</span>><span>&lt/</span><span class="light-blue">span</span><span>&gt;</span></span>
+                <span>&lt<span class="light-blue">span</span>>Full Name: &lt<span class="light-blue">strong</span>><span class="light-yellow-bg">&#64;</span>person.FirstName <span class="light-yellow-bg">&#64;</span>person.LastName<span>&lt/</span><span class="light-blue">strong</span>><span>&lt/</span><span class="light-blue">span</span><span>&gt;</span></span>
+                <span>&lt<span class="light-blue">span</span>>Job: &lt<span class="light-blue">strong</span>><span class="light-yellow-bg">&#64;</span>person.Job<span>&lt/</span><span class="light-blue">strong</span>><span>&lt/</span><span class="light-blue">span</span><span>&gt;</span></span>
+                <span>&lt<span class="light-blue">div</span><span>&gt;</span></span>
+                <span><span>&lt/</span><span class="dark-green">RowTemplate</span><span>&gt;</span></span>
+                <span>&lt/</span><span class="dark-green">BitBasicList</span><span>&gt;</span>
+                <span class="light-yellow-bg">&#64;code {</span>
+                <span>private readonly <span class="light-green">List&ltPerson></span>[] People = <span class="light-blue">new </span><span class="dark-green">List&ltPerson></span>[2];</span>
+                <span class="light-blue">protected override void </span><span class="dark-yellow">OnInitialized</span>()
+                <span>{</span>
+                <span><span class="light-green">Person</span><span class="light-blue"> person</span> = <span class=light-blue>new</span>();</span>
+                <span>People[0] = <span class="light-blue">person</span>.<span class="dark-yellow">GetPeople</span>(8000);</span>
+                <span>People[1] = <span class="light-blue">person</span>.<span class="dark-yellow">GetPeople</span>(100);</span>
+                <span><span class="light-blue">base</span>.<span class="dark-yellow">OnInitialized</span>();</span>
+                <span>}</span>
+                <span class="light-blue">public class </span><span class="light-green">Person</span>()
+                <span>{</span>
+                <span><span class="light-blue">public int</span> Id {<span class="light-blue"> get</span>; <span class=light-blue> set</span>; }</span>
+                <span><span class="light-blue">public int</span> FirstName {<span class=light-blue> get</span>; <span class=light-blue> set</span>; }</span>
+                <span><span class="light-blue">public int</span> LastName {<span class=light-blue> get</span>; <span class=light-blue> set</span>; }</span>
+                <span><span class="light-blue">public int</span> Job {<span class=light-blue> get</span>; <span class=light-blue> set</span>; }</span>
+                <span>}</span>
+                <span class="light-blue">public </span><span class="light-green"> List&ltPerson></span><span class="dark-yellow"> GetPeople </span>(<span class="light-blue">int </span>itemCount)
+                <span>{</span>
+                <span><span class="light-green">List&ltPerson></span><span class="light-blue"> person</span> = <span class=light-blue>new</span>();</span>
+                <span><span class="light-purple">for </span>(<span class="light-blue">int</span> i = 0; i &lt itemCount; i++)</span>
+                <span>{</span>
+                <span><span class="light-blue">people</span>.<span class="dark-yellow">Add</span> (<span class="light-blue">new </span><span class="light-green">Person</span></span>
+                <span>{</span>
+                <span>Id = i + 1,</span>
+                <span>FirstName = <span class="dark-orange">$"Person</span> {i + 1}<span class="dark-orange">"</span>,</span>
+                <span>LastName = <span class="dark-orange">$"Person Family</span> {i + 1}<span class="dark-orange">"</span>,</span>
+                <span>Job = <span class="dark-orange">$"Programmer</span> {i + 1}<span class="dark-orange">"</span></span>
+                <span>});</span>
+                <span>}</span>
+                <span>}</span>
+            </pre>
+        </CodeSampleContent>
+    </CodeSample>
+</ComponentPage>
