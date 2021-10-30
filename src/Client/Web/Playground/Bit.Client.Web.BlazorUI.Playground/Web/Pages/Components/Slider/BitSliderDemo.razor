@@ -1,0 +1,266 @@
+﻿@page "/components/slider"
+
+@using Bit.Client.Web.BlazorUI.Playground.Web.Components
+
+<ComponentPage ComponentName="Slider" OverviewDesc="A slider provides a visual indication of adjustable content, as well as the current setting in the total range of content. Use a slider when you want people to set defined values (such as volume or brightness), or when people would benefit from instant feedback on the effect of setting changes."
+               ComponentParameters="componentParameters">
+    <CodeSample Title="BitSlider" Description="">
+        <SampleContent>
+            <BitSlider />
+            <BitSlider Label="Snapping slider example"
+                       Min="0"
+                       Max="50"
+                       Step="10"
+                       DefaultValue="20" />
+            <BitSlider Label="Disabled example"
+                       Min="50"
+                       Max="500"
+                       Step="50"
+                       DefaultValue="300"
+                       IsEnabled="false" />
+            <BitSlider Label="Controlled example"
+                       Max="10"
+                       @bind-Value="BitSliderHorizontalValue" />
+            <BitButton Class="bit-btn-slider" OnClick="() => BitSliderHorizontalValue = 7">
+                Change Value
+            </BitButton>
+            <BitSlider Label="Example with formatted value"
+                       Max="100"
+                       DefaultValue="31"
+                       ValueFormat="P00" />
+            <BitSlider Label="Example with formatted value"
+                       Max="1000"
+                       DefaultValue="319"
+                       ValueFormat="P01" />
+            <BitSlider Label="Origin from zero"
+                       Min="-5"
+                       Max="5"
+                       Step="1"
+                       DefaultValue="2"
+                       IsRanged="true"
+                       IsOriginFromZero="true" />
+        </SampleContent>
+        <CodeSampleContent>
+            <pre>
+                &lt<span class="dark-green">BitSlider</span> /&gt;
+                &lt<span class="dark-green">BitSlider</span>
+                <span class="dark-green">Label</span>="<span>Snapping slider example"</span>
+                <span class="dark-green">Min</span>="<span>0"</span>
+                <span class="dark-green">Max</span>="<span>50"</span>
+                <span class="dark-green">Step</span>="<span>10"</span>
+                <span class="dark-green">DefaultValue</span>="<span>20"</span>/&gt;
+                &lt<span class="dark-green">BitSlider</span>
+                <span class="dark-green">Label</span>="<span>Disabled example"</span>
+                <span class="dark-green">Min</span>="<span>50"</span>
+                <span class="dark-green">Max</span>="<span>500"</span>
+                <span class="dark-green">Step</span>="<span>50"</span>
+                <span class="dark-green">DefaultValue</span>="<span>300"</span>
+                <span class="dark-green">IsEnabled</span>="<span class="light-blue">false"</span>/&gt;
+                &lt<span class="dark-green">BitSlider</span>
+                <span class="dark-green">Label</span>="<span>Controlled example"</span>
+                <span class="dark-green">Max</span>="<span>10"</span>
+                <span class="dark-green"><span class="light-yellow-bg">@@</span>bind-Value</span>="<span>BitSliderHorizontalValue"</span>/&gt;
+                &lt<span class="dark-green">BitButton</span>
+                <span class="dark-green">OnClick</span>="<span>() => BitSliderHorizontalValue = 7"</span>&gt;
+                <span>Change Value</span> &lt/<span class="dark-green">BitSlider</span>&gt;
+                &lt<span class="dark-green">BitSlider</span>
+                <span class="dark-green">Label</span>="<span>Example with formatted value"</span>
+                <span class="dark-green">Max</span>="<span>100"</span>
+                <span class="dark-green">DefaultValue</span>="<span>31"</span>
+                <span class="dark-green">ValueFormat</span>="<span>P00"</span>
+                &lt<span class="dark-green">BitSlider</span>
+                <span class="dark-green">Label</span>="<span>Example with formatted value"</span>
+                <span class="dark-green">Max</span>="<span>1000"</span>
+                <span class="dark-green">DefaultValue</span>="<span>319"</span>
+                <span class="dark-green">ValueFormat</span>="<span>P01"</span>
+                &lt<span class="dark-green">BitSlider</span>
+                <span class="dark-green">Label</span>="<span>Origin from zero"</span>
+                <span class="dark-green">Min</span>="<span>-5"</span>/&gt
+                <span class="dark-green">Max</span>="<span>5"</span>/&gt
+                <span class="dark-green">Step</span>="<span>1"</span>/&gt
+                <span class="dark-green">DefaultValue</span>="<span>2"</span>/&gt
+                <span class="dark-green">IsOriginFromZero</span>="<span class="light-blue">true"</span>/&gt
+            </pre>
+        </CodeSampleContent>
+    </CodeSample>
+    <CodeSample Title="Vertical sliders" Description="">
+        <SampleContent>
+            <div class="flex-sliders">
+                <BitSlider Label="Basic"
+                           Min="1"
+                           Max="5"
+                           Step="1"
+                           DefaultValue="2"
+                           IsVertical="true" />
+                <BitSlider Label="Disabled"
+                           Min="50"
+                           Max="500"
+                           Step="50"
+                           DefaultValue="300"
+                           IsVertical="true" />
+                <BitSlider Label="Formatted value"
+                           Max="100" ValueFormat="P00"
+                           IsVertical="true" />
+                <BitSlider Label="Origin from zero"
+                           Min="-5"
+                           Max="15"
+                           Step="1"
+                           DefaultValue="5"
+                           IsVertical="true"
+                           IsOriginFromZero="true" />
+            </div>
+        </SampleContent>
+        <CodeSampleContent>
+            <pre>
+                &lt<span class="dark-green">BitSlider</span>
+                <span class="dark-green">Label</span>="<span>Basic"</span>
+                <span class="dark-green">Min</span>="<span>1"</span>
+                <span class="dark-green">Max</span>="<span>5"</span>
+                <span class="dark-green">Step</span>="<span>1"</span>
+                <span class="dark-green">DefaultValue</span>="<span>2"</span>
+                <span class="dark-green">IsVertical</span>="<span class="light-blue">true"</span>/&gt;
+                &lt<span class="dark-green">BitSlider</span>
+                <span class="dark-green">Label</span>="<span>Disabled"</span>
+                <span class="dark-green">Min</span>="<span>50"</span>
+                <span class="dark-green">Max</span>="<span>500"</span>
+                <span class="dark-green">Step</span>="<span>50"</span>
+                <span class="dark-green">DefaultValue</span>="<span>300"</span>
+                <span class="dark-green">IsEnabled</span>="<span class="light-blue">false"</span>
+                <span class="dark-green">IsVertical</span>="<span class="light-blue">true"</span>/&gt;
+                &lt<span class="dark-green">BitSlider</span>
+                <span class="dark-green">Label</span>="<span>Formatted value"</span>
+                <span class="dark-green">Max</span>="<span>100"</span>
+                <span class="dark-green">ValueFormat</span>="<span>P00"</span>
+                <span class="dark-green">IsVertical</span>="<span class="light-blue">true"</span>/&gt;
+                &lt<span class="dark-green">BitSlider</span>
+                <span class="dark-green">Label</span>="<span>Origin from zero"</span>
+                <span class="dark-green">Min</span>="<span>-5"</span>
+                <span class="dark-green">Max</span>="<span>5"</span>
+                <span class="dark-green">Step</span>="<span>1"</span>
+                <span class="dark-green">DefaultValue</span>="<span>2"</span>
+                <span class="dark-green">IsVertical</span>="<span class="light-blue">true"</span>
+                <span class="dark-green">IsOriginFromZero</span>="<span class="light-blue">true"</span>/&gt;
+            </pre>
+        </CodeSampleContent>
+    </CodeSample>
+    <CodeSample Title="Range slider" Description="">
+        <SampleContent>
+            <div class="slider-container">
+
+                <BitSlider Label="Range slider"
+                           Min="0"
+                           Max="10"
+                           DefaultUpperValue="8"
+                           DefaultLowerValue="2"
+                           IsRanged="true" />
+                <BitSlider Label="Disabled example"
+                           Min="50"
+                           Max="500"
+                           Step="50"
+                           DefaultUpperValue="300"
+                           IsRanged="true"
+                           IsEnabled="false" />
+                <BitSlider Label="Controlled example"
+                           Max="10"
+                           @bind-LowerValue="BitSliderRangedLowerValue"
+                           @bind-UpperValue="BitSliderRangedUpperValue"
+                           IsRanged="true" />
+                <BitButton Class="bit-btn-slider" OnClick="ChangeBitSliderRangedValues">
+                    Change Value
+                </BitButton>
+                <BitSlider Label="Example with formatted value"
+                           Max="100"
+                           IsRanged="true"
+                           ValueFormat="P00" />
+                <BitSlider Label="Origin from zero"
+                           Min="-5"
+                           Max="5"
+                           Step="1"
+                           DefaultUpperValue="2"
+                           IsRanged="true"
+                           IsOriginFromZero="true" />
+            </div>
+        </SampleContent>
+        <CodeSampleContent>
+            <pre>
+                &lt<span class="dark-green">BitSlider</span>
+                <span class="dark-green">Label</span>="<span>Range slider"</span>
+                <span class="dark-green">Min</span>="<span>0"</span>
+                <span class="dark-green">Max</span>="<span>10"</span>
+                <span class="dark-green">DefaultUpperValue</span>="<span>8"</span>
+                <span class="dark-green">DefaultLowerValue</span>="<span>2"</span>
+                <span class="dark-green">IsRanged</span>="<span class="light-blue">true"</span>/&gt;
+                &lt<span class="dark-green">BitSlider</span>
+                <span class="dark-green">Label</span>="<span>Disabled example"</span>
+                <span class="dark-green">Min</span>="<span>50"</span>
+                <span class="dark-green">Max</span>="<span>500"</span>
+                <span class="dark-green">DefaultUpperValue</span>="<span>50"</span>
+                <span class="dark-green">DefaultValue</span>="<span>300"</span>
+                <span class="dark-green">IsRanged</span>="<span class="light-blue">true"</span>
+                <span class="dark-green">IsEnabled</span>="<span class="light-blue">false"</span>/&gt;
+                &lt<span class="dark-green">BitSlider</span>
+                <span class="dark-green">Label</span>="<span>Controlled example"</span>
+                <span class="dark-green">Max</span>="<span>10"</span>
+                <span class="dark-green"><span class="light-yellow-bg">@@</span>bind-LowerValue</span>="<span>BitSliderRangedLowerValue"</span>
+                <span class="dark-green"><span class="light-yellow-bg">@@</span>bind-UpperValue</span>="<span>BitSliderRangedUpperValue"</span>
+                <span class="dark-green">IsRanged</span>="<span class="light-blue">true"</span>/&gt;
+                &lt<span class="dark-green">BitButton</span>
+                <span class="dark-green">OnClick</span>="<span>ChangeBitSliderRangedValues"</span>&gt;
+                <span>Change Value</span> &lt/<span class="dark-green">BitSlider</span>&gt;
+                &lt<span class="dark-green">BitSlider</span>
+                <span class="dark-green">Label</span>="<span>Example with formatted value"</span>
+                <span class="dark-green">Max</span>="<span>100"</span>
+                <span class="dark-green">IsRanged</span>="<span class="light-blue">true"</span>
+                <span class="dark-green">ValueFormat</span><span>="P00"</span>/&gt;
+                &lt<span class="dark-green">BitSlider</span>
+                <span class="dark-green">Label</span>="<span>Origin from zero"</span>
+                <span class="dark-green">Min</span>="<span>-5"</span>
+                <span class="dark-green">Max</span>="<span>5"</span>
+                <span class="dark-green">Step</span>="<span>1"</span>
+                <span class="dark-green">DefaultUpperValue</span>="<span>2"</span>
+                <span class="dark-green">IsRanged</span>="<span class="light-blue">true"</span>
+                <span class="dark-green">IsOriginFromZero</span>="<span class="light-blue">true"</span>/&gt;
+            </pre>
+        </CodeSampleContent>
+    </CodeSample>
+    <CodeSample Title="Range slider vertical" Description="">
+        <SampleContent>
+            <BitSlider Label="Range slider vertical"
+                       Min="1"
+                       Max="5"
+                       Step="1"
+                       DefaultUpperValue="2"
+                       DefaultLowerValue="1"
+                       IsRanged="true"
+                       IsVertical="true" />
+        </SampleContent>
+        <CodeSampleContent>
+            <pre>
+                &lt<span class="dark-green">BitSlider</span>
+                <span class="dark-green">Label</span>="<span>Range slider vertical"</span>
+                <span class="dark-green">Min</span>="<span>1"</span>
+                <span class="dark-green">Max</span>="<span>5"</span>
+                <span class="dark-green">Step</span>="<span>1"</span>
+                <span class="dark-green">DefaultUpperValue</span>="<span>2"</span>
+                <span class="dark-green">DefaultLowerValue</span>="<span>1"</span>
+                <span class="dark-green">IsRanged</span>="<span class="light-blue">true"</span>
+                <span class="dark-green">IsVertical</span>="<span class="light-blue">true"</span>/&gt;
+            </pre>
+        </CodeSampleContent>
+    </CodeSample>
+    <CodeSample Title="Slider with slider box html attributes" Description="">
+        <SampleContent>
+            <BitSlider Max="10"
+                       IsRanged="true"
+                       SliderBoxHtmlAttributes="@BitSliderRangedSliderBoxHtmlAttributes" />
+        </SampleContent>
+        <CodeSampleContent>
+            <pre>
+                &lt<span class="dark-green">BitSlider</span>
+                <span class="dark-green">Max</span>="<span>10"</span>
+                <span class="dark-green">IsRanged</span>="<span class="light-blue">true"</span>
+                <span class="dark-green">SliderBoxHtmlAttributes</span>="<span class="light-yellow-bg">@@</span><span>BitSliderRangedSliderBoxHtmlAttributes"</span> /&gt;
+            </pre>
+        </CodeSampleContent>
+    </CodeSample>
+</ComponentPage>

@@ -684,6 +684,22 @@ footer {
     .bit-tgl-inline-fluent > div {
         margin-top: 0;
     }
+
+    .bit-slider-container {
+        padding: rem(30px) 0;
+    }
+
+    .bit-btn-slider {
+        margin-bottom: rem(30px);
+    }
+
+    .bit-slider-ranged-vertical .bit-slider-value, .bit-slider-vertical .bit-slider-value {
+        margin-top: rem(30px);
+    }
+
+    .bit-slider-vertical{
+        padding : rem(20px);
+    }
 }
 
 .tgl-btn {
