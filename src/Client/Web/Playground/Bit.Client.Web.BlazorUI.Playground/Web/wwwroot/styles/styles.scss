@@ -704,6 +704,14 @@ footer {
     }
 }
 
+.bit-pvt {
+    margin-bottom: rem(20px);
+
+    div:nth-child(2) {
+        margin-top: rem(25px);
+    }
+}
+
 .tgl-btn {
     @include sm {
         margin-top: rem(10px);
@@ -723,6 +731,34 @@ footer {
 }
 
 /* General */
+.bit-icon {
+    height: 0;
+}
+
+.sample .bit-drp-lbl {
+    padding-bottom: rem(20px);
+}
+/* General */
+.bit-nav-selected-fluent:after {
+    border-left: rem(4px) solid $Violet;
+}
+
+.bit-nav-grp-content {
+    margin-bottom: 0;
+}
+
+.bit-sch-box-fluent > div:last-child button {
+    background-color: $White;
+}
+
+.bit-icon--Clear {
+    padding-right: rem(20px);
+}
+
+input.search-input {
+    padding-top: rem(5px);
+}
+
 .bit-icon {
     height: 0;
 }
