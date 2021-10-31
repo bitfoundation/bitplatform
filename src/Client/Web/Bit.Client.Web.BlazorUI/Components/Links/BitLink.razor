@@ -10,16 +10,27 @@
     {
         @if (IsEnabled)
         {
-            <a class="@(HasUnderline ? "underlined" : "")"
-               href="@Href"
-               target="@Target">
-                @ChildContent
-            </a>
+            if (Href.StartsWith("#"))
+            {
+                <a class="@(HasUnderline ? "underlined" : "")"
+                    @onclick="ScrollToFragment"
+                    @onclick:preventDefault="true">
+                    @ChildContent
+                </a>
+            }
+            else
+            {
+                <a class="@(HasUnderline ? "underlined" : "")"
+                    href="@Href"
+                    target="@Target">
+                    @ChildContent
+                </a>
+            }
         }
         else
         {
             <a class="@(HasUnderline ? "underlined" : "")"
-               aria-disabled="true">
+                aria-disabled="true">
                 @ChildContent
             </a>
         }
@@ -29,18 +40,18 @@
         @if (IsEnabled)
         {
             <button class="@(HasUnderline ? "underlined" : "")"
-                    type="button"
-                    @onclick="HandleClick"
-                    @onclick:preventDefault="true">
+            type="button"
+            @onclick="HandleClick"
+            @onclick:preventDefault="true">
                 @ChildContent
             </button>
         }
         else
         {
             <button class="@(HasUnderline ? "underlined" : "")"
-                    type="button"
-                    aria-disabled="true"
-                    disabled>
+            type="button"
+            aria-disabled="true"
+            disabled>
                 @ChildContent
             </button>
         }
