@@ -59,154 +59,98 @@ tr:last-child {
     border: none;
 }
 
-.component-container {
-    display: flex;
-    background-image: url('/images/main/component-bg.png');
-    background-position: top center;
-    background-repeat: no-repeat;
-    background-size: 100% rem(700px);
-    padding: rem(144px) 0 0;
-
-    .component-content {
-        max-width: 70%;
-        padding: 0 rem(12px) 0 rem(80px);
-
-        @include lt-xl {
-            max-width: 85%;
-            padding: 0 rem(75px) 0 rem(75px);
-        }
-
-        @include lt-md {
-            max-width: 100%;
-            padding: 0 rem(90px) 0 rem(90px);
-        }
-
-        @include sm {
-            max-width: 90%;
-            padding: 0 rem(21px) 0 rem(21px);
-        }
-
-        .overview {
-            .name {
-                color: $Violet;
-                line-height: 0;
-                white-space: nowrap;
-            }
-
-            .description {
-                @include subtitle1-xl;
-
-                @include lg {
-                    @include subtitle1-lg;
-                }
-
-                @include md {
-                    @include subtitle1-md;
-                }
-
-                @include sm {
-                    @include subtitle1-sm;
-                }
-            }
-        }
-
-        .usage {
-            margin-top: rem(75px);
+.component-container .component-content {
+    .overview {
+        .name {
+            color: $Violet;
             line-height: 0;
+            white-space: nowrap;
+        }
 
-            @include h5-xl;
+        .description {
+            @include subtitle1-xl;
 
             @include lg {
-                @include h5-lg;
+                @include subtitle1-lg;
             }
 
             @include md {
-                @include h1-md;
+                @include subtitle1-md;
             }
 
             @include sm {
-                @include h1-sm;
-            }
-
-            .title {
-                color: $Violet;
-                border-bottom: 4px solid $Gray02;
-                padding-bottom: rem(25px);
-
-                @include body1-xl;
-
-                @include lg {
-                    @include body1-lg;
-                }
-
-                @include md {
-                    @include body1-md;
-                }
-
-                @include sm {
-                    @include body1-sm;
-                }
-            }
-        }
-
-        .implementation {
-            margin: rem(50px) 0 rem(80px);
-
-            .title {
-                color: $Violet;
-                border-bottom: 4px solid $Gray02;
-                padding-bottom: rem(15px);
-
-                @include body1-xl;
-
-                @include lg {
-                    @include body1-lg;
-                }
-
-                @include md {
-                    @include body1-md;
-                }
-
-                @include sm {
-                    @include body1-sm;
-                }
-            }
-
-            .table {
-                table-layout: fixed;
-                border-collapse: collapse;
-                width: 100%;
-                margin: rem(16px) 0 rem(80px);
+                @include subtitle1-sm;
             }
         }
     }
 
-    .component-siderail {
-        position: relative;
-        width: 30%;
-        margin-top: rem(127px);
+    .usage {
+        margin-top: rem(75px);
+        line-height: 0;
 
-        @include lt-xl {
-            display: none;
+        @include h5-xl;
+
+        @include lg {
+            @include h5-lg;
         }
 
-        ul.link-container:before {
-            position: absolute;
-            content: "";
-            width: 1px;
-            height: rem(370px);
-            background: $Gray02;
-            top: rem(-20px);
-            left: 0;
+        @include md {
+            @include h1-md;
+        }
+
+        @include sm {
+            @include h1-sm;
+        }
+
+        .title {
+            color: $Violet;
+            border-bottom: 4px solid $Gray02;
+            padding-bottom: rem(25px);
+
+            @include body1-xl;
+
+            @include lg {
+                @include body1-lg;
+            }
+
+            @include md {
+                @include body1-md;
+            }
+
+            @include sm {
+                @include body1-sm;
+            }
         }
     }
-}
 
-.siderail-selected {
-    border-left: rem(4px) solid $Violet;
-    color: $Violet;
+    .implementation {
+        margin: rem(50px) 0 rem(80px);
 
-    .bit-lnk-fluent > button {
-        padding-left: rem(4px);
+        .title {
+            color: $Violet;
+            border-bottom: 4px solid $Gray02;
+            padding-bottom: rem(15px);
+
+            @include body1-xl;
+
+            @include lg {
+                @include body1-lg;
+            }
+
+            @include md {
+                @include body1-md;
+            }
+
+            @include sm {
+                @include body1-sm;
+            }
+        }
+
+        .table {
+            table-layout: fixed;
+            border-collapse: collapse;
+            width: 100%;
+            margin: rem(16px) 0 rem(80px);
+        }
     }
 }

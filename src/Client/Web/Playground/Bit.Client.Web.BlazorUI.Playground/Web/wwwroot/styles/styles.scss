@@ -348,6 +348,66 @@ footer {
     }
 }
 
+/* Container */
+
+.component-container {
+    display: flex;
+    background-image: url('/images/main/component-bg.png');
+    background-position: top center;
+    background-repeat: no-repeat;
+    background-size: 100% rem(700px);
+    padding: rem(144px) 0 0;
+
+    .component-content {
+        max-width: 70%;
+        padding: 0 rem(12px) rem(248px) rem(80px);
+
+        @include lt-xl {
+            max-width: 85%;
+            padding: 0 rem(75px) rem(248px) rem(75px);
+        }
+
+        @include lt-md {
+            max-width: 100%;
+            padding: 0 rem(90px) rem(248px) rem(90px);
+        }
+
+        @include sm {
+            max-width: 90%;
+            padding: 0 rem(21px) rem(248px) rem(21px);
+        }
+    }
+
+    .component-siderail {
+        position: relative;
+        width: 30%;
+        margin-top: rem(127px);
+
+        @include lt-xl {
+            display: none;
+        }
+
+        ul.link-container:before {
+            position: absolute;
+            content: "";
+            width: 1px;
+            height: rem(370px);
+            background: $Gray02;
+            top: rem(-20px);
+            left: 0;
+        }
+    }
+}
+
+.siderail-selected {
+    border-left: rem(4px) solid $Violet;
+    color: $Violet;
+
+    .bit-lnk-fluent > button {
+        padding-left: rem(4px);
+    }
+}
+
 /* Nav Menu */
 
 .main-container {
@@ -487,6 +547,7 @@ footer {
             color: $White;
         }
     }
+
     /* Demo Page */
 
     .component-siderail {
