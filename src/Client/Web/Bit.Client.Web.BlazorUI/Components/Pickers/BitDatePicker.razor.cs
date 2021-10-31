@@ -139,6 +139,11 @@ namespace Bit.Client.Web.BlazorUI
         /// </summary>
         [Parameter] public DayOfWeek FirstDayOfWeek { get; set; } = DayOfWeek.Sunday;
 
+        /// <summary>
+        /// Whether the calendar should show the week number (weeks 1 to 53) before each week row
+        /// </summary>
+        [Parameter] public bool ShowWeekNumbers { get; set; } = false;
+
         public string CalloutId { get; set; } = string.Empty;
         public string MonthAndYearId { get; set; } = Guid.NewGuid().ToString();
         public string ActiveDescendantId { get; set; } = Guid.NewGuid().ToString();
@@ -526,6 +531,28 @@ namespace Bit.Client.Web.BlazorUI
             int dayOfWeek = (int)FirstDayOfWeek + index;
             if (dayOfWeek > 6) dayOfWeek = dayOfWeek - 7;
             return (DayOfWeek)dayOfWeek;
+        }
+
+        private int GetWeekNumber(int weekIndex)
+        {
+            int month = GetCorrectTargetMonth(weekIndex, 0);
+            int year = currentYear;
+            if (IsInCurrentMonth(weekIndex, 0) is false)
+            {
+                if (currentMonth == 12 && month == 1)
+                {
+                    year++;
+                }
+                else if (currentMonth == 1 && month == 12)
+                {
+                    year--;
+                }
+            }
+
+            int day = currentMonthCalendar[weekIndex, 0];
+            var date = calendar?.ToDateTime(year, month, day, 0, 0, 0, 0) ?? DateTime.Now;
+            int weekNumber = calendar?.GetWeekOfYear(date, CalendarWeekRule.FirstFullWeek, FirstDayOfWeek) ?? 1;
+            return weekNumber;
         }
 
         private int GetValueForComparison(int firstDay) => firstDay > (int)FirstDayOfWeek ? (int)FirstDayOfWeek : (int)FirstDayOfWeek - 7;
