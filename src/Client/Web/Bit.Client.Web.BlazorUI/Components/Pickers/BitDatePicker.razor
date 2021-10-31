@@ -103,10 +103,10 @@
                                         @if (ShowWeekNumbers)
                                         {
                                             <th class="week-num-cell"
-                                                title="@($"Week number")"
-                                                aria-label="@($"Week number")"
+                                                title="@($"Week number {GetWeekNumber(week)}")"
+                                                aria-label="@($"Week number {GetWeekNumber(week)}")"
                                                 scope="row">
-                                                <span>39</span>
+                                                <span>@GetWeekNumber(week)</span>
                                             </th>
                                         }
 
