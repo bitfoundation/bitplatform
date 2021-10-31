@@ -139,6 +139,11 @@ namespace Bit.Client.Web.BlazorUI
         /// </summary>
         [Parameter] public DayOfWeek FirstDayOfWeek { get; set; } = DayOfWeek.Sunday;
 
+        /// <summary>
+        /// Whether the calendar should show the week number (weeks 1 to 53) before each week row
+        /// </summary>
+        [Parameter] public bool ShowWeekNumbers { get; set; } = true;
+
         public string CalloutId { get; set; } = string.Empty;
         public string MonthAndYearId { get; set; } = Guid.NewGuid().ToString();
         public string ActiveDescendantId { get; set; } = Guid.NewGuid().ToString();

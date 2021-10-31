@@ -75,7 +75,7 @@
 }
 
 .day-picker-wrapper {
-    width: rem(196px);
+    min-width: rem(196px);
     margin: 0;
     padding: rem(12px);
     box-shadow: none;
@@ -83,7 +83,7 @@
 
     table {
         position: relative;
-        width: rem(196px);
+        //width: rem(196px);
         text-align: center;
         border-collapse: collapse;
         border-spacing: 0;
@@ -118,7 +118,7 @@
         flex-flow: row nowrap;
     }
 
-    td {
+    .date-cell {
         position: relative;
         display: flex;
         justify-content: center;
@@ -187,6 +187,22 @@
         .day-btn {
             color: $Grey130;
         }
+    }
+
+    .week-num-cell {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: rem(28px);
+        height: rem(28px);
+        margin: 0;
+        padding: rem(3px) 0 0 0;
+        border-right: rem(1px) solid $Grey30;
+        box-sizing: border-box;
+        font-weight: 400;
+        font-size: rem(12px);
+        color: $Grey130;
+        background-color: $Grey10;
     }
     //tr[role=presentation] {
     //    position: absolute;

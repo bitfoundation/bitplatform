@@ -79,6 +79,11 @@
                            aria-activedescendant="@ActiveDescendantId">
                             <tbody>
                                 <tr>
+                                    @if (ShowWeekNumbers)
+                                    {
+                                        <th class="week-day-label"></th>
+                                    }
+
                                     @for (var index = 0; index < 7; index++)
                                     {
                                         <th class="week-day-label" scope="col" title="@calendar?.GetDayOfWeekName(GetDayOfWeek(index))">
@@ -95,11 +100,21 @@
                                     }
 
                                     <tr>
+                                        @if (ShowWeekNumbers)
+                                        {
+                                            <th class="week-num-cell"
+                                                title="@($"Week number")"
+                                                aria-label="@($"Week number")"
+                                                scope="row">
+                                                <span>39</span>
+                                            </th>
+                                        }
+
                                         @for (var day = 0; day < 7; day++)
                                         {
                                             var localWeek = week;
                                             var localDay = day;
-                                            <td class="@GetDateElClass(localDay, localWeek)" role="presentation"
+                                            <td class="date-cell @GetDateElClass(localDay, localWeek)" role="presentation"
                                     @onclick="() => SelectDate(localDay, localWeek)">
                                                 <button class="day-btn"
                                             role="gridcell"
