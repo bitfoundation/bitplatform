@@ -194,6 +194,23 @@ pre {
     }
 }
 
+.spinner-container, spinner-positioning {
+    & > div {
+        & label {
+            font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+            -webkit-font-smoothing: antialiased;
+            font-size: 14px;
+            font-weight: 600;
+            color: rgb(50, 49, 48);
+            box-sizing: border-box;
+            box-shadow: none;
+            display: block;
+            padding: 5px 0px;
+            overflow-wrap: break-word;
+        }
+    }
+}
+
 /* Header */
 
 .header-container {
@@ -453,31 +470,31 @@ footer {
             .bit-nav-link-container {
                 margin-left: rem(41px);
             }
-        }
 
-        .bit-nav-selected-fluent:after {
-            border-left: rem(4px) solid $Violet;
-        }
+            .bit-nav-selected-fluent:after {
+                border-left: rem(4px) solid $Violet;
+            }
 
-        .bit-nav-grp-content {
-            margin-bottom: 0;
-        }
+            .bit-nav-grp-content {
+                margin-bottom: 0;
+            }
 
-        .bit-sch-box-fluent > div:last-child button {
-            background-color: $White;
-        }
+            .bit-sch-box-fluent > div:last-child button {
+                background-color: $White;
+            }
 
-        .bit-icon--Clear {
-            padding-right: rem(20px);
-        }
+            .bit-icon--Clear {
+                padding-right: rem(20px);
+            }
 
-        input.search-input {
-            padding-top: rem(5px);
-        }
+            input.search-input {
+                padding-top: rem(5px);
+            }
 
-        .border-top {
-            border-bottom: rem(1px) solid $Gray03;
-            padding-top: rem(30px);
+            .border-top {
+                border-bottom: rem(1px) solid $Gray03;
+                padding-top: rem(30px);
+            }
         }
     }
 
@@ -487,62 +504,23 @@ footer {
             color: $White;
         }
     }
-    /* Demo Page */
+}
 
-    .component-siderail {
-        ul.bit-nav-list:before {
-            position: absolute;
-            content: "";
-            width: 1px;
-            height: rem(370px);
-            background: $Gray02;
-            top: rem(-20px);
-            left: 0;
-        }
+/* Demo Page */
 
-        .bit-lnk-fluent a {
-            color: $Gray01;
-
-            @include subtitle2-xl;
-
-            @include lg {
-                @include subtitle2-lg;
-            }
-
-            @include md {
-                @include subtitle2-md;
-            }
-
-            @include sm {
-                @include subtitle2-sm;
-            }
-        }
-
-        .bit-lnk-fluent a:hover {
-            text-decoration: none;
-            color: $Violet;
-        }
-
-        .link-container li:hover {
-            background-color: $Gray04;
-        }
-
-        .bit-nav-link-container .bit-nav-link-txt {
-            margin-left: rem(-20px);
-        }
-
-        .bit-nav-link-enabled-hasurl-fluent {
-            margin-left: rem(15px);
-        }
-
-        .bit-nav-composite-link:hover {
-            background-color: transparent;
-        }
+.component-siderail {
+    ul.bit-nav-list:before {
+        position: absolute;
+        content: "";
+        width: 1px;
+        height: rem(370px);
+        background: $Gray02;
+        top: rem(-20px);
+        left: 0;
     }
 
-    .how-to-use {
-        text-justify: auto;
-        color: $Black01;
+    .bit-lnk-fluent a {
+        color: $Gray01;
 
         @include subtitle2-xl;
 
@@ -559,209 +537,221 @@ footer {
         }
     }
 
-    .copy-btn {
-        color: $Violet;
-        border: 1px dashed;
-
-        @include subtitle2-xl;
-
-        @include lg {
-            @include subtitle2-lg;
-        }
-
-        @include md {
-            @include subtitle2-md;
-        }
-
-        @include sm {
-            @include subtitle2-sm;
-        }
-
-        .bit-icon--Copy {
-            color: $Violet !important;
-        }
-    }
-
-    .copy-btn:hover {
+    .bit-lnk-fluent a:hover {
+        text-decoration: none;
         color: $Violet;
     }
 
-    .show-code-btn, .show-code-btn:hover {
-        @include code-button;
-        background-color: $Violet;
+    .link-container li:hover {
+        background-color: $Gray04;
     }
 
-    .hide-code-btn, .hide-code-btn:hover {
-        @include code-button;
-        background-color: $White;
-        color: $Violet;
+    .bit-nav-link-container .bit-nav-link-txt {
+        margin-left: rem(-20px);
     }
 
-    .table .bit-lnk > a {
-        color: $Violet;
+    .bit-nav-link-enabled-hasurl-fluent {
+        margin-left: rem(15px);
     }
 
-    .razor-code p {
-        white-space: nowrap;
-    }
-
-    .disable-btn {
-        @include md {
-            margin-top: rem(10px);
-            width: rem(241px);
-        }
-
-        @include sm {
-            margin-top: rem(10px);
-            width: rem(241px);
-        }
-    }
-
-    .label-btn {
-        @include sm {
-            margin-top: rem(10px);
-            width: rem(284px);
-        }
-    }
-
-    .lnk-btn {
-        @include sm {
-            margin-top: rem(10px);
-            width: rem(240px);
-        }
-    }
-
-    .chk-box .bit-chb-lbl {
-        margin-bottom: rem(10px);
-    }
-
-    .custom-button, .custom-button:hover {
-        background-color: $DarkRed;
-        border-color: $DarkRed;
-        color: $White;
-        text-decoration: underline;
-        font-weight: bolder;
-    }
-
-    .disable-cmp-btn {
-        @include md {
-            margin-top: rem(10px);
-            width: rem(214px);
-        }
-    }
-
-    .bit-cmp-btn {
-        @include sm {
-            margin-top: rem(10px);
-            width: rem(278px);
-        }
-    }
-
-    .sample {
-        .ch-group .bit-txt {
-            margin-bottom: rem(25px);
-        }
-
-        .bit-chg label {
-            padding-bottom: rem(20px);
-        }
-
-        .bit-sch-box {
-            margin-bottom: rem(12px);
-        }
-
-        .bit-txt-wrapper {
-            margin-bottom: rem(20px);
-        }
-
-        .bit-tgl > div {
-            margin-top: rem(10px);
-        }
-
-        .bit-tgl > div label {
-            margin-top: rem(12px);
-        }
-
-        .bit-tgl-inline-fluent > div {
-            margin-top: 0;
-        }
-
-        .bit-drp-lbl {
-            padding-bottom: rem(20px);
-        }
-
-        .bit-msg-bar-icon {
-            padding-top: rem(13px);
-        }
-
-        .bit-msg-bar-innertext span {
-            padding-top: rem(6px);
-        }
-    }
-
-    .bit-spn-medium-fluent {
-        padding-top: rem(10px);
+    .bit-nav-composite-link:hover {
+        background-color: transparent;
     }
 }
 
-.bit-pvt {
-    margin-bottom: rem(20px);
+.how-to-use {
+    text-justify: auto;
+    color: $Black01;
 
-    div:nth-child(2) {
-        margin-top: rem(25px);
+    @include subtitle2-xl;
+
+    @include lg {
+        @include subtitle2-lg;
     }
 
-    .bit-spb {
-        margin-top: rem(10px);
+    @include md {
+        @include subtitle2-md;
     }
-}
 
-.tgl-btn {
     @include sm {
-        margin-top: rem(10px);
-        width: rem(195px);
+        @include subtitle2-sm;
     }
 }
 
-.aria-hidden-tgl-btn {
+.copy-btn {
+    color: $Violet;
+    border: 1px dashed;
+
+    @include subtitle2-xl;
+
+    @include lg {
+        @include subtitle2-lg;
+    }
+
+    @include md {
+        @include subtitle2-md;
+    }
+
     @include sm {
-        margin-top: rem(10px);
-        width: rem(239px);
+        @include subtitle2-sm;
+    }
+
+    .bit-icon--Copy {
+        color: $Violet !important;
     }
 }
 
-.p-12 .bit-tgl label {
-    padding-bottom: rem(15px);
+.copy-btn:hover {
+    color: $Violet;
 }
 
-/* General */
-.bit-icon {
-    height: 0;
+.show-code-btn, .show-code-btn:hover {
+    @include code-button;
+    background-color: $Violet;
 }
 
-.sample .bit-drp-lbl {
-    padding-bottom: rem(20px);
-}
-/* General */
-.bit-nav-selected-fluent:after {
-    border-left: rem(4px) solid $Violet;
-}
-
-.bit-nav-grp-content {
-    margin-bottom: 0;
-}
-
-.bit-sch-box-fluent > div:last-child button {
+.hide-code-btn, .hide-code-btn:hover {
+    @include code-button;
     background-color: $White;
+    color: $Violet;
 }
 
-.bit-icon--Clear {
-    padding-right: rem(20px);
+.table .bit-lnk > a {
+    color: $Violet;
 }
 
-input.search-input {
-    padding-top: rem(5px);
+.razor-code p {
+    white-space: nowrap;
 }
+
+.disable-btn {
+    @include md {
+        margin-top: rem(10px);
+        width: rem(241px);
+    }
+
+    @include sm {
+        margin-top: rem(10px);
+        width: rem(241px);
+    }
+}
+
+.label-btn {
+    @include sm {
+        margin-top: rem(10px);
+        width: rem(284px);
+    }
+}
+
+.lnk-btn {
+    @include sm {
+        margin-top: rem(10px);
+        width: rem(240px);
+    }
+}
+
+.chk-box .bit-chb-lbl {
+    margin-bottom: rem(10px);
+}
+
+.custom-button, .custom-button:hover {
+    background-color: $DarkRed;
+    border-color: $DarkRed;
+    color: $White;
+    text-decoration: underline;
+    font-weight: bolder;
+}
+
+.disable-cmp-btn {
+    @include md {
+        margin-top: rem(10px);
+        width: rem(214px);
+    }
+}
+
+.bit-cmp-btn {
+    @include sm {
+        margin-top: rem(10px);
+        width: rem(278px);
+    }
+}
+
+.sample {
+    .ch-group .bit-txt {
+        margin-bottom: rem(25px);
+    }
+
+    .bit-chg label {
+        padding-bottom: rem(20px);
+    }
+
+    .bit-sch-box {
+        margin-bottom: rem(12px);
+    }
+
+    .bit-txt-wrapper {
+        margin-bottom: rem(20px);
+    }
+
+    .bit-tgl > div {
+        margin-top: rem(10px);
+    }
+
+    .bit-tgl > div label {
+        margin-top: rem(12px);
+    }
+
+    .bit-tgl-inline-fluent > div {
+        margin-top: 0;
+    }
+
+    .bit-slider-container {
+        padding: rem(30px) 0;
+    }
+
+    .bit-btn-slider {
+        margin-bottom: rem(30px);
+    }
+
+    .bit-slider-ranged-vertical .bit-slider-value, .bit-slider-vertical .bit-slider-value {
+        margin-top: rem(30px);
+    }
+
+    .bit-slider-vertical {
+        padding: rem(20px);
+    }
+
+    .bit-drp-lbl {
+        padding-bottom: rem(20px);
+    }
+
+    .bit-msg-bar-icon {
+        padding-top: rem(13px);
+    }
+
+    .bit-msg-bar-innertext span {
+        padding-top: rem(6px);
+    }
+
+    .tgl-btn {
+        @include sm {
+            margin-top: rem(10px);
+            width: rem(195px);
+        }
+    }
+
+    .aria-hidden-tgl-btn {
+        @include sm {
+            margin-top: rem(10px);
+            width: rem(239px);
+        }
+    }
+
+    .p-12 .bit-tgl label {
+        padding-bottom: rem(15px);
+    }
+}
+/* General */
 
 .bit-icon {
     height: 0;
