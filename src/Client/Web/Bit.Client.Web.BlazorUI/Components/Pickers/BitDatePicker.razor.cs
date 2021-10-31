@@ -133,7 +133,7 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// Show month picker on top of date picker when visible.
         /// </summary>
-        [Parameter] public bool ShowMonthPickerAsOverlay { get; set; } = true;
+        [Parameter] public bool ShowMonthPickerAsOverlay { get; set; } = false;
 
         /// <summary>
         /// The first day of the week for your locale
