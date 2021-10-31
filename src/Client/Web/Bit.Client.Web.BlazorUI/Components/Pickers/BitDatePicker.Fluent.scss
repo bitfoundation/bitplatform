@@ -75,6 +75,8 @@
 }
 
 .day-picker-wrapper {
+    display: flex;
+    flex-flow: column nowrap;
     min-width: rem(196px);
     margin: 0;
     padding: rem(12px);
@@ -384,33 +386,33 @@
             margin: 0;
         }
     }
+}
 
-    .go-today-btn {
-        position: relative;
-        bottom: 0;
-        align-self: flex-end;
-        height: rem(30px);
-        padding: 0 rem(4px);
-        margin: rem(3px) rem(4px) 0 0;
-        border: none;
-        outline: transparent;
-        box-sizing: content-box;
-        font-size: rem(12px);
-        line-height: rem(30px);
-        color: $Grey160;
+.go-today-btn {
+    position: relative;
+    bottom: 0;
+    align-self: flex-end;
+    height: rem(30px);
+    padding: 0 rem(4px);
+    margin: rem(3px) rem(4px) 0 0;
+    border: none;
+    outline: transparent;
+    box-sizing: content-box;
+    font-size: rem(12px);
+    line-height: rem(30px);
+    color: $Grey160;
+    background-color: transparent;
+    overflow: visible;
+
+    &:hover {
+        color: $CyanBlue10;
         background-color: transparent;
-        overflow: visible;
+        cursor: pointer;
+    }
 
-        &:hover {
-            color: $CyanBlue10;
-            background-color: transparent;
-            cursor: pointer;
-        }
-
-        &:disabled {
-            color: $Grey60;
-            pointer-events: none;
-        }
+    &:disabled {
+        color: $Grey60;
+        pointer-events: none;
     }
 }
 
