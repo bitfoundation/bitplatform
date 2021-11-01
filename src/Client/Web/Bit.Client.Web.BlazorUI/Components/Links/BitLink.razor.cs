@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
@@ -8,7 +7,7 @@ namespace Bit.Client.Web.BlazorUI
 {
     public partial class BitLink
     {
-        [Inject] public IJSRuntime JSRuntime { get; set; } = default!;
+        [Inject] public IJSRuntime? JSRuntime { get; set; }
 
         /// <summary>
         /// URL the link points to
@@ -47,7 +46,7 @@ namespace Bit.Client.Web.BlazorUI
 
         private async Task ScrollToFragment()
         {
-            await JSRuntime.BitLinkScrollToFragmentOnClickEvent(Href.Substring(1));
+            await JSRuntime!.BitLinkScrollToFragmentOnClickEvent(Href![1..]);
         }
     }
 }
