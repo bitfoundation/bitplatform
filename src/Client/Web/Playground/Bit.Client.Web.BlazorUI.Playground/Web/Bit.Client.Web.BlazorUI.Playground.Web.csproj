@@ -25,9 +25,4 @@
         <LibSassOutputLevel>verbose</LibSassOutputLevel>
         <LibSassMessageLevel>High</LibSassMessageLevel>
     </PropertyGroup>-->
-
-    <ItemGroup>
-        <ProjectReference Include="..\..\..\Bit.Client.Web.BlazorUI\Bit.Client.Web.BlazorUI.csproj" />
-        <ProjectReference Include="..\Shared\Bit.Client.Web.BlazorUI.Playground.Shared.csproj" />
-    </ItemGroup>
 </Project>
