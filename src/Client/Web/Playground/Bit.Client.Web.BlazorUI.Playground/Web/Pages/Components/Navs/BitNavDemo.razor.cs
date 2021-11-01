@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using Bit.Client.Web.BlazorUI.Playground.Web.Models;
+using Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 
 namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Navs
 {
@@ -63,11 +65,11 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Navs
                     new BitNavLinkItem { Name = "MSN", Url = "http://msn.com", Key = "key2", IsEnabled = false, Target = "_blank", Title = "" }
                 }
             },
-            new BitNavLinkItem { Name = "Shared Documents and Files", Url = "http://example.com", Key = "key3", Target = "_blank"},
-            new BitNavLinkItem { Name = "Pages", Url = "http://msn.com", Key = "key4", Target = "_parent"},
-            new BitNavLinkItem { Name = "Notebook", Url = "http://msn.com", Key = "key5", IsEnabled = false},
-            new BitNavLinkItem { Name = "Communication and Media", Url = "http://msn.com", Key = "key6", Target = "_top"},
-            new BitNavLinkItem { Name = "News", Key = "key7", Url = "http://cnn.com", Icon = "News", Target = "_self"}
+            new BitNavLinkItem { Name = "Shared Documents and Files", Url = "http://example.com", Key = "key3", Target = "_blank" },
+            new BitNavLinkItem { Name = "Pages", Url = "http://msn.com", Key = "key4", Target = "_parent" },
+            new BitNavLinkItem { Name = "Notebook", Url = "http://msn.com", Key = "key5", IsEnabled = false },
+            new BitNavLinkItem { Name = "Communication and Media", Url = "http://msn.com", Key = "key6", Target = "_top" },
+            new BitNavLinkItem { Name = "News", Key = "key7", Url = "http://cnn.com", Icon = "News", Target = "_self" }
         };
 
         private readonly List<BitNavLinkItem> BasicNoUrlNavLinks = new()
@@ -181,5 +183,180 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Navs
         {
             BitNavManualModeSelectedKey = selectedKey;
         }
+
+        private readonly List<ComponentParameter> componentParameters = new()
+        {
+            new ComponentParameter()
+            {
+                Name = "AriaLabel",
+                Type = "string",
+                DefaultValue = "",
+                Description = "The aria-label of the control for the benefit of screen readers.",
+            },
+            new ComponentParameter()
+            {
+                Name = "Class",
+                Type = "string",
+                DefaultValue = "",
+                Description = "Custom CSS class for the root element of the component",
+            },
+            new ComponentParameter()
+            {
+                Name = "HeaderTemplate",
+                Type = "RenderFragment<BitNavLinkItem>",
+                DefaultValue = "",
+                Description = "Used to customize how content inside the group header is rendered.",
+            },
+            new ComponentParameter()
+            {
+                Name = "HtmlAttributes",
+                Type = "Dictionary<string, object>",
+                DefaultValue = "",
+                Description = "Capture and render additional attributes in addition to the component's parameters.",
+            },
+            new ComponentParameter()
+            {
+                Name = "InitialSelectedKey",
+                Type = "string",
+                DefaultValue = "",
+                Description = "(Optional) The key of the nav item initially selected in manual mode.",
+            },
+            new ComponentParameter()
+            {
+                Name = "IsEnabled",
+                Type = "bool",
+                DefaultValue = "",
+                Description = "Whether or not the component is enabled.",
+            },
+            new ComponentParameter()
+            {
+                Name = "LinkTemplate",
+                Type = "RenderFragment<BitNavLinkItem>",
+                DefaultValue = "",
+                Description = "Used to customize how content inside the link tag is rendered.",
+            },
+            new ComponentParameter()
+            {
+                Name = "Mode",
+                Type = "BitNavMode",
+                DefaultValue = "Automatic",
+                Description = "Determines how the navigation will be handled. The default value is Automatic",
+            },
+            new ComponentParameter()
+            {
+                Name = "NavLinkItems",
+                Type = "ICollection<BitNavLinkItem>",
+                DefaultValue = "",
+                Description = "A collection of link items to display in the navigation bar.",
+            },
+            new ComponentParameter()
+            {
+                Name = "OnLinkClick",
+                Type = "EventCallback<BitNavLinkItem>",
+                DefaultValue = "",
+                Description = "Function callback invoked when a link in the navigation is clicked.",
+            },
+            new ComponentParameter()
+            {
+                Name = "OnLinkExpandClick",
+                Type = "EventCallback<BitNavLinkItem>",
+                DefaultValue = "",
+                Description = "Function callback invoked when the chevron on a link is clicked.",
+            },
+            new ComponentParameter()
+            {
+                Name = "RenderType",
+                Type = "BitNavRenderType",
+                DefaultValue = "Normal",
+                Description = "The way to render nav links.",
+            },
+            new ComponentParameter()
+            {
+                Name = "SelectedKey",
+                Type = "string",
+                DefaultValue = "",
+                Description = "The key of the nav item selected by caller.",
+            },
+            new ComponentParameter()
+            {
+                Name = "Style",
+                Type = "string",
+                DefaultValue = "",
+                Description = "Custom style for the root element of the component.",
+            }
+        };
+
+        private readonly List<EnumParameter> enumParameters = new()
+        {
+            new EnumParameter()
+            {
+                Id = "nav-mode-enum",
+                Title = "BitNavMode",
+                Description = "",
+                EnumList = new List<EnumItem>()
+                {
+                    new EnumItem()
+                    {
+                        Name= "Automatic",
+                        Description="The value of selected key will change using NavigationManager and the current url inside the component.",
+                        Value="automatic = 0",
+                    },
+                    new EnumItem()
+                    {
+                        Name= "Manual",
+                        Description="Selected key changes will be sent back to the parent component and the component won't change its value.",
+                        Value="manual= 1",
+                    }
+                }
+            },
+            new EnumParameter()
+            {
+                Id = "nav-render-type-enum",
+                Title = "BitNavRenderType",
+                Description = "",
+                EnumList = new List<EnumItem>()
+                {
+                    new EnumItem()
+                    {
+                        Name= "Normal",
+                        Description="",
+                        Value="",
+                    },
+                    new EnumItem()
+                    {
+                        Name= "Grouped",
+                        Description="",
+                        Value="",
+                    }
+                }
+            },
+            new EnumParameter()
+            {
+                Id = "component-visibility-enum",
+                Title = "ComponentVisibility",
+                Description = "",
+                EnumList = new List<EnumItem>()
+                {
+                    new EnumItem()
+                    {
+                        Name= "Visible",
+                        Description="",
+                        Value="",
+                    },
+                    new EnumItem()
+                    {
+                        Name= "Hidden",
+                        Description="",
+                        Value="",
+                    },
+                    new EnumItem()
+                    {
+                        Name= "Collapsed",
+                        Description="",
+                        Value="",
+                    }
+                }
+            }
+        };
     }
 }
