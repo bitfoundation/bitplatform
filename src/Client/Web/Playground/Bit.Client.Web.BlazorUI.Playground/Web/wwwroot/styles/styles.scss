@@ -218,18 +218,18 @@ pre {
     background: $Gray04;
     box-shadow: 0 rem(4px) rem(20px) $Shadow02;
     display: flex;
-    height: rem(160px);
+    height: rem(120px);
     position: fixed;
     top: 0;
     width: 100%;
     z-index: 2000;
 
     @include lg {
-        height: rem(120px);
+        height: rem(100px);
     }
 
     @include md {
-        height: rem(110px);
+        height: rem(64px);
     }
 
     @include lt-md {
@@ -241,7 +241,8 @@ pre {
         display: flex;
         align-items: center;
 
-        @include lt-md {
+        @include sm {
+            height: rem(76px);
             border-bottom: rem(1px) solid $Gray03;
         }
     }
@@ -249,34 +250,37 @@ pre {
     .logo-title {
         display: none;
 
-        @include lt-md {
+        @include sm {
             display: block;
             font-size: rem(14px);
             color: $DarkBlue;
+            margin-top: rem(10px);
         }
     }
 
     img {
         height: rem(90px);
-        margin-left: rem(350px);
         width: rem(90px);
+        padding-top: rem(5px);
+        margin-left: rem(350px);
 
         @include lg {
             height: rem(70px);
-            margin-left: rem(120px);
             width: rem(70px);
+            margin-left: rem(120px);
         }
 
         @include md {
             height: rem(40px);
-            margin-left: rem(32px);
             width: rem(40px);
+            margin-left: rem(32px);
+            padding-top: rem(7px);
         }
 
-        @include lt-md {
+        @include sm {
             height: rem(40px);
-            margin: rem(14px) rem(16px);
             width: rem(40px);
+            margin: 0 rem(16px);
         }
     }
 }
@@ -284,38 +288,76 @@ pre {
 .header-menu {
     display: flex;
     list-style-type: none;
-    padding-left: rem(29px);
+    padding-left: rem(47px);
+    position: relative;
 
-    @include lt-md {
-        margin-left: rem(11px);
+    @include-lg {
+        padding-left: rem(20px);
+    }
+
+    @include-md {
+        padding-left: rem(12px);
+    }
+
+    @include sm {
+        padding-left: rem(35px);
+        margin-top: rem(12px);
     }
 
     a, a:hover, a:visited {
         color: $DarkBlue;
         font-size: rem(28px);
         font-weight: 500;
-        padding: 0 rem(19px) 0 rem(19px);
+        padding: 0 rem(40px) 0 rem(42px);
         text-decoration: none;
 
         @include lg {
-            padding: 0 rem(12px) 0 rem(12px);
-            font-size: rem(20px);
+            padding: 0 rem(20px) 0 rem(20px);
+            font-size: rem(24px);
         }
 
         @include md {
-            padding: 0 rem(12px) 0 rem(12px);
+            padding: 0 rem(20px) 0 rem(20px);
             font-size: rem(18px);
         }
 
-        @include lt-md {
-            padding: 0 rem(15px) 0 rem(15px);
-            font-size: rem(16px);
+        @include sm {
+            padding: 0 rem(23px) 0 rem(23px);
+            font-size: rem(14px);
+        }
+
+        .active {
+            position: relative;
         }
     }
 
     .active {
-        text-decoration-line: underline;
-        text-underline-offset: rem(16px);
+        position: relative;
+    }
+
+    span.active:before {
+        position: absolute;
+        bottom: rem(-12px);
+        left: rem(40px);
+        height: rem(3px);
+        width: 50%;
+        background-color: $DarkBlue;
+        content: "";
+
+        @include lg {
+            left: rem(22px);
+            width: 60%;
+        }
+
+        @include md {
+            left: rem(19px);
+            width: 60%;
+        }
+
+        @include sm {
+            left: rem(5px);
+            width: 90%;
+        }
     }
 }
 
@@ -364,7 +406,6 @@ footer {
         color: $White;
     }
 }
-
 /* Nav Menu */
 
 .main-container {
@@ -505,7 +546,6 @@ footer {
         }
     }
 }
-
 /* Demo Page */
 
 .component-siderail {
@@ -766,7 +806,6 @@ input::-webkit-input-placeholder {
 ::-webkit-scrollbar {
     width: 0;
 }
-
 /*------------------------common styles-----------------------------------*/
 .container {
     margin: auto;
