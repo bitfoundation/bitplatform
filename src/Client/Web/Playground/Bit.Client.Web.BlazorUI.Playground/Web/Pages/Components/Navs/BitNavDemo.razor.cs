@@ -358,5 +358,136 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Navs
                 }
             }
         };
+
+        private readonly List<ComponentSubParameter> componentSubParameters = new()
+        {
+            new ComponentSubParameter()
+            {
+                Id = "NavLinkItem",
+                Title = "BitNavLinkItem",
+                Parameters = new List<ComponentParameter>()
+                {
+                   new ComponentParameter()
+                   {
+                       Name = "AriaCurrent",
+                       Type = "BitNavLinkItemAriaCurrent",
+                       DefaultValue = "Page",
+                       Description = "Aria-current token for active nav links. Must be a valid token value, and defaults to 'page'",
+                   },
+                  new ComponentParameter()
+                   {
+                       Name = "AriaLabel",
+                       Type = "string",
+                       DefaultValue = "",
+                       Description = "Aria label for nav link. Ignored if collapseAriaLabel or expandAriaLabel is provided",
+                   },
+                  new ComponentParameter()
+                   {
+                       Name = "CollapseAriaLabel",
+                       Type = "string",
+                       DefaultValue = "",
+                       Description = "ARIA label when items is collapsed and can be expanded.",
+                   },
+                  new ComponentParameter()
+                   {
+                       Name = "ExpandAriaLabel",
+                       Type = "string",
+                       DefaultValue = "",
+                       Description = "Aria label when group is collapsed and can be expanded.",
+                   },
+                  new ComponentParameter()
+                   {
+                       Name = "ForceAnchor",
+                       Type = "bool",
+                       DefaultValue = "",
+                       Description = "(Optional) By default, any link with onClick defined will render as a button. Set this property to true to override that behavior. (Links without onClick defined will render as anchors by default.)",
+                   },
+                  new ComponentParameter()
+                   {
+                       Name = "Icon",
+                       Type = "string",
+                       DefaultValue = "",
+                       Description = "Name of an icon to render next to this link button.",
+                   },
+                  new ComponentParameter()
+                   {
+                       Name = "IsCollapseByDefault",
+                       Type = "bool",
+                       DefaultValue = "",
+                       Description = "If true, the group should render collapsed by default.",
+                   },
+                  new ComponentParameter()
+                   {
+                       Name = "IsEnabled",
+                       Type = "bool",
+                       DefaultValue = "",
+                       Description = "Whether or not the link is enabled.",
+                   },
+                  new ComponentParameter()
+                   {
+                       Name = "IsExpanded",
+                       Type = "bool",
+                       DefaultValue = "",
+                       Description = "Whether or not the link is in an expanded state.",
+                   },
+                  new ComponentParameter()
+                   {
+                       Name = "Key",
+                       Type = "string",
+                       DefaultValue = "",
+                       Description = "A unique value to use as a key or id of the item, used when rendering the list of links and for tracking the currently selected link.",
+                   },
+                  new ComponentParameter()
+                   {
+                       Name = "Links",
+                       Type = "IEnumerable<BitNavLinkItem>",
+                       DefaultValue = "",
+                       Description = "A list of items to render as children of the current item.",
+                   },
+                  new ComponentParameter()
+                   {
+                       Name = "Name",
+                       Type = "string",
+                       DefaultValue = "",
+                       Description = "Text to render for this link.",
+                   },
+                  new ComponentParameter()
+                   {
+                       Name = "OnClick",
+                       Type = "Action<BitNavLinkItem>",
+                       DefaultValue = "",
+                       Description = "Callback invoked when a link in the navigation is clicked.",
+                   },
+                  new ComponentParameter()
+                   {
+                       Name = "OnHeaderClick",
+                       Type = "Action<bool>",
+                       DefaultValue = "",
+                       Description = "Callback invoked when a group header is clicked.",
+                   },
+                  new ComponentParameter()
+                   {
+                       Name = "Target",
+                       Type = "string",
+                       DefaultValue = "",
+                       Description = "Link target, specifies how to open the link.",
+                   },
+                  new ComponentParameter()
+                   {
+                       Name = "Title",
+                       Type = "string",
+                       DefaultValue = "",
+                       Description = "Text for title tooltip.",
+                   },
+                  new ComponentParameter()
+                   {
+                       Name = "Url",
+                       Type = "string",
+                       DefaultValue = "",
+                       Description = "URL to navigate to for this link.",
+                   }
+                }
+            }
+        };
     }
 }
