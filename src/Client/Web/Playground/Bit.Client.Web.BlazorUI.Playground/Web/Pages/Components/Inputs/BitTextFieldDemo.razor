@@ -1,96 +1,64 @@
 ﻿@page "/components/textfield"
 
-<h2>TextField</h2>
+@using Bit.Client.Web.BlazorUI.Playground.Web.Components
 
-<div class="card">
-    <p class="desc"> Text fields give people a way to enter and edit text. They’re used in forms, modal dialogs, tables, and other surfaces where text input is required.</p>
-</div>
+<ComponentPage ComponentName="TextField" OverviewDesc="Text fields give people a way to enter and edit text. They’re used in forms, modal dialogs, tables, and other surfaces where text input is required."
+               ComponentParameters="componentParameters" EnumParameters="enumParameters">
+    <CodeSample Title="BitTextField" Description="To create a text field you can use a BitTextField component.">
+        <SampleContent>
+            <div>
+                <BitTextField Label="Standard"></BitTextField>
+            </div>
+            <div class="m-t-15">
+                <BitTextField Label="Standard with two-way binding" @bind-Value="@TextValue"></BitTextField>
 
-<h2>Usage</h2>
-<div class="wrapper">
-    <div class="card">
-        <h3>Basic TextFields</h3>
-        <div class="desc">
-            <p>
-                To create a text field you can use a BitTextField component. You can enable and disable the text field by changing the IsEnabled attribute, A text filed can set for ReadOnly mode. By setting label attribute, a label appears above the text field. You can set Placeholder
-                and limit the chars of entered on text field by MaxLength attribute. You can even set icon for it and change text field type to password. By IsRequierd attribute check if the associated input is required or not.
-            </p>
-        </div>
-        <BitPivot>
-            <BitPivotItem HeaderText="Example" IconName="ViewList">
-                <div>
-                    <BitTextField Label="Standard"></BitTextField>
-                </div>
-                <div class="m-t-15">
-                    <BitTextField Label="Standard with two-way binding" @bind-Value="@TextValue"></BitTextField>
-
-                    <BitLabel>this is what you type: @TextValue </BitLabel>
-                </div>
-                <div class="m-t-15">
-                    <BitTextField Label="Read-only" IsReadonly="true" DefaultValue="I am read-only"></BitTextField>
-                </div>
-                <div class="m-t-15">
-                    <BitTextField Label="Disabled" IsEnabled="false" DefaultValue="I am disabled"></BitTextField>
-                </div>
-                <div class="m-t-15">
-                    <BitTextField Label="Disabled with placeholder" IsEnabled="false" Placeholder="I am disabled"></BitTextField>
-                </div>
-                <div class="m-t-15">
-                    <BitTextField Label="With placeholder" Placeholder="Please enter text here"></BitTextField>
-                </div>
-                <div class="m-t-15">
-                    <BitTextField Label="Controlled TextField limiting length of value to 10" MaxLength="10"></BitTextField>
-                </div>
-                <div class="m-t-15">
-                    <BitTextField Label="With an icon" IconName="CalendarMirrored"></BitTextField>
-                </div>
-                <div class="m-t-15">
-                    <BitTextField Label="Password with reveal button" Type="@InputType" CanRevealPassword="true"></BitTextField>
-                </div>
-                <div class="m-t-15">
-                    <BitTextField Label="Required" IsRequired="true"></BitTextField>
-                </div>
-                <div class="m-t-15">
-                    <BitTextField AriaLabel="Required without visible label" IsRequired="true" IsAriaRequired="true"></BitTextField>
-                </div>
-            </BitPivotItem>
-            <BitPivotItem HeaderText="Code" IconName="Source">
-                <p>
-                    &lt<span class="dark-green">BitTextField Label</span>="Standard"><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
-                </p>
-                <p>
-                    &lt<span class="dark-green">BitTextField IsReadonly</span>="<span class="light-blue">true</span>" <span class="dark-green">Label</span>="Read-only" <span class="dark-green">DefaultValue</span>="I am read-only"><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
-                </p>
-                <p>
-                    &lt<span class="dark-green">BitTextField IsEnabled</span>="<span class="light-blue">false</span>" <span class="dark-green">Label</span>="Disabled" <span class="dark-green">DefaultValue</span>="I am disabled"><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
-                </p>
-                <p>
-                    &lt<span class="dark-green">BitTextField IsEnabled</span>="<span class="light-blue">false</span>" <span class="dark-green">Label</span>="Disabled" <span class="dark-green">Placeholder</span>="I am disabled"><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
-                </p>
-                <p>
-                    &lt<span class="dark-green">BitTextField Placeholder</span>="Please enter text here" <span class="dark-green">Label</span>="With placeholder"><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
-                </p>
-                <p>
-                    &lt<span class="dark-green">BitTextField MaxLength</span>="10" <span class="dark-green">Label</span>="Controlled TextField limiting length of value to 10"><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
-                </p>
-                <p>
-                    &lt<span class="dark-green">BitTextField Label</span>="With an icon" <span class="dark-green">IconName</span>="CalendarMirrored"><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
-                </p>
-                <p>
-                    &lt<span class="dark-green">BitTextField Type</span>="<span class="light-yellow-bg">&#64;</span>InputType" <span class="dark-green">Label</span>="Password with reveal button" <span class="dark-green">CanRevealPassword</span>="<span class="light-blue">true</span>"><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
-                </p>
-                <p>
-                    &lt<span class="dark-green">BitTextField Label</span>="Required" <span class="dark-green">IsRequired</span>="<span class="light-blue">true</span>"><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
-                </p>
-                <p>
-                    &lt<span class="dark-green">BitTextField AriaLabel</span>="Required without visible label" <span class="dark-green">IsRequired</span>="<span class="light-blue">true</span>"><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
-                </p>
-            </BitPivotItem>
-        </BitPivot>
-    </div>
-    <h3>Multi-line TextField</h3>
-    <BitPivot>
-        <BitPivotItem HeaderText="Example" IconName="ViewList">
+                <BitLabel>this is what you type: @TextValue </BitLabel>
+            </div>
+            <div class="m-t-15">
+                <BitTextField Label="Read-only" IsReadonly="true" DefaultValue="I am read-only"></BitTextField>
+            </div>
+            <div class="m-t-15">
+                <BitTextField Label="Disabled" IsEnabled="false" DefaultValue="I am disabled"></BitTextField>
+            </div>
+            <div class="m-t-15">
+                <BitTextField Label="Disabled with placeholder" IsEnabled="false" Placeholder="I am disabled"></BitTextField>
+            </div>
+            <div class="m-t-15">
+                <BitTextField Label="With placeholder" Placeholder="Please enter text here"></BitTextField>
+            </div>
+            <div class="m-t-15">
+                <BitTextField Label="Controlled TextField limiting length of value to 10" MaxLength="10"></BitTextField>
+            </div>
+            <div class="m-t-15">
+                <BitTextField Label="With an icon" IconName="CalendarMirrored"></BitTextField>
+            </div>
+            <div class="m-t-15">
+                <BitTextField Label="Password with reveal button" Type="@InputType" CanRevealPassword="true"></BitTextField>
+            </div>
+            <div class="m-t-15">
+                <BitTextField Label="Required" IsRequired="true"></BitTextField>
+            </div>
+            <div class="m-t-15">
+                <BitTextField AriaLabel="Required without visible label" IsRequired="true" IsAriaRequired="true"></BitTextField>
+            </div>
+        </SampleContent>
+        <CodeSampleContent>
+            <pre>
+               &lt<span class="dark-green">BitTextField Label</span>="Standard"><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
+               &lt<span class="dark-green">BitTextField IsReadonly</span>=<span class="light-blue">"true"</span> <span class="dark-green">Label</span>="Read-only" <span class="dark-green">DefaultValue</span>="I am read-only"><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
+               &lt<span class="dark-green">BitTextField IsEnabled</span>=<span class="light-blue">"false"</span> <span class="dark-green">Label</span>="Disabled" <span class="dark-green">DefaultValue</span>="I am disabled"><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
+               &lt<span class="dark-green">BitTextField IsEnabled</span>=<span class="light-blue">"false"</span> <span class="dark-green">Label</span>="Disabled" <span class="dark-green">Placeholder</span>="I am disabled"><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
+               &lt<span class="dark-green">BitTextField Placeholder</span>="Please enter text here" <span class="dark-green">Label</span>="With placeholder"><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
+               &lt<span class="dark-green">BitTextField MaxLength</span>="10" <span class="dark-green">Label</span>="Controlled TextField limiting length of value to 10"><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
+               &lt<span class="dark-green">BitTextField Label</span>="With an icon" <span class="dark-green">IconName</span>="CalendarMirrored"><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
+               &lt<span class="dark-green">BitTextField Type</span>="<span class="light-yellow-bg">&#64;</span>InputType" <span class="dark-green">Label</span>="Password with reveal button" <span class="dark-green">CanRevealPassword</span>=<span class="light-blue">"true"</span>><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
+               &lt<span class="dark-green">BitTextField Label</span>="Required" <span class="dark-green">IsRequired</span>=<span class="light-blue">"true"</span>><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
+               &lt<span class="dark-green">BitTextField AriaLabel</span>="Required without visible label" <span class="dark-green">IsRequired</span>=<span class="light-blue">"true"</span>><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
+            </pre>
+        </CodeSampleContent>
+    </CodeSample>
+    <CodeSample Title="Multi-line TextField" Description="">
+        <SampleContent>
             <div>
                 <BitTextField Label="Standard" IsMultiline="true" Rows="3"></BitTextField>
             </div>
@@ -103,26 +71,18 @@
             <div class="m-t-15">
                 <BitTextField Label="Non-resizable" IsMultiline="true" IsResizable="false"></BitTextField>
             </div>
-        </BitPivotItem>
-        <BitPivotItem HeaderText="Code" IconName="Source">
-            <p>
-                &lt<span class="dark-green">BitTextField Label</span>="Standard" <span class="dark-green"> IsMultiline</span>="<span class="light-blue">true</span>" <span class="dark-green"> Rows</span>="3" ><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
-            </p>
-            <p>
-                &lt<span class="dark-green">BitTextField Label</span>="Limited multi-line text field - 10 chars" <span class="dark-green">IsMultiline</span>="<span class="light-blue">true</span>" <span class="dark-green">MaxLength</span>="10" ><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
-            </p>
-            <p>
-                &lt<span class="dark-green">BitTextField Label</span>="Disabled" <span class="dark-green">IsMultiline</span>="<span class="light-blue">true</span>" <span class="dark-green">IsEnabled</span>="<span class="light-blue">false</span>" <span class="dark-green">Value</span>="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat"><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
-            </p>
-            <p>
-                &lt<span class="dark-green">BitTextField Label</span>="Non-resizable" <span class="dark-green">IsMultiline</span>="<span class="light-blue">true</span>" <span class="dark-green">IsResizable</span>="<span class="light-blue">false</span>" ><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
-            </p>
-        </BitPivotItem>
-    </BitPivot>
-
-    <h3>Underlined and borderless TextFields</h3>
-    <BitPivot>
-        <BitPivotItem HeaderText="Example" IconName="ViewList">
+        </SampleContent>
+        <CodeSampleContent>
+            <pre>
+                &lt<span class="dark-green">BitTextField Label</span>="Standard" <span class="dark-green"> IsMultiline</span>=<span class="light-blue">"true"</span> <span class="dark-green"> Rows</span>="3" ><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
+                &lt<span class="dark-green">BitTextField Label</span>="Limited multi-line text field - 10 chars" <span class="dark-green">IsMultiline</span>=<span class="light-blue">"true"</span> <span class="dark-green">MaxLength</span>="10" ><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
+                &lt<span class="dark-green">BitTextField Label</span>="Disabled" <span class="dark-green">IsMultiline</span>=<span class="light-blue">"true"</span> <span class="dark-green">IsEnabled</span>=<span class="light-blue">"false"</span> <span class="dark-green">Value</span>="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat"><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
+                &lt<span class="dark-green">BitTextField Label</span>="Non-resizable" <span class="dark-green">IsMultiline</span>=<span class="light-blue">"true"</span> <span class="dark-green">IsResizable</span>=<span class="light-blue">"false"</span> ><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
+            </pre>
+        </CodeSampleContent>
+    </CodeSample>
+    <CodeSample Title="Underlined and borderless TextFields" Description="">
+        <SampleContent>
             <div>
                 <BitTextField Label="Standard:" IsUnderlined="true"></BitTextField>
             </div>
@@ -138,29 +98,19 @@
             <div class="m-t-15">
                 <BitTextField Label="Borderless multi-line TextField" IsMultiline="true" HasBorder="false"></BitTextField>
             </div>
-        </BitPivotItem>
-        <BitPivotItem HeaderText="Code" IconName="Source">
-            <p>
-                &lt<span class="dark-green">BitTextField Label</span>="Standard:" <span class="dark-green"> IsUnderlined</span>="<span class="light-blue">true</span>" ><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
-            </p>
-            <p>
-                &lt<span class="dark-green">BitTextField Label</span>="Disabled:" <span class="dark-green"> IsUnderlined</span>="<span class="light-blue">true</span>" <span class="dark-green"> IsEnabled</span>="<span class="light-blue">false</span>" <span class="dark-green"> DefaultValue</span>="I am disabled" ><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
-            </p>
-            <p>
-                &lt<span class="dark-green">BitTextField Label</span>="Required:" <span class="dark-green"> IsUnderlined</span>="<span class="light-blue">true</span>" <span class="dark-green"> IsRequired</span>="<span class="light-blue">true</span>" <span class="dark-green"> DefaultValue</span>="I am disabled" ><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
-            </p>
-            <p>
-                &lt<span class="dark-green">BitTextField Label</span>="Borderless single-line TextField" <span class="dark-green"> HasBorder</span>="<span class="light-blue">false</span>" ><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
-            </p>
-            <p>
-                &lt<span class="dark-green">BitTextField Label</span>="Borderless multi-line TextField" <span class="dark-green"> IsMultiline</span>="<span class="light-blue">true</span>" <span class="dark-green"> HasBorder</span>="<span class="light-blue">false</span>" ><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
-            </p>
-        </BitPivotItem>
-    </BitPivot>
-
-    <h3>TextField with prefix and/or suffix</h3>
-    <BitPivot>
-        <BitPivotItem HeaderText="Example" IconName="ViewList">
+        </SampleContent>
+        <CodeSampleContent>
+            <pre>
+               &lt<span class="dark-green">BitTextField Label</span>="Standard:" <span class="dark-green"> IsUnderlined</span>=<span class="light-blue">"true"</span> ><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
+               &lt<span class="dark-green">BitTextField Label</span>="Disabled:" <span class="dark-green"> IsUnderlined</span>=<span class="light-blue">"true"</span> <span class="dark-green"> IsEnabled</span>=<span class="light-blue">"false"</span> <span class="dark-green"> DefaultValue</span>="I am disabled" ><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
+               &lt<span class="dark-green">BitTextField Label</span>="Required:" <span class="dark-green"> IsUnderlined</span>=<span class="light-blue">"true"</span> <span class="dark-green"> IsRequired</span>=<span class="light-blue">"true"</span> <span class="dark-green"> DefaultValue</span>="I am disabled" ><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
+               &lt<span class="dark-green">BitTextField Label</span>="Borderless single-line TextField" <span class="dark-green"> HasBorder</span>=<span class="light-blue">"false"</span> ><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
+               &lt<span class="dark-green">BitTextField Label</span>="Borderless multi-line TextField" <span class="dark-green"> IsMultiline</span>=<span class="light-blue">"true"</span> <span class="dark-green"> HasBorder</span>=<span class="light-blue">"false"</span> ><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
+            </pre>
+        </CodeSampleContent>
+    </CodeSample>
+    <CodeSample Title="TextField with prefix and/or suffix" Description="">
+        <SampleContent>
             <div>
                 <BitTextField Label="With prefix" Prefix="https://"></BitTextField>
             </div>
@@ -173,26 +123,18 @@
             <div class="m-t-15">
                 <BitTextField Label="With prefix and suffix" Prefix="https://" Suffix=".com"></BitTextField>
             </div>
-        </BitPivotItem>
-        <BitPivotItem HeaderText="Code" IconName="Source">
-            <p>
-                &lt<span class="dark-green">BitTextField Label</span>="With prefix" <span class="dark-green"> Prefix</span>="https://" ><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
-            </p>
-            <p>
-                &lt<span class="dark-green">BitTextField Label</span>="With suffix" <span class="dark-green"> Suffix</span>=".com" ><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
-            </p>
-            <p>
-                &lt<span class="dark-green">BitTextField Label</span>="Disabled with prefix" <span class="dark-green"> Prefix</span>="https://" <span class="dark-green"> IsEnabled</span>="<span class="light-blue">false</span>" ><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
-            </p>
-            <p>
-                &lt<span class="dark-green">BitTextField Label</span>="With prefix and suffix" <span class="dark-green"> Prefix</span>="https://" <span class="dark-green"> Suffix</span>=".com" ><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
-            </p>
-        </BitPivotItem>
-    </BitPivot>
-
-    <h3>TextFields with custom label/description</h3>
-    <BitPivot>
-        <BitPivotItem HeaderText="Example" IconName="ViewList">
+        </SampleContent>
+        <CodeSampleContent>
+            <pre>
+               &lt<span class="dark-green">BitTextField Label</span>="With prefix" <span class="dark-green"> Prefix</span>="https://" ><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
+               &lt<span class="dark-green">BitTextField Label</span>="With suffix" <span class="dark-green"> Suffix</span>=".com" ><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
+               &lt<span class="dark-green">BitTextField Label</span>="Disabled with prefix" <span class="dark-green"> Prefix</span>="https://" <span class="dark-green"> IsEnabled</span>=<span class="light-blue">"false"</span> ><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
+               &lt<span class="dark-green">BitTextField Label</span>="With prefix and suffix" <span class="dark-green"> Prefix</span>="https://" <span class="dark-green"> Suffix</span>=".com" ><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
+            </pre>
+        </CodeSampleContent>
+    </CodeSample>
+    <CodeSample Title="TextFields with custom label/description" Description="">
+        <SampleContent>
             <div>
                 <BitTextField Description="Click the (i) icon!">
                     <LabelFragment>
@@ -208,289 +150,21 @@
                     </DescriptionFragment>
                 </BitTextField>
             </div>
-        </BitPivotItem>
-        <BitPivotItem HeaderText="Code" IconName="Source">
-            <div>
-                <p>&lt<span class="dark-green">BitTextField Description</span>="Click the (i) icon!" ></p>
-                <p>&emsp;&lt<span class="dark-green">LabelFragment</span>></p>
-                <p>&emsp;&emsp;&lt<span class="dark-green">BitLabel Style</span>="display:inline-block;padding-bottom:10px;">Custom label rendering<span>&lt/</span><span class="dark-green">BitLabel</span><span>&gt;</span></p>
-                <p>&emsp;&emsp;&lt<span class="dark-green">BitIconButton IconName</span>"Info" ><span>&lt/</span><span class="dark-green">BitLabel</span><span>&gt;</span></p>
-                <p>&emsp;&lt/<span class="dark-green">LabelFragment</span><span>&gt;</span></p>
-                <p>&lt/<span class="dark-green">BitTextField</span><span>&gt;</span></p>
-            </div>
-            <div class="m-t-15">
-                <p>&lt<span class="dark-green">BitTextField</span>></p>
-                <p>&emsp;&lt<span class="dark-green">DescriptionFragment</span>></p>
-                <p>&emsp;&emsp;&lt<span class="dark-green">BitLabel Style</span>="color:green;">Custom description rendering<span>&lt/</span><span class="dark-green">BitLabel</span><span>&gt;</span></p>
-                <p>&emsp;&lt/<span class="dark-green">DescriptionFragment</span><span>&gt;</span></p>
-                <p>&lt/<span class="dark-green">BitTextField</span><span>&gt;</span></p>
-            </div>
-        </BitPivotItem>
-    </BitPivot>
-</div>
-<h2>Implementation</h2>
-<div class="card">
-    <table>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Default value</th>
-            <th>Description</th>
-        </tr>
-        <tr>
-            <td>AriaLabel</td>
-            <td>string</td>
-            <td></td>
-            <td>The aria-label of the control for the benefit of screen readers.</td>
-        </tr>
-        <tr>
-            <td>CanRevealPassword</td>
-            <td>bool</td>
-            <td>false</td>
-            <td>Whether to show the reveal password button for input type 'password'. This will be ignored if the type prop is not set to 'password', or if the browser is known to have a built-in reveal button for password inputs.</td>
-        </tr>
-        <tr>
-            <td>Class</td>
-            <td>string</td>
-            <td></td>
-            <td>Custom CSS class for the root element of the component.</td>
-        </tr>
-        <tr>
-            <td>DefaultValue</td>
-            <td>string</td>
-            <td></td>
-            <td>Default value of the text field. Only provide this if the text field is an uncontrolled component; otherwise, use the value property.</td>
-        </tr>
-        <tr>
-            <td>Description</td>
-            <td>string</td>
-            <td></td>
-            <td>Description displayed below the text field to provide additional details about what text to enter.</td>
-        </tr>
-        <tr>
-            <td>DescriptionFragment</td>
-            <td>RenderFragment</td>
-            <td></td>
-            <td>Shows the custom description for text field.</td>
-        </tr>
-        <tr>
-            <td>HasBorder</td>
-            <td>bool</td>
-            <td>true</td>
-            <td>Whether or not the text field is borderless.</td>
-        </tr>
-        <tr>
-            <td>HtmlAttributes</td>
-            <td>Dictionary&lt;string, object&gt;</td>
-            <td></td>
-            <td>Capture and render additional attributes in addition to the component's parameters.</td>
-        </tr>
-        <tr>
-            <td>IconName</td>
-            <td>string</td>
-            <td></td>
-            <td>Icon name for an optional icon, displayed in the far right end of the text field..</td>
-        </tr>        
-        <tr>
-            <td>IsEnabled</td>
-            <td>bool</td>
-            <td>true</td>
-            <td>Whether the textfield is enabled.</td>
-        </tr>
-        <tr>
-            <td>IsMultiLine</td>
-            <td>bool</td>
-            <td>false</td>
-            <td>Whether or not the text field is a multiline text field.</td>
-        </tr>
-        <tr>
-            <td>IsReadonly</td>
-            <td>bool</td>
-            <td>false</td>
-            <td>If true, the text field is readonly.</td>
-        </tr>
-        <tr>
-            <td>IsRequired</td>
-            <td>bool</td>
-            <td>false</td>
-            <td>Whether the associated input is required or not, add an asterisk "*" to its label.</td>
-        </tr>
-        <tr>
-            <td>IsResizable</td>
-            <td>bool</td>
-            <td>true</td>
-            <td>For multiline text fields, whether or not the field is resizable.</td>
-        </tr>
-        <tr>
-            <td>IsUnderlined</td>
-            <td>bool</td>
-            <td>false</td>
-            <td>Whether or not the text field is underlined.</td>
-        </tr>
-        <tr>
-            <td>Label</td>
-            <td>string</td>
-            <td></td>
-            <td>Label displayed above the textfield and read by screen readers.</td>
-        </tr>
-        <tr>
-            <td>LabelFragment</td>
-            <td>RenderFragment</td>
-            <td></td>
-            <td>Shows the custom Label for text field.If you don't call default label, ensure that you give your custom label an id and that you set the textfield's aria-labelledby prop to that id.</td>
-        </tr>
-        <tr>
-            <td>MaxLength</td>
-            <td>int</td>
-            <td></td>
-            <td>Define max length of text field.</td>
-        </tr>
-        <tr>
-            <td>OnChange</td>
-            <td>EventCallback&lt;string?&gt;</td>
-            <td></td>
-            <td>Callback for when the input value changes. This is called on both input and change events.</td>
-        </tr>
-        <tr>
-            <td>OnClick</td>
-            <td>EventCallback&lt;MouseEventArgs&gt;</td>
-            <td></td>
-            <td>Callback for when the input is clicked.</td>
-        </tr>
-        <tr>
-            <td>OnFocus</td>
-            <td>EventCallback&lt;FocusEventArgs&gt;</td>
-            <td></td>
-            <td>Callback for when focus moves into the input.</td>
-        </tr>
-        <tr>
-            <td>OnFocusIn</td>
-            <td>EventCallback&lt;FocusEventArgs&gt;</td>
-            <td></td>
-            <td>Callback for when focus moves into the input.</td>
-        </tr>
-        <tr>
-            <td>OnFocusOut</td>
-            <td>EventCallback&lt;FocusEventArgs&gt;</td>
-            <td></td>
-            <td>Callback for when focus moves out of the input.</td>
-        </tr>
-        <tr>
-            <td>OnKeyDown</td>
-            <td>EventCallback&lt;KeyboardEventArgs&gt;</td>
-            <td></td>
-            <td>Callback for when a keyboard key is pressed.</td>
-        </tr>
-        <tr>
-            <td>OnKeyUp</td>
-            <td>EventCallback&lt;KeyboardEventArgs&gt;</td>
-            <td></td>
-            <td>Callback for When a keyboard key is released.</td>
-        </tr>
-        <tr>
-            <td>Placeholder</td>
-            <td>string</td>
-            <td></td>
-            <td>A text for textfield as placeholder.</td>
-        </tr>
-        <tr>
-            <td>Prefix</td>
-            <td>string</td>
-            <td></td>
-            <td>
-                Prefix displayed before the text field contents. This is not included in the value. Ensure a descriptive label is present to assist screen readers, as the value does not include the prefix.
-            </td>
-        </tr>        
-        <tr>
-            <td>Rows</td>
-            <td>int</td>
-            <td>3</td>
-            <td>For multiline text, Number of rows.</td>
-        </tr>     
-        <tr>
-            <td>Style</td>
-            <td>string</td>
-            <td></td>
-            <td>Custom style for the root element of the component.</td>
-        </tr>
-        <tr>
-            <td>Suffix</td>
-            <td>string</td>
-            <td></td>
-            <td>
-                Suffix displayed after the text field contents. This is not included in the value. Ensure a descriptive label is present to assist screen readers, as the value does not include the suffix.
-            </td>
-        </tr>
-        <tr>
-            <td>Type</td>
-            <td>TextFieldType</td>
-            <td></td>
-            <td>Type of textfield, text or password</td>
-        </tr>        
-        <tr>
-            <td>Value</td>
-            <td>string</td>
-            <td></td>
-            <td>Current value of the text field.</td>
-        </tr>
-        <tr>
-            <td>ValueChanged</td>
-            <td>EventCallback&lt;string?&gt;</td>
-            <td></td>
-            <td>Callback for when the input value changes.</td>
-        </tr>
-        <tr>
-            <td>Visibility</td>
-            <td>ComponentVisibility</td>
-            <td></td>
-            <td>Whether the component is visible, hidden, collapsed.</td>
-        </tr>
-    </table>
-    <div>
-        <h4>TextFieldType</h4>
-        <hr />
-        <table>
-            <tr>
-                <th>Name</th>
-                <th>Value</th>
-                <th>Description</th>
-            </tr>
-            <tr>
-                <td>Text</td>
-                <td>0</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>Password</td>
-                <td>1</td>
-                <td></td>
-            </tr>
-        </table>
-    </div>
-    <div>
-        <h4 id="component-visibility">ComponentVisibility</h4>
-        <hr />
-        <table>
-            <tr>
-                <th>Name</th>
-                <th>Value</th>
-                <th>Description</th>
-            </tr>
-            <tr>
-                <td>Visible</td>
-                <td>0</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>Hidden</td>
-                <td>1</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>Collapsed</td>
-                <td>2</td>
-                <td></td>
-            </tr>
-        </table>
-    </div>
-</div>
+        </SampleContent>
+        <CodeSampleContent>
+            <pre>
+               &lt<span class="dark-green">BitTextField Description</span>="Click the (i) icon!" >
+               &emsp;&lt<span class="dark-green">LabelFragment</span>>
+               &emsp;&emsp;&lt<span class="dark-green">BitLabel Style</span>="display:inline-block;padding-bottom:10px;">Custom label rendering<span>&lt/</span><span class="dark-green">BitLabel</span><span>&gt;</span>
+               &emsp;&emsp;&lt<span class="dark-green">BitIconButton IconName</span>"Info" ><span>&lt/</span><span class="dark-green">BitLabel</span><span>&gt;</span>
+               &emsp;&lt/<span class="dark-green">LabelFragment</span><span>&gt;</span>
+               &lt/<span class="dark-green">BitTextField</span><span>&gt;</span>
+               &lt<span class="dark-green">BitTextField</span>>
+               &emsp;&lt<span class="dark-green">DescriptionFragment</span>>
+               &emsp;&emsp;&lt<span class="dark-green">BitLabel Style</span>="color:green;">Custom description rendering<span>&lt/</span><span class="dark-green">BitLabel</span><span>&gt;</span>
+               &emsp;&lt/<span class="dark-green">DescriptionFragment</span><span>&gt;</span>
+               &lt/<span class="dark-green">BitTextField</span><span>&gt;</span>
+            </pre>
+        </CodeSampleContent>
+    </CodeSample>
+</ComponentPage>

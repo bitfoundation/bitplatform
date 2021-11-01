@@ -1,575 +1,210 @@
 ﻿@page "/components/spinbuttons"
 
-<h2>BitSpinButton</h2>
 
-<div class="card">
-    <p class="desc">
-        With BitSpinButton component, users can increase or decrease a value in steps with a certain size, specified beforehand. 
-        The component is customizable in different ways, for example, customizing the functionality when certain events occur or specifying a desired style for different parts.
-    </p>
-</div>
+@using Bit.Client.Web.BlazorUI.Playground.Web.Components
 
-<h2>Usage</h2>
-<div class="wrapper">
-    <div class="card">
-        <h3>Basic SpinButton</h3>              
-        <BitPivot>
-            <BitPivotItem HeaderText="Example" IconName="ViewList">                
-                    <BitSpinButton 
-                                   @bind-Value="BasicSpinButtonValue" 
-                                   Min="0" 
-                                   Max="100" 
-                                   Step="1"                                    
-                                   Label="Basic SpinButton">
-                    </BitSpinButton>
-                    <br />                
-                    <BitSpinButton 
-                                   Min="-10" 
-                                   Max="10" 
-                                   Step="0.1" 
-                                   Label="Decimal SpinButton">
-                    </BitSpinButton>
-                    <br />                
-                    <BitSpinButton 
-                                   @bind-Value="BasicSpinButtonDisableValue" 
-                                   Min="0" 
-                                   Max="100" 
-                                   Step="1" 
-                                   Label="Disabled SpinButton" 
-                                   IsEnabled="false">
-                    </BitSpinButton>                
-            </BitPivotItem>
-            <BitPivotItem HeaderText="Code" IconName="Source">
-                <pre>                 
-                &lt;<span class="dark-green">BitSpinButton</span>
-                                <span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-Value</span>="BasicSpinButtonValue"
-                                <span class="dark-green">Min</span>="0"
-                                <span class="dark-green">Max</span>="100"
-                                <span class="dark-green">Step</span>="1"
-                                <span class="dark-green">Label</span>="Basic SpinButton"&gt;
-                &lt;/<span class="dark-green">BitSpinButton</span>&gt;
-                &lt;br /&gt;                    
-                &lt;<span class="dark-green">BitSpinButton</span>&gt; 
-                                <span class="dark-green">Min</span>="-10" 
-                                <span class="dark-green">Max</span>="10" 
-                                <span class="dark-green">Step</span>="0.1" 
-                                <span class="dark-green">Label</span>="Decimal SpinButton"&gt;
-
-                &lt;/<span class="dark-green">BitSpinButton</span>&gt;
-                &lt;br /&gt;                
-                    &lt;<span class="dark-green">BitSpinButton</span> 
-                                   <span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-Value</span>="BasicSpinButtonDisableValue" 
-                                   <span class="dark-green">Min</span>="0" 
-                                   <span class="dark-green">Max</span>="100" 
-                                   <span class="dark-green">Step</span>Step="1" 
-                                   <span class="dark-green">Label</span>="Disabled SpinButton" 
-                                   <span class="dark-green">IsEnabled</span>="false"&gt;
-                    &lt;/<span class="dark-green">BitSpinButton</span>&gt;                 
-                 
-                 <span class="light-yellow-bg">&#64;code{</span>
-                    <span class="light-blue">private double</span> BasicSpinButtonValue = 5;
-                    <span class="light-blue">private double</span> BasicSpinButtonDisableValue = 20;                    
-                 <span class="light-yellow-bg">}</span>
-                </pre>                                
-            </BitPivotItem>
-        </BitPivot>
-    </div>
-    <div class="card">
-        <h3>SpinButton with icon</h3>        
-        <BitPivot>
-            <BitPivotItem HeaderText="Example" IconName="ListView">                
-                    <BitSpinButton 
-                                   IconName="IncreaseIndentLegacy" 
-                                   Min="0" 
-                                   Max="100" 
-                                   Step="1" 
-                                   Label="With icon">
-                    </BitSpinButton>
-                    <br />                
-                    <BitSpinButton 
-                                   IconName="IncreaseIndentLegacy" 
-                                   Min="0" 
-                                   Max="100" 
-                                   Step="1" 
-                                   Label="Disabled with icon" 
-                                   IsEnabled="false">
-                    </BitSpinButton>                    
-            </BitPivotItem>
-            <BitPivotItem HeaderText="Code" IconName="Source">
-                <pre>                
-                &lt;<span class="dark-green">BitSpinButton</span>    
-                                <span class="dark-green">IconName</span>="IncreaseIndentLegacy"
-                                <span class="dark-green">Min</span>="0"
-                                <span class="dark-green">Max</span>="100"
-                                <span class="dark-green">Step</span>="1"
-                                <span class="dark-green">Label</span>="With icon"&gt;
-                &lt;/<span class="dark-green">BitSpinButton</span>&gt;
-                &lt;br /&gt;               
-                &lt;<span class="dark-green">BitSpinButton</span>    
-                                <span class="dark-green">IconName</span>="IncreaseIndentLegacy"
-                                <span class="dark-green">Min</span>="0"
-                                <span class="dark-green">Max</span>="100"
-                                <span class="dark-green">Step</span>="1"
-                                <span class="dark-green">Label</span>="Disabled with icon"&gt;
-                                <span class="dark-green">IsEnabled</span>="<span class="light-blue">false</span>"
-                &lt;/<span class="dark-green">BitSpinButton</span>&gt;
-                &lt;br /&gt;
-                </pre>
-            </BitPivotItem>
-        </BitPivot>
-    </div>
-    <div class="card">
-        <h3>SpinButton with suffix</h3>        
-        <BitPivot>
-            <BitPivotItem HeaderText="Example" IconName="ListView">
-                <BitSpinButton 
-                               Suffix="Inch" 
-                               Min="0" 
-                               Max="100" 
-                               Step="1" 
-                               Label="With suffix">
-                </BitSpinButton>
-            </BitPivotItem>
-            <BitPivotItem HeaderText="Code" IconName="Source">
-                <pre>
-                &lt;<span class="dark-green">BitSpinButton</span>    
-                                   <span class="dark-green">Suffix</span>="Inch"
-                                   <span class="dark-green">Min</span>="0"
-                                   <span class="dark-green">Max</span>="100"
-                                   <span class="dark-green">Step</span>="1"
-                                   <span class="dark-green">Label</span>="With suffix"&gt;                                   
-                &lt;/<span class="dark-green">BitSpinButton</span>&gt;
-                </pre>
-            </BitPivotItem>
-        </BitPivot>
-    </div>
-    <div class="card">
-        <h3>SpinButton with custom handler</h3>
-        <div class="desc">
-            <p>
-
-            </p>
-        </div>
-        <BitPivot>
-            <BitPivotItem HeaderText="Example" IconName="ListView">                
-                <BitSpinButton 
-                                @bind-Value="SpinButtonWithCustomHandlerValue" 
-                                Min="0" 
-                                Max="100" 
-                                Step="1" 
-                                Label="With custom handler" 
-                                OnChange="@(e => HandleSpinButtonValueChange(e))">
-                </BitSpinButton>                
-                <p>value of spin button is: @SpinButtonWithCustomHandlerValue</p>
-            </BitPivotItem>
-            <BitPivotItem HeaderText="Code" IconName="Source">
-                <pre>
-                &lt;<span class="dark-green">BitSpinButton</span>    
-                                   <span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-Value</span>="SpinButtonWithCustomHandlerValue"
-                                   <span class="dark-green">Min</span>="0"
-                                   <span class="dark-green">Max</span>="100"
-                                   <span class="dark-green">Step</span>="1"
-                                   <span class="dark-green">Label</span>="With custom handler"
-                                   <span class="dark-green">OnChange</span>="<span class="light-yellow-bg">&#64;</span>(e => HandleSpinButtonValueChange(e))"&gt;                                   
-                &lt;/<span class="dark-green">BitSpinButton</span>&gt;
-                &lt;p&gt;value of spin button is:<span class="light-yellow-bg">&#64</span>SpinButtonWithCustomHandlerValue&lt;/p&gt;
-                
-                <span class="light-yellow-bg">&#64;code{</span>
-                    <span class="light-blue">private double</span> SpinButtonWithCustomHandlerValue = 14;        
-                    <span class="light-blue">private</span> void HandleSpinButtonValueChange(<span class="light-blue">double</span> value)
-                    {
-                       SpinButtonWithCustomHandlerValue = value;
-                    }
-                <span class="light-yellow-bg">}</span>
-                </pre>                
-            </BitPivotItem>
-        </BitPivot>
-    </div>
-    <div class="card">
-        <h3>SpinButton with label above</h3>
-        <div class="desc">
-            <p>
-
-            </p>
-        </div>
-        <BitPivot>
-            <BitPivotItem HeaderText="Example" IconName="ListView">                
-                 <BitSpinButton 
-                                   @bind-Value="SpinButtonWithLabelAboveValue" 
-                                   Suffix="cm" 
-                                   Min="0" 
-                                   Max="100" 
-                                   Step="1" 
-                                   Label="With labal above" 
-                                   LabelPosition="@BitSpinButtonLabelPosition.Top">
-                 </BitSpinButton>                
-            </BitPivotItem>
-            <BitPivotItem HeaderText="Code" IconName="Source">
-             <pre>
-                &lt;<span class="dark-green">BitSpinButton</span>    
-                                   <span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-Value</span>="SpinButtonWithLabelAboveValue"
-                                   <span class="dark-green">Suffix</span>="cm"
-                                   <span class="dark-green">Min</span>="0"
-                                   <span class="dark-green">Max</span>="100"
-                                   <span class="dark-green">Step</span>="1"
-                                   <span class="dark-green">Label</span>="With labal above"
-                                   <span class="dark-green">LabelPosition</span>="<span class="light-yellow-bg">&#64;</span><span class="neon-yellow">BitSpinButtonLabelPosition</span>.Top"&gt;                                   
-                &lt;/<span class="dark-green">BitSpinButton</span>&gt;
-                </pre>                   
-            </BitPivotItem>
-        </BitPivot>
-    </div>
-    <div class="card">
-        <h3>Custom styled SpinButton</h3>
-        <BitPivot>
-            <BitPivotItem HeaderText="Example" IconName="ListView">
-                <BitSpinButton 
-                               Class="custom-spb"
+<ComponentPage ComponentName="SpinButton" OverviewDesc="A spin button (SpinButton) allows someone to incrementally adjust a value in small steps. It’s mainly used for numeric values, but other values are supported too."
+               ComponentParameters="componentParameters" EnumParameters="enumParameters">
+    <CodeSample Title="BitSpinButton" Description="Files can be uploaded automatically after selecting them.">
+        <SampleContent>
+                <BitSpinButton @bind-Value="BasicSpinButtonValue"
                                Min="0"
                                Max="100"
                                Step="1"
-                               Label="Custom styled">                               
+                               Label="Basic SpinButton">
                 </BitSpinButton>
-            </BitPivotItem>
-            <BitPivotItem HeaderText="Code" IconName="Source">
-                <pre>
-                &lt;<span class="dark-green">BitSpinButton</span>
-                               <span class="dark-green">Class</span>="custom-spb"
-                               <span class="dark-green">Min</span>="0"
-                               <span class="dark-green">Max</span>="100"
-                               <span class="dark-green">Step</span>="1"
-                               <span class="dark-green">Label</span>="Custom styled"&gt;
-                &lt;/<span class="dark-green">BitSpinButton</span>&gt;
-                </pre>                
-            </BitPivotItem>
-        </BitPivot>
-    </div>
-    <div class="card">
-        <h3>Controlled SpinButton</h3>
-        <div class="desc">
-            <p>
-                A controlled BitSpinButton provides two-way binding using either bind-value or Value parameters. With bind-value all the changes to the value can be seen by its parent
-                but using Value, a custom handler should be implemented to reflect the changes outside the component.
-            </p>
-        </div>
-        <BitPivot>
-            <BitPivotItem HeaderText="Example" IconName="ListView">
-                <BitSpinButton 
-                               Label="Controlled SpinButton with bind-value"
-                               @bind-Value="BitSpinButtonBindValue"
+                <BitSpinButton Min="-10"
+                               Max="10"
+                               Step="0.1"
+                               Label="Decimal SpinButton">
+                </BitSpinButton>
+                <BitSpinButton @bind-Value="BasicSpinButtonDisableValue"
                                Min="0"
                                Max="100"
-                               Step="1">                               
+                               Step="1"
+                               Label="Disabled SpinButton"
+                               IsEnabled="false">
                 </BitSpinButton>
-                <br />
-                <BitSpinButton 
-                               Label="Controlled SpinButton with Value"
-                               Value="BitSpinButtonValueChanged"
-                               ValueChanged="HandleControlledSpinButtonValueChange"
-                               Min="0"
-                               Max="100"                                                              
-                               Step="1">                               
-                </BitSpinButton>
-            </BitPivotItem>
-            <BitPivotItem HeaderText="Code" IconName="Source">
-                <pre>
+        </SampleContent>
+        <CodeSampleContent>
+            <pre>
                 &lt;<span class="dark-green">BitSpinButton</span>
-                               <span class="dark-green">Label</span>="Controlled SpinButton with bind-value"
-                               <span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-Value</span>="BitSpinButtonBindValue"
-                               <span class="dark-green">Min</span>="0"
-                               <span class="dark-green">Max</span>="100"
-                               <span class="dark-green">Step</span>="1"
+                <span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-Value</span>="BasicSpinButtonValue"
+                <span class="dark-green">Min</span>="0"
+                <span class="dark-green">Max</span>="100"
+                <span class="dark-green">Step</span>="1"
+                <span class="dark-green">Label</span>="Basic SpinButton"&gt;
                 &lt;/<span class="dark-green">BitSpinButton</span>&gt;
-                &lt;br /&gt;
-                &lt;<span class="dark-green">BitSpinButton</span>
-                               <span class="dark-green">Label</span>="Controlled SpinButton with ValueChanged"
-                               <span class="dark-green">Value</span>="BitSpinButtonValueChanged"
-                               <span class="dark-green">ValueChanged</span>="HandleControlledSpinButtonValueChange"
-                               <span class="dark-green">Min</span>="0"
-                               <span class="dark-green">Max</span>="100"
-                               <span class="dark-green">Step</span>="1"
-                &lt;/<span class="dark-green">BitSpinButton</span>&gt;
+                &lt;<span class="dark-green">BitSpinButton</span>&gt; 
+                <span class="dark-green">Min</span>="-10" 
+                <span class="dark-green">Max</span>="10" 
+                <span class="dark-green">Step</span>="0.1" 
+                <span class="dark-green">Label</span>="Decimal SpinButton"&gt;
+                &lt;/<span class="dark-green">BitSpinButton</span>&gt;               
+                &lt;<span class="dark-green">BitSpinButton</span> 
+                <span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-Value</span>="BasicSpinButtonDisableValue" 
+                <span class="dark-green">Min</span>="0" 
+                <span class="dark-green">Max</span>="100" 
+                <span class="dark-green">Step</span>Step="1" 
+                <span class="dark-green">Label</span>="Disabled SpinButton" 
+                <span class="dark-green">IsEnabled</span>="false"&gt;
+                 &lt;/<span class="dark-green">BitSpinButton</span>&gt;                 
 
                 <span class="light-yellow-bg">&#64;code{</span>
-                    <span class="light-blue">private double</span> BitSpinButtonBindValue = 8;
-                    <span class="light-blue">private double</span> BitSpinButtonValueChanged = 16;        
-                    <span class="light-blue">private</span> void HandleControlledSpinButtonValueChange(double value)
-                       {
-                           BitSpinButtonValueChanged = value;
-                       }              
+                <span class="light-blue">private double</span> BasicSpinButtonValue = 5;
+                <span class="light-blue">private double</span> BasicSpinButtonDisableValue = 20;                    
                 <span class="light-yellow-bg">}</span>
-                </pre>
-            </BitPivotItem>
-        </BitPivot>
-    </div>
-</div>
-<h2>Implementation</h2>
-<div class="card">
-    <table>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Default value</th>
-            <th>Description</th>
-        </tr>
-        <tr>
-            <td>AriaDescription</td>
-            <td>string</td>
-            <td></td>
-            <td>Detailed description of the input for the benefit of screen readers.</td>
-        </tr>
-        <tr>
-            <td>AriaLabel</td>
-            <td>string</td>
-            <td></td>
-            <td>The aria-label of the control for the benefit of screen readers.</td>
-        </tr>
-        <tr>
-            <td>AriaPositionInSet</td>
-            <td>int</td>
-            <td></td>
-            <td>The position in the parent set (if in a set)</td>
-        </tr>
-        <tr>
-            <td>AriaSetSize</td>
-            <td>int</td>
-            <td></td>
-            <td>The total size of the parent set (if in a set).</td>
-        </tr>
-        <tr>
-            <td>AriaValueNow</td>
-            <td>double</td>
-            <td></td>
-            <td>Sets the control's aria-valuenow. Providing this only makes sense when using as a controlled component.</td>
-        </tr>
-        <tr>
-            <td>AriaValueText</td>
-            <td>string</td>
-            <td></td>
-            <td>Sets the control's aria-valuetext.</td>
-        </tr>
-        <tr>
-            <td>ChangeHandler</td>
-            <td>EventCallback&lt;BitSpinButtonAction&gt;</td>
-            <td></td>
-            <td>Custom handler for increment or decrement events. If used, the increment and decrement are required to be implemented.</td>
-        </tr>
-        <tr>
-            <td>Class</td>
-            <td>string</td>
-            <td></td>
-            <td>Custom CSS class for the root element of the component.</td>
-        </tr>
-        <tr>
-            <td>DecrementButtonAriaLabel</td>
-            <td>string</td>
-            <td></td>
-            <td>Accessible label text for the decrement button (for screen reader users)</td>
-        </tr>
-        <tr>
-            <td>DecrementButtonIconName</td>
-            <td>string</td>
-            <td>ChevronDownSmall</td>
-            <td>Custom icon name for the decrement button</td>
-        </tr>
-        <tr>
-            <td>DefaultValue</td>
-            <td>double</td>
-            <td>0</td>
-            <td>Initial value of the spin button.</td>
-        </tr>
-        <tr>
-            <td>HtmlAttributes</td>
-            <td>Dictionary&lt;string, object&gt;</td>
-            <td></td>
-            <td>Capture and render additional attributes in addition to the component's parameters.</td>
-        </tr>
-        <tr>
-            <td>IconAriaLabel</td>
-            <td>string</td>
-            <td></td>
-            <td>The aria label of the icon for the benefit of screen readers</td>
-        </tr>
-        <tr>
-            <td>IconName</td>
-            <td>string</td>
-            <td></td>
-            <td>Icon name for an icon to display alongside the spin button's label.</td>
-        </tr>
-        <tr>
-            <td>IncrementButtonAriaLabel</td>
-            <td>string</td>
-            <td></td>
-            <td>Accessible label text for the increment button (for screen reader users).</td>
-        </tr>
-        <tr>
-            <td>IncrementButtonIconName</td>
-            <td>string</td>
-            <td>ChevronUpSmall</td>
-            <td>Custom icon name for the increment button.</td>
-        </tr>
-        <tr>
-            <td>InputHtmlAttributes</td>
-            <td>Dictionary&lt;string, object&gt;</td>
-            <td></td>
-            <td>Additional props for the input field.</td>
-        </tr>
-        <tr>
-            <td>IsEnabled</td>
-            <td>bool</td>
-            <td></td>
-            <td>Whether or not the component is enabled.</td>
-        </tr>
-        <tr>
-            <td>Label</td>
-            <td>string</td>
-            <td></td>
-            <td>Descriptive label for the spin button, Label displayed above the spin button and read by screen readers.</td>
-        </tr>
-        <tr>
-            <td>LabelFragment</td>
-            <td>RenderFragment</td>
-            <td></td>
-            <td>Shows the custom Label for spin button. If you don't call default label, ensure that you give your custom label an id and that you set the input's aria-labelledby prop to that id.</td>
-        </tr>
-        <tr>
-            <td>LabelPosition</td>
-            <td>LabelPosition</td>
-            <td></td>
-            <td>The position of the label in regards to the spin button.</td>
-        </tr>
-        <tr>
-            <td>Max</td>
-            <td>double</td>
-            <td>double.MaxValue</td>
-            <td>Max value of the spin button. If not provided, the spin button has max value of double type.</td>
-        </tr>
-        <tr>
-            <td>Min</td>
-            <td>double</td>
-            <td>double.MinValue</td>
-            <td>Min value of the spin button. If not provided, the spin button has minimum value of double type.</td>
-        </tr>
-        <tr>
-            <td>OnBlur</td>
-            <td>EventCallback&lt;FocusEventArgs&gt;</td>
-            <td></td>
-            <td>Callback for when the control loses focus.</td>
-        </tr>
-        <tr>
-            <td>OnFocus</td>
-            <td>EventCallback&lt;FocusEventArgs&gt;</td>
-            <td></td>
-            <td>Callback for when focus moves into the input.</td>
-        </tr>
-        <tr>
-            <td>OnChange</td>
-            <td>EventCallback&ltdouble&gt</td>
-            <td></td>
-            <td>Callback for when the spin button value change.</td>
-        </tr>
-        <tr>
-            <td>OnDecrement</td>
-            <td>EventCallback&lt;BitSpinButtonChangeEventArgs&gt;</td>
-            <td></td>
-            <td>Callback for when the decrement button or down arrow key is pressed.</td>
-        </tr>
-        <tr>
-            <td>OnIncrement</td>
-            <td>EventCallback&lt;BitSpinButtonChangeEventArgs&gt;</td>
-            <td></td>
-            <td>Callback for when the increment button or up arrow key is pressed</td>
-        </tr>
-        <tr>
-            <td>Precision</td>
-            <td>int</td>
-            <td></td>
-            <td>How many decimal places the value should be rounded to</td>
-        </tr>
-        <tr>
-            <td>Step</td>
-            <td>double</td>
-            <td>1</td>
-            <td>Difference between two adjacent values of the spin button.</td>
-        </tr>
-        <tr>
-            <td>Style</td>
-            <td>string</td>
-            <td></td>
-            <td>Custom style for the root element of the component.</td>
-        </tr>
-        <tr>
-            <td>Suffix</td>
-            <td>string</td>
-            <td></td>
-            <td>A text is shown after the spin button value.</td>
-        </tr>
-        <tr>
-            <td>Title</td>
-            <td>string</td>
-            <td></td>
-            <td>A more descriptive title for the control, visible on its tooltip.</td>
-        </tr>
-        <tr>
-            <td>Value</td>
-            <td>double</td>
-            <td></td>
-            <td>Current value of the spin button.</td>
-        </tr>
-        <tr>
-            <td>ValueChanged</td>
-            <td>EventCallback&lt;double&gt;</td>
-            <td></td>
-            <td>Callback for when the spin button value change.</td>
-        </tr>
-        <tr>
-            <td>Visibility</td>
-            <td>ComponentVisibility</td>
-            <td></td>
-            <td>Whether the component is visible, hidden, collapsed.</td>
-        </tr>
-    </table>
-    <h4>BitSpinButtonLabelPosition</h4>
-    <hr />
-    <table>
-        <tr>
-            <th>Name</th>
-            <th>Value</th>
-            <th>Description</th>
-        </tr>
-        <tr>
-            <td>Top</td>
-            <td>0</td>
-            <td></td>
-        </tr>
-        <tr>
-            <td>Left</td>
-            <td>1</td>
-            <td></td>
-        </tr>
-    </table>
-    <h4 id="component-visibility">ComponentVisibility</h4>
-    <hr />
-    <table>
-        <tr>
-            <th>Name</th>
-            <th>Value</th>
-            <th>Description</th>
-        </tr>
-        <tr>
-            <td>Visible</td>
-            <td>0</td>
-            <td></td>
-        </tr>
-        <tr>
-            <td>Hidden</td>
-            <td>1</td>
-            <td></td>
-        </tr>
-        <tr>
-            <td>Collapsed</td>
-            <td>2</td>
-            <td></td>
-        </tr>
-    </table>
-</div>
+            </pre>
+        </CodeSampleContent>
+    </CodeSample>
+    <CodeSample Title="SpinButton with icon" Description="Multiple files can be selected to upload automatically.">
+        <SampleContent>
+            <BitSpinButton IconName="IncreaseIndentLegacy"
+                           Min="0"
+                           Max="100"
+                           Step="1"
+                           Label="With icon">
+            </BitSpinButton>
+            <BitSpinButton IconName="IncreaseIndentLegacy"
+                           Min="0"
+                           Max="100"
+                           Step="1"
+                           Label="Disabled with icon"
+                           IsEnabled="false">
+            </BitSpinButton>
+        </SampleContent>
+        <CodeSampleContent>
+            <pre>
+                 &lt;<span class="dark-green">BitSpinButton</span>    
+                 <span class="dark-green">IconName</span>="IncreaseIndentLegacy"
+                 <span class="dark-green">Min</span>="0"
+                 <span class="dark-green">Max</span>="100"
+                 <span class="dark-green">Step</span>="1"
+                 <span class="dark-green">Label</span>="With icon"&gt;
+                 &lt;/<span class="dark-green">BitSpinButton</span>&gt;
+                 &lt;<span class="dark-green">BitSpinButton</span>    
+                 <span class="dark-green">IconName</span>="IncreaseIndentLegacy"
+                 <span class="dark-green">Min</span>="0"
+                 <span class="dark-green">Max</span>="100"
+                 <span class="dark-green">Step</span>="1"
+                 <span class="dark-green">Label</span>="Disabled with icon"&gt;
+                 <span class="dark-green">IsEnabled</span>="<span class="light-blue">false</span>"
+                 &lt;/<span class="dark-green">BitSpinButton</span>&gt;
+            </pre>
+        </CodeSampleContent>
+    </CodeSample>
+    <CodeSample Title="SpinButton with suffix" Description="Multiple files can be selected to upload automatically with limited size.">
+        <SampleContent>
+            <BitSpinButton Suffix="Inch"
+                           Min="0"
+                           Max="100"
+                           Step="1"
+                           Label="With suffix">
+            </BitSpinButton>
+        </SampleContent>
+        <CodeSampleContent>
+            <pre>
+                &lt;<span class="dark-green">BitSpinButton</span>    
+                <span class="dark-green">Suffix</span>="Inch"
+                <span class="dark-green">Min</span>="0"
+                <span class="dark-green">Max</span>="100"
+                <span class="dark-green">Step</span>="1"
+                <span class="dark-green">Label</span>="With suffix"&gt;                                   
+                &lt;/<span class="dark-green">BitSpinButton</span>&gt;
+            </pre>
+        </CodeSampleContent>
+    </CodeSample>
+    <CodeSample Title="SpinButton with label above" Description="Single or multiple file uploading limited only by file extensions, which in this case the allowed file extensions include gif, jpg and mp4.">
+        <SampleContent>
+            <BitSpinButton @bind-Value="SpinButtonWithLabelAboveValue"
+                           Suffix="cm"
+                           Min="0"
+                           Max="100"
+                           Step="1"
+                           Label="With labal above"
+                           LabelPosition="@BitSpinButtonLabelPosition.Top">
+            </BitSpinButton>
+        </SampleContent>
+        <CodeSampleContent>
+            <pre>
+                 &lt;<span class="dark-green">BitSpinButton</span>    
+                 <span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-Value</span>="SpinButtonWithLabelAboveValue"
+                 <span class="dark-green">Suffix</span>="cm"
+                 <span class="dark-green">Min</span>="0"
+                 <span class="dark-green">Max</span>="100"
+                 <span class="dark-green">Step</span>="1"
+                 <span class="dark-green">Label</span>="With labal above"
+                 <span class="dark-green">LabelPosition</span>="<span class="light-yellow-bg">&#64;</span><span class="neon-yellow">BitSpinButtonLabelPosition</span>.Top"&gt;                                   
+                 &lt;/<span class="dark-green">BitSpinButton</span>&gt;
+            </pre>
+        </CodeSampleContent>
+    </CodeSample>
+    <CodeSample Title="Custom styled SpinButton" Description="">
+        <SampleContent>
+            <BitSpinButton Class="custom-spb"
+                           Min="0"
+                           Max="100"
+                           Step="1"
+                           Label="Custom styled">
+            </BitSpinButton>
+        </SampleContent>
+        <CodeSampleContent>
+            <pre>
+                 &lt;<span class="dark-green">BitSpinButton</span>
+                 <span class="dark-green">Class</span>="custom-spb"
+                 <span class="dark-green">Min</span>="0"
+                 <span class="dark-green">Max</span>="100"
+                 <span class="dark-green">Step</span>="1"
+                 <span class="dark-green">Label</span>="Custom styled"&gt;
+                 &lt;/<span class="dark-green">BitSpinButton</span>&gt;
+            </pre>
+        </CodeSampleContent>
+    </CodeSample>
+    <CodeSample Title="Controlled SpinButton" Description="A controlled BitSpinButton provides two-way binding using either bind-value or Value parameters. With bind-value all the changes to the value can be seen by its parent
+                but using Value, a custom handler should be implemented to reflect the changes outside the component.">
+        <SampleContent>
+            <BitSpinButton Label="Controlled SpinButton with bind-value"
+                           @bind-Value="BitSpinButtonBindValue"
+                           Min="0"
+                           Max="100"
+                           Step="1">
+            </BitSpinButton>
+            <BitSpinButton Label="Controlled SpinButton with Value"
+                           Value="BitSpinButtonValueChanged"
+                           ValueChanged="HandleControlledSpinButtonValueChange"
+                           Min="0"
+                           Max="100"
+                           Step="1">
+            </BitSpinButton>
+        </SampleContent>
+        <CodeSampleContent>
+            <pre>
+                 &lt;<span class="dark-green">BitSpinButton</span>
+                 <span class="dark-green">Label</span>="Controlled SpinButton with bind-value"
+                 <span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-Value</span>="BitSpinButtonBindValue"
+                 <span class="dark-green">Min</span>="0"
+                 <span class="dark-green">Max</span>="100"
+                 <span class="dark-green">Step</span>="1"
+                 &lt;/<span class="dark-green">BitSpinButton</span>&gt;
+
+                 &lt;<span class="dark-green">BitSpinButton</span>
+                 <span class="dark-green">Label</span>="Controlled SpinButton with ValueChanged"
+                 <span class="dark-green">Value</span>="BitSpinButtonValueChanged"
+                 <span class="dark-green">ValueChanged</span>="HandleControlledSpinButtonValueChange"
+                 <span class="dark-green">Min</span>="0"
+                 <span class="dark-green">Max</span>="100"
+                 <span class="dark-green">Step</span>="1"
+                 &lt;/<span class="dark-green">BitSpinButton</span>&gt;
+
+                 <span class="light-yellow-bg">&#64;code{</span>
+                 <span class="light-blue">private double</span> BitSpinButtonBindValue = 8;
+                 <span class="light-blue">private double</span> BitSpinButtonValueChanged = 16;        
+                 <span class="light-blue">private</span> void HandleControlledSpinButtonValueChange(double value)
+                 {
+                 BitSpinButtonValueChanged = value;
+                 }              
+                 <span class="light-yellow-bg">}</span>
+            </pre>
+        </CodeSampleContent>
+    </CodeSample>
+</ComponentPage>

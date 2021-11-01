@@ -1,0 +1,53 @@
+﻿.bit-crsl-fluent {
+    max-width: 90%;
+    min-height: 50px;
+    position: relative;
+    margin: auto;
+}
+
+.bit-crsl-buttons {
+
+
+    & .bit-crsl-next-btn, .bit-crsl-previuse-btn {
+        cursor: pointer;
+        position: absolute;
+        top: 38%;
+        width: auto;
+        margin-top: -22px;
+        padding: 11px 16px;
+        color: white;
+        font-weight: bold;
+        font-size: 18px;
+        transition: 0.6s ease;
+        border-radius: 50%;
+        user-select: none;
+    }
+
+    & .bit-crsl-next-btn {
+        right: 0;
+    }
+
+    & .bit-crsl-next-btn:hover, .bit-crsl-previuse-btn:hover {
+        background-color: rgba(0,0,0,0.8);
+    }
+}
+
+.bit-crsl-dots {
+    text-align: center;
+    margin-top: 15px;
+
+    & > div {
+        cursor: pointer;
+        height: 15px;
+        width: 15px;
+        margin: 0 2px;
+        background-color: #bbb;
+        border-radius: 50%;
+        display: inline-block;
+        transition: background-color 0.6s ease;
+
+        &:hover, &.bit-crsl-dot-current {
+            background-color: #717171;
+        }
+    }
+}

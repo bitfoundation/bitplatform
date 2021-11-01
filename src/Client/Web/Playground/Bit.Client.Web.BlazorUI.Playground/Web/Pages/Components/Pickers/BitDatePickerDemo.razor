@@ -1,260 +1,104 @@
 ﻿@page "/components/datepicker"
 
-<h2>DatePicker</h2>
+@using Bit.Client.Web.BlazorUI.Playground.Web.Components
 
-<div class="card">
-    <p class="desc">Picking a date can be tough without context. A BitDatePicker offers a drop-down control that’s optimized for picking a single date from a calendar view where contextual information like the day of the week or fullness of the calendar is important. You can modify the calendar to provide additional context or to limit available dates.</p>
-</div>
+<ComponentPage ComponentName="DatePicker" OverviewDesc="Picking a date can be tough without context. A BitDatePicker offers a drop-down control that’s optimized for picking a single date from a calendar view where contextual information like the day of the week or fullness of the calendar is important.
+                                                        You can modify the calendar to provide additional context or to limit available dates."
+               ComponentParameters="componentParameters" EnumParameters="enumParameters">
+    <CodeSample Title="BitDatePicker" Description="">
+        <SampleContent>
+            <div>
+                <BitDatePicker Style="width: 300px"
+                               FirstDayOfWeek="firstDayOfWeek">
+                </BitDatePicker>
+                <BitDropDown Style="width: 300px"
+                             Items="@GetFirstDayOfWeekDropdownItems()"
+                             Label="Select the first day of the week"
+                             DefaultSelectedKey="0"
+                             OnSelectItem="@SelectFirstDayOfWeek">
+                </BitDropDown>
+            </div>
+        </SampleContent>
+        <CodeSampleContent>
+            <pre>
+                &lt<span class="dark-green">BitDatePicker</span> <span class="light-blue">Style</span>="width: 300px"><span class="dark-green">&lt/BitDatePicker></span>
+            </pre>
+        </CodeSampleContent>
+    </CodeSample>
 
-<h2>Usage</h2>
-<div class="wrapper">
-    <div class="card">
-        <h3>BitDatePicker</h3>
-        <BitPivot>
-            <BitPivotItem HeaderText="Example" IconName="ViewList">
-                <BitDatePicker Style="width: 300px"></BitDatePicker>
-            </BitPivotItem>
-            <BitPivotItem HeaderText="Code" IconName="Source">
-                <p>
-                    &lt<span class="dark-green">BitDatePicker</span>><span class="dark-green">&lt/BitDatePicker></span>
-                </p>
-            </BitPivotItem>
-        </BitPivot>
-    </div>
-    <div class="card">
-        <h3>Date picker disabled</h3>
-        <BitPivot>
-            <BitPivotItem HeaderText="Example" IconName="ViewList">
-                <BitDatePicker IsEnabled="false" Style="width: 300px"></BitDatePicker>
-            </BitPivotItem>
-            <BitPivotItem HeaderText="Code" IconName="Source">
-                <p>
-                    &lt<span class="dark-green">BitDatePicker IsEnabled</span>="<span class="light-blue">false</span>><span class="dark-green">&lt/BitDatePicker></span>
-                </p>
-            </BitPivotItem>
-        </BitPivot>
-    </div>
-    <div class="card">
-        <h3>Shamsi Date picker</h3>
-        <BitPivot>
-            <BitPivotItem HeaderText="Example" IconName="ViewList">
-                <BitDatePicker CalendarType="BitCalendarType.Persian" Style="width: 300px"></BitDatePicker>
-            </BitPivotItem>
-            <BitPivotItem HeaderText="Code" IconName="Source">
-                <p>
-                    &lt<span class="dark-green">BitDatePicker CalendarType</span>="<span class="light-green">CalendarType</span>.Persian"><span class="dark-green">&lt/BitDatePicker></span>
-                </p>
-            </BitPivotItem>
-        </BitPivot>
-    </div>
-    <div class="card">
-        <h3>Value two-way binding</h3>
-        <BitPivot>
-            <BitPivotItem HeaderText="Example" IconName="ViewList">
+    <CodeSample Title="BitDatePicker with month picker as overlay" Description="">
+        <SampleContent>
+            <div>
+                <BitDatePicker Style="width: 300px"
+                               ShowMonthPickerAsOverlay="true">
+                </BitDatePicker>
+            </div>
+        </SampleContent>
+        <CodeSampleContent>
+            <pre>
+                &lt<span class="dark-green">BitDatePicker</span> <span class="light-blue">Style</span>="width: 300px"  <span class="light-blue">ShowMonthPickerAsOverlay</span>="true"><span class="dark-green">&lt/BitDatePicker></span>
+            </pre>
+        </CodeSampleContent>
+    </CodeSample>
+
+    <CodeSample Title="BitDatePicker with week numbers" Description="">
+        <SampleContent>
+            <div>
+                <BitDatePicker Style="width: 300px"
+                               ShowWeekNumbers="true">
+                </BitDatePicker>
+            </div>
+        </SampleContent>
+        <CodeSampleContent>
+            <pre>
+                &lt<span class="dark-green">BitDatePicker</span> <span class="light-blue">Style</span>="width: 300px"  <span class="light-blue">ShowWeekNumbers</span>="true"><span class="dark-green">&lt/BitDatePicker></span>
+            </pre>
+        </CodeSampleContent>
+    </CodeSample>
+    <CodeSample Title="Shamsi BitDatePicker" Description="">
+        <SampleContent>
+            <div>
+                <BitDatePicker CalendarType="BitCalendarType.Persian"
+                               Style="width: 300px"
+                               FirstDayOfWeek="DayOfWeek.Saturday">
+                </BitDatePicker>
+            </div>
+        </SampleContent>
+        <CodeSampleContent>
+            <pre>
+                 &lt<span class="dark-green">BitDatePicker CalendarType</span>="<span class="light-green">CalendarType</span>.Persian" <span class="light-blue">Style</span>="width: 300px"><span class="dark-green">&lt/BitDatePicker></span>
+            </pre>
+        </CodeSampleContent>
+    </CodeSample>
+    <CodeSample Title="Value two-way binding" Description="">
+        <SampleContent>
+            <div>
                 <BitDatePicker @bind-Value="@selectedDate" Style="width: 300px"></BitDatePicker>
                 <BitLabel>this is selected date: @selectedDate</BitLabel>
-            </BitPivotItem>
-            <BitPivotItem HeaderText="Code" IconName="Source">
-                <p>
-                    <span class="dark-green">
-                        &ltBitDatePicker
-                        <span class="light-yellow-bg">&#64</span>
-                        <span class="dark-green">bind-Value</span>
-                    </span>="selectedDate"<span class="dark-green">>&lt/BitDatePicker></span>
-                    <br />
-                    <span class="light-yellow-bg">&#64code{</span>
-                    <br />
-                    <span class="light-blue">private string</span> selectedDate = <span class="light-blue">"";s</span>
-                    <br />                                                              
-                    <span class="light-yellow-bg">}</span>
-                </p>
-            </BitPivotItem>
-        </BitPivot>
-    </div>
-    <div class="card">
-        <h3>DatePicker with custom date formatting</h3>
-        <BitPivot>
-            <BitPivotItem HeaderText="Example" IconName="ViewList">
+            </div>
+        </SampleContent>
+        <CodeSampleContent>
+            <pre>
+                &lt<span class="dark-green">BitDatePicker <span class="light-yellow-bg">&#64</span><span class="dark-green">bind-Value</span></span>="selectedDate"<span class="dark-green">>&lt/BitDatePicker></span>
+            <span class="light-yellow-bg">&#64code {</span>
+            <span class="light-blue">private string</span> selectedDate ="";
+            <span class="light-yellow-bg">}</span>
+            </pre>
+        </CodeSampleContent>
+    </CodeSample>
+    <CodeSample Title="DatePicker with custom date formatting" Description="">
+        <SampleContent>
+            <div>
                 <BitDatePicker OnSelectDate="OnDateFormat" Style="width: 300px"></BitDatePicker>
-            </BitPivotItem>
-            <BitPivotItem HeaderText="Code" IconName="Source">
-                <p>
-                    <span class="dark-green">
-                        &ltBitDatePicker
-                        <span class="dark-green">OnSelectDate</span>
-                    </span>="OnDateFormat"
-                    <span class="dark-green">>&lt/BitDatePicker></span>
-                    <br />
-                    <span class="light-yellow-bg">&#64code{</span>
-                    <br />
-                    <span class="light-blue">private <span class="dark-green">string</span></span> <span class="dark-yellow">OnDateFormat</span>
-                    <span class="light-blue">(<span class="dark-green">BitDate</span> date) =></span>
-                    <span class="m-l-30">
-                        <br />
-                        $<span class="light-blue">"</span>{date.GetDate()}/{date.GetMonth()}/{date.GetYear()}
-                        <span class="light-blue">";</span>
-                    </span>
-                    <br />
-                    <span class="light-yellow-bg">}</span>
-                </p>
-            </BitPivotItem>
-        </BitPivot>
-    </div>
-</div>
-<h2>Implementation</h2>
-<div class="card">
-    <table>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Default value</th>
-            <th>Description</th>
-        </tr>
-        <tr>
-            <td>AriaLabel</td>
-            <td>string</td>
-            <td></td>
-            <td>The aria-label of the control for the benefit of screen readers.</td>
-        </tr>
-        <tr>
-            <td>CalendarType</td>
-            <td>CalendarType</td>
-            <td>CalendarType.Gregorian</td>
-            <td>Calendar type for the DatePicker.</td>
-        </tr>
-        <tr>
-            <td>Class</td>
-            <td>string</td>
-            <td></td>
-            <td>Custom CSS class for the root element of the component.</td>
-        </tr>
-        <tr>
-            <td>GoToToday</td>
-            <td>string</td>
-            <td>Go to today</td>
-            <td>GoToToday text for the DatePicker.</td>
-        </tr>
-        <tr>
-            <td>HtmlAttributes</td>
-            <td>Dictionary&lt;string, object&gt;</td>
-            <td></td>
-            <td>Capture and render additional attributes in addition to the component's parameters.</td>
-        </tr>
-        <tr>
-            <td>IsEnabled</td>
-            <td>bool</td>
-            <td>true</td>
-            <td>Whether the DatePicker is enabled.</td>
-        </tr>
-        <tr>
-            <td>IsOpen</td>
-            <td>bool</td>
-            <td>false</td>
-            <td>Whether or not this DatePicker is open.</td>
-        </tr>
-        <tr>
-            <td>OnClick</td>
-            <td>EventCallback&lt;MouseEventArgs&gt;</td>
-            <td></td>
-            <td>Callback for when clicking on DatePicker input.</td>
-        </tr>
-        <tr>
-            <td>OnDateChoose</td>
-            <td>EventCallback&lt;int&gt;</td>
-            <td></td>
-            <td>Callback for when the date changes.</td>
-        </tr>
-        <tr>
-            <td>OnFocusIn</td>
-            <td>EventCallback&lt;FocusEventArgs&gt;</td>
-            <td></td>
-            <td>Callback for when focus moves into the DatePicker input.</td>
-        </tr>
-        <tr>
-            <td>OnFocusOut</td>
-            <td>EventCallback&lt;FocusEventArgs&gt;</td>
-            <td></td>
-            <td>Callback for when focus moves out the DatePicker input.</td>
-        </tr>
-        <tr>
-            <td>OnMonthChange</td>
-            <td>EventCallback&lt;int&gt;</td>
-            <td></td>
-            <td>Callback for when the month changes.</td>
-        </tr>
-        <tr>
-            <td>OnYearChange</td>
-            <td>EventCallback&lt;int&gt;</td>
-            <td></td>
-            <td>Callback for when the year changes.</td>
-        </tr>
-        <tr>
-            <td>Placeholder</td>
-            <td>string</td>
-            <td>Select a date...</td>
-            <td>Placeholder text for the DatePicker.</td>
-        </tr>
-        <tr>
-            <td>Style</td>
-            <td>string</td>
-            <td></td>
-            <td>Custom style for the root element of the component.</td>
-        </tr>
-        <tr>
-            <td>Visibility</td>
-            <td>ComponentVisibility</td>
-            <td></td>
-            <td>Whether the component is visible, hidden, collapsed.</td>
-        </tr>
-    </table>
-    <h4>CalendarType</h4>
-    <hr />
-    <table>
-        <tr>
-            <th>Name</th>
-            <th>Value</th>
-            <th>Description</th>
-        </tr>
-        <tr>
-            <td>Gregorian</td>
-            <td>0</td>
-            <td>Show DatePicker in Gregorian calendar.</td>
-        </tr>
-        <tr>
-            <td>Persian</td>
-            <td>1</td>
-            <td>Show DatePicker in Persian calendar.</td>
-        </tr>
-        <tr>
-            <td>Other</td>
-            <td>2</td>
-            <td></td>
-        </tr>
-    </table>
-    <div>
-        <h4 id="component-visibility">ComponentVisibility</h4>
-        <hr />
-        <table>
-            <tr>
-                <th>Name</th>
-                <th>Value</th>
-                <th>Description</th>
-            </tr>
-            <tr>
-                <td>Visible</td>
-                <td>0</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>Hidden</td>
-                <td>1</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>Collapsed</td>
-                <td>2</td>
-                <td></td>
-            </tr>
-        </table>
-    </div>
-</div>
+            </div>
+        </SampleContent>
+        <CodeSampleContent>
+            <pre>
+                &lt<span class="dark-green">BitDatePicker<span class="dark-green"> OnSelectDate</span> </span>="OnDateFormat"<span class="dark-green">>&lt/BitDatePicker></span>
+            <span class="light-yellow-bg">&#64code {</span>
+            <span class="light-blue">private string</span> <span class="dark-yellow"> OnDateFormat</span><span class="light-blue">(<span class="dark-green">BitDate</span> date) =></span>$"{date.GetDate()}/{date.GetMonth()}/{date.GetYear()}";
+            <span class="light-yellow-bg">}</span>
+                </pre>
+        </CodeSampleContent>
+    </CodeSample>
+</ComponentPage>

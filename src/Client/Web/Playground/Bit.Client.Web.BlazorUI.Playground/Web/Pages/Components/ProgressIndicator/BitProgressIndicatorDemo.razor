@@ -1,203 +1,64 @@
 ﻿@page "/components/progressindicator"
 
-<h2>Progressindicator</h2>
+@using Bit.Client.Web.BlazorUI.Playground.Web.Components
 
-<div class="card">
-    <p class="desc">
-        BitProgressIndicators are used to show the completion status of an operation lasting more than 2 seconds.
+<ComponentPage ComponentName="Progressindicator" OverviewDesc="BitProgressIndicators are used to show the completion status of an operation lasting more than 2 seconds.
         If the state of progress cannot be determined, use a Spinner instead.
         ProgressIndicators can appear in a new panel, a flyout, under the UI initiating the operation, or even replacing the initiating UI,
-        as long as the UI can return if the operation is canceled or is stopped.
-    </p>
-    <p class="desc">
-        Real-world examples include copying files to a storage location, saving edits to a file, and more.
+        as long as the UI can return if the operation is canceled or is stopped. Real-world examples include copying files to a storage location, saving edits to a file, and more.
         Use units that are informative and relevant to give the best idea to users of how long the operation will take to complete.
         Avoid time units as they are rarely accurate enough to be trustworthy. Also, combine steps of a complex operation into one total bar to avoid “rewinding” the bar.
         Instead change the operation description to reflect the change if necessary.
-        Bars moving backwards reduce confidence in the service.
-    </p>
-</div>
-
-<h2>Usage</h2>
-<div class="wrapper">
-    <div class="card">
-        <h3>Default ProgressIndicator</h3>
-        <BitPivot>
-            <BitPivotItem HeaderText="Example" IconName="ViewList">
-                <BitProgressIndicator Label="Example title" Description="@description" PercentComplete="@CompletedPercent" BarHeight="50"></BitProgressIndicator>
-                <div class="m-t-10">
-                    <BitButton OnClick="@StartProgress">Start Progress</BitButton>
-                </div>
-            </BitPivotItem>
-            <BitPivotItem HeaderText="Code" IconName="Source">
-                <p>
-                    &lt<span class="dark-green">BitProgressIndicator Label</span>="Example title" <span class="dark-green">Description</span>="<span class="light-yellow-bg">&#64;</span>description" <span class="dark-green">PercentComplete</span>="<span class="light-yellow-bg">&#64;</span>CompletedPercent" <span class="dark-green">BarHeight</span>="30"><span>&lt/</span><span class="dark-green">BitProgressIndicator</span><span>&gt;</span>
-                </p>
-                <p>
-                    &lt<span class="dark-green">BitButton OnClick</span>="<span class="light-yellow-bg">&#64;</span><span class="neon-yellow">StartProgress</span>"><span class="dark-green">BitButton</span><span>&gt;</span>
-                </p>
-                <div class="code m-t-10">
-                    <span class="light-yellow-bg">&#64;code {</span>
-                    <p>
-                        private string description= "<span class=dark-orange>Push button to start!</span>";
-                    </p>
-                    <p>
-                        public int CompletedPercent { get; set; }
-                    </p>
-                    <p>
-                        <span>private async <span class="dark-green">Task</span><span class="dark-yellow"> StartProgress</span>()</span>
-                        <br />
-                        <span class="light-yellow-bg">{</span>
-                        <br />
-                        <span class="m-l-30">CompletedPercent = 0;</span>
-                        <br />
-                        <span class="m-l-30">{</span>
-                        <br />
-                        <span class="m-l-30"><span class="light-purple">while</span> (CompletedPercent &lt= 100)</span>
-                        <br />
-                        <span class="m-l-30">{</span>
-                        <br />
-                        <span class="m-l-45"><span class="light-purple">if</span> (CompletedPercent == 100)</span>
-                        <br />
-                        <span class="m-l-45">{</span>
-                        <br />
-                        <span class="m-l-60">description = <span class="dark-orange">$"Completed !"</span></span>
-                        <br />
-                        <span class="m-l-60"><span class="light-purple">break</span>;</span>
-                        <br />
-                        <span class="m-l-45">}</span>
-                        <br />
-                        <span class="m-l-45"><span class="light-purple">else</span></span>
-                        <br />
-                        <span class="m-l-45">{</span>
-                        <br />
-                        <span class="m-l-60">CompletedPercent++;</span>
-                        <br />
-                        <span class="m-l-60">description = <span class="dark-orange">$"</span>{CompletedPercent}<span class="dark-orange">%"</span>;</span>
-                        <br />
-                        <span class="m-l-45">}</span>
-                        <br />
-                        <span class="m-l-45"><span class="dark-yellow">StateHasChanged</span>();</span>
-                        <br />
-                        <span class="m-l-45"><span class=light-blue>await </span><span class="light-green">Task</span>.<span class="dark-yellow">Delay</span>(100);</span>
-                        <br />
-                        <span class="m-l-30">}</span>
-                        <br />
-                        <span>}</span>
-                    </p>
-                    <span class="light-yellow-bg">}</span>
-                </div>
-            </BitPivotItem>
-        </BitPivot>
-    </div>
-    <div class="card">
-        <h3>Indeterminate Progress Indicator</h3>
-        <BitPivot>
-            <BitPivotItem HeaderText="Example" IconName="ViewList">
-                <BitProgressIndicator Label="Example title" Description="Example description" BarHeight="20"></BitProgressIndicator>
-            </BitPivotItem>
-            <BitPivotItem HeaderText="Code" IconName="Source">
-                <p>
-                    &lt<span class="dark-green">BitProgressIndicator Label</span>="Example title" <span class="dark-green">Description</span>="Example description" <span class="dark-green">BarHeight</span>="20"><span>&lt/</span><span class="dark-green">BitProgressIndicator</span><span>&gt;</span>
-                </p>
-            </BitPivotItem>
-        </BitPivot>
-    </div>
-</div>
-<h2>Implementation</h2>
-<div class="card">
-    <table>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Default value</th>
-            <th>Description</th>
-        </tr>
-        <tr>
-            <td>AriaLabel</td>
-            <td>string</td>
-            <td></td>
-            <td>The aria-label of the control for the benefit of screen readers.</td>
-        </tr>
-        <tr>
-            <td>BarHeight</td>
-            <td>int</td>
-            <td></td>
-            <td>Height of the ProgressIndicator.</td>
-        </tr>        
-        <tr>
-            <td>Class</td>
-            <td>string</td>
-            <td></td>
-            <td>Custom CSS class for the root element of the component.</td>
-        </tr>
-        <tr>
-            <td>Description</td>
-            <td>string</td>
-            <td></td>
-            <td>Text describing or supplementing the operation.</td>
-        </tr>
-        <tr>
-            <td>HtmlAttributes</td>
-            <td>Dictionary&lt;string, object&gt;</td>
-            <td></td>
-            <td>Capture and render additional attributes in addition to the component's parameters.</td>
-        </tr>
-        <tr>
-            <td>IsEnabled</td>
-            <td>bool</td>
-            <td></td>
-            <td>Whether or not the component is enabled.</td>
-        </tr>
-        <tr>
-            <td>Label</td>
-            <td>string</td>
-            <td></td>
-            <td>Label to display above the component.</td>
-        </tr>
-        <tr>
-            <td>PercentComplete</td>
-            <td>double</td>
-            <td></td>
-            <td>Percentage of the operation's completeness, numerically between 0 and 1. If this is not set, the indeterminate progress animation will be shown instead.</td>
-        </tr>              
-        <tr>
-            <td>Style</td>
-            <td>string</td>
-            <td></td>
-            <td>Custom style for the root element of the component.</td>
-        </tr>
-        <tr>
-            <td>Visibility</td>
-            <td>ComponentVisibility</td>
-            <td></td>
-            <td>Whether the component is visible, hidden, collapsed.</td>
-        </tr>
-    </table>
-    <div>
-        <h4 id="component-visibility">ComponentVisibility</h4>
-        <hr />
-        <table>
-            <tr>
-                <th>Name</th>
-                <th>Value</th>
-                <th>Description</th>
-            </tr>
-            <tr>
-                <td>Visible</td>
-                <td>0</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>Hidden</td>
-                <td>1</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>Collapsed</td>
-                <td>2</td>
-                <td></td>
-            </tr>
-        </table>
-    </div>
-</div>
+        Bars moving backwards reduce confidence in the service."
+               ComponentParameters="componentParameters">
+    <CodeSample Title="BitProgressIndicator" Description="">
+        <SampleContent>
+            <BitProgressIndicator Label="Example title" Description="@description" PercentComplete="@CompletedPercent" BarHeight="50"></BitProgressIndicator>
+            <div class="m-t-10">
+                <BitButton OnClick="@StartProgress">Start Progress</BitButton>
+            </div>
+        </SampleContent>
+        <CodeSampleContent>
+            <pre>
+               &lt<span class="dark-green">BitProgressIndicator Label</span>="Example title" <span class="dark-green">Description</span>="<span class="light-yellow-bg">&#64;</span>description" <span class="dark-green">PercentComplete</span>="<span class="light-yellow-bg">&#64;</span>CompletedPercent" <span class="dark-green">BarHeight</span>="30"><span>&lt/</span><span class="dark-green">BitProgressIndicator</span><span>&gt;</span>
+               &lt<span class="dark-green">BitButton OnClick</span>="<span class="light-yellow-bg">&#64;</span><span class="dark-yellow">StartProgress</span>"><span class="dark-green">BitButton</span><span>&gt;</span>
+            
+               <span class="light-yellow-bg">&#64;code {</span>
+                    <span class="light-blue"> private string </span>description= "<span class=dark-orange>Push button to start!</span>";
+                    <span class="light-blue"> public int </span>CompletedPercent { get; set; }
+                    
+                    <span class="light-blue">private async </span><span class="dark-green">Task</span><span class="dark-yellow"> StartProgress</span>()
+                    <span>{</span>
+                    <span>CompletedPercent = 0;</span>
+                    <span>{</span>
+                            <span><span class="light-purple">while</span> (CompletedPercent &lt= 100)</span>
+                            <span>{</span>
+                            <span><span class="light-purple">if</span> (CompletedPercent == 100)</span>
+                            <span>{</span>
+                                <span>description = <span class="dark-orange">$"Completed !"</span></span>
+                                <span><span class="light-purple">break</span>;</span>
+                            <span>}</span>
+                            <span><span class="light-purple">else</span></span>
+                            <span>{</span>
+                                <span>CompletedPercent++;</span>
+                                <span>description = <span class="dark-orange">$"</span>{CompletedPercent}<span class="dark-orange">%"</span>;</span>
+                            <span>}</span>
+                            <span><span class="dark-yellow">StateHasChanged</span>();</span>
+                            <span><span class=light-blue>await </span><span class="light-green">Task</span>.<span class="dark-yellow">Delay</span>(100);</span>
+                            <span>}</span>
+                    <span>}</span>
+            <span class="light-yellow-bg">}</span>
+            </pre>
+        </CodeSampleContent>
+    </CodeSample>
+    <CodeSample Title="Indeterminate Progress Indicator" Description="">
+        <SampleContent>
+            <BitProgressIndicator Label="Example title" Description="Example description" BarHeight="20"></BitProgressIndicator>
+        </SampleContent>
+        <CodeSampleContent>
+            <pre>
+              &lt<span class="dark-green">BitProgressIndicator Label</span>="Example title" <span class="dark-green">Description</span>="Example description" <span class="dark-green">BarHeight</span>="20"><span>&lt/</span><span class="dark-green">BitProgressIndicator</span><span>&gt;</span>
+            </pre>
+        </CodeSampleContent>
+    </CodeSample>
+</ComponentPage>
