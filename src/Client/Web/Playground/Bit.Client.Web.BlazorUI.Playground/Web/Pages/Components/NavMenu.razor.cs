@@ -1,11 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Bit.Client.Web.BlazorUI.Playground.Web.Services;
+using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 
 namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components
 {
     public partial class NavMenu
     {
+        private bool IsNavOpen = false;
         private readonly List<BitNavLinkItem> allNavLinks = new()
         {
             new BitNavLinkItem
@@ -92,15 +96,25 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components
                 },
             },
         };
-
         private List<BitNavLinkItem> filteredNavLinks;
         private BitNavRenderType renderType = BitNavRenderType.Grouped;
         private string searchText = string.Empty;
 
+        [Inject] public MenuService MenuService { get; set; }
+        [Inject] public IJSRuntime JsRuntime { get; set; }
+
         protected override void OnInitialized()
         {
             HandleClear();
+            MenuService.OnToggleMenu += ToggleMenu;
             base.OnInitialized();
+        }
+
+        private async void ToggleMenu()
+        {
+            IsNavOpen = !IsNavOpen;
+            await JsRuntime.InvokeVoidAsync("toggleMenu", IsNavOpen);
+            StateHasChanged();
         }
 
         private void HandleClear()
@@ -124,6 +138,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components
         {
             searchText = string.Empty;
             HandleClear();
+            ToggleMenu();
         }
 
         private static IEnumerable<BitNavLinkItem> Flatten(IEnumerable<BitNavLinkItem> e) => e.SelectMany(c => Flatten(c.Links)).Concat(e);

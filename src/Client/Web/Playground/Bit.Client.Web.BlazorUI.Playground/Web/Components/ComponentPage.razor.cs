@@ -1,15 +1,14 @@
 ﻿using System.Collections.Generic;
-using System.Threading.Tasks;
 using Bit.Client.Web.BlazorUI.Playground.Web.Models;
 using Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
+using Bit.Client.Web.BlazorUI.Playground.Web.Services;
 using Microsoft.AspNetCore.Components;
-using Microsoft.JSInterop;
 
 namespace Bit.Client.Web.BlazorUI.Playground.Web.Components
 {
     public partial class ComponentPage
     {
-        [Inject] public IJSRuntime JSRuntime { get; set; }
+        [Inject] public MenuService MenuService { get; set; }
 
         [Parameter] public string ComponentName { get; set; }
         [Parameter] public string OverviewDesc { get; set; }
@@ -18,9 +17,9 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Components
         [Parameter] public List<ComponentParameter> ComponentParameters { get; set; } = new();
         [Parameter] public List<ComponentSubParameter> ComponentSubParameters { get; set; } = new();
 
-        private async Task HandleClick()
+        private void ToggleMenu()
         {
-            await JSRuntime.ShowHideNavbar();
+            MenuService.ToggleMenu();
         }
     }
 }

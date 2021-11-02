@@ -1,4 +1,4 @@
-﻿<div id="navbar" class="navbar">
+﻿<div class="navbar desktop-nav">
     <BitSearchBox Placeholder="Search"
                   Class="search-box"
                   IconName=""
@@ -16,3 +16,26 @@
         </BitNav>
     </div>
 </div>
+
+@if (IsNavOpen)
+{
+    <div class="menu-shadow mobile-nav" @onclick="@ToggleMenu"></div>
+    <div class="navbar">
+        <BitSearchBox Placeholder="Search"
+                  Class="search-box"
+                  IconName=""
+                  Value="@searchText"
+                  ValueChanged="@HandleChange"
+                  OnClear="@HandleClear" />
+        <div class="border-top"></div>
+        <div class="nav-container">
+            <BitLink Href="\components\overview">Components</BitLink>
+            <BitNav Class="nav-link"
+                NavLinkItems="filteredNavLinks"
+                RenderType="renderType"
+                AriaLabel="Bit Component Nav"
+                OnLinkClick="HandleLinkClick">
+            </BitNav>
+        </div>
+    </div>
+}

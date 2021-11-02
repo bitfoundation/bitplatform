@@ -1,0 +1,36 @@
+﻿@import '../../Styles/_shared.scss';
+
+.desktop-nav {
+    display: block;
+
+    @include lt-lg {
+        display: none;
+    }
+}
+
+.mobile-nav {
+    display: none;
+
+    @include lt-lg {
+        display: flex;
+    }
+}
+
+.navbar {
+    @include lt-lg {
+        position: fixed;
+        z-index: 300;
+    }
+}
+
+.menu-shadow {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 200;
+    width: 100%;
+    height: 100vh;
+    justify-content: flex-start;
+    align-items: flex-start;
+    background-color: rgba(0,0,0,0.6);
+}

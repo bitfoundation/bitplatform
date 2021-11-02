@@ -452,23 +452,8 @@ footer {
             flex: 20%;
         }
 
-        @include md {
-            position: absolute;
-            height: calc(100% - 40px);
-            padding-top: rem(40px);
-            margin-top: 0;
-            display: none;
-            z-index: 0;
-        }
-
-        @include sm {
-            position: absolute;
-            height: calc(100% - 61px);
-            width: rem(272px);
-            padding-top: rem(36px);
-            margin-top: rem(25px);
-            display: none;
-            z-index: 0;
+        @include lt-lg {
+            position: fixed;
         }
 
         .search-box {
