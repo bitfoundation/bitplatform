@@ -1,7 +1,8 @@
 ﻿@import "../../Styles/Fluent/colors.fluent.scss", "../../Styles/functions.scss";
 
-@mixin getBaseli($class) {
+@mixin getLiBaseStyle($class) {
     $color: $Grey120;
+    border: rem(1px) solid $color;
 
     @if $class=="uploaded" {
         $color: $Green120;
@@ -13,166 +14,155 @@
         $color: $Red20;
     }
 
-    border: 1px solid $color;
-
     &:hover {
         color: $color;
     }
 
     .status {
-        color: $color;
         padding-left: rem(5px);
         white-space: nowrap;
         text-overflow: ellipsis;
+        color: $color;
         overflow: hidden;
     }
 }
 
-.bit-fl-up-fluent {
+.bit-file-upload-fluent {
+    display: flex;
     font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
     -webkit-font-smoothing: antialiased;
-    font-size: inherit;
-    font-weight: inherit;
-    width: rem(300px);
+}
 
-    > div:first-child {
-        padding: rem(3px);
-        position: relative;
-        justify-content: center;
-        align-items: center;
+.file-input {
+    display: none;
+}
 
-        > input[type='file'] {
-            display: none
-        }
+.bit-file-upload-lbl {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: rem(35px);
+    padding: rem(16px);
+    border: rem(1px) solid $Grey60;
+    border-radius: rem(4px);
+    outline: 0;
+    //box-sizing: border-box;
+    font-size: rem(16px);
+    font-weight: 300;
+    color: $Grey160;
+    background-color: $White;
+    cursor: pointer;
+    user-select: none;
 
-        > label {
-            font-size: 1rem;
-            font-weight: 300;
-            cursor: pointer;
-            outline: 0;
-            user-select: none;
-            border-color: $Grey60;
-            border-style: solid;
-            border-radius: rem(4px);
-            border-width: rem(1px);
-            background-color: $White;
-            color: $Grey160;
-            padding: rem(16px);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-
-            &:hover {
-                border-color: $Grey180;
-            }
-
-            &:active {
-                background-color: $Grey20;
-            }
-
-            > i {
-                padding-right: rem(5px);
-            }
-        }
+    &:hover {
+        border-color: $Grey180;
     }
 
-    ul {
-        padding: rem(0px);
-        margin: rem(0px);
+    &:active {
+        background-color: $Grey20;
+    }
 
-        .inprogress {
-            @include getBaseli($class:"inprogress");
+    i {
+        padding-right: rem(5px);
+    }
+}
+
+.file-list {
+    padding: 0;
+    margin: 0;
+}
+
+.inprogress {
+    @include getLiBaseStyle($class: "in-progress");
+}
+
+.uploaded {
+    @include getLiBaseStyle($class: "uploaded");
+}
+
+.failed {
+    @include getLiBaseStyle($class: "failed");
+}
+
+.paused {
+    @include getLiBaseStyle($class: "paused");
+}
+
+li {
+    border-radius: rem(5px);
+    margin: rem(3px);
+    font-size: rem(14px);
+    font-weight: 100;
+    overflow: hidden;
+
+    > div {
+        height: rem(80px);
+    }
+
+    > div:nth-child(1) {
+
+        * {
+            cursor: default;
         }
 
-        .uploaded {
-            @include getBaseli($class:"uploaded");
-        }
-
-        .failed {
-            @include getBaseli($class:"failed");
-        }
-
-        .paused {
-            @include getBaseli($class:"paused");
-        }
-
-        li {
+        > div:nth-child(1) {
+            padding: rem(4px);
             overflow: hidden;
-            border-radius: rem(5px);
-            margin: rem(3px);
-            font-size: rem(14px);
-            font-weight: 100;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
 
-            > div {
-                height: rem(80px);
-            }
+        > div:nth-child(2) {
+            padding: rem(4px);
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
 
-            > div:nth-child(1) {
-
-                * {
-                    cursor: default;
-                }
-
-                > div:nth-child(1) {
-                    padding: rem(4px);
-                    overflow: hidden;
-                    white-space: nowrap;
-                    text-overflow: ellipsis;
-                }
-
-                > div:nth-child(2) {
-                    padding: rem(4px);
-                    overflow: hidden;
-                    white-space: nowrap;
-                    text-overflow: ellipsis;
-
-                    > span:last-child {
-                        text-align: right;
-                        float: right;
-                    }
-                }
-
-                > .progress {
-                    position: relative;
-                    overflow: hidden;
-                    height: rem(2px);
-                    padding-top: rem(8px);
-                    padding-bottom: rem(8px);
-                    padding-left: rem(2px);
-
-                    > div:first-child {
-                        position: absolute;
-                        width: 100%;
-                        height: rem(2px);
-                        background-color: $Grey30;
-                    }
-
-                    > div:last-child {
-                        background-color: $Primary;
-                        height: rem(2px);
-                        position: absolute;
-                        transition: width 0.15s linear 0s;
-                    }
-                }
-
-                width: 60%;
-                float: left;
-            }
-
-            > div:nth-child(2) {
-                display: flex;
-                justify-content: center;
-                align-items: center;
+            > span:last-child {
+                text-align: right;
                 float: right;
+            }
+        }
 
-                span {
-                    margin-right: rem(20px);
+        > .progress {
+            position: relative;
+            overflow: hidden;
+            height: rem(2px);
+            padding-top: rem(8px);
+            padding-bottom: rem(8px);
+            padding-left: rem(2px);
 
-                    &:hover {
-                        cursor: pointer;
-                        color: $Primary;
-                    }
-                }
+            > div:first-child {
+                position: absolute;
+                width: 100%;
+                height: rem(2px);
+                background-color: $Grey30;
+            }
+
+            > div:last-child {
+                background-color: $Primary;
+                height: rem(2px);
+                position: absolute;
+                transition: width 0.15s linear 0s;
+            }
+        }
+
+        width: 60%;
+        float: left;
+    }
+
+    > div:nth-child(2) {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        float: right;
+
+        span {
+            margin-right: rem(20px);
+
+            &:hover {
+                cursor: pointer;
+                color: $Primary;
             }
         }
     }
@@ -182,20 +172,18 @@
     margin-right: 5px;
 }
 
-.bit-fl-up-disabled-fluent {
-    > div:first-child {
-        > label {
+.bit-file-upload-disabled-fluent {
+    .bit-file-upload-lbl {
+        border-color: $Grey60;
+        color: $Grey120;
+        background-color: $Grey20;
+
+        &:hover {
             border-color: $Grey60;
+        }
+
+        &:active {
             background-color: $Grey20;
-            color: $Grey120;
-
-            &:hover {
-                border-color: $Grey60;
-            }
-
-            &:active {
-                background-color: $Grey20;
-            }
         }
     }
 }
