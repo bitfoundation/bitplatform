@@ -406,7 +406,8 @@ footer {
         color: $White;
     }
 }
-/* Nav Menu */
+
+/* Main container*/
 
 .main-container {
     display: flex;
@@ -421,182 +422,158 @@ footer {
     @include sm {
         margin-top: rem(96px);
     }
+}
 
-    .content {
-        width: calc(100% - 360px);
-        margin-left: auto;
+.content {
+    width: calc(100% - 360px);
+    margin-left: auto;
+
+    @include lg {
+        flex: 65%;
+    }
+
+    @include lt-xl {
+        width: 100%;
+    }
+
+    @include sm {
+        flex: 65%;
+    }
+
+    .box .bit-lnk-fluent > a:active, .bit-lnk-fluent > a:hover, .bit-lnk-fluent > a:visited {
+        text-decoration: none;
+        color: $White;
+    }
+}
+
+/* Nav Menu */
+
+.navbar {
+    .search-box {
+        width: 82%;
+        position: relative;
+        margin-left: rem(30px);
+        height: rem(40px);
+        background: $White;
+        border: rem(1px) solid $DarkBlue;
+        box-sizing: border-box;
+        border-radius: rem(2px);
 
         @include lg {
-            flex: 65%;
+            width: 89%;
+            margin-left: rem(16px);
         }
 
-        @include lt-xl {
-            width: 100%;
+        @include md {
+            margin-left: rem(32px);
         }
 
         @include sm {
-            flex: 65%;
+            margin-left: rem(24px);
+        }
+
+        & > div:first-child {
+            background-image: url("/images/icon/search-icon.svg");
+            width: rem(20px);
+            height: rem(20px);
+            margin: rem(8px) 0 0 rem(4px);
+        }
+
+        input {
+            padding-left: rem(8px);
+            position: relative;
+            top: rem(2px);
         }
     }
 
-    .navbar {
-        position: sticky;
-        width: rem(360px);
-        padding-top: rem(80px);
-        background-color: $Gray04;
-        overflow-y: scroll;
+    .nav-link {
+        padding-top: rem(8px);
 
-        @include lg {
-            padding-top: rem(58px);
-            width: rem(272px);
-            flex: 20%;
+        .bit-icon--ChevronDown {
+            transform: rotate(-90deg);
         }
 
-        @include lt-lg {
-            position: fixed;
+        .bit-nav-expand-fluent {
+            transform: rotate(0deg);
         }
 
-        .search-box {
-            width: 82%;
-            position: relative;
-            margin-left: rem(30px);
-            height: rem(40px);
-            background: $White;
-            border: rem(1px) solid $DarkBlue;
-            box-sizing: border-box;
-            border-radius: rem(2px);
+        .bit-nav-grp-chevron-btn {
+            border: none;
+        }
+
+        .bit-nav-chevron-btn {
+            width: 90%;
+            color: $DarkBlue;
+            font-weight: 600;
+            font-size: rem(18px);
+            margin-left: rem(15px);
 
             @include lg {
-                width: 89%;
-                margin-left: rem(16px);
-            }
-
-            @include md {
-                margin-left: rem(31px);
+                font-size: rem(16px);
             }
 
             @include sm {
-                margin-left: rem(23px);
-            }
-
-            & > div:first-child {
-                background-image: url("/images/icon/search-icon.svg");
-                width: rem(20px);
-                height: rem(20px);
-                margin: rem(8px) 0 0 rem(4px);
-            }
-
-            input {
-                padding-left: rem(8px);
-                position: relative;
-                top: rem(2px);
+                white-space: unset;
+                line-height: rem(22px);
             }
         }
 
-        .nav-link {
-            padding-top: rem(8px);
+        .bit-nav-link-enabled-hasurl-fluent:hover, .bit-nav-selected-fluent, .bit-nav-selected-fluent:hover {
+            background-color: $Gray03;
+            color: $Violet;
+        }
 
-            .bit-icon--ChevronDown {
-                transform: rotate(-90deg);
-            }
+        .bit-nav-link-enabled-hasurl-fluent {
+            color: $DarkBlue;
+            font-size: rem(18px);
 
-            .bit-nav-expand-fluent {
-                transform: rotate(0deg);
-            }
-
-            .bit-nav-grp-chevron-btn {
-                border: none;
-            }
-
-            .bit-nav-chevron-btn {
-                width: 90%;
-                color: $DarkBlue;
-                font-weight: 600;
-                font-size: rem(18px);
-                margin-left: rem(15px);
-
-                @include lg {
-                    font-size: rem(16px);
-                }
-
-                @include sm {
-                    white-space: unset;
-                    line-height: rem(22px);
-                }
-            }
-
-            .bit-nav-link-enabled-hasurl-fluent:hover, .bit-nav-selected-fluent, .bit-nav-selected-fluent:hover {
-                background-color: $Gray03;
-                color: $Violet;
-            }
-
-            .bit-nav-link-enabled-hasurl-fluent {
-                color: $DarkBlue;
-                font-size: rem(18px);
-
-                @include lg {
-                    font-size: rem(16px);
-                }
-            }
-
-            .bit-nav-link-container {
-                margin-left: rem(41px);
-            }
-
-            .bit-nav-selected-fluent:after {
-                border-left: rem(4px) solid $Violet;
-            }
-
-            .bit-nav-grp-content {
-                margin-bottom: 0;
-            }
-
-            .bit-sch-box-fluent > div:last-child button {
-                background-color: $White;
-            }
-
-            .bit-icon--Clear {
-                padding-right: rem(20px);
-            }
-
-            input.search-input {
-                padding-top: rem(5px);
+            @include lg {
+                font-size: rem(16px);
             }
         }
 
-        .border-top {
-            border-bottom: rem(1px) solid $Gray03;
-            padding-top: rem(20px);
+        .bit-nav-link-container {
+            margin-left: rem(41px);
         }
 
-        .nav-container {
-            margin-top: 26px;
-
-            .bit-lnk {
-                margin-left: rem(43px);
-
-                a, a:hover, a:visited {
-                    font-family: Axiforma;
-                    color: $DarkBlue;
-                    font-weight: 600;
-                    font-size: rem(18px);
-                    text-decoration: none;
-
-                    @include lg {
-                        font-size: rem(16px);
-                    }
-                }
-            }
+        .bit-nav-selected-fluent:after {
+            border-left: rem(4px) solid $Violet;
         }
-    }
 
-    .box {
-        .bit-lnk-fluent > a:active, .bit-lnk-fluent > a:hover, .bit-lnk-fluent > a:visited {
-            text-decoration: none;
-            color: $White;
+        .bit-nav-grp-content {
+            margin-bottom: 0;
+        }
+
+        .bit-sch-box-fluent > div:last-child button {
+            background-color: $White;
+        }
+
+        .bit-icon--Clear {
+            padding-right: rem(20px);
+        }
+
+        input.search-input {
+            padding-top: rem(5px);
         }
     }
 }
+
+.nav-container .bit-lnk {
+    margin-left: rem(43px);
+
+    a, a:hover, a:visited {
+        font-family: Axiforma;
+        color: $DarkBlue;
+        font-weight: 600;
+        font-size: rem(18px);
+        text-decoration: none;
+
+        @include lg {
+            font-size: rem(16px);
+        }
+    }
+}
+
 /* Demo Page */
 
 .component-siderail {

@@ -113,6 +113,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components
         private async void ToggleMenu()
         {
             IsNavOpen = !IsNavOpen;
+
             await JsRuntime.InvokeVoidAsync("toggleMenu", IsNavOpen);
             StateHasChanged();
         }
@@ -137,6 +138,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components
         private void HandleLinkClick(BitNavLinkItem item)
         {
             searchText = string.Empty;
+
             HandleClear();
             ToggleMenu();
         }

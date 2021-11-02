@@ -1,5 +1,44 @@
 ﻿@import '../../Styles/_shared.scss';
 
+.navbar {
+    position: sticky;
+    width: rem(360px);
+    padding-top: rem(80px);
+    background-color: $Gray04;
+    overflow-y: scroll;
+
+    @include lg {
+        padding-top: rem(58px);
+        width: rem(272px);
+        flex: 20%;
+    }
+
+    @include md {
+        height: calc(100% - 40px);
+        padding-top: rem(40px);
+    }
+
+    @include sm {
+        width: rem(272px);
+        height: calc(100% - 61px);
+        padding-top: rem(63px);
+    }
+
+    @include lt-lg {
+        position: fixed;
+        z-index: 300;
+    }
+}
+
+.nav-container {
+    margin-top: rem(26px);
+}
+
+.border-top {
+    border-bottom: rem(1px) solid $Gray03;
+    padding-top: rem(20px);
+}
+
 .desktop-nav {
     display: block;
 
@@ -16,13 +55,6 @@
     }
 }
 
-.navbar {
-    @include lt-lg {
-        position: fixed;
-        z-index: 300;
-    }
-}
-
 .menu-shadow {
     position: fixed;
     top: 0;
@@ -32,5 +64,6 @@
     height: 100vh;
     justify-content: flex-start;
     align-items: flex-start;
-    background-color: rgba(0,0,0,0.6);
+    background-color: $Black01;
+    opacity: 0.5;
 }
