@@ -196,7 +196,7 @@
 }
 
 @mixin body2-xl() {
-    @include set-title(rem(14px), 500);
+    @include set-title(rem(24px), 500);
 }
 
 @mixin body2-lg() {
@@ -224,7 +224,7 @@
 }
 
 @mixin button1-sm() {
-    @include set-title(rem(12px), 600);
+    @include set-title(rem(16px), 600);
 }
 
 @mixin button2-xl() {
@@ -240,7 +240,7 @@
 }
 
 @mixin button2-sm() {
-    @include set-title(rem(10px), bold);
+    @include set-title(rem(14px), bold);
 }
 
 @mixin caption1-xl() {
