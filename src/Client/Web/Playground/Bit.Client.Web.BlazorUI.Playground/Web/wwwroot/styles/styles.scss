@@ -1420,3 +1420,11 @@ h6 {
         line-height: 176%;
     }
 }
+
+.usage nav {
+    line-height: initial;
+
+    & h3 {
+        font-size: 17px;
+    }
+}
