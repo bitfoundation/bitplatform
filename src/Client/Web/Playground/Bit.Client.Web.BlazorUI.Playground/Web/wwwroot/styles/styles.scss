@@ -230,12 +230,11 @@ footer {
     }
 
     .bit-lnk-fluent a, .bit-lnk-fluent > a:active, .bit-lnk-fluent > a:hover, .bit-lnk-fluent > a:visited {
-        font-family : Axiforma;
+        font-family: Axiforma;
         text-decoration: none;
         color: $White;
     }
 }
-/* Nav Menu */
 
 /* Main container*/
 
@@ -702,6 +701,7 @@ footer {
     .p-12 .bit-tgl label {
         padding-bottom: rem(15px);
     }
+}
 
 .bit-icon {
     height: 0;
@@ -715,18 +715,6 @@ input::-webkit-input-placeholder {
 
 ::-webkit-scrollbar {
     width: 0;
-}
-/*------------------------common styles-----------------------------------*/
-.container {
-    margin: auto;
-    flex-wrap: inherit;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    padding-right: var(--bs-gutter-x, 0.75rem);
-    padding-left: var(--bs-gutter-x, 0.75rem);
-    margin-right: auto;
-    margin-left: auto;
 }
 
 /* Colors */
@@ -765,4 +753,4 @@ input::-webkit-input-placeholder {
 
 .light-yellow-bg {
     background-color: $LightYellow;
-}    
+}
