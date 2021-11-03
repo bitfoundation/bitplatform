@@ -2,8 +2,6 @@
 @import '../../Styles/_shared.scss';
 
 * {
-    //todo this code is added because due to latest changes our index page has no font right now
-    //after finding a cool font for our websites this will be redundant
     font-family: "Axiforma";
 }
 
@@ -11,8 +9,6 @@ body {
     margin: 0;
     padding: 0;
 }
-
-/* Headers */
 
 h1 {
     @include h1-xl;
@@ -106,109 +102,18 @@ pre {
     }
 }
 
-/* Code Colors */
-
-.dark-green {
-    color: $DarkGreen;
+.bit-icon {
+    height: 0;
 }
 
-.light-green {
-    color: $LightGreen;
+input::-webkit-input-placeholder {
+    color: $DarkBlue;
+    font-size: rem(14px);
+    font-weight: 500;
 }
 
-.light-blue {
-    color: $LightBlue;
-}
-
-.dark-orange {
-    color: $DarkOrange;
-}
-
-.neon-yellow {
-    color: $NeonYellow;
-}
-
-.dark-yellow {
-    color: $DarkYellow;
-}
-
-.dark-cyan {
-    color: $DarkCyan;
-}
-
-.light-purple {
-    color: $LightPurple;
-}
-
-.light-yellow-bg {
-    background-color: $LightYellow;
-}
-
-/* Custom Style */
-
-.custom-spb {
-    .bit-spb-wrapper {
-        & span {
-            & button:first-child:active {
-                color: rgb(50, 49, 48);
-                background-color: green;
-            }
-
-            & button:nth-child(2):active {
-                color: rgb(50, 49, 48);
-                background-color: red;
-            }
-        }
-    }
-}
-
-.custom-drp-lbl-ic {
-    width: 32px;
-    height: 32px;
-    outline: transparent;
-    font-size: 14px;
-    font-weight: 400;
-    box-sizing: border-box;
-    border: none;
-    display: inline-block;
-    text-decoration: none;
-    text-align: center;
-    cursor: pointer;
-    padding: 0 4px;
-    border-radius: 2px;
-    background-color: transparent;
-    color: #0078d4;
-    margin-bottom: -8px;
-    user-select: none;
-
-    &:hover {
-        color: #106EBE;
-        background-color: #f3f2f1;
-    }
-}
-
-.bit-nav-wrapped-link {
-    a {
-        white-space: normal;
-        line-height: inherit
-    }
-}
-
-.spinner-container, spinner-positioning {
-    & > div {
-        & label {
-            font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
-            -webkit-font-smoothing: antialiased;
-            font-size: 14px;
-            font-weight: 600;
-            color: rgb(50, 49, 48);
-            box-sizing: border-box;
-            box-shadow: none;
-            display: block;
-            padding: 5px 0px;
-            overflow-wrap: break-word;
-        }
-    }
+::-webkit-scrollbar {
+    width: 0;
 }
 
 /* Header */
@@ -471,6 +376,7 @@ footer {
         }
     }
 }
+
 /* Demo Page */
 
 .component-siderail {
@@ -637,6 +543,64 @@ footer {
     }
 }
 
+.custom-spb {
+    .bit-spb-wrapper {
+        & span {
+            & button:first-child:active {
+                color: rgb(50, 49, 48);
+                background-color: green;
+            }
+
+            & button:nth-child(2):active {
+                color: rgb(50, 49, 48);
+                background-color: red;
+            }
+        }
+    }
+}
+
+.custom-drp-lbl-ic {
+    width: 32px;
+    height: 32px;
+    outline: transparent;
+    font-size: 14px;
+    font-weight: 400;
+    box-sizing: border-box;
+    border: none;
+    display: inline-block;
+    text-decoration: none;
+    text-align: center;
+    cursor: pointer;
+    padding: 0 4px;
+    border-radius: 2px;
+    background-color: transparent;
+    color: #0078d4;
+    margin-bottom: -8px;
+    user-select: none;
+
+    &:hover {
+        color: #106EBE;
+        background-color: #f3f2f1;
+    }
+}
+
+.spinner-container, spinner-positioning {
+    & > div {
+        & label {
+            font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+            -webkit-font-smoothing: antialiased;
+            font-size: 14px;
+            font-weight: 600;
+            color: rgb(50, 49, 48);
+            box-sizing: border-box;
+            box-shadow: none;
+            display: block;
+            padding: 5px 0px;
+            overflow-wrap: break-word;
+        }
+    }
+}
+
 .sample {
     .ch-group .bit-txt {
         margin-bottom: rem(25px);
@@ -711,481 +675,49 @@ footer {
     .p-12 .bit-tgl label {
         padding-bottom: rem(15px);
     }
-}
 
-/* General */
-
-.bit-icon {
-    height: 0;
-}
-
-input::-webkit-input-placeholder {
-    color: $DarkBlue;
-    font-size: rem(14px);
-    font-weight: 500;
-}
-
-::-webkit-scrollbar {
-    width: 0;
-}
-/*------------------------common styles-----------------------------------*/
-
-.container {
-    margin: auto;
-    flex-wrap: inherit;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    padding-right: var(--bs-gutter-x, rem(12px));
-    padding-left: var(--bs-gutter-x, rem(12px));
-    margin-right: auto;
-    margin-left: auto;
-}
-
-.row {
-    --bs-gutter-x: rem(24px);
-    --bs-gutter-y: 0;
-    display: flex;
-    flex-wrap: wrap;
-    margin-top: calc(var(--bs-gutter-y) * -1);
-    margin-right: calc(var(--bs-gutter-x) * -0.5);
-    margin-left: calc(var(--bs-gutter-x) * -0.5);
-}
-
-@media (max-width: 767px) {
-    .container {
-        max-width: 540px;
-    }
-
-    .col-sm-1 {
-        flex: 0 0 auto;
-        width: 8.33333333%;
-    }
-
-    .col-sm-2 {
-        flex: 0 0 auto;
-        width: 16.66666667%;
-    }
-
-    .col-sm-3 {
-        flex: 0 0 auto;
-        width: 25%;
-    }
-
-    .col-sm-4 {
-        flex: 0 0 auto;
-        width: 33.33333333%;
-    }
-
-    .col-sm-5 {
-        flex: 0 0 auto;
-        width: 41.66666667%;
-    }
-
-    .col-sm-6 {
-        flex: 0 0 auto;
-        width: 50%;
-    }
-
-    .col-sm-7 {
-        flex: 0 0 auto;
-        width: 58.33333333%;
-    }
-
-    .col-sm-8 {
-        flex: 0 0 auto;
-        width: 66.66666667%;
-    }
-
-    .col-sm-9 {
-        flex: 0 0 auto;
-        width: 75%;
-    }
-
-    .col-sm-10 {
-        flex: 0 0 auto;
-        width: 83.33333333%;
-    }
-
-    .col-sm-11 {
-        flex: 0 0 auto;
-        width: 91.66666667%;
-    }
-
-    .col-sm-12 {
-        flex: 0 0 auto;
-        width: 100%;
+    .bit-nav-wrapped-link {
+        a {
+            white-space: normal;
+            line-height: inherit
+        }
     }
 }
 
-@media(min-width:768px) {
-    .container {
-        max-width: 720px;
-    }
+/* Colors */
 
-    .col-md-1 {
-        flex: 0 0 auto;
-        width: 8.33333333%;
-    }
-
-    .col-md-2 {
-        flex: 0 0 auto;
-        width: 16.66666667%;
-    }
-
-    .col-md-3 {
-        flex: 0 0 auto;
-        width: 25%;
-    }
-
-    .col-md-4 {
-        flex: 0 0 auto;
-        width: 33.33333333%;
-    }
-
-    .col-md-5 {
-        flex: 0 0 auto;
-        width: 41.66666667%;
-    }
-
-    .col-md-6 {
-        flex: 0 0 auto;
-        width: 50%;
-    }
-
-    .col-md-7 {
-        flex: 0 0 auto;
-        width: 58.33333333%;
-    }
-
-    .col-md-8 {
-        flex: 0 0 auto;
-        width: 66.66666667%;
-    }
-
-    .col-md-9 {
-        flex: 0 0 auto;
-        width: 75%;
-    }
-
-    .col-md-10 {
-        flex: 0 0 auto;
-        width: 83.33333333%;
-    }
-
-    .col-md-11 {
-        flex: 0 0 auto;
-        width: 91.66666667%;
-    }
-
-    .col-md-12 {
-        flex: 0 0 auto;
-        width: 100%;
-    }
+.dark-green {
+    color: $DarkGreen;
 }
 
-@media (min-width: 1024px) {
-    .container {
-        max-width: 1140px;
-    }
-
-    .col-lg-2 {
-        flex: 0 0 auto;
-        width: 16.66666667%;
-    }
-
-    .col-lg-3 {
-        flex: 0 0 auto;
-        width: 25%;
-    }
-
-    .col-lg-4 {
-        flex: 0 0 auto;
-        width: 33.33333333%;
-    }
-
-    .col-lg-5 {
-        flex: 0 0 auto;
-        width: 41.66666667%;
-    }
-
-    .col-lg-6 {
-        flex: 0 0 auto;
-        width: 50%;
-    }
-
-    .col-lg-7 {
-        flex: 0 0 auto;
-        width: 58.33333333%;
-    }
-
-    .col-lg-8 {
-        flex: 0 0 auto;
-        width: 66.66666667%;
-    }
-
-    .col-xl-9 {
-        flex: 0 0 auto;
-        width: 75%;
-    }
-
-    .col-lg-10 {
-        flex: 0 0 auto;
-        width: 83.33333333%;
-    }
-
-    .col-lg-11 {
-        flex: 0 0 auto;
-        width: 91.66666667%;
-    }
-
-    .col-lg-12 {
-        flex: 0 0 auto;
-        width: 100%;
-    }
+.light-green {
+    color: $LightGreen;
 }
 
-@media (min-width: 1400px) {
-    .container {
-        max-width: 1320px;
-    }
-
-    .col-xl-2 {
-        flex: 0 0 auto;
-        width: 16.66666667%;
-    }
-
-    .col-xl-3 {
-        flex: 0 0 auto;
-        width: 25%;
-    }
-
-    .col-xl-4 {
-        flex: 0 0 auto;
-        width: 33.33333333%;
-    }
-
-    .col-xl-5 {
-        flex: 0 0 auto;
-        width: 41.66666667%;
-    }
-
-    .col-xl-6 {
-        flex: 0 0 auto;
-        width: 50%;
-    }
-
-    .col-xl-7 {
-        flex: 0 0 auto;
-        width: 58.33333333%;
-    }
-
-    .col-xl-8 {
-        flex: 0 0 auto;
-        width: 66.66666667%;
-    }
-
-    .col-xl-9 {
-        flex: 0 0 auto;
-        width: 75%;
-    }
-
-    .col-xl-10 {
-        flex: 0 0 auto;
-        width: 83.33333333%;
-    }
-
-    .col-xl-11 {
-        flex: 0 0 auto;
-        width: 91.66666667%;
-    }
-
-    .col-xl-12 {
-        flex: 0 0 auto;
-        width: 100%;
-    }
+.light-blue {
+    color: $LightBlue;
 }
 
-/*----------------------------------------Typography---------------------------------------------------*/
-
-.txt-bd1-md {
-    font-family: Axiforma;
-    font-style: normal;
-    font-weight: 500;
-
-    @include sm {
-        font-size: 14px;
-        line-height: 168%;
-    }
-
-    @include md {
-        font-size: 16px;
-        line-height: 150%;
-    }
-
-    @include lg {
-        font-size: 24px;
-        line-height: 165%;
-    }
-
-    @include xl {
-        font-size: 28px;
-        line-height: 142%;
-    }
+.dark-orange {
+    color: $DarkOrange;
 }
 
-.txt-bd2-md {
-    font-family: Axiforma;
-    font-style: normal;
-    font-weight: 500;
-
-    @include sm {
-        font-size: 12px;
-        line-height: 170%;
-    }
-
-    @include md {
-        font-size: 14px;
-        line-height: 170%;
-    }
-
-    @include lg {
-        font-size: 20px;
-        line-height: 158%;
-    }
-
-    @include xl {
-        font-size: 24px;
-        line-height: 165%;
-    }
+.neon-yellow {
+    color: $NeonYellow;
 }
 
-.subtitle1-regular {
-    font-family: Axiforma;
-    font-style: normal;
-    font-weight: normal;
-
-    @include sm {
-        font-size: 16px;
-        line-height: 198%;
-    }
-
-    @include md {
-        font-size: 16px;
-        line-height: 150%;
-    }
-
-    @include lg {
-        font-size: 18px;
-        line-height: 132%;
-    }
-
-    @include xl {
-        font-size: rem(24px);
-        line-height: 165%;
-    }
+.dark-yellow {
+    color: $DarkYellow;
 }
 
-.subtitle2-regular {
-    font-family: Axiforma;
-    font-style: normal;
-    font-weight: normal;
-
-    @include sm {
-        font-size: 14px;
-        line-height: 168%;
-    }
-
-    @include md {
-        font-size: 12px;
-        line-height: 135%;
-    }
-
-    @include lg {
-        font-size: 16px;
-        line-height: 150%;
-    }
-
-    @include xl {
-        font-size: rem(18px);
-        line-height: 175%;
-    }
+.dark-cyan {
+    color: $DarkCyan;
 }
 
-.txt-xl-caption1 {
-    font-family: Axiforma;
-    font-style: normal;
-    font-weight: 500;
-
-    @include sm {
-        font-size: 12px;
-        line-height: 136%;
-    }
-
-    @include md {
-        font-size: 12px;
-        line-height: 130%;
-    }
-
-    @include lg {
-        font-size: 14px;
-        line-height: 117%;
-    }
-
-    @include xl {
-        font-size: rem(16px);
-        line-height: 148%;
-    }
+.light-purple {
+    color: $LightPurple;
 }
 
-.btn1-SemiBold {
-    font-family: Axiforma;
-    font-style: normal;
-    font-weight: 600;
-
-    @include sm {
-        font-size: 16px;
-        line-height: 148%;
-    }
-
-    @include md {
-        font-size: 14px;
-        line-height: 170%;
-    }
-
-    @include lg {
-        font-size: 24px;
-        line-height: 165%;
-    }
-
-    @include xl {
-        font-size: 24px;
-        line-height: 165%;
-    }
-}
-
-.btn2-bold {
-    font-family: Axiforma;
-    font-style: normal;
-    font-weight: bold;
-
-    @include sm {
-        font-size: 14px;
-        line-height: 168%;
-    }
-
-    @include md {
-        font-size: 12px;
-        line-height: 135%;
-    }
-
-    @include lg {
-        font-size: 18px;
-        line-height: 176%;
-    }
-
-    @include xl {
-        font-size: 18px;
-        line-height: 176%;
-    }
+.light-yellow-bg {
+    background-color: $LightYellow;
 }
