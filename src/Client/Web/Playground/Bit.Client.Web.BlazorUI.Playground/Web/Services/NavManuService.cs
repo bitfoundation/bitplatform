@@ -2,7 +2,7 @@
 
 namespace Bit.Client.Web.BlazorUI.Playground.Web.Services
 {
-    public class MenuService
+    public class NavManuService
     {
         public event Action OnToggleMenu;
 

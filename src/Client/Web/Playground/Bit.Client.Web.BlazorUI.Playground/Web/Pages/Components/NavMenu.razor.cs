@@ -9,7 +9,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components
 {
     public partial class NavMenu
     {
-        private bool IsNavOpen = false;
+        private bool isNavOpen = false;
         private readonly List<BitNavLinkItem> allNavLinks = new()
         {
             new BitNavLinkItem
@@ -100,7 +100,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components
         private BitNavRenderType renderType = BitNavRenderType.Grouped;
         private string searchText = string.Empty;
 
-        [Inject] public MenuService MenuService { get; set; }
+        [Inject] public NavManuService MenuService { get; set; }
         [Inject] public IJSRuntime JsRuntime { get; set; }
 
         protected override void OnInitialized()
@@ -112,9 +112,9 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components
 
         private async void ToggleMenu()
         {
-            IsNavOpen = !IsNavOpen;
+            isNavOpen = !isNavOpen;
 
-            await JsRuntime.InvokeVoidAsync("toggleMenu", IsNavOpen);
+            await JsRuntime.SetToggleBodyOverflow(isNavOpen);
             StateHasChanged();
         }
 

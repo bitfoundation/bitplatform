@@ -18,7 +18,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddScoped<MenuService>();
+            services.AddScoped<NavManuService>();
 #if BlazorServer
             services.AddHttpClient("ApiHttpClient", (serviceProvider, httpClient) =>
             {

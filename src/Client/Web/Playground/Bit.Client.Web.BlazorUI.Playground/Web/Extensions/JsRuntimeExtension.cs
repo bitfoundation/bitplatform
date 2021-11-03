@@ -4,9 +4,9 @@ namespace Microsoft.JSInterop
 {
     public static class JsRuntimeExtension
     {
-        public static async Task ShowHideNavbar(this IJSRuntime jsRuntime)
+        public static async Task SetToggleBodyOverflow(this IJSRuntime jsRuntime, bool isNavOpen)
         {
-            await jsRuntime.InvokeVoidAsync("showHideNavbar");
+            await jsRuntime.InvokeVoidAsync("toggleBodyOverflow" , isNavOpen);
         }
     }
 }

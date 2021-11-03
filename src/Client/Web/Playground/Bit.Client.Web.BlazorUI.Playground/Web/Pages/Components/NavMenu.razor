@@ -1,8 +1,8 @@
-﻿@if (IsNavOpen is true)
+﻿@if (isNavOpen is true)
 {
     <div class="menu-shadow mobile-nav" @onclick="@ToggleMenu"></div>
 }
-<div class="navbar @(IsNavOpen is false ? "desktop-nav" : "")">
+<div class="navbar @(isNavOpen is false ? "desktop-nav" : "")">
     <BitSearchBox Placeholder="Search"
                   Class="search-box"
                   IconName=""
