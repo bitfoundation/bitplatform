@@ -68,7 +68,7 @@ tr:last-child {
     padding: rem(144px) 0 0;
 
     .component-content {
-         max-width: 70%;
+        max-width: 70%;
         padding: 0 rem(12px) 0 rem(80px);
 
         @include lt-xl {
@@ -112,6 +112,7 @@ tr:last-child {
 
         .usage {
             margin-top: rem(75px);
+            line-height: 0;
 
             @include h5-xl;
 

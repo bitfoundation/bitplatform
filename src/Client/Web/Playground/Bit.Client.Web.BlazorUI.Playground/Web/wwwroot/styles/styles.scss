@@ -1316,6 +1316,10 @@ h6 {
     }
 }
 
-.usage nav h3 {
-    font-size: 17px;
+.usage nav {
+    line-height: initial;
+
+    & h3 {
+        font-size: 17px;
+    }
 }
