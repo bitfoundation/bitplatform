@@ -213,95 +213,52 @@ pre {
 
 /* Header */
 
-.header-container {
-    align-items: center;
-    background: $Gray04;
-    box-shadow: 0 rem(4px) rem(20px) $Shadow02;
-    display: flex;
-    height: rem(120px);
-    position: fixed;
-    top: 0;
-    width: 100%;
-    z-index: 2000;
-
-    @include lg {
-        height: rem(100px);
-    }
-
-    @include md {
-        height: rem(64px);
-    }
-
-    @include lt-md {
-        height: rem(120px);
-        display: block;
-    }
-
-    .logo {
-        display: flex;
-        align-items: center;
-
-        @include sm {
-            height: rem(76px);
-            border-bottom: rem(1px) solid $Gray03;
-        }
-    }
-
-    .logo-title {
-        display: none;
-
-        @include sm {
-            display: block;
-            font-size: rem(14px);
-            color: $DarkBlue;
-            margin-top: rem(10px);
-        }
-    }
-
-    img {
-        height: rem(90px);
-        width: rem(90px);
-        padding-top: rem(5px);
-        margin-left: rem(350px);
-
-        @include lg {
-            height: rem(70px);
-            width: rem(70px);
-            margin-left: rem(120px);
-        }
-
-        @include md {
-            height: rem(40px);
-            width: rem(40px);
-            margin-left: rem(32px);
-            padding-top: rem(7px);
-        }
-
-        @include sm {
-            height: rem(40px);
-            width: rem(40px);
-            margin: 0 rem(16px);
-        }
-    }
-}
-
 .header-menu {
     display: flex;
     list-style-type: none;
     padding-left: rem(47px);
     position: relative;
 
-    @include-lg {
+    @include lg {
         padding-left: rem(20px);
     }
 
-    @include-md {
+    @include md {
         padding-left: rem(12px);
     }
 
     @include sm {
         padding-left: rem(35px);
         margin-top: rem(12px);
+    }
+
+    .active {
+        position: relative;
+    }
+
+    .active:before {
+        position: absolute;
+        bottom: rem(-12px);
+        left: rem(40px);
+        height: rem(3px);
+        width: 50%;
+        background-color: $DarkBlue;
+        content: "";
+
+        @include lg {
+            left: rem(22px);
+            width: 60%;
+        }
+
+        @include md {
+            left: rem(19px);
+            width: 60%;
+        }
+
+        @include sm {
+            left: rem(5px);
+            width: 90%;
+        }
     }
 
     a, a:hover, a:visited {
@@ -324,39 +281,6 @@ pre {
         @include sm {
             padding: 0 rem(23px) 0 rem(23px);
             font-size: rem(14px);
-        }
-
-        .active {
-            position: relative;
-        }
-    }
-
-    .active {
-        position: relative;
-    }
-
-    span.active:before {
-        position: absolute;
-        bottom: rem(-12px);
-        left: rem(40px);
-        height: rem(3px);
-        width: 50%;
-        background-color: $DarkBlue;
-        content: "";
-
-        @include lg {
-            left: rem(22px);
-            width: 60%;
-        }
-
-        @include md {
-            left: rem(19px);
-            width: 60%;
-        }
-
-        @include sm {
-            left: rem(5px);
-            width: 90%;
         }
     }
 }
@@ -390,7 +314,6 @@ footer {
     span {
         padding: rem(20px);
         font-size: rem(20px);
-        color: $White;
 
         @include lg {
             font-size: rem(16px);
@@ -401,11 +324,13 @@ footer {
         }
     }
 
-    .bit-lnk-fluent > a:active, .bit-lnk-fluent > a:hover, .bit-lnk-fluent > a:visited {
+    .bit-lnk-fluent a, .bit-lnk-fluent > a:active, .bit-lnk-fluent > a:hover, .bit-lnk-fluent > a:visited {
+        font-family : Axiforma;
         text-decoration: none;
         color: $White;
     }
 }
+
 /* Nav Menu */
 
 .main-container {
@@ -660,10 +585,6 @@ footer {
     color: $Violet;
 }
 
-.razor-code p {
-    white-space: nowrap;
-}
-
 .disable-btn {
     @include md {
         margin-top: rem(10px);
@@ -791,6 +712,7 @@ footer {
         padding-bottom: rem(15px);
     }
 }
+
 /* General */
 
 .bit-icon {
@@ -807,20 +729,21 @@ input::-webkit-input-placeholder {
     width: 0;
 }
 /*------------------------common styles-----------------------------------*/
+
 .container {
     margin: auto;
     flex-wrap: inherit;
     align-items: center;
     justify-content: space-between;
     width: 100%;
-    padding-right: var(--bs-gutter-x, 0.75rem);
-    padding-left: var(--bs-gutter-x, 0.75rem);
+    padding-right: var(--bs-gutter-x, rem(12px));
+    padding-left: var(--bs-gutter-x, rem(12px));
     margin-right: auto;
     margin-left: auto;
 }
 
 .row {
-    --bs-gutter-x: 1.5rem;
+    --bs-gutter-x: rem(24px);
     --bs-gutter-y: 0;
     display: flex;
     flex-wrap: wrap;
@@ -1082,161 +1005,8 @@ input::-webkit-input-placeholder {
         width: 100%;
     }
 }
+
 /*----------------------------------------Typography---------------------------------------------------*/
-h1 {
-    font-family: Axiforma;
-    font-style: normal;
-    font-weight: 500;
-
-    @include sm {
-        font-size: 30px;
-        line-height: 108%;
-    }
-
-    @include md {
-        font-size: 36px;
-        line-height: 155%;
-    }
-
-    @include lg {
-        font-size: rem(60px);
-        line-height: 134%;
-    }
-
-    @include xl {
-        font-size: rem(76px);
-        line-height: 116%;
-    }
-}
-
-h2 {
-    font-family: Axiforma;
-    font-style: normal;
-    font-weight: bold;
-
-    @include sm {
-        font-size: 24px;
-        line-height: 132%;
-    }
-
-    @include md {
-        font-size: 32px;
-        line-height: 150%;
-    }
-
-    @include lg {
-        font-size: 54px;
-        line-height: 148%;
-    }
-
-    @include xl {
-        font-size: 58px;
-        line-height: 138%;
-    }
-}
-
-h3 {
-    font-family: Axiforma;
-    font-style: italic;
-    font-weight: 800;
-
-    @include sm {
-        font-size: 24px;
-        line-height: 100%;
-    }
-
-    @include md {
-        font-size: 32px;
-        line-height: 150%;
-    }
-
-    @include lg {
-        font-size: 54px;
-        line-height: 149%;
-    }
-
-    @include xl {
-        font-size: 58px;
-        line-height: 164%;
-    }
-}
-
-h4 {
-    font-family: Axiforma;
-    font-style: normal;
-    font-weight: bold;
-
-    @include sm {
-        font-size: 20px;
-        line-height: 160%;
-    }
-
-    @include md {
-        font-size: 24px;
-        line-height: 165%;
-    }
-
-    @include lg {
-        font-size: 40px;
-        line-height: 160%;
-    }
-
-    @include xl {
-        font-size: 52px;
-        line-height: 153%;
-    }
-}
-
-h5 {
-    font-family: Axiforma;
-    font-style: normal;
-    font-weight: bold;
-
-    @include sm {
-        font-size: 18px;
-        line-height: 154%;
-    }
-
-    @include md {
-        font-size: 18px;
-        line-height: 136%;
-    }
-
-    @include lg {
-        font-size: 28px;
-        line-height: 144%;
-    }
-
-    @include xl {
-        font-size: 32px;
-        line-height: 136%
-    }
-}
-
-h6 {
-    font-family: Axiforma;
-    font-weight: 600;
-
-    @include sm {
-        font-size: 18px;
-        line-height: 132%;
-    }
-
-    @include md {
-        font-size: 20px;
-        line-height: 160%;
-    }
-
-    @include lg {
-        font-size: 16px;
-        line-height: 147%;
-    }
-
-    @include xl {
-        font-size: 18px;
-        line-height: 132%;
-    }
-}
 
 .txt-bd1-md {
     font-family: Axiforma;
@@ -1393,7 +1163,6 @@ h6 {
         line-height: 165%;
     }
 }
-
 
 .btn2-bold {
     font-family: Axiforma;

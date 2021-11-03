@@ -59,6 +59,10 @@ tr:last-child {
     border: none;
 }
 
+.razor-code p {
+    white-space: nowrap;
+}
+
 .component-container {
     display: flex;
     background-image: url('/images/main/component-bg.png');
