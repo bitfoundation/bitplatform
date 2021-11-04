@@ -384,6 +384,37 @@ namespace Bit.Client.Web.BlazorUI
             _ = await client.GetAsync(uri);
         }
 
+        private static string GetFileElClass(BitUploadStatus status)
+        {
+            switch (status)
+            {
+                case BitUploadStatus.Completed:
+                    return "uploaded";
+                case BitUploadStatus.Failed:
+                case BitUploadStatus.Unaccepted:
+                    return "failed";
+                case BitUploadStatus.Paused:
+                    return "paused";
+                default:
+                    return "in-progress";
+            }
+        }
+
+        private string GetUploadMessageStr(BitUploadStatus status)
+        {
+            switch (status)
+            {
+                case BitUploadStatus.Completed:
+                    return SuccessfulUploadedResultMessage;
+                case BitUploadStatus.Failed:
+                    return FailedUploadedResultMessage;
+                case BitUploadStatus.Unaccepted:
+                    return MaxSizeMessage;
+                default:
+                    return "";
+            }
+        }
+
         public void Dispose()
         {
             Dispose(true);

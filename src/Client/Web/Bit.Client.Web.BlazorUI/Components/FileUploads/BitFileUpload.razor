@@ -55,83 +55,56 @@
                 }
                 if (file.UploadStatus != BitUploadStatus.Removed)
                 {
-                    var statusClass = "inprogress";
-                    var message = "";
-                    if (file.UploadStatus == BitUploadStatus.Completed)
-                    {
-                        statusClass = "uploaded";
-                        message = SuccessfulUploadedResultMessage;
-                    }
-                    else if (file.UploadStatus == BitUploadStatus.Failed)
-                    {
-
-                        statusClass = "failed";
-                        message = FailedUploadedResultMessage;
-                    }
-                    else if (file.UploadStatus == BitUploadStatus.Unaccepted)
-                    {
-                        statusClass = "failed";
-                        message = MaxSizeMessage;
-                    }
-                    else if (file.UploadStatus == BitUploadStatus.Paused)
-                    {
-                        statusClass = "paused";
-                    }
-                    <li class="@statusClass">
-                        <div>
-                            <div title="@file.Name">
-
+                    <li class="@GetFileElClass(file.UploadStatus)">
+                        <div class="file-info-container">
+                            <div title="@file.Name" class="file-name-container">
                                 @if (string.IsNullOrWhiteSpace(fileFormat) is false)
                                 {
                                     <i class="bit-file-format bit-icon bit-icon--@fileFormat"></i>
                                 }
-                                <span>@file.Name</span>
+                                <div class="file-name">@file.Name</div>
                             </div>
-                            <div>
-                                <span>@($"{uploadedSize.Humanize()}/{file.Size.Humanize()}")</span>
-                                <span>@uploadedPercent%</span>
+                            <div class="file-size-container">
+                                <span class="file-siz">@($"{uploadedSize.Humanize()}/{file.Size.Humanize()}")</span>
+                                <span class="upload-percent">@uploadedPercent%</span>
                             </div>
                             @if (file.UploadStatus == BitUploadStatus.InProgress || file.UploadStatus == BitUploadStatus.Paused)
                             {
-                                <div class="progress">
-                                    <div></div>
-                                    <div role="progressbar" style="width:@uploadedPercent%;" aria-valuemin="0" aria-valuemax="100" aria-valuenow="@uploadedPercent"></div>
+                                <div class="progress-bar-container">
+                                    <div class="progress-bar" role="progressbar" style="width:@uploadedPercent%;" aria-valuemin="0" aria-valuemax="100" aria-valuenow="@uploadedPercent"></div>
                                 </div>
                             }
                             else
                             {
-
-                                <div class="status">@message</div>
+                                <div class="upload-status">@GetUploadMessageStr(file.UploadStatus)</div>
                             }
                         </div>
-                        <div>
-                            @if (file.UploadStatus == BitUploadStatus.Pending || file.UploadStatus == BitUploadStatus.Paused)
-                            {
-                                <span title="upload" class="bit-icon bit-icon--Play"
-                      @onclick="@(() =>Upload(index))">
-                                </span>
-                            }
+                        @if (file.UploadStatus == BitUploadStatus.Pending || file.UploadStatus == BitUploadStatus.Paused)
+                        {
+                            <div class="upload-status-icon" @onclick="@(() =>Upload(index))">
+                                <i title="upload" class="bit-icon bit-icon--Play" aria-hidden="true"></i>
+                            </div>
+                        }
 
-                            @if (file.UploadStatus == BitUploadStatus.InProgress)
-                            {
-                                <span title="pause" class="bit-icon bit-icon--Pause"
-                      @onclick="@(() =>RequestToPause(index))">
-                                </span>
-                            }
+                        @if (file.UploadStatus == BitUploadStatus.InProgress)
+                        {
+                            <div class="upload-status-icon" @onclick="@(() =>RequestToPause(index))">
+                                <i title="pause" class="bit-icon bit-icon--Pause" aria-hidden="true"></i>
+                            </div>
+                        }
 
-                            @if (file.UploadStatus == BitUploadStatus.InProgress || file.UploadStatus == BitUploadStatus.Paused)
-                            {
-                                <span title="cancel" class="bit-icon bit-icon--Cancel"
-                      @onclick="@(() =>RequestToCancel(index))">
-                                </span>
-                            }
-                            else
-                            {
-                                <span title="remove" class="bit-icon bit-icon--Delete"
-                      @onclick="@(() =>Remove(index))">
-                                </span>
-                            }
-                        </div>
+                        @if (file.UploadStatus == BitUploadStatus.InProgress || file.UploadStatus == BitUploadStatus.Paused)
+                        {
+                            <div class="upload-status-icon" @onclick="@(() =>RequestToCancel(index))">
+                                <i title="cancel" class="bit-icon bit-icon--Cancel" aria-hidden="true"></i>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="upload-status-icon" @onclick="@(() =>Remove(index))">
+                                <i title="remove" class="bit-icon bit-icon--Delete" aria-hidden="true"></i>
+                            </div>
+                        }
                     </li>
                 }
             }
