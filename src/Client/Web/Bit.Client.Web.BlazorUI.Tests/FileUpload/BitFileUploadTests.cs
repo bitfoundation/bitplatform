@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -20,10 +19,10 @@ namespace Bit.Client.Web.BlazorUI.Tests.FileUpload
                 parameters.Add(p => p.Visual, visual);
             });
 
-            var bitFileUpload = com.Find(".bit-fl-up");
+            var bitFileUpload = com.Find(".bit-file-upload");
             var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
 
-            Assert.IsTrue(bitFileUpload.ClassList.Contains($"bit-fl-up-{visualClass}") && bitFileUpload.ClassList.Contains($"bit-fl-up"));
+            Assert.IsTrue(bitFileUpload.ClassList.Contains($"bit-file-upload-{visualClass}") && bitFileUpload.ClassList.Contains($"bit-file-upload"));
         }
 
         [DataTestMethod,
@@ -37,7 +36,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.FileUpload
                 parameters.Add(p => p.IsMultiFile, isMultiFile);
             });
 
-            var bitFileUpload = com.Find("input[type=file]");
+            var bitFileUpload = com.Find(".file-input");
             var attribute = bitFileUpload.GetAttribute("multiple");
             var isMultiFileStr = isMultiFile == true ? "" : null;
             Assert.AreEqual(isMultiFileStr, attribute);
@@ -52,7 +51,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.FileUpload
                 parameters.Add(p => p.AcceptedExtensions, acceptedExtensions);
             });
 
-            var bitFileUpload = com.Find("input[type=file]");
+            var bitFileUpload = com.Find(".file-input");
             var attribute = bitFileUpload.GetAttribute("accept");
             Assert.AreEqual(".mp4,.mp3", attribute);
         }
@@ -68,7 +67,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.FileUpload
                 parameters.Add(p => p.IsEnabled, isEnabled);
             });
 
-            var bitFileUpload = com.Find("input[type=file]");
+            var bitFileUpload = com.Find(".file-input");
             var hasDisabledAttribute = bitFileUpload.HasAttribute("disabled");
 
             if (isEnabled)
