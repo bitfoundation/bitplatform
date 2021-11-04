@@ -8,7 +8,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Components
 {
     public partial class ComponentPage
     {
-        [Inject] public NavManuService MenuService { get; set; }
+        [Inject] public NavManuService NavManuService { get; set; }
 
         [Parameter] public string ComponentName { get; set; }
         [Parameter] public string OverviewDesc { get; set; }
@@ -19,7 +19,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Components
 
         private void ToggleMenu()
         {
-            MenuService.ToggleMenu();
+            NavManuService.ToggleMenu();
         }
     }
 }

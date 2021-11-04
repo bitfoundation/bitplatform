@@ -100,13 +100,13 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components
         private BitNavRenderType renderType = BitNavRenderType.Grouped;
         private string searchText = string.Empty;
 
-        [Inject] public NavManuService MenuService { get; set; }
+        [Inject] public NavManuService NavManuService { get; set; }
         [Inject] public IJSRuntime JsRuntime { get; set; }
 
         protected override void OnInitialized()
         {
             HandleClear();
-            MenuService.OnToggleMenu += ToggleMenu;
+            NavManuService.OnToggleMenu += ToggleMenu;
             base.OnInitialized();
         }
 
