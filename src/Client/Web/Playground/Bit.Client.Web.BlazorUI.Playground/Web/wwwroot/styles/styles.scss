@@ -113,7 +113,23 @@ input::-webkit-input-placeholder {
 }
 
 ::-webkit-scrollbar {
-    width: 0;
+    width: rem(16px);
+}
+
+::-webkit-scrollbar-thumb {
+    background: $Gray03;
+    border-radius: rem(8px);
+    border: rem(5px) solid $Gray03;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: $Gray02;
+    border-radius: rem(8px);
+    border: rem(4px) solid $Gray02;
+}
+
+::-webkit-scrollbar-button {
+    display: none;
 }
 
 /* Header */
@@ -230,7 +246,7 @@ footer {
     }
 
     .bit-lnk-fluent a, .bit-lnk-fluent > a:active, .bit-lnk-fluent > a:hover, .bit-lnk-fluent > a:visited {
-        font-family : Axiforma;
+        font-family: Axiforma;
         text-decoration: none;
         color: $White;
     }
@@ -269,11 +285,20 @@ footer {
         position: fixed;
         height: 100vh;
         padding-top: 0;
-        overflow-y: scroll;
+        overflow-y: hidden;
 
         @include lt-xl {
             margin-top: rem(40px);
             display: none;
+        }
+
+        &:hover {
+            overflow-y: scroll;
+        }
+
+        &::-webkit-scrollbar-thumb:hover {
+            background: $Gray03;
+            border: rem(4px) solid $Gray03;
         }
 
         .search-box {
@@ -720,4 +745,4 @@ footer {
 
 .light-yellow-bg {
     background-color: $LightYellow;
-}    
+}
