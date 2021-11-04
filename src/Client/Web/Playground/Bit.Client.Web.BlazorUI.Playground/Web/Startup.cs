@@ -10,6 +10,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Net.Http;
 using System;
+using Bit.Client.Web.BlazorUI.Playground.Web.Services;
 
 namespace Bit.Client.Web.BlazorUI.Playground.Web
 {
@@ -17,6 +18,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web
     {
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddScoped<NavManuService>();
 #if BlazorServer
             services.AddHttpClient("ApiHttpClient", (serviceProvider, httpClient) =>
             {
