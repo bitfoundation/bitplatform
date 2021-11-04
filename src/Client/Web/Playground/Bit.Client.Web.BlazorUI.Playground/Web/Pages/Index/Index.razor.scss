@@ -623,19 +623,24 @@ button {
 }
 
 .demo-btn {
-    padding: rem(10px) rem(43px);
+    padding: rem(19px) rem(43px);
     background-color: white;
     border: rem(1px) solid #5c2d91;
     box-sizing: border-box;
     border-radius: rem(4px);
     color: #5c2d91;
+    text-decoration:none;
 
     @include sm {
-        padding: rem(7px) rem(32px);
+        padding: rem(11px) rem(42px);
     }
 
     @include md {
-        padding: rem(7px) rem(32px);
+        padding: rem(12px) rem(42px);
+    }
+
+    @include lg {
+        padding: rem(18px) rem(43px);
     }
 }
 

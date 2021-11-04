@@ -113,7 +113,23 @@ input::-webkit-input-placeholder {
 }
 
 ::-webkit-scrollbar {
-    width: 0;
+    width: rem(16px);
+}
+
+::-webkit-scrollbar-thumb {
+    background: $Gray03;
+    border-radius: rem(8px);
+    border: rem(5px) solid $Gray03;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: $Gray02;
+    border-radius: rem(8px);
+    border: rem(4px) solid $Gray02;
+}
+
+::-webkit-scrollbar-button {
+    display: none;
 }
 
 /* Header */
@@ -279,7 +295,7 @@ footer {
 
 .navbar {
     .search-box {
-        width: 82%;
+        width: 85%;
         position: relative;
         margin-left: rem(30px);
         height: rem(40px);
@@ -701,22 +717,14 @@ footer {
     .p-12 .bit-tgl label {
         padding-bottom: rem(15px);
     }
-}
 
-.bit-icon {
-    height: 0;
+    .bit-nav-wrapped-link {
+        a {
+            white-space: normal;
+            line-height: inherit
+        }
+    }
 }
-
-input::-webkit-input-placeholder {
-    color: $DarkBlue;
-    font-size: rem(14px);
-    font-weight: 500;
-}
-
-::-webkit-scrollbar {
-    width: 0;
-}
-
 /* Colors */
 
 .dark-green {
