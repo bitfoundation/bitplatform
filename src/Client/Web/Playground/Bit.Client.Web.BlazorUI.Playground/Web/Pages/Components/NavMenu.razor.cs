@@ -1,19 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Bit.Client.Web.BlazorUI.Playground.Web.Services;
+using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 
 namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components
 {
     public partial class NavMenu
     {
+        private bool isNavOpen = false;
         private readonly List<BitNavLinkItem> allNavLinks = new()
         {
-            new BitNavLinkItem
-            {
-                Name = "Components",
-                Key = "Components",
-                Url = "/components/overview",
-            },
             new BitNavLinkItem
             {
                 Name = "Basic Inputs",
@@ -98,15 +96,26 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components
                 },
             },
         };
-
         private List<BitNavLinkItem> filteredNavLinks;
         private BitNavRenderType renderType = BitNavRenderType.Grouped;
         private string searchText = string.Empty;
 
+        [Inject] public NavManuService NavManuService { get; set; }
+        [Inject] public IJSRuntime JsRuntime { get; set; }
+
         protected override void OnInitialized()
         {
             HandleClear();
+            NavManuService.OnToggleMenu += ToggleMenu;
             base.OnInitialized();
+        }
+
+        private async void ToggleMenu()
+        {
+            isNavOpen = !isNavOpen;
+
+            await JsRuntime.SetToggleBodyOverflow(isNavOpen);
+            StateHasChanged();
         }
 
         private void HandleClear()
@@ -129,7 +138,9 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components
         private void HandleLinkClick(BitNavLinkItem item)
         {
             searchText = string.Empty;
+
             HandleClear();
+            ToggleMenu();
         }
 
         private static IEnumerable<BitNavLinkItem> Flatten(IEnumerable<BitNavLinkItem> e) => e.SelectMany(c => Flatten(c.Links)).Concat(e);
