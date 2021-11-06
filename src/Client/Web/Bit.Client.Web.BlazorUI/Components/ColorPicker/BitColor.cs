@@ -8,29 +8,10 @@ namespace Bit.Client.Web.BlazorUI
     internal class BitColor
     {
         private string? hex;
-        private bool bindHsv;
         private (int Hue, int Saturation, int Value) hsv;
 
-        public (int Hue, int Saturation, int Value) Hsv
-        {
-            get
-            {
-                if (!bindHsv)
-                    hsv = ToHsv();
-
-                return hsv;
-            }
-        }
-        public string Hex
-        {
-            get
-            {
-                if (string.IsNullOrEmpty(hex))
-                    hex = ToHex();
-
-                return hex;
-            }
-        }
+        public (int Hue, int Saturation, int Value) Hsv => hsv;
+        public string? Hex => hex;
 
         public int Red { get; private set; } = 255;
         public int Green { get; private set; } = 255;
@@ -40,6 +21,8 @@ namespace Bit.Client.Web.BlazorUI
         public BitColor(string color = "", double alpha = 1)
         {
             Parse(color, alpha);
+            CalculateHsv();
+            CalculateHex();
         }
 
         public BitColor(double hue, double saturation, double value, double alpha)
@@ -66,7 +49,8 @@ namespace Bit.Client.Web.BlazorUI
             Alpha = alpha;
 
             hsv = new(Convert.ToInt32(hue), Convert.ToInt32(saturation), Convert.ToInt32(value));
-            bindHsv = true;
+
+            CalculateHex();
         }
 
         public BitColor(int red, int green, int blue, double alpha)
@@ -75,9 +59,12 @@ namespace Bit.Client.Web.BlazorUI
             Green = green;
             Blue = blue;
             Alpha = alpha;
+
+            CalculateHex();
+            CalculateHsv();
         }
 
-        private (int Hue, int Saturation, int Value) ToHsv()
+        private void CalculateHsv()
         {
             double hue;
             double saturation;
@@ -96,19 +83,17 @@ namespace Bit.Client.Web.BlazorUI
 
             saturation = cMax == 0 ? 0 : span / cMax;
 
-            bindHsv = true;
-
-            return new(
+            hsv = new(
                 Convert.ToInt32(Math.Floor(hue)),
                 Convert.ToInt32(Math.Floor(saturation * 100)),
                 Convert.ToInt32(Math.Floor(cMax * 100))
                 );
         }
 
-        private string ToHex()
+        private void CalculateHex()
         {
             var myColor = Color.FromArgb(Red, Green, Blue);
-            return $"#{myColor.Name.Remove(0, 2)}";
+            hex = $"#{myColor.Name.Remove(0, 2)}";
         }
 
         public string ToRgbCss()
@@ -145,8 +130,8 @@ namespace Bit.Client.Web.BlazorUI
 
             if (red.HasValue || green.HasValue || blue.HasValue)
             {
-                bindHsv = false;
-                hex = null;
+                CalculateHsv();
+                CalculateHex();
             }
         }
 

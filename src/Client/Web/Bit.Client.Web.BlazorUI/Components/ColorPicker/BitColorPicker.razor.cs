@@ -11,12 +11,16 @@ namespace Bit.Client.Web.BlazorUI
         private string? onWindowMouseUpAbortControllerId;
         private string? onWindowMouseMoveAbortControllerId;
 
-        private BitColor bitColor = new BitColor();
+        private BitColor color = new BitColor();
 
         private BitColorType ColorType { get; set; }
 
+        public string Hex => BitColor.Hex;
+
+        public string Rgb => BitColor.ToRgbCss();
+
         [Inject]
-        public IJSRuntime JSRuntime { get; set; }
+        public IJSRuntime JSRuntime { get; set; } = default!;
 
         /// <summary>
         /// Whether to show a slider for editing alpha value.
@@ -37,13 +41,11 @@ namespace Bit.Client.Web.BlazorUI
                 if (valueAsBitColor.ToRgbaCss() == BitColor.ToRgbaCss()) return;
                 BitColor = valueAsBitColor;
                 Hue = BitColor.Hsv.Hue;
-                SaturationPickerBackground = new BitColor(Hue, 1, 1,1);
+                SaturationPickerBackground = new BitColor(Hue, 1, 1, 1);
 
                 ColorType = value.StartsWith("#", StringComparison.CurrentCultureIgnoreCase) ? BitColorType.Hex : BitColorType.Rgb;
 
                 ColorChanged.InvokeAsync(value);
-                HexChanged.InvokeAsync(BitColor.Hex);
-                RgbChanged.InvokeAsync(BitColor.ToRgbCss());
                 AlphaChanged.InvokeAsync(BitColor.Alpha);
 
             }
@@ -51,53 +53,7 @@ namespace Bit.Client.Web.BlazorUI
         
         [Parameter]
         public EventCallback<string> ColorChanged { get; set; }
-
-        /// <summary>
-        /// Indicates the Hex value.
-        /// </summary>
-        [Parameter]
-        public string Hex
-        {
-            get => BitColor.Hex;
-            set
-            {
-                var valueAsBitColor = new BitColor(value, BitColor.Alpha);
-                if (valueAsBitColor.Hex == BitColor.Hex) return;
-                BitColor = valueAsBitColor;
-                Hue = BitColor.Hsv.Hue;
-                SaturationPickerBackground = new BitColor(Hue, 1, 1,1);
-
-                ColorChanged.InvokeAsync(ColorType == BitColorType.Hex ? BitColor.Hex : BitColor.ToRgbaCss());
-                RgbChanged.InvokeAsync(BitColor.ToRgbCss());
-                HexChanged.InvokeAsync(BitColor.Hex);
-                AlphaChanged.InvokeAsync(BitColor.Alpha);
-            }
-        }
-
-        [Parameter]
-        public EventCallback<string> HexChanged { get; set; }
-
-        [Parameter]
-        public string Rgb
-        {
-            get => BitColor.Hex;
-            set
-            {
-                var valueAsBitColor = new BitColor(value, BitColor.Alpha);
-                if (valueAsBitColor.Hex == BitColor.Hex) return;
-                BitColor = valueAsBitColor;
-                Hue = BitColor.Hsv.Hue;
-                SaturationPickerBackground = new BitColor(Hue, 1, 1,1);
-
-                ColorChanged.InvokeAsync(ColorType == BitColorType.Hex ? BitColor.Hex : BitColor.ToRgbaCss());
-                RgbChanged.InvokeAsync(BitColor.ToRgbCss());
-                HexChanged.InvokeAsync(BitColor.Hex);
-                AlphaChanged.InvokeAsync(BitColor.Alpha);
-            }
-        }
-
-        [Parameter]
-        public EventCallback<string> RgbChanged { get; set; }
+        
 
         [Parameter]
         public double Alpha
@@ -119,15 +75,13 @@ namespace Bit.Client.Web.BlazorUI
         public bool ShowPreview { get; set; }
 
         private bool ColorHasBeenSet { get; set; }
-        private bool HexHasBeenSet { get; set; }
         private bool AlphaHasBeenSet { get; set; }
-        private bool RgbHasBeenSet { get; set; }
 
         private bool SaturationPickerMouseDown { get; set; }
 
         public ElementReference SaturationPickerRef { get; set; }
 
-        private Position? SaturationPickerThumbPosition { get; set; }
+        private BitColorPosition? SaturationPickerThumbPosition { get; set; }
 
         private double SelectedSaturation { get; set; } = 1;
         private double SelectedValue { get; set; } = 1;
@@ -137,9 +91,9 @@ namespace Bit.Client.Web.BlazorUI
 
         private BitColor BitColor
         {
-            get => bitColor; set
+            get => color; set
             {
-                bitColor = value;
+                color = value;
             }
         }
 
@@ -154,7 +108,7 @@ namespace Bit.Client.Web.BlazorUI
 
                 var saturationPickerRect = await JSRuntime.GetBoundingClientRect(SaturationPickerRef);
 
-                SaturationPickerThumbPosition = new Position
+                SaturationPickerThumbPosition = new BitColorPosition
                 {
                     Left = Convert.ToInt32(saturationPickerRect?.Width),
                     Top = 0
@@ -168,7 +122,7 @@ namespace Bit.Client.Web.BlazorUI
         {
             var parent = await JSRuntime.GetBoundingClientRect(SaturationPickerRef);
 
-            SaturationPickerThumbPosition = new Position
+            SaturationPickerThumbPosition = new BitColorPosition
             {
                 Left = e.ClientX < parent.Left ? 0 : e.ClientX > parent.Left + parent.Width ? Convert.ToInt32(parent.Width) : Convert.ToInt32(e.ClientX - parent.Left),
                 Top = e.ClientY < parent.Top ? 0 : e.ClientY > parent.Top + parent.Height ? Convert.ToInt32(parent.Height) : Convert.ToInt32(e.ClientY - parent.Top)
@@ -182,15 +136,11 @@ namespace Bit.Client.Web.BlazorUI
             SaturationPickerBackground = new BitColor(Hue, 1, 1, 1);
 
             await ColorChanged.InvokeAsync(ColorType == BitColorType.Hex ? BitColor.Hex : BitColor.ToRgbaCss());
-            await RgbChanged.InvokeAsync(BitColor.ToRgbCss());
-            await HexChanged.InvokeAsync(BitColor.Hex);
             await AlphaChanged.InvokeAsync(BitColor.Alpha);
 
             SaturationPickerBackground = new BitColor(Hue, 1, 1, 1);
 
             await ColorChanged.InvokeAsync(ColorType == BitColorType.Hex ? BitColor.Hex : BitColor.ToRgbaCss());
-            await RgbChanged.InvokeAsync(BitColor.ToRgbCss());
-            await HexChanged.InvokeAsync(BitColor.Hex);
             await AlphaChanged.InvokeAsync(BitColor.Alpha);
 
             StateHasChanged();
@@ -205,8 +155,6 @@ namespace Bit.Client.Web.BlazorUI
             SaturationPickerBackground = new BitColor(Hue, 1, 1,1);
 
             await ColorChanged.InvokeAsync(ColorType == BitColorType.Hex ? BitColor.Hex : BitColor.ToRgbaCss());
-            await RgbChanged.InvokeAsync(BitColor.ToRgbCss());
-            await HexChanged.InvokeAsync(BitColor.Hex);
             await AlphaChanged.InvokeAsync(BitColor.Alpha);
         }
 
@@ -215,8 +163,6 @@ namespace Bit.Client.Web.BlazorUI
             BitColor.Alpha = Convert.ToDouble(args.Value) / 100;
 
             await ColorChanged.InvokeAsync(ColorType == BitColorType.Hex ? BitColor.Hex : BitColor.ToRgbaCss());
-            await RgbChanged.InvokeAsync(BitColor.ToRgbCss());
-            await HexChanged.InvokeAsync(BitColor.Hex);
             await AlphaChanged.InvokeAsync(BitColor.Alpha);
         }
 
@@ -230,7 +176,7 @@ namespace Bit.Client.Web.BlazorUI
             Hue = hsv.Hue;
             SaturationPickerBackground = new BitColor(Hue, 1, 1,1 );
 
-            SaturationPickerThumbPosition = new Position
+            SaturationPickerThumbPosition = new BitColorPosition
             {
                 Left = Convert.ToInt32(Math.Round(saturationPickerRect.Width * hsv.Saturation / 100)),
                 Top = Convert.ToInt32(Math.Round(saturationPickerRect.Height - saturationPickerRect.Height * hsv.Value / 100))
@@ -238,8 +184,6 @@ namespace Bit.Client.Web.BlazorUI
 
 
             await ColorChanged.InvokeAsync(ColorType == BitColorType.Hex ? BitColor.Hex : BitColor.ToRgbaCss());
-            await RgbChanged.InvokeAsync(BitColor.ToRgbCss());
-            await HexChanged.InvokeAsync(BitColor.Hex);
             await AlphaChanged.InvokeAsync(BitColor.Alpha);
             StateHasChanged();
         }
@@ -290,11 +234,5 @@ namespace Bit.Client.Web.BlazorUI
             await JSRuntime.AbortProcedure(onWindowMouseUpAbortControllerId);
             await JSRuntime.AbortProcedure(onWindowMouseMoveAbortControllerId);
         }
-    }
-
-    public class Position
-    {
-        public int Top { get; set; }
-        public int Left { get; set; }
     }
 }
