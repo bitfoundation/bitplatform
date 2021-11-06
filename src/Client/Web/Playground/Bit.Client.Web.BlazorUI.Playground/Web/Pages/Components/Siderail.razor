@@ -1,0 +1,8 @@
+﻿<div class="component-siderail">
+    <ul class="link-container">
+        @foreach (var param in SiderailParameters)
+        {
+            <li><BitLink Class="@param.Class" OnClick="@(() => ScrollToFragment(param))">@param.Title</BitLink></li>
+        }
+    </ul>
+</div>
