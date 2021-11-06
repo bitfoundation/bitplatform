@@ -1,0 +1,57 @@
+﻿@import '../../Styles/_shared.scss';
+
+h1 {
+    color: $DarkBlue;
+    white-space: nowrap;
+    line-height: 25%;
+}
+
+h5 {
+    line-height: 0;
+}
+
+section {
+    margin-bottom: rem(110px);
+}
+
+.main-container {
+    background-image: url(/images/main/component-bg.png);
+    background-repeat: no-repeat;
+    background-size: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    position: relative;
+    margin-top: rem(160px);
+}
+
+.component-container {
+    background-image: none;
+    background-position: unset;
+    background-repeat: unset;
+    background-size: unset;
+}
+
+.command {
+    border-left: rem(4px) solid $Violet;
+    color: $Violet;
+    padding: rem(15px);
+    background: $Gray04;
+}
+
+.init-code, .startup-code {
+    background: $Gray04;
+    padding: rem(15px);
+}
+
+.index-path {
+    background: $Gray04;
+    color: $Violet;
+}
+
+.import-style-section {
+    margin-bottom: rem(140px);
+}
+
+.m-l-20 {
+    margin-left: rem(20px);
+}
