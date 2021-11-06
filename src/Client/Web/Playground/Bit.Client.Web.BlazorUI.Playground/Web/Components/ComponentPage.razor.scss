@@ -59,6 +59,10 @@ tr:last-child {
     border: none;
 }
 
+.razor-code p {
+    white-space: nowrap;
+}
+
 .component-container {
     display: flex;
     background-image: url('/images/main/component-bg.png');
@@ -87,6 +91,27 @@ tr:last-child {
         }
 
         .overview {
+            .name-container {
+                display: flex;
+
+                img {
+                    display: none;
+                    width: rem(52px);
+                    height: rem(52px);
+                    padding: rem(1px) rem(14px) 0;
+
+                    @include lt-lg {
+                        display: block;
+                    }
+
+                    @include sm {
+                        width: rem(33px);
+                        height: rem(33px);
+                        padding-top: rem(8px);
+                    }
+                }
+            }
+
             .name {
                 color: $Violet;
                 line-height: 0;

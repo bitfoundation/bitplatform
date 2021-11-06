@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Bit.Client.Web.BlazorUI.Playground.Web.Models;
 using Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 
@@ -7,6 +8,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Pickers
     public partial class BitDatePickerDemo
     {
         private string selectedDate = "";
+        private DayOfWeek firstDayOfWeek = DayOfWeek.Sunday;
 
         private readonly List<ComponentParameter> componentParameters = new()
         {
@@ -182,6 +184,67 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Pickers
         private string OnDateFormat(BitDate date)
         {
             return $"{date.GetDate()}/{date.GetMonth()}/{date.GetYear()}";
+        }
+
+        private List<BitDropDownItem> GetFirstDayOfWeekDropdownItems()
+        {
+            List<BitDropDownItem> items = new();
+
+            items.Add(new BitDropDownItem()
+            {
+                ItemType = BitDropDownItemType.Normal,
+                Text = "Sunday",
+                Value = "0"
+            });
+
+            items.Add(new BitDropDownItem()
+            {
+                ItemType = BitDropDownItemType.Normal,
+                Text = "Monday",
+                Value = "1"
+            });
+
+            items.Add(new BitDropDownItem()
+            {
+                ItemType = BitDropDownItemType.Normal,
+                Text = "Tuesday",
+                Value = "2"
+            });
+
+            items.Add(new BitDropDownItem()
+            {
+                ItemType = BitDropDownItemType.Normal,
+                Text = "Wednesday",
+                Value = "3"
+            });
+
+            items.Add(new BitDropDownItem()
+            {
+                ItemType = BitDropDownItemType.Normal,
+                Text = "Thursday",
+                Value = "4"
+            });
+
+            items.Add(new BitDropDownItem()
+            {
+                ItemType = BitDropDownItemType.Normal,
+                Text = "Friday",
+                Value = "5"
+            });
+
+            items.Add(new BitDropDownItem()
+            {
+                ItemType = BitDropDownItemType.Normal,
+                Text = "Saturday",
+                Value = "6"
+            });
+
+            return items;
+        }
+
+        private void SelectFirstDayOfWeek(BitDropDownItem item)
+        {
+            firstDayOfWeek = (DayOfWeek)int.Parse(item.Value);
         }
     }
 }

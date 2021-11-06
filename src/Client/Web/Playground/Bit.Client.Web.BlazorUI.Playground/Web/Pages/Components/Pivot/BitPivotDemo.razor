@@ -1,710 +1,353 @@
 ﻿@page "/components/pivot"
 
-<h2>Pivot</h2>
+@using Bit.Client.Web.BlazorUI.Playground.Web.Components
 
-<div class="card">
-    <p class="desc">
-        The Pivot control and related tabs pattern are used for navigating frequently accessed,
+<ComponentPage ComponentName="Pivot" OverviewDesc=" The Pivot control and related tabs pattern are used for navigating frequently accessed,
         distinct content categories. Pivots allow for navigation between two or more content
-        views and relies on text headers to articulate the different sections of content.
-    </p>
-    <p class="desc">
-        - Tapping on a pivot item header navigates to that header's section content.
-    </p>
-    <p class="desc">
-        Tabs are a visual variant of Pivot that use a combination of icons and text
-        or just icons to articulate section content.
-    </p>
-</div>
+        views and relies on text headers to articulate the different sections of content. Tapping on a pivot item header navigates to that header's section content. Tabs are a visual variant of Pivot that use a combination of icons and text
+        or just icons to articulate section content."
+               ComponentParameters="componentParameters" ComponentSubParameters="componentSubParameters" EnumParameters="enumParameters">
+    <CodeSample Title="BitPivot" Description="Files can be uploaded automatically after selecting them.">
+        <SampleContent>
+            <BitPivot>
+                <BitPivotItem HeaderText="File">
+                    Pivot #1
+                </BitPivotItem>
+                <BitPivotItem HeaderText="Shared with me">
+                    Pivot #2
+                </BitPivotItem>
+                <BitPivotItem HeaderText="Recent">
+                    Pivot #3
+                </BitPivotItem>
+            </BitPivot>
+        </SampleContent>
+        <CodeSampleContent>
+            <pre>
+                &lt;<span class="dark-green">BitPivot</span>&gt;
+                    &lt;<span class="dark-green">BitPivotItem HeaderText</span>="File">Pivot #1<span>&lt;</span><span class="dark-green">BitPivotItem</span><span>&gt;</span>
+                    &lt;<span class="dark-green">BitPivotItem HeaderText</span>="Shared with me">Pivot #2<span>&lt;</span><span class="dark-green">BitPivotItem</span><span>&gt;</span>
+                    &lt;<span class="dark-green">BitPivotItem HeaderText</span>="Recent">Pivot #3<span>&lt;</span><span class="dark-green">BitPivotItem</span><span>&gt;</span>
+                &lt;<span class="dark-green">BitPivot</span><span>&gt;</span>
+            </pre>
+        </CodeSampleContent>
+    </CodeSample>
+    <CodeSample Title="Count and Icon" Description="">
+        <SampleContent>
+            <BitPivot OverflowBehavior="@BitOverflowBehavior.Scroll">
+                <BitPivotItem HeaderText="Files"
+                              IconName="Info">
+                    Pivot #1
+                </BitPivotItem>
+                <BitPivotItem HeaderText="Shared with me"
+                              ItemCount="32">
+                    Pivot #2
+                </BitPivotItem>
+                <BitPivotItem HeaderText="Recent"
+                              IconName="Info"
+                              ItemCount="12">
+                    Pivot #3
+                </BitPivotItem>
+                <BitPivotItem HeaderText="Some tab"
+                              IconName="Info"
+                              ItemCount="6">
+                    Pivot #4
+                </BitPivotItem>
+                <BitPivotItem HeaderText="Latest"
+                              IconName="Info"
+                              ItemCount="8">
+                    Pivot #5
+                </BitPivotItem>
+                <BitPivotItem HeaderText="I also have a custom template for icon"
+                              IconName="Info"
+                              ItemCount="45">
+                    <HeaderFragment>
+                        <i class="bit-icon bit-icon--HeartFill"></i>
+                    </HeaderFragment>
+                    <BodyFragment>
+                        Pivot #6
+                    </BodyFragment>
+                </BitPivotItem>
+            </BitPivot>
+        </SampleContent>
+        <CodeSampleContent>
+            <pre>
+                &lt;<span class="dark-green">BitPivot OverflowBehavior</span>="<span class="light-yellow-bg">&#64;</span><span>OverflowBehavior.Scroll"></span>
+                     &lt;<span class="dark-green">BitPivotItem HeaderText</span> ="Files" <span class="dark-green">IconName</span>="Info">Pivot #1<span>&lt;</span><span class="dark-green">BitPivotItem</span><span>&gt;</span>
+                     &lt;<span class="dark-green">BitPivotItem HeaderText</span> ="Shared with me" <span class="dark-green">ItemCount</span>="32">Pivot #2<span>&lt;</span><span class="dark-green">BitPivotItem</span><span>&gt;</span>
+                     &lt;<span class="dark-green">BitPivotItem HeaderText</span> ="Recent" <span class="dark-green">IconName</span>="Info" <span class="dark-green">ItemCount</span>="12">Pivot #3<span>&lt;</span><span class="dark-green">BitPivotItem</span>&gt;
+                     &lt;<span class="dark-green">BitPivotItem HeaderText</span> ="Some tab" <span class="dark-green">IconName</span>="Info" <span class="dark-green">ItemCount</span>="6">Pivot #4<span>&lt;</span><span class="dark-green">BitPivotItem</span>&gt;
+                     &lt;<span class="dark-green">BitPivotItem HeaderText</span> ="Latest" <span class="dark-green">IconName</span>="Info" <span class="dark-green">ItemCount</span>="8">Pivot #5<span>&lt;</span><span class="dark-green">BitPivotItem</span>&gt;
+                     &lt;<span class="dark-green">BitPivotItem HeaderText</span> ="I also have a custom template for icon" <span class="dark-green">IconName</span>="Info" <span class="dark-green">ItemCount</span>="45">
+                     &lt;<span class="dark-green">HeaderContent</span><span>&gt;</span>
+                         &lt;<span class="light-blue">i</span> class="bit-icon bit-icon--HeartFill"><span>&lt;</span><span class="light-blue">i</span><span>&gt;</span>
+                     &lt;<span class="dark-green">HeaderContent</span><span>/&gt;</span>
+                     &lt;<span class="dark-green">BodyContent</span><span>&gt;</span>
+            <span>Pivot #6</span>
+                     &lt;<span class="dark-green">BodyContent</span><span>/&gt;</span>
+                &lt;<span class="dark-green">BitPivot</span><span>&gt;</span>
+            </pre>
+        </CodeSampleContent>
+    </CodeSample>
+    <CodeSample Title="Large link size" Description="">
+        <SampleContent>
+            <BitPivot LinkSize="@BitLinkSize.Large">
+                <BitPivotItem HeaderText="File">
+                    Pivot #1
+                </BitPivotItem>
+                <BitPivotItem HeaderText="Shared with me">
+                    Pivot #2
+                </BitPivotItem>
+                <BitPivotItem HeaderText="Recent">
+                    Pivot #3
+                </BitPivotItem>
+            </BitPivot>
+        </SampleContent>
+        <CodeSampleContent>
+            <pre>
+               &lt;<span class="dark-green">BitPivot LinkSize</span>="<span class="light-yellow-bg">&#64;</span>LinkSize.Large"<span>&gt;</span>
+                    &lt;<span class="dark-green">BitPivotItem HeaderText</span> ="File">Pivot #1<span>&lt;</span><span class="dark-green">BitPivotItem</span>&gt;
+                    &lt;<span class="dark-green">BitPivotItem HeaderText</span> ="Shared with me">Pivot #2<span>&lt;</span><span class="dark-green">BitPivotItem</span>&gt;
+                    &lt;<span class="dark-green">BitPivotItem HeaderText</span> ="Recent">Pivot #3<span>&lt;</span><span class="dark-green">BitPivotItem</span>&gt;
+            <span>&lt;</span><span class="dark-green">BitPivot</span>&gt;
+            </pre>
+        </CodeSampleContent>
+    </CodeSample>
+    <CodeSample Title="Links of tab style" Description="">
+        <SampleContent>
+            <BitPivot LinkFormat="@BitLinkFormat.Tabs">
+                <BitPivotItem HeaderText="Foo">
+                    Pivot #1
+                </BitPivotItem>
+                <BitPivotItem HeaderText="Bar">
+                    Pivot #2
+                </BitPivotItem>
+                <BitPivotItem HeaderText="Bas">
+                    Pivot #3
+                </BitPivotItem>
+                <BitPivotItem HeaderText="Biz">
+                    Pivot #4
+                </BitPivotItem>
+            </BitPivot>
+        </SampleContent>
+        <CodeSampleContent>
+            <pre>
+               &lt;<span class="dark-green">BitPivot LinkFormat</span>="<span class="light-yellow-bg">&#64;</span>LinkFormat.Tabs"<span>&gt;</span>
+                    &lt;<span class="dark-green">BitPivotItem HeaderText</span> ="Foo">Pivot #1<span>&lt;</span><span class="dark-green">BitPivotItem</span>&gt;
+                    &lt;<span class="dark-green">BitPivotItem HeaderText</span> ="Bar">Pivot #2<span>&lt;</span><span class="dark-green">BitPivotItem</span>&gt;
+                    &lt;<span class="dark-green">BitPivotItem HeaderText</span> ="Bas">Pivot #3<span>&lt;</span><span class="dark-green">BitPivotItem</span>&gt;
+                    &lt;<span class="dark-green">BitPivotItem HeaderText</span> ="Biz">Pivot #4<span>&lt;</span><span class="dark-green">BitPivotItem</span>&gt;
+               &lt;<span class="dark-green">BitPivot</span>&gt;
+            </pre>
+        </CodeSampleContent>
+    </CodeSample>
+    <CodeSample Title="Links of large tab style" Description="">
+        <SampleContent>
+            <BitPivot LinkFormat="@BitLinkFormat.Tabs"
+                      LinkSize="@BitLinkSize.Large">
+                <BitPivotItem HeaderText="Foo">
+                    Pivot #1
+                </BitPivotItem>
+                <BitPivotItem HeaderText="Bar">
+                    Pivot #2
+                </BitPivotItem>
+                <BitPivotItem HeaderText="Bas">
+                    Pivot #3
+                </BitPivotItem>
+                <BitPivotItem HeaderText="Biz">
+                    Pivot #4
+                </BitPivotItem>
+            </BitPivot>
+        </SampleContent>
+        <CodeSampleContent>
+            <pre>
+               &lt;<span class="dark-green">BitPivot LinkFormat</span>="<span class="light-yellow-bg">&#64;</span>LinkFormat.Tabs" <span class="dark-green">LinkSize</span>="<span class="light-yellow-bg">&#64;</span>LinkSize.Large"<span>&gt;</span>
+            <span>&lt;<span class="dark-green">BitPivotItem HeaderText</span> ="Foo">Pivot #1</span><span>&lt;</span><span class="dark-green">BitPivotItem</span>&gt;
+            <span>&lt;<span class="dark-green">BitPivotItem HeaderText</span> ="Bar">Pivot #2</span><span>&lt;</span><span class="dark-green">BitPivotItem</span>&gt;
+            <span>&lt;<span class="dark-green">BitPivotItem HeaderText</span> ="Bas">Pivot #3</span><span>&lt;</span><span class="dark-green">BitPivotItem</span>&gt;
+            <span>&lt;<span class="dark-green">BitPivotItem HeaderText</span> ="Biz">Pivot #4</span><span>&lt;</span><span class="dark-green">BitPivotItem</span>&gt;
+               &lt;<span class="dark-green">BitPivot</span><span>&gt;</span>
+            </pre>
+        </CodeSampleContent>
+    </CodeSample>
+    <CodeSample Title="Change tabs from outside of the component" Description="">
+        <SampleContent>
+            <BitPivot LinkFormat="@BitLinkFormat.Tabs"
+                      LinkSize="@BitLinkSize.Large"
+                      SelectedKey="@OverridePivotSelectedKey"
+                      SelectedKeyChanged="PivotSelectedKeyChanged">
+                <BitPivotItem HeaderText="Samples">
+                    Pivot #1
+                </BitPivotItem>
+                <BitPivotItem HeaderText="Fiels">
+                    Pivot #2
+                </BitPivotItem>
+                <BitPivotItem HeaderText="Recent">
+                    Pivot #3
+                </BitPivotItem>
+            </BitPivot>
+            <BitButton OnClick="(() => OverridePivotSelectedKey = (((int.Parse(OverridePivotSelectedKey) + 3 - 1) % 3)).ToString())">Prev</BitButton>
+            <BitButton OnClick="(() => OverridePivotSelectedKey = (((int.Parse(OverridePivotSelectedKey) + 1 ) % 3)).ToString())">Next</BitButton>
+        </SampleContent>
+        <CodeSampleContent>
+            <pre>
+                &lt;<span class="dark-green">BitPivot LinkFormat</span>="<span class="light-yellow-bg">&#64;</span>LinkFormat.Tabs" <span class="dark-green">LinkSize</span>="<span class="light-yellow-bg">&#64;</span>LinkSize.Large" <span class="dark-green">SelectedKey</span>="<span class="light-yellow-bg">&#64;</span>OverridePivotSelectedKey" <span class="dark-green">SelectedKeyChanged</span>="<span class="dark-yellow">PivotSelectedKeyChanged</span>"&gt;
+                      &lt;<span class="dark-green">BitPivotItem HeaderText</span> ="Samples">Pivot #1<span>&lt;</span><span class="dark-green">BitPivotItem</span>&gt;
+                      &lt;<span class="dark-green">BitPivotItem HeaderText</span> ="Fiels">Pivot #2<span>&lt;</span><span class="dark-green">BitPivotItem</span>&gt;
+                      &lt;<span class="dark-green">BitPivotItem HeaderText</span> ="Recent">Pivot #3<span>&lt;</span><span class="dark-green">BitPivotItem</span>&gt;
+                &lt;<span class="dark-green">BitPivot</span>&gt;
+                      &lt;<span class="dark-green">BitButton OnClick</span>="(() => OverridePivotSelectedKey = (((<span class="light-blue">int</span>.<span class="dark-yellow">Parse</span>(OverridePivotSelectedKey) + 3 - 1) % 3)).<span class="dark-yellow">ToString</span>())">prev<span>&lt;</span><span class="dark-green">BitButton</span>&gt;
+                &lt;<span class="dark-green">BitButton OnClick</span>="(() => OverridePivotSelectedKey = (((<span class="light-blue">int</span>.<span class="dark-yellow">Parse</span>(OverridePivotSelectedKey) + 1 ) % 3)).<span class="dark-yellow">ToString</span>())">next<span>&lt;</span><span class="dark-green">BitButton</span>&gt;
 
-<h2>Usage</h2>
-<div class="wrapper">
-    <div class="card">
-        <h3>Default Pivot</h3>
-        <BitPivot>
-            <BitPivotItem HeaderText="Example"
-                          IconName="ViewList">
-                <div>
-                    <BitPivot>
-                        <BitPivotItem HeaderText="File">
-                            Pivot #1
-                        </BitPivotItem>
-                        <BitPivotItem HeaderText="Shared with me">
-                            Pivot #2
-                        </BitPivotItem>
-                        <BitPivotItem HeaderText="Recent">
-                            Pivot #3
-                        </BitPivotItem>
-                    </BitPivot>
-                </div>
-            </BitPivotItem>
-            <BitPivotItem HeaderText="Code" 
-                          IconName="Source">
-                <p>
-                    &lt;<span class="dark-green">BitPivot</span>&gt;
-                    <br />
-                    <span class="m-l-30">&lt;<span class="dark-green">BitPivotItem HeaderText</span>="File">Pivot #1</span><span>&lt;</span><span class="dark-green">BitPivotItem</span><span>&gt;</span>
-                    <br />
-                    <span class="m-l-30">&lt;<span class="dark-green">BitPivotItem HeaderText</span>="Shared with me">Pivot #2</span><span>&lt;</span><span class="dark-green">BitPivotItem</span><span>&gt;</span>
-                    <br />
-                    <span class="m-l-30">&lt;<span class="dark-green">BitPivotItem HeaderText</span>="Recent">Pivot #3</span><span>&lt;</span><span class="dark-green">BitPivotItem</span><span>&gt;</span>
-                    <br />
-                    <span>&lt;</span><span class="dark-green">BitPivot</span><span>&gt;</span>
-                </p>
-            </BitPivotItem>
-        </BitPivot>
-    </div>
-    <div class="card">
-        <h3>Count and Icon</h3>
-        <BitPivot>
-            <BitPivotItem HeaderText="Example"
-                          IconName="ViewList">
-                <div>
-                    <BitPivot OverflowBehavior="@BitOverflowBehavior.Scroll">
-                        <BitPivotItem HeaderText="Files"
-                                      IconName="Info">
-                            Pivot #1
-                        </BitPivotItem>
-                        <BitPivotItem HeaderText="Shared with me"
-                                      ItemCount="32">
-                            Pivot #2
-                        </BitPivotItem>
-                        <BitPivotItem HeaderText="Recent"
-                                      IconName="Info"
-                                      ItemCount="12">
-                            Pivot #3
-                        </BitPivotItem>
-                        <BitPivotItem HeaderText="Some tab"
-                                      IconName="Info"
-                                      ItemCount="6">
-                            Pivot #4
-                        </BitPivotItem>
-                        <BitPivotItem HeaderText="Latest"
-                                      IconName="Info"
-                                      ItemCount="8">
-                            Pivot #5
-                        </BitPivotItem>
-                        <BitPivotItem HeaderText="I also have a custom template for icon"
-                                      IconName="Info"
-                                      ItemCount="45">
-                            <HeaderFragment>
-                                <i class="bit-icon bit-icon--HeartFill"></i>
-                            </HeaderFragment>
-                            <BodyFragment>
-                                Pivot #6
-                            </BodyFragment>
-                        </BitPivotItem>
-                    </BitPivot>
-                </div>
-            </BitPivotItem>
-            <BitPivotItem HeaderText="Code" IconName="Source">
-                <p>
-                    &lt;<span class="dark-green">BitPivot OverflowBehavior</span>="<span class="light-yellow-bg">&#64;</span><span>OverflowBehavior.Scroll"></span>
-                    <br />
-                    <span class="m-l-30">&lt;<span class="dark-green">BitPivotItem HeaderText</span> ="Files" <span class="dark-green">IconName</span>="Info"></span>Pivot #1<span>&lt;</span><span class="dark-green">BitPivotItem</span><span>&gt;</span>
-                    <br />
-                    <span class="m-l-30">&lt;<span class="dark-green">BitPivotItem HeaderText</span> ="Shared with me" <span class="dark-green">ItemCount</span>="32"></span>Pivot #2<span>&lt;</span><span class="dark-green">BitPivotItem</span><span>&gt;</span>
-                    <br />
-                    <span class="m-l-30">&lt;<span class="dark-green">BitPivotItem HeaderText</span> ="Recent" <span class="dark-green">IconName</span>="Info" <span class="dark-green">ItemCount</span>="12"></span>Pivot #3<span>&lt;</span><span class="dark-green">BitPivotItem</span><span>&gt;</span>
-                    <br />
-                    <span class="m-l-30">&lt;<span class="dark-green">BitPivotItem HeaderText</span> ="Some tab" <span class="dark-green">IconName</span>="Info" <span class="dark-green">ItemCount</span>="6"></span>Pivot #4<span>&lt;</span><span class="dark-green">BitPivotItem</span><span>&gt;</span>
-                    <br />
-                    <span class="m-l-30">&lt;<span class="dark-green">BitPivotItem HeaderText</span> ="Latest" <span class="dark-green">IconName</span>="Info" <span class="dark-green">ItemCount</span>="8"></span>Pivot #5<span>&lt;</span><span class="dark-green">BitPivotItem</span><span>&gt;</span>
-                    <br />
-                    <span class="m-l-30">&lt;<span class="dark-green">BitPivotItem HeaderText</span> ="I also have a custom template for icon" <span class="dark-green">IconName</span>="Info" <span class="dark-green">ItemCount</span>="45"></span>
-                    <br />
-                    <span class="m-l-45">&lt;<span class="dark-green">HeaderContent</span><span>&gt;</span></span>
-                    <br />
-                    <span class="m-l-60">&lt;<span class="light-blue">i</span> class="bit-icon bit-icon--HeartFill"><span>&lt;</span><span class="light-blue">i</span><span>&gt;</span></span>
-                    <br />
-                    <span class="m-l-45">&lt;<span class="dark-green">HeaderContent</span><span>&gt;</span></span>
-                    <br />
-                    <span class="m-l-45">&lt;<span class="dark-green">BodyContent</span><span>&gt;</span></span>
-                    <br />
-                    <span class="m-l-60">Pivot #6</span>
-                    <br />
-                    <span class="m-l-45">&lt;<span class="dark-green">BodyContent</span><span>&gt;</span></span>
-                    <br />
-                    <span>&lt;</span><span class="dark-green">BitPivot</span><span>&gt;</span>
-                </p>
-            </BitPivotItem>
-        </BitPivot>
-    </div>
-    <div class="card">
-        <h3>Large link size</h3>
-        <BitPivot>
-            <BitPivotItem HeaderText="Example" IconName="ViewList">
-                <div>
-                    <BitPivot LinkSize="@BitLinkSize.Large">
-                        <BitPivotItem HeaderText="File">
-                            Pivot #1
-                        </BitPivotItem>
-                        <BitPivotItem HeaderText="Shared with me">
-                            Pivot #2
-                        </BitPivotItem>
-                        <BitPivotItem HeaderText="Recent">
-                            Pivot #3
-                        </BitPivotItem>
-                    </BitPivot>
-                </div>
-            </BitPivotItem>
-            <BitPivotItem HeaderText="Code" IconName="Source">
-                <p>
-                    &lt;<span class="dark-green">BitPivot LinkSize</span>="<span class="light-yellow-bg">&#64;</span>LinkSize.Large"<span>&gt;</span>
-                    <br />
-                    <span class="m-l-30">&lt;<span class="dark-green">BitPivotItem HeaderText</span> ="File">Pivot #1</span><span>&lt;</span><span class="dark-green">BitPivotItem</span><span>&gt;</span>
-                    <br />
-                    <span class="m-l-30">&lt;<span class="dark-green">BitPivotItem HeaderText</span> ="Shared with me">Pivot #2</span><span>&lt;</span><span class="dark-green">BitPivotItem</span><span>&gt;</span>
-                    <br />
-                    <span class="m-l-30">&lt;<span class="dark-green">BitPivotItem HeaderText</span> ="Recent">Pivot #3</span><span>&lt;</span><span class="dark-green">BitPivotItem</span><span>&gt;</span>
-                    <br />
-                    <span>&lt;</span><span class="dark-green">BitPivot</span><span>&gt;</span>
-                </p>
-            </BitPivotItem>
-        </BitPivot>
-    </div>
-    <div class="card">
-        <h3>Links of tab style</h3>
-        <BitPivot>
-            <BitPivotItem HeaderText="Example"
-                          IconName="ViewList">
-                <div>
-                    <BitPivot LinkFormat="@BitLinkFormat.Tabs">
-                        <BitPivotItem HeaderText="Foo">
-                            Pivot #1
-                        </BitPivotItem>
-                        <BitPivotItem HeaderText="Bar">
-                            Pivot #2
-                        </BitPivotItem>
-                        <BitPivotItem HeaderText="Bas">
-                            Pivot #3
-                        </BitPivotItem>
-                        <BitPivotItem HeaderText="Biz">
-                            Pivot #4
-                        </BitPivotItem>
-                    </BitPivot>
-                </div>
-            </BitPivotItem>
-            <BitPivotItem HeaderText="Code"
-                          IconName="Source">
-                <p>
-                    &lt;<span class="dark-green">BitPivot LinkFormat</span>="<span class="light-yellow-bg">&#64;</span>LinkFormat.Tabs"<span>&gt;</span>
-                    <br />
-                    <span class="m-l-30">&lt;<span class="dark-green">BitPivotItem HeaderText</span> ="Foo">Pivot #1</span><span>&lt;</span><span class="dark-green">BitPivotItem</span><span>&gt;</span>
-                    <br />
-                    <span class="m-l-30">&lt;<span class="dark-green">BitPivotItem HeaderText</span> ="Bar">Pivot #2</span><span>&lt;</span><span class="dark-green">BitPivotItem</span><span>&gt;</span>
-                    <br />
-                    <span class="m-l-30">&lt;<span class="dark-green">BitPivotItem HeaderText</span> ="Bas">Pivot #3</span><span>&lt;</span><span class="dark-green">BitPivotItem</span><span>&gt;</span>
-                    <br />
-                    <span class="m-l-30">&lt;<span class="dark-green">BitPivotItem HeaderText</span> ="Biz">Pivot #4</span><span>&lt;</span><span class="dark-green">BitPivotItem</span><span>&gt;</span>
-                    <br />
-                    <span>&lt;</span><span class="dark-green">BitPivot</span><span>&gt;</span>
-                </p>
-            </BitPivotItem>
-        </BitPivot>
-    </div>
-    <div class="card">
-        <h3>Links of large tab style</h3>
-        <BitPivot>
-            <BitPivotItem HeaderText="Example"
-                          IconName="ViewList">
-                <div>
-                    <BitPivot LinkFormat="@BitLinkFormat.Tabs"
-                              LinkSize="@BitLinkSize.Large">
-                        <BitPivotItem HeaderText="Foo">
-                            Pivot #1
-                        </BitPivotItem>
-                        <BitPivotItem HeaderText="Bar">
-                            Pivot #2
-                        </BitPivotItem>
-                        <BitPivotItem HeaderText="Bas">
-                            Pivot #3
-                        </BitPivotItem>
-                        <BitPivotItem HeaderText="Biz">
-                            Pivot #4
-                        </BitPivotItem>
-                    </BitPivot>
-                </div>
-            </BitPivotItem>
-            <BitPivotItem HeaderText="Code"
-                          IconName="Source">
-                <p>
-                    &lt;<span class="dark-green">BitPivot LinkFormat</span>="<span class="light-yellow-bg">&#64;</span>LinkFormat.Tabs" <span class="dark-green">LinkSize</span>="<span class="light-yellow-bg">&#64;</span>LinkSize.Large"<span>&gt;</span>
-                    <br />
-                    <span class="m-l-30">&lt;<span class="dark-green">BitPivotItem HeaderText</span> ="Foo">Pivot #1</span><span>&lt;</span><span class="dark-green">BitPivotItem</span><span>&gt;</span>
-                    <br />
-                    <span class="m-l-30">&lt;<span class="dark-green">BitPivotItem HeaderText</span> ="Bar">Pivot #2</span><span>&lt;</span><span class="dark-green">BitPivotItem</span><span>&gt;</span>
-                    <br />
-                    <span class="m-l-30">&lt;<span class="dark-green">BitPivotItem HeaderText</span> ="Bas">Pivot #3</span><span>&lt;</span><span class="dark-green">BitPivotItem</span><span>&gt;</span>
-                    <br />
-                    <span class="m-l-30">&lt;<span class="dark-green">BitPivotItem HeaderText</span> ="Biz">Pivot #4</span><span>&lt;</span><span class="dark-green">BitPivotItem</span><span>&gt;</span>
-                    <br />
-                    <span>&lt;</span><span class="dark-green">BitPivot</span><span>&gt;</span>
-                </p>
-            </BitPivotItem>
-        </BitPivot>
-    </div>
-    <div class="card">
-        <h3>Change tabs from outside of the component</h3>
-        <BitPivot>
-            <BitPivotItem HeaderText="Example"
-                          IconName="ViewList">
-                <div>
-                    <BitPivot LinkFormat="@BitLinkFormat.Tabs"
-                              LinkSize="@BitLinkSize.Large"
-                              SelectedKey="@OverridePivotSelectedKey"
-                              SelectedKeyChanged="PivotSelectedKeyChanged">
-                        <BitPivotItem HeaderText="Samples">
-                            Pivot #1
-                        </BitPivotItem>
-                        <BitPivotItem HeaderText="Fiels">
-                            Pivot #2
-                        </BitPivotItem>
-                        <BitPivotItem HeaderText="Recent">
-                            Pivot #3
-                        </BitPivotItem>
-                    </BitPivot>
-                    <br />
-                    <BitButton OnClick="(() => OverridePivotSelectedKey = (((int.Parse(OverridePivotSelectedKey) + 3 - 1) % 3)).ToString())">Prev</BitButton>
-                    <BitButton OnClick="(() => OverridePivotSelectedKey = (((int.Parse(OverridePivotSelectedKey) + 1 ) % 3)).ToString())">Next</BitButton>
-                </div>
-            </BitPivotItem>
-            <BitPivotItem HeaderText="Code"
-                          IconName="Source">
-                <p>
-                    &lt;<span class="dark-green">BitPivot LinkFormat</span>="<span class="light-yellow-bg">&#64;</span>LinkFormat.Tabs" <span class="dark-green">LinkSize</span>="<span class="light-yellow-bg">&#64;</span>LinkSize.Large" <span class="dark-green">SelectedKey</span>="<span class="light-yellow-bg">&#64;</span>OverridePivotSelectedKey" <span class="dark-green">SelectedKeyChanged</span>="<span class="dark-yellow">PivotSelectedKeyChanged</span>"<span>&gt;</span>
-                    <br />
-                    <span class="m-l-30">&lt;<span class="dark-green">BitPivotItem HeaderText</span> ="Samples">Pivot #1</span><span>&lt;</span><span class="dark-green">BitPivotItem</span><span>&gt;</span>
-                    <br />
-                    <span class="m-l-30">&lt;<span class="dark-green">BitPivotItem HeaderText</span> ="Fiels">Pivot #2</span><span>&lt;</span><span class="dark-green">BitPivotItem</span><span>&gt;</span>
-                    <br />
-                    <span class="m-l-30">&lt;<span class="dark-green">BitPivotItem HeaderText</span> ="Recent">Pivot #3</span><span>&lt;</span><span class="dark-green">BitPivotItem</span><span>&gt;</span>
-                    <br />
-                    <span>&lt;</span><span class="dark-green">BitPivot</span><span>&gt;</span>
-                    <br />
-                    &lt;<span class="dark-green">BitButton OnClick</span>="(() => OverridePivotSelectedKey = (((<span class="light-blue">int</span>.<span class="dark-yellow">Parse</span>(OverridePivotSelectedKey) + 3 - 1) % 3)).<span class="dark-yellow">ToString</span>())">prev<span>&lt;</span><span class="dark-green">BitButton</span><span>&gt;</span>
-                    <br />
-                    &lt;<span class="dark-green">BitButton OnClick</span>="(() => OverridePivotSelectedKey = (((<span class="light-blue">int</span>.<span class="dark-yellow">Parse</span>(OverridePivotSelectedKey) + 1 ) % 3)).<span class="dark-yellow">ToString</span>())">next<span>&lt;</span><span class="dark-green">BitButton</span><span>&gt;</span>
-                </p>
-                <div>
-                    <span class="light-yellow-bg">&#64;code {</span>
-                    <p>
-                        <span>public string OverridePivotSelectedKey { get; set; } = "1";</span>
-                        <br />
-                        <span>public void </span><span class="dark-yellow">PivotSelectedKeyChanged</span>(string key)
-                        <br />
-                        <span>{</span>
-                        <br />
-                        <span class="m-l-30">OverridePivotSelectedKey = key;</span>
-                        <br />
-                        <span>}</span>
-                        <br />
-                        <span class="light-yellow-bg">}</span>
-                    </p>
-                </div>
-            </BitPivotItem>
-        </BitPivot>
-    </div>
-    <div class="card">
-        <h3>Render content separately</h3>
-        <BitPivot>
-            <BitPivotItem HeaderText="Example"
-                          IconName="ViewList">
-                <div>
-                    <BitPivot LinkFormat="@BitLinkFormat.Tabs"
-                              DefaultSelectedKey="Foo"
-                              LinkSize="@BitLinkSize.Large"
-                              HeadersOnly="true"
-                              OnLinkClick="@(item => SelectedKey = item.Key)">
-                        <BitPivotItem HeaderText="Foo" Key="Foo"></BitPivotItem>
-                        <BitPivotItem HeaderText="Bar" Key="Bar"></BitPivotItem>
-                        <BitPivotItem HeaderText="Bas" Key="Bas"></BitPivotItem>
-                        <BitPivotItem HeaderText="Biz" Key="Biz"></BitPivotItem>
-                    </BitPivot>
-
-                    @if (SelectedKey == "Foo")
-                    {
-                        <div>Hello I am Foo</div>
-                    }
-                    else if (SelectedKey == "Bar")
-                    {
-                        <div>Hello I am Bar</div>
-                    }
-                    else if (SelectedKey == "Bas")
-                    {
-                        <div>Hello I am Bas</div>
-                    }
-                    else if (SelectedKey == "Biz")
-                    {
-                        <div>Hello I am Biz</div>
-                    }
-
-                </div>
-            </BitPivotItem>
-            <BitPivotItem HeaderText="Code"
-                          IconName="Source">
-                <p>
+            <span class="light-yellow-bg">&#64;code {</span>
+            <span class="light-blue">public string </span>OverridePivotSelectedKey { get; set; } = "1";
+            <span class="light-blue">public void </span><span class="dark-yellow">PivotSelectedKeyChanged</span>(<span class="light-blue">string</span> key)
+            <span>{</span>
+            <span>OverridePivotSelectedKey = key;</span>
+            <span>}</span>
+            <span class="light-yellow-bg">}</span>
+            </pre>
+        </CodeSampleContent>
+    </CodeSample>
+    <CodeSample Title="Render content separately" Description="">
+        <SampleContent>
+            <BitPivot LinkFormat="@BitLinkFormat.Tabs"
+                      DefaultSelectedKey="Foo"
+                      LinkSize="@BitLinkSize.Large"
+                      HeadersOnly="true"
+                      OnLinkClick="@(item => SelectedKey = item.Key)">
+                <BitPivotItem HeaderText="Foo" Key="Foo"></BitPivotItem>
+                <BitPivotItem HeaderText="Bar" Key="Bar"></BitPivotItem>
+                <BitPivotItem HeaderText="Bas" Key="Bas"></BitPivotItem>
+                <BitPivotItem HeaderText="Biz" Key="Biz"></BitPivotItem>
+            </BitPivot>
+            <div class="how-to-use">
+                @if (SelectedKey == "Foo")
+                {
+                    <div>Hello I am Foo</div>
+                }
+                else if (SelectedKey == "Bar")
+                {
+                    <div>Hello I am Bar</div>
+                }
+                else if (SelectedKey == "Bas")
+                {
+                    <div>Hello I am Bas</div>
+                }
+                else if (SelectedKey == "Biz")
+                {
+                    <div>Hello I am Biz</div>
+                }
+            </div>
+        </SampleContent>
+        <CodeSampleContent>
+            <pre>
+            <p>
                     &lt;<span class="dark-green">BitPivot LinkFormat</span>="<span class="light-yellow-bg">&#64;</span>LinkFormat.Tabs" <span class="dark-green">LinkSize</span>="<span class="light-yellow-bg">&#64;</span>LinkSize.Large" <span class="dark-green">OnLinkClick</span>="<span class="light-yellow-bg">&#64;</span>(item => SelectedKey = item.Key)"<span>&gt;</span>
-                    <br />
-                    <span class="m-l-30">&lt;<span class="dark-green">BitPivotItem HeaderText</span> ="Foo" <span class="dark-green">Key</span>="Foo"></span><span>&lt;</span><span class="dark-green">BitPivotItem</span><span>&gt;</span>
-                    <br />
-                    <span class="m-l-30">&lt;<span class="dark-green">BitPivotItem HeaderText</span> ="Bar" <span class="dark-green">Key</span>="Bar"></span><span>&lt;</span><span class="dark-green">BitPivotItem</span><span>&gt;</span>
-                    <br />
-                    <span class="m-l-30">&lt;<span class="dark-green">BitPivotItem HeaderText</span> ="Bas" <span class="dark-green">Key</span>="Bas"></span><span>&lt;</span><span class="dark-green">BitPivotItem</span><span>&gt;</span>
-                    <br />
-                    <span class="m-l-30">&lt;<span class="dark-green">BitPivotItem HeaderText</span> ="Biz" <span class="dark-green">Key</span>="Biz"></span><span>&lt;</span><span class="dark-green">BitPivotItem</span><span>&gt;</span>
-                    <br />
-                    <span>&lt;</span><span class="dark-green">BitPivot</span><span>&gt;</span>
+            <br />
+            <span class="m-l-30">&lt;<span class="dark-green">BitPivotItem HeaderText</span> ="Foo" <span class="dark-green">Key</span>="Foo"></span><span>&lt;</span><span class="dark-green">BitPivotItem</span><span>&gt;</span>
+            <br />
+            <span class="m-l-30">&lt;<span class="dark-green">BitPivotItem HeaderText</span> ="Bar" <span class="dark-green">Key</span>="Bar"></span><span>&lt;</span><span class="dark-green">BitPivotItem</span><span>&gt;</span>
+            <br />
+            <span class="m-l-30">&lt;<span class="dark-green">BitPivotItem HeaderText</span> ="Bas" <span class="dark-green">Key</span>="Bas"></span><span>&lt;</span><span class="dark-green">BitPivotItem</span><span>&gt;</span>
+            <br />
+            <span class="m-l-30">&lt;<span class="dark-green">BitPivotItem HeaderText</span> ="Biz" <span class="dark-green">Key</span>="Biz"></span><span>&lt;</span><span class="dark-green">BitPivotItem</span><span>&gt;</span>
+            <br />
+            <span>&lt;</span><span class="dark-green">BitPivot</span><span>&gt;</span>
                 </p>
-                <div>
-                    <p>
-                        <span class="light-yellow-bg">&#64;</span>if (SelectedKey == <span class="dark-orange">"Foo"</span>)
-                        <span>{</span>
-                        <br />
-                        <span class="m-l-30"> &lt;<span class="light-blue">div></span>Hello I am Foo<span>&lt;</span><span class="light-blue">div</span><span>&gt;</span></span>
-                        <br />
-                        <span>}</span>
+            <div>
+            <p>
+            <span class="light-yellow-bg">&#64;</span>if (SelectedKey == <span class="dark-orange">"Foo"</span>)
+            <span>{</span>
+            <br />
+            <span class="m-l-30"> &lt;<span class="light-blue">div></span>Hello I am Foo<span>&lt;</span><span class="light-blue">div</span><span>&gt;</span></span>
+            <br />
+            <span>}</span>
                     </p>
-                    <p>
-                        <span>else if (SelectedKey == <span class="dark-orange">"Bar"</span>)</span>
-                        <span>{</span>
-                        <br />
-                        <span class="m-l-30"> &lt;<span class="light-blue">div></span>Hello I am Bar<span>&lt;</span><span class="light-blue">div</span><span>&gt;</span></span>
-                        <br />
-                        <span>}</span>
+            <p>
+            <span>else if (SelectedKey == <span class="dark-orange">"Bar"</span>)</span>
+            <span>{</span>
+            <br />
+            <span class="m-l-30"> &lt;<span class="light-blue">div></span>Hello I am Bar<span>&lt;</span><span class="light-blue">div</span><span>&gt;</span></span>
+            <br />
+            <span>}</span>
                     </p>
-                    <p>
-                        <span>else if (SelectedKey == <span class="dark-orange">"Bas"</span>)</span>
-                        <span>{</span>
-                        <br />
-                        <span class="m-l-30"> &lt;<span class="light-blue">div></span>Hello I am Bas<span>&lt;</span><span class="light-blue">div</span><span>&gt;</span></span>
-                        <br />
-                        <span>}</span>
+            <p>
+            <span>else if (SelectedKey == <span class="dark-orange">"Bas"</span>)</span>
+            <span>{</span>
+            <br />
+            <span class="m-l-30"> &lt;<span class="light-blue">div></span>Hello I am Bas<span>&lt;</span><span class="light-blue">div</span><span>&gt;</span></span>
+            <br />
+            <span>}</span>
                     </p>
-                    <p>
-                        <span>else if (SelectedKey == <span class="dark-orange">"Biz"</span>)</span>
-                        <span>{</span>
-                        <br />
-                        <span class="m-l-30"> &lt;<span class="light-blue">div></span>Hello I am Biz<span>&lt;</span><span class="light-blue">div</span><span>&gt;</span></span>
-                        <br />
-                        <span>}</span>
+            <p>
+            <span>else if (SelectedKey == <span class="dark-orange">"Biz"</span>)</span>
+            <span>{</span>
+            <span class="m-l-30"> &lt;<span class="light-blue">div></span>Hello I am Biz<span>&lt;</span><span class="light-blue">div</span><span>&gt;</span></span>
+            <span>}</span>
                     </p>
                 </div>
-                <div>
-                    <span class="light-yellow-bg">&#64;code {</span>
-                    <p>
-                        <span>private <span class="light-blue">string</span> SelectedKey = "Foo";</span>
-                        <br /><br />
-                        <span class="light-yellow-bg">}</span>
+            <div>
+            <span class="light-yellow-bg">&#64;code {</span>
+            <p>
+            <span>private <span class="light-blue">string</span> SelectedKey = "Foo";</span>
+            <br /><br />
+            <span class="light-yellow-bg">}</span>
                     </p>
                 </div>
-            </BitPivotItem>
-        </BitPivot>
-    </div>
-    <div class="card">
-        <h3>Trigger onchange event</h3>
-        <BitPivot>
-            <BitPivotItem HeaderText="Example"
-                          IconName="ViewList">
-                <div>
-                    <span>@SelectedPivotItem?.HeaderText Clicked</span>
-                    <div class="m-t-10">
-                        <BitPivot LinkFormat="@BitLinkFormat.Tabs"
-                                  LinkSize="@BitLinkSize.Large"
-                                  OnLinkClick="@(item => SelectedPivotItem = item)">
-                            <BitPivotItem HeaderText="Foo">
-                                Pivot #1
-                            </BitPivotItem>
-                            <BitPivotItem HeaderText="Bar">
-                                Pivot #2
-                            </BitPivotItem>
-                            <BitPivotItem HeaderText="Bas"
-                                          Key="aaa">
-                                Pivot #3
-                            </BitPivotItem>
-                            <BitPivotItem Visibility="@PivotItemVisibility"
-                                          HeaderText="Biz">
-                                Pivot #4
-                            </BitPivotItem>
-                            <BitPivotItem HeaderText="Baq">
-                                Pivot #5
-                            </BitPivotItem>
-                            <BitPivotItem HeaderText="Baw">
-                                Pivot #6
-                            </BitPivotItem>
-                        </BitPivot>
-                    </div>
-                    <br />
-                    <BitButton OnClick="TogglePivotItemVisobility">Hide/Show Biz</BitButton>
-                </div>
-            </BitPivotItem>
-            <BitPivotItem HeaderText="Code" 
-                          IconName="Source">
-                <p>
-                    <span class="light-yellow-bg">&#64;</span>SelectedPivotItem?.HeaderText Clicked
-                    <br /><br />
-                    &lt;<span class="dark-green">BitPivot LinkFormat</span>="<span class="light-yellow-bg">&#64;</span>LinkFormat.Tabs" <span class="dark-green">LinkSize</span>="<span class="light-yellow-bg">&#64;</span>LinkSize.Large" <span class="dark-green">OnLinkClick</span>="<span class="light-yellow-bg">&#64;</span>(item => SelectedPivotItem = item)"<span>&gt;</span>
-                    <br />
-                    <span class="m-l-30">&lt;<span class="dark-green">BitPivotItem HeaderText</span> ="Foo">Pivot #1</span><span>&lt;</span><span class="dark-green">BitPivotItem</span><span>&gt;</span>
-                    <br />
-                    <span class="m-l-30">&lt;<span class="dark-green">BitPivotItem HeaderText</span> ="Bar">Pivot #2</span><span>&lt;</span><span class="dark-green">BitPivotItem</span><span>&gt;</span>
-                    <br />
-                    <span class="m-l-30">&lt;<span class="dark-green">BitPivotItem HeaderText</span> ="Bas" <span class="dark-green">Key</span>="aaa">Pivot #3</span><span>&lt;</span><span class="dark-green">BitPivotItem</span><span>&gt;</span>
-                    <br />
-                    <span class="m-l-30">&lt;<span class="dark-green">BitPivotItem HeaderText</span> ="Biz"</span><span class="dark-green"> Visibility</span>="<span class="light-yellow-bg">&#64;</span>PivotItemVisibility"><span>Pivot #4</span><span>&lt;</span><span class="dark-green">BitPivotItem</span><span>&gt;</span>
-                    <br />
-                    <span class="m-l-30">&lt;<span class="dark-green">BitPivotItem HeaderText</span> ="Baq">Pivot #5</span><span>&lt;</span><span class="dark-green">BitPivotItem</span><span>&gt;</span>
-                    <br />
-                    <span class="m-l-30">&lt;<span class="dark-green">BitPivotItem HeaderText</span> ="Baw">Pivot #6</span><span>&lt;</span><span class="dark-green">BitPivotItem</span><span>&gt;</span>
-                    <br />
-                    <span>&lt;</span><span class="dark-green">BitPivot</span><span>&gt;</span>
-                    <br />
-                    &lt;<span class="dark-green">BitButton OnClick</span>="<span class="dark-yellow">TogglePivotItemVisobility</span>>"Hide/Show Biz<span>&lt;</span><span class="dark-green">BitButton</span><span>&gt;</span>
-                </p>
-                <div>
-                    <span class="light-yellow-bg">&#64;code {</span>
-                    <p>
-                        <span>public <span class="dark-yellow">ComponentVisibility</span> PivotItemVisibility { get; set; }</span>
-                        <br />
-                        <span>public <span class="dark-green">BitPivotItem</span> SelectedPivotItem { get; set; }</span>
-                        <br /><br />
-                        <span>public void </span><span class="dark-yellow">TogglePivotItemVisobility</span>()
-                        <br />
-                        <span>{</span>
-                        <br />
-                        <span class="m-l-30"> PivotItemVisibility = PivotItemVisibility == <span class="dark-yellow">ComponentVisibility</span>.Visible ? <span class="dark-yellow">ComponentVisibility</span>.Collapsed : <span class="dark-yellow">ComponentVisibility</span>.Visible;</span>
-                        <br />
-                        <span>}</span>
-                        <br />
-                        <span class="light-yellow-bg">}</span>
-                    </p>
-                </div>
-            </BitPivotItem>
-        </BitPivot>
-    </div>
-</div>
-<h2>Implementation</h2>
-<div class="card">
-    <table>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Default value</th>
-            <th>Description</th>
-        </tr>
-        <tr>
-            <td>AriaLabel</td>
-            <td>string</td>
-            <td></td>
-            <td>The aria-label of the control for the benefit of screen readers.</td>
-        </tr>
-        <tr>
-            <td>BodyContent</td>
-            <td>RenderFragment</td>
-            <td></td>
-            <td>The content of the pivot item can be Any custom tag or a text, If HeaderContent provided value of this parameter show, otherwise use ChildContent.</td>
-        </tr>
-        <tr>
-            <td>ChildContent</td>
-            <td>RenderFragment</td>
-            <td></td>
-            <td>Any custom tag or text the developer wishes to associate with the pivot or pivot item.</td>
-        </tr>
-        <tr>
-            <td>Class</td>
-            <td>string</td>
-            <td></td>
-            <td>Custom CSS class for the root element of the component.</td>
-        </tr>
-        <tr>
-            <td>DefaultSelectedKey</td>
-            <td>string</td>
-            <td>0</td>
-            <td>Default selected key for the pivot.</td>
-        </tr>
-        <tr>
-            <td>HeaderContent</td>
-            <td>RenderFragment</td>
-            <td></td>
-            <td>The content of the pivot item header, It can be Any custom tag or a text.</td>
-        </tr>
-        <tr>
-            <td>HeadersOnly</td>
-            <td>bool</td>
-            <td>false</td>
-            <td>Whether to skip rendering the tabpanel with the content of the selected tab.</td>
-        </tr>
-        <tr>
-            <td>HeaderText</td>
-            <td>RenderFragment</td>
-            <td></td>
-            <td>The text of the pivot item header, The text displayed of each pivot link.</td>
-        </tr>
-        <tr>
-            <td>HtmlAttributes</td>
-            <td>Dictionary&lt;string, object&gt;</td>
-            <td></td>
-            <td>Capture and render additional attributes in addition to the component's parameters.</td>
-        </tr>
-        <tr>
-            <td>IconName</td>
-            <td>string</td>
-            <td></td>
-            <td>The icon name for the icon shown next to the pivot link.</td>
-        </tr>
-        <tr>
-            <td>IsEnabled</td>
-            <td>bool</td>
-            <td></td>
-            <td>.Whether or not the component is enabled</td>
-        </tr>
-        <tr>
-            <td>ItemCount</td>
-            <td>int</td>
-            <td>0</td>
-            <td>Defines an optional item count displayed in parentheses just after the linkText.</td>
-        </tr>
-        <tr>
-            <td>Key</td>
-            <td>string</td>
-            <td></td>
-            <td>A required key to uniquely identify a pivot item.</td>
-        </tr>
-        <tr>
-            <td>LinkFormat</td>
-            <td>LinkFormat</td>
-            <td>Tabs</td>
-            <td>Pivot link format, display mode for the pivot links.</td>
-        </tr>
-        <tr>
-            <td>LinkSize</td>
-            <td>LinkSize</td>
-            <td>Normal</td>
-            <td>Pivot link size.</td>
-        </tr>
-        <tr>
-            <td>OnLinkClick</td>
-            <td>EventCallback&lt;BitPivotItem&gt;</td>
-            <td></td>
-            <td>Callback for when the selected pivot item is changed.</td>
-        </tr>
-        <tr>
-            <td>OverflowBehavior</td>
-            <td>OverflowBehavior</td>
-            <td>None</td>
-            <td>Overflow behavior when there is not enough room to display all of the links/tabs.</td>
-        </tr>
-        <tr>
-            <td>SelectedKey</td>
-            <td>string</td>
-            <td></td>
-            <td>Key of the selected pivot item. Updating this will override the Pivot's selected item state.</td>
-        </tr>
-        <tr>
-            <td>SelectedKeyChanged</td>
-            <td>EventCallback&lt;string&gt;</td>
-            <td></td>
-            <td>Callback for when the selected key changed.</td>
-        </tr>
-        <tr>
-            <td>Style</td>
-            <td>string</td>
-            <td></td>
-            <td>Custom style for the root element of the component.</td>
-        </tr>
-        <tr>
-            <td>Visibility</td>
-            <td>ComponentVisibility</td>
-            <td></td>
-            <td>Whether the component is visible, hidden, collapsed.</td>
-        </tr>
-    </table>
-</div>
-<h4 id="component-visibility">ComponentVisibility</h4>
-<hr />
-<table>
-    <tr>
-        <th>Name</th>
-        <th>Value</th>
-        <th>Description</th>
-    </tr>
-    <tr>
-        <td>Visible</td>
-        <td>0</td>
-        <td></td>
-    </tr>
-    <tr>
-        <td>Hidden</td>
-        <td>1</td>
-        <td></td>
-    </tr>
-    <tr>
-        <td>Collapsed</td>
-        <td>2</td>
-        <td></td>
-    </tr>
-</table>
-<h4>OverflowBehavior</h4>
-<hr />
-<table>
-    <tr>
-        <th>Name</th>
-        <th>Value</th>
-        <th>Description</th>
-    </tr>
-    <tr>
-        <td>None</td>
-        <td>0</td>
-        <td></td>
-    </tr>
-    <tr>
-        <td>Menu</td>
-        <td>1</td>
-        <td></td>
-    </tr>
-    <tr>
-        <td>Scroll</td>
-        <td>2</td>
-        <td></td>
-    </tr>
-</table>
+                  </pre>
+        </CodeSampleContent>
+    </CodeSample>
+    <CodeSample Title="Render content separately" Description="">
+        <SampleContent>
+            <span class="how-to-use">@SelectedPivotItem?.HeaderText Clicked</span>
+            <div>
+                <BitPivot LinkFormat="@BitLinkFormat.Tabs"
+                          LinkSize="@BitLinkSize.Large"
+                          OnLinkClick="@(item => SelectedPivotItem = item)">
+                    <BitPivotItem HeaderText="Foo">
+                        Pivot #1
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Bar">
+                        Pivot #2
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Bas"
+                                  Key="aaa">
+                        Pivot #3
+                    </BitPivotItem>
+                    <BitPivotItem Visibility="@PivotItemVisibility"
+                                  HeaderText="Biz">
+                        Pivot #4
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Baq">
+                        Pivot #5
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Baw">
+                        Pivot #6
+                    </BitPivotItem>
+                </BitPivot>
+            </div>
+            <BitButton OnClick="TogglePivotItemVisobility">Hide/Show Biz</BitButton>
+        </SampleContent>
+        <CodeSampleContent>
+            <pre>
+            <span class="light-yellow-bg">&#64;</span>SelectedPivotItem?.HeaderText Clicked &lt;<span class="dark-green">BitPivot LinkFormat</span>="<span class="light-yellow-bg">&#64;</span>LinkFormat.Tabs" <span class="dark-green">LinkSize</span>="<span class="light-yellow-bg">&#64;</span>LinkSize.Large" <span class="dark-green">OnLinkClick</span>="<span class="light-yellow-bg">&#64;</span>(item => SelectedPivotItem = item)"<span>&gt;</span>
+                       &lt;<span class="dark-green">BitPivotItem HeaderText</span> ="Foo">Pivot #1<span>&lt;</span><span class="dark-green">BitPivotItem</span>&gt;
+                       &lt;<span class="dark-green">BitPivotItem HeaderText</span> ="Bar">Pivot #2<span>&lt;</span><span class="dark-green">BitPivotItem</span>&gt;
+                       &lt;<span class="dark-green">BitPivotItem HeaderText</span> ="Bas" <span class="dark-green">Key</span>="aaa">Pivot #3<span>&lt;</span><span class="dark-green">BitPivotItem</span>&gt;
+                       &lt;<span class="dark-green">BitPivotItem HeaderText</span> ="Biz"<span class="dark-green"> Visibility</span>="<span class="light-yellow-bg">&#64;</span>PivotItemVisibility"><span>Pivot #4</span><span>&lt;</span><span class="dark-green">BitPivotItem</span>&gt;
+                       &lt;<span class="dark-green">BitPivotItem HeaderText</span> ="Baq">Pivot #5<span>&lt;</span><span class="dark-green">BitPivotItem</span>&gt;
+                       &lt;<span class="dark-green">BitPivotItem HeaderText</span> ="Baw">Pivot #6<span>&lt;</span><span class="dark-green">BitPivotItem</span>&gt;
+                       &lt;<span class="dark-green">BitPivot</span><span>&gt;</span>&lt;<span class="dark-green">BitButton OnClick</span>="<span class="dark-yellow">TogglePivotItemVisobility</span>>"Hide/Show Biz<span>&lt;</span><span class="dark-green">BitButton</span>&gt;
 
-<h4>LinkFormat</h4>
-<hr />
-<table>
-    <tr>
-        <th>Name</th>
-        <th>Value</th>
-        <th>Description</th>
-    </tr>
-    <tr>
-        <td>Tabs</td>
-        <td>0</td>
-        <td></td>
-    </tr>
-    <tr>
-        <td>Links</td>
-        <td>1</td>
-        <td></td>
-    </tr>
-</table>
-<h4>LinkSize</h4>
-<hr />
-<table>
-    <tr>
-        <th>Name</th>
-        <th>Value</th>
-        <th>Description</th>
-    </tr>
-    <tr>
-        <td>Normal</td>
-        <td>0</td>
-        <td></td>
-    </tr>
-    <tr>
-        <td>Large</td>
-        <td>1</td>
-        <td></td>
-    </tr>
-</table>
-
+            <span class="light-yellow-bg">&#64;code {</span>
+            <span class="light-blue">public </span><span class="dark-yellow">ComponentVisibility</span> PivotItemVisibility { get; set; }
+            <span class="light-blue">public </span><span class="dark-green">BitPivotItem</span> SelectedPivotItem { get; set; }
+            <span class="light-blue">public void </span><span class="dark-yellow">TogglePivotItemVisobility</span>()
+            <span>{</span>
+            <span> PivotItemVisibility = PivotItemVisibility == <span class="dark-yellow">ComponentVisibility</span>.Visible ? <span class="dark-yellow">ComponentVisibility</span>.Collapsed : <span class="dark-yellow">ComponentVisibility</span>.Visible;</span>
+            <span>}</span>
+            <span class="light-yellow-bg">}</span>
+            </pre>
+        </CodeSampleContent>
+    </CodeSample>
+</ComponentPage>

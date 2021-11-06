@@ -2,8 +2,6 @@
 @import '../../Styles/_shared.scss';
 
 * {
-    //todo this code is added because due to latest changes our index page has no font right now
-    //after finding a cool font for our websites this will be redundant
     font-family: "Axiforma";
 }
 
@@ -11,8 +9,6 @@ body {
     margin: 0;
     padding: 0;
 }
-
-/* Headers */
 
 h1 {
     @include h1-xl;
@@ -106,216 +102,107 @@ pre {
     }
 }
 
-/* Code Colors */
-
-.dark-green {
-    color: $DarkGreen;
+.bit-icon {
+    height: 0;
 }
 
-.light-green {
-    color: $LightGreen;
+input::-webkit-input-placeholder {
+    color: $DarkBlue;
+    font-size: rem(14px);
+    font-weight: 500;
 }
 
-.light-blue {
-    color: $LightBlue;
+::-webkit-scrollbar {
+    width: rem(16px);
 }
 
-.dark-orange {
-    color: $DarkOrange;
+::-webkit-scrollbar-thumb {
+    background: $Gray03;
+    border-radius: rem(8px);
+    border: rem(5px) solid $Gray03;
 }
 
-.neon-yellow {
-    color: $NeonYellow;
+::-webkit-scrollbar-thumb:hover {
+    background: $Gray02;
+    border-radius: rem(8px);
+    border: rem(4px) solid $Gray02;
 }
 
-.dark-yellow {
-    color: $DarkYellow;
-}
-
-.dark-cyan {
-    color: $DarkCyan;
-}
-
-.light-purple {
-    color: $LightPurple;
-}
-
-.light-yellow-bg {
-    background-color: $LightYellow;
-}
-
-/* Custom Style */
-
-.custom-spb {
-    .bit-spb-wrapper {
-        & span {
-            & button:first-child:active {
-                color: rgb(50, 49, 48);
-                background-color: green;
-            }
-
-            & button:nth-child(2):active {
-                color: rgb(50, 49, 48);
-                background-color: red;
-            }
-        }
-    }
-}
-
-.custom-drp-lbl-ic {
-    width: 32px;
-    height: 32px;
-    outline: transparent;
-    font-size: 14px;
-    font-weight: 400;
-    box-sizing: border-box;
-    border: none;
-    display: inline-block;
-    text-decoration: none;
-    text-align: center;
-    cursor: pointer;
-    padding: 0 4px;
-    border-radius: 2px;
-    background-color: transparent;
-    color: #0078d4;
-    margin-bottom: -8px;
-    user-select: none;
-
-    &:hover {
-        color: #106EBE;
-        background-color: #f3f2f1;
-    }
-}
-
-.bit-nav-wrapped-link {
-    a {
-        white-space: normal;
-        line-height: inherit
-    }
-}
-
-.spinner-container, spinner-positioning {
-    & > div {
-        & label {
-            font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
-            -webkit-font-smoothing: antialiased;
-            font-size: 14px;
-            font-weight: 600;
-            color: rgb(50, 49, 48);
-            box-sizing: border-box;
-            box-shadow: none;
-            display: block;
-            padding: 5px 0px;
-            overflow-wrap: break-word;
-        }
-    }
+::-webkit-scrollbar-button {
+    display: none;
 }
 
 /* Header */
 
-.header-container {
-    align-items: center;
-    background: $Gray04;
-    box-shadow: 0 rem(4px) rem(20px) $Shadow02;
-    display: flex;
-    height: rem(160px);
-    position: fixed;
-    top: 0;
-    width: 100%;
-    z-index: 1000;
-
-    @include lg {
-        height: rem(120px);
-    }
-
-    @include md {
-        height: rem(110px);
-    }
-
-    @include lt-md {
-        height: rem(120px);
-        display: block;
-    }
-
-    .logo {
-        display: flex;
-        align-items: center;
-
-        @include lt-md {
-            border-bottom: rem(1px) solid $Gray03;
-        }
-    }
-
-    .logo-title {
-        display: none;
-
-        @include lt-md {
-            display: block;
-            font-size: rem(14px);
-            color: $DarkBlue;
-        }
-    }
-
-    img {
-        height: rem(90px);
-        margin-left: rem(350px);
-        width: rem(90px);
-
-        @include lg {
-            height: rem(70px);
-            margin-left: rem(120px);
-            width: rem(70px);
-        }
-
-        @include md {
-            height: rem(40px);
-            margin-left: rem(32px);
-            width: rem(40px);
-        }
-
-        @include lt-md {
-            height: rem(40px);
-            margin: rem(14px) rem(16px);
-            width: rem(40px);
-        }
-    }
-}
-
 .header-menu {
     display: flex;
     list-style-type: none;
-    padding-left: rem(29px);
+    padding-left: rem(47px);
+    position: relative;
 
-    @include lt-md {
-        margin-left: rem(11px);
+    @include lg {
+        padding-left: rem(20px);
+    }
+
+    @include md {
+        padding-left: rem(12px);
+    }
+
+    @include sm {
+        padding-left: rem(35px);
+        margin-top: rem(12px);
+    }
+
+    .active {
+        position: relative;
+    }
+
+    .active:before {
+        position: absolute;
+        bottom: rem(-12px);
+        left: rem(40px);
+        height: rem(3px);
+        width: 50%;
+        background-color: $DarkBlue;
+        content: "";
+
+        @include lg {
+            left: rem(22px);
+            width: 60%;
+        }
+
+        @include md {
+            left: rem(19px);
+            width: 60%;
+        }
+
+        @include sm {
+            left: rem(5px);
+            width: 90%;
+        }
     }
 
     a, a:hover, a:visited {
         color: $DarkBlue;
         font-size: rem(28px);
         font-weight: 500;
-        padding: 0 rem(19px) 0 rem(19px);
+        padding: 0 rem(40px) 0 rem(42px);
         text-decoration: none;
 
         @include lg {
-            padding: 0 rem(12px) 0 rem(12px);
-            font-size: rem(20px);
+            padding: 0 rem(20px) 0 rem(20px);
+            font-size: rem(24px);
         }
 
         @include md {
-            padding: 0 rem(12px) 0 rem(12px);
+            padding: 0 rem(20px) 0 rem(20px);
             font-size: rem(18px);
         }
 
-        @include lt-md {
-            padding: 0 rem(15px) 0 rem(15px);
-            font-size: rem(16px);
+        @include sm {
+            padding: 0 rem(23px) 0 rem(23px);
+            font-size: rem(14px);
         }
-    }
-
-    .active {
-        text-decoration-line: underline;
-        text-underline-offset: rem(16px);
     }
 }
 
@@ -340,7 +227,7 @@ footer {
         height: rem(38px);
     }
 
-    @include lt-md {
+    @include sm {
         padding-left: rem(7px);
         height: rem(32px);
     }
@@ -348,7 +235,6 @@ footer {
     span {
         padding: rem(20px);
         font-size: rem(20px);
-        color: $White;
 
         @include lg {
             font-size: rem(16px);
@@ -359,7 +245,47 @@ footer {
         }
     }
 
-    .bit-lnk-fluent > a:active, .bit-lnk-fluent > a:hover, .bit-lnk-fluent > a:visited {
+    .bit-lnk-fluent a, .bit-lnk-fluent > a:active, .bit-lnk-fluent > a:hover, .bit-lnk-fluent > a:visited {
+        font-family: Axiforma;
+        text-decoration: none;
+        color: $White;
+    }
+}
+
+/* Main container*/
+
+.main-container {
+    display: flex;
+    flex-wrap: wrap;
+    position: relative;
+    margin-top: rem(80px);
+
+    @include md {
+        margin-top: rem(65px);
+    }
+
+    @include sm {
+        margin-top: rem(96px);
+    }
+}
+
+.content {
+    width: calc(100% - 360px);
+    margin-left: auto;
+
+    @include lg {
+        flex: 65%;
+    }
+
+    @include lt-xl {
+        width: 100%;
+    }
+
+    @include sm {
+        flex: 65%;
+    }
+
+    .box .bit-lnk-fluent > a:active, .bit-lnk-fluent > a:hover, .bit-lnk-fluent > a:visited {
         text-decoration: none;
         color: $White;
     }
@@ -367,122 +293,129 @@ footer {
 
 /* Nav Menu */
 
-.main-container {
-    display: flex;
-    flex-wrap: wrap;
-    position: relative;
-    margin-top: rem(160px);
+.navbar {
+    .search-box {
+        width: 86%;
+        position: relative;
+        margin-left: rem(30px);
+        height: rem(40px);
+        background: $White;
+        border: rem(1px) solid $DarkBlue;
+        box-sizing: border-box;
+        border-radius: rem(2px);
 
-    @include lt-lg {
-        margin-top: rem(112px);
-    }
-
-    @include sm {
-        margin-top: rem(96px);
-    }
-
-    .content {
-        width: calc(100% - 360px);
-        margin-left: auto;
-
-        @include lt-xl {
-            width: 100%;
-        }
-    }
-
-    .navbar {
-        background-color: $Gray04;
-        margin-top: rem(48px);
-        width: rem(360px);
-        flex: 17%;
-        position: fixed;
-        height: 100vh;
-        padding-top: 0;
-        overflow-y: scroll;
-
-        @include lt-xl {
-            margin-top: rem(40px);
-            display: none;
+        @include lg {
+            width: 89%;
+            margin-left: rem(16px);
         }
 
-        .search-box {
-            width: 82%;
-            position: relative;
-            margin-left: rem(30px);
-            height: rem(40px);
-            background: $White;
-            border: rem(1px) solid $DarkBlue;
-            box-sizing: border-box;
-            border-radius: rem(2px);
-
-            & > div {
-                background-image: url("/images/icon/search-icon.svg");
-                width: rem(20px);
-                height: rem(20px);
-                margin: rem(8px) 0 0 rem(4px);
-            }
-
-            @include md {
-                margin-left: rem(25px);
-            }
+        @include md {
+            margin-left: rem(32px);
         }
 
-        .bit-sch-box-fluent input {
+        @include sm {
+            margin-left: rem(24px);
+        }
+
+        & > div:first-child {
+            background-image: url("/images/icon/search-icon.svg");
+            width: rem(20px);
+            height: rem(20px);
+            margin: rem(8px) 0 0 rem(4px);
+        }
+
+        input {
             padding-left: rem(8px);
-        }
-
-        .nav-link {
-            padding-top: rem(8px);
-
-            .bit-nav-grp:first-child i {
-                display: none;
-            }
-
-            .bit-icon--ChevronDown {
-                transform: rotate(-90deg);
-            }
-
-            .bit-nav-expand-fluent {
-                transform: rotate(0deg);
-            }
-
-            .bit-nav-grp-chevron-btn {
-                border: none;
-            }
-
-            .bit-nav-chevron-btn {
-                color: $DarkBlue;
-                font-weight: 600;
-                font-size: rem(18px);
-                margin-left: rem(15px)
-            }
-
-            .bit-nav-link-enabled-hasurl-fluent:hover, .bit-nav-selected-fluent, .bit-nav-selected-fluent:hover {
-                background-color: $Gray03;
-                color: $Violet;
-            }
-
-            .bit-nav-link-enabled-hasurl-fluent {
-                color: $DarkBlue;
-                font-size: rem(18px);
-            }
-
-            .bit-nav-link-container {
-                margin-left: rem(41px);
-            }
+            position: relative;
+            top: rem(2px);
         }
     }
 
-    .border-top {
-        border-bottom: rem(1px) solid $Gray03;
-        padding-top: rem(30px);
+    .nav-link {
+        padding-top: rem(8px);
+
+        .bit-icon--ChevronDown {
+            transform: rotate(-90deg);
+        }
+
+        .bit-nav-expand-fluent {
+            transform: rotate(0deg);
+        }
+
+        .bit-nav-grp-chevron-btn {
+            border: none;
+        }
+
+        .bit-nav-chevron-btn {
+            width: 90%;
+            color: $DarkBlue;
+            font-weight: 600;
+            font-size: rem(18px);
+            margin-left: rem(15px);
+
+            @include lg {
+                font-size: rem(16px);
+            }
+
+            @include sm {
+                white-space: unset;
+                line-height: rem(22px);
+            }
+        }
+
+        .bit-nav-link-enabled-hasurl-fluent:hover, .bit-nav-selected-fluent, .bit-nav-selected-fluent:hover {
+            background-color: $Gray03;
+            color: $Violet;
+        }
+
+        .bit-nav-link-enabled-hasurl-fluent {
+            color: $DarkBlue;
+            font-size: rem(18px);
+
+            @include lg {
+                font-size: rem(16px);
+            }
+        }
+
+        .bit-nav-link-container {
+            margin-left: rem(41px);
+        }
+
+        .bit-nav-selected-fluent:after {
+            border-left: rem(4px) solid $Violet;
+        }
+
+        .bit-nav-grp-content {
+            margin-bottom: 0;
+        }
+
+        .bit-sch-box-fluent > div:last-child button {
+            background-color: $White;
+        }
+
+        .bit-icon--Clear {
+            padding-right: rem(20px);
+        }
+
+        input.search-input {
+            padding-top: rem(5px);
+        }
     }
 }
 
-.box {
-    .bit-lnk-fluent > a:active, .bit-lnk-fluent > a:hover, .bit-lnk-fluent > a:visited {
+.nav-container .bit-lnk {
+    margin-left: rem(43px);
+
+    a, a:hover, a:visited {
+        font-family: Axiforma;
+        color: $DarkBlue;
+        font-weight: 600;
+        font-size: rem(18px);
         text-decoration: none;
-        color: $White;
+
+        @include lg {
+            font-size: rem(16px);
+        }
     }
 }
 
@@ -600,10 +533,6 @@ footer {
     color: $Violet;
 }
 
-.razor-code p {
-    white-space: nowrap;
-}
-
 .disable-btn {
     @include md {
         margin-top: rem(10px);
@@ -656,6 +585,64 @@ footer {
     }
 }
 
+.custom-spb {
+    .bit-spb-wrapper {
+        & span {
+            & button:first-child:active {
+                color: rgb(50, 49, 48);
+                background-color: green;
+            }
+
+            & button:nth-child(2):active {
+                color: rgb(50, 49, 48);
+                background-color: red;
+            }
+        }
+    }
+}
+
+.custom-drp-lbl-ic {
+    width: 32px;
+    height: 32px;
+    outline: transparent;
+    font-size: 14px;
+    font-weight: 400;
+    box-sizing: border-box;
+    border: none;
+    display: inline-block;
+    text-decoration: none;
+    text-align: center;
+    cursor: pointer;
+    padding: 0 4px;
+    border-radius: 2px;
+    background-color: transparent;
+    color: #0078d4;
+    margin-bottom: -8px;
+    user-select: none;
+
+    &:hover {
+        color: #106EBE;
+        background-color: #f3f2f1;
+    }
+}
+
+.spinner-container, spinner-positioning {
+    & > div {
+        & label {
+            font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+            -webkit-font-smoothing: antialiased;
+            font-size: 14px;
+            font-weight: 600;
+            color: rgb(50, 49, 48);
+            box-sizing: border-box;
+            box-shadow: none;
+            display: block;
+            padding: 5px 0px;
+            overflow-wrap: break-word;
+        }
+    }
+}
+
 .sample {
     .ch-group .bit-txt {
         margin-bottom: rem(25px);
@@ -684,610 +671,94 @@ footer {
     .bit-tgl-inline-fluent > div {
         margin-top: 0;
     }
-}
 
-.tgl-btn {
-    @include sm {
-        margin-top: rem(10px);
-        width: rem(195px);
+    .bit-slider-container {
+        padding: rem(30px) 0;
+    }
+
+    .bit-btn-slider {
+        margin-bottom: rem(30px);
+    }
+
+    .bit-slider-ranged-vertical .bit-slider-value, .bit-slider-vertical .bit-slider-value {
+        margin-top: rem(30px);
+    }
+
+    .bit-slider-vertical {
+        padding: rem(20px);
+    }
+
+    .bit-drp-lbl {
+        padding-bottom: rem(20px);
+    }
+
+    .bit-msg-bar-icon {
+        padding-top: rem(13px);
+    }
+
+    .bit-msg-bar-innertext span {
+        padding-top: rem(6px);
+    }
+
+    .tgl-btn {
+        @include sm {
+            margin-top: rem(10px);
+            width: rem(195px);
+        }
+    }
+
+    .aria-hidden-tgl-btn {
+        @include sm {
+            margin-top: rem(10px);
+            width: rem(239px);
+        }
+    }
+
+    .p-12 .bit-tgl label {
+        padding-bottom: rem(15px);
+    }
+
+    .bit-nav-wrapped-link {
+        a {
+            white-space: normal;
+            line-height: inherit
+        }
     }
 }
+/* Colors */
 
-.aria-hidden-tgl-btn {
-    @include sm {
-        margin-top: rem(10px);
-        width: rem(239px);
-    }
+.dark-green {
+    color: $DarkGreen;
 }
 
-.p-12 .bit-tgl label {
-    padding-bottom: rem(15px);
+.light-green {
+    color: $LightGreen;
 }
 
-.sample .bit-drp-lbl {
-    padding-bottom: rem(20px);
+.light-blue {
+    color: $LightBlue;
 }
 
-/* General */
-.bit-nav-selected-fluent:after {
-    border-left: rem(4px) solid $Violet;
+.dark-orange {
+    color: $DarkOrange;
 }
 
-.bit-nav-grp-content {
-    margin-bottom: 0;
+.neon-yellow {
+    color: $NeonYellow;
 }
 
-.bit-sch-box-fluent > div:last-child button {
-    background-color: $White;
+.dark-yellow {
+    color: $DarkYellow;
 }
 
-.bit-icon--Clear {
-    padding-right: rem(20px);
+.dark-cyan {
+    color: $DarkCyan;
 }
 
-input.search-input {
-    padding-top: rem(5px);
+.light-purple {
+    color: $LightPurple;
 }
 
-.bit-icon {
-    height: 0;
-}
-
-input::-webkit-input-placeholder {
-    color: $DarkBlue;
-    font-size: rem(14px);
-    font-weight: 500;
-}
-
-::-webkit-scrollbar {
-    width: 0;
-}
-
-/*------------------------common styles-----------------------------------*/
-.container {
-    margin: auto;
-    flex-wrap: inherit;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    padding-right: var(--bs-gutter-x, 0.75rem);
-    padding-left: var(--bs-gutter-x, 0.75rem);
-    margin-right: auto;
-    margin-left: auto;
-}
-
-.row {
-    --bs-gutter-x: 1.5rem;
-    --bs-gutter-y: 0;
-    display: flex;
-    flex-wrap: wrap;
-    margin-top: calc(var(--bs-gutter-y) * -1);
-    margin-right: calc(var(--bs-gutter-x) * -0.5);
-    margin-left: calc(var(--bs-gutter-x) * -0.5);
-}
-
-@media(min-width:768px) {
-    .container {
-        max-width: 720px;
-    }
-
-    .col-md-1 {
-        flex: 0 0 auto;
-        width: 8.33333333%;
-    }
-
-    .col-md-2 {
-        flex: 0 0 auto;
-        width: 16.66666667%;
-    }
-
-    .col-md-3 {
-        flex: 0 0 auto;
-        width: 25%;
-    }
-
-    .col-md-4 {
-        flex: 0 0 auto;
-        width: 33.33333333%;
-    }
-
-    .col-md-5 {
-        flex: 0 0 auto;
-        width: 41.66666667%;
-    }
-
-    .col-md-6 {
-        flex: 0 0 auto;
-        width: 50%;
-    }
-
-    .col-md-7 {
-        flex: 0 0 auto;
-        width: 58.33333333%;
-    }
-
-    .col-md-8 {
-        flex: 0 0 auto;
-        width: 66.66666667%;
-    }
-
-    .col-md-9 {
-        flex: 0 0 auto;
-        width: 75%;
-    }
-
-    .col-md-10 {
-        flex: 0 0 auto;
-        width: 83.33333333%;
-    }
-
-    .col-md-11 {
-        flex: 0 0 auto;
-        width: 91.66666667%;
-    }
-
-    .col-md-12 {
-        flex: 0 0 auto;
-        width: 100%;
-    }
-}
-
-@media (min-width: 1024px) {
-    .container {
-        max-width: 1140px;
-    }
-
-    .col-lg-2 {
-        flex: 0 0 auto;
-        width: 16.66666667%;
-    }
-
-    .col-lg-3 {
-        flex: 0 0 auto;
-        width: 25%;
-    }
-
-    .col-lg-4 {
-        flex: 0 0 auto;
-        width: 33.33333333%;
-    }
-
-    .col-lg-5 {
-        flex: 0 0 auto;
-        width: 41.66666667%;
-    }
-
-    .col-lg-6 {
-        flex: 0 0 auto;
-        width: 50%;
-    }
-
-    .col-lg-7 {
-        flex: 0 0 auto;
-        width: 58.33333333%;
-    }
-
-    .col-lg-8 {
-        flex: 0 0 auto;
-        width: 66.66666667%;
-    }
-
-    .col-xl-9 {
-        flex: 0 0 auto;
-        width: 75%;
-    }
-
-    .col-lg-10 {
-        flex: 0 0 auto;
-        width: 83.33333333%;
-    }
-
-    .col-lg-11 {
-        flex: 0 0 auto;
-        width: 91.66666667%;
-    }
-
-    .col-lg-12 {
-        flex: 0 0 auto;
-        width: 100%;
-    }
-}
-
-@media (min-width: 1400px) {
-    .container {
-        max-width: 1320px;
-    }
-
-    .col-xl-2 {
-        flex: 0 0 auto;
-        width: 16.66666667%;
-    }
-
-    .col-xl-3 {
-        flex: 0 0 auto;
-        width: 25%;
-    }
-
-    .col-xl-4 {
-        flex: 0 0 auto;
-        width: 33.33333333%;
-    }
-
-    .col-xl-5 {
-        flex: 0 0 auto;
-        width: 41.66666667%;
-    }
-
-    .col-xl-6 {
-        flex: 0 0 auto;
-        width: 50%;
-    }
-
-    .col-xl-7 {
-        flex: 0 0 auto;
-        width: 58.33333333%;
-    }
-
-    .col-xl-8 {
-        flex: 0 0 auto;
-        width: 66.66666667%;
-    }
-
-    .col-xl-9 {
-        flex: 0 0 auto;
-        width: 75%;
-    }
-
-    .col-xl-10 {
-        flex: 0 0 auto;
-        width: 83.33333333%;
-    }
-
-    .col-xl-11 {
-        flex: 0 0 auto;
-        width: 91.66666667%;
-    }
-
-    .col-xl-12 {
-        flex: 0 0 auto;
-        width: 100%;
-    }
-}
-/*----------------------------------------Typography---------------------------------------------------*/
-h1 {
-    font-family: Axiforma;
-    font-style: normal;
-    font-weight: 500;
-
-    @include sm {
-        font-size: 30px;
-        line-height: 108%;
-    }
-
-    @include md {
-        font-size: 36px;
-        line-height: 155%;
-    }
-
-    @include lg {
-        font-size: rem(60px);
-        line-height: 134%;
-    }
-
-    @include xl {
-        font-size: rem(76px);
-        line-height: 116%;
-    }
-}
-
-h2 {
-    font-family: Axiforma;
-    font-style: normal;
-    font-weight: bold;
-
-    @include sm {
-        font-size: 24px;
-        line-height: 132%;
-    }
-
-    @include md {
-        font-size: 32px;
-        line-height: 150%;
-    }
-
-    @include lg {
-        font-size: 54px;
-        line-height: 148%;
-    }
-
-    @include xl {
-        font-size: 58px;
-        line-height: 138%;
-    }
-}
-
-h3 {
-    font-family: Axiforma;
-    font-style: italic;
-    font-weight: 800;
-
-    @include sm {
-        font-size: 24px;
-        line-height: 100%;
-    }
-
-    @include md {
-        font-size: 32px;
-        line-height: 150%;
-    }
-
-    @include lg {
-        font-size: 54px;
-        line-height: 149%;
-    }
-
-    @include xl {
-        font-size: 58px;
-        line-height: 164%;
-    }
-}
-
-h4 {
-    font-family: Axiforma;
-    font-style: normal;
-    font-weight: bold;
-
-    @include sm {
-        font-size: 20px;
-        line-height: 160%;
-    }
-
-    @include md {
-        font-size: 24px;
-        line-height: 165%;
-    }
-
-    @include lg {
-        font-size: 40px;
-        line-height: 160%;
-    }
-
-    @include xl {
-        font-size: 52px;
-        line-height: 153%;
-    }
-}
-
-h5 {
-    font-family: Axiforma;
-    font-style: normal;
-    font-weight: bold;
-
-    @include sm {
-        font-size: 18px;
-        line-height: 154%;
-    }
-
-    @include md {
-        font-size: 18px;
-        line-height: 136%;
-    }
-
-    @include lg {
-        font-size: 28px;
-        line-height: 144%;
-    }
-
-    @include xl {
-        font-size: 32px;
-        line-height: 136%
-    }
-}
-
-h6 {
-    font-family: Axiforma;
-    font-weight: 600;
-
-    @include sm {
-        font-size: 18px;
-        line-height: 132%;
-    }
-
-    @include md {
-        font-size: 20px;
-        line-height: 160%;
-    }
-
-    @include lg {
-        font-size: 16px;
-        line-height: 147%;
-    }
-
-    @include xl {
-        font-size: 18px;
-        line-height: 132%;
-    }
-}
-
-.txt-bd1-md {
-    font-family: Axiforma;
-    font-style: normal;
-    font-weight: 500;
-
-    @include sm {
-        font-size: 14px;
-        line-height: 168%;
-    }
-
-    @include md {
-        font-size: 16px;
-        line-height: 150%;
-    }
-
-    @include lg {
-        font-size: 24px;
-        line-height: 165%;
-    }
-
-    @include xl {
-        font-size: 28px;
-        line-height: 142%;
-    }
-}
-
-.txt-bd2-md {
-    font-family: Axiforma;
-    font-style: normal;
-    font-weight: 500;
-
-    @include sm {
-        font-size: 12px;
-        line-height: 170%;
-    }
-
-    @include md {
-        font-size: 14px;
-        line-height: 170%;
-    }
-
-    @include lg {
-        font-size: 20px;
-        line-height: 158%;
-    }
-
-    @include xl {
-        font-size: 24px;
-        line-height: 165%;
-    }
-}
-
-.subtitle1-regular {
-    font-family: Axiforma;
-    font-style: normal;
-    font-weight: normal;
-
-    @include sm {
-        font-size: 16px;
-        line-height: 198%;
-    }
-
-    @include md {
-        font-size: 16px;
-        line-height: 150%;
-    }
-
-    @include lg {
-        font-size: 18px;
-        line-height: 132%;
-    }
-
-    @include xl {
-        font-size: rem(24px);
-        line-height: 165%;
-    }
-}
-
-.subtitle2-regular {
-    font-family: Axiforma;
-    font-style: normal;
-    font-weight: normal;
-
-    @include sm {
-        font-size: 14px;
-        line-height: 168%;
-    }
-
-    @include md {
-        font-size: 12px;
-        line-height: 135%;
-    }
-
-    @include lg {
-        font-size: 16px;
-        line-height: 150%;
-    }
-
-    @include xl {
-        font-size: rem(18px);
-        line-height: 175%;
-    }
-}
-
-.txt-xl-caption1 {
-    font-family: Axiforma;
-    font-style: normal;
-    font-weight: 500;
-
-    @include sm {
-        font-size: 12px;
-        line-height: 136%;
-    }
-
-    @include md {
-        font-size: 12px;
-        line-height: 130%;
-    }
-
-    @include lg {
-        font-size: 14px;
-        line-height: 117%;
-    }
-
-    @include xl {
-        font-size: rem(16px);
-        line-height: 148%;
-    }
-}
-
-.btn1-SemiBold {
-    font-family: Axiforma;
-    font-style: normal;
-    font-weight: 600;
-
-    @include sm {
-        font-size: 16px;
-        line-height: 148%;
-    }
-
-    @include md {
-        font-size: 14px;
-        line-height: 170%;
-    }
-
-    @include lg {
-        font-size: 24px;
-        line-height: 165%;
-    }
-
-    @include xl {
-        font-size: 24px;
-        line-height: 165%;
-    }
-}
-
-
-.btn2-bold {
-    font-family: Axiforma;
-    font-style: normal;
-    font-weight: bold;
-
-    @include sm {
-        font-size: 14px;
-        line-height: 168%;
-    }
-
-    @include md {
-        font-size: 12px;
-        line-height: 135%;
-    }
-
-    @include lg {
-        font-size: 18px;
-        line-height: 176%;
-    }
-
-    @include xl {
-        font-size: 18px;
-        line-height: 176%;
-    }
+.light-yellow-bg {
+    background-color: $LightYellow;
 }

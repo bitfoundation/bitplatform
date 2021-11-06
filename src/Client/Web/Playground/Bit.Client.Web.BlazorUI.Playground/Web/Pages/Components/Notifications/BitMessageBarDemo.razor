@@ -1,459 +1,170 @@
 ﻿@page "/components/messagebar"
 
-<h2>MessageBar</h2>
+@using Bit.Client.Web.BlazorUI.Playground.Web.Components
 
-<div class="card">
-    <p class="desc">A banner (MessageBar) displays errors, warnings, or important information about an open app or file. For example, if a file failed to upload an error message bar should appear.</p>
-</div>
-
-<h2>Usage</h2>
-<div class="wrapper">
-    <div class="card">
-        <h3>BitMessageBar</h3>
-        <div class="desc">
-            <p>To show a message you can use a BitMessagebar component. Message bars should include :</p>
-            <ul>
-                <li>Body text</li>
-                <li>Action buttons (Optional)</li>
-                <li>Link (Optional)</li>
-                <li>Close button</li>
-            </ul>
-        </div>
-        <div class="card">
-            <h3>Success</h3>
-            <div class="desc">
-                <p>
-                    For showing success messages, just set MessageBarType parameter to Success.
-                </p>
-            </div>
-            <BitPivot>
-                <BitPivotItem HeaderText="Example" IconName="ViewList">
-                    <div>
-                        @if (IsMessageBarHidden1 is false)
-                        {
-                            <BitMessageBar MessageBarType="@BitMessageBarType.Success" OnDismiss="HideMessageBar1" IsMultiline="false" Truncated="true" OverflowButtonAriaLabel="see more">
-                                Action completed! This is a sample of message bar with dismiss ability
-                                Action completed! This is a sample of message bar with dismiss ability
-                                Action completed! This is a sample of message bar with dismiss ability
-                                Action completed! This is a sample of message bar with dismiss ability
-                                Action completed! This is a sample of message bar with dismiss ability
-                            </BitMessageBar>
-                        }
-                        <br />
-                        <BitMessageBar MessageBarType="@BitMessageBarType.Success" IsMultiline="false" Truncated="true" IsEnabled="false">
-                            <Actions>
-                                <BitButton>Ok</BitButton>
-                            </Actions>
-                            <ChildContent>
-                                Action completed! This is a sample of message bar with dismiss ability
-                                Action completed! This is a sample of message bar with dismiss ability
-                                Action completed! This is a sample of message bar with dismiss ability
-                                Action completed! This is a sample of message bar with dismiss ability
-                                Action completed! This is a sample of message bar with dismiss ability
-                            </ChildContent>
-                        </BitMessageBar>
-                        <br />
-                        @if (IsMessageBarHidden2 is false)
-                        {
-                            <BitMessageBar MessageBarType="@BitMessageBarType.Success" OnDismiss="HideMessageBar2" IsMultiline="false" DismissIconName="SkypeCheck" DismissButtonAriaLabel="close">
-                                Action completed! This is a sample of message bar with dismiss ability and custom dismiss icon
-                            </BitMessageBar>
-                        }
-                        <br />
-                        <BitMessageBar MessageBarType="@BitMessageBarType.Success" MessageBarIconName="Emoji2">
+<ComponentPage ComponentName="MessageBar" OverviewDesc="A banner (MessageBar) displays errors, warnings, or important information about an open app or file.
+                                                        For example, if a file failed to upload an error message bar should appear."
+               ComponentParameters="componentParameters" EnumParameters="enumParameters">
+    <CodeSample Title="Success" Description="For showing success messages, just set MessageBarType parameter to Success.">
+        <SampleContent>
+            @if (IsMessageBarHidden1 is false)
+            {
+                <div class="m-b-10">
+                    <BitMessageBar MessageBarType="@BitMessageBarType.Success" OnDismiss="HideMessageBar1" IsMultiline="false" Truncated="true" OverflowButtonAriaLabel="see more">
+                        Action completed! This is a sample of message bar with dismiss ability
+                        Action completed! This is a sample of message bar with dismiss ability
+                        Action completed! This is a sample of message bar with dismiss ability
+                        Action completed! This is a sample of message bar with dismiss ability
+                        Action completed! This is a sample of message bar with dismiss ability
+                    </BitMessageBar>
+                </div>
+            }
+            <div class="m-b-10">
+                <BitMessageBar MessageBarType="@BitMessageBarType.Success" IsMultiline="false" Truncated="true" IsEnabled="false">
+                    <Actions>
+                        <BitButton>Ok</BitButton>
+                    </Actions>
+                    <ChildContent>
+                        Action completed! This is a sample of message bar with dismiss ability
+                        Action completed! This is a sample of message bar with dismiss ability
+                        Action completed! This is a sample of message bar with dismiss ability
+                        Action completed! This is a sample of message bar with dismiss ability
+                        Action completed! This is a sample of message bar with dismiss ability
+                    </ChildContent>
+                </BitMessageBar>
+                @if (IsMessageBarHidden2 is false)
+                {
+                    <div class="m-b-10">
+                        <BitMessageBar MessageBarType="@BitMessageBarType.Success" OnDismiss="HideMessageBar2" IsMultiline="false" DismissIconName="SkypeCheck" DismissButtonAriaLabel="close">
                             Action completed! This is a sample of message bar with dismiss ability and custom dismiss icon
                         </BitMessageBar>
                     </div>
-                </BitPivotItem>
-                <BitPivotItem HeaderText="Code" IconName="Source">
-                    <p>
-                        <span><span class="light-yellow-bg">&#64;</span>if (IsMessageBarHidden1 <span class="light-blue">is false</span>)</span>
-                        <br />
-                        <span>{</span>
-                        <br />
-                        <span class="m-l-30">&lt<span class="dark-green">BitMessageBar MessageBarType="</span><span class="light-yellow-bg">&#64;</span><span>BitMessageBarType.Success"<span class="dark-green">OnDismiss</span>="<span class="dark-yellow">HideMessageBar1</span>"<span class="dark-green"> Truncated</span>="<span class="light-blue">true</span>"<span class="dark-green"> IsMultiline</span>="<span class="light-blue">false</span>" <span class="dark-green">OverflowButtonAriaLabel</span>="see more"></span></span>
-                        <br />
-                        <span class="m-l-45">Action completed! This is a sample of message bar with dismiss ability</span>
-                        <br />
-                        <span class="m-l-45">Action completed! This is a sample of message bar with dismiss ability</span>
-                        <br />
-                        <span class="m-l-45">Action completed! This is a sample of message bar with dismiss ability</span>
-                        <br />
-                        <span class="m-l-45">Action completed! This is a sample of message bar with dismiss ability</span>
-                        <br />
-                        <span class="m-l-45">Action completed! This is a sample of message bar with dismiss ability</span>
-                        <br />
-                        <span class="m-l-30">&lt/</span><span class="dark-green">BitMessageBar</span><span>&gt;</span>
-                        <br />
-                        <span>}</span>
-                    </p>
-                    <p>
-                        &lt<span class="dark-green">BitMessageBar MessageBarType="</span><span class="light-yellow-bg">&#64;</span><span>BitMessageBarType.Success"<span class="dark-green"> Truncated</span>="<span class="light-blue">true</span>"<span class="dark-green"> IsMultiline</span>="<span class="light-blue">false</span>"></span>
-                        <br />
-                        <span class="m-l-30">&lt<span class="dark-green">ChildContent></span></span>
-                        <br />
-                        <span class="m-l-45">Action completed! This is a sample of message bar with dismiss ability</span>
-                        <br />
-                        <span class="m-l-45">Action completed! This is a sample of message bar with dismiss ability</span>
-                        <br />
-                        <span class="m-l-45">Action completed! This is a sample of message bar with dismiss ability</span>
-                        <br />
-                        <span class="m-l-45">Action completed! This is a sample of message bar with dismiss ability</span>
-                        <br />
-                        <span class="m-l-45">Action completed! This is a sample of message bar with dismiss ability</span>
-                        <br />
-                        <span class="m-l-30">&lt/</span><span class="dark-green">ChildContent</span><span>&gt;</span>
-                        <br />
-                        <span class="m-l-30">&lt<span class="dark-green">Actions></span></span>
-                        <br />
-                        <span class="m-l-45"></span>&lt<span class="dark-green">BitButton></span>ok<span>&lt/</span><span class="dark-green">BitButton</span><span>&gt;</span>
-                        <br />
-                        <span class="m-l-30">&lt/</span><span class="dark-green">Actions</span><span>&gt;</span>
-                        <br />
-                        <span>&lt/</span><span class="dark-green">BitMessageBar</span><span>&gt;</span>
-                    </p>
-                    <p>
-                        <span><span class="light-yellow-bg">&#64;</span>if (IsMessageBarHidden2 <span class="light-blue">is false</span>)</span>
-                        <br />
-                        <span>{</span>
-                        <br />
-                        <span class="m-l-30">&lt<span class="dark-green">BitMessageBar MessageBarType="</span><span class="light-yellow-bg">&#64;</span><span>BitMessageBarType.Success"<span class="dark-green">OnDismiss</span>="<span class="dark-yellow">HideMessageBar2</span>"<span class="dark-green"> IsMultiline</span>="<span class="light-blue">false</span>" <span class="dark-green"> DismissIconName</span>="SkypeCheck" <span class="dark-green"> DismissButtonAriaLabel</span>="close"></span></span>
-                        <br />
-                        <span class="m-l-45">Action completed! This is a sample of message bar with dismiss ability</span>
-                        <br />
-                        <span class="m-l-30">&lt/</span><span class="dark-green">BitMessageBar</span><span>&gt;</span>
-                        <br />
-                        <span>}</span>
-                    </p>
-                    <p>
-                        <span>&lt<span class="dark-green">BitMessageBar MessageBarType="</span><span class="light-yellow-bg">&#64;</span><span>BitMessageBarType.Success"<span class="dark-green">MessageBarIconName</span>="Emoji2"></span></span>
-                        <br />
-                        <span class="m-l-45">Action completed! This is a sample of message bar with dismiss ability</span>
-                        <br />
-                        <span>&lt/</span><span class="dark-green">BitMessageBar</span><span>&gt;</span>
-                    </p>
+                }
+                <BitMessageBar MessageBarType="@BitMessageBarType.Success" MessageBarIconName="Emoji2">
+                    Action completed! This is a sample of message bar with dismiss ability and custom dismiss icon
+                </BitMessageBar>
+            </div>
+        </SampleContent>
+        <CodeSampleContent>
+            <pre>
+                <span class="light-yellow-bg">&#64;</span><span class="light-blue">if </span>(IsMessageBarHidden1 <span class="light-blue">is false</span>)
+                <span>{</span>
+                &lt<span class="dark-green">BitMessageBar MessageBarType=</span>"<span class="light-yellow-bg">&#64;</span><span>BitMessageBarType.Success" <span class="dark-green">OnDismiss</span>=<span class="dark-yellow">"HideMessageBar1"</span><span class="dark-green"> Truncated</span>=<span class="light-blue">"true"</span><span class="dark-green"> IsMultiline</span>=<span class="light-blue">"false"</span> <span class="dark-green">OverflowButtonAriaLabel</span>="see more"></span>
+                         <span>Action completed! This is a sample of message bar with dismiss ability</span>
+                         <span>Action completed! This is a sample of message bar with dismiss ability</span>
+                         <span>Action completed! This is a sample of message bar with dismiss ability</span>
+                         <span>Action completed! This is a sample of message bar with dismiss ability</span>
+                         <span>Action completed! This is a sample of message bar with dismiss ability</span>
+                &lt/<span class="dark-green">BitMessageBar</span>&gt;
+                <span>}</span>
+                &lt<span class="dark-green">BitMessageBar MessageBarType=</span>"<span class="light-yellow-bg">&#64;</span><span>BitMessageBarType.Success"<span class="dark-green"> Truncated</span>=<span class="light-blue">"true"</span><span class="dark-green"> IsMultiline</span>=<span class="light-blue">"false"</span>></span>
+                &lt<span class="dark-green">ChildContent></span>
+                         <span>Action completed! This is a sample of message bar with dismiss ability</span>
+                         <span>Action completed! This is a sample of message bar with dismiss ability</span>
+                         <span>Action completed! This is a sample of message bar with dismiss ability</span>
+                         <span>Action completed! This is a sample of message bar with dismiss ability</span>
+                         <span>Action completed! This is a sample of message bar with dismiss ability</span>
+                &lt/<span class="dark-green">ChildContent</span>&gt;
+                &lt<span class="dark-green">Actions></span>
+                         &lt<span class="dark-green">BitButton></span>ok<span>&lt/</span><span class="dark-green">BitButton</span><span>&gt;</span>
+                <span>&lt/</span><span class="dark-green">Actions</span><span>&gt;</span>
+                <span>&lt/</span><span class="dark-green">BitMessageBar</span><span>&gt;</span>
+                <span class="light-yellow-bg">&#64;</span><span class="light-blue">if </span> (IsMessageBarHidden2 <span class="light-blue">is false</span>)
+                <span>{</span>
+                &lt<span class="dark-green">BitMessageBar MessageBarType="</span><span class="light-yellow-bg">&#64;</span><span>BitMessageBarType.Success"<span class="dark-green">OnDismiss</span>="<span class="dark-yellow">HideMessageBar2</span>"<span class="dark-green"> IsMultiline</span>="<span class="light-blue">false</span>" <span class="dark-green"> DismissIconName</span>="SkypeCheck" <span class="dark-green"> DismissButtonAriaLabel</span>="close"></span>
+                         <span>Action completed! This is a sample of message bar with dismiss ability</span>
+                &lt/<span class="dark-green">BitMessageBar</span>&gt;
+                <span>}</span>
+                &lt<span class="dark-green">BitMessageBar MessageBarType="</span><span class="light-yellow-bg">&#64;</span><span>BitMessageBarType.Success"<span class="dark-green">MessageBarIconName</span>="Emoji2"></span>
+                         <span>Action completed! This is a sample of message bar with dismiss ability</span>
+                &lt/<span class="dark-green">BitMessageBar</span>&gt;
 
-                    <div>
-                        <span class="light-yellow-bg">&#64;code {</span>
-                        <p>
-                            <span>private bool IsMessageBarHidden1 = false;</span>
-                            <br />
-                            <span>private bool IsMessageBarHidden2 = false;</span>
-                            <br />
-                            <span>private void </span><span class="dark-yellow">HideMessageBar1</span>()
-                            <br />
-                            <span>{</span>
-                            <br />
-                            <span class="m-l-30">IsMessageBarHidden1 = true;</span>
-                            <br />
-                            <span>}</span>
-                            <br />
-                            <span>private void </span><span class="dark-yellow">HideMessageBar2</span>()
-                            <br />
-                            <span>{</span>
-                            <br />
-                            <span class="m-l-30">IsMessageBarHidden2 = true;</span>
-                            <br />
-                            <span>}</span>
-                            <br />
-                            <span class="light-yellow-bg">}</span>
-                        </p>
-                    </div>
-                </BitPivotItem>
-            </BitPivot>
-        </div>
-        <div class="card">
-            <h3>Error</h3>
-            <div class="desc">
-                <p>
-                    For showing error messages, just set MessageBarType parameter to Error.
-                </p>
+                <span class="light-yellow-bg">&#64;code {</span>
+                    <span class="light-blue">private bool </span>IsMessageBarHidden1 = <span class="light-blue">false</span>;
+                    <span class="light-blue">private bool </span>IsMessageBarHidden2 = <span class="light-blue">false</span>;
+                    <span class="light-blue">private void </span><span class="dark-yellow">HideMessageBar1</span>()
+                    <span>{</span>
+                         <span>IsMessageBarHidden1 = true;</span>
+                    <span>}</span>
+                    <span class="light-blue">private void </span><span class="dark-yellow">HideMessageBar2</span>()
+                    <span>{</span>
+                         <span>IsMessageBarHidden2 = true;</span>
+                    <span>}</span>
+                <span class="light-yellow-bg">}</span>
+            </pre>
+        </CodeSampleContent>
+    </CodeSample>
+    <CodeSample Title="Error" Description="For showing error messages, just set MessageBarType parameter to Error.">
+        <SampleContent>
+            <BitMessageBar MessageBarType="@BitMessageBarType.Error" Truncated="false">
+                <ChildContent>
+                    This is an error message bar with the ability to truncate your text Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+                </ChildContent>
+                <Actions>
+                    <BitButton>Ok</BitButton>
+                </Actions>
+            </BitMessageBar>
+        </SampleContent>
+        <CodeSampleContent>
+            <pre>
+                &lt<span class="dark-green">BitMessageBar MessageBarType=</span>"<span class="light-yellow-bg">&#64;</span><span>BitMessageBarType.Error"<span class="dark-green"> Truncated</span>=<span class="light-blue">"false"</span>></span>
+                    &lt<span class="dark-green">ChildContent></span>
+                             <span>This is an error message bar with the ability to truncate your text Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut</span>
+                             <span>aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</span>
+                    &lt/<span class="dark-green">ChildContent</span><span>&gt;</span>
+                    &lt<span class="dark-green">Actions></span>
+                             &lt<span class="dark-green">BitButton></span>ok<span>&lt/</span><span class="dark-green">BitButton</span>&gt;
+                    &lt/<span class="dark-green">Actions</span><span>&gt;</span>
+                &lt/<span class="dark-green">BitMessageBar</span>&gt;
+            </pre>
+        </CodeSampleContent>
+    </CodeSample>
+    <CodeSample Title="Blocked" Description="For showing blocked messages, just set MessageBarType parameter to Blocked.">
+        <SampleContent>
+            <BitMessageBar MessageBarType="@BitMessageBarType.Blocked">
+                Blocked MessageBar - single line Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+            </BitMessageBar>
+        </SampleContent>
+        <CodeSampleContent>
+            <pre>
+               &lt<span class="dark-green">BitMessageBar MessageBarType=</span>"<span class="light-yellow-bg">&#64;</span><span>BitMessageBarType.Blocked"></span>
+                   <span>Blocked MessageBar - single line Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo</span>
+                   <span>consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</span>
+               &lt/<span class="dark-green">BitMessageBar</span>&gt;
+            </pre>
+        </CodeSampleContent>
+    </CodeSample>
+    <CodeSample Title="Warning" Description="For showing warning messages or server warning, just set MessageBarType parameter to Warning or SevereWarning.">
+        <SampleContent>
+            <div class="m-b-10">
+                <BitMessageBar MessageBarType="@BitMessageBarType.Warning" IsMultiline="false">
+                    Caution! Action may takes long and also this message bar shown multiline messages time Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+                </BitMessageBar>
             </div>
-            <BitPivot>
-                <BitPivotItem HeaderText="Example" IconName="ViewList">
-                    <div>
-                        <BitMessageBar MessageBarType="@BitMessageBarType.Error" Truncated="false">
-                            <ChildContent>
-                                This is an error message bar with the ability to truncate your text Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-                            </ChildContent>
-                            <Actions>
-                                <BitButton>Ok</BitButton>
-                            </Actions>
-                        </BitMessageBar>
-                    </div>
-                </BitPivotItem>
-                <BitPivotItem HeaderText="Code" IconName="Source">
-                    <p>
-                        &lt<span class="dark-green">BitMessageBar MessageBarType="</span><span class="light-yellow-bg">&#64;</span><span>BitMessageBarType.Error"<span class="dark-green"> Truncated</span>="<span class="light-blue">false</span>"></span>
-                        <br />
-                        <span class="m-l-30">&lt<span class="dark-green">ChildContent></span></span>
-                        <br />
-                        <span class="m-l-45">This is an error message bar with the ability to truncate your text Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut</span>
-                        <span class="m-l-45">aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</span>
-                        <br />
-                        <span class="m-l-30">&lt/</span><span class="dark-green">ChildContent</span><span>&gt;</span>
-                        <br />
-                        <span class="m-l-30">&lt<span class="dark-green">Actions></span></span>
-                        <br />
-                        <span class="m-l-45"></span>&lt<span class="dark-green">BitButton></span>ok<span>&lt/</span><span class="dark-green">BitButton</span><span>&gt;</span>
-                        <br />
-                        <span class="m-l-30">&lt/</span><span class="dark-green">Actions</span><span>&gt;</span>
-                        <br />
-                        <span>&lt/</span><span class="dark-green">BitMessageBar</span><span>&gt;</span>
-                    </p>
-                </BitPivotItem>
-            </BitPivot>
-        </div>
-        <div class="card">
-            <h3>Blocked</h3>
-            <div class="desc">
-                <p>
-                    For showing blocked messages, just set MessageBarType parameter to Blocked.
-                </p>
-            </div>
-            <BitPivot>
-                <BitPivotItem HeaderText="Example" IconName="ViewList">
-                    <div>
-                        <BitMessageBar MessageBarType="@BitMessageBarType.Blocked">
-                            Blocked MessageBar - single line Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-                        </BitMessageBar>
-                    </div>
-                </BitPivotItem>
-                <BitPivotItem HeaderText="Code" IconName="Source">
-                    <p>
-                        &lt<span class="dark-green">BitMessageBar MessageBarType="</span><span class="light-yellow-bg">&#64;</span><span>BitMessageBarType.Blocked"></span>
-                        <br />
-                        <span class="m-l-30">Blocked MessageBar - single line Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo</span>
-                        <span class="m-l-30">consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</span>
-                        <br />
-                        <span>&lt/</span><span class="dark-green">BitMessageBar</span><span>&gt;</span>
-                    </p>
-                </BitPivotItem>
-            </BitPivot>
-        </div>
-        <div class="card">
-            <h3>Warning</h3>
-            <div class="desc">
-                <p>
-                    For showing warning messages or server warning, just set MessageBarType parameter to Warning or SevereWarning.
-                </p>
-            </div>
-            <BitPivot>
-                <BitPivotItem HeaderText="Example" IconName="ViewList">
-                    <div>
-                        <BitMessageBar MessageBarType="@BitMessageBarType.Warning" IsMultiline="false">
-                            Caution! Action may takes long and also this message bar shown multiline messages time Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-                        </BitMessageBar>
-                        <br />
-                        <BitMessageBar MessageBarType="@BitMessageBarType.SevereWarning">
-                            Cannot connect to server
-                        </BitMessageBar>
-                    </div>
-                </BitPivotItem>
-                <BitPivotItem HeaderText="Code" IconName="Source">
-                    <p>
-                        &lt<span class="dark-green">BitMessageBar MessageBarType="</span><span class="light-yellow-bg">&#64;</span><span>BitMessageBarType.Warning"<span class="dark-green"> IsMultiline</span>="<span class="light-blue">false</span>"></span>
-                        <br />
-                        <span class="m-l-30">Caution! Action may takes long and also this message bar shown multiline messages time Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation</span>
-                        <span class="m-l-30">ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</span>
-                        <br />
-                        <span>&lt/</span><span class="dark-green">BitMessageBar</span><span>&gt;</span>
-                    </p>
-                    <p>
-                        &lt<span class="dark-green">BitMessageBar MessageBarType="</span><span class="light-yellow-bg">&#64;</span><span>BitMessageBarType.SevereWarning"></span><span>Cannot connect to server</span><span>&lt/</span><span class="dark-green">BitMessageBar</span><span>&gt;</span>
-                    </p>
-                </BitPivotItem>
-            </BitPivot>
-        </div>
-        <div class="card">
-            <h3>Info</h3>
-            <div class="desc">
-                <p>
-                    For showing info messages, just set MessageBarType parameter to Info.
-                </p>
-            </div>
-            <BitPivot>
-                <BitPivotItem HeaderText="Example" IconName="ViewList">
-                    <div>
-                        <BitMessageBar MessageBarType="@BitMessageBarType.Info">
-                            Visit repository <BitLink HasUnderline="true">the link is rendered as a button</BitLink>
-                        </BitMessageBar>
-                    </div>
-                </BitPivotItem>
-                <BitPivotItem HeaderText="Code" IconName="Source">
-                    <p>
-                        &lt<span class="dark-green">BitMessageBar MessageBarType="</span><span class="light-yellow-bg">&#64;</span><span>BitMessageBarType.Info"></span><span>Visit repository</span> &lt<span class="dark-green">BitLink HasUnderline</span>="<span class="light-blue">true</span>"><span>the link is rendered as a button</span><span>&lt/</span><span class="dark-green">BitMessageBar</span><span>&gt;</span>
-                    </p>
-                </BitPivotItem>
-            </BitPivot>
-        </div>
-    </div>
-</div>
-<h2>Implementation</h2>
-<div class="card">
-    <table>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Default value</th>
-            <th>Description</th>
-        </tr>
-        <tr>
-            <td>Actions</td>
-            <td>RenderFragment</td>
-            <td></td>
-            <td>The content of the action to show on the message bar.</td>
-        </tr>        
-        <tr>
-            <td>AriaLabel</td>
-            <td>string</td>
-            <td></td>
-            <td>The aria-label of the control for the benefit of screen readers.</td>
-        </tr>
-        <tr>
-            <td>ChildContent</td>
-            <td>RenderFragment</td>
-            <td></td>
-            <td>The content of message bar.</td>
-        </tr>
-        <tr>
-            <td>Class</td>
-            <td>string</td>
-            <td></td>
-            <td>Custom CSS class for the root element of the component.</td>
-        </tr>
-        <tr>
-            <td>DismissButtonAriaLabel</td>
-            <td>string</td>
-            <td></td>
-            <td>Aria label on dismiss button if onDismiss is defined.</td>
-        </tr>
-        <tr>
-            <td>DismissIconName</td>
-            <td>string</td>
-            <td>Clear</td>
-            <td>Custom Fabric icon name to replace the dismiss icon. If unset, default will be the Fabric Clear icon.</td>
-        </tr>
-        <tr>
-            <td>HtmlAttributes</td>
-            <td>Dictionary&lt;string, object&gt;</td>
-            <td></td>
-            <td>Capture and render additional attributes in addition to the component's parameters.</td>
-        </tr>
-        <tr>
-            <td>IsEnabled</td>
-            <td>bool</td>
-            <td></td>
-            <td>Whether or not the component is enabled.</td>
-        </tr>
-        <tr>
-            <td>IsMultiline</td>
-            <td>bool</td>
-            <td>false</td>
-            <td>Determines if the message bar is multi lined. If false, and the text overflows over buttons or to another line, it is clipped.</td>
-        </tr>
-        <tr>
-            <td>MessageBarType</td>
-            <td>BitMessageBarType</td>
-            <td></td>
-            <td>The type of message bar to render.</td>
-        </tr>
-        <tr>
-            <td>OnDismiss</td>
-            <td>EventCallback </td>
-            <td></td>
-            <td>Whether the message bar has a dismiss button and its callback. If null, dismiss button won't show.</td>
-        </tr>        
-        <tr>
-            <td>OverflowButtonAriaLabel</td>
-            <td>string</td>
-            <td></td>
-            <td>Aria label on overflow button if truncated is true.</td>
-        </tr>
-        <tr>
-            <td>Style</td>
-            <td>string</td>
-            <td></td>
-            <td>Custom style for the root element of the component.</td>
-        </tr>
-        <tr>
-            <td>Truncated</td>
-            <td>bool</td>
-            <td>false</td>
-            <td>Determines if the message bar text is truncated. If true, a button will render to toggle between a single line view and multiline view. This parameter is for single line message bars with no buttons only in a limited space scenario.</td>
-        </tr>        
-        <tr>
-            <td>Visibility</td>
-            <td>ComponentVisibility</td>
-            <td></td>
-            <td>Whether the component is visible, hidden, collapsed.</td>
-        </tr>
-    </table>
-    <div>
-        <h4>BitMessageBarType</h4>
-        <hr />
-        <table>
-            <tr>
-                <th>Name</th>
-                <th>Value</th>
-                <th>Description</th>
-            </tr>
-            <tr>
-                <td>Info</td>
-                <td>0</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>Warning</td>
-                <td>1</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>Error</td>
-                <td>2</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>Blocked</td>
-                <td>3</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>SevereWarning</td>
-                <td>4</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>Success</td>
-                <td>5</td>
-                <td></td>
-            </tr>
-        </table>
-    </div>
-    <div>
-        <h4 id="component-visibility">ComponentVisibility</h4>
-        <hr />
-        <table>
-            <tr>
-                <th>Name</th>
-                <th>Value</th>
-                <th>Description</th>
-            </tr>
-            <tr>
-                <td>Visible</td>
-                <td>0</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>Hidden</td>
-                <td>1</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>Collapsed</td>
-                <td>2</td>
-                <td></td>
-            </tr>
-        </table>
-    </div>
-</div>
+            <BitMessageBar MessageBarType="@BitMessageBarType.SevereWarning">
+                Cannot connect to server
+            </BitMessageBar>
+        </SampleContent>
+        <CodeSampleContent>
+            <pre>
+               &lt<span class="dark-green">BitMessageBar MessageBarType=</span>"<span class="light-yellow-bg">&#64;</span><span>BitMessageBarType.Warning"<span class="dark-green"> IsMultiline</span>="<span class="light-blue">false</span>"></span>
+                   <span>Caution! Action may takes long and also this message bar shown multiline messages time Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation</span>
+                   <span>ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</span>
+               &lt/<span class="dark-green">BitMessageBar</span>&gt;
+               &lt<span class="dark-green">BitMessageBar MessageBarType="</span><span class="light-yellow-bg">&#64;</span><span>BitMessageBarType.SevereWarning"></span><span>Cannot connect to server</span><span>&lt/</span><span class="dark-green">BitMessageBar</span><span>&gt;</span>
+            </pre>
+        </CodeSampleContent>
+    </CodeSample>
+    <CodeSample Title="Info" Description="For showing info messages, just set MessageBarType parameter to Info.">
+        <SampleContent>
+            <BitMessageBar MessageBarType="@BitMessageBarType.Info">
+                Visit repository <BitLink HasUnderline="true">the link is rendered as a button</BitLink>
+            </BitMessageBar>
+        </SampleContent>
+        <CodeSampleContent>
+            <pre>
+               &lt<span class="dark-green">BitMessageBar MessageBarType=</span>"<span class="light-yellow-bg">&#64;</span><span>BitMessageBarType.Info"></span><span>Visit repository</span> &lt<span class="dark-green">BitLink HasUnderline</span>=<span class="light-blue">"true"</span>><span>the link is rendered as a button</span><span>&lt/</span><span class="dark-green">BitMessageBar</span><span>&gt;</span>       
+            </pre>
+        </CodeSampleContent>
+    </CodeSample>
+</ComponentPage>

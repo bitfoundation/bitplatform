@@ -32,7 +32,7 @@
 
 .bit-dtp-callout {
     position: absolute;
-    z-index: 1000;
+    z-index: 1001;
     border-radius: rem(2px);
     box-shadow: rgba(0,0,0, 0.13) 0px 6.4px 14.4px 0px, rgba(0,0,0, 0.11) 0px 1.2px 3.6px 0px;
     outline: transparent;
@@ -75,7 +75,9 @@
 }
 
 .day-picker-wrapper {
-    width: rem(196px);
+    display: flex;
+    flex-flow: column nowrap;
+    min-width: rem(196px);
     margin: 0;
     padding: rem(12px);
     box-shadow: none;
@@ -83,7 +85,7 @@
 
     table {
         position: relative;
-        width: rem(196px);
+        //width: rem(196px);
         text-align: center;
         border-collapse: collapse;
         border-spacing: 0;
@@ -118,7 +120,7 @@
         flex-flow: row nowrap;
     }
 
-    td {
+    .date-cell {
         position: relative;
         display: flex;
         justify-content: center;
@@ -187,6 +189,22 @@
         .day-btn {
             color: $Grey130;
         }
+    }
+
+    .week-num-cell {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: rem(28px);
+        height: rem(28px);
+        margin: 0;
+        padding: rem(3px) 0 0 0;
+        border-right: rem(1px) solid $Grey30;
+        box-sizing: border-box;
+        font-weight: 400;
+        font-size: rem(12px);
+        color: $Grey130;
+        background-color: $Grey10;
     }
     //tr[role=presentation] {
     //    position: absolute;
@@ -368,33 +386,33 @@
             margin: 0;
         }
     }
+}
 
-    .go-today-btn {
-        position: relative;
-        bottom: 0;
-        align-self: flex-end;
-        height: rem(30px);
-        padding: 0 rem(4px);
-        margin: rem(3px) rem(4px) 0 0;
-        border: none;
-        outline: transparent;
-        box-sizing: content-box;
-        font-size: rem(12px);
-        line-height: rem(30px);
-        color: $Grey160;
+.go-today-btn {
+    position: relative;
+    bottom: 0;
+    align-self: flex-end;
+    height: rem(30px);
+    padding: 0 rem(4px);
+    margin: rem(3px) rem(4px) 0 0;
+    border: none;
+    outline: transparent;
+    box-sizing: content-box;
+    font-size: rem(12px);
+    line-height: rem(30px);
+    color: $Grey160;
+    background-color: transparent;
+    overflow: visible;
+
+    &:hover {
+        color: $CyanBlue10;
         background-color: transparent;
-        overflow: visible;
+        cursor: pointer;
+    }
 
-        &:hover {
-            color: $CyanBlue10;
-            background-color: transparent;
-            cursor: pointer;
-        }
-
-        &:disabled {
-            color: $Grey60;
-            pointer-events: none;
-        }
+    &:disabled {
+        color: $Grey60;
+        pointer-events: none;
     }
 }
 

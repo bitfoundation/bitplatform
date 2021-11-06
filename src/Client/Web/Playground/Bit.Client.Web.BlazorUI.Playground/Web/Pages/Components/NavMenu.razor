@@ -1,4 +1,8 @@
-﻿<div class="navbar">
+﻿@if (isNavOpen)
+{
+    <div class="menu-shadow mobile-nav" @onclick="@ToggleMenu"></div>
+}
+<div class="navbar @(isNavOpen is false ? "desktop-nav" : "")">
     <BitSearchBox Placeholder="Search"
                   Class="search-box"
                   IconName=""
@@ -6,10 +10,13 @@
                   ValueChanged="@HandleChange"
                   OnClear="@HandleClear" />
     <div class="border-top"></div>
-    <BitNav Class="nav-link"
-            NavLinkItems="filteredNavLinks"
-            RenderType="renderType"
-            AriaLabel="Bit Component Nav"
-            OnLinkClick="HandleLinkClick">
-    </BitNav>
+    <div class="nav-container">
+        <BitLink Href="\components\overview">Components</BitLink>
+        <BitNav Class="nav-link"
+                NavLinkItems="filteredNavLinks"
+                RenderType="renderType"
+                AriaLabel="Bit Component Nav"
+                OnLinkClick="HandleLinkClick">
+        </BitNav>
+    </div>
 </div>

@@ -4,7 +4,10 @@
 <div class="component-container">
     <div class="component-content">
         <section id="overview-section" class="overview">
-            <h1 class="name">@ComponentName</h1>
+            <div class="name-container">
+                <img @onclick="ToggleMenu" src="/images/icon/menu-icon.svg" />
+                <h1 class="name">@ComponentName</h1>
+            </div>
             <p class="description">
                 @OverviewDesc
             </p>
@@ -41,6 +44,38 @@
                     </tr>
                 }
             </table>
+            @foreach (var param in ComponentSubParameters)
+            {
+                <div id="@param.Id" class="enums">
+                    <div class="title">@param.Title</div>
+                    <table class="table">
+                        <tr>
+                            <th>Name</th>
+                            <th>Type</th>
+                            <th>Default Value</th>
+                            <th>Description</th>
+                        </tr>
+                        @foreach (var item in param.Parameters)
+                        {
+                            <tr>
+                                <td>@item.Name</td>
+                                <td>
+                                    @if (item.LinkType == LinkType.Link)
+                                    {
+                                        <BitLink HasUnderline="true" Href="@item.Href">@item.Type</BitLink>
+                                    }
+                                    else
+                                    {
+                                        @item.Type
+                                    }
+                                </td>
+                                <td>@item.DefaultValue</td>
+                                <td>@item.Description</td>
+                            </tr>
+                        }
+                    </table>
+                </div>
+            }
             @foreach (var param in EnumParameters)
             {
                 <div id="@param.Id" class="enums">
