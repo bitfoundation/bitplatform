@@ -64,44 +64,12 @@ namespace Bit.Client.Web.BlazorUI
             CalculateHsv();
         }
 
-        private void CalculateHsv()
-        {
-            double hue;
-            double saturation;
-
-            var red = Red / 255;
-            var green = Green / 255;
-            var blue = Blue / 255;
-
-            double cMax = Math.Max(red, Math.Max(green, blue));
-            double cMin = Math.Min(red, Math.Min(green, blue));
-            double span = cMax - cMin == 0 ? 1 : cMax - cMin;
-
-            hue = red == cMax ? (60 * ((green - blue) / span) + 360) % 360
-                : green == cMax ? (60 * ((blue - red) / span) + 120) % 360
-                : (60 * ((red - green) / span) + 240) % 360;
-
-            saturation = cMax == 0 ? 0 : span / cMax;
-
-            hsv = new(
-                Convert.ToInt32(Math.Floor(hue)),
-                Convert.ToInt32(Math.Floor(saturation * 100)),
-                Convert.ToInt32(Math.Floor(cMax * 100))
-                );
-        }
-
-        private void CalculateHex()
-        {
-            var myColor = Color.FromArgb(Red, Green, Blue);
-            hex = $"#{myColor.Name.Remove(0, 2)}";
-        }
-
-        public string ToRgbCss()
+        public string GetRgbCss()
         {
             return $"rgb({Red},{Green},{Blue})";
         }
 
-        public string ToRgbaCss()
+        public string GetRgbaCss()
         {
             return $"rgba({Red},{Green},{Blue},{Alpha})";
         }
@@ -184,6 +152,38 @@ namespace Bit.Client.Web.BlazorUI
             Red = 255;
             Green = 255;
             Blue = 255;
+        }
+
+        private void CalculateHsv()
+        {
+            double hue;
+            double saturation;
+
+            var red = Red / 255;
+            var green = Green / 255;
+            var blue = Blue / 255;
+
+            double cMax = Math.Max(red, Math.Max(green, blue));
+            double cMin = Math.Min(red, Math.Min(green, blue));
+            double span = cMax - cMin == 0 ? 1 : cMax - cMin;
+
+            hue = red == cMax ? (60 * ((green - blue) / span) + 360) % 360
+                : green == cMax ? (60 * ((blue - red) / span) + 120) % 360
+                : (60 * ((red - green) / span) + 240) % 360;
+
+            saturation = cMax == 0 ? 0 : span / cMax;
+
+            hsv = new(
+                Convert.ToInt32(Math.Floor(hue)),
+                Convert.ToInt32(Math.Floor(saturation * 100)),
+                Convert.ToInt32(Math.Floor(cMax * 100))
+                );
+        }
+
+        private void CalculateHex()
+        {
+            var myColor = Color.FromArgb(Red, Green, Blue);
+            hex = $"#{myColor.Name.Remove(0, 2)}";
         }
     }
 }

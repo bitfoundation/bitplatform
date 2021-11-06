@@ -74,8 +74,8 @@ namespace Bit.Client.Web.BlazorUI.Tests.ColorPicker
             });
 
             Assert.AreEqual(color, cut.Instance.Color);
-            Assert.AreEqual(hex, cut.Instance.Hex);
-            Assert.AreEqual(rgb, cut.Instance.Rgb);
+            Assert.AreEqual(hex, cut.Instance.ElementReference.Hex);
+            Assert.AreEqual(rgb, cut.Instance.ElementReference.Rgb);
             Assert.AreEqual(alpha, cut.Instance.Alpha);
         }
     }
