@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Bit.Client.Web.BlazorUI.Playground.Web.Models;
 using Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 
@@ -99,5 +100,31 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Buttons
                 }
             }
         };
+
+        private readonly string bitButtonSampleCode = $"<BitButton IsEnabled='true'>Primary</BitButton>{Environment.NewLine}" +
+              $"<BitButton Style = 'margin-right: 2px;' ButtonStyle = 'BitButtonStyle.Standard' IsEnabled = 'true'>Standard</BitButton>{Environment.NewLine}" +
+              $"<BitButton IsEnabled = 'false' AllowDisabledFocus = 'false'>Disabled</BitButton>{Environment.NewLine}" +
+               "<BitButton Class = 'label-btn' IsEnabled = 'true'><label> A Text from label element</label></BitButton>";
+
+        private readonly string styleAndClassSampleCode = $"<BitButton Style='height: 40px;width: 166px;font-family: 'Axiforma';font-size: 16px;'>Styled Button</BitButton>{Environment.NewLine}" +
+                 $"<BitButton Class='custom-button'>Classed Button</BitButton>{Environment.NewLine}" +
+                 $"<style>{Environment.NewLine}" +
+                 $".custom-button {{ {Environment.NewLine}" +
+                 $"height:40px;{Environment.NewLine}" +
+                 $"width:166px;{Environment.NewLine}" +
+                 $"font-family:Axiforma;{Environment.NewLine}" +
+                 $" font-size:16px;{Environment.NewLine}" +
+                 $"background-color:#2F455A;{Environment.NewLine}" +
+                 $"border-color:#2F455A;{Environment.NewLine}" +
+                 $"}} {Environment.NewLine}" +
+                 $"</style>{Environment.NewLine}";
+
+        private readonly string visibilitySampleCode = $"<BitButton Style='margin-bottom: 10px;' Visibility='BitComponentVisibility.Visible'>Visible Button</BitButton>{Environment.NewLine}" +
+                 $"<BitButton Visibility='BitComponentVisibility.Hidden'>Hidden Button</BitButton>{Environment.NewLine}" +
+                 $"<BitButton Visibility='BitComponentVisibility.Collapsed'>Collapsed Button</BitButton>";
+
+        private readonly string buttonLikeAnchorSampleCode = $"<BitButton Style='margin-right: 10px;' Title='Primary' Target='_blank' Href='https://github.com/bitfoundation/bitframework'>Open Bit Foundation In New Tab</BitButton>{Environment.NewLine}" +
+                 $"<BitButton Visibility='BitComponentVisibility.Hidden'>Hidden Button</BitButton>{Environment.NewLine}" +
+                 $"<BitButton Visibility='BitComponentVisibility.Collapsed'>Collapsed Button</BitButton>";
     }
 }

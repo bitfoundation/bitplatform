@@ -19,3 +19,7 @@ function scrollToFragmentOnClickEvent(targetElementId: string) {
         });
     }
 }
+
+function copyToClipboardOnClickEvent(codeSampleContentForCopy: string) {
+    navigator.clipboard.writeText(codeSampleContentForCopy);
+}

@@ -13,5 +13,10 @@ namespace Microsoft.JSInterop
         {
             await jsRuntime.InvokeVoidAsync("scrollToFragmentOnClickEvent", targetElementId);
         }
+        
+        public static async Task CopyToClipboardOnClickEvent(this IJSRuntime jsRuntime, string codeSampleContentForCopy)
+        {
+            await jsRuntime.InvokeVoidAsync("copyToClipboardOnClickEvent", codeSampleContentForCopy);
+        }
     }
 }
