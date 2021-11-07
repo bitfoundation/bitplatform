@@ -7,3 +7,7 @@
         }
     }
 }
+
+function copyToClipboardOnClickEvent(codeSampleContentForCopy: string) {
+    navigator.clipboard.writeText(codeSampleContentForCopy);
+}

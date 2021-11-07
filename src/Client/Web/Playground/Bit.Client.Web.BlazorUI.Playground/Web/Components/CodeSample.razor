@@ -3,13 +3,13 @@
     <p class="how-to-use">
         @Description
     </p>
-    <BitToggleButton @bind-IsChecked="ShowCode"
-                     Label="@(ShowCode ? "</> Hide code":"</> Show code")"
-                     Class="@(ShowCode ? "hide-code-btn":"show-code-btn")">
+    <BitToggleButton @bind-IsChecked="showCode"
+                     Label="@(showCode ? "</> Hide code":"</> Show code")"
+                     Class="@(showCode ? "hide-code-btn":"show-code-btn")">
     </BitToggleButton>
 
     <div class="box">
-        @if (!ShowCode)
+        @if (!showCode)
         {
             <div class="sample">
                 @SampleContent
@@ -17,11 +17,11 @@
         }
         else
         {
-            <div class="code" @ref=CodeReference>
+            <div class="code">
                 <BitActionButton Class="copy-btn"
-                             OnClick=HandleOnCopyClick
+                             OnClick=CopyCodeToClipboard
                              IconName="Copy">
-                    Copy
+                    @copyButtonTitle
                 </BitActionButton>
                 <div class="razor-code">
                     @CodeSampleContent
@@ -30,4 +30,3 @@
         }
     </div>
 </div>
-
