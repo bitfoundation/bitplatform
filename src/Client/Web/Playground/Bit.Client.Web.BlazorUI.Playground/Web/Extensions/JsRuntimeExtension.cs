@@ -9,9 +9,9 @@ namespace Microsoft.JSInterop
             await jsRuntime.InvokeVoidAsync("toggleBodyOverflow", isNavOpen);
         }
 
-        public static async Task ScrollToFragmentOnClickEvent(this IJSRuntime jsRuntime, string targetElementId)
+        public static async Task ScrollToElement(this IJSRuntime jsRuntime, string targetElementId)
         {
-            await jsRuntime.InvokeVoidAsync("scrollToFragmentOnClickEvent", targetElementId);
+            await jsRuntime.InvokeVoidAsync("scrollToElement", targetElementId);
         }
     }
 }

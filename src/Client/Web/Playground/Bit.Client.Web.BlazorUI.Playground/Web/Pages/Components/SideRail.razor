@@ -1,8 +1,8 @@
 ﻿<div class="component-siderail">
     <ul class="link-container">
-        @foreach (var param in SideRailParameters)
+        @foreach (var item in SideRailItems)
         {
-            <li><BitLink Class="@param.Class" OnClick="@(() => ScrollToFragment(param))">@param.Title</BitLink></li>
+            <li><BitLink Class="@(activeItem == item.Id ? "active" : string.Empty)" OnClick="@(() => ScrollToItem(item))">@item.Title</BitLink></li>
         }
     </ul>
 </div>

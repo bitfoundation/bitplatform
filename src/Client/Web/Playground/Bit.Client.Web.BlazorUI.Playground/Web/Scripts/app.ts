@@ -8,7 +8,7 @@
     }
 }
 
-function scrollToFragmentOnClickEvent(targetElementId: string) {
+function scrollToElement(targetElementId: string) {
     const element = document.getElementById(targetElementId);
 
     if (element instanceof HTMLElement) {

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Bit.Client.Web.BlazorUI.Playground.Web.Models;
 using Microsoft.AspNetCore.Components;
@@ -8,17 +9,23 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components
 {
     public partial class SideRail
     {
-        [Inject] public IJSRuntime? JSRuntime { get; set; }
+        private string activeItem;
 
-        [Parameter] public List<SideRailParameter> SideRailParameters { get; set; }
+        [Inject] public IJSRuntime JSRuntime { get; set; }
+        [Parameter] public List<SideRailItems> SideRailItems { get; set; } = new List<SideRailItems>();
 
-
-        private async Task ScrollToFragment(SideRailParameter targetElement)
+        protected override void OnInitialized()
         {
-            SideRailParameters.ForEach(param => param.Class = string.Empty);
-            targetElement.Class = "active";
+            activeItem = SideRailItems.FirstOrDefault().Id;
 
-            await JSRuntime!.ScrollToFragmentOnClickEvent(targetElement.TargetId);
+            base.OnInitialized();
+        }
+
+        private async Task ScrollToItem(SideRailItems targetItem)
+        {
+            activeItem = targetItem.Id;
+
+            await JSRuntime.ScrollToElement(targetItem.Id);
         }
     }
 }
