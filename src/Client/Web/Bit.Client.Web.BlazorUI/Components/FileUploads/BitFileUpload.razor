@@ -34,7 +34,7 @@
     @if (Files is not null)
     {
         var fileCount = -1;
-        <ul class="file-list">
+        <ul class="bit-file-list">
             @for (int i = 0; i < Files.Count; i++)
             {
                 fileCount++;
@@ -55,7 +55,7 @@
                 }
                 if (file.UploadStatus != BitUploadStatus.Removed)
                 {
-                    <li class="@GetFileElClass(file.UploadStatus)">
+                    <li class="bit-file-item @GetFileElClass(file.UploadStatus)">
                         <div class="file-info-container">
                             <div title="@file.Name" class="file-name-container">
                                 @if (string.IsNullOrWhiteSpace(fileFormat) is false)
