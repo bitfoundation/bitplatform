@@ -38,38 +38,25 @@
             {
                 var index = i;
                 var file = Files[index];
-                int uploadedPercent;
-                long uploadedSize;
-                var fileFormat = GetFileIcon(file.Name.ToLower());
-                if (file.ChunkesUpLoadedSize.Sum() >= file.Size)
-                {
-                    uploadedPercent = 100;
-                    uploadedSize = file.Size;
-                }
-                else
-                {
-                    uploadedPercent = (int)(file.ChunkesUpLoadedSize.Sum() / (float)file.Size * 100);
-                    uploadedSize = file.ChunkesUpLoadedSize.Sum();
-                }
                 if (file.UploadStatus != BitUploadStatus.Removed)
                 {
                     <li class="bit-file-item @GetFileElClass(file.UploadStatus)">
                         <div class="file-info-container">
                             <div title="@file.Name" class="file-name-container">
-                                @if (string.IsNullOrWhiteSpace(fileFormat) is false)
+                                @if (string.IsNullOrWhiteSpace(GetFileIcon(file.Name.ToLower())) is false)
                                 {
-                                    <i class="bit-file-format bit-icon bit-icon--@fileFormat"></i>
+                                    <i class="bit-file-format bit-icon bit-icon--@GetFileIcon(file.Name.ToLower())"></i>
                                 }
                                 <div class="file-name">@file.Name</div>
                             </div>
                             <div class="file-size-container">
-                                <span class="file-siz">@($"{uploadedSize.Humanize()}/{file.Size.Humanize()}")</span>
-                                <span class="upload-percent">@uploadedPercent%</span>
+                                <span class="file-siz">@($"{GetFileUploadSize(file)}/{file.Size.Humanize()}")</span>
+                                <span class="upload-percent">@GetFileUploadPercent(file)%</span>
                             </div>
                             @if (file.UploadStatus == BitUploadStatus.InProgress || file.UploadStatus == BitUploadStatus.Paused)
                             {
                                 <div class="progress-bar-container">
-                                    <div class="progress-bar" role="progressbar" style="width:@uploadedPercent%;" aria-valuemin="0" aria-valuemax="100" aria-valuenow="@uploadedPercent"></div>
+                                    <div class="progress-bar" role="progressbar" style="width:@GetFileUploadPercent(file)%;" aria-valuemin="0" aria-valuemax="100" aria-valuenow="@GetFileUploadPercent(file)"></div>
                                 </div>
                             }
                             else

@@ -441,6 +441,36 @@ namespace Bit.Client.Web.BlazorUI
             return AcceptedExtensions.Count > 0 && !AcceptedExtensions.Any(ext => ext == "*") && !AcceptedExtensions.Any(ext => ext == file.ContentType);
         }
 
+        private static int GetFileUploadPercent(BitFileInfo file)
+        {
+            var uploadedPercent = 0;
+            if (file.ChunkesUpLoadedSize.Sum() >= file.Size)
+            {
+                uploadedPercent = 100;
+            }
+            else
+            {
+                uploadedPercent = (int)(file.ChunkesUpLoadedSize.Sum() / (float)file.Size * 100);
+            }
+
+            return uploadedPercent;
+        }
+
+        private static string GetFileUploadSize(BitFileInfo file)
+        {
+            long uploadedSize;
+            if (file.ChunkesUpLoadedSize.Sum() >= file.Size)
+            {
+                uploadedSize = file.Size;
+            }
+            else
+            {
+                uploadedSize = file.ChunkesUpLoadedSize.Sum();
+            }
+
+            return uploadedSize.Humanize();
+        }
+
         public void Dispose()
         {
             Dispose(true);
