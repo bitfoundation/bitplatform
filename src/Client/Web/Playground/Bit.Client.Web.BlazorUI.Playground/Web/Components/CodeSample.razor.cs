@@ -13,7 +13,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Components
 
         [Parameter] public string Title { get; set; }
         [Parameter] public string Description { get; set; }
-        [Parameter] public string CodeSampleContentForCopy { get; set; } = "hfhgf";
+        [Parameter] public string CodeSampleContentForCopy { get; set; }
         [Parameter] public RenderFragment SampleContent { get; set; }
         [Parameter] public RenderFragment CodeSampleContent { get; set; }
 
