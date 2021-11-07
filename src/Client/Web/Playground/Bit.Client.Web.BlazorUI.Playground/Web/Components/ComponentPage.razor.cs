@@ -8,6 +8,28 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Components
 {
     public partial class ComponentPage
     {
+        private List<SideRailParameter> siderailParameters { get; set; } = new()
+        {
+            new SideRailParameter()
+            {
+                Title = "Overview",
+                Class = "active",
+                TargetId = "overview-section"
+            },
+            new SideRailParameter()
+            {
+                Title = "Usage",
+                Class = "",
+                TargetId = "usage-section"
+            },
+            new SideRailParameter()
+            {
+                Title = "Implementation",
+                Class = "",
+                TargetId = "implementation-section"
+            }
+        };
+
         [Inject] public NavManuService NavManuService { get; set; }
 
         [Parameter] public string ComponentName { get; set; }
