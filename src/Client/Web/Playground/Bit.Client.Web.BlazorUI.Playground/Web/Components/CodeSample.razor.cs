@@ -7,7 +7,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Components
     public partial class CodeSample
     {
         private bool showCode { get; set; }
-        private string copyButtonTitle { get; set; } = "copy";
+        private bool isCopied { get; set; }
 
         [Inject] public IJSRuntime JSRuntime { get; set; }
 
@@ -19,9 +19,19 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Components
 
         private async Task CopyCodeToClipboard()
         {
-            await JSRuntime.CopyToClipboardOnClickEvent(CodeSampleContentForCopy);
+            await JSRuntime.CopyToClipboard(CodeSampleContentForCopy);
 
-            copyButtonTitle = "copied";
+            ChangeCopyButtonState();
+
+            await Task.Delay(2000);
+
+            ChangeCopyButtonState();
+        }
+
+        private void ChangeCopyButtonState()
+        {
+            isCopied = !isCopied;
+            StateHasChanged();
         }
     }
 }

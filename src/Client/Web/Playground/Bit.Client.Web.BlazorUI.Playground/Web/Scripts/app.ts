@@ -8,6 +8,6 @@
     }
 }
 
-function copyToClipboardOnClickEvent(codeSampleContentForCopy: string) {
+function copyToClipboard(codeSampleContentForCopy: string) {
     navigator.clipboard.writeText(codeSampleContentForCopy);
 }

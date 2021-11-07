@@ -18,10 +18,10 @@
         else
         {
             <div class="code">
-                <BitActionButton Class="copy-btn"
+                <BitActionButton Class="copy-btn" Style="@(isCopied ? "border:none;" : string.Empty)"
                              OnClick=CopyCodeToClipboard
                              IconName="Copy">
-                    @copyButtonTitle
+                    @(isCopied ? "copied" : "copy")
                 </BitActionButton>
                 <div class="razor-code">
                     @CodeSampleContent

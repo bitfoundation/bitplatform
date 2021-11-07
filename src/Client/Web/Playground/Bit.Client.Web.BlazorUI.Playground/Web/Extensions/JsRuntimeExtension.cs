@@ -9,9 +9,9 @@ namespace Microsoft.JSInterop
             await jsRuntime.InvokeVoidAsync("toggleBodyOverflow", isNavOpen);
         }
 
-        public static async Task CopyToClipboardOnClickEvent(this IJSRuntime jsRuntime, string codeSampleContentForCopy)
+        public static async Task CopyToClipboard(this IJSRuntime jsRuntime, string codeSampleContentForCopy)
         {
-            await jsRuntime.InvokeVoidAsync("copyToClipboardOnClickEvent", codeSampleContentForCopy);
+            await jsRuntime.InvokeVoidAsync("copyToClipboard", codeSampleContentForCopy);
         }
     }
 }
