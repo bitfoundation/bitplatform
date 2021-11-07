@@ -74,7 +74,12 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// Specifies the message for the failed uploading progress due to exceeding the maximum size.
         /// </summary>
-        [Parameter] public string MaxSizeErrorMessage { get; set; } = "The file size is larger than the max size.";
+        [Parameter] public string MaxSizeErrorMessage { get; set; } = "The file size is larger than the max size";
+
+        /// <summary>
+        /// Specifies the message for the failed uploading progress due to the accepted extentions.
+        /// </summary>
+        [Parameter] public string UnacceptedExtentionErrorMessage { get; set; } = "The file type is not accepted";
 
         /// <summary>
         /// Total count of files uploaded.
@@ -167,6 +172,12 @@ namespace Bit.Client.Web.BlazorUI
             if (Files[index].Size != 0 && uploadedSize >= Files[index].Size) return;
 
             if (MaxSize > 0 && Files[index].Size > MaxSize)
+            {
+                Files[index].UploadStatus = BitUploadStatus.Unaccepted;
+                return;
+            }
+
+            if (CheckInvalidFileType(Files[index]))
             {
                 Files[index].UploadStatus = BitUploadStatus.Unaccepted;
                 return;
@@ -403,19 +414,31 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
-        private string GetUploadMessageStr(BitUploadStatus status)
+        private string GetUploadMessageStr(BitFileInfo file)
         {
-            switch (status)
+            switch (file.UploadStatus)
             {
                 case BitUploadStatus.Completed:
                     return SuccessfullyUploadedMessage;
                 case BitUploadStatus.Failed:
                     return UploadingFailedMessage;
                 case BitUploadStatus.Unaccepted:
-                    return MaxSizeErrorMessage;
+                    if (CheckInvalidFileType(file))
+                    {
+                        return UnacceptedExtentionErrorMessage;
+                    }
+                    else
+                    {
+                        return MaxSizeErrorMessage;
+                    }
                 default:
                     return "";
             }
+        }
+
+        private bool CheckInvalidFileType(BitFileInfo file)
+        {
+            return AcceptedExtensions.Count > 0 && !AcceptedExtensions.Any(ext => ext == "*") && !AcceptedExtensions.Any(ext => ext == file.ContentType);
         }
 
         public void Dispose()
