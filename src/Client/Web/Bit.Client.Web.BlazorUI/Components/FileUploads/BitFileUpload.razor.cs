@@ -381,13 +381,10 @@ namespace Bit.Client.Web.BlazorUI
 
         private async Task RemoveOneFile(int index)
         {
-            if (Files is null || RemoveUrl is null || JSRuntime is null) return;
+            if (Files is null || RemoveUrl is null) return;
 
-            var baseUri = new Uri(navigationManager.BaseUri);
-            var relativeUri = $"{RemoveUrl}?fileName={Files[index].Name}";
-            var uri = new Uri(baseUri, relativeUri);
-            _ = await httpClient.DeleteAsync(uri);
-            //await JSRuntime.RemoveFile($"{RemoveUrl}?fileName={Files[index].Name}");
+            var uri = new Uri($"{RemoveUrl}?fileName={Files[index].Name}");
+            _ = await httpClient.GetAsync(uri);
         }
 
         private static string GetFileElClass(BitUploadStatus status)
