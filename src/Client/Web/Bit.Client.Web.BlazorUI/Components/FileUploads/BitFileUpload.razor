@@ -26,18 +26,16 @@
                type="file"
                disabled="@(IsEnabled is false)"
                aria-labelledby="@(Label.HasValue() ? Label : null)"
-               multiple="@IsMultiFile"
+               multiple="@IsMultiSelect"
                accept="@(string.Join(",",AcceptedExtensions))"
                @onchange="@(() => HandleOnChange())" />
     </div>
 
     @if (Files is not null)
     {
-        var fileCount = -1;
         <ul class="bit-file-list">
             @for (int i = 0; i < Files.Count; i++)
             {
-                fileCount++;
                 var index = i;
                 var file = Files[index];
                 int uploadedPercent;
@@ -101,7 +99,7 @@
                         }
                         else
                         {
-                            <div class="upload-status-icon" @onclick="@(() =>Remove(index))">
+                            <div class="upload-status-icon" @onclick="@(() =>RemoveFile(index))">
                                 <i title="remove" class="bit-icon bit-icon--Delete" aria-hidden="true"></i>
                             </div>
                         }
