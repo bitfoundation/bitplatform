@@ -7,8 +7,8 @@
     <div @ref="SaturationPickerRef"
          @onmousedown="OnSaturationPickerMouseDown">
         <div></div>
-        <div style=@($"background-color: {SaturationPickerBackground.GetRgbCss()}")></div>
-        <div style=@($"top: {SaturationPickerThumbPosition?.Top}px; left: {SaturationPickerThumbPosition?.Left}px; background: {BitColor.GetRgbaCss()};")>
+        <div style=@($"background-color: {saturationPickerBackgroundRgbCss}")></div>
+        <div style=@($"top: {SaturationPickerThumbPosition?.Top}px; left: {SaturationPickerThumbPosition?.Left}px; background: {Rgb};")>
         </div>
     </div>
 
@@ -19,12 +19,12 @@
             </div>
 
             <div class="alpha-slider" style=@($"display: {(ShowAlphaSlider ? "block" : "none")};")>
-                <div style=@($"background:linear-gradient(to left,{SaturationPickerBackground.GetRgbCss()} 0%, transparent 100%)")>
-                    <input type="range" min="0" max="100" value="@(BitColor.Alpha * 100)" @oninput="PickAlphaColor">
+                <div style=@($"background:linear-gradient(to left,{saturationPickerBackgroundRgbaCss} 0%, transparent 100%)")>
+                    <input type="range" min="0" max="100" value="@(color.Alpha * 100)" @oninput="PickAlphaColor">
                 </div>
             </div>
         </div>
-        <div class="preview-box" style=@($"background: {BitColor.GetRgbaCss()}; display: {(ShowPreview ? "block" : "none")}")>
+        <div class="preview-box" style=@($"background: {Rgb}; display: {(ShowPreview ? "block" : "none")}")>
         </div>
     </div>
 </div>

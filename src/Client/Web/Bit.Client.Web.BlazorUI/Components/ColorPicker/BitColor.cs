@@ -53,27 +53,6 @@ namespace Bit.Client.Web.BlazorUI
             CalculateHex();
         }
 
-        public BitColor(int red, int green, int blue, double alpha)
-        {
-            Red = red;
-            Green = green;
-            Blue = blue;
-            Alpha = alpha;
-
-            CalculateHex();
-            CalculateHsv();
-        }
-
-        public string GetRgbCss()
-        {
-            return $"rgb({Red},{Green},{Blue})";
-        }
-
-        public string GetRgbaCss()
-        {
-            return $"rgba({Red},{Green},{Blue},{Alpha})";
-        }
-
         public void SetColorByRgba(int? red = null, int? green = null, int? blue = null, double? alpha = null)
         {
             if (red.HasValue)
@@ -184,6 +163,23 @@ namespace Bit.Client.Web.BlazorUI
         {
             var myColor = Color.FromArgb(Red, Green, Blue);
             hex = $"#{myColor.Name.Remove(0, 2)}";
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is BitColor && this == (BitColor)obj;
+        }
+        public override int GetHashCode()
+        {
+            return Red.GetHashCode() ^ Green.GetHashCode() ^ Blue.GetHashCode() ^ Alpha.GetHashCode();
+        }
+        public static bool operator ==(BitColor x, BitColor y)
+        {
+            return x.Red == y.Red && x.Green == y.Green && x.Blue == y.Blue && x.Alpha == y.Alpha;
+        }
+        public static bool operator !=(BitColor x, BitColor y)
+        {
+            return !(x == y);
         }
     }
 }

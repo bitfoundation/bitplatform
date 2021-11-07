@@ -8,20 +8,28 @@
     <CodeSample Title="BitColorPicker" Description="">
         <SampleContent>
             <div>
-                <BitColorPicker ShowPreview="IsToggleChecked">Default ColorPicker</BitColorPicker>
+                <BitColorPicker ShowPreview="IsToggleChecked" @ref="ColorPicker" @bind-Color="Color">Default ColorPicker</BitColorPicker>
                 <div class="p-12">
                     <BitToggle Label="Show preview box" @bind-IsChecked="IsToggleChecked" IsEnabled="true" />
+                </div>
+                <div class="p-12 max-w-200">
+                    <BitTextField Label="Hex Code" Value="@Color"></BitTextField>
+                    <BitTextField Label="RGB" Value="@(ColorPicker?.Rgb ?? "rgb(255,255,255)")"></BitTextField>
                 </div>
             </div>
         </SampleContent>
         <CodeSampleContent>
-            <div>
-                <p>&lt;<span class="dark-green">BitColorPicker ShowPreview</span><span>="IsToggleChecked"</span>&gt;Default ColorPicker&lt;/<span class="dark-green">BitColorPicker</span>&gt;</p>
-                <p>&lt;<span class="dark-green">BitToggle Label</span>="Show preview box" <span class="light-yellow-bg">&#64</span> <span class="dark-green">bind-IsChecked</span>="IsToggleChecked"<span class="dark-green"> IsEnabled</span>="true"/&gt;</p>
-                <p><span class="light-yellow-bg">&#64code {</span></p>
-                <p class="m-l-70"><span class="light-blue">private bool</span> IsToggleChecked = <span class="light-blue">true</span>;</p>
-                <p><span class="light-yellow-bg">}</span></p>
-            </div>
+            <pre>
+                &lt;<span class="dark-green">BitColorPicker ShowPreview</span><span>="IsToggleChecked"</span> <span class="light-yellow-bg">&#64</span><span class="dark-green">ref</span><span>="ColorPicker"</span> <span class="light-yellow-bg">&#64</span><span class="dark-green">bind-Color</span><span>="Color"</span>&gt;Default ColorPicker&lt;/<span class="dark-green">BitColorPicker</span>&gt;
+                &lt;<span class="dark-green">BitToggle Label</span>="Show preview box" <span class="light-yellow-bg">&#64</span><span class="dark-green">bind-IsChecked</span>="IsToggleChecked"<span class="dark-green"> IsEnabled</span>="true"/&gt;
+                &lt<span class="dark-green">BitTextField Label</span>="Hex Code" <span class="dark-green"> Value</span>="<span class="light-yellow-bg">&#64</span>Color"><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
+                &lt<span class="dark-green">BitTextField Label</span>="RGB" <span class="dark-green"> Value</span>="<span class="light-yellow-bg">&#64(</span>ColorPicker?.Rgb ?? "rgb(255,255,255)"<span class="light-yellow-bg">)</span>"><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
+                <span class="light-yellow-bg">&#64code {</span>
+                    <span class="light-blue">private BitColorPicker</span> ColorPicker;
+                    <span class="light-blue">private string</span> Color = <span class="light-blue">"#ffffff"</span>;
+                    <span class="light-blue">private bool</span> IsToggleChecked = <span class="light-blue">true</span>;
+                <span class="light-yellow-bg">}</span>
+            </pre>
         </CodeSampleContent>
     </CodeSample>
 </ComponentPage>

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -9,15 +10,36 @@ namespace Bit.Client.Web.BlazorUI
     public partial class BitColorPicker : IAsyncDisposable
     {
         private string? onWindowMouseUpAbortControllerId;
+
         private string? onWindowMouseMoveAbortControllerId;
+
+        private string? saturationPickerBackgroundRgbCss;
+
+        private string? saturationPickerBackgroundRgbaCss;
 
         private BitColor color = new BitColor();
 
         private BitColorType ColorType { get; set; }
 
-        public string? Hex => BitColor.Hex;
+        private bool ColorHasBeenSet { get; set; }
 
-        public string Rgb => BitColor.GetRgbCss();
+        private bool AlphaHasBeenSet { get; set; }
+
+        private bool SaturationPickerMouseDown { get; set; }
+
+        public ElementReference SaturationPickerRef { get; set; }
+
+        private BitColorPosition? SaturationPickerThumbPosition { get; set; }
+
+        private double SelectedSaturation { get; set; } = 1;
+
+        private double SelectedValue { get; set; } = 1;
+
+        private double Hue { get; set; }
+
+        public string? Hex => color.Hex;
+
+        public string Rgb => GetRgbCss(color);
 
         [Inject]
         public IJSRuntime JSRuntime { get; set; } = default!;
@@ -34,34 +56,34 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter]
         public string Color
         {
-            get => ColorType == BitColorType.Hex ? BitColor.Hex! : BitColor.GetRgbaCss();
+            get => ColorType == BitColorType.Hex ? color.Hex! : GetRgbaCss(color);
             set
             {
-                var valueAsBitColor = new BitColor(value, BitColor.Alpha);
-                if (valueAsBitColor.GetRgbaCss() == BitColor.GetRgbaCss()) return;
-                BitColor = valueAsBitColor;
-                Hue = BitColor.Hsv.Hue;
-                SaturationPickerBackground = new BitColor(Hue, 1, 1, 1);
+                var valueAsBitColor = new BitColor(value, color.Alpha);
+                if (valueAsBitColor == color) return;
+                color = valueAsBitColor;
+                Hue = color.Hsv.Hue;
+                SetSaturationPickerBackground();
 
                 ColorType = value.HasValue() && value.StartsWith("#", StringComparison.CurrentCultureIgnoreCase) ? BitColorType.Hex : BitColorType.Rgb;
 
                 ColorChanged.InvokeAsync(value);
-                AlphaChanged.InvokeAsync(BitColor.Alpha);
+                AlphaChanged.InvokeAsync(color.Alpha);
             }
         }
-        
+
         [Parameter]
         public EventCallback<string> ColorChanged { get; set; }
-        
+
 
         [Parameter]
         public double Alpha
         {
-            get => BitColor.Alpha;
+            get => color.Alpha;
             set
             {
-                if (BitColor.Alpha == value) return;
-                BitColor.Alpha = value;
+                if (color.Alpha == value) return;
+                color.Alpha = value;
 
                 AlphaChanged.InvokeAsync(value);
             }
@@ -73,30 +95,14 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter]
         public bool ShowPreview { get; set; }
 
-        private bool ColorHasBeenSet { get; set; }
-        private bool AlphaHasBeenSet { get; set; }
-
-        private bool SaturationPickerMouseDown { get; set; }
-
-        public ElementReference SaturationPickerRef { get; set; }
-
-        private BitColorPosition? SaturationPickerThumbPosition { get; set; }
-
-        private double SelectedSaturation { get; set; } = 1;
-        private double SelectedValue { get; set; } = 1;
-        private double Hue { get; set; }
-
-        private BitColor SaturationPickerBackground { get; set; } = new BitColor(0,1,1,1);
-
-        private BitColor BitColor
-        {
-            get => color; set
-            {
-                color = value;
-            }
-        }
-
         protected override string RootElementClass => "bit-clr-pkr";
+
+        protected override void OnInitialized()
+        {
+            SetSaturationPickerBackground();
+
+            base.OnInitialized();
+        }
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
@@ -117,6 +123,13 @@ namespace Bit.Client.Web.BlazorUI
             await base.OnAfterRenderAsync(firstRender);
         }
 
+        private void SetSaturationPickerBackground()
+        {
+            var bitColor = new BitColor(Hue, 1, 1, 1);
+            saturationPickerBackgroundRgbaCss = GetRgbaCss(bitColor);
+            saturationPickerBackgroundRgbCss = GetRgbCss(bitColor);
+        }
+
         private async Task PickColorTune(MouseEventArgs e)
         {
             var parent = await JSRuntime.GetBoundingClientRect(SaturationPickerRef);
@@ -130,50 +143,45 @@ namespace Bit.Client.Web.BlazorUI
             SelectedSaturation = Math.Clamp(ToValidSpanValue(0, parent.Width, 0, 1, Convert.ToInt32(e.ClientX - parent.Left)), 0, 1);
             SelectedValue = Math.Clamp(ToValidSpanValue(0, parent.Height, 0, 1, parent.Height - Convert.ToInt32(e.ClientY - parent.Top)), 0, 1);
 
-            BitColor = new BitColor(Hue, SelectedSaturation, SelectedValue, BitColor.Alpha);
+            color = new BitColor(Hue, SelectedSaturation, SelectedValue, color.Alpha);
 
-            SaturationPickerBackground = new BitColor(Hue, 1, 1, 1);
+            SetSaturationPickerBackground();
 
-            await ColorChanged.InvokeAsync(ColorType == BitColorType.Hex ? BitColor.Hex : BitColor.GetRgbaCss());
-            await AlphaChanged.InvokeAsync(BitColor.Alpha);
-
-            SaturationPickerBackground = new BitColor(Hue, 1, 1, 1);
-
-            await ColorChanged.InvokeAsync(ColorType == BitColorType.Hex ? BitColor.Hex : BitColor.GetRgbaCss());
-            await AlphaChanged.InvokeAsync(BitColor.Alpha);
+            await ColorChanged.InvokeAsync(ColorType == BitColorType.Hex ? color.Hex : GetRgbaCss(color));
+            await AlphaChanged.InvokeAsync(color.Alpha);
 
             StateHasChanged();
         }
 
         private async Task PickMainColor(ChangeEventArgs args)
         {
-            Hue = Convert.ToInt32(args.Value);
+            Hue = Convert.ToInt32(args.Value, CultureInfo.InvariantCulture);
 
-            BitColor = new BitColor(Hue, SelectedSaturation, SelectedValue, BitColor.Alpha);
+            color = new BitColor(Hue, SelectedSaturation, SelectedValue, color.Alpha);
 
-            SaturationPickerBackground = new BitColor(Hue, 1, 1,1);
+            SetSaturationPickerBackground();
 
-            await ColorChanged.InvokeAsync(ColorType == BitColorType.Hex ? BitColor.Hex : BitColor.GetRgbaCss());
-            await AlphaChanged.InvokeAsync(BitColor.Alpha);
+            await ColorChanged.InvokeAsync(ColorType == BitColorType.Hex ? color.Hex : GetRgbaCss(color));
+            await AlphaChanged.InvokeAsync(color.Alpha);
         }
 
         private async Task PickAlphaColor(ChangeEventArgs args)
         {
-            BitColor.Alpha = Convert.ToDouble(args.Value) / 100;
+            color.Alpha = Convert.ToDouble(args.Value, CultureInfo.InvariantCulture) / 100;
 
-            await ColorChanged.InvokeAsync(ColorType == BitColorType.Hex ? BitColor.Hex : BitColor.GetRgbaCss());
-            await AlphaChanged.InvokeAsync(BitColor.Alpha);
+            await ColorChanged.InvokeAsync(ColorType == BitColorType.Hex ? color.Hex : GetRgbaCss(color));
+            await AlphaChanged.InvokeAsync(color.Alpha);
         }
 
         private async Task RGBColorChanged(string? red = null, string? green = null, string? blue = null)
         {
-            BitColor.SetColorByRgba(GetColorValue(red), GetColorValue(green), GetColorValue(blue));
+            color.SetColorByRgba(GetColorValue(red), GetColorValue(green), GetColorValue(blue));
 
             var saturationPickerRect = await JSRuntime.GetBoundingClientRect(SaturationPickerRef);
 
-            var hsv = BitColor.Hsv;
+            var hsv = color.Hsv;
             Hue = hsv.Hue;
-            SaturationPickerBackground = new BitColor(Hue, 1, 1,1 );
+            SetSaturationPickerBackground();
 
             SaturationPickerThumbPosition = new BitColorPosition
             {
@@ -181,13 +189,12 @@ namespace Bit.Client.Web.BlazorUI
                 Top = Convert.ToInt32(Math.Round(saturationPickerRect.Height - saturationPickerRect.Height * hsv.Value / 100))
             };
 
-
-            await ColorChanged.InvokeAsync(ColorType == BitColorType.Hex ? BitColor.Hex : BitColor.GetRgbaCss());
-            await AlphaChanged.InvokeAsync(BitColor.Alpha);
+            await ColorChanged.InvokeAsync(ColorType == BitColorType.Hex ? color.Hex : GetRgbaCss(color));
+            await AlphaChanged.InvokeAsync(color.Alpha);
             StateHasChanged();
         }
 
-        private int? GetColorValue(string? color)
+        private static int? GetColorValue(string? color)
         {
             if (color.HasValue(false) && int.TryParse(color, out int colorCode))
             {
@@ -197,7 +204,7 @@ namespace Bit.Client.Web.BlazorUI
             return null;
         }
 
-        private double ToValidSpanValue(double min, double max, double newMin, double newMax, double value)
+        private static double ToValidSpanValue(double min, double max, double newMin, double newMax, double value)
         {
             return (value - min) * (newMax - newMin) / (max - min);
         }
@@ -215,6 +222,16 @@ namespace Bit.Client.Web.BlazorUI
             await PickColorTune(e);
         }
 
+        private static string GetRgbCss(BitColor bitColor)
+        {
+            return $"rgb({bitColor.Red},{bitColor.Green},{bitColor.Blue})";
+        }
+
+        private static string GetRgbaCss(BitColor bitColor)
+        {
+            return $"rgba({bitColor.Red},{bitColor.Green},{bitColor.Blue},{bitColor.Alpha})";
+        }
+
         [JSInvokable]
         public void OnWindowMouseUp(MouseEventArgs e)
         {
@@ -229,8 +246,17 @@ namespace Bit.Client.Web.BlazorUI
 
         public async ValueTask DisposeAsync()
         {
-            await JSRuntime.AbortProcedure(onWindowMouseUpAbortControllerId);
-            await JSRuntime.AbortProcedure(onWindowMouseMoveAbortControllerId);
+            if (onWindowMouseUpAbortControllerId.HasValue())
+            {
+                await JSRuntime.AbortProcedure(onWindowMouseUpAbortControllerId!);
+            }
+
+            if (onWindowMouseMoveAbortControllerId.HasValue())
+            {
+                await JSRuntime.AbortProcedure(onWindowMouseMoveAbortControllerId!);
+            }
+
+            GC.SuppressFinalize(this);
         }
     }
 }

@@ -5,6 +5,8 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ColorPicker
 {
     public partial class BitColorPickerDemo
     {
+        private BitColorPicker ColorPicker;
+        private string Color = "#ffffff";
         private bool IsToggleChecked = true;
 
         private readonly List<ComponentParameter> componentParameters = new()
