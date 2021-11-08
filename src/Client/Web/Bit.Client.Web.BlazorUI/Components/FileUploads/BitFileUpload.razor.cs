@@ -18,7 +18,7 @@ namespace Bit.Client.Web.BlazorUI
 
         [Inject] public IJSRuntime? JSRuntime { get; set; }
 
-        [Inject] public NavigationManager NavigationManager { get; set; }
+        [Inject] public NavigationManager? NavigationManager { get; set; }
 
         /// <summary>
         /// URL of the server endpoint receiving the files.
@@ -81,21 +81,6 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public string NotAllowedExtentionErrorMessage { get; set; } = "The file type is not allowed";
 
         /// <summary>
-        /// Total count of files uploaded.
-        /// </summary>
-        //public int FileCount => Files?.Count ?? 0;
-
-        /// <summary>
-        /// Total size of files.
-        /// </summary>
-        //public long TotalSize => Files?.Sum(c => c.Size) ?? 0;
-
-        /// <summary>
-        /// Total size of uploaded files.
-        /// </summary>
-        //public long UploadedSize { get; set; }
-
-        /// <summary>
         /// General upload status.
         /// </summary>
         public BitUploadStatus UploadStatus { get; set; }
@@ -129,7 +114,7 @@ namespace Bit.Client.Web.BlazorUI
             if (JSRuntime is null || UploadUrl is null) return;
             dotnetObjectReference = DotNetObjectReference.Create(this);
             Files = await JSRuntime.InitUploader(inputFileElement, dotnetObjectReference, UploadUrl);
-
+            
             if (AutoUploadEnabled)
             {
                 await Upload();
@@ -391,7 +376,7 @@ namespace Bit.Client.Web.BlazorUI
 
         private async Task RemoveOneFile(int index)
         {
-            if (Files is null || RemoveUrl is null) return;
+            if (Files is null || RemoveUrl is null || NavigationManager is null) return;
 
             var url = $"{RemoveUrl}?fileName={Files[index].Name}";
             var http = new HttpClient();
