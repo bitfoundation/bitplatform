@@ -14,6 +14,7 @@ namespace Bit.Client.Web.BlazorUI
         private Calendar? calendar;
         private int[,] currentMonthCalendar = new int[DEFAULT_WEEK_COUNT, DEFAULT_DAY_COUNT_PER_WEEK];
         private int currentYear;
+        private int displayYear;
         private int currentMonth;
         private int yearRangeFrom;
         private int yearRangeTo;
@@ -181,11 +182,11 @@ namespace Bit.Client.Web.BlazorUI
 
         public async Task HandleClick(MouseEventArgs eventArgs)
         {
-            if (IsEnabled)
-            {
-                IsOpen = true;
-                await OnClick.InvokeAsync(eventArgs);
-            }
+            if (IsEnabled is false) return;
+
+            IsOpen = true;
+            displayYear = currentYear;
+            await OnClick.InvokeAsync(eventArgs);
         }
 
         public async Task HandleFocusIn(FocusEventArgs eventArgs)
@@ -222,6 +223,7 @@ namespace Bit.Client.Web.BlazorUI
             }
 
             IsOpen = false;
+            displayYear = currentYear;
             currentMonth = selectedMonth;
             CreateMonthCalendar(currentYear, currentMonth);
             int dayOfWeek = (int)GetDayOfWeek(dayIndex);
@@ -260,6 +262,7 @@ namespace Bit.Client.Web.BlazorUI
                 }
             }
 
+            displayYear = currentYear;
             CreateMonthCalendar(currentYear, currentMonth);
             await OnMonthChange.InvokeAsync(currentMonth);
         }
@@ -269,6 +272,7 @@ namespace Bit.Client.Web.BlazorUI
             if (IsEnabled is false) return;
 
             currentMonth = month;
+            currentYear = displayYear;
             CreateMonthCalendar(currentYear, currentMonth);
             await OnMonthChange.InvokeAsync(currentMonth);
             if (ShowMonthPickerAsOverlay is false) return;
@@ -280,7 +284,7 @@ namespace Bit.Client.Web.BlazorUI
         {
             if (IsEnabled is false) return;
 
-            currentYear = year;
+            currentYear = displayYear = year;
             ChangeYearRanges(currentYear - 1);
             CreateMonthCalendar(currentYear, currentMonth);
             await OnYearChange.InvokeAsync(currentYear);
@@ -303,11 +307,11 @@ namespace Bit.Client.Web.BlazorUI
 
             if (nextYear)
             {
-                currentYear++;
+                displayYear++;
             }
             else
             {
-                currentYear--;
+                displayYear--;
             }
 
             CreateMonthCalendar(currentYear, currentMonth);
@@ -333,6 +337,7 @@ namespace Bit.Client.Web.BlazorUI
         {
             currentMonth = calendar?.GetMonth(DateTime.Now) ?? 1;
             currentYear = calendar?.GetYear(DateTime.Now) ?? 1;
+            displayYear = currentYear;
             yearRangeFrom = currentYear - 1;
             yearRangeTo = currentYear + 10;
             CreateMonthCalendar(currentYear, currentMonth);
