@@ -14,17 +14,11 @@
             </div>
         </SampleContent>
         <CodeSampleContent>
-             <div>
-                <p>
-                    &lt<span class="dark-green">BitIconButton IconName=</span>"Emoji2"><span>&lt/</span><span class="dark-green">BitIconButton</span><span>&gt;</span>
-                </p>
-                <p>
-                    &lt<span class="dark-green">BitIconButton IconName=</span>"Emoji2" <span class="dark-green">AllowDisabledFocus=</span><span class="light-blue">"false"</span><span class="dark-green"> IsEnabled=</span><span class="light-blue">"false"></span><span>&lt/</span><span class="dark-green">BitIconButton</span><span>&gt;</span>
-                </p>
-                <p>
-                    &lt<span class="dark-green">BitIconButton IconName=</span>"Emoji2"<span class="dark-green"> ToolTip=</span><span>"I'm Happy"><span>&lt/</span></span><span class="dark-green">BitIconButton</span><span>&gt;</span>
-                </p>
-             </div>
+             <pre>
+                 &lt<span class="soco-component-attr">BitIconButton IconName</span>="Emoji2"><span>&lt/</span><span class="soco-component-attr">BitIconButton</span>&gt;
+                 &lt<span class="soco-component-attr">BitIconButton IconName</span>="Emoji2" <span class="soco-component-attr">AllowDisabledFocus</span>=<span class="soco-var-attr">"false"</span><span class="soco-component-attr"> IsEnabled</span>=<span class="soco-var-attr">"false"></span><span>&lt/</span><span class="soco-component-attr">BitIconButton</span>&gt;
+                 &lt<span class="soco-component-attr">BitIconButton IconName</span>="Emoji2"<span class="soco-component-attr"> ToolTip</span>="I'm Happy"><span>&lt/</span><span class="soco-component-attr">BitIconButton</span>&gt;
+             </pre>
         </CodeSampleContent>
     </CodeSample>
     <CodeSample Title="Style & Class" Description="BitIconButton can directly get css class or inline style.">
@@ -39,43 +33,36 @@
            </div>
       </SampleContent>
       <CodeSampleContent>
-           <div>
-              <p>
-                &lt<span class="dark-green">BitIconButton Style=</span><span>"color:red" </span><span class="dark-green"> IconName=</span>"Home"> Styled Button<span>&lt/</span><span class="dark-green">BitIconButton</span><span>&gt;</span>
-              </p>
-              <p>
-                &lt<span class="dark-green">BitIconButton Class=</span><span>"custom-button"</span><span class="dark-green"> IconName=</span>"FileImage"> Classed Button<span>&lt/</span><span class="dark-green">BitIconButton</span><span>&gt;</span>
-              </p>
-                <p>&lt<span class="light-blue">style></span></p>
-                <p><span class="m-l-30 dark-yellow">.custom-button</span> {</p>
-                <p><span class="m-l-45"><span class="light-blue">text-decoration</span> : underline;</span></p>
-                <p><span class="m-l-45"><span class="light-blue">font-weight</span> : bolder;</span></p>
-                <p><span class="m-l-45"><span class="light-blue">color</span> : #FFFFFF;</span></p>
-                <p><span class="m-l-45"><span class="light-blue">background-color</span> : #823535;</span></p>
-                <p><span class="m-l-45"><span class="light-blue">border-color</span> : #823535;</span></p>
-                <p><span class="m-l-30">}</span></p>
-                <p><span>&lt/</span><span class="light-blue">style</span><span>&gt;</span></p>
-           </div>
+           <pre>
+               &lt<span class="soco-component-attr">BitIconButton Style=</span><span>"color:red" </span><span class="soco-component-attr"> IconName=</span>"Home"> Styled Button<span>&lt/</span><span class="soco-component-attr">BitIconButton</span>&gt;
+               &lt<span class="soco-component-attr">BitIconButton Class=</span><span>"custom-button"</span><span class="soco-component-attr"> IconName=</span>"FileImage"> Classed Button<span>&lt/</span><span class="soco-component-attr">BitIconButton</span>&gt;
+               &lt<span class="soco-var-attr">style></span>
+                        <span class="soco-css-style">.custom-button</span> {
+                              <span class="soco-var-attr">height</span> : 40px;
+                              <span class="soco-var-attr">width</span> : 166px;
+                              <span class="soco-var-attr">font-family</span> : Axiforma;
+                              <span class="soco-var-attr">font-size</span> : 16px;
+                              <span class="soco-var-attr">background-color</span> : #2F455A;
+                              <span class="soco-var-attr">border-color</span> : #2F455A;
+                        }
+               &lt/<span class="soco-tag-type-def">style</span>&gt;
+           </pre>
      </CodeSampleContent>
     </CodeSample>
     <CodeSample Title="Visibility" Description="By setting Visibility attribute, BitIconButton can be Visible, Hidden or Collapsed.">
         <SampleContent>
             <div class="sample-btn">
                <BitIconButton IconName="List" Visibility="BitComponentVisibility.Visible">Visible Button</BitIconButton>
-               <p><span>Hidden Button: </span>[<BitIconButton Visibility="BitComponentVisibility.Hidden">Hidden Button</BitIconButton>]</p>
-               <p><span>Collapsed Button: </span>[<BitIconButton Visibility="BitComponentVisibility.Collapsed">Collapsed Button</BitIconButton>]</p>
+               <div><span>Hidden Button: </span>[<BitIconButton Visibility="BitComponentVisibility.Hidden">Hidden Button</BitIconButton>]</div>
+               <div><span>Collapsed Button: </span>[<BitIconButton Visibility="BitComponentVisibility.Collapsed">Collapsed Button</BitIconButton>]</div>
             </div>
         </SampleContent>
         <CodeSampleContent>
-             <p>
-                 &lt<span class="dark-green">BitIconButton Visibility=</span>"<span class="light-green">ComponentVisibility</span>.Visible"<span><span class="dark-green"> IconName=</span>"List"></span><span>Visible Button</span><span>&lt/</span><span class="dark-green">BitIconButton</span><span>&gt;</span>
-             </p>
-             <p>
-                 &lt<span class="dark-green">BitIconButton Hidden=</span>"<span class="light-green">ComponentHidden</span>.Hidden"<span><span class="dark-green"> IconName=</span>"List"></span><span>Hidden Button</span><span>&lt/</span><span class="dark-green">BitIconButton</span><span>&gt;</span>
-             </p>
-             <p>
-                 &lt<span class="dark-green">BitIconButton Visibility=</span>"<span class="light-green">ComponentVisibility</span>.Collapsed"<span><span class="dark-green"> IconName=</span>"List"></span><span>Collapsed Button</span><span>&lt/</span><span class="dark-green">BitIconButton</span><span>&gt;</span>
-             </p>
+             <pre>
+                 &lt<span class="soco-component-attr">BitIconButton Visibility</span>="ComponentVisibility.Visible"<span class="soco-component-attr"> IconName</span>="List">Visible Button<span>&lt/</span><span class="soco-component-attr">BitIconButton</span>&gt;
+                 &lt<span class="soco-component-attr">BitIconButton Visibility</span>="ComponentHidden.Hidden"<span class="soco-component-attr"> IconName</span>="List">Hidden Button&lt/<span class="soco-component-attr">BitIconButton</span>&gt;
+                 &lt<span class="soco-component-attr">BitIconButton Visibility</span>="ComponentVisibility.Collapsed"<span class="soco-component-attr"> IconName</span>="List">Collapsed Button<span>&lt/</span><span class="soco-component-attr">BitIconButton</span>&gt;
+             </pre>
         </CodeSampleContent>
     </CodeSample>
      <CodeSample Title="Arias for Screen Reader" Description="Aria attribues can also set for a BitIconButton.">
@@ -90,12 +77,10 @@
              </div>
         </SampleContent>
         <CodeSampleContent>
-           <p>
-               &lt<span class="dark-green">BitIconButton AriaDescription=</span><span>"Detailed description used for screen reader." <span class="dark-green"> IconName=</span>"PowerButton">Icon Button with Aria Description</span><span>&lt/</span><span class="dark-green">BitIconButton</span><span>&gt;</span>
-           </p>
-           <p>
-               &lt<span class="dark-green">BitIconButton AriaHidden=</span><span class="light-blue">"true" </span><span class="dark-green"> IconName=</span>"PowerButton">Icon Button with Aria Hidden<span>&lt/</span><span class="dark-green">BitIconButton</span><span>&gt;</span>
-           </p>
+           <pre>
+               &lt<span class="soco-component-attr">BitIconButton AriaDescription</span>="Detailed description used for screen reader." <span class="soco-component-attr"> IconName</span>="PowerButton">Icon Button with Aria Description<span>&lt/</span><span class="soco-component-attr">BitIconButton</span>&gt;
+               &lt<span class="soco-component-attr">BitIconButton AriaHidden</span>=<span class="soco-var-attr">"true" </span><span class="soco-component-attr"> IconName</span>="PowerButton">Icon Button with Aria Hidden<span>&lt/</span><span class="soco-component-attr">BitIconButton</span>&gt;
+           </pre>
         </CodeSampleContent>
     </CodeSample>
      <CodeSample Title="Button-like Anchor" Description="BitButton can act as a link by setting Href and Target attributes.">
@@ -113,15 +98,11 @@
               </div>
         </SampleContent>
         <CodeSampleContent>
-           <p>
-               &lt<span class="dark-green">BitIconButton</span><span class="dark-green"> IconName=</span>"Website"<span class="dark-green"> Target=</span><span>"_blank"</span><span class="dark-green"> Href=</span><span class="light-blue">"https://github.com/bitfoundation/bitframework"></span>Open Bit Foundation In New Tab<span>&lt/</span><span class="dark-green">BitIconButton</span><span>&gt;</span>
-           </p>
-           <p>
-               &lt<span class="dark-green">BitIconButton</span><span class="dark-green"> IconName=</span>"Website"<span class="dark-green"> ButtonStyle=</span><span class="light-green">"ButtonStyle</span><span>.Standard"</span><span class="dark-green"> Href=</span><span class="light-blue">"https://github.com/bitfoundation/bitframework"></span>Go To Bit Foundation<span>&lt/</span><span class="dark-green">BitIconButton</span><span>&gt;</span>
-           </p>
-           <p>
-               &lt<span class="dark-green">BitIconButton Target=</span><span>"_self"</span><span class="dark-green"> IconName=</span>"Website"<span class="dark-green"> Href=</span><span class="light-blue">"https://github.com/bitfoundation/bitframework"</span><span class="dark-green"> IsEnabled=</span><span class="light-blue">"false"&lt</span><span class="light-blue">span></span>Bit Foundation From Span<span class="light-blue">&ltspan></span><span>&lt/</span><span class="dark-green">BitIconButton</span><span>&gt;</span>
-           </p>
+           <pre>
+               &lt<span class="soco-component-attr">BitIconButton</span><span class="soco-component-attr"> IconName</span>="Website"<span class="soco-component-attr"> Target</span><span>="_blank"</span><span class="soco-component-attr"> Href</span>=<span class="soco-var-attr">"https://github.com/bitfoundation/bitframework"></span>Open Bit Foundation In New Tab<span>&lt/</span><span class="soco-component-attr">BitIconButton</span>&gt;
+               &lt<span class="soco-component-attr">BitIconButton</span><span class="soco-component-attr"> IconName</span>="Website"<span class="soco-component-attr"> ButtonStyle</span>="ButtonStyle.Standard"<span class="soco-component-attr"> Href</span>=<span class="soco-var-attr">"https://github.com/bitfoundation/bitframework"></span>Go To Bit Foundation<span>&lt/</span><span class="soco-component-attr">BitIconButton</span>&gt;
+               &lt<span class="soco-component-attr">BitIconButton Target</span>=<span>"_self"</span><span class="soco-component-attr"> IconName=</span>"Website"<span class="soco-component-attr"> Href</span>=<span class="soco-var-attr">"https://github.com/bitfoundation/bitframework"</span><span class="soco-component-attr"> IsEnabled</span>=<span class="soco-var-attr">"false"</span>&lt<span class="soco-var-attr">span</span>>Bit Foundation From Span&lt<span class="soco-var-attr">/span</span>>&lt/<span class="soco-component-attr">BitIconButton</span>&gt;
+           </pre>
         </CodeSampleContent>
     </CodeSample>
 </ComponentPage>
