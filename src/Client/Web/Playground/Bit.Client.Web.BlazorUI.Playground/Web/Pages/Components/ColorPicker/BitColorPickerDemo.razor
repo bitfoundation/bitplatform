@@ -15,6 +15,7 @@
                 <div class="p-12 max-w-200">
                     <BitTextField Label="Hex Code" Value="@Color"></BitTextField>
                     <BitTextField Label="RGB" Value="@(ColorPicker?.Rgb ?? "rgb(255,255,255)")"></BitTextField>
+                    <BitTextField Label="RGBA" Value="@(ColorPicker?.Rgba ?? "rgb(255,255,255,1)")"></BitTextField>
                 </div>
             </div>
         </SampleContent>
@@ -24,6 +25,7 @@
                 &lt;<span class="dark-green">BitToggle Label</span>="Show preview box" <span class="light-yellow-bg">&#64</span><span class="dark-green">bind-IsChecked</span>="IsToggleChecked"<span class="dark-green"> IsEnabled</span>="true"/&gt;
                 &lt<span class="dark-green">BitTextField Label</span>="Hex Code" <span class="dark-green"> Value</span>="<span class="light-yellow-bg">&#64</span>Color"><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
                 &lt<span class="dark-green">BitTextField Label</span>="RGB" <span class="dark-green"> Value</span>="<span class="light-yellow-bg">&#64(</span>ColorPicker?.Rgb ?? "rgb(255,255,255)"<span class="light-yellow-bg">)</span>"><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
+                &lt<span class="dark-green">BitTextField Label</span>="RGBA" <span class="dark-green"> Value</span>="<span class="light-yellow-bg">&#64(</span>ColorPicker?.Rgba ?? "rgb(255,255,255,1)"<span class="light-yellow-bg">)</span>"><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
                 <span class="light-yellow-bg">&#64code {</span>
                     <span class="light-blue">private BitColorPicker</span> ColorPicker;
                     <span class="light-blue">private string</span> Color = <span class="light-blue">"#ffffff"</span>;

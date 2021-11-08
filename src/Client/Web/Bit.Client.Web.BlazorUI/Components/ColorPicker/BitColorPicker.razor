@@ -8,14 +8,14 @@
          @onmousedown="OnSaturationPickerMouseDown">
         <div></div>
         <div style=@($"background-color: {saturationPickerBackgroundRgbCss}")></div>
-        <div style=@($"top: {SaturationPickerThumbPosition?.Top}px; left: {SaturationPickerThumbPosition?.Left}px; background: {Rgb};")>
+        <div style=@($"top: {saturationPickerThumbPosition?.Top}px; left: {saturationPickerThumbPosition?.Left}px; background: {Rgb};")>
         </div>
     </div>
 
     <div>
         <div>
             <div>
-                <input type="range" min="0" max="360" value="@Hue" @oninput="PickMainColor">
+                <input type="range" min="0" max="360" value="@hue" @oninput="PickMainColor">
             </div>
 
             <div class="alpha-slider" style=@($"display: {(ShowAlphaSlider ? "block" : "none")};")>
