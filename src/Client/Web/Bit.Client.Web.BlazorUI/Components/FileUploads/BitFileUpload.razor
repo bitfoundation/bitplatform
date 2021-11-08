@@ -27,7 +27,7 @@
                disabled="@(IsEnabled is false)"
                aria-labelledby="@(Label.HasValue() ? Label : null)"
                multiple="@IsMultiSelect"
-               accept="@(string.Join(",",AcceptedExtensions))"
+               accept="@(string.Join(",",AllowedExtensions))"
                @onchange="@(() => HandleOnChange())" />
     </div>
 

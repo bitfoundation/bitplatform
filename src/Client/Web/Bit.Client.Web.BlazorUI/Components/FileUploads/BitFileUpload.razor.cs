@@ -54,7 +54,7 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// Filters files by extension.
         /// </summary>
-        [Parameter] public IReadOnlyCollection<string> AcceptedExtensions { get; set; } = new List<string> { "*" };
+        [Parameter] public IReadOnlyCollection<string> AllowedExtensions { get; set; } = new List<string> { "*" };
 
         /// <summary>
         /// Single <c>false</c> or multiple <c>true</c> files upload.
@@ -77,9 +77,9 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public string MaxSizeErrorMessage { get; set; } = "The file size is larger than the max size";
 
         /// <summary>
-        /// Specifies the message for the failed uploading progress due to the accepted extentions.
+        /// Specifies the message for the failed uploading progress due to the allowed extentions.
         /// </summary>
-        [Parameter] public string UnacceptedExtentionErrorMessage { get; set; } = "The file type is not accepted";
+        [Parameter] public string NotAllowedExtentionErrorMessage { get; set; } = "The file type is not allowed";
 
         /// <summary>
         /// Total count of files uploaded.
@@ -166,20 +166,20 @@ namespace Bit.Client.Web.BlazorUI
         private async Task UploadOneFile(int index)
         {
             if (JSRuntime is null || Files is null) return;
-            if (Files[index].UploadStatus == BitUploadStatus.Unaccepted) return;
+            if (Files[index].UploadStatus == BitUploadStatus.NotAllowed) return;
 
             var uploadedSize = Files[index].ChunkesUpLoadedSize.Sum();
             if (Files[index].Size != 0 && uploadedSize >= Files[index].Size) return;
 
             if (MaxSize > 0 && Files[index].Size > MaxSize)
             {
-                Files[index].UploadStatus = BitUploadStatus.Unaccepted;
+                Files[index].UploadStatus = BitUploadStatus.NotAllowed;
                 return;
             }
 
-            if (CheckInvalidFileType(Files[index]))
+            if (IsFileTypeNotAllowed(Files[index]))
             {
-                Files[index].UploadStatus = BitUploadStatus.Unaccepted;
+                Files[index].UploadStatus = BitUploadStatus.NotAllowed;
                 return;
             }
 
@@ -312,7 +312,7 @@ namespace Bit.Client.Web.BlazorUI
             if (index < 0)
             {
                 UploadStatus = uploadStatus;
-                Files.Where(c => c.UploadStatus != BitUploadStatus.Unaccepted).ToList().ForEach(c => c.UploadStatus = uploadStatus);
+                Files.Where(c => c.UploadStatus != BitUploadStatus.NotAllowed).ToList().ForEach(c => c.UploadStatus = uploadStatus);
             }
             else
             {
@@ -392,10 +392,19 @@ namespace Bit.Client.Web.BlazorUI
 
         private async Task RemoveOneFile(int index)
         {
-            if (Files is null || RemoveUrl is null) return;
+            if (Files is null || RemoveUrl is null || JSRuntime is null) return;
 
-            var uri = new Uri($"{RemoveUrl}?fileName={Files[index].Name}");
-            _ = await httpClient.GetAsync(uri);
+            var baseUri = new Uri(navigationManager.BaseUri);
+            var relativeUri = $"{RemoveUrl}?fileName={Files[index].Name}";
+            var uri = new Uri(baseUri, relativeUri);
+            _ = await httpClient.DeleteAsync(uri);
+
+            //await JSRuntime.RemoveFile($"{RemoveUrl}?fileName={Files[index].Name}");
+
+            //if (Files is null || RemoveUrl is null) return;
+
+            //var uri = new Uri($"{RemoveUrl}?fileName={Files[index].Name}");
+            //_ = await httpClient.GetAsync(uri);
         }
 
         private static string GetFileElClass(BitUploadStatus status)
@@ -405,7 +414,7 @@ namespace Bit.Client.Web.BlazorUI
                 case BitUploadStatus.Completed:
                     return "uploaded";
                 case BitUploadStatus.Failed:
-                case BitUploadStatus.Unaccepted:
+                case BitUploadStatus.NotAllowed:
                     return "failed";
                 case BitUploadStatus.Paused:
                     return "paused";
@@ -422,10 +431,10 @@ namespace Bit.Client.Web.BlazorUI
                     return SuccessfullyUploadedMessage;
                 case BitUploadStatus.Failed:
                     return UploadingFailedMessage;
-                case BitUploadStatus.Unaccepted:
-                    if (CheckInvalidFileType(file))
+                case BitUploadStatus.NotAllowed:
+                    if (IsFileTypeNotAllowed(file))
                     {
-                        return UnacceptedExtentionErrorMessage;
+                        return NotAllowedExtentionErrorMessage;
                     }
                     else
                     {
@@ -436,9 +445,9 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
-        private bool CheckInvalidFileType(BitFileInfo file)
+        private bool IsFileTypeNotAllowed(BitFileInfo file)
         {
-            return AcceptedExtensions.Count > 0 && !AcceptedExtensions.Any(ext => ext == "*") && !AcceptedExtensions.Any(ext => ext == file.ContentType);
+            return AllowedExtensions.Count > 0 && !AllowedExtensions.Any(ext => ext == "*") && !AllowedExtensions.Any(ext => ext == file.ContentType);
         }
 
         private static int GetFileUploadPercent(BitFileInfo file)
