@@ -13,13 +13,12 @@ namespace Bit.Client.Web.BlazorUI
     /// </summary>
     public partial class BitFileUpload : IDisposable
     {
-        private static readonly HttpClient httpClient = new();
         private DotNetObjectReference<BitFileUpload>? dotnetObjectReference;
         private ElementReference inputFileElement;
 
         [Inject] public IJSRuntime? JSRuntime { get; set; }
 
-        [Inject] public NavigationManager? NavigationManager { get; set; }
+        [Inject] public NavigationManager NavigationManager { get; set; }
 
         /// <summary>
         /// URL of the server endpoint receiving the files.
@@ -392,19 +391,12 @@ namespace Bit.Client.Web.BlazorUI
 
         private async Task RemoveOneFile(int index)
         {
-            if (Files is null || RemoveUrl is null || JSRuntime is null || NavigationManager is null) return;
+            if (Files is null || RemoveUrl is null) return;
 
-            var baseUri = new Uri(NavigationManager.BaseUri);
-            var relativeUri = $"{RemoveUrl}?fileName={Files[index].Name}";
-            var uri = new Uri(baseUri, relativeUri);
-            _ = await httpClient.DeleteAsync(uri);
-
-            //await JSRuntime.RemoveFile($"{RemoveUrl}?fileName={Files[index].Name}");
-
-            //if (Files is null || RemoveUrl is null) return;
-
-            //var uri = new Uri($"{RemoveUrl}?fileName={Files[index].Name}");
-            //_ = await httpClient.GetAsync(uri);
+            var url = $"{RemoveUrl}?fileName={Files[index].Name}";
+            var http = new HttpClient();
+            http.BaseAddress = new Uri(NavigationManager.BaseUri);
+            _ = await http.DeleteAsync(url);
         }
 
         private static string GetFileElClass(BitUploadStatus status)

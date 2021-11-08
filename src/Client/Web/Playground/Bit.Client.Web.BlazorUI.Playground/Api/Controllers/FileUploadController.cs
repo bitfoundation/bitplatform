@@ -66,7 +66,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Api.Controllers
             return BadRequest();
         }
 
-        [HttpGet]
+        [HttpDelete]
         public IActionResult RemoveFile(string fileName)
         {
             var path = Path.Combine(BasePath, fileName);
