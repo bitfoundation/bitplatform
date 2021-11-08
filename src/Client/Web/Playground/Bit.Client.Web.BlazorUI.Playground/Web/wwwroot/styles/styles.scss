@@ -458,6 +458,7 @@ footer {
     .link-container {
         li {
             width: 80%;
+            list-style-type: none;
         }
 
         button {
@@ -465,9 +466,21 @@ footer {
         }
 
         li > .active {
-            width: 100%;
+            display: inline-block;
+            position: relative;
+            padding-top: rem(4px);
             background-color: $Gray04;
-            border-left: rem(4px) solid $Violet;
+            width: 100%;
+
+            &:before {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: rem(4px);
+                height: rem(35px);
+                content: "";
+                background-color: $Violet;
+            }
 
             button {
                 color: $Violet;
