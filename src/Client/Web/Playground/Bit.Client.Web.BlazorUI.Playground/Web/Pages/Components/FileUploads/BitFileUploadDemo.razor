@@ -32,7 +32,7 @@
     <CodeSample Title="Auto & Multiple" Description="Multiple files can be selected to upload automatically.">
         <SampleContent>
             <div>
-                <BitFileUpload IsMultiFile="true"
+                <BitFileUpload IsMultiSelect="true"
                                Label="Select or drag and drop files"
                                UploadUrl="@UploadUrl"
                                RemoveUrl="@RemoveUrl">
@@ -41,7 +41,7 @@
         </SampleContent>
         <CodeSampleContent>
             <pre>
-                 &lt<span class="dark-green">BitFileUpload IsMultiFile</span> =" <span class="light-blue">true</span>" 
+                 &lt<span class="dark-green">BitFileUpload IsMultiSelect</span> =" <span class="light-blue">true</span>" 
                                                 <span class="dark-green">Label</span>="Select or drag and drop files" 
                                                 <span class="dark-green">UploadUrl</span>="<span class="light-yellow-bg">&#64</span>UploadUrl" 
                                                 <span class="dark-green">RemoveUrl</span>="<span class="light-yellow-bg">&#64</span>RemoveUrl"&gt
@@ -56,7 +56,7 @@
     <CodeSample Title="Auto & Multiple with max-size limitation" Description="Multiple files can be selected to upload automatically with limited size.">
         <SampleContent>
             <div>
-                <BitFileUpload IsMultiFile="true"
+                <BitFileUpload IsMultiSelect="true"
                                Label="Select or drag and drop files"
                                MaxSize="1024 * 1024 * 100"
                                UploadUrl="@UploadUrl"
@@ -66,7 +66,7 @@
         </SampleContent>
         <CodeSampleContent>
             <pre>
-                 &lt<span class="dark-green">BitFileUpload IsMultiFile</span>="<span class="light-blue">true</span>" 
+                 &lt<span class="dark-green">BitFileUpload IsMultiSelect</span>="<span class="light-blue">true</span>" 
                                                 <span class="dark-green">Label</span>="Select or drag and drop files" 
                                                 <span class="dark-green">MaxSize</span>="1024 * 1024 * 100" 
                                                 <span class="dark-green">UploadUrl</span>="<span class="light-yellow-bg">&#64</span>UploadUrl" 
@@ -82,7 +82,7 @@
     <CodeSample Title="Individual & Multiple (limited by extensions format)" Description="Single or multiple file uploading limited only by file extensions, which in this case the allowed file extensions include gif, jpg and mp4.">
         <SampleContent>
             <div>
-                <BitFileUpload IsMultiFile="true"
+                <BitFileUpload IsMultiSelect="true"
                                AutoUploadEnabled="false"
                                AllowedExtensions="@(new List<string> { ".gif",".jpg",".mp4" })"
                                Label="Select or drag and drop files"
@@ -93,9 +93,9 @@
         </SampleContent>
         <CodeSampleContent>
             <pre>
-                 &lt<span class="dark-green">BitFileUpload IsMultiFile</span>="<span class="light-blue">true</span>" 
+                 &lt<span class="dark-green">BitFileUpload IsMultiSelect</span>="<span class="light-blue">true</span>" 
                                                 <span class="dark-green">AutoUploadEnabled</span>="<span class="light-blue">false</span>" 
-                                                <span class="dark-green">AcceptedExtensions</span>="<span class="light-yellow-bg">&#64</span>(<span class="light-blue">new</span> <span class="dark-cyan">List</span>&lt <span class="light-blue">string</span>&gt { <span class="dark-orange">".gif"</span>,<span class="dark-orange">".jpg"</span>,<span class="dark-orange">".mp4"</span> })" 
+                                                <span class="dark-green">AllowedExtensions</span>="<span class="light-yellow-bg">&#64</span>(<span class="light-blue">new</span> <span class="dark-cyan">List</span>&lt <span class="light-blue">string</span>&gt { <span class="dark-orange">".gif"</span>,<span class="dark-orange">".jpg"</span>,<span class="dark-orange">".mp4"</span> })" 
                                                 <span class="dark-green">Label</span>="Select or drag and drop files" 
                                                 <span class="dark-green">UploadUrl</span>="<span class="light-yellow-bg">&#64</span>UploadUrl" 
                                                 <span class="dark-green">RemoveUrl</span>="<span class="light-yellow-bg">&#64</span>RemoveUrl"&gt

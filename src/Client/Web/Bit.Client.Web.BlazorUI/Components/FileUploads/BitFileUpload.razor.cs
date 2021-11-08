@@ -19,7 +19,7 @@ namespace Bit.Client.Web.BlazorUI
 
         [Inject] public IJSRuntime? JSRuntime { get; set; }
 
-        [Inject] public NavigationManager navigationManager { get; set; }
+        [Inject] public NavigationManager? NavigationManager { get; set; }
 
         /// <summary>
         /// URL of the server endpoint receiving the files.
@@ -59,7 +59,7 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// Single <c>false</c> or multiple <c>true</c> files upload.
         /// </summary>
-        [Parameter] public bool IsMultiSelect { get; set; }
+        [Parameter] public bool IsMultiSelect { get; set; } = false;
 
         /// <summary>
         /// Uploads immediately after selecting the files.
@@ -392,9 +392,9 @@ namespace Bit.Client.Web.BlazorUI
 
         private async Task RemoveOneFile(int index)
         {
-            if (Files is null || RemoveUrl is null || JSRuntime is null) return;
+            if (Files is null || RemoveUrl is null || JSRuntime is null || NavigationManager is null) return;
 
-            var baseUri = new Uri(navigationManager.BaseUri);
+            var baseUri = new Uri(NavigationManager.BaseUri);
             var relativeUri = $"{RemoveUrl}?fileName={Files[index].Name}";
             var uri = new Uri(baseUri, relativeUri);
             _ = await httpClient.DeleteAsync(uri);
