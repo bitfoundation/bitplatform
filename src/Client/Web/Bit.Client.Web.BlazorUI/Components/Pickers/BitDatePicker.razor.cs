@@ -184,6 +184,11 @@ namespace Bit.Client.Web.BlazorUI
         {
             if (IsEnabled is false) return;
 
+            if(ShowMonthPickerAsOverlay)
+            {
+                isMonthPickerOverlayOnTop = false;
+            }
+
             IsOpen = true;
             displayYear = currentYear;
             await OnClick.InvokeAsync(eventArgs);
