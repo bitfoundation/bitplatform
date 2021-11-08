@@ -4,7 +4,10 @@
 <div class="component-container">
     <div class="component-content">
         <section id="overview-section" class="overview">
-            <h1 class="name">@ComponentName</h1>
+            <div class="name-container">
+                <img @onclick="ToggleMenu" src="/images/icon/menu-icon.svg" />
+                <h1 class="name">@ComponentName</h1>
+            </div>
             <p class="description">
                 @OverviewDesc
             </p>

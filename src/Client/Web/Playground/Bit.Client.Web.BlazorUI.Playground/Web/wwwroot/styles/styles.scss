@@ -227,7 +227,7 @@ footer {
         height: rem(38px);
     }
 
-    @include lt-md {
+    @include sm {
         padding-left: rem(7px);
         height: rem(32px);
     }
@@ -252,152 +252,169 @@ footer {
     }
 }
 
-/* Nav Menu */
+/* Main container*/
 
 .main-container {
     display: flex;
     flex-wrap: wrap;
     position: relative;
-    margin-top: rem(160px);
+    margin-top: rem(80px);
 
-    @include lt-lg {
-        margin-top: rem(112px);
+    @include md {
+        margin-top: rem(65px);
     }
 
     @include sm {
         margin-top: rem(96px);
     }
+}
 
-    .content {
-        width: calc(100% - 360px);
-        margin-left: auto;
+.content {
+    width: calc(100% - 360px);
+    margin-left: auto;
 
-        @include lt-xl {
-            width: 100%;
-        }
+    @include lg {
+        flex: 65%;
     }
 
-    .navbar {
-        background-color: $Gray04;
-        margin-top: rem(48px);
-        width: rem(360px);
-        flex: 17%;
-        position: fixed;
-        height: 100vh;
-        padding-top: 0;
-        overflow-y: hidden;
+    @include lt-xl {
+        width: 100%;
+    }
 
-        @include lt-xl {
-            margin-top: rem(40px);
-            display: none;
+    @include sm {
+        flex: 65%;
+    }
+
+    .box .bit-lnk-fluent > a:active, .bit-lnk-fluent > a:hover, .bit-lnk-fluent > a:visited {
+        text-decoration: none;
+        color: $White;
+    }
+}
+
+/* Nav Menu */
+
+.navbar {
+    .search-box {
+        width: 86%;
+        position: relative;
+        margin-left: rem(30px);
+        height: rem(40px);
+        background: $White;
+        border: rem(1px) solid $DarkBlue;
+        box-sizing: border-box;
+        border-radius: rem(2px);
+
+        @include lg {
+            width: 89%;
+            margin-left: rem(16px);
         }
 
-        &:hover {
-            overflow-y: scroll;
+        @include md {
+            margin-left: rem(32px);
         }
 
-        &::-webkit-scrollbar-thumb:hover {
-            background: $Gray03;
-            border: rem(4px) solid $Gray03;
+        @include sm {
+            margin-left: rem(24px);
         }
 
-        .search-box {
-            width: 82%;
-            position: relative;
-            margin-left: rem(30px);
-            height: rem(40px);
-            background: $White;
-            border: rem(1px) solid $DarkBlue;
-            box-sizing: border-box;
-            border-radius: rem(2px);
-
-            & > div {
-                background-image: url("/images/icon/search-icon.svg");
-                width: rem(20px);
-                height: rem(20px);
-                margin: rem(8px) 0 0 rem(4px);
-            }
-
-            @include md {
-                margin-left: rem(25px);
-            }
+        & > div:first-child {
+            background-image: url("/images/icon/search-icon.svg");
+            width: rem(20px);
+            height: rem(20px);
+            margin: rem(8px) 0 0 rem(4px);
         }
 
-        .bit-sch-box-fluent input {
+        input {
             padding-left: rem(8px);
-        }
-
-        .nav-link {
-            padding-top: rem(8px);
-
-            .bit-nav-grp:first-child i {
-                display: none;
-            }
-
-            .bit-icon--ChevronDown {
-                transform: rotate(-90deg);
-            }
-
-            .bit-nav-expand-fluent {
-                transform: rotate(0deg);
-            }
-
-            .bit-nav-grp-chevron-btn {
-                border: none;
-            }
-
-            .bit-nav-chevron-btn {
-                color: $DarkBlue;
-                font-weight: 600;
-                font-size: rem(18px);
-                margin-left: rem(15px)
-            }
-
-            .bit-nav-link-enabled-hasurl-fluent:hover, .bit-nav-selected-fluent, .bit-nav-selected-fluent:hover {
-                background-color: $Gray03;
-                color: $Violet;
-            }
-
-            .bit-nav-link-enabled-hasurl-fluent {
-                color: $DarkBlue;
-                font-size: rem(18px);
-            }
-
-            .bit-nav-link-container {
-                margin-left: rem(41px);
-            }
-
-            .bit-nav-selected-fluent:after {
-                border-left: rem(4px) solid $Violet;
-            }
-
-            .bit-nav-grp-content {
-                margin-bottom: 0;
-            }
-
-            .bit-sch-box-fluent > div:last-child button {
-                background-color: $White;
-            }
-
-            .bit-icon--Clear {
-                padding-right: rem(20px);
-            }
-
-            input.search-input {
-                padding-top: rem(5px);
-            }
-
-            .border-top {
-                border-bottom: rem(1px) solid $Gray03;
-                padding-top: rem(30px);
-            }
+            position: relative;
+            top: rem(2px);
         }
     }
 
-    .box {
-        .bit-lnk-fluent > a:active, .bit-lnk-fluent > a:hover, .bit-lnk-fluent > a:visited {
-            text-decoration: none;
-            color: $White;
+    .nav-link {
+        padding-top: rem(8px);
+
+        .bit-icon--ChevronDown {
+            transform: rotate(-90deg);
+        }
+
+        .bit-nav-expand-fluent {
+            transform: rotate(0deg);
+        }
+
+        .bit-nav-grp-chevron-btn {
+            border: none;
+        }
+
+        .bit-nav-chevron-btn {
+            width: 90%;
+            color: $DarkBlue;
+            font-weight: 600;
+            font-size: rem(18px);
+            margin-left: rem(15px);
+
+            @include lg {
+                font-size: rem(16px);
+            }
+
+            @include sm {
+                white-space: unset;
+                line-height: rem(22px);
+            }
+        }
+
+        .bit-nav-link-enabled-hasurl-fluent:hover, .bit-nav-selected-fluent, .bit-nav-selected-fluent:hover {
+            background-color: $Gray03;
+            color: $Violet;
+        }
+
+        .bit-nav-link-enabled-hasurl-fluent {
+            color: $DarkBlue;
+            font-size: rem(18px);
+
+            @include lg {
+                font-size: rem(16px);
+            }
+        }
+
+        .bit-nav-link-container {
+            margin-left: rem(41px);
+        }
+
+        .bit-nav-selected-fluent:after {
+            border-left: rem(4px) solid $Violet;
+        }
+
+        .bit-nav-grp-content {
+            margin-bottom: 0;
+        }
+
+        .bit-sch-box-fluent > div:last-child button {
+            background-color: $White;
+        }
+
+        .bit-icon--Clear {
+            padding-right: rem(20px);
+        }
+
+        input.search-input {
+            padding-top: rem(5px);
+        }
+    }
+}
+
+.nav-container .bit-lnk {
+    margin-left: rem(43px);
+
+    a, a:hover, a:visited {
+        font-family: Axiforma;
+        color: $DarkBlue;
+        font-weight: 600;
+        font-size: rem(18px);
+        text-decoration: none;
+
+        @include lg {
+            font-size: rem(16px);
         }
     }
 }
@@ -708,7 +725,6 @@ footer {
         }
     }
 }
-
 /* Colors */
 
 .dark-green {

@@ -13,43 +13,9 @@ namespace Bit.Client.Web.BlazorUI
     /// </summary>
     public partial class BitFileUpload : IDisposable
     {
-        protected override string RootElementClass => "bit-fl-up";
-
         private static readonly HttpClient client = new();
-     
-        private ElementReference inputFileElement { get; set; }
-
-        /// <summary>
-        /// Total count of files uploaded.
-        /// </summary>
-        public int FileCount => Files?.Count ?? 0;
-
-        /// <summary>
-        /// Total size of files.
-        /// </summary>
-        public long TotalSize => Files?.Sum(c => c.Size) ?? 0;
-
-        /// <summary>
-        /// Total size of uploaded files.
-        /// </summary>
-        public long UpLoadedSize { get; set; }
-
-        /// <summary>
-        /// General upload status.
-        /// </summary>
-        public BitUploadStatus UploadStatus { get; set; }
-
-        /// <summary>
-        /// Upload is done in the form of chunks and this property shows the progress of upload in each chunk.
-        /// </summary>
-        public static long ChunkSize => FileSizeHumanizer.OneMegaByte * 10;
-
-        /// <summary>
-        /// All selected files.
-        /// </summary>
-        public IReadOnlyList<BitFileInfo>? Files { get; private set; }
-
         private DotNetObjectReference<BitFileUpload>? dotnetObjectReference;
+        private ElementReference inputFileElement;
 
         [Inject] protected IJSRuntime? JSRuntime { get; set; }
 
@@ -64,9 +30,14 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public string? RemoveUrl { get; set; }
 
         /// <summary>
-        /// Custom label for browse button.
+        /// label text for browse button.
         /// </summary>
         [Parameter] public string Label { get; set; } = "Browse";
+
+        /// <summary>
+        /// Custom label for browse button.
+        /// </summary>
+        [Parameter] public RenderFragment? LabelFragment { get; set; }
 
         /// <summary>
         /// Custom label for Uploaded Status.
@@ -102,6 +73,37 @@ namespace Bit.Client.Web.BlazorUI
         /// Specifies the message for the failed uploading progress due to exceeding the maximum size.
         /// </summary>
         [Parameter] public string MaxSizeMessage { get; set; } = "File size is too large";
+
+        /// <summary>
+        /// Total count of files uploaded.
+        /// </summary>
+        public int FileCount => Files?.Count ?? 0;
+
+        /// <summary>
+        /// Total size of files.
+        /// </summary>
+        public long TotalSize => Files?.Sum(c => c.Size) ?? 0;
+
+        /// <summary>
+        /// Total size of uploaded files.
+        /// </summary>
+        public long UpLoadedSize { get; set; }
+
+        /// <summary>
+        /// General upload status.
+        /// </summary>
+        public BitUploadStatus UploadStatus { get; set; }
+
+        /// <summary>
+        /// Upload is done in the form of chunks and this property shows the progress of upload in each chunk.
+        /// </summary>
+        public static long ChunkSize => FileSizeHumanizer.OneMegaByte * 10;
+
+        /// <summary>
+        /// All selected files.
+        /// </summary>
+        public IReadOnlyList<BitFileInfo>? Files { get; private set; }
+        public string InputId { get; set; } = string.Empty;
 
         /// <summary>
         /// Select file(s) by browse button or drag and drop.
@@ -144,7 +146,15 @@ namespace Bit.Client.Web.BlazorUI
                 }
             }
         }
-        
+
+        protected override Task OnInitializedAsync()
+        {
+            InputId = $"{UniqueId}FileInput";
+            return base.OnInitializedAsync();
+        }
+
+        protected override string RootElementClass => "bit-file-upload";
+
         private async Task UploadOneFile(int index)
         {
             if (JSRuntime is null || Files is null) return;
@@ -198,7 +208,7 @@ namespace Bit.Client.Web.BlazorUI
         public void RequestToPause(int index = -1)
         {
             if (JSRuntime is null || Files is null) return;
-            
+
             if (index < 0)
             {
                 Files.ToList().ForEach(c => c.RequestToPause = true);
@@ -212,7 +222,7 @@ namespace Bit.Client.Web.BlazorUI
         private async Task PauseAsync(int index)
         {
             if (JSRuntime is null || Files is null) return;
-            
+
             await JSRuntime.PauseFile(index);
             UpdateStatus(BitUploadStatus.Paused, index);
             Files[index].RequestToPause = false;
@@ -228,7 +238,7 @@ namespace Bit.Client.Web.BlazorUI
         public void RequestToCancel(int index = -1)
         {
             if (JSRuntime is null || Files is null) return;
-            
+
             if (index < 0)
             {
                 Files.ToList().ForEach(c => c.RequestToCancell = true);
@@ -237,42 +247,6 @@ namespace Bit.Client.Web.BlazorUI
             {
                 Files[index].RequestToCancell = true;
             }
-        }
-
-        private async Task CancelAsync(int index)
-        {
-            if (JSRuntime is null || Files is null) return;
-            
-            await JSRuntime.PauseFile(index);
-            UpdateStatus(BitUploadStatus.Canceled, index);
-            Files[index].RequestToCancell = false;
-        }
-
-        private async Task Remove(int index)
-        {
-            if (JSRuntime is null || Files is null) return;
-
-            if (index < 0)
-            {
-                for (int i = 0; i < Files.Count; i++)
-                {
-                    await RemoveOneFileAsync(i);
-                }
-            }
-            else
-            {
-                await RemoveOneFileAsync(index);
-            }
-
-            UpdateStatus(BitUploadStatus.Removed, index);
-        }
-
-        private async Task RemoveOneFileAsync(int index)
-        {
-            if (Files is null || RemoveUrl is null) return;
-            
-            var uri = new Uri($"{RemoveUrl}?fileName={Files[index].Name}");
-            _ = await client.GetAsync(uri);
         }
 
         /// <summary>
@@ -320,7 +294,7 @@ namespace Bit.Client.Web.BlazorUI
         private void UpdateStatus(BitUploadStatus uploadStatus, int index)
         {
             if (Files is null) return;
-            
+
             if (index < 0)
             {
                 UploadStatus = uploadStatus;
@@ -372,6 +346,73 @@ namespace Bit.Client.Web.BlazorUI
             return responseStatus >= 200 && responseStatus <= 299 ?
                     BitUploadStatus.Completed :
                     (responseStatus == 0 ? BitUploadStatus.Paused : BitUploadStatus.Failed);
+        }
+
+        private async Task CancelAsync(int index)
+        {
+            if (JSRuntime is null || Files is null) return;
+
+            await JSRuntime.PauseFile(index);
+            UpdateStatus(BitUploadStatus.Canceled, index);
+            Files[index].RequestToCancell = false;
+        }
+
+        private async Task Remove(int index)
+        {
+            if (JSRuntime is null || Files is null) return;
+
+            if (index < 0)
+            {
+                for (int i = 0; i < Files.Count; i++)
+                {
+                    await RemoveOneFileAsync(i);
+                }
+            }
+            else
+            {
+                await RemoveOneFileAsync(index);
+            }
+
+            UpdateStatus(BitUploadStatus.Removed, index);
+        }
+
+        private async Task RemoveOneFileAsync(int index)
+        {
+            if (Files is null || RemoveUrl is null) return;
+
+            var uri = new Uri($"{RemoveUrl}?fileName={Files[index].Name}");
+            _ = await client.GetAsync(uri);
+        }
+
+        private static string GetFileElClass(BitUploadStatus status)
+        {
+            switch (status)
+            {
+                case BitUploadStatus.Completed:
+                    return "uploaded";
+                case BitUploadStatus.Failed:
+                case BitUploadStatus.Unaccepted:
+                    return "failed";
+                case BitUploadStatus.Paused:
+                    return "paused";
+                default:
+                    return "in-progress";
+            }
+        }
+
+        private string GetUploadMessageStr(BitUploadStatus status)
+        {
+            switch (status)
+            {
+                case BitUploadStatus.Completed:
+                    return SuccessfulUploadedResultMessage;
+                case BitUploadStatus.Failed:
+                    return FailedUploadedResultMessage;
+                case BitUploadStatus.Unaccepted:
+                    return MaxSizeMessage;
+                default:
+                    return "";
+            }
         }
 
         public void Dispose()
