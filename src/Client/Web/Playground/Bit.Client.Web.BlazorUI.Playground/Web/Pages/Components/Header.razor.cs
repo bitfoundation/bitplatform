@@ -4,43 +4,18 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components
 {
     public partial class Header
     {
-        private string homeLinkClass;
-        private string demoLinkClass;
-        private string getstartedLinkClass;
+        private readonly string demoPath = "components";
+        private readonly string getStartedPath = "get-started";
 
-        [Parameter] public PageType ActivePage { get; set; }
+        private string currentUri;
+
+        [Inject] public NavigationManager NavigationManager { get; set; }
 
         protected override void OnInitialized()
         {
-            string activeClassName = "active";
-
-            switch (ActivePage)
-            {
-                case PageType.Demo:
-                {
-                    demoLinkClass = activeClassName;
-                    break;
-                }
-                case PageType.GetStarted:
-                {
-                    getstartedLinkClass = activeClassName;
-                    break;
-                }
-                default:
-                {
-                    homeLinkClass = activeClassName;
-                    break;
-                }
-            }
+            currentUri = NavigationManager.Uri;
 
             base.OnInitialized();
         }
-    }
-
-    public enum PageType
-    {
-        Home,
-        Demo,
-        GetStarted
     }
 }

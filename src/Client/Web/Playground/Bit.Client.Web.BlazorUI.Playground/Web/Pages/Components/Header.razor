@@ -9,13 +9,13 @@
     </div>
     <ul class="header-menu">
         <li>
-            <BitLink Class="@homeLinkClass" Href="\">Home</BitLink>
+            <BitLink Href="\">Home</BitLink>
         </li>
         <li>
-            <BitLink Class="@demoLinkClass" Href="\components\overview">Demo</BitLink>
+            <BitLink Class="@((currentUri.Contains(demoPath) && !currentUri.Contains(getStartedPath)) ? "active" : string.Empty)" Href="\components\overview">Demo</BitLink>
         </li>
         <li>
-            <BitLink Class="@getstartedLinkClass" Href="\getstarted">Get Started</BitLink>
+            <BitLink Class="@(currentUri.Contains(getStartedPath) ? "active" : string.Empty)" Href="\getstarted">Get Started</BitLink>
         </li>
     </ul>
 </nav>
