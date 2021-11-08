@@ -65,7 +65,7 @@ namespace Bit.Client.Web.BlazorUI
                 Hue = color.Hsv.Hue;
                 SetSaturationPickerBackground();
 
-                ColorType = value.HasValue() && value.StartsWith("#", StringComparison.CurrentCultureIgnoreCase) ? BitColorType.Hex : BitColorType.Rgb;
+                ColorType = value.HasValue() && value.StartsWith("#", StringComparison.InvariantCultureIgnoreCase) ? BitColorType.Hex : BitColorType.Rgb;
 
                 ColorChanged.InvokeAsync(value);
                 AlphaChanged.InvokeAsync(color.Alpha);

@@ -88,13 +88,13 @@ namespace Bit.Client.Web.BlazorUI
 
             try
             {
-                if (color.StartsWith("#", StringComparison.CurrentCultureIgnoreCase))
+                if (color.StartsWith("#", StringComparison.InvariantCultureIgnoreCase))
                 {
                     Red = int.Parse(color.AsSpan(1, 2), NumberStyles.AllowHexSpecifier);
                     Green = int.Parse(color.AsSpan(3, 2), NumberStyles.AllowHexSpecifier);
                     Blue = int.Parse(color.AsSpan(5, 2), NumberStyles.AllowHexSpecifier);
                 }
-                else if (color.Contains("rgb", StringComparison.OrdinalIgnoreCase))
+                else if (color.Contains("rgb", StringComparison.InvariantCultureIgnoreCase))
                 {
                     Regex rx = new Regex(@"\(([^)]+)\)");
                     var mathedColor = rx.Match(color).Value;
