@@ -439,7 +439,9 @@ namespace Bit.Client.Web.BlazorUI
 
         private bool IsFileTypeNotAllowed(BitFileInfo file)
         {
-            return AllowedExtensions.Count > 0 && !AllowedExtensions.Any(ext => ext == "*") && !AllowedExtensions.Any(ext => ext == file.ContentType);
+            var fileSections = file.Name?.Split('.')?.ToList();
+            var extension = $".{fileSections?.Last()}";
+            return AllowedExtensions.Count > 0 && !AllowedExtensions.Any(ext => ext == "*") && !AllowedExtensions.Any(ext => ext == extension);
         }
 
         private static int GetFileUploadPercent(BitFileInfo file)
