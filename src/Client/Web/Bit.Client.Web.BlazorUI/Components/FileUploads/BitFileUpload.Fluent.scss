@@ -21,9 +21,12 @@
     }
 
     .upload-status {
-        padding-left: rem(5px);
-        white-space: nowrap;
+        width: 100%;
+        height: rem(16px);
+        padding-top: rem(8px);
+        margin-top: rem(8px);
         text-overflow: ellipsis;
+        white-space: nowrap;
         color: $color;
         overflow: hidden;
     }
@@ -70,7 +73,7 @@
     }
 }
 
-.file-list {
+.bit-file-list {
     padding: 0;
     margin: 0;
 }
@@ -91,7 +94,7 @@
     @include getLiBaseStyle($class: "paused");
 }
 
-li {
+.bit-file-item {
     display: flex;
     flex-flow: row nowrap;
     justify-content: space-between;

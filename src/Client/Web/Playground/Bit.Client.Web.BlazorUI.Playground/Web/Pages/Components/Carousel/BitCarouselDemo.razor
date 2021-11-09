@@ -1,0 +1,116 @@
+﻿@page "/components/carousel"
+@using Bit.Client.Web.BlazorUI.Playground.Web.Components
+
+<ComponentPage ComponentName="Carousel" OverviewDesc="Carousel (Carousel slide-show) let people show their items in seperate slides from two or more items."
+               ComponentParameters="componentParameters">
+    <CodeSample Title="Basic Carousel" Description="">
+        <SampleContent>
+            <div>
+                <BitCarousel>
+                    <BitCarouselItem>
+                        <div class="numbertext">1 / 4</div>
+                        <img src="/images/carousel/img1.jpg" style="width:100%">
+                        <div class="text">Aurora</div>
+                    </BitCarouselItem>
+                    <BitCarouselItem>
+                        <div class="numbertext">2 / 4</div>
+                        <img src="/images/carousel/img2.jpg" style="width:100%">
+                        <div class="text">Beautiful mountain</div>
+                    </BitCarouselItem>
+                    <BitCarouselItem>
+                        <div class="numbertext">3 / 4</div>
+                        <img src="/images/carousel/img3.jpg" style="width:100%">
+                        <div class="text">Forest in the valley</div>
+                    </BitCarouselItem>
+                    <BitCarouselItem>
+                        <div class="numbertext">4 / 4</div>
+                        <img src="/images/carousel/img4.jpg" style="width:100%">
+                        <div class="text">Road among the mountains</div>
+                    </BitCarouselItem>
+                </BitCarousel>
+            </div>
+        </SampleContent>
+        <CodeSampleContent>
+            <pre>
+                &lt<span class="dark-green">BitCarouselItem</span>>
+                    &lt<span class="blue">div</span> <span class="light-blue">class</span>="numbertext">1/4 &lt/<span class="blue">div</span>>
+                    &lt<span class="blue">img </span><span class="light-blue">src</span>="/images/carousel/img1.jpg"<span class="light-blue"> style</span>="width:100%" />
+                    &lt<span class="blue">div</span> <span class="light-blue">class</span>="text">Aurora &lt/<span class="blue">div</span>>
+                &lt/<span class="dark-green">BitCarouselItem</span>>
+                &lt<span class="dark-green">BitCarouselItem</span>>
+                    &lt<span class="blue">div</span> <span class="light-blue">class</span>="numbertext">2/4 &lt/<span class="blue">div</span>>
+                    &lt<span class="blue">img </span><span class="light-blue">src</span>="/images/carousel/img2.jpg"<span class="light-blue"> style</span>="width:100%" />
+                    &lt<span class="blue">div</span> <span class="light-blue">class</span>="text">Beautiful mountain &lt<span class="blue">/div</span>>
+                &lt/<span class="dark-green">BitCarouselItem</span>>
+                &lt<span class="dark-green">BitCarouselItem</span>>
+                    &lt<span class="blue">div</span> <span class="light-blue">class</span>="numbertext">3/4 &lt/<span class="blue">div</span>>
+                    &lt<span class="blue">img </span><span class="light-blue">src</span>="/images/carousel/img3.jpg"<span class="light-blue"> style</span>="width:100%" />
+                    &lt<span class="blue">div</span> <span class="light-blue">class</span>="text">Forest in the valley &lt/<span class="blue">div</span>>
+                &lt/<span class="dark-green">BitCarouselItem</span>>
+                &lt<span class="dark-green">BitCarouselItem</span>>
+                    &lt<span class="blue">div</span> <span class="light-blue">class</span>="numbertext">4/4 &lt/<span class="blue">div</span>>
+                    &lt<span class="blue">img </span><span class="light-blue">src</span>="/images/carousel/img4.jpg"<span class="light-blue"> style</span>="width:100%" />
+                    &lt<span class="blue">div</span> <span class="light-blue">class</span>="text">Road among the mountains &lt/<span class="blue">div</span>>
+                    &lt/<span class="blue">BitCarouselItem</span>>
+                &lt/<span class="dark-green">BitCarousel</span>>
+            </pre>
+
+        </CodeSampleContent>
+    </CodeSample>
+
+    <CodeSample Title="Carousel with slide show mode" Description="">
+        <SampleContent>
+            <div>
+                <BitCarousel IsSlideShow="true">
+                    <BitCarouselItem>
+                        <div class="numbertext">1 / 4</div>
+                        <img src="/images/carousel/img1.jpg" style="width:100%">
+                        <div class="text">Aurora</div>
+                    </BitCarouselItem>
+                    <BitCarouselItem>
+                        <div class="numbertext">2 / 4</div>
+                        <img src="/images/carousel/img2.jpg" style="width:100%">
+                        <div class="text">Beautiful mountain</div>
+                    </BitCarouselItem>
+                    <BitCarouselItem>
+                        <div class="numbertext">3 / 4</div>
+                        <img src="/images/carousel/img3.jpg" style="width:100%">
+                        <div class="text">Forest in the valley</div>
+                    </BitCarouselItem>
+                    <BitCarouselItem>
+                        <div class="numbertext">4 / 4</div>
+                        <img src="/images/carousel/img4.jpg" style="width:100%">
+                        <div class="text">Road among the mountains</div>
+                    </BitCarouselItem>
+                </BitCarousel>
+            </div>
+        </SampleContent>
+        <CodeSampleContent>
+            <pre>
+                &lt<span class="dark-green">BitCarouselItem IsSlideShow</span>="<span class="light-blue">true</span>">
+                    &lt<span class="blue">div</span> <span class="light-blue">class</span>="numbertext">1/4 &lt/<span class="blue">div</span>>
+                    &lt<span class="blue">img </span><span class="light-blue">src</span>="/images/carousel/img1.jpg"<span class="light-blue"> style</span>="width:100%" />
+                    &lt<span class="blue">div</span> <span class="light-blue">class</span>="text">Aurora &lt/<span class="blue">div</span>>
+                &lt/<span class="dark-green">BitCarouselItem</span>>
+                &lt<span class="dark-green">BitCarouselItem</span>>
+                    &lt<span class="blue">div</span> <span class="light-blue">class</span>="numbertext">2/4 &lt/<span class="blue">div</span>>
+                    &lt<span class="blue">img </span><span class="light-blue">src</span>="/images/carousel/img2.jpg"<span class="light-blue"> style</span>="width:100%" />
+                    &lt<span class="blue">div</span> <span class="light-blue">class</span>="text">Beautiful mountain &lt<span class="blue">/div</span>>
+                &lt/<span class="dark-green">BitCarouselItem</span>>
+                &lt<span class="dark-green">BitCarouselItem</span>>
+                    &lt<span class="blue">div</span> <span class="light-blue">class</span>="numbertext">3/4 &lt/<span class="blue">div</span>>
+                    &lt<span class="blue">img </span><span class="light-blue">src</span>="/images/carousel/img3.jpg"<span class="light-blue"> style</span>="width:100%" />
+                    &lt<span class="blue">div</span> <span class="light-blue">class</span>="text">Forest in the valley &lt/<span class="blue">div</span>>
+                &lt/<span class="dark-green">BitCarouselItem</span>>
+                &lt<span class="dark-green">BitCarouselItem</span>>
+                    &lt<span class="blue">div</span> <span class="light-blue">class</span>="numbertext">4/4 &lt/<span class="blue">div</span>>
+                    &lt<span class="blue">img </span><span class="light-blue">src</span>="/images/carousel/img4.jpg"<span class="light-blue"> style</span>="width:100%" />
+                    &lt<span class="blue">div</span> <span class="light-blue">class</span>="text">Road among the mountains &lt/<span class="blue">div</span>>
+                    &lt/<span class="blue">BitCarouselItem</span>>
+                &lt/<span class="dark-green">BitCarousel</span>>
+            </pre>
+
+        </CodeSampleContent>
+    </CodeSample>
+</ComponentPage>
+

@@ -24,16 +24,13 @@
         <SupportedOSPlatformVersion Condition="'$(TargetFramework)' == 'net6.0-ios'">14.2</SupportedOSPlatformVersion>
         <SupportedOSPlatformVersion Condition="'$(TargetFramework)' == 'net6.0-maccatalyst'">14.0</SupportedOSPlatformVersion>
         <SupportedOSPlatformVersion Condition="'$(TargetFramework)' == 'net6.0-android'">21.0</SupportedOSPlatformVersion>
-        <SupportedOSPlatformVersion Condition="$(TargetFramework.Contains('-windows'))">10.0.18362.0</SupportedOSPlatformVersion>
+        <SupportedOSPlatformVersion Condition="$(TargetFramework.Contains('-windows'))">10.0.17763.0</SupportedOSPlatformVersion>
+        <TargetPlatformMinVersion Condition="$(TargetFramework.Contains('-windows'))">10.0.17763.0</TargetPlatformMinVersion>
     </PropertyGroup>
 
     <ItemGroup>
         <!-- App Icon -->
-        <MauiImage
-			Include="Resources\appicon.svg"
-			ForegroundFile="Resources\appiconfg.svg"
-			IsAppIcon="true"
-			Color="#512BD4" />
+        <MauiIcon Include="Resources\appicon.svg" ForegroundFile="Resources\appiconfg.svg" Color="#512BD4" />
 
         <!-- Splash Screen -->
         <MauiSplashScreen Include="Resources\appiconfg.svg" Color="#512BD4" />
@@ -47,16 +44,13 @@
 
     <ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
         <!-- Required - WinUI does not yet have buildTransitive for everything -->
-        <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.0.0-experimental1" />
-        <PackageReference Include="Microsoft.WindowsAppSDK.Foundation" Version="1.0.0-experimental1" />
-        <PackageReference Include="Microsoft.WindowsAppSDK.WinUI" Version="1.0.0-experimental1" />
-        <PackageReference Include="Microsoft.WindowsAppSDK.InteractiveExperiences" Version="1.0.0-experimental1" NoWarn="NU1701" />
-        <PackageReference Include="Microsoft.Graphics.Win2D" Version="1.0.0.26-experimental1" />
+        <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.0.0-preview3" />
+        <PackageReference Include="Microsoft.Graphics.Win2D" Version="1.0.0.29-preview3" />
     </ItemGroup>
 
     <PropertyGroup Condition="$(TargetFramework.Contains('-windows'))">
         <OutputType>WinExe</OutputType>
-        <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+        <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
     </PropertyGroup>
 
     <PropertyGroup Condition="$(TargetFramework.Contains('-android'))">
@@ -73,7 +67,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="6.0.0-rc.2.21480.10" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="6.0.0" />
     </ItemGroup>
 
     <ItemGroup>

@@ -13,7 +13,7 @@
     <PackageReference Include="Microsoft.AspNet.SignalR.Core" Version="2.4.2" />
     <PackageReference Include="Microsoft.AspNet.SignalR.ServiceBus" Version="2.4.2" />
     <PackageReference Include="Microsoft.AspNet.SignalR.SqlServer" Version="2.4.2" />
-    <PackageReference Include="System.Diagnostics.PerformanceCounter" Version="6.0.0-rc.2.21480.5" />
+    <PackageReference Include="System.Diagnostics.PerformanceCounter" Version="6.0.0" />
   </ItemGroup>
 
   <ItemGroup>
