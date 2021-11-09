@@ -12,7 +12,7 @@
             <BitLink Href="\">Home</BitLink>
         </li>
         <li>
-            <BitLink Class="@((currentUri.StartsWith("components")) ? "active" : string.Empty)" Href="\components\overview">Demo</BitLink>
+            <BitLink Class="@((currentUri.StartsWith("components") && currentUri.EndsWith("get-started") is false) ? "active" : string.Empty)" Href="\components\overview">Demo</BitLink>
         </li>
         <li>
             <BitLink Class="@(currentUri.EndsWith("get-started") ? "active" : string.Empty)" Href="\getstarted">Get Started</BitLink>
