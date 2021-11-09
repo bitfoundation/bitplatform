@@ -159,26 +159,26 @@
                             {
                                 <div class="picker-header">
                                     <button class="header-title"
-                                aria-label="@($"{currentYear}, change year")"
+                                aria-label="@($"{displayYear}, change year")"
                                 tabindex="0"
                                 type="button"
                                 aria-atomic="true"
                                 aria-live="polite"
                                 @onclick="ToggleBetweenMonthAndYearPicker">
-                                        @currentYear
+                                        @displayYear
                                     </button>
                                     <div class="navigation-btn-container">
                                         <button class="navigation-btn"
                                     aria-disabled="false"
                                     type="button"
-                                    title="Go to previous year @(currentYear - 1)"
+                                    title="Go to previous year @(displayYear - 1)"
                                     @onclick="() => HandleYearChange(false)">
                                             <i class="bit-icon" aria-hidden="true"></i>
                                         </button>
                                         <button class="navigation-btn"
                                     aria-disabled="false"
                                     type="button"
-                                    title="Go to previous year @(currentYear + 1)"
+                                    title="Go to next year @(displayYear + 1)"
                                     @onclick="() => HandleYearChange(true)">
                                             <i class="bit-icon" aria-hidden="true"></i>
                                         </button>
@@ -186,7 +186,7 @@
                                 </div>
                                 <div class="grid-container"
                          role="grid"
-                         aria-label="@currentYear">
+                         aria-label="@displayYear">
                                     @for (var rowIndex = 0; rowIndex <= 2; rowIndex++)
                                     {
                                         <div class="btn-row" role="row">
