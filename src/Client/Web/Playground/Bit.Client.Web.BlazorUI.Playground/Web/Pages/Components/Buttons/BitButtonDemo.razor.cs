@@ -101,7 +101,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Buttons
             }
         };
 
-        private readonly string bitButtonSampleCode = $"<BitButton IsEnabled='true'>Primary</BitButton>{Environment.NewLine}" +
+        private readonly string buttonSampleCode = $"<BitButton IsEnabled='true'>Primary</BitButton>{Environment.NewLine}" +
               $"<BitButton Style = 'margin-right: 2px;' ButtonStyle = 'BitButtonStyle.Standard' IsEnabled = 'true'>Standard</BitButton>{Environment.NewLine}" +
               $"<BitButton IsEnabled = 'false' AllowDisabledFocus = 'false'>Disabled</BitButton>{Environment.NewLine}" +
                "<BitButton Class = 'label-btn' IsEnabled = 'true'><label> A Text from label element</label></BitButton>";

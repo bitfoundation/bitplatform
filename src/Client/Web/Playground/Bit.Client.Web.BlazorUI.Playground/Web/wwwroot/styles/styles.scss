@@ -91,7 +91,7 @@ h5 {
 }
 
 pre {
-    line-height: rem(40px);
+    line-height: rem(32px);
     margin-left: rem(-70px);
 
     @include md {
@@ -283,6 +283,10 @@ footer {
     }
 
     .box {
+        .bit-icon {
+            width: rem(16px);
+        }
+
         .bit-lnk-fluent > a:active, .bit-lnk-fluent > a:hover, .bit-lnk-fluent > a:visited {
             text-decoration: none;
             color: $White;
