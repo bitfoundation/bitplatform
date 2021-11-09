@@ -10,38 +10,25 @@ namespace Bit.Client.Web.BlazorUI
     public partial class BitColorPicker : IAsyncDisposable
     {
         private string? onWindowMouseUpAbortControllerId;
-
         private string? onWindowMouseMoveAbortControllerId;
-
         private string? saturationPickerBackgroundRgbCss;
-
         private string? saturationPickerBackgroundRgbaCss;
-
         private bool saturationPickerMouseDown;
-
         private BitColorPosition? saturationPickerThumbPosition;
-
         private BitColor color = new BitColor();
-
         private BitColorType colorType;
-
         private double hue;
-
         private double selectedSaturation = 1;
-
         private double selectedValue = 1;
 
+#pragma warning disable CA1823 // Avoid unused private fields
         private bool ColorHasBeenSet;
-
         private bool AlphaHasBeenSet;
+#pragma warning restore CA1823 // Avoid unused private fields
 
         public ElementReference SaturationPickerRef { get; set; }
-
         public string? Hex => color.Hex;
-
-        public string Rgb => GetRgbCss(color);
-
-        public string Rgba => GetRgbaCss(color);
+        public string? RGB => color.RGB;
 
         [Inject]
         public IJSRuntime JSRuntime { get; set; } = default!;
@@ -49,8 +36,7 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// Whether to show a slider for editing alpha value.
         /// </summary>
-        [Parameter]
-        public bool ShowAlphaSlider { get; set; } = true;
+        [Parameter] public bool ShowAlphaSlider { get; set; } = true;
 
         /// <summary>
         /// CSS-compatible string to describe the color.
@@ -58,20 +44,18 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter]
         public string Color
         {
-            get => colorType == BitColorType.Hex ? color.Hex! : GetRgbaCss(color);
+            get => colorType == BitColorType.Hex ? color.Hex! : color.RGB!;
             set
             {
-                var valueAsBitColor = new BitColor(value, color.Alpha);
+                colorType = value.HasValue() && value.StartsWith("#", StringComparison.InvariantCultureIgnoreCase) ? BitColorType.Hex : BitColorType.Rgb;
+
+                var valueAsBitColor = new BitColor(value, Alpha);
                 if (valueAsBitColor == color) return;
                 color = valueAsBitColor;
                 hue = color.Hsv.Hue;
                 SetSaturationPickerBackground();
 
-                colorType = value.HasValue() && value.StartsWith("#", StringComparison.InvariantCultureIgnoreCase) ? BitColorType.Hex : BitColorType.Rgb;
-
                 ColorChanged.InvokeAsync(value);
-                AlphaChanged.InvokeAsync(color.Alpha);
-                OnChange.InvokeAsync(value);
             }
         }
 
@@ -88,10 +72,6 @@ namespace Bit.Client.Web.BlazorUI
                 color.Alpha = value;
 
                 AlphaChanged.InvokeAsync(value);
-
-                string colorValue = colorType == BitColorType.Hex ? color.Hex! : GetRgbaCss(color);
-                OnChange.InvokeAsync(colorValue);
-                ColorChanged.InvokeAsync(colorValue);
             }
         }
 
@@ -99,14 +79,14 @@ namespace Bit.Client.Web.BlazorUI
 
         [Parameter] public bool ShowPreview { get; set; }
 
-        [Parameter] public EventCallback<string> OnChange { get; set; }
+        [Parameter] public EventCallback<BitColorEventArgs> OnChange { get; set; }
 
         protected override string RootElementClass => "bit-clr-pkr";
 
         protected override void OnInitialized()
         {
             SetSaturationPickerBackground();
-
+            
             base.OnInitialized();
         }
 
@@ -132,8 +112,8 @@ namespace Bit.Client.Web.BlazorUI
         private void SetSaturationPickerBackground()
         {
             var bitColor = new BitColor(hue, 1, 1, 1);
-            saturationPickerBackgroundRgbaCss = GetRgbaCss(bitColor);
-            saturationPickerBackgroundRgbCss = GetRgbCss(bitColor);
+            saturationPickerBackgroundRgbaCss = bitColor.RGBA;
+            saturationPickerBackgroundRgbCss = bitColor.RGB;
         }
 
         private async Task PickColorTune(MouseEventArgs e)
@@ -153,8 +133,12 @@ namespace Bit.Client.Web.BlazorUI
 
             SetSaturationPickerBackground();
 
-            await ColorChanged.InvokeAsync(colorType == BitColorType.Hex ? color.Hex : GetRgbaCss(color));
+
+
+            string? colorValue = colorType == BitColorType.Hex ? color.Hex : color.RGB;
+            await ColorChanged.InvokeAsync(colorValue);
             await AlphaChanged.InvokeAsync(color.Alpha);
+            await OnChange.InvokeAsync(new() { Color = colorValue, Alpha = color.Alpha });
 
             StateHasChanged();
         }
@@ -167,16 +151,20 @@ namespace Bit.Client.Web.BlazorUI
 
             SetSaturationPickerBackground();
 
-            await ColorChanged.InvokeAsync(colorType == BitColorType.Hex ? color.Hex : GetRgbaCss(color));
+            string? colorValue = colorType == BitColorType.Hex ? color.Hex : color.RGB;
+            await ColorChanged.InvokeAsync(colorValue);
             await AlphaChanged.InvokeAsync(color.Alpha);
+            await OnChange.InvokeAsync(new() { Color = colorValue, Alpha = color.Alpha });
         }
 
         private async Task PickAlphaColor(ChangeEventArgs args)
         {
             color.Alpha = Convert.ToDouble(args.Value, CultureInfo.InvariantCulture) / 100;
 
-            await ColorChanged.InvokeAsync(colorType == BitColorType.Hex ? color.Hex : GetRgbaCss(color));
+            string? colorValue = colorType == BitColorType.Hex ? color.Hex : color.RGB;
+            await ColorChanged.InvokeAsync(colorValue);
             await AlphaChanged.InvokeAsync(color.Alpha);
+            await OnChange.InvokeAsync(new() { Color = colorValue, Alpha = color.Alpha });
         }
 
         private async Task RGBColorChanged(string? red = null, string? green = null, string? blue = null)
@@ -195,8 +183,11 @@ namespace Bit.Client.Web.BlazorUI
                 Top = Convert.ToInt32(Math.Round(saturationPickerRect.Height - saturationPickerRect.Height * hsv.Value / 100))
             };
 
-            await ColorChanged.InvokeAsync(colorType == BitColorType.Hex ? color.Hex : GetRgbaCss(color));
+            string? colorValue = colorType == BitColorType.Hex ? color.Hex : color.RGB;
+            await ColorChanged.InvokeAsync(colorValue);
             await AlphaChanged.InvokeAsync(color.Alpha);
+            await OnChange.InvokeAsync(new() { Color = colorValue, Alpha = color.Alpha });
+
             StateHasChanged();
         }
 
@@ -226,16 +217,6 @@ namespace Bit.Client.Web.BlazorUI
             if (saturationPickerMouseDown is false) return;
 
             await PickColorTune(e);
-        }
-
-        private static string GetRgbCss(BitColor bitColor)
-        {
-            return $"rgb({bitColor.Red},{bitColor.Green},{bitColor.Blue})";
-        }
-
-        private static string GetRgbaCss(BitColor bitColor)
-        {
-            return $"rgba({bitColor.Red},{bitColor.Green},{bitColor.Blue},{bitColor.Alpha})";
         }
 
         [JSInvokable]

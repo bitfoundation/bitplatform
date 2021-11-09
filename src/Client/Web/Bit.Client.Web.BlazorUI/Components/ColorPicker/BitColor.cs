@@ -8,10 +8,14 @@ namespace Bit.Client.Web.BlazorUI
     internal class BitColor
     {
         private string? hex;
+        private string? rgb;
+        private string? rgba;
         private (int Hue, int Saturation, int Value) hsv;
 
-        public (int Hue, int Saturation, int Value) Hsv => hsv;
         public string? Hex => hex;
+        public string? RGB => rgb;
+        public string? RGBA => rgba;
+        public (int Hue, int Saturation, int Value) Hsv => hsv;
 
         public int Red { get; private set; } = 255;
         public int Green { get; private set; } = 255;
@@ -23,6 +27,8 @@ namespace Bit.Client.Web.BlazorUI
             Parse(color, alpha);
             CalculateHsv();
             CalculateHex();
+            CalculateRgbCss();
+            CalculateRgbaCss();
         }
 
         public BitColor(double hue, double saturation, double value, double alpha)
@@ -51,6 +57,8 @@ namespace Bit.Client.Web.BlazorUI
             hsv = new(Convert.ToInt32(hue), Convert.ToInt32(saturation), Convert.ToInt32(value));
 
             CalculateHex();
+            CalculateRgbCss();
+            CalculateRgbaCss();
         }
 
         public void SetColorByRgba(int? red = null, int? green = null, int? blue = null, double? alpha = null)
@@ -79,7 +87,10 @@ namespace Bit.Client.Web.BlazorUI
             {
                 CalculateHsv();
                 CalculateHex();
+                CalculateRgbCss();
             }
+
+            CalculateRgbaCss();
         }
 
         private void Parse(string color, double alpha = 1)
@@ -108,11 +119,6 @@ namespace Bit.Client.Web.BlazorUI
                         Red = int.Parse(colorString[0], CultureInfo.InvariantCulture);
                         Green = int.Parse(colorString[1], CultureInfo.InvariantCulture);
                         Blue = int.Parse(colorString[2], CultureInfo.InvariantCulture);
-
-                        if (colorString.Length == 4)
-                        {
-                            Alpha = Convert.ToDouble(colorString[3], CultureInfo.InvariantCulture);
-                        }
                     }
                 }
                 else
@@ -163,6 +169,16 @@ namespace Bit.Client.Web.BlazorUI
         {
             var myColor = Color.FromArgb(Red, Green, Blue);
             hex = $"#{myColor.Name.Remove(0, 2)}";
+        }
+
+        private void CalculateRgbCss()
+        {
+            rgb = $"rgb({Red},{Green},{Blue})";
+        }
+
+        private void CalculateRgbaCss()
+        {
+            rgba = $"rgba({Red},{Green},{Blue},{Alpha})";
         }
 
         public override bool Equals(object obj)

@@ -5,31 +5,53 @@
 <ComponentPage ComponentName="ColorPicker" OverviewDesc="The color picker (ColorPicker) is used to browse through and select colors. By default,
                                            it lets people navigate through colors on a color spectrum; or specify a color in either Red-Green-Blue (RGB); or alpha color code; or Hexadecimal textboxes."
                ComponentParameters="componentParameters">
-    <CodeSample Title="BitColorPicker" Description="">
+    <CodeSample Title="BitColorPicker (Hex)" Description="">
         <SampleContent>
             <div>
-                <BitColorPicker ShowPreview="IsToggleChecked" @ref="ColorPicker" @bind-Color="Color">Default ColorPicker</BitColorPicker>
+                <BitColorPicker ShowPreview="IsToggleChecked" @ref="ColorPicker" @bind-Color="Color" ShowAlphaSlider="false">Default ColorPicker</BitColorPicker>
                 <div class="p-12">
                     <BitToggle Label="Show preview box" @bind-IsChecked="IsToggleChecked" IsEnabled="true" />
                 </div>
                 <div class="p-12 max-w-200">
                     <BitTextField Label="Hex Code" Value="@Color"></BitTextField>
-                    <BitTextField Label="RGB" Value="@(ColorPicker?.Rgb ?? "rgb(255,255,255)")"></BitTextField>
-                    <BitTextField Label="RGBA" Value="@(ColorPicker?.Rgba ?? "rgb(255,255,255,1)")"></BitTextField>
+                    <BitTextField Label="RGB" Value="@(ColorPicker?.RGB ?? "rgb(255,255,255)")"></BitTextField>
                 </div>
             </div>
         </SampleContent>
         <CodeSampleContent>
             <pre>
-                &lt;<span class="dark-green">BitColorPicker ShowPreview</span><span>="IsToggleChecked"</span> <span class="light-yellow-bg">&#64</span><span class="dark-green">ref</span><span>="ColorPicker"</span> <span class="light-yellow-bg">&#64</span><span class="dark-green">bind-Color</span><span>="Color"</span>&gt;Default ColorPicker&lt;/<span class="dark-green">BitColorPicker</span>&gt;
+                &lt;<span class="dark-green">BitColorPicker ShowPreview</span><span>="IsToggleChecked"</span> <span class="light-yellow-bg">&#64</span><span class="dark-green">ref</span><span>="ColorPicker"</span> <span class="light-yellow-bg">&#64</span><span class="dark-green">bind-Color</span><span>="Color"</span> <span class="dark-green">ShowAlphaSlider</span><span>="false"</span>&gt;Default ColorPicker&lt;/<span class="dark-green">BitColorPicker</span>&gt;
                 &lt;<span class="dark-green">BitToggle Label</span>="Show preview box" <span class="light-yellow-bg">&#64</span><span class="dark-green">bind-IsChecked</span>="IsToggleChecked"<span class="dark-green"> IsEnabled</span>="true"/&gt;
                 &lt<span class="dark-green">BitTextField Label</span>="Hex Code" <span class="dark-green"> Value</span>="<span class="light-yellow-bg">&#64</span>Color"><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
                 &lt<span class="dark-green">BitTextField Label</span>="RGB" <span class="dark-green"> Value</span>="<span class="light-yellow-bg">&#64(</span>ColorPicker?.Rgb ?? "rgb(255,255,255)"<span class="light-yellow-bg">)</span>"><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
-                &lt<span class="dark-green">BitTextField Label</span>="RGBA" <span class="dark-green"> Value</span>="<span class="light-yellow-bg">&#64(</span>ColorPicker?.Rgba ?? "rgb(255,255,255,1)"<span class="light-yellow-bg">)</span>"><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
                 <span class="light-yellow-bg">&#64code {</span>
                     <span class="light-blue">private BitColorPicker</span> ColorPicker;
                     <span class="light-blue">private string</span> Color = <span class="light-blue">"#ffffff"</span>;
-                    <span class="light-blue">private bool</span> IsToggleChecked = <span class="light-blue">true</span>;
+                    <span class="light-blue">private bool</span> IsToggleChecked = <span class="light-blue">false</span>;
+                <span class="light-yellow-bg">}</span>
+            </pre>
+        </CodeSampleContent>
+    </CodeSample>
+
+    <CodeSample Title="BitColorPicker (RGB)" Description="">
+        <SampleContent>
+            <div>
+                <BitColorPicker ShowPreview="true" @bind-Alpha="Alpha" @bind-Color="ColorRgb">Default ColorPicker</BitColorPicker>
+                <div class="p-12 max-w-200">
+                    <BitTextField Label="RGB" Value="@ColorRgb"></BitTextField>
+                    <BitTextField Label="Alpha" Value="@(Alpha.ToString())"></BitTextField>
+                </div>
+            </div>
+        </SampleContent>
+        <CodeSampleContent>
+            <pre>
+                &lt;<span class="dark-green">BitColorPicker ShowPreview</span><span>="true"</span> <span class="light-yellow-bg">&#64</span><span class="dark-green">bind-Alpha</span><span>="Alpha"</span> <span class="light-yellow-bg">&#64</span><span class="dark-green">bind-Color</span><span>="ColorRgb"</span>&gt;Default ColorPicker&lt;/<span class="dark-green">BitColorPicker</span>&gt;
+                &lt<span class="dark-green">BitTextField Label</span>="Hex Code" <span class="dark-green"> Value</span>="<span class="light-yellow-bg">&#64</span>ColorRgb"><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
+                &lt<span class="dark-green">BitTextField Label</span>="Alpha" <span class="dark-green"> Value</span>="<span class="light-yellow-bg">&#64(</span>Alpha.ToString()"<span class="light-yellow-bg">)</span>"><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
+                <span class="light-yellow-bg">&#64code {</span>
+                    <span class="light-blue">private BitColorPicker</span> ColorPicker;
+                    <span class="light-blue">private string</span> ColorRgb = <span class="light-blue">"rgb(255,255,255)"</span>;
+                    <span class="light-blue">private double</span> Alpha = <span class="light-blue">1</span>;
                 <span class="light-yellow-bg">}</span>
             </pre>
         </CodeSampleContent>
