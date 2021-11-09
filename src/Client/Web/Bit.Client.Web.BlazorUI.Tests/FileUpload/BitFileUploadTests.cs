@@ -29,26 +29,26 @@ namespace Bit.Client.Web.BlazorUI.Tests.FileUpload
            DataRow(true),
            DataRow(false)
         ]
-        public void BitFileUpload_MultipleAttribute_Test(bool isMultiFile)
+        public void BitFileUpload_MultipleAttribute_Test(bool isMultiSelect)
         {
             var com = RenderComponent<BitFileUploadTest>(parameters =>
             {
-                parameters.Add(p => p.IsMultiFile, isMultiFile);
+                parameters.Add(p => p.IsMultiSelect, isMultiSelect);
             });
 
             var bitFileUpload = com.Find(".file-input");
             var attribute = bitFileUpload.GetAttribute("multiple");
-            var isMultiFileStr = isMultiFile == true ? "" : null;
+            var isMultiFileStr = isMultiSelect == true ? "" : null;
             Assert.AreEqual(isMultiFileStr, attribute);
         }
 
         [TestMethod]
         public void BitFileUpload_AcceptAttribute_Test()
         {
-            var acceptedExtensions = new List<string> { ".mp4", ".mp3" };
+            var allowedExtensions = new List<string> { ".mp4", ".mp3" };
             var com = RenderComponent<BitFileUploadTest>(parameters =>
             {
-                parameters.Add(p => p.AcceptedExtensions, acceptedExtensions);
+                parameters.Add(p => p.AllowedExtensions, allowedExtensions);
             });
 
             var bitFileUpload = com.Find(".file-input");

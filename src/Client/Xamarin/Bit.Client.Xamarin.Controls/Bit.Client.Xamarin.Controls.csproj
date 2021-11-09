@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="NodaTime" Version="3.0.7" />
+    <PackageReference Include="NodaTime" Version="3.0.9" />
       <PackageReference Include="Rg.Plugins.Popup" Version="2.0.0.13" />
       <PackageReference Include="Xamarin.Forms" Version="5.0.0.2196" />
   </ItemGroup>
