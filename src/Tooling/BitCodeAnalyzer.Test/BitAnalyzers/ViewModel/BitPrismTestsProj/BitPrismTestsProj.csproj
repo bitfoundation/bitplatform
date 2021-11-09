@@ -1,14 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <TargetPlatformIdentifier>Windows</TargetPlatformIdentifier>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Bit.Tooling.CodeAnalyzer" Version="8.4.0" />
-    <PackageReference Include="Microsoft.AppCenter.Analytics" Version="4.4.0" />
-    <PackageReference Include="Microsoft.AppCenter.Crashes" Version="4.4.0" />
-    <PackageReference Include="Prism.Autofac.Forms" Version="7.1.0.431" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Bit.Client.Xamarin.Prism" Version="8.5.0" />
+        <PackageReference Include="Bit.Tooling.CodeAnalyzer" Version="8.5.0" />
+        <PackageReference Include="Microsoft.AppCenter.Analytics" Version="4.4.0" />
+        <PackageReference Include="Microsoft.AppCenter.Crashes" Version="4.4.0" />
+    </ItemGroup>
 
 </Project>

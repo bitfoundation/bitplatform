@@ -432,7 +432,7 @@ footer {
         left: 0;
     }
 
-    .bit-lnk-fluent a {
+    .bit-lnk button {
         color: $Gray01;
 
         @include subtitle2-xl;
@@ -450,13 +450,51 @@ footer {
         }
     }
 
-    .bit-lnk-fluent a:hover {
+    .bit-lnk button:hover {
         text-decoration: none;
         color: $Violet;
     }
 
-    .link-container li:hover {
-        background-color: $Gray04;
+    .link-container {
+        li {
+            width: 80%;
+            list-style-type: none;
+        }
+
+        button {
+            padding-left: rem(11px);
+        }
+
+        li > .active {
+            display: inline-block;
+            position: relative;
+            padding-top: rem(4px);
+            background-color: $Gray04;
+            width: 100%;
+
+            &:before {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: rem(4px);
+                height: rem(35px);
+                content: "";
+                background-color: $Violet;
+            }
+
+            button {
+                color: $Violet;
+            }
+        }
+
+        li:hover {
+            background-color: $Gray04;
+            cursor: pointer;
+
+            button {
+                color: $Violet;
+            }
+        }
     }
 
     .bit-nav-link-container .bit-nav-link-txt {
@@ -738,7 +776,9 @@ footer {
 .light-blue {
     color: $LightBlue;
 }
-
+.blue {
+    color: $Blue;
+}
 .dark-orange {
     color: $DarkOrange;
 }
