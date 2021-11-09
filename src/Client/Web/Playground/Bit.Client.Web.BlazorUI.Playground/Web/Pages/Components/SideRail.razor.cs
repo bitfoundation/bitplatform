@@ -12,16 +12,16 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components
         private string activeItem;
 
         [Inject] public IJSRuntime JSRuntime { get; set; }
-        [Parameter] public List<SideRailItems> SideRailItems { get; set; } = new List<SideRailItems>();
+        [Parameter] public List<SideRailItem> Items { get; set; } = new List<SideRailItem>();
 
         protected override void OnInitialized()
         {
-            activeItem = SideRailItems.FirstOrDefault().Id;
+            activeItem = Items.FirstOrDefault().Id;
 
             base.OnInitialized();
         }
 
-        private async Task ScrollToItem(SideRailItems targetItem)
+        private async Task ScrollToItem(SideRailItem targetItem)
         {
             activeItem = targetItem.Id;
 

@@ -8,19 +8,19 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Components
 {
     public partial class ComponentPage
     {
-        private List<SideRailItems> sideRailItems { get; set; } = new()
+        private List<SideRailItem> items { get; set; } = new()
         {
-            new SideRailItems()
+            new SideRailItem()
             {
                 Title = "Overview",
                 Id = "overview-section"
             },
-            new SideRailItems()
+            new SideRailItem()
             {
                 Title = "Usage",
                 Id = "usage-section"
             },
-            new SideRailItems()
+            new SideRailItem()
             {
                 Title = "Implementation",
                 Id = "implementation-section"
