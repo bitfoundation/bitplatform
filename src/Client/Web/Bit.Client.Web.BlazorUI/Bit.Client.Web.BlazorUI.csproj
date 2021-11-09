@@ -32,12 +32,13 @@
         <PackageProjectUrl>https://github.com/bitfoundation/bitframework</PackageProjectUrl>
         <PackageIconUrl>https://avatars.githubusercontent.com/u/22663390</PackageIconUrl>
         <PackageReleaseNotes>https://github.com/bitfoundation/bitframework/releases/</PackageReleaseNotes>
-        <PackageVersion>$([System.DateTime]::Now.ToString("yyyy.MMdd.HHmm"))</PackageVersion>
         <IncludeContentInPack>false</IncludeContentInPack>
 
+        <PackageVersion>8.5.0</PackageVersion>
+
         <!-- Version -->
-        <Version>$([System.DateTime]::Now.ToString("yyyy.MMdd.HHmm"))</Version>
-        <AssemblyVersion>$([System.DateTime]::Now.ToString("yyyy.MMdd.HHmm"))</AssemblyVersion>
+        <Version>8.5.0</Version>
+        <AssemblyVersion>8.5.0</AssemblyVersion>
 
         <!-- Compile -->
         <NeutralLanguage>en</NeutralLanguage>
