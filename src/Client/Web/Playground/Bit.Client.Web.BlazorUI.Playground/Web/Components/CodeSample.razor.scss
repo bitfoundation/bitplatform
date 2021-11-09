@@ -1,13 +1,17 @@
 ﻿@import '../Styles/_shared.scss';
 
 .sample-container {
-    margin-top: rem(35px);
+    margin-top: rem(85px);
 
     .box {
         border-top: 1px solid $Gray02;
         padding: rem(15px) 0 rem(15px);
-        margin-top: rem(5px)
+        margin-top: rem(5px);
     }
+}
+
+#usage-section > .sample-container:nth-child(2) {
+    margin-top: rem(30px);
 }
 
 .code {
@@ -15,6 +19,14 @@
     padding: rem(15px);
     border: 1px solid $Gray03;
     overflow: scroll;
+
+    &::-webkit-scrollbar {
+        width: rem(10px);
+    }
+
+    &::-webkit-scrollbar:horizontal {
+        height: rem(10px);
+    }
 
     .razor-code {
         @include subtitle2-xl;

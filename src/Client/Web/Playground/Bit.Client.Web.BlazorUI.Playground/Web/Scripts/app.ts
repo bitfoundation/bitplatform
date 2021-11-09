@@ -19,3 +19,7 @@ function scrollToElement(targetElementId: string) {
         });
     }
 }
+
+function copyToClipboard(codeSampleContentForCopy: string) {
+    navigator.clipboard.writeText(codeSampleContentForCopy);
+}
