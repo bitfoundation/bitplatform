@@ -13,8 +13,8 @@ namespace Bit.Client.Web.BlazorUI
         private (int Hue, int Saturation, int Value) hsv;
 
         public string? Hex => hex;
-        public string? RGB => rgb;
-        public string? RGBA => rgba;
+        public string? Rgb => rgb;
+        public string? Rgba => rgba;
         public (int Hue, int Saturation, int Value) Hsv => hsv;
 
         public int Red { get; private set; } = 255;
