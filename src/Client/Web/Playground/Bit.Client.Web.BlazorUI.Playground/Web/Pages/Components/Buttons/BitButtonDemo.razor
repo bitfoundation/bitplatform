@@ -27,9 +27,9 @@
                 &lt<span class="soco-component-attr">BitButton IsEnabled</span>=<span class="soco-tag-type-def">"true"</span>>
                          Primary<span>
                 &lt/</span><span class="soco-component-attr">BitButton</span><span>&gt;</span>
-                &lt<span class="soco-component-attr">BitButton ButtonStyle</span>="<span>ButtonStyle</span>.Standard"<span class="soco-component-attr">
-                                       Style</span><span>="margin-right: 2px;"</span><span class="soco-component-attr">
-                                       IsEnabled</span>=<span class="soco-tag-type-def">"true"</span><span>></span>
+                &lt<span class="soco-component-attr">BitButton ButtonStyle</span>="<span>ButtonStyle</span>.Standard"
+                                       <span class="soco-component-attr">Style</span><span>="margin-right: 2px;"</span>
+                                       <span class="soco-component-attr">IsEnabled</span>=<span class="soco-tag-type-def">"true"</span><span>></span>
                          Standard<span>
                 &lt/</span><span class="soco-component-attr">BitButton</span><span>&gt;</span>
                 &lt<span class="soco-component-attr">BitButton IsEnabled</span>=<span class="soco-tag-type-def">"false"</span><span>></span>
@@ -92,6 +92,29 @@
                 <span>&lt/</span><span class="soco-component-attr">BitButton</span>&gt;
                 &lt<span class="soco-component-attr">BitButton Visibility</span>="ComponentVisibility.Collapsed"<span>></span>
                          <span>Collapsed Button</span>
+                <span>&lt/</span><span class="soco-component-attr">BitButton</span>&gt;
+            </pre>
+        </CodeSampleContent>
+    </CodeSample>
+    <CodeSample Title="Arias for Screen Reader" Description="Aria attribues can also set for a BitButton." CodeSampleContentForCopy="@ariasSampleCode">
+        <SampleContent>
+            <div>
+                <BitButton AriaDescription="Detailed description used for screen reader.">
+                    Button with Aria Description
+                </BitButton>
+                <BitButton ButtonStyle="BitButtonStyle.Standard" AriaHidden="true">
+                    Button with Aria Hidden
+                </BitButton>
+            </div>
+        </SampleContent>
+        <CodeSampleContent>
+            <pre>
+                &lt<span class="soco-component-attr">BitButton AriaDescription</span>="Detailed description used for screen reader."
+                        Button with Aria Description
+                <span>&lt/</span><span class="soco-component-attr">BitButton</span>&gt;
+                &lt<span class="soco-component-attr">BitButton ButtonStyle</span>="<span>ButtonStyle</span>.Standard"
+                                       <span class="soco-component-attr">AriaHidden</span>=<span class="soco-tag-type-def">"true"</span>
+                        Button with Aria Hidden
                 <span>&lt/</span><span class="soco-component-attr">BitButton</span>&gt;
             </pre>
         </CodeSampleContent>

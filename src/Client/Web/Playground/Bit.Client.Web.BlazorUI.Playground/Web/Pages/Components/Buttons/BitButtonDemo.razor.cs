@@ -123,6 +123,9 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Buttons
                  $"<BitButton Visibility='BitComponentVisibility.Hidden'>Hidden Button</BitButton>{Environment.NewLine}" +
                  $"<BitButton Visibility='BitComponentVisibility.Collapsed'>Collapsed Button</BitButton>";
 
+        private readonly string ariasSampleCode = $"<BitButton AriaDescription='Detailed description used for screen reader.'>Button with Aria Description</BitButton>{Environment.NewLine}" +
+                 $"<BitButton AriaHidden='true'>Button with Aria Hidden</BitButton>";
+
         private readonly string buttonLikeAnchorSampleCode = $"<BitButton Style='margin-right: 10px;' Title='Primary' Target='_blank' Href='https://github.com/bitfoundation/bitframework'>Open Bit Foundation In New Tab</BitButton>{Environment.NewLine}" +
                  $"<BitButton Visibility='BitComponentVisibility.Hidden'>Hidden Button</BitButton>{Environment.NewLine}" +
                  $"<BitButton Visibility='BitComponentVisibility.Collapsed'>Collapsed Button</BitButton>";
