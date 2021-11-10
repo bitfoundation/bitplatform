@@ -48,7 +48,7 @@
                         If it fails, you can run dotnet restore by yourself.
                     </p>
                 </section>
-                <section id="building-section" class="building-content">
+                <section id="debugging-section" class="building-content">
                     <h5>Development & Debugging</h5>
                     <p>
                         Run your project now.
@@ -57,22 +57,31 @@
                         $ dotnet run
                     </div>
                 </section>
+                 <section id="building-section" class="building-content">
+                    <h5>Building & Deployment</h5>
+                    <p>
+                       Entry files will be built and generated in  dist/wwwroot
+                    </p>
+                    <div class="command">
+                       $ dotnet publish -c release -o dist
+                    </div>
+                </section>
                 <section id="install-blazor-section" class="install-blazor-content">
                     <h5>Install Bit Design Blazor</h5>
                     <div class="command">
                         $ dotnet publish -c release -o dist
                     </div>
                 </section>
-                <section class="register-dependency-content">
+                <section id="register-dependency-section" class="register-dependency-content">
                     <h5>Register Dependencies</h5>
                     <p>Add dependency registration in Startup.cs.</p>
                     <div class="startup-code">
                         <div>
-                            <span class="light-blue"> public void </span><span class="dark-yellow">ConfigureServices</span> (<span class="neon-yellow">IServiceCollection</span> services)
+                            <span class="soco-tag-type-def">public void </span>ConfigureServices(IServiceCollection services)
                         </div>
                         <div>{</div>
                         <div class="m-l-20">...</div>
-                        <div class="m-l-20">services.<span class="dark-yellow">AddAntDesign</span>();</div>
+                        <div class="m-l-20">services.AddAntDesign();</div>
                         <div>}</div>
                     </div>
                 </section>
@@ -86,7 +95,7 @@
                     </div>
                 </section>
             </div>
-            @*<Siderail SiderailParameters="@siderailParameter" />*@
+            <SideRail Items="@items" />
         </div>
     </div>
 </div>

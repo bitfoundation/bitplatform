@@ -12,23 +12,41 @@ h5 {
 
 section {
     margin-bottom: rem(110px);
+    scroll-margin-top: rem(150px);
 }
 
 .main-container {
     background-image: url(/images/main/component-bg.png);
     background-repeat: no-repeat;
     background-size: 100%;
-    display: flex;
-    flex-wrap: wrap;
     position: relative;
-    margin-top: rem(160px);
+    margin-top: rem(120px);
 }
 
 .component-container {
+    display: flex;
     background-image: none;
     background-position: unset;
     background-repeat: unset;
     background-size: unset;
+}
+
+.component-content {
+    width: 70%;
+    padding-left: rem(70px);
+    margin: rem(100px) 0 rem(50px);
+
+    @include lg {
+        padding-left: rem(280px);
+    }
+
+    @include md {
+        padding-left: rem(100px);
+    }
+
+    @include sm {
+        padding-left: rem(50px);
+    }
 }
 
 .command {
