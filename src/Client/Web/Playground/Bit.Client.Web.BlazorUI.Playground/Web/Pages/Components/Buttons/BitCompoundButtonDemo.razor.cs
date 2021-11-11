@@ -36,7 +36,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Buttons
                 Type = "ButtonStyle",
                 LinkType = LinkType.Link,
                 Href = "#button-style-enum",
-                DefaultValue = "ButtonStyle.primary",
+                DefaultValue = "ButtonStyle.Primary",
                 Description = "The style of compound button, Possible values: Primary | Standard",
             },
             new ComponentParameter()
@@ -113,17 +113,17 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Buttons
              $"<BitCompoundButton IsEnabled='false' Text='Disabled' AriaDescription='Detailed description used for screen reader.' SecondaryText='This Button is a disabled compound button' ButtonStyle='ButtonStyle.Standard'></BitCompoundButton>";
 
         private readonly string styleAndClassSampleCode = $"<BitCompoundButton Style='background-color:#32385b;border-color:#32385b' Text='Styled' SecondaryText='This is styled compound button'></BitCompoundButton>{Environment.NewLine}" +
-                 $"<BitCompoundButton Class='custom-button' Text='Classed' SecondaryText='This is classed compound button' ButtonStyle='ButtonStyle.Standard'></BitCompoundButton>{Environment.NewLine}" +
+                 $"<BitCompoundButton Class='custom-compound-button' Text='Classed' SecondaryText='This is classed compound button' ButtonStyle='ButtonStyle.Standard'></BitCompoundButton>{Environment.NewLine}" +
                  $"<style>{Environment.NewLine}" +
-                 $".custom-button {{ {Environment.NewLine}" +
-                 $"height:40px;{Environment.NewLine}" +
-                 $"width:166px;{Environment.NewLine}" +
+                 $".custom-compound-button {{ {Environment.NewLine}" +
+                 $"width:230px;{Environment.NewLine}" +
                  $"font-family:Axiforma;{Environment.NewLine}" +
                  $"font-size:16px;{Environment.NewLine}" +
+                 $"color:white;{Environment.NewLine}" +
                  $"background-color:#2F455A;{Environment.NewLine}" +
                  $"border-color:#2F455A;{Environment.NewLine}" +
                  $"}} {Environment.NewLine}" +
-                 $"</style>{Environment.NewLine}";
+                 $"</style>";
 
         private readonly string visibilitySampleCode = $"<BitCompoundButton Visibility='ComponentVisibility.Visible' Text='Visible' SecondaryText='This Button is a visible compound button'></BitCompoundButton>{Environment.NewLine}" +
                  $"<BitCompoundButton Hidden='ComponentHidden.Hidden' Text='Hidden' SecondaryText='This Button is a hidden compound button'></BitCompoundButton>{Environment.NewLine}" +
