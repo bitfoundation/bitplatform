@@ -654,6 +654,20 @@ footer {
     }
 }
 
+.custom-icon-button, .custom-icon-button:hover {
+    height: rem(48px);
+    width: rem(48px);
+    border-radius: rem(5px);
+    background-color: $Gray03;
+    border-color: $Gray03;
+}
+
+.ico-btn-content {
+    .bit-icon {
+        font-size : rem(25px);
+    }
+}
+
 .custom-compound-button, .custom-compound-button:hover {
     width: rem(230px);
     font-family: Axiforma;
