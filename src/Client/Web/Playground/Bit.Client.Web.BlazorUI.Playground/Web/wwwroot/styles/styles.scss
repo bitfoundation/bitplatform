@@ -91,6 +91,7 @@ h5 {
 }
 
 pre {
+    line-height: rem(32px);
     margin-left: rem(-70px);
 
     @include md {
@@ -100,10 +101,6 @@ pre {
     @include sm {
         margin-left: rem(-48px);
     }
-}
-
-.bit-icon {
-    height: 0;
 }
 
 input::-webkit-input-placeholder {
@@ -285,9 +282,15 @@ footer {
         flex: 65%;
     }
 
-    .box .bit-lnk-fluent > a:active, .bit-lnk-fluent > a:hover, .bit-lnk-fluent > a:visited {
-        text-decoration: none;
-        color: $White;
+    .box {
+        .bit-icon {
+            width: rem(16px);
+        }
+
+        .bit-lnk-fluent > a:active, .bit-lnk-fluent > a:hover, .bit-lnk-fluent > a:visited {
+            text-decoration: none;
+            color: $White;
+        }
     }
 }
 
@@ -432,7 +435,7 @@ footer {
         left: 0;
     }
 
-    .bit-lnk-fluent a {
+    .bit-lnk button {
         color: $Gray01;
 
         @include subtitle2-xl;
@@ -450,13 +453,51 @@ footer {
         }
     }
 
-    .bit-lnk-fluent a:hover {
+    .bit-lnk button:hover {
         text-decoration: none;
         color: $Violet;
     }
 
-    .link-container li:hover {
-        background-color: $Gray04;
+    .link-container {
+        li {
+            width: 80%;
+            list-style-type: none;
+        }
+
+        button {
+            padding-left: rem(11px);
+        }
+
+        li > .active {
+            display: inline-block;
+            position: relative;
+            padding-top: rem(4px);
+            background-color: $Gray04;
+            width: 100%;
+
+            &:before {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: rem(4px);
+                height: rem(35px);
+                content: "";
+                background-color: $Violet;
+            }
+
+            button {
+                color: $Violet;
+            }
+        }
+
+        li:hover {
+            background-color: $Gray04;
+            cursor: pointer;
+
+            button {
+                color: $Violet;
+            }
+        }
     }
 
     .bit-nav-link-container .bit-nav-link-txt {
@@ -473,6 +514,7 @@ footer {
 }
 
 .how-to-use {
+    margin-bottom: rem(60px);
     text-justify: auto;
     color: $Black01;
 
@@ -531,6 +573,7 @@ footer {
 
 .table .bit-lnk > a {
     color: $Violet;
+    cursor: pointer;
 }
 
 .disable-btn {
@@ -559,16 +602,39 @@ footer {
     }
 }
 
+.styled-btn {
+    @include sm {
+        margin: 0 0 rem(10px) 0;
+    }
+}
+
 .chk-box .bit-chb-lbl {
     margin-bottom: rem(10px);
 }
 
 .custom-button, .custom-button:hover {
-    background-color: $DarkRed;
-    border-color: $DarkRed;
-    color: $White;
-    text-decoration: underline;
-    font-weight: bolder;
+    height: rem(40px);
+    width: rem(166px);
+    font-family: Axiforma;
+    font-size: rem(16px);
+    background-color: $DarkBlue;
+    border-color: $DarkBlue;
+}
+
+.custom-action-button, .custom-action-button:hover {
+    font-family: Axiforma;
+    font-size: rem(16px);
+    background-color: $Gray03;
+    border-color: $Gray03;
+    justify-content: center;
+    width: rem(220px);
+    margin-top: rem(10px);
+}
+
+.act-btn-content {
+    .bit-act-btn-fluent > span:first-child i {
+        font-size: rem(25px);
+    }
 }
 
 .disable-cmp-btn {
@@ -725,42 +791,37 @@ footer {
         }
     }
 }
+
 /* Colors */
 
-.dark-green {
-    color: $DarkGreen;
-}
-
-.light-green {
-    color: $LightGreen;
-}
-
-.light-blue {
-    color: $LightBlue;
-}
-.blue {
-    color: $Blue;
-}
-.dark-orange {
-    color: $DarkOrange;
-}
-
-.neon-yellow {
-    color: $NeonYellow;
-}
-
-.dark-yellow {
-    color: $DarkYellow;
-}
-
-.dark-cyan {
-    color: $DarkCyan;
-}
-
-.light-purple {
+.soco-if-for {
     color: $LightPurple;
 }
 
-.light-yellow-bg {
-    background-color: $LightYellow;
+.soco-var-attr {
+    color: $LightBlue;
+}
+
+.soco-tag-type-def {
+    color: $Blue;
+}
+
+.soco-string {
+    color: $DarkOrange;
+}
+
+.soco-class-attr {
+    color: $LightGreen;
+}
+
+.soco-component-attr {
+    color: $DarkGreen;
+}
+
+.soco-css-style {
+    color: $Orange;
+}
+
+.soco-code {
+    background-color: $DarkYellow;
 }
