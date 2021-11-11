@@ -661,7 +661,7 @@ footer {
 
 .ico-btn-content {
     .bit-icon {
-        font-size : rem(25px);
+        font-size: rem(25px);
     }
 }
 
@@ -720,6 +720,12 @@ footer {
             padding: 5px 0px;
             overflow-wrap: break-word;
         }
+    }
+}
+
+.component-subtitle {
+    @include sm {
+        line-height: rem(25px);
     }
 }
 
