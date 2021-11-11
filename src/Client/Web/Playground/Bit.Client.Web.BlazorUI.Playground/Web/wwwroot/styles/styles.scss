@@ -773,6 +773,16 @@ footer {
         }
     }
 
+    .bit-tgl-btn-primary-fluent .bit-icon {
+        color: $White;
+    }
+
+    .bit-tgl-btn-fluent > span > span {
+        font-weight: normal;
+        margin: 0;
+        line-height: 0;
+    }
+
     .aria-hidden-tgl-btn {
         @include sm {
             margin-top: rem(10px);
@@ -791,7 +801,6 @@ footer {
         }
     }
 }
-
 /* Colors */
 
 .soco-if-for {
