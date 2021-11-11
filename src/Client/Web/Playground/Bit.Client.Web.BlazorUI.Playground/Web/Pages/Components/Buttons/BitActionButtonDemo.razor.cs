@@ -76,17 +76,16 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Buttons
         private readonly string actionButtonSampleCode = $"<BitActionButton IconName='AddFriend'>Create account</BitActionButton>{Environment.NewLine}" +
              $"<BitActionButton IconName='UserRemove' AllowDisabledFocus='false' IsEnabled='false'>Remove user</BitActionButton>{Environment.NewLine}";
 
-        // Change style
-        private readonly string styleAndClassSampleCode = $"<BitActionButton Style='color:red'>Styled Action Button</BitActionButton>{Environment.NewLine}" +
-                 $"<BitActionButton Class='custom-button'>Classed Action Button</BitActionButton>{Environment.NewLine}" +
+        private readonly string styleAndClassSampleCode = $"<BitActionButton Style='font-family:'Axiforma';font-size:16px;border:2px solid #32385B;justify-content: center;width: 220px;'>Styled Action Button</BitActionButton>{Environment.NewLine}" +
+                 $"<BitActionButton Class='custom-action-button'>Classed Action Button</BitActionButton>{Environment.NewLine}" +
                  $"<style>{Environment.NewLine}" +
-                 $".custom-button {{ {Environment.NewLine}" +
-                 $"height:40px;{Environment.NewLine}" +
-                 $"width:166px;{Environment.NewLine}" +
+                 $".custom-action-button {{ {Environment.NewLine}" +
+                 $"width:220px;{Environment.NewLine}" +
                  $"font-family:Axiforma;{Environment.NewLine}" +
-                 $" font-size:16px;{Environment.NewLine}" +
-                 $"background-color:#2F455A;{Environment.NewLine}" +
-                 $"border-color:#2F455A;{Environment.NewLine}" +
+                 $"font-size:16px;{Environment.NewLine}" +
+                 $"background-color:#D7D7D7;{Environment.NewLine}" +
+                 $"border-color:#D7D7D7;{Environment.NewLine}" +
+                 $"justify-content:center;{Environment.NewLine}" +
                  $"}} {Environment.NewLine}" +
                  $"</style>{Environment.NewLine}";
 
@@ -99,6 +98,6 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Buttons
 
         private readonly string actionButtonLikeAnchorSampleCode = $"<BitActionButton IconName='Website' Target='_blank' Href='https://github.com/bitfoundation/bitframework'>Open Bit Foundation In New Tab</BitActionButton>{Environment.NewLine}" +
                  $"<BitActionButton IconName='Website' ButtonStyle='ButtonStyle.Standard' Href='https://github.com/bitfoundation/bitframework'>Go To Bit Foundation</BitActionButton>{Environment.NewLine}" +
-                 $"<BitActionButton Target='_self' IconName='Website' Href='https://github.com/bitfoundation/bitframework' IsEnabled='false'<span>Bit Foundation From Span<span></BitActionButton>{Environment.NewLine}";
+                 $"<BitActionButton Target='_self' IconName='Website' Href='https://github.com/bitfoundation/bitframework' IsEnabled='false'<span>Bit Foundation From Span</span></BitActionButton>{Environment.NewLine}";
     }
 }

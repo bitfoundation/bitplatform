@@ -621,6 +621,22 @@ footer {
     border-color: $DarkBlue;
 }
 
+.custom-action-button, .custom-action-button:hover {
+    font-family: Axiforma;
+    font-size: rem(16px);
+    background-color: $Gray03;
+    border-color: $Gray03;
+    justify-content: center;
+    width: rem(220px);
+    margin-top: rem(10px);
+}
+
+.act-btn-content {
+    .bit-act-btn-fluent > span:first-child i {
+        font-size: rem(25px);
+    }
+}
+
 .disable-cmp-btn {
     @include md {
         margin-top: rem(10px);
@@ -775,6 +791,7 @@ footer {
         }
     }
 }
+
 /* Colors */
 
 .soco-if-for {
