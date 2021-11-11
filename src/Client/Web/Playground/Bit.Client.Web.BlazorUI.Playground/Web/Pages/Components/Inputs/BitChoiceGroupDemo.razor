@@ -4,7 +4,7 @@
 
 <ComponentPage ComponentName="ChoiceGroup" OverviewDesc="Radio buttons (ChoiceGroup) let people select a single option from two or more choices."
                ComponentParameters="componentParameters">
-    <CodeSample Title="BitChoiceGroup" Description="To create a choicegroup you can use a BitChoiceGroup component">
+    <CodeSample Title="BitChoiceGroup" Description="To create a choicegroup you can use a BitChoiceGroup component" CodeSampleContentForCopy="@choiceGroupSampleCode">
         <SampleContent>
             <div class="ch-group">
                 <BitLabel>Selected Key is : @MySelectedKey</BitLabel>
@@ -18,21 +18,36 @@
         </SampleContent>
         <CodeSampleContent>
             <pre>
-                &lt<span class="soco-component-attr">BitLabel</span>>Selected Key is : <span class="soco-code">@@</span>MySelectedKey<span>&lt/</span><span class="soco-component-attr">BitLabel</span>&gt;
-                &lt<span class="soco-component-attr">BitTextField <span class="soco-code">@@</span>bind-Value</span>="MySelectedKey" <span class="soco-component-attr">Placeholder</span>="Select one of A, B or C"><span>&lt/</span><span class="soco-component-attr">BitTextField</span>&gt;
-                &lt<span class="soco-component-attr">BitChoiceGroup Name</span>="Group1" <span class="soco-component-attr">Label</span>="Pick one" <span class="soco-component-attr">IsRequired</span>=<span class="soco-tag-type-def">"true"</span>>
-                &lt<span class="soco-component-attr">BitChoiceOption</span> <span class="soco-component-attr">Key</span>="A" <span class="soco-component-attr">Text</span>="Option1" <span class="soco-component-attr">Value</span>="1">&lt/<span class="soco-component-attr">BitChoiceOption</span>>
-                &lt<span class="soco-component-attr">BitChoiceOption</span> <span class="soco-component-attr">Key</span>="B" <span class="soco-component-attr">Text</span>="Option2" <span class="soco-component-attr">Value</span>="2">&lt/<span class="soco-component-attr">BitChoiceOption</span>>
-                &lt<span class="soco-component-attr">BitChoiceOption</span> <span class="soco-component-attr">Key</span>="C" <span class="soco-component-attr">Text</span>="Disabled Option" <span class="soco-component-attr">Value</span>="3" <span class="soco-component-attr">IsEnabled</span>=<span class="soco-tag-type-def">"false"</span>>&lt/<span class="soco-component-attr">BitChoiceOption</span>>
+                &lt<span class="soco-component-attr">BitLabel</span>>
+                         Selected Key is : <span class="soco-code">@@</span>MySelectedKey
+                &lt/<span class="soco-component-attr">BitLabel</span>&gt;
+                &lt<span class="soco-component-attr">BitTextField <span class="soco-code">@@</span>bind-Value</span>="MySelectedKey" 
+                                          <span class="soco-component-attr">Placeholder</span>="Select one of A, B or C">
+                &lt/<span class="soco-component-attr">BitTextField</span>&gt;
+                &lt<span class="soco-component-attr">BitChoiceGroup Name</span>="Group1" 
+                                                    <span class="soco-component-attr">Label</span>="Pick one" 
+                                                    <span class="soco-component-attr">IsRequired</span>=<span class="soco-tag-type-def">"true"</span>>
+                    &lt<span class="soco-component-attr">BitChoiceOption</span> <span class="soco-component-attr">Key</span>="A"
+                                                        <span class="soco-component-attr">Text</span>="Option1"
+                                                        <span class="soco-component-attr">Value</span>="1">
+                    &lt/<span class="soco-component-attr">BitChoiceOption</span>>
+                    &lt<span class="soco-component-attr">BitChoiceOption</span> <span class="soco-component-attr">Key</span>="B"
+                                                        <span class="soco-component-attr">Text</span>="Option2"
+                                                        <span class="soco-component-attr">Value</span>="2">
+                    &lt/<span class="soco-component-attr">BitChoiceOption</span>>
+                    &lt<span class="soco-component-attr">BitChoiceOption</span> <span class="soco-component-attr">Key</span>="C" 
+                                                        <span class="soco-component-attr">Text</span>="Disabled Option" 
+                                                        <span class="soco-component-attr">Value</span>="3" 
+                                                        <span class="soco-component-attr">IsEnabled</span>=<span class="soco-tag-type-def">"false"</span>>
+                    &lt/<span class="soco-component-attr">BitChoiceOption</span>>
                 &lt/<span class="soco-component-attr">BitChoiceGroup</span>>
-                
                 <span class="soco-code">&#64;code {</span>
                       <span class="soco-tag-type-def">private string </span> MySelectedKey = <span class="soco-string">"B"</span>
                 <span class="soco-code">}</span>
             </pre>
         </CodeSampleContent>
     </CodeSample>
-    <CodeSample Title="Disabled" Description="BitChoiceGroup in disabled mode.">
+    <CodeSample Title="Disabled" Description="BitChoiceGroup in disabled mode." CodeSampleContentForCopy="@disabledSampleCode">
         <SampleContent>
             <div>
                 <BitChoiceGroup Name="Group2" IsEnabled="false" Label="Pick one" DefaultSelectedKey="C">
@@ -44,15 +59,28 @@
         </SampleContent>
         <CodeSampleContent>
             <pre>
-                &lt<span class="soco-component-attr">BitChoiceGroup Name</span>="Group2" <span class="soco-component-attr">IsEnabled</span>=<span class="soco-tag-type-def">"false"</span> <span class="soco-component-attr">Label</span>="Pick one"  <span class="soco-component-attr">DefaultSelectedKey</span>="C">
-                                &lt<span class="soco-component-attr">BitChoiceOption</span> <span class="soco-component-attr">Key</span>="A" <span class="soco-component-attr">Text</span>="Option1" <span class="soco-component-attr">Value</span>="1">&lt/<span class="soco-component-attr">BitChoiceOption</span>>
-                                &lt<span class="soco-component-attr">BitChoiceOption</span> <span class="soco-component-attr">Key</span>="B" <span class="soco-component-attr">Text</span>="Option2" <span class="soco-component-attr">Value</span>="2">&lt/<span class="soco-component-attr">BitChoiceOption</span>>
-                                &lt<span class="soco-component-attr">BitChoiceOption</span> <span class="soco-component-attr">Key</span>="C" <span class="soco-component-attr">Text</span>="Disabled option" <span class="soco-component-attr">Value</span>="3" <span class="soco-component-attr">IsEnabled</span>=<span class="soco-tag-type-def">"false"</span>>&lt/<span class="soco-component-attr">BitChoiceOption</span>>
+                &lt<span class="soco-component-attr">BitChoiceGroup Name</span>="Group2"
+                                                    <span class="soco-component-attr">IsEnabled</span>=<span class="soco-tag-type-def">"false"</span>
+                                                    <span class="soco-component-attr">Label</span>="Pick one"
+                                                    <span class="soco-component-attr">DefaultSelectedKey</span>="C">
+                   &lt<span class="soco-component-attr">BitChoiceOption</span> <span class="soco-component-attr">Key</span>="A" 
+                                                       <span class="soco-component-attr">Text</span>="Option1" 
+                                                       <span class="soco-component-attr">Value</span>="1">
+                   &lt/<span class="soco-component-attr">BitChoiceOption</span>>
+                   &lt<span class="soco-component-attr">BitChoiceOption</span> <span class="soco-component-attr">Key</span>="B" 
+                                                       <span class="soco-component-attr">Text</span>="Option2" 
+                                                       <span class="soco-component-attr">Value</span>="2">
+                   &lt/<span class="soco-component-attr">BitChoiceOption</span>>
+                   &lt<span class="soco-component-attr">BitChoiceOption</span> <span class="soco-component-attr">Key</span>="C" 
+                                                       <span class="soco-component-attr">Text</span>="Disabled option" 
+                                                       <span class="soco-component-attr">Value</span>="3" 
+                                                       <span class="soco-component-attr">IsEnabled</span>=<span class="soco-tag-type-def">"false"</span>>
+                   &lt/<span class="soco-component-attr">BitChoiceOption</span>>
                 &lt/<span class="soco-component-attr">BitChoiceGroup</span>>
             </pre>
         </CodeSampleContent>
     </CodeSample>
-    <CodeSample Title="ChoiceGroup with images" Description="">
+    <CodeSample Title="ChoiceGroup with images" Description="" CodeSampleContentForCopy="@choiceGroupwithImagesSampleCode">
         <SampleContent>
             <div>
                 <BitChoiceGroup Name="Group1" Label="Pick one image" DefaultSelectedKey="pie">
@@ -64,15 +92,39 @@
         </SampleContent>
         <CodeSampleContent>
             <pre>
-                &lt<span class="soco-component-attr">BitChoiceGroup Name</span>="Group1 <span class="soco-component-attr">Label</span>="Pick one image" <span class="soco-component-attr">DefaultSelectedKey</span>="pie">
-                                &lt<span class="soco-component-attr">BitChoiceOption</span> <span class="soco-component-attr">Key</span>="bar" <span class="soco-component-attr">Text</span>="Clustered bar chart" <span class="soco-component-attr">Value</span>="1" <span class="soco-component-attr">ImageSrc</span>="/choicegroup-bar-unselected.png" <span class="soco-component-attr">SelectedImageSrc</span>="/choicegroup-bar-selected.png" <span class="soco-component-attr">ImageAlt</span>="alt" <span class="soco-component-attr">ImageSize</span>="<span class="soco-tag-type-def">new</span> System.Drawing.Size( width: 32, height: 32)"><span class="soco-component-attr">BitChoiceOption</span>>
-                                &lt<span class="soco-component-attr">BitChoiceOption</span> <span class="soco-component-attr">Key</span>="pie" <span class="soco-component-attr">Text</span>="Pie chart" <span class="soco-component-attr">Value</span>="2" <span class="soco-component-attr">ImageSrc</span>="/choicegroup-bar-unselected.png" <span class="soco-component-attr">SelectedImageSrc</span>="/choicegroup-bar-selected.png" <span class="soco-component-attr">ImageAlt</span>="alt" <span class="soco-component-attr">ImageSize</span>="<span class="soco-tag-type-def">new</span> System.Drawing.Size( width: 32, height: 32)"<span class="soco-component-attr">>&lt/BitChoiceOption</span>
-                                &lt<span class="soco-component-attr">BitChoiceOption</span> <span class="soco-component-attr">Key</span>="disabeled_option" <span class="soco-component-attr">Text</span>="Disabeled" <span class="soco-component-attr">IsEnabled</span>=<span class="soco-tag-type-def">"false"</span> <span class="soco-component-attr">Value</span>="3" <span class="soco-component-attr">ImageSrc</span>="/choicegroup-bar-unselected.png" <span class="soco-component-attr">SelectedImageSrc</span>="/choicegroup-bar-selected.png" <span class="soco-component-attr">ImageAlt</span>="alt"  <span class="soco-component-attr">ImageSize</span>="<span class="soco-tag-type-def">new</span> System.Drawing.Size( width: 32, height: 32)">&lt/<span class="soco-component-attr">BitChoiceOption</span>>
+                &lt<span class="soco-component-attr">BitChoiceGroup Name</span>="Group1
+                                                    <span class="soco-component-attr">Label</span>="Pick one image" 
+                                                    <span class="soco-component-attr">DefaultSelectedKey</span>="pie">
+                   &lt<span class="soco-component-attr">BitChoiceOption</span> <span class="soco-component-attr">Key</span>="bar" 
+                                                       <span class="soco-component-attr">Text</span>="Clustered bar chart" 
+                                                       <span class="soco-component-attr">Value</span>="1" 
+                                                       <span class="soco-component-attr">ImageSrc</span>="/choicegroup-bar-unselected.png" 
+                                                       <span class="soco-component-attr">SelectedImageSrc</span>="/choicegroup-bar-selected.png" 
+                                                       <span class="soco-component-attr">ImageAlt</span>="alt" 
+                                                       <span class="soco-component-attr">ImageSize</span>="<span class="soco-tag-type-def">new</span> System.Drawing.Size( width: 32, height: 32)"
+                   &lt/<span class="soco-component-attr">BitChoiceOption</span>>
+                   &lt<span class="soco-component-attr">BitChoiceOption</span> <span class="soco-component-attr">Key</span>="pie" 
+                                                       <span class="soco-component-attr">Text</span>="Pie chart" 
+                                                       <span class="soco-component-attr">Value</span>="2" 
+                                                       <span class="soco-component-attr">ImageSrc</span>="/choicegroup-bar-unselected.png" 
+                                                       <span class="soco-component-attr">SelectedImageSrc</span>="/choicegroup-bar-selected.png" 
+                                                       <span class="soco-component-attr">ImageAlt</span>="alt" 
+                                                       <span class="soco-component-attr">ImageSize</span>="<span class="soco-tag-type-def">new</span> System.Drawing.Size( width: 32, height: 32)"
+                   &lt/<span class="soco-component-attr">BitChoiceOption</span>>
+                   &lt<span class="soco-component-attr">BitChoiceOption</span> <span class="soco-component-attr">Key</span>="disabeled_option" 
+                                                       <span class="soco-component-attr">Text</span>="Disabeled" 
+                                                       <span class="soco-component-attr">IsEnabled</span>=<span class="soco-tag-type-def">"false"</span> 
+                                                       <span class="soco-component-attr">Value</span>="3" 
+                                                       <span class="soco-component-attr">ImageSrc</span>="/choicegroup-bar-unselected.png" 
+                                                       <span class="soco-component-attr">SelectedImageSrc</span>="/choicegroup-bar-selected.png" 
+                                                       <span class="soco-component-attr">ImageAlt</span>="alt" 
+                                                       <span class="soco-component-attr">ImageSize</span>="<span class="soco-tag-type-def">new</span> System.Drawing.Size( width: 32, height: 32)">
+                   &lt/<span class="soco-component-attr">BitChoiceOption</span>>
                 &lt/<span class="soco-component-attr">BitChoiceGroup</span>>
             </pre>
         </CodeSampleContent>
     </CodeSample>
-    <CodeSample Title="ChoiceGroup with icons" Description="">
+    <CodeSample Title="ChoiceGroup with icons" Description="" CodeSampleContentForCopy="@choiceGroupwithIconsSampleCode">
         <SampleContent>
             <div>
                 <BitChoiceGroup Name="Group1" Label="Pick one icon">
@@ -84,10 +136,24 @@
         </SampleContent>
         <CodeSampleContent>
             <pre>
-                &lt<span class="soco-component-attr">BitChoiceGroup Name</span>="Group1" <span class="soco-component-attr">Label</span>="Pick one icon" >
-                                &lt<span class="soco-component-attr">BitChoiceOption</span> <span class="soco-component-attr">Key</span>="day" <span class="soco-component-attr">Text</span>="Day" <span class="soco-component-attr">Value</span>="1" <span class="soco-component-attr">IconName</span>="CalendarDay">&lt/<span class="soco-component-attr">BitChoiceOption</span>>
-                                &lt<span class="soco-component-attr">BitChoiceOption</span> <span class="soco-component-attr">Key</span>="week" <span class="soco-component-attr">Text</span>="Week" <span class="soco-component-attr">Value</span>="2"  <span class="soco-component-attr">IconName</span>="CalendarWeek">&lt/<span class="soco-component-attr">BitChoiceOption</span>>
-                                &lt<span class="soco-component-attr">BitChoiceOption</span> <span class="soco-component-attr">Key</span>="month" <span class="soco-component-attr">Text</span>="Disabled Month" <span class="soco-component-attr">Value</span>="3" <span class="soco-component-attr">IsEnabled</span>=<span class="soco-tag-type-def">"false"</span> <span class="soco-component-attr">IconName</span>="Calendar">&lt/<span class="soco-component-attr">BitChoiceOption</span>>
+                &lt<span class="soco-component-attr">BitChoiceGroup Name</span>="Group1"
+                                                    <span class="soco-component-attr">Label</span>="Pick one icon" >
+                   &lt<span class="soco-component-attr">BitChoiceOption</span> <span class="soco-component-attr">Key</span>="day" 
+                                                       <span class="soco-component-attr">Text</span>="Day" 
+                                                       <span class="soco-component-attr">Value</span>="1" 
+                                                       <span class="soco-component-attr">IconName</span>="CalendarDay">
+                   &lt/<span class="soco-component-attr">BitChoiceOption</span>>
+                   &lt<span class="soco-component-attr">BitChoiceOption</span> <span class="soco-component-attr">Key</span>="week" 
+                                                       <span class="soco-component-attr">Text</span>="Week" 
+                                                       <span class="soco-component-attr">Value</span>="2"
+                                                       <span class="soco-component-attr">IconName</span>="CalendarWeek">
+                   &lt/<span class="soco-component-attr">BitChoiceOption</span>>
+                   &lt<span class="soco-component-attr">BitChoiceOption</span> <span class="soco-component-attr">Key</span>="month"
+                                                       <span class="soco-component-attr">Text</span>="Disabled Month"
+                                                       <span class="soco-component-attr">Value</span>="3"
+                                                       <span class="soco-component-attr">IsEnabled</span>=<span class="soco-tag-type-def">"false"</span>
+                                                       <span class="soco-component-attr">IconName</span>="Calendar">
+                   &lt/<span class="soco-component-attr">BitChoiceOption</span>>
                 &lt/<span class="soco-component-attr">BitChoiceGroup</span>>
             </pre>
         </CodeSampleContent>
