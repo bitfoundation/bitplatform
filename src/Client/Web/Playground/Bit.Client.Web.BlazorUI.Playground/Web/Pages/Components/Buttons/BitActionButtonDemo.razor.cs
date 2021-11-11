@@ -74,7 +74,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Buttons
         };
 
         private readonly string actionButtonSampleCode = $"<BitActionButton IconName='AddFriend'>Create account</BitActionButton>{Environment.NewLine}" +
-             $"<BitActionButton IconName='UserRemove' AllowDisabledFocus='false' IsEnabled='false'>Remove user</BitActionButton>{Environment.NewLine}";
+             $"<BitActionButton IconName='UserRemove' AllowDisabledFocus='false' IsEnabled='false'>Remove user</BitActionButton>";
 
         private readonly string styleAndClassSampleCode = $"<BitActionButton Style='font-family:'Axiforma';font-size:16px;border:2px solid #32385B;justify-content: center;width: 220px;'>Styled Action Button</BitActionButton>{Environment.NewLine}" +
                  $"<BitActionButton Class='custom-action-button'>Classed Action Button</BitActionButton>{Environment.NewLine}" +
@@ -87,7 +87,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Buttons
                  $"border-color:#D7D7D7;{Environment.NewLine}" +
                  $"justify-content:center;{Environment.NewLine}" +
                  $"}} {Environment.NewLine}" +
-                 $"</style>{Environment.NewLine}";
+                 $"</style>";
 
         private readonly string visibilitySampleCode = $"<BitActionButton Visibility='ComponentVisibility.Visible' IconName='AddEvent'>Add Event</BitActionButton>{Environment.NewLine}" +
                  $"<BitActionButton Hidden='ComponentHidden.Hidden'>Hidden Action Button</BitActionButton>{Environment.NewLine}" +
@@ -98,6 +98,6 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Buttons
 
         private readonly string actionButtonLikeAnchorSampleCode = $"<BitActionButton IconName='Website' Target='_blank' Href='https://github.com/bitfoundation/bitframework'>Open Bit Foundation In New Tab</BitActionButton>{Environment.NewLine}" +
                  $"<BitActionButton IconName='Website' ButtonStyle='ButtonStyle.Standard' Href='https://github.com/bitfoundation/bitframework'>Go To Bit Foundation</BitActionButton>{Environment.NewLine}" +
-                 $"<BitActionButton Target='_self' IconName='Website' Href='https://github.com/bitfoundation/bitframework' IsEnabled='false'<span>Bit Foundation From Span</span></BitActionButton>{Environment.NewLine}";
+                 $"<BitActionButton Target='_self' IconName='Website' Href='https://github.com/bitfoundation/bitframework' IsEnabled='false'<span>Bit Foundation From Span</span></BitActionButton>";
     }
 }
