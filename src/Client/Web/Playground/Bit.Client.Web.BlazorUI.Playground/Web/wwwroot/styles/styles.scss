@@ -286,11 +286,6 @@ footer {
         .bit-icon {
             width: rem(16px);
         }
-
-        .bit-lnk-fluent > a:active, .bit-lnk-fluent > a:hover, .bit-lnk-fluent > a:visited {
-            text-decoration: none;
-            color: $White;
-        }
     }
 }
 
@@ -514,6 +509,7 @@ footer {
 }
 
 .how-to-use {
+    font-family: Axiforma;
     margin-bottom: rem(60px);
     text-justify: auto;
     color: $Black01;

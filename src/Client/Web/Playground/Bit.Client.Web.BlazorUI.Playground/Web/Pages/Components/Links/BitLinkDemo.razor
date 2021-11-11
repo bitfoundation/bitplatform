@@ -4,7 +4,7 @@
 
 <ComponentPage ComponentName="Link" OverviewDesc="Links lead to another part of an app, other pages, or help articles. They can also be used to initiate commands."
                ComponentParameters="componentParameters">
-    <CodeSample Title="BitLink" Description="To create a link you can use a BitLink component.">
+    <CodeSample Title="BitLink" Description="To create a link you can use a BitLink component." CodeSampleContentForCopy="@linkSampleCode">
         <SampleContent>
             <div>
                 <p class="how-to-use">
@@ -15,14 +15,13 @@
             </div>
         </SampleContent>
         <CodeSampleContent>
-            <div>
-                <p>
-                    When a link has an href,<span>&lt</span><span class="dark-green">BitLink Href="</span><span class="link">https://github.com/bitfoundation/bitframework</span>"<span class="dark-green"> Target</span>="_blank"><span class="dark-green">HasUnderline</span>=<span class="light-blue">"true"</span>> it renders as an anchor tag<span>&lt/</span>
-                    <span class="dark-green">BitLink</span><span>&gt;</span>Without an href, &lt<span class="dark-green">BitLink HasUnderline</span>=<span class="light-blue">"true"</span>>"the link is rendered as a button.<span>&lt/</span>
-                    <span class="dark-green">BitLink</span><span>&gt;</span>You can also use the disabled attribute to create a &lt<span class="dark-green">BitLink Href</span>="<span class="link">https://github.com/bitfoundation/bitframework</span>"<span class="dark-green"> IsEnabled</span><span class="light-blue">="false"</span><span class="dark-green"> HasUnderline</span>=<span class="light-blue">"true"</span>>"disabled link.<span>&lt/</span><span class="dark-green">BitLink</span><span>&gt;</span>It's not recommended to use Links with imgs because
-                    Links are meant to render textual inline content. Buttons are inline-block or in the case of imgs, block. However, it is possible to create a linked image button by making a button with an unstyled variant and adding the img content and href source to that.
-                </p>
-            </div>
+            <pre>
+                When a link has an href,<span>&lt</span><span class="soco-component-attr">BitLink Href="</span><span class="link soco-tag-type-def">https://github.com/bitfoundation/bitframework</span>" <span class="soco-component-attr">Target</span>="_blank" <span class="soco-component-attr">HasUnderline</span>=<span class="soco-tag-type-def">"true"</span>>
+                it renders as an anchor tag &lt/<span class="soco-component-attr">BitLink</span><span>&gt;</span>Without an href, &lt<span class="soco-component-attr">BitLink HasUnderline</span>=<span class="soco-tag-type-def">"true"</span>> the link is rendered as a button. />
+                &lt<span class="soco-component-attr">BitLink</span><span>&gt;</span>You can also use the disabled attribute to create a &lt<span class="soco-component-attr">BitLink Href</span>="<span class="link soco-tag-type-def">https://github.com/bitfoundation/bitframework</span>" <span class="soco-component-attr">IsEnabled</span><span class="soco-tag-type-def">="false"</span><span class="soco-component-attr"> HasUnderline</span>=<span class="soco-tag-type-def">"true"</span>> disabled link. />
+                &lt<span class="soco-component-attr">BitLink</span><span>&gt;</span>It's not recommended to use Links with imgs because Links are meant to render textual inline content. Buttons are inline-block or in the case of imgs, block.
+                However, it is possible to create a linked image button by making a button with an unstyled variant and adding the img content and href source to that.
+            </pre>
         </CodeSampleContent>
     </CodeSample>
 </ComponentPage>
