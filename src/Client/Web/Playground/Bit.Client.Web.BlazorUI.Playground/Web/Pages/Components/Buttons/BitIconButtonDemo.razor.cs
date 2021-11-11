@@ -68,27 +68,26 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Buttons
 
         private readonly string iconButtonSampleCode = $"<BitIconButton IconName='Emoji2'></BitIconButton>{Environment.NewLine}" +
               $"<BitIconButton IconName='Emoji2' AllowDisabledFocus='false' IsEnabled='false'></BitIconButton>{Environment.NewLine}" +
-              $"<BitIconButton IconName='Emoji2' ToolTip='I'm Happy'></BitIconButton>{Environment.NewLine}";
+              $"<BitIconButton IconName='Emoji2' ToolTip='I'm Happy'></BitIconButton>";
 
         private readonly string styleAndClassSampleCode = $"<BitIconButton Style='color:red' IconName='Home'>Styled Button</BitIconButton>{Environment.NewLine}" +
-                 $"<BitIconButton Class='custom-button' IconName='FileImage'>Classed Button</BitIconButton>{Environment.NewLine}" +
+                 $"<BitIconButton Class='custom-icon-button' IconName='FileImage'>Classed Button</BitIconButton>{Environment.NewLine}" +
                  $"<style>{Environment.NewLine}" +
-                 $".custom-button {{ {Environment.NewLine}" +
-                 $"height:40px;{Environment.NewLine}" +
-                 $"width:166px;{Environment.NewLine}" +
-                 $"font-family:Axiforma;{Environment.NewLine}" +
-                 $" font-size:16px;{Environment.NewLine}" +
-                 $"background-color:#2F455A;{Environment.NewLine}" +
-                 $"border-color:#2F455A;{Environment.NewLine}" +
+                 $".custom-icon-button {{ {Environment.NewLine}" +
+                 $"height:48px;{Environment.NewLine}" +
+                 $"width:48px;{Environment.NewLine}" +
+                 $"border-radius:5px;{Environment.NewLine}" +
+                 $"background-color:#D7D7D7;{Environment.NewLine}" +
+                 $"border-color:#D7D7D7;{Environment.NewLine}" +
                  $"}} {Environment.NewLine}" +
-                 $"</style>{Environment.NewLine}";
+                 $"</style>";
 
         private readonly string visibilitySampleCode = $"<BitIconButton Visibility='ComponentVisibility.Visible' IconName='List'>Visible Button</BitIconButton>{Environment.NewLine}" +
                  $"<BitIconButton Visibility='ComponentHidden.Hidden' IconName='List'>Hidden Button</BitIconButton>{Environment.NewLine}" +
                  $"<BitIconButton Visibility='ComponentVisibility.Collapsed' IconName='List'>Collapsed Button</BitIconButton>";
 
-        private readonly string areasSampleCode = $"<BitIconButton AriaDescription='Detailed description used for screen reader.' IconName='PowerButton'>Icon Button with Aria Description</BitIconButton>{Environment.NewLine}" +
-                $"<BitIconButton AriaHidden='true'  IconName='PowerButton'>Icon Button with Aria Hidden</BitIconButton>{Environment.NewLine}";
+        private readonly string areasSampleCode = $"<BitIconButton AriaDescription='Detailed description used for screen reader.' IconName='Library'>Icon Button with Aria Description</BitIconButton>{Environment.NewLine}" +
+                $"<BitIconButton AriaHidden='true' IconName='Library'>Icon Button with Aria Hidden</BitIconButton>";
 
         private readonly string iconButtonLikeAnchorSampleCode = $"<BitIconButton IconName='Website' Target='_blank' Href='https://github.com/bitfoundation/bitframework'>Open Bit Foundation In New Tab</BitIconButton>{Environment.NewLine}" +
                  $"<BitIconButton IconName='Website' ButtonStyle='ButtonStyle.Standard' Href='https://github.com/bitfoundation/bitframework'>Go To Bit Foundation</BitIconButton>{Environment.NewLine}" +
