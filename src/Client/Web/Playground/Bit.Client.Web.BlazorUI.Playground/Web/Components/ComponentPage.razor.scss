@@ -75,19 +75,18 @@ tr:last-child {
         max-width: 70%;
         padding: 0 rem(12px) 0 rem(80px);
 
-        @include lt-xl {
-            max-width: 85%;
-            padding: 0 rem(75px) 0 rem(75px);
+        @include lg {
+            padding: 0 rem(16px) 0 rem(75px);
         }
 
-        @include lt-md {
+        @include md {
             max-width: 100%;
-            padding: 0 rem(90px) 0 rem(90px);
+            padding: 0 rem(104px);
         }
 
         @include sm {
-            max-width: 90%;
-            padding: 0 rem(21px) 0 rem(21px);
+            max-width: 95%;
+            padding: 0 rem(20px);
         }
 
         .overview {
@@ -98,7 +97,7 @@ tr:last-child {
                     display: none;
                     width: rem(52px);
                     height: rem(52px);
-                    padding: rem(1px) rem(14px) 0;
+                    padding-top: rem(1px);
 
                     @include lt-lg {
                         display: block;
@@ -156,7 +155,7 @@ tr:last-child {
             .title {
                 color: $Violet;
                 border-bottom: 4px solid $Gray02;
-                padding-bottom: rem(25px);
+                padding-bottom: rem(18px);
 
                 @include body1-xl;
 
@@ -175,7 +174,7 @@ tr:last-child {
         }
 
         .implementation {
-            margin: rem(50px) 0 rem(80px);
+            margin: rem(80px) 0 rem(270px);
 
             .title {
                 color: $Violet;
@@ -205,33 +204,8 @@ tr:last-child {
             }
         }
     }
-
-    .component-siderail {
-        position: relative;
-        width: 30%;
-        margin-top: rem(127px);
-
-        @include lt-xl {
-            display: none;
-        }
-
-        ul.link-container:before {
-            position: absolute;
-            content: "";
-            width: 1px;
-            height: rem(370px);
-            background: $Gray02;
-            top: rem(-20px);
-            left: 0;
-        }
-    }
 }
 
-.siderail-selected {
-    border-left: rem(4px) solid $Violet;
-    color: $Violet;
-
-    .bit-lnk-fluent > button {
-        padding-left: rem(4px);
-    }
+#overview-section, #usage-section, #implementation-section {
+    scroll-margin-top: 150px;
 }

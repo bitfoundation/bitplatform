@@ -8,5 +8,15 @@ namespace Microsoft.JSInterop
         {
             await jsRuntime.InvokeVoidAsync("toggleBodyOverflow", isNavOpen);
         }
+
+        public static async Task ScrollToElement(this IJSRuntime jsRuntime, string targetElementId)
+        {
+            await jsRuntime.InvokeVoidAsync("scrollToElement", targetElementId);
+        }
+
+        public static async Task CopyToClipboard(this IJSRuntime jsRuntime, string codeSampleContentForCopy)
+        {
+            await jsRuntime.InvokeVoidAsync("copyToClipboard", codeSampleContentForCopy);
+        }
     }
 }

@@ -1,8 +1,7 @@
 ﻿<CascadingValue Value="Visual">
     <BitColorPicker IsEnabled="IsEnabled"
                     @bind-Color="Color"
-                    HexChanged="(string color) => Hex =color"
-                    RgbChanged="(string color) => Rgb = color"
+                    @ref="ElementReference"
                     AlphaChanged="(double alpha) => Alpha = alpha"
                     ShowPreview="ShowPreview"
                     ShowAlphaSlider="ShowAlphaSlider">
@@ -10,6 +9,7 @@
 </CascadingValue>
 
 @code {
+    public BitColorPicker ElementReference { get; set; }
     [Parameter] public Visual Visual { get; set; }
     [Parameter] public bool IsEnabled { get; set; }
     [Parameter] public double Alpha { get; set; }
