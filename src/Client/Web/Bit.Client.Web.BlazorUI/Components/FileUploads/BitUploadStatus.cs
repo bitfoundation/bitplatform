@@ -38,8 +38,8 @@
         Removed,
 
         /// <summary>
-        /// The type of uploaded file is not acceptable
+        /// The type of uploaded file is not allowed
         /// </summary>
-        Unaccepted
+        NotAllowed
     }
 }
