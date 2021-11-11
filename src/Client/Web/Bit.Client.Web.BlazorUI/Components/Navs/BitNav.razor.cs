@@ -98,17 +98,6 @@ namespace Bit.Client.Web.BlazorUI
                 SetParentKeys(navLink, null);
             };
 
-            var flatNavLinkItems = Flatten(NavLinkItems).ToList();
-            var currrentUrl = NavigationManager.Uri.Replace(NavigationManager.BaseUri, "/", StringComparison.Ordinal);
-            selectedKey = flatNavLinkItems.FirstOrDefault(item => item.Url == currrentUrl)?.Key
-                                      ?? selectedKey
-                                      ?? InitialSelectedKey;
-
-            //To expand all the parent links of the selected item
-            var selectedItem = flatNavLinkItems.Find(i => i.Key == selectedKey)!;
-            if (selectedItem is not null)
-                ExpandSelectedNavLinkItemParents(selectedItem);
-
             if (RenderType == BitNavRenderType.Grouped)
             {
                 foreach (var link in NavLinkItems)
@@ -117,6 +106,19 @@ namespace Bit.Client.Web.BlazorUI
                         link.IsExpanded = !link.IsCollapseByDefault.Value;
                 }
             }
+
+            var flatNavLinkItems = Flatten(NavLinkItems).ToList();
+            var currrentUrl = NavigationManager.Uri.Replace(NavigationManager.BaseUri, "/", StringComparison.Ordinal);
+            selectedKey = flatNavLinkItems.FirstOrDefault(item => item.Url == currrentUrl)?.Key
+                                      ?? selectedKey
+                                      ?? InitialSelectedKey;
+
+            if (SelectedKey.HasValue() is false) return;
+
+            //To expand all the parent links of the selected item
+            var selectedItem = flatNavLinkItems.Find(i => i.Key == selectedKey)!;
+            if (selectedItem is not null)
+                ExpandSelectedNavLinkItemParents(selectedItem);
 
             await base.OnInitializedAsync();
         }
@@ -217,7 +219,7 @@ namespace Bit.Client.Web.BlazorUI
 
             var mainStyle = $"bit-nav-link-{enabledClass}-{hasUrlClass}-{VisualClassRegistrar()}";
 
-            var selectedClass = navLinkItem.Key == SelectedKey
+            var selectedClass = selectedKey.HasValue() && navLinkItem.Key == SelectedKey
                                     ? $"bit-nav-selected-{VisualClassRegistrar()}"
                                     : string.Empty;
 

@@ -146,14 +146,17 @@
 
     i {
         position: absolute;
-        top: 0;
+        top: 0px;
         left: rem(8px);
-        display: inline-block;
+        display: inline-flex;
+        align-items: center;
+        width: unset;
         height: rem(44px);
         font-size: rem(12px);
         line-height: rem(44px);
         speak: none;
         transition: transform 0.1s linear 0s;
+        -webkit-font-smoothing: antialiased;
     }
 }
 

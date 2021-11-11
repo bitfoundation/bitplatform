@@ -6,19 +6,32 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Components
 {
     public partial class CodeSample
     {
-        private ElementReference CodeReference { get; set; }
-        private bool ShowCode { get; set; }
+        private bool showCode { get; set; }
+        private bool isCopied { get; set; }
 
         [Inject] public IJSRuntime JSRuntime { get; set; }
 
         [Parameter] public string Title { get; set; }
         [Parameter] public string Description { get; set; }
+        [Parameter] public string CodeSampleContentForCopy { get; set; }
         [Parameter] public RenderFragment SampleContent { get; set; }
         [Parameter] public RenderFragment CodeSampleContent { get; set; }
 
-        private async Task HandleOnCopyClick()
+        private async Task CopyCodeToClipboard()
         {
-            await JSRuntime.InvokeVoidAsync("copyCodeSample", CodeReference);
+            await JSRuntime.CopyToClipboard(CodeSampleContentForCopy);
+
+            ChangeCopyButtonState();
+
+            await Task.Delay(2000);
+
+            ChangeCopyButtonState();
+        }
+
+        private void ChangeCopyButtonState()
+        {
+            isCopied = !isCopied;
+            StateHasChanged();
         }
     }
 }
