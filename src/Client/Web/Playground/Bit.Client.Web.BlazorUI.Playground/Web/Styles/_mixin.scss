@@ -279,13 +279,13 @@
 
 /// https://github.com/Necromancerx/media-queries-scss-mixins
 
-$screen-md-min: em(768px);
-$screen-lg-min: em(1024px);
-$screen-xl-min: em(1440px);
+$screen-md-min: em(767px);
+$screen-lg-min: em(1025px);
+$screen-xl-min: em(1441px);
 
-$screen-sm-max: em(767px);
-$screen-md-max: em(1023px);
-$screen-lg-max: em(1439px);
+$screen-sm-max: em(768px);
+$screen-md-max: em(1024px);
+$screen-lg-max: em(1440px);
 $screen-xl-max: em(5000px);
 
 @mixin sm {

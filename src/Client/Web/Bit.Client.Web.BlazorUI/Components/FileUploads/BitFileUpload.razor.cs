@@ -13,11 +13,12 @@ namespace Bit.Client.Web.BlazorUI
     /// </summary>
     public partial class BitFileUpload : IDisposable
     {
-        private static readonly HttpClient client = new();
         private DotNetObjectReference<BitFileUpload>? dotnetObjectReference;
         private ElementReference inputFileElement;
 
-        [Inject] protected IJSRuntime? JSRuntime { get; set; }
+        [Inject] public IJSRuntime? JSRuntime { get; set; }
+
+        [Inject] public NavigationManager? NavigationManager { get; set; }
 
         /// <summary>
         /// URL of the server endpoint receiving the files.
@@ -42,22 +43,22 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// Custom label for Uploaded Status.
         /// </summary>
-        [Parameter] public string SuccessfulUploadedResultMessage { get; set; } = "File uploaded";
+        [Parameter] public string SuccessfullyUploadedMessage { get; set; } = "File uploaded";
 
         /// <summary>
         /// Custom label for Failed Status.
         /// </summary>
-        [Parameter] public string FailedUploadedResultMessage { get; set; } = "Uploading failed";
+        [Parameter] public string UploadingFailedMessage { get; set; } = "Uploading failed";
 
         /// <summary>
         /// Filters files by extension.
         /// </summary>
-        [Parameter] public IReadOnlyCollection<string> AcceptedExtensions { get; set; } = new List<string> { "*" };
+        [Parameter] public IReadOnlyCollection<string> AllowedExtensions { get; set; } = new List<string> { "*" };
 
         /// <summary>
         /// Single <c>false</c> or multiple <c>true</c> files upload.
         /// </summary>
-        [Parameter] public bool IsMultiFile { get; set; }
+        [Parameter] public bool IsMultiSelect { get; set; } = false;
 
         /// <summary>
         /// Uploads immediately after selecting the files.
@@ -72,22 +73,12 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// Specifies the message for the failed uploading progress due to exceeding the maximum size.
         /// </summary>
-        [Parameter] public string MaxSizeMessage { get; set; } = "File size is too large";
+        [Parameter] public string MaxSizeErrorMessage { get; set; } = "The file size is larger than the max size";
 
         /// <summary>
-        /// Total count of files uploaded.
+        /// Specifies the message for the failed uploading progress due to the allowed extentions.
         /// </summary>
-        public int FileCount => Files?.Count ?? 0;
-
-        /// <summary>
-        /// Total size of files.
-        /// </summary>
-        public long TotalSize => Files?.Sum(c => c.Size) ?? 0;
-
-        /// <summary>
-        /// Total size of uploaded files.
-        /// </summary>
-        public long UpLoadedSize { get; set; }
+        [Parameter] public string NotAllowedExtentionErrorMessage { get; set; } = "The file type is not allowed";
 
         /// <summary>
         /// General upload status.
@@ -103,18 +94,27 @@ namespace Bit.Client.Web.BlazorUI
         /// All selected files.
         /// </summary>
         public IReadOnlyList<BitFileInfo>? Files { get; private set; }
+
         public string InputId { get; set; } = string.Empty;
+
+        protected override Task OnInitializedAsync()
+        {
+            InputId = $"{UniqueId}FileInput";
+            return base.OnInitializedAsync();
+        }
+
+        protected override string RootElementClass => "bit-file-upload";
 
         /// <summary>
         /// Select file(s) by browse button or drag and drop.
         /// </summary>
         /// <returns></returns>
-        public async Task HandleOnChange()
+        private async Task HandleOnChange()
         {
             if (JSRuntime is null || UploadUrl is null) return;
             dotnetObjectReference = DotNetObjectReference.Create(this);
             Files = await JSRuntime.InitUploader(inputFileElement, dotnetObjectReference, UploadUrl);
-
+            
             if (AutoUploadEnabled)
             {
                 await Upload();
@@ -124,7 +124,7 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// Uploads the file(s).
         /// </summary>
-        public async Task Upload(int index = -1)
+        private async Task Upload(int index = -1)
         {
             if (JSRuntime is null || Files is null) return;
 
@@ -147,37 +147,35 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
-        protected override Task OnInitializedAsync()
-        {
-            InputId = $"{UniqueId}FileInput";
-            return base.OnInitializedAsync();
-        }
-
-        protected override string RootElementClass => "bit-file-upload";
-
         private async Task UploadOneFile(int index)
         {
             if (JSRuntime is null || Files is null) return;
-            if (Files[index].UploadStatus == BitUploadStatus.Unaccepted) return;
+            if (Files[index].UploadStatus == BitUploadStatus.NotAllowed) return;
 
             var uploadedSize = Files[index].ChunkesUpLoadedSize.Sum();
             if (Files[index].Size != 0 && uploadedSize >= Files[index].Size) return;
 
             if (MaxSize > 0 && Files[index].Size > MaxSize)
             {
-                Files[index].UploadStatus = BitUploadStatus.Unaccepted;
+                Files[index].UploadStatus = BitUploadStatus.NotAllowed;
+                return;
+            }
+
+            if (IsFileTypeNotAllowed(Files[index]))
+            {
+                Files[index].UploadStatus = BitUploadStatus.NotAllowed;
                 return;
             }
 
             if (Files[index].RequestToPause)
             {
-                await PauseAsync(index);
+                await PauseUpload(index);
                 return;
             }
 
             if (Files[index].RequestToCancell)
             {
-                await CancelAsync(index);
+                await CancelUpload(index);
                 return;
             }
 
@@ -219,7 +217,7 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
-        private async Task PauseAsync(int index)
+        private async Task PauseUpload(int index)
         {
             if (JSRuntime is null || Files is null) return;
 
@@ -298,7 +296,7 @@ namespace Bit.Client.Web.BlazorUI
             if (index < 0)
             {
                 UploadStatus = uploadStatus;
-                Files.Where(c => c.UploadStatus != BitUploadStatus.Unaccepted).ToList().ForEach(c => c.UploadStatus = uploadStatus);
+                Files.Where(c => c.UploadStatus != BitUploadStatus.NotAllowed).ToList().ForEach(c => c.UploadStatus = uploadStatus);
             }
             else
             {
@@ -348,7 +346,7 @@ namespace Bit.Client.Web.BlazorUI
                     (responseStatus == 0 ? BitUploadStatus.Paused : BitUploadStatus.Failed);
         }
 
-        private async Task CancelAsync(int index)
+        private async Task CancelUpload(int index)
         {
             if (JSRuntime is null || Files is null) return;
 
@@ -357,7 +355,7 @@ namespace Bit.Client.Web.BlazorUI
             Files[index].RequestToCancell = false;
         }
 
-        private async Task Remove(int index)
+        private async Task RemoveFile(int index)
         {
             if (JSRuntime is null || Files is null) return;
 
@@ -365,23 +363,25 @@ namespace Bit.Client.Web.BlazorUI
             {
                 for (int i = 0; i < Files.Count; i++)
                 {
-                    await RemoveOneFileAsync(i);
+                    await RemoveOneFile(i);
                 }
             }
             else
             {
-                await RemoveOneFileAsync(index);
+                await RemoveOneFile(index);
             }
 
             UpdateStatus(BitUploadStatus.Removed, index);
         }
 
-        private async Task RemoveOneFileAsync(int index)
+        private async Task RemoveOneFile(int index)
         {
-            if (Files is null || RemoveUrl is null) return;
+            if (Files is null || RemoveUrl is null || NavigationManager is null) return;
 
-            var uri = new Uri($"{RemoveUrl}?fileName={Files[index].Name}");
-            _ = await client.GetAsync(uri);
+            var url = $"{RemoveUrl}?fileName={Files[index].Name}";
+            var http = new HttpClient();
+            http.BaseAddress = new Uri(NavigationManager.BaseUri);
+            _ = await http.DeleteAsync(url);
         }
 
         private static string GetFileElClass(BitUploadStatus status)
@@ -391,7 +391,7 @@ namespace Bit.Client.Web.BlazorUI
                 case BitUploadStatus.Completed:
                     return "uploaded";
                 case BitUploadStatus.Failed:
-                case BitUploadStatus.Unaccepted:
+                case BitUploadStatus.NotAllowed:
                     return "failed";
                 case BitUploadStatus.Paused:
                     return "paused";
@@ -400,19 +400,63 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
-        private string GetUploadMessageStr(BitUploadStatus status)
+        private string GetUploadMessageStr(BitFileInfo file)
         {
-            switch (status)
+            switch (file.UploadStatus)
             {
                 case BitUploadStatus.Completed:
-                    return SuccessfulUploadedResultMessage;
+                    return SuccessfullyUploadedMessage;
                 case BitUploadStatus.Failed:
-                    return FailedUploadedResultMessage;
-                case BitUploadStatus.Unaccepted:
-                    return MaxSizeMessage;
+                    return UploadingFailedMessage;
+                case BitUploadStatus.NotAllowed:
+                    if (IsFileTypeNotAllowed(file))
+                    {
+                        return NotAllowedExtentionErrorMessage;
+                    }
+                    else
+                    {
+                        return MaxSizeErrorMessage;
+                    }
                 default:
                     return "";
             }
+        }
+
+        private bool IsFileTypeNotAllowed(BitFileInfo file)
+        {
+            var fileSections = file.Name?.Split('.')?.ToList();
+            var extension = $".{fileSections?.Last()}";
+            return AllowedExtensions.Count > 0 && !AllowedExtensions.Any(ext => ext == "*") && !AllowedExtensions.Any(ext => ext == extension);
+        }
+
+        private static int GetFileUploadPercent(BitFileInfo file)
+        {
+            var uploadedPercent = 0;
+            if (file.ChunkesUpLoadedSize.Sum() >= file.Size)
+            {
+                uploadedPercent = 100;
+            }
+            else
+            {
+                uploadedPercent = (int)(file.ChunkesUpLoadedSize.Sum() / (float)file.Size * 100);
+            }
+
+            return uploadedPercent;
+        }
+
+        private static string GetFileUploadSize(BitFileInfo file)
+        {
+            long uploadedSize;
+            if (file.ChunkesUpLoadedSize.Sum() >= file.Size)
+            {
+                uploadedSize = file.Size;
+            }
+            else
+            {
+                uploadedSize = file.ChunkesUpLoadedSize.Sum();
+            }
+
+            return uploadedSize.Humanize();
         }
 
         public void Dispose()

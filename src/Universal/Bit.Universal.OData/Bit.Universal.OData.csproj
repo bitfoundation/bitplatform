@@ -9,9 +9,12 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Simple.OData.V4.Client" Version="5.25.0" />
-        <PackageReference Include="Microsoft.OData.Core" Version="7.9.3" />
-        <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="6.0.0-rc.2.21480.5" />
+        <PackageReference Include="Microsoft.OData.Core" Version="7.9.4" />
+        <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="6.0.0" />
+    </ItemGroup>
+
+    <ItemGroup Condition=" '$(TargetFramework)' == 'monoandroid10.0' OR '$(TargetFramework)' == 'Xamarin.iOS10'">
+        <Reference Include="System.Xml.Linq" />
     </ItemGroup>
 
     <ItemGroup>
