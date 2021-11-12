@@ -35,6 +35,7 @@
     position: absolute;
     top: rem(34px);
     z-index: 1001;
+    display: none;
     border-radius: rem(2px);
     box-shadow: rgba(0,0,0, 0.13) 0px 6.4px 14.4px 0px, rgba(0,0,0, 0.11) 0px 1.2px 3.6px 0px;
     outline: transparent;
@@ -427,12 +428,13 @@
 }
 
 .bit-dtp-overlay {
-    width: 100%;
-    height: 100%;
     position: fixed;
     top: 0;
     left: 0;
     z-index: 999;
+    display: none;
+    width: 100%;
+    height: 100%;
     background-color: transparent;
 }
 
