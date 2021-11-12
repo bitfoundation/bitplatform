@@ -1,6 +1,7 @@
 ﻿@namespace Bit.Client.Web.BlazorUI
 @inherits BitComponentBase
 <div @ref="RootElement"
+     id="@UniqueId"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
     @if (LabelFragment is not null)

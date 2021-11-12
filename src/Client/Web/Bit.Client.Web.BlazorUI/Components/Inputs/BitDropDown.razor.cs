@@ -226,7 +226,7 @@ namespace Bit.Client.Web.BlazorUI
         {
             if (JSRuntime is null) return;
 
-            await JSRuntime.InvokeVoidAsync("BitDropDown.toggleDropDownCallout", DropDownId, DropDownCalloutId, DropDownOverlayId, isOpen);
+            await JSRuntime.InvokeVoidAsync("BitDropDown.toggleDropDownCallout", UniqueId, DropDownId, DropDownCalloutId, DropDownOverlayId, isOpen);
             IsOpen = false;
             StateHasChanged();
         }
@@ -235,7 +235,7 @@ namespace Bit.Client.Web.BlazorUI
         {
             if (IsEnabled is false || JSRuntime is null) return;
 
-            await JSRuntime.InvokeVoidAsync("BitDropDown.toggleDropDownCallout", DropDownId, DropDownCalloutId, DropDownOverlayId, isOpen);
+            await JSRuntime.InvokeVoidAsync("BitDropDown.toggleDropDownCallout", UniqueId, DropDownId, DropDownCalloutId, DropDownOverlayId, isOpen);
             isOpen = !isOpen;
             await OnClick.InvokeAsync(e);
         }
@@ -296,7 +296,7 @@ namespace Bit.Client.Web.BlazorUI
                 selectedItem.IsSelected = true;
                 Text = selectedItem.Text;
                 SelectedKey = selectedItem.Value;
-                await JSRuntime.InvokeVoidAsync("BitDropDown.toggleDropDownCallout", DropDownId, DropDownCalloutId, DropDownOverlayId, isOpen);
+                await JSRuntime.InvokeVoidAsync("BitDropDown.toggleDropDownCallout", UniqueId, DropDownId, DropDownCalloutId, DropDownOverlayId, isOpen);
                 isOpen = false;
 
                 if (isSameItemSelected && !NotifyOnReselect) return;
