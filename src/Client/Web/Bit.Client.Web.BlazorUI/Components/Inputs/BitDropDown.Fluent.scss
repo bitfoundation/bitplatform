@@ -18,6 +18,7 @@
 }
 
 .bit-drp-overlay {
+    display: none;
     width: 100%;
     height: 100%;
     position: fixed;
@@ -90,15 +91,20 @@
 
     .bit-drp-wrapper-ic {
         position: absolute;
-        top: 0;
+        top: rem(1px);
         right: rem(8px);
-        height: 100%;
-        display: flex;
-        align-items: center;
+        height: rem(32px);
+        line-height: rem(30px);
+        cursor: pointer;
 
-        i:first-child {
+        i {
             display: inline-block;
+            width: unset;
+            -webkit-font-smoothing: antialiased;
             font-size: rem(12px);
+            color: $Grey130;
+            speak: none;
+            pointer-events: none;
         }
     }
 }
@@ -162,6 +168,7 @@
 }
 
 .bit-drp-items-wrapper {
+    display: none;
     position: absolute;
     width: inherit;
     max-height: 744px;
