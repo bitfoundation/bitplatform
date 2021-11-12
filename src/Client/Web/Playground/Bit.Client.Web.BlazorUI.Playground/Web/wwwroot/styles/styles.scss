@@ -662,18 +662,8 @@ footer {
 }
 
 .custom-spb {
-    .bit-spb-wrapper {
-        & span {
-            & button:first-child:active {
-                color: rgb(50, 49, 48);
-                background-color: green;
-            }
-
-            & button:nth-child(2):active {
-                color: rgb(50, 49, 48);
-                background-color: red;
-            }
-        }
+    .bit-spb-wrapper input {
+        background-color: $Gray03;
     }
 }
 
@@ -726,6 +716,10 @@ footer {
 }
 
 .sample {
+    .bit-spb {
+        margin-top: rem(10px);
+    }
+
     .ch-group .bit-txt {
         margin-bottom: rem(25px);
     }

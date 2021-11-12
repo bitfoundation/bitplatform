@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Bit.Client.Web.BlazorUI.Playground.Web.Models;
 using Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 
@@ -247,10 +248,103 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.SpinButtons
             }
         };
 
-        private void HandleSpinButtonValueChange(double value)
-        {
-            SpinButtonWithCustomHandlerValue = value;
-        }
+        private readonly string spinButtonSampleCode = $"<BitSpinButton @bind-Value='BasicSpinButtonValue'{Environment.NewLine}" +
+              $"Min='0'{Environment.NewLine}" +
+              $"Max='100'{Environment.NewLine}" +
+              $"Step='1'{Environment.NewLine}" +
+              $"Label='Basic SpinButton'>{Environment.NewLine}" +
+              $"</BitSpinButton>{Environment.NewLine}" +
+              $"<BitSpinButton @bind-Value='BasicSpinButtonValue'{Environment.NewLine}" +
+              $"Min='-10'{Environment.NewLine}" +
+              $"Max='10'{Environment.NewLine}" +
+              $"Step='0.1'{Environment.NewLine}" +
+              $"Label='Decimal SpinButton'>{Environment.NewLine}" +
+              $"</BitSpinButton>{Environment.NewLine}" +
+              $"<BitSpinButton @bind-Value='BasicSpinButtonDisableValue'{Environment.NewLine}" +
+              $"Min='0'{Environment.NewLine}" +
+              $"Max='100'{Environment.NewLine}" +
+              $"Step='1'{Environment.NewLine}" +
+              $"Label='Disabled SpinButton'>{Environment.NewLine}" +
+              $"IsEnabled='false'>{Environment.NewLine}" +
+              $"</BitSpinButton>{Environment.NewLine}" +
+              $"@code {{ {Environment.NewLine}" +
+              $"private double BasicSpinButtonValue = 5; {Environment.NewLine}" +
+              $"private double BasicSpinButtonDisableValue = 20; {Environment.NewLine}" +
+              "}}";
+
+        private readonly string spinButtonWithIconSampleCode = $"<BitSpinButton IconName='IncreaseIndentLegacy'{Environment.NewLine}" +
+             $"Min='0'{Environment.NewLine}" +
+             $"Max='100'{Environment.NewLine}" +
+             $"Step='1'{Environment.NewLine}" +
+             $"Label='With Icon'>{Environment.NewLine}" +
+             $"</BitSpinButton>{Environment.NewLine}" +
+             $"<BitSpinButton IconName='IncreaseIndentLegacy'{Environment.NewLine}" +
+             $"Min='0'{Environment.NewLine}" +
+             $"Max='100'{Environment.NewLine}" +
+             $"Step='1'{Environment.NewLine}" +
+             $"Label='Disabled With Icon'>{Environment.NewLine}" +
+             $"IsEnabled='false'>{Environment.NewLine}" +
+             $"</BitSpinButton>{Environment.NewLine}" +
+             $"<BitSpinButton @bind-Value='BasicSpinButtonDisableValue'{Environment.NewLine}" +
+             $"Min='0'{Environment.NewLine}" +
+             $"Max='100'{Environment.NewLine}" +
+             $"Step='1'{Environment.NewLine}" +
+             $"Label='Disabled SpinButton'>{Environment.NewLine}" +
+             $"IsEnabled='false'>{Environment.NewLine}" +
+             "</BitSpinButton>";
+
+        private readonly string withSuffixSampleCode = $"<BitSpinButton Suffix='Inch'{Environment.NewLine}" +
+             $"Min='0'{Environment.NewLine}" +
+             $"Max='100'{Environment.NewLine}" +
+             $"Step='1'{Environment.NewLine}" +
+             $"Label='With Suffix'>{Environment.NewLine}" +
+             "</BitSpinButton>";
+
+        private readonly string withLabelAboveSampleCode = $"<BitSpinButton @bind-Value='SpinButtonWithLabelAboveValue'{Environment.NewLine}" +
+             $"Suffix='cm'{Environment.NewLine}" +
+             $"Min='0'{Environment.NewLine}" +
+             $"Max='100'{Environment.NewLine}" +
+             $"Step='1'{Environment.NewLine}" +
+             $"Label='With Labal Above'>{Environment.NewLine}" +
+             $"LabelPosition='@BitSpinButtonLabelPosition.Top'>{Environment.NewLine}" +
+             "</BitSpinButton>";
+
+        private readonly string styledSampleCode = $"<BitSpinButton Class='custom-spb'{Environment.NewLine}" +
+           $"Suffix='cm'{Environment.NewLine}" +
+           $"Min='0'{Environment.NewLine}" +
+           $"Max='100'{Environment.NewLine}" +
+           $"Step='1'{Environment.NewLine}" +
+           $"Label='Custom Styled'>{Environment.NewLine}" +
+           $"</BitSpinButton>{Environment.NewLine}" +
+           $"<style>{Environment.NewLine}" +
+           $".custom-spb {{ {Environment.NewLine}" +
+           $".bit-spb-wrapper input {{ {Environment.NewLine}" +
+           $"background-color: #D7D7D7;{Environment.NewLine}" +
+           $"}} {Environment.NewLine}" +
+           $"}} {Environment.NewLine}" +
+           $"</style>{Environment.NewLine}";
+
+        private readonly string controlledSampleCode = $"<BitSpinButton Label='Controlled SpinButton With bind-value'{Environment.NewLine}" +
+           $"@bind-Value='BitSpinButtonBindValue'{Environment.NewLine}" +
+           $"Min='0'{Environment.NewLine}" +
+           $"Max='100'{Environment.NewLine}" +
+           $"Step='1'{Environment.NewLine}" +
+           $"</BitSpinButton>{Environment.NewLine}" +
+           $"<BitSpinButton Label='Controlled SpinButton With ValueChanged'{Environment.NewLine}" +
+           $"Value='BitSpinButtonValueChanged'{Environment.NewLine}" +
+           $"ValueChanged='HandleControlledSpinButtonValueChange'{Environment.NewLine}" +
+           $"Min='0'{Environment.NewLine}" +
+           $"Max='100'{Environment.NewLine}" +
+           $"Step='1'{Environment.NewLine}" +
+           $"</BitSpinButton>{Environment.NewLine}" +
+           $"@code {{ {Environment.NewLine}" +
+           $"private double BitSpinButtonBindValue = 8; {Environment.NewLine}" +
+           $"private double BitSpinButtonValueChanged = 16; {Environment.NewLine}" +
+           $"private void HandleControlledSpinButtonValueChange(double value) {Environment.NewLine}" +
+           $"{{ {Environment.NewLine}" +
+           $"BitSpinButtonValueChanged = value; {Environment.NewLine}" +
+           $"}} {Environment.NewLine}" +
+           "}}";
 
         private void HandleControlledSpinButtonValueChange(double value)
         {
