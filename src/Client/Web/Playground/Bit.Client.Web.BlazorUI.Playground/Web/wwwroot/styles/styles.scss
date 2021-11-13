@@ -816,6 +816,15 @@ footer {
             line-height: inherit
         }
     }
+
+    .bit-crsl-fluent {
+        max-width: 100%;
+    }
+
+    .bit-crslitm-current-fluent {
+        border: rem(1px) solid $Gray02;
+        box-shadow: rem(1px) rem(1px) $Gray03;
+    }
 }
 /* Colors */
 
