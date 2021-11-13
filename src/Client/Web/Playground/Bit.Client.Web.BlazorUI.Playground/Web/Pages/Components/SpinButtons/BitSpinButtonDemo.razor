@@ -1,11 +1,10 @@
 ﻿@page "/components/spinbuttons"
 
-
 @using Bit.Client.Web.BlazorUI.Playground.Web.Components
 
 <ComponentPage ComponentName="SpinButton" OverviewDesc="A spin button (SpinButton) allows someone to incrementally adjust a value in small steps. It’s mainly used for numeric values, but other values are supported too."
                ComponentParameters="componentParameters" EnumParameters="enumParameters">
-    <CodeSample Title="BitSpinButton" Description="Files can be uploaded automatically after selecting them.">
+    <CodeSample Title="BitSpinButton" Description="Files can be uploaded automatically after selecting them." CodeSampleContentForCopy="@spinButtonSampleCode">
         <SampleContent>
                 <BitSpinButton @bind-Value="BasicSpinButtonValue"
                                Min="0"
@@ -28,72 +27,66 @@
         </SampleContent>
         <CodeSampleContent>
             <pre>
-                &lt;<span class="dark-green">BitSpinButton</span>
-                <span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-Value</span>="BasicSpinButtonValue"
-                <span class="dark-green">Min</span>="0"
-                <span class="dark-green">Max</span>="100"
-                <span class="dark-green">Step</span>="1"
-                <span class="dark-green">Label</span>="Basic SpinButton"&gt;
-                &lt;/<span class="dark-green">BitSpinButton</span>&gt;
-                &lt;<span class="dark-green">BitSpinButton</span>&gt; 
-                <span class="dark-green">Min</span>="-10" 
-                <span class="dark-green">Max</span>="10" 
-                <span class="dark-green">Step</span>="0.1" 
-                <span class="dark-green">Label</span>="Decimal SpinButton"&gt;
-                &lt;/<span class="dark-green">BitSpinButton</span>&gt;               
-                &lt;<span class="dark-green">BitSpinButton</span> 
-                <span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-Value</span>="BasicSpinButtonDisableValue" 
-                <span class="dark-green">Min</span>="0" 
-                <span class="dark-green">Max</span>="100" 
-                <span class="dark-green">Step</span>Step="1" 
-                <span class="dark-green">Label</span>="Disabled SpinButton" 
-                <span class="dark-green">IsEnabled</span>="false"&gt;
-                 &lt;/<span class="dark-green">BitSpinButton</span>&gt;                 
-
-                <span class="light-yellow-bg">&#64;code{</span>
-                <span class="light-blue">private double</span> BasicSpinButtonValue = 5;
-                <span class="light-blue">private double</span> BasicSpinButtonDisableValue = 20;                    
-                <span class="light-yellow-bg">}</span>
+                &lt;<span class="soco-component-attr">BitSpinButton</span> <span class="soco-code">&#64;</span><span class="soco-component-attr">bind-Value</span>="BasicSpinButtonValue"
+                                               <span class="soco-component-attr">Min</span>="0"
+                                               <span class="soco-component-attr">Max</span>="100"
+                                               <span class="soco-component-attr">Step</span>="1"
+                                               <span class="soco-component-attr">Label</span>="Basic SpinButton"&gt;
+                &lt;/<span class="soco-component-attr">BitSpinButton</span>&gt;
+                &lt;<span class="soco-component-attr">BitSpinButton</span> <span class="soco-component-attr">Min</span>="-10" 
+                                               <span class="soco-component-attr">Max</span>="10" 
+                                               <span class="soco-component-attr">Step</span>="0.1" 
+                                               <span class="soco-component-attr">Label</span>="Decimal SpinButton"&gt;
+                &lt;/<span class="soco-component-attr">BitSpinButton</span>&gt;
+                &lt;<span class="soco-component-attr">BitSpinButton</span>  <span class="soco-code">&#64;</span><span class="soco-component-attr">bind-Value</span>="BasicSpinButtonDisableValue" 
+                                               <span class="soco-component-attr">Min</span>="0" 
+                                               <span class="soco-component-attr">Max</span>="100" 
+                                               <span class="soco-component-attr">Step</span>="1" 
+                                               <span class="soco-component-attr">Label</span>="Disabled SpinButton" 
+                                               <span class="soco-component-attr">IsEnabled</span>="false"&gt;
+                 &lt;/<span class="soco-component-attr">BitSpinButton</span>&gt;
+                <span class="soco-code">&#64;code {</span>
+                      <span class="soco-tag-type-def">private double</span> BasicSpinButtonValue = 5;
+                      <span class="soco-tag-type-def">private double</span> BasicSpinButtonDisableValue = 20;
+                <span class="soco-code">}</span>
             </pre>
         </CodeSampleContent>
     </CodeSample>
-    <CodeSample Title="SpinButton with icon" Description="Multiple files can be selected to upload automatically.">
+    <CodeSample Title="SpinButton With Icon" Description="Multiple files can be selected to upload automatically." CodeSampleContentForCopy="@spinButtonWithIconSampleCode">
         <SampleContent>
             <BitSpinButton IconName="IncreaseIndentLegacy"
                            Min="0"
                            Max="100"
                            Step="1"
-                           Label="With icon">
+                           Label="With Icon">
             </BitSpinButton>
             <BitSpinButton IconName="IncreaseIndentLegacy"
                            Min="0"
                            Max="100"
                            Step="1"
-                           Label="Disabled with icon"
+                           Label="Disabled With Icon"
                            IsEnabled="false">
             </BitSpinButton>
         </SampleContent>
         <CodeSampleContent>
             <pre>
-                 &lt;<span class="dark-green">BitSpinButton</span>    
-                 <span class="dark-green">IconName</span>="IncreaseIndentLegacy"
-                 <span class="dark-green">Min</span>="0"
-                 <span class="dark-green">Max</span>="100"
-                 <span class="dark-green">Step</span>="1"
-                 <span class="dark-green">Label</span>="With icon"&gt;
-                 &lt;/<span class="dark-green">BitSpinButton</span>&gt;
-                 &lt;<span class="dark-green">BitSpinButton</span>    
-                 <span class="dark-green">IconName</span>="IncreaseIndentLegacy"
-                 <span class="dark-green">Min</span>="0"
-                 <span class="dark-green">Max</span>="100"
-                 <span class="dark-green">Step</span>="1"
-                 <span class="dark-green">Label</span>="Disabled with icon"&gt;
-                 <span class="dark-green">IsEnabled</span>="<span class="light-blue">false</span>"
-                 &lt;/<span class="dark-green">BitSpinButton</span>&gt;
+                 &lt;<span class="soco-component-attr">BitSpinButton</span> <span class="soco-component-attr">IconName</span>="IncreaseIndentLegacy"
+                                                <span class="soco-component-attr">Min</span>="0"
+                                                <span class="soco-component-attr">Max</span>="100"
+                                                <span class="soco-component-attr">Step</span>="1"
+                                                <span class="soco-component-attr">Label</span>="With Icon"&gt;
+                 &lt;/<span class="soco-component-attr">BitSpinButton</span>&gt;
+                 &lt;<span class="soco-component-attr">BitSpinButton</span> <span class="soco-component-attr">IconName</span>="IncreaseIndentLegacy"
+                                                <span class="soco-component-attr">Min</span>="0"
+                                                <span class="soco-component-attr">Max</span>="100"
+                                                <span class="soco-component-attr">Step</span>="1"
+                                                <span class="soco-component-attr">Label</span>="Disabled With Icon";
+                                                <span class="soco-component-attr">IsEnabled</span>="<span class="soco-tag-type-def">false</span>">
+                 &lt;/<span class="soco-component-attr">BitSpinButton</span>&gt;
             </pre>
         </CodeSampleContent>
     </CodeSample>
-    <CodeSample Title="SpinButton with suffix" Description="Multiple files can be selected to upload automatically with limited size.">
+    <CodeSample Title="SpinButton With Suffix" Description="Multiple files can be selected to upload automatically with limited size." CodeSampleContentForCopy="@withSuffixSampleCode">
         <SampleContent>
             <BitSpinButton Suffix="Inch"
                            Min="0"
@@ -104,64 +97,68 @@
         </SampleContent>
         <CodeSampleContent>
             <pre>
-                &lt;<span class="dark-green">BitSpinButton</span>    
-                <span class="dark-green">Suffix</span>="Inch"
-                <span class="dark-green">Min</span>="0"
-                <span class="dark-green">Max</span>="100"
-                <span class="dark-green">Step</span>="1"
-                <span class="dark-green">Label</span>="With suffix"&gt;                                   
-                &lt;/<span class="dark-green">BitSpinButton</span>&gt;
+                &lt;<span class="soco-component-attr">BitSpinButton</span> <span class="soco-component-attr">Suffix</span>="Inch"
+                                               <span class="soco-component-attr">Min</span>="0"
+                                               <span class="soco-component-attr">Max</span>="100"
+                                               <span class="soco-component-attr">Step</span>="1"
+                                               <span class="soco-component-attr">Label</span>="With suffix"&gt;
+                &lt;/<span class="soco-component-attr">BitSpinButton</span>&gt;
             </pre>
         </CodeSampleContent>
     </CodeSample>
-    <CodeSample Title="SpinButton with label above" Description="Single or multiple file uploading limited only by file extensions, which in this case the allowed file extensions include gif, jpg and mp4.">
+    <CodeSample Title="SpinButton With Label Above" Description="Single or multiple file uploading limited only by file extensions, which in this case the allowed file extensions include gif, jpg and mp4." CodeSampleContentForCopy="@withLabelAboveSampleCode">
         <SampleContent>
             <BitSpinButton @bind-Value="SpinButtonWithLabelAboveValue"
                            Suffix="cm"
                            Min="0"
                            Max="100"
                            Step="1"
-                           Label="With labal above"
+                           Label="With Labal Above"
                            LabelPosition="@BitSpinButtonLabelPosition.Top">
             </BitSpinButton>
         </SampleContent>
         <CodeSampleContent>
             <pre>
-                 &lt;<span class="dark-green">BitSpinButton</span>    
-                 <span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-Value</span>="SpinButtonWithLabelAboveValue"
-                 <span class="dark-green">Suffix</span>="cm"
-                 <span class="dark-green">Min</span>="0"
-                 <span class="dark-green">Max</span>="100"
-                 <span class="dark-green">Step</span>="1"
-                 <span class="dark-green">Label</span>="With labal above"
-                 <span class="dark-green">LabelPosition</span>="<span class="light-yellow-bg">&#64;</span><span class="neon-yellow">BitSpinButtonLabelPosition</span>.Top"&gt;                                   
-                 &lt;/<span class="dark-green">BitSpinButton</span>&gt;
+                 &lt;<span class="soco-component-attr">BitSpinButton</span> <span class="soco-code">&#64;</span><span class="soco-component-attr">bind-Value</span>="SpinButtonWithLabelAboveValue"
+                                                <span class="soco-component-attr">Suffix</span>="cm"
+                                                <span class="soco-component-attr">Min</span>="0"
+                                                <span class="soco-component-attr">Max</span>="100"
+                                                <span class="soco-component-attr">Step</span>="1"
+                                                <span class="soco-component-attr">Label</span>="With Labal Above"
+                                                <span class="soco-component-attr">LabelPosition</span>="<span class="soco-code">&#64;</span><span class="neon-yellow">BitSpinButtonLabelPosition</span>.Top"&gt;
+                 &lt;/<span class="soco-component-attr">BitSpinButton</span>&gt;
             </pre>
         </CodeSampleContent>
     </CodeSample>
-    <CodeSample Title="Custom styled SpinButton" Description="">
+    <CodeSample Title="Custom Styled SpinButton" Description="" CodeSampleContentForCopy="@styledSampleCode">
         <SampleContent>
             <BitSpinButton Class="custom-spb"
                            Min="0"
                            Max="100"
                            Step="1"
-                           Label="Custom styled">
+                           Label="Custom Styled">
             </BitSpinButton>
         </SampleContent>
         <CodeSampleContent>
             <pre>
-                 &lt;<span class="dark-green">BitSpinButton</span>
-                 <span class="dark-green">Class</span>="custom-spb"
-                 <span class="dark-green">Min</span>="0"
-                 <span class="dark-green">Max</span>="100"
-                 <span class="dark-green">Step</span>="1"
-                 <span class="dark-green">Label</span>="Custom styled"&gt;
-                 &lt;/<span class="dark-green">BitSpinButton</span>&gt;
+                 &lt;<span class="soco-component-attr">BitSpinButton</span> <span class="soco-component-attr">Class</span>="custom-spb"
+                                                <span class="soco-component-attr">Min</span>="0"
+                                                <span class="soco-component-attr">Max</span>="100"
+                                                <span class="soco-component-attr">Step</span>="1"
+                                                <span class="soco-component-attr">Label</span>="Custom Styled"&gt;
+                 &lt;/<span class="soco-component-attr">BitSpinButton</span>&gt;
+                 &lt<span class="soco-tag-type-def">style></span>
+                 <span class="soco-css-style">.custom-spb</span> {
+                       <span class="soco-css-style">.bit-spb-wrapper input</span> {
+                               <span class="soco-var-attr">background-color</span> : #D7D7D7;
+                       }
+                 }
+                &lt/<span class="soco-tag-type-def">style</span>&gt;
             </pre>
         </CodeSampleContent>
     </CodeSample>
     <CodeSample Title="Controlled SpinButton" Description="A controlled BitSpinButton provides two-way binding using either bind-value or Value parameters. With bind-value all the changes to the value can be seen by its parent
-                but using Value, a custom handler should be implemented to reflect the changes outside the component.">
+                but using Value, a custom handler should be implemented to reflect the changes outside the component." CodeSampleContentForCopy="@controlledSampleCode">
         <SampleContent>
             <BitSpinButton Label="Controlled SpinButton with bind-value"
                            @bind-Value="BitSpinButtonBindValue"
@@ -179,31 +176,27 @@
         </SampleContent>
         <CodeSampleContent>
             <pre>
-                 &lt;<span class="dark-green">BitSpinButton</span>
-                 <span class="dark-green">Label</span>="Controlled SpinButton with bind-value"
-                 <span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-Value</span>="BitSpinButtonBindValue"
-                 <span class="dark-green">Min</span>="0"
-                 <span class="dark-green">Max</span>="100"
-                 <span class="dark-green">Step</span>="1"
-                 &lt;/<span class="dark-green">BitSpinButton</span>&gt;
-
-                 &lt;<span class="dark-green">BitSpinButton</span>
-                 <span class="dark-green">Label</span>="Controlled SpinButton with ValueChanged"
-                 <span class="dark-green">Value</span>="BitSpinButtonValueChanged"
-                 <span class="dark-green">ValueChanged</span>="HandleControlledSpinButtonValueChange"
-                 <span class="dark-green">Min</span>="0"
-                 <span class="dark-green">Max</span>="100"
-                 <span class="dark-green">Step</span>="1"
-                 &lt;/<span class="dark-green">BitSpinButton</span>&gt;
-
-                 <span class="light-yellow-bg">&#64;code{</span>
-                 <span class="light-blue">private double</span> BitSpinButtonBindValue = 8;
-                 <span class="light-blue">private double</span> BitSpinButtonValueChanged = 16;        
-                 <span class="light-blue">private</span> void HandleControlledSpinButtonValueChange(double value)
-                 {
-                 BitSpinButtonValueChanged = value;
-                 }              
-                 <span class="light-yellow-bg">}</span>
+                 &lt;<span class="soco-component-attr">BitSpinButton</span> <span class="soco-component-attr">Label</span>="Controlled SpinButton with bind-value"
+                                                <span class="soco-code">&#64;</span><span class="soco-component-attr">bind-Value</span>="BitSpinButtonBindValue"
+                                                <span class="soco-component-attr">Min</span>="0"
+                                                <span class="soco-component-attr">Max</span>="100"
+                                                <span class="soco-component-attr">Step</span>="1">
+                 &lt;/<span class="soco-component-attr">BitSpinButton</span>&gt;
+                 &lt;<span class="soco-component-attr">BitSpinButton</span> <span class="soco-component-attr">Label</span>="Controlled SpinButton with ValueChanged"
+                                                <span class="soco-component-attr">Value</span>="BitSpinButtonValueChanged"
+                                                <span class="soco-component-attr">ValueChanged</span>="HandleControlledSpinButtonValueChange"
+                                                <span class="soco-component-attr">Min</span>="0"
+                                                <span class="soco-component-attr">Max</span>="100"
+                                                <span class="soco-component-attr">Step</span>="1">
+                 &lt;/<span class="soco-component-attr">BitSpinButton</span>&gt;
+                 <span class="soco-code">&#64;code {</span>
+                       <span class="soco-tag-type-def">private double</span> BitSpinButtonBindValue = 8;
+                       <span class="soco-tag-type-def">private double</span> BitSpinButtonValueChanged = 16;        
+                       <span class="soco-tag-type-def">private</span> void HandleControlledSpinButtonValueChange(double value)
+                       {
+                             BitSpinButtonValueChanged = value;
+                       }              
+                 <span class="soco-code">}</span>
             </pre>
         </CodeSampleContent>
     </CodeSample>
