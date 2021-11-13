@@ -86,7 +86,7 @@ namespace Bit.Client.Web.BlazorUI
         protected override void OnInitialized()
         {
             SetSaturationPickerBackground();
-            
+
             base.OnInitialized();
         }
 
@@ -97,16 +97,27 @@ namespace Bit.Client.Web.BlazorUI
                 onWindowMouseUpAbortControllerId = await JSRuntime.RegisterOnWindowMouseUpEvent(this, "OnWindowMouseUp");
                 onWindowMouseMoveAbortControllerId = await JSRuntime.RegisterOnWindowMouseMoveEvent(this, "OnWindowMouseMove");
 
-                var saturationPickerRect = await JSRuntime.GetBoundingClientRect(SaturationPickerRef);
-
-                saturationPickerThumbPosition = new BitColorPosition
-                {
-                    Left = Convert.ToInt32(saturationPickerRect?.Width ?? 0),
-                    Top = 0
-                };
+                await SetPositionAsync();
             }
 
             await base.OnAfterRenderAsync(firstRender);
+        }
+
+        private async Task SetPositionAsync()
+        {
+            var hsv = color.Hsv;
+            var saturationPickerRect = await JSRuntime.GetBoundingClientRect(SaturationPickerRef);
+
+            var width = saturationPickerRect?.Width ?? 0;
+            var height = saturationPickerRect?.Height ?? 0;
+
+            saturationPickerThumbPosition = new BitColorPosition
+            {
+                Left = Convert.ToInt32(width * hsv.Saturation / 100),
+                Top = Convert.ToInt32(height - (height * hsv.Value / 100))
+            };
+
+            StateHasChanged();
         }
 
         private void SetSaturationPickerBackground()
@@ -132,7 +143,6 @@ namespace Bit.Client.Web.BlazorUI
             color = new BitColor(hue, selectedSaturation, selectedValue, color.Alpha);
 
             SetSaturationPickerBackground();
-
 
 
             string? colorValue = colorType == BitColorType.Hex ? color.Hex : color.Rgb;
