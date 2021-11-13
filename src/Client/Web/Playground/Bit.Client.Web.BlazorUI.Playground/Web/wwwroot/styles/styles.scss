@@ -754,6 +754,12 @@ footer {
         margin-top: 0;
     }
 
+    .bit-tgl {
+        @include sm {
+            line-height: rem(15px);
+        }
+    }
+
     .bit-slider-container {
         padding: rem(30px) 0;
     }

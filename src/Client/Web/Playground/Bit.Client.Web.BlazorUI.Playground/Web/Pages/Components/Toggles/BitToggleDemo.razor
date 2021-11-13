@@ -4,68 +4,113 @@
 
 <ComponentPage ComponentName="Toggle" OverviewDesc="A toggle represents a physical switch that allows someone to choose between two mutually exclusive options.  For example, “On/Off”, “Show/Hide”. Choosing an option should produce an immediate result."
                ComponentParameters="componentParameters">
-    <CodeSample Title="BitToggle" Description="">
+    <CodeSample Title="BitToggle" Description="" CodeSampleContentForCopy="@toggleSampleCode">
         <SampleContent>
             <div class="m-t-15">
-                <BitToggle Label="Enabled and checked" @bind-IsChecked="IsToggleChecked" IsEnabled="true" OnText="On" OffText="Off" />
+                <BitToggle Label="Enabled And Checked" @bind-IsChecked="IsToggleChecked" IsEnabled="true" OnText="On" OffText="Off" />
             </div>
             <div class="m-t-15">
-                <BitToggle Label="Enabled and unchecked" @bind-IsChecked="IsToggleUnChecked" IsEnabled="true" OnText="On" OffText="Off" />
+                <BitToggle Label="Enabled And Unchecked" @bind-IsChecked="IsToggleUnChecked" IsEnabled="true" OnText="On" OffText="Off" />
             </div>
             <div class="m-t-15">
-                <BitToggle Label="Disabled and checked" IsChecked="true" IsEnabled="false" OnText="On" OffText="Off" />
+                <BitToggle Label="Disabled And Checked" IsChecked="true" IsEnabled="false" OnText="On" OffText="Off" />
             </div>
             <div class="m-t-15">
-                <BitToggle Label="Disabled and unchecked" IsChecked="false" IsEnabled="false" OnText="On" OffText="Off" />
+                <BitToggle Label="Disabled And Unchecked" IsChecked="false" IsEnabled="false" OnText="On" OffText="Off" />
             </div>
             <div class="m-t-15">
-                <BitToggle Label="With inline label" @bind-IsChecked="IsToggleUnChecked" IsEnabled="true" IsInlineLabel="true" OnText="On" OffText="Off" />
+                <BitToggle Label="With Inline Label" @bind-IsChecked="IsToggleUnChecked" IsEnabled="true" IsInlineLabel="true" OnText="On" OffText="Off" />
             </div>
             <div class="m-t-15">
-                <BitToggle Label="Disabled with inline label" IsChecked="false" IsEnabled="false" IsInlineLabel="true" OnText="On" OffText="Off" />
+                <BitToggle Label="Disabled With Inline Label" IsChecked="false" IsEnabled="false" IsInlineLabel="true" OnText="On" OffText="Off" />
             </div>
             <div class="m-t-15">
-                <BitToggle Label="With inline label and without onText and offText" @bind-IsChecked="IsToggleUnChecked" IsEnabled="true" IsInlineLabel="true" />
+                <BitToggle Label="With Inline Label And Without OnText And OffText" @bind-IsChecked="IsToggleUnChecked" IsEnabled="true" IsInlineLabel="true" />
             </div>
             <div class="m-t-15">
-                <BitToggle Label="Disabled With inline label and without onText and offText" IsChecked="false" IsEnabled="false" IsInlineLabel="true" />
+                <BitToggle Label="Disabled With Inline Label And Without OnText And OffText" IsChecked="false" IsEnabled="false" IsInlineLabel="true" />
             </div>
             <div class="m-t-15">
-                <BitToggle Label="Enabled and checked (ARIA 1.0 compatible)" @bind-IsChecked="IsToggleChecked" IsEnabled="true" OnText="On" OffText="Off" Role="Checkbox" />
+                <BitToggle Label="Enabled And Checked (ARIA 1.0 compatible)" @bind-IsChecked="IsToggleChecked" IsEnabled="true" OnText="On" OffText="Off" Role="Checkbox" />
             </div>
         </SampleContent>
         <CodeSampleContent>
             <pre>
-               &lt<span class="dark-green">BitToggle Label</span>="Enabled and checked" <span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-IsChecked="</span><span>IsToggleChecked" </span><span class="dark-green">IsEnabled=</span><span class="light-blue">"true"</span> <span class="dark-green"> OnText</span>="On"<span class="dark-green"> OffText</span>="Off"><span>&lt/</span><span class="dark-green">BitToggle</span><span>&gt;</span>
-               &lt<span class="dark-green">BitToggle Label</span>="Enabled and unchecked" <span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-IsChecked="</span><span>IsToggleUnChecked" </span><span class="dark-green">IsEnabled=</span><span class="light-blue">"true"</span> <span class="dark-green"> OnText</span>="On"<span class="dark-green"> OffText</span>="Off"><span>&lt/</span><span class="dark-green">BitToggle</span><span>&gt;</span>
-               &lt<span class="dark-green">BitToggle Label</span>="Disabled and checked" <span class="dark-green">IsChecked="</span><span class="light-blue">true" </span><span class="dark-green">IsEnabled=</span><span class="light-blue">"false"</span> <span class="dark-green"> OnText</span>="On"<span class="dark-green"> OffText</span>="Off"><span>&lt/</span><span class="dark-green">BitToggle</span><span>&gt;</span>
-               &lt<span class="dark-green">BitToggle Label</span>="Disabled and unchecked" <span class="dark-green">IsChecked="</span><span class="light-blue">false" </span><span class="dark-green">IsEnabled=</span><span class="light-blue">"false"</span> <span class="dark-green"> OnText</span>="On"<span class="dark-green"> OffText</span>="Off"><span>&lt/</span><span class="dark-green">BitToggle</span><span>&gt;</span>
-               &lt<span class="dark-green">BitToggle Label</span>="With inline label" <span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-IsChecked="</span><span>IsToggleUnChecked" </span><span class="dark-green">IsEnabled=</span><span class="light-blue">"true"</span> <span class="dark-green">IsInlineLabel=</span><span class="light-blue">"true"</span> <span class="dark-green"> OnText</span>="On"<span class="dark-green"> OffText</span>="Off"><span>&lt/</span><span class="dark-green">BitToggle</span><span>&gt;</span>
-               &lt<span class="dark-green">BitToggle Label</span>="Disabled with inline label" <span class="dark-green">IsChecked="</span><span class="light-blue">false" </span><span class="dark-green">IsEnabled=</span><span class="light-blue">"false"</span> <span class="dark-green">IsInlineLabel=</span>"<span class="light-blue">true</span>"<span class="dark-green"> OnText</span>="On"<span class="dark-green"> OffText</span>="Off"><span>&lt/</span><span class="dark-green">BitToggle</span><span>&gt;</span>
-               &lt<span class="dark-green">BitToggle Label</span>="With inline label and without onText and offText" <span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-IsChecked="</span><span>IsToggleUnChecked" </span><span class="dark-green">IsEnabled=</span><span class="light-blue">"true"</span> <span class="dark-green">IsInlineLabel=</span>"<span class="light-blue">true</span>"><span>&lt/</span><span class="dark-green">BitToggle</span><span>&gt;</span>
-               &lt<span class="dark-green">BitToggle Label</span>="Disabled With inline label and without onText and offText" <span class="dark-green">IsChecked=</span><span class="light-blue">"false" </span><span class="dark-green">IsEnabled=</span><span class="light-blue">"false"</span> <span class="dark-green">IsInlineLabel=</span><span class="light-blue">"true"</span>><span>&lt/</span><span class="dark-green">BitToggle</span><span>&gt;</span>
-               &lt<span class="dark-green">BitToggle Label</span>="Enabled and checked (ARIA 1.0 compatible)" <span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-IsChecked="</span>IsToggleChecked" <span class="dark-green">IsEnabled=</span><span class="light-blue">"true"</span> <span class="dark-green"> OnText</span>="On"<span class="dark-green"> OffText</span>="Off" <span class="dark-green">Role=</span>"Checkbox"><span>&lt/</span><span class="dark-green">BitToggle</span><span>&gt;</span>
-
-               <span class="light-yellow-bg">&#64;code {</span>
-                     <span class="light-blue">private bool </span>IsToggleChecked = <span class="light-blue">true</span>;
-                     <span class="light-blue">private bool </span>IsToggleUnChecked = <span class="light-blue">false</span>;
-               <span class="light-yellow-bg">}</span>
+               &lt<span class="soco-component-attr">BitToggle Label</span>="Enabled And Checked"
+                                     <span class="soco-code">&#64;</span><span class="soco-component-attr">bind-IsChecked="</span><span class="soco-code">@@</span>IsToggleChecked"
+                                     <span class="soco-component-attr">IsEnabled=</span><span class="soco-tag-type-def">"true"</span>
+                                     <span class="soco-component-attr">OnText</span>="On"
+                                     <span class="soco-component-attr"> OffText</span>="Off">
+               &lt/<span class="soco-component-attr">BitToggle</span>&gt;
+               &lt<span class="soco-component-attr">BitToggle Label</span>="Enabled And Unchecked"
+                                     <span class="soco-code">&#64;</span><span class="soco-component-attr">bind-IsChecked="</span><span class="soco-code">@@</span>IsToggleUnChecked"
+                                     <span class="soco-component-attr">IsEnabled=</span><span class="soco-tag-type-def">"true"</span>
+                                     <span class="soco-component-attr">OnText</span>="On"
+                                     <span class="soco-component-attr">OffText</span>="Off">
+               &lt/<span class="soco-component-attr">BitToggle</span>&gt;
+               &lt<span class="soco-component-attr">BitToggle Label</span>="Disabled And Checked"
+                                     <span class="soco-component-attr">IsChecked="</span><span class="soco-tag-type-def">true"</span>
+                                     <span class="soco-component-attr">IsEnabled=</span><span class="soco-tag-type-def">"false"</span>
+                                     <span class="soco-component-attr">OnText</span>="On"
+                                     <span class="soco-component-attr">OffText</span>="Off">
+               &lt/<span class="soco-component-attr">BitToggle</span>&gt;
+               &lt<span class="soco-component-attr">BitToggle Label</span>="Disabled And Unchecked"
+                                     <span class="soco-component-attr">IsChecked="</span><span class="soco-tag-type-def">false"</span>
+                                     <span class="soco-component-attr">IsEnabled=</span><span class="soco-tag-type-def">"false"</span>
+                                     <span class="soco-component-attr">OnText</span>="On"
+                                     <span class="soco-component-attr">OffText</span>="Off">
+               &lt/<span class="soco-component-attr">BitToggle</span>&gt;
+               &lt<span class="soco-component-attr">BitToggle Label</span>="With Inline Label"
+                                     <span class="soco-code">&#64;</span><span class="soco-component-attr">bind-IsChecked="</span><span class="soco-code">@@</span>IsToggleUnChecked"
+                                     <span class="soco-component-attr">IsEnabled=</span><span class="soco-tag-type-def">"true"</span>
+                                     <span class="soco-component-attr">IsInlineLabel=</span><span class="soco-tag-type-def">"true"</span>
+                                     <span class="soco-component-attr">OnText</span>="On"
+                                     <span class="soco-component-attr">OffText</span>="Off">
+               &lt/<span class="soco-component-attr">BitToggle</span>&gt;
+               &lt<span class="soco-component-attr">BitToggle Label</span>="Disabled With Inline Label"
+                                     <span class="soco-component-attr">IsChecked="</span><span class="soco-tag-type-def">false"</span>
+                                     <span class="soco-component-attr">IsEnabled=</span><span class="soco-tag-type-def">"false"</span>
+                                     <span class="soco-component-attr">IsInlineLabel=</span>"<span class="soco-tag-type-def">true</span>"
+                                     <span class="soco-component-attr">OnText</span>="On"
+                                     <span class="soco-component-attr">OffText</span>="Off">
+               &lt/<span class="soco-component-attr">BitToggle</span>&gt;
+               &lt<span class="soco-component-attr">BitToggle Label</span>="With Inline Label And Without OnText And OffText"
+                                     <span class="soco-code">&#64;</span><span class="soco-component-attr">bind-IsChecked="</span><span class="soco-code">@@</span>IsToggleUnChecked"
+                                     <span class="soco-component-attr">IsEnabled=</span><span class="soco-tag-type-def">"true"</span>
+                                     <span class="soco-component-attr">IsInlineLabel=</span>"<span class="soco-tag-type-def">true</span>">
+               &lt/<span class="soco-component-attr">BitToggle</span>&gt;
+               &lt<span class="soco-component-attr">BitToggle Label</span>="Disabled With Inline Label And Without OnText And OffText"
+                                     <span class="soco-component-attr">IsChecked=</span><span class="soco-tag-type-def">"false"</span>
+                                     <span class="soco-component-attr">IsEnabled=</span><span class="soco-tag-type-def">"false"</span>
+                                     <span class="soco-component-attr">IsInlineLabel=</span><span class="soco-tag-type-def">"true"</span>>
+               &lt/<span class="soco-component-attr">BitToggle</span>&gt;
+               &lt<span class="soco-component-attr">BitToggle Label</span>="Enabled And Checked (ARIA 1.0 compatible)"
+                                     <span class="soco-code">&#64;</span><span class="soco-component-attr">bind-IsChecked="</span><span class="soco-code">@@</span>IsToggleChecked"
+                                     <span class="soco-component-attr">IsEnabled=</span><span class="soco-tag-type-def">"true"</span>
+                                     <span class="soco-component-attr">OnText</span>="On"
+                                     <span class="soco-component-attr">OffText</span>="Off"
+                                     <span class="soco-component-attr">Role=</span>"Checkbox">
+               &lt/<span class="soco-component-attr">BitToggle</span>&gt;
+               <span class="soco-code">&#64;code {</span>
+                     <span class="soco-tag-type-def">private bool </span>IsToggleChecked = <span class="soco-tag-type-def">true</span>;
+                     <span class="soco-tag-type-def">private bool </span>IsToggleUnChecked = <span class="soco-tag-type-def">false</span>;
+               <span class="soco-code">}</span>
             </pre>
         </CodeSampleContent>
     </CodeSample>
-    <CodeSample Title="Toggles with Custom Labels" Description="">
+    <CodeSample Title="Toggles With Custom Labels" Description="" CodeSampleContentForCopy="@customLabelSampleCode">
         <SampleContent>
             <div class="m-t-15">
                 <BitToggle @bind-IsChecked="IsToggleUnChecked" IsEnabled="true" OnText="On" OffText="Off">
                     <LabelFragment>
-                        Custom label
+                        Custom Inline Label
                     </LabelFragment>
                 </BitToggle>
                 </div>
                 <div class="m-t-15">
                     <BitToggle @bind-IsChecked="BindedIsToggleUnChecked" IsEnabled="true" OnText="On" OffText="Off" IsInlineLabel="true">
                         <LabelFragment>
-                            Custom inline label
+                            Custom Inline Label
                         </LabelFragment>
                     </BitToggle>
                 <div class="m-t-15">
@@ -75,22 +120,30 @@
         </SampleContent>
         <CodeSampleContent>
             <pre>
-                &lt<span class="dark-green">BitToggle </span><span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-IsChecked="</span><span>IsToggleUnChecked" </span><span class="dark-green">IsEnabled=</span><span class="light-blue">"true"</span> <span class="dark-green"> OnText</span>="On"<span class="dark-green"> OffText</span>="Off">
-                <span class="m-l-30">&lt<span class="dark-green">LabelFragment></span></span>
-                      <span class="m-l-45">Custom inline label</span>
-                <span class="m-l-30">&lt/</span><span class="dark-green">LabelFragment</span><span>&gt;</span>
-                <span>&lt/</span><span class="dark-green">BitToggle</span><span>&gt;</span>
-                &lt<span class="dark-green">BitToggle </span><span class="light-yellow-bg">&#64;</span><span class="dark-green">bind-IsChecked="</span><span>BindedIsToggleUnChecked" </span><span class="dark-green">IsEnabled=</span><span class="light-blue">"true"</span> <span class="dark-green"> OnText</span>="On"<span class="dark-green"> OffText</span>="Off" <span class="dark-green">IsInlineLabel=</span><span class="light-blue">"true"</span>>
-                <span class="m-l-30">&lt<span class="dark-green">LabelFragment></span></span>
-                      <span class="m-l-45">Custom inline label</span>
-                <span class="m-l-30">&lt/</span><span class="dark-green">LabelFragment</span><span>&gt;</span>
-                <span>&lt/</span><span class="dark-green">BitToggle</span><span>&gt;</span>
-                &lt<span class="dark-green">BitButton OnClick</span>="() => BindedIsToggleUnChecked = <span class="light-blue">true</span>">Make Toggle Check<span>&lt/</span><span class="dark-green">BitButton</span><span>&gt;</span>
-
-                <span class="light-yellow-bg">&#64;code {</span>
-                      <span class="light-blue">private bool </span>BindedIsToggleUnChecked = <span class="light-blue">false</span>;
-                      <span class="light-blue">private bool </span>IsToggleUnChecked = <span class="light-blue">false</span>;
-                <span class="light-yellow-bg">}</span>
+                &lt<span class="soco-component-attr">BitToggle </span><span class="soco-code">&#64;</span><span class="soco-component-attr">bind-IsChecked="</span><span class="soco-code">@@</span>IsToggleUnChecked"
+                                      <span class="soco-component-attr">IsEnabled=</span><span class="soco-tag-type-def">"true"</span>
+                                      <span class="soco-component-attr">OnText</span>="On"
+                                      <span class="soco-component-attr">OffText</span>="Off">
+                         &lt<span class="soco-component-attr">LabelFragment></span>
+                                  Custom Inline Label
+                         &lt/<span class="soco-component-attr">LabelFragment</span>&gt;
+                &lt/<span class="soco-component-attr">BitToggle</span>&gt;
+                &lt<span class="soco-component-attr">BitToggle</span><span class="soco-code">&#64;</span><span class="soco-component-attr">bind-IsChecked="</span><span class="soco-code">@@</span>BindedIsToggleUnChecked"
+                                      <span class="soco-component-attr">IsEnabled=</span><span class="soco-tag-type-def">"true"</span>
+                                      <span class="soco-component-attr">OnText</span>="On"
+                                      <span class="soco-component-attr">OffText</span>="Off"
+                                      <span class="soco-component-attr">IsInlineLabel=</span><span class="soco-tag-type-def">"true"</span>>
+                          &lt<span class="soco-component-attr">LabelFragment></span>
+                                   Custom Inline Label
+                          &lt/<span class="soco-component-attr">LabelFragment</span>&gt;
+                &lt/<span class="soco-component-attr">BitToggle</span>&gt;
+                &lt<span class="soco-component-attr">BitButton OnClick</span>="() => BindedIsToggleUnChecked = <span class="soco-tag-type-def">true</span>">
+                          Make Toggle Check
+                &lt/<span class="soco-component-attr">BitButton</span>&gt;
+                <span class="soco-code">&#64;code {</span>
+                      <span class="soco-tag-type-def">private bool </span>BindedIsToggleUnChecked = <span class="soco-tag-type-def">false</span>;
+                      <span class="soco-tag-type-def">private bool </span>IsToggleUnChecked = <span class="soco-tag-type-def">false</span>;
+                <span class="soco-code">}</span>
             </pre>
         </CodeSampleContent>
     </CodeSample>
