@@ -141,27 +141,19 @@ namespace Bit.Client.Web.BlazorUI
 
         private void CalculateHsv()
         {
-            double hue;
-            double saturation;
+            var myColor = Color.FromArgb(Red, Green, Blue);
 
-            var red = Red / 255;
-            var green = Green / 255;
-            var blue = Blue / 255;
+            int max = Math.Max(myColor.R, Math.Max(myColor.G, myColor.B));
+            int min = Math.Min(myColor.R, Math.Min(myColor.G, myColor.B));
 
-            double cMax = Math.Max(red, Math.Max(green, blue));
-            double cMin = Math.Min(red, Math.Min(green, blue));
-            double span = cMax - cMin == 0 ? 1 : cMax - cMin;
-
-            hue = red == cMax ? (60 * ((green - blue) / span) + 360) % 360
-                : green == cMax ? (60 * ((blue - red) / span) + 120) % 360
-                : (60 * ((red - green) / span) + 240) % 360;
-
-            saturation = cMax == 0 ? 0 : span / cMax;
+            var hue = myColor.GetHue();
+            var saturation = (max == 0) ? 0 : 1d - (1d * min / max);
+            var value = max / 255d;
 
             hsv = new(
                 Convert.ToInt32(Math.Floor(hue)),
                 Convert.ToInt32(Math.Floor(saturation * 100)),
-                Convert.ToInt32(Math.Floor(cMax * 100))
+                Convert.ToInt32(Math.Floor(value * 100))
                 );
         }
 
