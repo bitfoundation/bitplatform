@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.JSInterop;
 
 namespace Bit.Client.Web.BlazorUI
 {
@@ -24,6 +25,8 @@ namespace Bit.Client.Web.BlazorUI
         private bool isMonthPickerOverlayOnTop = false;
         private int monthLength;
         private bool ValueHasBeenSet;
+
+        [Inject] public IJSRuntime? JSRuntime { get; set; }
 
         /// <summary>
         /// Whether or not this DatePicker is open
@@ -147,6 +150,8 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public bool ShowWeekNumbers { get; set; } = false;
 
         public string CalloutId { get; set; } = string.Empty;
+        public string OverlayId { get; set; } = string.Empty;
+        public string WrapperId { get; set; } = string.Empty;
         public string MonthAndYearId { get; set; } = Guid.NewGuid().ToString();
         public string ActiveDescendantId { get; set; } = Guid.NewGuid().ToString();
 
@@ -161,6 +166,8 @@ namespace Bit.Client.Web.BlazorUI
         protected override Task OnInitializedAsync()
         {
             CalloutId = $"DatePicker-Callout{UniqueId}";
+            OverlayId = $"DatePicker-Overlay{UniqueId}";
+            WrapperId = $"DatePicker-Wrapper{UniqueId}";
             return base.OnInitializedAsync();
         }
 
@@ -182,13 +189,14 @@ namespace Bit.Client.Web.BlazorUI
 
         public async Task HandleClick(MouseEventArgs eventArgs)
         {
-            if (IsEnabled is false) return;
+            if (IsEnabled is false || JSRuntime is null) return;
 
-            if(ShowMonthPickerAsOverlay)
+            if (ShowMonthPickerAsOverlay)
             {
                 isMonthPickerOverlayOnTop = false;
             }
 
+            await JSRuntime.InvokeVoidAsync("BitDatePicker.toggleDatePickerCallout", WrapperId, CalloutId, OverlayId, isOpen);
             IsOpen = true;
             displayYear = currentYear;
             await OnClick.InvokeAsync(eventArgs);
@@ -439,8 +447,11 @@ namespace Bit.Client.Web.BlazorUI
             yearRangeTo = fromYear + 11;
         }
 
-        private void CloseCallout()
+        private async Task CloseCallout()
         {
+            if (JSRuntime is null) return;
+
+            await JSRuntime.InvokeVoidAsync("BitDatePicker.toggleDatePickerCallout", WrapperId, CalloutId, OverlayId, isOpen);
             IsOpen = false;
             StateHasChanged();
         }
