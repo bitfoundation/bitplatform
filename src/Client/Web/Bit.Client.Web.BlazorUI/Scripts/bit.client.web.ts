@@ -16,7 +16,7 @@
 }
 
 class Bit {
-    static cureentCallout: CalloutComponent = new CalloutComponent();
+    static currentCallout: CalloutComponent = new CalloutComponent();
 
     static setProperty(element: { [key: string]: any }, property: string, value: any): void {
         element[property] = value;
@@ -35,18 +35,18 @@ class Bit {
     }
 
     static closeCurrentCalloutIfExists(calloutId: string, overlayId: string, obj: any) {
-        if (Bit.cureentCallout.calloutId.length === 0 || Bit.cureentCallout.overlayId.length === 0) {
-            Bit.cureentCallout.update(calloutId, overlayId, obj);
+        if (Bit.currentCallout.calloutId.length === 0 || Bit.currentCallout.overlayId.length === 0) {
+            Bit.currentCallout.update(calloutId, overlayId, obj);
             return;
         }
 
-        if (calloutId !== Bit.cureentCallout.calloutId && overlayId !== Bit.cureentCallout.overlayId) {
-            var callout = document.getElementById(Bit.cureentCallout.calloutId) ?? new HTMLElement();
-            var overlay = document.getElementById(Bit.cureentCallout.overlayId) ?? new HTMLElement();
+        if (calloutId !== Bit.currentCallout.calloutId && overlayId !== Bit.currentCallout.overlayId) {
+            var callout = document.getElementById(Bit.currentCallout.calloutId) ?? new HTMLElement();
+            var overlay = document.getElementById(Bit.currentCallout.overlayId) ?? new HTMLElement();
             callout.style.display = "none";
             overlay.style.display = "none";
-            Bit.cureentCallout.objRef.invokeMethodAsync("CloseCallout");
-            Bit.cureentCallout.update(calloutId, overlayId, obj);
+            Bit.currentCallout.objRef.invokeMethodAsync("CloseCallout");
+            Bit.currentCallout.update(calloutId, overlayId, obj);
         }
     }
 }
