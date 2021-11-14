@@ -13,7 +13,7 @@
         if (isOpen) {
             dropDownCallout.style.display = "none";
             dropDownOverlay.style.display = "none";
-            Bit.cureentCallout.update("", "", null);
+            Bit.currentCallout.update("", "", null);
         } else {
             Bit.closeCurrentCalloutIfExists(dropDownCalloutId, dropDownOverlayId, dotnetObjReference);
             dropDownCallout.style.display = "block";
