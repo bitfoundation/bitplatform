@@ -634,16 +634,19 @@ footer {
 }
 
 .disable-cmp-btn {
+    @include lg {
+        margin-top: rem(10px);
+    }
+
     @include md {
         margin-top: rem(10px);
-        width: rem(214px);
     }
 }
 
 .bit-cmp-btn {
     @include sm {
         margin-top: rem(10px);
-        width: rem(278px);
+        width: rem(230px);
     }
 }
 
@@ -659,6 +662,15 @@ footer {
     .bit-icon {
         font-size: rem(25px);
     }
+}
+
+.custom-compound-button, .custom-compound-button:hover {
+    width: rem(230px);
+    font-family: Axiforma;
+    font-size: rem(16px);
+    color: $White;
+    background-color: $DarkBlue;
+    border-color: $DarkBlue;
 }
 
 .custom-spb {
@@ -815,6 +827,15 @@ footer {
             white-space: normal;
             line-height: inherit
         }
+    }
+
+    .bit-crsl-fluent {
+        max-width: 100%;
+    }
+
+    .bit-crslitm-current-fluent {
+        border: rem(1px) solid $Gray02;
+        box-shadow: rem(1px) rem(1px) $Gray03;
     }
 
     .bit-spn-fluent {

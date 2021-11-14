@@ -1,17 +1,18 @@
-﻿.numbertext {
-    color: #f2f2f2;
-    font-size: 12px;
-    padding: 8px 12px;
+﻿@import "../../../Styles/_shared.scss";
+
+.numbertext {
+    color: $Gray03;
+    font-size: rem(12px);
+    padding: rem(12px);
     position: absolute;
-    top: 0;
+    top: rem(12px);
 }
 
 .text {
-    color: #f2f2f2;
-    font-size: 15px;
-    padding: 8px 12px;
+    color: $White;
+    font-size: rem(15px);
     position: absolute;
-    bottom: 55px;
+    bottom: rem(55px);
     width: 100%;
     text-align: center;
 }
