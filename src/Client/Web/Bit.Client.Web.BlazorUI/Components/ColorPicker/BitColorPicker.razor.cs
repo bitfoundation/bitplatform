@@ -61,7 +61,9 @@ namespace Bit.Client.Web.BlazorUI
 
         [Parameter] public EventCallback<string> ColorChanged { get; set; }
 
-
+        /// <summary>
+        /// Indicates the Alpha value.
+        /// </summary>
         [Parameter]
         public double Alpha
         {
@@ -77,6 +79,9 @@ namespace Bit.Client.Web.BlazorUI
 
         [Parameter] public EventCallback<double> AlphaChanged { get; set; }
 
+        /// <summary>
+        /// Whether to show color preview box.
+        /// </summary>
         [Parameter] public bool ShowPreview { get; set; }
 
         [Parameter] public EventCallback<BitColorEventArgs> OnChange { get; set; }
