@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
-using Bit.Client.Web.BlazorUI.Playground.Web.Models;
 using Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 
 namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ProgressIndicator
@@ -68,6 +68,33 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ProgressIndica
                 Description = "A custom template for progress track.",
             },
         };
+
+        private readonly string indeterminateSampleCode = $"<BitProgressIndicator Label='Example title' Description='@description' PercentComplete='@CompletedPercent' BarHeight='50'/>{Environment.NewLine}" +
+              $"<BitButton OnClick='@StartProgress'>Start Progress</BitButton>";
+
+        private readonly string progressIndicatorSampleCode = $"<BitProgressIndicator Label='Example title' Description='Example description' BarHeight='20'/>{Environment.NewLine}" +
+              $"<BitButton OnClick='@StartProgress'>Start Progress</BitButton>{Environment.NewLine}" +
+              $"private string description = 'Push button to start!';{Environment.NewLine}" +
+              $"public int CompletedPercent {{ get; set; }}{Environment.NewLine}" +
+              $"private async Task StartProgress(){Environment.NewLine}" +
+              $"{{ {Environment.NewLine}" +
+              $"CompletedPercent = 0;{Environment.NewLine}" +
+              $"while (CompletedPercent <= 100){Environment.NewLine}" +
+              $"{{ {Environment.NewLine}" +
+              $"if (CompletedPercent == 100){Environment.NewLine}" +
+              $"{{ {Environment.NewLine}" +
+              $"description = $'Completed !';{Environment.NewLine}" +
+              $"break;{Environment.NewLine}" +
+              $"}} {Environment.NewLine}" +
+              $"else{Environment.NewLine}" +
+              $"{{ {Environment.NewLine}" +
+              $"CompletedPercent++;{Environment.NewLine}" +
+              $"description = $'{{CompletedPercent}}%';{Environment.NewLine}" +
+              $"}} {Environment.NewLine}" +
+              $"StateHasChanged();{Environment.NewLine}" +
+              $"await Task.Delay(100);{Environment.NewLine}" +
+              $"}} {Environment.NewLine}"+
+              $"}}";
 
         public int CompletedPercent { get; set; }
 

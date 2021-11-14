@@ -2,7 +2,7 @@
 
 @using Bit.Client.Web.BlazorUI.Playground.Web.Components
 
-<ComponentPage ComponentName="Progressindicator" OverviewDesc="BitProgressIndicators are used to show the completion status of an operation lasting more than 2 seconds.
+<ComponentPage ComponentName="ProgressIndicator" OverviewDesc="BitProgressIndicators are used to show the completion status of an operation lasting more than 2 seconds.
         If the state of progress cannot be determined, use a Spinner instead.
         ProgressIndicators can appear in a new panel, a flyout, under the UI initiating the operation, or even replacing the initiating UI,
         as long as the UI can return if the operation is canceled or is stopped. Real-world examples include copying files to a storage location, saving edits to a file, and more.
@@ -11,53 +11,57 @@
         Instead change the operation description to reflect the change if necessary.
         Bars moving backwards reduce confidence in the service."
                ComponentParameters="componentParameters">
-    <CodeSample Title="BitProgressIndicator" Description="">
+    <CodeSample Title="BitProgressIndicator" Description="" CodeSampleContentForCopy="@progressIndicatorSampleCode">
         <SampleContent>
             <BitProgressIndicator Label="Example title" Description="@description" PercentComplete="@CompletedPercent" BarHeight="50"></BitProgressIndicator>
-            <div class="m-t-10">
+            <div>
                 <BitButton OnClick="@StartProgress">Start Progress</BitButton>
             </div>
         </SampleContent>
         <CodeSampleContent>
             <pre>
-               &lt<span class="dark-green">BitProgressIndicator Label</span>="Example title" <span class="dark-green">Description</span>="<span class="light-yellow-bg">&#64;</span>description" <span class="dark-green">PercentComplete</span>="<span class="light-yellow-bg">&#64;</span>CompletedPercent" <span class="dark-green">BarHeight</span>="30"><span>&lt/</span><span class="dark-green">BitProgressIndicator</span><span>&gt;</span>
-               &lt<span class="dark-green">BitButton OnClick</span>="<span class="light-yellow-bg">&#64;</span><span class="dark-yellow">StartProgress</span>"><span class="dark-green">BitButton</span><span>&gt;</span>
-            
-               <span class="light-yellow-bg">&#64;code {</span>
-                    <span class="light-blue"> private string </span>description= "<span class=dark-orange>Push button to start!</span>";
-                    <span class="light-blue"> public int </span>CompletedPercent { get; set; }
-                    
-                    <span class="light-blue">private async </span><span class="dark-green">Task</span><span class="dark-yellow"> StartProgress</span>()
+               &lt<span class="soco-component-attr">BitProgressIndicator Label</span>="Example title"
+                                                           <span class="soco-component-attr">Description</span>="<span class="soco-code">&#64;</span>description"
+                                                           <span class="soco-component-attr">PercentComplete</span>="<span class="soco-code">&#64;</span>CompletedPercent"
+                                                           <span class="soco-component-attr">BarHeight</span>="30">
+               &lt/<span class="soco-component-attr">BitProgressIndicator</span>&gt;
+               &lt<span class="soco-component-attr">BitButton OnClick</span>="<span class="soco-code">&#64;</span><span>StartProgress</span>"><span class="soco-component-attr">BitButton</span>&gt;
+               <span class="soco-code">&#64;code {</span>
+                    <span class="soco-tag-type-def">private string </span>description= "<span class=soco-string>Push button to start!</span>";
+                    <span class="soco-tag-type-def">public int </span>CompletedPercent { <span class="soco-tag-type-def">get</span>; <span class="soco-tag-type-def">set</span>; }
+                    <span class="soco-tag-type-def">private async </span><span class="soco-component-attr">Task</span><span> StartProgress</span>()
                     <span>{</span>
-                    <span>CompletedPercent = 0;</span>
-                    <span>{</span>
-                            <span><span class="light-purple">while</span> (CompletedPercent &lt= 100)</span>
-                            <span>{</span>
-                            <span><span class="light-purple">if</span> (CompletedPercent == 100)</span>
-                            <span>{</span>
-                                <span>description = <span class="dark-orange">$"Completed !"</span></span>
-                                <span><span class="light-purple">break</span>;</span>
-                            <span>}</span>
-                            <span><span class="light-purple">else</span></span>
-                            <span>{</span>
-                                <span>CompletedPercent++;</span>
-                                <span>description = <span class="dark-orange">$"</span>{CompletedPercent}<span class="dark-orange">%"</span>;</span>
-                            <span>}</span>
-                            <span><span class="dark-yellow">StateHasChanged</span>();</span>
-                            <span><span class=light-blue>await </span><span class="light-green">Task</span>.<span class="dark-yellow">Delay</span>(100);</span>
-                            <span>}</span>
+                           <span>CompletedPercent = 0;</span>
+                           <span class="soco-if-for">while</span> (CompletedPercent &lt= 100)
+                           <span>{</span>
+                                 <span class="soco-if-for">if</span> (CompletedPercent == 100)
+                                 <span>{</span>
+                                          <span>description = <span class="soco-string">$"Completed !"</span></span>
+                                          <span><span class="soco-if-for">break</span>;</span>
+                                 <span>}</span>
+                                 <span class="soco-if-for">else</span>
+                                 <span>{</span>
+                                          <span>CompletedPercent++;</span>
+                                          description = <span class="soco-string">$"</span>{CompletedPercent}<span class="soco-string">%"</span>;
+                                 <span>}</span>
+                           <span>}</span>
+                           <span class="dark-yellow">StateHasChanged</span>();
+                           <span class=soco-tag-type-def>await </span><span class="light-green">Task</span>.<span class="dark-yellow">Delay</span>(100);
                     <span>}</span>
-            <span class="light-yellow-bg">}</span>
+               <span class="soco-code">}</span>
             </pre>
         </CodeSampleContent>
     </CodeSample>
-    <CodeSample Title="Indeterminate Progress Indicator" Description="">
+    <CodeSample Title="Indeterminate Progress Indicator" Description="" CodeSampleContentForCopy="@indeterminateSampleCode">
         <SampleContent>
             <BitProgressIndicator Label="Example title" Description="Example description" BarHeight="20"></BitProgressIndicator>
         </SampleContent>
         <CodeSampleContent>
             <pre>
-              &lt<span class="dark-green">BitProgressIndicator Label</span>="Example title" <span class="dark-green">Description</span>="Example description" <span class="dark-green">BarHeight</span>="20"><span>&lt/</span><span class="dark-green">BitProgressIndicator</span><span>&gt;</span>
+                &lt<span class="soco-component-attr">BitProgressIndicator Label</span>="Example title"
+                                                            <span class="soco-component-attr">Description</span>="Example description"
+                                                            <span class="soco-component-attr">BarHeight</span>="20">
+                &lt/<span class="soco-component-attr">BitProgressIndicator</span>&gt;
             </pre>
         </CodeSampleContent>
     </CodeSample>
