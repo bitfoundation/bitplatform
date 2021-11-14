@@ -1,18 +1,19 @@
 ﻿class BitDatePicker {
-    static toggleDatePickerCallout(datePickerId: string,
+    static toggleDatePickerCallout(dotnetObjReference: any,
+        datePickerId: string,
         datePickerCalloutId: string,
         datePickerOverlayId: string,
         isOpen: boolean) {
-        const datePicker = document.getElementById(datePickerId);
-        const datePickerCallout = document.getElementById(datePickerCalloutId);
-        const datePickerOverlay = document.getElementById(datePickerOverlayId);
-
-        if (!datePickerCallout || !datePickerOverlay || !datePicker) return;
+        const datePicker = document.getElementById(datePickerId) ?? new HTMLElement();
+        const datePickerCallout = document.getElementById(datePickerCalloutId) ?? new HTMLElement();
+        const datePickerOverlay = document.getElementById(datePickerOverlayId) ?? new HTMLElement();
 
         if (isOpen) {
             datePickerCallout.style.display = "none";
             datePickerOverlay.style.display = "none";
+            Bit.cureentCallout.update("", "", null);
         } else {
+            Bit.closeCurrentCalloutIfExists(datePickerCalloutId, datePickerOverlayId, dotnetObjReference);
             datePickerCallout.style.display = "block";
             datePickerOverlay.style.display = "block";
             var datePickerCalloutHeight = datePickerCallout.offsetHeight;

@@ -183,6 +183,13 @@ namespace Bit.Client.Web.BlazorUI
         public string DropDownCalloutId { get; set; } = string.Empty;
         public string DropDownOverlayId { get; set; } = String.Empty;
 
+
+        [JSInvokable("CloseCallout")]
+        public void CloseCalloutBeforeAnotherCalloutIsOpened()
+        {
+            IsOpen = false;
+        }
+
         protected override string RootElementClass => "bit-drp";
 
         protected override void RegisterComponentClasses()
@@ -226,7 +233,8 @@ namespace Bit.Client.Web.BlazorUI
         {
             if (JSRuntime is null) return;
 
-            await JSRuntime.InvokeVoidAsync("BitDropDown.toggleDropDownCallout", UniqueId, DropDownId, DropDownCalloutId, DropDownOverlayId, isOpen);
+            var obj = DotNetObjectReference.Create(this);
+            await JSRuntime.InvokeVoidAsync("BitDropDown.toggleDropDownCallout", obj, UniqueId, DropDownId, DropDownCalloutId, DropDownOverlayId, isOpen);
             IsOpen = false;
             StateHasChanged();
         }
@@ -235,7 +243,8 @@ namespace Bit.Client.Web.BlazorUI
         {
             if (IsEnabled is false || JSRuntime is null) return;
 
-            await JSRuntime.InvokeVoidAsync("BitDropDown.toggleDropDownCallout", UniqueId, DropDownId, DropDownCalloutId, DropDownOverlayId, isOpen);
+            var obj = DotNetObjectReference.Create(this);
+            await JSRuntime.InvokeVoidAsync("BitDropDown.toggleDropDownCallout", obj, UniqueId, DropDownId, DropDownCalloutId, DropDownOverlayId, isOpen);
             isOpen = !isOpen;
             await OnClick.InvokeAsync(e);
         }
@@ -296,7 +305,8 @@ namespace Bit.Client.Web.BlazorUI
                 selectedItem.IsSelected = true;
                 Text = selectedItem.Text;
                 SelectedKey = selectedItem.Value;
-                await JSRuntime.InvokeVoidAsync("BitDropDown.toggleDropDownCallout", UniqueId, DropDownId, DropDownCalloutId, DropDownOverlayId, isOpen);
+                var obj = DotNetObjectReference.Create(this);
+                await JSRuntime.InvokeVoidAsync("BitDropDown.toggleDropDownCallout", obj, UniqueId, DropDownId, DropDownCalloutId, DropDownOverlayId, isOpen);
                 isOpen = false;
 
                 if (isSameItemSelected && !NotifyOnReselect) return;

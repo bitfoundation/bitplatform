@@ -1,20 +1,21 @@
 ﻿class BitDropDown {
-    static toggleDropDownCallout(dropDownWrapperId: string,
+    static toggleDropDownCallout(dotnetObjReference: any,
+        dropDownWrapperId: string,
         dropDownId: string,
-        dropDowndropDownCalloutId: string,
+        dropDownCalloutId: string,
         dropDownOverlayId: string,
         isOpen: boolean) {
-        const dropDownWrapper = document.getElementById(dropDownWrapperId);
-        const dropDown = document.getElementById(dropDownId);
-        const dropDownCallout = document.getElementById(dropDowndropDownCalloutId);
-        const dropDownOverlay = document.getElementById(dropDownOverlayId);
-
-        if (!dropDownCallout || !dropDownOverlay || !dropDownWrapper || !dropDown) return;
+        const dropDownWrapper = document.getElementById(dropDownWrapperId) ?? new HTMLElement();
+        const dropDown = document.getElementById(dropDownId) ?? new HTMLElement();
+        const dropDownCallout = document.getElementById(dropDownCalloutId) ?? new HTMLElement();
+        const dropDownOverlay = document.getElementById(dropDownOverlayId) ?? new HTMLElement();
 
         if (isOpen) {
             dropDownCallout.style.display = "none";
             dropDownOverlay.style.display = "none";
+            Bit.cureentCallout.update("", "", null);
         } else {
+            Bit.closeCurrentCalloutIfExists(dropDownCalloutId, dropDownOverlayId, dotnetObjReference);
             dropDownCallout.style.display = "block";
             dropDownOverlay.style.display = "block";
             var dropDownCalloutHeight = dropDownCallout.offsetHeight;
