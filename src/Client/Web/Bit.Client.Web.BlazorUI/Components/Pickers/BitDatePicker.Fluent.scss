@@ -31,6 +31,11 @@
     -webkit-font-smoothing: antialiased;
 }
 
+.bit-dtp-wrapper {
+    position: relative;
+    z-index: 1000;
+}
+
 .bit-dtp-callout {
     position: absolute;
     top: rem(34px);
