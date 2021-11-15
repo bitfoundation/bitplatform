@@ -47,18 +47,10 @@ namespace Bit.Client.Web.BlazorUI.Tests.ColorPicker
                 parameters.Add(p => p.Color, "rgb(255,255,255)");
             });
 
-            var alphaSlider = cut.Find(".bit-clr-pkr .alpha-slider");
-            var previewBox = cut.Find(".bit-clr-pkr .preview-box");
-
-            if (visibility)
+            if (visibility is false)
             {
-                Assert.IsTrue(alphaSlider.ToMarkup().Contains("display: block"));
-                Assert.IsTrue(previewBox.ToMarkup().Contains("display: block"));
-            }
-            else
-            {
-                Assert.IsTrue(alphaSlider.ToMarkup().Contains("display: none"));
-                Assert.IsTrue(previewBox.ToMarkup().Contains("display: none"));
+                Assert.ThrowsException<ElementNotFoundException>(() => cut.Find(".alpha-slider"));
+                Assert.ThrowsException<ElementNotFoundException>(() => cut.Find(".preview-box"));
             }
         }
 
