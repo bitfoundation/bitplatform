@@ -166,8 +166,8 @@ namespace Bit.Client.Web.BlazorUI
 
         private async Task PickAlphaColor(ChangeEventArgs args)
         {
-            color.Alpha = Convert.ToDouble(args.Value, CultureInfo.InvariantCulture) / 100;
-
+            var alpha = Convert.ToDouble(args.Value, CultureInfo.InvariantCulture) / 100;
+            color = new BitColor(color.Hex ?? "", alpha);
             string? colorValue = colorType == BitColorType.Hex ? color.Hex : color.Rgb;
             await ColorChanged.InvokeAsync(colorValue);
             await AlphaChanged.InvokeAsync(color.Alpha);

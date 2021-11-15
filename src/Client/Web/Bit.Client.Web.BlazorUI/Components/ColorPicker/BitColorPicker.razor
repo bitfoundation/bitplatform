@@ -62,8 +62,10 @@
                     </div>
                 }
             </div>
-            <div class="preview-box" style=@($"background: {Rgb}; display: {(ShowPreview ? "block" : "none")}")>
-            </div>
+            @if (ShowPreview)
+            {
+                <div class="preview-box" style=@($"background: {(ShowAlphaSlider ? color.Rgba : color.Rgb)}")></div>
+            }
         </div>
     </div>
-</div>
+</div>  
