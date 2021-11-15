@@ -13,155 +13,68 @@
 .bit-clr-pkr-panel {
     padding: rem(12px);
     user-select: none;
+}
 
-    & > div:nth-child(2) {
-        display: flex;
+.bit-clr-pkr-flex-container {
+    display: flex;
+}
 
-        & > div:first-child {
-            flex-grow: 1;
+.bit-clr-pkr-slider-container {
+    flex-grow: 1;
+}
 
-            & > div:first-child {
-                background: linear-gradient(to right, red 0%, #ff0 17%, lime 33%, cyan 50%, blue 66%, #f0f 83%, red 100%);
-                width: 100%;
-                height: 20px;
-                border: 1px solid rgb(237, 235, 233);
-                border-radius: 2px;
-                box-sizing: border-box;
-                margin-bottom: 8px;
-                position: relative;
+.bit-clr-pkr-slider {
+    position: relative;
+    width: 100%;
+    height: rem(20px);
+    border: rem(1px) solid $Grey30;
+    border-radius: rem(2px);
+    margin-bottom: rem(8px);
+    outline: none;
+    box-sizing: border-box;
+    forced-color-adjust: none;
 
-                & > input[type=range] {
-                    position: relative;
-                    top: -1px;
-                    width: calc(100% + 14px);
-                    background: none;
-                    -webkit-appearance: none;
-                    margin: 0 -7px;
+    input[type=range] {
+        position: relative;
+        top: rem(-1px);
+        width: calc(100% + #{rem(14px)});
+        margin: 0 rem(-7px);
+        background: none;
+        -webkit-appearance: none;
 
-                    &::-webkit-slider-thumb {
-                        -webkit-appearance: none;
-                        appearance: none;
-                        width: 20px;
-                        height: 20px;
-                        background: $White;
-                        cursor: pointer;
-                        border-radius: 50%;
-                        border: 1px solid rgb(138, 136, 134);
-                    }
-
-                    &::-moz-range-thumb {
-                        width: 20px;
-                        height: 20px;
-                        background: $White;
-                        cursor: pointer;
-                        border-radius: 50%;
-                        border: 1px solid rgb(138, 136, 134);
-                    }
-                }
-            }
-
-            & > div:last-child {
-                background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAJUlEQVQYV2N89erVfwY0ICYmxoguxjgUFKI7GsTH5m4M3w1ChQC1/Ca8i2n1WgAAAABJRU5ErkJggg==);
-                margin-bottom: 8px;
-                height: 20px;
-                border: 1px solid rgb(237, 235, 233);
-                position: relative;
-
-                & > div {
-                    width: 100%;
-                    height: 20px;
-                    background: linear-gradient(to left, red 0%, transparent 100%);
-                    margin-bottom: 8px;
-
-                    & > input[type=range] {
-                        width: calc(100% + 14px);
-                        background: none;
-                        -webkit-appearance: none;
-                        margin: 0 -7px;
-
-                        &::-webkit-slider-thumb {
-                            -webkit-appearance: none;
-                            appearance: none;
-                            width: 20px;
-                            height: 20px;
-                            background: $White;
-                            cursor: pointer;
-                            border-radius: 50%;
-                            border: 1px solid rgb(138, 136, 134);
-                        }
-
-                        &::-moz-range-thumb {
-                            width: 20px;
-                            height: 20px;
-                            background: $White;
-                            cursor: pointer;
-                            border-radius: 50%;
-                            border: 1px solid rgb(138, 136, 134);
-                        }
-                    }
-                }
-            }
+        &::-webkit-slider-thumb {
+            width: rem(20px);
+            height: rem(20px);
+            border-radius: 50%;
+            border: rem(1px) solid $GreyInputBorder;
+            box-shadow: rgba(0, 0, 0, 0.13) 0px 3.2px 7.2px 0px, rgba(0, 0, 0, 0.11) 0px 0.6px 1.8px 0px;
+            background: $White;
+            cursor: pointer;
+            -webkit-appearance: none;
+            appearance: none;
         }
 
-        & > div:last-child {
-            width: 48px;
-            height: 48px;
-            margin: 0px 0px 0px 8px;
-            border: 1px solid rgb(200, 198, 196);
+        &::-moz-range-thumb {
+            width: rem(20px);
+            height: rem(20px);
+            border-radius: 50%;
+            border: rem(1px) solid $GreyInputBorder;
+            box-shadow: rgba(0, 0, 0, 0.13) 0px 3.2px 7.2px 0px, rgba(0, 0, 0, 0.11) 0px 0.6px 1.8px 0px;
+            background: $White;
+            cursor: pointer;
         }
     }
+}
 
-    & > table {
-        table-layout: fixed;
-        width: 100%;
+.hue-slider {
+    background: linear-gradient(to right, red 0%, #ff0 17%, lime 33%, cyan 50%, blue 66%, #f0f 83%, red 100%);
+}
 
-        & > thead {
-            & > tr {
-                & > td {
-                    color: $Grey160;
-                    font-size: 11px;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                }
-            }
-        }
-
-        & > tbody {
-            & > tr {
-                & > td {
-                    & > input {
-                        max-width: 100%;
-                        width: 100%;
-                        box-sizing: border-box;
-                        -webkit-box-sizing: border-box;
-                        -moz-box-sizing: border-box;
-                        padding: 5px;
-                        text-overflow: clip;
-                        font-size: 14px;
-                        -webkit-font-smoothing: antialiased;
-                        color: $Grey160;
-                        outline: 0px;
-                        border: none;
-                        box-shadow: 0 0 0 1px $Grey130;
-
-                        &:focus {
-                            box-shadow: 0 0 0 2px $CyanBlue10;
-                        }
-
-                        &[type=number] {
-                            -moz-appearance: textfield;
-
-                            &::-webkit-outer-spin-button,
-                            &::-webkit-inner-spin-button {
-                                -webkit-appearance: none;
-                                margin: 0;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
+.preview-box {
+    width: 48px;
+    height: 48px;
+    margin: 0px 0px 0px 8px;
+    border: 1px solid rgb(200, 198, 196);
 }
 
 .bit-clr-pkr-rectangle {
@@ -206,7 +119,7 @@
         height: rem(20px);
         border: rem(2px) solid $White;
         border-radius: 50%;
-        box-shadow: 0 0px 0px 1px #8a8886;
+        box-shadow: 0 0px 0px 1px $GreyInputBorder;
         box-sizing: border-box;
         background: white;
         transform: translate(-50%,-50%);

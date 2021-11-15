@@ -27,17 +27,18 @@
             </div>
         </div>
 
-        <div>
-            <div>
-                <div>
+        <div class="bit-clr-pkr-flex-container">
+            <div class="bit-clr-pkr-slider-container">
+                <div class="bit-clr-pkr-slider hue-slider">
                     <input type="range" min="0" max="360" value="@hue" @oninput="PickMainColor">
                 </div>
 
-                <div class="alpha-slider" style=@($"display: {(ShowAlphaSlider ? "block" : "none")};")>
-                    <div style=@($"background:linear-gradient(to left,{saturationPickerBackgroundRgbaCss} 0%, transparent 100%)")>
+                @if (ShowAlphaSlider)
+                {
+                    <div class="bit-clr-pkr-slider" style=@($"background: linear-gradient(to left,{Rgb} 0%, transparent 100%), url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAJUlEQVQYV2N89erVfwY0ICYmxoguxjgUFKI7GsTH5m4M3w1ChQC1/Ca8i2n1WgAAAABJRU5ErkJggg==);")>
                         <input type="range" min="0" max="100" value="@(color.Alpha * 100)" @oninput="PickAlphaColor">
                     </div>
-                </div>
+                }
             </div>
             <div class="preview-box" style=@($"background: {Rgb}; display: {(ShowPreview ? "block" : "none")}")>
             </div>
