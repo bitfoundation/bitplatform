@@ -2,29 +2,45 @@
 @inherits BitComponentBase
 
 <div @ref="RootElement"
+     @attributes="@HtmlAttributes"
      style="@StyleBuilder.Value"
-     class="@ClassBuilder.Value">
-    <div @ref="SaturationPickerRef"
-         @onmousedown="OnSaturationPickerMouseDown">
-        <div></div>
-        <div style=@($"background-color: {saturationPickerBackgroundRgbCss}")></div>
-        <div style=@($"top: {saturationPickerThumbPosition?.Top}px; left: {saturationPickerThumbPosition?.Left}px; background: {Rgb};")>
+     class="@ClassBuilder.Value"
+     role="group"
+     aria-label="@GetRootElAriaLabel()">
+    <div class="bit-clr-pkr-panel">
+        <div @ref="SaturationPickerRef"
+             @onmousedown="OnSaturationPickerMouseDown"
+             class="bit-clr-pkr-rectangle"
+             style=@($"background-color: {saturationPickerBackgroundRgbCss}")
+             role="slider"
+             tabindex="0"
+             aria-valuetext="@($"Saturation {color.Hsv.Saturation} brightness {color.Hsv.Value}")"
+             aria-valuenow="@(true ? color.Hsv.Saturation : color.Hsv.Value)"
+             aria-valuemin="0"
+             aria-valuemax="100"
+             aria-label="Saturation and brightness"
+             aria-describedby="@ColorRectangleDescriptionId">
+            <div class="description" id="@ColorRectangleDescriptionId">Use left and right arrow keys to set saturation. Use up and down arrow keys to set brightness.</div>
+            <div class="bit-clr-pkr-light"></div>
+            <div class="bit-clr-pkr-dark"></div>
+            <div class="bit-clr-pkr-thumb" style=@($"top: {saturationPickerThumbPosition?.Top}px; left: {saturationPickerThumbPosition?.Left}px; background: {Rgb};")>
+            </div>
         </div>
-    </div>
 
-    <div>
         <div>
             <div>
-                <input type="range" min="0" max="360" value="@hue" @oninput="PickMainColor">
-            </div>
+                <div>
+                    <input type="range" min="0" max="360" value="@hue" @oninput="PickMainColor">
+                </div>
 
-            <div class="alpha-slider" style=@($"display: {(ShowAlphaSlider ? "block" : "none")};")>
-                <div style=@($"background:linear-gradient(to left,{saturationPickerBackgroundRgbaCss} 0%, transparent 100%)")>
-                    <input type="range" min="0" max="100" value="@(color.Alpha * 100)" @oninput="PickAlphaColor">
+                <div class="alpha-slider" style=@($"display: {(ShowAlphaSlider ? "block" : "none")};")>
+                    <div style=@($"background:linear-gradient(to left,{saturationPickerBackgroundRgbaCss} 0%, transparent 100%)")>
+                        <input type="range" min="0" max="100" value="@(color.Alpha * 100)" @oninput="PickAlphaColor">
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="preview-box" style=@($"background: {Rgb}; display: {(ShowPreview ? "block" : "none")}")>
+            <div class="preview-box" style=@($"background: {Rgb}; display: {(ShowPreview ? "block" : "none")}")>
+            </div>
         </div>
     </div>
 </div>

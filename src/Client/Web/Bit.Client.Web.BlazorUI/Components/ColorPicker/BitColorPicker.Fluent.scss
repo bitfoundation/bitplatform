@@ -1,51 +1,18 @@
 ﻿@import "../../Styles/Fluent/colors.fluent.scss", "../../Styles/functions.scss";
 
 .bit-clr-pkr-fluent {
-    padding: 12px;
-    width: 300px;
+    position: relative;
+    max-width: rem(352px);
+    min-width: rem(352px);
+    font-size: rem(14px);
+    font-weight: 400;
+    font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
+
+.bit-clr-pkr-panel {
+    padding: rem(12px);
     user-select: none;
-
-    & > div:first-child {
-        width: 300px;
-        height: 250px;
-        position: relative;
-        margin-bottom: 8px;
-        border: 1px solid rgb(243, 242, 241);
-        box-sizing: border-box;
-        position: relative;
-
-        & > div:first-child {
-            background: linear-gradient(to bottom, transparent 0%, #000 100%);
-            position: relative;
-            z-index: 1;
-            width: 300px;
-            height: 250px;
-        }
-
-        & > div:nth-child(2) {
-            background: linear-gradient(to right, white 0%, transparent 100%);
-            position: absolute;
-            top: 0;
-            background-color: red;
-            width: 300px;
-            height: 250px;
-        }
-
-        & > div:last-child {
-            position: absolute;
-            inset: 0px;
-            border-radius: 50%;
-            box-sizing: border-box;
-            width: 18px;
-            height: 18px;
-            box-shadow: 0 0px 0px 1px #8a8886;
-            transform: translate(-50%,-50%);
-            background: white;
-            box-shadow: 0 0px 0px 1px #8a8886;
-            border: 2px solid white;
-            z-index: 1;
-        }
-    }
 
     & > div:nth-child(2) {
         display: flex;
@@ -194,5 +161,54 @@
                 }
             }
         }
+    }
+}
+
+.bit-clr-pkr-rectangle {
+    position: relative;
+    min-width: rem(220px);
+    min-height: rem(220px);
+    height: rem(268px);
+    margin-bottom: rem(8px);
+    border: rem(1px) solid $Grey20;
+    border-radius: rem(2px);
+    outline: none;
+    box-sizing: border-box;
+
+    .description {
+        position: absolute;
+        width: rem(1px);
+        height: rem(1px);
+        margin: rem(-1px);
+        padding: 0;
+        border: 0;
+        overflow: hidden;
+        white-space: nowrap;
+    }
+
+    .bit-clr-pkr-dark {
+        position: absolute;
+        inset: 0px;
+        background: linear-gradient(transparent 0px, rgb(0, 0, 0) 100%);
+    }
+
+    .bit-clr-pkr-light {
+        position: absolute;
+        inset: 0px;
+        background: linear-gradient(to right, white 0%, transparent 100%);
+    }
+
+    .bit-clr-pkr-thumb {
+        position: absolute;
+        z-index: 1;
+        inset: 0px;
+        width: rem(20px);
+        height: rem(20px);
+        border: rem(2px) solid $White;
+        border-radius: 50%;
+        box-shadow: 0 0px 0px 1px #8a8886;
+        box-sizing: border-box;
+        background: white;
+        transform: translate(-50%,-50%);
     }
 }

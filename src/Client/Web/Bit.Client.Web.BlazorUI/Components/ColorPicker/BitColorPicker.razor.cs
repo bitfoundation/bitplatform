@@ -26,12 +26,7 @@ namespace Bit.Client.Web.BlazorUI
         private bool AlphaHasBeenSet;
 #pragma warning restore CA1823 // Avoid unused private fields
 
-        public ElementReference SaturationPickerRef { get; set; }
-        public string? Hex => color.Hex;
-        public string? Rgb => color.Rgb;
-
-        [Inject]
-        public IJSRuntime JSRuntime { get; set; } = default!;
+        [Inject] public IJSRuntime JSRuntime { get; set; } = default!;
 
         /// <summary>
         /// Whether to show a slider for editing alpha value.
@@ -86,10 +81,16 @@ namespace Bit.Client.Web.BlazorUI
 
         [Parameter] public EventCallback<BitColorEventArgs> OnChange { get; set; }
 
+        public ElementReference SaturationPickerRef { get; set; }
+        public string? Hex => color.Hex;
+        public string? Rgb => color.Rgb;
+        public string ColorRectangleDescriptionId { get; set; } = string.Empty;
+
         protected override string RootElementClass => "bit-clr-pkr";
 
         protected override void OnInitialized()
         {
+            ColorRectangleDescriptionId = $"ColorRectangle-description{UniqueId}";
             SetSaturationPickerBackground();
 
             base.OnInitialized();
@@ -135,7 +136,6 @@ namespace Bit.Client.Web.BlazorUI
         private async Task PickColorTune(MouseEventArgs e)
         {
             var parent = await JSRuntime.GetBoundingClientRect(SaturationPickerRef);
-
             saturationPickerThumbPosition = new BitColorPosition
             {
                 Left = e.ClientX < parent.Left ? 0 : e.ClientX > parent.Left + parent.Width ? Convert.ToInt32(parent.Width) : Convert.ToInt32(e.ClientX - parent.Left),
@@ -144,28 +144,20 @@ namespace Bit.Client.Web.BlazorUI
 
             selectedSaturation = Math.Clamp(ToValidSpanValue(0, parent.Width, 0, 1, Convert.ToInt32(e.ClientX - parent.Left)), 0, 1);
             selectedValue = Math.Clamp(ToValidSpanValue(0, parent.Height, 0, 1, parent.Height - Convert.ToInt32(e.ClientY - parent.Top)), 0, 1);
-
             color = new BitColor(hue, selectedSaturation, selectedValue, color.Alpha);
-
             SetSaturationPickerBackground();
-
-
             string? colorValue = colorType == BitColorType.Hex ? color.Hex : color.Rgb;
             await ColorChanged.InvokeAsync(colorValue);
             await AlphaChanged.InvokeAsync(color.Alpha);
             await OnChange.InvokeAsync(new() { Color = colorValue, Alpha = color.Alpha });
-
             StateHasChanged();
         }
 
         private async Task PickMainColor(ChangeEventArgs args)
         {
             hue = Convert.ToInt32(args.Value, CultureInfo.InvariantCulture);
-
             color = new BitColor(hue, selectedSaturation, selectedValue, color.Alpha);
-
             SetSaturationPickerBackground();
-
             string? colorValue = colorType == BitColorType.Hex ? color.Hex : color.Rgb;
             await ColorChanged.InvokeAsync(colorValue);
             await AlphaChanged.InvokeAsync(color.Alpha);
@@ -185,13 +177,10 @@ namespace Bit.Client.Web.BlazorUI
         private async Task RGBColorChanged(string? red = null, string? green = null, string? blue = null)
         {
             color.SetColorByRgba(GetColorValue(red), GetColorValue(green), GetColorValue(blue));
-
             var saturationPickerRect = await JSRuntime.GetBoundingClientRect(SaturationPickerRef);
-
             var hsv = color.Hsv;
             hue = hsv.Hue;
             SetSaturationPickerBackground();
-
             saturationPickerThumbPosition = new BitColorPosition
             {
                 Left = Convert.ToInt32(Math.Round(saturationPickerRect.Width * hsv.Saturation / 100)),
@@ -202,7 +191,6 @@ namespace Bit.Client.Web.BlazorUI
             await ColorChanged.InvokeAsync(colorValue);
             await AlphaChanged.InvokeAsync(color.Alpha);
             await OnChange.InvokeAsync(new() { Color = colorValue, Alpha = color.Alpha });
-
             StateHasChanged();
         }
 
@@ -232,6 +220,21 @@ namespace Bit.Client.Web.BlazorUI
             if (saturationPickerMouseDown is false) return;
 
             await PickColorTune(e);
+        }
+
+        private string GetRootElAriaLabel()
+        {
+            var ariaLabel = $"Color picker, Red {color.Red} Green {color.Green} Blue {color.Blue} ";
+            if (ShowAlphaSlider)
+            {
+                ariaLabel += $"Alpha {color.Alpha * 100}% selected.";
+            }
+            else
+            {
+                ariaLabel += "selected.";
+            }
+
+            return ariaLabel;
         }
 
         [JSInvokable]
