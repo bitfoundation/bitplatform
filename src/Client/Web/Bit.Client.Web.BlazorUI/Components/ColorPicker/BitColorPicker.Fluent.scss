@@ -71,10 +71,10 @@
 }
 
 .preview-box {
-    width: 48px;
-    height: 48px;
-    margin: 0px 0px 0px 8px;
-    border: 1px solid rgb(200, 198, 196);
+    width: rem(48px);
+    height: rem(48px);
+    margin-left: rem(8px);
+    border: rem(1px) solid $Grey60;
 }
 
 .bit-clr-pkr-rectangle {
