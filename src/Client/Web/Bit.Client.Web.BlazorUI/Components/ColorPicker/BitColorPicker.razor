@@ -30,13 +30,35 @@
         <div class="bit-clr-pkr-flex-container">
             <div class="bit-clr-pkr-slider-container">
                 <div class="bit-clr-pkr-slider hue-slider">
-                    <input type="range" min="0" max="360" value="@hue" @oninput="PickMainColor">
+                    <input type="range"
+                           role="slider"
+                           tabindex="0"
+                           aria-label="Hue"
+                           min="0"
+                           max="359"
+                           aria-valuetext="@hue"
+                           aria-valuenow="@hue"
+                           aria-valuemin="0"
+                           aria-valuemax="359"
+                           value="@hue"
+                           @oninput="PickMainColor">
                 </div>
 
                 @if (ShowAlphaSlider)
                 {
                     <div class="bit-clr-pkr-slider" style=@($"background: linear-gradient(to left,{Rgb} 0%, transparent 100%), url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAJUlEQVQYV2N89erVfwY0ICYmxoguxjgUFKI7GsTH5m4M3w1ChQC1/Ca8i2n1WgAAAABJRU5ErkJggg==);")>
-                        <input type="range" min="0" max="100" value="@(color.Alpha * 100)" @oninput="PickAlphaColor">
+                        <input type="range"
+                           role="slider"
+                           tabindex="0"
+                           aria-label="Alpha"
+                           min="0"
+                           max="100"
+                           aria-valuetext="@(color.Alpha * 100)"
+                           aria-valuenow="@(color.Alpha * 100)"
+                           aria-valuemin="0"
+                           aria-valuemax="100"
+                           value="@(color.Alpha * 100)"
+                           @oninput="PickAlphaColor">
                     </div>
                 }
             </div>
