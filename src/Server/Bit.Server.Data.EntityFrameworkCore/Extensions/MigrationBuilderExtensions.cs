@@ -50,9 +50,6 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                 throw new ArgumentNullException(nameof(migrationBuilder));
 
             migrationBuilder.Sql("DECLARE @dbname sysname = db_name();" +
-                                 "EXEC('ALTER DATABASE [' + @dbname + '] SET ALLOW_SNAPSHOT_ISOLATION ON');", true); 
-            
-            migrationBuilder.Sql("DECLARE @dbname sysname = db_name();" +
                                  "EXEC('ALTER DATABASE [' + @dbname + '] SET READ_COMMITTED_SNAPSHOT ON');", true);
         }
     }
