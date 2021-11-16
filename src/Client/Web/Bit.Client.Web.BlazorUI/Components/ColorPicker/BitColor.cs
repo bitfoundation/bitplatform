@@ -54,7 +54,11 @@ namespace Bit.Client.Web.BlazorUI
             Blue = Convert.ToInt32(Math.Floor((color.b + m) * 255));
             Alpha = alpha;
 
-            hsv = new(Convert.ToInt32(hue), Convert.ToInt32(saturation), Convert.ToInt32(value));
+            hsv = new(
+                Convert.ToInt32(Math.Floor(hue)),
+                Convert.ToInt32(Math.Floor(saturation * 100)),
+                Convert.ToInt32(Math.Floor(value * 100))
+                );
 
             CalculateHex();
             CalculateRgbCss();
