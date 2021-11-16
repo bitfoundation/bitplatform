@@ -7,19 +7,28 @@ namespace Bit.Client.Web.BlazorUI
 {
     internal class BitColor
     {
-        private static Rgb defaultColor => new Rgb() { Red = 255, Green = 255, Blue = 255 };
+        private string? hex;
+        private string? rgb;
+        private string? rgba;
+        private (int Hue, int Saturation, int Value) hsv;
 
-        private Rgb rgb = defaultColor;
+        public string? Hex => hex;
+        public string? Rgb => rgb;
+        public string? Rgba => rgba;
+        public (int Hue, int Saturation, int Value) Hsv => hsv;
 
-        public Rgb Rgb { get => rgb; }
-        public Hsv Hsv { get => ToHsv(); }
-        public Hex Hex { get => ToHex(); }
-
+        public int Red { get; private set; } = 255;
+        public int Green { get; private set; } = 255;
+        public int Blue { get; private set; } = 255;
         public double Alpha { get; set; } = 1;
 
         public BitColor(string color = "", double alpha = 1)
         {
             Parse(color, alpha);
+            CalculateHsv();
+            CalculateHex();
+            CalculateRgbCss();
+            CalculateRgbaCss();
         }
 
         public BitColor(double hue, double saturation, double value, double alpha)
@@ -40,62 +49,48 @@ namespace Bit.Client.Web.BlazorUI
             Math.Floor((color.g + m) * 255);
             Math.Floor((color.b + m) * 255);
 
-            rgb = new Rgb()
-            {
-                Red = Math.Floor((color.r + m) * 255),
-                Green = Math.Floor((color.g + m) * 255),
-                Blue = Math.Floor((color.b + m) * 255)
-            };
-
+            Red = Convert.ToInt32(Math.Floor((color.r + m) * 255));
+            Green = Convert.ToInt32(Math.Floor((color.g + m) * 255));
+            Blue = Convert.ToInt32(Math.Floor((color.b + m) * 255));
             Alpha = alpha;
+
+            hsv = new(Convert.ToInt32(hue), Convert.ToInt32(saturation), Convert.ToInt32(value));
+
+            CalculateHex();
+            CalculateRgbCss();
+            CalculateRgbaCss();
         }
 
-        private Hsv ToHsv()
+        public void SetColorByRgba(int? red = null, int? green = null, int? blue = null, double? alpha = null)
         {
-            double hue;
-            double saturation;
-
-            var red = Rgb.Red / 255;
-            var green = Rgb.Green / 255;
-            var blue = Rgb.Blue / 255;
-
-            double cMax = Math.Max(red, Math.Max(green, blue));
-            double cMin = Math.Min(red, Math.Min(green, blue));
-            double span = cMax - cMin == 0 ? 1 : cMax - cMin;
-
-            hue = red == cMax ? (60 * ((green - blue) / span) + 360) % 360
-                : green == cMax ? (60 * ((blue - red) / span) + 120) % 360
-                : (60 * ((red - green) / span) + 240) % 360;
-
-            saturation = cMax == 0 ? 0 : span / cMax;
-
-            return new Hsv()
+            if (red.HasValue)
             {
-                Hue = Math.Floor(hue),
-                Saturation = Math.Floor(saturation * 100),
-                Value = Math.Floor(cMax * 100)
-            };
-        }
+                Red = red.Value;
+            }
 
-        private Hex ToHex()
-        {
-            var myColor = Color.FromArgb(Convert.ToInt32(Rgb.Red), Convert.ToInt32(Rgb.Green), Convert.ToInt32(Rgb.Blue));
-            return new Hex() { ColorCode = $"#{myColor.Name.Remove(0, 2)}" };
-        }
+            if (green.HasValue)
+            {
+                Green = green.Value;
+            }
 
-        public string ToRgbCss()
-        {
-            return $"rgb({rgb.Red},{rgb.Green},{rgb.Blue})";
-        }
+            if (blue.HasValue)
+            {
+                Blue = blue.Value;
+            }
 
-        public string ToRgbaCss()
-        {
-            return $"rgba({rgb.Red},{rgb.Green},{rgb.Blue},{Alpha})";
-        }
+            if (alpha.HasValue)
+            {
+                Alpha = alpha.Value;
+            }
 
-        public void SetColorByRgb(Rgb color)
-        {
-            rgb = color;
+            if (red.HasValue || green.HasValue || blue.HasValue)
+            {
+                CalculateHsv();
+                CalculateHex();
+                CalculateRgbCss();
+            }
+
+            CalculateRgbaCss();
         }
 
         private void Parse(string color, double alpha = 1)
@@ -104,21 +99,13 @@ namespace Bit.Client.Web.BlazorUI
 
             try
             {
-                if (color.StartsWith("#"))
+                if (color.StartsWith("#", StringComparison.InvariantCultureIgnoreCase))
                 {
-                    var red = int.Parse(color.Substring(1, 2), NumberStyles.AllowHexSpecifier);
-                    var green = int.Parse(color.Substring(3, 2), NumberStyles.AllowHexSpecifier);
-                    var blue = int.Parse(color.Substring(5, 2), NumberStyles.AllowHexSpecifier);
-
-                    rgb = new Rgb()
-                    {
-                        Red = red,
-                        Green = green,
-                        Blue = blue
-                    };
-
+                    Red = int.Parse(color.AsSpan(1, 2), NumberStyles.AllowHexSpecifier);
+                    Green = int.Parse(color.AsSpan(3, 2), NumberStyles.AllowHexSpecifier);
+                    Blue = int.Parse(color.AsSpan(5, 2), NumberStyles.AllowHexSpecifier);
                 }
-                else if (color.ToLower().Contains("rgb"))
+                else if (color.Contains("rgb", StringComparison.InvariantCultureIgnoreCase))
                 {
                     Regex rx = new Regex(@"\(([^)]+)\)");
                     var mathedColor = rx.Match(color).Value;
@@ -129,26 +116,78 @@ namespace Bit.Client.Web.BlazorUI
                     var colorString = mathedColor.Split(",");
                     if (colorString.Length >= 3)
                     {
-                        rgb.Red = int.Parse(colorString[0]);
-                        rgb.Green = int.Parse(colorString[1]);
-                        rgb.Blue = int.Parse(colorString[2]);
-
-
-                        if (colorString.Length == 4)
-                        {
-                            Alpha = Convert.ToDouble(colorString[3]);
-                        }
+                        Red = int.Parse(colorString[0], CultureInfo.InvariantCulture);
+                        Green = int.Parse(colorString[1], CultureInfo.InvariantCulture);
+                        Blue = int.Parse(colorString[2], CultureInfo.InvariantCulture);
                     }
                 }
                 else
                 {
-                    rgb = defaultColor;
+                    SetDefaultColor();
                 }
             }
-            catch (Exception exp)
+            catch
             {
-                rgb = defaultColor;
+                SetDefaultColor();
             }
+        }
+
+        private void SetDefaultColor()
+        {
+            Red = 255;
+            Green = 255;
+            Blue = 255;
+        }
+
+        private void CalculateHsv()
+        {
+            var myColor = Color.FromArgb(Red, Green, Blue);
+
+            int max = Math.Max(myColor.R, Math.Max(myColor.G, myColor.B));
+            int min = Math.Min(myColor.R, Math.Min(myColor.G, myColor.B));
+
+            var hue = myColor.GetHue();
+            var saturation = (max == 0) ? 0 : 1d - (1d * min / max);
+            var value = max / 255d;
+
+            hsv = new(
+                Convert.ToInt32(Math.Floor(hue)),
+                Convert.ToInt32(Math.Floor(saturation * 100)),
+                Convert.ToInt32(Math.Floor(value * 100))
+                );
+        }
+
+        private void CalculateHex()
+        {
+            var myColor = Color.FromArgb(Red, Green, Blue);
+            hex = $"#{myColor.Name.Remove(0, 2)}";
+        }
+
+        private void CalculateRgbCss()
+        {
+            rgb = $"rgb({Red},{Green},{Blue})";
+        }
+
+        private void CalculateRgbaCss()
+        {
+            rgba = $"rgba({Red},{Green},{Blue},{Alpha})";
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is BitColor && this == (BitColor)obj;
+        }
+        public override int GetHashCode()
+        {
+            return Red.GetHashCode() ^ Green.GetHashCode() ^ Blue.GetHashCode() ^ Alpha.GetHashCode();
+        }
+        public static bool operator ==(BitColor x, BitColor y)
+        {
+            return x.Red == y.Red && x.Green == y.Green && x.Blue == y.Blue && x.Alpha == y.Alpha;
+        }
+        public static bool operator !=(BitColor x, BitColor y)
+        {
+            return !(x == y);
         }
     }
 }

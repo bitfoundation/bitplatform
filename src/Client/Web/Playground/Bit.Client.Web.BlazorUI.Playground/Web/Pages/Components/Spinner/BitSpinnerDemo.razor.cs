@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using Bit.Client.Web.BlazorUI.Playground.Web.Models;
 using Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 
@@ -140,5 +142,15 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Spinner
                 },
             },
         };
+
+        private readonly string spinnerSampleCode = $"<BitSpinner Size='BitSpinnerSize.XSmall' />{Environment.NewLine}" +
+             $"<BitSpinner Size='BitSpinnerSize.Small' />{Environment.NewLine}" +
+             $"<BitSpinner Size='BitSpinnerSize.Medium' />{Environment.NewLine}" +
+             $"<BitSpinner Size='BitSpinnerSize.Large' />";
+
+        private readonly string labelPositioningSampleCode = $"<BitSpinner LabelPosition='BitSpinnerLabelPosition.Top' Label='I am definitely loading...'/>{Environment.NewLine}" +
+             $"<BitSpinner LabelPosition='BitSpinnerLabelPosition.Bottom' Label='Seriously, still loading...' />{Environment.NewLine}" +
+             $"<BitSpinner LabelPosition='BitSpinnerLabelPosition.Left' Label='Wait, wait...' />{Environment.NewLine}" +
+             $"<BitSpinner LabelPosition='BitSpinnerLabelPosition.Right' Label='Nope, still loading...' />";
     }
 }

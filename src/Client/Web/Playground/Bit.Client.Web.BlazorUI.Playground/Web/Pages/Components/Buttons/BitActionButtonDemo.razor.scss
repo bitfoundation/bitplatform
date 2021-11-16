@@ -1,9 +1,6 @@
 ﻿@import "../../../Styles/_shared.scss";
 
 .sample-btn {
-    text-justify: auto;
-    color: $Black01;
-
     @include subtitle2-xl;
 
     @include lg {
@@ -17,12 +14,7 @@
     @include sm {
         @include subtitle2-sm;
     }
-}
 
-.m-l-30 {
-    margin-left: rem(30px);
-}
-
-.m-l-45 {
-    margin-left: rem(45px);
+    line-height: rem(50px);
+    color: $Black01;
 }

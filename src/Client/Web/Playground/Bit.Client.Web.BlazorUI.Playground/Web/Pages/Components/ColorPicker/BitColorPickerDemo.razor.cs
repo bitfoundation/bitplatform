@@ -1,84 +1,78 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 
 namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ColorPicker
 {
     public partial class BitColorPickerDemo
     {
-        private bool IsToggleChecked = true;
+        private BitColorPicker ColorPicker;
+        private string Color = "#FFFFFF";
+        private string ColorRgb = "rgb(255,255,255)";
+        private double Alpha = 1;
+        private bool IsToggleChecked = false;
 
         private readonly List<ComponentParameter> componentParameters = new()
         {
             new ComponentParameter()
             {
-                Name = "alpha",
+                Name = "Alpha",
                 Type = "double",
                 DefaultValue = "",
                 Description = "Indicates the Alpha value.",
             },
             new ComponentParameter()
             {
-                Name = "alphaChanged",
+                Name = "AlphaChanged",
                 Type = "EventCallback<double>",
                 DefaultValue = "",
                 Description = "Callback for when the alpha value changed.",
             },
             new ComponentParameter()
             {
-                Name = "color",
+                Name = "Color",
                 Type = "string",
                 DefaultValue = "",
                 Description = "CSS-compatible string to describe the color.",
             },
             new ComponentParameter()
             {
-                Name = "colorChanged",
+                Name = "ColorChanged",
                 Type = "EventCallback<string>",
                 DefaultValue = "",
                 Description = "Callback for when the color value changed.",
             },
             new ComponentParameter()
             {
-                Name = "hex",
-                Type = "string",
+                Name = "OnChange",
+                Type = "EventCallback<BitColorEventArgs>",
                 DefaultValue = "",
-                Description = "Indicates the Hex value.",
+                Description = "Callback for when the value changed.",
             },
             new ComponentParameter()
             {
-                Name = "hexChanged",
-                Type = "EventCallback<string>",
-                DefaultValue = "",
-                Description = "Callback for when the hex value changed.",
-            },
-            new ComponentParameter()
-            {
-                Name = "rgb",
-                Type = "string",
-                DefaultValue = "",
-                Description = "Indicates the Rgb value.",
-            },
-            new ComponentParameter()
-            {
-                Name = "rgbChanged",
-                Type = "EventCallback<string>",
-                DefaultValue = "",
-                Description = "Callback for when the rgb value changed.",
-            },
-            new ComponentParameter()
-            {
-                Name = "showAlphaSlider",
+                Name = "ShowAlphaSlider",
                 Type = "bool",
                 DefaultValue = "false",
                 Description = "Whether to show a slider for editing alpha value.",
             },
             new ComponentParameter()
             {
-                Name = "showPreview",
+                Name = "ShowPreview",
                 Type = "bool",
                 DefaultValue = "false",
                 Description = "Whether to show color preview box.",
             },
         };
+
+        private readonly string hexColorPickerSampleCode = $"<BitColorPicker ShowPreview='IsToggleChecked' @ref='ColorPicker' @bind-Color='Color' ShowAlphaSlider='false'>Default ColorPicker</BitColorPicker>{Environment.NewLine}" +
+              $"<BitToggle Label='Show Preview Box' @bind-IsChecked='IsToggleChecked' IsEnabled='true'/>{Environment.NewLine}" +
+              $"<BitTextField Label='Hex Code' Value='@Color'></BitTextField>{Environment.NewLine}" +
+               "<BitTextField Label='RGB' Value='@(ColorPicker?.Rgb ?? 'rgb(255,255,255)')'></BitTextField>";
+
+        private readonly string rgbColorPickerSampleCode = $"<BitColorPicker ShowPreview='true' @bind-Alpha='Alpha' @bind-Color='ColorRgb'>Default ColorPicker</BitColorPicker>{Environment.NewLine}" +
+             $"<BitTextField Label='RGB' Value='@ColorRgb'></BitTextField>{Environment.NewLine}" +
+             $"<BitTextField Label='Hex Code' Value='@Color'></BitTextField>{Environment.NewLine}" +
+              "<BitTextField Label='Alpha' Value='@(Alpha.ToString())'></BitTextField>";
     }
 }

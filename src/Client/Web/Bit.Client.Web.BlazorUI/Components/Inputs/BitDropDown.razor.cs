@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.JSInterop;
 
 namespace Bit.Client.Web.BlazorUI
 {
@@ -18,6 +19,8 @@ namespace Bit.Client.Web.BlazorUI
         private bool SelectedKeyHasBeenSet;
         private bool IsSelectedMultipleKeysChanged = false;
         private List<BitDropDownItem> NormalDropDownItems = new List<BitDropDownItem>();
+
+        [Inject] public IJSRuntime? JSRuntime { get; set; }
 
         /// <summary>
         /// Whether multiple items are allowed to be selected
@@ -177,6 +180,15 @@ namespace Bit.Client.Web.BlazorUI
         public string DropDownId { get; set; } = String.Empty;
         public string? DropdownLabelId { get; set; } = String.Empty;
         public string DropDownOptionId { get; set; } = String.Empty;
+        public string DropDownCalloutId { get; set; } = string.Empty;
+        public string DropDownOverlayId { get; set; } = String.Empty;
+
+
+        [JSInvokable("CloseCallout")]
+        public void CloseCalloutBeforeAnotherCalloutIsOpened()
+        {
+            IsOpen = false;
+        }
 
         protected override string RootElementClass => "bit-drp";
 
@@ -200,6 +212,8 @@ namespace Bit.Client.Web.BlazorUI
             DropDownId = $"Dropdown{UniqueId}";
             DropDownOptionId = $"{DropDownId}-option";
             DropdownLabelId = Label.HasValue() ? $"{DropDownId}-label" : null;
+            DropDownOverlayId = $"{DropDownId}-overlay";
+            DropDownCalloutId = $"{DropDownId}-list";
 
             NormalDropDownItems = Items.FindAll(i => i.ItemType == BitDropDownItemType.Normal).ToList();
             InitText();
@@ -215,26 +229,24 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
-        private void CloseCallout()
+        private async Task CloseCallout()
         {
+            if (JSRuntime is null) return;
+
+            var obj = DotNetObjectReference.Create(this);
+            await JSRuntime.InvokeVoidAsync("BitDropDown.toggleDropDownCallout", obj, UniqueId, DropDownId, DropDownCalloutId, DropDownOverlayId, isOpen);
             IsOpen = false;
             StateHasChanged();
         }
 
         private async Task HandleClick(MouseEventArgs e)
         {
-            if (IsEnabled)
-            {
-                if (isOpen is false)
-                {
-                    isOpen = true;
-                }
-                else
-                {
-                    isOpen = false;
-                }
-                await OnClick.InvokeAsync(e);
-            }
+            if (IsEnabled is false || JSRuntime is null) return;
+
+            var obj = DotNetObjectReference.Create(this);
+            await JSRuntime.InvokeVoidAsync("BitDropDown.toggleDropDownCallout", obj, UniqueId, DropDownId, DropDownCalloutId, DropDownOverlayId, isOpen);
+            isOpen = !isOpen;
+            await OnClick.InvokeAsync(e);
         }
 
         private async Task HandleItemClick(BitDropDownItem selectedItem)
@@ -285,12 +297,16 @@ namespace Bit.Client.Web.BlazorUI
             }
             else
             {
+                if (JSRuntime is null) return;
+
                 var oldSelectedItem = Items.SingleOrDefault(i => i.IsSelected)!;
                 var isSameItemSelected = oldSelectedItem == selectedItem;
                 if (oldSelectedItem is not null) oldSelectedItem.IsSelected = false;
                 selectedItem.IsSelected = true;
                 Text = selectedItem.Text;
                 SelectedKey = selectedItem.Value;
+                var obj = DotNetObjectReference.Create(this);
+                await JSRuntime.InvokeVoidAsync("BitDropDown.toggleDropDownCallout", obj, UniqueId, DropDownId, DropDownCalloutId, DropDownOverlayId, isOpen);
                 isOpen = false;
 
                 if (isSameItemSelected && !NotifyOnReselect) return;

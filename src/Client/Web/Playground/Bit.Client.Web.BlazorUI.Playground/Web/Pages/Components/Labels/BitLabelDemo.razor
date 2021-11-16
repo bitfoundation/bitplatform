@@ -4,7 +4,7 @@
 
 <ComponentPage ComponentName="Label" OverviewDesc="Labels give a name or title to a control or group of controls, including text fields, check boxes, combo boxes, radio buttons, and drop-down menus."
                ComponentParameters="componentParameters">
-    <CodeSample Title="BitLabel" Description="To create a label you can use a BitLabel component.">
+    <CodeSample Title="BitLabel" Description="To create a label you can use a BitLabel component." CodeSampleContentForCopy="@labelSampleCode">
         <SampleContent>
             <div>
                 <BitLabel>I'm a Label</BitLabel>
@@ -16,23 +16,13 @@
             </div>
         </SampleContent>
         <CodeSampleContent>
-            <div>
-                <p>
-                    &lt<span class="dark-green">BitLabel</span>>I'm a Label<span>&lt/</span><span class="dark-green">BitLabel</span><span>&gt;</span>
-                </p>
-                <p>
-                    &lt<span class="dark-green">BitLabel IsEnabled=</span><span class="light-blue">"false"</span>>I'm a disabled Label<span>&lt/</span><span class="dark-green">BitLabel</span><span>&gt;</span>
-                </p>
-                <p>
-                    &lt<span class="dark-green">BitLabel IsRequired=</span><span class="light-blue">"true"</span>>I'm a required Label<span>&lt/</span><span class="dark-green">BitLabel</span><span>&gt;</span>
-                </p>
-                <p>
-                    &lt<span class="dark-green">BitLabel For="</span>labels-container__input">A Label for An Input<span>&lt/</span><span class="dark-green">BitLabel</span><span>&gt;</span>
-                </p>
-                <p>
-                    &lt<span class="light-blue">input </span><span>type="text" name="labels-container__input" id="labels-container__input"<span>/&gt</span></span>
-                </p>
-            </div>
+            <pre>
+                &lt<span class="soco-component-attr">BitLabel</span>>I'm a Label<span>&lt/</span><span class="soco-component-attr">BitLabel</span>&gt;
+                &lt<span class="soco-component-attr">BitLabel IsEnabled=</span><span class="soco-tag-type-def">"false"</span>>I'm a disabled Label<span>&lt/</span><span class="soco-component-attr">BitLabel</span>&gt;
+                &lt<span class="soco-component-attr">BitLabel IsRequired=</span><span class="soco-tag-type-def">"true"</span>>I'm a required Label<span>&lt/</span><span class="soco-component-attr">BitLabel</span>&gt;
+                &lt<span class="soco-component-attr">BitLabel For="</span>labels-container__input">A Label for An Input<span>&lt/</span><span class="soco-component-attr">BitLabel</span>&gt;
+                &lt<span class="soco-tag-type-def">input </span><span><span class="soco-var-attr">type</span>="text" <span class="soco-var-attr">name</span>="labels-container__input" <span class="soco-var-attr">id</span>="labels-container__input"<span>/&gt</span></span>
+            </pre>
         </CodeSampleContent>
     </CodeSample>
 </ComponentPage>

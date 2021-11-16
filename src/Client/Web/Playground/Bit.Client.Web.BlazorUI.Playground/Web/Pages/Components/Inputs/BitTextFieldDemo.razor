@@ -4,141 +4,205 @@
 
 <ComponentPage ComponentName="TextField" OverviewDesc="Text fields give people a way to enter and edit text. They’re used in forms, modal dialogs, tables, and other surfaces where text input is required."
                ComponentParameters="componentParameters" EnumParameters="enumParameters">
-    <CodeSample Title="BitTextField" Description="To create a text field you can use a BitTextField component.">
+    <CodeSample Title="BitTextField" Description="To create a text field you can use a BitTextField component." CodeSampleContentForCopy="@textFieldSampleCode">
         <SampleContent>
             <div>
                 <BitTextField Label="Standard"></BitTextField>
             </div>
-            <div class="m-t-15">
-                <BitTextField Label="Standard with two-way binding" @bind-Value="@TextValue"></BitTextField>
+            <div>
+                <BitTextField Label="Standard With Two-Way Binding" @bind-Value="@TextValue"></BitTextField>
 
-                <BitLabel>this is what you type: @TextValue </BitLabel>
+                <BitLabel>You are typing : @TextValue </BitLabel>
             </div>
-            <div class="m-t-15">
+            <div>
                 <BitTextField Label="Read-only" IsReadonly="true" DefaultValue="I am read-only"></BitTextField>
             </div>
-            <div class="m-t-15">
+            <div>
                 <BitTextField Label="Disabled" IsEnabled="false" DefaultValue="I am disabled"></BitTextField>
             </div>
-            <div class="m-t-15">
-                <BitTextField Label="Disabled with placeholder" IsEnabled="false" Placeholder="I am disabled"></BitTextField>
+            <div>
+                <BitTextField Label="Disabled With Placeholder" IsEnabled="false" Placeholder="I am disabled"></BitTextField>
             </div>
-            <div class="m-t-15">
-                <BitTextField Label="With placeholder" Placeholder="Please enter text here"></BitTextField>
+            <div>
+                <BitTextField Label="With Placeholder" Placeholder="Please enter text here"></BitTextField>
             </div>
-            <div class="m-t-15">
-                <BitTextField Label="Controlled TextField limiting length of value to 10" MaxLength="10"></BitTextField>
+            <div>
+                <BitTextField Label="Controlled TextField Limiting Length Of Value To 10" MaxLength="10"></BitTextField>
             </div>
-            <div class="m-t-15">
-                <BitTextField Label="With an icon" IconName="CalendarMirrored"></BitTextField>
+            <div>
+                <BitTextField Label="With An Icon" IconName="CalendarMirrored"></BitTextField>
             </div>
-            <div class="m-t-15">
-                <BitTextField Label="Password with reveal button" Type="@InputType" CanRevealPassword="true"></BitTextField>
+            <div>
+                <BitTextField Label="Password With Reveal Button" Type="@InputType" CanRevealPassword="true"></BitTextField>
             </div>
-            <div class="m-t-15">
+            <div>
                 <BitTextField Label="Required" IsRequired="true"></BitTextField>
             </div>
-            <div class="m-t-15">
-                <BitTextField AriaLabel="Required without visible label" IsRequired="true" IsAriaRequired="true"></BitTextField>
+            <div>
+                <BitTextField AriaLabel="Required Without Visible Label" IsRequired="true" IsAriaRequired="true"></BitTextField>
             </div>
         </SampleContent>
         <CodeSampleContent>
             <pre>
-               &lt<span class="dark-green">BitTextField Label</span>="Standard"><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
-               &lt<span class="dark-green">BitTextField IsReadonly</span>=<span class="light-blue">"true"</span> <span class="dark-green">Label</span>="Read-only" <span class="dark-green">DefaultValue</span>="I am read-only"><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
-               &lt<span class="dark-green">BitTextField IsEnabled</span>=<span class="light-blue">"false"</span> <span class="dark-green">Label</span>="Disabled" <span class="dark-green">DefaultValue</span>="I am disabled"><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
-               &lt<span class="dark-green">BitTextField IsEnabled</span>=<span class="light-blue">"false"</span> <span class="dark-green">Label</span>="Disabled" <span class="dark-green">Placeholder</span>="I am disabled"><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
-               &lt<span class="dark-green">BitTextField Placeholder</span>="Please enter text here" <span class="dark-green">Label</span>="With placeholder"><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
-               &lt<span class="dark-green">BitTextField MaxLength</span>="10" <span class="dark-green">Label</span>="Controlled TextField limiting length of value to 10"><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
-               &lt<span class="dark-green">BitTextField Label</span>="With an icon" <span class="dark-green">IconName</span>="CalendarMirrored"><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
-               &lt<span class="dark-green">BitTextField Type</span>="<span class="light-yellow-bg">&#64;</span>InputType" <span class="dark-green">Label</span>="Password with reveal button" <span class="dark-green">CanRevealPassword</span>=<span class="light-blue">"true"</span>><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
-               &lt<span class="dark-green">BitTextField Label</span>="Required" <span class="dark-green">IsRequired</span>=<span class="light-blue">"true"</span>><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
-               &lt<span class="dark-green">BitTextField AriaLabel</span>="Required without visible label" <span class="dark-green">IsRequired</span>=<span class="light-blue">"true"</span>><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
+                &lt<span class="soco-component-attr">BitTextField Label</span>="Standard"><span>&lt/</span><span class="soco-component-attr">BitTextField</span>&gt;
+                &lt<span class="soco-component-attr">BitTextField IsReadonly</span>=<span class="soco-tag-type-def">"true"</span>
+                                          <span class="soco-component-attr">Label</span>="Read-only"
+                                          <span class="soco-component-attr">DefaultValue</span>="I am read-only">
+                &lt/<span class="soco-component-attr">BitTextField</span>&gt;
+                &lt<span class="soco-component-attr">BitTextField IsEnabled</span>=<span class="soco-tag-type-def">"false"</span>
+                                          <span class="soco-component-attr">Label</span>="Disabled"
+                                          <span class="soco-component-attr">DefaultValue</span>="I am disabled">
+                &lt/<span class="soco-component-attr">BitTextField</span>&gt;
+                &lt<span class="soco-component-attr">BitTextField IsEnabled</span>=<span class="soco-tag-type-def">"false"</span>
+                                          <span class="soco-component-attr">Label</span>="Disabled"
+                                          <span class="soco-component-attr">Placeholder</span>="I am disabled">
+                &lt/<span class="soco-component-attr">BitTextField</span>&gt;
+                &lt<span class="soco-component-attr">BitTextField Placeholder</span>="Please enter text here"
+                                          <span class="soco-component-attr">Label</span>="With placeholder">
+                &lt/<span class="soco-component-attr">BitTextField</span>&gt;
+                &lt<span class="soco-component-attr">BitTextField MaxLength</span>="10"
+                                          <span class="soco-component-attr">Label</span>="Controlled TextField limiting length of value to 10">
+                &lt/<span class="soco-component-attr">BitTextField</span><span>&gt;</span>
+                &lt<span class="soco-component-attr">BitTextField Label</span>="With an icon"
+                                          <span class="soco-component-attr">IconName</span>="CalendarMirrored">
+                &lt/<span class="soco-component-attr">BitTextField</span>&gt;
+                &lt<span class="soco-component-attr">BitTextField Type</span>="<span class="soco-code">&#64;</span>InputType"
+                                          <span class="soco-component-attr">Label</span>="Password with reveal button"
+                                          <span class="soco-component-attr">CanRevealPassword</span>=<span class="soco-tag-type-def">"true"</span>>
+                &lt/<span class="soco-component-attr">BitTextField</span>&gt;
+                &lt<span class="soco-component-attr">BitTextField Label</span>="Required"
+                                          <span class="soco-component-attr">IsRequired</span>=<span class="soco-tag-type-def">"true"</span>>
+                &lt/<span class="soco-component-attr">BitTextField</span>&gt;
+                &lt<span class="soco-component-attr">BitTextField AriaLabel</span>="Required without visible label"
+                                          <span class="soco-component-attr">IsRequired</span>=<span class="soco-tag-type-def">"true"</span>>
+                &lt/<span class="soco-component-attr">BitTextField</span>&gt;
+                <span class="soco-code">@@code {</span>
+                      <span class="soco-tag-type-def">private string</span> TextValue;
+                      <span class="soco-tag-type-def">private </span> BitTextFieldType InputType = BitTextFieldType.Password;
+                <span class="soco-code">}</span>
             </pre>
         </CodeSampleContent>
     </CodeSample>
-    <CodeSample Title="Multi-line TextField" Description="">
+    <CodeSample Title="Multi-Line TextField" Description="" CodeSampleContentForCopy="@multiLineSampleCode">
         <SampleContent>
             <div>
                 <BitTextField Label="Standard" IsMultiline="true" Rows="3"></BitTextField>
             </div>
-            <div class="m-t-15">
+            <div>
                 <BitTextField Label="Limited multi-line text field - 10 chars" IsMultiline="true" MaxLength="10"></BitTextField>
             </div>
-            <div class="m-t-15">
+            <div>
                 <BitTextField Label="Disabled" IsMultiline="true" IsEnabled="false" Value="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat"></BitTextField>
             </div>
-            <div class="m-t-15">
+            <div>
                 <BitTextField Label="Non-resizable" IsMultiline="true" IsResizable="false"></BitTextField>
             </div>
         </SampleContent>
         <CodeSampleContent>
             <pre>
-                &lt<span class="dark-green">BitTextField Label</span>="Standard" <span class="dark-green"> IsMultiline</span>=<span class="light-blue">"true"</span> <span class="dark-green"> Rows</span>="3" ><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
-                &lt<span class="dark-green">BitTextField Label</span>="Limited multi-line text field - 10 chars" <span class="dark-green">IsMultiline</span>=<span class="light-blue">"true"</span> <span class="dark-green">MaxLength</span>="10" ><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
-                &lt<span class="dark-green">BitTextField Label</span>="Disabled" <span class="dark-green">IsMultiline</span>=<span class="light-blue">"true"</span> <span class="dark-green">IsEnabled</span>=<span class="light-blue">"false"</span> <span class="dark-green">Value</span>="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat"><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
-                &lt<span class="dark-green">BitTextField Label</span>="Non-resizable" <span class="dark-green">IsMultiline</span>=<span class="light-blue">"true"</span> <span class="dark-green">IsResizable</span>=<span class="light-blue">"false"</span> ><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
+                &lt<span class="soco-component-attr">BitTextField Label</span>="Standard"
+                                          <span class="soco-component-attr">IsMultiline</span>=<span class="soco-tag-type-def">"true"</span>
+                                          <span class="soco-component-attr">Rows</span>="3" >
+                &lt/<span class="soco-component-attr">BitTextField</span>&gt;
+                &lt<span class="soco-component-attr">BitTextField Label</span>="Limited multi-line text field - 10 chars"
+                                          <span class="soco-component-attr">IsMultiline</span>=<span class="soco-tag-type-def">"true"</span>
+                                          <span class="soco-component-attr">MaxLength</span>="10" >
+                &lt/<span class="soco-component-attr">BitTextField</span>&gt;
+                &lt<span class="soco-component-attr">BitTextField Label</span>="Disabled"
+                                          <span class="soco-component-attr">IsMultiline</span>=<span class="soco-tag-type-def">"true"</span>
+                                          <span class="soco-component-attr">IsEnabled</span>=<span class="soco-tag-type-def">"false"</span>
+                                          <span class="soco-component-attr">Value</span>="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat">
+                &lt/<span class="soco-component-attr">BitTextField</span>&gt;
+                &lt<span class="soco-component-attr">BitTextField Label</span>="Non-resizable"
+                                          <span class="soco-component-attr">IsMultiline</span>=<span class="soco-tag-type-def">"true"</span>
+                                          <span class="soco-component-attr">IsResizable</span>=<span class="soco-tag-type-def">"false"</span>>
+                &lt/<span class="soco-component-attr">BitTextField</span>&gt;
             </pre>
         </CodeSampleContent>
     </CodeSample>
-    <CodeSample Title="Underlined and borderless TextFields" Description="">
+    <CodeSample Title="Underlined And Borderless TextFields" Description="" CodeSampleContentForCopy="@underlinedSampleCode">
         <SampleContent>
             <div>
                 <BitTextField Label="Standard:" IsUnderlined="true"></BitTextField>
             </div>
-            <div class="m-t-15">
+            <div>
                 <BitTextField Label="Disabled:" IsUnderlined="true" IsEnabled="false" DefaultValue="I am disabled"></BitTextField>
             </div>
-            <div class="m-t-15">
+            <div>
                 <BitTextField Label="Required:" IsUnderlined="true" IsRequired="true"></BitTextField>
             </div>
-            <div class="m-t-15">
+            <div>
                 <BitTextField Label="Borderless single-line TextField" HasBorder="false"></BitTextField>
             </div>
-            <div class="m-t-15">
+            <div>
                 <BitTextField Label="Borderless multi-line TextField" IsMultiline="true" HasBorder="false"></BitTextField>
             </div>
         </SampleContent>
         <CodeSampleContent>
             <pre>
-               &lt<span class="dark-green">BitTextField Label</span>="Standard:" <span class="dark-green"> IsUnderlined</span>=<span class="light-blue">"true"</span> ><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
-               &lt<span class="dark-green">BitTextField Label</span>="Disabled:" <span class="dark-green"> IsUnderlined</span>=<span class="light-blue">"true"</span> <span class="dark-green"> IsEnabled</span>=<span class="light-blue">"false"</span> <span class="dark-green"> DefaultValue</span>="I am disabled" ><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
-               &lt<span class="dark-green">BitTextField Label</span>="Required:" <span class="dark-green"> IsUnderlined</span>=<span class="light-blue">"true"</span> <span class="dark-green"> IsRequired</span>=<span class="light-blue">"true"</span> <span class="dark-green"> DefaultValue</span>="I am disabled" ><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
-               &lt<span class="dark-green">BitTextField Label</span>="Borderless single-line TextField" <span class="dark-green"> HasBorder</span>=<span class="light-blue">"false"</span> ><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
-               &lt<span class="dark-green">BitTextField Label</span>="Borderless multi-line TextField" <span class="dark-green"> IsMultiline</span>=<span class="light-blue">"true"</span> <span class="dark-green"> HasBorder</span>=<span class="light-blue">"false"</span> ><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
+                &lt<span class="soco-component-attr">BitTextField Label</span>="Standard:"
+                                          <span class="soco-component-attr">IsUnderlined</span>=<span class="soco-tag-type-def">"true"</span>>
+                &lt/<span class="soco-component-attr">BitTextField</span>&gt;
+                &lt<span class="soco-component-attr">BitTextField Label</span>="Disabled:"
+                                          <span class="soco-component-attr">IsUnderlined</span>=<span class="soco-tag-type-def">"true"</span>
+                                          <span class="soco-component-attr">IsEnabled</span>=<span class="soco-tag-type-def">"false"</span>
+                                          <span class="soco-component-attr">DefaultValue</span>="I am disabled" >
+                &lt/<span class="soco-component-attr">BitTextField</span><span>&gt;</span>
+                &lt<span class="soco-component-attr">BitTextField Label</span>="Required:"
+                                          <span class="soco-component-attr">IsUnderlined</span>=<span class="soco-tag-type-def">"true"</span>
+                                          <span class="soco-component-attr">IsRequired</span>=<span class="soco-tag-type-def">"true"</span>
+                                          <span class="soco-component-attr">DefaultValue</span>="I am disabled">
+                &lt/<span class="soco-component-attr">BitTextField</span>&gt;
+                &lt<span class="soco-component-attr">BitTextField Label</span>="Borderless single-line TextField"
+                                          <span class="soco-component-attr">HasBorder</span>=<span class="soco-tag-type-def">"false"</span>>
+                &lt/<span class="soco-component-attr">BitTextField</span>&gt;
+                &lt<span class="soco-component-attr">BitTextField Label</span>="Borderless multi-line TextField"
+                                          <span class="soco-component-attr">IsMultiline</span>=<span class="soco-tag-type-def">"true"</span>
+                                          <span class="soco-component-attr">HasBorder</span>=<span class="soco-tag-type-def">"false"</span>>
+                &lt/<span class="soco-component-attr">BitTextField</span>&gt;
             </pre>
         </CodeSampleContent>
     </CodeSample>
-    <CodeSample Title="TextField with prefix and/or suffix" Description="">
+    <CodeSample Title="TextField With Prefix And/Or Suffix" Description="" CodeSampleContentForCopy="@prefixsuffixSampleCode">
         <SampleContent>
             <div>
-                <BitTextField Label="With prefix" Prefix="https://"></BitTextField>
+                <BitTextField Label="With Prefix" Prefix="https://"></BitTextField>
             </div>
-            <div class="m-t-15">
-                <BitTextField Label="With suffix" Suffix=".com"></BitTextField>
+            <div>
+                <BitTextField Label="With Suffix" Suffix=".com"></BitTextField>
             </div>
-            <div class="m-t-15">
-                <BitTextField Label="Disabled with prefix" Prefix="https://" IsEnabled="false"></BitTextField>
+            <div>
+                <BitTextField Label="Disabled With Prefix" Prefix="https://" IsEnabled="false"></BitTextField>
             </div>
-            <div class="m-t-15">
-                <BitTextField Label="With prefix and suffix" Prefix="https://" Suffix=".com"></BitTextField>
+            <div>
+                <BitTextField Label="With Prefix And Suffix" Prefix="https://" Suffix=".com"></BitTextField>
             </div>
         </SampleContent>
         <CodeSampleContent>
             <pre>
-               &lt<span class="dark-green">BitTextField Label</span>="With prefix" <span class="dark-green"> Prefix</span>="https://" ><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
-               &lt<span class="dark-green">BitTextField Label</span>="With suffix" <span class="dark-green"> Suffix</span>=".com" ><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
-               &lt<span class="dark-green">BitTextField Label</span>="Disabled with prefix" <span class="dark-green"> Prefix</span>="https://" <span class="dark-green"> IsEnabled</span>=<span class="light-blue">"false"</span> ><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
-               &lt<span class="dark-green">BitTextField Label</span>="With prefix and suffix" <span class="dark-green"> Prefix</span>="https://" <span class="dark-green"> Suffix</span>=".com" ><span>&lt/</span><span class="dark-green">BitTextField</span><span>&gt;</span>
+                &lt<span class="soco-component-attr">BitTextField Label</span>="With Prefix"
+                                          <span class="soco-component-attr">Prefix</span>="https://">
+                &lt/<span class="soco-component-attr">BitTextField</span>&gt;
+                &lt<span class="soco-component-attr">BitTextField Label</span>="With Suffix"
+                                          <span class="soco-component-attr">Suffix</span>=".com">
+                &lt/<span class="soco-component-attr">BitTextField</span>&gt;
+                &lt<span class="soco-component-attr">BitTextField Label</span>="Disabled With Prefix"
+                                          <span class="soco-component-attr">Prefix</span>="https://"
+                                          <span class="soco-component-attr">IsEnabled</span>=<span class="soco-tag-type-def">"false"</span>>
+                &lt/<span class="soco-component-attr">BitTextField</span>&gt;
+                &lt<span class="soco-component-attr">BitTextField Label</span>="With Prefix And Suffix"
+                                          <span class="soco-component-attr">Prefix</span>="https://"
+                                          <span class="soco-component-attr">Suffix</span>=".com">
+                &lt/<span class="soco-component-attr">BitTextField</span>&gt;
             </pre>
         </CodeSampleContent>
     </CodeSample>
-    <CodeSample Title="TextFields with custom label/description" Description="">
+    <CodeSample Title="TextFields With Custom Label/Description" Description="" CodeSampleContentForCopy="@customLabelSampleCode">
         <SampleContent>
             <div>
                 <BitTextField Description="Click the (i) icon!">
                     <LabelFragment>
-                        <BitLabel Style="display:inline-block;padding-bottom:10px;">With prefixCustom label rendering</BitLabel>
+                        <BitLabel Style="display:inline-block;padding-bottom:10px;">With PrefixCustom Label Rendering</BitLabel>
                         <BitIconButton IconName="Info"></BitIconButton>
                     </LabelFragment>
                 </BitTextField>
@@ -146,24 +210,24 @@
             <div class="m-t-15">
                 <BitTextField>
                     <DescriptionFragment>
-                        <BitLabel Style="color:green;">With prefixCustom label rendering</BitLabel>
+                        <BitLabel Style="color:green;">With PrefixCustom Label Rendering</BitLabel>
                     </DescriptionFragment>
                 </BitTextField>
             </div>
         </SampleContent>
         <CodeSampleContent>
             <pre>
-               &lt<span class="dark-green">BitTextField Description</span>="Click the (i) icon!" >
-               &emsp;&lt<span class="dark-green">LabelFragment</span>>
-               &emsp;&emsp;&lt<span class="dark-green">BitLabel Style</span>="display:inline-block;padding-bottom:10px;">Custom label rendering<span>&lt/</span><span class="dark-green">BitLabel</span><span>&gt;</span>
-               &emsp;&emsp;&lt<span class="dark-green">BitIconButton IconName</span>"Info" ><span>&lt/</span><span class="dark-green">BitLabel</span><span>&gt;</span>
-               &emsp;&lt/<span class="dark-green">LabelFragment</span><span>&gt;</span>
-               &lt/<span class="dark-green">BitTextField</span><span>&gt;</span>
-               &lt<span class="dark-green">BitTextField</span>>
-               &emsp;&lt<span class="dark-green">DescriptionFragment</span>>
-               &emsp;&emsp;&lt<span class="dark-green">BitLabel Style</span>="color:green;">Custom description rendering<span>&lt/</span><span class="dark-green">BitLabel</span><span>&gt;</span>
-               &emsp;&lt/<span class="dark-green">DescriptionFragment</span><span>&gt;</span>
-               &lt/<span class="dark-green">BitTextField</span><span>&gt;</span>
+               &lt<span class="soco-component-attr">BitTextField Description</span>="Click the (i) icon!">
+                        &lt<span class="soco-component-attr">LabelFragment</span>>
+                                 &lt<span class="soco-component-attr">BitLabel Style</span>="display:inline-block;padding-bottom:10px;">Custom label rendering<span>&lt/</span><span class="soco-component-attr">BitLabel</span>&gt;
+                                 &lt<span class="soco-component-attr">BitIconButton IconName</span>"Info" ><span>&lt/</span><span class="soco-component-attr">BitLabel</span>&gt;
+                        &lt/<span class="soco-component-attr">LabelFragment</span>&gt;
+               &lt/<span class="soco-component-attr">BitTextField</span>&gt;
+               &lt<span class="soco-component-attr">BitTextField</span>>
+                        &lt<span class="soco-component-attr">DescriptionFragment</span>>
+                                 &lt<span class="soco-component-attr">BitLabel Style</span>="color:green;">With PrefixCustom Label Rendering<span>&lt/</span><span class="soco-component-attr">BitLabel</span>&gt;
+                        &lt/<span class="soco-component-attr">DescriptionFragment</span>&gt;
+               &lt/<span class="soco-component-attr">BitTextField</span>&gt;
             </pre>
         </CodeSampleContent>
     </CodeSample>

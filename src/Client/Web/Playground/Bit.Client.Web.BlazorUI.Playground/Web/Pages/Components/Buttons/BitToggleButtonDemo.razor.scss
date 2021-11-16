@@ -1,25 +1,13 @@
 ﻿@import "../../../Styles/_shared.scss";
 
 .checkbox-status {
-    @include caption1-lg;
-
-    @include md {
-        @include caption1-md;
-    }
-
-    @include sm {
-        @include caption1-sm;
-    }
+    @include caption1-xl;
 }
 
 .m-t-10 {
     margin-top: rem(10px);
 }
 
-.m-l-70 {
-    margin-left: rem(70px);
-}
-
-.m-l-120 {
-    margin-left: rem(120px);
+.m-t-20 {
+    margin-top: rem(20px);
 }

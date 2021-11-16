@@ -43,6 +43,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
         ]
         public void BitDropDownOnClickShouldWorkCorrect(bool isEnabled)
         {
+            Context.JSInterop.Mode = JSRuntimeMode.Loose;
             var component = RenderComponent<BitDropDownTest>(parameters =>
             {
                 parameters.Add(p => p.IsEnabled, isEnabled);
@@ -397,8 +398,9 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
             DataRow(Visual.Material, true, "f-app"),
             DataRow(Visual.Material, false, "f-app"),
         ]
-        public void BitDropDownNotifyOnReselectShouldWOrkCorrect(Visual visual, bool notifyOnReselect, string defaultSelectedKey)
+        public void BitDropDownNotifyOnReselectShouldWorkCorrect(Visual visual, bool notifyOnReselect, string defaultSelectedKey)
         {
+            Context.JSInterop.Mode = JSRuntimeMode.Loose;
             var items = GetRawDropdownItems();
             var component = RenderComponent<BitDropDownTest>(parameters =>
             {
@@ -434,8 +436,10 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
             DataRow(true, false),
             DataRow(false, false)
         ]
-        public void BitDropDownEnableItemSelectionShouldWOrkCorrect(bool itemIsEnabled, bool isMultiSelect)
+        public void BitDropDownEnableItemSelectionShouldWorkCorrect(bool itemIsEnabled, bool isMultiSelect)
         {
+            Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
             var items = new List<BitDropDownItem>()
             {
                 new BitDropDownItem() {Value = "Apple", Text = "f-app", IsEnabled = itemIsEnabled },
@@ -473,6 +477,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
         ]
         public void BitDropDownTwoWayBoundWithCustomHandlerShouldWorkCorrect(string selectedKey)
         {
+            Context.JSInterop.Mode = JSRuntimeMode.Loose;
             BitDropDownSelectedKey = selectedKey;
 
             var items = GetRawDropdownItems();
