@@ -22,5 +22,8 @@ namespace Bit.Tests.Model.DomainModels
         public virtual long Version { get; set; }
 
         public virtual bool IsArchived { get; set; }
+
+        [ConcurrencyCheck, Timestamp]
+        public byte[] Timestamp { get; set; } = Array.Empty<byte>();
     }
 }

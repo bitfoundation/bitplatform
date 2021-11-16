@@ -6,6 +6,8 @@
 
         public static readonly string ResourceNotFoundException = nameof(ResourceNotFoundException);
 
+        public static readonly string ConflictException = nameof(ConflictException);
+
         public static readonly string EntityNotFoundException = nameof(EntityNotFoundException);
 
         public static readonly string DomainLogicException = nameof(DomainLogicException);

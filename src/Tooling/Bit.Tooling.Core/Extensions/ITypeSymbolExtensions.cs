@@ -149,6 +149,9 @@ namespace Microsoft.CodeAnalysis
             {
                 if (type.IsQueryableType() || type.IsCollectionType())
                 {
+                    if (type.GetElementType().Name == nameof(Byte))
+                        return "Edm.Binary";
+
                     switch (typeToEdmTypeCollectionBehavior)
                     {
                         case TypeToEdmTypeCollectionBehavior.UseJayDataNonGenericQueryable:

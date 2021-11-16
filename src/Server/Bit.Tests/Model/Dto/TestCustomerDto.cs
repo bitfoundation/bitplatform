@@ -29,6 +29,9 @@ namespace Bit.Tests.Model.Dto
 
         public virtual bool IsArchived { get; set; }
 
+        [ConcurrencyCheck, Timestamp]
+        public byte[] Timestamp { get; set; } = Array.Empty<byte>();
+
         public virtual TestCustomerKind Kind { get; set; }
 
         public virtual DateTimeOffset BirthDate { get; set; }
