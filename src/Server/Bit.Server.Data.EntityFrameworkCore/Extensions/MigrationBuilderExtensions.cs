@@ -44,7 +44,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             }
         }
 
-        public static void AllowSnapshotIsolation(this MigrationBuilder migrationBuilder)
+        public static void AllowReadCommittedSnapshot(this MigrationBuilder migrationBuilder)
         {
             if (migrationBuilder == null)
                 throw new ArgumentNullException(nameof(migrationBuilder));
