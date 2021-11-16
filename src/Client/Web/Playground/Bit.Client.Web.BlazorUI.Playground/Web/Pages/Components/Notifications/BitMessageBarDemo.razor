@@ -7,18 +7,6 @@
                ComponentParameters="componentParameters" EnumParameters="enumParameters">
     <CodeSample Title="Success" Description="For showing success messages, just set MessageBarType parameter to Success." CodeSampleContentForCopy="@successMessagebarSampleCode">
         <SampleContent>
-            @if (IsMessageBarHidden1 is false)
-            {
-                <div class="m-b-10">
-                    <BitMessageBar MessageBarType="@BitMessageBarType.Success" OnDismiss="HideMessageBar1" IsMultiline="false" Truncated="true" OverflowButtonAriaLabel="see more">
-                        Action completed! This is a sample of message bar with dismiss ability
-                        Action completed! This is a sample of message bar with dismiss ability
-                        Action completed! This is a sample of message bar with dismiss ability
-                        Action completed! This is a sample of message bar with dismiss ability
-                        Action completed! This is a sample of message bar with dismiss ability
-                    </BitMessageBar>
-                </div>
-            }
             <div class="m-b-10">
                 <BitMessageBar MessageBarType="@BitMessageBarType.Success" IsMultiline="false" Truncated="true" IsEnabled="false">
                     <Actions>
@@ -44,23 +32,21 @@
                     Action completed! This is a sample of message bar with dismiss ability and custom dismiss icon
                 </BitMessageBar>
             </div>
+            @if (IsMessageBarHidden1 is false)
+            {
+                <div class="m-b-10">
+                    <BitMessageBar MessageBarType="@BitMessageBarType.Success" OnDismiss="HideMessageBar1" IsMultiline="false" Truncated="true" OverflowButtonAriaLabel="see more">
+                        Action completed! This is a sample of message bar with dismiss ability
+                        Action completed! This is a sample of message bar with dismiss ability
+                        Action completed! This is a sample of message bar with dismiss ability
+                        Action completed! This is a sample of message bar with dismiss ability
+                        Action completed! This is a sample of message bar with dismiss ability
+                    </BitMessageBar>
+                </div>
+            }
         </SampleContent>
         <CodeSampleContent>
             <pre>
-                 <span class="soco-code">&#64;</span><span class="soco-if-for">if </span>(IsMessageBarHidden1 <span class="soco-tag-type-def">is false</span>)
-                 <span>{</span>
-                      &lt<span class="soco-component-attr">BitMessageBar MessageBarType=</span>"<span class="soco-code">&#64;</span>MessageBarType.Success"
-                                                        <span class="soco-component-attr">OnDismiss</span>="HideMessageBar1"
-                                                        <span class="soco-component-attr">Truncated</span>=<span class="soco-tag-type-def">"true"</span>
-                                                        <span class="soco-component-attr">IsMultiline</span>=<span class="soco-tag-type-def">"false"</span>
-                                                        <span class="soco-component-attr">OverflowButtonAriaLabel</span>="see more">
-                               <span>Action completed! This is a sample of message bar with dismiss ability</span>
-                               <span>Action completed! This is a sample of message bar with dismiss ability</span>
-                               <span>Action completed! This is a sample of message bar with dismiss ability</span>
-                               <span>Action completed! This is a sample of message bar with dismiss ability</span>
-                               <span>Action completed! This is a sample of message bar with dismiss ability</span>
-                      &lt/<span class="soco-component-attr">BitMessageBar</span>&gt;
-                 <span>}</span>
                  &lt<span class="soco-component-attr">BitMessageBar MessageBarType=</span>"<span class="soco-code">&#64;</span>BitMessageBarType.Success"
                                                    <span class="soco-component-attr">Truncated</span>=<span class="soco-tag-type-def">"true"</span>
                                                    <span class="soco-component-attr">IsMultiline</span>=<span class="soco-tag-type-def">"false"</span>>
@@ -101,6 +87,21 @@
                           <span>IsMessageBarHidden2 = <span class="soco-tag-type-def">true</span>;</span>
                      <span>}</span>
                  <span class="soco-code">}</span>
+                 
+                 <span class="soco-code">&#64;</span><span class="soco-if-for">if </span>(IsMessageBarHidden1 <span class="soco-tag-type-def">is false</span>)
+                 <span>{</span>
+                      &lt<span class="soco-component-attr">BitMessageBar MessageBarType=</span>"<span class="soco-code">&#64;</span>MessageBarType.Success"
+                                                        <span class="soco-component-attr">OnDismiss</span>="HideMessageBar1"
+                                                        <span class="soco-component-attr">Truncated</span>=<span class="soco-tag-type-def">"true"</span>
+                                                        <span class="soco-component-attr">IsMultiline</span>=<span class="soco-tag-type-def">"false"</span>
+                                                        <span class="soco-component-attr">OverflowButtonAriaLabel</span>="see more">
+                               <span>Action completed! This is a sample of message bar with dismiss ability</span>
+                               <span>Action completed! This is a sample of message bar with dismiss ability</span>
+                               <span>Action completed! This is a sample of message bar with dismiss ability</span>
+                               <span>Action completed! This is a sample of message bar with dismiss ability</span>
+                               <span>Action completed! This is a sample of message bar with dismiss ability</span>
+                      &lt/<span class="soco-component-attr">BitMessageBar</span>&gt;
+                 <span>}</span>
             </pre>
         </CodeSampleContent>
     </CodeSample>
