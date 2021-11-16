@@ -1,198 +1,127 @@
 ﻿@import "../../Styles/Fluent/colors.fluent.scss", "../../Styles/functions.scss";
 
 .bit-clr-pkr-fluent {
-    padding: 12px;
-    width: 300px;
+    position: relative;
+    max-width: rem(352px);
+    min-width: rem(352px);
+    font-size: rem(14px);
+    font-weight: 400;
+    font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
+
+.bit-clr-pkr-panel {
+    padding: rem(12px);
     user-select: none;
+}
 
-    & > div:first-child {
-        width: 300px;
-        height: 250px;
+.bit-clr-pkr-flex-container {
+    display: flex;
+}
+
+.bit-clr-pkr-slider-container {
+    flex-grow: 1;
+}
+
+.bit-clr-pkr-slider {
+    position: relative;
+    width: 100%;
+    height: rem(20px);
+    border: rem(1px) solid $Grey30;
+    border-radius: rem(2px);
+    margin-bottom: rem(8px);
+    outline: none;
+    box-sizing: border-box;
+    forced-color-adjust: none;
+
+    input[type=range] {
         position: relative;
-        margin-bottom: 8px;
-        border: 1px solid rgb(243, 242, 241);
-        box-sizing: border-box;
-        position: relative;
+        top: rem(-1px);
+        width: calc(100% + #{rem(14px)});
+        margin: 0 rem(-7px);
+        background: none;
+        -webkit-appearance: none;
 
-        & > div:first-child {
-            background: linear-gradient(to bottom, transparent 0%, #000 100%);
-            position: relative;
-            z-index: 1;
-            width: 300px;
-            height: 250px;
-        }
-
-        & > div:nth-child(2) {
-            background: linear-gradient(to right, white 0%, transparent 100%);
-            position: absolute;
-            top: 0;
-            background-color: red;
-            width: 300px;
-            height: 250px;
-        }
-
-        & > div:last-child {
-            position: absolute;
-            inset: 0px;
+        &::-webkit-slider-thumb {
+            width: rem(20px);
+            height: rem(20px);
             border-radius: 50%;
-            box-sizing: border-box;
-            width: 18px;
-            height: 18px;
-            box-shadow: 0 0px 0px 1px #8a8886;
-            transform: translate(-50%,-50%);
-            background: white;
-            box-shadow: 0 0px 0px 1px #8a8886;
-            border: 2px solid white;
-            z-index: 1;
+            border: rem(1px) solid $GreyInputBorder;
+            box-shadow: rgba(0, 0, 0, 0.13) 0px 3.2px 7.2px 0px, rgba(0, 0, 0, 0.11) 0px 0.6px 1.8px 0px;
+            background: $White;
+            cursor: pointer;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        &::-moz-range-thumb {
+            width: rem(20px);
+            height: rem(20px);
+            border-radius: 50%;
+            border: rem(1px) solid $GreyInputBorder;
+            box-shadow: rgba(0, 0, 0, 0.13) 0px 3.2px 7.2px 0px, rgba(0, 0, 0, 0.11) 0px 0.6px 1.8px 0px;
+            background: $White;
+            cursor: pointer;
         }
     }
+}
 
-    & > div:nth-child(2) {
-        display: flex;
+.hue-slider {
+    background: linear-gradient(to right, red 0%, #ff0 17%, lime 33%, cyan 50%, blue 66%, #f0f 83%, red 100%);
+}
 
-        & > div:first-child {
-            flex-grow: 1;
+.preview-box {
+    width: rem(48px);
+    height: rem(48px);
+    margin-left: rem(8px);
+    border: rem(1px) solid $Grey60;
+}
 
-            & > div:first-child {
-                background: linear-gradient(to right, red 0%, #ff0 17%, lime 33%, cyan 50%, blue 66%, #f0f 83%, red 100%);
-                width: 100%;
-                height: 20px;
-                border: 1px solid rgb(237, 235, 233);
-                border-radius: 2px;
-                box-sizing: border-box;
-                margin-bottom: 8px;
-                position: relative;
+.bit-clr-pkr-rectangle {
+    position: relative;
+    min-width: rem(220px);
+    min-height: rem(220px);
+    height: rem(268px);
+    margin-bottom: rem(8px);
+    border: rem(1px) solid $Grey20;
+    border-radius: rem(2px);
+    outline: none;
+    box-sizing: border-box;
 
-                & > input[type=range] {
-                    position: relative;
-                    top: -1px;
-                    width: calc(100% + 14px);
-                    background: none;
-                    -webkit-appearance: none;
-                    margin: 0 -7px;
-
-                    &::-webkit-slider-thumb {
-                        -webkit-appearance: none;
-                        appearance: none;
-                        width: 20px;
-                        height: 20px;
-                        background: $White;
-                        cursor: pointer;
-                        border-radius: 50%;
-                        border: 1px solid rgb(138, 136, 134);
-                    }
-
-                    &::-moz-range-thumb {
-                        width: 20px;
-                        height: 20px;
-                        background: $White;
-                        cursor: pointer;
-                        border-radius: 50%;
-                        border: 1px solid rgb(138, 136, 134);
-                    }
-                }
-            }
-
-            & > div:last-child {
-                background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAJUlEQVQYV2N89erVfwY0ICYmxoguxjgUFKI7GsTH5m4M3w1ChQC1/Ca8i2n1WgAAAABJRU5ErkJggg==);
-                margin-bottom: 8px;
-                height: 20px;
-                border: 1px solid rgb(237, 235, 233);
-                position: relative;
-
-                & > div {
-                    width: 100%;
-                    height: 20px;
-                    background: linear-gradient(to left, red 0%, transparent 100%);
-                    margin-bottom: 8px;
-
-                    & > input[type=range] {
-                        width: calc(100% + 14px);
-                        background: none;
-                        -webkit-appearance: none;
-                        margin: 0 -7px;
-
-                        &::-webkit-slider-thumb {
-                            -webkit-appearance: none;
-                            appearance: none;
-                            width: 20px;
-                            height: 20px;
-                            background: $White;
-                            cursor: pointer;
-                            border-radius: 50%;
-                            border: 1px solid rgb(138, 136, 134);
-                        }
-
-                        &::-moz-range-thumb {
-                            width: 20px;
-                            height: 20px;
-                            background: $White;
-                            cursor: pointer;
-                            border-radius: 50%;
-                            border: 1px solid rgb(138, 136, 134);
-                        }
-                    }
-                }
-            }
-        }
-
-        & > div:last-child {
-            width: 48px;
-            height: 48px;
-            margin: 0px 0px 0px 8px;
-            border: 1px solid rgb(200, 198, 196);
-        }
+    .description {
+        position: absolute;
+        width: rem(1px);
+        height: rem(1px);
+        margin: rem(-1px);
+        padding: 0;
+        border: 0;
+        overflow: hidden;
+        white-space: nowrap;
     }
 
-    & > table {
-        table-layout: fixed;
-        width: 100%;
+    .bit-clr-pkr-dark {
+        position: absolute;
+        inset: 0px;
+        background: linear-gradient(transparent 0px, rgb(0, 0, 0) 100%);
+    }
 
-        & > thead {
-            & > tr {
-                & > td {
-                    color: $Grey160;
-                    font-size: 11px;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                }
-            }
-        }
+    .bit-clr-pkr-light {
+        position: absolute;
+        inset: 0px;
+        background: linear-gradient(to right, white 0%, transparent 100%);
+    }
 
-        & > tbody {
-            & > tr {
-                & > td {
-                    & > input {
-                        max-width: 100%;
-                        width: 100%;
-                        box-sizing: border-box;
-                        -webkit-box-sizing: border-box;
-                        -moz-box-sizing: border-box;
-                        padding: 5px;
-                        text-overflow: clip;
-                        font-size: 14px;
-                        -webkit-font-smoothing: antialiased;
-                        color: $Grey160;
-                        outline: 0px;
-                        border: none;
-                        box-shadow: 0 0 0 1px $Grey130;
-
-                        &:focus {
-                            box-shadow: 0 0 0 2px $CyanBlue10;
-                        }
-
-                        &[type=number] {
-                            -moz-appearance: textfield;
-
-                            &::-webkit-outer-spin-button,
-                            &::-webkit-inner-spin-button {
-                                -webkit-appearance: none;
-                                margin: 0;
-                            }
-                        }
-                    }
-                }
-            }
-        }
+    .bit-clr-pkr-thumb {
+        position: absolute;
+        z-index: 1;
+        inset: 0px;
+        width: rem(20px);
+        height: rem(20px);
+        border: rem(2px) solid $White;
+        border-radius: 50%;
+        box-shadow: 0 0px 0px 1px $GreyInputBorder;
+        box-sizing: border-box;
+        background: white;
+        transform: translate(-50%,-50%);
     }
 }
