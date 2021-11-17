@@ -8,11 +8,19 @@ h1 {
 
 h5 {
     line-height: 0;
+
+    @include sm {
+        line-height: rem(20px);
+    }
 }
 
 section {
     margin-bottom: rem(110px);
     scroll-margin-top: rem(150px);
+
+    @include sm {
+        width: 91%;
+    }
 }
 
 .main-container {
@@ -21,6 +29,14 @@ section {
     background-size: 100%;
     position: relative;
     margin-top: rem(120px);
+
+    @include lg {
+        margin-top: rem(100px);
+    }
+
+    @include lt-lg {
+        margin-top: rem(80px);
+    }
 }
 
 .component-container {
@@ -37,7 +53,7 @@ section {
     margin: rem(100px) 0 rem(50px);
 
     @include lg {
-        padding-left: rem(280px);
+        padding: 0 rem(75px) rem(270px);
     }
 
     @include md {
@@ -45,7 +61,7 @@ section {
     }
 
     @include sm {
-        padding-left: rem(50px);
+        padding-left: rem(60px);
     }
 }
 
@@ -54,6 +70,32 @@ section {
     color: $Violet;
     padding: rem(15px);
     background: $Gray04;
+
+    @include sm {
+        width: 80%;
+    }
+}
+
+.command, .init-code > div, .startup-code > div {
+    @include subtitle2-xl;
+
+    @include lg {
+        @include subtitle2-lg
+    }
+
+    @include md {
+        @include subtitle2-md
+    }
+
+    @include sm {
+        @include subtitle2-sm;
+    }
+}
+
+.init-code, .startup-code {
+    @include sm {
+        width: 80%;
+    }
 }
 
 .init-code, .startup-code {
