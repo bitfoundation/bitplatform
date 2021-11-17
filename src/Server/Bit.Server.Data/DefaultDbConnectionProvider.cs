@@ -39,10 +39,11 @@ namespace Bit.Data
             {
                 TDbConnection newConnection = new TDbConnection { ConnectionString = connectionString };
                 DbTransaction? transaction = null;
+                var isolationLevel = IsolationLevel;
                 try
                 {
                     newConnection.Open();
-                    transaction = newConnection.BeginTransaction(IsolationLevel);
+                    transaction = newConnection.BeginTransaction(isolationLevel);
                 }
                 catch { }
                 DbConnectionAndTransactions.Add(new DbConnectionAndTransactionPair(connectionString, newConnection, transaction, rollbackOnScopeStatusFailure));
@@ -61,10 +62,11 @@ namespace Bit.Data
             {
                 TDbConnection newConnection = new TDbConnection { ConnectionString = connectionString };
                 DbTransaction? transaction = null;
+                var isolationLevel = IsolationLevel;
                 try
                 {
                     await newConnection.OpenAsync(cancellationToken).ConfigureAwait(false);
-                    transaction = await newConnection.BeginTransactionAsync(IsolationLevel, cancellationToken).ConfigureAwait(false);
+                    transaction = await newConnection.BeginTransactionAsync(isolationLevel, cancellationToken).ConfigureAwait(false);
                 }
                 catch { }
                 DbConnectionAndTransactions.Add(new DbConnectionAndTransactionPair(connectionString, newConnection, transaction, rollbackOnScopeStatusFailure));
@@ -105,30 +107,32 @@ namespace Bit.Data
             }
         }
 
-        public async ValueTask DisposeAsync()
+        public async Task WaitForDisposal(CancellationToken cancellationToken)
         {
             bool wasSucceeded = ScopeStatusManager.WasSucceeded();
 
-            foreach (DbConnectionAndTransactionPair dbAndTran in DbConnectionAndTransactions)
+            var dbConnectionAndTransactions = DbConnectionAndTransactions.ToArray();
+
+            foreach (DbConnectionAndTransactionPair dbAndTran in dbConnectionAndTransactions)
             {
                 try
                 {
                     if (dbAndTran.RollbackOnScopeStatusFailure == false)
                     {
                         if (dbAndTran.Transaction != null)
-                            await dbAndTran.Transaction.CommitAsync().ConfigureAwait(false);
+                            await dbAndTran.Transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
                     }
                     else
                     {
                         if (wasSucceeded)
                         {
                             if (dbAndTran.Transaction != null)
-                                await dbAndTran.Transaction.CommitAsync().ConfigureAwait(false);
+                                await dbAndTran.Transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
                         }
                         else
                         {
                             if (dbAndTran.Transaction != null)
-                                await dbAndTran.Transaction.RollbackAsync().ConfigureAwait(false);
+                                await dbAndTran.Transaction.RollbackAsync(cancellationToken).ConfigureAwait(false);
                         }
                     }
                 }
@@ -137,6 +141,7 @@ namespace Bit.Data
                     if (dbAndTran.Transaction != null)
                         await dbAndTran.Transaction.DisposeAsync().ConfigureAwait(false);
                     await dbAndTran.Connection.DisposeAsync().ConfigureAwait(false);
+                    DbConnectionAndTransactions.Remove(dbAndTran); // To reduce re work in dispose which gets called later using di scope disposal 
                 }
             }
         }

@@ -33,6 +33,8 @@ namespace Bit.Core.Contracts
             where TService : notnull;
 
         bool IsRegistered(TypeInfo serviceType);
+
+        IPipelineAwareDisposable[] GetPipelineAwareDisposables();
     }
 
     public interface IServiceCollectionAccessor

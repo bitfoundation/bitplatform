@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Bit.Core.Contracts
@@ -16,7 +17,7 @@ namespace Bit.Core.Contracts
             return dependencyManager;
         }
 
-        public static async Task<bool> TransactionAction(this IDependencyManager dependencyManager, string operationName, Func<IDependencyResolver, Task> task)
+        public static async Task<bool> TransactionAction(this IDependencyManager dependencyManager, string operationName, Func<IDependencyResolver, Task> task, CancellationToken cancellationToken = default)
         {
             await using var resolver = dependencyManager.CreateChildDependencyResolver();
 
@@ -25,6 +26,11 @@ namespace Bit.Core.Contracts
                 await task.Invoke(resolver);
 
                 resolver.Resolve<IScopeStatusManager>().MarkAsSucceeded();
+
+                foreach (var pipelineAwareDisposable in resolver.GetPipelineAwareDisposables())
+                {
+                    await pipelineAwareDisposable.WaitForDisposal(cancellationToken);
+                }
 
                 return true;
             }
@@ -37,7 +43,7 @@ namespace Bit.Core.Contracts
             }
         }
 
-        public static async Task<TResult> TransactionFunc<TResult>(this IDependencyManager dependencyManager, string operationName, Func<IDependencyResolver, Task<TResult>> task)
+        public static async Task<TResult> TransactionFunc<TResult>(this IDependencyManager dependencyManager, string operationName, Func<IDependencyResolver, Task<TResult>> task, CancellationToken cancellationToken = default)
         {
             await using var resolver = dependencyManager.CreateChildDependencyResolver();
 
@@ -46,6 +52,11 @@ namespace Bit.Core.Contracts
                 TResult result = await task.Invoke(resolver);
 
                 resolver.Resolve<IScopeStatusManager>().MarkAsSucceeded();
+
+                foreach (var pipelineAwareDisposable in resolver.GetPipelineAwareDisposables())
+                {
+                    await pipelineAwareDisposable.WaitForDisposal(cancellationToken);
+                }
 
                 return result;
             }

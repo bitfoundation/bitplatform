@@ -5,6 +5,7 @@ using Bit.Core.Contracts;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 
@@ -393,6 +394,19 @@ namespace Bit.Core.Implementations
             dependencyManager.BuildContainer();
 
             return dependencyManager;
+        }
+
+        private static readonly Type _disposerType = Assembly.Load("Autofac").GetType("Autofac.Core.Disposer");
+        private static readonly FieldInfo _itemsField = _disposerType.GetField("_items", BindingFlags.NonPublic | BindingFlags.Instance);
+
+        public IPipelineAwareDisposable[] GetPipelineAwareDisposables()
+        {
+            var disposer = GetContainer()
+                .Disposer;
+
+            var objects = (Stack<object>)_itemsField.GetValue(disposer);
+
+            return objects.OfType<IPipelineAwareDisposable>().ToArray();
         }
     }
 }

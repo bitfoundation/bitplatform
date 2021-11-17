@@ -2,10 +2,11 @@
 using System.Data.Common;
 using System.Threading;
 using System.Threading.Tasks;
+using Bit.Core.Contracts;
 
 namespace Bit.Data.Contracts
 {
-    public interface IDbConnectionProvider : IDisposable, IAsyncDisposable
+    public interface IDbConnectionProvider : IPipelineAwareDisposable
     {
         Task<DbConnection> GetDbConnectionAsync(string connectionString, bool rollbackOnScopeStatusFailure, CancellationToken cancellationToken);
 
