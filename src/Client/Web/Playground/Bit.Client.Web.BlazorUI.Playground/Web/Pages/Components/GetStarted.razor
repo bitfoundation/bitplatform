@@ -1,0 +1,102 @@
+﻿@layout MainLayout
+@page "/components/get-started"
+
+<Header />
+<div class="main-container">
+    <div class="content">
+        <div class="component-container">
+            <div class="component-content">
+                <section id="get-started-section">
+                    <h1>Getting Started</h1>
+                    <p>
+                        Bit Design of Blazor is dedicated to providing a good development
+                        experience for programmers.
+                    </p>
+                    <p>
+                        Before delving into Bit Design Blazor,
+                        a good knowledge of Blazor and .NET Core is needed.
+                    </p>
+                </section>
+                <section id="first-development-section" class="first-development">
+                    <h5>First Local Development</h5>
+                    <p>
+                        During development, you may need to compile and debug .
+                        NET code, and even proxy some of the requests to mock data or other external services.
+                        All of these can be done with quick feedback provided  through hot reloading of changes.
+                    </p>
+                </section>
+                <section id="installation-section" class="installation-content">
+                    <h5>Installation</h5>
+                    <p>
+                        We strongly recommended to develop Blazor with .NET Core SDK
+                        you can install it from:
+                    </p>
+                    <div class="command">
+                        <span>https://dotnet.microsoft.com/download?WT.mc_id=DT-MVP-5003987</span>
+                    </div>
+                </section>
+                <section id="web-assembly-section" class="web-assembly-content">
+                    <h5>Create a New Blazor WebAssembly Project</h5>
+                    <p>
+                        A new project can be created using .NET Core SDK.
+                    </p>
+                    <div>
+                        <span>$ dotnet new blazorwasm -o PROJECT-NAME</span>
+                    </div>
+                    <p>
+                        dotnet cli will run dotnet restore after a project is created.
+                        If it fails, you can run dotnet restore by yourself.
+                    </p>
+                </section>
+                <section id="debugging-section" class="building-content">
+                    <h5>Development & Debugging</h5>
+                    <p>
+                        Run your project now.
+                    </p>
+                    <div class="command">
+                        $ dotnet run
+                    </div>
+                </section>
+                 <section id="building-section" class="building-content">
+                    <h5>Building & Deployment</h5>
+                    <p>
+                       Entry files will be built and generated in  dist/wwwroot
+                    </p>
+                    <div class="command">
+                       $ dotnet publish -c release -o dist
+                    </div>
+                </section>
+                <section id="install-blazor-section" class="install-blazor-content">
+                    <h5>Install Bit Design Blazor</h5>
+                    <div class="command">
+                        $ dotnet publish -c release -o dist
+                    </div>
+                </section>
+                <section id="register-dependency-section" class="register-dependency-content">
+                    <h5>Register Dependencies</h5>
+                    <p>Add dependency registration in Startup.cs.</p>
+                    <div class="startup-code">
+                        <div>
+                            <span class="soco-tag-type-def">public void </span>ConfigureServices(IServiceCollection services)
+                        </div>
+                        <div>{</div>
+                        <div class="m-l-20">...</div>
+                        <div class="m-l-20">services.AddAntDesign();</div>
+                        <div>}</div>
+                    </div>
+                </section>
+                <section id="import-style-section" class="import-style-content">
+                    <h5>Import Styles</h5>
+                    <span>Use styles and JS</span>
+                    <p>Import the styles and script in <span class="index-path">wwwroot/index.html</span></p>
+                    <div class="init-code">
+                        <div>&lt<span class="light-blue">link href</span>="_content/AntDesign/css/ant-design-blazor.css" <span class="light-blue">rel</span>="stylesheet" /></div>
+                        <div>&lt<span class="light-blue">script src</span>="_content/AntDesign/js/ant-design-blazor.js">&lt/script></div>
+                    </div>
+                </section>
+            </div>
+            <SideRail Items="@items" />
+        </div>
+    </div>
+</div>
+<Footer />
