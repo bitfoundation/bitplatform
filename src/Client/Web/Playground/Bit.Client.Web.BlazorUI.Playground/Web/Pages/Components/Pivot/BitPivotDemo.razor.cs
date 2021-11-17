@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Bit.Client.Web.BlazorUI.Playground.Web.Models;
 using Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 
@@ -146,13 +147,13 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Pivot
                     {
                         Name= "Tabs",
                         Description="Display Pivot Links as Tabs.",
-                        Value="Tabs = 0",
+                        Value="0",
                     },
                     new EnumItem()
                     {
                         Name= "Links",
                         Description="Display Pivot Links as links.",
-                        Value="Links = 1",
+                        Value="1",
                     },
                 }
             },
@@ -167,13 +168,13 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Pivot
                     {
                         Name= "Normal",
                         Description="Display Link using normal font size.",
-                        Value="Normal = 0",
+                        Value="0",
                     },
                     new EnumItem()
                     {
                         Name= "Large",
                         Description="Display links using large font size.",
-                        Value="Large = 1",
+                        Value="1",
                     },
                 }
             },
@@ -188,23 +189,125 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Pivot
                     {
                         Name= "None",
                         Description="Pivot links will overflow the container and may not be visible.",
-                        Value="None = 0",
+                        Value="0",
                     },
                     new EnumItem()
                     {
                         Name= "Menu",
                         Description="Display an overflow menu that contains the tabs that don't fit.",
-                        Value="Menu = 1",
+                        Value="1",
                     },
                     new EnumItem()
                     {
                         Name= "Scroll",
                         Description="Display a scroll bar below of the tabs for moving between them.",
-                        Value="Scroll = 2",
+                        Value="2",
                     },
                 }
             }
         };
+
+        private readonly string pivotSampleCode = $"<BitPivot>{Environment.NewLine}" +
+             $"<BitPivotItem HeaderText='File'>Pivot #1></BitPivotItem>{Environment.NewLine}" +
+             $"<BitPivotItem HeaderText='Shared with me'>Pivot #2</BitPivotItem>{Environment.NewLine}" +
+             $"<BitPivotItem HeaderText='Recent'>Pivot #3></BitPivotItem>{Environment.NewLine}" +
+             $"</BitPivot>";
+
+        private readonly string pivotWithCountAndIconSampleCode = $"<BitPivot OverflowBehavior='@OverflowBehavior.Scroll'>{Environment.NewLine}" +
+             $"<BitPivotItem HeaderText ='Files' IconName='Info'>Pivot #1</BitPivotItem>{Environment.NewLine}" +
+             $"<BitPivotItem HeaderText ='Shared with me' ItemCount='32'>Pivot #2</BitPivotItem>{Environment.NewLine}" +
+             $"<BitPivotItem HeaderText ='Recent' IconName='Info' ItemCount='12'>Pivot #3</BitPivotItem>{Environment.NewLine}" +
+             $"<BitPivotItem HeaderText ='Some tab' IconName='Info' ItemCount='6'>Pivot #4</BitPivotItem>{Environment.NewLine}" +
+             $"<BitPivotItem HeaderText ='Latest' IconName='Info' ItemCount='8'>Pivot #5</BitPivotItem>{Environment.NewLine}" +
+             $"<BitPivotItem HeaderText ='I also have a custom template for icon' IconName='Info' ItemCount='45'></BitPivotItem>{Environment.NewLine}" +
+             $"<HeaderContent>{Environment.NewLine}" +
+             $"<i class='bit-icon bit-icon--HeartFill'></i>{Environment.NewLine}" +
+             $"</HeaderContent>{Environment.NewLine}" +
+             $"<BodyContent>{Environment.NewLine}" +
+             $"Pivot #6{Environment.NewLine}" +
+             $"</BodyContent>{Environment.NewLine}" +
+             $"</BitPivot>";
+
+        private readonly string pivotWithLargeLinkSizeSampleCode = $"<BitPivot LinkSize='@LinkSize.Large'>{Environment.NewLine}" +
+             $"<BitPivotItem HeaderText='File'>Pivot #1></BitPivotItem>{Environment.NewLine}" +
+             $"<BitPivotItem HeaderText='Shared with me'>Pivot #2</BitPivotItem>{Environment.NewLine}" +
+             $"<BitPivotItem HeaderText='Recent'>Pivot #3></BitPivotItem>{Environment.NewLine}" +
+             $"</BitPivot>";
+
+        private readonly string pivotWithLinkSampleCode = $"<BitPivot LinkFormat='@LinkFormat.Tabs'>{Environment.NewLine}" +
+             $"<BitPivotItem HeaderText='Foo'>Pivot #1></BitPivotItem>{Environment.NewLine}" +
+             $"<BitPivotItem HeaderText='Bar'>Pivot #2</BitPivotItem>{Environment.NewLine}" +
+             $"<BitPivotItem HeaderText='Bas'>Pivot #3></BitPivotItem>{Environment.NewLine}" +
+             $"<BitPivotItem HeaderText='Biz'>Pivot #4></BitPivotItem>{Environment.NewLine}" +
+             $"</BitPivot>";
+
+        private readonly string pivotWithLargeLinkSampleCode = $"<BitPivot LinkFormat='@LinkFormat.Tabs' LinkSize='@LinkSize.Large'>{Environment.NewLine}" +
+             $"<BitPivotItem HeaderText='Foo'>Pivot #1></BitPivotItem>{Environment.NewLine}" +
+             $"<BitPivotItem HeaderText='Bar'>Pivot #2</BitPivotItem>{Environment.NewLine}" +
+             $"<BitPivotItem HeaderText='Bas'>Pivot #3></BitPivotItem>{Environment.NewLine}" +
+             $"<BitPivotItem HeaderText='Biz'>Pivot #4></BitPivotItem>{Environment.NewLine}" +
+             $"</BitPivot>";
+
+        private readonly string pivotChangeFromOutsideSampleCode = $"<BitPivot LinkFormat='@LinkFormat.Tabs' LinkSize='@LinkSize.Large' SelectedKey='@OverridePivotSelectedKey' SelectedKeyChanged='PivotSelectedKeyChanged'>{Environment.NewLine}" +
+             $"<BitPivotItem HeaderText='Samples'>Pivot #1></BitPivotItem>{Environment.NewLine}" +
+             $"<BitPivotItem HeaderText='Files'>Pivot #2</BitPivotItem>{Environment.NewLine}" +
+             $"<BitPivotItem HeaderText='Recent'>Pivot #3></BitPivotItem>{Environment.NewLine}" +
+             $"<BitPivotItem HeaderText='Biz'>Pivot #4></BitPivotItem>{Environment.NewLine}" +
+             $"</BitPivot>{Environment.NewLine}" +
+             $"<BitButton OnClick='(() => OverridePivotSelectedKey = (((int.Parse(OverridePivotSelectedKey) + 3 - 1) % 3)).ToString())'>prev</BitButton>{Environment.NewLine}" +
+             $"<BitButton OnClick='(() => OverridePivotSelectedKey = (((int.Parse(OverridePivotSelectedKey) + 1 ) % 3)).ToString())'>next</BitButton>{Environment.NewLine}" +
+             $"@code {{ {Environment.NewLine}" +
+             $"public string OverridePivotSelectedKey {{ get; set; }} = '1';{Environment.NewLine}" +
+             $"public void PivotSelectedKeyChanged(string key){Environment.NewLine}" +
+             $"{{{Environment.NewLine}" +
+             $"OverridePivotSelectedKey = key;{Environment.NewLine}" +
+             $"}}{Environment.NewLine}" +
+             $"}}";
+
+        private readonly string pivotContent1SampleCode = $"<BitPivot LinkFormat='@LinkFormat.Tabs' LinkSize='@LinkSize.Large' OnLinkClick='@(item => SelectedKey = item.Key)'>{Environment.NewLine}" +
+             $"<BitPivotItem HeaderText='Foo'>Pivot #1></BitPivotItem>{Environment.NewLine}" +
+             $"<BitPivotItem HeaderText='Bar'>Pivot #2</BitPivotItem>{Environment.NewLine}" +
+             $"<BitPivotItem HeaderText='Bas'>Pivot #3></BitPivotItem>{Environment.NewLine}" +
+             $"<BitPivotItem HeaderText='Biz'>Pivot #4></BitPivotItem>{Environment.NewLine}" +
+             $"</BitPivot>{Environment.NewLine}" +
+             $"@if (SelectedKey == 'Foo'){Environment.NewLine}" +
+             $"{{ {Environment.NewLine}" +
+             $"<div>Hello I am Foo</div>{Environment.NewLine}" +
+             $"}}{Environment.NewLine}" +
+             $"@if (SelectedKey == 'Bar'){Environment.NewLine}" +
+             $"{{ {Environment.NewLine}" +
+             $"<div>Hello I am Bar</div>{Environment.NewLine}" +
+             $"}}{Environment.NewLine}" +
+             $"@if (SelectedKey == 'Bas'){Environment.NewLine}" +
+             $"{{ {Environment.NewLine}" +
+             $"<div>Hello I am Bas</div>{Environment.NewLine}" +
+             $"}}{Environment.NewLine}" +
+             $"@if (SelectedKey == 'Biz'){Environment.NewLine}" +
+             $"{{ {Environment.NewLine}" +
+             $"<div>Hello I am Biz</div>{Environment.NewLine}" +
+             $"}}{Environment.NewLine}" +
+             $"@code {{ {Environment.NewLine}" +
+             $"private string SelectedKey = 'Foo';{Environment.NewLine}" +
+             $"}}";
+
+        private readonly string pivotContent2SampleCode = $"<span>@SelectedPivotItem?.HeaderText Clicked</span>{Environment.NewLine}" +
+             $"<BitPivot LinkFormat='@LinkFormat.Tabs' LinkSize='@LinkSize.Large' OnLinkClick='@(item => SelectedPivotItem = item)'>{Environment.NewLine}" +
+             $"<BitPivotItem HeaderText='Foo'>Pivot #1></BitPivotItem>{Environment.NewLine}" +
+             $"<BitPivotItem HeaderText='Bar'>Pivot #2</BitPivotItem>{Environment.NewLine}" +
+             $"<BitPivotItem HeaderText='Bas' Key='aaa'>Pivot #3></BitPivotItem>{Environment.NewLine}" +
+             $"<BitPivotItem HeaderText='Biz' Visibility='@PivotItemVisibility'>Pivot #4></BitPivotItem>{Environment.NewLine}" +
+             $"<BitPivotItem HeaderText='Baq'>Pivot #5></BitPivotItem>{Environment.NewLine}" +
+             $"<BitPivotItem HeaderText='Baw'>Pivot #6></BitPivotItem>{Environment.NewLine}" +
+             $"</BitPivot>{Environment.NewLine}" +
+             $"<BitButton OnClick='TogglePivotItemVisobility'>Hide/Show Biz</BitButton>{Environment.NewLine}" +
+             $"@code {{ {Environment.NewLine}" +
+             $"public ComponentVisibility PivotItemVisibility {{ get; set; }}{Environment.NewLine}" +
+             $"public BitPivotItem SelectedPivotItem {{ get; set; }}{Environment.NewLine}" +
+             $"public void TogglePivotItemVisobility(){Environment.NewLine}" +
+             $"{{{Environment.NewLine}" +
+             $"PivotItemVisibility = PivotItemVisibility == ComponentVisibility.Visible ? ComponentVisibility.Collapsed : ComponentVisibility.Visible;{Environment.NewLine}" +
+             $"}}{Environment.NewLine}" +
+             $"}}";
 
         private void PivotSelectedKeyChanged(string key)
         {
