@@ -607,11 +607,12 @@ button {
 
 .get-start-btn {
     color: white;
-    padding: rem(11px) rem(32px);
+    padding: rem(19px) rem(43px);
     background: #5c2d91;
     border-radius: rem(4px);
     margin-right: rem(12px);
-    border: none;
+    text-decoration: none;
+    box-sizing: border-box;
 
     @include sm {
         padding: rem(8px) rem(32px);
