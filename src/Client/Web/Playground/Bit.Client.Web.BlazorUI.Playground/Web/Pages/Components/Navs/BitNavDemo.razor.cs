@@ -298,13 +298,13 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Navs
                     {
                         Name= "Automatic",
                         Description="The value of selected key will change using NavigationManager and the current url inside the component.",
-                        Value="Automatic = 0",
+                        Value="0",
                     },
                     new EnumItem()
                     {
                         Name= "Manual",
                         Description="Selected key changes will be sent back to the parent component and the component won't change its value.",
-                        Value="Manual= 1",
+                        Value="1",
                     }
                 }
             },

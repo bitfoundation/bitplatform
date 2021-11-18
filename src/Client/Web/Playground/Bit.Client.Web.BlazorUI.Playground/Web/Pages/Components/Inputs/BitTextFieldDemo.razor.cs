@@ -112,14 +112,14 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Inputs
             },
             new ComponentParameter()
             {
-                Name = "onChange",
+                Name = "OnChange",
                 Type = "EventCallback<string?>",
                 DefaultValue = "",
                 Description = "Callback for when the input value changes. This is called on both input and change events.",
             },
             new ComponentParameter()
             {
-                Name = "onClick",
+                Name = "OnClick",
                 Type = "EventCallback<MouseEventArgs>",
                 DefaultValue = "",
                 Description = "Callback for when the input clicked.",
@@ -229,7 +229,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Inputs
                 Name = "ValueChanged",
                 Type = "EventCallback<string?>",
                 DefaultValue = "",
-                Description = "Callback for when the input value changes",
+                Description = "Callback for when the input value changes.",
             },
         };
 
@@ -246,13 +246,13 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Inputs
                     {
                         Name= "Text",
                         Description="The TextField characters are shown as text.",
-                        Value="Text = 0",
+                        Value="0",
                     },
                     new EnumItem()
                     {
                         Name= "Password",
                         Description="The TextField characters are masked.",
-                        Value="Password = 1",
+                        Value="1",
                     }
                 }
             }

@@ -96,13 +96,13 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Buttons
                     {
                         Name= "Primary",
                         Description="The button with white text on a blue background.",
-                        Value="Primary = 1",
+                        Value="0",
                     },
                     new EnumItem()
                     {
                         Name= "Standard",
                         Description="The button with black text on a white background.",
-                        Value="Standard = 1",
+                        Value="1",
                     }
                 }
             }

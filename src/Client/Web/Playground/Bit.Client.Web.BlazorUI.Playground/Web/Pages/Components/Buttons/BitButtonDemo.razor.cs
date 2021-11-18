@@ -89,13 +89,13 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Buttons
                     {
                         Name= "Primary",
                         Description="The button with white text on a blue background.",
-                        Value="Primary = 0",
+                        Value="0",
                     },
                     new EnumItem()
                     {
                         Name= "Standard",
                         Description="The button with black text on a white background.",
-                        Value="Standard = 1",
+                        Value="1",
                     }
                 }
             }
@@ -117,7 +117,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Buttons
                  $"background-color:#2F455A;{Environment.NewLine}" +
                  $"border-color:#2F455A;{Environment.NewLine}" +
                  $"}} {Environment.NewLine}" +
-                 $"</style>{Environment.NewLine}";
+                 $"</style>";
 
         private readonly string visibilitySampleCode = $"<BitButton Style='margin-bottom: 10px;' Visibility='BitComponentVisibility.Visible'>Visible Button</BitButton>{Environment.NewLine}" +
                  $"<BitButton Visibility='BitComponentVisibility.Hidden'>Hidden Button</BitButton>{Environment.NewLine}" +
