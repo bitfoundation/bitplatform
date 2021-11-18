@@ -15,7 +15,7 @@
 		<PackageReference Include="Microsoft.ApplicationInsights.WindowsApps" Condition=" '$(TargetFramework)' == 'uap10.0.17763' " Version="1.1.1" />
 		<PackageReference Include="Microsoft.ApplicationInsights" Condition=" '$(TargetFramework)' != 'uap10.0.17763' " Version="2.19.0" />
 		<PackageReference Include="Prism.Plugin.Popups" Version="8.0.76" />
-		<PackageReference Include="Xamarin.Forms" Version="5.0.0.2196" />
+		<PackageReference Include="Xamarin.Forms" Version="5.0.0.2244" />
         <PackageReference Include="Xamarin.Essentials" Version="1.7.0" />
 		<ProjectReference Include="..\..\..\Universal\Bit.Universal.Core\Bit.Universal.Core.csproj" />
 		<ProjectReference Include="..\Bit.Client.Xamarin.Controls\Bit.Client.Xamarin.Controls.csproj" />

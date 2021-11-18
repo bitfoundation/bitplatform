@@ -86,7 +86,7 @@ namespace Bit.CSharpClientSample
             containerRegistry.RegisterForRegionNav<RegionCView, RegionCViewModel>("RegionC");
             containerRegistry.RegisterForRegionNav<RegionDView, RegionDViewModel>("RegionD");
 
-            const string developerMachineIp = "192.168.42.203";
+            const string developerMachineIp = "192.168.42.232";
 
             containerBuilder.Register<IClientAppProfile>(c => new DefaultClientAppProfile
             {
