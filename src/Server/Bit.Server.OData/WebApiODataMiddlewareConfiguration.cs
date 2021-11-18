@@ -102,12 +102,26 @@ namespace Bit.OData
             _webApiConfig.EnsureInitialized();
         }
 
+        private bool isDisposed;
+
         public virtual void Dispose()
         {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (isDisposed) return;
             _odataBatchHandler?.Dispose();
             _webApiConfig?.Dispose();
             _server?.Dispose();
-            GC.SuppressFinalize(this);
+            isDisposed = true;
+        }
+
+        ~WebApiODataMiddlewareConfiguration()
+        {
+            Dispose(false);
         }
     }
 }

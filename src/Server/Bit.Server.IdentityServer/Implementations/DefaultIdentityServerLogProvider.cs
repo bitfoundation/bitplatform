@@ -62,7 +62,7 @@ namespace Bit.IdentityServer.Implementations
 
         public virtual void Dispose()
         {
-            GC.SuppressFinalize(this);
+            
         }
     }
 }

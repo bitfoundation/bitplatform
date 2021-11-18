@@ -58,10 +58,24 @@ namespace Bit.Owin.Implementations
             }
         }
 
+        private bool isDisposed;
+
         public virtual void Dispose()
         {
-            _certificate?.Dispose();
+            Dispose(true);
             GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (isDisposed) return;
+            _certificate?.Dispose();
+            isDisposed = true;
+        }
+
+        ~DefaultAppCertificatesProvider()
+        {
+            Dispose(false);
         }
     }
 }

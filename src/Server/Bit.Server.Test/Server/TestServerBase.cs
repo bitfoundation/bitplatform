@@ -93,7 +93,18 @@ namespace Bit.Test.Server
             }
         }
 
-        public abstract void Dispose();
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        ~TestServerBase()
+        {
+            Dispose(false);
+        }
+
+        protected abstract void Dispose(bool disposing);
 
         public virtual WebDriver BuildWebDriver(WebDriverOptions? options = null)
         {

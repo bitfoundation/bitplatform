@@ -2,6 +2,7 @@
 using Bit.Hangfire.Filters;
 using Hangfire;
 using Hangfire.Logging;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -57,10 +58,29 @@ namespace Bit.Hangfire.Implementations
             BackgroundJobServer = new BackgroundJobServer(options, storage);
         }
 
+        private bool isDisposed;
+
         public virtual void Dispose()
         {
-            BackgroundJobServer?.Stop(force: true);
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (isDisposed) return;
+
+            if (disposing)
+                BackgroundJobServer?.Stop(force: true);
+
             BackgroundJobServer?.Dispose();
+
+            isDisposed = true;
+        }
+
+        ~JobSchedulerBaseBackendConfiguration()
+        {
+            Dispose(false);
         }
     }
 }

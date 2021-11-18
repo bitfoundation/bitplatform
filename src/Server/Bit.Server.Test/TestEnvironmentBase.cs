@@ -239,6 +239,8 @@ namespace Bit.Test
                 .Distinct();
         }
 
+        private bool isDisposed;
+
         public virtual void Dispose()
         {
             Dispose(true);
@@ -247,7 +249,14 @@ namespace Bit.Test
 
         protected virtual void Dispose(bool disposing)
         {
+            if (isDisposed) return;
             Server?.Dispose();
+            isDisposed = true;
+        }
+
+        ~TestEnvironmentBase()
+        {
+            Dispose(false);
         }
     }
 }

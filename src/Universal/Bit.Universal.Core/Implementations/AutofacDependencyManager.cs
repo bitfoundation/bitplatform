@@ -361,16 +361,26 @@ namespace Bit.Core.Implementations
             return GetContainer().IsRegistered(serviceType);
         }
 
+        private bool isDisposed;
+
         public virtual void Dispose()
         {
+            Dispose(true);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (isDisposed) return;
             _container?.Dispose();
-            GC.SuppressFinalize(this);
+            isDisposed = true;
         }
 
         public virtual async ValueTask DisposeAsync()
         {
+            if (isDisposed) return;
             if (_container != null)
                 await _container.DisposeAsync().ConfigureAwait(false);
+            isDisposed = true;
         }
 
         public virtual IDependencyManager Populate(IServiceCollection services)

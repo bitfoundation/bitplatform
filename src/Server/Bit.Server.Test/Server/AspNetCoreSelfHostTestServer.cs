@@ -30,7 +30,7 @@ namespace Bit.Test.Server
                 .Start();
         }
 
-        public override void Dispose()
+        protected override void Dispose(bool disposing)
         {
             _host?.Services.GetRequiredService<IHostApplicationLifetime>().StopApplication();
             _host?.Dispose();

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Bit.View
 {
-    public class ComponentBase<TViewModel> : ComponentBase, IAsyncDisposable, IDisposable
+    public class ComponentBase<TViewModel> : ComponentBase, IAsyncDisposable
              where TViewModel : ViewModelBase
     {
         private TViewModel _ViewModel = default!;
@@ -176,14 +176,13 @@ namespace Bit.View
             };
         }
 
-        public virtual void Dispose()
-        {
-            VM.Dispose();
-        }
+        private bool isDisposed;
 
-        public virtual ValueTask DisposeAsync()
+        public virtual async ValueTask DisposeAsync()
         {
-            return VM.DisposeAsync();
+            if (isDisposed) return;
+            await VM.DisposeAsync();
+            isDisposed = true;
         }
     }
 }

@@ -132,7 +132,7 @@ namespace Bit.Test.Implementations
 
         public virtual string ReportObjects => string.Join(Environment.NewLine, Objects.Select(o => o.GetType().FullName).OrderBy(o => o));
 
-        public override void Dispose()
+        protected override void Dispose(bool disposing)
         {
             ContainerBuilder builder = GetContainerBuidler();
 
@@ -151,7 +151,7 @@ namespace Bit.Test.Implementations
 
             Objects = null;
 
-            base.Dispose();
+            base.Dispose(disposing);
         }
     }
 }
