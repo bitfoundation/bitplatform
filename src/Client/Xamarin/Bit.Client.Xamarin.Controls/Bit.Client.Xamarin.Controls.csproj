@@ -1,31 +1,32 @@
 ﻿<Project Sdk="MSBuild.Sdk.Extras/2.1.2">
 
-  <Import Project="../../../Bit.Build.props" />
+    <Import Project="../../../Bit.Build.props" />
 
-  <PropertyGroup>
-    <TargetFrameworks>monoandroid10.0;Xamarin.iOS10;uap10.0.17763;netstandard2.0;netstandard2.1;</TargetFrameworks>
-    <PackageTags>$(PackageTags) Xamarin-Forms Xaml Date-Picker Radio-Button</PackageTags>
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFrameworks>monoandroid10.0;Xamarin.iOS10;uap10.0.17763;netstandard2.0;netstandard2.1;</TargetFrameworks>
+        <PackageTags>$(PackageTags) Xamarin-Forms Xaml Date-Picker Radio-Button</PackageTags>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="NodaTime" Version="3.0.9" />
-      <PackageReference Include="Rg.Plugins.Popup" Version="2.0.0.13" />
-      <PackageReference Include="Xamarin.Forms" Version="5.0.0.2196" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="NodaTime" Version="3.0.9" />
+        <PackageReference Include="Rg.Plugins.Popup" Version="2.0.0.14" Condition=" '$(TargetFramework)' != 'uap10.0.17763' " />
+        <PackageReference Include="Xamarin.Forms" Version="5.0.0.2244" />
+    </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'uap10.0.17763' ">
-    <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform" Version="6.2.13" />
-    <PackageReference Include="Microsoft.UI.Xaml" Version="2.7.0" />
-  </ItemGroup>
+    <ItemGroup Condition=" '$(TargetFramework)' == 'uap10.0.17763' ">
+        <PackageReference Include="Rg.Plugins.Popup" Version="2.0.0.13" />
+        <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform" Version="6.2.13" />
+        <PackageReference Include="Microsoft.UI.Xaml" Version="2.7.0" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Condition=" '$(TargetFramework)' == 'uap10.0.17763' OR '$(TargetFramework)' == 'netstandard2.0' " Include="..\..\..\Extensions\Bit.System.Diagnostics.CodeAnalysis\Bit.System.Diagnostics.CodeAnalysis.csproj" />
-  </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Condition=" '$(TargetFramework)' == 'uap10.0.17763' OR '$(TargetFramework)' == 'netstandard2.0' " Include="..\..\..\Extensions\Bit.System.Diagnostics.CodeAnalysis\Bit.System.Diagnostics.CodeAnalysis.csproj" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <Compile Update="Implementations\BitGlobalStyles.xaml.cs">
-      <DependentUpon>BitGlobalStyles.xaml</DependentUpon>
-    </Compile>
-  </ItemGroup>
+    <ItemGroup>
+        <Compile Update="Implementations\BitGlobalStyles.xaml.cs">
+            <DependentUpon>BitGlobalStyles.xaml</DependentUpon>
+        </Compile>
+    </ItemGroup>
 
 </Project>

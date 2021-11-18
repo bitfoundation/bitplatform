@@ -69,11 +69,25 @@ namespace Bit.WebApi
             _webApiConfig.EnsureInitialized();
         }
 
+        private bool isDisposed;
+
         public virtual void Dispose()
         {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (isDisposed) return;
             _webApiConfig?.Dispose();
             _server?.Dispose();
-            GC.SuppressFinalize(this);
+            isDisposed = true;
+        }
+
+        ~WebApiMiddlewareConfiguration()
+        {
+            Dispose(false);
         }
     }
 }

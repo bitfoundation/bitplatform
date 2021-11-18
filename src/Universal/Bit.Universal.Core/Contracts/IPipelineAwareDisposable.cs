@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Bit.Core.Contracts
 {
-    public interface IPipelineAwareDisposable : IDisposable
+    public interface IPipelineAwareDisposable : IAsyncDisposable, IDisposable
     {
         Task WaitForDisposal(CancellationToken cancellationToken);
     }

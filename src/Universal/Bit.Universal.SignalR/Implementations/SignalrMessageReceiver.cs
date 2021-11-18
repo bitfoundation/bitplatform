@@ -235,8 +235,18 @@ namespace Bit.Signalr.Implementations
                 await Task.Run(_hubConnection.Stop, cancellationToken).ConfigureAwait(false);
         }
 
+        private bool isDisposed;
+
         public void Dispose()
         {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (isDisposed) return;
+
             _continueWork = false;
 
             if (_hubConnection != null)
@@ -264,6 +274,13 @@ namespace Bit.Signalr.Implementations
             _listener?.Dispose();
             _serverSentEventsTransport?.Dispose();
             _hubConnection?.Dispose();
+
+            isDisposed = true;
+        }
+
+        ~SignalrMessageReceiver()
+        {
+            Dispose(false);
         }
     }
 }

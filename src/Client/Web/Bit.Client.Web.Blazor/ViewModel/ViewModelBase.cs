@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Bit.ViewModel
 {
-    public class ViewModelBase : Bindable, IAsyncDisposable, IDisposable
+    public class ViewModelBase : Bindable, IAsyncDisposable
     {
         public IExceptionHandler ExceptionHandler { get; set; } = default!;
 
@@ -33,14 +33,9 @@ namespace Bit.ViewModel
 
         }
 
-        public virtual void Dispose()
+        public virtual async ValueTask DisposeAsync()
         {
-            
-        }
 
-        public virtual ValueTask DisposeAsync()
-        {
-            return ValueTask.CompletedTask;
         }
     }
 }

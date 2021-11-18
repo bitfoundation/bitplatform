@@ -75,73 +75,66 @@ namespace Bit.Data
             return DbConnectionAndTransactions.ExtendedSingle($"Getting db connection for {connectionString}", dbAndTran => dbAndTran.ConnectionString == connectionString && dbAndTran.RollbackOnScopeStatusFailure == rollbackOnScopeStatusFailure).Connection;
         }
 
+        private bool isDisposed;
+
         public virtual void Dispose()
         {
             Dispose(true);
             GC.SuppressFinalize(this);
         }
 
+        ~DefaultDbConnectionProvider()
+        {
+            Dispose(false);
+        }
+
         protected virtual void Dispose(bool disposing)
         {
-            bool wasSucceeded = ScopeStatusManager.WasSucceeded();
-
+            if (isDisposed) return;
             foreach (DbConnectionAndTransactionPair dbAndTran in DbConnectionAndTransactions)
             {
-                try
-                {
-                    if (dbAndTran.RollbackOnScopeStatusFailure == false)
-                        dbAndTran.Transaction?.Commit();
-                    else
-                    {
-                        if (wasSucceeded)
-                            dbAndTran.Transaction?.Commit();
-                        else
-                            dbAndTran.Transaction?.Rollback();
-                    }
-                }
-                finally
-                {
-                    dbAndTran.Transaction?.Dispose();
-                    dbAndTran.Connection.Dispose();
-                }
+                dbAndTran.Transaction?.Dispose();
+                dbAndTran.Connection.Dispose();
             }
+            isDisposed = true;
+        }
+
+        public virtual async ValueTask DisposeAsync()
+        {
+            if (isDisposed) return;
+            foreach (DbConnectionAndTransactionPair dbAndTran in DbConnectionAndTransactions)
+            {
+                if (dbAndTran.Transaction != null)
+                    await dbAndTran.Transaction.DisposeAsync();
+                await dbAndTran.Connection.DisposeAsync();
+            }
+            GC.SuppressFinalize(this);
+            isDisposed = true;
         }
 
         public async Task WaitForDisposal(CancellationToken cancellationToken)
         {
             bool wasSucceeded = ScopeStatusManager.WasSucceeded();
 
-            var dbConnectionAndTransactions = DbConnectionAndTransactions.ToArray();
-
-            foreach (DbConnectionAndTransactionPair dbAndTran in dbConnectionAndTransactions)
+            foreach (DbConnectionAndTransactionPair dbAndTran in DbConnectionAndTransactions)
             {
-                try
+                if (dbAndTran.RollbackOnScopeStatusFailure == false)
                 {
-                    if (dbAndTran.RollbackOnScopeStatusFailure == false)
+                    if (dbAndTran.Transaction != null)
+                        await dbAndTran.Transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
+                }
+                else
+                {
+                    if (wasSucceeded)
                     {
                         if (dbAndTran.Transaction != null)
                             await dbAndTran.Transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
                     }
                     else
                     {
-                        if (wasSucceeded)
-                        {
-                            if (dbAndTran.Transaction != null)
-                                await dbAndTran.Transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
-                        }
-                        else
-                        {
-                            if (dbAndTran.Transaction != null)
-                                await dbAndTran.Transaction.RollbackAsync(cancellationToken).ConfigureAwait(false);
-                        }
+                        if (dbAndTran.Transaction != null)
+                            await dbAndTran.Transaction.RollbackAsync(cancellationToken).ConfigureAwait(false);
                     }
-                }
-                finally
-                {
-                    if (dbAndTran.Transaction != null)
-                        await dbAndTran.Transaction.DisposeAsync().ConfigureAwait(false);
-                    await dbAndTran.Connection.DisposeAsync().ConfigureAwait(false);
-                    DbConnectionAndTransactions.Remove(dbAndTran); // To reduce re work in dispose which gets called later using di scope disposal 
                 }
             }
         }

@@ -38,7 +38,7 @@ using Xamarin.Forms.Xaml;
 
 namespace Bit
 {
-    public abstract class BitApplication : PrismApplication, IAsyncDisposable
+    public abstract class BitApplication : PrismApplication, IAsyncDisposable, IDisposable
     {
         private readonly Lazy<IEventAggregator> _eventAggregator = default!;
         private readonly TaskCompletionSource<object?> _isReadyTaskCompletionSource = new TaskCompletionSource<object?>();
@@ -181,10 +181,33 @@ namespace Bit
             containerRegistry.RegisterForNav<PageWhichWeStayThereUntilRegionsAreDisposedPage>("PageWhichWeStayThereUntilRegionsAreDisposed");
         }
 
+        private bool isDisposed;
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        ~BitApplication()
+        {
+            Dispose(false);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (isDisposed) return;
+            Container.GetContainer().Dispose();
+            isDisposed = true;
+        }
+
         public virtual async ValueTask DisposeAsync()
         {
+            if (isDisposed) return;
             await NavigationService.NavigateAsync("/PageWhichWeStayThereUntilRegionsAreDisposed");
             await Container.GetContainer().DisposeAsync();
+            GC.SuppressFinalize(this);
+            isDisposed = true;
         }
 
         public Task Ready()

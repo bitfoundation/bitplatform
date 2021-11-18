@@ -45,15 +45,28 @@ namespace Bit.OData.Implementations
             this.AddService(Microsoft.OData.ServiceLifetime.Singleton, sp => conventions);
         }
 
+        private bool isDisposed;
+
         public virtual void Dispose()
         {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (isDisposed) return;
             _childDependencyResolver?.Dispose();
+            isDisposed = true;
         }
 
         public async ValueTask DisposeAsync()
         {
+            if (isDisposed) return;
             if (_childDependencyResolver != null)
                 await _childDependencyResolver.DisposeAsync().ConfigureAwait(false);
+            GC.SuppressFinalize(this);
+            isDisposed = true;
         }
 
         public virtual IContainerBuilder AddService(Microsoft.OData.ServiceLifetime lifetime, Type serviceType, Type implementationType)

@@ -24,9 +24,24 @@ namespace Prism.Autofac
         public virtual IScopedProvider CurrentScope => this;
         public virtual IScopedProvider CreateScope() => this;
 
+        private bool isDisposed;
+
         public virtual void Dispose()
         {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (isDisposed) return;
             Scope.Dispose();
+            isDisposed = true;
+        }
+
+        ~AutofacScopeProvider()
+        {
+            Dispose(false);
         }
 
         public virtual object Resolve(Type type) =>

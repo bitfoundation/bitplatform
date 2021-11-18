@@ -42,7 +42,7 @@ namespace Bit.Test.Server
             _server = hostBuilder.Start().GetTestServer();
         }
 
-        public override void Dispose()
+        protected override void Dispose(bool disposing)
         {
             _server?.Services.GetRequiredService<IHostApplicationLifetime>().StopApplication();
 
