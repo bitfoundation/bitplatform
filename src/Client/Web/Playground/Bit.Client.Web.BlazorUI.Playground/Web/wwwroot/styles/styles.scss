@@ -527,6 +527,8 @@ footer {
     @include sm {
         @include subtitle2-sm;
     }
+
+    line-height: 0;
 }
 
 .copy-btn {

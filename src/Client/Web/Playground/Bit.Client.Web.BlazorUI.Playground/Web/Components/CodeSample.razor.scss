@@ -8,6 +8,10 @@
         padding: rem(15px) 0 rem(15px);
         margin-top: rem(5px);
     }
+
+    h5 {
+        line-height: 0;
+    }
 }
 
 #usage-section > .sample-container:nth-child(2) {
