@@ -151,32 +151,10 @@ input::-webkit-input-placeholder {
     }
 
     .active {
-        position: relative;
-    }
-
-    .active:before {
-        position: absolute;
-        bottom: rem(-12px);
-        left: rem(40px);
-        height: rem(3px);
-        width: 50%;
-        background-color: $DarkBlue;
-        content: "";
-
-        @include lg {
-            left: rem(22px);
-            width: 60%;
-        }
-
-        @include md {
-            left: rem(19px);
-            width: 60%;
-        }
-
-        @include sm {
-            left: rem(5px);
-            width: 90%;
-        }
+        text-decoration-line: underline;
+        text-underline-offset: rem(16px);
+        text-decoration-thickness: rem(3px);
+        text-decoration-color: $DarkBlue;
     }
 
     a, a:hover, a:visited {
