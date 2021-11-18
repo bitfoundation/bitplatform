@@ -528,8 +528,6 @@ footer {
     @include sm {
         @include subtitle2-sm;
     }
-
-    line-height: 0;
 }
 
 .copy-btn {
@@ -753,10 +751,6 @@ footer {
 
     .bit-tgl > div {
         margin-top: rem(10px);
-    }
-
-    .bit-tgl > div label {
-        margin-top: rem(12px);
     }
 
     .bit-tgl-inline-fluent > div {
