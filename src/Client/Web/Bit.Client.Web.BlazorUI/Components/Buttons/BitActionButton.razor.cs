@@ -26,7 +26,7 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// The icon name for the icon shown in the action button
         /// </summary>
-        [Parameter] public string? IconName { get; set; }
+        [Parameter] public BitIcon IconName { get; set; }
 
         /// <summary>
         /// The content of action button, It can be Any custom tag or a text

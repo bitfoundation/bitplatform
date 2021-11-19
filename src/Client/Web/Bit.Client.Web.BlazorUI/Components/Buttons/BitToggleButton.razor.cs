@@ -47,7 +47,7 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// The icon that shows in the button.
         /// </summary>
-        [Parameter] public string? IconName { get; set; }
+        [Parameter] public BitIcon? IconName { get; set; }
 
         /// <summary>
         /// The text that shows in the label.

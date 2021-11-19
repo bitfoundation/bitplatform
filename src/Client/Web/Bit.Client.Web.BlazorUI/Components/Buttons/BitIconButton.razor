@@ -15,7 +15,7 @@
        href="@Href"
        tabindex="@tabIndex">
         <span>
-            <i class="bit-icon bit-icon--@IconName"></i>
+            <i class="bit-icon bit-icon--@IconName.GetName()"></i>
         </span>
     </a>
 }
@@ -33,7 +33,7 @@ else
             tabindex="@tabIndex"
             @onclick="HandleOnClick">
         <span>
-            <i class="bit-icon bit-icon--@IconName"></i>
+            <i class="bit-icon bit-icon--@IconName.GetName()"></i>
         </span>
     </button>
 }

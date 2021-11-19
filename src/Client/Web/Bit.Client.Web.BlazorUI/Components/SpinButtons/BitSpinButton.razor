@@ -5,12 +5,12 @@
      @attributes="HtmlAttributes"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
-    @if (IconName.HasValue() || Label.HasValue() || LabelFragment != null)
+    @if (IconName.HasValue || Label.HasValue() || LabelFragment != null)
     {
     <div class="bit-spb-lbl-wrapper">
-        @if (IconName.HasValue())
+        @if (IconName.HasValue)
         {
-            <i class="bit-icon bit-icon--@IconName bit-icon--l"
+            <i class="bit-icon bit-icon--@IconName.GetName() bit-icon--l"
                aria-hidden="true"
                role="@GetIconRole"
                aria-label="@IconAriaLabel"></i>
@@ -63,7 +63,7 @@
                     @onmouseout="HandleMouseUpOrOut"
                     @onmouseup="HandleMouseUpOrOut">
                 <span>
-                    <i class="bit-icon bit-icon--@IncrementButtonIconName bit-icon--s"></i>
+                    <i class="bit-icon bit-icon--@IncrementButtonIconName.GetName() bit-icon--s"></i>
                 </span>
             </button>
 
@@ -77,7 +77,7 @@
                     @onmouseout="HandleMouseUpOrOut"
                     @onmouseup="HandleMouseUpOrOut">
                 <span>
-                    <i class="bit-icon bit-icon--@DecrementButtonIconName bit-icon--s"></i>
+                    <i class="bit-icon bit-icon--@DecrementButtonIconName.GetName() bit-icon--s"></i>
                 </span>
             </button>
         </span>

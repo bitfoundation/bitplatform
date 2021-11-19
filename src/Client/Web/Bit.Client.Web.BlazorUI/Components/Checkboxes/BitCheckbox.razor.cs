@@ -77,7 +77,7 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// Custom icon for the check mark rendered by the checkbox instade of default check mark icon
         /// </summary>
-        [Parameter] public string CheckmarkIconName { get; set; } = "Accept";
+        [Parameter] public BitIcon CheckmarkIconName { get; set; } = BitIcon.Accept;
 
         /// <summary>
         /// he aria label of the icon for the benefit of screen readers

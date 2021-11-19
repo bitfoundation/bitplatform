@@ -134,7 +134,7 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// Icon name for an icon to display alongside the spin button's label
         /// </summary>
-        [Parameter] public string IconName { get; set; } = string.Empty;
+        [Parameter] public BitIcon? IconName { get; set; }
 
         /// <summary>
         /// The aria label of the icon for the benefit of screen readers
@@ -168,12 +168,12 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// Custom icon name for the decrement button
         /// </summary>
-        [Parameter] public string DecrementButtonIconName { get; set; } = "ChevronDownSmall";
+        [Parameter] public BitIcon DecrementButtonIconName { get; set; } = BitIcon.ChevronDownSmall;
 
         /// <summary>
         /// Custom icon name for the increment button
         /// </summary>
-        [Parameter] public string IncrementButtonIconName { get; set; } = "ChevronUpSmall";
+        [Parameter] public BitIcon IncrementButtonIconName { get; set; } = BitIcon.ChevronUpSmall;
 
         /// <summary>
         /// A more descriptive title for the control, visible on its tooltip

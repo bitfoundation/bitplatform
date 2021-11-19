@@ -113,8 +113,8 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
             Assert.AreEqual(isReadOnly, bitTextField.HasAttribute("readonly"));
         }
 
-        [DataTestMethod, DataRow("Emoji2")]
-        public void BitTextFieldShouldAcceptIcon(string iconName)
+        [DataTestMethod, DataRow(BitIcon.Emoji2)]
+        public void BitTextFieldShouldAcceptIcon(BitIcon iconName)
         {
             var component = RenderComponent<BitTextFieldTest>(
                 parameters =>

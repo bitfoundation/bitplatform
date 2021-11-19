@@ -1,4 +1,7 @@
-﻿using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Reflection;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 
@@ -26,7 +29,7 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// The icon name for the icon shown in the button
         /// </summary>
-        [Parameter] public string? IconName { get; set; }
+        [Parameter] public BitIcon IconName { get; set; }
 
         /// <summary>
         /// The tooltip to show when the mouse is placed on the icon button

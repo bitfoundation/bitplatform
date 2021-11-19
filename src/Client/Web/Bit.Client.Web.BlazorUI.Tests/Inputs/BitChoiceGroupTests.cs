@@ -189,7 +189,8 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
             Assert.AreEqual(label, optionLabel.TextContent);
         }
 
-        public void BitChoiceOptionShouldrespectIcon(string iconName)
+        [DataTestMethod, DataRow(BitIcon.Emoji2)]
+        public void BitChoiceOptionShouldrespectIcon(BitIcon iconName)
         {
             var component = RenderComponent<BitChoiceGroupTest>(
                 parameters =>
@@ -198,7 +199,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                 });
 
             var icon = component.Find(".bit-cho .bit-cho-icn-wrpr i");
-            Assert.IsTrue(icon.ClassList.Contains($"bit-icon--{iconName}"));
+            Assert.IsTrue(icon.ClassList.Contains($"bit-icon--{iconName.GetName()}"));
         }
 
         [DataTestMethod,
