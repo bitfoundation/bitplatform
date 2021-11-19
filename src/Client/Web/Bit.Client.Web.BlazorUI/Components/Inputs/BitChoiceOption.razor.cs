@@ -41,7 +41,7 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// Icon to display with this option.
         /// </summary>
-        [Parameter] public string? IconName { get; set; }
+        [Parameter] public BitIcon? IconName { get; set; }
 
         /// <summary>
         /// ChoiceOption content, It can be a text
@@ -120,7 +120,7 @@ namespace Bit.Client.Web.BlazorUI
             ClassBuilder.Register(() => IsChecked
                                         ? $"{RootElementClass}-checked-{VisualClassRegistrar()}" : string.Empty);
 
-            ClassBuilder.Register(() => ImageSrc.HasValue() || IconName.HasValue()
+            ClassBuilder.Register(() => ImageSrc.HasValue() || IconName.HasValue
                                         ? $"{RootElementClass}-image-{VisualClassRegistrar()}" : string.Empty);
         }
 

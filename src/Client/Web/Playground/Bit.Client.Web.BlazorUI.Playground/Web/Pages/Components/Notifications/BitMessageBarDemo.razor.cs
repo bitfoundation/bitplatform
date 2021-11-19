@@ -46,8 +46,8 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Notifications
             new ComponentParameter()
             {
                 Name = "DismissIconName",
-                Type = "string",
-                DefaultValue = "Clear",
+                Type = "BitIcon",
+                DefaultValue = "BitIcon.Clear",
                 Description = "Custom Fabric icon name to replace the dismiss icon. If unset, default will be the Fabric Clear icon.",
             },
             new ComponentParameter()
@@ -171,13 +171,13 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Notifications
               $"<BitMessageBar MessageBarType='@BitMessageBarType.Success' {Environment.NewLine}" +
               $"OnDismiss='HideMessageBar2' {Environment.NewLine}" +
               $"IsMultiline='false' {Environment.NewLine}" +
-              $"DismissIconName='SkypeCheck' {Environment.NewLine}" +
+              $"DismissIconName='BitIcon.SkypeCheck' {Environment.NewLine}" +
               $"DismissButtonAriaLabel='close'> {Environment.NewLine}" +
               $"Action completed! This is a sample of message bar with dismiss ability {Environment.NewLine}" +
               $"</BitMessageBar> {Environment.NewLine}" +
               $"}} {Environment.NewLine}" +
               $"<BitMessageBar MessageBarType='@BitMessageBarType.Success' {Environment.NewLine}" +
-              $"MessageBarIconName='Emoji2'> {Environment.NewLine}" +
+              $"MessageBarIconName='BitIcon.Emoji2'> {Environment.NewLine}" +
               $"Action completed! This is a sample of message bar with dismiss ability {Environment.NewLine}" +
               $"</BitMessageBar> {Environment.NewLine}" +
               $"@code {{ {Environment.NewLine}" +

@@ -95,9 +95,9 @@
                 </button>
             }
 
-            @if (IconName is not null)
+            @if (IconName.HasValue)
             {
-                <i class="bit-icon bit-icon--@IconName" aria-hidden="true"></i>
+                <i class="bit-icon bit-icon--@IconName.GetName()" aria-hidden="true"></i>
             }
 
             @if (SuffixFragment is not null)

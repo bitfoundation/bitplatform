@@ -16,9 +16,9 @@
        tabindex="@tabIndex"
        @onclick="HandleOnClick">
         <span>
-            @if (IconName.HasValue())
+            @if (IconName.HasValue)
             {
-                <i class="bit-icon bit-icon--@IconName"></i>
+                <i class="bit-icon bit-icon--@IconName.GetName()"></i>
             }
 
             @if (Label.HasValue())
@@ -42,9 +42,9 @@ else
             title="@Title"
             @onclick="HandleOnClick">
         <span>
-            @if (IconName.HasValue())
+            @if (IconName.HasValue)
             {
-                <i class="bit-icon bit-icon--@IconName"></i>
+                <i class="bit-icon bit-icon--@IconName.GetName()"></i>
             }
 
             @if (Label.HasValue())

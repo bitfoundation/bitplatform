@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using Bunit;
+﻿using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.Client.Web.BlazorUI.Tests.Buttons
@@ -8,22 +7,22 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
     public class BitIconButtonTests : BunitTestContext
     {
         [DataTestMethod,
-               DataRow(Visual.Fluent, true, "Emoji2", null),
-               DataRow(Visual.Fluent, false, "Emoji2", null),
-               DataRow(Visual.Fluent, true, "Emoji2", "I'm Happy"),
-               DataRow(Visual.Fluent, false, "Emoji2", "I'm Happy"),
+               DataRow(Visual.Fluent, true, BitIcon.Emoji2, null),
+               DataRow(Visual.Fluent, false, BitIcon.Emoji2, null),
+               DataRow(Visual.Fluent, true, BitIcon.Emoji2, "I'm Happy"),
+               DataRow(Visual.Fluent, false, BitIcon.Emoji2, "I'm Happy"),
 
-               DataRow(Visual.Cupertino, true, "Emoji2", null),
-               DataRow(Visual.Cupertino, false, "Emoji2", null),
-               DataRow(Visual.Cupertino, true, "Emoji2", "I'm Happy"),
-               DataRow(Visual.Cupertino, false, "Emoji2", "I'm Happy"),
+               DataRow(Visual.Cupertino, true, BitIcon.Emoji2, null),
+               DataRow(Visual.Cupertino, false, BitIcon.Emoji2, null),
+               DataRow(Visual.Cupertino, true, BitIcon.Emoji2, "I'm Happy"),
+               DataRow(Visual.Cupertino, false, BitIcon.Emoji2, "I'm Happy"),
 
-               DataRow(Visual.Material, true, "Emoji2", null),
-               DataRow(Visual.Material, false, "Emoji2", null),
-               DataRow(Visual.Material, true, "Emoji2", "I'm Happy"),
-               DataRow(Visual.Material, false, "Emoji2", "I'm Happy"),
+               DataRow(Visual.Material, true, BitIcon.Emoji2, null),
+               DataRow(Visual.Material, false, BitIcon.Emoji2, null),
+               DataRow(Visual.Material, true, BitIcon.Emoji2, "I'm Happy"),
+               DataRow(Visual.Material, false, BitIcon.Emoji2, "I'm Happy"),
            ]
-        public void BitIconButtonTest(Visual visual, bool isEnabled, string iconName, string title)
+        public void BitIconButtonTest(Visual visual, bool isEnabled, BitIcon iconName, string title)
         {
             var com = RenderComponent<BitIconButtonTest>(parameters =>
             {
@@ -41,7 +40,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
 
             Assert.IsTrue(bitIconButton.ClassList.Contains($"bit-ico-btn-{isEnabledClass}-{visualClass}"));
 
-            Assert.IsTrue(bitIconITag.ClassList.Contains($"bit-icon--{iconName}"));
+            Assert.IsTrue(bitIconITag.ClassList.Contains($"bit-icon--{iconName.GetName()}"));
 
             if (title.HasValue())
             {

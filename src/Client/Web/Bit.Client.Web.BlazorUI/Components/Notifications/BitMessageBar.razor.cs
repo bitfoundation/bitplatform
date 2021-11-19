@@ -7,7 +7,7 @@ namespace Bit.Client.Web.BlazorUI
     public partial class BitMessageBar
     {
         private BitMessageBarType messageBarType = BitMessageBarType.Info;
-        private string? messageBarIcon;
+        private BitIcon? messageBarIcon;
         private bool ExpandSingleLine;
 
         /// <summary>
@@ -32,12 +32,12 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// Custom Fabric icon name to replace the dismiss icon. If unset, default will be the Fabric Clear icon
         /// </summary>
-        [Parameter] public string DismissIconName { get; set; } = "Clear";
+        [Parameter] public BitIcon DismissIconName { get; set; } = BitIcon.Clear;
 
         /// <summary>
         /// Custom icon to replace the message bar icon. If unset, default will be the icon set by messageBarType.
         /// </summary>
-        [Parameter] public string? MessageBarIconName { get; set; }
+        [Parameter] public BitIcon? MessageBarIconName { get; set; }
 
         /// <summary>
         /// Determines if the message bar text is truncated. If true, a button will render to toggle between a single line view and multiline view. This parameter is for single line message bars with no buttons only in a limited space scenario
@@ -92,7 +92,7 @@ namespace Bit.Client.Web.BlazorUI
 
         protected override Task OnParametersSetAsync()
         {
-            messageBarIcon = MessageBarIconName.HasValue() ? MessageBarIconName : IconMap[MessageBarType];
+            messageBarIcon = MessageBarIconName.HasValue ? MessageBarIconName.Value : IconMap[MessageBarType];
             LabelId = $"MessageBar{UniqueId}";
 
             return base.OnParametersSetAsync();
@@ -103,14 +103,14 @@ namespace Bit.Client.Web.BlazorUI
             ExpandSingleLine = !ExpandSingleLine;
         }
 
-        private static Dictionary<BitMessageBarType, string> IconMap = new()
+        private static Dictionary<BitMessageBarType, BitIcon> IconMap = new()
         {
-            [BitMessageBarType.Info] = "Info",
-            [BitMessageBarType.Warning] = "Info",
-            [BitMessageBarType.Error] = "ErrorBadge",
-            [BitMessageBarType.Blocked] = "Blocked2",
-            [BitMessageBarType.SevereWarning] = "Warning",
-            [BitMessageBarType.Success] = "Completed"
+            [BitMessageBarType.Info] = BitIcon.Info,
+            [BitMessageBarType.Warning] = BitIcon.Info,
+            [BitMessageBarType.Error] = BitIcon.ErrorBadge,
+            [BitMessageBarType.Blocked] = BitIcon.Blocked2,
+            [BitMessageBarType.SevereWarning] = BitIcon.Warning,
+            [BitMessageBarType.Success] = BitIcon.Completed
         };
 
         private string GetTextRole()

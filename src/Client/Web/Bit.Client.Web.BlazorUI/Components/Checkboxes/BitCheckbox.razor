@@ -21,7 +21,7 @@
            hidden>
     <label class="bit-chb-lbl" for="@InputId">
         <div class="bit-chb-checkbox" @onclick="@HandleCheckboxClick">
-            <i class=@($"{RootElementClass}-checkmark bit-icon bit-icon--{CheckmarkIconName}")
+            <i class=@($"{RootElementClass}-checkmark bit-icon bit-icon--{CheckmarkIconName.GetName()}")
                aria-hidden="true"
                aria-label="@CheckmarkIconAriaLabel"></i>
         </div>

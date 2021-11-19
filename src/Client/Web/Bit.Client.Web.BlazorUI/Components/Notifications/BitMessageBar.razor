@@ -14,7 +14,7 @@
             <div class=@($"{RootElementClass}-content")>
 
                 <div class=@($"{RootElementClass}-icon") aria-hidden="true">
-                    <i class=@($"bit-icon bit-icon--{messageBarIcon}")></i>
+                    <i class=@($"bit-icon bit-icon--{messageBarIcon.GetName()}")></i>
                 </div>
 
                 <div class=@($"{RootElementClass}-text")
@@ -37,7 +37,7 @@
                                 title="@(DismissButtonAriaLabel.HasValue() ? DismissButtonAriaLabel : null)"
                                 aria-label="@(DismissButtonAriaLabel.HasValue() ? DismissButtonAriaLabel : null)">
                             <span>
-                                <i class="bit-icon bit-icon--@DismissIconName" aria-hidden="true"></i>
+                                <i class="bit-icon bit-icon--@DismissIconName.GetName()" aria-hidden="true"></i>
                             </span>
                         </button>
                     </div>
@@ -84,7 +84,7 @@
                         <button @onclick="@ToggleExpandSingleLine"
                                 aria-label="@(OverflowButtonAriaLabel.HasValue()? OverflowButtonAriaLabel : null)"
                                 aria-expanded="@(ExpandSingleLine ? "true" : "false")">
-                            <i class=@($"bit-icon bit-icon--{(ExpandSingleLine ? "DoubleChevronUp" : "DoubleChevronDown")}") aria-hidden="true"></i>
+                            <i class=@($"bit-icon bit-icon--{(ExpandSingleLine ? BitIcon.DoubleChevronUp : BitIcon.DoubleChevronDown).GetName()}") aria-hidden="true"></i>
                         </button>
                     </div>
                 }
@@ -97,7 +97,7 @@
                                 title="@(DismissButtonAriaLabel.HasValue() ? DismissButtonAriaLabel : null)"
                                 aria-label="@(DismissButtonAriaLabel.HasValue() ? DismissButtonAriaLabel : null)">
                             <span>
-                                <i class="bit-icon bit-icon--@DismissIconName" aria-hidden="true"></i>
+                                <i class="bit-icon bit-icon--@DismissIconName.GetName()" aria-hidden="true"></i>
                             </span>
                         </button>
                     </div>

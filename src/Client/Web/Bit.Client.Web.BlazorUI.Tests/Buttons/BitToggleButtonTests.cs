@@ -7,26 +7,26 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
     public class BitToggleButtonTests : BunitTestContext
     {
         [DataTestMethod,
-           DataRow(Visual.Fluent, true, true, "Button label", "Emoji2", "title"),
-           DataRow(Visual.Fluent, true, false, "Button label", "Emoji2", "title"),
-           DataRow(Visual.Fluent, false, true, "Button label", "Emoji2", "title"),
-           DataRow(Visual.Fluent, false, false, "Button label", "Emoji2", "title"),
+           DataRow(Visual.Fluent, true, true, "Button label", BitIcon.Emoji2, "title"),
+           DataRow(Visual.Fluent, true, false, "Button label", BitIcon.Emoji2, "title"),
+           DataRow(Visual.Fluent, false, true, "Button label", BitIcon.Emoji2, "title"),
+           DataRow(Visual.Fluent, false, false, "Button label", BitIcon.Emoji2, "title"),
 
-           DataRow(Visual.Cupertino, true, true, "Button label", "Emoji2", "title"),
-           DataRow(Visual.Cupertino, true, false, "Button label", "Emoji2", "title"),
-           DataRow(Visual.Cupertino, false, true, "Button label", "Emoji2", "title"),
-           DataRow(Visual.Cupertino, false, false, "Button label", "Emoji2", "title"),
+           DataRow(Visual.Cupertino, true, true, "Button label", BitIcon.Emoji2, "title"),
+           DataRow(Visual.Cupertino, true, false, "Button label", BitIcon.Emoji2, "title"),
+           DataRow(Visual.Cupertino, false, true, "Button label", BitIcon.Emoji2, "title"),
+           DataRow(Visual.Cupertino, false, false, "Button label", BitIcon.Emoji2, "title"),
 
-           DataRow(Visual.Material, true, true, "Button label", "Emoji2", "title"),
-           DataRow(Visual.Material, true, false, "Button label", "Emoji2", "title"),
-           DataRow(Visual.Material, false, true, "Button label", "Emoji2", "title"),
-           DataRow(Visual.Material, false, false, "Button label", "Emoji2", "title"),
+           DataRow(Visual.Material, true, true, "Button label", BitIcon.Emoji2, "title"),
+           DataRow(Visual.Material, true, false, "Button label", BitIcon.Emoji2, "title"),
+           DataRow(Visual.Material, false, true, "Button label", BitIcon.Emoji2, "title"),
+           DataRow(Visual.Material, false, false, "Button label", BitIcon.Emoji2, "title"),
        ]
         public void BitToggleButtonShouldHaveCorrectLabelAndIconAndTitle(Visual visual,
             bool isChecked,
             bool isEnabled,
             string label,
-            string iconName,
+            BitIcon? iconName,
             string title)
         {
             var component = RenderComponent<BitToggleButtonTest>(parameters =>
@@ -52,7 +52,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
 
             Assert.AreEqual(bitToggleButton.GetAttribute("title"), title);
 
-            Assert.IsTrue(bitIconTag.ClassList.Contains($"bit-icon--{iconName}"));
+            Assert.IsTrue(bitIconTag.ClassList.Contains($"bit-icon--{iconName.GetName()}"));
         }
 
         [DataTestMethod,

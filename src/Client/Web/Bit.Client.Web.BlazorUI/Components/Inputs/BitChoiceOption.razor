@@ -15,7 +15,7 @@
            @onchange="@HandleChange" />
 
     <label for="@UniqueId">
-        @if (ImageSrc.HasValue() || IconName.HasValue())
+        @if (ImageSrc.HasValue() || IconName.HasValue)
         {
             @if (ImageSrc.HasValue())
             {
@@ -33,11 +33,11 @@
                 </div>
             }
 
-            @if (IconName.HasValue())
+            @if (IconName.HasValue)
             {
                 <div class="bit-cho-icn-wrpr">
                     <div>
-                        <i aria-hidden="true" class="bit-icon bit-icon--@IconName"></i>
+                        <i aria-hidden="true" class="bit-icon bit-icon--@IconName.GetName()"></i>
                     </div>
                 </div>
             }

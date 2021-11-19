@@ -92,7 +92,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Inputs
         private readonly string choiceGroupSampleCode = $"<BitLabel>Selected Key is : @MySelectedKey</BitLabel>{Environment.NewLine}" +
                 $"<BitTextField @bind-Value='MySelectedKey' Placeholder='Select one of A, B or C'></BitTextField>{Environment.NewLine}" +
                 $"<BitChoiceGroup Name='Group1' Label='Pick one' IsRequired='true' @bind-SelectedKey='MySelectedKey'>{Environment.NewLine}" +
-                $"<BitCheckbox CheckmarkIconName='Heart'>Custom checkmark Checkbox</BitCheckbox>{Environment.NewLine}" +
+                $"<BitCheckbox CheckmarkIconName='BitIcon.Heart'>Custom checkmark Checkbox</BitCheckbox>{Environment.NewLine}" +
                 $"<BitChoiceOption Key='A' Text='Option A' Value='1'></BitChoiceOption> {Environment.NewLine}" +
                 $"<BitChoiceOption Key='B' Text='Option B' Value='2'></BitChoiceOption>{Environment.NewLine}" +
                 $"<BitChoiceOption Key='C' Text='Disabled option C' Value='3' IsEnabled='false'></BitChoiceOption>{Environment.NewLine}" +
@@ -113,9 +113,9 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Inputs
                 $"</BitChoiceGroup>";
 
         private readonly string choiceGroupwithIconsSampleCode = $"<BitChoiceGroup Name='Group1' Label='Pick one icon'>{Environment.NewLine}" +
-                $"<BitChoiceOption Key='day' Text='Day' Value='1' IconName='CalendarDay'></BitChoiceOption>{Environment.NewLine}" +
-                $"<BitChoiceOption Key='week' Text='Week' Value='2' IconName='CalendarWeek'></BitChoiceOption>{Environment.NewLine}" +
-                $"<BitChoiceOption Key='month' Text='Month' Value='3' IconName='Calendar' IsEnabled='false'></BitChoiceOption>{Environment.NewLine}" +
+                $"<BitChoiceOption Key='day' Text='Day' Value='1' IconName='BitIcon.CalendarDay'></BitChoiceOption>{Environment.NewLine}" +
+                $"<BitChoiceOption Key='week' Text='Week' Value='2' IconName='BitIcon.CalendarWeek'></BitChoiceOption>{Environment.NewLine}" +
+                $"<BitChoiceOption Key='month' Text='Month' Value='3' IconName='BitIcon.Calendar' IsEnabled='false'></BitChoiceOption>{Environment.NewLine}" +
                 "</BitChoiceGroup>";
     }
 }

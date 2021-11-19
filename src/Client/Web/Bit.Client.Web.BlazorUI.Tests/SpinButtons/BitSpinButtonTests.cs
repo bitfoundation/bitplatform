@@ -37,10 +37,10 @@ namespace Bit.Client.Web.BlazorUI.Tests.SpinButtons
 
         [DataTestMethod,
             DataRow(null, null),
-            DataRow("IncreaseIndentLegacy", null),
-            DataRow("IncreaseIndentLegacy", "BitSpinButtonIcon")
+            DataRow(BitIcon.IncreaseIndentLegacy, null),
+            DataRow(BitIcon.IncreaseIndentLegacy, "BitSpinButtonIcon")
         ]
-        public void SpinButtonShoudRenderCorrectIcon(string iconName, string iconAriaLabel)
+        public void SpinButtonShoudRenderCorrectIcon(BitIcon? iconName, string iconAriaLabel)
         {
             var component = RenderComponent<BitSpinButtonTest>(parameters =>
             {
@@ -48,27 +48,27 @@ namespace Bit.Client.Web.BlazorUI.Tests.SpinButtons
                 parameters.Add(p => p.IconAriaLabel, iconAriaLabel);
             });
 
-            if (iconName is null)
+            if (iconName.HasValue)
             {
-                Assert.AreEqual(2, component.FindAll("i").Count);
+                var icon = component.FindAll(".bit-icon")[0];
+                Assert.IsTrue(icon.ClassList.Contains($"bit-icon--{iconName.GetName()}"));
+
+                if (iconAriaLabel is not null) Assert.AreEqual(iconAriaLabel, icon.GetAttribute("aria-label"));
             }
             else
             {
-                var icon = component.FindAll(".bit-icon")[0];
-                Assert.IsTrue(icon.ClassList.Contains($"bit-icon--{iconName}"));
-
-                if (iconAriaLabel is not null) Assert.AreEqual(iconAriaLabel, icon.GetAttribute("aria-label"));
+                Assert.AreEqual(2, component.FindAll("i").Count);
             }
         }
 
         [DataTestMethod,
-            DataRow("IncreaseIndentLegacy", null, true),
-            DataRow("IncreaseIndentLegacy", null, false),
+            DataRow(BitIcon.IncreaseIndentLegacy, null, true),
+            DataRow(BitIcon.IncreaseIndentLegacy, null, false),
 
-            DataRow("IncreaseIndentLegacy", "BitSpinButtonIcon", true),
-            DataRow("IncreaseIndentLegacy", "BitSpinButtonIcon", false)
+            DataRow(BitIcon.IncreaseIndentLegacy, "BitSpinButtonIcon", true),
+            DataRow(BitIcon.IncreaseIndentLegacy, "BitSpinButtonIcon", false)
         ]
-        public void SpinButtonShoudRenderCorrectIncrementButton(string iconName, string iconAriaLabel, bool isEnabled)
+        public void SpinButtonShoudRenderCorrectIncrementButton(BitIcon iconName, string iconAriaLabel, bool isEnabled)
         {
             var component = RenderComponent<BitSpinButtonTest>(parameters =>
             {
@@ -80,7 +80,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.SpinButtons
             var button = component.Find("button");
             var icon = component.Find("button > span > i");
 
-            Assert.IsTrue(icon.ClassList.Contains($"bit-icon--{iconName}"));
+            Assert.IsTrue(icon.ClassList.Contains($"bit-icon--{iconName.GetName()}"));
             Assert.AreEqual(!isEnabled, button.HasAttribute("disabled"));
             Assert.AreEqual(!isEnabled, button.HasAttribute("aria-disabled"));
 
@@ -91,13 +91,13 @@ namespace Bit.Client.Web.BlazorUI.Tests.SpinButtons
         }
 
         [DataTestMethod,
-            DataRow("IncreaseIndentLegacy", null, true),
-            DataRow("IncreaseIndentLegacy", null, false),
+            DataRow(BitIcon.IncreaseIndentLegacy, null, true),
+            DataRow(BitIcon.IncreaseIndentLegacy, null, false),
 
-            DataRow("IncreaseIndentLegacy", "BitSpinButtonIcon", true),
-            DataRow("IncreaseIndentLegacy", "BitSpinButtonIcon", false)
+            DataRow(BitIcon.IncreaseIndentLegacy, "BitSpinButtonIcon", true),
+            DataRow(BitIcon.IncreaseIndentLegacy, "BitSpinButtonIcon", false)
         ]
-        public void SpinButtonShoudRenderCorrectDecrementButton(string iconName, string iconAriaLabel, bool isEnabled)
+        public void SpinButtonShoudRenderCorrectDecrementButton(BitIcon iconName, string iconAriaLabel, bool isEnabled)
         {
             var component = RenderComponent<BitSpinButtonTest>(parameters =>
             {
@@ -109,7 +109,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.SpinButtons
             var button = component.Find("button:last-child");
             var icon = component.Find("button:last-child > span > i");
 
-            Assert.IsTrue(icon.ToMarkup().Contains($"bit-icon--{iconName}"));
+            Assert.IsTrue(icon.ToMarkup().Contains($"bit-icon--{iconName.GetName()}"));
             Assert.AreEqual(!isEnabled, button.HasAttribute("disabled"));
             Assert.AreEqual(!isEnabled, button.HasAttribute("aria-disabled"));
 

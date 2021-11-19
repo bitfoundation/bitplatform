@@ -59,7 +59,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Buttons
             new ComponentParameter()
             {
                 Name = "IconName",
-                Type = "string",
+                Type = "BitIcon",
                 DefaultValue = "",
                 Description = "The icon that shows in the toggle button.",
             },
@@ -132,16 +132,16 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Buttons
             }
         };
 
-        private readonly string toggleButtonSampleCode = $"<BitToggleButton @bind-IsChecked='TogglePrimaryButtonChecked' Label='@(TogglePrimaryButtonChecked ? 'Primary Mute' : 'Primary Unmute')' IconName='@(TogglePrimaryButtonChecked ? 'MicOff' : 'Microphone') ButtonStyle='ButtonStyle.Primary'></BitToggleButton>{Environment.NewLine}" +
-             $"<BitToggleButton @bind-IsChecked='ToggleStandardButtonChecked' Label='@(ToggleStandardButtonChecked ? 'Standard Mute' : 'Standard Unmute')' IconName='@(ToggleStandardButtonChecked ? 'MicOff' : 'Microphone')' ButtonStyle='ButtonStyle.Standard'></BitToggleButton>{Environment.NewLine}" +
-             $"<BitToggleButton @bind-IsChecked='ToggleDisabledButtonChecked' Label='@(ToggleDisabledButtonChecked ? 'Disabled Mute' : 'Disabled Unmute')' IconName='@(ToggleDisabledButtonChecked ? 'MicOff' : 'Microphone')' IsEnabled='false'></BitToggleButton>{Environment.NewLine}" +
+        private readonly string toggleButtonSampleCode = $"<BitToggleButton @bind-IsChecked='TogglePrimaryButtonChecked' Label='@(TogglePrimaryButtonChecked ? 'Primary Mute' : 'Primary Unmute')' IconName='@(TogglePrimaryButtonChecked ? BitIcon.MicOff : BitIcon.Microphone) ButtonStyle='ButtonStyle.Primary'></BitToggleButton>{Environment.NewLine}" +
+             $"<BitToggleButton @bind-IsChecked='ToggleStandardButtonChecked' Label='@(ToggleStandardButtonChecked ? 'Standard Mute' : 'Standard Unmute')' IconName='@(ToggleStandardButtonChecked ? BitIcon.MicOff : BitIcon.Microphone)' ButtonStyle='ButtonStyle.Standard'></BitToggleButton>{Environment.NewLine}" +
+             $"<BitToggleButton @bind-IsChecked='ToggleDisabledButtonChecked' Label='@(ToggleDisabledButtonChecked ? 'Disabled Mute' : 'Disabled Unmute')' IconName='@(ToggleDisabledButtonChecked ? BitIcon.MicOff : BitIcon.Microphone)' IsEnabled='false'></BitToggleButton>{Environment.NewLine}" +
              $"@code {{ {Environment.NewLine}" +
              $"private bool TogglePrimaryButtonChecked = false; {Environment.NewLine}" +
              $"private bool ToggleStandardButtonChecked =  false; {Environment.NewLine}" +
              $"private bool ToggleDisabledButtonChecked = false; {Environment.NewLine}" +
              "}";
 
-        private readonly string onChangeSampleCode = $"<BitToggleButton @bind-IsChecked='ToggleButtonForOnChange' Label='@(ToggleButtonForOnChange ? 'Mute' : 'Unmute')' IconName='@(ToggleButtonForOnChange ? 'MicOff' : 'Microphone')'OnChange='ToggleButtonChanged'></BitToggleButton>{Environment.NewLine}" +
+        private readonly string onChangeSampleCode = $"<BitToggleButton @bind-IsChecked='ToggleButtonForOnChange' Label='@(ToggleButtonForOnChange ? 'Mute' : 'Unmute')' IconName='@(ToggleButtonForOnChange ? BitIcon.MicOff : BitIcon.Microphone)'OnChange='ToggleButtonChanged'></BitToggleButton>{Environment.NewLine}" +
              $"<span>Check status is: @OnToggleButtonChanged</span>{Environment.NewLine}" +
              $"@code {{ {Environment.NewLine}" +
              $"private bool ToggleButtonForOnChange = true; {Environment.NewLine}" +
@@ -150,14 +150,14 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Buttons
 
         private readonly string twoWayBindingSampleCode = $"<input type=checkbox id='BitTogleButtonTwoWayValue' @bind='TogleButtonTwoWayValue'>{Environment.NewLine}" +
              $"<label for='BitTogleButtonTwoWayValue'>Checked Toggle Button</label>{Environment.NewLine}" +
-             $"<BitToggleButton @bind-IsChecked='TogleButtonTwoWayValue' Label='@(TogleButtonTwoWayValue ? 'Mute' : 'Unmute')' IconName='@(TogleButtonTwoWayValue ? 'MicOff' : 'Microphone')'></BitToggleButton>{Environment.NewLine}" +
+             $"<BitToggleButton @bind-IsChecked='TogleButtonTwoWayValue' Label='@(TogleButtonTwoWayValue ? 'Mute' : 'Unmute')' IconName='@(TogleButtonTwoWayValue ? BitIcon.MicOff : BitIcon.Microphone)'></BitToggleButton>{Environment.NewLine}" +
              $"<span>Check status is: @OnToggleButtonChanged</span> {Environment.NewLine}" +
              $"@code {{ {Environment.NewLine}" +
              $"private bool ToggleButtonTwoWayValue  = true; {Environment.NewLine}" +
              "}";
 
-        private readonly string ariasSampleCode = $"<BitToggleButton @bind-IsChecked='ToggleButtonChecked' Label='@(ToggleButtonChecked ? 'Aria Description Mute' : 'Aria Description Unmute')' IconName='@(ToggleButtonChecked ? 'MicOff' : 'Microphone')' AriaDescription='Detailed description used for screen reader'></BitToggleButton>{Environment.NewLine}" +
-             $"<BitToggleButton @bind-IsChecked='ToggleButtonChecked' Label='@(ToggleButtonChecked ? 'Aria Hidden Mute' : 'Aria Hidden Unmute')' IconName='@(ToggleButtonChecked ? 'MicOff' : 'Microphone')' AriaHidden='true'></BitToggleButton>{Environment.NewLine}" +
+        private readonly string ariasSampleCode = $"<BitToggleButton @bind-IsChecked='ToggleButtonChecked' Label='@(ToggleButtonChecked ? 'Aria Description Mute' : 'Aria Description Unmute')' IconName='@(ToggleButtonChecked ? BitIcon.MicOff : BitIcon.Microphone)' AriaDescription='Detailed description used for screen reader'></BitToggleButton>{Environment.NewLine}" +
+             $"<BitToggleButton @bind-IsChecked='ToggleButtonChecked' Label='@(ToggleButtonChecked ? 'Aria Hidden Mute' : 'Aria Hidden Unmute')' IconName='@(ToggleButtonChecked ? BitIcon.MicOff : BitIcon.Microphone)' AriaHidden='true'></BitToggleButton>{Environment.NewLine}" +
              $"@code {{ {Environment.NewLine}" +
              $"private bool ToggleButtonChecked = false; {Environment.NewLine}" +
              "}";

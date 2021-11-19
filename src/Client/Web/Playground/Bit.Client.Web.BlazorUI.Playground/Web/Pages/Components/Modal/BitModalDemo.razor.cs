@@ -72,7 +72,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Modal
               $"<BitModal @bind-IsOpen=IsOpen>{Environment.NewLine}" +
               $"<div class='modal-header'>{Environment.NewLine}" +
               $"<span>Lorem Ipsum</span>{Environment.NewLine}" +
-              $"<BitIconButton OnClick=@(()=>IsOpen=false) IconName='ChromeClose' Title='Close' />{Environment.NewLine}" +
+              $"<BitIconButton OnClick=@(()=>IsOpen=false) IconName='BitIcon.ChromeClose' Title='Close' />{Environment.NewLine}" +
               $"</div>{Environment.NewLine}" +
               $"<div class='modal-body'>{Environment.NewLine}" +
               $"<p>{Environment.NewLine}" +
