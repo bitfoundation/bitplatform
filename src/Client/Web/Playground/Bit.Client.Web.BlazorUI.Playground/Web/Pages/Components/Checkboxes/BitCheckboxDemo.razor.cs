@@ -53,7 +53,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Checkboxes
             new ComponentParameter()
             {
                 Name = "CheckmarkIconName",
-                Type = "string",
+                Type = "BitIcon",
                 DefaultValue = "",
                 Description = "Custom icon for the check mark rendered by the checkbox instade of default check mark icon.",
             },
@@ -164,7 +164,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Checkboxes
         private readonly string checkboxSampleCode = $"<BitCheckbox @bind-IsChecked='IsCheckBoxChecked'>Basic Checkbox</BitCheckbox>{Environment.NewLine}" +
               $"<BitCheckbox IsChecked='true'>Checked Checkbox</BitCheckbox>{Environment.NewLine}" +
               $"<BitCheckbox IsEnabled='false'>Disable Checkbox</BitCheckbox>{Environment.NewLine}" +
-              $"<BitCheckbox CheckmarkIconName='Heart'>Custom checkmark Checkbox</BitCheckbox>{Environment.NewLine}" +
+              $"<BitCheckbox CheckmarkIconName='BitIcon.Heart'>Custom checkmark Checkbox</BitCheckbox>{Environment.NewLine}" +
               $"<@code {{ {Environment.NewLine}" +
               $"private bool IsCheckBoxChecked = false;{Environment.NewLine}" +
               "}";

@@ -112,7 +112,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Pivot
                    new ComponentParameter()
                    {
                        Name = "IconName",
-                       Type = "string",
+                       Type = "BitIcon",
                        DefaultValue = "",
                        Description = "The icon name for the icon shown next to the pivot link.",
                    },
@@ -214,12 +214,12 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Pivot
              $"</BitPivot>";
 
         private readonly string pivotWithCountAndIconSampleCode = $"<BitPivot OverflowBehavior='@OverflowBehavior.Scroll'>{Environment.NewLine}" +
-             $"<BitPivotItem HeaderText ='Files' IconName='Info'>Pivot #1</BitPivotItem>{Environment.NewLine}" +
+             $"<BitPivotItem HeaderText ='Files' IconName='BitIcon.Info'>Pivot #1</BitPivotItem>{Environment.NewLine}" +
              $"<BitPivotItem HeaderText ='Shared with me' ItemCount='32'>Pivot #2</BitPivotItem>{Environment.NewLine}" +
-             $"<BitPivotItem HeaderText ='Recent' IconName='Info' ItemCount='12'>Pivot #3</BitPivotItem>{Environment.NewLine}" +
-             $"<BitPivotItem HeaderText ='Some tab' IconName='Info' ItemCount='6'>Pivot #4</BitPivotItem>{Environment.NewLine}" +
-             $"<BitPivotItem HeaderText ='Latest' IconName='Info' ItemCount='8'>Pivot #5</BitPivotItem>{Environment.NewLine}" +
-             $"<BitPivotItem HeaderText ='I also have a custom template for icon' IconName='Info' ItemCount='45'></BitPivotItem>{Environment.NewLine}" +
+             $"<BitPivotItem HeaderText ='Recent' IconName='BitIcon.Info' ItemCount='12'>Pivot #3</BitPivotItem>{Environment.NewLine}" +
+             $"<BitPivotItem HeaderText ='Some tab' IconName='BitIcon.Info' ItemCount='6'>Pivot #4</BitPivotItem>{Environment.NewLine}" +
+             $"<BitPivotItem HeaderText ='Latest' IconName='BitIcon.Info' ItemCount='8'>Pivot #5</BitPivotItem>{Environment.NewLine}" +
+             $"<BitPivotItem HeaderText ='I also have a custom template for icon' IconName='BitIcon.Info' ItemCount='45'></BitPivotItem>{Environment.NewLine}" +
              $"<HeaderContent>{Environment.NewLine}" +
              $"<i class='bit-icon bit-icon--HeartFill'></i>{Environment.NewLine}" +
              $"</HeaderContent>{Environment.NewLine}" +

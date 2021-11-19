@@ -7,19 +7,16 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
     public class BitActionButtonTests : BunitTestContext
     {
         [DataTestMethod,
-            DataRow(Visual.Fluent, true, null, false, "title"),
-            DataRow(Visual.Fluent, true, "AddFriend", true, "title"),
-            DataRow(Visual.Fluent, false, "AddFriend", true, "title"),
+            DataRow(Visual.Fluent, true, BitIcon.AddFriend, "title"),
+            DataRow(Visual.Fluent, false, BitIcon.AddFriend, "title"),
 
-            DataRow(Visual.Cupertino, true, null, false, "title"),
-            DataRow(Visual.Cupertino, true, "AddFriend", true, "title"),
-            DataRow(Visual.Cupertino, false, "AddFriend", true, "title"),
+            DataRow(Visual.Cupertino, true, BitIcon.AddFriend, "title"),
+            DataRow(Visual.Cupertino, false, BitIcon.AddFriend, "title"),
 
-            DataRow(Visual.Material, true, null, false, "title"),
-            DataRow(Visual.Material, true, "AddFriend", true, "title"),
-            DataRow(Visual.Material, false, "AddFriend", true, "title"),
+            DataRow(Visual.Material, true, BitIcon.AddFriend, "title"),
+            DataRow(Visual.Material, false, BitIcon.AddFriend, "title"),
         ]
-        public void BitActionButtonTest(Visual visual, bool isEnabled, string iconName, bool expectedResult, string title)
+        public void BitActionButtonTest(Visual visual, bool isEnabled, BitIcon iconName, string title)
         {
             var com = RenderComponent<BitActionButtonTest>(parameters =>
             {
@@ -37,10 +34,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
 
             Assert.IsTrue(bitButton.ClassList.Contains($"bit-act-btn-{isEnabledClass}-{visualClass}"));
 
-            if (iconName.HasValue())
-            {
-                Assert.AreEqual(bitIconITag.ClassList.Contains($"bit-icon--{iconName}"), expectedResult);
-            }
+            Assert.IsTrue(bitIconITag.ClassList.Contains($"bit-icon--{iconName.GetName()}"));
 
             Assert.AreEqual(bitButton.GetAttribute("title"), title);
 

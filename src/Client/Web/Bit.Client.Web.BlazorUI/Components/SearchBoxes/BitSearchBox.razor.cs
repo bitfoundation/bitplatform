@@ -80,7 +80,7 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// The icon name for the icon shown at the beginning of the search box
         /// </summary>
-        [Parameter] public string IconName { get; set; } = "Search";
+        [Parameter] public BitIcon IconName { get; set; } = BitIcon.Search;
 
         /// <summary>
         /// Placeholder for the search box

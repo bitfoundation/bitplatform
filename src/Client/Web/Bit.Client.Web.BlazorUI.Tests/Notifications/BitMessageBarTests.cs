@@ -47,23 +47,23 @@ namespace Bit.Client.Web.BlazorUI.Tests.Notifications
 
             var icon = component.Find(".bit-msg-bar-icon > i");
 
-            Dictionary<BitMessageBarType, string> IconMap = new()
+            Dictionary<BitMessageBarType, BitIcon> IconMap = new()
             {
-                [BitMessageBarType.Info] = "Info",
-                [BitMessageBarType.Warning] = "Info",
-                [BitMessageBarType.Error] = "ErrorBadge",
-                [BitMessageBarType.Blocked] = "Blocked2",
-                [BitMessageBarType.SevereWarning] = "Warning",
-                [BitMessageBarType.Success] = "Completed"
+                [BitMessageBarType.Info] = BitIcon.Info,
+                [BitMessageBarType.Warning] = BitIcon.Info,
+                [BitMessageBarType.Error] = BitIcon.ErrorBadge,
+                [BitMessageBarType.Blocked] = BitIcon.Blocked2,
+                [BitMessageBarType.SevereWarning] = BitIcon.Warning,
+                [BitMessageBarType.Success] = BitIcon.Completed
             };
 
-            Assert.IsTrue(icon.ClassList.Contains($"bit-icon--{IconMap[messageBarType]}"));
+            Assert.IsTrue(icon.ClassList.Contains($"bit-icon--{IconMap[messageBarType].GetName()}"));
         }
 
         [DataTestMethod,
-            DataRow("Emoji2")
+            DataRow(BitIcon.Emoji2)
         ]
-        public void BitMessageBarShouldRespectCustomIcon(string iconName)
+        public void BitMessageBarShouldRespectCustomIcon(BitIcon iconName)
         {
             var component = RenderComponent<BitMessageBarTest>(
                 parameters =>
@@ -72,7 +72,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Notifications
                 });
 
             var icon = component.Find(".bit-msg-bar-icon > i");
-            Assert.IsTrue(icon.ClassList.Contains($"bit-icon--{iconName}"));
+            Assert.IsTrue(icon.ClassList.Contains($"bit-icon--{iconName.GetName()}"));
         }
 
         [DataTestMethod,
@@ -118,9 +118,9 @@ namespace Bit.Client.Web.BlazorUI.Tests.Notifications
         }
 
         [DataTestMethod,
-            DataRow("Emoji2")
+            DataRow(BitIcon.Emoji2)
         ]
-        public void BitMessageBarShouldRespectCustomDismissIcon(string iconName)
+        public void BitMessageBarShouldRespectCustomDismissIcon(BitIcon iconName)
         {
             var component = RenderComponent<BitMessageBarTest>(
                 parameters =>
@@ -129,7 +129,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Notifications
                 });
 
             var icon = component.Find(".bit-msg-bar-dismiss button span i");
-            Assert.IsTrue(icon.ClassList.Contains($"bit-icon--{iconName}"));
+            Assert.IsTrue(icon.ClassList.Contains($"bit-icon--{iconName.GetName()}"));
         }
 
         [DataTestMethod,

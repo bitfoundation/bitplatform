@@ -264,9 +264,9 @@ namespace Bit.Client.Web.BlazorUI.Tests.Checkboxes
         }
 
         [DataTestMethod,
-            DataRow("Emoji2")
+            DataRow(BitIcon.Emoji2)
         ]
-        public void BitCheckboxCustomCheckmarkIconTest(string checkmarkIconName)
+        public void BitCheckboxCustomCheckmarkIconTest(BitIcon checkmarkIconName)
         {
             var component = RenderComponent<BitCheckboxTest>(parameters =>
             {
@@ -275,7 +275,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Checkboxes
 
             var icon = component.Find(".bit-chb-checkmark");
 
-            Assert.IsTrue(icon.ClassList.Contains($"bit-icon--{checkmarkIconName}"));
+            Assert.IsTrue(icon.ClassList.Contains($"bit-icon--{checkmarkIconName.GetName()}"));
         }
 
         [DataTestMethod,

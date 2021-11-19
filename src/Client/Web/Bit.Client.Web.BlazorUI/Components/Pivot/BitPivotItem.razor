@@ -15,10 +15,10 @@
         tabindex="@Pivot?.GetPivotItemTabIndex(this)"
         @onclick="HandleButtonClick">
     <span>
-        @if (@IconName.HasValue())
+        @if (@IconName.HasValue)
         {
             <span>
-                <i class="bit-icon bit-icon--@(IconName)"></i>
+                <i class="bit-icon bit-icon--@(IconName.Value.GetName())"></i>
             </span>
         }
 
