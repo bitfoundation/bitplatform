@@ -112,13 +112,13 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Rating
                     {
                         Name= "Small",
                         Description="Display rating icon using small size.",
-                        Value="Small = 0",
+                        Value="0",
                     },
                     new EnumItem()
                     {
                         Name= "Large",
                         Description=" Display rating icon using large size.",
-                        Value="Large = 1",
+                        Value="1",
                     },
                 }
             }

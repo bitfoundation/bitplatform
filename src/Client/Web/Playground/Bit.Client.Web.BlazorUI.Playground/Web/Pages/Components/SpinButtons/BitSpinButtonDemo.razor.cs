@@ -236,13 +236,13 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.SpinButtons
                     {
                         Name= "Top",
                         Description="The label shows on the top of the spin button.",
-                        Value="Top = 0",
+                        Value="0",
                     },
                     new EnumItem()
                     {
                         Name= "Left",
                         Description="The label shows on the left side of the spin button.",
-                        Value="Left = 1",
+                        Value="1",
                     }
                 }
             }

@@ -50,7 +50,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.List
                 Name = "Virtualize",
                 Type = "bool",
                 DefaultValue = "false",
-                Description = "virtualize rendering the list, UI rendering to just the parts that are currently visible",
+                Description = "virtualize rendering the list, UI rendering to just the parts that are currently visible.",
             },
         };
 

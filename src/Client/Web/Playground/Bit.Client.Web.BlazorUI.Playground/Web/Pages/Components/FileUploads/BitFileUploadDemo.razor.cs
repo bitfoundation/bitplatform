@@ -134,49 +134,49 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.FileUploads
                     {
                         Name= "Pending",
                         Description="File uploading progress is pended because the server cannot be contacted.",
-                        Value="Pending = 0",
+                        Value="0",
                     },
                     new EnumItem()
                     {
                         Name= "InProgress",
                         Description="File uploading is in progress.",
-                        Value="InProgress = 1",
+                        Value="1",
                     },
                     new EnumItem()
                     {
                         Name= "Paused",
                         Description="File uploading progress is paused by the user.",
-                        Value="Paused = 2",
+                        Value="2",
                     },
                     new EnumItem()
                     {
                         Name= "Canceled",
                         Description="File uploading progress is canceled by the user.",
-                        Value="Canceled = 3",
+                        Value="3",
                     },
                     new EnumItem()
                     {
                         Name= "Completed",
                         Description="The file is successfully uploaded.",
-                        Value="Completed = 4",
+                        Value="4",
                     },
                     new EnumItem()
                     {
                         Name= "Failed",
                         Description="The file has a problem and progress is failed.",
-                        Value="Failed = 5",
+                        Value="5",
                     },
                     new EnumItem()
                     {
                         Name= "Removed",
                         Description="The uploaded file removed by the user.",
-                        Value="Removed = 6",
+                        Value="6",
                     },
                     new EnumItem()
                     {
                         Name= "Unaccepted",
                         Description="The type of uploaded file is not acceptable.",
-                        Value="Unaccepted = 7",
+                        Value="7",
                     }
                 }
             }

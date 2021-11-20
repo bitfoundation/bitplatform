@@ -59,19 +59,19 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Spinner
                     {
                         Name= "Assertive",
                         Description="",
-                        Value="Assertive = 0",
+                        Value="0",
                     },
                     new EnumItem()
                     {
                         Name= "Polite",
                         Description="",
-                        Value="Polite = 1",
+                        Value="1",
                     },
                     new EnumItem()
                     {
                         Name= "Off",
                         Description="",
-                        Value="Off = 2",
+                        Value="2",
                     },
                 },
             },
@@ -86,25 +86,25 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Spinner
                     {
                         Name= "Top",
                         Description="The label shows on the top of the spinner.",
-                        Value="Top = 0",
+                        Value="0",
                     },
                     new EnumItem()
                     {
                         Name= "Right",
                         Description="The label shows on the right side of the spinner.",
-                        Value="Right = 1",
+                        Value="1",
                     },
                     new EnumItem()
                     {
                         Name= "Bottom",
                         Description="The label shows on the bottom of the spinner.",
-                        Value="Bottom = 2",
+                        Value="2",
                     },
                     new EnumItem()
                     {
                         Name= "Left",
                         Description="The label shows on the left side of the spinner.",
-                        Value="Left = 3",
+                        Value="3",
                     },
                 }
             },
@@ -119,25 +119,25 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Spinner
                     {
                         Name= "Medium",
                         Description="20px Spinner diameter.",
-                        Value="Medium = 0",
+                        Value="0",
                     },
                     new EnumItem()
                     {
                         Name= "Large",
                         Description="28px Spinner diameter.",
-                        Value="Large = 1",
+                        Value="1",
                     },
                     new EnumItem()
                     {
                         Name= "Small",
                         Description="16px Spinner diameter.",
-                        Value="Small = 2",
+                        Value="2",
                     },
                     new EnumItem()
                     {
                         Name= "XSmall",
                         Description="12px Spinner diameter.",
-                        Value="XSmall = 3",
+                        Value="3",
                     },
                 },
             },

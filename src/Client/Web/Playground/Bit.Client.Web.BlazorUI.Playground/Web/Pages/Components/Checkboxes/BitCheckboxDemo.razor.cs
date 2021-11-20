@@ -149,13 +149,13 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Checkboxes
                     {
                         Name= "Start",
                         Description="The checkbox shows before the label.",
-                        Value="Start = 0",
+                        Value="0",
                     },
                     new EnumItem()
                     {
                         Name= "End",
                         Description="The checkbox shows after the label.",
-                        Value="End = 1",
+                        Value="1",
                     }
                 }
             }
