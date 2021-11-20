@@ -6,16 +6,16 @@ using System.Threading.Tasks;
 
 namespace Bit.Client.Web.BlazorUI
 {
-    public enum BitLinkFormat
+    public enum BitPivotLinkSize
     {
         /// <summary>
-        /// Display Pivot Links as Tabs
+        /// Display Link using normal font size
         /// </summary>
-        Tabs,
+        Normal,
 
         /// <summary>
-        /// Display Pivot Links as links
+        /// Display links using large font size
         /// </summary>
-        Links
+        Large
     }
 }

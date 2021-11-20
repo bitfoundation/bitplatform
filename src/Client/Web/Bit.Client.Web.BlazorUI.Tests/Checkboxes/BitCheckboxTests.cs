@@ -48,16 +48,16 @@ namespace Bit.Client.Web.BlazorUI.Tests.Checkboxes
         }
 
         [DataTestMethod,
-            DataRow(Visual.Fluent, BitBoxSide.Start),
-            DataRow(Visual.Fluent, BitBoxSide.End),
+            DataRow(Visual.Fluent, BitCheckBoxSide.Start),
+            DataRow(Visual.Fluent, BitCheckBoxSide.End),
 
-            DataRow(Visual.Cupertino, BitBoxSide.Start),
-            DataRow(Visual.Cupertino, BitBoxSide.End),
+            DataRow(Visual.Cupertino, BitCheckBoxSide.Start),
+            DataRow(Visual.Cupertino, BitCheckBoxSide.End),
 
-            DataRow(Visual.Material, BitBoxSide.Start),
-            DataRow(Visual.Material, BitBoxSide.End),
+            DataRow(Visual.Material, BitCheckBoxSide.Start),
+            DataRow(Visual.Material, BitCheckBoxSide.End),
         ]
-        public void BitCheckboxBoxSideTest(Visual visual, BitBoxSide boxSide)
+        public void BitCheckboxBoxSideTest(Visual visual, BitCheckBoxSide boxSide)
         {
             var component = RenderComponent<BitCheckboxTest>(parameters =>
             {
@@ -68,7 +68,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Checkboxes
             var chb = component.Find(".bit-chb");
             var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
 
-            if (boxSide is BitBoxSide.End)
+            if (boxSide is BitCheckBoxSide.End)
             {
                 Assert.IsTrue(chb.ClassList.Contains($"bit-chb-end-{visualClass}"));
             }

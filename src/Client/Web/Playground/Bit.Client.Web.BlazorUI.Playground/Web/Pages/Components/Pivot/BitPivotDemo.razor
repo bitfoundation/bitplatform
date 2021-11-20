@@ -33,7 +33,7 @@
     </CodeSample>
     <CodeSample Title="Count and Icon" Description="" CodeSampleContentForCopy="@pivotWithCountAndIconSampleCode">
         <SampleContent>
-            <BitPivot OverflowBehavior="@BitOverflowBehavior.Scroll">
+            <BitPivot OverflowBehavior="@BitPivotOverflowBehavior.Scroll">
                 <BitPivotItem HeaderText="Files"
                               IconName="BitIcon.Info">
                     Pivot #1
@@ -90,7 +90,7 @@
     </CodeSample>
     <CodeSample Title="Large link size" Description="" CodeSampleContentForCopy="@pivotWithLargeLinkSizeSampleCode">
         <SampleContent>
-            <BitPivot LinkSize="@BitLinkSize.Large">
+            <BitPivot LinkSize="@BitPivotLinkSize.Large">
                 <BitPivotItem HeaderText="File">
                     Pivot #1
                 </BitPivotItem>
@@ -114,7 +114,7 @@
     </CodeSample>
     <CodeSample Title="Links of tab style" Description="" CodeSampleContentForCopy="@pivotWithLinkSampleCode">
         <SampleContent>
-            <BitPivot LinkFormat="@BitLinkFormat.Tabs">
+            <BitPivot LinkFormat="@BitPivotLinkFormat.Tabs">
                 <BitPivotItem HeaderText="Foo">
                     Pivot #1
                 </BitPivotItem>
@@ -142,8 +142,8 @@
     </CodeSample>
     <CodeSample Title="Links of large tab style" Description="" CodeSampleContentForCopy="@pivotWithLargeLinkSampleCode">
         <SampleContent>
-            <BitPivot LinkFormat="@BitLinkFormat.Tabs"
-                      LinkSize="@BitLinkSize.Large">
+            <BitPivot LinkFormat="@BitPivotLinkFormat.Tabs"
+                      LinkSize="@BitPivotLinkSize.Large">
                 <BitPivotItem HeaderText="Foo">
                     Pivot #1
                 </BitPivotItem>
@@ -171,8 +171,8 @@
     </CodeSample>
     <CodeSample Title="Change tabs from outside of the component" Description="" CodeSampleContentForCopy="@pivotChangeFromOutsideSampleCode">
         <SampleContent>
-            <BitPivot LinkFormat="@BitLinkFormat.Tabs"
-                      LinkSize="@BitLinkSize.Large"
+            <BitPivot LinkFormat="@BitPivotLinkFormat.Tabs"
+                      LinkSize="@BitPivotLinkSize.Large"
                       SelectedKey="@OverridePivotSelectedKey"
                       SelectedKeyChanged="PivotSelectedKeyChanged">
                 <BitPivotItem HeaderText="Samples">
@@ -212,9 +212,9 @@
     </CodeSample>
     <CodeSample Title="Render content separately" Description="" CodeSampleContentForCopy="@pivotContent1SampleCode">
         <SampleContent>
-            <BitPivot LinkFormat="@BitLinkFormat.Tabs"
+            <BitPivot LinkFormat="@BitPivotLinkFormat.Tabs"
                       DefaultSelectedKey="Foo"
-                      LinkSize="@BitLinkSize.Large"
+                      LinkSize="@BitPivotLinkSize.Large"
                       HeadersOnly="true"
                       OnLinkClick="@(item => SelectedKey = item.Key)">
                 <BitPivotItem HeaderText="Foo" Key="Foo"></BitPivotItem>
@@ -277,8 +277,8 @@
         <SampleContent>
             <span class="how-to-use">@SelectedPivotItem?.HeaderText Clicked</span>
             <div>
-                <BitPivot LinkFormat="@BitLinkFormat.Tabs"
-                          LinkSize="@BitLinkSize.Large"
+                <BitPivot LinkFormat="@BitPivotLinkFormat.Tabs"
+                          LinkSize="@BitPivotLinkSize.Large"
                           OnLinkClick="@(item => SelectedPivotItem = item)">
                     <BitPivotItem HeaderText="Foo">
                         Pivot #1

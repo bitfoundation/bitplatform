@@ -9,9 +9,9 @@ namespace Bit.Client.Web.BlazorUI
     {
         private string? selectedKey;
         private bool SelectedKeyHasBeenSet;
-        private BitLinkSize linkSize = BitLinkSize.Normal;
-        private BitLinkFormat linkFormat = BitLinkFormat.Links;
-        private BitOverflowBehavior overflowBehavior = BitOverflowBehavior.None;
+        private BitPivotLinkSize linkSize = BitPivotLinkSize.Normal;
+        private BitPivotLinkFormat linkFormat = BitPivotLinkFormat.Links;
+        private BitPivotOverflowBehavior overflowBehavior = BitPivotOverflowBehavior.None;
         private BitPivotItem? SelectedItem { get; set; }
         private List<BitPivotItem> AllItems = new();
 
@@ -29,7 +29,7 @@ namespace Bit.Client.Web.BlazorUI
         /// Overflow behavior when there is not enough room to display all of the links/tabs
         /// </summary>
         [Parameter]
-        public BitOverflowBehavior OverflowBehavior
+        public BitPivotOverflowBehavior OverflowBehavior
         {
             get => overflowBehavior;
             set
@@ -43,7 +43,7 @@ namespace Bit.Client.Web.BlazorUI
         /// Pivot link format, display mode for the pivot links
         /// </summary>
         [Parameter]
-        public BitLinkFormat LinkFormat
+        public BitPivotLinkFormat LinkFormat
         {
             get => linkFormat;
             set
@@ -57,7 +57,7 @@ namespace Bit.Client.Web.BlazorUI
         /// Pivot link size
         /// </summary>
         [Parameter]
-        public BitLinkSize LinkSize
+        public BitPivotLinkSize LinkSize
         {
             get => linkSize;
             set
@@ -154,17 +154,17 @@ namespace Bit.Client.Web.BlazorUI
 
         protected override void RegisterComponentClasses()
         {
-            ClassBuilder.Register(() => LinkSize == BitLinkSize.Large ? $"{RootElementClass}-large-{VisualClassRegistrar()}"
-                                      : LinkSize == BitLinkSize.Normal ? $"{RootElementClass}-normal-{VisualClassRegistrar()}"
+            ClassBuilder.Register(() => LinkSize == BitPivotLinkSize.Large ? $"{RootElementClass}-large-{VisualClassRegistrar()}"
+                                      : LinkSize == BitPivotLinkSize.Normal ? $"{RootElementClass}-normal-{VisualClassRegistrar()}"
                                       : string.Empty);
 
-            ClassBuilder.Register(() => LinkFormat == BitLinkFormat.Links ? $"{RootElementClass}-links-{VisualClassRegistrar()}"
-                                      : LinkFormat == BitLinkFormat.Tabs ? $"{RootElementClass}-tabs-{VisualClassRegistrar()}"
+            ClassBuilder.Register(() => LinkFormat == BitPivotLinkFormat.Links ? $"{RootElementClass}-links-{VisualClassRegistrar()}"
+                                      : LinkFormat == BitPivotLinkFormat.Tabs ? $"{RootElementClass}-tabs-{VisualClassRegistrar()}"
                                       : string.Empty);
 
-            ClassBuilder.Register(() => OverflowBehavior == BitOverflowBehavior.Menu ? $"{RootElementClass}-menu-{VisualClassRegistrar()}"
-                                      : OverflowBehavior == BitOverflowBehavior.Scroll ? $"{RootElementClass}-scroll-{VisualClassRegistrar()}"
-                                      : OverflowBehavior == BitOverflowBehavior.None ? $"{RootElementClass}-none-{VisualClassRegistrar()}"
+            ClassBuilder.Register(() => OverflowBehavior == BitPivotOverflowBehavior.Menu ? $"{RootElementClass}-menu-{VisualClassRegistrar()}"
+                                      : OverflowBehavior == BitPivotOverflowBehavior.Scroll ? $"{RootElementClass}-scroll-{VisualClassRegistrar()}"
+                                      : OverflowBehavior == BitPivotOverflowBehavior.None ? $"{RootElementClass}-none-{VisualClassRegistrar()}"
                                       : string.Empty);
         }
 

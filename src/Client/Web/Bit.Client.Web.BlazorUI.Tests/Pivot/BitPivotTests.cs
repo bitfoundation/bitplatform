@@ -7,18 +7,18 @@ namespace Bit.Client.Web.BlazorUI.Tests.Pivot
     public class BitPivotTests : BunitTestContext
     {
         [DataTestMethod,
-         DataRow(Visual.Fluent, BitLinkFormat.Links, BitLinkSize.Large, BitOverflowBehavior.None),
-         DataRow(Visual.Fluent, BitLinkFormat.Tabs, BitLinkSize.Normal, BitOverflowBehavior.Scroll),
-         DataRow(Visual.Fluent, BitLinkFormat.Tabs, BitLinkSize.Normal, BitOverflowBehavior.Menu),
+         DataRow(Visual.Fluent, BitPivotLinkFormat.Links, BitPivotLinkSize.Large, BitPivotOverflowBehavior.None),
+         DataRow(Visual.Fluent, BitPivotLinkFormat.Tabs, BitPivotLinkSize.Normal, BitPivotOverflowBehavior.Scroll),
+         DataRow(Visual.Fluent, BitPivotLinkFormat.Tabs, BitPivotLinkSize.Normal, BitPivotOverflowBehavior.Menu),
 
-         DataRow(Visual.Cupertino, BitLinkFormat.Links, BitLinkSize.Large, BitOverflowBehavior.None),
-         DataRow(Visual.Cupertino, BitLinkFormat.Tabs, BitLinkSize.Normal, BitOverflowBehavior.Scroll),
-         DataRow(Visual.Cupertino, BitLinkFormat.Tabs, BitLinkSize.Normal, BitOverflowBehavior.Menu),
+         DataRow(Visual.Cupertino, BitPivotLinkFormat.Links, BitPivotLinkSize.Large, BitPivotOverflowBehavior.None),
+         DataRow(Visual.Cupertino, BitPivotLinkFormat.Tabs, BitPivotLinkSize.Normal, BitPivotOverflowBehavior.Scroll),
+         DataRow(Visual.Cupertino, BitPivotLinkFormat.Tabs, BitPivotLinkSize.Normal, BitPivotOverflowBehavior.Menu),
 
-         DataRow(Visual.Material, BitLinkFormat.Links, BitLinkSize.Large, BitOverflowBehavior.None),
-         DataRow(Visual.Material, BitLinkFormat.Tabs, BitLinkSize.Normal, BitOverflowBehavior.Scroll),
-         DataRow(Visual.Material, BitLinkFormat.Tabs, BitLinkSize.Normal, BitOverflowBehavior.Menu)]
-        public void BitPivotShouldRepectLinkFormatClasses(Visual visual, BitLinkFormat linkFormat, BitLinkSize linkSize, BitOverflowBehavior overflowBehavior)
+         DataRow(Visual.Material, BitPivotLinkFormat.Links, BitPivotLinkSize.Large, BitPivotOverflowBehavior.None),
+         DataRow(Visual.Material, BitPivotLinkFormat.Tabs, BitPivotLinkSize.Normal, BitPivotOverflowBehavior.Scroll),
+         DataRow(Visual.Material, BitPivotLinkFormat.Tabs, BitPivotLinkSize.Normal, BitPivotOverflowBehavior.Menu)]
+        public void BitPivotShouldRepectLinkFormatClasses(Visual visual, BitPivotLinkFormat linkFormat, BitPivotLinkSize linkSize, BitPivotOverflowBehavior overflowBehavior)
         {
             var component = RenderComponent<BitPivotTest>(parameters =>
             {
