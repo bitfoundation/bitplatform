@@ -8,11 +8,11 @@
 </CascadingValue>
 
 @code{
-    [Parameter] public BitOverflowBehavior OverflowBehavior { get; set; }
+    [Parameter] public BitPivotOverflowBehavior OverflowBehavior { get; set; }
     [Parameter] public Visual Visual { get; set; }
     [Parameter] public bool HeadersOnly { get; set; }
-    [Parameter] public BitLinkFormat LinkFormat { get; set; }
-    [Parameter] public BitLinkSize LinkSize { get; set; }
+    [Parameter] public BitPivotLinkFormat LinkFormat { get; set; }
+    [Parameter] public BitPivotLinkSize LinkSize { get; set; }
     [Parameter] public RenderFragment ChildContent { get; set; }
     [Parameter] public string AriaLabel { get; set; }
 }

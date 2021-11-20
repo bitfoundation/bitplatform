@@ -1,6 +1,6 @@
 ﻿namespace Bit.Client.Web.BlazorUI
 {
-    public enum BitBoxSide
+    public enum BitCheckBoxSide
     {
         /// <summary>
         /// The checkbox shows before the label
