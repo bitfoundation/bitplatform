@@ -151,36 +151,15 @@ input::-webkit-input-placeholder {
     }
 
     .active {
-        position: relative;
-    }
-
-    .active:before {
-        position: absolute;
-        bottom: rem(-12px);
-        left: rem(40px);
-        height: rem(3px);
-        width: 50%;
-        background-color: $DarkBlue;
-        content: "";
-
-        @include lg {
-            left: rem(22px);
-            width: 60%;
-        }
-
-        @include md {
-            left: rem(19px);
-            width: 60%;
-        }
-
-        @include sm {
-            left: rem(5px);
-            width: 90%;
-        }
+        text-decoration-line: underline;
+        text-underline-offset: rem(16px);
+        text-decoration-thickness: rem(3px);
+        text-decoration-color: $DarkBlue;
     }
 
     a, a:hover, a:visited {
         color: $DarkBlue;
+        font-family: Axiforma;
         font-size: rem(28px);
         font-weight: 500;
         padding: 0 rem(40px) 0 rem(42px);
@@ -527,8 +506,6 @@ footer {
     @include sm {
         @include subtitle2-sm;
     }
-
-    line-height: 0;
 }
 
 .copy-btn {
@@ -625,7 +602,7 @@ footer {
     background-color: $Gray03;
     border-color: $Gray03;
     justify-content: center;
-    width: rem(220px);
+    width: rem(232px);
     margin-top: rem(10px);
 }
 
@@ -752,10 +729,6 @@ footer {
 
     .bit-tgl > div {
         margin-top: rem(10px);
-    }
-
-    .bit-tgl > div label {
-        margin-top: rem(12px);
     }
 
     .bit-tgl-inline-fluent > div {

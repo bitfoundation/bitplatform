@@ -76,11 +76,11 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Buttons
         private readonly string actionButtonSampleCode = $"<BitActionButton IconName='BitIcon.AddFriend'>Create account</BitActionButton>{Environment.NewLine}" +
              $"<BitActionButton IconName='BitIcon.UserRemove' AllowDisabledFocus='false' IsEnabled='false'>Remove user</BitActionButton>";
 
-        private readonly string styleAndClassSampleCode = $"<BitActionButton Style='font-family:'Axiforma';font-size:16px;border:2px solid #32385B;justify-content: center;width: 220px;'>Styled Action Button</BitActionButton>{Environment.NewLine}" +
-                 $"<BitActionButton Class='custom-action-button'>Classed Action Button</BitActionButton>{Environment.NewLine}" +
+        private readonly string styleAndClassSampleCode = $"<BitActionButton IconName='BitIcon.ThisPC' Style='font-family:'Axiforma';font-size:16px;border:2px solid #32385B;justify-content: center;width: 232px;'>Styled Action Button</BitActionButton>{Environment.NewLine}" +
+                 $"<BitActionButton IconName='BitIcon.ThisPC' Class='custom-action-button'>Classed Action Button</BitActionButton>{Environment.NewLine}" +
                  $"<style>{Environment.NewLine}" +
                  $".custom-action-button {{ {Environment.NewLine}" +
-                 $"width:220px;{Environment.NewLine}" +
+                 $"width:232px;{Environment.NewLine}" +
                  $"font-family:Axiforma;{Environment.NewLine}" +
                  $"font-size:16px;{Environment.NewLine}" +
                  $"background-color:#D7D7D7;{Environment.NewLine}" +
