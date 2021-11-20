@@ -1,7 +1,7 @@
 <svg width="68" height="68" viewBox="0 0 68 68" fill="none" xmlns="http://www.w3.org/2000/svg">
-<rect width="68" height="68" fill="#EF9C00"/>
+<rect width="68" height="68" fill="#2F455A"/>
 <rect width="34" height="68" fill="white"/>
-<circle cx="42.1228" cy="33.7992" r="14.0349" fill="#14A38B"/>
-<circle cx="25.9196" cy="33.7992" r="14.0349" fill="#EF9C00"/>
+<circle cx="42.1228" cy="33.7992" r="14.0349" fill="#EF9C00"/>
+<circle cx="25.9196" cy="33.7992" r="14.0349" fill="#2F455A"/>
 <path fill-rule="evenodd" clip-rule="evenodd" d="M33.985 45.4475C37.571 42.9049 39.9113 38.721 39.9113 33.9905C39.9113 29.26 37.571 25.0761 33.985 22.5336C30.399 25.0761 28.0586 29.26 28.0586 33.9905C28.0586 38.721 30.399 42.9049 33.985 45.4475Z" fill="white"/>
 </svg>

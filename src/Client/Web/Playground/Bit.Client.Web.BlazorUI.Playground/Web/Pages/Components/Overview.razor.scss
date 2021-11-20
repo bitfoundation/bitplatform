@@ -1,62 +1,110 @@
 ﻿@import '../../Styles/_shared.scss';
 
-.overview-container {
-    position: relative;
-    margin-left: rem(80px);
-    margin-top: rem(180px);
-
-    @include md {
-        margin-left: rem(235px);
-    }
+h4 {
+    color: $DarkBlue;
 }
 
-.page-title {
-    margin: rem(80px) 0 0;
-    font-weight: bold;
-    color: $DarkBlue;
-
-    @include h5-xl;
-
-    @include lg {
-        @include h5-lg;
-    }
+.overview-container {
+    margin: rem(180px) 0 0 rem(80px);
 
     @include md {
-        @include h4-md;
+        margin: rem(100px) 0 0 rem(110px);
+    }
+
+    @include lt-md {
+        margin: rem(96px) 0 0 rem(110px);
     }
 
     @include sm {
-        @include h5-sm;
+        margin: rem(96px) 0 0 rem(24px);
+    }
+}
+
+.toggle-container {
+    display: none;
+
+    @include lt-lg {
+        display: block;
+    }
+
+    .toggle-title {
+        display: flex;
+
+        h2 {
+            color: $Violet;
+            line-height: 0;
+        }
+
+        img {
+            width: rem(48px);
+            height: rem(48px);
+            padding-top: rem(1px);
+
+            @include sm {
+                width: rem(33px);
+                height: rem(33px);
+                padding-top: rem(8px);
+            }
+        }
+    }
+
+    .toggle-description {
+        @include subtitle1-md;
+
+        @include sm {
+            width: 92%;
+            @include subtitle1-sm;
+        }
     }
 }
 
 .page-description {
-    width: 79%;
+    width: 75%;
     line-height: rem(40px);
     min-height: rem(160px);
     color: $Black01;
-    font-size: rem(24px);
-    font-weight: 500;
+
+    @include body2-xl;
 
     @include lg {
-        font-size: rem(20px);
+        @include body2-lg;
     }
 
     @include md {
-        font-size: rem(16px);
+        width: 89%;
+        min-height: 0;
+        line-height: rem(25px);
+
+        @include body2-md;
+    }
+
+    @include lt-md {
+        width: 87%;
     }
 
     @include sm {
-        font-size: rem(14px);
-        font-weight: normal;
+        width: 92%;
+        line-height: rem(25px);
+        @include body2-sm;
     }
 }
 
 .box-container {
-    margin-bottom: rem(64px);
     display: flex;
     flex-wrap: wrap;
     width: 80%;
+    margin: rem(70px) 0 rem(175px);
+
+    @include md {
+        width: 90%;
+        margin: rem(60px) 0 0;
+    }
+
+    @include lt-md {
+        flex-flow: wrap;
+        width: 94%;
+        margin-bottom: rem(75px);
+    }
 
     @include sm {
         flex-flow: column;
@@ -64,26 +112,32 @@
 }
 
 .box {
-    width: 32%;
-    height: rem(260px);
+    width: 30.3%;
+    min-height: rem(260px);
     background: $Gray04;
     border-radius: rem(8px) rem(8px) 0 0;
-    margin-bottom: rem(44px);
+    margin-bottom: rem(70px);
 
     &:nth-child(1), &:nth-child(2), &:nth-child(4), &:nth-child(5), &:nth-child(7), &:nth-child(8) {
         margin-right: rem(16px);
     }
 
     @include md {
-        width: 50%;
+        width: 47%;
+        min-height: rem(224px);
 
-        &:nth-child(1), &:nth-child(2), &:nth-child(4), &:nth-child(5), &:nth-child(7), &:nth-child(8) {
+        &:nth-child(n+1) {
             margin-right: rem(24px);
         }
     }
 
+    @include lt-md {
+        width: 45%;
+    }
+
     @include sm {
         width: 100%;
+        margin-bottom: rem(40px);
     }
 
     &:hover {
@@ -106,28 +160,31 @@
 
     .title {
         padding: 0 0 rem(50px) rem(25px);
-        font-size: rem(18px);
-        font-weight: bold;
-        width: rem(288px);
         color: $DarkBlue;
+        font-size: rem(20px);
+        font-weight: 500;
 
         @include lg {
-            width: rem(216px);
+            width: rem(192px);
+            font-size: rem(18px);
         }
 
         @include md {
-            font-weight: 500;
             width: rem(248px);
+            font-size: rem(18px);
         }
 
         @include sm {
-            font-weight: bold;
+            font-size: rem(20px);
+        }
+
+        @include lt-md {
+            font-size: rem(16px);
         }
     }
 
     .footer {
         padding: rem(20px);
-        font-weight: 300;
         background: $Violet;
         color: $White;
 
@@ -139,12 +196,10 @@
 
         @include md {
             @include body2-md;
-            font-weight: 500;
         }
 
         @include sm {
             @include subtitle2-sm;
-            font-weight: normal;
         }
     }
 }
