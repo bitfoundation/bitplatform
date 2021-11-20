@@ -788,14 +788,6 @@ footer {
         padding-bottom: rem(20px);
     }
 
-    .bit-msg-bar-icon {
-        padding-top: rem(13px);
-    }
-
-    .bit-msg-bar-innertext span {
-        padding-top: rem(6px);
-    }
-
     .tgl-btn {
         @include sm {
             margin-top: rem(10px);
@@ -848,6 +840,10 @@ footer {
 
     .bit-spn-fluent {
         margin-top: rem(10px);
+    }
+
+    .bit-spb-lbl-wrapper{
+        height : auto;
     }
 }
 
