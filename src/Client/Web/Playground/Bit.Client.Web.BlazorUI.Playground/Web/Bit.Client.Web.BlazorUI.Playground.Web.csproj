@@ -27,6 +27,14 @@
     </PropertyGroup>-->
 
     <ItemGroup>
+        <Content Update="tsconfig.json">
+            <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+            <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+            <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+        </Content>
+    </ItemGroup>
+
+    <ItemGroup>
         <ProjectReference Include="..\..\..\Bit.Client.Web.BlazorUI\Bit.Client.Web.BlazorUI.csproj" />
         <ProjectReference Include="..\Shared\Bit.Client.Web.BlazorUI.Playground.Shared.csproj" />
     </ItemGroup>

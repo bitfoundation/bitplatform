@@ -1,24 +1,14 @@
 {
-  "profiles": {
-    "Bit.Client.Web.BlazorUI.Playground.Api": {
-      "commandName": "Project",
-      "launchBrowser": false,
-      "inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}",
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      },
-      "applicationUrl": "https://localhost:5001;http://localhost:5000"
-    },
-    "Bit.Client.Web.BlazorUI.Playground-Watch": {
-      "executablePath": "dotnet.exe",
-      "workingDirectory": "$(ProjectDir)",
-      "commandLineArgs": "watch run",
-      "launchBrowser": true,
-      "launchUrl": "/",
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      },
-      "applicationUrl": "http://localhost:5000"
+    "profiles": {
+        "Bit.Client.Web.BlazorUI.Playground.Api": {
+            "commandName": "Project",
+            "dotnetRunMessages": true,
+            "launchBrowser": true,
+            "inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}",
+            "environmentVariables": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            },
+            "applicationUrl": "https://localhost:5001;http://localhost:5000"
+        }
     }
-  }
 }

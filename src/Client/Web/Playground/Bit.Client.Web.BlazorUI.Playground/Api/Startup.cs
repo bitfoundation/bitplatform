@@ -19,6 +19,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Api
     {
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddPlaygroundServices();
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 #if BlazorClient
             services.AddScoped(c =>

@@ -17,7 +17,11 @@ namespace Bit.Client.Web.BlazorUI.Playground.Api
             Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
-                    webBuilder.UseStartup<Startup>();
+                    webBuilder.UseStartup<Startup>()
+#if DEBUG
+                        .UseUrls("https://*:5001", "http://*:5000")
+#endif
+                    ;
                 });
     }
 }
