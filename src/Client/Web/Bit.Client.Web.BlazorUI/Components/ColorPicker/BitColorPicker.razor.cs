@@ -20,11 +20,8 @@ namespace Bit.Client.Web.BlazorUI
         private double hue;
         private double selectedSaturation = 1;
         private double selectedValue = 1;
-
-#pragma warning disable CA1823 // Avoid unused private fields
         private bool ColorHasBeenSet;
         private bool AlphaHasBeenSet;
-#pragma warning restore CA1823 // Avoid unused private fields
 
         [Inject] public IJSRuntime JSRuntime { get; set; } = default!;
 
@@ -135,6 +132,8 @@ namespace Bit.Client.Web.BlazorUI
 
         private async Task PickColorTune(MouseEventArgs e)
         {
+            if (ColorHasBeenSet && ColorChanged.HasDelegate is false) return;
+
             var parent = await JSRuntime.GetBoundingClientRect(SaturationPickerRef);
             saturationPickerThumbPosition = new BitColorPosition
             {
@@ -155,6 +154,8 @@ namespace Bit.Client.Web.BlazorUI
 
         private async Task PickMainColor(ChangeEventArgs args)
         {
+            if (ColorHasBeenSet && ColorChanged.HasDelegate is false) return;
+
             hue = Convert.ToInt32(args.Value, CultureInfo.InvariantCulture);
             color = new BitColor(hue, selectedSaturation, selectedValue, color.Alpha);
             SetSaturationPickerBackground();
@@ -166,32 +167,14 @@ namespace Bit.Client.Web.BlazorUI
 
         private async Task PickAlphaColor(ChangeEventArgs args)
         {
+            if (AlphaHasBeenSet && AlphaChanged.HasDelegate is false) return;
+
             var alpha = Convert.ToDouble(args.Value, CultureInfo.InvariantCulture) / 100;
             color = new BitColor(color.Hex ?? "", alpha);
             string? colorValue = colorType == BitColorType.Hex ? color.Hex : color.Rgb;
             await ColorChanged.InvokeAsync(colorValue);
             await AlphaChanged.InvokeAsync(color.Alpha);
             await OnChange.InvokeAsync(new() { Color = colorValue, Alpha = color.Alpha });
-        }
-
-        private async Task RGBColorChanged(string? red = null, string? green = null, string? blue = null)
-        {
-            color.SetColorByRgba(GetColorValue(red), GetColorValue(green), GetColorValue(blue));
-            var saturationPickerRect = await JSRuntime.GetBoundingClientRect(SaturationPickerRef);
-            var hsv = color.Hsv;
-            hue = hsv.Hue;
-            SetSaturationPickerBackground();
-            saturationPickerThumbPosition = new BitColorPosition
-            {
-                Left = Convert.ToInt32(Math.Round(saturationPickerRect.Width * hsv.Saturation / 100)),
-                Top = Convert.ToInt32(Math.Round(saturationPickerRect.Height - saturationPickerRect.Height * hsv.Value / 100))
-            };
-
-            string? colorValue = colorType == BitColorType.Hex ? color.Hex : color.Rgb;
-            await ColorChanged.InvokeAsync(colorValue);
-            await AlphaChanged.InvokeAsync(color.Alpha);
-            await OnChange.InvokeAsync(new() { Color = colorValue, Alpha = color.Alpha });
-            StateHasChanged();
         }
 
         private static int? GetColorValue(string? color)
