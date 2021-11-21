@@ -22,7 +22,7 @@
                     <div>Half star in readOnly mode</div>
                     <BitRating IsReadOnly="true" @bind-Rating="RatingReadOnlyValue" GetAriaLabel="@((value, max) => $"Half star in readOnly mode rating value is {value.ToString()} of {max.ToString()}")" />
                     <div>Custom icons</div>
-                    <BitRating Icon="HeartFill" UnselectedIcon="Heart" AllowZeroStars="true" @bind-Rating="RatingCustomIconValue" />
+                    <BitRating Icon="BitIcon.HeartFill" UnselectedIcon="BitIcon.Heart" AllowZeroStars="true" @bind-Rating="RatingCustomIconValue" />
                 </div>
             </div>
         </SampleContent>
@@ -41,8 +41,8 @@
                &lt<span class="soco-component-attr">BitRating IsReadOnly</span><span class="soco-tag-type-def">="true"</span>
                                       <span class="soco-code">&#64;</span><span class="soco-component-attr">bind-Rating</span><span>="RatingReadOnlyValue"</span>
                                       <span class="soco-component-attr">GetAriaLabel</span>="<span class="soco-code">&#64;</span>((value, max) => <span class="soco-string">$"Half star in readOnly mode rating value is </span>{value.ToString()} <span class="soco-string"> of </span>{max.ToString()}<span class="soco-string">"</span>)"/&gt;
-               &lt<span class="soco-component-attr">BitRating Icon</span>="HeartFill"
-                                      <span class="soco-component-attr">UnselectedIcon</span>="Heart"
+               &lt<span class="soco-component-attr">BitRating Icon</span>="BitIcon.HeartFill"
+                                      <span class="soco-component-attr">UnselectedIcon</span>="BitIcon.Heart"
                                       <span class="soco-component-attr">AllowZeroStars</span>=<span class="soco-tag-type-def">"true"</span>
                                       <span class="soco-code">&#64;</span><span class="soco-component-attr">bind-Rating</span><span>="RatingOutsideValue"</span>/&gt;
             </pre>
@@ -51,7 +51,7 @@
     <CodeSample Title="Button-controlled rating" Description="BitRating component support two-way binding as well." CodeSampleContentForCopy="@controlledRatingSampleCode">
         <SampleContent>
             <div class="how-to-use">
-                <BitRating Icon="Emoji2" UnselectedIcon="EmojiNeutral" AllowZeroStars="true" @bind-Rating="RatingOutsideValue" />
+                <BitRating Icon="BitIcon.Emoji2" UnselectedIcon="BitIcon.EmojiNeutral" AllowZeroStars="true" @bind-Rating="RatingOutsideValue" />
                 <div>
                     <span>RatingOutsideValue: @RatingOutsideValue</span>
                 </div>
@@ -63,8 +63,8 @@
         </SampleContent>
         <CodeSampleContent>
             <pre>
-               &lt<span class="soco-component-attr">BitRating Icon</span>="Emoji2"
-                                      <span class="soco-component-attr">UnselectedIcon</span>="EmojiNeutral"
+               &lt<span class="soco-component-attr">BitRating Icon</span>="BitIcon.Emoji2"
+                                      <span class="soco-component-attr">UnselectedIcon</span>="BitIcon.EmojiNeutral"
                                       <span class="soco-component-attr">AllowZeroStars</span>=<span class="soco-tag-type-def">"true"</span>
                                       <span class="soco-code">&#64;</span><span class="soco-component-attr">bind-Rating</span><span>="RatingOutsideValue"</span>/&gt;
                &lt<span class="soco-component-attr">BitButton OnClick</span>="() => RatingOutsideValue = 5">Fully satisfied<span>&lt/</span><span class="soco-component-attr">BitButton</span><span>&gt;</span>

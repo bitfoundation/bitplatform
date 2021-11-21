@@ -49,7 +49,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Rating
             new ComponentParameter()
             {
                 Name = "Icon",
-                Type = "string",
+                Type = "BitIcon",
                 DefaultValue = "FavoriteStarFill",
                 Description = "Custom icon name for unselected rating elements, If unset, default will be the FavoriteStar icon.",
             },
@@ -137,13 +137,13 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Rating
             $"<BitRating IsReadOnly='true'{Environment.NewLine}" +
             $"@bind-Rating='RatingReadOnlyValue'{Environment.NewLine}" +
             $"GetAriaLabel='@((value, max) => $'Half star in readOnly mode rating value is {{value.ToString()}} of {{max.ToString()}}')'/>{Environment.NewLine}" +
-            $"<BitRating Icon='HeartFill'{Environment.NewLine}" +
-            $"UnselectedIcon='Heart'{Environment.NewLine}" +
+            $"<BitRating Icon='BitIcon.HeartFill'{Environment.NewLine}" +
+            $"UnselectedIcon='BitIcon.Heart'{Environment.NewLine}" +
             $"AllowZeroStars='true'{Environment.NewLine}" +
             "@bind-Rating='RatingOutsideValue'/>" ;
 
-        private readonly string controlledRatingSampleCode = $"<BitRating Icon='Emoji2'{Environment.NewLine}" +
-          $"UnselectedIcon='EmojiNeutral'{Environment.NewLine}" +
+        private readonly string controlledRatingSampleCode = $"<BitRating Icon='BitIcon.Emoji2'{Environment.NewLine}" +
+          $"UnselectedIcon='BitIcon.EmojiNeutral'{Environment.NewLine}" +
           $"AllowZeroStars='true'{Environment.NewLine}" +
           $"<BitRating AllowZeroStars='true'{Environment.NewLine}" +
           $"@bind-Rating='RatingOutsideValue'/>{Environment.NewLine}" +

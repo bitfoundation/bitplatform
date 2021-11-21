@@ -88,9 +88,9 @@ namespace Bit.Client.Web.BlazorUI.Tests.Rating
         public void BitRatingShouldTakeCorrectAriaLabelFormat(string ariaLabelFormat)
         {
             var component = RenderComponent<BitRatingTest>(parameters =>
-               {
-                   parameters.Add(p => p.AriaLabelFormat, ariaLabelFormat);
-               });
+            {
+                parameters.Add(p => p.AriaLabelFormat, ariaLabelFormat);
+            });
             var span = component.Find(".bit-rating button span");
             Assert.AreEqual(string.Format(ariaLabelFormat, 1, 5), span.TextContent);
         }
@@ -131,10 +131,10 @@ namespace Bit.Client.Web.BlazorUI.Tests.Rating
         }
 
         [DataTestMethod,
-            DataRow("HeartFill", "Heart"),
-            DataRow("HeartFill", "Heart"),
+            DataRow(BitIcon.HeartFill, BitIcon.Heart),
+            DataRow(BitIcon.HeartFill, BitIcon.Heart),
             ]
-        public void BitRatingShouldTakeCustomIcon(string icon, string unselectedIcon)
+        public void BitRatingShouldTakeCustomIcon(BitIcon icon, BitIcon unselectedIcon)
         {
             var component = RenderComponent<BitRatingTest>(parameters =>
             {
@@ -203,12 +203,12 @@ namespace Bit.Client.Web.BlazorUI.Tests.Rating
 
 
         [DataTestMethod,
-              DataRow(5, 2, "HeartFill", "Heart"),
-              DataRow(5, 3, "HeartFill", "Heart"),
-              DataRow(5, 1.25, "HeartFill", "Heart"),
-              DataRow(5, 2.5, "HeartFill", "Heart")
+              DataRow(5, 2, BitIcon.HeartFill, BitIcon.Heart),
+              DataRow(5, 3, BitIcon.HeartFill, BitIcon.Heart),
+              DataRow(5, 1.25, BitIcon.HeartFill, BitIcon.Heart),
+              DataRow(5, 2.5, BitIcon.HeartFill, BitIcon.Heart)
         ]
-        public void BitRatingShouldRespectRatingValue(int max, double rating, string icon, string unselectedIcon)
+        public void BitRatingShouldRespectRatingValue(int max, double rating, BitIcon icon, BitIcon unselectedIcon)
         {
             var component = RenderComponent<BitRatingTest>(parameters =>
             {
@@ -218,8 +218,8 @@ namespace Bit.Client.Web.BlazorUI.Tests.Rating
 
             var buttons = component.FindAll(".bit-rating button i:nth-child(2)");
 
-            var filledBitRatingIconCount = buttons.Where(s => s.ClassList.Contains($"bit-icon--{icon}")).Count();
-            var unselectedBitRatingIconCount = buttons.Where(s => s.ClassList.Contains($"bit-icon--{unselectedIcon}")).Count();
+            var filledBitRatingIconCount = buttons.Where(s => s.ClassList.Contains($"bit-icon--{icon.GetName()}")).Count();
+            var unselectedBitRatingIconCount = buttons.Where(s => s.ClassList.Contains($"bit-icon--{unselectedIcon.GetName()}")).Count();
 
             //TODO: bypassed - BUnit 2-way bound parameters issue
             //Assert.AreEqual(filledBitRatingIconCount, rating);
@@ -227,12 +227,12 @@ namespace Bit.Client.Web.BlazorUI.Tests.Rating
         }
 
         [DataTestMethod,
-             DataRow(5, 2, "HeartFill", "Heart"),
-             DataRow(5, 3, "HeartFill", "Heart"),
-             DataRow(5, 1.25, "HeartFill", "Heart"),
-             DataRow(5, 2.5, "HeartFill", "Heart")
+             DataRow(5, 2, BitIcon.HeartFill, BitIcon.Heart),
+             DataRow(5, 3, BitIcon.HeartFill, BitIcon.Heart),
+             DataRow(5, 1.25, BitIcon.HeartFill, BitIcon.Heart),
+             DataRow(5, 2.5, BitIcon.HeartFill, BitIcon.Heart)
        ]
-        public void BitRatingShouldRespectDefaultRatingValue(int max, double defaultRating, string icon, string unselectedIcon)
+        public void BitRatingShouldRespectDefaultRatingValue(int max, double defaultRating, BitIcon icon, BitIcon unselectedIcon)
         {
             var component = RenderComponent<BitRatingTest>(parameters =>
             {
@@ -242,8 +242,8 @@ namespace Bit.Client.Web.BlazorUI.Tests.Rating
 
             var buttons = component.FindAll(".bit-rating button i:nth-child(2)");
 
-            var filledBitRatingIconCount = buttons.Where(s => s.ClassList.Contains($"bit-icon--{icon}")).Count();
-            var unselectedBitRatingIconCount = buttons.Where(s => s.ClassList.Contains($"bit-icon--{unselectedIcon}")).Count();
+            var filledBitRatingIconCount = buttons.Where(s => s.ClassList.Contains($"bit-icon--{icon.GetName()}")).Count();
+            var unselectedBitRatingIconCount = buttons.Where(s => s.ClassList.Contains($"bit-icon--{unselectedIcon.GetName()}")).Count();
 
             //TODO: bypassed - BUnit 2-way bound parameters issue
             //Assert.AreEqual(filledBitRatingIconCount, defaultRating);
