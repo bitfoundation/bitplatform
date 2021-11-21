@@ -19,7 +19,6 @@ namespace Bit.Client.Web.BlazorUI.Playground.Api
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddPlaygroundServices();
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 #if BlazorClient
             services.AddScoped(c =>
@@ -31,6 +30,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Api
                 return new HttpClient { BaseAddress = new Uri(c.GetRequiredService<NavigationManager>().BaseUri) };
             });
             services.AddRazorPages();
+            services.AddPlaygroundServices();
 #endif
             services.AddCors();
             services.AddMvcCore();
