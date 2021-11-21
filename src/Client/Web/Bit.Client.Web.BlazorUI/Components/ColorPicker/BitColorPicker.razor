@@ -41,6 +41,7 @@
                            aria-valuemin="0"
                            aria-valuemax="359"
                            value="@hue"
+                           disabled="@(ColorHasBeenSet && ColorChanged.HasDelegate is false)"
                            @oninput="PickMainColor">
                 </div>
 
@@ -58,6 +59,7 @@
                            aria-valuemin="0"
                            aria-valuemax="100"
                            value="@(color.Alpha * 100)"
+                           disabled="@(AlphaHasBeenSet && AlphaChanged.HasDelegate is false)"
                            @oninput="PickAlphaColor">
                     </div>
                 }

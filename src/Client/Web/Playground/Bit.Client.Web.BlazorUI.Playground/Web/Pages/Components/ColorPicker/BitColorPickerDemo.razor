@@ -8,9 +8,9 @@
     <CodeSample Title="BitColorPicker (Hex)" Description="" CodeSampleContentForCopy="@hexColorPickerSampleCode">
         <SampleContent>
             <div>
-                <BitColorPicker ShowPreview="IsToggleChecked" @ref="ColorPicker" @bind-Color="Color" ShowAlphaSlider="false">Default ColorPicker</BitColorPicker>
+                <BitColorPicker ShowPreview="@IsToggleChecked" @ref="ColorPicker" @bind-Color="@Color" ShowAlphaSlider="false">Default ColorPicker</BitColorPicker>
                 <div class="p-12">
-                    <BitToggle Label="Show Preview Box" @bind-IsChecked="IsToggleChecked" IsEnabled="true" />
+                    <BitToggle Label="Show Preview Box" @bind-IsChecked="@IsToggleChecked" IsEnabled="true" />
                 </div>
                 <div class="p-12 max-w-300">
                     <BitTextField Label="Hex Code" Value="@Color"></BitTextField>
@@ -47,7 +47,7 @@
     <CodeSample Title="BitColorPicker (RGB)" Description="" CodeSampleContentForCopy="@rgbColorPickerSampleCode">
         <SampleContent>
             <div>
-                <BitColorPicker ShowPreview="true" @bind-Alpha="Alpha" @bind-Color="ColorRgb">Default ColorPicker</BitColorPicker>
+                <BitColorPicker ShowPreview="true" @bind-Alpha="@Alpha" @bind-Color="@ColorRgb">Default ColorPicker</BitColorPicker>
                 <div class="p-12 max-w-300">
                     <BitTextField Label="RGB" Value="@ColorRgb"></BitTextField>
                     <BitTextField Label="Alpha" Value="@(Alpha.ToString())"></BitTextField>
