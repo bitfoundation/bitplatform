@@ -2,13 +2,26 @@
 using System.Collections.Generic;
 using Bit.Client.Web.BlazorUI.Playground.Web.Models;
 using Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
+using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.Configuration;
 
 namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.FileUploads
 {
     public partial class BitFileUploadDemo
     {
-        private string UploadUrl = "/FileUpload/UploadStreamedFile";
-        private string RemoveUrl = "/FileUpload/RemoveFile";
+        string UploadUrl => $"{GetBaseUrl()}FileUpload/UploadStreamedFile";
+        string RemoveUrl => $"{GetBaseUrl()}FileUpload/RemoveFile";
+
+        [Inject] public IConfiguration Configuration { get; set; }
+
+        string GetBaseUrl()
+        {
+#if BlazorWebAssembly
+            return "/";
+#else
+            return Configuration.GetValue<string>("ApiServerAddress");
+#endif
+        }
 
         private readonly List<ComponentParameter> componentParameters = new()
         {

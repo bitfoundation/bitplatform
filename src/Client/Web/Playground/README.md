@@ -1,44 +1,48 @@
 # Bit.Client.Web.BlazorUI.Playground
-Blazor dual mode with best practices in mind!
+Blazor multi mode with best practices in mind!
 
-In Directory.build.props, you can switch between blazor server and client by using either
+In Directory.build.props, you can switch between blazor server / web assembly and hybrid by using either
 
 ```xml
-<BlazorMode>Client</BlazorMode>
+<BlazorMode>BlazorWebAssembly</BlazorMode>
 ```
 
 ```xml
-<BlazorMode>Server</BlazorMode>
+<BlazorMode>BlazorServer</BlazorMode>
 ```
 
-In Bit.Client.Web.BlazorUI.Playground.Web, use
+```xml
+<BlazorMode>BlazorHybrid</BlazorMode>
+```
+
+For blazor web assembly use followings in Bit.Client.Web.BlazorUI.Playground.Web:
 
 ```xml
 <Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
 ```
 
-for client side blazor and use
+for blazor server use:
 
 ```xml
 <Project Sdk="Microsoft.NET.Sdk.Web">
 ```
 
-for server side blazor.
+For blazor hybrid, use Bit.Client.Web.BlazorUI.App project instead.
 
-Note that for Client mode, set Bit.Client.Web.BlazorUI.Playground.Api.csproj as startup project, but for Server mode set both Bit.Client.Web.BlazorUI.Playground.Api.csproj and Bit.Client.Web.BlazorUI.Playground.Web.csproj as startup projects.
+To run blazor web assembly only start Api project, but for blazor hybrid you need multi startup for both api & app projects. In blazor server you need multi startup for both api & web projects.
 
-In shared project, you can also detect code is running in blazor server or client/wasm modes by use any of followings:
+In shared project, you can also detect code is running in blazor server / web assembly or hybrid mode by use any of followings:
 
 ```cs
 
-if (Bit.Client.Web.BlazorUI.Playground.Shared.BlazorModeDetector.Current.IsServer())
+if (Bit.Client.Web.BlazorUI.Playground.Shared.BlazorModeDetector.Current.IsBlazorServer())
 {
 }
 
-#if BlazorClient
+#if BlazorWebAssembly
 
 #endif
 
 ```
 
-It's recommended to clear your browser's cache while switching between server and client/wasm modes!
+It's recommended to clear your browser's cache and close/open visual studio while switching between blazor modes!

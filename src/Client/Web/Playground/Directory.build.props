@@ -1,10 +1,11 @@
 <Project>
 
     <PropertyGroup>
-        <BlazorMode>Server</BlazorMode>
-        <!-- You can use either Server or Client, for example: <BlazorMode>Server</BlazorMode>-->
-        <DefineConstants Condition=" '$(BlazorMode)' == 'Client' ">$(DefineConstants);BlazorClient</DefineConstants>
-        <DefineConstants Condition=" '$(BlazorMode)' == 'Server' ">$(DefineConstants);BlazorServer</DefineConstants>
+        <BlazorMode>BlazorServer</BlazorMode>
+        <!-- You can use either Server or web assembly or hybrid, for example: <BlazorMode>BlazorWebAssembly</BlazorMode>-->
+        <DefineConstants Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' ">$(DefineConstants);BlazorWebAssembly</DefineConstants>
+        <DefineConstants Condition=" '$(BlazorMode)' == 'BlazorServer' ">$(DefineConstants);BlazorServer</DefineConstants>
+        <DefineConstants Condition=" '$(BlazorMode)' == 'BlazorHybrid' ">$(DefineConstants);BlazorHybrid</DefineConstants>
         <LangVersion>preview</LangVersion>
     </PropertyGroup>
 

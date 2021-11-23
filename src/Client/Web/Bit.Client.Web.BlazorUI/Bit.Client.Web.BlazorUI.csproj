@@ -34,11 +34,11 @@
         <PackageReleaseNotes>https://github.com/bitfoundation/bitframework/releases/</PackageReleaseNotes>
         <IncludeContentInPack>false</IncludeContentInPack>
         
-        <PackageVersion>$([System.DateTime]::Now.ToString("yyyy.MMdd.HHmm"))</PackageVersion>
+        <PackageVersion Condition=" '$(Configuration)' == 'Release' ">$([System.DateTime]::Now.ToString("yyyy.MMdd.HHmm"))</PackageVersion>
 
         <!-- Version -->
-        <Version>$([System.DateTime]::Now.ToString("yyyy.MMdd.HHmm"))</Version>
-        <AssemblyVersion>$([System.DateTime]::Now.ToString("yyyy.MMdd.HHmm"))</AssemblyVersion>
+        <Version Condition=" '$(Configuration)' == 'Release' ">$([System.DateTime]::Now.ToString("yyyy.MMdd.HHmm"))</Version>
+        <AssemblyVersion Condition=" '$(Configuration)' == 'Release' ">$([System.DateTime]::Now.ToString("yyyy.MMdd.HHmm"))</AssemblyVersion>
 
         <!-- Compile -->
         <NeutralLanguage>en</NeutralLanguage>

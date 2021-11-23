@@ -255,3 +255,16 @@ _book
 /src/Client/Web/Bit.Client.Web.BlazorUI/wwwroot/**/*.css.gz
 
 /src/Client/Xamarin/Sample/Bit.CSharpClientSample.iOS/GoogleService-Info.plist
+
+/src/Client/Web/Playground/Bit.Client.Web.BlazorUI.Playground/App/Styles
+/src/Client/Web/Playground/Bit.Client.Web.BlazorUI.Playground/App/Shared
+/src/Client/Web/Playground/Bit.Client.Web.BlazorUI.Playground/App/Services
+/src/Client/Web/Playground/Bit.Client.Web.BlazorUI.Playground/App/Scripts
+/src/Client/Web/Playground/Bit.Client.Web.BlazorUI.Playground/App/Pages
+/src/Client/Web/Playground/Bit.Client.Web.BlazorUI.Playground/App/Models
+/src/Client/Web/Playground/Bit.Client.Web.BlazorUI.Playground/App/Extensions
+/src/Client/Web/Playground/Bit.Client.Web.BlazorUI.Playground/App/Components
+/src/Client/Web/Playground/Bit.Client.Web.BlazorUI.Playground/App/wwwroot/styles
+/src/Client/Web/Playground/Bit.Client.Web.BlazorUI.Playground/App/wwwroot/scripts
+/src/Client/Web/Playground/Bit.Client.Web.BlazorUI.Playground/App/wwwroot/images
+/src/Client/Web/Playground/Bit.Client.Web.BlazorUI.Playground/App/wwwroot/fonts
