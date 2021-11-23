@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 
-namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.SearchBoxes
+namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.SearchBox
 {
     public partial class BitSearchBoxDemo
     {

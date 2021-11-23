@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Bit.Client.Web.BlazorUI.Playground.Web.Models;
 using Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 
-namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Navs
+namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Nav
 {
     public partial class BitNavDemo
     {

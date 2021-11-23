@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 
-namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Labels
+namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Label
 {
     public partial class BitLabelDemo
     {

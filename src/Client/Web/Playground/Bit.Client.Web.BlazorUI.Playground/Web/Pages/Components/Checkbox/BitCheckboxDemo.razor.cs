@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Bit.Client.Web.BlazorUI.Playground.Web.Models;
 using Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 
-namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Checkboxes
+namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Checkbox
 {
     public partial class BitCheckboxDemo
     {

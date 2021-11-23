@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 
-namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Links
+namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Link
 {
     public partial class BitLinkDemo
     {

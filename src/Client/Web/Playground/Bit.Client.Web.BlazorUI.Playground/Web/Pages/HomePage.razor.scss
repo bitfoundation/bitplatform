@@ -148,3 +148,50 @@
         @include SecondaryBtn;
     }
 }
+
+.popular-components-section {
+    padding: rem(136px) 0;
+    background: linear-gradient(0deg, rgba(35, 49, 132, 0.9), rgba(35, 49, 132, 0.9)), url(/images/home/most-popular-components-bg.svg);
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+
+    @include lg {
+        padding: rem(104px) 0;
+    }
+
+    @include md {
+        padding: rem(64px) 0;
+    }
+
+    @include sm {
+        padding: rem(56px) 0;
+    }
+
+    .section-title {
+        font-weight: bold;
+        font-size: rem(50px);
+        line-height: rem(72px);
+        margin-bottom: rem(104px);
+        color: $White;
+        text-align: center;
+
+        @include lg {
+            font-size: rem(36px);
+            line-height: rem(48px);
+            margin-bottom: rem(40px);
+        }
+
+        @include md {
+            font-size: rem(28px);
+            line-height: rem(40px);
+            margin-bottom: rem(30px);
+        }
+
+        @include sm {
+            font-size: rem(18px);
+            line-height: rem(24px);
+            margin-bottom: rem(24px);
+        }
+    }
+}

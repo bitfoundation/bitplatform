@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Bit.Client.Web.BlazorUI.Playground.Web.Models;
 using Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 
-namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.SpinButtons
+namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.SpinButton
 {
     public partial class BitSpinButtonDemo
     {

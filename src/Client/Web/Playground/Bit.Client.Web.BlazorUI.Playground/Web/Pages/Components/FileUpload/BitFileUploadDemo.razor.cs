@@ -5,7 +5,7 @@ using Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Configuration;
 
-namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.FileUploads
+namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.FileUpload
 {
     public partial class BitFileUploadDemo
     {
