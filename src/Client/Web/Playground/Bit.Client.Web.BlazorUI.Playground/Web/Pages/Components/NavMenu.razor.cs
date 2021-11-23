@@ -24,7 +24,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components
                      new BitNavLinkItem { Name= "IconButton", Key = "IconButton", Url = "/components/icon-button"},
                      new BitNavLinkItem { Name= "ToggleButton", Key = "ToggleButton", Url = "/components/toggle-button" },
                      new BitNavLinkItem { Name= "Checkbox", Key = "Checkbox", Url = "/components/check-box" },
-                     new BitNavLinkItem { Name= "ChoiceGroup", Key = "Choice", Url = "/components/choice-group" },
+                     new BitNavLinkItem { Name= "ChoiceGroup (RadioButton)", Key = "Choice", Url = "/components/choice-group" },
                      new BitNavLinkItem { Name= "DropDown", Key = "DropDown", Url = "/components/drop-down" },
                      new BitNavLinkItem { Name= "FileUpload", Key= "FileUpload", Url = "/components/file-upload"},
                      new BitNavLinkItem { Name= "Label", Key = "Label",  Url = "/components/label" },
@@ -32,9 +32,9 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components
                      new BitNavLinkItem { Name= "Rating", Key = "Rating", Url = "/components/rating" },
                      new BitNavLinkItem { Name= "SearchBox", Key = "SearchBox", Url = "/components/search-box" },
                      new BitNavLinkItem { Name= "Slider", Key = "Slider", Url = "/components/slider" },
-                     new BitNavLinkItem { Name= "SpinButton", Key = "SpinButton", Url = "/components/spin-button"},
+                     new BitNavLinkItem { Name= "SpinButton (NumericTextField)", Key = "SpinButton", Url = "/components/spin-button"},
                      new BitNavLinkItem { Name= "TextField", Key = "TextField", Url = "/components/text-field" },
-                     new BitNavLinkItem { Name= "Toggle", Key = "Toggle", Url = "/components/toggle" }
+                     new BitNavLinkItem { Name= "Toggle (Switch)", Key = "Toggle", Url = "/components/toggle" }
                 }
             },
             new BitNavLinkItem
@@ -43,9 +43,9 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components
                 Key = "Pickers",
                 Links = new List<BitNavLinkItem>
                 {
-                    new BitNavLinkItem { Name = "DatePicker", Key = "DatePicker", Url="/components/date-picker" },
+                    new BitNavLinkItem { Name= "Carousel", Key = "Carousel", Url = "/components/carousel" },
                     new BitNavLinkItem { Name= "ColorPicker", Key = "ColorPicker", Url = "/components/color-picker" },
-                    new BitNavLinkItem { Name= "Carousel", Key = "Carousel", Url = "/components/carousel" }
+                    new BitNavLinkItem { Name = "DatePicker", Key = "DatePicker", Url="/components/date-picker" }
                 }
             },
             new BitNavLinkItem
@@ -54,7 +54,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components
                 Key = "Lists",
                 Links = new List<BitNavLinkItem>
                 {
-                    new BitNavLinkItem { Name = "Basic List", Key = "BasicList", Url="/components/basic-list" }
+                    new BitNavLinkItem { Name = "BasicList", Key = "BasicList", Url="/components/basic-list" }
                 }
             },
             new BitNavLinkItem
@@ -63,8 +63,8 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components
                 Key = "Navigations",
                 Links = new List<BitNavLinkItem>
                 {
-                    new BitNavLinkItem { Name = "Nav", Key = "Nav", Url = "/components/nav" },
-                    new BitNavLinkItem { Name = "Pivot", Key = "Pivot", Url = "/components/pivot" },
+                    new BitNavLinkItem { Name = "Nav (TreeList)", Key = "Nav", Url = "/components/nav" },
+                    new BitNavLinkItem { Name = "Pivot (Tab)", Key = "Pivot", Url = "/components/pivot" },
                 }
             },
             new BitNavLinkItem
@@ -82,8 +82,8 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components
                 Key = "Progress",
                 Links = new List<BitNavLinkItem>
                 {
-                    new BitNavLinkItem{ Name = "Spinner", Key = "Spinner", Url = "/components/spinner" },
-                    new BitNavLinkItem{ Name = "Progressindicator", Key = "Progressindicator", Url = "/components/progress-indicator" }
+                    new BitNavLinkItem{ Name = "Progressindicator", Key = "ProgressIndicator", Url = "/components/progress-indicator" },
+                    new BitNavLinkItem{ Name = "Spinner", Key = "Spinner", Url = "/components/spinner" }
                 },
             },
             new BitNavLinkItem

@@ -546,3 +546,148 @@
         }
     }
 }
+
+.component-list-section {
+    padding: rem(136px) rem(32px);
+
+    @include lg {
+        padding: rem(104px) rem(32px);
+    }
+
+    @include md {
+        padding: rem(64px) rem(32px);
+    }
+
+    @include sm {
+        padding: rem(56px) rem(16px);
+    }
+
+    .section-title {
+        font-weight: bold;
+        font-size: rem(50px);
+        line-height: rem(72px);
+        margin-bottom: rem(104px);
+        color: $SecondaryColor;
+        text-align: center;
+
+        @include lg {
+            font-size: rem(36px);
+            line-height: rem(48px);
+            margin-bottom: rem(64px);
+        }
+
+        @include md {
+            font-size: rem(28px);
+            line-height: rem(40px);
+            margin-bottom: rem(32px);
+        }
+
+        @include sm {
+            font-size: rem(18px);
+            line-height: rem(24px);
+            margin-bottom: rem(32px);
+        }
+    }
+
+    .list-group {
+        display: flex;
+        flex-flow: row wrap;
+        justify-content: flex-start;
+        align-items: flex-start;
+    }
+
+    .list-col {
+        display: flex;
+        flex-flow: column nowrap;
+        justify-content: flex-start;
+        align-items: flex-start;
+        width: rem(336px);
+        margin-right: rem(144px);
+
+        &:last-child {
+            margin-right: 0;
+        }
+
+        @include lg {
+            margin-right: rem(16px);
+        }
+
+        @include md {
+            width: rem(274px);
+            margin-right: rem(50px);
+        }
+
+        @include sm {
+            width: 100%;
+            margin-right: 0;
+        }
+    }
+
+    .list {
+        display: flex;
+        flex-flow: column nowrap;
+        justify-content: flex-start;
+        align-items: flex-start;
+        width: 100%;
+        margin-bottom: rem(52px);
+
+        //&:last-child {
+        //    margin-bottom: 0;
+        //}
+
+        @include lg {
+            margin-bottom: rem(40px);
+        }
+
+        @include md {
+            margin-bottom: rem(32px);
+        }
+
+        @include sm {
+            margin-bottom: rem(24px);
+        }
+    }
+
+    .list-title {
+        margin-bottom: rem(16px);
+        font-weight: 500;
+        font-size: rem(24px);
+        line-height: rem(40px);
+        color: $SecondaryColor;
+
+        @include lt-lg {
+            margin-bottom: rem(8px);
+            font-size: rem(16px);
+            line-height: rem(24px);
+        }
+    }
+
+    .list-item {
+        color: $Black01;
+        font-size: rem(18px);
+        line-height: rem(31px);
+        margin-bottom: rem(12px);
+
+        &:last-child {
+            margin-bottom: 0;
+        }
+
+        &:hover {
+            color: $PrimaryColor;
+        }
+
+        @include lg {
+            line-height: rem(24px);
+        }
+
+        @include md {
+            font-size: rem(12px);
+            line-height: rem(16px);
+        }
+
+        @include sm {
+            font-size: rem(14px);
+            line-height: rem(24px);
+        }
+    }
+}

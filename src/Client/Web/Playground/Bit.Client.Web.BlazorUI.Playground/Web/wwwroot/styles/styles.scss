@@ -316,6 +316,10 @@ input::-webkit-input-placeholder {
 
         .bit-nav-link-container {
             margin-left: rem(41px);
+
+            .bit-nav-link-txt {
+                white-space: nowrap;
+            }
         }
 
         .bit-nav-selected-fluent:after {
@@ -436,6 +440,7 @@ input::-webkit-input-placeholder {
 
     .bit-nav-link-container .bit-nav-link-txt {
         margin-left: rem(-20px);
+        white-space: nowrap;
     }
 
     .bit-nav-link-enabled-hasurl-fluent {
