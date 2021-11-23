@@ -47,14 +47,18 @@
     }
 
     .contact-link-container {
-        position: relative;
+        position: absolute;
+        top: rem(-73px);
+        z-index: 1;
+        margin: 0 auto;
+        right: 0;
+        left: 0;
         display: flex;
         justify-content: center;
         flex-flow: row nowrap;
-        margin-bottom: rem(24px);
 
         @include lt-xl {
-            margin-bottom: rem(16px);
+            top: rem(-65px);
         }
     }
 
