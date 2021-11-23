@@ -1,5 +1,7 @@
-﻿@import '_function.scss';
-@import '_variable.scss';
+﻿@import '_functions.scss';
+@import '_variables.scss';
+@import '_media-queries.scss';
+@import '_colors.scss';
 
 /* Global Mixins */
 
@@ -275,75 +277,14 @@
     @include set-title(rem(10px), 300);
 }
 
-/* Media Queries */
+//==============================================
 
-/// https://github.com/Necromancerx/media-queries-scss-mixins
+@mixin PrimaryBtn {
+    background-color: $PrimaryColor;
+    color: $White;
+    cursor: pointer;
 
-$screen-md-min: em(767px);
-$screen-lg-min: em(1025px);
-$screen-xl-min: em(1441px);
-
-$screen-sm-max: em(768px);
-$screen-md-max: em(1024px);
-$screen-lg-max: em(1440px);
-$screen-xl-max: em(5000px);
-
-@mixin sm {
-    @media screen and (max-width: #{$screen-sm-max}) {
-        @content;
-    }
-}
-
-@mixin md {
-    @media screen and (min-width: #{$screen-md-min}) and (max-width: #{$screen-md-max}) {
-        @content;
-    }
-}
-
-@mixin lg {
-    @media screen and (min-width: #{$screen-lg-min}) and (max-width: #{$screen-lg-max}) {
-        @content;
-    }
-}
-
-@mixin xl {
-    @media screen and (min-width: #{$screen-xl-min}) and (max-width: #{$screen-xl-max}) {
-        @content;
-    }
-}
-
-@mixin lt-md {
-    @media screen and (max-width: #{$screen-sm-max}) {
-        @content;
-    }
-}
-
-@mixin lt-lg {
-    @media screen and (max-width: #{$screen-md-max}) {
-        @content;
-    }
-}
-
-@mixin lt-xl {
-    @media screen and (max-width: #{$screen-lg-max}) {
-        @content;
-    }
-}
-
-@mixin gt-sm {
-    @media screen and (min-width: #{$screen-md-min}) {
-        @content;
-    }
-}
-
-@mixin gt-md {
-    @media screen and (min-width: #{$screen-lg-min}) {
-        @content;
-    }
-}
-
-@mixin gt-lg {
-    @media screen and (min-width: #{$screen-xl-min}) {
-        @content;
+    &:hover {
+        background-color: $SecondaryColor;
     }
 }

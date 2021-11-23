@@ -1,0 +1,19 @@
+﻿@import '../Styles/_shared.scss';
+
+.main-container {
+    width: 100%;
+    padding-top: rem(96px);
+    background-color: red;
+
+    @include lg {
+        padding-top: rem(80px);
+    }
+
+    @include md {
+        padding-top: rem(56px);
+    }
+
+    @include sm {
+        padding-top: rem(92px);
+    }
+}

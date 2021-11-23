@@ -1,0 +1,196 @@
+﻿@import '../Styles/_shared.scss';
+
+.main-header {
+    position: fixed;
+    top: 0;
+    z-index: 100;
+    width: 100%;
+    background-color: $White;
+}
+
+.header-main-container {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    height: rem(96px);
+    padding: 0 rem(255px);
+    box-sizing: border-box;
+
+    @include lg {
+        height: rem(80px);
+        padding: 0 rem(100px);
+    }
+
+    @include md {
+        height: rem(56px);
+        padding: 0 rem(32px);
+    }
+
+    @include sm {
+        height: rem(45px);
+        padding: 0 rem(16px);
+        border-bottom: rem(1px) solid #E9E9E9;
+    }
+}
+
+.header-content-container {
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    height: 100%;
+
+    @include sm {
+        .header-link {
+            display: none;
+        }
+    }
+}
+
+.header-logo {
+    width: rem(80px);
+    height: rem(80px);
+    background-image: url('/images/bit-logo.svg');
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    cursor: pointer;
+    margin-right: rem(80px);
+
+    @include lg {
+        width: rem(64px);
+        height: rem(64px);
+    }
+
+    @include md {
+        width: rem(40px);
+        height: rem(40px);
+        margin-right: rem(48px);
+    }
+
+    @include sm {
+        width: rem(32px);
+        height: rem(32px);
+        margin-right: rem(8px);
+    }
+}
+
+.header-link {
+    padding-bottom: rem(8px);
+    margin-right: rem(41px);
+    font-size: rem(20px);
+    line-height: rem(28px);
+    color: $Gray01;
+    text-decoration: none;
+    cursor: pointer;
+
+    @include lg {
+        padding-bottom: rem(6px);
+        margin-right: rem(32px);
+        font-size: rem(16px);
+        line-height: rem(24px);
+    }
+
+    @include md {
+        padding-bottom: rem(4px);
+        margin-right: rem(24px);
+        font-size: rem(12px);
+        line-height: rem(16px);
+    }
+
+    @include sm {
+        padding-bottom: rem(4px);
+        margin-right: 0;
+        font-weight: 500;
+        font-size: rem(14px);
+        line-height: rem(24px);
+    }
+}
+
+.header-link--active {
+    font-weight: 500;
+    color: $SecondaryColor;
+    border-bottom: rem(2px) solid $SecondaryColor;
+}
+
+.btn--primary {
+    @include PrimaryBtn;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: rem(56px);
+    padding: rem(5px) rem(25px) 0 rem(25px);
+    border-radius: rem(4px);
+    box-sizing: border-box;
+    text-align: center;
+    font-weight: 600;
+    font-size: rem(22px);
+    line-height: rem(40px);
+
+    @include lg {
+        height: rem(46px);
+        font-size: rem(18px);
+        line-height: rem(31px);
+    }
+
+    @include md {
+        height: rem(40px);
+        font-size: rem(14px);
+        line-height: rem(24px);
+        padding: rem(5px) rem(14px) 0 rem(14px);
+    }
+
+    @include sm {
+        display: none;
+    }
+}
+
+.github-btn {
+    width: rem(49px);
+    height: rem(49px);
+    background-image: url('/images/github-secondary-icon.svg');
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    cursor: pointer;
+    margin-left: rem(80px);
+
+    &:hover {
+        background-image: url('/images/github-black-icon.svg');
+    }
+
+    @include lg {
+        width: rem(40px);
+        height: rem(40px);
+        margin-left: rem(43px);
+    }
+
+    @include md {
+        width: rem(28px);
+        height: rem(28px);
+        margin-left: rem(26px);
+    }
+
+    @include sm {
+        width: rem(21px);
+        height: rem(32px);
+        background-size: rem(21px);
+        margin-left: 0;
+    }
+}
+
+.header-second-row {
+    display: none;
+    flex-flow: row nowrap;
+    justify-content: space-evenly;
+    align-items: center;
+    width: 100%;
+    height: rem(44px);
+    padding: 0 rem(16px);
+    box-sizing: border-box;
+
+    @include sm {
+        display: flex;
+    }
+}

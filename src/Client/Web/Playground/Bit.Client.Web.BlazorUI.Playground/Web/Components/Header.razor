@@ -1,0 +1,23 @@
+﻿<header class="main-header">
+    <div class="header-main-container">
+        <div class="header-content-container">
+            <a class="header-logo" href="/"></a>
+            <a class="header-link @(CurrentUrl == "/" ? "header-link--active" : "")" href="/">Home</a>
+            <a class="header-link @(CurrentUrl == "/components/demo" ? "header-link--active" : "")" href="/components/demo">Demo</a>
+            <a class="header-link @(CurrentUrl == "/get-started" ? "header-link--active" : "")" href="/get-started">Get Started</a>
+        </div>
+        <div class="header-content-container">
+            @if (CurrentUrl != "/get-started")
+            {
+                <a class="btn--primary" href="/get-started">Try for Free</a>
+            }
+            <a class="github-btn" target="_blank" href="https://github.com/bitfoundation/bitframework"></a>
+        </div>
+    </div>
+
+    <div class="header-second-row">
+        <a class="header-link @(CurrentUrl == "/" ? "header-link--active" : "")" href="/">Home</a>
+        <a class="header-link @(CurrentUrl == "/components/demo" ? "header-link--active" : "")" href="/components/demo">Demo</a>
+        <a class="header-link @(CurrentUrl == "/get-started" ? "header-link--active" : "")" href="/get-started">Get Started</a>
+    </div>
+</header>
