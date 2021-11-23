@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Routing;
 
 namespace Bit.Client.Web.BlazorUI.Playground.Web.Components
 {
@@ -12,7 +13,15 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Components
         protected override void OnInitialized()
         {
             CurrentUrl = NavigationManager.Uri.Replace(NavigationManager.BaseUri, "/", StringComparison.Ordinal);
+            NavigationManager.LocationChanged += OnLocationChanged;
+
             base.OnInitialized();
+        }
+
+        private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
+        {
+            CurrentUrl = NavigationManager.Uri.Replace(NavigationManager.BaseUri, "/", StringComparison.Ordinal);
+            StateHasChanged();
         }
     }
 }
