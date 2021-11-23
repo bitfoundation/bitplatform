@@ -11,6 +11,10 @@
 
 .hero-section {
     padding: rem(120px) rem(75px) rem(136px);
+    background-image: url('/images/home/hero-section-bg.svg');
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
 
     @include lg {
         padding: rem(136px) rem(60px) rem(104px);

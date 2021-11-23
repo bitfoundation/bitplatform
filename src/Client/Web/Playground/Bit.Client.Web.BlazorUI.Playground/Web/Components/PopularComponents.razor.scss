@@ -10,6 +10,10 @@
     @include lg {
         height: rem(568px);
     }
+
+    @include lt-lg {
+        display: none;
+    }
 }
 
 .left-box {
@@ -259,5 +263,88 @@
         @include lg {
             height: calc(100% - #{rem(104px)});
         }
+    }
+}
+
+.card-container {
+    display: none;
+    flex-flow: row wrap;
+    justify-content: center;
+    align-items: flex-start;
+    width: rem(596px);
+
+    @include sm {
+        width: 100%;
+    }
+}
+
+.card {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    width: rem(274px);
+    height: rem(120px);
+    border-radius: rem(10px);
+    margin: 0 rem(12px) rem(24px);
+    padding-top: rem(80px);
+    box-sizing: border-box;
+    font-weight: 500;
+    font-size: rem(16px);
+    line-height: rem(24px);
+    color: $SecondaryColor;
+    background-color: #F5F5F5;
+    background-repeat: no-repeat;
+    background-position: top rem(16px) center;
+    background-size: rem(48px);
+    cursor: pointer;
+
+    &:last-child {
+        margin-bottom: 0;
+    }
+}
+
+.color-picker-card {
+    background-image: url('/images/home/color-picker-blue-icon.svg');
+}
+
+.date-picker-card {
+    background-image: url('/images/home/date-picker-blue-icon.svg');
+}
+
+.drop-down-card {
+    background-image: url('/images/home/drop-down-blue-icon.svg');
+}
+
+.nav-card {
+    background-image: url('/images/home/nav-blue-icon.svg');
+}
+
+.file-upload-card {
+    background-image: url('/images/home/file-upload-blue-icon.svg');
+}
+
+@media all and (max-width: em(1100px)) {
+    .main-container {
+        display: none;
+    }
+
+    .card-container {
+        display: flex;
+    }
+}
+
+@media all and (max-width: em(610px)) {
+    .card-container {
+        max-width: rem(344px);
+    }
+
+    .card {
+        width: rem(156px);
+        height: rem(88px);
+        margin: 0 rem(8px) rem(16px);
+        padding-top: rem(56px);
+        font-size: rem(12px);
+        line-height: rem(16px);
+        background-size: rem(32px);
     }
 }

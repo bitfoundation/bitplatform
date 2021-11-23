@@ -198,3 +198,12 @@
         </div>
     </div>
 </section>
+
+<section class="card-container">
+    @foreach(var com in AllComponents)
+    {
+        <a class="card @($"{com.CssClassName}-card")" href="@com.Url">
+            @com.Name
+        </a>
+    }
+</section>
