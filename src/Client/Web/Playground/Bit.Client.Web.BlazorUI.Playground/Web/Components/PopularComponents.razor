@@ -1,0 +1,200 @@
+﻿<section class="main-container">
+    <div class="left-box">
+        <div class="selected-component">
+            <div class="selected-component-icon @($"{SelectedComponent.CssClassName}-icon")"></div>
+            <div class="selected-component-name">@SelectedComponent.Name</div>
+            <div class="selected-component-desc">@SelectedComponent.Description</div>
+            <a class="demo-btn" href="@SelectedComponent.Url">More about @SelectedComponent.Name</a>
+        </div>
+        <div class="component-list">
+            @foreach (var com in Components)
+            {
+                <div class="component-row @($"{com.CssClassName}-row")" @onclick="@(() => SelectComponent(com))">
+                    @com.Name
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="right-box">
+        <div class="top-bar">
+            <div class="top-bar-tab @(ActiveTab == "demo" ? "actvie-tab" : "")" @onclick="@(() => SelectTab("demo"))">Demo</div>
+            <div class="top-bar-tab @(ActiveTab == "code" ? "actvie-tab" : "")" @onclick="@(() => SelectTab("code"))">Code</div>
+        </div>
+
+        <div class="tab-content">
+            @if (ActiveTab == "demo")
+            {
+                @if (SelectedComponent.Name == "ColorPicker")
+                {
+                    <BitColorPicker ShowPreview="true" @bind-Alpha="@Alpha" @bind-Color="@ColorRgb">Default ColorPicker</BitColorPicker>
+                }
+                else if (SelectedComponent.Name == "DatePicker")
+                {
+                    <BitDatePicker Style="width: 300px"
+                           ShowWeekNumbers="true">
+                    </BitDatePicker>
+                }
+                else if (SelectedComponent.Name == "FileUpload")
+                {
+                    <BitFileUpload IsMultiSelect="true"
+                           Label="Select files"
+                           UploadUrl="@UploadUrl"
+                           RemoveUrl="@RemoveUrl">
+                    </BitFileUpload>
+                }
+                else if (SelectedComponent.Name == "DropDown")
+                {
+                    <BitDropDown Label="Multi-select uncontrolled"
+                         Items="GetDropdownItems()"
+                         Placeholder="Select options"
+                         IsMultiSelect="true"
+                         Style="width: 290px; margin-bottom: 20px;">
+                    </BitDropDown>
+                }
+                else if (SelectedComponent.Name == "Nav (TreeList)")
+                {
+                    <BitNav Style="width: 208px;
+                       height: 350px;
+                       box-sizing: border-box;
+                       border: 1px solid #eee;
+                       overflow-y: auto;"
+                    NavLinkItems="BasicNavLinks"
+                    AriaLabel="Nav basic example"
+                    SelectedKey="key3">
+                    </BitNav>
+                }
+            }
+            else
+            {
+                @if (SelectedComponent.Name == "ColorPicker")
+                {
+                    <pre>
+                &lt;<span class="soco-component-attr">BitColorPicker ShowPreview</span>="<span class="soco-tag-type-def">true</span>"
+                                                <span class="soco-code">@@</span><span class="soco-component-attr">bind-Alpha</span><span>="Alpha"</span>
+                                                <span class="soco-code">@@</span><span class="soco-component-attr">bind-Color</span><span>="ColorRgb"</span>&gt;
+                          Default ColorPicker
+                &lt;/<span class="soco-component-attr">BitColorPicker</span>&gt;
+                <span class="soco-code">@@code {</span>
+                    <span class="soco-tag-type-def">private</span> BitColorPicker ColorPicker;
+                    <span class="soco-tag-type-def">private string</span> ColorRgb = "rgb(255,255,255)";
+                    <span class="soco-tag-type-def">private double</span> Alpha = 1;
+                <span class="soco-code">}</span>
+            </pre>
+                }
+                else if (SelectedComponent.Name == "DatePicker")
+                {
+                    <pre>
+                        &lt<span class="soco-component-attr">BitDatePicker Style</span>="width: 300px" 
+                                                       <span class="soco-component-attr">ShowWeekNumbers</span>="<span class="soco-tag-type-def">true</span>">
+                        &lt/<span class="soco-component-attr">BitDatePicker</span>>
+                    </pre>
+                }
+                else if (SelectedComponent.Name == "FileUpload")
+                {
+                    <pre>
+                        &lt<span class="soco-component-attr">BitFileUpload IsMultiSelect</span> =" <span class="soco-tag-type-def">true</span>" 
+                                                        <span class="soco-component-attr">Label</span>="Select or drag and drop files" 
+                                                        <span class="soco-component-attr">UploadUrl</span>="<span class="soco-code">&#64</span>UploadUrl" 
+                                                        <span class="soco-component-attr">RemoveUrl</span>="<span class="soco-code">&#64</span>RemoveUrl"&gt
+                        &lt/<span class="soco-component-attr">BitFileUpload</span>&gt
+                        <span class="soco-code">&#64code {</span>
+                        <span class="soco-tag-type-def">private string</span> UploadUrl;
+                        <span class="soco-tag-type-def">private string</span> RemoveUrl;
+                        <span class="soco-code">}</span>
+                    </pre>
+                }
+                else if (SelectedComponent.Name == "DropDown")
+                {
+                    <pre>
+                &lt<span class="soco-component-attr">BitDropDown Label</span>="Multi-select uncontrolled "
+                                              <span class="soco-component-attr">Items</span>="GetDropdownItems ()"
+                                              <span class="soco-component-attr">Placeholder</span>="Select options">
+                                              <span class="soco-component-attr">IsMultiSelect</span>="<span class="soco-tag-type-def">true</span>"
+                                              <span class="soco-component-attr">Style</span>="width: 290px; margin-bottom: 20px;">
+                &lt;/<span class="soco-component-attr">BitDropDown</span>&gt;
+                <span class="soco-code">&#64;code {</span>
+                <span class="soco-tag-type-def">private </span><span class="soco-component-attr">List&ltdropdownitem></span> GetDropdownItems ()
+                <span>{</span>
+                       <span class="soco-component-attr">List&ltdropdownitem></span> items = <span class="soco-tag-type-def">new</span>();
+                       items.<span>Add</span>(<span class="soco-tag-type-def">new</span><span class="soco-component-attr"> DropDownItem</span>()
+                       <span>{</span>
+                               ItemType = <span> DropDownItemType.Header,</span>
+                               Text = <span class="soco-string">"Fruits"</span>
+                       <span>});</span>
+                       items.<span>Add</span>(<span class="soco-tag-type-def">new</span><span class="soco-component-attr"> DropDownItem</span>()
+                       <span>{</span>
+                               <span>ItemType = DropDownItemType.Normal</span>,
+                               Text = <span class="soco-string">"Apple"</span>,
+                               Value = <span class="soco-string">"f-app"</span>
+                       <span>});</span>
+                       items.<span>Add</span>(<span class="soco-tag-type-def">new</span><span class="soco-component-attr"> DropDownItem</span>()
+                       <span>{</span>
+                               <span>ItemType = DropDownItemType.Normal</span>,
+                               Text = <span class="soco-string">"Orange"</span>,
+                               Value = <span class="soco-string">"f-ora"</span>,
+                               IsEnabled = <span class="soco-tag-type-def">"false"</span>
+                       <span>});</span>
+                        items.<span>Add</span>(<span class="soco-tag-type-def">new</span><span class="soco-component-attr"> DropDownItem</span>()
+                        <span>{</span>
+                                <span>ItemType = DropDownItemType.Normal</span>,
+                                Text = <span class="soco-string">"Banana"</span>,
+                                Value = <span class="soco-string">"f-ban"</span>
+                        <span>});</span>
+                        items.<span>Add</span>(<span class="soco-tag-type-def">new</span><span class="soco-component-attr"> DropDownItem</span>()
+                        <span>{</span>
+                                <span>ItemType = DropDownItemType.Divider,</span>
+                        <span>});</span>
+                        items.<span>Add</span>(<span class="soco-tag-type-def">new</span><span class="soco-component-attr"> DropDownItem</span>()
+                        <span>{</span>
+                                <span>ItemType = DropDownItemType.Header,</span>
+                                Text = <span class="soco-string">"Vegetables"</span>
+                        <span>});</span>
+                        items.<span>Add</span>(<span class="soco-tag-type-def">new</span><span class="soco-component-attr"> DropDownItem</span>()
+                        <span>{</span>
+                                <span>ItemType = DropDownItemType.Normal</span>,
+                                Text = <span class="soco-string">"Broccoli"</span>,
+                                Value = <span class="soco-string">"v-bro"</span>
+                        <span>});</span>
+                    <span>}</span>
+                <span class="soco-code">}</span>
+            </pre>
+                }
+                else if (SelectedComponent.Name == "Nav (TreeList)")
+                {
+<pre>
+                &lt<span class="soco-component-attr">BitNav Style</span>="width: 208px;height: 350px;box-sizing: border-box;border: 1px solid #eee;overflow-y: auto;"
+                                 <span class="soco-component-attr">NavLinkItems</span> = "BasicNavLinks"
+                                 <span class="soco-component-attr">IsOnTop</span>="<span class="soco-tag-type-def">true</span>"
+                                 <span class="soco-component-attr">AriaLabel</span> = "Nav basic example"
+                                 <span class="soco-component-attr">SelectedKey</span> = "key3">
+                &lt/<span class="soco-component-attr">BitNav</span>&gt;
+                <span class="soco-code">&#64;code {</span>
+                    <span class="soco-tag-type-def">private readonly </span>List&ltBitNavLinkItem> BasicNavLinks = <span class=soco-tag-type-def>new</span>()
+                    {
+                        <span class="soco-tag-type-def">new </span>BitNavLinkItem
+                        {
+                            Name = <span class="soco-string">"Home"</span>,
+                            Url = <span class="soco-tag-type-def">"http://example.com"</span>,
+                            ExpandAriaLabel = <span class="soco-string">"Expand Home section"</span>,
+                            CollapseAriaLabel = <span class="soco-string">"Collapse Home section"</span>,
+                            IsExpanded = <span class="soco-tag-type-def">true</span>,
+                            Links = <span class="soco-tag-type-def">new</span><span> List&ltBitNavLinkItem></span>
+                            {
+                                <span class="soco-tag-type-def">new </span><span>BitNavLinkItem</span> { Name = <span class="soco-string">"Activity"</span>, Url = "<span class="soco-tag-type-def">http://msn.com</span>", Key = <span class="soco-string">"key1"</span>, Target=<span class="soco-string">"_blank"</span> },
+                                <span class="soco-tag-type-def">new </span><span>BitNavLinkItem</span> { Name = <span class="soco-string">"MSN"</span>, Url = "<span class="soco-tag-type-def">http://msn.com</span>", Key = <span class="soco-string">"key2"</span>, IsEnabled = <span class="soco-tag-type-def">false</span>, Target = <span class="soco-string">"_blank"</span> }
+                            }
+                        },
+                        <span class="soco-tag-type-def">new </span><span>BitNavLinkItem</span><span> { Name = </span><span class="soco-string">"Documents"</span><span>, Url = "</span><span class="soco-tag-type-def">http://example.com</span>" , <span>Key = </span><span class="soco-string">"key2"</span> , <span>Target = </span><span class="soco-string">"_blank"</span> , <span>IsExpanded = </span><span class="soco-tag-type-def">true</span> },
+                        <span class="soco-tag-type-def">new </span><span>BitNavLinkItem</span><span> { Name = </span><span class="soco-string">"Pages"</span><span>, Url = "</span><span class="soco-tag-type-def">http://msn.com</span>" , <span>Key = </span><span class="soco-string">"key3"</span> , <span>Target = </span><span class="soco-string">"_parent"</span> },
+                        <span class="soco-tag-type-def">new </span><span>BitNavLinkItem</span><span> { Name = </span><span class="soco-string">"Notebook"</span><span>, Url = "</span><span class="soco-tag-type-def">http://msn.com</span>" , <span>Key = </span><span class="soco-string">"key4"</span> , <span>IsEnabled = </span><span class="soco-tag-type-def">false</span> },
+                        <span class="soco-tag-type-def">new </span><span>BitNavLinkItem</span><span> { Name = </span><span class="soco-string">"Communication and Media"</span><span>, Url = "</span><span class="soco-tag-type-def">http://msn.com</span>" , <span>Key = </span><span class="soco-string">"key5"</span> , <span>Target = </span><span class="soco-string">"_top"</span> },
+                        <span class="soco-tag-type-def">new </span><span>BitNavLinkItem</span><span> { Name = </span><span class="soco-string">"News"</span><span>, Title = </span><span class="soco-string">"News"</span><span>, Url = "</span><span class="soco-tag-type-def">http://msn.com</span>" , <span>Key = </span><span class="soco-string">"key6"</span> , <span>Target = </span><span class="soco-string">"_self"</span> , <span>Icon = </span><span class="soco-string">News</span> }
+                    }
+                <span class="soco-code">};</span>
+            </pre>
+                }
+            }
+        </div>
+    </div>
+</section>
