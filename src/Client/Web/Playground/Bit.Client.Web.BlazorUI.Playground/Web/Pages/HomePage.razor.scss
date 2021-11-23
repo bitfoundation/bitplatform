@@ -199,3 +199,177 @@
         }
     }
 }
+
+.benefits-section {
+    padding: rem(136px) rem(32px);
+
+    @include lg {
+        padding: rem(104px) rem(32px);
+    }
+
+    @include md {
+        padding: rem(64px) rem(32px);
+    }
+
+    @include sm {
+        padding: rem(56px) rem(16px);
+    }
+
+    .section-title {
+        font-weight: bold;
+        font-size: rem(50px);
+        line-height: rem(72px);
+        margin-bottom: rem(104px);
+        color: $SecondaryColor;
+        text-align: center;
+
+        @include lg {
+            font-size: rem(36px);
+            line-height: rem(48px);
+            margin-bottom: rem(40px);
+        }
+
+        @include md {
+            font-size: rem(28px);
+            line-height: rem(40px);
+            margin-bottom: rem(30px);
+        }
+
+        @include sm {
+            font-size: rem(18px);
+            line-height: rem(24px);
+            margin-bottom: rem(24px);
+        }
+    }
+}
+
+.benefit-card {
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    align-items: flex-start;
+    max-width: rem(1416px);
+    border: rem(1px) solid $Gray05;
+    border-radius: rem(10px);
+    padding: rem(40px) rem(32px);
+    margin-bottom: rem(24px);
+    box-sizing: border-box;
+    background-color: $White;
+    cursor: pointer;
+
+    &:last-child {
+        margin-bottom: 0;
+    }
+
+    &:hover {
+        background-color: #F5F5F5;
+    }
+
+    @include lg {
+        max-width: rem(1040px);
+        padding: rem(32px) rem(24px);
+    }
+
+    @include md {
+        max-width: rem(770px);
+        padding: rem(24px) rem(16px);
+        margin-bottom: rem(16px);
+    }
+
+    @include sm {
+        max-width: 100%;
+        padding: rem(16px) rem(8px);
+        margin-bottom: rem(8px);
+    }
+
+    .benefit-card-title {
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        width: 100%;
+        min-height: rem(80px);
+        font-weight: 500;
+        font-size: rem(28px);
+        line-height: rem(40px);
+        margin-bottom: rem(30px);
+        padding-left: rem(96px);
+        box-sizing: border-box;
+        color: $SecondaryColor;
+        background-position: center left;
+        background-repeat: no-repeat;
+        background-size: rem(80px);
+
+        @include lg {
+            min-height: rem(80px);
+            font-size: rem(20px);
+            line-height: rem(32px);
+            margin-bottom: rem(24px);
+        }
+
+        @include md {
+            min-height: rem(64px);
+            font-size: rem(16px);
+            line-height: rem(24px);
+            margin-bottom: rem(16px);
+            padding-left: rem(72px);
+            background-size: rem(64px);
+        }
+
+        @include sm {
+            min-height: rem(40px);
+            font-size: rem(12px);
+            line-height: rem(18px);
+            margin-bottom: rem(8px);
+            padding-left: rem(48px);
+            background-size: rem(40px);
+        }
+    }
+
+    .orange-text {
+        color: $OrangeColor;
+        white-space: pre;
+    }
+
+    .native-icon {
+        background-image: url('/images/home/native-icon.svg');
+    }
+
+    .customize-icon {
+        background-image: url('/images/home/customize-icon.svg');
+    }
+
+    .open-source-icon {
+        background-image: url('/images/home/open-source-icon.svg');
+    }
+
+    .special-components-icon {
+        background-image: url('/images/home/special-components-icon.svg');
+    }
+
+    .design-system-icon {
+        background-image: url('/images/home/design-system-icon.svg');
+    }
+
+    .benefit-card-desc {
+        width: 100%;
+        font-weight: 500;
+        font-size: rem(22px);
+        line-height: rem(40px);
+        color: $Gray01;
+
+        @include lg {
+            font-size: rem(16px);
+            line-height: rem(24px);
+        }
+
+        @include md {
+            font-size: rem(12px);
+            line-height: rem(18px);
+        }
+
+        @include sm {
+            font-size: rem(10px);
+            line-height: rem(16px);
+        }
+    }
+}
