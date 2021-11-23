@@ -3,7 +3,6 @@
 .main-container {
     width: 100%;
     padding-top: rem(96px);
-    background-color: red;
 
     @include lg {
         padding-top: rem(80px);
@@ -64,7 +63,7 @@
         height: rem(56px);
         background-position: center;
         background-repeat: no-repeat;
-        background-size: cover;
+        background-size: contain;
         cursor: pointer;
         margin: 0 rem(12px);
 

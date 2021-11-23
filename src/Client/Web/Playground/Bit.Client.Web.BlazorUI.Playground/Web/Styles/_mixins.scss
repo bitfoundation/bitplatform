@@ -287,3 +287,15 @@
         background-color: $SecondaryColor;
     }
 }
+
+@mixin SecondaryBtn {
+    background-color: $White;
+    color: $PrimaryColor;
+    border: rem(1px) solid $PrimaryColor;
+    cursor: pointer;
+
+    &:hover {
+        color: $SecondaryColor;
+        border-color: $SecondaryColor;
+    }
+}

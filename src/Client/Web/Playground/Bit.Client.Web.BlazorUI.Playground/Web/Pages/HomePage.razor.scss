@@ -1,0 +1,150 @@
+﻿@import '../Styles/_shared.scss';
+
+.page-section {
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.hero-section {
+    padding: rem(120px) rem(75px) rem(136px);
+
+    @include lg {
+        padding: rem(136px) rem(60px) rem(104px);
+    }
+
+    @include md {
+        padding: rem(104px) rem(32px) rem(64px);
+    }
+
+    @include sm {
+        padding: rem(28px) rem(16px) rem(56px);
+    }
+
+    .section-title {
+        max-width: rem(1120px);
+        margin-bottom: rem(40px);
+        font-weight: bold;
+        font-size: rem(52px);
+        line-height: rem(72px);
+        text-align: center;
+        color: $SecondaryColor;
+
+        @include lg {
+            max-width: rem(860px);
+            font-size: rem(40px);
+            line-height: rem(56px);
+        }
+
+        @include md {
+            max-width: rem(770px);
+            margin-bottom: rem(24px);
+            font-size: rem(30px);
+            line-height: rem(48px);
+        }
+
+        @include sm {
+            max-width: 100%;
+            margin-bottom: rem(24px);
+            font-size: rem(20px);
+            line-height: rem(32px);
+        }
+    }
+
+    .section-subtitle {
+        max-width: rem(936px);
+        margin-bottom: rem(80px);
+        font-weight: 500;
+        font-size: rem(24px);
+        line-height: rem(40px);
+        text-align: center;
+        color: $Gray01;
+
+        @include lg {
+            max-width: rem(688px);
+            margin-bottom: rem(64px);
+            font-size: rem(18px);
+            line-height: rem(31px);
+        }
+
+        @include md {
+            max-width: rem(572px);
+            margin-bottom: rem(40px);
+            font-size: rem(16px);
+            line-height: rem(24px);
+        }
+
+        @include sm {
+            max-width: 100%;
+            margin-bottom: rem(32px);
+            font-size: rem(14px);
+            line-height: rem(24px);
+        }
+    }
+
+    .section-btn-group {
+        display: flex;
+        flex-flow: row nowrap;
+        align-items: center;
+        //margin-bottom: rem(80px);
+        //@include lg {
+        //    margin-bottom: rem(64px);
+        //}
+        //@include md {
+        //    margin-bottom: rem(40px);
+        //}
+        //@include sm {
+        //    margin-bottom: rem(32px);
+        //}
+    }
+
+    .section-btn {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: rem(64px);
+        border-radius: rem(4px);
+        box-sizing: border-box;
+        text-align: center;
+        font-weight: 600;
+        font-size: rem(24px);
+        line-height: rem(40px);
+        padding: rem(5px) rem(43px) 0;
+
+        @include lg {
+            height: rem(56px);
+            font-size: rem(18px);
+            line-height: rem(31px);
+        }
+
+        @include lt-lg {
+            height: rem(40px);
+            font-size: rem(14px);
+            line-height: rem(24px);
+        }
+
+        @include md {
+            padding: rem(5px) rem(34px) 0;
+        }
+
+        @include sm {
+            padding: rem(5px) rem(22px) 0;
+        }
+    }
+
+    .btn--primary {
+        @include PrimaryBtn;
+        margin-right: rem(16px);
+
+        @include lt-xl {
+            margin-right: rem(8px);
+        }
+    }
+
+    .btn--secondary {
+        @include SecondaryBtn;
+    }
+}
