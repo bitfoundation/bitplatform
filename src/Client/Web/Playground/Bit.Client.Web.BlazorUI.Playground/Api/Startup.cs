@@ -8,7 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Net.Http.Headers;
 
-#if BlazorClient
+#if BlazorWebAssembly
 using System.Net.Http;
 using Microsoft.AspNetCore.Components;
 #endif
@@ -20,7 +20,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Api
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-#if BlazorClient
+#if BlazorWebAssembly
             services.AddScoped(c =>
             {
                 // this is for pre rendering of blazor client/wasm
@@ -48,12 +48,12 @@ namespace Bit.Client.Web.BlazorUI.Playground.Api
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-#if BlazorClient
+#if BlazorWebAssembly
                 app.UseWebAssemblyDebugging();
 #endif
             }
 
-#if BlazorClient
+#if BlazorWebAssembly
             app.UseBlazorFrameworkFiles();
 #endif
 
@@ -71,13 +71,13 @@ namespace Bit.Client.Web.BlazorUI.Playground.Api
             });
 
             app.UseRouting();
-            app.UseCors(options => options.WithOrigins("https://localhost:4001").AllowAnyMethod().AllowAnyHeader());
+            app.UseCors(options => options.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
 
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapDefaultControllerRoute();
 
-#if BlazorClient
+#if BlazorWebAssembly
                 endpoints.MapFallbackToPage("/_Host");
 #endif
             });

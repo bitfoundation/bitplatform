@@ -5,12 +5,12 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Content Condition=" '$(BlazorMode)' == 'Client' " Include="..\Web\Pages\_Host.cshtml" Link="Pages\_Host.cshtml" />
-        <PackageReference Condition=" '$(BlazorMode)' == 'Client' " Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="6.0.0" />
+        <Content Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="..\Web\Pages\_Host.cshtml" Link="Pages\_Host.cshtml" />
+        <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="6.0.0" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Web\Bit.Client.Web.BlazorUI.Playground.Web.csproj" Condition=" '$(BlazorMode)' == 'Client' " />
+        <ProjectReference Include="..\Web\Bit.Client.Web.BlazorUI.Playground.Web.csproj" Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " />
         <ProjectReference Include="..\Shared\Bit.Client.Web.BlazorUI.Playground.Shared.csproj" />
     </ItemGroup>
 

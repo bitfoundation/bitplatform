@@ -18,7 +18,7 @@ namespace Bit.Client.Web.BlazorUI
 
         [Inject] public IJSRuntime? JSRuntime { get; set; }
 
-        [Inject] public NavigationManager? NavigationManager { get; set; }
+        [Inject] public HttpClient? HttpClient { get; set; }
 
         /// <summary>
         /// URL of the server endpoint receiving the files.
@@ -114,7 +114,7 @@ namespace Bit.Client.Web.BlazorUI
             if (JSRuntime is null || UploadUrl is null) return;
             dotnetObjectReference = DotNetObjectReference.Create(this);
             Files = await JSRuntime.InitUploader(inputFileElement, dotnetObjectReference, UploadUrl);
-            
+
             if (AutoUploadEnabled)
             {
                 await Upload();
@@ -376,12 +376,10 @@ namespace Bit.Client.Web.BlazorUI
 
         private async Task RemoveOneFile(int index)
         {
-            if (Files is null || RemoveUrl is null || NavigationManager is null) return;
+            if (Files is null || RemoveUrl is null || HttpClient is null) return;
 
             var url = $"{RemoveUrl}?fileName={Files[index].Name}";
-            var http = new HttpClient();
-            http.BaseAddress = new Uri(NavigationManager.BaseUri);
-            _ = await http.DeleteAsync(url);
+            _ = await HttpClient.DeleteAsync(url);
         }
 
         private static string GetFileElClass(BitUploadStatus status)

@@ -4,24 +4,31 @@
     {
         public static BlazorModeDetector Current { get; set; } = new BlazorModeDetector();
 
-        public virtual bool IsServer()
+        public virtual bool IsBlazorServer()
         {
-            return Mode == BlazorMode.Server;
+            return Mode == BlazorMode.BlazorServer;
         }
 
-        public virtual bool IsClient()
+        public virtual bool IsBlazorWebAssembly()
         {
-            return Mode == BlazorMode.Client;
+            return Mode == BlazorMode.BlazorWebAssembly;
+        }
+        
+        public virtual bool IsBlazorHybrid()
+        {
+            return Mode == BlazorMode.BlazorHybrid;
         }
 
         public virtual BlazorMode Mode
         {
             get
             {
-#if BlazorClient
-                return BlazorMode.Client;
+#if BlazorWebAssembly
+                return BlazorMode.BlazorWebAssembly;
+#elif BlazorHybrid
+                return BlazorMode.BlazorHybrid;
 #else
-                return BlazorMode.Server;
+                return BlazorMode.BlazorServer;
 #endif
             }
         }
@@ -29,8 +36,9 @@
 
     public enum BlazorMode
     {
-        Server,
-        Client
+        BlazorServer,
+        BlazorWebAssembly,
+        BlazorHybrid
     }
 
 }
