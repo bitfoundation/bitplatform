@@ -98,6 +98,7 @@ tr:last-child {
                     width: rem(52px);
                     height: rem(52px);
                     padding-top: rem(1px);
+                    cursor: pointer;
 
                     @include lt-lg {
                         display: block;

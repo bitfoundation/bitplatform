@@ -5,7 +5,7 @@ using Bit.Client.Web.BlazorUI.Playground.Web.Models;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
-namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components
+namespace Bit.Client.Web.BlazorUI.Playground.Web.Components
 {
     public partial class SideRail
     {

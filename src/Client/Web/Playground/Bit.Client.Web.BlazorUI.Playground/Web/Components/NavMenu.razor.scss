@@ -1,32 +1,31 @@
-﻿@import '../../Styles/_shared.scss';
+﻿@import '../Styles/_shared.scss';
 
 .navbar {
-    position: sticky;
+    position: fixed;
+    z-index: 3000;
+    left: 0;
     width: rem(360px);
+    height: calc(100vh - #{rem(96px)});
     padding-top: rem(80px);
     background-color: $Gray04;
     overflow-y: scroll;
 
     @include lg {
-        padding-top: rem(58px);
         width: rem(272px);
+        height: calc(100vh - #{rem(80px)});
+        padding-top: rem(58px);
         flex: 20%;
     }
 
     @include md {
-        height: calc(100% - 40px);
+        height: calc(100vh - #{rem(56px)});
         padding-top: rem(40px);
     }
 
     @include sm {
         width: rem(272px);
-        height: calc(100% - 61px);
+        height: calc(100vh - #{rem(89px)});
         padding-top: rem(63px);
-    }
-
-    @include lt-lg {
-        position: fixed;
-        z-index: 300;
     }
 }
 

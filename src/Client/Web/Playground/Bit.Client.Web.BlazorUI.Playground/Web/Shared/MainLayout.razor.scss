@@ -3,6 +3,7 @@
 .main-container {
     width: 100%;
     padding-top: rem(96px);
+    box-sizing: border-box;
 
     @include lg {
         padding-top: rem(80px);
@@ -17,9 +18,21 @@
     }
 }
 
+.pad-left {
+    padding-left: rem(360px);
+
+    @include md {
+        padding-left: 0;
+    }
+}
+
+.page-content {
+
+}
+
 .footer {
     position: relative;
-    width: 100%;
+    width: 100vw;
 
     .footer-gray-bar {
         display: flex;

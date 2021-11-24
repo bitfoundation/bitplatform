@@ -24,19 +24,10 @@ section {
 }
 
 .main-container {
-    background-image: url(/images/main/component-bg.png);
+    position: relative;
+    background-image: url('/images/main/component-bg.png');
     background-repeat: no-repeat;
     background-size: 100%;
-    position: relative;
-    margin-top: rem(120px);
-
-    @include lg {
-        margin-top: rem(100px);
-    }
-
-    @include lt-lg {
-        margin-top: rem(80px);
-    }
 }
 
 .component-container {

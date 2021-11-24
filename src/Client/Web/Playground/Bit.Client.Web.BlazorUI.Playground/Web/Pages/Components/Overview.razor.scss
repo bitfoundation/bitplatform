@@ -39,6 +39,7 @@ h4 {
             width: rem(48px);
             height: rem(48px);
             padding-top: rem(1px);
+            cursor: pointer;
 
             @include sm {
                 width: rem(33px);
