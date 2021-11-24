@@ -1,4 +1,15 @@
-﻿function toggleBodyOverflow(isMenuOpen: boolean) {
+﻿var headerBtn = document.getElementById("headerBtn") ?? new HTMLElement();
+
+window.addEventListener('scroll', () => {
+    if (document.body.scrollTop > 10 || document.documentElement.scrollTop > 10) {
+        headerBtn.style.display = "flex";
+    } else {
+        headerBtn.style.display = "none";
+    }
+}, true);
+
+
+function toggleBodyOverflow(isMenuOpen: boolean) {
     if (window.innerWidth < 1024) {
         if (isMenuOpen) {
             document.body.style.overflow = "hidden";
