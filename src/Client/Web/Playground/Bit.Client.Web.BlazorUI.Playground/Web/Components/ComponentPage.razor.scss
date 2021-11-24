@@ -14,10 +14,10 @@ ul {
 }
 
 th {
-    border-bottom: 1px solid $Violet;
+    border-bottom: rem(1px) solid $SecondaryColor;
 
     @include caption1-xl;
-    @include table-content($Violet);
+    @include table-content($SecondaryColor);
 
     @include lg {
         @include caption1-lg;
@@ -52,7 +52,7 @@ td {
 }
 
 tr {
-    border-bottom: 1px solid $Violet
+    border-bottom: rem(1px) solid $SecondaryColor;
 }
 
 tr:last-child {
@@ -113,7 +113,7 @@ tr:last-child {
             }
 
             .name {
-                color: $Violet;
+                color: $SecondaryColor;
                 line-height: 0;
                 white-space: nowrap;
             }
@@ -153,7 +153,7 @@ tr:last-child {
             }
 
             .title {
-                color: $Violet;
+                color: $SecondaryColor;
                 border-bottom: 4px solid $Gray02;
                 padding-bottom: rem(18px);
                 line-height: 0;
@@ -178,7 +178,7 @@ tr:last-child {
             margin: rem(80px) 0 rem(270px);
 
             .title {
-                color: $Violet;
+                color: $SecondaryColor;
                 border-bottom: 4px solid $Gray02;
                 padding-bottom: rem(15px);
 

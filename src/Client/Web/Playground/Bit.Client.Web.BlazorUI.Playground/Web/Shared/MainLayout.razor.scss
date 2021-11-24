@@ -21,7 +21,11 @@
 .pad-left {
     padding-left: rem(360px);
 
-    @include md {
+    @include lg {
+        padding-left: rem(272px);
+    }
+
+    @include lt-lg {
         padding-left: 0;
     }
 }
@@ -32,7 +36,7 @@
 
 .footer {
     position: relative;
-    width: 100vw;
+    width: 100%;
 
     .footer-gray-bar {
         display: flex;

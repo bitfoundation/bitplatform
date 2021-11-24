@@ -1,7 +1,7 @@
 ﻿@import '../../Styles/_shared.scss';
 
 h1 {
-    color: $DarkBlue;
+    color: $SecondaryColor;
     white-space: nowrap;
     line-height: 25%;
 }
@@ -57,8 +57,8 @@ section {
 }
 
 .command {
-    border-left: rem(4px) solid $Violet;
-    color: $Violet;
+    border-left: rem(4px) solid $SecondaryColor;
+    color: $SecondaryColor;
     padding: rem(15px);
     background: $Gray04;
 
@@ -96,7 +96,7 @@ section {
 
 .index-path {
     background: $Gray04;
-    color: $Violet;
+    color: $SecondaryColor;
 }
 
 .import-style-section {

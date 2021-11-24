@@ -207,11 +207,6 @@ input::-webkit-input-placeholder {
             }
         }
 
-        .bit-nav-link-enabled-hasurl-fluent:hover, .bit-nav-selected-fluent, .bit-nav-selected-fluent:hover {
-            background-color: $Gray03;
-            color: $Violet;
-        }
-
         .bit-nav-link-enabled-hasurl-fluent {
             color: $DarkBlue;
             font-size: rem(18px);
@@ -219,6 +214,11 @@ input::-webkit-input-placeholder {
             @include lg {
                 font-size: rem(16px);
             }
+        }
+
+        .bit-nav-link-enabled-hasurl-fluent:hover, .bit-nav-selected-fluent, .bit-nav-selected-fluent:hover {
+            background-color: #DDDDDD;
+            color: $SecondaryColor;
         }
 
         .bit-nav-link-container {
@@ -230,7 +230,7 @@ input::-webkit-input-placeholder {
         }
 
         .bit-nav-selected-fluent:after {
-            border-left: rem(4px) solid $Violet;
+            border-left: rem(4px) solid $SecondaryColor;
         }
 
         .bit-nav-grp-content {
@@ -300,7 +300,7 @@ input::-webkit-input-placeholder {
 
     .bit-lnk button:hover {
         text-decoration: none;
-        color: $Violet;
+        color: $SecondaryColor;
     }
 
     .link-container {
@@ -327,11 +327,11 @@ input::-webkit-input-placeholder {
                 width: rem(4px);
                 height: rem(35px);
                 content: "";
-                background-color: $Violet;
+                background-color: $SecondaryColor;
             }
 
             button {
-                color: $Violet;
+                color: $SecondaryColor;
             }
         }
 
@@ -340,7 +340,7 @@ input::-webkit-input-placeholder {
             cursor: pointer;
 
             button {
-                color: $Violet;
+                color: $SecondaryColor;
             }
         }
     }
@@ -381,7 +381,7 @@ input::-webkit-input-placeholder {
 }
 
 .copy-btn {
-    color: $Violet;
+    color: $SecondaryColor;
     border: 1px dashed;
 
     @include subtitle2-xl;
@@ -399,27 +399,27 @@ input::-webkit-input-placeholder {
     }
 
     .bit-icon--Copy {
-        color: $Violet !important;
+        color: $SecondaryColor !important;
     }
 }
 
 .copy-btn:hover {
-    color: $Violet;
+    color: $SecondaryColor;
 }
 
 .show-code-btn, .show-code-btn:hover {
     @include code-button;
-    background-color: $Violet;
+    background-color: $SecondaryColor;
 }
 
 .hide-code-btn, .hide-code-btn:hover {
     @include code-button;
     background-color: $White;
-    color: $Violet;
+    color: $SecondaryColor;
 }
 
 .table .bit-lnk > a {
-    color: $Violet;
+    color: $SecondaryColor;
     cursor: pointer;
 }
 

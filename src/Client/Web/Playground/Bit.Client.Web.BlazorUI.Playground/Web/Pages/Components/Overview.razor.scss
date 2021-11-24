@@ -1,7 +1,7 @@
 ﻿@import '../../Styles/_shared.scss';
 
 h4 {
-    color: $DarkBlue;
+    color: $SecondaryColor;
 }
 
 .overview-container {
@@ -31,7 +31,7 @@ h4 {
         display: flex;
 
         h2 {
-            color: $Violet;
+            color: $SecondaryColor;
             line-height: 0;
         }
 
@@ -186,7 +186,7 @@ h4 {
 
     .footer {
         padding: rem(20px);
-        background: $Violet;
+        background: $SecondaryColor;
         color: $White;
 
         @include caption2-xl;
