@@ -13,7 +13,7 @@
         }
     }
 
-    @if $hasValue = true {
+    @if $hasValue == true {
         & > div:last-child {
             opacity: 1;
             flex-basis: 0;

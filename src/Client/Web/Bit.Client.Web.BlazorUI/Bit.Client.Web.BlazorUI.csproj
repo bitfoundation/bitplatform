@@ -33,7 +33,7 @@
         <PackageIconUrl>https://avatars.githubusercontent.com/u/22663390</PackageIconUrl>
         <PackageReleaseNotes>https://github.com/bitfoundation/bitframework/releases/</PackageReleaseNotes>
         <IncludeContentInPack>false</IncludeContentInPack>
-        
+
         <PackageVersion Condition=" '$(Configuration)' == 'Release' ">$([System.DateTime]::Now.ToString("yyyy.MMdd.HHmm"))</PackageVersion>
 
         <!-- Version -->
@@ -77,8 +77,13 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="wwwroot\scripts\" />
-      <Folder Include="wwwroot\styles\" />
+        <Folder Include="wwwroot\scripts\" />
+        <Folder Include="wwwroot\styles\" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Content Remove="compilerconfig.json" />
+        <None Include="compilerconfig.json" />
     </ItemGroup>
 
     <Target Name="ToolRestore" BeforeTargets="PreBuildEvent">
