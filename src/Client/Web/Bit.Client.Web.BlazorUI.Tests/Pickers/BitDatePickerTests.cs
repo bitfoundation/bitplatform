@@ -75,6 +75,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Pickers
       ]
         public void BitDatePickerCalendarItemsShouldRespectIsEnabled(bool isEnabled,int count)
         {
+            Context.JSInterop.Mode = JSRuntimeMode.Loose;
             var component = RenderComponent<BitDatePickerTest>(
                parameters =>
                {
