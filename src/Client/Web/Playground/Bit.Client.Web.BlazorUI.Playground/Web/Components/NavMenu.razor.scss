@@ -1,0 +1,66 @@
+﻿@import '../Styles/_shared.scss';
+
+.navbar {
+    position: fixed;
+    z-index: 3000;
+    left: 0;
+    width: rem(360px);
+    height: calc(100vh - #{rem(96px)});
+    padding-top: rem(20px);
+    box-sizing: border-box;
+    background-color: $Gray04;
+    overflow-y: scroll;
+
+    @include lg {
+        width: rem(272px);
+        height: calc(100vh - #{rem(80px)});
+    }
+
+    @include md {
+        height: calc(100vh - #{rem(56px)});
+    }
+
+    @include sm {
+        width: rem(272px);
+        height: calc(100vh - #{rem(89px)});
+        padding-top: rem(16px);
+    }
+}
+
+.nav-container {
+    margin-top: rem(26px);
+}
+
+.border-top {
+    border-bottom: rem(1px) solid $Gray03;
+    padding-top: rem(20px);
+}
+
+.desktop-nav {
+    display: block;
+
+    @include lt-lg {
+        display: none;
+    }
+}
+
+.mobile-nav {
+    display: none;
+
+    @include lt-lg {
+        display: flex;
+    }
+}
+
+.menu-shadow {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 200;
+    width: 100%;
+    height: 100vh;
+    justify-content: flex-start;
+    align-items: flex-start;
+    background-color: $Black01;
+    opacity: 0.5;
+}

@@ -1,0 +1,108 @@
+﻿@import '../Styles/_shared.scss';
+
+h1 {
+    color: $SecondaryColor;
+    white-space: nowrap;
+    line-height: 25%;
+}
+
+h5 {
+    line-height: 0;
+
+    @include sm {
+        line-height: rem(20px);
+    }
+}
+
+section {
+    margin-bottom: rem(110px);
+    scroll-margin-top: rem(150px);
+
+    @include sm {
+        width: 91%;
+    }
+}
+
+.main-container {
+    position: relative;
+    background-image: url('/images/main/component-bg.png');
+    background-repeat: no-repeat;
+    background-size: 100%;
+}
+
+.component-container {
+    display: flex;
+    background-image: none;
+    background-position: unset;
+    background-repeat: unset;
+    background-size: unset;
+}
+
+.component-content {
+    width: 80% !important;
+    padding-left: rem(70px);
+    margin: rem(100px) 0 rem(50px);
+
+    @include lg {
+        padding: 0 rem(75px) rem(270px);
+    }
+
+    @include md {
+        padding-left: rem(100px);
+    }
+
+    @include sm {
+        padding-left: rem(60px);
+    }
+}
+
+.command {
+    border-left: rem(4px) solid $SecondaryColor;
+    color: $SecondaryColor;
+    padding: rem(15px);
+    background: $Gray04;
+
+    @include sm {
+        width: 80%;
+    }
+}
+
+.command, .init-code > div, .startup-code > div {
+    @include subtitle2-xl;
+
+    @include lg {
+        @include subtitle2-lg
+    }
+
+    @include md {
+        @include subtitle2-md
+    }
+
+    @include sm {
+        @include subtitle2-sm;
+    }
+}
+
+.init-code, .startup-code {
+    @include sm {
+        width: 80%;
+    }
+}
+
+.init-code, .startup-code {
+    background: $Gray04;
+    padding: rem(15px);
+}
+
+.index-path {
+    background: $Gray04;
+    color: $SecondaryColor;
+}
+
+.import-style-section {
+    margin-bottom: rem(140px);
+}
+
+.m-l-20 {
+    margin-left: rem(20px);
+}

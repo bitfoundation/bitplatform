@@ -1,0 +1,95 @@
+﻿@page "/components/search-box"
+
+@using Bit.Client.Web.BlazorUI.Playground.Web.Components
+
+<ComponentPage ComponentName="SearchBox" OverviewDesc="A search box (SearchBox) provides an input field for searching content within a site or app to find specific items."
+               ComponentParameters="componentParameters">
+    <CodeSample Title="BitSearchBox" Description="To create a searchbox you can use a BitSearchbox component." CodeSampleContentForCopy="@searchBoxSampleCode">
+        <SampleContent>
+            <div>
+                <BitSearchBox Placeholder="Search"></BitSearchBox>
+                <BitSearchBox Placeholder="Search" DefaultValue="this is default value"></BitSearchBox>
+                <BitSearchBox Placeholder="Search with no animation" DisableAnimation=true></BitSearchBox>
+                <BitSearchBox Placeholder="SearchBox with fixed icon" ShowIcon="true"></BitSearchBox>
+                <BitSearchBox Placeholder="Search with Binded value" @bind-Value="@TextValue"></BitSearchBox>
+                <BitLabel>The value you are looking for: @TextValue</BitLabel>
+            </div>
+        </SampleContent>
+        <CodeSampleContent>
+            <pre>
+                &lt<span class="soco-component-attr">BitSearchBox Placeholder="</span>Search">&lt/<span class="soco-component-attr">BitSearchBox</span>&gt;
+                &lt<span class="soco-component-attr">BitSearchBox Placeholder="</span>Search
+                                              <span class="soco-component-attr">DefaultValue</span>="This is default value">
+                &lt/<span class="soco-component-attr">BitSearchBox</span>&gt;
+                &lt<span class="soco-component-attr">BitSearchBox Placeholder="</span>Search with no animation"
+                                              <span class="soco-component-attr">DisableAnimation</span>=<span class="soco-tag-type-def">"true"</span>>
+                &lt/<span class="soco-component-attr">BitSearchBox</span>&gt;
+                &lt<span class="soco-component-attr">BitSearchBox Placeholder="</span>SearchBox with fixed icon"
+                                              <span class="soco-component-attr">ShowIcon</span>=<span class="soco-tag-type-def">"true"</span>>
+                &lt/<span class="soco-component-attr">BitSearchBox</span>&gt;
+                &lt<span class="soco-component-attr">BitSearchBox Placeholder="</span>Search with Binded value"
+                                              <span class="soco-component-attr"><span class="soco-code">&#64</span>bind-Value</span>=<span><span class="soco-code">&#64</span>TextValue</span>>
+                &lt/<span class="soco-component-attr">BitSearchBox</span><span>&gt;</span>
+                <span class="soco-code">@@code {</span>
+                      <span class="soco-tag-type-def">private string</span> TextValue;
+                <span class="soco-code">}</span>
+            </pre>
+        </CodeSampleContent>
+    </CodeSample>
+    <CodeSample Title="Underlined SearchBox" Description="BitSearchBox component can be like an underline." CodeSampleContentForCopy="@underlineSearchBoxSampleCode">
+        <SampleContent>
+            <div>
+                <BitSearchBox Placeholder="Search" IsUnderlined="true"></BitSearchBox>
+            </div>
+        </SampleContent>
+        <CodeSampleContent>
+            <pre>
+               &lt<span class="soco-component-attr">BitSearchBox Placeholder="</span>Search"
+                                             <span class="soco-component-attr"> IsUnderlined</span>=<span class="soco-tag-type-def">"true"</span>>
+               &lt/<span class="soco-component-attr">BitSearchBox</span>&gt;
+            </pre>
+        </CodeSampleContent>
+    </CodeSample>
+    <CodeSample Title="SearchBox with custom icon" Description="BitSeachBox component also can get a custom icon." CodeSampleContentForCopy="@customIconSearchBoxSampleCode">
+        <SampleContent>
+            <div>
+                <BitSearchBox Placeholder="Filter" IconName="BitIcon.Filter"></BitSearchBox>
+            </div>
+        </SampleContent>
+        <CodeSampleContent>
+            <pre>
+               &lt<span class="soco-component-attr">BitSearchBox Placeholder="</span>Filter"
+                                             <span class="soco-component-attr">IconName</span>="BitIcon.Filter">
+               &lt/<span class="soco-component-attr">BitSearchBox</span>&gt;
+            </pre>
+        </CodeSampleContent>
+    </CodeSample>
+    <CodeSample Title="SearchBox with fixed width" Description="You can set width of searchbox by Width attribute." CodeSampleContentForCopy="@fixedWidthSearchBoxSampleCode">
+        <SampleContent>
+            <div>
+                <BitSearchBox Placeholder="Search" Width="250px"></BitSearchBox>
+            </div>
+        </SampleContent>
+        <CodeSampleContent>
+            <pre>
+                &lt<span class="soco-component-attr">BitSearchBox Placeholder="</span>Search"
+                                              <span class="soco-component-attr">Width</span>="250px">
+                &lt/<span class="soco-component-attr">BitSearchBox</span>&gt;
+            </pre>
+        </CodeSampleContent>
+    </CodeSample>
+    <CodeSample Title="Disabled SearchBox" Description="BitSearchBox can be disabled or enabled by setting IsEnabled attribute." CodeSampleContentForCopy="@disabledSearchBoxSampleCode">
+        <SampleContent>
+            <div>
+                <BitSearchBox Placeholder="Search" IsEnabled=false></BitSearchBox>
+            </div>
+        </SampleContent>
+        <CodeSampleContent>
+            <pre>
+                &lt<span class="soco-component-attr">BitSearchBox Placeholder="</span>Search"
+                                              <span class="soco-component-attr">IsEnabled</span>=<span class="soco-tag-type-def">"false"</span>>
+                &lt/<span class="soco-component-attr">BitSearchBox</span>&gt;
+            </pre>
+        </CodeSampleContent>
+    </CodeSample>
+</ComponentPage>
