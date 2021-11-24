@@ -229,6 +229,7 @@ namespace Bit.Client.Web.BlazorUI
         {
             if (IsEnabled is false) return;
             if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+            if (JSRuntime is null) return;
 
             int day = currentMonthCalendar[weekIndex, dayIndex];
             int selectedMonth = GetCorrectTargetMonth(weekIndex, dayIndex);
@@ -242,6 +243,8 @@ namespace Bit.Client.Web.BlazorUI
                 currentYear--;
             }
 
+            var obj = DotNetObjectReference.Create(this);
+            await JSRuntime.InvokeVoidAsync("BitDatePicker.toggleDatePickerCallout", obj, WrapperId, CalloutId, OverlayId, isOpen);
             IsOpen = false;
             displayYear = currentYear;
             currentMonth = selectedMonth;
