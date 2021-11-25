@@ -9,8 +9,10 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// list of items that want to render
         /// </summary>
-        [Parameter] public ICollection<TItem> Items { get; set; } = Array.Empty<TItem>();  
-        
+#pragma warning disable CA2227 // Collection properties should be read only
+        [Parameter] public ICollection<TItem> Items { get; set; } = Array.Empty<TItem>();
+#pragma warning restore CA2227 // Collection properties should be read only
+
         /// <summary>
         /// virtualize rendering the list
         /// UI rendering to just the parts that are currently visible

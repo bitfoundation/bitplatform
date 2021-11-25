@@ -173,7 +173,9 @@ namespace Bit.Client.Web.BlazorUI
         Build,
         BuildIssue,
         BuildQueue,
+#pragma warning disable CA1711 // Identifiers should not have incorrect suffix
         BuildQueueNew,
+#pragma warning restore CA1711 // Identifiers should not have incorrect suffix
         BulkUpload,
         BulletedList2,
         BulletedList2Mirrored,
@@ -648,7 +650,9 @@ namespace Bit.Client.Web.BlazorUI
         GroupedDescending,
         GroupedList,
         GroupObject,
+#pragma warning disable CA1720 // Identifier contains type name
         GUID,
+#pragma warning restore CA1720 // Identifier contains type name
         Guitar,
         HailDay,
         HailNight,

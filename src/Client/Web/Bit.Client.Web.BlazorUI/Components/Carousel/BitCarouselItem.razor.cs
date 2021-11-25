@@ -7,7 +7,7 @@ namespace Bit.Client.Web.BlazorUI
     {
         private bool isCurrent;
         private bool IsCurrentHasBeenSet;
-        public int Index;
+        internal int Index;
 
         [Parameter]
         public bool IsCurrent
@@ -26,7 +26,7 @@ namespace Bit.Client.Web.BlazorUI
 
         [Parameter] public RenderFragment? ChildContent { get; set; }
 
-        [Parameter] public string Key { get; set; }
+        [Parameter] public string Key { get; set; } = string.Empty;
 
         [CascadingParameter] protected BitCarousel? Carousel { get; set; }
 

@@ -9,7 +9,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.SpinButton
     {
         private double BasicSpinButtonValue = 5;
         private double BasicSpinButtonDisableValue = 20;
-        private double SpinButtonWithCustomHandlerValue = 14;
+        //private double SpinButtonWithCustomHandlerValue = 14;
         private double SpinButtonWithLabelAboveValue = 7;
         private double BitSpinButtonBindValue = 8;
         private double BitSpinButtonValueChanged = 16;

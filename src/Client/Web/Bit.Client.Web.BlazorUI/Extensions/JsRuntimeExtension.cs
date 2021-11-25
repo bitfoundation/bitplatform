@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Components;
 
 namespace Microsoft.JSInterop
 {
-    public static class JsRuntimeExtension
+    internal static class JsRuntimeExtension
     {
         public static async Task SetProperty(this IJSRuntime jsRuntime, ElementReference element, string property, object value)
         {

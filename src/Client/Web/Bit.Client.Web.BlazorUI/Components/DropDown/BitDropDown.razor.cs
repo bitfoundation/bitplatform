@@ -10,15 +10,15 @@ namespace Bit.Client.Web.BlazorUI
 {
     public partial class BitDropDown
     {
-        private bool isOpen = false;
-        private bool isMultiSelect = false;
-        private bool isRequired = false;
+        private bool isOpen;
+        private bool isMultiSelect;
+        private bool isRequired;
         private List<string> selectedMultipleKeys = new();
         private string selectedKey = string.Empty;
         private bool SelectedMultipleKeysHasBeenSet;
         private bool SelectedKeyHasBeenSet;
-        private bool IsSelectedMultipleKeysChanged = false;
-        private List<BitDropDownItem> NormalDropDownItems = new List<BitDropDownItem>();
+        private bool IsSelectedMultipleKeysChanged;
+        private List<BitDropDownItem> NormalDropDownItems = new();
 
         [Inject] public IJSRuntime? JSRuntime { get; set; }
 
@@ -67,18 +67,27 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// A list of items to display in the dropdown
         /// </summary>
+#pragma warning disable CA1002 // Do not expose generic lists
+#pragma warning disable CA2227 // Collection properties should be read only
         [Parameter] public List<BitDropDownItem> Items { get; set; } = new List<BitDropDownItem>();
+#pragma warning restore CA2227 // Collection properties should be read only
+#pragma warning restore CA1002 // Do not expose generic lists
 
         /// <summary>
         /// Keys of the selected items for multiSelect scenarios
         /// If you provide this, you must maintain selection state by observing onChange events and passing a new value in when changed
         /// </summary>
         [Parameter]
+#pragma warning disable CA1002 // Do not expose generic lists
+#pragma warning disable CA2227 // Collection properties should be read only
         public List<string> SelectedMultipleKeys
+#pragma warning restore CA2227 // Collection properties should be read only
+#pragma warning restore CA1002 // Do not expose generic lists
         {
             get => selectedMultipleKeys;
             set
             {
+                if (value == null) return;
                 if (selectedMultipleKeys.All(value.Contains) && selectedMultipleKeys.Count == value.Count) return;
                 selectedMultipleKeys = value;
                 _ = SelectedMultipleKeysChanged.InvokeAsync(value);
@@ -108,7 +117,11 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// Keys that will be initially used to set selected items for multiSelect scenarios
         /// </summary>
+#pragma warning disable CA1002 // Do not expose generic lists
+#pragma warning disable CA2227 // Collection properties should be read only
         [Parameter] public List<string> DefaultSelectedMultipleKeys { get; set; } = new List<string>();
+#pragma warning restore CA2227 // Collection properties should be read only
+#pragma warning restore CA1002 // Do not expose generic lists
 
         /// <summary>
         /// Key that will be initially used to set selected item

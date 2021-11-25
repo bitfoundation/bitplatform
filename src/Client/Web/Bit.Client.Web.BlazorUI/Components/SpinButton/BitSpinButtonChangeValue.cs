@@ -2,7 +2,7 @@
 
 namespace Bit.Client.Web.BlazorUI
 {
-    public class BitSpinButtonChangeEventArgs
+    public class BitSpinButtonChangeValue
     {
         public double Value { get; set; }
         public MouseEventArgs? MouseEventArgs { get; set; }

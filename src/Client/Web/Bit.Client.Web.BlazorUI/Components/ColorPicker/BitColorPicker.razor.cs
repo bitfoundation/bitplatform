@@ -76,7 +76,7 @@ namespace Bit.Client.Web.BlazorUI
         /// </summary>
         [Parameter] public bool ShowPreview { get; set; }
 
-        [Parameter] public EventCallback<BitColorEventArgs> OnChange { get; set; }
+        [Parameter] public EventCallback<BitColorValue> OnChange { get; set; }
 
         public ElementReference SaturationPickerRef { get; set; }
         public string? Hex => color.Hex;

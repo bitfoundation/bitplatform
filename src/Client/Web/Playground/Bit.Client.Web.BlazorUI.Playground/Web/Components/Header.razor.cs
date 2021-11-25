@@ -18,7 +18,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Components
             base.OnInitialized();
         }
 
-        private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
+        private void OnLocationChanged(object sender, LocationChangedEventArgs args)
         {
             CurrentUrl = NavigationManager.Uri.Replace(NavigationManager.BaseUri, "/", StringComparison.Ordinal);
             StateHasChanged();

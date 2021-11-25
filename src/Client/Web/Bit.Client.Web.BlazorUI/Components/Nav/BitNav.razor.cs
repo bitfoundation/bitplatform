@@ -14,11 +14,8 @@ namespace Bit.Client.Web.BlazorUI
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         [Inject] private NavigationManager NavigationManager { get; set; }
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-
-#pragma warning disable CA1823 // Avoid unused private fields
+        
         private bool SelectedKeyHasBeenSet;
-#pragma warning restore CA1823 // Avoid unused private fields
-
         private string? selectedKey;
 
         /// <summary>
@@ -195,7 +192,7 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
-        private void HandleClick(BitNavLinkItem navLinkItem)
+        private static void HandleClick(BitNavLinkItem navLinkItem)
         {
             if (navLinkItem.IsEnabled is false) return;
 

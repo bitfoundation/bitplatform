@@ -13,7 +13,9 @@ namespace Bit.Client.Web.BlazorUI
         private const int DEFAULT_DAY_COUNT_PER_WEEK = 7;
         private bool isOpen;
         private Calendar? calendar;
+#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
         private int[,] currentMonthCalendar = new int[DEFAULT_WEEK_COUNT, DEFAULT_DAY_COUNT_PER_WEEK];
+#pragma warning restore CA1814 // Prefer jagged arrays over multidimensional
         private int currentYear;
         private int displayYear;
         private int currentMonth;
@@ -22,7 +24,7 @@ namespace Bit.Client.Web.BlazorUI
         private string monthTitle = "";
         private string selectedDate = "";
         private bool showMonthPicker = true;
-        private bool isMonthPickerOverlayOnTop = false;
+        private bool isMonthPickerOverlayOnTop;
         private int monthLength;
         private bool ValueHasBeenSet;
 
@@ -445,9 +447,9 @@ namespace Bit.Client.Web.BlazorUI
             int month = date.GetMonth();
             int day = date.GetDate();
             int dayOfWeek = date.GetDayOfWeek();
-            return calendar?.GetDayOfWeekShortName(Enum.Parse<DayOfWeek>(dayOfWeek.ToString()))
+            return calendar?.GetDayOfWeekShortName(Enum.Parse<DayOfWeek>(dayOfWeek.ToString(CultureInfo.InvariantCulture)))
                    + " " + calendar?.GetMonthShortName(month)
-                   + " " + day.ToString().PadLeft(2, '0')
+                   + " " + day.ToString(CultureInfo.InvariantCulture).PadLeft(2, '0')
                    + " " + year;
         }
 
