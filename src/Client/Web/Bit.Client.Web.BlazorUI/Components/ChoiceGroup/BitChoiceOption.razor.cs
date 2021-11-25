@@ -108,7 +108,7 @@ namespace Bit.Client.Web.BlazorUI
         {
             if (ImageSize is not null)
             {
-                imageSizeStyle = $" width:{ImageSize?.Width}px; height:{ImageSize?.Height}px;";
+                imageSizeStyle = $" width:{ImageSize.Value.Width}px; height:{ImageSize.Value.Height}px;";
             }
             return base.OnParametersSetAsync();
         }

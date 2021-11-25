@@ -7,12 +7,7 @@ namespace Bit.Client.Web.BlazorUI
     public partial class BitRating
     {
         private bool isReadOnly;
-
-#pragma warning disable CA1823 // Avoid unused private fields
         private bool RatingHasBeenSet;
-#pragma warning restore CA1823 // Avoid unused private fields
-
-
         private double ratingValue;
 
         /// <summary>

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
@@ -109,7 +110,7 @@ namespace Bit.Client.Web.BlazorUI
 
             if (option.Key.HasNoValue())
             {
-                option.Key = AllOptions.Count.ToString();
+                option.Key = AllOptions.Count.ToString(CultureInfo.InvariantCulture);
             }
 
             if (SelectedKey == option.Key)

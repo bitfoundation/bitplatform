@@ -102,7 +102,9 @@ namespace Bit.Client.Web.BlazorUI
         /// Capture and render additional attributes in addition to the component's parameters
         /// </summary>
         [Parameter]
+#pragma warning disable CA2227 // Collection properties should be read only
         public Dictionary<string, object> HtmlAttributes { get; set; } = new Dictionary<string, object>();
+#pragma warning restore CA2227 // Collection properties should be read only
 
         public override Task SetParametersAsync(ParameterView parameters)
         {

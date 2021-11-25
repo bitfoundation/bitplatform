@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -99,12 +100,12 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// Callback for when the decrement button or down arrow key is pressed
         /// </summary>
-        [Parameter] public EventCallback<BitSpinButtonChangeEventArgs> OnDecrement { get; set; }
+        [Parameter] public EventCallback<BitSpinButtonChangeValue> OnDecrement { get; set; }
 
         /// <summary>
         /// Callback for when the increment button or up arrow key is pressed
         /// </summary>
-        [Parameter] public EventCallback<BitSpinButtonChangeEventArgs> OnIncrement { get; set; }
+        [Parameter] public EventCallback<BitSpinButtonChangeValue> OnIncrement { get; set; }
 
         /// <summary>
         /// Initial value of the spin button 
@@ -188,11 +189,11 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// Additional props for the input field
         /// </summary>
-        [Parameter]
-        public Dictionary<string, object>? InputHtmlAttributes { get; set; }
+#pragma warning disable CA2227 // Collection properties should be read only
+        [Parameter] public Dictionary<string, object>? InputHtmlAttributes { get; set; }
+#pragma warning restore CA2227 // Collection properties should be read only
 
-        [Parameter]
-        public EventCallback<BitSpinButtonAction> ChangeHandler { get; set; }
+        [Parameter] public EventCallback<BitSpinButtonAction> ChangeHandler { get; set; }
 
         protected override string RootElementClass => "bit-spb";
 
@@ -292,17 +293,21 @@ namespace Bit.Client.Web.BlazorUI
             await ChangeHandler.InvokeAsync(action);
             if (action is BitSpinButtonAction.Increment && OnIncrement.HasDelegate is true)
             {
-                var args = new BitSpinButtonChangeEventArgs();
-                args.Value = Value;
-                args.MouseEventArgs = e;
+                var args = new BitSpinButtonChangeValue
+                {
+                    Value = Value,
+                    MouseEventArgs = e
+                };
                 await OnIncrement.InvokeAsync(args);
             }
 
             if (action is BitSpinButtonAction.Decrement && OnDecrement.HasDelegate is true)
             {
-                var args = new BitSpinButtonChangeEventArgs();
-                args.Value = Value;
-                args.MouseEventArgs = e;
+                var args = new BitSpinButtonChangeValue
+                {
+                    Value = Value,
+                    MouseEventArgs = e
+                };
                 await OnDecrement.InvokeAsync(args);
             }
         }
@@ -346,17 +351,21 @@ namespace Bit.Client.Web.BlazorUI
 
             if (e.Key is "ArrowUp" && OnIncrement.HasDelegate is true)
             {
-                var args = new BitSpinButtonChangeEventArgs();
-                args.Value = Value;
-                args.KeyboardEventArgs = e;
+                var args = new BitSpinButtonChangeValue
+                {
+                    Value = Value,
+                    KeyboardEventArgs = e
+                };
                 await OnIncrement.InvokeAsync(args);
             }
 
             if (e.Key is "ArrowDown" && OnDecrement.HasDelegate is true)
             {
-                var args = new BitSpinButtonChangeEventArgs();
-                args.Value = Value;
-                args.KeyboardEventArgs = e;
+                var args = new BitSpinButtonChangeValue
+                {
+                    Value = Value,
+                    KeyboardEventArgs = e
+                };
                 await OnDecrement.InvokeAsync(args);
             }
         }
@@ -391,12 +400,12 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
-        private int CalculatePrecision(double value)
+        private static int CalculatePrecision(double value)
         {
             var regex = new Regex(@"[1-9]([0]+$)|\.([0-9]*)");
-            if (regex.IsMatch(value.ToString()) is false) return 0;
+            if (regex.IsMatch(value.ToString(CultureInfo.InvariantCulture)) is false) return 0;
 
-            var matches = regex.Matches(value.ToString());
+            var matches = regex.Matches(value.ToString(CultureInfo.InvariantCulture));
             if (matches.Count == 0) return 0;
 
             var groups = matches[0].Groups;
@@ -426,9 +435,21 @@ namespace Bit.Client.Web.BlazorUI
         private string? GetIconRole => IconAriaLabel.HasValue() ? "img" : null;
         private string GetLabelId => Label.HasValue() ? $"label{Guid.NewGuid()}" : String.Empty;
 
+        private bool _disposed;
+
         public void Dispose()
         {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed) return;
+
             timer?.Dispose();
+
+            _disposed = true;
         }
     }
 }

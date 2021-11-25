@@ -21,12 +21,10 @@ namespace Bit.Client.Web.BlazorUI
         private int inputHeight;
         private readonly string sliderBoxId = $"Slider{Guid.NewGuid()}";
 
-#pragma warning disable CA1823 // Avoid unused private fields
         private bool ValueHasBeenSet;
         private bool UpperValueHasBeenSet;
         private bool LowerValueHasBeenSet;
         private bool RangeValueHasBeenSet;
-#pragma warning restore CA1823 // Avoid unused private fields
 
         private ElementReference ContainerRef { get; set; }
         private ElementReference TitleRef { get; set; }
@@ -202,8 +200,9 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// Additional parameter for the Slider box
         /// </summary>
-        [Parameter]
-        public Dictionary<string, object>? SliderBoxHtmlAttributes { get; set; }
+#pragma warning disable CA2227 // Collection properties should be read only
+        [Parameter] public Dictionary<string, object>? SliderBoxHtmlAttributes { get; set; }
+#pragma warning restore CA2227 // Collection properties should be read only
 
         /// <summary>
         /// Whether to render the Slider as readonly
@@ -396,7 +395,7 @@ namespace Bit.Client.Web.BlazorUI
             {
                 return $"{val}";
             }
-            else if (ValueFormat!.Contains("p", StringComparison.CurrentCultureIgnoreCase))
+            else if (ValueFormat!.Contains('p', StringComparison.CurrentCultureIgnoreCase))
             {
                 int digitCount = $"{(Max - 1)}".Length;
                 return (val.GetValueOrDefault() / Math.Pow(10, digitCount)).ToString(ValueFormat, CultureInfo.InvariantCulture);
@@ -409,10 +408,7 @@ namespace Bit.Client.Web.BlazorUI
 
         private string GetAriaValueText(double value)
         {
-            if (AriaValueText != null)
-                return AriaValueText(value);
-            else
-                return value.ToString();
+            return AriaValueText != null ? AriaValueText(value) : value.ToString(CultureInfo.InvariantCulture);
         }
 
         private bool GetAriaDisabled => !IsEnabled;

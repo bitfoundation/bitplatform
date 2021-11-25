@@ -41,7 +41,7 @@
                             <ul class="bit-nav-list" role="list">
                                 @foreach (var childNavLinkItem in navLinkItem.Links)
                                 {
-                                    @childTemplate(childNavLinkItem)
+                                    @childTemplate!(childNavLinkItem)
                                 }
                             </ul>
                         </div>
@@ -164,7 +164,7 @@
                 {
                     childLinkItem.Depth = navLinkItem.Depth + 1;
                     if (childTemplate is not null)
-                        @childTemplate(childLinkItem)
+                        @childTemplate!(childLinkItem)
                     }
             </ul>
         }

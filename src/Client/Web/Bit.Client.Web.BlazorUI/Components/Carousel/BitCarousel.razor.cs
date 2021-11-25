@@ -9,7 +9,7 @@ namespace Bit.Client.Web.BlazorUI
     public partial class BitCarousel
     {
         private BitCarouselItem? SelectedItem;
-        private int CurrentIndex = 0;
+        private int CurrentIndex;
         private List<BitCarouselItem> AllCarouselItems = new();
         private string? selectedKey;
         private bool SelectedKeyHasBeenSet;

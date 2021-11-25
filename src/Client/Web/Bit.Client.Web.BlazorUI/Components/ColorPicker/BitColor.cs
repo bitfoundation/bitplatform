@@ -130,7 +130,9 @@ namespace Bit.Client.Web.BlazorUI
                     SetDefaultColor();
                 }
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 SetDefaultColor();
             }
@@ -177,9 +179,9 @@ namespace Bit.Client.Web.BlazorUI
             rgba = $"rgba({Red},{Green},{Blue},{Alpha})";
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
-            return obj is BitColor && this == (BitColor)obj;
+            return obj is BitColor color && this == color;
         }
         public override int GetHashCode()
         {

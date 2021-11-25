@@ -23,12 +23,16 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// URL of the server endpoint receiving the files.
         /// </summary>
+#pragma warning disable CA1056 // URI-like properties should not be strings
         [Parameter] public string? UploadUrl { get; set; }
+#pragma warning restore CA1056 // URI-like properties should not be strings
 
         /// <summary>
         /// URL of the server endpoint removing the files.
         /// </summary>
+#pragma warning disable CA1056 // URI-like properties should not be strings
         [Parameter] public string? RemoveUrl { get; set; }
+#pragma warning restore CA1056 // URI-like properties should not be strings
 
         /// <summary>
         /// label text for browse button.
@@ -379,7 +383,9 @@ namespace Bit.Client.Web.BlazorUI
             if (Files is null || RemoveUrl is null || HttpClient is null) return;
 
             var url = $"{RemoveUrl}?fileName={Files[index].Name}";
+#pragma warning disable CA2234 // Pass system uri objects instead of strings
             _ = await HttpClient.DeleteAsync(url);
+#pragma warning restore CA2234 // Pass system uri objects instead of strings
         }
 
         private static string GetFileElClass(BitUploadStatus status)
