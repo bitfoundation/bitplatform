@@ -17,6 +17,6 @@ jobs:
       with:
         dotnet-version: 6.0.x
     - name: dotnet pack
-      run: dotnet pack src/Client/Web/Bit.Client.Web.BlazorUI/Bit.Client.Web.BlazorUI.csproj --output .
+      run: dotnet pack src/Client/Web/Bit.Client.Web.BlazorUI/Bit.Client.Web.BlazorUI.csproj --output . --configuration Release
     - name: dotnet nuget push
       run: dotnet nuget push *.nupkg --source https://nuget.pkg.github.com/bitfoundation/index.json --api-key ${{secrets.PACKAGE_API_KEY}}
