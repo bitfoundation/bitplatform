@@ -19,18 +19,16 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "@types/node": "^14.14.7",
-    "@types/pubsub-js": "^1.8.1",
-    "@types/signalr": "^2.2.36"
+    "@types/node": "^16.11.10",
+    "@types/pubsub-js": "^1.8.3",
+    "@types/signalr": "^2.2.37"
   },
   "optionalDependencies": {
-    "core-js": "^2.6.9",
+    "core-js": "^2.6.12",
     "decimal.js": "^10.2.1",
-    "event-source-polyfill": "^1.0.21",
-    "pubsub-js": "^1.9.0",
-    "regenerator": "^0.14.7",
-    "signalr": "^2.4.1",
-    "whatwg-fetch": "^3.5.0"
+    "event-source-polyfill": "^1.0.25",
+    "pubsub-js": "^1.9.4",
+    "signalr": "^2.4.2"
   },
   "dependencies": {
     "@bit/jaydata": "^1.5.22"

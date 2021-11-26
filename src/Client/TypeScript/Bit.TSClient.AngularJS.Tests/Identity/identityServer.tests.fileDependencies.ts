@@ -46,19 +46,6 @@ module Bit.Identity.Tests {
     });
 
     dependencyManager.registerFileDependency({
-        name: "fetch",
-        path: "src/Client/TypeScript/Bit.TSClient.Core/node_modules/whatwg-fetch/fetch",
-        predicate: (appInfo) => {
-            return typeof (fetch) == "undefined";
-        }
-    });
-
-    dependencyManager.registerFileDependency({
-        name: "runtime",
-        path: "src/Client/TypeScript/Bit.TSClient.Core/node_modules/regenerator-runtime/runtime"
-    });
-
-    dependencyManager.registerFileDependency({
         name: "angular",
         path: "src/Client/TypeScript/Bit.TSClient.AngularJS/node_modules/angular/angular"
     });

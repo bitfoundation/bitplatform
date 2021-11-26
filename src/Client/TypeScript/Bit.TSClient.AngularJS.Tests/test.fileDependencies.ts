@@ -133,24 +133,11 @@
     });
 
     dependencyManager.registerFileDependency({
-        name: "fetch",
-        path: "src/Client/TypeScript/Bit.TSClient.Core/node_modules/whatwg-fetch/fetch",
-        predicate: (appInfo) => {
-            return typeof (fetch) == "undefined";
-        }
-    });
-
-    dependencyManager.registerFileDependency({
         name: "event-source-polyfill",
         path: "src/Client/TypeScript/Bit.TSClient.Core/node_modules/event-source-polyfill/eventsourc",
         predicate: (appInfo) => {
             return typeof (window["EventSource"]) == "undefined";
         }
-    });
-
-    dependencyManager.registerFileDependency({
-        name: "runtime",
-        path: "src/Client/TypeScript/Bit.TSClient.Core/node_modules/regenerator-runtime/runtime"
     });
 
     dependencyManager.registerFileDependency({

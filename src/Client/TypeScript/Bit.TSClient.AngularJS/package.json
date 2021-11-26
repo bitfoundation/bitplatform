@@ -19,21 +19,20 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "@types/angular": "^1.8.0",
-    "@types/angular-material": "^1.1.72",
-    "@types/angular-translate": "^2.16.2",
-    "@types/jquery": "^3.5.4",
-    "@types/kendo-ui": "^2020.3.0",
-    "gulp": "^4.0.2",
-    "gulp-less": "^4.0.1"
+    "@types/angular": "^1.8.3",
+    "@types/angular-material": "^1.1.73",
+    "@types/angular-translate": "^2.16.3",
+    "@types/decimal.js": "^7.4.0",
+    "@types/jquery": "^3.5.9",
+    "@types/kendo-ui": "^2021.3.0"
   },
   "optionalDependencies": {
     "angular-animate": "^1.8.2",
     "angular-aria": "^1.8.2",
-    "angular-material": "^1.2.1",
+    "angular-material": "^1.2.3",
     "angular-messages": "^1.8.2",
-    "angular-translate": "^2.18.3",
-    "jquery": "^3.5.1",
+    "angular-translate": "^2.19.0",
+    "jquery": "^3.6.0",
     "normalize-css": "^2.3.1",
     "persian-datepicker": "^1.2.0"
   },

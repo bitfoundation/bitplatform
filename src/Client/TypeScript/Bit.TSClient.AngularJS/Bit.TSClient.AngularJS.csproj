@@ -1,10 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web" ToolsVersion="15.0">
-  <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <TypeScriptToolsVersion>4.4</TypeScriptToolsVersion>
-    <TypeScriptBuildMode>true</TypeScriptBuildMode>
-    <OutputType>Library</OutputType>
-    <ApplicationIcon />
-    <StartupObject />
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <TypeScriptToolsVersion>4.5</TypeScriptToolsVersion>
+        <TypeScriptBuildMode>true</TypeScriptBuildMode>
+        <OutputType>Library</OutputType>
+        <ApplicationIcon />
+        <StartupObject />
+    </PropertyGroup>
+    <ItemGroup>
+        <Content Remove="compilerconfig.json" />
+        <None Include="compilerconfig.json" />
+    </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="BuildWebCompiler" Version="1.12.405" />
+    </ItemGroup>
 </Project>
