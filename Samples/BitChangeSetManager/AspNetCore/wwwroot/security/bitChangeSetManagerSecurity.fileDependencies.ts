@@ -36,24 +36,6 @@ module BitChangeSetManagerSecurity {
     });
 
     dependencyManager.registerFileDependency({
-        name: "Core-js",
-        path: "node_modules/core-js/client/core"
-    });
-
-    dependencyManager.registerFileDependency({
-        name: "fetch",
-        path: "node_modules/whatwg-fetch/fetch",
-        predicate: (appInfo) => {
-            return typeof (fetch) == "undefined";
-        }
-    });
-
-    dependencyManager.registerFileDependency({
-        name: "runtime",
-        path: "node_modules/regenerator-runtime/runtime"
-    });
-
-    dependencyManager.registerFileDependency({
         name: "angular",
         path: "node_modules/angular/angular"
     });

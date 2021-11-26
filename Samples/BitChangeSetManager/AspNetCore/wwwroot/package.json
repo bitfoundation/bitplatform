@@ -12,14 +12,14 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "@types/angular": "^1.8.2",
+    "@types/angular": "^1.8.3",
     "@types/angular-material": "^1.1.73",
     "@types/angular-translate": "^2.16.3",
     "@types/angular-ui-router": "^1.1.41",
     "@types/decimal.js": "^7.4.0",
-    "@types/jquery": "^3.5.6",
-    "@types/kendo-ui": "^2021.2.2",
-    "@types/pubsub-js": "^1.8.2",
+    "@types/jquery": "^3.5.9",
+    "@types/kendo-ui": "^2021.3.0",
+    "@types/pubsub-js": "^1.8.3",
     "@types/signalr": "^2.2.37"
   },
   "dependencies": {
@@ -32,13 +32,12 @@
     "angular-material": "^1.2.3",
     "angular-messages": "^1.8.2",
     "angular-translate": "^2.19.0",
-    "core-js": "^3.17.3",
     "decimal.js": "^10.3.1",
     "event-source-polyfill": "^1.0.25",
     "jquery": "^3.6.0",
     "normalize-css": "^2.3.1",
     "persian-datepicker": "^1.2.0",
-    "pubsub-js": "^1.9.3",
+    "pubsub-js": "^1.9.4",
     "regenerator": "^0.14.7",
     "signalr": "^2.4.2",
     "whatwg-fetch": "^3.6.2"

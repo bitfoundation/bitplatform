@@ -2,13 +2,8 @@
 
 	<PropertyGroup>
 		<TargetFramework>net6.0</TargetFramework>
-		<RuntimeIdentifier>win7-x86</RuntimeIdentifier>
-		<TypeScriptToolsVersion>4.4</TypeScriptToolsVersion>
+		<TypeScriptToolsVersion>4.5</TypeScriptToolsVersion>
 	</PropertyGroup>
-
-	<ItemGroup>
-		<None Remove="BitChangeSetManager.DataAccess.BitChangeSetManagerDbContext.edmx" />
-	</ItemGroup>
 
 	<ItemGroup>
 		<Content Include="IdentityServerCertificate.pfx">
@@ -17,34 +12,16 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Bit.Server.Data.EntityFramework" Version="8.5.2" />
-		<PackageReference Include="Bit.Server.Hangfire" Version="8.5.2" />
-		<PackageReference Include="Bit.Server.IdentityServer" Version="8.5.2" />
-		<PackageReference Include="Bit.Server.OData" Version="8.5.2" />
-		<PackageReference Include="Bit.Server.Owin" Version="8.5.2" />
-		<PackageReference Include="Bit.Server.Signalr" Version="8.5.2" />
-		<PackageReference Include="Bit.Tooling.CodeAnalyzer" Version="8.5.2" />
-		<PackageReference Include="Bit.Tooling.CodeGenerator.Task" Version="8.5.2" />
-		<PackageReference Include="Bit.Universal.AutoMapper" Version="8.5.2" />
+		<PackageReference Include="Bit.Server.Data.EntityFramework" Version="8.5.3" />
+		<PackageReference Include="Bit.Server.Hangfire" Version="8.5.3" />
+		<PackageReference Include="Bit.Server.IdentityServer" Version="8.5.3" />
+		<PackageReference Include="Bit.Server.OData" Version="8.5.3" />
+		<PackageReference Include="Bit.Server.Owin" Version="8.5.3" />
+		<PackageReference Include="Bit.Server.Signalr" Version="8.5.3" />
+		<PackageReference Include="Bit.Tooling.CodeAnalyzer" Version="8.5.3" />
+		<PackageReference Include="Bit.Tooling.CodeGenerator.Task" Version="8.5.3" />
+		<PackageReference Include="Bit.Universal.AutoMapper" Version="8.5.3" />
 		<PackageReference Include="Dapper" Version="2.0.123" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<Content Update="App_Data\templates.json">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</Content>
-	</ItemGroup>
-
-	<ItemGroup>
-		<None Update="app.config">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</None>
-		<None Update="Web.Debug.config">
-			<DependentUpon>Web.config</DependentUpon>
-		</None>
-		<None Update="Web.Release.config">
-			<DependentUpon>Web.config</DependentUpon>
-		</None>
 	</ItemGroup>
 
 </Project>

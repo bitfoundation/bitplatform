@@ -6,8 +6,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Bit.Client.Xamarin.Prism" Version="8.5.2" />
-        <PackageReference Include="Bit.Tooling.CodeAnalyzer" Version="8.5.2" />
+        <PackageReference Include="Bit.Client.Xamarin.Prism" Version="8.5.3" />
+        <PackageReference Include="Bit.Tooling.CodeAnalyzer" Version="8.5.3" />
         <PackageReference Include="Microsoft.AppCenter.Analytics" Version="4.4.0" />
         <PackageReference Include="Microsoft.AppCenter.Crashes" Version="4.4.0" />
     </ItemGroup>
