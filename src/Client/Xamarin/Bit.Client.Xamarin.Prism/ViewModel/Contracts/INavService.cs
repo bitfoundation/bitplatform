@@ -36,6 +36,10 @@ namespace Bit.ViewModel.Contracts
         Task GoBackToAsync(string name, params (string key, object value)[] parameters);
         Task GoBackToAsync(string name, INavigationParameters? parameters = null);
 
+        Task SelectTabAsync(string name, params (string key, object value)[] parameters);
+
+        Task SelectTabAsync(string name, INavigationParameters? parameters = null);
+
         INavigationService PrismNavigationService { get; }
 
         INavService AppNavService { get; }
