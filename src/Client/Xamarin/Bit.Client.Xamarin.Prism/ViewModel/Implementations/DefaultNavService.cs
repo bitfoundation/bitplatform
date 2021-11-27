@@ -178,12 +178,12 @@ namespace Bit.ViewModel.Implementations
                 .Repeat("../", timesToGoBack));
         }
 
-        public Task SelectTabAsync(string name, params (string key, object value)[] parameters)
+        public virtual Task SelectTabAsync(string name, params (string key, object value)[] parameters)
         {
             return SelectTabAsync(name, ConvertToINavigationParameters(parameters));
         }
 
-        public async Task SelectTabAsync(string name, INavigationParameters parameters = null)
+        public virtual async Task SelectTabAsync(string name, INavigationParameters parameters = null)
         {
             var prismNavService = PrismNavigationService;
 
