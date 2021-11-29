@@ -102,6 +102,11 @@ section {
     background-color: #e5e4e4;
 }
 
+.link--underlined {
+    text-decoration: underline;
+    color: $SecondaryColor;
+}
+
 .include-style-section {
     margin-bottom: rem(140px);
 }

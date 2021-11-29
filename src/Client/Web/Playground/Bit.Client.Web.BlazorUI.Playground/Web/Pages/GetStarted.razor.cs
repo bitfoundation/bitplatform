@@ -29,8 +29,8 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
             },
             new SideRailItem()
             {
-                Title = "Include source file",
-                Id = "includeSourceSection"
+                Title = "Include the script file",
+                Id = "includeScriptSection"
             }
         };
     }
