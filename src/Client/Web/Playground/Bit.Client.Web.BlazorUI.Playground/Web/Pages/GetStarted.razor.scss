@@ -95,11 +95,14 @@ section {
 }
 
 .index-path {
-    background: $Gray04;
+    display: inline-block;
+    padding: rem(1px) rem(8px) 0;
+    border-radius: rem(4px);
     color: $SecondaryColor;
+    background-color: #e5e4e4;
 }
 
-.import-style-section {
+.include-style-section {
     margin-bottom: rem(140px);
 }
 
