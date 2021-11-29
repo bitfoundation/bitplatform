@@ -5,13 +5,60 @@
     <div class="content">
         <div class="component-container">
             <div class="component-content">
-                <section id="get-started-section">
-                    <h1>Getting Started</h1>
+                <section id="getStartedSection">
+                    <h1>Get Started</h1>
+                </section>
+                <section id="installationSection">
+                    <h5>1. Install</h5>
                     <p>
-                        Coming soon...
+                        Bit’s Blazor UI Components are distributed as the <span class="index-path">Bit.Client.Web.BlazorUI</span> nuget package.
+                        You can add them to your project in one of the following ways:
+                        <br />
+                        <br />
+                        Install the package from command line by running this command:
+                    </p>
+                    <div class="command">
+                        $ dotnet add package Bit.Client.Web.BlazorUI
+                    </div>
+                    <p>
+                        Or install the package from Package Manager Console by running this command:
+                    </p>
+                    <div class="command">
+                        $ Install-Package Bit.Client.Web.BlazorUI
+                    </div>
+                    <p>
+                        Or add the package to the project from the Visual Nuget Package Manager.
                     </p>
                 </section>
+                <section id="importNamespaceSection">
+                    <h5>2. Import the namespace</h5>
+                    <p>
+                        Open the <span class="index-path">_Imports.razor</span> file of your Blazor application and add this line:
+                    </p>
+                    <div class="startup-code">
+                        <span class="soco-tag-type-def">@("@using")</span> Bit.Client.Web.BlazorUI
+                    </div>
+                </section>
+                <section id="includeStyleSection" class="include-style-content">
+                    <h5>3. Include styles</h5>
+                    <p>
+                        Open the <span class="index-path">_Host.cshtml</span> file (server-side Blazor) or <span class="index-path">wwwroot/index.html</span> file (client-side WebAssembly Blazor) and include a CSS file by adding this snippet:
+                    </p>
+                    <div class="init-code">
+                        <div>&lt<span class="light-blue">link href</span>="_content/Bit.Client.Web.BlazorUI/styles/bit.blazorui.min.css" <span class="light-blue">rel</span>="stylesheet" /></div>
+                    </div>
+                </section>
+                <section id="includeSourceSection">
+                    <h5>4. Include source file</h5>
+                    <p>
+                        Open the <span class="index-path">_Host.cshtml</span> file (server-side Blazor) or <span class="index-path">wwwroot/index.html</span> file (client-side WebAssembly Blazor) and include a source file by adding this snippet:
+                    </p>
+                    <div class="init-code">
+                        <div>&lt<span class="light-blue">script src</span>="_content/Bit.Client.Web.BlazorUI/scripts/bit.blazorui.min.js" /></div>
+                    </div>
+                </section>
             </div>
+            <SideRail Items="@items" />
         </div>
     </div>
 </div>
