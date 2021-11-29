@@ -11,7 +11,6 @@
 
 .hero-section {
     padding: rem(120px) rem(75px) rem(136px);
-    background-image: url('/images/home/hero-section-bg.svg');
     background-position: center;
     background-repeat: no-repeat;
     background-size: cover;
@@ -155,7 +154,7 @@
 
 .popular-components-section {
     padding: rem(136px) 0;
-    background: linear-gradient(0deg, rgba(35, 49, 132, 0.9), rgba(35, 49, 132, 0.9)), url('/images/home/most-popular-components-bg.svg');
+    background: linear-gradient(0deg, rgba(35, 49, 132, 0.9), rgba(35, 49, 132, 0.9));
     background-position: center;
     background-size: cover;
     background-repeat: no-repeat;
