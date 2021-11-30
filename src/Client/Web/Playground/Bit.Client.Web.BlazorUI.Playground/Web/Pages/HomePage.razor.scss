@@ -515,43 +515,43 @@
 }
 
 .component-list-section {
-    padding: rem(136px) rem(32px);
+    padding: rem(88px) rem(32px);
 
     @include lg {
-        padding: rem(104px) rem(32px);
+        padding: rem(80px) rem(32px);
     }
 
     @include md {
-        padding: rem(64px) rem(32px);
+        padding: rem(56px) rem(32px);
     }
 
     @include sm {
-        padding: rem(56px) rem(16px);
+        padding: rem(48x) rem(16px);
     }
 
     .section-title {
         font-weight: bold;
-        font-size: rem(50px);
-        line-height: rem(72px);
-        margin-bottom: rem(104px);
+        font-size: rem(32px);
+        line-height: rem(48px);
+        margin-bottom: rem(80px);
         color: $SecondaryColor;
         text-align: center;
 
         @include lg {
-            font-size: rem(36px);
-            line-height: rem(48px);
-            margin-bottom: rem(64px);
+            font-size: rem(24px);
+            line-height: rem(32px);
+            margin-bottom: rem(72px);
         }
 
         @include md {
-            font-size: rem(28px);
-            line-height: rem(40px);
-            margin-bottom: rem(32px);
+            font-size: rem(20px);
+            line-height: rem(32px);
+            margin-bottom: rem(31px);
         }
 
         @include sm {
             font-size: rem(18px);
-            line-height: rem(24px);
+            line-height: rem(31px);
             margin-bottom: rem(32px);
         }
     }
@@ -568,8 +568,8 @@
         flex-flow: column nowrap;
         justify-content: flex-start;
         align-items: flex-start;
-        width: rem(336px);
-        margin-right: rem(144px);
+        width: rem(248px);
+        margin-right: rem(64px);
 
         &:last-child {
             margin-right: 0;
@@ -580,8 +580,8 @@
         }
 
         @include md {
-            width: rem(274px);
-            margin-right: rem(50px);
+            width: rem(174px);
+            margin-right: rem(25px);
         }
 
         @include sm {
@@ -596,17 +596,17 @@
         justify-content: flex-start;
         align-items: flex-start;
         width: 100%;
-        margin-bottom: rem(52px);
+        margin-bottom: rem(24px);
         //&:last-child {
         //    margin-bottom: 0;
         //}
 
         @include lg {
-            margin-bottom: rem(40px);
+            margin-bottom: rem(32px);
         }
 
         @include md {
-            margin-bottom: rem(32px);
+            margin-bottom: rem(40px);
         }
 
         @include sm {
@@ -615,24 +615,27 @@
     }
 
     .list-title {
-        margin-bottom: rem(16px);
-        font-weight: 500;
-        font-size: rem(24px);
-        line-height: rem(40px);
+        margin-bottom: rem(8px);
+        font-size: rem(18px);
+        line-height: rem(31px);
         color: $SecondaryColor;
 
-        @include lt-lg {
-            margin-bottom: rem(8px);
+        @include lt-xl {
+            font-weight: 500;
             font-size: rem(16px);
             line-height: rem(24px);
+        }
+
+        @include lt-lg {
+            font-size: rem(14px);
         }
     }
 
     .list-item {
         color: $Black1;
-        font-size: rem(18px);
-        line-height: rem(31px);
-        margin-bottom: rem(12px);
+        font-size: rem(14px);
+        line-height: rem(24px);
+        margin-bottom: rem(4px);
 
         &:last-child {
             margin-bottom: 0;
@@ -649,11 +652,13 @@
         @include md {
             font-size: rem(12px);
             line-height: rem(16px);
+            margin-bottom: rem(12px);
         }
 
         @include sm {
             font-size: rem(14px);
             line-height: rem(24px);
+            margin-bottom: rem(8px);
         }
     }
 }
