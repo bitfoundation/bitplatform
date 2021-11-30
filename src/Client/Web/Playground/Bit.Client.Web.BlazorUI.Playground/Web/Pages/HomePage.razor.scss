@@ -664,86 +664,52 @@
 }
 
 .bottom-section {
-    padding: rem(230px) 0 rem(280px);
+    padding: rem(184px) 0 rem(168px);
     background: linear-gradient(0deg, rgba(35, 49, 132, 0.9), rgba(35, 49, 132, 0.9)), url('/images/home/bottom-section-bg.png');
     background-position: center;
     background-size: cover;
     background-repeat: no-repeat;
 
     @include lg {
-        padding: rem(176px) 0 rem(264px);
+        padding: rem(148px) 0 rem(125px);
     }
 
     @include md {
-        padding: rem(64px) 0 rem(160px);
+        padding: rem(56px) 0 rem(112px);
     }
 
     @include sm {
-        padding: rem(56px) 0 rem(152px);
+        padding: rem(40px) 0 rem(92px);
     }
 
     .section-title {
         font-weight: bold;
-        font-size: rem(52px);
-        line-height: rem(82px);
+        font-size: rem(38px);
+        line-height: rem(56px);
         margin-bottom: rem(72px);
         color: $White;
         text-align: center;
 
         @include lg {
-            font-size: rem(40px);
-            line-height: rem(56px);
-            margin-bottom: rem(64px);
-        }
-
-        @include md {
-            font-size: rem(30px);
+            font-size: rem(32px);
             line-height: rem(48px);
             margin-bottom: rem(56px);
         }
 
+        @include md {
+            font-size: rem(24px);
+            line-height: rem(40px);
+            margin-bottom: rem(44px);
+        }
+
         @include sm {
-            font-size: rem(20px);
-            line-height: rem(32px);
-            margin-bottom: rem(40px);
+            font-size: rem(18px);
+            line-height: rem(31px);
+            margin-bottom: rem(32px);
         }
     }
 
     .section-btn {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        width: rem(248px);
-        height: rem(64px);
-        border: rem(1px) solid $PrimaryColor;
-        border-radius: rem(4px);
-        box-sizing: border-box;
-        font-weight: 600;
-        font-size: rem(24px);
-        line-height: rem(40px);
-        color: $PrimaryColor;
-        background-color: $White;
-        cursor: pointer;
-
-        @include lg {
-            width: rem(208px);
-            height: rem(56px);
-            font-size: rem(18px);
-            line-height: rem(31px);
-        }
-
-        @include md {
-            width: rem(174px);
-            height: rem(40px);
-            font-size: rem(14px);
-            line-height: rem(24px);
-        }
-
-        @include sm {
-            width: rem(132px);
-            height: rem(40px);
-            font-size: rem(14px);
-            line-height: rem(24px);
-        }
+        @include SecondaryBtn;
     }
 }
