@@ -163,42 +163,42 @@
 }
 
 .benefits-section {
-    padding: rem(136px) rem(32px);
+    padding: rem(88px) rem(32px);
 
     @include lg {
-        padding: rem(104px) rem(32px);
+        padding: rem(80px) rem(32px);
     }
 
     @include md {
-        padding: rem(64px) rem(32px);
+        padding: rem(56px) rem(32px);
     }
 
     @include sm {
-        padding: rem(56px) rem(16px);
+        padding: rem(48px) rem(16px);
     }
 
     .section-title {
         font-weight: bold;
-        font-size: rem(50px);
-        line-height: rem(72px);
-        margin-bottom: rem(104px);
+        font-size: rem(32px);
+        line-height: rem(48px);
+        margin-bottom: rem(72px);
         color: $SecondaryColor;
         text-align: center;
 
         @include lg {
-            font-size: rem(36px);
-            line-height: rem(48px);
-            margin-bottom: rem(40px);
+            font-size: rem(24px);
+            line-height: rem(32px);
+            margin-bottom: rem(32px);
         }
 
         @include md {
-            font-size: rem(28px);
-            line-height: rem(40px);
-            margin-bottom: rem(30px);
+            font-size: rem(20px);
+            line-height: rem(32px);
+            margin-bottom: rem(32px);
         }
 
         @include sm {
-            font-size: rem(18px);
+            font-size: rem(16px);
             line-height: rem(24px);
             margin-bottom: rem(24px);
         }
@@ -210,11 +210,11 @@
     flex-flow: column nowrap;
     justify-content: flex-start;
     align-items: flex-start;
-    max-width: rem(1416px);
+    max-width: rem(1232px);
     border: rem(1px) solid $Gray4;
     border-radius: rem(10px);
-    padding: rem(40px) rem(32px);
-    margin-bottom: rem(24px);
+    padding: rem(24px);
+    margin-bottom: rem(16px);
     box-sizing: border-box;
     background-color: $White;
     cursor: pointer;
@@ -224,18 +224,18 @@
     }
 
     &:hover {
-        background-color: #F5F5F5;
+        background-color: $Gray5;
     }
 
     @include lg {
-        max-width: rem(1040px);
-        padding: rem(32px) rem(24px);
+        max-width: rem(864px);
+        padding: rem(24px) rem(16px);
     }
 
     @include md {
         max-width: rem(770px);
-        padding: rem(24px) rem(16px);
-        margin-bottom: rem(16px);
+        padding: rem(20px) rem(16px);
+        margin-bottom: rem(8px);
     }
 
     @include sm {
@@ -249,32 +249,34 @@
         justify-content: flex-start;
         align-items: center;
         width: 100%;
-        min-height: rem(80px);
+        min-height: rem(64px);
         font-weight: 500;
-        font-size: rem(28px);
+        font-size: rem(22px);
         line-height: rem(40px);
-        margin-bottom: rem(30px);
-        padding-left: rem(96px);
+        margin-bottom: rem(16px);
+        padding-left: rem(80px);
         box-sizing: border-box;
         color: $SecondaryColor;
         background-position: center left;
         background-repeat: no-repeat;
-        background-size: rem(80px);
+        background-size: rem(64px);
 
         @include lg {
-            min-height: rem(80px);
-            font-size: rem(20px);
-            line-height: rem(32px);
-            margin-bottom: rem(24px);
+            min-height: rem(56px);
+            font-size: rem(18px);
+            line-height: rem(31px);
+            margin-bottom: rem(16px);
+            padding-left: rem(72px);
+            background-size: rem(56px);
         }
 
         @include md {
-            min-height: rem(64px);
-            font-size: rem(16px);
+            min-height: rem(48px);
+            font-size: rem(14px);
             line-height: rem(24px);
-            margin-bottom: rem(16px);
-            padding-left: rem(72px);
-            background-size: rem(64px);
+            margin-bottom: rem(12px);
+            padding-left: rem(56px);
+            background-size: rem(48px);
         }
 
         @include sm {
@@ -314,22 +316,24 @@
 
     .benefit-card-desc {
         width: 100%;
-        font-weight: 500;
-        font-size: rem(22px);
-        line-height: rem(40px);
+        font-size: rem(18px);
+        line-height: rem(31px);
         color: $Gray1;
 
         @include lg {
-            font-size: rem(16px);
+            font-weight: 500;
+            font-size: rem(14px);
             line-height: rem(24px);
         }
 
         @include md {
+            font-weight: 500;
             font-size: rem(12px);
-            line-height: rem(18px);
+            line-height: rem(20px);
         }
 
         @include sm {
+            font-weight: 500;
             font-size: rem(10px);
             line-height: rem(16px);
         }
