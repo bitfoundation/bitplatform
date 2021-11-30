@@ -354,6 +354,7 @@
     border-radius: rem(4px);
     background-color: $White;
     border: rem(2px) solid $PrimaryColor;
+    box-sizing: border-box;
     font-weight: 600;
     font-size: rem(18px);
     line-height: rem(32px);

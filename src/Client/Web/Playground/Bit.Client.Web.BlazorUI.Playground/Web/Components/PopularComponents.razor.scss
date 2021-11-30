@@ -5,10 +5,10 @@
     flex-flow: row nowrap;
     justify-content: center;
     align-items: center;
-    height: rem(672px);
+    height: rem(504px);
 
     @include lg {
-        height: rem(568px);
+        height: rem(442px);
     }
 
     @include lt-lg {
@@ -19,9 +19,9 @@
 .left-box {
     display: flex;
     flex-flow: column nowrap;
-    width: rem(576px);
+    width: rem(608px);
     height: 100%;
-    margin-right: rem(24px);
+    margin-right: rem(16px);
     border-radius: rem(10px);
     border: rem(1px) solid #DDDDDD;
     box-sizing: border-box;
@@ -29,8 +29,7 @@
     overflow: hidden;
 
     @include lg {
-        width: rem(424px);
-        margin-right: rem(16px);
+        width: rem(512px);
     }
 }
 
@@ -41,20 +40,20 @@
     justify-content: flex-start;
     align-items: flex-start;
     width: 100%;
-    height: rem(280px);
+    height: rem(184px);
     border: rem(1px) solid #DDDDDD;
-    padding: rem(72px) rem(32px) rem(32px) rem(96px);
+    padding: rem(25px) rem(40px) rem(16px) rem(104px);
     box-sizing: border-box;
-    background-color: #F5F5F5;
+    background-color: $Gray5;
 
     @include lg {
-        height: rem(248px);
-        padding: rem(48px) rem(24px) rem(24px) rem(80px);
+        height: rem(202px);
+        padding: rem(24px) rem(24px) rem(24px) rem(80px);
     }
 
     .selected-component-icon {
         position: absolute;
-        top: rem(64px);
+        top: rem(16px);
         left: rem(32px);
         width: rem(48px);
         height: rem(48px);
@@ -63,7 +62,7 @@
         background-repeat: no-repeat;
 
         @include lg {
-            top: rem(48px);
+            top: rem(24px);
             left: rem(24px);
             width: rem(40px);
             height: rem(40px);
@@ -92,8 +91,8 @@
 
     .selected-component-name {
         font-weight: 500;
-        font-size: rem(24px);
-        line-height: rem(40px);
+        font-size: rem(20px);
+        line-height: rem(32px);
         margin-bottom: rem(8px);
         color: $SecondaryColor;
 
@@ -106,31 +105,21 @@
     .selected-component-desc {
         width: 100%;
         height: rem(65px);
-        font-weight: 500;
-        font-size: rem(16px);
+        font-size: rem(14px);
         line-height: rem(24px);
-        margin-bottom: rem(24px);
+        margin-bottom: rem(8px);
         color: $Gray1;
 
         @include lg {
-            height: rem(104px);
-            font-size: rem(14px);
-            line-height: rem(21px);
-            margin-bottom: rem(8px);
+            height: rem(82px);
         }
     }
 
     .demo-btn {
-        font-weight: 600;
-        font-size: rem(20px);
-        line-height: rem(32px);
+        font-size: rem(14px);
+        line-height: rem(24px);
         color: $PrimaryColor;
         cursor: pointer;
-
-        @include lg {
-            font-size: rem(14px);
-            line-height: rem(24px);
-        }
     }
 }
 
@@ -138,11 +127,9 @@
     display: flex;
     flex-flow: column nowrap;
     width: 100%;
-    padding: 0 rem(32px) rem(40px);
-    box-sizing: border-box;
 
     @include lg {
-        padding: 0 rem(16px) 0;
+        padding: 0 0 rem(16px) 0;
     }
 
     .component-row {
@@ -150,16 +137,16 @@
         justify-content: flex-start;
         align-items: center;
         width: 100%;
-        height: rem(88px);
-        padding-left: rem(64px);
+        height: rem(80px);
+        padding-left: rem(104px);
         border-bottom: rem(1px) solid #DDDDDD;
         box-sizing: border-box;
         font-weight: 500;
-        font-size: rem(24px);
-        line-height: rem(40px);
+        font-size: rem(20px);
+        line-height: rem(32px);
         color: $Gray1;
         cursor: pointer;
-        background-position: center left;
+        background-position: center left rem(32px);
         background-repeat: no-repeat;
         background-size: rem(48px);
 
@@ -168,11 +155,12 @@
         }
 
         @include lg {
-            height: rem(80px);
-            padding-left: rem(56px);
+            height: rem(56px);
+            padding-left: rem(80px);
             font-size: rem(18px);
             line-height: rem(31px);
             background-size: rem(40px);
+            background-position: center left rem(24px);
         }
     }
 
@@ -200,8 +188,8 @@
 .right-box {
     display: flex;
     flex-flow: column nowrap;
-    width: rem(816px);
-    height: rem(672px);
+    width: rem(512px);
+    height: 100%;
     border: rem(1px) solid #DDDDDD;
     border-radius: rem(10px);
     box-sizing: border-box;
@@ -209,8 +197,7 @@
     overflow: hidden;
 
     @include lg {
-        width: rem(600px);
-        height: rem(568px);
+        width: rem(512px);
     }
 
     .top-bar {
@@ -219,29 +206,32 @@
         justify-content: flex-start;
         align-items: center;
         width: 100%;
-        height: rem(128px);
-        padding-left: rem(65px);
+        height: rem(72px);
+        padding-left: rem(48px);
         box-sizing: border-box;
-        background-color: #F5F5F5;
+        background-color: $Gray5;
 
         @include lg {
-            height: rem(104px);
-            padding-left: rem(43px);
+            height: rem(60px);
+            padding-left: rem(46px);
         }
     }
 
     .top-bar-tab {
-        padding-bottom: rem(8px);
-        margin-right: rem(72px);
-        font-weight: 500;
-        font-size: rem(24px);
-        line-height: rem(40px);
+        height: 100%;
+        padding: rem(32px) rem(16px) rem(8px);
+        margin-right: rem(40px);
+        box-sizing: border-box;
+        font-weight: 600;
+        font-size: rem(18px);
+        line-height: rem(32px);
         color: $SecondaryColor;
         cursor: pointer;
 
         @include lg {
-            font-size: rem(18px);
-            line-height: rem(31px);
+            padding: rem(24px) 0 rem(12px);
+            font-size: rem(16px);
+            line-height: rem(24px);
         }
     }
 
@@ -255,13 +245,18 @@
         justify-content: flex-start;
         align-items: flex-start;
         width: 100%;
-        height: calc(100% - #{rem(128px)});
-        padding: rem(32px);
+        height: calc(100% - #{rem(72px)});
+        padding: rem(24px);
         box-sizing: border-box;
         overflow: auto;
 
         @include lg {
-            height: calc(100% - #{rem(104px)});
+            height: calc(100% - #{rem(60px)});
+        }
+
+        pre {
+            margin-top: 0;
+            margin-bottom: 0;
         }
     }
 }
@@ -271,7 +266,7 @@
     flex-flow: row wrap;
     justify-content: center;
     align-items: flex-start;
-    width: rem(596px);
+    width: rem(597px);
 
     @include sm {
         width: 100%;
@@ -282,19 +277,19 @@
     display: flex;
     justify-content: center;
     align-items: flex-start;
-    width: rem(274px);
-    height: rem(120px);
+    width: rem(175px);
+    height: rem(136px);
     border-radius: rem(10px);
     margin: 0 rem(12px) rem(24px);
-    padding-top: rem(80px);
+    padding-top: rem(88px);
     box-sizing: border-box;
     font-weight: 500;
-    font-size: rem(16px);
+    font-size: rem(14px);
     line-height: rem(24px);
     color: $SecondaryColor;
-    background-color: #F5F5F5;
+    background-color: $Gray5;
     background-repeat: no-repeat;
-    background-position: top rem(16px) center;
+    background-position: top rem(24px) center;
     background-size: rem(48px);
     cursor: pointer;
 
@@ -340,11 +335,11 @@
 
     .card {
         width: rem(156px);
-        height: rem(88px);
+        height: rem(112px);
         margin: 0 rem(8px) rem(16px);
-        padding-top: rem(56px);
+        padding-top: rem(64px);
         font-size: rem(12px);
-        line-height: rem(16px);
+        line-height: rem(18px);
         background-size: rem(32px);
     }
 }

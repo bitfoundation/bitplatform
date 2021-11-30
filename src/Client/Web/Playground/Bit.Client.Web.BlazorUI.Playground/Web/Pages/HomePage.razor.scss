@@ -116,48 +116,48 @@
 }
 
 .popular-components-section {
-    padding: rem(136px) 0;
-    background: linear-gradient(0deg, rgba(35, 49, 132, 0.9), rgba(35, 49, 132, 0.9));
+    padding: rem(88px) 0;
+    background: linear-gradient(0deg, rgba(35, 49, 132, 0.9), rgba(35, 49, 132, 0.9)), url('/images/home/most-popular-components-bg.svg');
     background-position: center;
     background-size: cover;
     background-repeat: no-repeat;
 
     @include lg {
-        padding: rem(104px) 0;
+        padding: rem(80px) 0;
     }
 
     @include md {
-        padding: rem(64px) 0;
-    }
-
-    @include sm {
         padding: rem(56px) 0;
     }
 
+    @include sm {
+        padding: rem(24px) 0;
+    }
+
     .section-title {
+        margin-bottom: rem(72px);
         font-weight: bold;
-        font-size: rem(50px);
-        line-height: rem(72px);
-        margin-bottom: rem(104px);
+        font-size: rem(32px);
+        line-height: rem(48px);
         color: $White;
         text-align: center;
 
         @include lg {
-            font-size: rem(36px);
-            line-height: rem(48px);
-            margin-bottom: rem(40px);
+            font-size: rem(24px);
+            line-height: rem(32px);
+            margin-bottom: rem(46px);
         }
 
         @include md {
-            font-size: rem(28px);
-            line-height: rem(40px);
-            margin-bottom: rem(30px);
+            font-size: rem(20px);
+            line-height: rem(32px);
+            margin-bottom: rem(32px);
         }
 
         @include sm {
-            font-size: rem(18px);
+            font-size: rem(16px);
             line-height: rem(24px);
-            margin-bottom: rem(24px);
+            margin-bottom: rem(16px);
         }
     }
 }
