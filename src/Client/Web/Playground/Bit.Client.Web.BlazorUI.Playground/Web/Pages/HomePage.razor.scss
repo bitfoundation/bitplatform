@@ -341,37 +341,36 @@
 }
 
 .contribution-section {
-    padding: rem(136px) rem(32px);
-    background: linear-gradient(0deg, rgba(35, 49, 132, 0.9), rgba(35, 49, 132, 0.9)), url('/images/home/open-source-section-bg.png');
+    padding: rem(88px) rem(32px);
+    background: linear-gradient(0deg, rgba(35, 49, 132, 0.9), rgba(35, 49, 132, 0.9)), url('/images/home/open-source-section-bg.svg');
     background-position: center;
     background-size: cover;
     background-repeat: no-repeat;
 
     @include lg {
-        padding: rem(104px) rem(32px);
+        padding: rem(80px) rem(32px);
     }
 
     @include md {
-        padding: rem(64px) rem(32px);
+        padding: rem(56px) rem(32px);
     }
 
     @include sm {
-        padding: rem(56px) rem(16px);
+        padding: rem(40px) rem(16px);
     }
 
     .section-icon {
-        width: rem(120px);
-        height: rem(120px);
-        margin-bottom: rem(40px);
+        width: rem(72px);
+        height: rem(72px);
+        margin-bottom: rem(32px);
         background-image: url('/images/home/open-source-icon.svg');
         background-position: center;
-        background-size: cover;
+        background-size: contain;
         background-repeat: no-repeat;
 
-        @include md {
+        @include lt-xl {
             width: rem(64px);
             height: rem(64px);
-            margin-bottom: rem(24px);
         }
 
         @include sm {
@@ -379,61 +378,55 @@
             height: rem(40px);
             margin-bottom: rem(16px);
         }
-
-        @include lg {
-            width: rem(80px);
-            height: rem(80px);
-            margin-bottom: rem(48px);
-        }
     }
 
     .section-title {
         font-weight: bold;
-        font-size: rem(50px);
-        line-height: rem(72px);
-        margin-bottom: rem(52px);
+        font-size: rem(32px);
+        line-height: rem(48px);
+        margin-bottom: rem(24px);
         color: $White;
         text-align: center;
 
         @include lg {
-            font-size: rem(36px);
-            line-height: rem(48px);
-            margin-bottom: rem(32px);
+            font-size: rem(24px);
+            line-height: rem(32px);
+            margin-bottom: rem(24px);
         }
 
         @include md {
-            font-size: rem(28px);
-            line-height: rem(40px);
-            margin-bottom: rem(24px);
+            font-size: rem(20px);
+            line-height: rem(32px);
+            margin-bottom: rem(16px);
         }
 
         @include sm {
-            font-size: rem(18px);
+            font-size: rem(16px);
             line-height: rem(24px);
-            margin-bottom: rem(24px);
+            margin-bottom: rem(8px);
         }
     }
 
     .secion-desc {
-        max-width: rem(936px);
-        margin-bottom: rem(36px);
+        max-width: rem(1024px);
+        margin-bottom: rem(40px);
         font-weight: 500;
-        font-size: rem(24px);
-        line-height: rem(40px);
+        font-size: rem(20px);
+        line-height: rem(32px);
         text-align: center;
         color: #DDDDDD;
 
         @include lg {
             max-width: rem(864px);
-            margin-bottom: rem(40px);
+            margin-bottom: rem(24px);
             font-size: rem(18px);
             line-height: rem(31px);
         }
 
         @include md {
             max-width: 100%;
-            margin-bottom: rem(24px);
-            font-size: rem(16px);
+            margin-bottom: rem(40px);
+            font-size: rem(14px);
             line-height: rem(24px);
         }
 
@@ -450,65 +443,73 @@
         flex-flow: row nowrap;
         justify-content: center;
         align-items: center;
-        width: rem(248px);
-        height: rem(64px);
-        border: rem(1px) solid $PrimaryColor;
+        width: rem(209px);
+        height: rem(56px);
+        border: rem(2px) solid $PrimaryColor;
         border-radius: rem(4px);
         box-sizing: border-box;
         font-weight: 600;
-        font-size: rem(24px);
-        line-height: rem(40px);
+        font-size: rem(18px);
+        line-height: rem(32px);
         color: $PrimaryColor;
         background-color: $White;
         cursor: pointer;
 
         @include lg {
-            width: rem(208px);
-            height: rem(56px);
-            font-size: rem(18px);
-            line-height: rem(31px);
-        }
-
-        @include md {
-            width: rem(174px);
-            height: rem(40px);
-            font-size: rem(14px);
+            width: rem(178px);
+            height: rem(48px);
+            font-size: rem(16px);
             line-height: rem(24px);
         }
 
-        @include sm {
-            width: rem(132px);
-            height: rem(40px);
-            font-size: rem(14px);
-            line-height: rem(24px);
-        }
-    }
-
-    .github-icon {
-        display: inline-block;
-        width: rem(36px);
-        height: rem(36px);
-        margin-right: rem(16px);
-        background-image: url('/images/home/github-btn-blue-icon.svg');
-        background-position: center;
-        background-size: cover;
-        background-repeat: no-repeat;
-
-        @include lg {
-            width: rem(28px);
-            height: rem(28px);
-        }
-
         @include md {
-            width: rem(24px);
-            height: rem(24px);
-            margin-right: rem(10px);
+            width: rem(135px);
+            height: rem(40px);
+            font-size: rem(12px);
+            line-height: rem(16px);
         }
 
         @include sm {
-            width: rem(21px);
-            height: rem(21px);
-            margin-right: rem(10px);
+            width: rem(115px);
+            height: rem(40px);
+            font-size: rem(12px);
+            line-height: rem(16px);
+        }
+
+        .github-icon {
+            display: inline-block;
+            width: rem(40px);
+            height: rem(40px);
+            margin-right: rem(8px);
+            background-image: url('/images/home/github-btn-blue-icon.svg');
+            background-position: center;
+            background-size: contain;
+            background-repeat: no-repeat;
+
+            @include lg {
+                width: rem(32px);
+                height: rem(32px);
+            }
+
+            @include md {
+                width: rem(20px);
+                height: rem(20px);
+            }
+
+            @include sm {
+                width: rem(16px);
+                height: rem(16px);
+            }
+        }
+
+        &:hover {
+            border-color: $SecondaryColor;
+            color: $SecondaryColor;
+            background-color: $Gray5;
+
+            .github-icon {
+                background-image: url('/images/home/github-btn-dark-icon.svg');
+            }
         }
     }
 }
