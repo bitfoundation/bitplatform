@@ -22,9 +22,9 @@
 }
 
 @mixin code-button {
-    border-radius: 4px;
     padding: rem(10px);
-    border: 1px solid $Violet;
+    border-radius: rem(4px);
+    border: rem(1px) solid $SecondaryColor;
 
     @include subtitle2-xl;
 

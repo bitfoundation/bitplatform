@@ -63,7 +63,7 @@ h4 {
     width: 75%;
     line-height: rem(40px);
     min-height: rem(160px);
-    color: $Black01;
+    color: $Black1;
 
     @include body2-xl;
 
@@ -115,11 +115,16 @@ h4 {
 .box {
     width: 30.3%;
     min-height: rem(260px);
-    background: $Gray04;
+    background-color: $Gray4;
     border-radius: rem(8px) rem(8px) 0 0;
     margin-bottom: rem(70px);
 
-    &:nth-child(1), &:nth-child(2), &:nth-child(4), &:nth-child(5), &:nth-child(7), &:nth-child(8) {
+    &:nth-child(1), 
+    &:nth-child(2), 
+    &:nth-child(4), 
+    &:nth-child(5), 
+    &:nth-child(7), 
+    &:nth-child(8) {
         margin-right: rem(16px);
     }
 

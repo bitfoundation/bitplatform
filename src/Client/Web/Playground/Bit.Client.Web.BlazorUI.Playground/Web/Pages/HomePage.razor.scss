@@ -64,7 +64,7 @@
         font-size: rem(24px);
         line-height: rem(40px);
         text-align: center;
-        color: $Gray01;
+        color: $Gray1;
 
         @include lg {
             max-width: rem(688px);
@@ -248,7 +248,7 @@
     justify-content: flex-start;
     align-items: flex-start;
     max-width: rem(1416px);
-    border: rem(1px) solid $Gray05;
+    border: rem(1px) solid $Gray4;
     border-radius: rem(10px);
     padding: rem(40px) rem(32px);
     margin-bottom: rem(24px);
@@ -354,7 +354,7 @@
         font-weight: 500;
         font-size: rem(22px);
         line-height: rem(40px);
-        color: $Gray01;
+        color: $Gray1;
 
         @include lg {
             font-size: rem(16px);
@@ -662,7 +662,7 @@
     }
 
     .list-item {
-        color: $Black01;
+        color: $Black1;
         font-size: rem(18px);
         line-height: rem(31px);
         margin-bottom: rem(12px);

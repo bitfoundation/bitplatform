@@ -32,7 +32,7 @@
     @include sm {
         height: rem(45px);
         padding: 0 rem(16px);
-        border-bottom: rem(1px) solid #E9E9E9;
+        border-bottom: rem(1px) solid $Gray4;
     }
 }
 
@@ -82,7 +82,7 @@
     margin-right: rem(41px);
     font-size: rem(20px);
     line-height: rem(28px);
-    color: $Gray01;
+    color: $Gray1;
     text-decoration: none;
     cursor: pointer;
 

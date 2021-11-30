@@ -4,7 +4,7 @@
     margin-top: rem(85px);
 
     .box {
-        border-top: 1px solid $Gray02;
+        border-top: rem(1px) solid $Gray2;
         padding: rem(15px) 0 rem(15px);
         margin-top: rem(5px);
     }
@@ -21,7 +21,7 @@
 .code {
     height: rem(252px);
     padding: rem(15px);
-    border: 1px solid $Gray03;
+    border: rem(1px) solid $Gray3;
     overflow: scroll;
 
     &::-webkit-scrollbar {
