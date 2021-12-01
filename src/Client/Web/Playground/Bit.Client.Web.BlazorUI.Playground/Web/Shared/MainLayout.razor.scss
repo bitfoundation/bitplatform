@@ -43,29 +43,28 @@
         justify-content: center;
         align-items: center;
         width: 100%;
-        height: rem(40px);
-        padding-top: rem(4px);
+        height: rem(24px);
         box-sizing: border-box;
         text-align: center;
-        font-size: rem(14px);
-        line-height: rem(22px);
+        font-size: rem(15px);
+        line-height: rem(24px);
         color: $Gray1;
         background-color: $Gray4;
 
         @include lt-xl {
-            height: rem(32px);
-            font-size: rem(10px);
-            line-height: rem(16px);
+            font-weight: 500;
+            font-size: rem(8px);
+            line-height: rem(12px);
         }
 
         @include lt-lg {
-            height: rem(24px);
+            height: rem(12px);
         }
     }
 
     .contact-link-container {
         position: absolute;
-        top: rem(-73px);
+        top: rem(-50px);
         z-index: 1;
         margin: 0 auto;
         right: 0;
@@ -75,27 +74,28 @@
         flex-flow: row nowrap;
 
         @include lt-xl {
-            top: rem(-65px);
+            top: rem(-38px);
         }
     }
 
     .footer-link {
-        width: rem(56px);
-        height: rem(56px);
+        width: rem(40px);
+        height: rem(40px);
         background-position: center;
         background-repeat: no-repeat;
         background-size: contain;
         cursor: pointer;
-        margin: 0 rem(12px);
+        margin: 0 rem(8px);
 
         @include lg {
-            width: rem(48px);
-            height: rem(48px);
+            width: rem(28px);
+            height: rem(28px);
+            margin: 0 rem(4px);
         }
 
         @include md {
-            width: rem(40px);
-            height: rem(40px);
+            width: rem(24px);
+            height: rem(24px);
             margin: 0 rem(8px);
         }
 
