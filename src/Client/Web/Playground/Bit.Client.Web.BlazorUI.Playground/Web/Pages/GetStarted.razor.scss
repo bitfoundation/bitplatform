@@ -60,7 +60,7 @@ section {
     border-left: rem(4px) solid $SecondaryColor;
     color: $SecondaryColor;
     padding: rem(15px);
-    background: $Gray04;
+    background-color: $Gray4;
 
     @include sm {
         width: 80%;
@@ -89,9 +89,10 @@ section {
     }
 }
 
-.init-code, .startup-code {
-    background: $Gray04;
+.init-code, 
+.startup-code {
     padding: rem(15px);
+    background-color: $Gray4;
 }
 
 .index-path {

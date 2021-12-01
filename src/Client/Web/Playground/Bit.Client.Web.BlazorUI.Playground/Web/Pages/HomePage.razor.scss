@@ -10,73 +10,71 @@
 }
 
 .hero-section {
-    padding: rem(120px) rem(75px) rem(136px);
+    padding: rem(112px) rem(200px) rem(105px);
+    background-image: url('/images/home/hero-section-bg.svg');
     background-position: center;
     background-repeat: no-repeat;
     background-size: cover;
 
     @include lg {
-        padding: rem(136px) rem(60px) rem(104px);
+        padding: rem(112px) rem(100px) rem(105px);
     }
 
     @include md {
-        padding: rem(104px) rem(32px) rem(64px);
+        padding: rem(64px) rem(32px) rem(56px);
     }
 
     @include sm {
-        padding: rem(28px) rem(16px) rem(56px);
+        padding: rem(40px) rem(16px) rem(48px);
     }
 
     .section-title {
-        max-width: rem(1120px);
-        margin-bottom: rem(40px);
+        width: 100%;
+        margin-bottom: rem(32px);
         font-weight: bold;
-        font-size: rem(52px);
-        line-height: rem(72px);
+        font-size: rem(38px);
+        line-height: rem(56px);
         text-align: center;
         color: $SecondaryColor;
 
         @include lg {
-            max-width: rem(860px);
-            font-size: rem(40px);
-            line-height: rem(56px);
-        }
-
-        @include md {
-            max-width: rem(770px);
-            margin-bottom: rem(24px);
-            font-size: rem(30px);
+            font-size: rem(32px);
             line-height: rem(48px);
         }
 
+        @include md {
+            margin-bottom: rem(16px);
+            font-size: rem(24px);
+            line-height: rem(40px);
+        }
+
         @include sm {
-            max-width: 100%;
             margin-bottom: rem(24px);
-            font-size: rem(20px);
-            line-height: rem(32px);
+            font-size: rem(18px);
+            line-height: rem(31px);
         }
     }
 
     .section-subtitle {
-        max-width: rem(936px);
+        max-width: rem(811px);
         margin-bottom: rem(80px);
         font-weight: 500;
-        font-size: rem(24px);
-        line-height: rem(40px);
+        font-size: rem(20px);
+        line-height: rem(32px);
         text-align: center;
-        color: $Gray01;
+        color: $Gray1;
 
         @include lg {
             max-width: rem(688px);
             margin-bottom: rem(64px);
-            font-size: rem(18px);
-            line-height: rem(31px);
+            font-size: rem(16px);
+            line-height: rem(24px);
         }
 
         @include md {
             max-width: rem(572px);
-            margin-bottom: rem(40px);
-            font-size: rem(16px);
+            margin-bottom: rem(48px);
+            font-size: rem(14px);
             line-height: rem(24px);
         }
 
@@ -105,46 +103,11 @@
     }
 
     .section-btn {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: rem(64px);
-        border-radius: rem(4px);
-        box-sizing: border-box;
-        text-align: center;
-        font-weight: 600;
-        font-size: rem(24px);
-        line-height: rem(40px);
-        padding: rem(5px) rem(43px) 0;
-
-        @include lg {
-            height: rem(56px);
-            font-size: rem(18px);
-            line-height: rem(31px);
-        }
-
-        @include lt-lg {
-            height: rem(40px);
-            font-size: rem(14px);
-            line-height: rem(24px);
-        }
-
-        @include md {
-            padding: rem(5px) rem(34px) 0;
-        }
-
-        @include sm {
-            padding: rem(5px) rem(22px) 0;
-        }
+        margin: 0 rem(4px);
     }
 
     .btn--primary {
         @include PrimaryBtn;
-        margin-right: rem(16px);
-
-        @include lt-xl {
-            margin-right: rem(8px);
-        }
     }
 
     .btn--secondary {
@@ -153,89 +116,89 @@
 }
 
 .popular-components-section {
-    padding: rem(136px) 0;
-    background: linear-gradient(0deg, rgba(35, 49, 132, 0.9), rgba(35, 49, 132, 0.9));
+    padding: rem(88px) 0;
+    background: linear-gradient(0deg, rgba(35, 49, 132, 0.9), rgba(35, 49, 132, 0.9)), url('/images/home/most-popular-components-bg.svg');
     background-position: center;
     background-size: cover;
     background-repeat: no-repeat;
 
     @include lg {
-        padding: rem(104px) 0;
+        padding: rem(80px) 0;
     }
 
     @include md {
-        padding: rem(64px) 0;
-    }
-
-    @include sm {
         padding: rem(56px) 0;
     }
 
+    @include sm {
+        padding: rem(24px) 0;
+    }
+
     .section-title {
+        margin-bottom: rem(72px);
         font-weight: bold;
-        font-size: rem(50px);
-        line-height: rem(72px);
-        margin-bottom: rem(104px);
+        font-size: rem(32px);
+        line-height: rem(48px);
         color: $White;
         text-align: center;
 
         @include lg {
-            font-size: rem(36px);
-            line-height: rem(48px);
-            margin-bottom: rem(40px);
+            font-size: rem(24px);
+            line-height: rem(32px);
+            margin-bottom: rem(46px);
         }
 
         @include md {
-            font-size: rem(28px);
-            line-height: rem(40px);
-            margin-bottom: rem(30px);
+            font-size: rem(20px);
+            line-height: rem(32px);
+            margin-bottom: rem(32px);
         }
 
         @include sm {
-            font-size: rem(18px);
+            font-size: rem(16px);
             line-height: rem(24px);
-            margin-bottom: rem(24px);
+            margin-bottom: rem(16px);
         }
     }
 }
 
 .benefits-section {
-    padding: rem(136px) rem(32px);
+    padding: rem(88px) rem(32px);
 
     @include lg {
-        padding: rem(104px) rem(32px);
+        padding: rem(80px) rem(32px);
     }
 
     @include md {
-        padding: rem(64px) rem(32px);
+        padding: rem(56px) rem(32px);
     }
 
     @include sm {
-        padding: rem(56px) rem(16px);
+        padding: rem(48px) rem(16px);
     }
 
     .section-title {
         font-weight: bold;
-        font-size: rem(50px);
-        line-height: rem(72px);
-        margin-bottom: rem(104px);
+        font-size: rem(32px);
+        line-height: rem(48px);
+        margin-bottom: rem(72px);
         color: $SecondaryColor;
         text-align: center;
 
         @include lg {
-            font-size: rem(36px);
-            line-height: rem(48px);
-            margin-bottom: rem(40px);
+            font-size: rem(24px);
+            line-height: rem(32px);
+            margin-bottom: rem(32px);
         }
 
         @include md {
-            font-size: rem(28px);
-            line-height: rem(40px);
-            margin-bottom: rem(30px);
+            font-size: rem(20px);
+            line-height: rem(32px);
+            margin-bottom: rem(32px);
         }
 
         @include sm {
-            font-size: rem(18px);
+            font-size: rem(16px);
             line-height: rem(24px);
             margin-bottom: rem(24px);
         }
@@ -247,11 +210,11 @@
     flex-flow: column nowrap;
     justify-content: flex-start;
     align-items: flex-start;
-    max-width: rem(1416px);
-    border: rem(1px) solid $Gray05;
+    max-width: rem(1232px);
+    border: rem(1px) solid $Gray4;
     border-radius: rem(10px);
-    padding: rem(40px) rem(32px);
-    margin-bottom: rem(24px);
+    padding: rem(24px);
+    margin-bottom: rem(16px);
     box-sizing: border-box;
     background-color: $White;
     cursor: pointer;
@@ -261,18 +224,18 @@
     }
 
     &:hover {
-        background-color: #F5F5F5;
+        background-color: $Gray5;
     }
 
     @include lg {
-        max-width: rem(1040px);
-        padding: rem(32px) rem(24px);
+        max-width: rem(864px);
+        padding: rem(24px) rem(16px);
     }
 
     @include md {
         max-width: rem(770px);
-        padding: rem(24px) rem(16px);
-        margin-bottom: rem(16px);
+        padding: rem(20px) rem(16px);
+        margin-bottom: rem(8px);
     }
 
     @include sm {
@@ -286,32 +249,34 @@
         justify-content: flex-start;
         align-items: center;
         width: 100%;
-        min-height: rem(80px);
+        min-height: rem(64px);
         font-weight: 500;
-        font-size: rem(28px);
+        font-size: rem(22px);
         line-height: rem(40px);
-        margin-bottom: rem(30px);
-        padding-left: rem(96px);
+        margin-bottom: rem(16px);
+        padding-left: rem(80px);
         box-sizing: border-box;
         color: $SecondaryColor;
         background-position: center left;
         background-repeat: no-repeat;
-        background-size: rem(80px);
+        background-size: rem(64px);
 
         @include lg {
-            min-height: rem(80px);
-            font-size: rem(20px);
-            line-height: rem(32px);
-            margin-bottom: rem(24px);
+            min-height: rem(56px);
+            font-size: rem(18px);
+            line-height: rem(31px);
+            margin-bottom: rem(16px);
+            padding-left: rem(72px);
+            background-size: rem(56px);
         }
 
         @include md {
-            min-height: rem(64px);
-            font-size: rem(16px);
+            min-height: rem(48px);
+            font-size: rem(14px);
             line-height: rem(24px);
-            margin-bottom: rem(16px);
-            padding-left: rem(72px);
-            background-size: rem(64px);
+            margin-bottom: rem(12px);
+            padding-left: rem(56px);
+            background-size: rem(48px);
         }
 
         @include sm {
@@ -351,22 +316,24 @@
 
     .benefit-card-desc {
         width: 100%;
-        font-weight: 500;
-        font-size: rem(22px);
-        line-height: rem(40px);
-        color: $Gray01;
+        font-size: rem(18px);
+        line-height: rem(31px);
+        color: $Gray1;
 
         @include lg {
-            font-size: rem(16px);
+            font-weight: 500;
+            font-size: rem(14px);
             line-height: rem(24px);
         }
 
         @include md {
+            font-weight: 500;
             font-size: rem(12px);
-            line-height: rem(18px);
+            line-height: rem(20px);
         }
 
         @include sm {
+            font-weight: 500;
             font-size: rem(10px);
             line-height: rem(16px);
         }
@@ -374,37 +341,36 @@
 }
 
 .contribution-section {
-    padding: rem(136px) rem(32px);
-    background: linear-gradient(0deg, rgba(35, 49, 132, 0.9), rgba(35, 49, 132, 0.9)), url('/images/home/open-source-section-bg.png');
+    padding: rem(88px) rem(32px);
+    background: linear-gradient(0deg, rgba(35, 49, 132, 0.9), rgba(35, 49, 132, 0.9)), url('/images/home/open-source-section-bg.svg');
     background-position: center;
     background-size: cover;
     background-repeat: no-repeat;
 
     @include lg {
-        padding: rem(104px) rem(32px);
+        padding: rem(80px) rem(32px);
     }
 
     @include md {
-        padding: rem(64px) rem(32px);
+        padding: rem(56px) rem(32px);
     }
 
     @include sm {
-        padding: rem(56px) rem(16px);
+        padding: rem(40px) rem(16px);
     }
 
     .section-icon {
-        width: rem(120px);
-        height: rem(120px);
-        margin-bottom: rem(40px);
+        width: rem(72px);
+        height: rem(72px);
+        margin-bottom: rem(32px);
         background-image: url('/images/home/open-source-icon.svg');
         background-position: center;
-        background-size: cover;
+        background-size: contain;
         background-repeat: no-repeat;
 
-        @include md {
+        @include lt-xl {
             width: rem(64px);
             height: rem(64px);
-            margin-bottom: rem(24px);
         }
 
         @include sm {
@@ -412,61 +378,55 @@
             height: rem(40px);
             margin-bottom: rem(16px);
         }
-
-        @include lg {
-            width: rem(80px);
-            height: rem(80px);
-            margin-bottom: rem(48px);
-        }
     }
 
     .section-title {
         font-weight: bold;
-        font-size: rem(50px);
-        line-height: rem(72px);
-        margin-bottom: rem(52px);
+        font-size: rem(32px);
+        line-height: rem(48px);
+        margin-bottom: rem(24px);
         color: $White;
         text-align: center;
 
         @include lg {
-            font-size: rem(36px);
-            line-height: rem(48px);
-            margin-bottom: rem(32px);
+            font-size: rem(24px);
+            line-height: rem(32px);
+            margin-bottom: rem(24px);
         }
 
         @include md {
-            font-size: rem(28px);
-            line-height: rem(40px);
-            margin-bottom: rem(24px);
+            font-size: rem(20px);
+            line-height: rem(32px);
+            margin-bottom: rem(16px);
         }
 
         @include sm {
-            font-size: rem(18px);
+            font-size: rem(16px);
             line-height: rem(24px);
-            margin-bottom: rem(24px);
+            margin-bottom: rem(8px);
         }
     }
 
     .secion-desc {
-        max-width: rem(936px);
-        margin-bottom: rem(36px);
+        max-width: rem(1024px);
+        margin-bottom: rem(40px);
         font-weight: 500;
-        font-size: rem(24px);
-        line-height: rem(40px);
+        font-size: rem(20px);
+        line-height: rem(32px);
         text-align: center;
         color: #DDDDDD;
 
         @include lg {
             max-width: rem(864px);
-            margin-bottom: rem(40px);
+            margin-bottom: rem(24px);
             font-size: rem(18px);
             line-height: rem(31px);
         }
 
         @include md {
             max-width: 100%;
-            margin-bottom: rem(24px);
-            font-size: rem(16px);
+            margin-bottom: rem(40px);
+            font-size: rem(14px);
             line-height: rem(24px);
         }
 
@@ -483,107 +443,115 @@
         flex-flow: row nowrap;
         justify-content: center;
         align-items: center;
-        width: rem(248px);
-        height: rem(64px);
-        border: rem(1px) solid $PrimaryColor;
+        width: rem(209px);
+        height: rem(56px);
+        border: rem(2px) solid $PrimaryColor;
         border-radius: rem(4px);
         box-sizing: border-box;
         font-weight: 600;
-        font-size: rem(24px);
-        line-height: rem(40px);
+        font-size: rem(18px);
+        line-height: rem(32px);
         color: $PrimaryColor;
         background-color: $White;
         cursor: pointer;
 
         @include lg {
-            width: rem(208px);
-            height: rem(56px);
-            font-size: rem(18px);
-            line-height: rem(31px);
-        }
-
-        @include md {
-            width: rem(174px);
-            height: rem(40px);
-            font-size: rem(14px);
+            width: rem(178px);
+            height: rem(48px);
+            font-size: rem(16px);
             line-height: rem(24px);
         }
 
-        @include sm {
-            width: rem(132px);
-            height: rem(40px);
-            font-size: rem(14px);
-            line-height: rem(24px);
-        }
-    }
-
-    .github-icon {
-        display: inline-block;
-        width: rem(36px);
-        height: rem(36px);
-        margin-right: rem(16px);
-        background-image: url('/images/home/github-btn-blue-icon.svg');
-        background-position: center;
-        background-size: cover;
-        background-repeat: no-repeat;
-
-        @include lg {
-            width: rem(28px);
-            height: rem(28px);
-        }
-
         @include md {
-            width: rem(24px);
-            height: rem(24px);
-            margin-right: rem(10px);
+            width: rem(135px);
+            height: rem(40px);
+            font-size: rem(12px);
+            line-height: rem(16px);
         }
 
         @include sm {
-            width: rem(21px);
-            height: rem(21px);
-            margin-right: rem(10px);
+            width: rem(115px);
+            height: rem(40px);
+            font-size: rem(12px);
+            line-height: rem(16px);
+        }
+
+        .github-icon {
+            display: inline-block;
+            width: rem(40px);
+            height: rem(40px);
+            margin-right: rem(8px);
+            background-image: url('/images/home/github-btn-blue-icon.svg');
+            background-position: center;
+            background-size: contain;
+            background-repeat: no-repeat;
+
+            @include lg {
+                width: rem(32px);
+                height: rem(32px);
+            }
+
+            @include md {
+                width: rem(20px);
+                height: rem(20px);
+            }
+
+            @include sm {
+                width: rem(16px);
+                height: rem(16px);
+            }
+        }
+
+        &:hover {
+            border-color: $SecondaryColor;
+            color: $SecondaryColor;
+            background-color: $Gray5;
+
+            .github-icon {
+                background-image: url('/images/home/github-btn-dark-icon.svg');
+            }
         }
     }
 }
 
 .component-list-section {
-    padding: rem(136px) rem(32px);
+    padding: rem(88px) rem(32px);
 
     @include lg {
-        padding: rem(104px) rem(32px);
+        padding: rem(80px) rem(32px);
     }
 
     @include md {
-        padding: rem(64px) rem(32px);
+        padding: rem(56px) rem(32px);
     }
 
     @include sm {
-        padding: rem(56px) rem(16px);
+        padding: rem(48x) rem(16px);
     }
 
     .section-title {
         font-weight: bold;
-        font-size: rem(50px);
-        line-height: rem(72px);
-        margin-bottom: rem(104px);
+        font-size: rem(32px);
+        line-height: rem(48px);
+        margin-bottom: rem(80px);
         color: $SecondaryColor;
         text-align: center;
 
         @include lg {
-            font-size: rem(36px);
-            line-height: rem(48px);
-            margin-bottom: rem(64px);
+            font-size: rem(24px);
+            line-height: rem(32px);
+            margin-bottom: rem(72px);
         }
 
         @include md {
-            font-size: rem(28px);
-            line-height: rem(40px);
-            margin-bottom: rem(32px);
+            font-size: rem(20px);
+            line-height: rem(32px);
+            margin-bottom: rem(31px);
         }
 
         @include sm {
             font-size: rem(18px);
-            line-height: rem(24px);
+            line-height: rem(31px);
             margin-bottom: rem(32px);
         }
     }
@@ -600,8 +568,8 @@
         flex-flow: column nowrap;
         justify-content: flex-start;
         align-items: flex-start;
-        width: rem(336px);
-        margin-right: rem(144px);
+        width: rem(248px);
+        margin-right: rem(64px);
 
         &:last-child {
             margin-right: 0;
@@ -612,8 +580,8 @@
         }
 
         @include md {
-            width: rem(274px);
-            margin-right: rem(50px);
+            width: rem(174px);
+            margin-right: rem(25px);
         }
 
         @include sm {
@@ -628,18 +596,17 @@
         justify-content: flex-start;
         align-items: flex-start;
         width: 100%;
-        margin-bottom: rem(52px);
-
+        margin-bottom: rem(24px);
         //&:last-child {
         //    margin-bottom: 0;
         //}
 
         @include lg {
-            margin-bottom: rem(40px);
+            margin-bottom: rem(32px);
         }
 
         @include md {
-            margin-bottom: rem(32px);
+            margin-bottom: rem(40px);
         }
 
         @include sm {
@@ -648,24 +615,27 @@
     }
 
     .list-title {
-        margin-bottom: rem(16px);
-        font-weight: 500;
-        font-size: rem(24px);
-        line-height: rem(40px);
+        margin-bottom: rem(8px);
+        font-size: rem(18px);
+        line-height: rem(31px);
         color: $SecondaryColor;
 
-        @include lt-lg {
-            margin-bottom: rem(8px);
+        @include lt-xl {
+            font-weight: 500;
             font-size: rem(16px);
             line-height: rem(24px);
+        }
+
+        @include lt-lg {
+            font-size: rem(14px);
         }
     }
 
     .list-item {
-        color: $Black01;
-        font-size: rem(18px);
-        line-height: rem(31px);
-        margin-bottom: rem(12px);
+        color: $Black1;
+        font-size: rem(14px);
+        line-height: rem(24px);
+        margin-bottom: rem(4px);
 
         &:last-child {
             margin-bottom: 0;
@@ -682,96 +652,64 @@
         @include md {
             font-size: rem(12px);
             line-height: rem(16px);
+            margin-bottom: rem(12px);
         }
 
         @include sm {
             font-size: rem(14px);
             line-height: rem(24px);
+            margin-bottom: rem(8px);
         }
     }
 }
 
 .bottom-section {
-    padding: rem(230px) 0 rem(280px);
+    padding: rem(184px) 0 rem(168px);
     background: linear-gradient(0deg, rgba(35, 49, 132, 0.9), rgba(35, 49, 132, 0.9)), url('/images/home/bottom-section-bg.png');
     background-position: center;
     background-size: cover;
     background-repeat: no-repeat;
 
     @include lg {
-        padding: rem(176px) 0 rem(264px);
+        padding: rem(148px) 0 rem(125px);
     }
 
     @include md {
-        padding: rem(64px) 0 rem(160px);
+        padding: rem(56px) 0 rem(112px);
     }
 
     @include sm {
-        padding: rem(56px) 0 rem(152px);
+        padding: rem(40px) 0 rem(92px);
     }
 
     .section-title {
         font-weight: bold;
-        font-size: rem(52px);
-        line-height: rem(82px);
+        font-size: rem(38px);
+        line-height: rem(56px);
         margin-bottom: rem(72px);
         color: $White;
         text-align: center;
 
         @include lg {
-            font-size: rem(40px);
-            line-height: rem(56px);
-            margin-bottom: rem(64px);
-        }
-
-        @include md {
-            font-size: rem(30px);
+            font-size: rem(32px);
             line-height: rem(48px);
             margin-bottom: rem(56px);
         }
 
+        @include md {
+            font-size: rem(24px);
+            line-height: rem(40px);
+            margin-bottom: rem(44px);
+        }
+
         @include sm {
-            font-size: rem(20px);
-            line-height: rem(32px);
-            margin-bottom: rem(40px);
+            font-size: rem(18px);
+            line-height: rem(31px);
+            margin-bottom: rem(32px);
         }
     }
 
     .section-btn {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        width: rem(248px);
-        height: rem(64px);
-        border: rem(1px) solid $PrimaryColor;
-        border-radius: rem(4px);
-        box-sizing: border-box;
-        font-weight: 600;
-        font-size: rem(24px);
-        line-height: rem(40px);
-        color: $PrimaryColor;
-        background-color: $White;
-        cursor: pointer;
-
-        @include lg {
-            width: rem(208px);
-            height: rem(56px);
-            font-size: rem(18px);
-            line-height: rem(31px);
-        }
-
-        @include md {
-            width: rem(174px);
-            height: rem(40px);
-            font-size: rem(14px);
-            line-height: rem(24px);
-        }
-
-        @include sm {
-            width: rem(132px);
-            height: rem(40px);
-            font-size: rem(14px);
-            line-height: rem(24px);
-        }
+        @include SecondaryBtn;
     }
 }

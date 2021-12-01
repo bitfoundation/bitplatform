@@ -120,15 +120,15 @@ input::-webkit-input-placeholder {
 }
 
 ::-webkit-scrollbar-thumb {
-    background: $Gray03;
+    background: $Gray3;
     border-radius: rem(8px);
-    border: rem(5px) solid $Gray03;
+    border: rem(5px) solid $Gray3;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: $Gray02;
+    background: $Gray2;
     border-radius: rem(8px);
-    border: rem(4px) solid $Gray02;
+    border: rem(4px) solid $Gray2;
 }
 
 ::-webkit-scrollbar-button {
@@ -275,13 +275,13 @@ input::-webkit-input-placeholder {
         content: "";
         width: 1px;
         height: rem(370px);
-        background: $Gray02;
+        background: $Gray2;
         top: rem(-20px);
         left: 0;
     }
 
     .bit-lnk button {
-        color: $Gray01;
+        color: $Gray1;
 
         @include subtitle2-xl;
 
@@ -316,9 +316,9 @@ input::-webkit-input-placeholder {
         li > .active {
             display: inline-block;
             position: relative;
-            padding-top: rem(4px);
-            background-color: $Gray04;
             width: 100%;
+            padding-top: rem(4px);
+            background-color: $Gray4;
 
             &:before {
                 position: absolute;
@@ -336,7 +336,7 @@ input::-webkit-input-placeholder {
         }
 
         li:hover {
-            background-color: $Gray04;
+            background-color: $Gray4;
             cursor: pointer;
 
             button {
@@ -363,7 +363,7 @@ input::-webkit-input-placeholder {
     font-family: Axiforma;
     margin-bottom: rem(60px);
     text-justify: auto;
-    color: $Black01;
+    color: $Black1;
 
     @include subtitle2-xl;
 
@@ -471,8 +471,8 @@ input::-webkit-input-placeholder {
 .custom-action-button, .custom-action-button:hover {
     font-family: Axiforma;
     font-size: rem(16px);
-    background-color: $Gray03;
-    border-color: $Gray03;
+    background-color: $Gray3;
+    border-color: $Gray3;
     justify-content: center;
     width: rem(232px);
     margin-top: rem(10px);
@@ -505,8 +505,8 @@ input::-webkit-input-placeholder {
     height: rem(48px);
     width: rem(48px);
     border-radius: rem(5px);
-    background-color: $Gray03;
-    border-color: $Gray03;
+    background-color: $Gray3;
+    border-color: $Gray3;
 }
 
 .ico-btn-content {
@@ -526,7 +526,7 @@ input::-webkit-input-placeholder {
 
 .custom-spb {
     .bit-spb-wrapper input {
-        background-color: $Gray03;
+        background-color: $Gray3;
     }
 }
 
@@ -683,8 +683,8 @@ input::-webkit-input-placeholder {
     }
 
     .bit-crslitm-current-fluent {
-        border: rem(1px) solid $Gray02;
-        box-shadow: rem(1px) rem(1px) $Gray03;
+        border: rem(1px) solid $Gray2;
+        box-shadow: rem(1px) rem(1px) $Gray3;
     }
 
     .bit-spn-fluent {

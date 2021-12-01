@@ -36,7 +36,7 @@ td {
     line-height: 197%;
 
     @include caption2-xl;
-    @include table-content($Black01);
+    @include table-content($Black1);
 
     @include lg {
         @include caption2-lg;
@@ -154,7 +154,7 @@ tr:last-child {
 
             .title {
                 color: $SecondaryColor;
-                border-bottom: 4px solid $Gray02;
+                border-bottom: rem(4px) solid $Gray2;
                 padding-bottom: rem(18px);
                 line-height: 0;
 
@@ -179,7 +179,7 @@ tr:last-child {
 
             .title {
                 color: $SecondaryColor;
-                border-bottom: 4px solid $Gray02;
+                border-bottom: rem(4px) solid $Gray2;
                 padding-bottom: rem(15px);
 
                 @include body1-xl;

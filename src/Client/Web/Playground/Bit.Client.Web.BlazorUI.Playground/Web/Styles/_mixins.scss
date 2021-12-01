@@ -22,9 +22,9 @@
 }
 
 @mixin code-button {
-    border-radius: 4px;
     padding: rem(10px);
-    border: 1px solid $Violet;
+    border-radius: rem(4px);
+    border: rem(1px) solid $SecondaryColor;
 
     @include subtitle2-xl;
 
@@ -279,23 +279,109 @@
 //==============================================
 
 @mixin PrimaryBtn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: rem(213px);
+    height: rem(56px);
+    border-radius: rem(4px);
     background-color: $PrimaryColor;
+    font-weight: 600;
+    font-size: rem(18px);
+    line-height: rem(32px);
     color: $White;
     cursor: pointer;
 
     &:hover {
         background-color: $SecondaryColor;
     }
+
+    @include lg {
+        width: rem(185px);
+        height: rem(48px);
+        font-size: rem(16px);
+        line-height: rem(24px);
+    }
+
+    @include lt-lg {
+        width: rem(146px);
+        height: rem(40px);
+        font-size: rem(12px);
+        line-height: rem(16px);
+    }
+
+    @include sm {
+        width: rem(118px);
+    }
 }
 
-@mixin SecondaryBtn {
-    background-color: $White;
-    color: $PrimaryColor;
-    border: rem(1px) solid $PrimaryColor;
+@mixin HeaderPrimaryBtn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: rem(181px);
+    height: rem(48px);
+    border-radius: rem(4px);
+    background-color: $PrimaryColor;
+    font-weight: 600;
+    font-size: rem(18px);
+    line-height: rem(32px);
+    color: $White;
     cursor: pointer;
 
     &:hover {
-        color: $SecondaryColor;
+        background-color: $SecondaryColor;
+    }
+
+    @include lg {
+        width: rem(153px);
+        height: rem(40px);
+        font-size: rem(14px);
+        line-height: rem(24px);
+    }
+
+    @include lt-lg {
+        display: none;
+    }
+}
+
+@mixin SecondaryBtn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: rem(213px);
+    height: rem(56px);
+    border-radius: rem(4px);
+    background-color: $White;
+    border: rem(2px) solid $PrimaryColor;
+    box-sizing: border-box;
+    font-weight: 600;
+    font-size: rem(18px);
+    line-height: rem(32px);
+    color: $PrimaryColor;
+    cursor: pointer;
+
+    &:hover {
+        background-color: $Gray5;
         border-color: $SecondaryColor;
+        color: $SecondaryColor;
+    }
+
+    @include lg {
+        width: rem(185px);
+        height: rem(48px);
+        font-size: rem(16px);
+        line-height: rem(24px);
+    }
+
+    @include lt-lg {
+        width: rem(146px);
+        height: rem(40px);
+        font-size: rem(12px);
+        line-height: rem(16px);
+    }
+
+    @include sm {
+        width: rem(118px);
     }
 }

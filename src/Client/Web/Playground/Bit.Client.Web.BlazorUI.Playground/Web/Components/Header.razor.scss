@@ -15,24 +15,24 @@
     justify-content: space-between;
     align-items: center;
     width: 100%;
-    height: rem(96px);
-    padding: 0 rem(255px);
+    height: rem(80px);
+    padding: 0 rem(164px);
     box-sizing: border-box;
 
     @include lg {
-        height: rem(80px);
+        height: rem(56px);
         padding: 0 rem(100px);
     }
 
     @include md {
-        height: rem(56px);
+        height: rem(40px);
         padding: 0 rem(32px);
     }
 
     @include sm {
-        height: rem(45px);
+        height: rem(48px);
         padding: 0 rem(16px);
-        border-bottom: rem(1px) solid #E9E9E9;
+        border-bottom: rem(1px) solid $Gray4;
     }
 }
 
@@ -50,24 +50,24 @@
 }
 
 .header-logo {
-    width: rem(80px);
-    height: rem(80px);
+    width: rem(48px);
+    height: rem(48px);
     background-image: url('/images/bit-logo.svg');
     background-position: center;
     background-repeat: no-repeat;
-    background-size: cover;
+    background-size: contain;
     cursor: pointer;
-    margin-right: rem(80px);
+    margin-right: rem(104px);
 
     @include lg {
-        width: rem(64px);
-        height: rem(64px);
+        width: rem(28px);
+        height: rem(28px);
     }
 
     @include md {
-        width: rem(40px);
-        height: rem(40px);
-        margin-right: rem(48px);
+        width: rem(24px);
+        height: rem(24px);
+        margin-right: rem(57px);
     }
 
     @include sm {
@@ -78,34 +78,35 @@
 }
 
 .header-link {
-    padding-bottom: rem(8px);
-    margin-right: rem(41px);
+    height: 100%;
+    padding: rem(28px) 0 rem(20px);
+    margin-right: rem(44px);
+    box-sizing: border-box;
     font-size: rem(20px);
-    line-height: rem(28px);
-    color: $Gray01;
+    line-height: rem(32px);
+    color: $Gray1;
     text-decoration: none;
     cursor: pointer;
 
     @include lg {
-        padding-bottom: rem(6px);
-        margin-right: rem(32px);
-        font-size: rem(16px);
+        padding: rem(20px) 0 rem(10px);
+        margin-right: rem(40px);
+        font-size: rem(14px);
         line-height: rem(24px);
     }
 
     @include md {
-        padding-bottom: rem(4px);
-        margin-right: rem(24px);
+        padding: rem(16px) 0 rem(8px);
+        margin-right: rem(25px);
         font-size: rem(12px);
         line-height: rem(16px);
     }
 
     @include sm {
-        padding-bottom: rem(4px);
-        margin-right: 0;
-        font-weight: 500;
+        padding: rem(10px) 0 rem(8px);
         font-size: rem(14px);
         line-height: rem(24px);
+        margin: 0;
     }
 }
 
@@ -116,61 +117,33 @@
 }
 
 .btn--primary {
-    @include PrimaryBtn;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: rem(56px);
-    padding: rem(5px) rem(25px) 0 rem(25px);
-    border-radius: rem(4px);
-    box-sizing: border-box;
-    text-align: center;
-    font-weight: 600;
-    font-size: rem(22px);
-    line-height: rem(40px);
-
-    @include lg {
-        height: rem(46px);
-        font-size: rem(18px);
-        line-height: rem(31px);
-    }
-
-    @include md {
-        height: rem(40px);
-        font-size: rem(14px);
-        line-height: rem(24px);
-        padding: rem(5px) rem(14px) 0 rem(14px);
-    }
-
-    @include sm {
-        display: none;
-    }
+    @include HeaderPrimaryBtn;
 }
 
 .github-btn {
-    width: rem(49px);
-    height: rem(49px);
+    width: rem(48px);
+    height: rem(48px);
     background-image: url('/images/github-secondary-icon.svg');
     background-position: center;
     background-repeat: no-repeat;
-    background-size: cover;
+    background-size: contain;
     cursor: pointer;
-    margin-left: rem(80px);
+    margin-left: rem(19px);
 
     &:hover {
         background-image: url('/images/github-black-icon.svg');
     }
 
     @include lg {
-        width: rem(40px);
-        height: rem(40px);
-        margin-left: rem(43px);
-    }
-
-    @include md {
         width: rem(28px);
         height: rem(28px);
         margin-left: rem(26px);
+    }
+
+    @include md {
+        width: rem(21px);
+        height: rem(21px);
+        margin-left: 0;
     }
 
     @include sm {
