@@ -8,8 +8,8 @@ namespace Bit.Client.Web.BlazorUI
 {
     public partial class BitChoiceOption : IDisposable
     {
-        private bool isChecked;
         internal bool IsRequired { get; set; }
+        private bool isChecked;
         private string? imageSizeStyle;
         private bool IsCheckedHasBeenSet;
 
@@ -19,24 +19,9 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public string? Key { get; set; }
 
         /// <summary>
-        /// Image src to display with this option.
+        /// ChoiceOption content, It can be a text
         /// </summary>
-        [Parameter] public string? ImageSrc { get; set; }
-
-        /// <summary>
-        /// Alt text if the option is an image. default is an empty string
-        /// </summary>
-        [Parameter] public string? ImageAlt { get; set; }
-
-        /// <summary>
-        /// The src of image for choice field which is selected.
-        /// </summary>
-        [Parameter] public string? SelectedImageSrc { get; set; }
-
-        /// <summary>
-        /// The width and height of the image in px for choice field.
-        /// </summary>
-        [Parameter] public Size? ImageSize { get; set; }
+        [Parameter] public string? Text { get; set; }
 
         /// <summary>
         /// Icon to display with this option.
@@ -44,9 +29,24 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public BitIcon? IconName { get; set; }
 
         /// <summary>
-        /// ChoiceOption content, It can be a text
+        /// Image src to display with this option.
         /// </summary>
-        [Parameter] public string? Text { get; set; }
+        [Parameter] public string? ImageSrc { get; set; }
+
+        /// <summary>
+        /// The src of image for choice field which is selected.
+        /// </summary>
+        [Parameter] public string? SelectedImageSrc { get; set; }
+
+        /// <summary>
+        /// Alt text if the option is an image. default is an empty string
+        /// </summary>
+        [Parameter] public string? ImageAlt { get; set; }
+
+        /// <summary>
+        /// The width and height of the image in px for choice field.
+        /// </summary>
+        [Parameter] public Size? ImageSize { get; set; }
 
         /// <summary>
         /// This value is used to group each ChoiceGroupOption into the same logical ChoiceGroup
@@ -110,6 +110,7 @@ namespace Bit.Client.Web.BlazorUI
             {
                 imageSizeStyle = $" width:{ImageSize.Value.Width}px; height:{ImageSize.Value.Height}px;";
             }
+
             return base.OnParametersSetAsync();
         }
 
@@ -124,28 +125,29 @@ namespace Bit.Client.Web.BlazorUI
                                         ? $"{RootElementClass}-image-{VisualClassRegistrar()}" : string.Empty);
         }
 
-        protected virtual async Task HandleClick(MouseEventArgs e)
+        internal void SetState(bool status)
+        {
+            IsChecked = status;
+            StateHasChanged();
+        }
+
+        private async Task HandleClick(MouseEventArgs e)
         {
             if (IsEnabled is false) return;
             if (ChoiceGroup is not null)
             {
                 await ChoiceGroup.SelectOption(this);
             }
+
             await OnClick.InvokeAsync(e);
         }
 
-        protected virtual async Task HandleChange(ChangeEventArgs e)
+        private async Task HandleChange(ChangeEventArgs e)
         {
             if (IsEnabled is false) return;
             if (IsCheckedHasBeenSet && IsCheckedChanged.HasDelegate is false) return;
 
             await OnChange.InvokeAsync(IsChecked);
-        }
-
-        internal void SetState(bool status)
-        {
-            IsChecked = status;
-            StateHasChanged();
         }
 
         private bool _disposed;
@@ -159,7 +161,6 @@ namespace Bit.Client.Web.BlazorUI
         protected virtual void Dispose(bool disposing)
         {
             if (_disposed) return;
-
             if (ChoiceGroup is not null)
             {
                 ChoiceGroup.UnregisterOption(this);
