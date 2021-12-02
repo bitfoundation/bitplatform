@@ -91,6 +91,9 @@ namespace Bit.Client.Web.BlazorUI
 
         [CascadingParameter] protected BitChoiceGroup? ChoiceGroup { get; set; }
 
+        public string InputId { get; set; } = string.Empty;
+        public string TextId { get; set; } = string.Empty;
+
         protected override Task OnInitializedAsync()
         {
             if (ChoiceGroup is not null)
@@ -100,7 +103,11 @@ namespace Bit.Client.Web.BlazorUI
                 {
                     Name = ChoiceGroup.Name;
                 }
+
+                InputId = $"ChoiceGroup{ChoiceGroup.UniqueId}-{Key}";
+                TextId = $"ChoiceGroupLabel{ChoiceGroup.UniqueId}-{Key}";
             }
+
             return base.OnInitializedAsync();
         }
 
@@ -118,17 +125,23 @@ namespace Bit.Client.Web.BlazorUI
 
         protected override void RegisterComponentClasses()
         {
-            ClassBuilder.Register(() => IsChecked
-                                        ? $"{RootElementClass}-checked-{VisualClassRegistrar()}" : string.Empty);
-
             ClassBuilder.Register(() => ImageSrc.HasValue() || IconName.HasValue
-                                        ? $"{RootElementClass}-image-{VisualClassRegistrar()}" : string.Empty);
+                                        ? $"{RootElementClass}-with-img-{VisualClassRegistrar()}" : string.Empty);
+
+            ClassBuilder.Register(() => IsChecked
+                            ? $"{RootElementClass}-checked-{VisualClassRegistrar()}" : string.Empty);
         }
 
         internal void SetState(bool status)
         {
             IsChecked = status;
             StateHasChanged();
+        }
+
+        private string GetLabelClassNameStr()
+        {
+            var className = ImageSrc.HasValue() || IconName.HasValue ? "bit-cho-lbl-with-img" : "bit-cho-lbl";
+            return className;
         }
 
         private async Task HandleClick(MouseEventArgs e)
@@ -168,6 +181,6 @@ namespace Bit.Client.Web.BlazorUI
 
             _disposed = true;
         }
-      
+
     }
 }
