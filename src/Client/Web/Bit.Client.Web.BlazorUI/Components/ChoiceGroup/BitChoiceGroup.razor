@@ -4,21 +4,25 @@
      @attributes="HtmlAttributes"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
+    <div role="radiogroup" aria-labelledby="@GetAriaLabelledBy()">
+        @if (LabelFragment != null)
+        {
+            <label class="bit-chg-label-@(VisualClassRegistrar())" id="@LabelId" disabled="@(IsEnabled is false)">
+                @LabelFragment
+            </label>
+        }
+        else if (Label.HasValue())
+        {
+            <label class="bit-chg-label-@(VisualClassRegistrar())" id="@LabelId" disabled="@(IsEnabled is false)">
+                @Label
+            </label>
+        }
 
-
-    @if (LabelFragment != null)
-    {
-        <span>@LabelFragment</span>
-    }
-    else if (Label.HasValue())
-    {
-    <label>
-        @Label
-    </label>
-    }
-    
-    <CascadingValue Value="this"
-                    IsFixed="true">
-        @ChildContent
-    </CascadingValue>
+        <div class="choice-field-group">
+            <CascadingValue Value="this"
+                            IsFixed="true">
+                @ChildContent
+            </CascadingValue>
+        </div>
+    </div>
 </div>

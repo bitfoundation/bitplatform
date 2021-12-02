@@ -40,6 +40,11 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public string? Label { get; set; }
 
         /// <summary>
+        /// ID of an element to use as the aria label for this ChoiceGroup.
+        /// </summary>
+        [Parameter] public string AriaLabelledBy { get; set; } = string.Empty;
+
+        /// <summary>
         /// Contains the key of the selected item
         /// </summary>
         [Parameter]
@@ -79,6 +84,23 @@ namespace Bit.Client.Web.BlazorUI
         /// Callback that is called when the value parameter is changed
         /// </summary>
         [Parameter] public EventCallback<string> OnValueChange { get; set; }
+
+        public string LabelId { get; set; } = string.Empty;
+
+        protected override string RootElementClass => "bit-chg";
+
+        protected override void RegisterComponentClasses()
+        {
+            ClassBuilder.Register(() => IsEnabled && IsRequired
+                                       ? $"{RootElementClass}-required-{VisualClassRegistrar()}" : string.Empty);
+        }
+
+        protected override Task OnInitializedAsync()
+        {
+            selectedKey = selectedKey ?? DefaultSelectedKey;
+            LabelId = $"ChoiceGroupLabel{UniqueId}";
+            return base.OnInitializedAsync();
+        }
 
         internal async Task SelectOption(BitChoiceOption option)
         {
@@ -126,20 +148,6 @@ namespace Bit.Client.Web.BlazorUI
             AllOptions.Remove(option);
         }
 
-        protected override string RootElementClass => "bit-chg";
-
-        protected override void RegisterComponentClasses()
-        {
-            ClassBuilder.Register(() => IsEnabled && IsRequired
-                                       ? $"{RootElementClass}-required-{VisualClassRegistrar()}" : string.Empty);
-        }
-
-        protected override Task OnInitializedAsync()
-        {
-            selectedKey = selectedKey ?? DefaultSelectedKey;
-            return base.OnInitializedAsync();
-        }
-
         private void SelectOptionByKey(string? key)
         {
             var newOption = AllOptions.FirstOrDefault(i => i.Key == key);
@@ -152,5 +160,7 @@ namespace Bit.Client.Web.BlazorUI
 
             _ = SelectOption(newOption);
         }
+
+        private string GetAriaLabelledBy() => Label.HasValue() || LabelFragment is not null ? LabelId : AriaLabelledBy;
     }
 }
