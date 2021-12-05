@@ -58,10 +58,10 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                     parameters.Add(p => p.ChoiceOptionName, optionName);
                 });
 
-            var bitChoiceOption = component.Find(".bit-chg .bit-cho");
+            var bitChoiceOptionInput = component.Find(".bit-cho-input");
 
-            Assert.IsTrue(bitChoiceOption.FirstElementChild.HasAttribute("name"));
-            Assert.AreEqual(optionName, bitChoiceOption.FirstElementChild.GetAttribute("name"));
+            Assert.IsTrue(bitChoiceOptionInput.HasAttribute("name"));
+            Assert.AreEqual(optionName, bitChoiceOptionInput.GetAttribute("name"));
         }
 
 
@@ -74,7 +74,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                     parameters.Add(p => p.Label, label);
                 });
 
-            var bitChoiceGroupLabel = component.Find(".bit-chg > label");
+            var bitChoiceGroupLabel = component.Find(".bit-chg-label-fluent");
 
             Assert.AreEqual(label, bitChoiceGroupLabel.TextContent);
         }
@@ -92,7 +92,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                 });
 
             var bitChoiceGroup = component.Find(".bit-chg");
-            var input = component.Find(".bit-cho input");
+            var input = component.Find(".bit-cho-input");
 
             Assert.AreEqual(isRequired, bitChoiceGroup.ClassList.Contains("bit-chg-required-fluent"));
 
@@ -112,7 +112,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                     parameters.Add(p => p.ChoiceGroupIsEnabled, isEnabled);
                 });
 
-            var input = component.Find(".bit-chg .bit-cho input");
+            var input = component.Find(".bit-cho-input");
 
             input.Click();
 
@@ -130,7 +130,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                     parameters.Add(p => p.Value, value);
                 });
 
-            var input = component.Find(".bit-cho input");
+            var input = component.Find(".bit-cho-input");
 
             Assert.IsTrue(input.HasAttribute("value"));
             Assert.AreEqual(value, input.GetAttribute("value"));
@@ -145,15 +145,15 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                     parameters.Add(p => p.Text, text);
                 });
 
-            var bitChoiceOptionLabelText = component.Find(".bit-cho label span");
+            var bitChoiceOptionLabelText = component.Find(".bit-cho-txt");
 
             Assert.AreEqual(text, bitChoiceOptionLabelText.TextContent);
         }
 
         [DataTestMethod,
-           DataRow("https://picsum.photos/100", "this is alt", "https://picsum.photos/200", 50, 50, "this is label")
+           DataRow("https://picsum.photos/100", "this is alt", 50, 50, "this is label")
         ]
-        public void BitChoiceOptionShouldrespectImage(string imageSrc, string imageAlt, string selectedImageSrc, int width, int height, string label)
+        public void BitChoiceOptionShouldRespectImage(string imageSrc, string imageAlt, int width, int height, string label)
         {
             var component = RenderComponent<BitChoiceGroupTest>(
                 parameters =>
@@ -161,31 +161,20 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                     parameters.Add(p => p.Text, label);
                     parameters.Add(p => p.ImageSrc, imageSrc);
                     parameters.Add(p => p.ImageAlt, imageAlt);
-                    parameters.Add(p => p.SelectedImageSrc, selectedImageSrc);
                     parameters.Add(p => p.ImageSize, new Size(width, height));
                 });
 
-            var unSelectedImage = component.Find(".bit-cho .bit-cho-img-wrpr div:first-child img");
-            Assert.IsTrue(unSelectedImage.HasAttribute("src"));
-            Assert.AreEqual(imageSrc, unSelectedImage.GetAttribute("src"));
-            Assert.IsTrue(unSelectedImage.HasAttribute("alt"));
-            Assert.AreEqual(imageAlt, unSelectedImage.GetAttribute("alt"));
+            var image = component.Find(".bit-cho-img img");
+            Assert.IsTrue(image.HasAttribute("src"));
+            Assert.AreEqual(imageSrc, image.GetAttribute("src"));
+            Assert.IsTrue(image.HasAttribute("alt"));
+            Assert.AreEqual(imageAlt, image.GetAttribute("alt"));
 
-            var selectedImage = component.Find(".bit-cho .bit-cho-img-wrpr div:nth-child(2) img");
-            Assert.IsTrue(selectedImage.HasAttribute("src"));
-            Assert.AreEqual(selectedImageSrc, selectedImage.GetAttribute("src"));
-            Assert.IsTrue(selectedImage.HasAttribute("alt"));
-            Assert.AreEqual(imageAlt, selectedImage.GetAttribute("alt"));
+            var imageContainer = component.Find(".bit-cho-img");
+            Assert.IsTrue(imageContainer.HasAttribute("style"));
+            Assert.AreEqual($" width:{width}px; height:{height}px;", imageContainer.GetAttribute("style"));
 
-            var unSelectedImageImageContainer = component.Find(".bit-cho .bit-cho-img-wrpr div:first-child > div");
-            Assert.IsTrue(unSelectedImageImageContainer.HasAttribute("style"));
-            Assert.AreEqual($" width:{width}px; height:{height}px;", unSelectedImageImageContainer.GetAttribute("style"));
-
-            var selectedImageImageContainer = component.Find(".bit-cho .bit-cho-img-wrpr div:nth-child(2) > div");
-            Assert.IsTrue(selectedImageImageContainer.HasAttribute("style"));
-            Assert.AreEqual($" width:{width}px; height:{height}px;", selectedImageImageContainer.GetAttribute("style"));
-
-            var optionLabel = component.Find(".bit-cho .bit-cho-lbl-wrpr span");
+            var optionLabel = component.Find(".bit-cho-txt");
             Assert.AreEqual(label, optionLabel.TextContent);
         }
 
@@ -198,7 +187,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                     parameters.Add(p => p.IconName, iconName);
                 });
 
-            var icon = component.Find(".bit-cho .bit-cho-icn-wrpr i");
+            var icon = component.Find(".bit-cho-icon-wrapper i");
             Assert.IsTrue(icon.ClassList.Contains($"bit-icon--{iconName.GetName()}"));
         }
 
@@ -214,7 +203,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                     parameters.Add(p => p.IsChecked, isChecked);
                 });
 
-            var input = component.Find(".bit-cho input");
+            var input = component.Find(".bit-cho-input");
            
             // TODO: bypassed - BUnit two-way binding issue
             //Assert.AreEqual(isChecked, input.HasAttribute("checked"));
@@ -236,7 +225,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                     parameters.Add(p => p.ChoiceOptionIsEnabled, optionIsEnabled);
                 });
 
-            var input1 = component.Find(".bit-chg .bit-cho:nth-child(1) input");
+            var input1 = component.Find(".bit-cho:nth-child(1) input");
             input1.Click();
 
             if (groupIsEnabled && optionIsEnabled)
@@ -245,7 +234,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                 //Assert.IsTrue(input1.HasAttribute("checked"));
             }
 
-            var input2 = component.Find($".bit-chg .bit-cho:nth-child(2) input");
+            var input2 = component.Find($".bit-cho:nth-child(2) input");
             input2.Click();
 
             if (groupIsEnabled && optionIsEnabled)
@@ -273,7 +262,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                     parameters.Add(p => p.ChoiceOptionIsEnabled, optionIsEnabled);
                 });
 
-            var input = component.Find(".bit-cho input");
+            var input = component.Find(".bit-cho-input");
 
             input.Click();
 

@@ -1,25 +1,32 @@
 ﻿@import "../../Styles/Fluent/colors.fluent.scss", "../../Styles/functions.scss";
 
 .bit-chg-fluent {
-    & > label {
-        font-size: 14px;
-        font-weight: 600;
-        color: $Grey160;
-        box-sizing: border-box;
-        box-shadow: none;
-        margin: 0px;
-        display: block;
-        padding: 5px 0px;
-        overflow-wrap: break-word;
-    }
+    display: block;
+    font-size: rem(14px);
+    font-weight: 400;
+    font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
+
+.bit-chg-label-fluent {
+    display: block;
+    margin: 0;
+    padding: rem(5px) 0;
+    box-shadow: none;
+    box-sizing: border-box;
+    font-size: rem(14px);
+    font-weight: 600;
+    color: $Grey160;
+    overflow-wrap: break-word;
+    -webkit-font-smoothing: antialiased;
 }
 
 .bit-chg-required-fluent {
-    & > label {
+    .bit-chg-label-fluent {
         &::after {
-            content: "*";
+            content: " *";
+            padding-right: rem(12px);
             color: $Red20;
-            margin-left: em(5px);
         }
     }
 }

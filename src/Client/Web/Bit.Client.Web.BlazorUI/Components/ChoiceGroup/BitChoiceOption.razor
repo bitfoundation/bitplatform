@@ -4,30 +4,26 @@
      @attributes="HtmlAttributes"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
-    <input id="@UniqueId"
-           type="radio"
-           checked=@IsChecked
-           name="@Name"
-           value="@Value"
-           hidden
-           required="@(IsRequired is true)"
-           @onclick="@HandleClick"
-           @onchange="@HandleChange" />
+    <div class="bit-cho-wrapper">
+        <input id="@InputId"
+               class="bit-cho-input"
+               aria-label="@AriaLabel"
+               type="radio"
+               checked=@IsChecked
+               name="@Name"
+               value="@Value"
+               hidden
+               required="@(IsRequired is true)"
+               @onclick="@HandleClick"
+               @onchange="@HandleChange" />
 
-    <label for="@UniqueId">
-        @if (ImageSrc.HasValue() || IconName.HasValue)
-        {
+        <label for="@InputId" class="@GetLabelClassNameStr()">
             @if (ImageSrc.HasValue())
             {
-                <div class="bit-cho-img-wrpr">
-                    <div class="@(IsChecked?"bit-cho-fluent-img-wrpr-is-hidden":string.Empty)">
-                        <div style="@imageSizeStyle">
-                            <img src="@ImageSrc" alt="@ImageAlt">
-                        </div>
-                    </div>
-                    <div class="@(!IsChecked?"bit-cho-fluent-img-wrpr-is-hidden":string.Empty)">
-                        <div style="@imageSizeStyle">
-                            <img src="@SelectedImageSrc" alt="@ImageAlt">
+                <div class="bit-cho-img-inner-field">
+                    <div class="bit-cho-img-wrapper">
+                        <div class="bit-cho-img" style="@imageSizeStyle">
+                            <img src="@(isChecked ? SelectedImageSrc : ImageSrc)" alt="@ImageAlt">
                         </div>
                     </div>
                 </div>
@@ -35,22 +31,27 @@
 
             @if (IconName.HasValue)
             {
-                <div class="bit-cho-icn-wrpr">
-                    <div>
+                <div class="bit-cho-icon-inner-field">
+                    <div class="bit-cho-icon-wrapper">
                         <i aria-hidden="true" class="bit-icon bit-icon--@IconName.GetName()"></i>
                     </div>
                 </div>
             }
 
-            <div class="bit-cho-lbl-wrpr">
-                <span>@Text</span>
-            </div>
-        }
-        else
-        {
-            <span>
-                @Text
-            </span>
-        }
-    </label>
+            @if (ImageSrc.HasValue() || IconName.HasValue)
+            {
+                <div class="bit-cho-txt-wrapper">
+                    <span class="bit-cho-txt" id="@TextId">
+                        @Text
+                    </span>
+                </div>
+            }
+            else
+            {
+                <span class="bit-cho-txt" id="@TextId">
+                    @Text
+                </span>
+            }
+        </label>
+    </div>
 </div>
