@@ -62,6 +62,7 @@ namespace Bit.Client.Web.BlazorUI
             {
                 if (value == isChecked) return;
                 isChecked = value;
+                SetTexts();
                 ClassBuilder.Reset();
                 _ = IsCheckedChanged.InvokeAsync(value);
             }
@@ -102,6 +103,13 @@ namespace Bit.Client.Web.BlazorUI
 
         protected override async Task OnInitializedAsync()
         {
+            SetTexts();
+
+            await base.OnInitializedAsync();
+        }
+
+        private void SetTexts()
+        {
             StateText = (IsChecked ? OnText : OffText) ?? DefaultText ?? "";
 
             if (AriaLabel.HasNoValue())
@@ -113,10 +121,8 @@ namespace Bit.Client.Web.BlazorUI
                 if (StateText.HasValue())
                 {
                     LabelledById = LabelledById.HasValue() ? LabelId + " " + StateTextId : StateTextId;
-                } 
+                }
             }
-
-            await base.OnInitializedAsync();
         }
     }
 }
