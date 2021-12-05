@@ -177,16 +177,6 @@ namespace Bit.Client.Web.BlazorUI
             await OnChange.InvokeAsync(new() { Color = colorValue, Alpha = color.Alpha });
         }
 
-        private static int? GetColorValue(string? color)
-        {
-            if (color.HasValue(false) && int.TryParse(color, out int colorCode))
-            {
-                return colorCode;
-            }
-
-            return null;
-        }
-
         private static double ToValidSpanValue(double min, double max, double newMin, double newMax, double value)
         {
             return (value - min) * (newMax - newMin) / (max - min);
