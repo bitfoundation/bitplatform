@@ -2,7 +2,9 @@
 using System.Text.RegularExpressions;
 using System.Drawing;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 
+[assembly: InternalsVisibleTo("Bit.Client.Web.BlazorUI.Tests")]
 namespace Bit.Client.Web.BlazorUI
 {
     internal class BitColor
@@ -33,6 +35,16 @@ namespace Bit.Client.Web.BlazorUI
 
         public BitColor(double hue, double saturation, double value, double alpha)
         {
+            if (saturation > 1)
+            {
+                saturation /= 100;
+            }
+
+            if (value > 1)
+            {
+                value /= 100;
+            }
+
             var c = value * saturation;
             var x = c * (1 - Math.Abs((hue / 60) % 2 - 1));
             var m = value - c;
@@ -45,10 +57,6 @@ namespace Bit.Client.Web.BlazorUI
                 : hue >= 240 && hue < 300 ? (x, 0, c)
                 : (c, 0, x);
 
-            Math.Floor((color.r + m) * 255);
-            Math.Floor((color.g + m) * 255);
-            Math.Floor((color.b + m) * 255);
-
             Red = Convert.ToInt32(Math.Floor((color.r + m) * 255));
             Green = Convert.ToInt32(Math.Floor((color.g + m) * 255));
             Blue = Convert.ToInt32(Math.Floor((color.b + m) * 255));
@@ -56,8 +64,8 @@ namespace Bit.Client.Web.BlazorUI
 
             hsv = new(
                 Convert.ToInt32(Math.Floor(hue)),
-                Convert.ToInt32(Math.Floor(saturation * 100)),
-                Convert.ToInt32(Math.Floor(value * 100))
+                Convert.ToInt32(Math.Floor(saturation)),
+                Convert.ToInt32(Math.Floor(value))
                 );
 
             CalculateHex();
