@@ -135,140 +135,213 @@ input::-webkit-input-placeholder {
     display: none;
 }
 
-/* Nav Menu */
+/* Side Nav ==================================================================================== */
 
-.navbar {
-    .search-box {
-        width: 86%;
-        position: relative;
-        margin-left: rem(30px);
+.side-nav-search-box {
+    width: 100%;
+    height: rem(40px);
+
+    @include lg {
+        height: rem(36px);
+    }
+
+    @include md {
+        height: rem(36px);
+    }
+}
+
+.side-nav-demo-link {
+    display: block;
+    width: 100%;
+    height: rem(40px);
+
+    a {
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        width: 100%;
         height: rem(40px);
-        background: $White;
-        border: rem(1px) solid $DarkBlue;
+        padding-left: rem(44px);
         box-sizing: border-box;
-        border-radius: rem(2px);
+        font-family: Axiforma;
+        font-weight: 500;
+        font-size: rem(16px);
+        line-height: rem(32px);
+        color: $Gray1;
+
+        &:hover {
+            background-color: $Gray4;
+            color: $PrimaryColor;
+            text-decoration: none;
+        }
+    }
+
+    @include lg {
+        height: rem(32px);
+
+        a {
+            height: rem(32px);
+            padding-left: rem(36px);
+            font-size: rem(14px);
+            line-height: rem(24px);
+        }
+    }
+
+    @include md {
+        height: rem(36px);
+
+        a {
+            height: rem(36px);
+            padding-left: rem(36px);
+            font-size: rem(16px);
+            line-height: rem(24px);
+        }
+    }
+
+    @include sm {
+        height: rem(40px);
+
+        a {
+            height: rem(40px);
+            padding-left: rem(40px);
+            font-size: rem(14px);
+            line-height: rem(24px);
+        }
+    }
+}
+
+.side-nav-demo-link--active {
+    a {
+        padding-left: rem(40px);
+        background-color: $Gray4;
+        color: $SecondaryColor;
+        border-left: rem(4px) solid $SecondaryColor;
+
+        &:hover {
+            background-color: $Gray4;
+            color: $PrimaryColor;
+        }
 
         @include lg {
-            width: 89%;
-            margin-left: rem(16px);
+            a {
+                padding-left: rem(32px);
+            }
         }
 
         @include md {
-            margin-left: rem(32px);
+            a {
+                padding-left: rem(32px);
+            }
         }
 
         @include sm {
-            margin-left: rem(24px);
-        }
-
-        & > div:first-child {
-            background-image: url("/images/icon/search-icon.svg");
-            width: rem(20px);
-            height: rem(20px);
-            margin: rem(8px) 0 0 rem(4px);
-        }
-
-        input {
-            padding-left: rem(8px);
-            position: relative;
-            top: rem(2px);
+            a {
+                padding-left: rem(36px);
+            }
         }
     }
+}
 
-    .nav-link {
-        padding-top: rem(8px);
+.side-nav {
+    .bit-nav-grp-chevron-btn {
+        height: rem(40px);
+        margin: 0;
+        padding-left: rem(44px);
+        border: none;
+        font-weight: 500;
+        font-size: rem(16px);
+        line-height: rem(32px);
+        color: $Gray1;
 
-        .bit-icon--ChevronDown {
-            transform: rotate(-90deg);
+        &:hover {
+            color: $PrimaryColor;
+        }
+
+        i {
+            height: 100%;
+            left: rem(17px);
+            transform: rotate( -90deg);
         }
 
         .bit-nav-expand-fluent {
+            height: 100%;
+            left: rem(17px);
             transform: rotate(0deg);
         }
 
-        .bit-nav-grp-chevron-btn {
-            border: none;
+        @include lg {
+            height: rem(32px);
+            padding-left: rem(36px);
+            font-size: rem(14px);
+            line-height: rem(24px);
         }
 
-        .bit-nav-chevron-btn {
-            width: 90%;
-            color: $DarkBlue;
-            font-weight: 600;
-            font-size: rem(18px);
-            margin-left: rem(15px);
-
-            @include lg {
-                font-size: rem(16px);
-            }
-
-            @include sm {
-                white-space: unset;
-                line-height: rem(22px);
-            }
+        @include md {
+            height: rem(36px);
+            padding-left: rem(36px);
+            font-size: rem(16px);
+            line-height: rem(24px);
         }
 
-        .bit-nav-link-enabled-hasurl-fluent {
-            color: $DarkBlue;
-            font-size: rem(18px);
-
-            @include lg {
-                font-size: rem(16px);
-            }
-        }
-
-        .bit-nav-link-enabled-hasurl-fluent:hover, .bit-nav-selected-fluent, .bit-nav-selected-fluent:hover {
-            background-color: #DDDDDD;
-            color: $SecondaryColor;
-        }
-
-        .bit-nav-link-container {
-            margin-left: rem(41px);
-
-            .bit-nav-link-txt {
-                white-space: nowrap;
-            }
-        }
-
-        .bit-nav-selected-fluent:after {
-            border-left: rem(4px) solid $SecondaryColor;
-        }
-
-        .bit-nav-grp-content {
-            margin-bottom: 0;
-        }
-
-        .bit-sch-box-fluent > div:last-child button {
-            background-color: $White;
-        }
-
-        .bit-icon--Clear {
-            padding-right: rem(20px);
-        }
-
-        input.search-input {
-            padding-top: rem(5px);
+        @include sm {
+            height: rem(40px);
+            padding-left: rem(40px);
+            font-size: rem(14px);
+            line-height: rem(24px);
         }
     }
-}
 
-.nav-container .bit-lnk {
-    margin-left: rem(43px);
+    .bit-nav-grp-content {
+        margin-bottom: 0;
+    }
 
-    a, a:hover, a:visited {
-        font-family: Axiforma;
-        color: $DarkBlue;
-        font-weight: 600;
-        font-size: rem(18px);
-        text-decoration: none;
+    .bit-nav-link-txt {
+        white-space: nowrap;
+    }
+
+    .bit-nav-link-enabled-hasurl-fluent {
+        height: rem(40px);
+        padding: 0 rem(16px) 0 rem(52px) !important;
+        box-sizing: border-box;
+        font-size: rem(15px);
+        line-height: rem(26px);
+        color: $Gray1;
+
+        &:hover {
+            color: $PrimaryColor;
+        }
 
         @include lg {
+            height: rem(32px);
+            font-size: rem(12px);
+            line-height: rem(18px);
+        }
+
+        @include md {
+            height: rem(36px);
             font-size: rem(16px);
+            line-height: rem(24px);
+        }
+
+        @include sm {
+            height: rem(40px);
+            font-size: rem(12px);
+            font-weight: 500;
+            line-height: rem(24px);
+        }
+    }
+
+    .bit-nav-selected-fluent {
+        font-weight: unset;
+        color: $SecondaryColor;
+
+        &:after {
+            border-left: rem(4px) solid $SecondaryColor;
         }
     }
 }
 
-/* Demo Page */
-
+/* Demo Page =================================================================================== */
 .component-siderail {
     ul.bit-nav-list:before {
         position: absolute;
@@ -687,8 +760,8 @@ input::-webkit-input-placeholder {
         margin-top: rem(10px);
     }
 
-    .bit-spb-lbl-wrapper{
-        height : auto;
+    .bit-spb-lbl-wrapper {
+        height: auto;
     }
 }
 

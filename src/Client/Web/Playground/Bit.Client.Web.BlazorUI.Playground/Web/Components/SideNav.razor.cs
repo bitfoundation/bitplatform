@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using Bit.Client.Web.BlazorUI.Playground.Web.Services;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.JSInterop;
 
 namespace Bit.Client.Web.BlazorUI.Playground.Web.Components
 {
-    public partial class NavMenu
+    public partial class SideNav
     {
         private bool isNavOpen = false;
         private readonly List<BitNavLinkItem> allNavLinks = new()
@@ -103,11 +104,24 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Components
         [Inject] public NavManuService NavManuService { get; set; }
         [Inject] public IJSRuntime JsRuntime { get; set; }
 
+        [Inject]
+        public NavigationManager NavigationManager { get; set; }
+
+        public string CurrentUrl { get; set; }
+
         protected override void OnInitialized()
         {
             HandleClear();
             NavManuService.OnToggleMenu += ToggleMenu;
+            CurrentUrl = NavigationManager.Uri.Replace(NavigationManager.BaseUri, "/", StringComparison.Ordinal);
+            NavigationManager.LocationChanged += OnLocationChanged;
             base.OnInitialized();
+        }
+
+        private void OnLocationChanged(object sender, LocationChangedEventArgs args)
+        {
+            CurrentUrl = NavigationManager.Uri.Replace(NavigationManager.BaseUri, "/", StringComparison.Ordinal);
+            StateHasChanged();
         }
 
         private async void ToggleMenu()
@@ -141,6 +155,17 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Components
 
             HandleClear();
             ToggleMenu();
+        }
+
+        private string GetDemoLinkClassName()
+        {
+            var className = "side-nav-demo-link";
+            if (CurrentUrl == "/components/demo")
+            {
+                className += " side-nav-demo-link--active";
+            }
+
+            return className;
         }
 
         private static IEnumerable<BitNavLinkItem> Flatten(IEnumerable<BitNavLinkItem> e) => e.SelectMany(c => Flatten(c.Links)).Concat(e);
