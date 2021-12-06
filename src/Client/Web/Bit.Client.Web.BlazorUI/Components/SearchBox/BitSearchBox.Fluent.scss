@@ -25,175 +25,166 @@
     }
 }
 
-.bit-sch-box-fluent {
-    font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
-    -webkit-font-smoothing: antialiased;
-    font-size: 14px;
-    font-weight: 400;
-    box-shadow: none;
-    margin: 0;
-    padding: 1px 0 1px 4px;
-    box-sizing: border-box;
-    color: $Grey160;
-    background-color: $White;
+.bit-srch-box-fluent {
     display: flex;
     flex-flow: row nowrap;
     align-items: stretch;
-    border-radius: 2px;
-    border: 1px solid $Grey130;
-    height: 32px;
+    height: rem(32px);
+    box-shadow: none;
+    border: rem(1px) solid $Grey130;
+    border-radius: rem(2px);
+    margin: 0;
+    padding: rem(1px) 0 rem(1px) rem(4px);
+    box-sizing: border-box;
+    font-size: rem(14px);
+    font-weight: 400;
+    color: $Grey160;
+    font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+    background-color: $White;
+    -webkit-font-smoothing: antialiased;
+}
 
-    & > div:first-child {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        flex-shrink: 0;
-        font-size: 16px;
-        width: 32px;
-        text-align: center;
-        color: $CyanBlue10;
-        cursor: text;
-        transition: width 0.167s ease 0s;
+.bit-srch-box-icon-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    flex-shrink: 0;
+    width: rem(32px);
+    font-size: rem(16px);
+    text-align: center;
+    color: $ThemePrimary;
+    cursor: text;
+    transition: width 0.167s ease 0s;
 
-        & i {
-            display: inline-block;
-            -webkit-font-smoothing: antialiased;
-            font-style: normal;
-            font-weight: normal;
-            speak: none;
-            opacity: 1;
-            transition: opacity 0.167s ease 0s;
-        }
-    }
-
-    input {
-        box-shadow: none;
-        margin: 0;
-        padding: 0 0 0.5px;
-        box-sizing: border-box;
-        background-color: transparent;
-        border: none;
-        outline: none;
-        color: $Grey160;
-        flex: 1 1 0;
-        min-width: 0;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    & > div:last-child {
-        display: flex;
-        flex-direction: row;
-        align-items: stretch;
-        cursor: pointer;
-        flex-basis: 0;
-        flex-shrink: 0;
-        padding: 0;
-        margin: -1px 0;
-        width: 32px;
-        opacity: 0;
+    i {
+        display: inline-block;
+        width: unset;
+        height: unset;
+        -webkit-font-smoothing: antialiased;
+        color: $ThemePrimary;
+        speak: none;
+        opacity: 1;
         transition: opacity 0.167s ease 0s;
+    }
+}
 
-        & i {
-            opacity: 0;
-            transition: opacity 0.167s ease 0s;
-        }
+.srch-box-input {
+    flex: 1 1 0;
+    min-width: 0;
+    box-shadow: none;
+    border: none;
+    outline: none;
+    margin: 0;
+    padding: 0 0 rem(0.5px);
+    box-sizing: border-box;
+    color: $Grey160;
+    text-overflow: ellipsis;
+    background-color: transparent;
+    overflow: hidden;
+}
 
-        & button {
-            outline: transparent;
-            position: relative;
-            font-size: 14px;
-            font-weight: 400;
-            box-sizing: border-box;
-            border: none;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            text-decoration: none;
-            cursor: pointer;
-            padding: 0 4px;
-            border-radius: 2px;
-            width: 32px;
-            height: auto;
-            background-color: transparent;
-            color: $Grey130;
-            user-select: none;
-        }
+.srch-box-clear-btn-container {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    flex-basis: rem(32px);
+    flex-shrink: 0;
+    padding: 0;
+    margin: rem(-1px) 0;
+    //opacity: 0;
+    //transition: opacity 0.167s ease 0s;
+}
 
-        &:hover {
-            background-color: $Grey20;
+.srch-box-clear-btn {
+    width: rem(32px);
+    background-color: transparent;
+    cursor: pointer;
+
+    i {
+        flex-shrink: 0;
+        width: unset;
+        height: rem(16px);
+        margin: 0 rem(4px);
+        font-size: rem(12px);
+        line-height: rem(16px);
+        text-align: center;
+        color: $ThemePrimary;
+        //opacity: 0;
+        //transition: opacity 0.167s ease 0s;
+    }
+
+    &:hover {
+        background-color: $Grey20;
+
+        i {
+            color: $DarkAlt;
         }
     }
 }
 
-.bit-sch-box-has-value-fluent {
-    & > div:last-child {
+.bit-srch-box-has-value-fluent {
+    .srch-box-clear-btn-container {
         opacity: 1;
         flex-basis: 0;
 
-        & i {
+        i {
             opacity: 1;
         }
     }
 
-    &:hover > div:first-child {
-        width: 0;
+    &:hover {
+        .bit-srch-box-icon-container {
+            width: 0;
 
-        & i {
-            opacity: 0;
+            & i {
+                opacity: 0;
+            }
         }
     }
 }
 
-.bit-sch-box-fixed-icon-has-value-fluent {
-    & > div:last-child {
+.bit-srch-box-fixed-icon-has-value-fluent {
+    .srch-box-clear-btn-container {
         opacity: 1;
         flex-basis: 0;
 
-        & i {
+        i {
             opacity: 1;
         }
     }
 }
 
-.bit-sch-box-focused-fluent {
+.bit-srch-box-focused-fluent {
     @include getFocusedStyle();
 }
 
-.bit-sch-box-fixed-icon-focused-fluent {
+.bit-srch-box-fixed-icon-focused-fluent {
     @include getFocusedStyle($fixedIcon: true);
 }
 
-.bit-sch-box-no-animation-fluent {
-    & > div:first-child {
+.bit-srch-box-no-animation-fluent {
+    .srch-box-clear-btn-container,
+    .bit-srch-box-icon-container {
         transition: none;
 
-        & i {
-            transition: none;
-        }
-    }
-
-    & > div:last-child {
-        transition: none;
-
-        & i {
+        i {
             transition: none;
         }
     }
 }
 
-.bit-sch-box-underlined-fluent {
+.bit-srch-box-underlined-fluent {
     border: none;
     border-radius: 0;
     border-bottom: 1px solid $Grey130;
     padding-left: 12px;
 
-    &.bit-sch-box-focused-fluent {
+    &.bit-srch-box-focused-fluent {
         border-bottom: 2px solid $Primary;
     }
 }
 
-.bit-sch-box-disabled-fluent {
+.bit-srch-box-disabled-fluent {
     color: $Grey160;
     background-color: $Grey20;
     align-items: stretch;
@@ -205,7 +196,7 @@
         background-color: transparent;
     }
 
-    & > div:first-child {
+    .bit-srch-box-icon-container {
         color: $Grey90;
     }
 }
