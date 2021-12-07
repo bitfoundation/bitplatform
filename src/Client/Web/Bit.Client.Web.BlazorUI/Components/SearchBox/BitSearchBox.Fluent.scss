@@ -42,6 +42,16 @@
     font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
     background-color: $White;
     -webkit-font-smoothing: antialiased;
+
+    &:hover {
+        border-color: $Grey160;
+
+        .bit-srch-box-icon-container {
+            i {
+                color: $Dark;
+            }
+        }
+    }
 }
 
 .bit-srch-box-icon-container {
@@ -69,14 +79,17 @@
 }
 
 .srch-box-input {
-    flex: 1 1 0;
-    min-width: 0;
+    flex: 1 1 0px;
+    min-width: 0px;
     box-shadow: none;
     border: none;
     outline: none;
     margin: 0;
     padding: 0 0 rem(0.5px);
     box-sizing: border-box;
+    font-weight: inherit;
+    font-family: inherit;
+    font-size: inherit;
     color: $Grey160;
     text-overflow: ellipsis;
     background-color: transparent;
@@ -91,14 +104,49 @@
     flex-shrink: 0;
     padding: 0;
     margin: rem(-1px) 0;
+    cursor: pointer;
     //opacity: 0;
     //transition: opacity 0.167s ease 0s;
+
+    &:hover {
+        .srch-box-clear-btn {
+            background-color: $Grey20;
+
+            i {
+                color: $Grey160;
+            }
+        }
+    }
 }
 
 .srch-box-clear-btn {
+    position: relative;
+    display: inline-block;
     width: rem(32px);
-    background-color: transparent;
+    height: auto;
+    padding: 0 rem(4px);
+    border-radius: 0 rem(1px) rem(1px) 0;
+    outline: transparent;
+    border: none;
+    box-sizing: border-box;
+    font-size: rem(14px);
+    font-weight: 400;
+    font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-decoration: none;
+    text-align: center;
+    color: $ThemePrimary;
     cursor: pointer;
+    background-color: transparent;
+    user-select: none;
+
+    span {
+        display: flex;
+        flex-wrap: nowrap;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+    }
 
     i {
         flex-shrink: 0;
@@ -108,17 +156,9 @@
         font-size: rem(12px);
         line-height: rem(16px);
         text-align: center;
-        color: $ThemePrimary;
+        color: $Grey130;
         //opacity: 0;
         //transition: opacity 0.167s ease 0s;
-    }
-
-    &:hover {
-        background-color: $Grey20;
-
-        i {
-            color: $DarkAlt;
-        }
     }
 }
 
