@@ -233,13 +233,17 @@
 }
 
 .bit-srch-box-underlined-fluent {
-    border: none;
+    padding: rem(1px) 0 rem(1px) rem(8px);
     border-radius: 0;
-    border-bottom: 1px solid $Grey130;
-    padding-left: 12px;
+    border-width: 0 0 rem(1px);
 
     &.bit-srch-box-focused-fluent {
-        border-bottom: 2px solid $Primary;
+        border-bottom: rem(2px) solid $ThemePrimary;
+
+        &:hover {
+            border-width: 0 0 rem(1px);
+            border-bottom: rem(2px) solid $ThemePrimary;
+        }
     }
 }
 
