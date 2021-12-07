@@ -1,7 +1,9 @@
 ﻿@import '../Styles/_shared.scss';
 
 .main-container {
+    position: relative;
     width: 100%;
+    min-height: 100vh;
     padding-top: rem(80px);
     box-sizing: border-box;
 
@@ -18,15 +20,29 @@
     }
 }
 
-.pad-left {
-    padding-left: rem(360px);
+.main-container-pad {
+    padding-right: rem(288px);
+    padding-left: rem(288px);
+    box-sizing: border-box;
 
-    @include lg {
-        padding-left: rem(272px);
+    @include gt-xl {
+        padding-right: rem(448px);
+        padding-left: rem(448px);
     }
 
-    @include lt-lg {
-        padding-left: 0;
+    @include lg {
+        padding-right: rem(100px);
+        padding-left: rem(100px);
+    }
+
+    @include md {
+        padding-right: rem(32px);
+        padding-left: rem(32px);
+    }
+
+    @include sm {
+        padding-right: rem(16px);
+        padding-left: rem(16px);
     }
 }
 
@@ -35,7 +51,10 @@
 }
 
 .footer {
-    position: relative;
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    left: 0;
     width: 100%;
 
     .footer-gray-bar {
@@ -136,5 +155,17 @@
         &:hover {
             background-image: url('/images/footer/footer-linkedin-active-icon.svg');
         }
+    }
+}
+
+@media all and (max-width: #{em(1800px)}) and (min-width: #{em(1441)}) {
+    .main-container-pad {
+        padding-left: rem(380px);
+    }
+}
+
+@media all and (max-width: #{em(1390px)}) and (min-width: #{em(901)}) {
+    .main-container-pad {
+        padding-left: rem(300px);
     }
 }

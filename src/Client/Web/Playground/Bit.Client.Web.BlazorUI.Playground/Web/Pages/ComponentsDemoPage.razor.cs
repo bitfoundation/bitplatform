@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Components;
 
 namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
 {
-    public partial class Overview
+    public partial class ComponentsDemoPage
     {
         [Inject] public NavManuService NavManuService { get; set; }
 
