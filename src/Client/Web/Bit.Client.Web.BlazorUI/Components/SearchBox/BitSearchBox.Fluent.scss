@@ -250,16 +250,29 @@
 .bit-srch-box-disabled-fluent {
     color: $Grey160;
     background-color: $Grey20;
-    align-items: stretch;
     border-color: $Grey20;
     pointer-events: none;
     cursor: default;
 
-    &.underlined {
-        background-color: transparent;
-    }
-
     .bit-srch-box-icon-container {
         color: $Grey90;
+
+        i {
+            color: $Grey90;
+        }
+    }
+
+    &:hover {
+        border-color: $Grey20;
+
+        .bit-srch-box-icon-container {
+            i {
+                color: $Grey90;
+            }
+        }
+    }
+
+    &.bit-srch-box-underlined-fluent {
+        background-color: transparent;
     }
 }
