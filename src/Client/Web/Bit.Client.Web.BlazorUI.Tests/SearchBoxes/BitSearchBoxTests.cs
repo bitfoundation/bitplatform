@@ -11,7 +11,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.SearchBoxes
         {
             var component = RenderComponent<BitSearchBoxTest>(parameter =>
             parameter.Add(p => p.Placeholder, componentPlaceholder));
-            var input = component.Find("input.search-input");
+            var input = component.Find(".srch-box-input");
 
             var inputPlaceholder = input.GetAttribute("placeholder");
 
@@ -23,7 +23,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.SearchBoxes
         {
             var component = RenderComponent<BitSearchBoxTest>(parameter =>
             parameter.Add(p => p.Value, value));
-            var input = component.Find("input.search-input");
+            var input = component.Find(".srch-box-input");
 
             var inputValue = input.GetAttribute("value");
 
@@ -35,9 +35,9 @@ namespace Bit.Client.Web.BlazorUI.Tests.SearchBoxes
         {
             var component = RenderComponent<BitSearchBoxTest>(parameter =>
             parameter.Add(p => p.DisableAnimation, disableAnimation));
-            var searchBox = component.Find(".bit-sch-box-fluent");
+            var searchBox = component.Find(".bit-srch-box-fluent");
 
-            Assert.AreEqual(disableAnimation, searchBox.ClassList.Contains("bit-sch-box-no-animation-fluent"));
+            Assert.AreEqual(disableAnimation, searchBox.ClassList.Contains("bit-srch-box-no-animation-fluent"));
         }
 
         [DataTestMethod, DataRow(true), DataRow(false)]
@@ -45,9 +45,9 @@ namespace Bit.Client.Web.BlazorUI.Tests.SearchBoxes
         {
             var component = RenderComponent<BitSearchBoxTest>(parameter =>
             parameter.Add(p => p.IsUnderlined, isUnderlined));
-            var searchBox = component.Find(".bit-sch-box-fluent");
+            var searchBox = component.Find(".bit-srch-box-fluent");
 
-            Assert.AreEqual(isUnderlined, searchBox.ClassList.Contains("bit-sch-box-underlined-fluent"));
+            Assert.AreEqual(isUnderlined, searchBox.ClassList.Contains("bit-srch-box-underlined-fluent"));
         }
 
         [DataTestMethod, DataRow("Detailed label")]
@@ -58,7 +58,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.SearchBoxes
                 parameters.Add(p => p.AriaLabel, ariaLabel);
             });
 
-            var bitSearchBox = com.Find(".search-input");
+            var bitSearchBox = com.Find(".srch-box-input");
 
             Assert.IsTrue(bitSearchBox.GetAttribute("aria-label").Equals(ariaLabel));
         }
@@ -72,7 +72,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.SearchBoxes
                     parameters.Add(p => p.DefaultValue, defaultValue);
                 });
 
-            var input = component.Find(".bit-sch-box input");
+            var input = component.Find(".srch-box-input");
             Assert.AreEqual(defaultValue, input.GetAttribute("value"));
         }
 
@@ -89,8 +89,8 @@ namespace Bit.Client.Web.BlazorUI.Tests.SearchBoxes
                     parameters.Add(p => p.ShowIcon, showIcon);
                 });
 
-            var bitSearchBox = component.Find(".bit-sch-box");
-            Assert.AreEqual(showIcon, bitSearchBox.ClassList.Contains("bit-sch-box-fixed-icon-has-value-fluent"));
+            var bitSearchBox = component.Find(".bit-srch-box");
+            Assert.AreEqual(showIcon, bitSearchBox.ClassList.Contains("bit-srch-box-fixed-icon-has-value-fluent"));
         }
 
         [DataTestMethod,
@@ -104,7 +104,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.SearchBoxes
                 {
                     parameters.Add(p => p.IsEnabled, isEnabled);                    
                 });
-            var input = component.Find(".bit-sch-box input");
+            var input = component.Find(".srch-box-input");
             //TODO: bypassed - BUnit oninput event issue
             //input.KeyDown("a");
             //Assert.AreEqual(isEnabled ? 1 : 0, component.Instance.CurrentCount);
