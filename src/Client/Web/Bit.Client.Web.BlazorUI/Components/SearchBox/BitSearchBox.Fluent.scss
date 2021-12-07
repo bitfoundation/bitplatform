@@ -181,18 +181,45 @@
 }
 
 .bit-srch-box-fixed-icon-has-value-fluent {
-    .srch-box-clear-btn-container {
-        opacity: 1;
-        flex-basis: 0;
+    &:hover {
+        .bit-srch-box-icon-container {
+            width: rem(32px);
+            color: $Dark;
 
-        i {
-            opacity: 1;
+            i {
+                color: $Dark;
+                opacity: 1;
+            }
         }
     }
 }
 
 .bit-srch-box-fixed-icon-focused-fluent {
-    @include getFocusedStyle($fixedIcon: true);
+    border: rem(2px) solid $ThemePrimary;
+
+    .bit-srch-box-icon-container {
+        width: rem(32px);
+        color: $ThemePrimary;
+
+        i {
+            color: $ThemePrimary;
+            opacity: 1;
+        }
+    }
+
+    &:hover {
+        border: rem(2px) solid $ThemePrimary;
+
+        .bit-srch-box-icon-container {
+            width: rem(32px);
+            color: $Dark;
+
+            i {
+                color: $Dark;
+                opacity: 1;
+            }
+        }
+    }
 }
 
 .bit-srch-box-no-animation-fluent {
