@@ -3,16 +3,6 @@
 @mixin getFocusedStyle($fixedIcon: false, $hasValue: false) {
     border: 2px solid $Primary;
 
-    & > div:first-child {
-        @if $fixedIcon == false {
-            width: 0;
-
-            & i.bit-icon {
-                opacity: 0;
-            }
-        }
-    }
-
     @if $hasValue == true {
         & > div:last-child {
             opacity: 1;
@@ -105,8 +95,6 @@
     padding: 0;
     margin: rem(-1px) 0;
     cursor: pointer;
-    //opacity: 0;
-    //transition: opacity 0.167s ease 0s;
 
     &:hover {
         .srch-box-clear-btn {
@@ -157,8 +145,6 @@
         line-height: rem(16px);
         text-align: center;
         color: $Grey130;
-        //opacity: 0;
-        //transition: opacity 0.167s ease 0s;
     }
 }
 
@@ -177,7 +163,21 @@
 }
 
 .bit-srch-box-focused-fluent {
-    @include getFocusedStyle();
+    border: rem(2px) solid $ThemePrimary;
+
+    .bit-srch-box-icon-container {
+        width: rem(4px);
+        color: $Dark;
+
+        i {
+            color: $Dark;
+            opacity: 0;
+        }
+    }
+
+    &:hover {
+        border: rem(2px) solid $ThemePrimary;
+    }
 }
 
 .bit-srch-box-fixed-icon-has-value-fluent {
