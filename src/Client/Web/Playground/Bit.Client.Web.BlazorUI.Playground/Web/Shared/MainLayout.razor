@@ -2,10 +2,10 @@
 
 <Header />
 
-<div class="main-container @(CurrentUrl.Contains("components") ? "pad-left" : "")">
+<div class="main-container @(CurrentUrl.Contains("components") ? "main-container-pad" : "")">
     @if(CurrentUrl.Contains("components"))
     {
-        <NavMenu />
+        <SideNav />
     }
     <div class="page-content">
         @Body
