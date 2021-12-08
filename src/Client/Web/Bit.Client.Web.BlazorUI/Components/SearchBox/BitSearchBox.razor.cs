@@ -97,6 +97,7 @@ namespace Bit.Client.Web.BlazorUI
             set
             {
                 if (value == inputValue) return;
+                
                 inputValue = value;
                 ClassBuilder.Reset();
                 _ = ValueChanged.InvokeAsync(value);
@@ -143,15 +144,7 @@ namespace Bit.Client.Web.BlazorUI
         /// </summary>
         [Parameter] public EventCallback<string?> ValueChanged { get; set; }
 
-        public void HandleInputFocusIn()
-        {
-            InputHasFocus = true;
-        }
-
-        public void HandleInputFocusOut()
-        {
-            InputHasFocus = false;
-        }
+        public string InputId { get; set; } = string.Empty;
 
         protected override Task OnInitializedAsync()
         {
@@ -159,10 +152,12 @@ namespace Bit.Client.Web.BlazorUI
             {
                 Value = DefaultValue;
             }
+
+            InputId = $"SearchBox{UniqueId}";
             return base.OnInitializedAsync();
         }
 
-        protected override string RootElementClass => "bit-sch-box";
+        protected override string RootElementClass => "bit-srch-box";
 
         protected override void RegisterComponentClasses()
         {
@@ -175,6 +170,16 @@ namespace Bit.Client.Web.BlazorUI
         protected override void RegisterComponentStyles()
         {
             StyleBuilder.Register(() => Width.HasValue() ? $"width: {Width}" : string.Empty);
+        }
+
+        private void HandleInputFocusIn()
+        {
+            InputHasFocus = true;
+        }
+
+        private void HandleInputFocusOut()
+        {
+            InputHasFocus = false;
         }
 
         private async Task HandleOnClear()
@@ -190,6 +195,7 @@ namespace Bit.Client.Web.BlazorUI
         {
             if (IsEnabled is false) return;
             if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+            
             Value = e.Value?.ToString();
             await OnChange.InvokeAsync(Value);
         }

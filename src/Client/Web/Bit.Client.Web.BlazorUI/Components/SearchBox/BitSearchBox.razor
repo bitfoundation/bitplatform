@@ -5,12 +5,13 @@
      @attributes="HtmlAttributes"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
-    <div aria-hidden="true">
+    <div class="bit-srch-box-icon-container" aria-hidden="true">
         <i class="bit-icon bit-icon--@IconName.GetName()" aria-hidden="true"></i>
     </div>
-    <input type="text"
+    <input class="srch-box-input"
+           id="@InputId"
+           type="text"
            aria-label="@AriaLabel"
-           class="search-input"
            disabled="@(IsEnabled is false)"
            placeholder="@Placeholder"
            role="searchbox"
@@ -22,14 +23,15 @@
            @oninput="@HandleChange" />
     @if (Value.HasValue())
     {
-        <div>
-            <button aria-label="Clear text"
-                    aria-hidden="true"
-                    disabled="@(Value.HasNoValue())"
-                    type="button"
-                    @onclick="HandleOnClear">
+        <div class="srch-box-clear-btn-container">
+            <button class="srch-box-clear-btn"
+                type="button"
+                aria-label="Clear text"
+                aria-hidden="true"
+                disabled="@(Value.HasNoValue())"
+                @onclick="HandleOnClear">
                 <span>
-                    <i class="bit-icon bit-icon--Clear"></i>
+                    <i class="bit-icon bit-icon--Clear" aria-hidden="true"></i>
                 </span>
             </button>
         </div>
