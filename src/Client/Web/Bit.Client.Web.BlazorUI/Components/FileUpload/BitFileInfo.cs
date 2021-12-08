@@ -7,13 +7,13 @@ namespace Bit.Client.Web.BlazorUI
     public class BitFileInfo
     {
         [JsonPropertyName("name")]
-        public string Name { get; set; } = String.Empty;
+        public string Name { get; set; } = string.Empty;
 
         [JsonPropertyName("size")]
         public long Size { get; set; }
 
         [JsonPropertyName("type")]
-        public string ContentType { get; set; } = String.Empty;
+        public string ContentType { get; set; } = string.Empty;
 
         [JsonIgnore]
         public BitUploadStatus UploadStatus { get; set; }

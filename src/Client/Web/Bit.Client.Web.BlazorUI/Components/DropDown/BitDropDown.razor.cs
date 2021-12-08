@@ -190,11 +190,11 @@ namespace Bit.Client.Web.BlazorUI
 
         public string? Text { get; set; }
 
-        public string DropDownId { get; set; } = String.Empty;
-        public string? DropdownLabelId { get; set; } = String.Empty;
-        public string DropDownOptionId { get; set; } = String.Empty;
+        public string DropDownId { get; set; } = string.Empty;
+        public string? DropdownLabelId { get; set; } = string.Empty;
+        public string DropDownOptionId { get; set; } = string.Empty;
         public string DropDownCalloutId { get; set; } = string.Empty;
-        public string DropDownOverlayId { get; set; } = String.Empty;
+        public string DropDownOverlayId { get; set; } = string.Empty;
 
 
         [JSInvokable("CloseCallout")]

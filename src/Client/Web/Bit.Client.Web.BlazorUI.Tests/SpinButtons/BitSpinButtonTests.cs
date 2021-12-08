@@ -381,7 +381,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.SpinButtons
             });
 
             var input = component.Find("input");
-            var expectedResult = ariaValueNow is not null ? ariaValueNow : String.IsNullOrEmpty(suffix) ? component.Instance.Value : null;
+            var expectedResult = ariaValueNow is not null ? ariaValueNow : string.IsNullOrEmpty(suffix) ? component.Instance.Value : null;
             Assert.AreEqual(expectedResult.ToString(), input.GetAttribute("aria-valuenow"));
         }
 
@@ -400,7 +400,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.SpinButtons
             });
 
             var input = component.Find("input");
-            var expectedResult = !String.IsNullOrEmpty(ariaValueText) ? ariaValueText : !String.IsNullOrEmpty(suffix) ? $"{Normalize(component.Instance.Value, precision)}{suffix}" : null;
+            var expectedResult = !string.IsNullOrEmpty(ariaValueText) ? ariaValueText : !string.IsNullOrEmpty(suffix) ? $"{Normalize(component.Instance.Value, precision)}{suffix}" : null;
             Assert.AreEqual(expectedResult, input.GetAttribute("aria-valuetext"));
         }
 
