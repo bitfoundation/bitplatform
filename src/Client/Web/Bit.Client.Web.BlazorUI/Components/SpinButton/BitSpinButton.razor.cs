@@ -19,7 +19,7 @@ namespace Bit.Client.Web.BlazorUI
         private double min;
         private double max;
         private string InputId = $"input{Guid.NewGuid()}";
-        private string IntermediateValue = String.Empty;
+        private string IntermediateValue = string.Empty;
         private bool ValueHasBeenSet;
         private Timer? timer;
 
@@ -433,7 +433,7 @@ namespace Bit.Client.Web.BlazorUI
         private double? GetAriaValueNow => AriaValueNow is not null ? AriaValueNow : Suffix.HasNoValue() ? Value : null;
         private string? GetAriaValueText => AriaValueText.HasValue() ? AriaValueText : Suffix.HasValue() ? $"{Normalize(Value)}{Suffix}" : null;
         private string? GetIconRole => IconAriaLabel.HasValue() ? "img" : null;
-        private string GetLabelId => Label.HasValue() ? $"label{Guid.NewGuid()}" : String.Empty;
+        private string GetLabelId => Label.HasValue() ? $"label{Guid.NewGuid()}" : string.Empty;
 
         private bool _disposed;
 
