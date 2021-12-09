@@ -3,7 +3,7 @@
 Bit is a full stack freamework to build high performance yet maintainable api / mobile / web / desktop applications using C# .NET and Blazor
 It's a combination of best practices and facilities to implement those best practices. Bit can help you develop high quality apps in less time.
 
-Our primary focus is developing high performance native blazor components which is being done in src/Bit.Client.Web.BlazorUI.sln
+Our primary focus is developing high performance native blazor components which is being done in **src/Bit.Client.Web.BlazorUI.sln**
 
 ## **Contribute**
 
