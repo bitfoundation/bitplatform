@@ -59,7 +59,7 @@ namespace Bit.Owin.Implementations
             if (_currentTimeZoneName == null || _desiredTimeZoneName == null)
                 return dateTimeOffset;
 
-            if (dateTimeOffset == DateTimeOffset.MinValue)
+            if (dateTimeOffset == DateTimeOffset.MinValue || dateTimeOffset == DateTimeOffset.MaxValue)
                 return dateTimeOffset;
 
             if (_currentTimeZoneName == _desiredTimeZoneName)
@@ -82,7 +82,7 @@ namespace Bit.Owin.Implementations
             if (_currentTimeZoneName == null || _desiredTimeZoneName == null)
                 return dateTimeOffset;
 
-            if (dateTimeOffset == DateTimeOffset.MinValue)
+            if (dateTimeOffset == DateTimeOffset.MinValue || dateTimeOffset == DateTimeOffset.MaxValue)
                 return dateTimeOffset;
 
             if (_currentTimeZoneName == _desiredTimeZoneName)
