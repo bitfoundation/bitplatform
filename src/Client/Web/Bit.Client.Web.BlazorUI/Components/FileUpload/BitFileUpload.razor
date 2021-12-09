@@ -43,7 +43,7 @@
                     <li class="bit-file-item @GetFileElClass(file.UploadStatus)">
                         <div class="file-info-container">
                             <div title="@file.Name" class="file-name-container">
-                                @if (string.IsNullOrWhiteSpace(GetFileIcon(file.Name.ToLower())) is false)
+                                @if (GetFileIcon(file.Name.ToLower()).HasValue())
                                 {
                                     <i class="bit-file-format bit-icon bit-icon--@GetFileIcon(file.Name.ToLower())"></i>
                                 }

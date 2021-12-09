@@ -23,7 +23,8 @@ namespace Microsoft.JSInterop
 
         public static async Task<BitFileInfo[]?> InitUploader(this IJSRuntime jsRuntime, ElementReference element, DotNetObjectReference<BitFileUpload>? dotnetObjectReference, string uploadAddress)
         {
-            if (string.IsNullOrEmpty(uploadAddress) || dotnetObjectReference is null) return null;
+            if (uploadAddress.HasNoValue() || dotnetObjectReference is null) return null;
+
             return await jsRuntime.InvokeAsync<BitFileInfo[]>("BitFileUploader.init", element, dotnetObjectReference, uploadAddress);
         }
 
