@@ -547,7 +547,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Sliders
 
             var labels = com.FindAll(".bit-slider-value");
 
-            if (string.IsNullOrEmpty(valueFormat))
+            if (valueFormat.HasNoValue())
             {
                 Assert.AreEqual(labels.Count(l => !l.TextContent.Contains("%")), ranged ? 2 : 1);
             }
