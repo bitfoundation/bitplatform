@@ -27,9 +27,9 @@
 		<type fullname="*" />
 	</assembly>
 
-	<!--<assembly fullname="Simple.OData.Client.V4.Adapter">
+	<assembly fullname="Simple.OData.Client.V4.Adapter">
 		<type fullname="*" />
-	</assembly>-->
+	</assembly>
 
 	<assembly fullname="Microsoft.Extensions.Logging">
 		<type fullname="*" />

@@ -11,6 +11,7 @@
     <ItemGroup>
         <PackageReference Include="Microsoft.OData.Core" Version="7.9.4" />
         <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="6.0.0" />
+        <PackageReference Include="Simple.OData.V4.Client" Version="5.26.0" />
     </ItemGroup>
 
     <ItemGroup Condition=" '$(TargetFramework)' == 'monoandroid10.0' OR '$(TargetFramework)' == 'Xamarin.iOS10'">

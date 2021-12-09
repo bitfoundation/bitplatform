@@ -269,3 +269,5 @@ _book
 /src/Client/Web/Playground/Bit.Client.Web.BlazorUI.Playground/App/wwwroot/images
 /src/Client/Web/Playground/Bit.Client.Web.BlazorUI.Playground/App/wwwroot/fonts
 /src/Client/Web/Playground/Bit.Client.Web.BlazorUI.Playground/Api/BitFileUploaderFiles
+/src/Client/Web/Playground/Bit.Client.Web.BlazorUI.Playground/Api/Properties/PublishProfiles/bitcomponents - Web Deploy.pubxml
+/src/Client/Web/Playground/Bit.Client.Web.BlazorUI.Playground/Api/Properties/ServiceDependencies/bitcomponents - Web Deploy/profile.arm.json
