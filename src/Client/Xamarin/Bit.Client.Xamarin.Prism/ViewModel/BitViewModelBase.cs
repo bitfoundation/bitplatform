@@ -141,7 +141,7 @@ namespace Bit.ViewModel
             try
             {
                 await Task.Yield();
-                await OnInitializeAsync(parameters);
+                OnInitialize(parameters);
             }
             catch (Exception exp)
             {
@@ -149,9 +149,9 @@ namespace Bit.ViewModel
             }
         }
 
-        public virtual Task OnInitializeAsync(INavigationParameters parameters)
+        public virtual void OnInitialize(INavigationParameters parameters)
         {
-            return Task.CompletedTask;
+            
         }
 
         public void OnNavigatedTo(INavigationContext navigationContext)
