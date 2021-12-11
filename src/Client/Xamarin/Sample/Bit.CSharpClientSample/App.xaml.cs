@@ -17,7 +17,6 @@ using Prism.Events;
 using Prism.Ioc;
 using System;
 using System.Threading.Tasks;
-using Xamarin.Essentials;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 
@@ -44,14 +43,25 @@ namespace Bit.CSharpClientSample
         {
             InitializeComponent();
 
-            if (Device.RuntimePlatform != Device.UWP && DeviceInfo.DeviceType == DeviceType.Physical)
+#if ANDROID || IOS
+            if (Device.RuntimePlatform != Device.UWP && Microsoft.Maui.Essentials.DeviceInfo.DeviceType == Microsoft.Maui.Essentials.DeviceType.Physical)
             {
-                Accelerometer.Start(SensorSpeed.UI);
-                Accelerometer.ShakeDetected += async delegate
+                Microsoft.Maui.Essentials.Accelerometer.Start(Microsoft.Maui.Essentials.SensorSpeed.UI);
+                Microsoft.Maui.Essentials.Accelerometer.ShakeDetected += async delegate
                 {
                     await LocalTelemetryService.Current.OpenConsole();
                 };
             }
+#else
+            if (Device.RuntimePlatform != Device.UWP && Xamarin.Essentials.DeviceInfo.DeviceType == Xamarin.Essentials.DeviceType.Physical)
+            {
+                Xamarin.Essentials.Accelerometer.Start(Xamarin.Essentials.SensorSpeed.UI);
+                Xamarin.Essentials.Accelerometer.ShakeDetected += async delegate
+                {
+                    await LocalTelemetryService.Current.OpenConsole();
+                };
+            }
+#endif
 
             bool isLoggedIn = await Container.Resolve<ISecurityService>().IsLoggedInAsync();
 
@@ -88,9 +98,15 @@ namespace Bit.CSharpClientSample
 
             const string developerMachineIp = "192.168.42.232";
 
+#if ANDROID || IOS
+            bool isVirtual = Microsoft.Maui.Essentials.DeviceInfo.DeviceType == Microsoft.Maui.Essentials.DeviceType.Virtual;
+#else
+            bool isVirtual = Xamarin.Essentials.DeviceInfo.DeviceType == Xamarin.Essentials.DeviceType.Virtual;
+#endif
+
             containerBuilder.Register<IClientAppProfile>(c => new DefaultClientAppProfile
             {
-                HostUri = new Uri((Device.RuntimePlatform == Device.Android && DeviceInfo.DeviceType == DeviceType.Virtual) ? "http://10.0.2.2" : Device.RuntimePlatform == Device.UWP ? "http://127.0.0.1" : $"http://{developerMachineIp}"),
+                HostUri = new Uri((Device.RuntimePlatform == Device.Android && isVirtual) ? "http://10.0.2.2" : Device.RuntimePlatform == Device.UWP ? "http://127.0.0.1" : $"http://{developerMachineIp}"),
                 OAuthRedirectUri = new Uri("test-oauth://"),
                 AppName = "Test",
                 ODataRoute = "odata/Test/"

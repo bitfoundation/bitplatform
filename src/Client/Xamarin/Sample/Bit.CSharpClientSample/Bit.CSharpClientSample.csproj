@@ -1,29 +1,32 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <LangVersion>preview</LangVersion>
-    <Nullable>disable</Nullable>
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFrameworks>netstandard2.0;net6.0-android;net6.0-ios;</TargetFrameworks>
+        <LangVersion>preview</LangVersion>
+        <Nullable>disable</Nullable>
+        <UseMauiEssentials Condition=" '$(TargetFramework)' == 'net6.0-android' OR '$(TargetFramework)' == 'net6.0-ios' ">true</UseMauiEssentials>
+    </PropertyGroup>
 
-  <ItemGroup>
+    <ItemGroup>
 
-    <Reference Include="System.Data" />
+        <Reference Include="System.Data" />
 
-    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="6.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="6.0.0" />
 
-    <PackageReference Include="PropertyChanged.Fody" Version="3.4.0" />
-    <PackageReference Include="System.ComponentModel.Annotations" Version="6.0.0-preview.4.21253.7" />
-    <PackageReference Include="System.Net.Http.Json" Version="6.0.0" />
-    <PackageReference Include="Xamarin.Forms" Version="5.0.0.2244" />
+        <PackageReference Include="PropertyChanged.Fody" Version="3.4.0" />
+        <PackageReference Include="System.ComponentModel.Annotations" Version="6.0.0-preview.4.21253.7" />
+        <PackageReference Include="System.Net.Http.Json" Version="6.0.0" />
+        <PackageReference Include="Xamarin.Forms" Version="5.0.0.2244" />
 
-  </ItemGroup>
+        <PackageReference Condition=" '$(TargetFramework)' == 'netstandard2.0' " Include="Xamarin.Essentials" Version="1.7.0" />
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\..\Universal\Bit.Universal.SignalR\Bit.Universal.SignalR.csproj" />
-    <ProjectReference Include="..\..\..\..\Universal\Bit.Universal.Sync.ODataEntityFrameworkCore\Bit.Universal.Sync.ODataEntityFrameworkCore.csproj" />
-    <ProjectReference Include="..\..\..\Bit.Client.Data.EntityFrameworkCore\Bit.Client.Data.EntityFrameworkCore.csproj" />
-    <ProjectReference Include="..\..\Bit.Client.Xamarin.Prism\Bit.Client.Xamarin.Prism.csproj" />
-  </ItemGroup>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\..\..\Universal\Bit.Universal.SignalR\Bit.Universal.SignalR.csproj" />
+        <ProjectReference Include="..\..\..\..\Universal\Bit.Universal.Sync.ODataEntityFrameworkCore\Bit.Universal.Sync.ODataEntityFrameworkCore.csproj" />
+        <ProjectReference Include="..\..\..\Bit.Client.Data.EntityFrameworkCore\Bit.Client.Data.EntityFrameworkCore.csproj" />
+        <ProjectReference Include="..\..\Bit.Client.Xamarin.Prism\Bit.Client.Xamarin.Prism.csproj" />
+    </ItemGroup>
 
 </Project>

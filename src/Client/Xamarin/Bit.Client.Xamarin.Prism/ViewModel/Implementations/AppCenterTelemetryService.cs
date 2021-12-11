@@ -13,7 +13,6 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using Xamarin.Essentials;
 using Xamarin.Forms;
 
 namespace Bit.ViewModel.Implementations
@@ -151,14 +150,12 @@ namespace Bit.ViewModel.Implementations
                             { "CurrentUICulture", CultureInfo.CurrentUICulture.Name }
                         };
 
-                        items.Add("VersionHistory", string.Join(",", VersionTracking.VersionHistory.OrderByDescending(vh => vh)));
-                        items.Add("Version", string.Join(",", VersionTracking.CurrentVersion));
-#if XamarinEssentials
-                        else
-                        {
-                            items.Add("VersionHistory", string.Join(",", Xamarin.Essentials.VersionTracking.VersionHistory.OrderByDescending(vh => vh)));
-                            items.Add("Version", string.Join(",", Xamarin.Essentials.VersionTracking.CurrentVersion));
-                        }
+#if Xamarin
+                        items.Add("VersionHistory", string.Join(",", Xamarin.Essentials.VersionTracking.VersionHistory.OrderByDescending(vh => vh)));
+                        items.Add("Version", string.Join(",", Xamarin.Essentials.VersionTracking.CurrentVersion));
+#elif NET6_0_ANDROID || NET6_0_IOS
+                        items.Add("VersionHistory", string.Join(",", Microsoft.Maui.Essentials.VersionTracking.VersionHistory.OrderByDescending(vh => vh)));
+                        items.Add("Version", string.Join(",", Microsoft.Maui.Essentials.VersionTracking.CurrentVersion));
 #endif
 
                         Crashes.TrackError(exp, items);

@@ -29,8 +29,13 @@ namespace Bit.Android
         {
             _useDefaultConfiguration = true;
             Rg.Plugins.Popup.Popup.Init(this);
+#if Xamarin
             Xamarin.Essentials.Platform.Init(this, savedInstanceState);
             Xamarin.Essentials.VersionTracking.Track();
+#else
+            Microsoft.Maui.Essentials.Platform.Init(this, savedInstanceState);
+            Microsoft.Maui.Essentials.VersionTracking.Track();
+#endif
             BitCSharpClientControls.Init();
             SetBitPlatformServices();
         }
@@ -69,7 +74,11 @@ namespace Bit.Android
         {
             if (_useDefaultConfiguration == true)
             {
+#if Xamarin
                 Xamarin.Essentials.Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults);
+#else
+                Microsoft.Maui.Essentials.Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults);
+#endif
             }
 
             base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -81,7 +90,11 @@ namespace Bit.Android
 
             if (_useDefaultConfiguration)
             {
+#if Xamarin
                 Xamarin.Essentials.Platform.OnNewIntent(intent);
+#else
+                Microsoft.Maui.Essentials.Platform.OnNewIntent(intent);
+#endif
             }
         }
 
@@ -91,7 +104,11 @@ namespace Bit.Android
 
             if (_useDefaultConfiguration)
             {
+#if Xamarin
                 Xamarin.Essentials.Platform.OnResume(activity: null);
+#else
+                Microsoft.Maui.Essentials.Platform.OnResume(activity: null);
+#endif
             }
         }
 

@@ -2,7 +2,6 @@
 using Bit.ViewModel.Implementations;
 using Rg.Plugins.Popup.Contracts;
 using System.Threading.Tasks;
-using Xamarin.Essentials;
 
 namespace Bit.ViewModel
 {
@@ -24,7 +23,11 @@ namespace Bit.ViewModel
 
         async Task Copy(TrackedThing thing)
         {
-            await Clipboard.SetTextAsync(thing.ToString());
+#if Xamarin
+            await Xamarin.Essentials.Clipboard.SetTextAsync(thing.ToString());
+#elif NET6_0_ANDROID || NET6_0_IOS
+            await Microsoft.Maui.Essentials.Clipboard.SetTextAsync(thing.ToString());
+#endif
         }
 
         async Task Close()

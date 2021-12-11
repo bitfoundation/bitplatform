@@ -2,6 +2,7 @@
 
 using Bit.iOS;
 using Bit.View.Controls;
+using ObjCRuntime;
 using System;
 using Xamarin.Forms;
 using Xamarin.Forms.Platform.iOS;

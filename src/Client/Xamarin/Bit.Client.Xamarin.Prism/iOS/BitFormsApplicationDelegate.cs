@@ -20,7 +20,11 @@ namespace Bit.iOS
         protected virtual void UseDefaultConfiguration()
         {
             _useDefaultConfiguration = true;
+#if Xamarin
             Xamarin.Essentials.VersionTracking.Track();
+#else
+            Microsoft.Maui.Essentials.VersionTracking.Track();
+#endif
             Rg.Plugins.Popup.Popup.Init();
             BitCSharpClientControls.Init();
             SetBitPlatformServices();
@@ -47,12 +51,24 @@ namespace Bit.iOS
             base.PerformActionForShortcutItem(application, shortcutItem, completionHandler);
 
             if (_useDefaultConfiguration)
+            {
+#if Xamarin
                 Xamarin.Essentials.Platform.PerformActionForShortcutItem(application, shortcutItem, completionHandler);
+#else
+                Microsoft.Maui.Essentials.Platform.PerformActionForShortcutItem(application, shortcutItem, completionHandler);
+#endif
+            }
         }
 
         public override bool OpenUrl(UIApplication app, NSUrl url, NSDictionary options)
         {
-            if (_useDefaultConfiguration == true && Xamarin.Essentials.Platform.OpenUrl(app, url, options))
+            if (_useDefaultConfiguration == true &&
+#if Xamarin
+                Xamarin.Essentials.Platform.OpenUrl(app, url, options)
+#else
+                Microsoft.Maui.Essentials.Platform.OpenUrl(app, url, options)
+#endif
+                )
             {
                 return true;
             }
