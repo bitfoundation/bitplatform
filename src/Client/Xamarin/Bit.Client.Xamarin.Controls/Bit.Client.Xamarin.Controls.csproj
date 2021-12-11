@@ -3,7 +3,7 @@
     <Import Project="../../../Bit.Build.props" />
 
     <PropertyGroup>
-        <TargetFrameworks>monoandroid10.0;Xamarin.iOS10;uap10.0.17763;netstandard2.0;netstandard2.1;</TargetFrameworks>
+        <TargetFrameworks>monoandroid10.0;Xamarin.iOS10;uap10.0.17763;netstandard2.0;netstandard2.1;net6.0-ios;net6.0-android;</TargetFrameworks>
         <PackageTags>$(PackageTags) Xamarin-Forms Xaml Date-Picker Radio-Button</PackageTags>
     </PropertyGroup>
 
@@ -24,9 +24,9 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Compile Update="Implementations\BitGlobalStyles.xaml.cs">
-            <DependentUpon>BitGlobalStyles.xaml</DependentUpon>
-        </Compile>
+        <EmbeddedResource Update="**\*.xaml">
+            <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+        </EmbeddedResource>
     </ItemGroup>
 
 </Project>

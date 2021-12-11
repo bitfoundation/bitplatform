@@ -23,7 +23,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Xamarin.Essentials;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 
@@ -105,11 +104,19 @@ namespace Bit
 
                 if (Device.RuntimePlatform == Device.UWP || Device.RuntimePlatform == Device.iOS || Device.RuntimePlatform == Device.Android)
                 {
-                    Connectivity.ConnectivityChanged += (sender, e) =>
+#if Xamarin
+                    Xamarin.Essentials.Connectivity.ConnectivityChanged += (sender, e) =>
                     {
                         _eventAggregator.Value.GetEvent<ConnectivityChangedEvent>()
                             .Publish(new ConnectivityChangedEvent { IsConnected = e.NetworkAccess != Xamarin.Essentials.NetworkAccess.None });
                     };
+#elif NET6_0_ANDROID || NET6_0_IOS
+                    Microsoft.Maui.Essentials.Connectivity.ConnectivityChanged += (sender, e) =>
+                    {
+                        _eventAggregator.Value.GetEvent<ConnectivityChangedEvent>()
+                            .Publish(new ConnectivityChangedEvent { IsConnected = e.NetworkAccess != Microsoft.Maui.Essentials.NetworkAccess.None });
+                    };
+#endif
                 }
 
                 await OnInitializedAsync();

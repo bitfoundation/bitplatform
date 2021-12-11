@@ -3,7 +3,6 @@ using Bit.Tests.Model.Dto;
 using Microsoft.EntityFrameworkCore;
 using Prism.Services;
 using System.IO;
-using Xamarin.Essentials;
 
 namespace Bit.CSharpClientSample.Data
 {
@@ -19,7 +18,11 @@ namespace Bit.CSharpClientSample.Data
         {
             string dbFileName = "Sample.db";
 
-            dbFileName = Path.Combine(FileSystem.AppDataDirectory, dbFileName);
+#if ANDROID || IOS
+            dbFileName = Path.Combine(Microsoft.Maui.Essentials.FileSystem.AppDataDirectory, dbFileName);
+#else
+            dbFileName = Path.Combine(Xamarin.Essentials.FileSystem.AppDataDirectory, dbFileName);
+#endif
 
             optionsBuilder.UseSqlite($"Filename={dbFileName}");
 

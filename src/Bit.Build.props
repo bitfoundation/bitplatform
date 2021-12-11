@@ -49,7 +49,7 @@
 		<DefineConstants Condition=" '$(TargetFramework)' == 'netstandard2.1' ">$(DefineConstants);DotNetStandard;DotNetStandard2_1</DefineConstants>
         <DefineConstants Condition=" '$(TargetFramework)' == 'monoandroid10.0' OR '$(TargetFramework)' == 'Xamarin.iOS10' OR '$(TargetFramework)' == 'uap10.0.17763' ">$(DefineConstants);Xamarin</DefineConstants>
         <DefineConstants Condition=" '$(TargetFramework)' == 'net6.0-android' OR '$(TargetFramework)' == 'net6.0-ios' OR '$(TargetFramework)' == 'net6.0-windows10.0.19041' ">$(DefineConstants);Maui</DefineConstants>
-        <UseMaui Condition=" '$(TargetFramework)' == 'net6.0-android' OR '$(TargetFramework)' == 'net6.0-ios' OR '$(TargetFramework)' == 'net6.0-windows10.0.19041' ">true</UseMaui>
+        <UseMauiEssentials Condition=" '$(TargetFramework)' == 'net6.0-android' OR '$(TargetFramework)' == 'net6.0-ios' OR '$(TargetFramework)' == 'net6.0-windows10.0.19041' ">true</UseMauiEssentials>
 		<GenerateLibraryLayout Condition=" '$(TargetFramework)' == 'uap10.0.17763' OR '$(TargetFramework)' == 'net6.0-windows10.0.19041' ">true</GenerateLibraryLayout>
 		<DesignTimeBuild>True</DesignTimeBuild>
 		<AndroidResgenFile>False</AndroidResgenFile>

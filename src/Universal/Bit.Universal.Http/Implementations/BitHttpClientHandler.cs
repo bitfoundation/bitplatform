@@ -125,7 +125,7 @@ namespace Bit.Http.Implementations
 
                 return response;
             }
-#if Android
+#if Android && !Maui
             catch (Java.Lang.Throwable exp) // https://github.com/xamarin/xamarin-android/issues/3216
             {
                 throw exp switch

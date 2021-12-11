@@ -51,9 +51,12 @@ namespace Bit.ViewModel.Implementations
                     };
 #endif
 
-#if XamarinEssentials
+#if Xamarin
                     _client.Context.Device.Model = Xamarin.Essentials.DeviceInfo.Model;
                     _client.Context.Session.IsFirst = Xamarin.Essentials.VersionTracking.IsFirstLaunchEver;
+#elif NET6_0_ANDROID || NET6_0_IOS
+                    _client.Context.Device.Model = Microsoft.Maui.Essentials.DeviceInfo.Model;
+                    _client.Context.Session.IsFirst = Microsoft.Maui.Essentials.VersionTracking.IsFirstLaunchEver;
 #endif
                     _client.Context.Device.OperatingSystem = Device.RuntimePlatform;
 
