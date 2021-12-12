@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Components;
 
 namespace Bit.Client.Web.BlazorUI.Playground.Web.Components
 {
-    public partial class ComponentPage
+    public partial class ComponentDemo
     {
         private List<SideRailItem> items { get; set; } = new()
         {

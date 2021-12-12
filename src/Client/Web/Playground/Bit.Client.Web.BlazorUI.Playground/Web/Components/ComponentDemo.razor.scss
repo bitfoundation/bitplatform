@@ -1,5 +1,25 @@
 ﻿@import '../Styles/_shared.scss';
 
+.page-container {
+    width: 100%;
+    max-width: rem(1044px);
+    margin: 0 auto;
+    padding: rem(112px) 0;
+
+    @include lg {
+        max-width: rem(792px);
+    }
+
+    @include md {
+        max-width: rem(596px);
+        padding: rem(72px) 0;
+    }
+
+    @include sm {
+        padding: rem(32px) 0 rem(56px);
+    }
+}
+
 p {
     margin: 0;
     padding: 0 0 rem(27px);
@@ -63,7 +83,7 @@ tr:last-child {
     white-space: nowrap;
 }
 
-.component-container {
+.component-demo-container {
     display: flex;
     background-image: url('/images/main/component-bg.png');
     background-position: top center;
