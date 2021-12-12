@@ -1,6 +1,6 @@
 ﻿@import '../Styles/_shared.scss';
 
-.page-container {
+.component-demo-container {
     width: 100%;
     max-width: rem(1044px);
     margin: 0 auto;
@@ -20,217 +20,90 @@
     }
 }
 
-p {
-    margin: 0;
-    padding: 0 0 rem(27px);
+.demo-section {
+    width: 100%;
 }
 
-li {
-    list-style-type: none;
-}
-
-ul {
-    padding-left: rem(14px);
-}
-
-th {
-    border-bottom: rem(1px) solid $SecondaryColor;
-
-    @include caption1-xl;
-    @include table-content($SecondaryColor);
+.component-name {
+    margin: 0 0 rem(16px) 0;
+    padding: 0;
+    font-weight: bold;
+    font-size: rem(38px);
+    line-height: rem(56px);
+    color: $SecondaryColor;
 
     @include lg {
-        @include caption1-lg;
+        font-size: rem(32px);
+        line-height: rem(48px);
     }
 
     @include md {
-        @include caption1-md;
+        font-size: rem(24px);
+        line-height: rem(40px);
     }
 
     @include sm {
-        @include caption1-sm;
+        font-size: rem(18px);
+        line-height: rem(31px);
+        margin: 0 0 rem(8px) 0;
     }
 }
 
-td {
-    line-height: 197%;
-
-    @include caption2-xl;
-    @include table-content($Black1);
+.component-desc {
+    width: 100%;
+    margin-bottom: rem(40px);
+    font-size: rem(20px);
+    line-height: rem(32px);
+    text-align: justify;
+    color: #2E2E2E;
 
     @include lg {
-        @include caption2-lg;
+        margin-bottom: rem(32px);
+        font-size: rem(16px);
+        line-height: rem(24px);
     }
 
     @include md {
-        @include caption2-md;
+        margin-bottom: rem(28px);
+        font-weight: 500;
+        font-size: rem(14px);
+        line-height: rem(24px);
     }
 
     @include sm {
-        @include caption2-sm;
+        margin-bottom: rem(32px);
+        font-weight: 500;
+        font-size: rem(12px);
+        line-height: rem(24px);
     }
 }
 
-tr {
-    border-bottom: rem(1px) solid $SecondaryColor;
-}
+.section-title {
+    width: 100%;
+    border-bottom: rem(2px) solid $Gray3;
+    margin-bottom: rem(40px);
+    font-weight: 500;
+    font-size: rem(22px);
+    line-height: rem(40px);
+    color: $SecondaryColor;
 
-tr:last-child {
-    border: none;
-}
-
-.razor-code p {
-    white-space: nowrap;
-}
-
-.component-demo-container {
-    display: flex;
-    background-image: url('/images/main/component-bg.png');
-    background-position: top center;
-    background-repeat: no-repeat;
-    background-size: 100% rem(700px);
-    padding: rem(144px) 0 0;
-
-    .component-content {
-        max-width: 70%;
-        padding: 0 rem(12px) 0 rem(80px);
-
-        @include lg {
-            padding: 0 rem(16px) 0 rem(75px);
-        }
-
-        @include md {
-            max-width: 100%;
-            padding: 0 rem(104px);
-        }
-
-        @include sm {
-            max-width: 95%;
-            padding: 0 rem(20px);
-        }
-
-        .overview {
-            .name-container {
-                display: flex;
-
-                img {
-                    display: none;
-                    width: rem(52px);
-                    height: rem(52px);
-                    padding-top: rem(1px);
-                    cursor: pointer;
-
-                    @include lt-lg {
-                        display: block;
-                    }
-
-                    @include sm {
-                        width: rem(33px);
-                        height: rem(33px);
-                        padding-top: rem(8px);
-                    }
-                }
-            }
-
-            .name {
-                color: $SecondaryColor;
-                line-height: 0;
-                white-space: nowrap;
-            }
-
-            .description {
-                @include subtitle1-xl;
-
-                @include lg {
-                    @include subtitle1-lg;
-                }
-
-                @include md {
-                    @include subtitle1-md;
-                }
-
-                @include sm {
-                    @include subtitle1-sm;
-                }
-            }
-        }
-
-        .usage {
-            margin-top: rem(75px);
-
-            @include h5-xl;
-
-            @include lg {
-                @include h5-lg;
-            }
-
-            @include md {
-                @include h1-md;
-            }
-
-            @include sm {
-                @include h1-sm;
-            }
-
-            .title {
-                color: $SecondaryColor;
-                border-bottom: rem(4px) solid $Gray2;
-                padding-bottom: rem(18px);
-                line-height: 0;
-
-                @include body1-xl;
-
-                @include lg {
-                    @include body1-lg;
-                }
-
-                @include md {
-                    @include body1-md;
-                }
-
-                @include sm {
-                    @include body1-sm;
-                }
-            }
-        }
-
-        .implementation {
-            margin: rem(80px) 0 rem(270px);
-
-            .title {
-                color: $SecondaryColor;
-                border-bottom: rem(4px) solid $Gray2;
-                padding-bottom: rem(15px);
-
-                @include body1-xl;
-
-                @include lg {
-                    @include body1-lg;
-                }
-
-                @include md {
-                    @include body1-md;
-                }
-
-                @include sm {
-                    @include body1-sm;
-                }
-            }
-
-            .table {
-                table-layout: fixed;
-                border-collapse: collapse;
-                width: 100%;
-                margin: rem(16px) 0 rem(80px);
-            }
-        }
+    @include lg {
+        margin-bottom: rem(32px);
+        font-size: rem(18px);
+        line-height: rem(31px);
     }
-}
 
-.enums {
-    scroll-margin-top: rem(180px);
-}
+    @include md {
+        border-width: rem(1px);
+        margin-bottom: rem(24px);
+        font-size: rem(18px);
+        line-height: rem(32px);
+    }
 
-#overview-section, #usage-section, #implementation-section {
-    scroll-margin-top: 150px;
+    @include sm {
+        border-width: rem(1px);
+        margin-bottom: rem(16px);
+        font-size: rem(14px);
+        line-height: rem(24px);
+    }
 }

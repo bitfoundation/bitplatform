@@ -2,102 +2,15 @@
 @using Pages.Components.ComponentDemoBase
 
 <section class="component-demo-container">
-    <section id="overview-section" class="overview">
-        <div class="name-container">
-            <img @onclick="ToggleMenu" src="/images/icon/menu-icon.svg" />
-            <h1 class="name">@ComponentName</h1>
-        </div>
-        <p class="description">
-            @OverviewDesc
-        </p>
+    <section id="overview-section" class="demo-section">
+        <h1 class="component-name">@ComponentName</h1>
+        <div class="component-desc">@ComponentDescription</div>
     </section>
-    <section id="usage-section" class="usage">
-        <div class="title">Usage</div>
+    <section id="usage-section" class="demo-section">
+        <h2 class="section-title">Usage</h2>
         @ChildContent
     </section>
-    <section class="implementation">
-        <div id="implementation-section" class="title">Implementation</div>
-        <table class="table">
-            <tr>
-                <th>Name</th>
-                <th>Type</th>
-                <th>Default Value</th>
-                <th>Description</th>
-            </tr>
-            @foreach (var param in ComponentParameters)
-            {
-                <tr>
-                    <td>@param.Name</td>
-                    <td>
-                        @if (param.LinkType == LinkType.Link)
-                        {
-                            <BitLink HasUnderline="true" Href="@param.Href">@param.Type</BitLink>
-                        }
-                        else
-                        {
-                            @param.Type
-                        }
-                    </td>
-                    <td>@param.DefaultValue</td>
-                    <td>@param.Description</td>
-                </tr>
-            }
-        </table>
-        @foreach (var param in ComponentSubParameters)
-        {
-            <div id="@param.Id" class="enums">
-                <div class="title">@param.Title</div>
-                <table class="table">
-                    <tr>
-                        <th>Name</th>
-                        <th>Type</th>
-                        <th>Default Value</th>
-                        <th>Description</th>
-                    </tr>
-                    @foreach (var item in param.Parameters)
-                    {
-                        <tr>
-                            <td>@item.Name</td>
-                            <td>
-                                @if (item.LinkType == LinkType.Link)
-                                {
-                                    <BitLink HasUnderline="true" Href="@item.Href">@item.Type</BitLink>
-                                }
-                                else
-                                {
-                                    @item.Type
-                                }
-                            </td>
-                            <td>@item.DefaultValue</td>
-                            <td>@item.Description</td>
-                        </tr>
-                    }
-                </table>
-            </div>
-        }
-        @foreach (var param in EnumParameters)
-        {
-            <div id="@param.Id" class="enums">
-                <div class="title">@param.Title</div>
-                <table class="table">
-                    <tr>
-                        <th>Name</th>
-                        <th>Value</th>
-                        <th></th>
-                        <th>Description</th>
-                    </tr>
-                    @foreach (var item in param.EnumList)
-                    {
-                        <tr>
-                            <td>@item.Name</td>
-                            <td>@item.Value</td>
-                            <td></td>
-                            <td>@item.Description</td>
-                        </tr>
-                    }
-                </table>
-            </div>
-        }
+    <section id="implementation-section" class="demo-section">
+        <h2 class="section-title">Implementation</h2>
     </section>
-    <SideRail Items="@items" />
 </section>

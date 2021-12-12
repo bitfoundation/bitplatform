@@ -1,0 +1,105 @@
+﻿@import '../Styles/_shared.scss';
+
+.box {
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    width: 100%;
+    margin-bottom: rem(80px);
+
+    @include lg {
+        margin-bottom: rem(64px);
+    }
+
+    @include lt-lg {
+        margin-bottom: rem(40px);
+    }
+}
+
+.box-header {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    height: rem(48px);
+    padding: 0 rem(24px);
+    border-radius: rem(10px) rem(10px) 0 0;
+    box-sizing: border-box;
+    background-color: $SecondaryColor;
+    color: $White;
+
+    @include lt-xl {
+        height: rem(40px);
+        padding: 0 rem(16px);
+        border-radius: rem(8px) rem(8px) 0 0;
+    }
+
+    @include sm {
+        padding: 0 rem(8px);
+    }
+}
+
+.header-title {
+    font-weight: 500;
+    font-size: rem(20px);
+    line-height: rem(32px);
+
+    @include lt-xl {
+        font-size: rem(16px);
+        line-height: rem(24px);
+    }
+
+    @include sm {
+        font-size: rem(12px);
+    }
+}
+
+.header-btn-group {
+    display: flex;
+    align-items: center;
+    flex-flow: row nowrap;
+}
+
+.box-content {
+    position: relative;
+    width: 100%;
+    max-height: rem(464px);
+    border: rem(1px) solid $Gray3;
+    border-top: none;
+    border-radius: 0 0 rem(10px) rem(10px);
+    padding: rem(24px);
+    box-sizing: border-box;
+    background-color: $White;
+    color: #2E2E2E;
+    font-size: rem(16px);
+    line-height: rem(24px);
+    overflow: auto;
+
+    pre {
+        margin: 0;
+    }
+
+    @include lg {
+        max-height: rem(400px);
+        border-radius: 0 0 rem(8px) rem(8px);
+        padding: rem(16px);
+        font-size: rem(13px);
+    }
+
+    @include md {
+        max-height: rem(304px);
+        border-radius: 0 0 rem(8px) rem(8px);
+        padding: rem(8px) rem(16px);
+        font-size: rem(10px);
+        line-height: rem(14px);
+    }
+
+    @include sm {
+        max-height: rem(400px);
+        border-radius: 0 0 rem(8px) rem(8px);
+        padding: rem(16px) rem(8px);
+        font-size: rem(12px);
+        line-height: rem(16px);
+    }
+}

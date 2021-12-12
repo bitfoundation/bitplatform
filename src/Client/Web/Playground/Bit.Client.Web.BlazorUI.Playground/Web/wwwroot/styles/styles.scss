@@ -16,86 +16,6 @@ a {
     text-decoration: none;
 }
 
-h1 {
-    @include h1-xl;
-
-    @include lg {
-        @include h1-lg;
-    }
-
-    @include md {
-        @include h1-md;
-    }
-
-    @include sm {
-        @include h1-sm;
-    }
-}
-
-h2 {
-    @include h2-xl;
-
-    @include lg {
-        @include h2-lg;
-    }
-
-    @include md {
-        @include h2-md;
-    }
-
-    @include sm {
-        @include h2-sm;
-    }
-}
-
-h3 {
-    @include h3-xl;
-
-    @include lg {
-        @include h3-lg;
-    }
-
-    @include md {
-        @include h3-md;
-    }
-
-    @include sm {
-        @include h3-sm;
-    }
-}
-
-h4 {
-    @include h4-xl;
-
-    @include lg {
-        @include h4-lg;
-    }
-
-    @include md {
-        @include h4-md;
-    }
-
-    @include sm {
-        @include h4-sm;
-    }
-}
-
-h5 {
-    @include h5-xl;
-
-    @include lg {
-        @include h5-lg;
-    }
-
-    @include md {
-        @include h5-md;
-    }
-
-    @include sm {
-        @include h5-sm;
-    }
-}
-
 pre {
     line-height: rem(32px);
     margin-left: rem(-70px);
@@ -341,161 +261,114 @@ input::-webkit-input-placeholder {
     }
 }
 
-/* Demo Page =================================================================================== */
-.component-siderail {
-    ul.bit-nav-list:before {
-        position: absolute;
-        content: "";
-        width: 1px;
-        height: rem(370px);
-        background: $Gray2;
-        top: rem(-20px);
-        left: 0;
-    }
+/* Component Example Box =================================================================================== */
+.com-example-box-header-btn {
+    min-width: rem(32px);
+    min-height: rem(32px);
+    border: none;
+    padding: 0;
+    background-color: transparent;
 
-    .bit-lnk button {
-        color: $Gray1;
-
-        @include subtitle2-xl;
-
-        @include lg {
-            @include subtitle2-lg;
-        }
-
-        @include md {
-            @include subtitle2-md;
-        }
-
-        @include sm {
-            @include subtitle2-sm;
+    span {
+        i {
+            font-size: rem(32px);
+            color: $White;
         }
     }
 
-    .bit-lnk button:hover {
-        text-decoration: none;
-        color: $SecondaryColor;
+    &:first-child {
+        margin-right: rem(40px);
     }
 
-    .link-container {
-        li {
-            width: 80%;
-            list-style-type: none;
-        }
-
-        button {
-            padding-left: rem(11px);
-        }
-
-        li > .active {
-            display: inline-block;
-            position: relative;
-            width: 100%;
-            padding-top: rem(4px);
-            background-color: $Gray4;
-
-            &:before {
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: rem(4px);
-                height: rem(35px);
-                content: "";
-                background-color: $SecondaryColor;
-            }
-
-            button {
-                color: $SecondaryColor;
-            }
-        }
-
-        li:hover {
-            background-color: $Gray4;
-            cursor: pointer;
-
-            button {
-                color: $SecondaryColor;
-            }
-        }
-    }
-
-    .bit-nav-link-container .bit-nav-link-txt {
-        margin-left: rem(-20px);
-        white-space: nowrap;
-    }
-
-    .bit-nav-link-enabled-hasurl-fluent {
-        margin-left: rem(15px);
-    }
-
-    .bit-nav-composite-link:hover {
+    &:hover {
         background-color: transparent;
-    }
-}
-
-.how-to-use {
-    font-family: Axiforma;
-    margin-bottom: rem(60px);
-    text-justify: auto;
-    color: $Black1;
-
-    @include subtitle2-xl;
-
-    @include lg {
-        @include subtitle2-lg;
+        border: none;
     }
 
-    @include md {
-        @include subtitle2-md;
+    @include lt-xl {
+        span {
+            i {
+                font-size: rem(24px);
+            }
+        }
+
+        &:first-child {
+            margin-right: rem(33px);
+        }
     }
 
     @include sm {
-        @include subtitle2-sm;
+        min-width: rem(28px);
+        min-height: rem(28px);
+
+        &:first-child {
+            margin-right: rem(40px);
+        }
     }
 }
 
-.copy-btn {
-    color: $SecondaryColor;
-    border: 1px dashed;
+.com-example-box-copy-btn {
+    position: absolute;
+    right: rem(24px);
+    top: rem(24px);
+    width: rem(48px);
+    height: rem(48px);
+    border-radius: 50%;
+    background-color: $Gray5;
 
-    @include subtitle2-xl;
+    span {
+        i {
+            color: $SecondaryColor;
+            margin: 0;
+            font-size: rem(28px);
+        }
+    }
+
+    &:hover {
+        background-color: $Gray4;
+    }
 
     @include lg {
-        @include subtitle2-lg;
+        width: rem(40px);
+        height: rem(40px);
+        right: rem(16px);
+        top: rem(16px);
+
+        span {
+            i {
+                font-size: rem(24px);
+            }
+        }
     }
 
     @include md {
-        @include subtitle2-md;
+        width: rem(40px);
+        height: rem(40px);
+        right: rem(8px);
+        top: rem(8px);
+
+        span {
+            i {
+                font-size: rem(24px);
+            }
+        }
     }
 
     @include sm {
-        @include subtitle2-sm;
+        width: rem(32px);
+        height: rem(32px);
+        right: rem(8px);
+        top: rem(16px);
+
+        span {
+            i {
+                font-size: rem(20px);
+            }
+        }
     }
-
-    .bit-icon--Copy {
-        color: $SecondaryColor !important;
-    }
 }
 
-.copy-btn:hover {
-    color: $SecondaryColor;
-}
-
-.show-code-btn, .show-code-btn:hover {
-    @include code-button;
-    background-color: $SecondaryColor;
-}
-
-.hide-code-btn, .hide-code-btn:hover {
-    @include code-button;
-    background-color: $White;
-    color: $SecondaryColor;
-}
-
-.table .bit-lnk > a {
-    color: $SecondaryColor;
-    cursor: pointer;
-}
-
+/* Demo Page =================================================================================== */
 .disable-btn {
     @include md {
         margin-top: rem(10px);
