@@ -157,10 +157,14 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Components
             ToggleMenu();
         }
 
-        private string GetDemoLinkClassName()
+        private string GetDemoLinkClassName(string link)
         {
             var className = "side-nav-demo-link";
-            if (CurrentUrl == "/components/demo")
+            if (CurrentUrl == "/components/overview" && link == "overview")
+            {
+                className += " side-nav-demo-link--active";
+            }
+            else if (CurrentUrl == "/get-started" && link == "get-started")
             {
                 className += " side-nav-demo-link--active";
             }
