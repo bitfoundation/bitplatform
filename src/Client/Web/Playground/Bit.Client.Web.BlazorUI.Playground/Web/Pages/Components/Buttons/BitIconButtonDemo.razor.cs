@@ -82,9 +82,9 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Buttons
                  $"}} {Environment.NewLine}" +
                  $"</style>";
 
-        private readonly string visibilitySampleCode = $"<BitIconButton Visibility='ComponentVisibility.Visible' IconName='BitIcon.List'>Visible Button</BitIconButton>{Environment.NewLine}" +
+        private readonly string visibilitySampleCode = $"<BitIconButton Visibility='BitComponentVisibility.Visible' IconName='BitIcon.List'>Visible Button</BitIconButton>{Environment.NewLine}" +
                  $"<BitIconButton Visibility='ComponentHidden.Hidden' IconName='BitIcon.List'>Hidden Button</BitIconButton>{Environment.NewLine}" +
-                 $"<BitIconButton Visibility='ComponentVisibility.Collapsed' IconName='BitIcon.List'>Collapsed Button</BitIconButton>";
+                 $"<BitIconButton Visibility='BitComponentVisibility.Collapsed' IconName='BitIcon.List'>Collapsed Button</BitIconButton>";
 
         private readonly string areasSampleCode = $"<BitIconButton AriaDescription='Detailed description used for screen reader.' IconName='BitIcon.Library'>Icon Button with Aria Description</BitIconButton>{Environment.NewLine}" +
                 $"<BitIconButton AriaHidden='true' IconName='BitIcon.Library'>Icon Button with Aria Hidden</BitIconButton>";

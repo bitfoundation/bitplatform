@@ -125,9 +125,9 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Buttons
                  $"}} {Environment.NewLine}" +
                  $"</style>";
 
-        private readonly string visibilitySampleCode = $"<BitCompoundButton Visibility='ComponentVisibility.Visible' Text='Visible' SecondaryText='This Button is a visible compound button'></BitCompoundButton>{Environment.NewLine}" +
+        private readonly string visibilitySampleCode = $"<BitCompoundButton Visibility='BitComponentVisibility.Visible' Text='Visible' SecondaryText='This Button is a visible compound button'></BitCompoundButton>{Environment.NewLine}" +
                  $"<BitCompoundButton Hidden='ComponentHidden.Hidden' Text='Hidden' SecondaryText='This Button is a hidden compound button'></BitCompoundButton>{Environment.NewLine}" +
-                 $"<BitCompoundButton Visibility='ComponentVisibility.Collapsed' Text='Collapsed' SecondaryText='This Button is a collapsed compound button'></BitCompoundButton>";
+                 $"<BitCompoundButton Visibility='BitComponentVisibility.Collapsed' Text='Collapsed' SecondaryText='This Button is a collapsed compound button'></BitCompoundButton>";
 
         private readonly string ariasSampleCode = $"<BitCompoundButton AriaDescription='Detailed description used for screen reader' Text='AriaDescription' SecondaryText='This is a compound button with aria description' ButtonStyle='BitButtonStyle.Standard'></BitCompoundButton>{Environment.NewLine}" +
                 $"<BitCompoundButton AriaHidden='true' Style='height: 85px;' Text='AriaDescription' SecondaryText='This is a compound button with aria description'></BitCompoundButton>";
