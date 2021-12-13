@@ -1,11 +1,10 @@
 ﻿@page "/components/modal"
 
-@using Bit.Client.Web.BlazorUI.Playground.Web.Components
-
-<ComponentPage ComponentName="Modal" OverviewDesc="Modals are temporary pop-ups that take focus from the page or app and require people to interact with them. Unlike a dialog box (Dialog), a modal should be used for hosting lengthy content, such as privacy statements or license agreements, or for asking people to perform complex or multiple actions, such as changing settings."
+<ComponentDemo ComponentName="Modal" ComponentDescription="Modals are temporary pop-ups that take focus from the page or app and require people to interact with them. Unlike a dialog box (Dialog), a modal should be used for hosting lengthy content, such as privacy statements or license agreements, or for asking people to perform complex or multiple actions, such as changing settings."
                ComponentParameters="componentParameters">
-    <CodeSample Title="BitModal" Description="To create a modal you can use a BitModal component." CodeSampleContentForCopy="@modalSampleCode">
-        <SampleContent>
+    <ComponentExampleBox Title="BitModal" ExampleSourceCodeForCopy="@modalSampleCode" ExampleId="example1">
+        <ExamplePreview>
+            <div class="example-desc">To create a modal you can use a BitModal component.</div>
             <div>
                 <BitButton OnClick=@(()=>IsOpen=true)>Open Modal</BitButton>
                 <BitModal @bind-IsOpen=IsOpen>
@@ -57,80 +56,63 @@
                     </div>
                 </BitModal>
             </div>
-        </SampleContent>
-        <CodeSampleContent>
+        </ExamplePreview>
+        <ExampleSourceCode>
             <pre>
-                &lt<span class="soco-component-attr">BitButton OnClick</span>="<span class="soco-code">@@</span>=>IsOpen=<span></span>true)">Open Modal<span>&lt/</span><span class="soco-component-attr">BitButton</span>&gt;
-                &lt<span class="soco-component-attr">BitModal</span> <span class="soco-code">@@bind-IsOpen</span>=IsOpen&gt;
-                         &lt<span class="soco-tag-type-def">div</span> <span class="soco-var-attr">class</span>="modal-header">
-                                  &lt<span class="soco-tag-type-def">span</span>>Lorem Ipsum &lt;/<span class="soco-tag-type-def">span</span>&gt;
-                                  &lt<span class="soco-component-attr">BitIconButton OnClick</span>="<span class="soco-code">@@</span>(()=>IsOpen=false)"
-                                                                  <span class="soco-component-attr">IconName</span>="BitIcon.ChromeClose"
-                                                                  <span class="soco-component-attr">Title</span>="Close"/&gt;
-                         &lt;/<span class="soco-tag-type-def">div</span>&gt;
-                         &lt<span class="soco-tag-type-def">div</span> <span class="soco-var-attr">class</span>=<span>"modal-body"</span>&gt;
-                             &lt<span class="soco-tag-type-def">p</span>&gt;
-                                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-                                  amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-                                  sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
-                                  turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
-                                  ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
-                                  Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
-                                  Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
-                                  efficitur.
-                             &lt;/<span class="soco-tag-type-def">p</span>&gt;
-                             &lt<span class="soco-tag-type-def">p</span>&gt;
-                                  Mauris at nunc eget lectus lobortis facilisis et eget magna. Vestibulum venenatis augue sapien, rhoncus
-                                  faucibus magna semper eget. Proin rutrum libero sagittis sapien aliquet auctor. Suspendisse tristique a
-                                  magna at facilisis. Duis rhoncus feugiat magna in rutrum. Suspendisse semper, dolor et vestibulum lacinia,
-                                  nunc felis malesuada ex, nec hendrerit justo ex et massa. Quisque quis mollis nulla. Nam commodo est ornare,
-                                  rhoncus odio eu, pharetra tellus. Nunc sed velit mi.
-                             &lt;/<span class="soco-tag-type-def">p</span>&gt;
-                             &lt<span class="soco-tag-type-def">p</span>&gt;
-                                  Sed condimentum ultricies turpis convallis pharetra. Sed sagittis quam pharetra luctus porttitor. Cras vel
-                                  consequat lectus. Sed nec fringilla urna, a aliquet libero. Aenean sed nisl purus. Vivamus vulputate felis
-                                  et odio efficitur suscipit. Ut volutpat dictum lectus, ac rutrum massa accumsan at. Sed pharetra auctor
-                                  finibus. In augue libero, commodo vitae nisi non, sagittis convallis ante. Phasellus malesuada eleifend
-                                  mollis. Curabitur ultricies leo ac metus venenatis elementum.
-                             &lt;/<span class="soco-tag-type-def">p</span>&gt;
-                             &lt<span class="soco-tag-type-def">p</span>&gt;
-                                  Aenean egestas quam ut erat commodo blandit. Mauris ante nisl, pellentesque sed venenatis nec, aliquet sit
-                                  amet enim. Praesent vitae diam non diam aliquet tristique non ut arcu. Pellentesque et ultrices eros. Fusce
-                                  diam metus, mattis eu luctus nec, facilisis vel erat. Nam a lacus quis tellus gravida euismod. Nulla sed sem
-                                  eget tortor cursus interdum. Sed vehicula tristique ultricies. Aenean libero purus, mollis quis massa quis,
-                                  eleifend dictum massa. Fusce eu sapien sit amet odio lacinia placerat. Mauris varius risus sed aliquet
-                                  cursus. Aenean lectus magna, tincidunt sit amet sodales a, volutpat ac leo. Morbi nisl sapien, tincidunt sit
-                                  amet mauris quis, sollicitudin auctor est.
-                             &lt;/<span class="soco-tag-type-def">p</span>&gt;
-                             &lt<span class="soco-tag-type-def">p</span>&gt;
-                                  Nam id mi justo. Nam vehicula vulputate augue, ac pretium enim rutrum ultricies. Sed aliquet accumsan
-                                  varius. Quisque ac auctor ligula. Fusce fringilla, odio et dignissim iaculis, est lacus ultrices risus,
-                                  vitae condimentum enim urna eu nunc. In risus est, mattis non suscipit at, mattis ut ante. Maecenas
-                                  consectetur urna vel erat maximus, non molestie massa consequat. Duis a feugiat nibh. Sed a hendrerit diam,
-                                  a mattis est. In augue dolor, faucibus vel metus at, convallis rhoncus dui.
-                             &lt;/<span class="soco-tag-type-def">p</span>&gt;
-                         &lt;/<span class="soco-tag-type-def">div</span>&gt;
-                &lt/<span class="soco-component-attr">BitModal</span>&gt;
-                <span class="soco-code">&#64;code {</span>
-                      <span class="soco-tag-type-def">private bool</span> IsOpen = <span class="soco-tag-type-def">false</span>;
-                <span class="soco-code">}</span>
-                &lt<span class="soco-tag-type-def">style></span>
-                         <span class="soco-css-style">.modal-header</span> {
-                               <span class="soco-var-attr">display</span> : flex;
-                               <span class="soco-var-attr">align-items</span> : center;
-                               <span class="soco-var-attr">font-weight</span> : 600;
-                               <span class="soco-var-attr">font-size</span> : 24px;
-                               <span class="soco-var-attr">border-top</span> : 4px solid #5C2D91;
-                               <span class="soco-var-attr">justify-content</span> : space-between;
-                               <span class="soco-var-attr">padding</span> : 12px 12px 14px 24px;
-                         }
-                         <span class="soco-css-style">.modal-body</span> {
-                               <span class="soco-var-attr">line-height</span> : 20px;
-                               <span class="soco-var-attr">overflow-y</span> : hidden;
-                               <span class="soco-var-attr">padding</span> : 0 24px 24px;
-                         }
-               &lt/<span class="soco-tag-type-def">style</span>&gt;
+            &ltBitButton OnClick=&#64;(()=>IsOpen=true)>Open Modal&lt/BitButton>
+            &ltBitModal &#64;bind-IsOpen=IsOpen>
+                    &ltdiv class="modal-header">
+                            &ltspan>Lorem Ipsum&lt/span>
+                            &ltBitIconButton OnClick=&#64;(()=>IsOpen=false) IconName="BitIcon.ChromeClose" Title="Close" />
+                    &lt/div>
+                    &ltdiv class="modal-body">
+                            &ltp>
+                                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+                                    amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+                                    sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+                                    turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
+                                    ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
+                                    Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
+                                    Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
+                                    efficitur.
+                            &lt/p>
+                            &ltp>
+                                    Mauris at nunc eget lectus lobortis facilisis et eget magna. Vestibulum venenatis augue sapien, rhoncus
+                                    faucibus magna semper eget. Proin rutrum libero sagittis sapien aliquet auctor. Suspendisse tristique a
+                                    magna at facilisis. Duis rhoncus feugiat magna in rutrum. Suspendisse semper, dolor et vestibulum lacinia,
+                                    nunc felis malesuada ex, nec hendrerit justo ex et massa. Quisque quis mollis nulla. Nam commodo est ornare,
+                                    rhoncus odio eu, pharetra tellus. Nunc sed velit mi.
+                            &lt/p>
+                            &ltp>
+                                    Sed condimentum ultricies turpis convallis pharetra. Sed sagittis quam pharetra luctus porttitor. Cras vel
+                                    consequat lectus. Sed nec fringilla urna, a aliquet libero. Aenean sed nisl purus. Vivamus vulputate felis
+                                    et odio efficitur suscipit. Ut volutpat dictum lectus, ac rutrum massa accumsan at. Sed pharetra auctor
+                                    finibus. In augue libero, commodo vitae nisi non, sagittis convallis ante. Phasellus malesuada eleifend
+                                    mollis. Curabitur ultricies leo ac metus venenatis elementum.
+                            &lt/p>
+                            &ltp>
+                                    Aenean egestas quam ut erat commodo blandit. Mauris ante nisl, pellentesque sed venenatis nec, aliquet sit
+                                    amet enim. Praesent vitae diam non diam aliquet tristique non ut arcu. Pellentesque et ultrices eros. Fusce
+                                    diam metus, mattis eu luctus nec, facilisis vel erat. Nam a lacus quis tellus gravida euismod. Nulla sed sem
+                                    eget tortor cursus interdum. Sed vehicula tristique ultricies. Aenean libero purus, mollis quis massa quis,
+                                    eleifend dictum massa. Fusce eu sapien sit amet odio lacinia placerat. Mauris varius risus sed aliquet
+                                    cursus. Aenean lectus magna, tincidunt sit amet sodales a, volutpat ac leo. Morbi nisl sapien, tincidunt sit
+                                    amet mauris quis, sollicitudin auctor est.
+                            &lt/p>
+                            &ltp>
+                                    Nam id mi justo. Nam vehicula vulputate augue, ac pretium enim rutrum ultricies. Sed aliquet accumsan
+                                    varius. Quisque ac auctor ligula. Fusce fringilla, odio et dignissim iaculis, est lacus ultrices risus,
+                                    vitae condimentum enim urna eu nunc. In risus est, mattis non suscipit at, mattis ut ante. Maecenas
+                                    consectetur urna vel erat maximus, non molestie massa consequat. Duis a feugiat nibh. Sed a hendrerit diam,
+                                    a mattis est. In augue dolor, faucibus vel metus at, convallis rhoncus dui.
+                            &lt/p>
+                    &lt/div>
+            &lt/BitModal>
+
+            &#64;code {
+                    private bool IsOpen = false;
+            }
             </pre>
-        </CodeSampleContent>
-    </CodeSample>
-</ComponentPage>
+        </ExampleSourceCode>
+    </ComponentExampleBox>
+</ComponentDemo>
