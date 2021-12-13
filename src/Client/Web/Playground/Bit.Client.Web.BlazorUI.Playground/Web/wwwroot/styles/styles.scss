@@ -364,6 +364,11 @@ input::-webkit-input-placeholder {
 }
 
 /* Demo Page =================================================================================== */
+
+.example-desc {
+    margin-bottom: rem(8px);
+}
+
 .disable-btn {
     @include md {
         margin-top: rem(10px);
