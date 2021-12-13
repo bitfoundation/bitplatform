@@ -17,6 +17,7 @@
 }
 
 .box-header {
+    position: relative;
     display: flex;
     flex-flow: row nowrap;
     justify-content: space-between;
@@ -76,8 +77,12 @@
     line-height: rem(24px);
     overflow: auto;
 
-    pre {
-        margin: 0;
+    &::-webkit-scrollbar {
+        width: rem(10px);
+    }
+
+    &::-webkit-scrollbar:horizontal {
+        height: rem(10px);
     }
 
     @include lg {

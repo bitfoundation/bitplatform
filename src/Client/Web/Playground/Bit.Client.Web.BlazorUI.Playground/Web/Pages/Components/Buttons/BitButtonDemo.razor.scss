@@ -1,30 +1,10 @@
 ﻿@import "../../../Styles/_shared.scss";
 
 .sample-lnk-btn {
-    display: block;
-
-    @include lt-md {
-        display: flex;
-        flex-wrap: wrap;
-    }
+    display: flex;
+    flex-flow: row wrap;
 }
 
-.sample-btn {
-    @include subtitle2-xl;
-
-    @include lg {
-        @include subtitle2-lg;
-    }
-
-    @include md {
-        @include subtitle2-md;
-    }
-
-    @include sm {
-        @include subtitle2-sm;
-    }
-
-    line-height: 50px;
-    text-justify: auto;
-    color: $Black1;
+.example-desc {
+    margin-bottom: rem(8px);
 }

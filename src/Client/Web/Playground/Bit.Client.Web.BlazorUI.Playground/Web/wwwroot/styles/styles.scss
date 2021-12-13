@@ -17,16 +17,7 @@ a {
 }
 
 pre {
-    line-height: rem(32px);
-    margin-left: rem(-70px);
-
-    @include md {
-        margin-left: rem(-52px);
-    }
-
-    @include sm {
-        margin-left: rem(-48px);
-    }
+    margin: 0;
 }
 
 input::-webkit-input-placeholder {
@@ -271,6 +262,7 @@ input::-webkit-input-placeholder {
 
     span {
         i {
+            width: unset;
             font-size: rem(32px);
             color: $White;
         }
@@ -309,8 +301,9 @@ input::-webkit-input-placeholder {
 
 .com-example-box-copy-btn {
     position: absolute;
+    z-index: 1;
     right: rem(24px);
-    top: rem(24px);
+    top: rem(72px);
     width: rem(48px);
     height: rem(48px);
     border-radius: 50%;
@@ -318,6 +311,7 @@ input::-webkit-input-placeholder {
 
     span {
         i {
+            width: unset;
             color: $SecondaryColor;
             margin: 0;
             font-size: rem(28px);
@@ -332,7 +326,7 @@ input::-webkit-input-placeholder {
         width: rem(40px);
         height: rem(40px);
         right: rem(16px);
-        top: rem(16px);
+        top: rem(56px);
 
         span {
             i {
@@ -345,7 +339,7 @@ input::-webkit-input-placeholder {
         width: rem(40px);
         height: rem(40px);
         right: rem(8px);
-        top: rem(8px);
+        top: rem(48px);
 
         span {
             i {
@@ -358,7 +352,7 @@ input::-webkit-input-placeholder {
         width: rem(32px);
         height: rem(32px);
         right: rem(8px);
-        top: rem(16px);
+        top: rem(56px);
 
         span {
             i {

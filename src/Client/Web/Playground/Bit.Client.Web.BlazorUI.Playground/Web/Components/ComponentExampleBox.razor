@@ -1,4 +1,4 @@
-﻿<section class="box" id="@exampleId">
+﻿<section class="box" id="@ExampleId">
     <div class="box-header">
         <div class="header-title">@Title</div>
         <div class="header-btn-group">
@@ -13,20 +13,21 @@
                            OnClick="@CopyLinkToClipboard">
             </BitIconButton>
         </div>
+        <BitIconButton Class="com-example-box-copy-btn"
+                       OnClick=CopyCodeToClipboard
+                       IconName="BitIcon.Copy"
+                       Title="Copy source">
+        </BitIconButton>
     </div>
 
     <div class="box-content">
         @if (!showCode)
         {
-            @SampleContent
+            @ExampleContent
         }
         else
         {
-            <BitIconButton Class="com-example-box-copy-btn"
-                       OnClick=CopyCodeToClipboard
-                       IconName="BitIcon.Copy">
-            </BitIconButton>
-            @CodeSampleContent
+            @ExampleSurceCode
         }
     </div>
 </section>

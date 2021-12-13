@@ -83,6 +83,14 @@
     overflow-y: auto;
     overflow-x: hidden;
 
+    &::-webkit-scrollbar {
+        width: rem(10px);
+    }
+
+    &::-webkit-scrollbar:horizontal {
+        height: rem(10px);
+    }
+
     @include lt-xl {
         height: calc(100% - #{rem(84px)});
     }

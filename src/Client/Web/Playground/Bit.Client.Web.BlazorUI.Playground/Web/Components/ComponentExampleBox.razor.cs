@@ -7,27 +7,27 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Components
 {
     public partial class ComponentExampleBox
     {
-        private bool showCode { get; set; }
-        private string exampleId = Guid.NewGuid().ToString();
+        private bool showCode;
 
         [Inject] public IJSRuntime JSRuntime { get; set; }
         [Inject] public NavigationManager NavigationManager { get; set; }
 
         [Parameter] public string Title { get; set; }
-        [Parameter] public string Description { get; set; }
-        [Parameter] public string CodeSampleContentForCopy { get; set; }
-        [Parameter] public RenderFragment SampleContent { get; set; }
-        [Parameter] public RenderFragment CodeSampleContent { get; set; }
+        [Parameter] public string ExampleId { get; set; }
+        [Parameter] public string ExampleSourceCodeForCopy { get; set; }
+        [Parameter] public RenderFragment ExampleContent { get; set; }
+        [Parameter] public RenderFragment ExampleSurceCode { get; set; }
 
         private async Task CopyCodeToClipboard()
         {
-            await JSRuntime.CopyToClipboard(CodeSampleContentForCopy);
+            await JSRuntime.CopyToClipboard(ExampleSourceCodeForCopy);
         }
 
         private async Task CopyLinkToClipboard()
         {
             var currentUrl = NavigationManager.Uri.Replace(NavigationManager.BaseUri, "/", StringComparison.Ordinal);
-            var exampleUrl = $"{currentUrl}#{exampleId}";
+            currentUrl = currentUrl.Contains("#") ? currentUrl.Substring(0, currentUrl.IndexOf("#")) : currentUrl;
+            var exampleUrl = $"{currentUrl}#{ExampleId}";
             await JSRuntime.CopyToClipboard(exampleUrl);
         }
     }
