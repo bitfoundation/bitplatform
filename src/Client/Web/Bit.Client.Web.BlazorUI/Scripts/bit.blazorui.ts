@@ -51,6 +51,6 @@ class Bit {
     }
 }
 
-window.addEventListener('scroll', () => {
-    Bit.closeCurrentCalloutIfExists("", "", null);
-}, true);
+//window.addEventListener('scroll', () => {
+//    Bit.closeCurrentCalloutIfExists("", "", null);
+//}, true);
