@@ -401,8 +401,10 @@ input::-webkit-input-placeholder {
     }
 }
 
-.chk-box .bit-chb-lbl {
-    margin-bottom: rem(10px);
+.chk-box {
+    .bit-chb-lbl {
+        margin-bottom: rem(10px);
+    }
 }
 
 .custom-button, .custom-button:hover {
@@ -624,42 +626,4 @@ input::-webkit-input-placeholder {
     .bit-spb-lbl-wrapper {
         height: auto;
     }
-}
-
-.overview-container .bit-lnk > a:hover {
-    text-decoration: none;
-}
-
-/* Colors */
-
-.soco-if-for {
-    color: $LightPurple;
-}
-
-.soco-var-attr {
-    color: $LightBlue;
-}
-
-.soco-tag-type-def {
-    color: $Blue;
-}
-
-.soco-string {
-    color: $DarkOrange;
-}
-
-.soco-class-attr {
-    color: $LightGreen;
-}
-
-.soco-component-attr {
-    color: $DarkGreen;
-}
-
-.soco-css-style {
-    color: $Orange;
-}
-
-.soco-code {
-    background-color: $DarkYellow;
 }

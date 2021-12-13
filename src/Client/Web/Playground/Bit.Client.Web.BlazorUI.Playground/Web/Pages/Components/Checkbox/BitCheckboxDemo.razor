@@ -1,11 +1,10 @@
 ﻿@page "/components/check-box"
 
-@using Bit.Client.Web.BlazorUI.Playground.Web.Components
-
-<ComponentPage ComponentName="Checkbox" OverviewDesc="BitCheckbox is component that permits the user to make a binary choice, a choice between one of two possible mutually exclusive options. For example, the user may have to answer 'yes' or 'no' on a simple yes/no question. Checkboxes are shown as ☐ when unchecked, or ☑ when checked."
+<ComponentDemo ComponentName="Checkbox" ComponentDescription="BitCheckbox is component that permits the user to make a binary choice, a choice between one of two possible mutually exclusive options. For example, the user may have to answer 'yes' or 'no' on a simple yes/no question. Checkboxes are shown as ☐ when unchecked, or ☑ when checked."
                ComponentParameters="componentParameters" EnumParameters="enumParameters">
-    <CodeSample Title="BitCheckbox" Description="To create a checkbox you can use a BitCheckbox component." CodeSampleContentForCopy="@checkboxSampleCode">
-        <SampleContent>
+    <ComponentExampleBox Title="BitCheckbox" ExampleSourceCodeForCopy="@checkboxSampleCode" ExampleId="example1">
+        <ExamplePreview>
+            <div class="example-desc">To create a checkbox you can use a BitCheckbox component.</div>
             <div class="chk-box">
                 <BitCheckbox @bind-IsChecked="IsCheckBoxChecked">Basic Checkbox</BitCheckbox>
                 <BitCheckbox IsChecked="true">Checked Checkbox</BitCheckbox>
@@ -13,63 +12,44 @@
                 <BitCheckbox IsEnabled="false" IsChecked="true">Disable Checked Checkbox</BitCheckbox>
                 <BitCheckbox CheckmarkIconName="BitIcon.Heart">Custom checkmark Checkbox</BitCheckbox>
             </div>
-        </SampleContent>
-        <CodeSampleContent>
+        </ExamplePreview>
+        <ExampleSourceCode>
             <pre>
-                &lt<span class="soco-component-attr">BitCheckbox </span><span class="soco-code">&#64;</span><span class="soco-component-attr">bind-IsChecked=</span>"IsCheckBoxChecked">
-                         Basic Checkbox
-                &lt/<span class="soco-component-attr">BitCheckbox</span>&gt;
-                &lt<span class="soco-component-attr">BitCheckbox IsChecked</span>=<span class="soco-tag-type-def">"true"</span>>
-                         Checked Checkbox
-                &lt/<span class="soco-component-attr">BitCheckbox</span>&gt;
-                &lt<span class="soco-component-attr">BitCheckbox IsEnabled</span>=<span class="soco-tag-type-def">"false"</span>>
-                         Disable Checkbox
-                &lt/<span class="soco-component-attr">BitCheckbox</span>&gt;
-                &lt<span class="soco-component-attr">BitCheckbox IsEnabled</span>=<span class="soco-tag-type-def">"false"</span>
-                                             <span class="soco-component-attr">IsChecked=</span><span class="soco-tag-type-def">"true"</span>>
-                         Disable Checked Checkbox
-                &lt/<span class="soco-component-attr">BitCheckbox</span>&gt;
-                &lt<span class="soco-component-attr">BitCheckbox CheckmarkIconName</span>="BitIcon.Heart" >
-                         Custom checkmark Checkbox
-                &lt/<span class="soco-component-attr">BitCheckbox</span>&gt;
-                <span class="soco-code">&#64;code {</span>
-                      <span class="soco-tag-type-def">private bool</span> IsCheckBoxChecked = <span class="soco-tag-type-def">false</span>;
-                <span class="soco-code">}</span>
+            &ltdiv>To create a checkbox you can use a BitCheckbox component.&lt/div>
+            &ltBitCheckbox &#64;bind-IsChecked="IsCheckBoxChecked">Basic Checkbox&lt/BitCheckbox>
+            &ltBitCheckbox IsChecked="true">Checked Checkbox&lt/BitCheckbox>
+            &ltBitCheckbox IsEnabled="false">Disable Checkbox&lt/BitCheckbox>
+            &ltBitCheckbox IsEnabled="false" IsChecked="true">Disable Checked Checkbox&lt/BitCheckbox>
+            &ltBitCheckbox CheckmarkIconName="BitIcon.Heart">Custom checkmark Checkbox&lt/BitCheckbox>
+
+            &#64;code {
+                    private bool IsCheckBoxChecked = false;
+            }
             </pre>
-        </CodeSampleContent>
-    </CodeSample>
-    <CodeSample Title="Reversed" Description="" CodeSampleContentForCopy="@reversedSampleCode">
-        <SampleContent>
+        </ExampleSourceCode>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Reversed" ExampleSourceCodeForCopy="@reversedSampleCode" ExampleId="example2">
+        <ExamplePreview>
             <div class="chk-box">
                 <BitCheckbox BoxSide="@BitCheckBoxSide.End">Reversed -- Basic Checkbox</BitCheckbox>
                 <BitCheckbox BoxSide="@BitCheckBoxSide.End">IsChecked="true">Reversed -- Checked Checkbox</BitCheckbox>
                 <BitCheckbox BoxSide="@BitCheckBoxSide.End">IsEnabled="false">Reversed -- Disable Checkbox</BitCheckbox>
                 <BitCheckbox BoxSide="@BitCheckBoxSide.End">IsEnabled="false" IsChecked="true">Reversed -- Disable Checked Checkbox</BitCheckbox>
             </div>
-        </SampleContent>
-        <CodeSampleContent>
+        </ExamplePreview>
+        <ExampleSourceCode>
             <pre>
-                &lt<span class="soco-component-attr">BitCheckbox BoxSide</span>="<span class="soco-code">&#64;</span>BitCheckBoxSide.End">
-                         Reversed -- Basic Checkbox
-                &lt/<span class="soco-component-attr">BitCheckbox</span>&gt;
-                &lt<span class="soco-component-attr">BitCheckbox BoxSide</span>="<span class="soco-code">&#64;</span>BitCheckBoxSide.End"
-                                             <span class="soco-component-attr">IsChecked</span>=<span class="soco-tag-type-def">"true"</span>>
-                      Reversed -- Checked Checkbox
-                &lt/<span class="soco-component-attr">BitCheckbox</span>&gt;
-                &lt<span class="soco-component-attr">BitCheckbox BoxSide</span>="<span class="soco-code">&#64;</span>BitCheckBoxSide.End"
-                                             <span class="soco-component-attr">IsEnabled</span>=<span class="soco-tag-type-def">"true"</span>>
-                      Reversed -- Disable Checkbox
-                &lt/<span class="soco-component-attr">BitCheckbox</span>&gt;
-                &lt<span class="soco-component-attr">BitCheckbox BoxSide</span>="<span class="soco-code">&#64;</span>BitCheckBoxSide.End"
-                                             <span class="soco-component-attr">IsEnabled</span>=<span class="soco-tag-type-def">"false"</span>
-                                             <span class="soco-component-attr">IsChecked</span>=<span class="soco-tag-type-def">"true"</span>>
-                      Reversed -- Disable Checked Checkbox
-                &lt/<span class="soco-component-attr">BitCheckbox</span>&gt;
+            &ltBitCheckbox BoxSide="&#64;BitCheckBoxSide.End">Reversed -- Basic Checkbox&lt/BitCheckbox>
+            &ltBitCheckbox BoxSide="&#64;BitCheckBoxSide.End">IsChecked="true">Reversed -- Checked Checkbox&lt/BitCheckbox>
+            &ltBitCheckbox BoxSide="&#64;BitCheckBoxSide.End">IsEnabled="false">Reversed -- Disable Checkbox&lt/BitCheckbox>
+            &ltBitCheckbox BoxSide="&#64;BitCheckBoxSide.End">IsEnabled="false" IsChecked="true">Reversed -- Disable Checked Checkbox&lt/BitCheckbox>
             </pre>
-        </CodeSampleContent>
-    </CodeSample>
-    <CodeSample Title="Indeterminate" Description="" CodeSampleContentForCopy="@indeterminateSampleCode">
-        <SampleContent>
+        </ExampleSourceCode>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Indeterminate" ExampleSourceCodeForCopy="@indeterminateSampleCode" ExampleId="example3">
+        <ExamplePreview>
             <div class="chk-box">
                 <BitCheckbox @bind-IsIndeterminate="IsCheckBoxIndeterminate" @bind-IsChecked="IsCheckBoxChecked">Indeterminated checkbox</BitCheckbox>
                 <BitCheckbox IsIndeterminate="true">Indeterminate checkbox</BitCheckbox>
@@ -77,55 +57,43 @@
                 <BitCheckbox @bind-IsIndeterminate="IsCheckBoxIndeterminateInCode" @bind-IsChecked="IsCheckBoxChecked">Controlled indeterminated checkbox</BitCheckbox>
                 <BitButton OnClick="() => IsCheckBoxIndeterminateInCode = true">Make Checkbox Indeterminate</BitButton>
             </div>
-        </SampleContent>
-        <CodeSampleContent>
+        </ExamplePreview>
+        <ExampleSourceCode>
             <pre>
-                &lt<span class="soco-component-attr">BitCheckbox </span><span class="soco-code">&#64;</span><span class="soco-component-attr">bind-IsChecked</span><span>="IsCheckBoxIndeterminate"</span>
-                                             <span class="soco-code">&#64;</span><span class="soco-component-attr">bind-IsIndeterminate</span><span>="IsCheckBoxChecked"</span>>
-                         Basic Checkbox
-                &lt/<span class="soco-component-attr">BitCheckbox</span>&gt;
-                &lt<span class="soco-component-attr">BitCheckbox IsIndeterminate</span>=<span class="soco-tag-type-def">"true"</span>>
-                         Indeterminate checkbox
-                &lt/<span class="soco-component-attr">BitCheckbox</span><span>&gt;</span>
-                &lt<span class="soco-component-attr">BitCheckbox IsIndeterminate</span>=<span class="soco-tag-type-def">"true"</span>
-                                             <span class="soco-component-attr">IsEnabled</span>=<span class="soco-tag-type-def">"false"</span>>
-                         Disabled indeterminated checkbox
-                &lt/<span class="soco-component-attr">BitCheckbox</span>&gt;
-                &lt<span class="soco-component-attr">BitCheckbox </span><span class="soco-code">&#64;</span><span class="soco-component-attr">bind-IsIndeterminate</span>="IsCheckBoxIndeterminateInCode"
-                                             <span class="soco-code">&#64;</span><span class="soco-component-attr">bind-IsChecked</span>="IsCheckBoxChecked"
-                                             <span class="soco-component-attr">IsChecked=</span><span class="soco-tag-type-def">"true"</span>>
-                         Controlled indeterminated checkbox
-                &lt/<span class="soco-component-attr">BitCheckbox</span>&gt;
-                &lt<span class="soco-component-attr">BitCheckbox OnClick</span>="<span>() => IsCheckBoxIndeterminateInCode = <span class="soco-tag-type-def">true</span>"></span>
-                         Make Checkbox Indeterminate
-                &lt/<span class="soco-component-attr">BitCheckbox</span><span>&gt;</span>
-                <span class="soco-code">&#64;code {</span>
-                      <span class="soco-tag-type-def">private bool </span>IsCheckBoxIndeterminate = <span class="soco-tag-type-def">true</span>;
-                      <span class="soco-tag-type-def">private bool </span>IsCheckBoxIndeterminateInCode = <span class="soco-tag-type-def">true</span>;
-                <span class="soco-code">}</span>
+            &ltBitCheckbox &#64;bind-IsIndeterminate="IsCheckBoxIndeterminate" &#64;bind-IsChecked="IsCheckBoxChecked">Indeterminated checkbox&lt/BitCheckbox>
+            &ltBitCheckbox IsIndeterminate="true">Indeterminate checkbox&lt/BitCheckbox>
+            &ltBitCheckbox IsIndeterminate="true" IsEnabled="false">Disabled indeterminated checkbox&lt/BitCheckbox>
+            &ltBitCheckbox &#64;bind-IsIndeterminate="IsCheckBoxIndeterminateInCode" &#64;bind-IsChecked="IsCheckBoxChecked">Controlled indeterminated checkbox&lt/BitCheckbox>
+            &ltBitButton OnClick="() => IsCheckBoxIndeterminateInCode = true">Make Checkbox Indeterminate&lt/BitButton>
+
+            &#64;code {
+                    private bool IsCheckBoxIndeterminate = true;
+                    private bool IsCheckBoxIndeterminateInCode = true;
+            }
             </pre>
-        </CodeSampleContent>
-    </CodeSample>
-    <CodeSample Title="Custom Label" Description="" CodeSampleContentForCopy="@customLabelSampleCode">
-        <SampleContent>
+        </ExampleSourceCode>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Custom Label" ExampleSourceCodeForCopy="@customLabelSampleCode" ExampleId="example4">
+        <ExamplePreview>
             <div>
                 <BitCheckbox>
                     Custom-rendered label with a link go to
-                    <a href='https://github.com/bitfoundation/bitframework'>
+                    <a href="https://github.com/bitfoundation/bitframework">
                         Bit Foundation repository page
                     </a>
                 </BitCheckbox>
             </div>
-        </SampleContent>
-        <CodeSampleContent>
+        </ExamplePreview>
+        <ExampleSourceCode>
             <pre>
-                &lt<span class="soco-component-attr">BitCheckbox></span>
-                         Custom-rendered label with a link go to 
-                         &lt<span class="soco-tag-type-def">a</span><span class="soco-var-attr"> href</span>="<span class="soco-tag-type-def">https://github.com/bitfoundation/bitframework</span>">
-                                  Bit Foundation repository page
-                         <span class="soco-tag-type-def">&lt/a></span>
-                &lt/<span class="soco-component-attr">BitCheckbox</span>&gt;
+            &ltBitCheckbox>
+                    Custom-rendered label with a link go to
+                    &lta href="https://github.com/bitfoundation/bitframework">
+                            Bit Foundation repository page
+                    &lt/a>
+            &lt/BitCheckbox>
             </pre>
-        </CodeSampleContent>
-    </CodeSample>
-</ComponentPage>
+        </ExampleSourceCode>
+    </ComponentExampleBox>
+</ComponentDemo>

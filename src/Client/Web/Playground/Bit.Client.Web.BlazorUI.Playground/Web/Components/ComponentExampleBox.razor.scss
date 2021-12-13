@@ -66,6 +66,7 @@
     position: relative;
     width: 100%;
     max-height: rem(464px);
+    min-height: rem(70px);
     border: rem(1px) solid $Gray3;
     border-top: none;
     border-radius: 0 0 rem(10px) rem(10px);
