@@ -305,7 +305,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Pivot
              $"public BitPivotItem SelectedPivotItem {{ get; set; }}{Environment.NewLine}" +
              $"public void TogglePivotItemVisobility(){Environment.NewLine}" +
              $"{{{Environment.NewLine}" +
-             $"PivotItemVisibility = PivotItemVisibility == ComponentVisibility.Visible ? ComponentVisibility.Collapsed : ComponentVisibility.Visible;{Environment.NewLine}" +
+             $"PivotItemVisibility = PivotItemVisibility == BitComponentVisibility.Visible ? BitComponentVisibility.Collapsed : BitComponentVisibility.Visible;{Environment.NewLine}" +
              $"}}{Environment.NewLine}" +
              $"}}";
 
