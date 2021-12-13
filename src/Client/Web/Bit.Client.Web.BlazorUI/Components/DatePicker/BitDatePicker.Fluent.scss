@@ -57,6 +57,14 @@
     outline: none;
     background-color: $White;
     overflow: hidden auto;
+
+    &.bit-rtl {
+        direction: rtl;
+
+        .day-picker-wrapper, .month-picker-wrapper {
+            direction: ltr;
+        }
+    }
 }
 
 .bit-dtp-group {

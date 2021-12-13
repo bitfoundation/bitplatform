@@ -10,7 +10,7 @@
          id="@WrapperId"
          aria-owns="@(IsOpen ? CalloutId : null)"
          @onclick="HandleClick">
-        <BitTextField Class="@(AllowTextInput ? "editable-input" : "")"
+        <BitTextField Class="@(AllowTextInput ? "editable-input" : null)"
                       IsEnabled="IsEnabled"
                       role="combobox"
                       Label="@Label"
@@ -27,7 +27,8 @@
                       IsMultiline="false"
                       OnFocusIn="HandleFocusIn"
                       OnFocusOut="HandleFocusOut"
-                      @bind-Value="@selectedDate">
+                      Value="@GetSelectedDateString()"
+                      ValueChanged="HandleTextInputChanged">
         </BitTextField>
     </div>
 
@@ -36,7 +37,7 @@
          @onclick="CloseCallout"></div>
 
     <div class="bit-dtp-callout" id="@CalloutId">
-        <div class="bit-dtp-callout-main" role="dialog">
+        <div class="bit-dtp-callout-main@(Culture.TextInfo.IsRightToLeft ? " bit-rtl" : null)" role="dialog">
             <div aria-hidden="true" tabindex="0" data-is-visible="true" style="pointer-events: none; position: fixed;"></div>
             <div class="bit-dtp-group"
                  role="group"
@@ -89,8 +90,8 @@
 
                                     @for (var index = 0; index < 7; index++)
                                     {
-                                        <th class="week-day-label" scope="col" title="@calendar?.GetDayOfWeekName(GetDayOfWeek(index))">
-                                            @calendar?.GetDayOfWeekName(GetDayOfWeek(index))[0]
+                                        <th class="week-day-label" scope="col" title="@Culture?.DateTimeFormat.GetShortestDayName(GetDayOfWeek(index))">
+                                            @Culture?.DateTimeFormat.GetShortestDayName(GetDayOfWeek(index))[0]
                                         </th>
                                     }
                                 </tr>
@@ -117,8 +118,7 @@
                                         {
                                             var localWeek = week;
                                             var localDay = day;
-                                            <td class="date-cell @GetDateElClass(localDay, localWeek)" role="presentation"
-                                    @onclick="() => SelectDate(localDay, localWeek)">
+                                            <td class="date-cell @GetDateElClass(localDay, localWeek)" role="presentation" @onclick="() => SelectDate(localDay, localWeek)">
                                                 <button class="day-btn"
                                             role="gridcell"
                                             type="button"
@@ -199,9 +199,9 @@
                                     aria-readonly="true"
                                     tabindex="@(IsMonthSelected(monthIndex) ? 0 : -1)"
                                     type="button"
-                                    aria-label="@calendar?.GetMonthName(monthIndex)"
+                                    aria-label="@Culture?.DateTimeFormat.GetMonthName(monthIndex)"
                                     @onclick="() => SelectMonth(monthIndex)">
-                                                <span aria-hidden="true">@calendar?.GetMonthShortName(monthIndex)</span>
+                                                <span aria-hidden="true">@Culture?.DateTimeFormat.GetAbbreviatedMonthName(monthIndex)</span>
                                             </button>
                                         }
                                     </div>
