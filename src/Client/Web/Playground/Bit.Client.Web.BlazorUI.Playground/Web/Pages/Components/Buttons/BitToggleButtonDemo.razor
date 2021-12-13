@@ -29,7 +29,6 @@
         </ExamplePreview>
         <ExampleSourceCode>
             <pre>
-            &ltdiv>BitToggleButton component represents a button as a checkbox and can use in form pages.&lt/div>
             &ltBitToggleButton &#64;bind-IsChecked="TogglePrimaryButtonChecked"
                              Class="tgl-btn"
                              Label="&#64;(TogglePrimaryButtonChecked ? "Primary Mute":"Primary Unmute")"
@@ -71,7 +70,6 @@
         </ExamplePreview>
         <ExampleSourceCode>
             <pre>
-            &ltdiv>Check status is: &#64;OnToggleButtonChanged&lt/div>
             &ltBitToggleButton &#64;bind-IsChecked="ToggleButtonForOnChange"
                              Label="&#64;(ToggleButtonForOnChange ? "Mute" : "Unmute")"
                              IconName=&#64;(ToggleButtonForOnChange ? BitIcon.MicOff : BitIcon.Microphone)
@@ -101,7 +99,6 @@
         </ExamplePreview>
         <ExampleSourceCode>
             <pre>
-            &ltinput type=checkbox id="BitToggleButtonTwoWayValue" &#64;bind="ToggleButtonTwoWayValue">
             &ltlabel class="checkbox-status" for="BitToggleButtonTwoWayValue">Checked Toggle Button&lt/label>
             &ltBitToggleButton &#64;bind-IsChecked="ToggleButtonTwoWayValue"
                              Label="&#64;(ToggleButtonTwoWayValue ? "Mute" : "Unmute")"
@@ -134,7 +131,6 @@
         </ExamplePreview>
         <ExampleSourceCode>
             <pre>
-            <div>Aria attribues can also set for a BitToggleButton.</div>
             &lt/BitToggleButton &#64;bind-IsChecked="ToggleButtonChecked"
                              Label="&#64;(ToggleButtonChecked ? "Aria Description Mute" : "Aria Description Unmute")"
                              IconName="&#64;(ToggleButtonChecked ? BitIcon.MicOff : BitIcon.Microphone)"
