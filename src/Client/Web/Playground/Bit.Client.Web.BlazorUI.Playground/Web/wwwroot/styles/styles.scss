@@ -419,12 +419,6 @@ input::-webkit-input-placeholder {
     margin-top: rem(10px);
 }
 
-.act-btn-content {
-    .bit-act-btn-fluent > span:first-child i {
-        font-size: rem(25px);
-    }
-}
-
 .disable-cmp-btn {
     @include lg {
         margin-top: rem(10px);
