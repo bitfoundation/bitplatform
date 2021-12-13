@@ -5,7 +5,7 @@
 <ComponentDemo ComponentName="Toggle" ComponentDescription="A toggle represents a physical switch that allows someone to choose between two mutually exclusive options.  For example, “On/Off”, “Show/Hide”. Choosing an option should produce an immediate result."
                ComponentParameters="componentParameters">
     <ComponentExampleBox Title="BitToggle" ExampleSourceCodeForCopy="@toggleSampleCode" ExampleId="example1">
-        <ExampleContent>
+        <ExamplePreview>
             <div>
                 <BitToggle Label="Enabled And Checked" @bind-IsChecked="IsToggleChecked" IsEnabled="true" OnText="On" OffText="Off" />
             </div>
@@ -33,8 +33,8 @@
             <div>
                 <BitToggle Label="Enabled And Checked (ARIA 1.0 compatible)" @bind-IsChecked="IsToggleChecked" IsEnabled="true" OnText="On" OffText="Off" Role="Checkbox" />
             </div>
-        </ExampleContent>
-        <ExampleSurceCode>
+        </ExamplePreview>
+        <ExampleSourceCode>
             <pre>
             &ltBitToggle Label="Enabled And Checked" &#64;bind-IsChecked="IsToggleChecked" IsEnabled="true" OnText="On" OffText="Off" />
             &ltBitToggle Label="Enabled And Unchecked" &#64;bind-IsChecked="IsToggleUnChecked" IsEnabled="true" OnText="On" OffText="Off" />
@@ -51,11 +51,11 @@
                     private bool IsToggleUnChecked = false;
             }
             </pre>
-        </ExampleSurceCode>
+        </ExampleSourceCode>
     </ComponentExampleBox>
 
     <ComponentExampleBox Title="Toggles With Custom Labels" ExampleSourceCodeForCopy="@customLabelSampleCode" ExampleId="example2">
-        <ExampleContent>
+        <ExamplePreview>
             <div class="m-t-15">
                 <BitToggle @bind-IsChecked="IsToggleUnChecked" IsEnabled="true" OnText="On" OffText="Off">
                     <LabelFragment>
@@ -73,8 +73,8 @@
                     <BitButton Class="m-t-15" OnClick="() => BindedIsToggleUnChecked = true">Make Toggle Check</BitButton>
                 </div>
             </div>
-        </ExampleContent>
-        <ExampleSurceCode>
+        </ExamplePreview>
+        <ExampleSourceCode>
             <pre>
             &ltBitToggle &#64;bind-IsChecked="IsToggleUnChecked" IsEnabled="true" OnText="On" OffText="Off">
                     &ltLabelFragment>
@@ -93,6 +93,6 @@
                     private bool IsToggleUnChecked = false;
             }
             </pre>
-        </ExampleSurceCode>
+        </ExampleSourceCode>
     </ComponentExampleBox>
 </ComponentDemo>

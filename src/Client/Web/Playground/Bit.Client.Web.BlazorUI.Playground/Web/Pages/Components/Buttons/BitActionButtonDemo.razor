@@ -1,29 +1,27 @@
 ﻿@page "/components/action-button"
 
-@using Bit.Client.Web.BlazorUI.Playground.Web.Components
-
 <ComponentDemo ComponentName="Action Button" ComponentDescription="Buttons give people a way to trigger an action. They’re typically found in forms, dialog panels, and dialogs.
     Some buttons are specialized for particular tasks, such as navigation, repeated actions, or presenting menus."
                ComponentParameters="componentParameters">
     <ComponentExampleBox Title="BitActionButton" ExampleSourceCodeForCopy="@actionButtonSampleCode" ExampleId="example1">
-        <ExampleContent>
+        <ExamplePreview>
             <div class="example-desc">BitActionButton component is a button that acts as a link.</div>
             <div>
                 <BitActionButton IconName="BitIcon.AddFriend">Create account</BitActionButton>
                 <BitActionButton AllowDisabledFocus="false" IsEnabled="false" IconName="BitIcon.UserRemove">Remove user</BitActionButton>
             </div>
-        </ExampleContent>
-        <ExampleSurceCode>
+        </ExamplePreview>
+        <ExampleSourceCode>
             <pre>
             &ltdiv>BitActionButton component is a button that acts as a link.&lt/div>
             &ltBitActionButton IconName="BitIcon.AddFriend">Create account&lt/BitActionButton>
             &ltBitActionButton AllowDisabledFocus="false" IsEnabled="false" IconName="BitIcon.UserRemove">Remove user&lt/BitActionButton>
             </pre>
-        </ExampleSurceCode>
+        </ExampleSourceCode>
     </ComponentExampleBox>
 
     <ComponentExampleBox Title="Style & Class" ExampleSourceCodeForCopy="@styleAndClassSampleCode" ExampleId="example2">
-        <ExampleContent>
+        <ExamplePreview>
             <div class="example-desc">BitActionButton can directly get css class or inline style.</div>
             <div>
                 <BitActionButton IconName="BitIcon.ThisPC" Style="font-family:'Axiforma';font-size:16px;border:2px solid #32385B;justify-content: center;width: 232px;">
@@ -33,8 +31,8 @@
                     Classed Action Button
                 </BitActionButton>
             </div>
-        </ExampleContent>
-        <ExampleSurceCode>
+        </ExamplePreview>
+        <ExampleSourceCode>
             <pre>
             &ltdiv>BitActionButton can directly get css class or inline style.&lt/div>
             &ltBitActionButton IconName="BitIcon.ThisPC" Style="font-family:'Axiforma';font-size:16px;border:2px solid #32385B;justify-content: center;width: 232px;">
@@ -44,30 +42,30 @@
                     Classed Action Button
             &lt/BitActionButton>
             </pre>
-        </ExampleSurceCode>
+        </ExampleSourceCode>
     </ComponentExampleBox>
 
     <ComponentExampleBox Title="Visibility" ExampleSourceCodeForCopy="@visibilitySampleCode" ExampleId="example3">
-        <ExampleContent>
+        <ExamplePreview>
             <div class="example-desc">By setting Visibility attribute, BitActionButton can be Visible, Hidden or Collapsed.</div>
             <div class="sample-btn">
                 <BitActionButton IconName="BitIcon.AddEvent" Visibility="BitComponentVisibility.Visible">Add Event</BitActionButton>
                 <div><span>Hidden Button: </span>[<BitActionButton Visibility="BitComponentVisibility.Hidden">Hidden Action Button</BitActionButton>]</div>
                 <div><span>Collapsed Button: </span>[<BitActionButton Visibility="BitComponentVisibility.Collapsed">Collapsed Action Button</BitActionButton>]</div>
             </div>
-        </ExampleContent>
-        <ExampleSurceCode>
+        </ExamplePreview>
+        <ExampleSourceCode>
             <pre>
             &ltdiv>By setting Visibility attribute, BitActionButton can be Visible, Hidden or Collapsed.&lt/div>
             &ltBitActionButton IconName="BitIcon.AddEvent" Visibility="BitComponentVisibility.Visible">Add Event&lt/BitActionButton>
             &ltdiv>Hidden Button: [&ltBitActionButton Visibility="BitComponentVisibility.Hidden">Hidden Action Button&lt/BitActionButton>]&lt/div>
             &ltdiv>Collapsed Button: [&ltBitActionButton Visibility="BitComponentVisibility.Collapsed">Collapsed Action Button&lt/BitActionButton>]&lt/div>
             </pre>
-        </ExampleSurceCode>
+        </ExampleSourceCode>
     </ComponentExampleBox>
 
     <ComponentExampleBox Title="Arias for Screen Reader" ExampleSourceCodeForCopy="@ariasSampleCode" ExampleId="example4">
-        <ExampleContent>
+        <ExamplePreview>
             <div class="example-desc">Aria attribues can also set for a BitActionButton.</div>
             <div>
                 <BitActionButton IconName="BitIcon.Library" AriaDescription="Detailed description used for screen reader.">
@@ -77,8 +75,8 @@
                     Action Button with Aria Hidden
                 </BitActionButton>
             </div>
-        </ExampleContent>
-        <ExampleSurceCode>
+        </ExamplePreview>
+        <ExampleSourceCode>
             <pre>
             &ltdiv>Aria attribues can also set for a BitActionButton.&lt/div>
             &ltBitActionButton IconName="BitIcon.Library" AriaDescription="Detailed description used for screen reader.">
@@ -88,11 +86,11 @@
                     Action Button with Aria Hidden
             &lt/BitActionButton>
             </pre>
-        </ExampleSurceCode>
+        </ExampleSourceCode>
     </ComponentExampleBox>
 
     <ComponentExampleBox Title="ActionButton-like Anchor" ExampleSourceCodeForCopy="@actionButtonLikeAnchorSampleCode" ExampleId="example5">
-        <ExampleContent>
+        <ExamplePreview>
             <div class="example-desc">BitActionButton can act as a link by setting Href and Target attribute, you define how to open your link.</div>
             <div>
                 <BitActionButton IconName="BitIcon.Website" Target="_blank" Href="https://github.com/bitfoundation/bitframework">
@@ -105,8 +103,8 @@
                     <span>Bit Foundation From Span</span>
                 </BitActionButton>
             </div>
-        </ExampleContent>
-        <ExampleSurceCode>
+        </ExamplePreview>
+        <ExampleSourceCode>
             <pre>
             &ltdiv>BitActionButton can act as a link by setting Href and Target attribute, you define how to open your link.&lt/div>
             &ltBitActionButton IconName="BitIcon.Website" Target="_blank" Href="https://github.com/bitfoundation/bitframework">
@@ -119,6 +117,6 @@
                     &ltspan>Bit Foundation From Span&lt/span>
             &lt/BitActionButton>
             </pre>
-        </ExampleSurceCode>
+        </ExampleSourceCode>
     </ComponentExampleBox>
 </ComponentDemo>

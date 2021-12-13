@@ -1,67 +1,65 @@
 ﻿@page "/components/icon-button"
 
-@using Bit.Client.Web.BlazorUI.Playground.Web.Components
-
 <ComponentDemo ComponentName="Icon Button" ComponentDescription="Buttons give people a way to trigger an action. They’re typically found in forms, dialog panels, and dialogs.
     Some buttons are specialized for particular tasks, such as navigation, repeated actions, or presenting menus."
                ComponentParameters="componentParameters">
     <ComponentExampleBox Title="BitIconButton" ExampleSourceCodeForCopy="@iconButtonSampleCode" ExampleId="example1">
-        <ExampleContent>
+        <ExamplePreview>
             <div class="example-desc">To create a icon button you can use a BitIconButton component.</div>
             <div>
                 <BitIconButton IconName="BitIcon.Emoji" />
                 <BitIconButton IconName="BitIcon.Emoji2" Title="I'm Happy" />
                 <BitIconButton IconName="BitIcon.EmojiDisappointed" AllowDisabledFocus="false" IsEnabled="false" />
             </div>
-        </ExampleContent>
-        <ExampleSurceCode>
+        </ExamplePreview>
+        <ExampleSourceCode>
             <pre>
             &ltdiv>To create a icon button you can use a BitIconButton component.&lt/div>
             &ltBitIconButton IconName="BitIcon.Emoji" />
             &ltBitIconButton IconName="BitIcon.Emoji2" Title="I'm Happy" />
             &ltBitIconButton IconName="BitIcon.EmojiDisappointed" AllowDisabledFocus="false" IsEnabled="false" />
              </pre>
-        </ExampleSurceCode>
+        </ExampleSourceCode>
     </ComponentExampleBox>
 
     <ComponentExampleBox Title="Style & Class" ExampleSourceCodeForCopy="@styleAndClassSampleCode" ExampleId="example2">
-        <ExampleContent>
+        <ExamplePreview>
             <div class="example-desc">BitIconButton can directly get css class or inline style.</div>
             <div>
                 <BitIconButton IconName="BitIcon.Home" Style="border-radius: 5px;padding: 23px;border: #D7D7D7 solid 2px;" />
                 <BitIconButton IconName="BitIcon.FileImage" Class="custom-icon-button" />
             </div>
-        </ExampleContent>
-        <ExampleSurceCode>
+        </ExamplePreview>
+        <ExampleSourceCode>
             <pre>
             &ltdiv>BitIconButton can directly get css class or inline style.&lt/div>
             &ltBitIconButton IconName="BitIcon.Home" Style="border-radius: 5px;padding: 23px;border: #D7D7D7 solid 2px;" />
             &ltBitIconButton IconName="BitIcon.FileImage" Class="custom-icon-button" />
             </pre>
-        </ExampleSurceCode>
+        </ExampleSourceCode>
     </ComponentExampleBox>
 
     <ComponentExampleBox Title="Visibility" ExampleSourceCodeForCopy="@visibilitySampleCode" ExampleId="example3">
-        <ExampleContent>
+        <ExamplePreview>
             <div class="example-desc">By setting Visibility attribute, BitIconButton can be Visible, Hidden or Collapsed.</div>
             <div class="sample-btn">
                 <BitIconButton IconName="BitIcon.List" Visibility="BitComponentVisibility.Visible">Visible Button</BitIconButton>
                 <div><span>Hidden Button: </span>[<BitIconButton Visibility="BitComponentVisibility.Hidden">Hidden Button</BitIconButton>]</div>
                 <div><span>Collapsed Button: </span>[<BitIconButton Visibility="BitComponentVisibility.Collapsed">Collapsed Button</BitIconButton>]</div>
             </div>
-        </ExampleContent>
-        <ExampleSurceCode>
+        </ExamplePreview>
+        <ExampleSourceCode>
             <pre>
             &ltdiv>By setting Visibility attribute, BitIconButton can be Visible, Hidden or Collapsed.&lt/div>
             &ltBitIconButton IconName="BitIcon.List" Visibility="BitComponentVisibility.Visible">Visible Button&lt/BitIconButton>
             &ltdiv>Hidden Button: [&ltBitIconButton Visibility="BitComponentVisibility.Hidden">Hidden Button&lt/BitIconButton>]&lt/div>
             &ltdiv>Collapsed Button: [&ltBitIconButton Visibility="BitComponentVisibility.Collapsed">Collapsed Button&lt/BitIconButton>]&lt/div>
             </pre>
-        </ExampleSurceCode>
+        </ExampleSourceCode>
     </ComponentExampleBox>
 
     <ComponentExampleBox Title="Arias for Screen Reader" ExampleSourceCodeForCopy="@areasSampleCode" ExampleId="example4">
-        <ExampleContent>
+        <ExamplePreview>
             <div class="example-desc">Aria attribues can also set for a BitIconButton.</div>
             <div>
                 <BitIconButton IconName="BitIcon.Library" AriaDescription="Detailed description used for screen reader.">
@@ -71,8 +69,8 @@
                     Button with Aria Hidden
                 </BitIconButton>
             </div>
-        </ExampleContent>
-        <ExampleSurceCode>
+        </ExamplePreview>
+        <ExampleSourceCode>
             <pre>
             &ltdiv>Aria attribues can also set for a BitIconButton.&lt/div>
             &ltBitIconButton IconName="BitIcon.Library" AriaDescription="Detailed description used for screen reader.">
@@ -82,11 +80,11 @@
                     Button with Aria Hidden
             &lt/BitIconButton>
             </pre>
-        </ExampleSurceCode>
+        </ExampleSourceCode>
     </ComponentExampleBox>
 
     <ComponentExampleBox Title="Button-like Anchor" ExampleSourceCodeForCopy="@iconButtonLikeAnchorSampleCode" ExampleId="example5">
-        <ExampleContent>
+        <ExamplePreview>
             <div class="example-desc">BitButton can act as a link by setting Href and Target attributes.</div>
             <div>
                 <BitIconButton IconName="BitIcon.Website" Target="_blank" Href="https://github.com/bitfoundation/bitframework">
@@ -99,8 +97,8 @@
                     <span>Bit Foundation From Span</span>
                 </BitIconButton>
             </div>
-        </ExampleContent>
-        <ExampleSurceCode>
+        </ExamplePreview>
+        <ExampleSourceCode>
             <pre>
             &lt/div>BitButton can act as a link by setting Href and Target attributes.&lt//div>
             &lt/BitIconButton IconName="BitIcon.Website" Target="_blank" Href="https://github.com/bitfoundation/bitframework">
@@ -113,6 +111,6 @@
                     &lt/span>Bit Foundation From Span&lt//span>
             &lt//BitIconButton>
             </pre>
-        </ExampleSurceCode>
+        </ExampleSourceCode>
     </ComponentExampleBox>
 </ComponentDemo>
