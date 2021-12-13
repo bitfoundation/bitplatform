@@ -36,7 +36,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Buttons
                 Type = "BitButtonStyle",
                 LinkType = LinkType.Link,
                 Href = "#button-style-enum",
-                DefaultValue = "ButtonStyle.Primary",
+                DefaultValue = "BitButtonStyle.Primary",
                 Description = "The style of button, Possible values: Primary | Standard.",
             },
             new ComponentParameter()
