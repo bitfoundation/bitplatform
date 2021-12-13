@@ -519,8 +519,10 @@ input::-webkit-input-placeholder {
         margin-top: rem(10px);
     }
 
-    .ch-group .bit-txt {
-        margin-bottom: rem(25px);
+    .ch-group {
+        .bit-txt {
+            margin-bottom: rem(25px);
+        }
     }
 
     .bit-sch-box {
