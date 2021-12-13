@@ -90,7 +90,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Buttons
                 $"<BitIconButton AriaHidden='true' IconName='BitIcon.Library'>Icon Button with Aria Hidden</BitIconButton>";
 
         private readonly string iconButtonLikeAnchorSampleCode = $"<BitIconButton IconName='BitIcon.Website' Target='_blank' Href='https://github.com/bitfoundation/bitframework'>Open Bit Foundation In New Tab</BitIconButton>{Environment.NewLine}" +
-                 $"<BitIconButton IconName='BitIcon.Website' ButtonStyle='ButtonStyle.Standard' Href='https://github.com/bitfoundation/bitframework'>Go To Bit Foundation</BitIconButton>{Environment.NewLine}" +
+                 $"<BitIconButton IconName='BitIcon.Website' ButtonStyle='BitButtonStyle.Standard' Href='https://github.com/bitfoundation/bitframework'>Go To Bit Foundation</BitIconButton>{Environment.NewLine}" +
                  $"<BitIconButton Target='_self' IconName='BitIcon.Website' Href='https://github.com/bitfoundation/bitframework' IsEnabled='false'<span>Bit Foundation From Span</span></BitIconButton>";
     }
 }
