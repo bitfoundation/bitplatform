@@ -46,7 +46,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Buttons
                 Type = "BitButtonStyle",
                 LinkType = LinkType.Link,
                 Href = "#button-style-enum",
-                DefaultValue = "ButtonStyle.Primary",
+                DefaultValue = "BitButtonStyle.Primary",
                 Description = "The style of toggle button, Possible values: Primary | Standard",
             },
             new ComponentParameter()
@@ -132,8 +132,8 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Buttons
             }
         };
 
-        private readonly string toggleButtonSampleCode = $"<BitToggleButton @bind-IsChecked='TogglePrimaryButtonChecked' Label='@(TogglePrimaryButtonChecked ? 'Primary Mute' : 'Primary Unmute')' IconName='@(TogglePrimaryButtonChecked ? BitIcon.MicOff : BitIcon.Microphone) ButtonStyle='ButtonStyle.Primary'></BitToggleButton>{Environment.NewLine}" +
-             $"<BitToggleButton @bind-IsChecked='ToggleStandardButtonChecked' Label='@(ToggleStandardButtonChecked ? 'Standard Mute' : 'Standard Unmute')' IconName='@(ToggleStandardButtonChecked ? BitIcon.MicOff : BitIcon.Microphone)' ButtonStyle='ButtonStyle.Standard'></BitToggleButton>{Environment.NewLine}" +
+        private readonly string toggleButtonSampleCode = $"<BitToggleButton @bind-IsChecked='TogglePrimaryButtonChecked' Label='@(TogglePrimaryButtonChecked ? 'Primary Mute' : 'Primary Unmute')' IconName='@(TogglePrimaryButtonChecked ? BitIcon.MicOff : BitIcon.Microphone) ButtonStyle='BitButtonStyle.Primary'></BitToggleButton>{Environment.NewLine}" +
+             $"<BitToggleButton @bind-IsChecked='ToggleStandardButtonChecked' Label='@(ToggleStandardButtonChecked ? 'Standard Mute' : 'Standard Unmute')' IconName='@(ToggleStandardButtonChecked ? BitIcon.MicOff : BitIcon.Microphone)' ButtonStyle='BitButtonStyle.Standard'></BitToggleButton>{Environment.NewLine}" +
              $"<BitToggleButton @bind-IsChecked='ToggleDisabledButtonChecked' Label='@(ToggleDisabledButtonChecked ? 'Disabled Mute' : 'Disabled Unmute')' IconName='@(ToggleDisabledButtonChecked ? BitIcon.MicOff : BitIcon.Microphone)' IsEnabled='false'></BitToggleButton>{Environment.NewLine}" +
              $"@code {{ {Environment.NewLine}" +
              $"private bool TogglePrimaryButtonChecked = false; {Environment.NewLine}" +

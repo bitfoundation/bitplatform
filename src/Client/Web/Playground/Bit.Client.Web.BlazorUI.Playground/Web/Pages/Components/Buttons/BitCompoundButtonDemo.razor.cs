@@ -36,7 +36,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Buttons
                 Type = "ButtonStyle",
                 LinkType = LinkType.Link,
                 Href = "#button-style-enum",
-                DefaultValue = "ButtonStyle.Primary",
+                DefaultValue = "BitButtonStyle.Primary",
                 Description = "The style of compound button, Possible values: Primary | Standard",
             },
             new ComponentParameter()
@@ -109,11 +109,11 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Buttons
         };
 
         private readonly string compoundButtonSampleCode = $"<BitCompoundButton IsEnabled='true' Text='Primary' AriaLabel='Detailed label used for screen reader.' SecondaryText='This Button is compound button'></BitCompoundButton>{Environment.NewLine}" +
-             $"<BitCompoundButton IsEnabled='true' Text='Primary' AriaHidden='true' SecondaryText='This Button is compound button' ButtonStyle='ButtonStyle.Standard'></BitCompoundButton>{Environment.NewLine}" +
-             $"<BitCompoundButton IsEnabled='false' Text='Disabled' AriaDescription='Detailed description used for screen reader.' SecondaryText='This Button is a disabled compound button' ButtonStyle='ButtonStyle.Standard'></BitCompoundButton>";
+             $"<BitCompoundButton IsEnabled='true' Text='Primary' AriaHidden='true' SecondaryText='This Button is compound button' ButtonStyle='BitButtonStyle.Standard'></BitCompoundButton>{Environment.NewLine}" +
+             $"<BitCompoundButton IsEnabled='false' Text='Disabled' AriaDescription='Detailed description used for screen reader.' SecondaryText='This Button is a disabled compound button' ButtonStyle='BitButtonStyle.Standard'></BitCompoundButton>";
 
         private readonly string styleAndClassSampleCode = $"<BitCompoundButton Style='background-color:#32385b;border-color:#32385b' Text='Styled' SecondaryText='This is styled compound button'></BitCompoundButton>{Environment.NewLine}" +
-                 $"<BitCompoundButton Class='custom-compound-button' Text='Classed' SecondaryText='This is classed compound button' ButtonStyle='ButtonStyle.Standard'></BitCompoundButton>{Environment.NewLine}" +
+                 $"<BitCompoundButton Class='custom-compound-button' Text='Classed' SecondaryText='This is classed compound button' ButtonStyle='BitButtonStyle.Standard'></BitCompoundButton>{Environment.NewLine}" +
                  $"<style>{Environment.NewLine}" +
                  $".custom-compound-button {{ {Environment.NewLine}" +
                  $"width:230px;{Environment.NewLine}" +
@@ -129,11 +129,11 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Buttons
                  $"<BitCompoundButton Hidden='ComponentHidden.Hidden' Text='Hidden' SecondaryText='This Button is a hidden compound button'></BitCompoundButton>{Environment.NewLine}" +
                  $"<BitCompoundButton Visibility='ComponentVisibility.Collapsed' Text='Collapsed' SecondaryText='This Button is a collapsed compound button'></BitCompoundButton>";
 
-        private readonly string ariasSampleCode = $"<BitCompoundButton AriaDescription='Detailed description used for screen reader' Text='AriaDescription' SecondaryText='This is a compound button with aria description' ButtonStyle='ButtonStyle.Standard'></BitCompoundButton>{Environment.NewLine}" +
+        private readonly string ariasSampleCode = $"<BitCompoundButton AriaDescription='Detailed description used for screen reader' Text='AriaDescription' SecondaryText='This is a compound button with aria description' ButtonStyle='BitButtonStyle.Standard'></BitCompoundButton>{Environment.NewLine}" +
                 $"<BitCompoundButton AriaHidden='true' Style='height: 85px;' Text='AriaDescription' SecondaryText='This is a compound button with aria description'></BitCompoundButton>";
 
         private readonly string compoundButtonLikeAnchorSampleCode = $"<BitCompoundButton Target='_blank' Href='https://github.com/bitfoundation/bitframework' Text='Open the site' SecondaryText='Open Bit Foundation In New Tab'></BitCompoundButton>{Environment.NewLine}" +
-                 $"<BitCompoundButton ButtonStyle='ButtonStyle.Standard' Href='https://github.com/bitfoundation/bitframework' Text='Open the site' SecondaryText='Go To Bit Foundation'></BitCompoundButton>{Environment.NewLine}" +
+                 $"<BitCompoundButton ButtonStyle='BitButtonStyle.Standard' Href='https://github.com/bitfoundation/bitframework' Text='Open the site' SecondaryText='Go To Bit Foundation'></BitCompoundButton>{Environment.NewLine}" +
                  $"<BitCompoundButton Href='https://github.com/bitfoundation/bitframework' IsEnabled='false' Text='Open the site' SecondaryText='Go To Bit Foundation'></BitCompoundButton>";
     }
 }
