@@ -1,11 +1,9 @@
 ﻿@page "/components/basic-list"
 
-@using Bit.Client.Web.BlazorUI.Playground.Web.Components
-
-<ComponentPage ComponentName="Basic List" OverviewDesc="BitBasicList provides a base component for rendering large sets of items. It’s agnostic of layout, the tile component used, and selection management."
+<ComponentDemo ComponentName="Basic List" ComponentDescription="BitBasicList provides a base component for rendering large sets of items. It’s agnostic of layout, the tile component used, and selection management."
                ComponentParameters="componentParameters">
-    <CodeSample Title="BitBasicList" Description="" CodeSampleContentForCopy="@basicListSampleCode">
-        <SampleContent>
+    <ComponentExampleBox Title="BitBasicList" ExampleSourceCodeForCopy="@basicListSampleCode" ExampleId="example1">
+        <ExamplePreview>
             <BitBasicList Class="how-to-use" Items="People[0]" Virtualize="true" Style="border: 1px #a19f9d solid; border-radius: 3px; ">
                 <RowTemplate Context="person">
                     <div style="border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;">
@@ -18,60 +16,64 @@
                     </div>
                 </RowTemplate>
             </BitBasicList>
-        </SampleContent>
-        <CodeSampleContent>
+        </ExamplePreview>
+        <ExampleSourceCode>
             <pre>
-                &lt<span class="soco-component-attr">BitBasicList Items</span>="People[0]"
-                                           <span class="soco-component-attr">Virtualize</span>="<span class="soco-tag-type-def">true</span>"
-                                           <span class="soco-component-attr">Style</span>="border: 1px #a19f9d solid; border-radius: 3px;">
-                         &lt<span class="soco-component-attr">RowTemplate Context</span>="person">
-                                  &lt<span class="soco-tag-type-def">div</span> <span class="soco-var-attr">style</span>="margin-left:3%; display: inline-block;">
-                                      &lt<span class="soco-tag-type-def">img</span> <span class="soco-var-attr">src</span>="<span class="soco-tag-type-def">https://picsum.photos/100/100?random=<span class="soco-code">&#64;</span>(person.Id)</span>">
-                                      &lt<span class="soco-tag-type-def">div</span> <span class="soco-var-attr">style</span>="margin-left:3%; display: inline-block;">
-                                               <span>&lt<span class="soco-tag-type-def">p</span>>Id: &lt<span class="soco-tag-type-def">strong</span>><span class="soco-code">&#64;</span>person.Id<span>&lt/</span><span class="soco-tag-type-def">strong</span>><span>&lt/</span><span class="soco-tag-type-def">p</span><span>&gt;</span></span>
-                                               <span>&lt<span class="soco-tag-type-def">p</span>>Full Name: &lt<span class="soco-tag-type-def">strong</span>><span class="soco-code">&#64;</span>person.FirstName <span class="soco-code">&#64;</span>person.LastName<span>&lt/</span><span class="soco-tag-type-def">strong</span>><span>&lt/</span><span class="soco-tag-type-def">p</span><span>&gt;</span></span>
-                                               <span>&lt<span class="soco-tag-type-def">p</span>>Job: &lt<span class="soco-tag-type-def">strong</span>><span class="soco-code">&#64;</span>person.Job<span>&lt/</span><span class="soco-tag-type-def">strong</span>><span>&lt/</span><span class="soco-tag-type-def">p</span><span>&gt;</span></span>
-                                      &lt/<span class="soco-tag-type-def">div</span>&gt;
-                                  &lt/<span class="soco-tag-type-def">div</span>&gt;
-                         &lt/<span class="soco-component-attr">RowTemplate</span>&gt;
-                &lt/<span class="soco-component-attr">BitBasicList</span>&gt;
-                <span class="soco-code">&#64;code {</span>
-                      <span class="soco-tag-type-def">private readonly </span>List&ltPerson>[] People = <span class="soco-tag-type-def">new </span>List&ltPerson>[2];
-                      <span class="soco-tag-type-def">protected override void </span><span>OnInitialized</span>()
-                      <span>{</span>
-                              Person<span class="soco-tag-type-def"> person</span> = <span class=soco-tag-type-def>new</span>();
-                              People[0] = person.GetPeople(8000);
-                              People[1] = person.GetPeople(100);
-                              <span class="soco-tag-type-def">base</span>.OnInitialized();
-                      <span>}</span>
-                      <span class="soco-tag-type-def">public class </span>Person()
-                      <span>{</span>
-                              <span><span class="soco-tag-type-def">public int</span> Id {<span class="soco-tag-type-def"> get</span>; <span class=soco-tag-type-def> set</span>; }</span>
-                              <span><span class="soco-tag-type-def">public int</span> FirstName {<span class=soco-tag-type-def> get</span>; <span class=soco-tag-type-def> set</span>; }</span>
-                              <span><span class="soco-tag-type-def">public int</span> LastName {<span class=soco-tag-type-def> get</span>; <span class=soco-tag-type-def> set</span>; }</span>
-                              <span><span class="soco-tag-type-def">public int</span> Job {<span class=soco-tag-type-def> get</span>; <span class=soco-tag-type-def> set</span>; }</span>
-                      <span>}</span>
-                      <span class="soco-tag-type-def">public </span>List&ltPerson> GetPeople(<span class="soco-tag-type-def">int </span>itemCount)
-                      <span>{</span>
-                              List&ltPerson><span class="soco-tag-type-def"> person</span> = <span class=soco-tag-type-def>new</span>();
-                              <span class="soco-if-for">for </span>(<span class="soco-tag-type-def">int</span> i = 0; i &lt itemCount; i++)
-                              <span>{</span>
-                                      <span class="soco-tag-type-def">people</span>.Add(<span class="soco-tag-type-def">new </span>Person
-                                      <span>{</span>
-                                              <span>Id = i + 1,</span>
-                                              FirstName = <span class="soco-string">$"Person</span> {i + 1}<span class="soco-string">"</span>,
-                                              LastName = <span class="soco-string">$"Person Family</span> {i + 1}<span class="soco-string">"</span>,
-                                              Job = <span class="soco-string">$"Programmer</span> {i + 1}<span class="soco-string">"</span>
-                                      <span>});</span>
-                              <span>}</span>
-                      <span>}</span>
-                 <span class="soco-code">}</span>
+            &ltBitBasicList Items="People[0]" Virtualize="true" Style="border: 1px #a19f9d solid; border-radius: 3px; ">
+                    &ltRowTemplate Context="person">
+                            &ltdiv style="border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;">
+                                    &ltimg src="https://picsum.photos/100/100?random=&#64;(person.Id)">
+                                    &ltdiv style="margin-left:3%; display: inline-block;">
+                                            &ltp>Id: &ltstrong>&#64;person.Id&lt/strong>&lt/p>
+                                            &ltp>Full Name: &ltstrong>&#64;person.FirstName &#64;person.LastName&lt/strong>&lt/p>
+                                            &ltp>Job: &ltstrong>&#64;person.Job&lt/strong>&lt/p>
+                                    &lt/div>
+                            &lt/div>
+                    &lt/RowTemplate>
+            &lt/BitBasicList>
+
+            &#64;code {
+                    private readonly List&ltPerson>[] People = new List&ltPerson>[2];
+                    protected override void OnInitialized()
+                    {
+                            Person person = new();
+                            People[0] = person.GetPeople(8000);
+                            People[1] = person.GetPeople(100);
+                            base.OnInitialized();
+                    }
+
+                    public class Person()
+                    {
+                            public int Id { get; set; }
+                            public string FirstName { get; set; }
+                            public string LastName { get; set; }
+                            public string Job { get; set; }
+                    }
+
+                    public List&ltPerson> GetPeople(int itemCount)
+                    {
+                            List&ltPerson> people = new();
+                            for &#40;int i = 0; i &lt itemCount; i++)
+                            {
+                                people.Add(new Person
+                                {
+                                    Id = i + 1,
+                                    FirstName = $"Person {i + 1}",
+                                    LastName = $"Person Family {i + 1}",
+                                    Job = $"Programmer {i + 1}"
+                                });
+                            }
+
+                            return people;
+                    }
+            }
             </pre>
-        </CodeSampleContent>
-    </CodeSample>
-    <CodeSample Title="Basic List without virtualization" Description="" CodeSampleContentForCopy="@basicListWithoutVirtualizationSampleCode">
-        <SampleContent>
-            <BitBasicList Class="how-to-use" Items="People[1]" Virtualize="false" Style="border: 1px #a19f9d solid; border-radius: 3px; ">
+        </ExampleSourceCode>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Basic List without virtualization" ExampleSourceCodeForCopy="@basicListWithoutVirtualizationSampleCode" ExampleId="example2">
+        <ExamplePreview>
+            <BitBasicList Items="People[1]" Virtualize="false" Style="border: 1px #a19f9d solid; border-radius: 3px; ">
                 <RowTemplate Context="person">
                     <div style="border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;">
                         <p>Id: <strong>@person.Id</strong></p>
@@ -80,60 +82,61 @@
                     </div>
                 </RowTemplate>
             </BitBasicList>
-        </SampleContent>
-        <CodeSampleContent>
+        </ExamplePreview>
+        <ExampleSourceCode>
             <pre>
-                &lt<span class="soco-component-attr">BitBasicList Items</span>="People[1]"
-                                           <span class="soco-component-attr">Virtualize</span>="<span class="soco-tag-type-def">true</span>"
-                                           <span class="soco-component-attr">Style</span>="border: 1px #a19f9d solid; border-radius: 3px; ">
-                         &lt<span class="soco-component-attr">RowTemplate Context</span>="person">
-                             &lt<span class="soco-tag-type-def">div</span> <span class="soco-var-attr">style</span>="margin-left:3%; display: inline-block;">
-                                 &lt<span class="soco-tag-type-def">img</span> <span class="soco-var-attr">src</span>="<span class="soco-tag-type-def">https://picsum.photos/100/100?random=<span class="soco-code">&#64;</span>(person.Id)</span>">
-                                 &lt<span class="soco-tag-type-def">div</span> <span class="soco-var-attr">style</span>="margin-left:3%; display: inline-block;">
-                                     <span>&lt<span class="soco-tag-type-def">p</span>>Id: &lt<span class="soco-tag-type-def">strong</span>><span class="soco-code">&#64;</span>person.Id<span>&lt/</span><span class="soco-tag-type-def">strong</span>><span>&lt/</span><span class="soco-tag-type-def">p</span><span>&gt;</span></span>
-                                     <span>&lt<span class="soco-tag-type-def">p</span>>Full Name: &lt<span class="soco-tag-type-def">strong</span>><span class="soco-code">&#64;</span>person.FirstName <span class="soco-code">&#64;</span>person.LastName<span>&lt/</span><span class="soco-tag-type-def">strong</span>><span>&lt/</span><span class="soco-tag-type-def">p</span><span>&gt;</span></span>
-                                     <span>&lt<span class="soco-tag-type-def">p</span>>Job: &lt<span class="soco-tag-type-def">strong</span>><span class="soco-code">&#64;</span>person.Job<span>&lt/</span><span class="soco-tag-type-def">strong</span>><span>&lt/</span><span class="soco-tag-type-def">p</span><span>&gt;</span></span>
-                                 &lt<span class="soco-tag-type-def">div</span>&gt;
-                             &lt/<span class="soco-tag-type-def">div</span>&gt;
-                         &lt/<span class="soco-component-attr">RowTemplate</span>&gt;
-                &lt/<span class="soco-component-attr">BitBasicList</span>&gt;
-                <span class="soco-code">&#64;code {</span>
-                      <span class="soco-tag-type-def">private readonly </span>List&ltPerson>[] People = <span class="soco-tag-type-def">new </span>List&ltPerson>[2];
-                      <span class="soco-tag-type-def">protected override void </span><span>OnInitialized</span>()
-                      <span>{</span>
-                              Person<span class="soco-tag-type-def"> person</span> = <span class=soco-tag-type-def>new</span>();
-                              People[0] = person.GetPeople(8000);
-                              People[1] = person.GetPeople(100);
-                              <span class="soco-tag-type-def">base</span>.OnInitialized();
-                      <span>}</span>
-                      <span class="soco-tag-type-def">public class </span>Person()
-                      <span>{</span>
-                              <span><span class="soco-tag-type-def">public int</span> Id {<span class="soco-tag-type-def"> get</span>; <span class=soco-tag-type-def> set</span>; }</span>
-                              <span><span class="soco-tag-type-def">public int</span> FirstName {<span class=soco-tag-type-def> get</span>; <span class=soco-tag-type-def> set</span>; }</span>
-                              <span><span class="soco-tag-type-def">public int</span> LastName {<span class=soco-tag-type-def> get</span>; <span class=soco-tag-type-def> set</span>; }</span>
-                              <span><span class="soco-tag-type-def">public int</span> Job {<span class=soco-tag-type-def> get</span>; <span class=soco-tag-type-def> set</span>; }</span>
-                      <span>}</span>
-                      <span class="soco-tag-type-def">public </span>List&ltPerson> GetPeople(<span class="soco-tag-type-def">int </span>itemCount)
-                      <span>{</span>
-                              List&ltPerson><span class="soco-tag-type-def"> person</span> = <span class=soco-tag-type-def>new</span>();
-                              <span class="soco-if-for">for </span>(<span class="soco-tag-type-def">int</span> i = 0; i &lt itemCount; i++)
-                              <span>{</span>
-                                      <span class="soco-tag-type-def">people</span>.Add(<span class="soco-tag-type-def">new </span>Person
-                                      <span>{</span>
-                                              <span>Id = i + 1,</span>
-                                              FirstName = <span class="soco-string">$"Person</span> {i + 1}<span class="soco-string">"</span>,
-                                              LastName = <span class="soco-string">$"Person Family</span> {i + 1}<span class="soco-string">"</span>,
-                                              Job = <span class="soco-string">$"Programmer</span> {i + 1}<span class="soco-string">"</span>
-                                      <span>});</span>
-                              <span>}</span>
-                      <span>}</span>
-                 <span class="soco-code">}</span>
+            &ltBitBasicList Items="People[1]" Virtualize="false" Style="border: 1px #a19f9d solid; border-radius: 3px; ">
+                    &ltRowTemplate Context="person">
+                            &ltdiv style="border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;">
+                                    &ltp>Id: &ltstrong>&#64;person.Id&lt/strong>&lt/p>
+                                    &ltp>Full Name: &ltstrong>&#64;person.FirstName &#64;person.LastName&lt/strong>&lt/p>
+                                    &ltp>Job: &ltstrong>&#64;person.Job&lt/strong>&lt/p>
+                            &lt/div>
+                    &lt/RowTemplate>
+            &lt/BitBasicList>
+
+            &#64;code {
+                    private readonly List&ltPerson>[] People = new List&ltPerson>[2];
+                    protected override void OnInitialized()
+                    {
+                            Person person = new();
+                            People[0] = person.GetPeople(8000);
+                            People[1] = person.GetPeople(100);
+                            base.OnInitialized();
+                    }
+
+                    public class Person()
+                    {
+                            public int Id { get; set; }
+                            public string FirstName { get; set; }
+                            public string LastName { get; set; }
+                            public string Job { get; set; }
+                    }
+
+                    public List&ltPerson> GetPeople(int itemCount)
+                    {
+                            List&ltPerson> people = new();
+                            for &#40;int i = 0; i &lt itemCount; i++)
+                            {
+                                people.Add(new Person
+                                {
+                                    Id = i + 1,
+                                    FirstName = $"Person {i + 1}",
+                                    LastName = $"Person Family {i + 1}",
+                                    Job = $"Programmer {i + 1}"
+                                });
+                            }
+
+                            return people;
+                    }
+            }
             </pre>
-        </CodeSampleContent>
-    </CodeSample>
-    <CodeSample Title="Basic List with custom role and class" Description="" CodeSampleContentForCopy="@basicListWithCustomRoleSampleCode">
-        <SampleContent>
-            <BitBasicList Items="People[0]" Virtualize="true" Role="list" Class="lst-custom-style how-to-use" Style="border: 1px #a19f9d solid; border-radius: 3px; ">
+        </ExampleSourceCode>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Basic List with custom role and class" ExampleSourceCodeForCopy="@basicListWithCustomRoleSampleCode" ExampleId="example3">
+        <ExamplePreview>
+            <BitBasicList Items="People[0]" Virtualize="true" Role="list" Style="border: 1px #a19f9d solid; border-radius: 3px;">
                 <RowTemplate Context="person">
                     <div class="lst3-list-item">
                         <span>Id: <strong>@person.Id</strong></span>
@@ -142,73 +145,74 @@
                     </div>
                 </RowTemplate>
             </BitBasicList>
-        </SampleContent>
-        <CodeSampleContent>
+        </ExamplePreview>
+        <ExampleSourceCode>
             <pre>
-                &lt<span class="soco-component-attr">BitBasicList Items</span>="People[0]"
-                                           <span class="soco-component-attr">Virtualize</span>="<span class="soco-tag-type-def">true</span>"
-                                           <span class="soco-component-attr">Role</span>="list"
-                                           <span class="soco-component-attr">Class</span>="lst-custom-style"
-                                           <span class="soco-component-attr">Style</span>="border: 1px #a19f9d solid; border-radius: 3px; ">
-                         &lt<span class="soco-component-attr">RowTemplate Context</span>="person">
-                             &lt<span class="soco-tag-type-def">div class</span>="lst3-list-item">
-                                 &lt<span class="soco-tag-type-def">span</span>>Id: &lt<span class="soco-tag-type-def">strong</span>><span class="soco-code">&#64;</span>person.Id<span>&lt/</span><span class="soco-tag-type-def">strong</span>><span>&lt/</span><span class="soco-tag-type-def">span</span>&gt;
-                                 &lt<span class="soco-tag-type-def">span</span>>Full Name: &lt<span class="soco-tag-type-def">strong</span>><span class="soco-code">&#64;</span>person.FirstName <span class="soco-code">&#64;</span>person.LastName<span>&lt/</span><span class="soco-tag-type-def">strong</span>><span>&lt/</span><span class="soco-tag-type-def">span</span>&gt;
-                                 &lt<span class="soco-tag-type-def">span</span>>Job: &lt<span class="soco-tag-type-def">strong</span>><span class="soco-code">&#64;</span>person.Job<span>&lt/</span><span class="soco-tag-type-def">strong</span>><span>&lt/</span><span class="soco-tag-type-def">span</span>&gt;
-                             &lt/<span class="soco-tag-type-def">div</span>&gt;
-                         &lt/<span class="soco-component-attr">RowTemplate</span>&gt;
-                &lt/<span class="soco-component-attr">BitBasicList</span>&gt;
-                <span class="soco-code">&#64;code {</span>
-                      <span class="soco-tag-type-def">private readonly </span>List&ltPerson>[] People = <span class="soco-tag-type-def">new </span>List&ltPerson>[2];
-                      <span class="soco-tag-type-def">protected override void </span>OnInitialized()
-                      <span>{</span>
-                              Person person = <span class=soco-tag-type-def>new</span>();
-                              People[0] = person.GetPeople(8000);
-                              People[1] = person.GetPeople(100);
-                              <span class="soco-tag-type-def">base</span>.OnInitialized();
-                      <span>}</span>
-                      <span class="soco-tag-type-def">public class </span>Person()
-                      <span>{</span>
-                               <span class="soco-tag-type-def">public int</span>Id {<span class="soco-tag-type-def"> get</span>; <span class=soco-tag-type-def> set</span>; }
-                               <span class="soco-tag-type-def">public int</span>FirstName {<span class=soco-tag-type-def> get</span>; <span class=soco-tag-type-def> set</span>; }
-                               <span><span class="soco-tag-type-def">public int</span>LastName {<span class=soco-tag-type-def> get</span>; <span class=soco-tag-type-def> set</span>; }</span>
-                               <span><span class="soco-tag-type-def">public int</span>Job {<span class=soco-tag-type-def> get</span>; <span class=soco-tag-type-def> set</span>; }</span>
-                      <span>}</span>
-                      <span class="soco-tag-type-def">public </span> List&ltPerson> GetPeople(<span class="soco-tag-type-def">int </span>itemCount)
-                      <span>{</span>
-                              List&ltPerson><span class="soco-tag-type-def"> person</span> = <span class=soco-tag-type-def>new</span>();
-                              <span class="soco-if-for">for </span>(<span class="soco-tag-type-def">int</span> i = 0; i &lt itemCount; i++)
-                              <span>{</span>
-                                      <span class="soco-tag-type-def">people</span>.Add(<span class="soco-tag-type-def">new </span>Person
-                                      <span>{</span>
-                                              <span>Id = i + 1,</span>
-                                              FirstName = <span class="soco-string">$"Person</span> {i + 1}<span class="soco-string">"</span>,
-                                              LastName = <span class="soco-string">$"Person Family</span> {i + 1}<span class="soco-string">"</span>,
-                                              Job = <span class="soco-string">$"Programmer</span> {i + 1}<span class="soco-string">"</span>
-                                      <span>});</span>
-                              <span>}</span>
-                      <span>}</span>
-                <span class="soco-code">}</span>
-                &lt<span class="soco-tag-type-def">style></span>
-                          <span class="soco-css-style">.lst-custom-style</span> {
-                                <span class="soco-css-style">.lst3-list-item </span>{
-                                      <span class="soco-tag-type-def">padding</span> : 16px 20px;
-                                      <span class="soco-tag-type-def">background-color</span> : #f2f2f2;
-                                      <span class="soco-tag-type-def">margin</span> : 10px 10px;
-                                      <span class="soco-tag-type-def">width</span> : 20%;
-                                      <span class="soco-tag-type-def">height</span> : 143px;
-                                      <span class="soco-tag-type-def">display</span> : inline-grid;
-                                      <span class="soco-tag-type-def">justify-content</span> : center;
-                                      <span class="soco-tag-type-def">align-items</span> : center;
-                                <span>}</span>
-                          <span>}</span>
-                &lt/<span class="soco-tag-type-def">style</span>&gt;
+            &ltBitBasicList Items="People[0]" Virtualize="true" Role="list" Style="border: 1px #a19f9d solid; border-radius: 3px;">
+                    &ltRowTemplate Context="person">
+                            &ltdiv class="lst3-list-item">
+                                    &ltspan>Id: &ltstrong>&#64;person.Id&lt/strong>&lt/span>
+                                    &ltspan>Full Name: &ltstrong>&#64;person.FirstName&lt/strong>&lt/span>
+                                    &ltspan>Job: &ltstrong>&#64;person.Job&lt/strong>&lt/span>
+                            &lt/div>
+                    &lt/RowTemplate>
+            &lt/BitBasicList>
+
+            &#64;code {
+                    private readonly List&ltPerson>[] People = new List&ltPerson>[2];
+                    protected override void OnInitialized()
+                    {
+                            Person person = new();
+                            People[0] = person.GetPeople(8000);
+                            People[1] = person.GetPeople(100);
+                            base.OnInitialized();
+                    }
+
+                    public class Person()
+                    {
+                            public int Id { get; set; }
+                            public string FirstName { get; set; }
+                            public string LastName { get; set; }
+                            public string Job { get; set; }
+                    }
+
+                    public List&ltPerson> GetPeople(int itemCount)
+                    {
+                            List&ltPerson> people = new();
+                            for &#40;int i = 0; i &lt itemCount; i++)
+                            {
+                                people.Add(new Person
+                                {
+                                    Id = i + 1,
+                                    FirstName = $"Person {i + 1}",
+                                    LastName = $"Person Family {i + 1}",
+                                    Job = $"Programmer {i + 1}"
+                                });
+                            }
+
+                            return people;
+                    }
+            }
+
+            &ltstyle>
+                    .lst3-list-item {
+                            padding: 16px 20px;
+                            background-color: #f2f2f2;
+                            margin: 10px 10px;
+                            width: 20%;
+                            height: 143px;
+                            display: inline-grid;
+                            justify-content: center;
+                            align-items: center;
+                    }
+            &lt/style>;
             </pre>
-        </CodeSampleContent>
-    </CodeSample>
-    <CodeSample Title="Basic List with overscan count" Description="" CodeSampleContentForCopy="@basicListWithoverscanSampleCode">
-        <SampleContent>
-            <BitBasicList Class="how-to-use" Items="People[0]" Virtualize="true" OverscanCount="5" ItemSize="300" Style="border: 1px #a19f9d solid; border-radius: 3px; ">
+        </ExampleSourceCode>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Basic List with overscan count" ExampleSourceCodeForCopy="@basicListWithoverscanSampleCode" ExampleId="example4">
+        <ExamplePreview>
+            <BitBasicList Items="People[0]" Virtualize="true" OverscanCount="5" ItemSize="300" Style="border: 1px #a19f9d solid; border-radius: 3px; ">
                 <RowTemplate Context="person">
                     <div style="border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;">
                         <p>Id: <strong>@person.Id</strong></p>
@@ -217,54 +221,55 @@
                     </div>
                 </RowTemplate>
             </BitBasicList>
-        </SampleContent>
-        <CodeSampleContent>
+        </ExamplePreview>
+        <ExampleSourceCode>
             <pre>
-                &lt<span class="soco-component-attr">BitBasicList Items</span>="People[0]"
-                                           <span class="soco-component-attr">Virtualize</span>="<span class="soco-tag-type-def">true</span>"
-                                           <span class="soco-component-attr">OverscanCount</span>="5"
-                                           <span class="soco-component-attr">ItemSize</span>="300"
-                                           <span class="soco-component-attr">Style</span>="border: 1px #a19f9d solid; border-radius: 3px; ">
-                         &lt<span class="soco-component-attr">RowTemplate Context</span>="person">
-                                  &lt<span class="soco-tag-type-def">div style</span>="border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;">
-                                           &lt<span class="soco-tag-type-def">span</span>>Id: &lt<span class="soco-tag-type-def">strong</span>><span class="soco-code">&#64;</span>person.Id<span>&lt/</span><span class="soco-tag-type-def">strong</span>><span>&lt/</span><span class="soco-tag-type-def">span</span>&gt;
-                                           &lt<span class="soco-tag-type-def">span</span>>Full Name: &lt<span class="soco-tag-type-def">strong</span>><span class="soco-code">&#64;</span>person.FirstName <span class="soco-code">&#64;</span>person.LastName<span>&lt/</span><span class="soco-tag-type-def">strong</span>><span>&lt/</span><span class="soco-tag-type-def">span</span>&gt;
-                                           &lt<span class="soco-tag-type-def">span</span>>Job: &lt<span class="soco-tag-type-def">strong</span>><span class="soco-code">&#64;</span>person.Job<span>&lt/</span><span class="soco-tag-type-def">strong</span>><span>&lt/</span><span class="soco-tag-type-def">span</span>&gt;
-                                  &lt/<span class="soco-tag-type-def">div</span>&gt;
-                         &lt/<span class="soco-component-attr">RowTemplate</span>&gt;
-                &lt/<span class="soco-component-attr">BitBasicList</span>&gt;
-                <span class="soco-code">&#64;code {</span>
-                      <span class="soco-tag-type-def">private readonly </span>List&ltPerson>[] People = <span class="soco-tag-type-def">new </span>List&ltPerson>[2];
-                      <span class="soco-tag-type-def">protected override void </span>OnInitialized()
-                      <span>{</span>
-                              Person person = <span class=soco-tag-type-def>new</span>();
-                              People[0] = person.GetPeople(8000);
-                              People[1] = person.GetPeople(100);
-                              <span class="soco-tag-type-def">base</span>.OnInitialized();
-                      <span>}</span>
-                      <span class="soco-tag-type-def">public class </span>Person()
-                      <span>{</span>
-                           <span class="soco-tag-type-def">public int</span> Id {<span class="soco-tag-type-def"> get</span>; <span class=soco-tag-type-def> set</span>; }
-                           <span class="soco-tag-type-def">public int</span> FirstName {<span class=soco-tag-type-def> get</span>; <span class=soco-tag-type-def> set</span>; }
-                           <span><span class="soco-tag-type-def">public int</span> LastName {<span class=soco-tag-type-def> get</span>; <span class=soco-tag-type-def> set</span>; }</span>
-                           <span><span class="soco-tag-type-def">public int</span> Job {<span class=soco-tag-type-def> get</span>; <span class=soco-tag-type-def> set</span>; }</span>
-                      <span>}</span>
-                      <span class="soco-tag-type-def">public </span> List&ltPerson> GetPeople(<span class="soco-tag-type-def">int </span>itemCount)
-                      <span>{</span>
-                              List&ltPerson><span class="soco-tag-type-def"> person</span> = <span class=soco-tag-type-def>new</span>();
-                              <span class="soco-if-for">for </span>(<span class="soco-tag-type-def">int</span> i = 0; i &lt itemCount; i++)
-                              <span>{</span>
-                                      <span class="soco-tag-type-def">people</span>.Add(<span class="soco-tag-type-def">new </span>Person
-                                      <span>{</span>
-                                              <span>Id = i + 1,</span>
-                                              FirstName = <span class="soco-string">$"Person</span> {i + 1}<span class="soco-string">"</span>,
-                                              LastName = <span class="soco-string">$"Person Family</span> {i + 1}<span class="soco-string">"</span>,
-                                              Job = <span class="soco-string">$"Programmer</span> {i + 1}<span class="soco-string">"</span>
-                                      <span>});</span>
-                              <span>}</span>
-                       <span>}</span>
-                 <span class="soco-code">}</span>
+            &ltBitBasicList Items="People[0]" Virtualize="true" OverscanCount="5" ItemSize="300" Style="border: 1px #a19f9d solid; border-radius: 3px;">
+                    &ltRowTemplate Context="person">
+                            &ltdiv style="border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;">
+                                    &ltspan>Id: &ltstrong>&#64;person.Id&lt/strong>&lt/span>
+                                    &ltspan>Full Name: &ltstrong>&#64;person.FirstName&lt/strong>&lt/span>
+                                    &ltspan>Job: &ltstrong>&#64;person.Job&lt/strong>&lt/span>
+                            &lt/div>
+                    &lt/RowTemplate>
+            &lt/BitBasicList>
+
+            &#64;code {
+                    private readonly List&ltPerson>[] People = new List&ltPerson>[2];
+                    protected override void OnInitialized()
+                    {
+                            Person person = new();
+                            People[0] = person.GetPeople(8000);
+                            People[1] = person.GetPeople(100);
+                            base.OnInitialized();
+                    }
+
+                    public class Person()
+                    {
+                            public int Id { get; set; }
+                            public string FirstName { get; set; }
+                            public string LastName { get; set; }
+                            public string Job { get; set; }
+                    }
+
+                    public List&ltPerson> GetPeople(int itemCount)
+                    {
+                            List&ltPerson> people = new();
+                            for &#40;int i = 0; i &lt itemCount; i++)
+                            {
+                                people.Add(new Person
+                                {
+                                    Id = i + 1,
+                                    FirstName = $"Person {i + 1}",
+                                    LastName = $"Person Family {i + 1}",
+                                    Job = $"Programmer {i + 1}"
+                                });
+                            }
+
+                            return people;
+                    }
+            }
             </pre>
-        </CodeSampleContent>
-    </CodeSample>
-</ComponentPage>
+        </ExampleSourceCode>
+    </ComponentExampleBox>
+</ComponentDemo>
