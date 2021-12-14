@@ -514,118 +514,116 @@ input::-webkit-input-placeholder {
     }
 }
 
-.sample {
-    .bit-spb {
+.bit-spb {
+    margin-bottom: rem(8px);
+}
+
+.ch-group {
+    .bit-txt {
+        margin-bottom: rem(25px);
+    }
+}
+
+.bit-sch-box {
+    margin-bottom: rem(12px);
+}
+
+.bit-txt-wrapper {
+    margin-bottom: rem(20px);
+}
+
+.bit-tgl > div {
+    margin-top: rem(10px);
+}
+
+.bit-tgl-inline-fluent > div {
+    margin-top: 0;
+}
+
+.bit-tgl {
+    @include sm {
+        line-height: rem(15px);
+    }
+}
+
+.bit-slider-container {
+    padding: rem(30px) 0;
+}
+
+.bit-btn-slider {
+    margin-bottom: rem(30px);
+}
+
+.bit-slider-ranged-vertical .bit-slider-value, .bit-slider-vertical .bit-slider-value {
+    margin-top: rem(30px);
+}
+
+.bit-slider-vertical {
+    padding: rem(20px);
+}
+
+.bit-drp-lbl {
+    padding-bottom: rem(20px);
+}
+
+.tgl-btn {
+    @include sm {
         margin-top: rem(10px);
+        width: rem(195px);
     }
+}
 
-    .ch-group {
-        .bit-txt {
-            margin-bottom: rem(25px);
-        }
-    }
+.bit-tgl-btn-primary-fluent .bit-icon {
+    color: $White;
+}
 
-    .bit-sch-box {
-        margin-bottom: rem(12px);
-    }
+.bit-tgl-btn-fluent > span > span {
+    font-weight: normal;
+    margin: 0;
+    line-height: 0;
+}
 
-    .bit-txt-wrapper {
-        margin-bottom: rem(20px);
-    }
-
-    .bit-tgl > div {
+.aria-hidden-tgl-btn {
+    @include sm {
         margin-top: rem(10px);
+        width: rem(239px);
     }
+}
 
-    .bit-tgl-inline-fluent > div {
-        margin-top: 0;
-    }
+.p-12 .bit-tgl label {
+    padding-bottom: rem(15px);
+}
 
-    .bit-tgl {
-        @include sm {
-            line-height: rem(15px);
-        }
+.bit-nav-wrapped-link {
+    a {
+        white-space: normal;
+        line-height: inherit
     }
+}
 
-    .bit-slider-container {
-        padding: rem(30px) 0;
-    }
+.bit-nav-grp h3 {
+    font-size: 20px;
+    font-weight: normal;
+    font-style: normal;
+}
 
-    .bit-btn-slider {
-        margin-bottom: rem(30px);
-    }
+.bit-pvt-fluent > div {
+    margin-top: rem(10px);
+}
 
-    .bit-slider-ranged-vertical .bit-slider-value, .bit-slider-vertical .bit-slider-value {
-        margin-top: rem(30px);
-    }
+.bit-crsl-fluent {
+    max-width: 100%;
+}
 
-    .bit-slider-vertical {
-        padding: rem(20px);
-    }
+.bit-crslitm-current-fluent {
+    border: rem(1px) solid $Gray2;
+    box-shadow: rem(1px) rem(1px) $Gray3;
+}
 
-    .bit-drp-lbl {
-        padding-bottom: rem(20px);
-    }
+.bit-spn-fluent {
+    margin-top: rem(10px);
+}
 
-    .tgl-btn {
-        @include sm {
-            margin-top: rem(10px);
-            width: rem(195px);
-        }
-    }
-
-    .bit-tgl-btn-primary-fluent .bit-icon {
-        color: $White;
-    }
-
-    .bit-tgl-btn-fluent > span > span {
-        font-weight: normal;
-        margin: 0;
-        line-height: 0;
-    }
-
-    .aria-hidden-tgl-btn {
-        @include sm {
-            margin-top: rem(10px);
-            width: rem(239px);
-        }
-    }
-
-    .p-12 .bit-tgl label {
-        padding-bottom: rem(15px);
-    }
-
-    .bit-nav-wrapped-link {
-        a {
-            white-space: normal;
-            line-height: inherit
-        }
-    }
-
-    .bit-nav-grp h3 {
-        font-size: 20px;
-        font-weight: normal;
-        font-style: normal;
-    }
-
-    .bit-pvt-fluent > div {
-        margin-top: rem(10px);
-    }
-
-    .bit-crsl-fluent {
-        max-width: 100%;
-    }
-
-    .bit-crslitm-current-fluent {
-        border: rem(1px) solid $Gray2;
-        box-shadow: rem(1px) rem(1px) $Gray3;
-    }
-
-    .bit-spn-fluent {
-        margin-top: rem(10px);
-    }
-
-    .bit-spb-lbl-wrapper {
-        height: auto;
-    }
+.bit-spb-lbl-wrapper {
+    height: auto;
 }
