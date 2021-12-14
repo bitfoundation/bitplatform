@@ -1,90 +1,88 @@
 ﻿@page "/components/date-picker"
 
-@using Bit.Client.Web.BlazorUI.Playground.Web.Components
-
-<ComponentPage ComponentName="DatePicker" OverviewDesc="Picking a date can be tough without context. A BitDatePicker offers a drop-down control that’s optimized for picking a single date from a calendar view where contextual information like the day of the week or fullness of the calendar is important.
+<ComponentDemo ComponentName="DatePicker" ComponentDescription="Picking a date can be tough without context. A BitDatePicker offers a drop-down control that’s optimized for picking a single date from a calendar view where contextual information like the day of the week or fullness of the calendar is important.
                                                         You can modify the calendar to provide additional context or to limit available dates."
                ComponentParameters="componentParameters" EnumParameters="enumParameters">
-    <CodeSample Title="BitDatePicker with month picker as overlay" Description="" CodeSampleContentForCopy="@datePickerWithMonthSampleCode">
-        <SampleContent>
+    <ComponentExampleBox Title="BitDatePicker with month picker as overlay" ExampleSourceCodeForCopy="@datePickerWithMonthSampleCode" ExampleId="example1">
+        <ExamplePreview>
             <div>
                 <BitDatePicker Style="width: 300px"
                                ShowMonthPickerAsOverlay="true">
                 </BitDatePicker>
             </div>
-        </SampleContent>
-        <CodeSampleContent>
+        </ExamplePreview>
+        <ExampleSourceCode>
             <pre>
-                &lt<span class="soco-component-attr">BitDatePicker Style</span>="width: 300px"
-                                               <span class="soco-component-attr">ShowMonthPickerAsOverlay</span>="<span class="soco-tag-type-def">true</span>">
-                &lt/<span class="soco-component-attr">BitDatePicker</span>>
+            &ltBitDatePicker Style="width: 300px"
+                           ShowMonthPickerAsOverlay="true">
+            &lt/BitDatePicker>
             </pre>
-        </CodeSampleContent>
-    </CodeSample>
+        </ExampleSourceCode>
+    </ComponentExampleBox>
 
-    <CodeSample Title="BitDatePicker with week numbers" Description="" CodeSampleContentForCopy="@datePickerWithWeekSampleCode">
-        <SampleContent>
+    <ComponentExampleBox Title="BitDatePicker with week numbers" ExampleSourceCodeForCopy="@datePickerWithWeekSampleCode" ExampleId="example2">
+        <ExamplePreview>
             <div>
                 <BitDatePicker Style="width: 300px"
                                ShowWeekNumbers="true">
                 </BitDatePicker>
             </div>
-        </SampleContent>
-        <CodeSampleContent>
+        </ExamplePreview>
+        <ExampleSourceCode>
             <pre>
-                &lt<span class="soco-component-attr">BitDatePicker Style</span>="width: 300px" 
-                                               <span class="soco-component-attr">ShowWeekNumbers</span>="<span class="soco-tag-type-def">true</span>">
-                &lt/<span class="soco-component-attr">BitDatePicker</span>>
+            &ltBitDatePicker Style="width: 300px"
+                           ShowWeekNumbers="true">
+            &lt/BitDatePicker>
             </pre>
-        </CodeSampleContent>
-    </CodeSample>
-    <CodeSample Title="Shamsi BitDatePicker" Description="" CodeSampleContentForCopy="@shamsiDatePickerSampleCode">
-        <SampleContent>
+        </ExampleSourceCode>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Shamsi BitDatePicker" ExampleSourceCodeForCopy="@shamsiDatePickerSampleCode" ExampleId="example3">
+        <ExamplePreview>
             <div>
                 <BitDatePicker Culture="Bit.Client.Web.BlazorUI.Utils.CultureInfoProvider.GetPersianCaltureByFinglishNames()"
                                Style="width: 300px">
                 </BitDatePicker>
             </div>
-        </SampleContent>
-        <CodeSampleContent>
+        </ExamplePreview>
+        <ExampleSourceCode>
             <pre>
-                 &lt<span class="soco-component-attr">BitDatePicker Culture</span>="Bit.Client.Web.BlazorUI.Utils.CultureInfoProvider.GetPersianCaltureByFinglishNames()"
-                                                <span class="soco-component-attr">Style</span>="width: 300px"
-                 &lt/<span class="soco-component-attr">BitDatePicker</span>>
+            &ltBitDatePicker Culture="Bit.Client.Web.BlazorUI.Utils.CultureInfoProvider.GetPersianCaltureByFinglishNames()"
+                           Style="width: 300px">
+            &lt/BitDatePicker>
             </pre>
-        </CodeSampleContent>
-    </CodeSample>
-    <CodeSample Title="Value two-way binding" Description="" CodeSampleContentForCopy="@datePickerWithTwoWayBindingSampleCode">
-        <SampleContent>
+        </ExampleSourceCode>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Value two-way binding" ExampleSourceCodeForCopy="@datePickerWithTwoWayBindingSampleCode" ExampleId="example4">
+        <ExamplePreview>
             <div>
                 <BitDatePicker @bind-Value="@selectedDate" Style="width: 300px"></BitDatePicker>
                 <BitLabel>this is selected date: @selectedDate.ToString()</BitLabel>
             </div>
-        </SampleContent>
-        <CodeSampleContent>
+        </ExamplePreview>
+        <ExampleSourceCode>
             <pre>
-                &lt<span class="soco-component-attr">BitDatePicker </span><span class="soco-code">&#64</span>bind-Value="selectedDate"
-                                               <span class="soco-component-attr">Style</span>="width: 300px">
-                &lt/<span class="soco-component-attr">BitDatePicker</span>>
-                &lt<span class="soco-component-attr">BitLabel </span>>this is selected date: <span class="soco-code">&#64</span>selectedDate &lt/<span class="soco-component-attr">BitLabel</span>>
-                <span class="soco-code">&#64code {</span>
-                      <span class="soco-tag-type-def">private string</span> selectedDate ="";
-                <span class="soco-code">}</span>
+            &ltBitDatePicker &#64;bind-Value="&#64;selectedDate" Style="width: 300px">&lt/BitDatePicker>
+            &ltBitLabel>this is selected date: &#64;selectedDate.ToString()&lt/BitLabel>
+
+            &#64;code {
+                    private string selectedDate ="";
+            }
             </pre>
-        </CodeSampleContent>
-    </CodeSample>
-    <CodeSample Title="DatePicker with custom date formatting" Description="" CodeSampleContentForCopy="@datePickerWithcustomFormattingSampleCode">
-        <SampleContent>
+        </ExampleSourceCode>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="DatePicker with custom date formatting" ExampleSourceCodeForCopy="@datePickerWithcustomFormattingSampleCode" ExampleId="example5">
+        <ExamplePreview>
             <div>
                 <BitDatePicker FormatDate="d" Style="width: 300px"></BitDatePicker>
             </div>
-        </SampleContent>
-        <CodeSampleContent>
+        </ExamplePreview>
+        <ExampleSourceCode>
             <pre>
-                &lt<span class="soco-component-attr">BitDatePicker<span class="soco-component-attr"> FormatDate</span> </span>="d"
-                                               <span class="soco-component-attr">Style</span>="width: 300px">
-                &lt/<span class="soco-component-attr">BitDatePicker</span>>
+            &ltBitDatePicker FormatDate="d" Style="width: 300px">&lt/BitDatePicker>
             </pre>
-        </CodeSampleContent>
-    </CodeSample>
-</ComponentPage>
+        </ExampleSourceCode>
+    </ComponentExampleBox>
+</ComponentDemo>
