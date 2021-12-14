@@ -1,11 +1,9 @@
 ﻿@page "/components/nav"
 
-@using Bit.Client.Web.BlazorUI.Playground.Web.Components
-
-<ComponentPage ComponentName="Nav" OverviewDesc="A navigation pane (Nav) provides links to the main areas of an app or site."
+<ComponentDemo ComponentName="Nav" ComponentDescription="A navigation pane (Nav) provides links to the main areas of an app or site."
                ComponentParameters="componentParameters" EnumParameters="enumParameters" ComponentSubParameters="componentSubParameters">
-    <CodeSample Title="Basic Nav With Sample Links" Description="" CodeSampleContentForCopy="@navLinksSampleCode">
-        <SampleContent>
+    <ComponentExampleBox Title="Basic Nav With Sample Links" ExampleSourceCodeForCopy="@navLinksSampleCode" ExampleId="example1">
+        <ExamplePreview>
             <div>
                 <BitNav Style="width: 208px;
                    height: 350px;
@@ -13,49 +11,52 @@
                    border: 1px solid #eee;
                    overflow-y: auto;"
                         NavLinkItems="BasicNavLinks"
-                        IsOnTop="true"
                         AriaLabel="Nav basic example"
                         SelectedKey="key3">
                 </BitNav>
             </div>
-        </SampleContent>
-        <CodeSampleContent>
+        </ExamplePreview>
+        <ExampleSourceCode>
             <pre>
-                &lt<span class="soco-component-attr">BitNav Style</span>="width: 208px;height: 350px;box-sizing: border-box;border: 1px solid #eee;overflow-y: auto;"
-                                 <span class="soco-component-attr">NavLinkItems</span> = "BasicNavLinks"
-                                 <span class="soco-component-attr">IsOnTop</span>="<span class="soco-tag-type-def">true</span>"
-                                 <span class="soco-component-attr">AriaLabel</span> = "Nav basic example"
-                                 <span class="soco-component-attr">SelectedKey</span> = "key3">
-                &lt/<span class="soco-component-attr">BitNav</span>&gt;
-                <span class="soco-code">&#64;code {</span>
-                    <span class="soco-tag-type-def">private readonly </span>List&ltBitNavLinkItem> BasicNavLinks = <span class=soco-tag-type-def>new</span>()
-                    {
-                        <span class="soco-tag-type-def">new </span>BitNavLinkItem
-                        {
-                            Name = <span class="soco-string">"Home"</span>,
-                            Url = <span class="soco-tag-type-def">"http://example.com"</span>,
-                            ExpandAriaLabel = <span class="soco-string">"Expand Home section"</span>,
-                            CollapseAriaLabel = <span class="soco-string">"Collapse Home section"</span>,
-                            IsExpanded = <span class="soco-tag-type-def">true</span>,
-                            Links = <span class="soco-tag-type-def">new</span><span> List&ltBitNavLinkItem></span>
-                            {
-                                <span class="soco-tag-type-def">new </span><span>BitNavLinkItem</span> { Name = <span class="soco-string">"Activity"</span>, Url = "<span class="soco-tag-type-def">http://msn.com</span>", Key = <span class="soco-string">"key1"</span>, Target=<span class="soco-string">"_blank"</span> },
-                                <span class="soco-tag-type-def">new </span><span>BitNavLinkItem</span> { Name = <span class="soco-string">"MSN"</span>, Url = "<span class="soco-tag-type-def">http://msn.com</span>", Key = <span class="soco-string">"key2"</span>, IsEnabled = <span class="soco-tag-type-def">false</span>, Target = <span class="soco-string">"_blank"</span> }
-                            }
-                        },
-                        <span class="soco-tag-type-def">new </span><span>BitNavLinkItem</span><span> { Name = </span><span class="soco-string">"Documents"</span><span>, Url = "</span><span class="soco-tag-type-def">http://example.com</span>" , <span>Key = </span><span class="soco-string">"key2"</span> , <span>Target = </span><span class="soco-string">"_blank"</span> , <span>IsExpanded = </span><span class="soco-tag-type-def">true</span> },
-                        <span class="soco-tag-type-def">new </span><span>BitNavLinkItem</span><span> { Name = </span><span class="soco-string">"Pages"</span><span>, Url = "</span><span class="soco-tag-type-def">http://msn.com</span>" , <span>Key = </span><span class="soco-string">"key3"</span> , <span>Target = </span><span class="soco-string">"_parent"</span> },
-                        <span class="soco-tag-type-def">new </span><span>BitNavLinkItem</span><span> { Name = </span><span class="soco-string">"Notebook"</span><span>, Url = "</span><span class="soco-tag-type-def">http://msn.com</span>" , <span>Key = </span><span class="soco-string">"key4"</span> , <span>IsEnabled = </span><span class="soco-tag-type-def">false</span> },
-                        <span class="soco-tag-type-def">new </span><span>BitNavLinkItem</span><span> { Name = </span><span class="soco-string">"Communication and Media"</span><span>, Url = "</span><span class="soco-tag-type-def">http://msn.com</span>" , <span>Key = </span><span class="soco-string">"key5"</span> , <span>Target = </span><span class="soco-string">"_top"</span> },
-                        <span class="soco-tag-type-def">new </span><span>BitNavLinkItem</span><span> { Name = </span><span class="soco-string">"News"</span><span>, Title = </span><span class="soco-string">"News"</span><span>, Url = "</span><span class="soco-tag-type-def">http://msn.com</span>" , <span>Key = </span><span class="soco-string">"key6"</span> , <span>Target = </span><span class="soco-string">"_self"</span> , <span>Icon = </span><span class="soco-string">News</span> }
-                    }
-                <span class="soco-code">};</span>
-            </pre>
-        </CodeSampleContent>
-    </CodeSample>
+            &ltBitNav Style="width: 208px;
+                   height: 350px;
+                   box-sizing: border-box;
+                   border: 1px solid #eee;
+                   overflow-y: auto;"
+                    NavLinkItems="BasicNavLinks"
+                    AriaLabel="Nav basic example"
+                    SelectedKey="key3">
+            &lt/BitNav>
 
-    <CodeSample Title="Nav With Wrapped Link Text And No Tooltips" Description="" CodeSampleContentForCopy="@navLinksWithoutTooltipSampleCode">
-        <SampleContent>
+            &#64;code {
+                    private readonly List&ltBitNavLinkItem> BasicNavLinks = new()
+                    {
+                            new BitNavLinkItem
+                            {
+                                    Name = "Home",
+                                    Url = "http://example.com",
+                                    ExpandAriaLabel = "Expand Home section",
+                                    CollapseAriaLabel = "Collapse Home section",
+                                    IsExpanded = true,
+                                    Links = new List&ltBitNavLinkItem>
+                                    {
+                                            new BitNavLinkItem { Name = "Activity", Url = "http://msn.com", Key = "key1", Target="_blank" },
+                                            new BitNavLinkItem { Name = "MSN", Url = "http://msn.com", Key = "key2", IsEnabled = false, Target = "_blank" }
+                                    }
+                            },
+                            new BitNavLinkItem { Name = "Documents", Url = "http://example.com", Key = "key3", Target = "_blank", IsExpanded = true },
+                            new BitNavLinkItem { Name = "Pages", Url = "http://msn.com", Key = "key4", Target = "_parent" },
+                            new BitNavLinkItem { Name = "Notebook", Url = "http://msn.com", Key = "key5", IsEnabled = false },
+                            new BitNavLinkItem { Name = "Communication and Media", Url = "http://msn.com", Key = "key6", Target = "_top" },
+                            new BitNavLinkItem { Name = "News", Title = "News", Url = "http://msn.com", Key = "key7", Icon = "News", Target = "_self" },
+                    };
+            }
+            </pre>
+        </ExampleSourceCode>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Nav With Wrapped Link Text And No Tooltips" ExampleSourceCodeForCopy="@navLinksWithoutTooltipSampleCode"  ExampleId="example2">
+        <ExamplePreview>
             <div>
                 <BitNav Style="width: 208px;
                    height: 350px;
@@ -68,44 +69,50 @@
                         NavLinkItems="BasicNoToolTipNavLinks">
                 </BitNav>
             </div>
-        </SampleContent>
-        <CodeSampleContent>
-             <pre>
-                &lt<span class="soco-component-attr">BitNav Style</span>="width: 208px;height: 350px;box-sizing: border-box;border: 1px solid #eee;overflow-y: auto;"
-                                 <span class="soco-component-attr">Class</span>="bit-nav-wrapped-link"
-                                 <span class="soco-component-attr">SelectedKey</span>="key5">
-                                 <span class="soco-component-attr">AriaLabel</span>="Nav example with wrapped link text"
-                                 <span class="soco-component-attr">NavLinkItems</span>="BasicNoToolTipNavLinks">
-                &lt/<span class="soco-component-attr">BitNav</span>&gt;
-                <span class="soco-code">&#64;code {</span>
-                    <span class="soco-tag-type-def">private readonly </span><span>List&ltBitNavLinkItem></span> BasicNoToolTipNavLinks = <span class=soco-tag-type-def>new</span>()
-                    {
-                        <span class="soco-tag-type-def">new </span><span>BitNavLinkItem</span>
-                        {
-                            Name = <span class="soco-string">"Home"</span>,
-                            Url = <span class="soco-tag-type-def">"http://example.com"</span>,
-                            IsExpanded = <span class="soco-tag-type-def">true</span>,
-                            CollapseAriaLabel = <span class="soco-string">"Collapse Home section"</span>,
-                            ExpandAriaLabel = <span class="soco-string">"Expand Home section"</span>,
-                            Links = <span class="soco-tag-type-def">new</span><span> List&ltBitNavLinkItem></span>
-                            {
-                                <span class="soco-tag-type-def">new </span><span>BitNavLinkItem</span> { Name = <span class="soco-string">"Activity"</span>, Url = "<span class="soco-tag-type-def">http://msn.com</span>", Key = <span class="soco-string">"key1"</span>, Target=<span class="soco-string">"_blank"</span>, Title = <span class="soco-string">""</span> },
-                                <span class="soco-tag-type-def">new </span><span>BitNavLinkItem</span> { Name = <span class="soco-string">"MSN"</span>, Url = "<span class="soco-tag-type-def">http://msn.com</span>", Key = <span class="soco-string">"key2"</span>, IsEnabled = <span class="soco-tag-type-def">false</span>, Target = <span class="soco-string">"_blank"</span>, Title = <span class="soco-string">"</span> }
-                            }
-                        },
-                        <span class="soco-tag-type-def">new </span><span>BitNavLinkItem</span><span> { Name = </span><span class="soco-string">"Shared Documents and Files"</span><span>, Url = "</span><span class="soco-tag-type-def">http://example.com</span>" , <span>Key = </span><span class="soco-string">"key2"</span> , <span>Target = </span><span class="soco-string">"_blank"</span>},
-                        <span class="soco-tag-type-def">new </span><span>BitNavLinkItem</span><span> { Name = </span><span class="soco-string">"Pages"</span><span>, Url = "</span><span class="soco-tag-type-def">http://msn.com</span>" , <span>Key = </span><span class="soco-string">"key3"</span> , <span>Target = </span><span class="soco-string">"_parent"</span> },
-                        <span class="soco-tag-type-def">new </span><span>BitNavLinkItem</span><span> { Name = </span><span class="soco-string">"Notebook"</span><span>, Url = "</span><span class="soco-tag-type-def">http://msn.com</span>" , <span>Key = </span><span class="soco-string">"key4"</span> , <span>IsEnabled = </span><span class="soco-tag-type-def">false</span> },
-                        <span class="soco-tag-type-def">new </span><span>BitNavLinkItem</span><span> { Name = </span><span class="soco-string">"Communication and Media"</span><span>, Url = "</span><span class="soco-tag-type-def">http://msn.com</span>" , <span>Key = </span><span class="soco-string">"key5"</span> , <span>Target = </span><span class="soco-string">"_top"</span> },
-                        <span class="soco-tag-type-def">new </span><span>BitNavLinkItem</span><span> { Name = </span><span class="soco-string">"News"</span><span>, Url = "</span><span class="soco-tag-type-def">http://msn.com</span>" , <span>Key = </span><span class="soco-string">"key6"</span> , <span>Target = </span><span class="soco-string">"_self"</span> , <span>Icon = </span><span class="soco-string">"News"</span> }
-                    };
-                <span class="soco-code">}</span>
-            </pre>    
-        </CodeSampleContent>
-    </CodeSample>
+        </ExamplePreview>
+        <ExampleSourceCode>
+            <pre>
+            &ltBitNav Style="width: 208px;
+                   height: 350px;
+                   box-sizing: border-box;
+                   border: 1px solid #eee;
+                   overflow-y: auto;"
+                    Class="bit-nav-wrapped-link"
+                    SelectedKey="key6"
+                    AriaLabel="Nav example with wrapped link text"
+                    NavLinkItems="BasicNoToolTipNavLinks">
+            &lt/BitNav>
 
-    <CodeSample Title="Nav Without Url" Description="" CodeSampleContentForCopy="@navLinksWithNoUrlSampleCode">
-        <SampleContent>
+            &#64;code {
+                    private readonly List&ltBitNavLinkItem> BasicNoToolTipNavLinks = new()
+                    {
+                            new BitNavLinkItem
+                            {
+                                    Name = "Home",
+                                    Url = "http://example.com",
+                                    Title = "",
+                                    IsExpanded = true,
+                                    CollapseAriaLabel = "Collapse Home section",
+                                    ExpandAriaLabel = "Expand Home section",
+                                    Links = new List&ltBitNavLinkItem>
+                                    {
+                                            new BitNavLinkItem { Name = "Activity", Url = "http://msn.com", Key = "key1", Target="_blank", Title = "" },
+                                            new BitNavLinkItem { Name = "MSN", Url = "http://msn.com", Key = "key2", IsEnabled = false, Target = "_blank", Title = "" }
+                                    }
+                            },
+                            new BitNavLinkItem { Name = "Shared Documents and Files", Url = "http://example.com", Key = "key3", Target = "_blank", Title = "" },
+                            new BitNavLinkItem { Name = "Pages", Url = "http://msn.com", Key = "key4", Target = "_parent", Title = "" },
+                            new BitNavLinkItem { Name = "Notebook", Url = "http://msn.com", Key = "key5", IsEnabled = false, Title = "" },
+                            new BitNavLinkItem { Name = "Communication and Media", Url = "http://msn.com", Key = "key6", Target = "_top", Title = "" },
+                            new BitNavLinkItem { Name = "News", Key = "key7", Url = "http://cnn.com", Icon = "News", Target = "_self", Title = "" }
+                    };
+            }
+            </pre>
+        </ExampleSourceCode>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Nav Without Url" ExampleSourceCodeForCopy="@navLinksWithNoUrlSampleCode" ExampleId="example3">
+        <ExamplePreview>
             <div>
                 <BitNav Style="width: 300px;"
                         NavLinkItems="BasicNoUrlNavLinks"
@@ -113,125 +120,124 @@
                         AriaLabel="Nav example similar to one found in this demo page">
                 </BitNav>
             </div>
-        </SampleContent>
-        <CodeSampleContent>
+        </ExamplePreview>
+        <ExampleSourceCode>
             <pre>
-                &lt<span class="soco-component-attr">BitNav Style</span><span>="width: 300px;"</span>
-                                 <span class="soco-component-attr">NavLinkItems</span>="BasicNoUrlNavLinks"
-                                 <span class="soco-component-attr">RenderType</span>="BitNavRenderType.Grouped"
-                                 <span class="soco-component-attr">AriaLabel</span>="Nav example similar to one found in this demo page"
-                &lt/<span class="soco-component-attr">BitNav</span>&gt;
-                <span class="soco-code">&#64;code {</span>
-                    <span class="soco-tag-type-def">private readonly </span> List&ltBitNavLinkItem> BasicNoUrlNavLinks = <span class=soco-tag-type-def>new</span>()
-                    {
-                        <span class="soco-tag-type-def">new </span><span>BitNavLinkItem</span>
-                        {
-                            Name = <span class="soco-string">"Basic components"</span>,
-                            CollapseAriaLabel = <span class="soco-string">"Collapse Basic components section"</span>,
-                            IsExpanded = <span class="soco-tag-type-def">true</span>,
-                            Links = <span class="soco-tag-type-def">new</span><span> List&ltBitNavLinkItem></span>
-                            {
-                                <span class="soco-tag-type-def">new </span><span> List&ltBitNavLinkItem></span> 
-                                {
-                                    <span class="soco-tag-type-def">new </span><span>BitNavLinkItem</span><span> { Name = </span><span class="soco-string">"ActivityItem"</span><span>, Url = "</span><span class="soco-string">#/examples/activityitem</span>" , <span>Key = </span><span class="soco-string">"ActivityItem"</span> },                        
-                                    <span class="soco-tag-type-def">new </span><span>BitNavLinkItem</span><span> { Name = </span><span class="soco-string">"Breadcrumb"</span><span>, Url = "</span><span class="soco-string">#/examples/breadcrumb</span>" , <span>Key = </span><span class="soco-string">"Breadcrumb"</span> },                        
-                                    <span class="soco-tag-type-def">new </span><span>BitNavLinkItem</span><span> { Name = </span><span class="soco-string">"Button"</span><span>, Url = "</span><span class="soco-string">#/examples/button</span>" , <span>Key = </span><span class="soco-string">"Button"</span> }                        
-                                }
-                            },
-                            <span class="soco-tag-type-def">new </span><span>BitNavLinkItem</span>
-                            {
-                                Name = <span class="soco-string">"Extended components"</span>,
-                                CollapseAriaLabel = <span class="soco-string">"Collapse Extended components section"</span>,
-                                IsExpanded = <span class="soco-tag-type-def">true</span>,
-                                Links = <span class="soco-tag-type-def">new</span><span> List&ltBitNavLinkItem></span>
-                                {
-                                    <span class="soco-tag-type-def">new </span><span>BitNavLinkItem</span><span> { Name = </span><span class="soco-string">"ColorPicker"</span><span>, Url = "</span><span class="soco-string">#/examples/colorpicker</span>" , <span>Key = </span><span class="soco-string">"ColorPicker"</span> },                        
-                                    <span class="soco-tag-type-def">new </span><span>BitNavLinkItem</span><span> { Name = </span><span class="soco-string">"ExtendedPeoplePicker"</span><span>, Url = "</span><span class="soco-string">#/examples/extendedpeoplepicker</span>" , <span>Key = </span><span class="soco-string">"ExtendedPeoplePicker"</span> },                        
-                                    <span class="soco-tag-type-def">new </span><span>BitNavLinkItem</span><span> { Name = </span><span class="soco-string">"GroupedList"</span><span>, Url = "</span><span class="soco-string">#/examples/groupedlist</span>" , <span>Key = </span><span class="soco-string">"GroupedList"</span> }                                                                
-                                },
-                            }
-                            <span class="soco-tag-type-def">new </span><span>BitNavLinkItem</span>
-                            {
-                                Name = <span class="soco-string">"Utilities"</span>,
-                                CollapseAriaLabel = <span class="soco-string">"Collapse Utilities section"</span>,
-                                IsExpanded = <span class="soco-tag-type-def">true</span>,
-                                Links = <span class="soco-tag-type-def">new</span><span> List&ltBitNavLinkItem></span>
-                                {
-                                    <span class="soco-tag-type-def">new </span><span>BitNavLinkItem</span><span> { Name = </span><span class="soco-string">"FocusTrapZone"</span><span>, Url = "</span><span class="soco-string">#/examples/focustrapzone</span>" , <span>Key = </span><span class="soco-string">"FocusTrapZone"</span> },                        
-                                    <span class="soco-tag-type-def">new </span><span>BitNavLinkItem</span><span> { Name = </span><span class="soco-string">"FocusZone"</span><span>, Url = "</span><span class="soco-string">#/examples/focuszone</span>" , <span>Key = </span><span class="soco-string">"FocusZone"</span> },                        
-                                    <span class="soco-tag-type-def">new </span><span>BitNavLinkItem</span><span> { Name = </span><span class="soco-string">"MarqueeSelection"</span><span>, Url = "</span><span class="soco-string">#/examples/marqueeselection</span>" , <span>Key = </span><span class="soco-string">"MarqueeSelection"</span> }                                                                
-                                }
-                            }
-                        }
-                    };
-                <span class="soco-code">}</span>
-            </pre>
-        </CodeSampleContent>
-    </CodeSample>
+            &ltBitNav Style="width: 300px;"
+                    NavLinkItems="BasicNoUrlNavLinks"
+                    RenderType="BitNavRenderType.Grouped"
+                    AriaLabel="Nav example similar to one found in this demo page">
+            &lt/BitNav>
 
-    <CodeSample Title="Nav With Nested Links" Description="" CodeSampleContentForCopy="@navWithNestedLinksSampleCode">
-        <SampleContent>
+            &#64;code {
+                    private readonly List&ltBitNavLinkItem> BasicNoUrlNavLinks = new()
+                    {
+                            new BitNavLinkItem
+                            {
+                                    Name = "Basic components",
+                                    CollapseAriaLabel = "Collapse Basic components section",
+                                    IsExpanded = true,
+                                    Links = new List&ltBitNavLinkItem>
+                                    {
+                                            new BitNavLinkItem { Name= "ActivityItem", Key = "ActivityItem", Url = "#/examples/activityitem" },
+                                            new BitNavLinkItem { Name= "Breadcrumb", Key = "Breadcrumb", Url = "#/examples/breadcrumb" },
+                                            new BitNavLinkItem { Name= "Button", Key = "Button", Url = "#/examples/button" }
+                                    }
+                            },
+                            new BitNavLinkItem
+                            {
+                                    Name = "Extended components",
+                                    CollapseAriaLabel = "Collapse Extended components section",
+                                    IsExpanded = true,
+                                    Links = new List&ltBitNavLinkItem>
+                                    {
+                                            new BitNavLinkItem { Name = "ColorPicker", Key = "ColorPicker", Url ="#/examples/colorpicker" },
+                                            new BitNavLinkItem { Name = "ExtendedPeoplePicker", Key = "ExtendedPeoplePicker", Url ="#/examples/extendedpeoplepicker" },
+                                            new BitNavLinkItem { Name = "GroupedList", Key = "GroupedList", Url ="#/examples/groupedlist" }
+                                    }
+                            },
+                            new BitNavLinkItem
+                            {
+                                    Name = "Utilities",
+                                    CollapseAriaLabel = "Collapse Utilities section",
+                                    IsExpanded = true,
+                                    Links = new List&ltBitNavLinkItem>
+                                    {
+                                            new BitNavLinkItem { Name = "FocusTrapZone", Key = "FocusTrapZone", Url = "#/examples/focustrapzone" },
+                                            new BitNavLinkItem { Name = "FocusZone", Key = "FocusZone", Url = "#/examples/focuszone" },
+                                            new BitNavLinkItem { Name = "MarqueeSelection", Key = "MarqueeSelection", Url = "#/examples/marqueeselection" }
+                                    }
+                            }
+                    };
+            }
+            </pre>
+        </ExampleSourceCode>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Nav With Nested Links" ExampleSourceCodeForCopy="@navWithNestedLinksSampleCode" ExampleId="example4">
+        <ExamplePreview>
             <div>
                 <BitNav NavLinkItems="NestedLinks"
                         AriaLabel="Nav example with nested links"
                         SelectedKey="Key1-1-2">
                 </BitNav>
             </div>
-        </SampleContent>
-        <CodeSampleContent>
+        </ExamplePreview>
+        <ExampleSourceCode>
             <pre>
-                &lt;<span class="soco-component-attr">BitNav NavLinkItems</span>="NestedLinks"
-                                  <span class="soco-component-attr">AriaLabel</span>="Nav example with nested links" 
-                                  <span class="soco-component-attr">SelectedKey</span>="Key1-1-2"&gt;
-                &lt;/<span class="soco-component-attr">BitNav</span>&gt;
-                <span class="soco-code">&#64;code {</span>
-                    <span class="soco-tag-type-def">private readonly </span><span>List&ltBitNavLinkItem></span> NestedLinks = <span class=soco-tag-type-def>new</span>()                        
-                    {
-                        <span class="soco-tag-type-def">new </span><span>BitNavLinkItem</span>
-                        {
-                            Name = <span class="soco-string">"Parent link 1"</span>,
-                            Url = <span class="soco-string">"http://example.com"</span>,
-                            Key = <span class="soco-string">"key1"</span>,
-                            Title = <span class="soco-string">"Parent link 1"</span>,
-                            CollapseAriaLabel = <span class="soco-string">"Collapse Parent link 1"</span>,
-                            Links = <span class="soco-tag-type-def">new</span><span> List&ltBitNavLinkItem></span>
-                            {                        
-                                <span class="soco-tag-type-def">new </span><span>BitNavLinkItem</span> 
-                                {                        
-                                    Name = <span class="soco-string">"Child link 1"</span>,
-                                    Url = <span class="soco-tag-type-def">"http://msn.com"</span>,
-                                    Key = <span class="soco-string">"key1-1"</span>,
-                                    Title = <span class="soco-string">"Child link 1"</span>,
-                                    Links = <span class="soco-tag-type-def">new</span><span> List&ltBitNavLinkItem></span>
-                                    {
-                                        <span class="soco-tag-type-def">new </span><span>BitNavLinkItem</span><span> { Name = </span><span class="soco-string">"3rd level link 1"</span><span>, Url = "</span><span class="soco-string">http://msn.com</span>" , <span>Title = </span><span class="soco-string">"3rd level link 1"</span> , <span>Key = </span><span class="soco-string">"Key1-1-1"</span> },
-                                        <span class="soco-tag-type-def">new </span><span>BitNavLinkItem</span><span> { Name = </span><span class="soco-string">"3rd level link 2"</span><span>, Url = "</span><span class="soco-string">http://msn.com</span>" , <span>Title = </span><span class="soco-string">"3rd level link 2"</span> , <span>Key = </span><span class="soco-string">"Key1-1-2"</span> , <span>IsEnabled = "</span><span class="soco-tag-type-def">false</span>" },
-                                    }
-                                },
-                                <span class="soco-tag-type-def">new </span><span>BitNavLinkItem</span><span> { Name = </span><span class="soco-string">"3rd level link 2"</span><span>, Url = "</span><span class="soco-string">http://msn.com</span>" , <span>Title = </span><span class="soco-string">"3rd level link 2"</span> , <span>Key = </span><span class="soco-string">"Key1-2"</span> },
-                                <span class="soco-tag-type-def">new </span><span>BitNavLinkItem</span><span> { Name = </span><span class="soco-string">"3rd level link 3"</span><span>, Url = "</span><span class="soco-string">http://msn.com</span>" , <span>Title = </span><span class="soco-string">"3rd level link 3"</span> , <span>Key = </span><span class="soco-string">"Key1-3"</span> , <span>IsEnabled = "</span><span class="soco-tag-type-def">false</span>" },
-                            }
-                        },
-                        <span class="soco-tag-type-def">new </span><span>BitNavLinkItem</span>
-                        {
-                            Name = <span class="soco-string">"Parent link 2"</span>,
-                            Key = <span class="soco-string">"key2"</span>,
-                            Title = <span class="soco-string">Parent link 2</span>,
-                            Url = <span class="soco-tag-type-def">http://example.com</span>,
-                            CollapseAriaLabel = <span class="soco-string">"Collapse Parent link 2"</span>,
-                            Links = <span class="soco-tag-type-def">new</span><span> List&ltBitNavLinkItem></span>
-                            {
-                                <span class="soco-tag-type-def">new </span><span>BitNavLinkItem</span><span> { Name = </span><span class="soco-string">"Child link 4"</span><span>, Title = </span><span class="soco-string">"Child link 4"</span><span>, Url = "</span><span class="soco-tag-type-def">http://example.com</span>" , <span>Key = </span><span class="soco-string">"Key2-1"</span> }
-                            }
-                        }
-                    };
-                <span class="soco-code">}</span>
-            </pre>          
-        </CodeSampleContent>
-    </CodeSample>
+            &ltBitNav NavLinkItems="NestedLinks"
+                    AriaLabel="Nav example with nested links"
+                    SelectedKey="Key1-1-2">
+            &lt/BitNav>
 
-    <CodeSample Title="Nav With Custom Group Header" Description="" CodeSampleContentForCopy="@navWithCustomHeaderLinksSampleCode">
-        <SampleContent>
+            &#64;code {
+                    private readonly List&ltBitNavLinkItem> NestedLinks = new()
+                    {
+                            new()
+                            {
+                                    Name = "Parent link 1",
+                                    Url = "http://example.com",
+                                    Key = "Key1",
+                                    Title = "Parent link 1",
+                                    CollapseAriaLabel = "Collapse Parent link 1",
+                                    Links = new List&ltBitNavLinkItem>()
+                                    {
+                                            new()
+                                            {
+                                                    Name = "Child link 1",
+                                                    Url = "http://msn.com",
+                                                    Key = "Key1-1",
+                                                    Title = "Child link 1",
+                                                    Links = new List&ltBitNavLinkItem>()
+                                                    {
+                                                            new() { Name = "3rd level link 1", Title = "3rd level link 1", Url = "http://msn.com", Key = "Key1-1-1" },
+                                                            new() { Name = "3rd level link 2", Title = "3rd level link 2", Url = "http://msn.com", Key = "Key1-1-2", IsEnabled = false }
+                                                    }
+                                            },
+                                            new() { Name = "Child link 2", Title = "Child link 2", Url = "http://msn.com", Key = "Key1-2" },
+                                            new() { Name = "Child link 3", Title = "Child link 3", Url = "http://msn.com", Key = "Key1-3", IsEnabled = false },
+                                    }
+                            },
+                            new()
+                            {
+                                    Name = "Parent link 2",
+                                    Title = "Parent link 2",
+                                    Url = "http://example.com",
+                                    Key = "Key2",
+                                    CollapseAriaLabel = "Collapse Parent link 2",
+                                    Links = new List&ltBitNavLinkItem>()
+                                    {
+                                            new() { Name = "Child link 4", Title = "Child link 4", Url = "http://example.com", Key = "Key2-1" }
+                                    }
+                            }
+                    };
+            }
+            </pre>
+        </ExampleSourceCode>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Nav With Custom Group Header" ExampleSourceCodeForCopy="@navWithCustomHeaderLinksSampleCode" ExampleId="example5">
+        <ExamplePreview>
             <div>
                 <BitNav NavLinkItems="CustomHeaderLinks"
                         RenderType="BitNavRenderType.Grouped"
@@ -241,45 +247,48 @@
                     </HeaderTemplate>
                 </BitNav>
             </div>
-        </SampleContent>
-        <CodeSampleContent>
+        </ExamplePreview>
+        <ExampleSourceCode>
             <pre>
-                &lt;<span class="soco-component-attr">BitNav NavLinkItems</span>="CustomHeaderLinks"
-                                  <span class="soco-component-attr">RenderType</span>="BitNavRenderType.Grouped"
-                                  <span class="soco-component-attr">AriaLabel</span>="Nav with custom group header"&gt;
-                      &lt;<span class="soco-component-attr">HeaderTemplate Context</span>="link"&gt;
-                                &lt;<span class="soco-tag-type-def">h3</span>&gt;<span class="soco-code">&#64;</span>link.Name &lt;/<span class="soco-tag-type-def">h3</span>&gt;
-                      &lt;/<span class="soco-component-attr">HeaderTemplate</span>="link"&gt;
-                &lt;/<span class="soco-component-attr">BitNav</span>&gt;
-                <span class="soco-code">&#64;code {</span>
-                    <span class="soco-tag-type-def">private readonly </span> <span>List&ltBitNavLinkItem></span> CustomHeaderLinks = <span class=soco-tag-type-def>new</span>()
-                    {
-                        <span class="soco-tag-type-def">new </span><span>BitNavLinkItem</span>
-                        {
-                            Name = <span class="soco-string">"Pages"</span>,
-                            Links = <span class="soco-tag-type-def">new</span><span> List&ltBitNavLinkItem></span>
-                            {
-                                <span class="soco-tag-type-def">new </span><span>BitNavLinkItem</span><span> { Name = </span><span class="soco-string">"Activity"</span><span> , Title = </span><span class="soco-string">"Activity"</span><span>, Url = "</span><span class="soco-string">http://msn.com</span>" , <span>Key = </span><span class="soco-string">"Key2-1"</span> },
-                                <span class="soco-tag-type-def">new </span><span>BitNavLinkItem</span><span> { Name = </span><span class="soco-string">"News"</span><span> , Title = </span><span class="soco-string">"News"</span><span> Url = "</span><span class="soco-string">http://msn.com</span>" , <span>Key = </span><span class="soco-string">"Key2-1"</span> }
-                            }
-                        },
-                        <span class="soco-tag-type-def">new </span><span>BitNavLinkItem</span>
-                        {                        
-                            Name = <span class="soco-string">"More pages"</span>,
-                            Links = <span class="soco-tag-type-def">new</span><span> List&ltBitNavLinkItem></span>
-                            {
-                                <span class="soco-tag-type-def">new </span><span>BitNavLinkItem</span><span> { Name = </span><span class="soco-string">"Settings"</span><span> , Title = </span><span class="soco-string">"Settings"</span><span>, Url = "</span><span class="soco-string">http://example.com</span>" , <span>Key = </span><span class="soco-string">"Key2-1"</span> },
-                                <span class="soco-tag-type-def">new </span><span>BitNavLinkItem</span><span> { Name = </span><span class="soco-string">"Notes"</span><span> , Title = </span><span class="soco-string">"Notes"</span><span> Url = "</span><span class="soco-string">http://example.com</span>" , <span>Key = </span><span class="soco-string">"Key2-1"</span> }
-                            }
-                        }
-                    };
-                <span class="soco-code">}</span>
-            </pre>        
-        </CodeSampleContent>
-    </CodeSample>
+            &ltBitNav NavLinkItems="CustomHeaderLinks"
+                    RenderType="BitNavRenderType.Grouped"
+                    AriaLabel="Nav with custom group header">
+                    &ltHeaderTemplate Context="link">
+                            &lth3> &#64;link.Name &lt/h3>
+                    &lt/HeaderTemplate>
+            &lt/BitNav>
 
-    <CodeSample Title="Basic Nav, Top Of The Another Element" Description="" CodeSampleContentForCopy="@navTopOfAnotherSampleCode">
-        <SampleContent>
+            &#64;code {
+                    private readonly List&ltBitNavLinkItem> CustomHeaderLinks = new()
+                    {
+                            new BitNavLinkItem
+                            {
+                                    Name = "Pages",
+                                    IsExpanded = true,
+                                    Links = new List&ltBitNavLinkItem>
+                                    {
+                                            new BitNavLinkItem { Name = "Activity", Url = "http://msn.com", Key = "Key1-1", Title = "Activity" },
+                                            new BitNavLinkItem { Name = "News", Title = "News", Url = "http://msn.com", Key = "Key1-2" },
+                                    }
+                            },
+                            new BitNavLinkItem
+                            {
+                                    Name = "More pages",
+                                    IsExpanded = true,
+                                    Links = new List&ltBitNavLinkItem>
+                                    {
+                                            new BitNavLinkItem { Name= "Settings", Title = "Settings", Url = "http://example.com", Key = "Key2-1" },
+                                            new BitNavLinkItem { Name= "Notes", Title = "Notes", Url = "http://example.com", Key = "Key2-1" }
+                                    }
+                            }
+                    };
+            }
+            </pre>
+        </ExampleSourceCode>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Basic Nav, Top Of The Another Element" ExampleSourceCodeForCopy="@navTopOfAnotherSampleCode"  ExampleId="example6">
+        <ExamplePreview>
             <div>
                 <BitNav Style="width: 208px;
                             height: 350px;
@@ -289,52 +298,54 @@
                             z-index: 2;
                             background-color: white;"
                         NavLinkItems="BasicNavLinks"
-                        IsOnTop="true"
                         AriaLabel="Nav basic example"
                         SelectedKey="key3">
                 </BitNav>
             </div>
-        </SampleContent>
-        <CodeSampleContent>
+        </ExamplePreview>
+        <ExampleSourceCode>
             <pre>
-                &lt;<span class="soco-tag-type-def">div style</span>="position: relative;"&gt
-                     &lt;<span class="soco-tag-type-def">div </span><span class="soco-var-attr">style</span>="width: 200px;height: 500px;background-color: rebeccapurple;"&lt;/<span class="soco-tag-type-def">div</span>&gt;
-                     &lt;<span class="soco-component-attr">BitNav Style</span>="width: 208px;height: 350px;box-sizing: border-box;border: 1px solid #eee;overflow-y: auto;background-color: white;"
-                                       <span class="soco-component-attr">NavLinkItems</span>="BasicNavLinks"
-                                       <span class="soco-component-attr">IsOnTop</span>="<span class="soco-tag-type-def">true</span>"
-                                       <span class="soco-component-attr">AriaLabel</span>="Nav basic example"
-                                       <span class="soco-component-attr">SelectedKey</span>="key3">
-                     &lt;/<span class="soco-component-attr">BitNav</span><span>&gt;</span>
-                &lt;/<span class="soco-tag-type-def">div</span>&gt;
-                <span class="soco-code">&#64;code {</span>
-                    <span class="soco-tag-type-def">private readonly </span> <span>List&ltBitNavLinkItem></span> BasicNavLinks = <span class=soco-tag-type-def>new</span>()
-                    {
-                        <span class="soco-tag-type-def">new </span><span>BitNavLinkItem</span>
-                        {
-                            Name = <span class="soco-string">"Home"</span>,
-                            Url = <span class="soco-tag-type-def">"http://example.com"</span>,
-                            ExpandAriaLabel = <span class="soco-string">"Expand Home section"</span>,
-                            CollapseAriaLabel = <span class="soco-string">"Collapse Home section"</span>,
-                            IsExpanded = <span class="soco-tag-type-def">true</span>,
-                            Links = <span class="soco-tag-type-def">new</span><span> List&ltBitNavLinkItem></span>
-                            {
-                                <span class="soco-tag-type-def">new </span><span>BitNavLinkItem</span> { Name = <span class="soco-string">"Activity"</span>, Url = "<span class="soco-tag-type-def">http://msn.com</span>", Key = <span class="soco-string">"key1"</span>, Target=<span class="soco-string">"_blank"</span> },
-                                <span class="soco-tag-type-def">new </span><span>BitNavLinkItem</span> { Name = <span class="soco-string">"MSN"</span>, Url = "<span class="soco-tag-type-def">http://msn.com</span>", Key = <span class="soco-string">"key2"</span>, IsEnabled = <span class="soco-tag-type-def">false</span>, Target = <span class="soco-string">"_blank"</span> }
-                            }
-                        },
-                        <span class="soco-tag-type-def">new </span><span>BitNavLinkItem</span><span> { Name = </span><span class="soco-string">"Documents"</span><span>, Url = "</span><span class="soco-tag-type-def">http://example.com</span>" , <span>Key = </span><span class="soco-string">"key2"</span> , <span>Target = </span><span class="soco-string">"_blank"</span> , <span>IsExpanded = </span><span class="soco-tag-type-def">true</span> },
-                        <span class="soco-tag-type-def">new </span><span>BitNavLinkItem</span><span> { Name = </span><span class="soco-string">"Pages"</span><span>, Url = "</span><span class="soco-tag-type-def">http://msn.com</span>" , <span>Key = </span><span class="soco-string">"key3"</span> , <span>Target = </span><span class="soco-string">"_parent"</span> },
-                        <span class="soco-tag-type-def">new </span><span>BitNavLinkItem</span><span> { Name = </span><span class="soco-string">"Notebook"</span><span>, Url = "</span><span class="soco-tag-type-def">http://msn.com</span>" , <span>Key = </span><span class="soco-string">"key4"</span> , <span>IsEnabled = </span><span class="soco-tag-type-def">false</span> },
-                        <span class="soco-tag-type-def">new </span><span>BitNavLinkItem</span><span> { Name = </span><span class="soco-string">"Communication and Media"</span><span>, Url = "</span><span class="soco-tag-type-def">http://msn.com</span>" , <span>Key = </span><span class="soco-string">"key5"</span> , <span>Target = </span><span class="soco-string">"_top"</span> },
-                        <span class="soco-tag-type-def">new </span><span>BitNavLinkItem</span><span> { Name = </span><span class="soco-string">"News"</span><span>, Title = </span><span class="soco-string">"News"</span><span>, Url = "</span><span class="soco-tag-type-def">http://msn.com</span>" , <span>Key = </span><span class="soco-string">"key6"</span> , <span>Target = </span><span class="soco-string">"_self"</span> , <span>Icon = </span><span class="soco-string">News</span> }
-                    };
-                <span class="soco-code">}</span>
-            </pre>   
-        </CodeSampleContent>
-    </CodeSample>
+            &ltBitNav Style="width: 208px;
+                            height: 350px;
+                            box-sizing: border-box;
+                            border: 1px solid #eee;
+                            overflow-y: auto;
+                            z-index: 2;
+                            background-color: white;"
+                    NavLinkItems="BasicNavLinks"
+                    AriaLabel="Nav basic example"
+                    SelectedKey="key3">
+            &lt/BitNav>
 
-    <CodeSample Title="Basic Nav With Manual Mode" Description="" CodeSampleContentForCopy="@navWithManualModeLinksSampleCode">
-        <SampleContent>
+            &#64;code {
+                    private readonly List&ltBitNavLinkItem> BasicNavLinks = new()
+                    {
+                            new BitNavLinkItem
+                            {
+                                    Name = "Home",
+                                    Url = "http://example.com",
+                                    ExpandAriaLabel = "Expand Home section",
+                                    CollapseAriaLabel = "Collapse Home section",
+                                    IsExpanded = true,
+                                    Links = new List&ltBitNavLinkItem>
+                                    {
+                                            new BitNavLinkItem { Name = "Activity", Url = "http://msn.com", Key = "key1", Target="_blank" },
+                                            new BitNavLinkItem { Name = "MSN", Url = "http://msn.com", Key = "key2", IsEnabled = false, Target = "_blank" }
+                                    }
+                            },
+                            new BitNavLinkItem { Name = "Documents", Url = "http://example.com", Key = "key3", Target = "_blank", IsExpanded = true },
+                            new BitNavLinkItem { Name = "Pages", Url = "http://msn.com", Key = "key4", Target = "_parent" },
+                            new BitNavLinkItem { Name = "Notebook", Url = "http://msn.com", Key = "key5", IsEnabled = false },
+                            new BitNavLinkItem { Name = "Communication and Media", Url = "http://msn.com", Key = "key6", Target = "_top" },
+                            new BitNavLinkItem { Name = "News", Title = "News", Url = "http://msn.com", Key = "key7", Icon = "News", Target = "_self" },
+                    };
+            }
+            </pre>
+        </ExampleSourceCode>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Basic Nav With Manual Mode" ExampleSourceCodeForCopy="@navWithManualModeLinksSampleCode"  ExampleId="example7">
+        <ExamplePreview>
             <div>
                 <BitNav Style="width: 208px;
                    height: 350px;
@@ -348,44 +359,51 @@
                         SelectedKeyChanged="HandleSelectedKeyChange">
                 </BitNav>
             </div>
-        </SampleContent>
-        <CodeSampleContent>
+        </ExamplePreview>
+        <ExampleSourceCode>
             <pre>
-                &lt<span class="soco-component-attr">BitNav Style</span>="width: 208px;height: 350px;box-sizing: border-box;border: 1px solid #eee;overflow-y: auto;" 
-                                 <span class="soco-component-attr">NavLinkItems</span>="BasicNavLinksWithoutURL"
-                                 <span class="soco-component-attr">Mode</span>="BitNavMode.Manual"
-                                 <span class="soco-component-attr">AriaLabel</span>="Nav manual mode example"
-                                 <span class="soco-component-attr">SelectedKey</span>="<span class="soco-code">&#64;</span>BitNavManualModeSelectedKey"
-                                 <span class="soco-component-attr">SelectedKeyChanged</span>="HandleSelectedKeyChange">
-                &lt;/<span class="soco-component-attr">BitNav</span>&gt;
-                <span class="soco-code">&#64;code {</span>
-                    <span class="soco-tag-type-def">private readonly </span> <span>List&ltBitNavLinkItem></span> BasicNavLinksWithoutURL = <span class=soco-tag-type-def>new</span>()
+            &ltBitNav Style="width: 208px;
+                   height: 350px;
+                   box-sizing: border-box;
+                   border: 1px solid #eee;
+                   overflow-y: auto;"
+                    NavLinkItems="BasicNavLinksWithoutURL"
+                    Mode="BitNavMode.Manual"
+                    AriaLabel="Nav manual mode example"
+                    SelectedKey="&#64;BitNavManualModeSelectedKey"
+                    SelectedKeyChanged="HandleSelectedKeyChange">
+            &lt/BitNav>
+
+            &#64;code {
+                    private readonly List&ltBitNavLinkItem> BasicNavLinksWithoutURL = new()
                     {
-                        <span class="soco-tag-type-def">new </span><span class="soco-component-attr">BitNavLinkItem</span>
-                        {
-                            Name = <span class="soco-string">"Home"</span>,
-                            ExpandAriaLabel = <span class="soco-string">"Expand Home section"</span>,
-                            CollapseAriaLabel = <span class="soco-string">"Collapse Home section"</span>,
-                            IsExpanded = <span class="soco-tag-type-def">true</span>,
-                            Links = <span class="soco-tag-type-def">new</span><span> List&ltBitNavLinkItem></span>
+                            new BitNavLinkItem
                             {
-                                <span class="soco-tag-type-def">new </span><span>BitNavLinkItem</span> { Name = <span class="soco-string">"Activity"</span>, Key = <span class="soco-string">"key1"</span>, Target = <span class="soco-string">"_blank"</span> },
-                                <span class="soco-tag-type-def">new </span><span>BitNavLinkItem</span> { Name = <span class="soco-string">"MSN"</span>, Key = "key2", IsEnabled = <span class="soco-tag-type-def">false</span>, Target = <span class="soco-string">"_blank"</span> }
-                            }
-                        },
-                        <span class="soco-tag-type-def">new </span><span>BitNavLinkItem</span><span> { Name = </span><span class="soco-string">"Documents"</span>, <span>Key = </span><span class="soco-string">"key2"</span> , <span>Target = </span><span class="soco-string">"_blank"</span> , <span>IsExpanded = </span><span class="soco-tag-type-def">true</span> },
-                        <span class="soco-tag-type-def">new </span><span>BitNavLinkItem</span><span> { Name = </span><span class="soco-string">"Pages"</span>, <span>Key = </span><span class="soco-string">"key3"</span> , <span>Target = </span><span class="soco-string">"_parent"</span> },
-                        <span class="soco-tag-type-def">new </span><span>BitNavLinkItem</span><span> { Name = </span><span class="soco-string">"Notebook"</span>, <span>Key = </span><span class="soco-string">"key4"</span> , <span>IsEnabled = </span><span class="soco-tag-type-def">false</span> },
-                        <span class="soco-tag-type-def">new </span><span>BitNavLinkItem</span><span> { Name = </span><span class="soco-string">"Communication and Media"</span>, <span>Key = </span><span class="soco-string">"key5"</span> , <span>Target = </span><span class="soco-string">"_top"</span> },
-                        <span class="soco-tag-type-def">new </span><span>BitNavLinkItem</span><span> { Name = </span><span class="soco-string">"News"</span><span>, Title = </span><span class="soco-string">"News"</span>, <span>Key = </span><span class="soco-string">"key6"</span> , <span>Target = </span><span class="soco-string">"_self"</span> , <span>Icon = </span><span class="soco-string">News</span> }
+                                    Name = "Home",
+                                    ExpandAriaLabel = "Expand Home section",
+                                    CollapseAriaLabel = "Collapse Home section",
+                                    IsExpanded = true,
+                                    Links = new List&ltBitNavLinkItem>
+                                    {
+                                            new BitNavLinkItem { Name = "Activity", Key = "key1", Target="_blank" },
+                                            new BitNavLinkItem { Name = "MSN", Key = "key2", IsEnabled = false, Target = "_blank" }
+                                    }
+                            },
+                            new BitNavLinkItem { Name = "Documents", Key = "key3", Target = "_blank", IsExpanded = true },
+                            new BitNavLinkItem { Name = "Pages", Key = "key4", Target = "_parent" },
+                            new BitNavLinkItem { Name = "Notebook", Key = "key5", IsEnabled = false },
+                            new BitNavLinkItem { Name = "Communication and Media", Key = "key6", Target = "_top" },
+                            new BitNavLinkItem { Name = "News", Title = "News", Key = "key7", Icon = "News", Target = "_self" },
                     };
-                    <span class="soco-tag-type-def">private string</span> BitNavManualModeSelectedKey = <span class="soco-string">"key3"</span>;
-                    <span class="soco-tag-type-def">private void</span> HandleSelectedKeyChange(<span class="soco-tag-type-def">string</span> selectedKey)
-                    <span>{</span>
-                        BitNavManualModeSelectedKey = selectedKey;
-                    <span>}</span>
-                <span class="soco-code">}</span>
-            </pre>     
-        </CodeSampleContent>
-    </CodeSample>
-</ComponentPage>
+
+                    private string BitNavManualModeSelectedKey = "key3";
+
+                    private void HandleSelectedKeyChange(string selectedKey)
+                    {
+                            BitNavManualModeSelectedKey = selectedKey;
+                    }
+            }
+            </pre>
+        </ExampleSourceCode>
+    </ComponentExampleBox>
+</ComponentDemo>
