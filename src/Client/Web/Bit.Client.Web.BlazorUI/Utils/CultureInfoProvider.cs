@@ -1,8 +1,8 @@
 ﻿using System.Globalization;
 
-namespace Bit.Client.Web.BlazorUI.Components.Helper
+namespace Bit.Client.Web.BlazorUI.Utils
 {
-    public static class CultureInfoHelper
+    public static class CultureInfoProvider
     {
         public static CultureInfo GetPersianCaltureByFinglishNames()
         {

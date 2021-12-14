@@ -1,6 +1,5 @@
 ﻿using System;
-using System.Globalization;
-using Bit.Client.Web.BlazorUI.Components.Helper;
+using Bit.Client.Web.BlazorUI.Utils;
 using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -120,7 +119,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Pickers
                parameters =>
                {
                    parameters.Add(p => p.IsOpen, true);
-                   parameters.Add(p => p.Culture, CultureInfoHelper.GetPersianCaltureByFinglishNames());
+                   parameters.Add(p => p.Culture, CultureInfoProvider.GetPersianCaltureByFinglishNames());
                });
 
             var monthButtons = component.FindAll(".month-picker-wrapper .grid-container .btn-row button");
