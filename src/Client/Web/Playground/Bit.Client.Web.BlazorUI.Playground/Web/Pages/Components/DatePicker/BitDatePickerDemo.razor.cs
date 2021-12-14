@@ -7,8 +7,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.DatePicker
 {
     public partial class BitDatePickerDemo
     {
-        private string selectedDate = "";
-        private DayOfWeek firstDayOfWeek = DayOfWeek.Sunday;
+        private DateTimeOffset? selectedDate = new DateTimeOffset(new DateTime(2020, 1, 17), DateTimeOffset.Now.Offset);
 
         private readonly List<ComponentParameter> componentParameters = new()
         {
@@ -255,13 +254,8 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.DatePicker
         private readonly string datePickerWithcustomFormattingSampleCode = $"<BitDatePicker Style='width: 300px' OnSelectDate='OnDateFormat'></BitDatePicker>{Environment.NewLine}" +
            $"<BitLabel >this is selected date: @selectedDate </BitLabel>{Environment.NewLine}" +
            $"@code {{{Environment.NewLine}" +
-           $"private string OnDateFormat(BitDate date) => $'{{date.GetDate()}}/{{date.GetMonth()}}/{{date.GetYear()}}';{Environment.NewLine}" +
+           $"private string OnDateFormat(BitDate date) => $'{{date.Year}}/{{date.Month}}/{{date.Day}}';{Environment.NewLine}" +
            $"}}";
-
-        private string OnDateFormat(BitDate date)
-        {
-            return $"{date.GetDate()}/{date.GetMonth()}/{date.GetYear()}";
-        }
 
         private List<BitDropDownItem> GetFirstDayOfWeekDropdownItems()
         {
@@ -317,11 +311,6 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.DatePicker
             });
 
             return items;
-        }
-
-        private void SelectFirstDayOfWeek(BitDropDownItem item)
-        {
-            firstDayOfWeek = (DayOfWeek)int.Parse(item.Value);
         }
     }
 }

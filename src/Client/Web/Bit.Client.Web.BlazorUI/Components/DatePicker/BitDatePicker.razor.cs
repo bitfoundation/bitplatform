@@ -12,7 +12,6 @@ namespace Bit.Client.Web.BlazorUI
         private const int DEFAULT_WEEK_COUNT = 6;
         private const int DEFAULT_DAY_COUNT_PER_WEEK = 7;
         private bool isOpen;
-        private Calendar? calendar;
 #pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
         private int[,] currentMonthCalendar = new int[DEFAULT_WEEK_COUNT, DEFAULT_DAY_COUNT_PER_WEEK];
 #pragma warning restore CA1814 // Prefer jagged arrays over multidimensional
@@ -21,8 +20,8 @@ namespace Bit.Client.Web.BlazorUI
         private int currentMonth;
         private int yearRangeFrom;
         private int yearRangeTo;
-        private string monthTitle = "";
-        private string selectedDate = "";
+        private string monthTitle = string.Empty;
+        private DateTimeOffset? selectedDate;
         private bool showMonthPicker = true;
         private bool isMonthPickerOverlayOnTop;
         private int monthLength;
@@ -45,7 +44,7 @@ namespace Bit.Client.Web.BlazorUI
         }
 
         [Parameter]
-        public string Value
+        public DateTimeOffset? Value
         {
             get => selectedDate;
             set
@@ -68,9 +67,14 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public string Placeholder { get; set; } = "Select a date...";
 
         /// <summary>
-        /// Calendar type for the DatePicker
+        /// CultureInfo for the DatePicker
         /// </summary>
-        [Parameter] public BitCalendarType CalendarType { get; set; } = BitCalendarType.Gregorian;
+        [Parameter] public CultureInfo Culture { get; set; } = CultureInfo.CurrentUICulture;
+
+        /// <summary>
+        /// FormatDate for the DatePicker
+        /// </summary>
+        [Parameter] public string FormatDate { get; set; } = "ddd MMM dd yyyy";
 
         /// <summary>
         /// Callback for when clicking on DatePicker input
@@ -88,28 +92,16 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public EventCallback<FocusEventArgs> OnFocusOut { get; set; }
 
         /// <summary>
-        /// Callback for when the month changes
-        /// </summary>
-        [Parameter] public EventCallback<int> OnMonthChange { get; set; }
-
-        /// <summary>
-        /// Callback for when the year changes
-        /// </summary>
-        [Parameter] public EventCallback<int> OnYearChange { get; set; }
-
-        /// <summary>
         /// Callback for when the date changes
         /// </summary>
-        [Parameter] public EventCallback<string> OnDateSet { get; set; }
+        [Parameter] public EventCallback<DateTimeOffset?> OnSelectDate { get; set; }
 
-        [Parameter] public Func<BitDate, string>? OnSelectDate { get; set; }
-
-        [Parameter] public EventCallback<string> ValueChanged { get; set; }
+        [Parameter] public EventCallback<DateTimeOffset?> ValueChanged { get; set; }
 
         /// <summary>
         /// Label for the DatePicker
         /// </summary>
-        [Parameter] public string Label { get; set; } = string.Empty;
+        [Parameter] public string? Label { get; set; }
 
         /// <summary>
         /// Determines if the DatePicker has a border.
@@ -119,17 +111,17 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// Whether or not the Textfield of the DatePicker is underlined.
         /// </summary>
-        [Parameter] public bool IsUnderlined { get; set; } = false;
+        [Parameter] public bool IsUnderlined { get; set; }
 
         /// <summary>
         /// The tabIndex of the TextField
         /// </summary>
-        [Parameter] public int TabIndex { get; set; } = 0;
+        [Parameter] public int TabIndex { get; set; }
 
         /// <summary>
         /// Whether the DatePicker allows input a date string directly or not
         /// </summary>
-        [Parameter] public bool AllowTextInput { get; set; } = false;
+        [Parameter] public bool AllowTextInput { get; set; }
 
         /// <summary>
         /// Whether the month picker is shown beside the day picker or hidden.
@@ -139,17 +131,12 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// Show month picker on top of date picker when visible.
         /// </summary>
-        [Parameter] public bool ShowMonthPickerAsOverlay { get; set; } = false;
-
-        /// <summary>
-        /// The first day of the week for your locale
-        /// </summary>
-        [Parameter] public DayOfWeek FirstDayOfWeek { get; set; } = DayOfWeek.Sunday;
+        [Parameter] public bool ShowMonthPickerAsOverlay { get; set; }
 
         /// <summary>
         /// Whether the calendar should show the week number (weeks 1 to 53) before each week row
         /// </summary>
-        [Parameter] public bool ShowWeekNumbers { get; set; } = false;
+        [Parameter] public bool ShowWeekNumbers { get; set; }
 
         public string CalloutId { get; set; } = string.Empty;
         public string OverlayId { get; set; } = string.Empty;
@@ -181,16 +168,8 @@ namespace Bit.Client.Web.BlazorUI
 
         protected override Task OnParametersSetAsync()
         {
-            if (CalendarType == BitCalendarType.Gregorian)
-            {
-                calendar = new GregorianCalendar();
-            }
-            else if (CalendarType == BitCalendarType.Persian)
-            {
-                calendar = new PersianCalendar();
-            }
-
-            CreateMonthCalendar();
+            var dateTime = Value.GetValueOrDefault(DateTimeOffset.Now).DateTime;
+            CreateMonthCalendar(dateTime);
 
             return base.OnParametersSetAsync();
         }
@@ -227,6 +206,21 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
+        public async Task HandleTextInputChanged(string value)
+        {
+            if (IsEnabled && AllowTextInput && value.HasValue() && DateTime.TryParse(value, Culture, DateTimeStyles.None, out DateTime date))
+            {
+                var dateTimeOffset = new DateTimeOffset(date);
+
+                if (selectedDate != dateTimeOffset)
+                {
+                    selectedDate = date;
+                    await ValueChanged.InvokeAsync(dateTimeOffset);
+                    await OnSelectDate.InvokeAsync(dateTimeOffset);
+                }
+            }
+        }
+
         public async Task SelectDate(int dayIndex, int weekIndex)
         {
             if (IsEnabled is false) return;
@@ -251,14 +245,12 @@ namespace Bit.Client.Web.BlazorUI
             displayYear = currentYear;
             currentMonth = selectedMonth;
             CreateMonthCalendar(currentYear, currentMonth);
-            int dayOfWeek = (int)GetDayOfWeek(dayIndex);
-            BitDate date = new(currentYear, currentMonth, day, dayOfWeek);
-            selectedDate = OnSelectDate is not null ? OnSelectDate.Invoke(date) : GetSelectedDateString(date);
+            selectedDate = new DateTimeOffset(Culture.Calendar.ToDateTime(currentYear, currentMonth, day, 0, 0, 0, 0));
             await ValueChanged.InvokeAsync(selectedDate);
-            await OnDateSet.InvokeAsync(selectedDate);
+            await OnSelectDate.InvokeAsync(selectedDate);
         }
 
-        public async Task HandleMonthChange(bool nextMonth)
+        public void HandleMonthChange(bool nextMonth)
         {
             if (IsEnabled is false) return;
 
@@ -289,30 +281,27 @@ namespace Bit.Client.Web.BlazorUI
 
             displayYear = currentYear;
             CreateMonthCalendar(currentYear, currentMonth);
-            await OnMonthChange.InvokeAsync(currentMonth);
         }
 
-        public async Task SelectMonth(int month)
+        public void SelectMonth(int month)
         {
             if (IsEnabled is false) return;
 
             currentMonth = month;
             currentYear = displayYear;
             CreateMonthCalendar(currentYear, currentMonth);
-            await OnMonthChange.InvokeAsync(currentMonth);
             if (ShowMonthPickerAsOverlay is false) return;
 
             ToggleMonthPickerAsOverlay();
         }
 
-        public async Task SelectYear(int year)
+        public void SelectYear(int year)
         {
             if (IsEnabled is false) return;
 
             currentYear = displayYear = year;
             ChangeYearRanges(currentYear - 1);
             CreateMonthCalendar(currentYear, currentMonth);
-            await OnYearChange.InvokeAsync(currentYear);
 
             if (ShowMonthPickerAsOverlay is false) return;
 
@@ -326,7 +315,7 @@ namespace Bit.Client.Web.BlazorUI
             showMonthPicker = !showMonthPicker;
         }
 
-        public async Task HandleYearChange(bool nextYear)
+        public void HandleYearChange(bool nextYear)
         {
             if (IsEnabled is false) return;
 
@@ -340,7 +329,6 @@ namespace Bit.Client.Web.BlazorUI
             }
 
             CreateMonthCalendar(currentYear, currentMonth);
-            await OnYearChange.InvokeAsync(currentYear);
         }
 
         public void HandleYearRangeChange(int fromYear)
@@ -354,14 +342,14 @@ namespace Bit.Client.Web.BlazorUI
         {
             if (IsEnabled)
             {
-                CreateMonthCalendar();
+                CreateMonthCalendar(DateTime.Now);
             }
         }
 
-        private void CreateMonthCalendar()
+        private void CreateMonthCalendar(DateTime dateTime)
         {
-            currentMonth = calendar?.GetMonth(DateTime.Now) ?? 1;
-            currentYear = calendar?.GetYear(DateTime.Now) ?? 1;
+            currentMonth = Culture?.Calendar.GetMonth(dateTime) ?? 1;
+            currentYear = Culture?.Calendar.GetYear(dateTime) ?? 1;
             displayYear = currentYear;
             yearRangeFrom = currentYear - 1;
             yearRangeTo = currentYear + 10;
@@ -370,9 +358,9 @@ namespace Bit.Client.Web.BlazorUI
 
         private void CreateMonthCalendar(int year, int month)
         {
-            monthTitle = $"{calendar?.GetMonthName(month) ?? ""} {year}";
-            monthLength = calendar?.GetDaysInMonth(year, month) ?? 29;
-            var firstDay = calendar?.ToDateTime(year, month, 1, 0, 0, 0, 0) ?? DateTime.Now;
+            monthTitle = $"{Culture?.DateTimeFormat.GetMonthName(month) ?? string.Empty} {year}";
+            monthLength = Culture?.Calendar.GetDaysInMonth(year, month) ?? 29;
+            var firstDay = Culture?.Calendar.ToDateTime(year, month, 1, 0, 0, 0, 0) ?? DateTime.Now;
             var currentDay = 1;
             ResetCalendar();
 
@@ -390,21 +378,23 @@ namespace Bit.Client.Web.BlazorUI
                         if (month - 1 == 0)
                         {
                             previousMonth = 12;
-                            previousMonthDaysCount = calendar?.GetDaysInMonth(year - 1, previousMonth) ?? 29;
+                            previousMonthDaysCount = Culture?.Calendar.GetDaysInMonth(year - 1, previousMonth) ?? 29;
                         }
                         else
                         {
                             previousMonth = month - 1;
-                            previousMonthDaysCount = calendar?.GetDaysInMonth(year, previousMonth) ?? 29;
+                            previousMonthDaysCount = Culture?.Calendar.GetDaysInMonth(year, previousMonth) ?? 29;
                         }
 
-                        if ((int)firstDay.DayOfWeek > (int)FirstDayOfWeek)
+                        var firstDayOfWeek = (int)(Culture?.DateTimeFormat.FirstDayOfWeek ?? DayOfWeek.Sunday);
+
+                        if ((int)firstDay.DayOfWeek > firstDayOfWeek)
                         {
-                            currentMonthCalendar[weekIndex, dayIndex] = previousMonthDaysCount + dayIndex - (int)firstDay.DayOfWeek + 1 + (int)FirstDayOfWeek;
+                            currentMonthCalendar[weekIndex, dayIndex] = previousMonthDaysCount + dayIndex - (int)firstDay.DayOfWeek + 1 + firstDayOfWeek;
                         }
                         else
                         {
-                            currentMonthCalendar[weekIndex, dayIndex] = previousMonthDaysCount + dayIndex - (7 + (int)firstDay.DayOfWeek - 1 - (int)FirstDayOfWeek);
+                            currentMonthCalendar[weekIndex, dayIndex] = previousMonthDaysCount + dayIndex - (7 + (int)firstDay.DayOfWeek - 1 - firstDayOfWeek);
                         }
                     }
                     else
@@ -441,16 +431,16 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
-        private string GetSelectedDateString(BitDate date)
+        private string? GetSelectedDateString()
         {
-            int year = date.GetYear();
-            int month = date.GetMonth();
-            int day = date.GetDate();
-            int dayOfWeek = date.GetDayOfWeek();
-            return calendar?.GetDayOfWeekShortName(Enum.Parse<DayOfWeek>(dayOfWeek.ToString(CultureInfo.InvariantCulture)))
-                   + " " + calendar?.GetMonthShortName(month)
-                   + " " + day.ToString(CultureInfo.InvariantCulture).PadLeft(2, '0')
-                   + " " + year;
+            if (Value.HasValue)
+            {
+                return Value.Value.ToString(FormatDate, Culture);
+            }
+            else
+            {
+                return null;
+            }
         }
 
         private void ChangeYearRanges(int fromYear)
@@ -471,10 +461,10 @@ namespace Bit.Client.Web.BlazorUI
 
         private string GetDateElClass(int day, int week)
         {
-            var className = "";
-            var todayYear = calendar?.GetYear(DateTime.Now) ?? 1;
-            var todayMonth = calendar?.GetMonth(DateTime.Now) ?? 1;
-            var todayDay = calendar?.GetDayOfMonth(DateTime.Now) ?? 1;
+            var className = string.Empty;
+            var todayYear = Culture?.Calendar.GetYear(DateTime.Now) ?? 1;
+            var todayMonth = Culture?.Calendar.GetMonth(DateTime.Now) ?? 1;
+            var todayDay = Culture?.Calendar.GetDayOfMonth(DateTime.Now) ?? 1;
             var currentDay = currentMonthCalendar[week, day];
 
             if (IsInCurrentMonth(week, day) is false)
@@ -536,33 +526,31 @@ namespace Bit.Client.Web.BlazorUI
                 }
             }
 
-            return $"{currentMonthCalendar[week, day]}, {calendar?.GetMonthName(month)}, {year}";
+            return $"{currentMonthCalendar[week, day]}, {Culture?.DateTimeFormat.GetMonthName(month)}, {year}";
         }
 
         private bool IsDateSelected(int weekIndex, int dayIndex)
         {
             int month = GetCorrectTargetMonth(weekIndex, dayIndex);
             int day = currentMonthCalendar[weekIndex, dayIndex];
-            BitDate currentDate = new(currentYear, month, day, (int)GetDayOfWeek(dayIndex));
-            if (selectedDate.HasValue() && selectedDate == GetSelectedDateString(currentDate)) return true;
-
-            return false;
+            var currentDate = new DateTimeOffset(Culture.Calendar.ToDateTime(currentYear, month, day, 0, 0, 0, 0));
+            return selectedDate is not null && selectedDate == currentDate;
         }
 
         private bool IsMonthSelected(int month)
         {
-            return (month == currentMonth);
+            return month == currentMonth;
         }
 
         private bool IsYearSelected(int year)
         {
-            return (year == currentYear);
+            return year == currentYear;
         }
 
         private bool IsGoTodayDisabeld()
         {
-            var todayMonth = calendar?.GetMonth(DateTime.Now) ?? 1;
-            var todayYear = calendar?.GetYear(DateTime.Now) ?? 1;
+            var todayMonth = Culture?.Calendar.GetMonth(DateTime.Now) ?? 1;
+            var todayYear = Culture?.Calendar.GetYear(DateTime.Now) ?? 1;
 
             if (ShowMonthPickerAsOverlay)
             {
@@ -576,8 +564,8 @@ namespace Bit.Client.Web.BlazorUI
 
         private DayOfWeek GetDayOfWeek(int index)
         {
-            int dayOfWeek = (int)FirstDayOfWeek + index;
-            if (dayOfWeek > 6) dayOfWeek = dayOfWeek - 7;
+            int dayOfWeek = (int)(Culture?.DateTimeFormat.FirstDayOfWeek ?? DayOfWeek.Sunday) + index;
+            if (dayOfWeek > 6) dayOfWeek -= 7;
             return (DayOfWeek)dayOfWeek;
         }
 
@@ -598,9 +586,8 @@ namespace Bit.Client.Web.BlazorUI
             }
 
             int day = currentMonthCalendar[weekIndex, 0];
-            var date = calendar?.ToDateTime(year, month, day, 0, 0, 0, 0) ?? DateTime.Now;
-            int weekNumber = calendar?.GetWeekOfYear(date, CalendarWeekRule.FirstFullWeek, FirstDayOfWeek) ?? 1;
-            return weekNumber;
+            var date = Culture?.Calendar.ToDateTime(year, month, day, 0, 0, 0, 0) ?? DateTime.Now;
+            return Culture?.Calendar.GetWeekOfYear(date, CalendarWeekRule.FirstFullWeek, Culture.DateTimeFormat.FirstDayOfWeek) ?? 1;
         }
 
         private void ToggleMonthPickerAsOverlay()
@@ -608,6 +595,11 @@ namespace Bit.Client.Web.BlazorUI
             isMonthPickerOverlayOnTop = !isMonthPickerOverlayOnTop;
         }
 
-        private int GetValueForComparison(int firstDay) => firstDay > (int)FirstDayOfWeek ? (int)FirstDayOfWeek : (int)FirstDayOfWeek - 7;
+        private int GetValueForComparison(int firstDay)
+        {
+            var firstDayOfWeek = (int)(Culture?.DateTimeFormat.FirstDayOfWeek ?? DayOfWeek.Sunday);
+
+            return firstDay > firstDayOfWeek ? firstDayOfWeek : firstDayOfWeek - 7;
+        }
     }
 }
