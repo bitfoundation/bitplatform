@@ -12,8 +12,10 @@
                       OnClear="@HandleClear" />
     </div>
     <div class="side-nav-list">
-        <BitLink Class="@GetDemoLinkClassName()"
-                 Href="/components/demo">Components</BitLink>
+        <BitLink Class="@GetDemoLinkClassName("overview")"
+                 Href="/components/overview">Overview</BitLink>
+        <BitLink Class="@GetDemoLinkClassName("get-started")"
+                 Href="/get-started">Get started</BitLink>
         <BitNav Class="side-nav"
                 NavLinkItems="filteredNavLinks"
                 RenderType="renderType"

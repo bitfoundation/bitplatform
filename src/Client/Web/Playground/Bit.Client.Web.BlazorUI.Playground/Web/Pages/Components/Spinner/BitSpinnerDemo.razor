@@ -1,11 +1,10 @@
 ﻿@page "/components/spinner"
 
-@using Bit.Client.Web.BlazorUI.Playground.Web.Components
-
-<ComponentPage ComponentName="Spinner" OverviewDesc="BitSpinner is an outline of a circle which animates around itself indicating to the user that things are processing. A Spinner is shown when it's unsure how long a task will take making it the indeterminate version of a ProgressIndicator. They can be various sizes, located inline with content or centered. They generally appear after an action is being processed or committed. They are subtle and generally do not take up much space, but are transitions from the completed task."
+<ComponentDemo ComponentName="Spinner" ComponentDescription="BitSpinner is an outline of a circle which animates around itself indicating to the user that things are processing. A Spinner is shown when it's unsure how long a task will take making it the indeterminate version of a ProgressIndicator. They can be various sizes, located inline with content or centered. They generally appear after an action is being processed or committed. They are subtle and generally do not take up much space, but are transitions from the completed task."
                ComponentParameters="componentParameters" EnumParameters="enumParameters">
-    <CodeSample Title="BitSpinner" Description="To create a spinner, you can use a BitSpinner component." CodeSampleContentForCopy="@spinnerSampleCode">
-        <SampleContent>
+    <ComponentExampleBox Title="BitSpinner" ExampleSourceCodeForCopy="@spinnerSampleCode" ExampleId="example1">
+        <ExamplePreview>
+            <div class="example-desc">To create a spinner, you can use a BitSpinner component.</div>
             <div class="spinner-container">
                 <div class="m-b-15">
                     <label>Extra small spinner</label>
@@ -24,18 +23,20 @@
                     <BitSpinner Size="BitSpinnerSize.Large" />
                 </div>
             </div>
-        </SampleContent>
-        <CodeSampleContent>
+        </ExamplePreview>
+        <ExampleSourceCode>
             <pre>
-                &lt<span class="soco-component-attr">BitSpinner Size=</span>"SpinnerSize.XSmall">&lt/<span class="soco-component-attr">BitSpinner</span>&gt;
-                &lt<span class="soco-component-attr">BitSpinner Size=</span>"SpinnerSize.Small">&lt/<span class="soco-component-attr">BitSpinner</span>&gt;
-                &lt<span class="soco-component-attr">BitSpinner Size=</span>"SpinnerSize.Medium">&lt/<span class="soco-component-attr">BitSpinner</span>&gt;
-                &lt<span class="soco-component-attr">BitSpinner Size=</span>"SpinnerSize.Large">&lt/<span class="soco-component-attr">BitSpinner</span>&gt;
+            &ltBitSpinner Size="BitSpinnerSize.XSmall" />
+            &ltBitSpinner Size="BitSpinnerSize.Small" />
+            &ltBitSpinner Size="BitSpinnerSize.Medium" />
+            &ltBitSpinner Size="BitSpinnerSize.Large" />
             </pre>
-        </CodeSampleContent>
-    </CodeSample>
-    <CodeSample Title="Label positioning" Description="By setting LabelPosition attribute, change position of spinner to bottom, top, left or right." CodeSampleContentForCopy="@labelPositioningSampleCode">
-        <SampleContent>
+        </ExampleSourceCode>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Label positioning" ExampleSourceCodeForCopy="@labelPositioningSampleCode" ExampleId="example2">
+        <ExamplePreview>
+            <div class="example-desc">By setting LabelPosition attribute, change position of spinner to bottom, top, left or right.</div>
             <div class="spinner-positioning">
                 <div>
                     <label>Spinner with label positioned below</label>
@@ -54,22 +55,14 @@
                     <BitSpinner LabelPosition="BitSpinnerLabelPosition.Right" Label="Nope, still loading..." />
                 </div>
             </div>
-        </SampleContent>
-        <CodeSampleContent>
+        </ExamplePreview>
+        <ExampleSourceCode>
             <pre>
-                &lt<span class="soco-component-attr">BitSpinner LabelPosition=</span>"SpinnerLabelPosition.Bottom"
-                                       <span class="soco-component-attr"> Label</span>="I am definitely loading...">
-                &lt/<span class="soco-component-attr">BitSpinner</span>&gt;
-                &lt<span class="soco-component-attr">BitSpinner LabelPosition=</span>"SpinnerLabelPosition.Top"
-                                       <span class="soco-component-attr"> Label</span>="Seriously, still loading...">
-                &lt/<span class="soco-component-attr">BitSpinner</span>&gt;
-                &lt<span class="soco-component-attr">BitSpinner LabelPosition=</span>"SpinnerLabelPosition.Right"
-                                       <span class="soco-component-attr"> Label</span>="Wait, wait...">
-                &lt/<span class="soco-component-attr">BitSpinner</span>&gt;
-                &lt<span class="soco-component-attr">BitSpinner LabelPosition=</span>"SpinnerLabelPosition.Left"
-                                       <span class="soco-component-attr"> Label</span>="Nope, still loading...">
-                &lt/<span class="soco-component-attr">BitSpinner</span>&gt;
+            &ltBitSpinner LabelPosition="BitSpinnerLabelPosition.Top" Label="I am definitely loading..." />
+            &ltBitSpinner LabelPosition="BitSpinnerLabelPosition.Bottom" Label="Seriously, still loading..." />
+            &ltBitSpinner LabelPosition="BitSpinnerLabelPosition.Left" Label="Wait, wait..." />
+            &ltBitSpinner LabelPosition="BitSpinnerLabelPosition.Right" Label="Nope, still loading..." />
             </pre>
-        </CodeSampleContent>
-    </CodeSample>
-</ComponentPage>
+        </ExampleSourceCode>
+    </ComponentExampleBox>
+</ComponentDemo>

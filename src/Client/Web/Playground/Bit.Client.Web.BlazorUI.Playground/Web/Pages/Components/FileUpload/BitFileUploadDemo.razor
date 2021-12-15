@@ -1,36 +1,38 @@
 ﻿@page "/components/file-upload"
 
-@using Bit.Client.Web.BlazorUI.Playground.Web.Components
-
-<ComponentPage ComponentName="FileUpload" OverviewDesc="BitFileUpload component wraps the HTML file input element(s) and uploads them to a given URL. The files can be removed by
+<ComponentDemo ComponentName="FileUpload" ComponentDescription="BitFileUpload component wraps the HTML file input element(s) and uploads them to a given URL. The files can be removed by
     specifying the URL they have been uploaded. Moreover, it provides several other options including single or multiple or automatic file uploading.
     By automatic, it means the files can be automatically uploaded after being selected. It is possible to specify a maximum size for each file if need be.
     Additionally, by specifying file extensions, the files can be restricted to certain types."
                ComponentParameters="componentParameters" EnumParameters="enumParameters">
-    <CodeSample Title="BitFileUpload" Description="Files can be uploaded automatically after selecting them." CodeSampleContentForCopy="@fileUploadSampleCode">
-        <SampleContent>
+    <ComponentExampleBox Title="BitFileUpload" ExampleSourceCodeForCopy="@fileUploadSampleCode" ExampleId="example1">
+        <ExamplePreview>
+            <div class="example-desc">Files can be uploaded automatically after selecting them.</div>
             <div>
                 <BitFileUpload Label="Select or drag and drop files"
                                UploadUrl="@UploadUrl"
                                RemoveUrl="@RemoveUrl">
                 </BitFileUpload>
             </div>
-        </SampleContent>
-        <CodeSampleContent>
+        </ExamplePreview>
+        <ExampleSourceCode>
             <pre>
-                &lt<span class="soco-component-attr">BitFileUpload Label</span> ="Select or drag and drop files" 
-                                               <span class="soco-component-attr">UploadUrl</span> ="<span class="soco-code">&#64</span>UploadUrl" 
-                                               <span class="soco-component-attr">RemoveUrl</span> ="<span class="soco-code">&#64</span>RemoveUrl"&gt
-                &lt/<span class="soco-component-attr">BitFileUpload</span>&gt
-                <span class="soco-code">&#64code {</span>
-                <span class="soco-tag-type-def">private string</span> UploadUrl;
-                <span class="soco-tag-type-def">private string</span> RemoveUrl;
-                <span class="soco-code">}</span>
+            &ltBitFileUpload Label="Select or drag and drop files"
+                           UploadUrl="&#64;UploadUrl"
+                           RemoveUrl="&#64;RemoveUrl">
+            &lt/BitFileUpload>
+
+            &#64;code {
+                    privae string UploadUrl;
+                    private string RemoveUrl;
+            }
             </pre>
-        </CodeSampleContent>
-    </CodeSample>
-    <CodeSample Title="Auto & Multiple" Description="Multiple files can be selected to upload automatically." CodeSampleContentForCopy="@autoSampleCode">
-        <SampleContent>
+        </ExampleSourceCode>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Auto & Multiple" ExampleSourceCodeForCopy="@autoSampleCode" ExampleId="example2">
+        <ExamplePreview>
+            <div class="example-desc">Multiple files can be selected to upload automatically.</div>
             <div>
                 <BitFileUpload IsMultiSelect="true"
                                Label="Select or drag and drop files"
@@ -38,23 +40,26 @@
                                RemoveUrl="@RemoveUrl">
                 </BitFileUpload>
             </div>
-        </SampleContent>
-        <CodeSampleContent>
+        </ExamplePreview>
+        <ExampleSourceCode>
             <pre>
-                 &lt<span class="soco-component-attr">BitFileUpload IsMultiSelect</span> =" <span class="soco-tag-type-def">true</span>" 
-                                                <span class="soco-component-attr">Label</span>="Select or drag and drop files" 
-                                                <span class="soco-component-attr">UploadUrl</span>="<span class="soco-code">&#64</span>UploadUrl" 
-                                                <span class="soco-component-attr">RemoveUrl</span>="<span class="soco-code">&#64</span>RemoveUrl"&gt
-                 &lt/<span class="soco-component-attr">BitFileUpload</span>&gt
-                <span class="soco-code">&#64code {</span>
-                <span class="soco-tag-type-def">private string</span> UploadUrl;
-                <span class="soco-tag-type-def">private string</span> RemoveUrl;
-                <span class="soco-code">}</span>
+            &ltBitFileUpload Label="Select or drag and drop files"
+                            IsMultiSelect="true"    
+                            UploadUrl="&#64;UploadUrl"
+                            RemoveUrl="&#64;RemoveUrl">
+            &lt/BitFileUpload>
+
+            &#64;code {
+                    privae string UploadUrl;
+                    private string RemoveUrl;
+            }
             </pre>
-        </CodeSampleContent>
-    </CodeSample>
-    <CodeSample Title="Auto & Multiple with max-size limitation" Description="Multiple files can be selected to upload automatically with limited size."  CodeSampleContentForCopy="@maxSizeSampleCode">
-        <SampleContent>
+        </ExampleSourceCode>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Auto & Multiple with max-size limitation" ExampleSourceCodeForCopy="@maxSizeSampleCode" ExampleId="example3">
+        <ExamplePreview>
+            <div class="example-desc">Multiple files can be selected to upload automatically with limited size.</div>
             <div>
                 <BitFileUpload IsMultiSelect="true"
                                Label="Select or drag and drop files"
@@ -63,24 +68,26 @@
                                RemoveUrl="@RemoveUrl">
                 </BitFileUpload>
             </div>
-        </SampleContent>
-        <CodeSampleContent>
+        </ExamplePreview>
+        <ExampleSourceCode>
             <pre>
-                 &lt<span class="soco-component-attr">BitFileUpload IsMultiSelect</span>="<span class="soco-tag-type-def">true</span>" 
-                                                <span class="soco-component-attr">Label</span>="Select or drag and drop files" 
-                                                <span class="soco-component-attr">MaxSize</span>="1024 * 1024 * 100" 
-                                                <span class="soco-component-attr">UploadUrl</span>="<span class="soco-code">&#64</span>UploadUrl" 
-                                                <span class="soco-component-attr">RemoveUrl</span>="<span class="soco-code">&#64</span>RemoveUrl"&gt
-                 &lt/<span class="soco-component-attr">BitFileUpload</span>&gt
-                 <span class="soco-code">&#64code {</span>
-                 <span class="soco-tag-type-def">private string</span> UploadUrl;
-                 <span class="soco-tag-type-def">private string</span> RemoveUrl;
-                 <span class="soco-code">}</span>
+            &ltBitFileUpload Label="Select or drag and drop files"
+                            IsMultiSelect="true"   
+                            MaxSize="1024 * 1024 * 100"
+                            UploadUrl="&#64;UploadUrl"
+                            RemoveUrl="&#64;RemoveUrl">
+            &lt/BitFileUpload>
+
+            &#64;code {
+                    privae string UploadUrl;
+                    private string RemoveUrl;
+            }
             </pre>
-        </CodeSampleContent>
-    </CodeSample>
-    <CodeSample Title="Individual & Multiple (limited by extensions format)" Description="Single or multiple file uploading limited only by file extensions, which in this case the allowed file extensions include gif, jpg and mp4."  CodeSampleContentForCopy="@extensionSampleCode">
-        <SampleContent>
+        </ExampleSourceCode>
+    </ComponentExampleBox>
+    <ComponentExampleBox Title="Individual & Multiple (limited by extensions format)" ExampleSourceCodeForCopy="@extensionSampleCode" ExampleId="example4">
+        <ExamplePreview>
+            <div class="example-desc">Single or multiple file uploading limited only by file extensions, which in this case the allowed file extensions include gif, jpg and mp4.</div>
             <div>
                 <BitFileUpload IsMultiSelect="true"
                                AutoUploadEnabled="false"
@@ -90,21 +97,22 @@
                                RemoveUrl="@RemoveUrl">
                 </BitFileUpload>
             </div>
-        </SampleContent>
-        <CodeSampleContent>
+        </ExamplePreview>
+        <ExampleSourceCode>
             <pre>
-                 &lt<span class="soco-component-attr">BitFileUpload IsMultiSelect</span>="<span class="soco-tag-type-def">true</span>" 
-                                                <span class="soco-component-attr">AutoUploadEnabled</span>="<span class="soco-tag-type-def">false</span>" 
-                                                <span class="soco-component-attr">AllowedExtensions</span>="<span class="soco-code">&#64</span>(<span class="soco-tag-type-def">new</span> <span class="dark-cyan">List</span>&lt <span class="soco-tag-type-def">string</span>&gt { <span class="soco-string">".gif"</span>,<span class="soco-string">".jpg"</span>,<span class="soco-string">".mp4"</span> })" 
-                                                <span class="soco-component-attr">Label</span>="Select or drag and drop files" 
-                                                <span class="soco-component-attr">UploadUrl</span>="<span class="soco-code">&#64</span>UploadUrl" 
-                                                <span class="soco-component-attr">RemoveUrl</span>="<span class="soco-code">&#64</span>RemoveUrl"&gt
-                 &lt/<span class="soco-component-attr">BitFileUpload</span>&gt
-                <span class="soco-code">&#64code {</span>
-                <span class="soco-tag-type-def">private string</span> UploadUrl;
-                <span class="soco-tag-type-def">private string</span> RemoveUrl;
-                <span class="soco-code">}</span>
+            &ltBitFileUpload Label="Select or drag and drop files"
+                            IsMultiSelect="true"   
+                            AutoUploadEnabled="false"
+                               AllowedExtensions="&#64;(new List&ltstring> { ".gif",".jpg",".mp4" })"
+                            UploadUrl="&#64;UploadUrl"
+                            RemoveUrl="&#64;RemoveUrl">
+            &lt/BitFileUpload>
+
+            &#64;code {
+                    privae string UploadUrl;
+                    private string RemoveUrl;
+            }
             </pre>
-        </CodeSampleContent>
-    </CodeSample>
-</ComponentPage>
+        </ExampleSourceCode>
+    </ComponentExampleBox>
+</ComponentDemo>

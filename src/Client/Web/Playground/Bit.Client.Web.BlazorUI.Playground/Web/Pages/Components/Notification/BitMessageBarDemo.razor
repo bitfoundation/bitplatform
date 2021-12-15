@@ -1,12 +1,11 @@
 ﻿@page "/components/message-bar"
 
-@using Bit.Client.Web.BlazorUI.Playground.Web.Components
-
-<ComponentPage ComponentName="MessageBar" OverviewDesc="A banner (MessageBar) displays errors, warnings, or important information about an open app or file.
+<ComponentDemo ComponentName="MessageBar" ComponentDescription="A banner (MessageBar) displays errors, warnings, or important information about an open app or file.
                                                         For example, if a file failed to upload an error message bar should appear."
                ComponentParameters="componentParameters" EnumParameters="enumParameters">
-    <CodeSample Title="Success" Description="For showing success messages, just set MessageBarType parameter to Success." CodeSampleContentForCopy="@successMessagebarSampleCode">
-        <SampleContent>
+    <ComponentExampleBox Title="Success" ExampleSourceCodeForCopy="@successMessagebarSampleCode" ExampleId="example1">
+        <ExamplePreview>
+            <div class="example-desc">For showing success messages, just set MessageBarType parameter to Success.</div>
             <div class="m-b-10">
                 <BitMessageBar MessageBarType="@BitMessageBarType.Success" IsMultiline="false" Truncated="true" IsEnabled="false">
                     <Actions>
@@ -44,69 +43,64 @@
                     </BitMessageBar>
                 </div>
             }
-        </SampleContent>
-        <CodeSampleContent>
+        </ExamplePreview>
+        <ExampleSourceCode>
             <pre>
-                 &lt<span class="soco-component-attr">BitMessageBar MessageBarType=</span>"<span class="soco-code">&#64;</span>BitMessageBarType.Success"
-                                                   <span class="soco-component-attr">Truncated</span>=<span class="soco-tag-type-def">"true"</span>
-                                                   <span class="soco-component-attr">IsMultiline</span>=<span class="soco-tag-type-def">"false"</span>>
-                     &lt<span class="soco-component-attr">ChildContent></span>
-                              <span>Action completed! This is a sample of message bar with dismiss ability</span>
-                              <span>Action completed! This is a sample of message bar with dismiss ability</span>
-                              <span>Action completed! This is a sample of message bar with dismiss ability</span>
-                              <span>Action completed! This is a sample of message bar with dismiss ability</span>
-                              <span>Action completed! This is a sample of message bar with dismiss ability</span>
-                     &lt/<span class="soco-component-attr">ChildContent</span>&gt;
-                     &lt<span class="soco-component-attr">Actions></span>
-                            &lt<span class="soco-component-attr">BitButton></span>ok<span>&lt/</span><span class="soco-component-attr">BitButton</span>&gt;
-                     &lt/<span class="soco-component-attr">Actions</span>&gt;
-                 &lt/<span class="soco-component-attr">BitMessageBar</span>&gt;
-                 <span class="soco-code">&#64;</span><span class="soco-if-for">if </span> (IsMessageBarHidden2 <span class="soco-tag-type-def">is false</span>)
-                 <span>{</span>
-                     &lt<span class="soco-component-attr">BitMessageBar MessageBarType="</span><span class="soco-code">&#64;</span>BitMessageBarType.Success"
-                                                       <span class="soco-component-attr">OnDismiss</span>="<span class="dark-yellow">HideMessageBar2</span>"
-                                                       <span class="soco-component-attr">IsMultiline</span>="<span class="soco-tag-type-def">false</span>"
-                                                       <span class="soco-component-attr">DismissIconName</span>="BitIcon.SkypeCheck"
-                                                       <span class="soco-component-attr">DismissButtonAriaLabel</span>="close">
-                              <span>Action completed! This is a sample of message bar with dismiss ability</span>
-                     &lt/<span class="soco-component-attr">BitMessageBar</span>&gt;
-                 <span>}</span>
-                 &lt<span class="soco-component-attr">BitMessageBar MessageBarType="</span><span class="soco-code">&#64;</span>BitMessageBarType.Success"
-                                                  <span class="soco-component-attr">MessageBarIconName</span>="BitIcon.Emoji2">
-                          <span>Action completed! This is a sample of message bar with dismiss ability</span>
-                 &lt/<span class="soco-component-attr">BitMessageBar</span>&gt;
-                 <span class="soco-code">&#64;code {</span>
-                     <span class="soco-tag-type-def">private bool </span>IsMessageBarHidden1 = <span class="soco-tag-type-def">false</span>;
-                     <span class="soco-tag-type-def">private bool </span>IsMessageBarHidden2 = <span class="soco-tag-type-def">false</span>;
-                     <span class="soco-tag-type-def">private void </span>HideMessageBar1()
-                     <span>{</span>
-                          <span>IsMessageBarHidden1 = <span class="soco-tag-type-def">true</span>;</span>
-                     <span>}</span>
-                     <span class="soco-tag-type-def">private void </span>HideMessageBar2()
-                     <span>{</span>
-                          <span>IsMessageBarHidden2 = <span class="soco-tag-type-def">true</span>;</span>
-                     <span>}</span>
-                 <span class="soco-code">}</span>
-                 
-                 <span class="soco-code">&#64;</span><span class="soco-if-for">if </span>(IsMessageBarHidden1 <span class="soco-tag-type-def">is false</span>)
-                 <span>{</span>
-                      &lt<span class="soco-component-attr">BitMessageBar MessageBarType=</span>"<span class="soco-code">&#64;</span>MessageBarType.Success"
-                                                        <span class="soco-component-attr">OnDismiss</span>="HideMessageBar1"
-                                                        <span class="soco-component-attr">Truncated</span>=<span class="soco-tag-type-def">"true"</span>
-                                                        <span class="soco-component-attr">IsMultiline</span>=<span class="soco-tag-type-def">"false"</span>
-                                                        <span class="soco-component-attr">OverflowButtonAriaLabel</span>="see more">
-                               <span>Action completed! This is a sample of message bar with dismiss ability</span>
-                               <span>Action completed! This is a sample of message bar with dismiss ability</span>
-                               <span>Action completed! This is a sample of message bar with dismiss ability</span>
-                               <span>Action completed! This is a sample of message bar with dismiss ability</span>
-                               <span>Action completed! This is a sample of message bar with dismiss ability</span>
-                      &lt/<span class="soco-component-attr">BitMessageBar</span>&gt;
-                 <span>}</span>
+            &ltBitMessageBar MessageBarType="&#64;BitMessageBarType.Success" IsMultiline="false" Truncated="true" IsEnabled="false">
+                    &ltActions>
+                            &ltBitButton>Ok&lt/BitButton>
+                    &lt/Actions>
+                    &ltChildContent>
+                            Action completed! This is a sample of message bar with dismiss ability
+                            Action completed! This is a sample of message bar with dismiss ability
+                            Action completed! This is a sample of message bar with dismiss ability
+                            Action completed! This is a sample of message bar with dismiss ability
+                            Action completed! This is a sample of message bar with dismiss ability
+                    &lt/ChildContent>
+            &lt/BitMessageBar>
+
+            &#64;if (IsMessageBarHidden2 is false)
+            {
+                    &ltBitMessageBar MessageBarType="&#64;BitMessageBarType.Success" OnDismiss="HideMessageBar2" IsMultiline="false" DismissIconName="BitIcon.SkypeCheck" DismissButtonAriaLabel="close">
+                            Action completed! This is a sample of message bar with dismiss ability and custom dismiss icon
+                    &lt/BitMessageBar>
+            }
+
+            &ltBitMessageBar MessageBarType="&#64;BitMessageBarType.Success" MessageBarIconName="BitIcon.Emoji2">
+                    Action completed! This is a sample of message bar with dismiss ability and custom dismiss icon
+            &lt/BitMessageBar>
+
+            &#64;if (IsMessageBarHidden1 is false)
+            {
+                    &ltBitMessageBar MessageBarType="&#64;BitMessageBarType.Success" OnDismiss="HideMessageBar1" IsMultiline="false" Truncated="true" OverflowButtonAriaLabel="see more">
+                            Action completed! This is a sample of message bar with dismiss ability
+                            Action completed! This is a sample of message bar with dismiss ability
+                            Action completed! This is a sample of message bar with dismiss ability
+                            Action completed! This is a sample of message bar with dismiss ability
+                            Action completed! This is a sample of message bar with dismiss ability
+                    &lt/BitMessageBar>
+            }
+
+             &#64;code {
+                    private bool IsMessageBarHidden1 = false;
+                    private bool IsMessageBarHidden2 = false;
+                    private void HideMessageBar1()
+                    {
+                            IsMessageBarHidden1 = true;
+                    }
+
+                    private void HideMessageBar2()
+                    {
+                            IsMessageBarHidden2 = true;
+                    }
+            }
             </pre>
-        </CodeSampleContent>
-    </CodeSample>
-    <CodeSample Title="Error" Description="For showing error messages, just set MessageBarType parameter to Error." CodeSampleContentForCopy="@errorMessagebarSampleCode">
-        <SampleContent>
+        </ExampleSourceCode>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Error" ExampleSourceCodeForCopy="@errorMessagebarSampleCode" ExampleId="example2">
+        <ExamplePreview>
+            <div class="example-desc">For showing error messages, just set MessageBarType parameter to Error.</div>
             <BitMessageBar MessageBarType="@BitMessageBarType.Error" Truncated="false">
                 <ChildContent>
                     This is an error message bar with the ability to truncate your text Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
@@ -115,39 +109,40 @@
                     <BitButton>Ok</BitButton>
                 </Actions>
             </BitMessageBar>
-        </SampleContent>
-        <CodeSampleContent>
+        </ExamplePreview>
+        <ExampleSourceCode>
             <pre>
-                &lt<span class="soco-component-attr">BitMessageBar MessageBarType=</span>"<span class="soco-code">&#64;</span><span>BitMessageBarType.Error"
-                                                  <span class="soco-component-attr">Truncated</span>=<span class="soco-tag-type-def">"false"</span>></span>
-                    &lt<span class="soco-component-attr">ChildContent></span>
-                             <span>This is an error message bar with the ability to truncate your text Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut</span>
-                             <span>aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</span>
-                    &lt/<span class="soco-component-attr">ChildContent</span><span>&gt;</span>
-                    &lt<span class="soco-component-attr">Actions></span>
-                             &lt<span class="soco-component-attr">BitButton></span>ok<span>&lt/</span><span class="soco-component-attr">BitButton</span>&gt;
-                    &lt/<span class="soco-component-attr">Actions</span><span>&gt;</span>
-                &lt/<span class="soco-component-attr">BitMessageBar</span>&gt;
+            &ltBitMessageBar MessageBarType="&#64;BitMessageBarType.Error" Truncated="false">
+                    &ltChildContent>
+                            This is an error message bar with the ability to truncate your text Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+                    &lt/ChildContent>
+                    &ltActions>
+                            &ltBitButton>Ok&lt/BitButton>
+                    &lt/Actions>
+            &lt/BitMessageBar>
             </pre>
-        </CodeSampleContent>
-    </CodeSample>
-    <CodeSample Title="Blocked" Description="For showing blocked messages, just set MessageBarType parameter to Blocked." CodeSampleContentForCopy="@blockedMessagebarSampleCode">
-        <SampleContent>
+        </ExampleSourceCode>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Blocked" ExampleSourceCodeForCopy="@blockedMessagebarSampleCode" ExampleId="example3">
+        <ExamplePreview>
+            <div class="example-desc">For showing blocked messages, just set MessageBarType parameter to Blocked.</div>
             <BitMessageBar MessageBarType="@BitMessageBarType.Blocked">
                 Blocked MessageBar - single line Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
             </BitMessageBar>
-        </SampleContent>
-        <CodeSampleContent>
+        </ExamplePreview>
+        <ExampleSourceCode>
             <pre>
-               &lt<span class="soco-component-attr">BitMessageBar MessageBarType=</span>"<span class="soco-code">&#64;</span><span>BitMessageBarType.Blocked"></span>
-                        <span>Blocked MessageBar - single line Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo</span>
-                        <span>consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</span>
-               &lt/<span class="soco-component-attr">BitMessageBar</span>&gt;
+            &ltBitMessageBar MessageBarType="&#64;BitMessageBarType.Blocked">
+                    Blocked MessageBar - single line Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+            &lt/BitMessageBar>
             </pre>
-        </CodeSampleContent>
-    </CodeSample>
-    <CodeSample Title="Warning" Description="For showing warning messages or server warning, just set MessageBarType parameter to Warning or SevereWarning." CodeSampleContentForCopy="@warningMessagebarSampleCode">
-        <SampleContent>
+        </ExampleSourceCode>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Warning" ExampleSourceCodeForCopy="@warningMessagebarSampleCode" ExampleId="example4">
+        <ExamplePreview>
+            <div class="example-desc">For showing warning messages or server warning, just set MessageBarType parameter to Warning or SevereWarning.</div>
             <div class="m-b-10">
                 <BitMessageBar MessageBarType="@BitMessageBarType.Warning" IsMultiline="false">
                     Caution! Action may takes long and also this message bar shown multiline messages time Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
@@ -156,34 +151,32 @@
             <BitMessageBar MessageBarType="@BitMessageBarType.SevereWarning">
                 Cannot connect to server
             </BitMessageBar>
-        </SampleContent>
-        <CodeSampleContent>
+        </ExamplePreview>
+        <ExampleSourceCode>
             <pre>
-               &lt<span class="soco-component-attr">BitMessageBar MessageBarType=</span>"<span class="soco-code">&#64;</span>BitMessageBarType.Warning"
-                                                 <span class="soco-component-attr">IsMultiline</span>="<span class="soco-tag-type-def">false</span>">
-                        <span>Caution! Action may takes long and also this message bar shown multiline messages time Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation</span>
-                        <span>ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</span>
-               &lt/<span class="soco-component-attr">BitMessageBar</span>&gt;
-               &lt<span class="soco-component-attr">BitMessageBar MessageBarType="</span><span class="soco-code">&#64;</span><span>BitMessageBarType.SevereWarning"></span>
-                        <span>Cannot connect to the server</span>
-               &lt/<span class="soco-component-attr">BitMessageBar</span>&gt;
+            &ltBitMessageBar MessageBarType="&#64;BitMessageBarType.Warning" IsMultiline="false">
+                    Caution! Action may takes long and also this message bar shown multiline messages time Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+            &lt/BitMessageBar>
+            &ltBitMessageBar MessageBarType="&#64;BitMessageBarType.SevereWarning">
+                    Cannot connect to server
+            &lt/BitMessageBar>
             </pre>
-        </CodeSampleContent>
-    </CodeSample>
-    <CodeSample Title="Info" Description="For showing info messages, just set MessageBarType parameter to Info." CodeSampleContentForCopy="@infoMessagebarSampleCode">
-        <SampleContent>
+        </ExampleSourceCode>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Info" ExampleSourceCodeForCopy="@infoMessagebarSampleCode" ExampleId="example5">
+        <ExamplePreview>
+            <div class="example-desc">For showing info messages, just set MessageBarType parameter to Info.</div>
             <BitMessageBar MessageBarType="@BitMessageBarType.Info">
                 Visit repository <BitLink HasUnderline="true">the link is rendered as a button</BitLink>
             </BitMessageBar>
-        </SampleContent>
-        <CodeSampleContent>
+        </ExamplePreview>
+        <ExampleSourceCode>
             <pre>
-               &lt<span class="soco-component-attr">BitMessageBar MessageBarType=</span>"<span class="soco-code">&#64;</span><span>BitMessageBarType.Info"></span>
-                        <span>Visit repository</span>
-               &lt<span class="soco-component-attr">BitLink HasUnderline</span>=<span class="soco-tag-type-def">"true"</span>>
-                        <span>the link is rendered as a button</span>
-               &lt/<span class="soco-component-attr">BitMessageBar</span>&gt;
+            &ltBitMessageBar MessageBarType="&#64;BitMessageBarType.Info">
+                    Visit repository &ltBitLink HasUnderline="true">the link is rendered as a button&lt/BitLink>
+            &lt/BitMessageBar>
             </pre>
-        </CodeSampleContent>
-    </CodeSample>
-</ComponentPage>
+        </ExampleSourceCode>
+    </ComponentExampleBox>
+</ComponentDemo>

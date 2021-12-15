@@ -1,14 +1,12 @@
 ﻿@page "/components/pivot"
 
-@using Bit.Client.Web.BlazorUI.Playground.Web.Components
-
-<ComponentPage ComponentName="Pivot" OverviewDesc=" The Pivot control and related tabs pattern are used for navigating frequently accessed,
+<ComponentDemo ComponentName="Pivot" ComponentDescription=" The Pivot control and related tabs pattern are used for navigating frequently accessed,
         distinct content categories. Pivots allow for navigation between two or more content
         views and relies on text headers to articulate the different sections of content. Tapping on a pivot item header navigates to that header's section content. Tabs are a visual variant of Pivot that use a combination of icons and text
         or just icons to articulate section content."
                ComponentParameters="componentParameters" ComponentSubParameters="componentSubParameters" EnumParameters="enumParameters">
-    <CodeSample Title="BitPivot" Description="" CodeSampleContentForCopy="@pivotSampleCode">
-        <SampleContent>
+    <ComponentExampleBox Title="BitPivot" ExampleSourceCodeForCopy="@pivotSampleCode" ExampleId="example1">
+        <ExamplePreview>
             <BitPivot>
                 <BitPivotItem HeaderText="File">
                     Pivot #1
@@ -20,19 +18,26 @@
                     Pivot #3
                 </BitPivotItem>
             </BitPivot>
-        </SampleContent>
-        <CodeSampleContent>
+        </ExamplePreview>
+        <ExampleSourceCode>
             <pre>
-                &lt;<span class="soco-component-attr">BitPivot</span>&gt;
-                    &lt;<span class="soco-component-attr">BitPivotItem HeaderText</span>="File">Pivot #1><span>&lt;/</span><span class="soco-component-attr">BitPivotItem</span><span>&gt;</span>
-                    &lt;<span class="soco-component-attr">BitPivotItem HeaderText</span>="Shared with me">Pivot #2<span>&lt;/</span><span class="soco-component-attr">BitPivotItem</span><span>&gt;</span>
-                    &lt;<span class="soco-component-attr">BitPivotItem HeaderText</span>="Recent">Pivot #3><span>&lt;/</span><span class="soco-component-attr">BitPivotItem</span><span>&gt;</span>
-                &lt;/<span class="soco-component-attr">BitPivot</span>&gt;
+            &ltBitPivot>
+                    &ltBitPivotItem HeaderText="File">
+                            Pivot #1
+                    &lt/BitPivotItem>
+                    &ltBitPivotItem HeaderText="Shared with me">
+                            Pivot #2
+                    &lt/BitPivotItem>
+                    &ltBitPivotItem HeaderText="Recent">
+                            Pivot #3
+                    &lt/BitPivotItem>
+            &lt/BitPivot>
             </pre>
-        </CodeSampleContent>
-    </CodeSample>
-    <CodeSample Title="Count and Icon" Description="" CodeSampleContentForCopy="@pivotWithCountAndIconSampleCode">
-        <SampleContent>
+        </ExampleSourceCode>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Count and Icon" ExampleSourceCodeForCopy="@pivotWithCountAndIconSampleCode" ExampleId="example2">
+        <ExamplePreview>
             <BitPivot OverflowBehavior="@BitPivotOverflowBehavior.Scroll">
                 <BitPivotItem HeaderText="Files"
                               IconName="BitIcon.Info">
@@ -68,28 +73,50 @@
                     </BodyFragment>
                 </BitPivotItem>
             </BitPivot>
-        </SampleContent>
-        <CodeSampleContent>
+        </ExamplePreview>
+        <ExampleSourceCode>
             <pre>
-                &lt;<span class="soco-component-attr">BitPivot OverflowBehavior</span>="<span class="soco-code">&#64;</span><span>OverflowBehavior.Scroll"></span>
-                        &lt;<span class="soco-component-attr">BitPivotItem HeaderText</span> ="Files" <span class="soco-component-attr">IconName</span>="BitIcon.Info">Pivot #1<span>&lt;/</span><span class="soco-component-attr">BitPivotItem</span>&gt;
-                        &lt;<span class="soco-component-attr">BitPivotItem HeaderText</span> ="Shared with me" <span class="soco-component-attr">ItemCount</span>="32">Pivot #2<span>&lt;/</span><span class="soco-component-attr">BitPivotItem</span>&gt;
-                        &lt;<span class="soco-component-attr">BitPivotItem HeaderText</span> ="Recent" <span class="soco-component-attr">IconName</span>="BitIcon.Info" <span class="soco-component-attr">ItemCount</span>="12">Pivot #3<span>&lt;/</span><span class="soco-component-attr">BitPivotItem</span>&gt;
-                        &lt;<span class="soco-component-attr">BitPivotItem HeaderText</span> ="Some tab" <span class="soco-component-attr">IconName</span>="BitIcon.Info" <span class="soco-component-attr">ItemCount</span>="6">Pivot #4<span>&lt;/</span><span class="soco-component-attr">BitPivotItem</span>&gt;
-                        &lt;<span class="soco-component-attr">BitPivotItem HeaderText</span> ="Latest" <span class="soco-component-attr">IconName</span>="BitIcon.Info" <span class="soco-component-attr">ItemCount</span>="8">Pivot #5<span>&lt;/</span><span class="soco-component-attr">BitPivotItem</span>&gt;
-                        &lt;<span class="soco-component-attr">BitPivotItem HeaderText</span> ="I also have a custom template for icon" <span class="soco-component-attr">IconName</span>="BitIcon.Info" <span class="soco-component-attr">ItemCount</span>="45">&lt;/<span class="soco-component-attr">BitPivotItem</span>&gt;
-                        &lt;<span class="soco-component-attr">HeaderContent</span>&gt;
-                             &lt;<span class="soco-tag-type-def">i</span> <span class="soco-var-attr">class</span>="bit-icon bit-icon--HeartFill"><span>&lt;/</span><span class="soco-tag-type-def">i</span>&gt;
-                        &lt;/<span class="soco-component-attr">HeaderContent</span>&gt;
-                        &lt;<span class="soco-component-attr">BodyContent</span>&gt;
-                             <span>Pivot #6</span>
-                        &lt;/<span class="soco-component-attr">BodyContent</span>&gt;
-                &lt;/<span class="soco-component-attr">BitPivot</span>&gt;
+            &ltBitPivot OverflowBehavior="&#64;BitPivotOverflowBehavior.Scroll">
+                    &ltBitPivotItem HeaderText="Files"
+                                  IconName="BitIcon.Info">
+                            Pivot #1
+                    &lt/BitPivotItem>
+                    &ltBitPivotItem HeaderText="Shared with me"
+                                  ItemCount="32">
+                            Pivot #2
+                    &lt/BitPivotItem>
+                    &ltBitPivotItem HeaderText="Recent"
+                                  IconName="BitIcon.Info"
+                                  ItemCount="12">
+                            Pivot #3
+                    &lt/BitPivotItem>
+                    &ltBitPivotItem HeaderText="Some tab"
+                                  IconName="BitIcon.Info"
+                                  ItemCount="6">
+                            Pivot #4
+                    &lt/BitPivotItem>
+                    &ltBitPivotItem HeaderText="Latest"
+                                  IconName="BitIcon.Info"
+                                  ItemCount="8">
+                            Pivot #5
+                    &lt/BitPivotItem>
+                    &ltBitPivotItem HeaderText="I also have a custom template for icon"
+                                  IconName="BitIcon.Info"
+                                  ItemCount="45">
+                            &ltHeaderFragment>
+                                    &lti class="bit-icon bit-icon--HeartFill">&lt/i>
+                            &lt/HeaderFragment>
+                            &ltBodyFragment>
+                                    Pivot #6
+                            &lt/BodyFragment>
+                    &lt/BitPivotItem>
+            &lt/BitPivot>
             </pre>
-        </CodeSampleContent>
-    </CodeSample>
-    <CodeSample Title="Large link size" Description="" CodeSampleContentForCopy="@pivotWithLargeLinkSizeSampleCode">
-        <SampleContent>
+        </ExampleSourceCode>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Large link size" ExampleSourceCodeForCopy="@pivotWithLargeLinkSizeSampleCode" ExampleId="example3">
+        <ExamplePreview>
             <BitPivot LinkSize="@BitPivotLinkSize.Large">
                 <BitPivotItem HeaderText="File">
                     Pivot #1
@@ -101,19 +128,26 @@
                     Pivot #3
                 </BitPivotItem>
             </BitPivot>
-        </SampleContent>
-        <CodeSampleContent>
+        </ExamplePreview>
+        <ExampleSourceCode>
             <pre>
-                &lt;<span class="soco-component-attr">BitPivot LinkSize</span>="<span class="soco-code">&#64;</span>LinkSize.Large"<span>&gt;</span>
-                        &lt;<span class="soco-component-attr">BitPivotItem HeaderText</span> ="File">Pivot #1<span>&lt;/</span><span class="soco-component-attr">BitPivotItem</span>&gt;
-                        &lt;<span class="soco-component-attr">BitPivotItem HeaderText</span> ="Shared with me">Pivot #2<span>&lt;/</span><span class="soco-component-attr">BitPivotItem</span>&gt;
-                        &lt;<span class="soco-component-attr">BitPivotItem HeaderText</span> ="Recent">Pivot #3<span>&lt;/</span><span class="soco-component-attr">BitPivotItem</span>&gt;
-                &lt;/<span class="soco-component-attr">BitPivot</span>&gt;
+            &ltBitPivot LinkSize="&#64;BitPivotLinkSize.Large">
+                    &ltBitPivotItem HeaderText="File">
+                            Pivot #1
+                    &lt/BitPivotItem>
+                    &ltBitPivotItem HeaderText="Shared with me">
+                            Pivot #2
+                    &lt/BitPivotItem>
+                    &ltBitPivotItem HeaderText="Recent">
+                            Pivot #3
+                    &lt/BitPivotItem>
+            &lt/BitPivot>
             </pre>
-        </CodeSampleContent>
-    </CodeSample>
-    <CodeSample Title="Links of tab style" Description="" CodeSampleContentForCopy="@pivotWithLinkSampleCode">
-        <SampleContent>
+        </ExampleSourceCode>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Links of tab style" ExampleSourceCodeForCopy="@pivotWithLinkSampleCode" ExampleId="example4">
+        <ExamplePreview>
             <BitPivot LinkFormat="@BitPivotLinkFormat.Tabs">
                 <BitPivotItem HeaderText="Foo">
                     Pivot #1
@@ -128,20 +162,29 @@
                     Pivot #4
                 </BitPivotItem>
             </BitPivot>
-        </SampleContent>
-        <CodeSampleContent>
+        </ExamplePreview>
+        <ExampleSourceCode>
             <pre>
-               &lt;<span class="soco-component-attr">BitPivot LinkFormat</span>="<span class="soco-code">&#64;</span>LinkFormat.Tabs"<span>&gt;</span>
-                       &lt;<span class="soco-component-attr">BitPivotItem HeaderText</span> ="Foo">Pivot #1<span>&lt;/</span><span class="soco-component-attr">BitPivotItem</span>&gt;
-                       &lt;<span class="soco-component-attr">BitPivotItem HeaderText</span> ="Bar">Pivot #2<span>&lt;/</span><span class="soco-component-attr">BitPivotItem</span>&gt;
-                       &lt;<span class="soco-component-attr">BitPivotItem HeaderText</span> ="Bas">Pivot #3<span>&lt;/</span><span class="soco-component-attr">BitPivotItem</span>&gt;
-                       &lt;<span class="soco-component-attr">BitPivotItem HeaderText</span> ="Biz">Pivot #4<span>&lt;/</span><span class="soco-component-attr">BitPivotItem</span>&gt;
-               &lt;/<span class="soco-component-attr">BitPivot</span>&gt;
+            &ltBitPivot LinkFormat="&#64;BitPivotLinkFormat.Tabs">
+                    &ltBitPivotItem HeaderText="Foo">
+                            Pivot #1
+                    &lt/BitPivotItem>
+                    &ltBitPivotItem HeaderText="Bar">
+                            Pivot #2
+                    &lt/BitPivotItem>
+                    &ltBitPivotItem HeaderText="Bas">
+                            Pivot #3
+                    &lt/BitPivotItem>
+                    &ltBitPivotItem HeaderText="Biz">
+                            Pivot #4
+                    &lt/BitPivotItem>
+            &lt/BitPivot>
             </pre>
-        </CodeSampleContent>
-    </CodeSample>
-    <CodeSample Title="Links of large tab style" Description="" CodeSampleContentForCopy="@pivotWithLargeLinkSampleCode">
-        <SampleContent>
+        </ExampleSourceCode>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Links of large tab style" ExampleSourceCodeForCopy="@pivotWithLargeLinkSampleCode" ExampleId="example5">
+        <ExamplePreview>
             <BitPivot LinkFormat="@BitPivotLinkFormat.Tabs"
                       LinkSize="@BitPivotLinkSize.Large">
                 <BitPivotItem HeaderText="Foo">
@@ -157,20 +200,30 @@
                     Pivot #4
                 </BitPivotItem>
             </BitPivot>
-        </SampleContent>
-        <CodeSampleContent>
+        </ExamplePreview>
+        <ExampleSourceCode>
             <pre>
-               &lt;<span class="soco-component-attr">BitPivot LinkFormat</span>="<span class="soco-code">&#64;</span>LinkFormat.Tabs" <span class="soco-component-attr">LinkSize</span>="<span class="soco-code">&#64;</span>LinkSize.Large"<span>&gt;</span>
-                       <span>&lt;<span class="soco-component-attr">BitPivotItem HeaderText</span> ="Foo">Pivot #1</span><span>&lt;/</span><span class="soco-component-attr">BitPivotItem</span>&gt;
-                       <span>&lt;<span class="soco-component-attr">BitPivotItem HeaderText</span> ="Bar">Pivot #2</span><span>&lt;/</span><span class="soco-component-attr">BitPivotItem</span>&gt;
-                       <span>&lt;<span class="soco-component-attr">BitPivotItem HeaderText</span> ="Bas">Pivot #3</span><span>&lt;/</span><span class="soco-component-attr">BitPivotItem</span>&gt;
-                       <span>&lt;<span class="soco-component-attr">BitPivotItem HeaderText</span> ="Biz">Pivot #4</span><span>&lt;/</span><span class="soco-component-attr">BitPivotItem</span>&gt;
-               &lt;/<span class="soco-component-attr">BitPivot</span>&gt;
+            &ltBitPivot LinkFormat="&#64;BitPivotLinkFormat.Tabs"
+                      LinkSize="&#64;BitPivotLinkSize.Large">
+                    &ltBitPivotItem HeaderText="Foo">
+                            Pivot #1
+                    &lt/BitPivotItem>
+                    &ltBitPivotItem HeaderText="Bar">
+                            Pivot #2
+                    &lt/BitPivotItem>
+                    &ltBitPivotItem HeaderText="Bas">
+                            Pivot #3
+                    &lt/BitPivotItem>
+                    &ltBitPivotItem HeaderText="Biz">
+                            Pivot #4
+                    &lt/BitPivotItem>
+            &lt/BitPivot>
             </pre>
-        </CodeSampleContent>
-    </CodeSample>
-    <CodeSample Title="Change tabs from outside of the component" Description="" CodeSampleContentForCopy="@pivotChangeFromOutsideSampleCode">
-        <SampleContent>
+        </ExampleSourceCode>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Change tabs from outside of the component" ExampleSourceCodeForCopy="@pivotChangeFromOutsideSampleCode" ExampleId="example6">
+        <ExamplePreview>
             <BitPivot LinkFormat="@BitPivotLinkFormat.Tabs"
                       LinkSize="@BitPivotLinkSize.Large"
                       SelectedKey="@OverridePivotSelectedKey"
@@ -187,31 +240,39 @@
             </BitPivot>
             <BitButton OnClick="(() => OverridePivotSelectedKey = (((int.Parse(OverridePivotSelectedKey) + 3 - 1) % 3)).ToString())">Prev</BitButton>
             <BitButton OnClick="(() => OverridePivotSelectedKey = (((int.Parse(OverridePivotSelectedKey) + 1 ) % 3)).ToString())">Next</BitButton>
-        </SampleContent>
-        <CodeSampleContent>
+        </ExamplePreview>
+        <ExampleSourceCode>
             <pre>
-                &lt;<span class="soco-component-attr">BitPivot LinkFormat</span>="<span class="soco-code">&#64;</span>LinkFormat.Tabs"
-                                   <span class="soco-component-attr">LinkSize</span>="<span class="soco-code">&#64;</span>LinkSize.Large"
-                                   <span class="soco-component-attr">SelectedKey</span>="<span class="soco-code">&#64;</span>OverridePivotSelectedKey"
-                                   <span class="soco-component-attr">SelectedKeyChanged</span>="<span>PivotSelectedKeyChanged</span>"&gt;
-                          &lt;<span class="soco-component-attr">BitPivotItem HeaderText</span> ="Samples">Pivot #1<span>&lt;/</span><span class="soco-component-attr">BitPivotItem</span>&gt;
-                          &lt;<span class="soco-component-attr">BitPivotItem HeaderText</span> ="Files">Pivot #2<span>&lt;/</span><span class="soco-component-attr">BitPivotItem</span>&gt;
-                          &lt;<span class="soco-component-attr">BitPivotItem HeaderText</span> ="Recent">Pivot #3<span>&lt;/</span><span class="soco-component-attr">BitPivotItem</span>&gt;
-                &lt;/<span class="soco-component-attr">BitPivot</span>&gt;
-                &lt;<span class="soco-component-attr">BitButton OnClick</span>="(() => OverridePivotSelectedKey = (((<span class="soco-tag-type-def">int</span>.<span class="dark-yellow">Parse</span>(OverridePivotSelectedKey) + 3 - 1) % 3)).<span>ToString</span>())">prev<span>&lt;/</span><span class="soco-component-attr">BitButton</span>&gt;
-                &lt;<span class="soco-component-attr">BitButton OnClick</span>="(() => OverridePivotSelectedKey = (((<span class="soco-tag-type-def">int</span>.Parse(OverridePivotSelectedKey) + 1 ) % 3)).<span class="dark-yellow">ToString</span>())">next<span>&lt;/</span><span class="soco-component-attr">BitButton</span>&gt;
-                <span class="soco-code">&#64;code {</span>
-                      <span class="soco-tag-type-def">public string </span>OverridePivotSelectedKey { <span class="soco-tag-type-def">get</span>; <span class="soco-tag-type-def">set</span>; } = <span class="soco-string">"1"</span>;
-                      <span class="soco-tag-type-def">public void </span><span class="dark-yellow">PivotSelectedKeyChanged</span>(<span class="soco-tag-type-def">string</span> key)
-                      <span>{</span>
-                             <span>OverridePivotSelectedKey = key;</span>
-                      <span>}</span>
-                <span class="soco-code">}</span>
+            &lt/BitPivot LinkFormat="&#64;BitPivotLinkFormat.Tabs"
+                      LinkSize="&#64;BitPivotLinkSize.Large"
+                      SelectedKey="&#64;OverridePivotSelectedKey"
+                      SelectedKeyChanged="PivotSelectedKeyChanged">
+                    &lt/BitPivotItem HeaderText="Samples">
+                            Pivot #1
+                    &lt//BitPivotItem>
+                    &lt/BitPivotItem HeaderText="Files">
+                            Pivot #2
+                    &lt//BitPivotItem>
+                    &lt/BitPivotItem HeaderText="Recent">
+                            Pivot #3
+                    &lt//BitPivotItem>
+            &lt//BitPivot>
+            &lt/BitButton OnClick="(() => OverridePivotSelectedKey = (((int.Parse(OverridePivotSelectedKey) + 3 - 1) % 3)).ToString())">Prev&lt//BitButton>
+            &lt/BitButton OnClick="(() => OverridePivotSelectedKey = (((int.Parse(OverridePivotSelectedKey) + 1 ) % 3)).ToString())">Next&lt//BitButton>
+
+            &#64;code {
+                    private string OverridePivotSelectedKey = "1";
+                    private void PivotSelectedKeyChanged(string key)
+                    {
+                            OverridePivotSelectedKey = key;
+                    }
+            }
             </pre>
-        </CodeSampleContent>
-    </CodeSample>
-    <CodeSample Title="Render content separately" Description="" CodeSampleContentForCopy="@pivotContent1SampleCode">
-        <SampleContent>
+        </ExampleSourceCode>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Render content separately" ExampleSourceCodeForCopy="@pivotContent1SampleCode" ExampleId="example7">
+        <ExamplePreview>
             <BitPivot LinkFormat="@BitPivotLinkFormat.Tabs"
                       DefaultSelectedKey="Foo"
                       LinkSize="@BitPivotLinkSize.Large"
@@ -222,7 +283,7 @@
                 <BitPivotItem HeaderText="Bas" Key="Bas"></BitPivotItem>
                 <BitPivotItem HeaderText="Biz" Key="Biz"></BitPivotItem>
             </BitPivot>
-            <div class="how-to-use m-t-20">
+            <div class="m-t-20">
                 @if (SelectedKey == "Foo")
                 {
                     <div>Hello I am Foo</div>
@@ -240,42 +301,46 @@
                     <div>Hello I am Biz</div>
                 }
             </div>
-        </SampleContent>
-        <CodeSampleContent>
+        </ExamplePreview>
+        <ExampleSourceCode>
             <pre>
-                &lt;<span class="soco-component-attr">BitPivot LinkFormat</span>="<span class="soco-code">&#64;</span>LinkFormat.Tabs"
-                                   <span class="soco-component-attr">LinkSize</span>="<span class="soco-code">&#64;</span>LinkSize.Large"
-                                   <span class="soco-component-attr">OnLinkClick</span>="<span class="soco-code">&#64;</span>(item => SelectedKey = item.Key)"<span>&gt;</span>
-                          &lt;<span class="soco-component-attr">BitPivotItem HeaderText</span> ="Foo" <span class="soco-component-attr">Key</span>="Foo">&lt;/<span class="soco-component-attr">BitPivotItem</span>&gt;
-                          &lt;<span class="soco-component-attr">BitPivotItem HeaderText</span> ="Bar" <span class="soco-component-attr">Key</span>="Bar">&lt;/<span class="soco-component-attr">BitPivotItem</span>&gt;
-                          &lt;<span class="soco-component-attr">BitPivotItem HeaderText</span> ="Bas" <span class="soco-component-attr">Key</span>="Bas">&lt;/<span class="soco-component-attr">BitPivotItem</span>&gt;
-                          &lt;<span class="soco-component-attr">BitPivotItem HeaderText</span> ="Biz" <span class="soco-component-attr">Key</span>="Biz">&lt;/<span class="soco-component-attr">BitPivotItem</span>&gt; 
-                &lt;/<span class="soco-component-attr">BitPivot</span>&gt;
-                <span class="soco-code">&#64;</span><span class="soco-if-for">if</span> (SelectedKey == <span class="soco-string">"Foo"</span>)
-                <span>{</span>
-                       &lt;<span class="soco-tag-type-def">div></span>Hello I am Foo<span>&lt;/</span><span class="soco-tag-type-def">div</span>&gt;
-                <span>}</span>
-                <span class="soco-if-for">else if </span>(SelectedKey == <span class="soco-string">"Bar"</span>)
-                <span>{</span>
-                       &lt;<span class="soco-tag-type-def">div></span>Hello I am Bar<span>&lt;/</span><span class="soco-tag-type-def">div</span>&gt;
-                <span>}</span>
-                <span class="soco-if-for">else if </span>(SelectedKey == <span class="soco-string">"Bas"</span>)
-                <span>{</span>
-                       &lt;<span class="soco-tag-type-def">div></span>Hello I am Bas<span>&lt;/</span><span class="soco-tag-type-def">div</span>&gt;
-                <span>}</span>
-                <span class="soco-if-for">else if </span>(SelectedKey == <span class="soco-string">"Biz"</span>)
-                <span>{</span>
-                       &lt;<span class="soco-tag-type-def">div></span>Hello I am Biz<span>&lt;/</span><span class="soco-tag-type-def">div</span>&gt;
-                <span>}</span>
-                <span class="soco-code">&#64;code {</span>
-                      <span class="soco-tag-type-def">private string</span> SelectedKey = <span class="soco-string">"Foo"</span>;
-                <span class="soco-code">}</span>
-             </pre>
-        </CodeSampleContent>
-    </CodeSample>
-    <CodeSample Title="Render content separately" Description="" CodeSampleContentForCopy="@pivotContent2SampleCode">
-        <SampleContent>
-            <span class="how-to-use">@SelectedPivotItem?.HeaderText Clicked</span>
+            &ltBitPivot LinkFormat="&#64;BitPivotLinkFormat.Tabs"
+                      DefaultSelectedKey="Foo"
+                      LinkSize="&#64;BitPivotLinkSize.Large"
+                      HeadersOnly="true"
+                      OnLinkClick="&#64;(item => SelectedKey = item.Key)">
+                    &ltBitPivotItem HeaderText="Foo" Key="Foo">&lt/BitPivotItem>
+                    &ltBitPivotItem HeaderText="Bar" Key="Bar">&lt/BitPivotItem>
+                    &ltBitPivotItem HeaderText="Bas" Key="Bas">&lt/BitPivotItem>
+                    &ltBitPivotItem HeaderText="Biz" Key="Biz">&lt/BitPivotItem>
+            &lt/BitPivot>
+            &#64;if (SelectedKey == "Foo")
+            {
+                    &ltdiv>Hello I am Foo&lt/div>
+            }
+            else if &#40;SelectedKey == "Bar")
+            {
+                    &ltdiv>Hello I am Bar&lt/div>
+            }
+            else if &#40;SelectedKey == "Bas")
+            {
+                    &ltdiv>Hello I am Bas&lt/div>
+            }
+            else if &#40;SelectedKey == "Biz")
+            {
+                    &ltdiv>Hello I am Biz&lt/div>
+            }    
+
+            &#64;code {
+                    private string SelectedKey = "Foo";
+            }
+            </pre>
+        </ExampleSourceCode>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Render content separately" ExampleSourceCodeForCopy="@pivotContent2SampleCode" ExampleId="example8">
+        <ExamplePreview>
+            <div>@SelectedPivotItem?.HeaderText Clicked</div>
             <div>
                 <BitPivot LinkFormat="@BitPivotLinkFormat.Tabs"
                           LinkSize="@BitPivotLinkSize.Large"
@@ -301,30 +366,43 @@
                 </BitPivot>
             </div>
             <BitButton OnClick="TogglePivotItemVisobility">Hide/Show Biz</BitButton>
-        </SampleContent>
-        <CodeSampleContent>
+        </ExamplePreview>
+        <ExampleSourceCode>
             <pre>
-                &lt;<span class="soco-tag-type-def">span</span><span>&gt;</span><span class="soco-code">@@</span>SelectedPivotItem?.HeaderText Clicked<span>&lt;/</span><span class="soco-tag-type-def">span</span>&gt;
-                &lt;<span class="soco-component-attr">BitPivot LinkFormat</span>="<span class="soco-code">&#64;</span>LinkFormat.Tabs"
-                                   <span class="soco-component-attr">LinkSize</span>="<span class="soco-code">&#64;</span>LinkSize.Large"
-                                   <span class="soco-component-attr">OnLinkClick</span>="<span class="soco-code">&#64;</span>(item => SelectedPivotItem = item)"<span>&gt;</span>
-                          &lt;<span class="soco-component-attr">BitPivotItem HeaderText</span> ="Foo">Pivot #1<span>&lt;/</span><span class="soco-component-attr">BitPivotItem</span>&gt;
-                          &lt;<span class="soco-component-attr">BitPivotItem HeaderText</span> ="Bar">Pivot #2<span>&lt;/</span><span class="soco-component-attr">BitPivotItem</span>&gt;
-                          &lt;<span class="soco-component-attr">BitPivotItem HeaderText</span> ="Bas" <span class="soco-component-attr">Key</span>="aaa">Pivot #3<span>&lt;/</span><span class="soco-component-attr">BitPivotItem</span>&gt;
-                          &lt;<span class="soco-component-attr">BitPivotItem HeaderText</span> ="Biz"<span class="soco-component-attr"> Visibility</span>="<span class="soco-code">&#64;</span>PivotItemVisibility"><span>Pivot #4</span><span>&lt;/</span><span class="soco-component-attr">BitPivotItem</span>&gt;
-                          &lt;<span class="soco-component-attr">BitPivotItem HeaderText</span> ="Baq">Pivot #5<span>&lt;/</span><span class="soco-component-attr">BitPivotItem</span>&gt;
-                          &lt;<span class="soco-component-attr">BitPivotItem HeaderText</span> ="Baw">Pivot #6<span>&lt;/</span><span class="soco-component-attr">BitPivotItem</span>&gt;
-                &lt;/<span class="soco-component-attr">BitPivot</span>&gt;
-                &lt;<span class="soco-component-attr">BitButton OnClick</span>="TogglePivotItemVisobility">Hide/Show Biz<span>&lt;/</span><span class="soco-component-attr">BitButton</span>&gt;
-                <span class="soco-code">&#64;code {</span>
-                      <span class="soco-tag-type-def">public </span>ComponentVisibility PivotItemVisibility { <span class="soco-tag-type-def">get</span>; <span class="soco-tag-type-def">set</span>; }
-                      <span class="soco-tag-type-def">public </span>BitPivotItem SelectedPivotItem { <span class="soco-tag-type-def">get</span>; <span class="soco-tag-type-def">set</span>; }
-                      <span class="soco-tag-type-def">public void </span>TogglePivotItemVisobility()
-                      <span>{</span>
-                             PivotItemVisibility = PivotItemVisibility == BitComponentVisibility.Visible ? BitComponentVisibility.Collapsed : BitComponentVisibility.Visible;
-                      <span>}</span>
-                <span class="soco-code">}</span>
+            <div>&#64;SelectedPivotItem?.HeaderText Clicked</div>
+            &ltBitPivot LinkFormat="&#64;BitPivotLinkFormat.Tabs"
+                          LinkSize="&#64;BitPivotLinkSize.Large"
+                          OnLinkClick="&#64;(item => SelectedPivotItem = item)">
+                    &ltBitPivotItem HeaderText="Foo">
+                            Pivot #1
+                    &lt/BitPivotItem>
+                    &ltBitPivotItem HeaderText="Bar">
+                            Pivot #2
+                    &lt/BitPivotItem>
+                    &ltBitPivotItem HeaderText="Bas" Key="aaa">
+                            Pivot #3
+                    &lt/BitPivotItem>
+                    &ltBitPivotItem Visibility="&#64;PivotItemVisibility" HeaderText="Biz">
+                            Pivot #4
+                    &lt/BitPivotItem>
+                    &ltBitPivotItem HeaderText="Baq">
+                            Pivot #5
+                    &lt/BitPivotItem>
+                    &ltBitPivotItem HeaderText="Baw">
+                            Pivot #6
+                    &lt/BitPivotItem>
+            &lt/BitPivot>
+            &ltBitButton OnClick="TogglePivotItemVisobility">Hide/Show Biz&lt/BitButton>
+
+            &#64;code {
+                    private BitPivotItem SelectedPivotItem;
+                    private BitComponentVisibility PivotItemVisibility;
+                    private void TogglePivotItemVisobility()
+                    {
+                            PivotItemVisibility = PivotItemVisibility == BitComponentVisibility.Visible ? BitComponentVisibility.Collapsed : BitComponentVisibility.Visible;
+                    }
+            }
             </pre>
-        </CodeSampleContent>
-    </CodeSample>
-</ComponentPage>
+        </ExampleSourceCode>
+    </ComponentExampleBox>
+</ComponentDemo>

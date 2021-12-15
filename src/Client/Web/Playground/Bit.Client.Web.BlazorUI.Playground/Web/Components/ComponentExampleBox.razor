@@ -1,0 +1,33 @@
+﻿<section class="box" id="@ExampleId">
+    <div class="box-header">
+        <div class="header-title">@Title</div>
+        <div class="header-btn-group">
+            <BitToggleButton Class="com-example-box-header-btn"
+                             @bind-IsChecked="showCode"
+                             IconName="BitIcon.CodeEdit"
+                             Title="@(showCode ? "Hide code" : "Show code")">
+            </BitToggleButton>
+            <BitIconButton Class="com-example-box-header-btn"
+                           IconName="BitIcon.Link"
+                           Title="Copy link"
+                           OnClick="@CopyLinkToClipboard">
+            </BitIconButton>
+        </div>
+        <BitIconButton Class="com-example-box-copy-btn"
+                       OnClick=CopyCodeToClipboard
+                       IconName="BitIcon.Copy"
+                       Title="Copy source">
+        </BitIconButton>
+    </div>
+
+    <div class="box-content">
+        @if (!showCode)
+        {
+            @ExamplePreview
+        }
+        else
+        {
+            @ExampleSourceCode
+        }
+    </div>
+</section>

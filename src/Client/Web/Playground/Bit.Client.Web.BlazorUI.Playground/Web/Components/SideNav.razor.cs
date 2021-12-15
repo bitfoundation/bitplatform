@@ -24,7 +24,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Components
                      new BitNavLinkItem { Name= "CompoundButton", Key = "CompoundButton", Url = "/components/compound-button"},
                      new BitNavLinkItem { Name= "IconButton", Key = "IconButton", Url = "/components/icon-button"},
                      new BitNavLinkItem { Name= "ToggleButton", Key = "ToggleButton", Url = "/components/toggle-button" },
-                     new BitNavLinkItem { Name= "Checkbox", Key = "Checkbox", Url = "/components/check-box" },
+                     new BitNavLinkItem { Name= "CheckBox", Key = "CheckBox", Url = "/components/check-box" },
                      new BitNavLinkItem { Name= "ChoiceGroup (RadioGroup)", Key = "Choice", Url = "/components/choice-group" },
                      new BitNavLinkItem { Name= "DropDown", Key = "DropDown", Url = "/components/drop-down" },
                      new BitNavLinkItem { Name= "FileUpload", Key= "FileUpload", Url = "/components/file-upload"},
@@ -157,10 +157,14 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Components
             ToggleMenu();
         }
 
-        private string GetDemoLinkClassName()
+        private string GetDemoLinkClassName(string link)
         {
             var className = "side-nav-demo-link";
-            if (CurrentUrl == "/components/demo")
+            if (CurrentUrl == "/components/overview" && link == "overview")
+            {
+                className += " side-nav-demo-link--active";
+            }
+            else if (CurrentUrl == "/get-started" && link == "get-started")
             {
                 className += " side-nav-demo-link--active";
             }

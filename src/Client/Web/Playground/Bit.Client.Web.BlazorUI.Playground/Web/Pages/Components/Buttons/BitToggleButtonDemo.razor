@@ -1,12 +1,11 @@
 ﻿@page "/components/toggle-button"
 
-@using Bit.Client.Web.BlazorUI.Playground.Web.Components
-
-<ComponentPage ComponentName="Toggle Button" OverviewDesc="Buttons give people a way to trigger an action. They’re typically found in forms, dialog panels, and dialogs.
+<ComponentDemo ComponentName="ToggleButton" ComponentDescription="Buttons give people a way to trigger an action. They’re typically found in forms, dialog panels, and dialogs.
     Some buttons are specialized for particular tasks, such as navigation, repeated actions, or presenting menus."
                ComponentParameters="componentParameters" EnumParameters="enumParameters">
-    <CodeSample Title="BitToggleButton" Description="BitToggleButton component represents a button as a checkbox and can use in form pages." CodeSampleContentForCopy="@toggleButtonSampleCode">
-        <SampleContent>
+    <ComponentExampleBox Title="BitToggleButton" ExampleSourceCodeForCopy="@toggleButtonSampleCode" ExampleId="example1">
+        <ExamplePreview>
+            <div class="example-desc">BitToggleButton component represents a button as a checkbox and can use in form pages.</div>
             <div>
                 <BitToggleButton @bind-IsChecked="TogglePrimaryButtonChecked"
                                  Class="tgl-btn"
@@ -14,14 +13,12 @@
                                  IconName=@(TogglePrimaryButtonChecked ? BitIcon.MicOff : BitIcon.Microphone)
                                  ButtonStyle="BitButtonStyle.Primary">
                 </BitToggleButton>
-
                 <BitToggleButton @bind-IsChecked="ToggleStandardButtonChecked"
                                  Class="tgl-btn"
                                  Label="@(ToggleStandardButtonChecked ? "Standard Mute":"Standard Unmute")"
                                  IconName=@(ToggleStandardButtonChecked ? BitIcon.MicOff : BitIcon.Microphone)
                                  ButtonStyle="BitButtonStyle.Standard">
                 </BitToggleButton>
-
                 <BitToggleButton @bind-IsChecked="ToggleDisabledButtonChecked"
                                  Class="tgl-btn"
                                  IsEnabled="false"
@@ -29,35 +26,40 @@
                                  IconName=@(ToggleDisabledButtonChecked ? BitIcon.MicOff : BitIcon.Microphone)>
                 </BitToggleButton>
             </div>
-        </SampleContent>
-        <CodeSampleContent>
+        </ExamplePreview>
+        <ExampleSourceCode>
             <pre>
-                &lt<span class="soco-component-attr">BitToggleButton </span><span class="soco-code">&#64;</span><span class="soco-component-attr">bind-IsChecked</span>="TogglePrimaryButtonChecked"
-                                                    <span class="soco-component-attr">Label</span>="<span class="soco-code">&#64;(</span>TogglePrimaryButtonChecked ? <span class="soco-string">"Primary Mute"</span> : <span class="soco-string">"Primary Unmute"</span><span class="soco-code">)</span>"
-                                                    <span class="soco-component-attr">IconName</span>="<span class="soco-code">&#64;(</span>TogglePrimaryButtonChecked ? <span class="soco-string">BitIcon.MicOff</span> : <span class="soco-string">BitIcon.Microphone</span><span class="soco-code">)</span>"
-                                                    <span class="soco-component-attr">ButtonStyle</span>="BitButtonStyle.Primary">
-                &lt/<span class="soco-component-attr">BitToggleButton</span>&gt;
-                &lt<span class="soco-component-attr">BitToggleButton </span><span class="soco-code">&#64;</span><span class="soco-component-attr">bind-IsChecked</span>="ToggleStandardButtonChecked"
-                                                    <span class="soco-component-attr">Label</span>="<span class="soco-code">&#64;(</span>ToggleStandardButtonChecked ? <span class="soco-string">"Standard Mute"</span> : <span class="soco-string">"Standard Unmute"</span><span class="soco-code">)</span>"
-                                                    <span class="soco-component-attr">IconName</span>="<span class="soco-code">&#64;(</span>ToggleStandardButtonChecked ? <span class="soco-string">BitIcon.MicOff</span> : <span class="soco-string">BitIcon.Microphone</span><span class="soco-code">)</span>"
-                                                    <span class="soco-component-attr">ButtonStyle</span>="BitButtonStyle.Standard">
-                &lt/<span class="soco-component-attr">BitToggleButton</span>&gt;
-                &lt<span class="soco-component-attr">BitToggleButton </span><span class="soco-code">&#64;</span><span class="soco-component-attr">bind-IsChecked</span>="ToggleDisabledButtonChecked"
-                                                    <span class="soco-component-attr">Label</span>="<span class="soco-code">&#64;(</span>ToggleDisabledButtonChecked ? <span class="soco-string">"Disabled Mute"</span> : <span class="soco-string">"Disabled Unmute"</span><span class="soco-code">)</span>"
-                                                    <span class="soco-component-attr">IconName</span>="<span class="soco-code">&#64;(</span>ToggleDisabledButtonChecked ? <span class="soco-string">BitIcon.MicOff</span> : <span class="soco-string">BitIcon.Microphone</span><span class="soco-code">)</span>"
-                                                    <span class="soco-component-attr">IsEnabled</span>=<span class="soco-tag-type-def">"false"</span>>
-                &lt/<span class="soco-component-attr">BitToggleButton</span>&gt;
-                <span class="soco-code">&#64;code {</span>
-                      <span class="soco-tag-type-def">private bool</span> TogglePrimaryButtonChecked = <span class="soco-tag-type-def">false</span>;
-                      <span class="soco-tag-type-def">private bool</span> ToggleStandardButtonChecked = <span class="soco-tag-type-def"> false</span>;
-                      <span class="soco-tag-type-def">private bool</span> ToggleDisabledButtonChecked = <span class="soco-tag-type-def">false</span>;
-                <span class="soco-code">}</span>
+            &ltBitToggleButton &#64;bind-IsChecked="TogglePrimaryButtonChecked"
+                             Class="tgl-btn"
+                             Label="&#64;(TogglePrimaryButtonChecked ? "Primary Mute":"Primary Unmute")"
+                             IconName=&#64;(TogglePrimaryButtonChecked ? BitIcon.MicOff : BitIcon.Microphone)
+                             ButtonStyle="BitButtonStyle.Primary">
+            &lt/BitToggleButton>
+            &ltBitToggleButton &#64;bind-IsChecked="ToggleStandardButtonChecked"
+                             Class="tgl-btn"
+                             Label="&#64;(ToggleStandardButtonChecked ? "Standard Mute":"Standard Unmute")"
+                             IconName=&#64;(ToggleStandardButtonChecked ? BitIcon.MicOff : BitIcon.Microphone)
+                             ButtonStyle="BitButtonStyle.Standard">
+            &lt/BitToggleButton>
+            &ltBitToggleButton &#64;bind-IsChecked="ToggleDisabledButtonChecked"
+                             Class="tgl-btn"
+                             IsEnabled="false"
+                             Label="&#64;(ToggleDisabledButtonChecked ? "Disabled Mute" : "Disabled Unmute")"
+                             IconName=&#64;(ToggleDisabledButtonChecked ? BitIcon.MicOff : BitIcon.Microphone)>
+            &lt/BitToggleButton>
+
+            &#64;code {
+                    private bool TogglePrimaryButtonChecked;
+                    private bool ToggleStandardButtonChecked;
+                    private bool ToggleDisabledButtonChecked;
+            }
             </pre>
-        </CodeSampleContent>
-    </CodeSample>
-    <CodeSample Title="Toggle Button with OnChange event" Description="" CodeSampleContentForCopy="@onChangeSampleCode">
-        <SampleContent>
-            <span class="checkbox-status">Check status is: <span class="soco-tag-type-def">@OnToggleButtonChanged</span></span>
+        </ExampleSourceCode>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Toggle Button with OnChange event" ExampleSourceCodeForCopy="@onChangeSampleCode" ExampleId="example2">
+        <ExamplePreview>
+            <div class="example-desc">Check status is: @OnToggleButtonChanged</div>
             <div class="m-t-20">
                 <BitToggleButton @bind-IsChecked="ToggleButtonForOnChange"
                                  Label="@(ToggleButtonForOnChange ? "Mute" : "Unmute")"
@@ -65,24 +67,25 @@
                                  OnChange="ToggleButtonChanged">
                 </BitToggleButton>
             </div>
-        </SampleContent>
-        <CodeSampleContent>
+        </ExamplePreview>
+        <ExampleSourceCode>
             <pre>
-                &lt<span class="soco-component-attr">BitToggleButton </span><span class="soco-code">&#64;</span><span class="soco-component-attr">bind-IsChecked</span>="ToggleButtonForOnChange"
-                                                    <span class="soco-component-attr">Label</span>="<span class="soco-code">&#64;(</span>ToggleButtonForOnChange ? <span class="soco-string">"Mute"</span> : <span class="soco-string">"Unmute"</span><span class="soco-code">)</span>"
-                                                    <span class="soco-component-attr">IconName</span>="<span class="soco-code">&#64;(</span>ToggleButtonForOnChange ? <span class="soco-string">BitIcon.MicOff</span> : <span class="soco-string">BitIcon.Microphone</span><span class="soco-code">)</span>"
-                                                    <span class="soco-component-attr">OnChange</span>="ToggleButtonChanged"<span>&gt;</span>>
-                &lt/<span class="soco-component-attr">BitToggleButton</span>&gt
-                &lt<span class="soco-tag-type-def">span</span>><span>Check status is: <span class="soco-code">&#64;</span>OnToggleButtonChanged</span>&lt/<span class="soco-tag-type-def">span</span>>
-                <span class="soco-code">&#64;code {</span>
-                      <span class="soco-tag-type-def">private bool</span> ToggleButtonForOnChange = <span class="soco-tag-type-def">true;</span>
-                      <span class="soco-tag-type-def">private bool</span> OnToggleButtonChanged = <span class="soco-tag-type-def">true;</span>
-                <span class="soco-code">}</span>
+            &ltBitToggleButton &#64;bind-IsChecked="ToggleButtonForOnChange"
+                             Label="&#64;(ToggleButtonForOnChange ? "Mute" : "Unmute")"
+                             IconName=&#64;(ToggleButtonForOnChange ? BitIcon.MicOff : BitIcon.Microphone)
+                             OnChange="ToggleButtonChanged">
+            &lt/BitToggleButton>
+
+            &#64;code {
+                    private bool ToggleButtonForOnChange = true;
+                    private bool OnToggleButtonChanged = true;
+            }
             </pre>
-        </CodeSampleContent>
-    </CodeSample>
-    <CodeSample Title="Toggle Button with two way binding" Description="" CodeSampleContentForCopy="@twoWayBindingSampleCode">
-        <SampleContent>
+        </ExampleSourceCode>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Toggle Button with two way binding" ExampleSourceCodeForCopy="@twoWayBindingSampleCode" ExampleId="example3">
+        <ExamplePreview>
             <div>
                 <input type=checkbox id="BitToggleButtonTwoWayValue" @bind="ToggleButtonTwoWayValue">
                 <label class="checkbox-status" for="BitToggleButtonTwoWayValue">Checked Toggle Button</label>
@@ -93,54 +96,57 @@
                     </BitToggleButton>
                 </div>
             </div>
-        </SampleContent>
-        <CodeSampleContent>
+        </ExamplePreview>
+        <ExampleSourceCode>
             <pre>
-                &lt<span class="soco-tag-type-def">input</span><span class="soco-var-attr"> type</span>=checkbox<span class="soco-var-attr"> id</span>="BitTogleButtonTwoWayValue" <span class="soco-code">&#64;</span><span class="soco-component-attr">bind</span>="TogleButtonTwoWayValue"/>
-                &lt<span class="soco-tag-type-def">label</span><span class="soco-var-attr"> for</span>="BitTogleButtonTwoWayValue">Checked Toggle Button<span>&lt/</span><span class="soco-tag-type-def">label</span>&gt;
-                &lt<span class="soco-component-attr">BitToggleButton </span><span class="soco-code">&#64;</span><span class="soco-component-attr">bind-IsChecked</span>="TogleButtonTwoWayValue"
-                                                    <span class="soco-component-attr">Label</span>="<span class="soco-code">&#64;(</span>TogleButtonTwoWayValue ? <span class="soco-string">"Mute"</span> : <span class="soco-string">"Unmute"</span><span class="soco-code">)</span>"
-                                                    <span class="soco-component-attr">IconName</span>="<span class="soco-code">&#64;(</span>TogleButtonTwoWayValue ? <span class="soco-string">BitIcon.MicOff</span> : <span class="soco-string">BitIcon.Microphone</span><span class="soco-code">)</span>">
-                &lt/<span class="soco-component-attr">BitToggleButton</span>&gt;
-                &lt<span class="soco-tag-type-def">span</span>>Check status is: <span class="soco-code">&#64;</span>OnToggleButtonChanged<span class="soco-tag-type-def">&lt/span</span>>
-                <span class="soco-code">&#64;code {</span>
-                      <span class="soco-tag-type-def">private bool</span> ToggleButtonTwoWayValue = <span class="soco-tag-type-def">true</span>;
-                <span class="soco-code">}</span>
+            &ltlabel class="checkbox-status" for="BitToggleButtonTwoWayValue">Checked Toggle Button&lt/label>
+            &ltBitToggleButton &#64;bind-IsChecked="ToggleButtonTwoWayValue"
+                             Label="&#64;(ToggleButtonTwoWayValue ? "Mute" : "Unmute")"
+                             IconName=&#64;(ToggleButtonTwoWayValue ? BitIcon.MicOff : BitIcon.Microphone)>
+            &lt/BitToggleButton>
+
+            &#64;code {
+                    private bool ToggleButtonTwoWayValue = true;
+            }
             </pre>
-        </CodeSampleContent>
-    </CodeSample>
-    <CodeSample Title="Arias for Screen Reader" Description="Aria attribues can also set for a BitToggleButton." CodeSampleContentForCopy="@ariasSampleCode">
-        <SampleContent>
+        </ExampleSourceCode>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Arias for Screen Reader" ExampleSourceCodeForCopy="@ariasSampleCode" ExampleId="example4">
+        <ExamplePreview>
+            <div class="example-desc">Aria attribues can also set for a BitToggleButton.</div>
             <div>
                 <BitToggleButton @bind-IsChecked="ToggleButtonChecked"
                                  Label="@(ToggleButtonChecked ? "Aria Description Mute" : "Aria Description Unmute")"
-                                 IconName=@(ToggleButtonChecked ? BitIcon.MicOff : BitIcon.Microphone)
+                                 IconName="@(ToggleButtonChecked ? BitIcon.MicOff : BitIcon.Microphone)"
                                  AriaDescription="Detailed description used for screen reader">
                 </BitToggleButton>
                 <BitToggleButton @bind-IsChecked="ToggleButtonChecked"
                                  Class="aria-hidden-tgl-btn"
                                  Label="@(ToggleButtonChecked ? "Aria Hidden Mute" : "Aria Hidden Unmute")"
-                                 IconName=@(ToggleButtonChecked ? BitIcon.MicOff : BitIcon.Microphone)
+                                 IconName="@(ToggleButtonChecked ? BitIcon.MicOff : BitIcon.Microphone)"
                                  AriaHidden="true">
                 </BitToggleButton>
             </div>
-        </SampleContent>
-        <CodeSampleContent>
+        </ExamplePreview>
+        <ExampleSourceCode>
             <pre>
-                &lt<span class="soco-component-attr">BitToggleButton </span><span class="soco-code">&#64;</span><span class="soco-component-attr">bind-IsChecked</span>="ToggleButtonChecked"
-                                                    <span class="soco-component-attr">Label</span>="<span class="soco-code">&#64;(</span>ToggleButtonChecked ? <span class="soco-string">"Aria Description Mute"</span> : <span class="soco-string">"Aria Description Unmute"</span><span class="soco-code">)</span>"
-                                                    <span class="soco-component-attr">IconName</span>="<span class="soco-code">&#64;(</span>ToggleButtonChecked ? <span class="soco-string">BitIcon.MicOff</span> : <span class="soco-string">BitIcon.Microphone</span><span class="soco-code">)</span>"
-                                                    <span class="soco-component-attr">AriaDescription</span>="Detailed description used for screen reader"&gt;
-                &lt/<span class="soco-component-attr">BitToggleButton</span>&gt;
-                &lt<span class="soco-component-attr">BitToggleButton </span><span class="soco-code">&#64;</span><span class="soco-component-attr">bind-IsChecked</span>="ToggleButtonChecked"
-                                                    <span class="soco-component-attr">Label</span>="<span class="soco-code">&#64;(</span>ToggleButtonChecked ? <span class="soco-string">"Aria Hidden Mute"</span> : <span class="soco-string">"Aria Hidden Unmute"</span><span class="soco-code">)</span>"
-                                                    <span class="soco-component-attr">IconName</span>="<span class="soco-code">&#64;(</span>ToggleButtonChecked ? <span class="soco-string">BitIcon.MicOff</span> : <span class="soco-string">BitIcon.Microphone</span><span class="soco-code">)</span>"
-                                                    <span class="soco-component-attr">AriaHidden</span>="<span class="soco-tag-type-def">true</span>"&gt;
-                &lt/<span class="soco-component-attr">BitToggleButton</span>&gt;
-                <span class="soco-code">&#64;code {</span>
-                      <span class="soco-tag-type-def">private bool</span> ToggleButtonChecked = <span class="soco-tag-type-def">false</span>;
-                <span class="soco-code">}</span>
+            &lt/BitToggleButton &#64;bind-IsChecked="ToggleButtonChecked"
+                             Label="&#64;(ToggleButtonChecked ? "Aria Description Mute" : "Aria Description Unmute")"
+                             IconName="&#64;(ToggleButtonChecked ? BitIcon.MicOff : BitIcon.Microphone)"
+                             AriaDescription="Detailed description used for screen reader">
+            &lt//BitToggleButton>
+            &lt/BitToggleButton &#64;bind-IsChecked="ToggleButtonChecked"
+                             Class="aria-hidden-tgl-btn"
+                             Label="&#64;(ToggleButtonChecked ? "Aria Hidden Mute" : "Aria Hidden Unmute")"
+                             IconName="&#64;(ToggleButtonChecked ? BitIcon.MicOff : BitIcon.Microphone)"
+                             AriaHidden="true">
+            &lt//BitToggleButton>
+
+            &#64;code {
+                    private bool ToggleButtonChecked = false;
+            }
             </pre>
-        </CodeSampleContent>
-    </CodeSample>
-</ComponentPage>
+        </ExampleSourceCode>
+    </ComponentExampleBox>
+</ComponentDemo>

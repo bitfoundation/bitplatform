@@ -1,11 +1,10 @@
 ﻿@page "/components/drop-down"
 
-@using Bit.Client.Web.BlazorUI.Playground.Web.Components
-
-<ComponentPage ComponentName="Dropdown" OverviewDesc="A dropdown is a list in which the selected item is always visible while other items are visible on demand by clicking a dropdown button. Dropdowns are typically used for forms."
+<ComponentDemo ComponentName="DropDown" ComponentDescription="A dropdown is a list in which the selected item is always visible while other items are visible on demand by clicking a dropdown button. Dropdowns are typically used for forms."
                ComponentParameters="componentParameters">
-    <CodeSample Title="BitDropDown" Description="To create a dropdown you can use a BitDropDown component." CodeSampleContentForCopy="@dropDownSampleCode">
-        <SampleContent>
+    <ComponentExampleBox Title="BitDropDown" ExampleSourceCodeForCopy="@dropDownSampleCode" ExampleId="example1">
+        <ExamplePreview>
+            <div class="example-desc">To create a dropdown you can use a BitDropDown component.</div>
             <div>
                 <BitDropDown Label="Basic Uncontrolled"
                              Items="GetDropdownItems()"
@@ -26,77 +25,88 @@
                              Style="width: 290px; margin-bottom: 20px;">
                 </BitDropDown>
             </div>
-        </SampleContent>
-        <CodeSampleContent>
+        </ExamplePreview>
+        <ExampleSourceCode>
             <pre>
-                &lt<span class="soco-component-attr">BitDropDown Label</span>="Basic Uncontrolled"
-                                              <span class="soco-component-attr">Items</span>="GetDropdownItems ()"
-                                              <span class="soco-component-attr">Placeholder</span>="Select an option"
-                                              <span class="soco-component-attr">Style</span>="width: 290px; margin: 20px 0 20px 0">
-                &lt;/<span class="soco-component-attr">BitDropDown</span>&gt;
-                &lt<span class="soco-component-attr">BitDropDown Label</span>="Disabled  with defaultSelectedKey"
-                                              <span class="soco-component-attr">Items</span>="GetDropdownItems ()"
-                                              <span class="soco-component-attr">Placeholder</span>="Select an option">
-                                              <span class="soco-component-attr">IsEnabled</span>="<span class="soco-tag-type-def">false</span>"
-                                              <span class="soco-component-attr">DefaultSelectedKey</span>="Broccoli"
-                                              <span class="soco-component-attr">Style</span>="width: 290px; margin-bottom: 20px;">
-                &lt;/<span class="soco-component-attr">BitDropDown</span>&gt;
-                &lt<span class="soco-component-attr">BitDropDown Label</span>="Multi-select uncontrolled "
-                                              <span class="soco-component-attr">Items</span>="GetDropdownItems ()"
-                                              <span class="soco-component-attr">Placeholder</span>="Select options">
-                                              <span class="soco-component-attr">IsMultiSelect</span>="<span class="soco-tag-type-def">true</span>"
-                                              <span class="soco-component-attr">Style</span>="width: 290px; margin-bottom: 20px;">
-                &lt;/<span class="soco-component-attr">BitDropDown</span>&gt;
-                <span class="soco-code">&#64;code {</span>
-                <span class="soco-tag-type-def">private </span><span class="soco-component-attr">List&ltdropdownitem></span> GetDropdownItems ()
-                <span>{</span>
-                       <span class="soco-component-attr">List&ltdropdownitem></span> items = <span class="soco-tag-type-def">new</span>();
-                       items.<span>Add</span>(<span class="soco-tag-type-def">new</span><span class="soco-component-attr"> DropDownItem</span>()
-                       <span>{</span>
-                               ItemType = <span> DropDownItemType.Header,</span>
-                               Text = <span class="soco-string">"Fruits"</span>
-                       <span>});</span>
-                       items.<span>Add</span>(<span class="soco-tag-type-def">new</span><span class="soco-component-attr"> DropDownItem</span>()
-                       <span>{</span>
-                               <span>ItemType = DropDownItemType.Normal</span>,
-                               Text = <span class="soco-string">"Apple"</span>,
-                               Value = <span class="soco-string">"f-app"</span>
-                       <span>});</span>
-                       items.<span>Add</span>(<span class="soco-tag-type-def">new</span><span class="soco-component-attr"> DropDownItem</span>()
-                       <span>{</span>
-                               <span>ItemType = DropDownItemType.Normal</span>,
-                               Text = <span class="soco-string">"Orange"</span>,
-                               Value = <span class="soco-string">"f-ora"</span>,
-                               IsEnabled = <span class="soco-tag-type-def">"false"</span>
-                       <span>});</span>
-                        items.<span>Add</span>(<span class="soco-tag-type-def">new</span><span class="soco-component-attr"> DropDownItem</span>()
-                        <span>{</span>
-                                <span>ItemType = DropDownItemType.Normal</span>,
-                                Text = <span class="soco-string">"Banana"</span>,
-                                Value = <span class="soco-string">"f-ban"</span>
-                        <span>});</span>
-                        items.<span>Add</span>(<span class="soco-tag-type-def">new</span><span class="soco-component-attr"> DropDownItem</span>()
-                        <span>{</span>
-                                <span>ItemType = DropDownItemType.Divider,</span>
-                        <span>});</span>
-                        items.<span>Add</span>(<span class="soco-tag-type-def">new</span><span class="soco-component-attr"> DropDownItem</span>()
-                        <span>{</span>
-                                <span>ItemType = DropDownItemType.Header,</span>
-                                Text = <span class="soco-string">"Vegetables"</span>
-                        <span>});</span>
-                        items.<span>Add</span>(<span class="soco-tag-type-def">new</span><span class="soco-component-attr"> DropDownItem</span>()
-                        <span>{</span>
-                                <span>ItemType = DropDownItemType.Normal</span>,
-                                Text = <span class="soco-string">"Broccoli"</span>,
-                                Value = <span class="soco-string">"v-bro"</span>
-                        <span>});</span>
-                    <span>}</span>
-                <span class="soco-code">}</span>
+            &ltBitDropDown Label="Basic Uncontrolled"
+                         Items="GetDropdownItems()"
+                         Placeholder="Select an option"
+                         Style="width: 290px; margin: 20px 0 20px 0">
+            &lt/BitDropDown>
+            &ltBitDropDown Label="Disabled with defaultSelectedKey"
+                         Items="GetDropdownItems()"
+                         Placeholder="Select an option"
+                         IsEnabled="false"
+                         DefaultSelectedKey="Broccoli"
+                         Style="width: 290px; margin-bottom: 20px;">
+            &lt/BitDropDown>
+            &ltBitDropDown Label="Multi-select uncontrolled"
+                         Items="GetDropdownItems()"
+                         Placeholder="Select options"
+                         IsMultiSelect="true"
+                         Style="width: 290px; margin-bottom: 20px;">
+            &lt/BitDropDown>
+
+            &#64;code {
+                private List&ltBitDropDownItem> GetDropdownItems()
+                {
+                    List&ltBitDropDownItem> items = new();
+
+                    items.Add(new BitDropDownItem()
+                    {
+                        ItemType = BitDropDownItemType.Header,
+                        Text = "Fruits"
+                    });
+
+                    items.Add(new BitDropDownItem()
+                    {
+                        ItemType = BitDropDownItemType.Normal,
+                        Text = "Apple",
+                        Value = "f-app"
+                    });
+
+                    items.Add(new BitDropDownItem()
+                    {
+                        ItemType = BitDropDownItemType.Normal,
+                        Text = "Orange",
+                        Value = "f-ora",
+                        IsEnabled = false
+                    });
+
+                    items.Add(new BitDropDownItem()
+                    {
+                        ItemType = BitDropDownItemType.Normal,
+                        Text = "Banana",
+                        Value = "f-ban",
+                    });
+
+                    items.Add(new BitDropDownItem()
+                    {
+                        ItemType = BitDropDownItemType.Divider,
+                    });
+
+                    items.Add(new BitDropDownItem()
+                    {
+                        ItemType = BitDropDownItemType.Header,
+                        Text = "Vegetables"
+                    });
+
+                    items.Add(new BitDropDownItem()
+                    {
+                        ItemType = BitDropDownItemType.Normal,
+                        Text = "Broccoli",
+                        Value = "v-bro",
+                    });
+
+                    return items;
+                }
+            }
             </pre>
-        </CodeSampleContent>
-    </CodeSample>
-    <CodeSample Title="Controlled Single-Select" Description="" CodeSampleContentForCopy="@singleSelectSampleCode">
-        <SampleContent>
+        </ExampleSourceCode>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Controlled Single-Select" ExampleSourceCodeForCopy="@singleSelectSampleCode" ExampleId="example2">
+        <ExamplePreview>
             <div>
                 <BitDropDown Label="Single-select Controlled"
                              Items="GetDropdownItems()"
@@ -105,66 +115,77 @@
                              Style="width: 290px; margin: 20px 0 20px 0">
                 </BitDropDown>
             </div>
-        </SampleContent>
-        <CodeSampleContent>
+        </ExamplePreview>
+        <ExampleSourceCode>
             <pre>
-                &lt<span class="soco-component-attr">BitDropDown Label</span>="Single-Select Controlled"
-                                              <span class="soco-component-attr">Items</span>="GetDropdownItems()"
-                                              <span class="soco-component-attr">Placeholder</span>="Select an option">
-                                              <span class="soco-code">&#64;</span><span class="soco-component-attr">bind-SelectedKey</span>="ControlledSelectedKey"
-                                              <span class="soco-component-attr">Style</span>="width: 290px; margin: 20px 0 20px 0">
-                &lt;/<span class="soco-component-attr">BitDropDown</span>&gt;>
-                <span class="soco-code">&#64;code {</span>
-                <span class="soco-tag-type-def">private </span><span class="soco-tag-type-def">string</span> ControlledSelectedKey = <span class="soco-string">"Apple"</span>;
-                <span class="soco-tag-type-def">private </span><span class="soco-component-attr">List&ltdropdownitem></span> GetDropdownItems ()
-                <span>{</span>
-                       <span class="soco-component-attr">List&ltdropdownitem></span> items = <span class="soco-tag-type-def">new</span>();
-                       items.<span>Add</span>(<span class="soco-tag-type-def">new</span><span class="soco-component-attr"> DropDownItem</span>()
-                       <span>{</span>
-                               <span>ItemType = DropDownItemType.Header,</span>
-                               Text = <span class="soco-string">"Fruits"</span>
-                       <span>});</span>
-                       items.<span>Add</span>(<span class="soco-tag-type-def">new</span><span class="soco-component-attr"> DropDownItem</span>()
-                       <span>{</span>
-                               <span>ItemType = DropDownItemType.Normal,</span>
-                               Text = <span class="soco-string">"Apple"</span>,
-                               Value = <span class="soco-string">"f-app"</span>
-                       <span>});</span>
-                       items.<span>Add</span>(<span class="soco-tag-type-def">new</span><span class="soco-component-attr"> DropDownItem</span>()
-                       <span>{</span>
-                               <span>ItemType = DropDownItemType.Normal,</span>
-                               Text = <span class="soco-string">"Orange"</span>,
-                               Value = <span class="soco-string">"f-ora"</span>,
-                               IsEnabled = <span class="soco-tag-type-def">"false"</span>
-                       <span>});</span>
-                       items.<span>Add</span>(<span class="soco-tag-type-def">new</span><span class="soco-component-attr"> DropDownItem</span>()
-                       <span>{</span>
-                               <span>ItemType = DropDownItemType.Normal,</span>
-                               Text = <span class="soco-string">"Banana"</span>,
-                               Value = <span class="soco-string">"f-ban"</span>
-                       <span>});</span>
-                       items.<span>Add</span>(<span class="soco-tag-type-def">new</span><span class="soco-component-attr"> DropDownItem</span>()
-                       <span>{</span>
-                               <span>ItemType = DropDownItemType.Divider,</span>
-                       <span>});</span>
-                       items.<span>Add</span>(<span class="soco-tag-type-def">new</span><span class="soco-component-attr"> DropDownItem</span>()
-                       <span>{</span>
-                               <span>ItemType = DropDownItemType.Header,</span>
-                               Text = <span class="soco-string">"Vegetables"</span>
-                       <span>});</span>
-                       items.<span>Add</span>(<span class="soco-tag-type-def">new</span><span class="soco-component-attr"> DropDownItem</span>()
-                       <span>{</span>
-                               <span>ItemType = DropDownItemType.Normal,</span>
-                               Text = <span class="soco-string">"Broccoli"</span>,
-                               Value = <span class="soco-string">"v-bro"</span>
-                       <span>});</span>
-                    <span>}</span>
-                <span class="soco-code">}</span>
+            &ltBitDropDown Label="Single-select Controlled"
+                         Items="GetDropdownItems()"
+                         Placeholder="Select an option"
+                         &#64;bind-SelectedKey="ControlledSelectedKey"
+                         Style="width: 290px; margin: 20px 0 20px 0">
+            &lt/BitDropDown>
+
+            &#64;code {
+                private string ControlledSelectedKey = "Apple";
+                private List&ltBitDropDownItem> GetDropdownItems()
+                {
+                    List&ltBitDropDownItem> items = new();
+
+                    items.Add(new BitDropDownItem()
+                    {
+                        ItemType = BitDropDownItemType.Header,
+                        Text = "Fruits"
+                    });
+
+                    items.Add(new BitDropDownItem()
+                    {
+                        ItemType = BitDropDownItemType.Normal,
+                        Text = "Apple",
+                        Value = "f-app"
+                    });
+
+                    items.Add(new BitDropDownItem()
+                    {
+                        ItemType = BitDropDownItemType.Normal,
+                        Text = "Orange",
+                        Value = "f-ora",
+                        IsEnabled = false
+                    });
+
+                    items.Add(new BitDropDownItem()
+                    {
+                        ItemType = BitDropDownItemType.Normal,
+                        Text = "Banana",
+                        Value = "f-ban",
+                    });
+
+                    items.Add(new BitDropDownItem()
+                    {
+                        ItemType = BitDropDownItemType.Divider,
+                    });
+
+                    items.Add(new BitDropDownItem()
+                    {
+                        ItemType = BitDropDownItemType.Header,
+                        Text = "Vegetables"
+                    });
+
+                    items.Add(new BitDropDownItem()
+                    {
+                        ItemType = BitDropDownItemType.Normal,
+                        Text = "Broccoli",
+                        Value = "v-bro",
+                    });
+
+                    return items;
+                }
+            }
             </pre>
-        </CodeSampleContent>
-    </CodeSample>
-    <CodeSample Title="Controlled Multi-Select" Description="" CodeSampleContentForCopy="@multiSelectSampleCode">
-        <SampleContent>
+        </ExampleSourceCode>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Controlled Multi-Select" ExampleSourceCodeForCopy="@multiSelectSampleCode" ExampleId="example3">
+        <ExamplePreview>
             <div>
                 <BitDropDown Label="Multi-select controlled"
                              Items="GetDropdownItems()"
@@ -174,73 +195,78 @@
                              Style="width:290px; margin:20px 0 20px 0">
                 </BitDropDown>
             </div>
-        </SampleContent>
-        <CodeSampleContent>
+        </ExamplePreview>
+        <ExampleSourceCode>
             <pre>
-                &lt<span class="soco-component-attr">BitDropDown Label</span>="Multi-Select Controlled "
-                                                    <span class="soco-component-attr">Items</span>="GetDropdownItems()"
-                                                    <span class="soco-component-attr">Placeholder</span>="Select options">
-                                                    <span class="soco-code">&#64;</span><span class="soco-component-attr">bind-SelectedMultipleKeys</span>="ControlledSelectedMultipleKeys"
-                                                    <span class="soco-component-attr">IsMultiSelect</span>="<span class="soco-tag-type-def">true</span>"
-                                                    <span class="soco-component-attr">Style</span>="width: 290px; margin: 20px 0 20px 0">
-                &lt;/<span class="soco-component-attr">BitDropDown</span>&gt;
-                <span class="soco-code">&#64;code {</span>
-                <span class="soco-tag-type-def">private </span><span class="soco-tag-type-def">string</span> ControlledSelectedMultipleKeys = new List&lt;<span class="soco-tag-type-def">string</span>&gt;()
-                <span>{</span>
-                       <span class="soco-string">"Apple"</span>,
-                       <span class="soco-string">"Banana"</span>,
-                       <span class="soco-string">"Grape"</span>
-                <span>};</span>
-                <span class="soco-tag-type-def">private </span><span class="soco-component-attr">List&ltdropdownitem></span> GetDropdownItems ()
-                <span>{</span>
-                       <span class="soco-component-attr">List&ltdropdownitem></span> items = <span class="soco-tag-type-def">new</span>();
-                       items.<span>Add</span>(<span class="soco-tag-type-def">new</span><span class="soco-component-attr"> DropDownItem</span>()
-                       <span>{</span>
-                              <span>ItemType = DropDownItemType.Header,</span>
-                              Text = <span class="soco-string">"Fruits"</span>
-                       <span>});</span>
-                       items.<span>Add</span>(<span class="soco-tag-type-def">new</span><span class="soco-component-attr"> DropDownItem</span>()
-                       <span>{</span>
-                              <span>ItemType = DropDownItemType.Normal,</span>
-                              Text = <span class="soco-string">"Apple"</span>,
-                              Value = <span class="soco-string">"f-app"</span>
-                       <span>});</span>
-                       items.<span>Add</span>(<span class="soco-tag-type-def">new</span><span class="soco-component-attr"> DropDownItem</span>()
-                       <span>{</span>
-                              <span>ItemType = DropDownItemType.Normal,</span>
-                              Text = <span class="soco-string">"Orange"</span>,
-                              Value = <span class="soco-string">"f-ora"</span>,
-                              IsEnabled = <span class="soco-tag-type-def">"false"</span>
-                       <span>});</span>
-                       items.<span>Add</span>(<span class="soco-tag-type-def">new</span><span class="soco-component-attr"> DropDownItem</span>()
-                       <span>{</span>
-                              <span>ItemType = DropDownItemType.Normal,</span>
-                              Text = <span class="soco-string">"Banana"</span>,
-                              Value = <span class="soco-string">"f-ban"</span>
-                       <span>});</span>
-                       items.<span>Add</span>(<span class="soco-tag-type-def">new</span><span class="soco-component-attr"> DropDownItem</span>()
-                       <span>{</span>
-                              <span>ItemType = DropDownItemType.Divider,</span>
-                       <span>});</span>
-                       items.<span>Add</span>(<span class="soco-tag-type-def">new</span><span class="soco-component-attr"> DropDownItem</span>()
-                       <span>{</span>
-                              <span>ItemType = DropDownItemType.Header,</span>
-                              Text = <span class="soco-string">"Vegetables"</span>
-                       <span>});</span>
-                       items.<span>Add</span>(<span class="soco-tag-type-def">new</span><span class="soco-component-attr"> DropDownItem</span>()
-                       <span>{</span>
-                              <span>ItemType = DropDownItemType.Normal,</span>
-                              Text = <span class="soco-string">"Broccoli"</span>,
-                              Value = <span class="soco-string">"v-bro"</span>
-                       <span>});</span>
-                       <span class="soco-tag-type-def">return</span> items;
-                    <span>}</span>
-                <span class="soco-code">}</span>
+            &ltBitDropDown Label="Multi-select controlled"
+                         Items="GetDropdownItems()"
+                         Placeholder="Select options"
+                         &#64;bind-SelectedMultipleKeys="ControlledSelectedMultipleKeys"
+                         IsMultiSelect="true"
+                         Style="width:290px; margin:20px 0 20px 0">
+            &lt/BitDropDown>
+
+            &#64;code {
+                private List&ltstring> ControlledSelectedMultipleKeys = new List&ltstring>() { "Apple", "Banana", "Grape" };
+                private List&ltBitDropDownItem> GetDropdownItems()
+                {
+                    List&ltBitDropDownItem> items = new();
+
+                    items.Add(new BitDropDownItem()
+                    {
+                        ItemType = BitDropDownItemType.Header,
+                        Text = "Fruits"
+                    });
+
+                    items.Add(new BitDropDownItem()
+                    {
+                        ItemType = BitDropDownItemType.Normal,
+                        Text = "Apple",
+                        Value = "f-app"
+                    });
+
+                    items.Add(new BitDropDownItem()
+                    {
+                        ItemType = BitDropDownItemType.Normal,
+                        Text = "Orange",
+                        Value = "f-ora",
+                        IsEnabled = false
+                    });
+
+                    items.Add(new BitDropDownItem()
+                    {
+                        ItemType = BitDropDownItemType.Normal,
+                        Text = "Banana",
+                        Value = "f-ban",
+                    });
+
+                    items.Add(new BitDropDownItem()
+                    {
+                        ItemType = BitDropDownItemType.Divider,
+                    });
+
+                    items.Add(new BitDropDownItem()
+                    {
+                        ItemType = BitDropDownItemType.Header,
+                        Text = "Vegetables"
+                    });
+
+                    items.Add(new BitDropDownItem()
+                    {
+                        ItemType = BitDropDownItemType.Normal,
+                        Text = "Broccoli",
+                        Value = "v-bro",
+                    });
+
+                    return items;
+                }
+            }
             </pre>
-        </CodeSampleContent>
-    </CodeSample>
-    <CodeSample Title="Customized Dropdown" Description="" CodeSampleContentForCopy="@customizedSampleCode">
-        <SampleContent>
+        </ExampleSourceCode>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Customized Dropdown" ExampleSourceCodeForCopy="@customizedSampleCode" ExampleId="example4">
+        <ExamplePreview>
             <div>
                 <BitDropDown Label="Custom Controlled"
                              Items="GetCustomDropdownItems()"
@@ -286,176 +312,180 @@
                     </LabelFragment>
                 </BitDropDown>
             </div>
-        </SampleContent>
-        <CodeSampleContent>
+        </ExamplePreview>
+        <ExampleSourceCode>
             <pre>
-                &lt;<span class="soco-component-attr">BitDropDown Label</span>="Custom Label"
-                                               <span class="soco-component-attr">Items</span>="GetCustomDropdownItems()"
-                                               <span class="soco-component-attr">Placeholder</span>="Select an option"
-                                               <span class="soco-component-attr">AriaLabel</span>="Custom dropdown "
-                                               <span class="soco-component-attr">Style</span>="width:290px; margin:20px 0 20px 0"&gt;
-                    &lt;<span class="soco-component-attr">TextTemplate</span>&gt;
-                      &lt;<span class="soco-tag-type-def">div</span>&gt;
-                            &lt;<span class="soco-tag-type-def">i class</span>="bit-icon bit-icon--<span class="soco-code">&#64;(</span>(context.Items.Find(i => i.Value == context.SelectedKey).Data as DropDownItemData).IconName<span class="soco-code">)</span>&lt;/<span class="soco-tag-type-def">i</span>&gt;
-                            <span class="soco-tag-type-def">aria-hidden</span>=<span class="soco-tag-type-def">"true"</span>
-                            <span class="soco-tag-type-def">title</span>="<span class="soco-code">&#64;(</span>(context.Items.Find(i => i.Value == context.SelectedKey).Data as DropDownItemData).IconName)">&lt;/i&gt;
-                            &lt;<span class="soco-tag-type-def">span</span>&gt;<span class="soco-code">&#64;</span>context.Items.Find(i => i.Value == context.SelectedKey).Text&lt;/<span class="soco-tag-type-def">span</span>&gt;
-                      &lt;/<span class="soco-tag-type-def">div</span>&gt;
-                    &lt;/<span class="soco-component-attr">TextTemplate</span>&gt;
-                    &lt;<span class="soco-component-attr">PlaceholderTemplate</span>&gt;
-                      &lt;<span class="soco-tag-type-def">div</span>&gt;
-                            &lt;<span class="soco-tag-type-def">i class</span>="bit-icon bit-icon--MessageFill" <span class="soco-tag-type-def">aria-hidden</span>=<span class="soco-tag-type-def">"true"</span>&gt;&lt;/<span class="soco-tag-type-def">i</span>&gt;
-                            &lt;<span class="soco-tag-type-def">span</span>&gt;<span class="soco-code">&#64;</span>context.Placeholder&lt;/<span class="soco-tag-type-def">span</span>&gt;
-                      &lt;/<span class="soco-tag-type-def">div</span>&gt;
-                      &lt;/<span class="soco-component-attr">PlaceholderTemplate</span>&gt;
-                      &lt;<span class="soco-component-attr">CaretDownFragment</span>&gt;
-                            &lt;<span class="soco-tag-type-def">i class</span>="bit-icon bit-icon--CirclePlus"&gt;&lt;/<span class="soco-tag-type-def">i</span>&gt;
-                      &lt;/<span class="soco-component-attr">CaretDownFragment</span>&gt;
-                    &lt;<span class="soco-component-attr">ItemTemplate</span>&gt;
-                      &lt;<span class="soco-tag-type-def">div</span>&gt;
-                            &lt;<span class="soco-tag-type-def">i class</span>="bit-icon bit-icon--<span class="soco-code">&#64;(</span>(context.Data as DropDownItemData).IconName)"<span class="soco-tag-type-def">i</span>&gt;
-                            <span class="soco-tag-type-def">aria-hidden</span>=<span class="soco-tag-type-def">"true"</span>
-                            <span class="soco-tag-type-def">title</span>="<span class="soco-code">&#64;(</span>(context.Data as DropDownItemData).IconName)">&lt;/i&gt;
-                            &lt;<span class="soco-tag-type-def">span</span>&gt;<span class="soco-code">&#64;</span>context.Text&lt;/<span class="soco-tag-type-def">span</span>&gt;
-                      &lt;/<span class="soco-tag-type-def">div</span>&gt;
-                    &lt;/<span class="soco-component-attr">ItemTemplate</span>&gt;
-                &lt;/<span class="soco-component-attr">BitDropDown</span>&gt;
-                &lt;<span class="soco-component-attr">BitDropDown Items</span>="GetCustomDropdownItems()"
-                                               <span class="soco-component-attr">Placeholder</span>="Select an option"
-                                               <span class="soco-component-attr">Label</span>="Custom label"
-                                               <span class="soco-component-attr">AriaLabel</span>="Custom dropdown label "
-                                               <span class="soco-component-attr">Style</span>="width:290px"&gt;
-                    &lt;<span class="soco-component-attr">LabelFragment</span>&gt;
-                        &lt;<span class="soco-tag-type-def">label</span>&gt;Custom label&lt;/<span class="soco-tag-type-def">label</span>&gt;
-                        &lt;<span class="soco-tag-type-def">button type</span>="button" <span class="soco-tag-type-def">title</span>="Info" <span class="soco-tag-type-def">aria-label</span>="Info" <span class="soco-tag-type-def">class</span>="custom-drp-lbl-ic"&gt;
-                        &lt;<span class="soco-tag-type-def">i class</span>="bit-icon bit-icon--Info"&gt;&lt;/<span class="soco-tag-type-def">i</span>&gt;
-                        &lt;/<span class="soco-tag-type-def">button</span>&gt;
-                    &lt;/<span class="soco-component-attr">LabelFragment</span>&gt;
-                &lt;/<span class="soco-component-attr">BitDropDown</span>&gt;
-                <span class="soco-code">&#64;code {</span>
-                <span class="soco-tag-type-def">private </span><span class="soco-component-attr">List&ltdropdownitem></span> GetCustomDropdownItems()
-                <span>{</span>
-                       <span class="soco-component-attr">List&ltdropdownitem></span> items = <span class="soco-tag-type-def">new</span>();
-                       items.<span>Add</span>(<span class="soco-tag-type-def">new</span><span class="soco-component-attr"> DropDownItem</span>()
-                       <span>{</span>
-                              <span>ItemType = DropDownItemType.Header,</span>
-                              Text = <span class="soco-string">"Options"</span>,
-                              Value = <span class="soco-string">"Header"</span>
-                       <span>});</span>
-                       items.<span>Add</span>(<span class="soco-tag-type-def">new</span><span class="soco-component-attr"> DropDownItem</span>()
-                       <span>{</span>
-                              <span>ItemType = DropDownItemType.Normal,</span>
-                              Text = <span class="soco-string">"Option a"</span>,
-                              Value = <span class="soco-string">"A"</span>
-                              Data = <span class="soco-tag-type-def">new</span><span class="soco-component-attr">DropDownItemData</span>()
-                              <span>{</span>
-                                     IconName= <span class="soco-string">"Memo"</span>
-                              <span>}</span>
-                    <span>});</span>
-                    items.<span>Add</span>(<span class="soco-tag-type-def">new</span><span class="soco-component-attr"> DropDownItem</span>()
-                    <span>{</span>
-                       <span>ItemType = DropDownItemType.Normal,</span>
-                       Text = <span class="soco-string">"Option b"</span>,
-                       Value = <span class="soco-string">"B"</span>
-                       Data = <span class="soco-tag-type-def">new</span><span class="soco-component-attr">DropDownItemData</span>()
-                       <span>{</span>
-                              IconName= <span class="soco-string">"Print"</span>
-                       <span>}</span>
-                    <span>});</span>
-                    items.<span>Add</span>(<span class="soco-tag-type-def">new</span><span class="soco-component-attr"> DropDownItem</span>()
-                    <span>{</span>
-                           <span>ItemType = DropDownItemType.Normal,</span>
-                           Text = <span class="soco-string">"Option c"</span>,
-                           Value = <span class="soco-string">"C"</span>
-                           Data = <span class="soco-tag-type-def">new</span><span class="soco-component-attr">DropDownItemData</span>()
-                           <span>{</span>
-                                  IconName= <span class="soco-string">"ShoppingCart"</span>
-                           <span>}</span>
-                    <span>});</span>
-                    items.<span>Add</span>(<span class="soco-tag-type-def">new</span><span class="soco-component-attr"> DropDownItem</span>()
-                    <span>{</span>
-                           <span>ItemType = DropDownItemType.Normal,</span>
-                           Text = <span class="soco-string">"Option d"</span>,
-                           Value = <span class="soco-string">"D"</span>
-                           Data = <span class="soco-tag-type-def">new</span><span class="soco-component-attr">DropDownItemData</span>()
-                           <span>{</span>
-                                  IconName= <span class="soco-string">"Train"</span>
-                           <span>}</span>
-                    <span>});</span>
-                    items.<span>Add</span>(<span class="soco-tag-type-def">new</span><span class="soco-component-attr"> DropDownItem</span>()
-                    <span>{</span>
-                    <span>ItemType = DropDownItemType.Normal,</span>
-                           Text = <span class="soco-string">"Option e"</span>,
-                           Value = <span class="soco-string">"E"</span>
-                           Data = <span class="soco-tag-type-def">new</span><span class="soco-component-attr">DropDownItemData</span>()
-                           <span>{</span>
-                                  IconName= <span class="soco-string">"Repair"</span>
-                           <span>}</span>
-                    <span>});</span>
-                    items.<span>Add</span>(<span class="soco-tag-type-def">new</span><span class="soco-component-attr"> DropDownItem</span>()
-                    <span>{</span>
-                           <span>ItemType = DropDownItemType.Divider,</span>
-                    <span>});</span>
-                    items.<span>Add</span>(<span class="soco-tag-type-def">new</span><span class="soco-component-attr"> DropDownItem</span>()
-                    <span>{</span>
-                           <span>ItemType = DropDownItemType.Header,</span>
-                           Text = <span class="soco-string">"More options"</span>,
-                           Value = <span class="soco-string">"Header2"</span>
-                    <span>});</span>
-                    items.<span>Add</span>(<span class="soco-tag-type-def">new</span><span class="soco-component-attr"> DropDownItem</span>()
-                    <span>{</span>
-                           <span>ItemType = </span><span> DropDownItemType</span><span>.Normal,</span>
-                            Text = <span class="soco-string">"Option f"</span>,
-                            Value = <span class="soco-string">"F"</span>
-                            Data = <span class="soco-tag-type-def">new</span><span class="soco-component-attr">DropDownItemData</span>()
-                            <span>{</span>
-                                   IconName= <span class="soco-string">"Running"</span>
-                            <span>}</span>
-                    <span>});</span>
-                    items.<span>Add</span>(<span class="soco-tag-type-def">new</span><span class="soco-component-attr"> DropDownItem</span>()
-                    <span>{</span>
-                           <span>ItemType = DropDownItemType.Normal,</span>
-                            Text = <span class="soco-string">"Option g"</span>,
-                            Value = <span class="soco-string">"G"</span>
-                            Data = <span class="soco-tag-type-def">new</span><span class="soco-component-attr">DropDownItemData</span>()
-                            <span>{</span>
-                                   IconName= <span class="soco-string">"EmoijNeutral"</span>
-                            <span>}</span>
-                    <span>});</span>
-                    items.<span>Add</span>(<span class="soco-tag-type-def">new</span><span class="soco-component-attr"> DropDownItem</span>()
-                    <span>{</span>
-                           <span>ItemType = DropDownItemType.Normal,</span>
-                           Text = <span class="soco-string">"Option h"</span>,
-                           Value = <span class="soco-string">"H"</span>
-                           Data = <span class="soco-tag-type-def">new</span><span class="soco-component-attr">DropDownItemData</span>()
-                           <span>{</span>
-                                  IconName= <span class="soco-string">"ChatInviteFriend"</span>
-                           <span>}</span>
-                    <span>});</span>
-                    items.<span>Add</span>(<span class="soco-tag-type-def">new</span><span class="soco-component-attr"> DropDownItem</span>()
-                    <span>{</span>
-                           <span>ItemType = </span><span> DropDownItemType</span><span>.Normal,</span>
-                           Text = <span class="soco-string">"Option i"</span>,
-                           Value = <span class="soco-string">"I"</span>
-                           Data = <span class="soco-tag-type-def">new</span><span class="soco-component-attr">DropDownItemData</span>()
-                           <span>{</span>
-                                  IconName= <span class="soco-string">"SecurityGroup"</span>
-                           <span>}</span>
-                    <span>});</span>
-                    items.<span>Add</span>(<span class="soco-tag-type-def">new</span><span class="soco-component-attr"> DropDownItem</span>()
-                    <span>{</span>
-                           <span>ItemType = DropDownItemType.Normal,</span>
-                           Text = <span class="soco-string">"Option j"</span>,
-                           Value = <span class="soco-string">"J"</span>
-                           Data = <span class="soco-tag-type-def">new</span><span class="soco-component-attr">DropDownItemData</span>()
-                           <span>{</span>
-                                  IconName= <span class="soco-string">"AddGroup"</span>
-                           <span>}</span>
-                    <span>});</span>
-                    <span class="soco-tag-type-def">return</span> items;
-                  <span>}</span>
-                <span class="soco-code">}</span>
+            &ltBitDropDown Label="Custom Controlled"
+                         Items="GetCustomDropdownItems()"
+                         Placeholder="Select an option"
+                         AriaLabel="Custom dropdown"
+                         Style="width:290px; margin:20px 0 20px 0">
+                    &ltTextTemplate>
+                            &ltdiv>
+                                    &lti class="bit-icon bit-icon--&#64;((context.Items.Find(i => i.Value == context.SelectedKey).Data as DropDownItemData).IconName)"
+                                        aria-hidden="true"
+                                        title="&#64;((context.Items.Find(i => i.Value == context.SelectedKey).Data as DropDownItemData).IconName)">
+                                    &lt/i>
+                                    &ltspan>&#64;context.Items.Find(i => i.Value == context.SelectedKey).Text&lt/span>
+                            &lt/div>
+                    &lt/TextTemplate>
+                    &ltPlaceholderTemplate>
+                            &ltdiv>
+                                    &lti class="bit-icon bit-icon--MessageFill" aria-hidden="true">&lt/i>
+                                    &ltspan>&#64;context.Placeholder&lt/span>
+                            &lt/div>
+                    &lt/PlaceholderTemplate>
+                    &ltCaretDownFragment>
+                            &lti class="bit-icon bit-icon--CirclePlus">&lt/i>
+                    &lt/CaretDownFragment>
+                    &ltItemTemplate>
+                            &ltdiv>
+                                    &lti class="bit-icon bit-icon--&#64;((context.Data as DropDownItemData).IconName)"
+                                        aria-hidden="true"
+                                        title="&#64;((context.Data as DropDownItemData).IconName)">
+                                    &lt/i>
+                                    &ltspan>&#64;context.Text&lt/span>
+                            &lt/div>
+                    &lt/ItemTemplate>
+            &lt/BitDropDown>
+            &ltBitDropDown Items="GetCustomDropdownItems()"
+                         Placeholder="Select an option"
+                         Label="Custom Label"
+                         AriaLabel="Custom dropdown label "
+                         Style="width:290px">
+                    &ltLabelFragment>
+                            &ltlabel>Custom label&lt/label>
+                            &ltbutton type="button" title="Info" aria-label="Info" class="custom-drp-lbl-ic">
+                                    &lti class="bit-icon bit-icon--Info">&lt/i>
+                            &lt/button>
+                    &lt/LabelFragment>
+            &lt/BitDropDown>
+
+            &#64;code {
+                private List&ltBitDropDownItem> GetDropdownItems()
+                {
+                    List&ltBitDropDownItem> items = new();
+                    items.Add(new BitDropDownItem()
+                    {
+                        ItemType = BitDropDownItemType.Header,
+                        Text = "Options",
+                        Value = "Header"
+                    });
+                    items.Add(new BitDropDownItem()
+                    {
+                        ItemType = BitDropDownItemType.Normal,
+                        Text = "Option a",
+                        Value = "A",
+                        Data = new DropDownItemData()
+                        {
+                            IconName = "Memo"
+                        }
+                    });
+                    items.Add(new BitDropDownItem()
+                    {
+                        ItemType = BitDropDownItemType.Normal,
+                        Text = "Option b",
+                        Value = "B",
+                        Data = new DropDownItemData()
+                        {
+                            IconName = "Print"
+                        }
+                    });
+                    items.Add(new BitDropDownItem()
+                    {
+                        ItemType = BitDropDownItemType.Normal,
+                        Text = "Option c",
+                        Value = "C",
+                        Data = new DropDownItemData()
+                        {
+                            IconName = "ShoppingCart"
+                        }
+                    });
+                    items.Add(new BitDropDownItem()
+                    {
+                        ItemType = BitDropDownItemType.Normal,
+                        Text = "Option d",
+                        Value = "D",
+                        Data = new DropDownItemData()
+                        {
+                            IconName = "Train"
+                        }
+                    });
+                    items.Add(new BitDropDownItem()
+                    {
+                        ItemType = BitDropDownItemType.Normal,
+                        Text = "Option e",
+                        Value = "E",
+                        Data = new DropDownItemData()
+                        {
+                            IconName = "Repair"
+                        }
+                    });
+                    items.Add(new BitDropDownItem()
+                    {
+                        ItemType = BitDropDownItemType.Divider
+                    });
+                    items.Add(new BitDropDownItem()
+                    {
+                        ItemType = BitDropDownItemType.Header,
+                        Text = "More options",
+                        Value = "Header2"
+                    });
+                    items.Add(new BitDropDownItem()
+                    {
+                        ItemType = BitDropDownItemType.Normal,
+                        Text = "Option f",
+                        Value = "F",
+                        Data = new DropDownItemData()
+                        {
+                            IconName = "Running"
+                        }
+                    });
+                    items.Add(new BitDropDownItem()
+                    {
+                        ItemType = BitDropDownItemType.Normal,
+                        Text = "Option g",
+                        Value = "G",
+                        Data = new DropDownItemData()
+                        {
+                            IconName = "EmojiNeutral"
+                        }
+                    });
+                    items.Add(new BitDropDownItem()
+                    {
+                        ItemType = BitDropDownItemType.Normal,
+                        Text = "Option h",
+                        Value = "H",
+                        Data = new DropDownItemData()
+                        {
+                            IconName = "ChatInviteFriend"
+                        }
+                    });
+                    items.Add(new BitDropDownItem()
+                    {
+                        ItemType = BitDropDownItemType.Normal,
+                        Text = "Option i",
+                        Value = "I",
+                        Data = new DropDownItemData()
+                        {
+                            IconName = "SecurityGroup"
+                        }
+                    });
+                    items.Add(new BitDropDownItem()
+                    {
+                        ItemType = BitDropDownItemType.Normal,
+                        Text = "Option j",
+                        Value = "J",
+                        Data = new DropDownItemData()
+                        {
+                            IconName = "AddGroup"
+                        }
+                    });
+
+                    return items;
+                }
+            }
             </pre>
-        </CodeSampleContent>
-    </CodeSample>
-</ComponentPage>
+        </ExampleSourceCode>
+    </ComponentExampleBox>
+</ComponentDemo>

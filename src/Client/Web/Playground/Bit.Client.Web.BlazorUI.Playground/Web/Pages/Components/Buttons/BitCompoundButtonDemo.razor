@@ -1,12 +1,11 @@
 ﻿@page "/components/compound-button"
 
-@using Bit.Client.Web.BlazorUI.Playground.Web.Components
-
-<ComponentPage ComponentName="Compound Button" OverviewDesc="Buttons give people a way to trigger an action. They’re typically found in forms, dialog panels, and dialogs.
+<ComponentDemo ComponentName="CompoundButton" ComponentDescription="Buttons give people a way to trigger an action. They’re typically found in forms, dialog panels, and dialogs.
     Some buttons are specialized for particular tasks, such as navigation, repeated actions, or presenting menus."
                ComponentParameters="componentParameters" EnumParameters="enumParameters">
-    <CodeSample Title="BitCompoundButton" Description="A compound button with SecondaryText attribute." CodeSampleContentForCopy="@compoundButtonSampleCode">
-        <SampleContent>
+    <ComponentExampleBox Title="BitCompoundButton" ExampleSourceCodeForCopy="@compoundButtonSampleCode" ExampleId="example1">
+        <ExamplePreview>
+            <div class="example-desc">A compound button with SecondaryText attribute.</div>
             <div>
                 <BitCompoundButton IsEnabled="true"
                                    Text="Primary"
@@ -26,131 +25,95 @@
                                    SecondaryText="This Button is a disabled compound button">
                 </BitCompoundButton>
             </div>
-        </SampleContent>
-        <CodeSampleContent>
-              <pre>
-                  &lt<span class="soco-component-attr">BitCompoundButton IsEnabled</span>=<span class="soco-tag-type-def">"true"</span>
-                                                                <span class="soco-component-attr">Text</span><span>="Primary"</span>
-                                                                <span class="soco-component-attr">AriaLabel</span><span>="Detailed label used for screen reader."</span>
-                                                                <span class="soco-component-attr">SecondaryText</span>="This Button is a compound button">
-                  &lt/<span class="soco-component-attr">BitCompoundButton</span>&gt;
-                  &lt<span class="soco-component-attr">BitCompoundButton IsEnabled</span>=<span class="soco-tag-type-def">"true"</span>
-                                                                <span class="soco-component-attr">Text</span><span>="Primary"</span>
-                                                                <span class="soco-component-attr">AriaHidden</span>=<span class="soco-tag-type-def">"true"</span>
-                                                                <span class="soco-component-attr">SecondaryText</span>="This Button is a compound button"
-                                                                <span class="soco-component-attr">ButtonStyle</span>="BitButtonStyle.Standard">
-                  &lt/<span class="soco-component-attr">BitCompoundButton</span>&gt;
-                  &lt<span class="soco-component-attr">BitCompoundButton IsEnabled</span>=<span class="soco-tag-type-def">"false"</span>
-                                                                <span class="soco-component-attr">Text</span><span>="Disabled"</span>
-                                                                <span class="soco-component-attr">AriaDescription</span>="Detailed description used for screen reader."
-                                                                <span class="soco-component-attr">SecondaryText</span>="This Button is a disabled compound button"
-                                                                <span class="soco-component-attr">ButtonStyle</span>="BitButtonStyle.Standard">
-                  &lt/<span class="soco-component-attr">BitCompoundButton</span>&gt;
-              </pre>
-        </CodeSampleContent>
-    </CodeSample>
-    <CodeSample Title="Style & Class" Description="BitCompoundButton can directly get css class or inline style." CodeSampleContentForCopy="@styleAndClassSampleCode">
-        <SampleContent>
+        </ExamplePreview>
+        <ExampleSourceCode>
+            <pre>
+            &ltBitCompoundButton IsEnabled="true"
+                               Text="Primary"
+                               SecondaryText="This Button is a compound button">
+            &lt/BitCompoundButton>
+            &ltBitCompoundButton IsEnabled="true"
+                               Text="Standard"
+                               AriaHidden="true"
+                               SecondaryText="This Button is a compound button"
+                               ButtonStyle="BitButtonStyle.Standard">
+            &lt/BitCompoundButton>
+            &ltBitCompoundButton IsEnabled="false"
+                               AllowDisabledFocus="false"
+                               Text="Disabled"
+                               Class="disable-cmp-btn"
+                               AriaDescription="Detailed description used for screen reader."
+                               SecondaryText="This Button is a disabled compound button">
+             &lt/BitCompoundButton>
+             </pre>
+        </ExampleSourceCode>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Style & Class" ExampleSourceCodeForCopy="@styleAndClassSampleCode" ExampleId="example2">
+        <ExamplePreview>
+            <div class="example-desc">BitCompoundButton can directly get css class or inline style.</div>
             <div>
                 <BitCompoundButton Style="height: 80px;font-size: 16px;text-decoration: underline;" Text="Styled" SecondaryText="This is styled compound button"></BitCompoundButton>
                 <BitCompoundButton ButtonStyle="BitButtonStyle.Standard" Class="custom-compound-button" Text="Classed" SecondaryText="This is classed compound button"></BitCompoundButton>
             </div>
-        </SampleContent>
-        <CodeSampleContent>
+        </ExamplePreview>
+        <ExampleSourceCode>
             <pre>
-                &lt<span class="soco-component-attr">BitCompoundButton Style</span><span>="height: 80px;font-size: 16px;text-decoration: underline;"</span>
-                                                              <span class="soco-component-attr">Text</span>="Styled"
-                                                              <span class="soco-component-attr">SecondaryText</span>="This is styled compound button">
-                &lt/<span class="soco-component-attr">BitCompoundButton</span>&gt;
-                &lt<span class="soco-component-attr">BitCompoundButton Class</span><span>="custom-compound-button"</span>
-                                                              <span class="soco-component-attr">Text</span>="Classed"
-                                                              <span class="soco-component-attr"> SecondaryText</span>="This is classed compound button"
-                                                              <span class="soco-component-attr">ButtonStyle</span>="BitButtonStyle.Standard">
-                &lt/<span class="soco-component-attr">BitCompoundButton</span>&gt;
-                &lt<span class="soco-tag-type-def">style></span>
-                        <span class="soco-css-style">.custom-compound-button</span> {
-                               <span class="soco-var-attr">width</span> : 230px;
-                               <span class="soco-var-attr">font-family</span> : Axiforma;
-                               <span class="soco-var-attr">font-size</span> : 16px;
-                               <span class="soco-var-attr">color</span> : white;
-                               <span class="soco-var-attr">background-color</span> : #2F455A;
-                               <span class="soco-var-attr">border-color</span> : #2F455A;
-                         }
-                &lt/<span class="soco-tag-type-def">style</span>&gt;
+            &ltBitCompoundButton Style="height: 80px;font-size: 16px;text-decoration: underline;" Text="Styled" SecondaryText="This is styled compound button">&lt/BitCompoundButton>
+            &ltBitCompoundButton ButtonStyle="BitButtonStyle.Standard" Class="custom-compound-button" Text="Classed" SecondaryText="This is classed compound button">&lt/BitCompoundButton>
             </pre>
-        </CodeSampleContent>
-    </CodeSample>
-    <CodeSample Title="Visibility" Description="By setting Visibility attribute, BitCompoundButton can be Visible, Hidden or Collapsed." CodeSampleContentForCopy="@visibilitySampleCode">
-        <SampleContent>
+        </ExampleSourceCode>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Visibility" ExampleSourceCodeForCopy="@visibilitySampleCode" ExampleId="example3">
+        <ExamplePreview>
+            <div class="example-desc">By setting Visibility attribute, BitCompoundButton can be Visible, Hidden or Collapsed.</div>
             <div class="sample-btn">
                 <BitCompoundButton Visibility="BitComponentVisibility.Visible" Text="Visible" SecondaryText="This Button is a visible compound button"></BitCompoundButton>
-                <p><span>Hidden Button: </span>[<BitCompoundButton Text="Hidden" SecondaryText="This Button is a hidden compound button" Visibility="BitComponentVisibility.Hidden"></BitCompoundButton>]</p>
-                <p><span>Collapsed Button: </span>[<BitCompoundButton Text="Collapsed" SecondaryText="This Button is a collapsed compound button" Visibility="BitComponentVisibility.Collapsed"></BitCompoundButton>]</p>
+                <div><span>Hidden Button: </span>[<BitCompoundButton Text="Hidden" SecondaryText="This Button is a hidden compound button" Visibility="BitComponentVisibility.Hidden"></BitCompoundButton>]</div>
+                <div><span>Collapsed Button: </span>[<BitCompoundButton Text="Collapsed" SecondaryText="This Button is a collapsed compound button" Visibility="BitComponentVisibility.Collapsed"></BitCompoundButton>]</div>
             </div>
-        </SampleContent>
-        <CodeSampleContent>
+        </ExamplePreview>
+        <ExampleSourceCode>
             <pre>
-                &lt<span class="soco-component-attr">BitCompoundButton Visibility</span>="BitComponentVisibility.Visible"
-                                                               <span class="soco-component-attr">Text</span>="Visible"
-                                                               <span class="soco-component-attr">SecondaryText</span>="This Button is a visible compound button">
-                &lt/<span class="soco-component-attr">BitCompoundButton</span>&gt;
-                &lt<span class="soco-component-attr">BitCompoundButton Hidden</span>="BitComponentVisibility.Hidden"
-                                                               <span class="soco-component-attr">Text</span>="Hidden"
-                                                               <span class="soco-component-attr">SecondaryText</span>="This Button is a hidden compound button">
-                &lt/<span class="soco-component-attr">BitCompoundButton</span>&gt;
-                &lt<span class="soco-component-attr">BitCompoundButton Visibility</span>="BitComponentVisibility.Collapsed"
-                                                               <span class="soco-component-attr">Text</span>="Collapsed"
-                                                               <span class="soco-component-attr"> SecondaryText</span>="This Button is a collapsed compound button">
-                &lt/<span class="soco-component-attr">BitCompoundButton</span>&gt;
+            &ltBitCompoundButton Visibility="BitComponentVisibility.Visible" Text="Visible" SecondaryText="This Button is a visible compound button">&lt/BitCompoundButton>
+            &ltdiv>Hidden Button: [&ltBitCompoundButton Text="Hidden" SecondaryText="This Button is a hidden compound button" Visibility="BitComponentVisibility.Hidden">&lt/BitCompoundButton>]&lt/div>
+            &ltdiv>Collapsed Button: [&ltBitCompoundButton Text="Collapsed" SecondaryText="This Button is a collapsed compound button" Visibility="BitComponentVisibility.Collapsed">&lt/BitCompoundButton>]&lt/div>
             </pre>
-        </CodeSampleContent>
-    </CodeSample>
-    <CodeSample Title="Arias for Screen Reader" Description="Aria attribues can also set for a BitCompoundButton." CodeSampleContentForCopy="@ariasSampleCode">
-        <SampleContent>
+        </ExampleSourceCode>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Arias for Screen Reader" ExampleSourceCodeForCopy="@ariasSampleCode" ExampleId="example4">
+        <ExamplePreview>
+            <div class="example-desc">Aria attribues can also set for a BitCompoundButton.</div>
             <div>
                 <BitCompoundButton ButtonStyle="BitButtonStyle.Standard" Text="AriaDescription" SecondaryText="This is a compound button with aria description" AriaDescription="Button with Aria Description"></BitCompoundButton>
                 <BitCompoundButton Text="AriaHidden" Style="height: 85px;" SecondaryText="This is a compound button with aria hidden" AriaHidden="true"></BitCompoundButton>
             </div>
-        </SampleContent>
-        <CodeSampleContent>
+        </ExamplePreview>
+        <ExampleSourceCode>
             <pre>
-                &lt<span class="soco-component-attr">BitCompoundButton AriaDescription</span>="Detailed description used for screen reader"
-                                                               <span class="soco-component-attr">Text</span>="AriaDescription"
-                                                               <span class="soco-component-attr">SecondaryText</span>="This is a compound button with aria description"
-                                                               <span class="soco-component-attr">ButtonStyle</span>="BitButtonStyle.Standard">
-                &lt/<span class="soco-component-attr">BitCompoundButton</span>&gt;
-                &lt<span class="soco-component-attr">BitCompoundButton AriaHidden</span>=<span class="soco-tag-type-def">"true"</span>
-                                                               <span class="soco-component-attr">Style</span>="height: 85px;"
-                                                               <span class="soco-component-attr">Text</span>="AriaDescription"
-                                                               <span class="soco-component-attr">SecondaryText</span>="This is a compound button with aria description">
-                &lt/<span class="soco-component-attr">BitCompoundButton</span>&gt;
+            &ltBitCompoundButton ButtonStyle="BitButtonStyle.Standard" Text="AriaDescription" SecondaryText="This is a compound button with aria description" AriaDescription="Button with Aria Description">&lt/BitCompoundButton>
+            &ltBitCompoundButton Text="AriaHidden" Style="height: 85px;" SecondaryText="This is a compound button with aria hidden" AriaHidden="true">&lt/BitCompoundButton>
             </pre>
-        </CodeSampleContent>
-    </CodeSample>
-    <CodeSample Title="Button-like Anchor" Description="BitCompoundButton can act as a link by setting Href and Target attributes." CodeSampleContentForCopy="@compoundButtonLikeAnchorSampleCode">
-        <SampleContent>
+        </ExampleSourceCode>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Button-like Anchor" ExampleSourceCodeForCopy="@compoundButtonLikeAnchorSampleCode" ExampleId="example5">
+        <ExamplePreview>
+            <div class="example-desc">BitCompoundButton can act as a link by setting Href and Target attributes.</div>
             <div>
                 <BitCompoundButton Target="_blank" Href="https://github.com/bitfoundation/bitframework" Text="Open the site" SecondaryText="Open Bit Foundation In New Tab"></BitCompoundButton>
                 <BitCompoundButton Href="https://github.com/bitfoundation/bitframework" ButtonStyle="BitButtonStyle.Standard" Text="Open the site" SecondaryText="Go To Bit Foundation"></BitCompoundButton>
                 <BitCompoundButton Target="_self" Href="https://github.com/bitfoundation/bitframework" IsEnabled="false" Text="Open the site" SecondaryText="Go To Bit Foundation"></BitCompoundButton>
             </div>
-        </SampleContent>
-        <CodeSampleContent>
+        </ExamplePreview>
+        <ExampleSourceCode>
             <pre>
-                &lt<span class="soco-component-attr">BitCompoundButton</span><span class="soco-component-attr"> Target</span>="_blank"
-                                                                <span class="soco-component-attr">Href</span>="<span class="soco-tag-type-def">https://github.com/bitfoundation/bitframework</span>>"
-                                                                <span class="soco-component-attr">Text</span>="Open the site"
-                                                                <span class="soco-component-attr">SecondaryText</span>="Open Bit Foundation In New Tab">
-                &lt/<span class="soco-component-attr">BitCompoundButton</span>&gt;
-                &lt<span class="soco-component-attr">BitCompoundButton</span><span class="soco-component-attr"> ButtonStyle</span>="BitButtonStyle.Standard"
-                                                                <span class="soco-component-attr">Href</span>="<span class="soco-tag-type-def">https://github.com/bitfoundation/bitframework</span>"
-                                                                <span class="soco-component-attr">Text</span>="<span>Open the site</span>"<span class="soco-component-attr">SecondaryText</span>="Go To Bit Foundation">
-                &lt/<span class="soco-component-attr">BitCompoundButton</span>&gt;
-                &lt<span class="soco-component-attr">BitCompoundButton</span><span class="soco-component-attr"> Href</span>="<span class="soco-tag-type-def">https://github.com/bitfoundation/bitframework</span>"
-                                                                <span class="soco-component-attr">IsEnabled</span>=<span class="soco-tag-type-def">"false"</span>
-                                                                <span class="soco-component-attr">Text</span>="Open the site"<span class="soco-component-attr">SecondaryText</span>="Go To Bit Foundation">
-                &lt/<span class="soco-component-attr">BitCompoundButton</span>&gt;
+            &ltBitCompoundButton Target="_blank" Href="https://github.com/bitfoundation/bitframework" Text="Open the site" SecondaryText="Open Bit Foundation In New Tab">&lt/BitCompoundButton>
+            &ltBitCompoundButton Href="https://github.com/bitfoundation/bitframework" ButtonStyle="BitButtonStyle.Standard" Text="Open the site" SecondaryText="Go To Bit Foundation">&lt/BitCompoundButton>
+            &ltBitCompoundButton Target="_self" Href="https://github.com/bitfoundation/bitframework" IsEnabled="false" Text="Open the site" SecondaryText="Go To Bit Foundation">&lt/BitCompoundButton>
             </pre>
-        </CodeSampleContent>
-    </CodeSample>
-</ComponentPage>
+        </ExampleSourceCode>
+    </ComponentExampleBox>
+</ComponentDemo>

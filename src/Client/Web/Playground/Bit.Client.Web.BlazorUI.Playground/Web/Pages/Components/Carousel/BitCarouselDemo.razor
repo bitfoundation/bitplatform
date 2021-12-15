@@ -1,10 +1,9 @@
 ﻿@page "/components/carousel"
-@using Bit.Client.Web.BlazorUI.Playground.Web.Components
 
-<ComponentPage ComponentName="Carousel" OverviewDesc="Carousel (Carousel slide-show) let people show their items in seperate slides from two or more items."
+<ComponentDemo ComponentName="Carousel" ComponentDescription="Carousel (Carousel slide-show) let people show their items in seperate slides from two or more items."
                ComponentParameters="componentParameters">
-    <CodeSample Title="Basic Carousel" Description="" CodeSampleContentForCopy="@carouselSampleCode">
-        <SampleContent>
+    <ComponentExampleBox Title="Basic Carousel" ExampleSourceCodeForCopy="@carouselSampleCode" ExampleId="example1">
+        <ExamplePreview>
             <div>
                 <BitCarousel>
                     <BitCarouselItem>
@@ -14,139 +13,103 @@
                     </BitCarouselItem>
                     <BitCarouselItem>
                         <div class="numbertext">2 / 4</div>
-                        <img src="/images/carousel/img2.jpg" style="width:100%">
+                        <img src="/images/carousel/img2.jpg" style="width:100%" />
                         <div class="text">Beautiful Mountain</div>
                     </BitCarouselItem>
                     <BitCarouselItem>
                         <div class="numbertext">3 / 4</div>
-                        <img src="/images/carousel/img3.jpg" style="width:100%">
+                        <img src="/images/carousel/img3.jpg" style="width:100%" />
                         <div class="text">Forest In The Valley</div>
                     </BitCarouselItem>
                     <BitCarouselItem>
                         <div class="numbertext">4 / 4</div>
-                        <img src="/images/carousel/img4.jpg" style="width:100%">
+                        <img src="/images/carousel/img4.jpg" style="width:100%" />
                         <div class="text">Road Among The Mountains</div>
                     </BitCarouselItem>
                 </BitCarousel>
             </div>
-        </SampleContent>
-        <CodeSampleContent>
+        </ExamplePreview>
+        <ExampleSourceCode>
             <pre>
-                &lt<span class="soco-component-attr">BitCarousel</span>>
-                    &lt<span class="soco-component-attr">BitCarouselItem</span>>
-                             &lt<span class="soco-tag-type-def">div</span> <span class="soco-var-attr">class</span>="numbertext">1/4 &lt/<span class="soco-tag-type-def">div</span>>
-                             &lt<span class="soco-tag-type-def">img </span><span class="soco-var-attr">src</span>="/images/carousel/img1.jpg"<span class="soco-var-attr"> style</span>="width:100%" />
-                             &lt<span class="soco-tag-type-def">div</span> <span class="soco-var-attr">class</span>="text">Aurora &lt/<span class="soco-tag-type-def">div</span>>
-                    &lt/<span class="soco-component-attr">BitCarouselItem</span>>
-                    &lt<span class="soco-component-attr">BitCarouselItem</span>>
-                             &lt<span class="soco-tag-type-def">div</span> <span class="soco-var-attr">class</span>="numbertext">2/4 &lt/<span class="soco-tag-type-def">div</span>>
-                             &lt<span class="soco-tag-type-def">img </span><span class="soco-var-attr">src</span>="/images/carousel/img2.jpg"<span class="soco-var-attr"> style</span>="width:100%" />
-                             &lt<span class="soco-tag-type-def">div</span> <span class="soco-var-attr">class</span>="text">Beautiful Mountain &lt/<span class="soco-tag-type-def">/div</span>>
-                    &lt/<span class="soco-component-attr">BitCarouselItem</span>>
-                    &lt<span class="soco-component-attr">BitCarouselItem</span>>
-                             &lt<span class="soco-tag-type-def">div</span> <span class="soco-var-attr">class</span>="numbertext">3/4 &lt/<span class="soco-tag-type-def">div</span>>
-                             &lt<span class="soco-tag-type-def">img </span><span class="soco-var-attr">src</span>="/images/carousel/img3.jpg"<span class="soco-var-attr"> style</span>="width:100%" />
-                             &lt<span class="soco-tag-type-def">div</span> <span class="soco-var-attr">class</span>="text">Forest In The Valley &lt/<span class="soco-tag-type-def">div</span>>
-                    &lt/<span class="soco-component-attr">BitCarouselItem</span>>
-                    &lt<span class="soco-component-attr">BitCarouselItem</span>>
-                             &lt<span class="soco-tag-type-def">div</span> <span class="soco-var-attr">class</span>="numbertext">4/4 &lt/<span class="soco-tag-type-def">div</span>>
-                             &lt<span class="soco-tag-type-def">img </span><span class="soco-var-attr">src</span>="/images/carousel/img4.jpg"<span class="soco-var-attr"> style</span>="width:100%" />
-                             &lt<span class="soco-tag-type-def">div</span> <span class="soco-var-attr">class</span>="text">Road Among The Mountains &lt/<span class="soco-tag-type-def">div</span>>
-                    &lt/<span class="soco-component-attr">BitCarouselItem</span>>
-                &lt/<span class="soco-component-attr">BitCarousel</span>>
-               &lt<span class="soco-tag-type-def">style></span>
-                         <span class="soco-css-style">.numbertext</span> {
-                               <span class="soco-var-attr">color</span> : #DDDDDD;
-                               <span class="soco-var-attr">font-size</span> : 12px;
-                               <span class="soco-var-attr">padding</span> : 12px;
-                               <span class="soco-var-attr">position</span> : absolute;
-                               <span class="soco-var-attr">top</span> : 12px;
-                         }
-                         <span class="soco-css-style">.text</span> {
-                               <span class="soco-var-attr">color</span> : #FFFFFF;
-                               <span class="soco-var-attr">font-size</span> : 15px;
-                               <span class="soco-var-attr">width</span> : 100%;
-                               <span class="soco-var-attr">position</span> : absolute;
-                               <span class="soco-var-attr">bottom</span> : 55px;
-                               <span class="soco-var-attr">text-align</span> : center;
-                         }
-                &lt/<span class="soco-tag-type-def">style</span>&gt;
+            &ltBitCarousel>
+                    &ltBitCarouselItem>
+                            &ltdiv class="numbertext">1 / 4&lt/div>
+                            &ltimg src="/images/carousel/img1.jpg" style="width:100%" />
+                            &ltdiv class="text">Aurora&lt/div>
+                    &lt/BitCarouselItem>
+                    &ltBitCarouselItem>
+                            &ltdiv class="numbertext">2 / 4&lt/div>
+                            &ltimg src="/images/carousel/img2.jpg" style="width:100%" />
+                            &ltdiv class="text">Beautiful Mountain&lt/div>
+                    &lt/BitCarouselItem>
+                    &ltBitCarouselItem>
+                            &ltdiv class="numbertext">3 / 4&lt/div>
+                            &ltimg src="/images/carousel/img3.jpg" style="width:100%" />
+                            &ltdiv class="text">Forest In The Valley&lt/div>
+                    &lt/BitCarouselItem>
+                    &ltBitCarouselItem>
+                            &ltdiv class="numbertext">4 / 4&lt/div>
+                            &ltimg src="/images/carousel/img4.jpg" style="width:100%" />
+                            &ltdiv class="text">Road Among The Mountains&lt/div>
+                    &lt/BitCarouselItem>
+            &lt/BitCarousel>
             </pre>
+        </ExampleSourceCode>
+    </ComponentExampleBox>
 
-        </CodeSampleContent>
-    </CodeSample>
-
-    <CodeSample Title="Carousel With Slide Show Mode" Description="" CodeSampleContentForCopy="@slideShowCarouselSampleCode">
-        <SampleContent>
+    <ComponentExampleBox Title="Carousel With Slide Show Mode" ExampleSourceCodeForCopy="@slideShowCarouselSampleCode" ExampleId="example2">
+        <ExamplePreview>
             <div>
                 <BitCarousel IsSlideShow="true">
                     <BitCarouselItem>
                         <div class="numbertext">1 / 4</div>
-                        <img src="/images/carousel/img1.jpg" style="width:100%">
+                        <img src="/images/carousel/img1.jpg" style="width:100%" />
                         <div class="text">Aurora</div>
                     </BitCarouselItem>
                     <BitCarouselItem>
                         <div class="numbertext">2 / 4</div>
-                        <img src="/images/carousel/img2.jpg" style="width:100%">
+                        <img src="/images/carousel/img2.jpg" style="width:100%" />
                         <div class="text">Beautiful Mountain</div>
                     </BitCarouselItem>
                     <BitCarouselItem>
                         <div class="numbertext">3 / 4</div>
-                        <img src="/images/carousel/img3.jpg" style="width:100%">
+                        <img src="/images/carousel/img3.jpg" style="width:100%" />
                         <div class="text">Forest In The Valley</div>
                     </BitCarouselItem>
                     <BitCarouselItem>
                         <div class="numbertext">4 / 4</div>
-                        <img src="/images/carousel/img4.jpg" style="width:100%">
+                        <img src="/images/carousel/img4.jpg" style="width:100%" />
                         <div class="text">Road Among The Mountains</div>
                     </BitCarouselItem>
                 </BitCarousel>
             </div>
-        </SampleContent>
-        <CodeSampleContent>
+        </ExamplePreview>
+        <ExampleSourceCode>
             <pre>
-                &lt<span class="soco-component-attr">BitCarousel IsSlideShow</span>="<span class="soco-tag-type-def">true</span>">
-                    &lt<span class="soco-component-attr">BitCarouselItem</span>>
-                             &lt<span class="soco-tag-type-def">div</span> <span class="soco-var-attr">class</span>="numbertext">1/4 &lt/<span class="soco-tag-type-def">div</span>>
-                             &lt<span class="soco-tag-type-def">img </span><span class="soco-var-attr">src</span>="/images/carousel/img1.jpg"<span class="soco-var-attr"> style</span>="width:100%" />
-                             &lt<span class="soco-tag-type-def">div</span> <span class="soco-var-attr">class</span>="text">Aurora &lt/<span class="soco-tag-type-def">div</span>>
-                    &lt/<span class="soco-component-attr">BitCarouselItem</span>>
-                    &lt<span class="soco-component-attr">BitCarouselItem</span>>
-                             &lt<span class="soco-tag-type-def">div</span> <span class="soco-var-attr">class</span>="numbertext">2/4 &lt/<span class="soco-tag-type-def">div</span>>
-                             &lt<span class="soco-tag-type-def">img </span><span class="soco-var-attr">src</span>="/images/carousel/img2.jpg"<span class="soco-var-attr"> style</span>="width:100%" />
-                             &lt<span class="soco-tag-type-def">div</span> <span class="soco-var-attr">class</span>="text">Beautiful Mountain &lt/<span class="soco-tag-type-def">/div</span>>
-                    &lt/<span class="soco-component-attr">BitCarouselItem</span>>
-                    &lt<span class="soco-component-attr">BitCarouselItem</span>>
-                             &lt<span class="soco-tag-type-def">div</span> <span class="soco-var-attr">class</span>="numbertext">3/4 &lt/<span class="soco-tag-type-def">div</span>>
-                             &lt<span class="soco-tag-type-def">img </span><span class="soco-var-attr">src</span>="/images/carousel/img3.jpg"<span class="soco-var-attr"> style</span>="width:100%" />
-                             &lt<span class="soco-tag-type-def">div</span> <span class="soco-var-attr">class</span>="text">Forest in the valley &lt/<span class="soco-tag-type-def">div</span>>
-                    &lt/<span class="soco-component-attr">BitCarouselItem</span>>
-                    &lt<span class="soco-component-attr">BitCarouselItem</span>>
-                             &lt<span class="soco-tag-type-def">div</span> <span class="soco-var-attr">class</span>="numbertext">4/4 &lt/<span class="soco-tag-type-def">div</span>>
-                             &lt<span class="soco-tag-type-def">img </span><span class="soco-var-attr">src</span>="/images/carousel/img4.jpg"<span class="soco-var-attr"> style</span>="width:100%" />
-                             &lt<span class="soco-tag-type-def">div</span> <span class="soco-var-attr">class</span>="text">Road Among The Mountains &lt/<span class="soco-tag-type-def">div</span>>
-                    &lt/<span class="soco-component-attr">BitCarouselItem</span>>
-                &lt/<span class="soco-component-attr">BitCarousel</span>>
-                &lt<span class="soco-tag-type-def">style></span>
-                         <span class="soco-css-style">.numbertext</span> {
-                               <span class="soco-var-attr">color</span> : #DDDDDD;
-                               <span class="soco-var-attr">font-size</span> : 12px;
-                               <span class="soco-var-attr">padding</span> : 12px;
-                               <span class="soco-var-attr">position</span> : absolute;
-                               <span class="soco-var-attr">top</span> : 12px;
-                         }
-                         <span class="soco-css-style">.text</span> {
-                               <span class="soco-var-attr">color</span> : #FFFFFF;
-                               <span class="soco-var-attr">font-size</span> : 15px;
-                               <span class="soco-var-attr">width</span> : 100%;
-                               <span class="soco-var-attr">position</span> : absolute;
-                               <span class="soco-var-attr">bottom</span> : 55px;
-                               <span class="soco-var-attr">text-align</span> : center;
-                         }
-                &lt/<span class="soco-tag-type-def">style</span>&gt;
+            &ltBitCarousel IsSlideShow="true">
+                    &ltBitCarouselItem>
+                            &ltdiv class="numbertext">1 / 4&lt/div>
+                            &ltimg src="/images/carousel/img1.jpg" style="width:100%" />
+                            &ltdiv class="text">Aurora&lt/div>
+                    &lt/BitCarouselItem>
+                    &ltBitCarouselItem>
+                            &ltdiv class="numbertext">2 / 4&lt/div>
+                            &ltimg src="/images/carousel/img2.jpg" style="width:100%" />
+                            &ltdiv class="text">Beautiful Mountain&lt/div>
+                    &lt/BitCarouselItem>
+                    &ltBitCarouselItem>
+                            &ltdiv class="numbertext">3 / 4&lt/div>
+                            &ltimg src="/images/carousel/img3.jpg" style="width:100%" />
+                            &ltdiv class="text">Forest In The Valley&lt/div>
+                    &lt/BitCarouselItem>
+                    &ltBitCarouselItem>
+                            &ltdiv class="numbertext">4 / 4&lt/div>
+                            &ltimg src="/images/carousel/img4.jpg" style="width:100%" />
+                            &ltdiv class="text">Road Among The Mountains&lt/div>
+                    &lt/BitCarouselItem>
+            &lt/BitCarousel>
             </pre>
-
-        </CodeSampleContent>
-    </CodeSample>
-</ComponentPage>
+        </ExampleSourceCode>
+    </ComponentExampleBox>
+</ComponentDemo>
 

@@ -2,8 +2,8 @@
 
 <Header />
 
-<div class="main-container @(CurrentUrl.Contains("components") ? "main-container-pad" : "")">
-    @if(CurrentUrl.Contains("components"))
+<div class="main-container @(CurrentUrl != "/" ? "main-container-pad" : "")">
+    @if(CurrentUrl != "/")
     {
         <SideNav />
     }
