@@ -107,3 +107,165 @@
         line-height: rem(24px);
     }
 }
+
+.table-title {
+    margin-bottom: rem(8px);
+    font-weight: 500;
+    font-size: rem(20px);
+    line-height: rem(32px);
+    color: $SecondaryColor;
+
+    @include lt-xl {
+        font-size: rem(16px);
+        line-height: rem(24px);
+    }
+
+    @include sm {
+        font-size: rem(12px);
+    }
+}
+
+.table-view {
+    width: 100%;
+    margin-bottom: rem(40px);
+    border: rem(1px) solid $Gray3;
+    border-radius: rem(10px);
+    box-sizing: border-box;
+    background-color: $White;
+    overflow: hidden;
+    border-spacing: 0;
+
+    @include lt-xl {
+        border-radius: rem(8px);
+    }
+}
+
+.th-row {
+    display: flex;
+    width: 100%;
+    min-height: rem(48px);
+    background-color: $SecondaryColor;
+
+    @include lt-xl {
+        min-height: rem(40px);
+    }
+}
+
+.tdata-row {
+    display: flex;
+    width: 100%;
+    border-bottom: rem(1px) solid $Gray3;
+
+    &:last-child {
+        border: none;
+    }
+}
+
+.th-cell {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    min-height: 100%;
+    padding: rem(5px) rem(16px) rem(5px) rem(16px);
+    border-right: rem(1px) solid $Gray3;
+    box-sizing: border-box;
+    font-size: rem(18px);
+    line-height: rem(31px);
+    text-align: left;
+    color: $Gray5;
+    background-color: transparent;
+
+    &:last-child {
+        border: none;
+    }
+
+    @include lg {
+        font-size: rem(16px);
+        line-height: rem(24px);
+    }
+
+    @include md {
+        font-weight: 500;
+        font-size: rem(14px);
+        line-height: rem(24px);
+    }
+
+    @include sm {
+        padding: rem(5px) rem(8px) rem(5px) rem(8px);
+        font-weight: 500;
+        font-size: rem(10px);
+        line-height: rem(16px);
+    }
+}
+
+.td-cell {
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    padding: rem(16px);
+    border-right: rem(1px) solid $Gray3;
+    box-sizing: border-box;
+    font-size: rem(14px);
+    line-height: rem(24px);
+    text-align: left;
+    color: $Gray1;
+    text-overflow: ellipsis;
+    white-space: break-spaces;
+    overflow: hidden;
+
+
+    &:last-child {
+        border: none;
+    }
+
+    @include lg {
+        font-size: rem(12px);
+        line-height: rem(18px);
+    }
+
+    @include md {
+        font-size: rem(10px);
+        line-height: rem(16px);
+    }
+
+    @include sm {
+        padding: rem(8px);
+        font-size: rem(8px);
+        line-height: rem(12px);
+    }
+}
+
+.params-table {
+    .th-cell,
+    .td-cell {
+        &:nth-child(1) {
+            width: 20%;
+        }
+
+        &:nth-child(2),
+        &:nth-child(3) {
+            width: 22%;
+        }
+
+        &:nth-child(4) {
+            width: 36%;
+        }
+    }
+}
+
+.types-table {
+    .th-cell,
+    .td-cell {
+        &:nth-child(1) {
+            width: 20%;
+        }
+
+        &:nth-child(2) {
+            width: 44%;
+        }
+
+        &:nth-child(3) {
+            width: 36%;
+        }
+    }
+}

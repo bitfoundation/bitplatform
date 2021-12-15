@@ -12,5 +12,38 @@
     </section>
     <section id="implementation-section" class="demo-section">
         <h2 class="section-title">Implementation</h2>
+        <div class="table-title">@ComponentName parameters</div>
+        <table class="table-view params-table">
+            <tr class="th-row">
+                <th class="th-cell">Name</th>
+                <th class="th-cell">Type</th>
+                <th class="th-cell">Default value</th>
+                <th class="th-cell">Description</th>
+            </tr>
+            @foreach (var param in ComponentParameters)
+            {
+                <tr class="tdata-row">
+                    <td class="td-cell">@param.Name</td>
+                    <td class="td-cell">@param.Type</td>
+                    <td class="td-cell">@param.DefaultValue</td>
+                    <td class="td-cell">@param.Description</td>
+                </tr>
+            }
+        </table>
+
+
+        <div class="table-title">Parameters</div>
+        <table class="table-view types-table">
+            <tr class="th-row">
+                <th class="th-cell">Name</th>
+                <th class="th-cell">Value</th>
+                <th class="th-cell">Description</th>
+            </tr>
+            <tr class="tdata-row">
+                <td class="td-cell"></td>
+                <td class="td-cell"></td>
+                <td class="td-cell"></td>
+            </tr>
+        </table>
     </section>
 </section>
