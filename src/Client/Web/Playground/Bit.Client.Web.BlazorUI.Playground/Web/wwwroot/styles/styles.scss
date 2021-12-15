@@ -363,8 +363,32 @@ input::-webkit-input-placeholder {
     }
 }
 
-/* Demo Page =================================================================================== */
+.param-table-link {
+    a {
+        font-family: Axiforma;
+        cursor: pointer;
+        color: $PrimaryColor;
+        font-size: rem(14px);
+        line-height: rem(24px);
 
+        @include lg {
+            font-size: rem(12px);
+            line-height: rem(18px);
+        }
+
+        @include md {
+            font-size: rem(10px);
+            line-height: rem(16px);
+        }
+
+        @include sm {
+            font-size: rem(8px);
+            line-height: rem(12px);
+        }
+    }
+}
+
+/* Demo Page =================================================================================== */
 .example-desc {
     margin-bottom: rem(8px);
 }
