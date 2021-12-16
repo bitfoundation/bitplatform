@@ -47,6 +47,55 @@ input::-webkit-input-placeholder {
     display: none;
 }
 
+/* Home Page ==================================================================================== */
+
+.component-list-item {
+    max-width: 100%;
+    margin-bottom: rem(4px);
+    color: $Black1;
+    font-size: rem(16px);
+    line-height: rem(24px);
+    font-family: Axiforma;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    cursor: pointer;
+
+    a {
+        color: inherit;
+        font-family: inherit;
+
+        &:hover, &:active {
+            color: $PrimaryColor;
+            text-decoration: none;
+        }
+    }
+
+    &:last-child {
+        margin-bottom: 0;
+    }
+
+    &:hover {
+        color: $PrimaryColor;
+    }
+
+    @include lg {
+        line-height: rem(24px);
+    }
+
+    @include md {
+        font-size: rem(14px);
+        line-height: rem(16px);
+        margin-bottom: rem(12px);
+    }
+
+    @include sm {
+        font-size: rem(14px);
+        line-height: rem(24px);
+        margin-bottom: rem(8px);
+    }
+}
+
 /* Side Nav ==================================================================================== */
 
 .side-nav-search-box {
