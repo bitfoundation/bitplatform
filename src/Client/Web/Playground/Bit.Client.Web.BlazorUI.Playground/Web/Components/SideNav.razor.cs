@@ -103,9 +103,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Components
 
         [Inject] public NavManuService NavManuService { get; set; }
         [Inject] public IJSRuntime JsRuntime { get; set; }
-
-        [Inject]
-        public NavigationManager NavigationManager { get; set; }
+        [Inject] public NavigationManager NavigationManager { get; set; }
 
         public string CurrentUrl { get; set; }
 
