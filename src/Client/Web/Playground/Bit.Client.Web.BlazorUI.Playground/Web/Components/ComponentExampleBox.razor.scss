@@ -76,7 +76,6 @@
     color: #2E2E2E;
     font-size: rem(16px);
     line-height: rem(24px);
-    overflow: auto;
 
     &::-webkit-scrollbar {
         width: rem(10px);
@@ -108,4 +107,8 @@
         font-size: rem(12px);
         line-height: rem(16px);
     }
+}
+
+.box-content--scroll {
+    overflow: auto;
 }

@@ -14,20 +14,18 @@
             </BitIconButton>
         </div>
         <BitIconButton Class="com-example-box-copy-btn"
-                       OnClick=CopyCodeToClipboard
+                       OnClick=@CopyCodeToClipboard
                        IconName="BitIcon.Copy"
                        Title="Copy source">
         </BitIconButton>
     </div>
+    @if (!showCode)
+    {
+        <div class="box-content @(IsExamplePreviewScrollable ? "box-content--scroll" : "")">@ExamplePreview</div>
+    }
+    else
+    {
+        <div class="box-content">@ExampleSourceCode</div>
+    }
 
-    <div class="box-content">
-        @if (!showCode)
-        {
-            @ExamplePreview
-        }
-        else
-        {
-            @ExampleSourceCode
-        }
-    </div>
 </section>
