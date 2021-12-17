@@ -1,4 +1,6 @@
 ﻿using Bit.Core.Exceptions;
+using Bit.Owin.Middlewares;
+using Bit.WebApi.ActionFilters;
 using BitChangeSetManager.DataAccess.Contracts;
 using BitChangeSetManager.Dto;
 using BitChangeSetManager.Model;
@@ -83,7 +85,7 @@ public static async Task UploadImagess()
          */
 
         [Route("get-image/{imageId}")]
-        [HttpGet]
+        [HttpGet, OwinActionFilter(typeof(OwinCacheResponseMiddleware))]
         public virtual async Task<HttpResponseMessage> GetImage(Guid imageId, CancellationToken cancellationToken)
         {
             ChangeSetImage image = await (await Repository.GetAllAsync(cancellationToken))

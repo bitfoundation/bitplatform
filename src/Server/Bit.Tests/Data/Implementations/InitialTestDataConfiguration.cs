@@ -83,20 +83,19 @@ namespace Bit.Tests.Data.Implementations
         {
             try
             {
-                using (IDependencyResolver childDependencyResolver = _dependencyManager.CreateChildDependencyResolver())
+                _dependencyManager.TransactionAction("DeleteDatabase", async childResolver =>
                 {
-                    TestDbContext dbContext = childDependencyResolver.Resolve<TestDbContext>();
-
+                    TestDbContext dbContext = childResolver.Resolve<TestDbContext>();
                     dbContext.Database.EnsureDeleted(); // after delete, scope and it's transaction are not much usable!
-                }
+                }).GetAwaiter().GetResult();
             }
             catch (SqlException)
             {
             }
 
-            using (IDependencyResolver childDependencyResolver = _dependencyManager.CreateChildDependencyResolver())
+            _dependencyManager.TransactionAction("CreateDatabaseWithInitialData", async childResolver =>
             {
-                TestDbContext dbContext = childDependencyResolver.Resolve<TestDbContext>();
+                TestDbContext dbContext = childResolver.Resolve<TestDbContext>();
 
                 dbContext.Database.EnsureCreated();
 
@@ -110,17 +109,17 @@ namespace Bit.Tests.Data.Implementations
                 dbContext.TestCustomers.Add(customer);
 
                 dbContext.SaveChanges();
-            }
+            }).GetAwaiter().GetResult();
         }
 
         public virtual void OnAppEnd()
         {
-            using (IDependencyResolver childDependencyResolver = _dependencyManager.CreateChildDependencyResolver())
+            _dependencyManager.TransactionAction("DeleteDatabase", async childResolver =>
             {
-                TestDbContext dbContext = childDependencyResolver.Resolve<TestDbContext>();
+                TestDbContext dbContext = childResolver.Resolve<TestDbContext>();
 
                 dbContext.Database.EnsureDeleted();
-            }
+            }).GetAwaiter().GetResult();
         }
     }
 }
