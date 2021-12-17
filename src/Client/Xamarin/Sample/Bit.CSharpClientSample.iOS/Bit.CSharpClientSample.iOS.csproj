@@ -136,7 +136,7 @@
     <PackageReference Include="Xamarin.Firebase.iOS.Crashlytics">
       <Version>4.6.2</Version>
     </PackageReference>
-    <PackageReference Include="Xamarin.Forms" Version="5.0.0.2244" />
+    <PackageReference Include="Xamarin.Forms" Version="5.0.0.2291" />
     <PackageReference Include="System.Reflection.Emit" Version="4.3.0" ExcludeAssets="All">
       <IncludeAssets>none</IncludeAssets>
     </PackageReference>
