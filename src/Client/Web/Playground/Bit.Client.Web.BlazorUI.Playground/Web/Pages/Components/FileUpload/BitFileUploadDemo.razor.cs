@@ -43,7 +43,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.FileUpload
             {
                 Name = "ChunkSize",
                 Type = "long",
-                DefaultValue = "",
+                DefaultValue = "10485760",
                 Description = "Upload is done in the form of chunks and this property shows the progress of upload in each chunk.",
             },
             new ComponentParameter()
