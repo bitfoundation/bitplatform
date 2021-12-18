@@ -29,6 +29,13 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.DatePicker
             },
             new ComponentParameter()
             {
+                Name = "Culture",
+                Type = "CultureInfo",
+                DefaultValue = "CultureInfo.CurrentUICulture",
+                Description = "CultureInfo for the DatePicker."
+            },    
+            new ComponentParameter()
+            {
                 Name = "GoToToday",
                 Type = "string",
                 DefaultValue = "Go to today",

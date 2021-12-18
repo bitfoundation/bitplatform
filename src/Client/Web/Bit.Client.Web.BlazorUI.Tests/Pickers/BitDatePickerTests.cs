@@ -119,7 +119,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Pickers
                parameters =>
                {
                    parameters.Add(p => p.IsOpen, true);
-                   parameters.Add(p => p.Culture, CultureInfoProvider.GetPersianCaltureByFinglishNames());
+                   parameters.Add(p => p.Culture, CultureInfoHelper.GetPersianCultureByFinglishNames());
                });
 
             var monthButtons = component.FindAll(".month-picker-wrapper .grid-container .btn-row button");
