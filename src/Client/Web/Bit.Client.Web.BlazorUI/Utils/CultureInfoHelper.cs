@@ -1,6 +1,6 @@
 ﻿using System.Globalization;
 
-namespace Bit.Client.Web.BlazorUI.Utils
+namespace Bit.Client.Web.BlazorUI
 {
     public static class CultureInfoHelper
     {
