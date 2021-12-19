@@ -184,8 +184,8 @@ namespace Bit.Client.Web.BlazorUI
             }
 
             var obj = DotNetObjectReference.Create(this);
-            await JSRuntime.InvokeVoidAsync("BitDatePicker.toggleDatePickerCallout", obj, WrapperId, CalloutId, OverlayId, isOpen);
-            IsOpen = true;
+            await JSRuntime.InvokeVoidAsync("BitDatePicker.toggleDatePickerCallout", obj, UniqueId, CalloutId, OverlayId, isOpen);
+            IsOpen = !isOpen;
             displayYear = currentYear;
             await OnClick.InvokeAsync(eventArgs);
         }
@@ -240,7 +240,7 @@ namespace Bit.Client.Web.BlazorUI
             }
 
             var obj = DotNetObjectReference.Create(this);
-            await JSRuntime.InvokeVoidAsync("BitDatePicker.toggleDatePickerCallout", obj, WrapperId, CalloutId, OverlayId, isOpen);
+            await JSRuntime.InvokeVoidAsync("BitDatePicker.toggleDatePickerCallout", obj, UniqueId, CalloutId, OverlayId, isOpen);
             IsOpen = false;
             displayYear = currentYear;
             currentMonth = selectedMonth;
@@ -454,7 +454,7 @@ namespace Bit.Client.Web.BlazorUI
             if (JSRuntime is null) return;
 
             var obj = DotNetObjectReference.Create(this);
-            await JSRuntime.InvokeVoidAsync("BitDatePicker.toggleDatePickerCallout", obj, WrapperId, CalloutId, OverlayId, isOpen);
+            await JSRuntime.InvokeVoidAsync("BitDatePicker.toggleDatePickerCallout", obj, UniqueId, CalloutId, OverlayId, isOpen);
             IsOpen = false;
             StateHasChanged();
         }
