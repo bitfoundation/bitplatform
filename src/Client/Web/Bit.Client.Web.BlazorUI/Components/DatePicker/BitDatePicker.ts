@@ -27,25 +27,25 @@
             var datePickerWrapperRight = window.innerWidth - (datePickerWidth + datePickerX);
 
             if (datePickerWrapperBottom >= datePickerCalloutHeight) {
-                datePickerCallout.style.top = datePickerHeight + 1 + "px";
-                datePickerCallout.style.left = "0px";
+                datePickerCallout.style.top = datePickerY + datePickerHeight + 1 + "px";
+                datePickerCallout.style.left = datePickerX + "px";
                 datePickerCallout.style.right = "unset";
                 datePickerCallout.style.bottom = "unset";
             } else if (datePickerTop >= datePickerCalloutHeight) {
+                datePickerCallout.style.bottom = datePickerWrapperBottom + datePickerHeight + 1 + "px";;
+                datePickerCallout.style.left = datePickerX + "px";
                 datePickerCallout.style.right = "unset";
                 datePickerCallout.style.top = "unset";
-                datePickerCallout.style.bottom = datePickerHeight + 1 + "px";
-                datePickerCallout.style.left = "0px";
             } else if (datePickerWrapperRight >= datePickerCalloutWidth) {
-                datePickerCallout.style.left = datePickerWidth + 1 + "px";
-                datePickerCallout.style.bottom = 0 - datePickerWrapperBottom + "px";
+                datePickerCallout.style.left = datePickerX + datePickerWidth + 1 + "px";
+                datePickerCallout.style.bottom = "2px";
                 datePickerCallout.style.right = "unset";
                 datePickerCallout.style.top = "unset";
             } else {
-                datePickerCallout.style.left = "unset";
+                datePickerCallout.style.left = datePickerX - datePickerCalloutWidth - 1 + "px";
+                datePickerCallout.style.bottom = "2px";
+                datePickerCallout.style.right = "unset";
                 datePickerCallout.style.top = "unset"
-                datePickerCallout.style.right = datePickerWidth + "px";
-                datePickerCallout.style.bottom = 0 - datePickerWrapperBottom + "px";
             }
         }
     }

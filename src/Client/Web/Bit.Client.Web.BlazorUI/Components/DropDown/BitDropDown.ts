@@ -20,35 +20,35 @@
             dropDownOverlay.style.display = "block";
             var dropDownCalloutHeight = dropDownCallout.offsetHeight;
             var dropDownCalloutWidth = dropDownCallout.offsetWidth;
-            var dropDownWrapperHeight = dropDownWrapper.offsetHeight;
             var dropDownHeight = dropDown.offsetHeight;
+            var dropDownTop = dropDown.getBoundingClientRect().y;
+            var dropDownWrapperHeight = dropDownWrapper.offsetHeight;
             var dropDownWrapperWidth = dropDownWrapper.offsetWidth;
             var dropDownWrapperX = dropDownWrapper.getBoundingClientRect().x;
             var dropDownWrapperY = dropDownWrapper.getBoundingClientRect().y;
-            var dropDownTop = dropDown.getBoundingClientRect().y;
             var dropDownWrapperBottom = window.innerHeight - (dropDownWrapperHeight + dropDownWrapperY);
             var dropDownWrapperRight = window.innerWidth - (dropDownWrapperWidth + dropDownWrapperX);
 
             if (dropDownWrapperBottom >= dropDownCalloutHeight) {
-                dropDownCallout.style.top = dropDownWrapperHeight + 1 + "px";
-                dropDownCallout.style.left = "0px";
+                dropDownCallout.style.top = dropDownWrapperY + dropDownWrapperHeight + 1 + "px";
+                dropDownCallout.style.left = dropDownWrapperX + "px";
                 dropDownCallout.style.right = "unset";
                 dropDownCallout.style.bottom = "unset";
             } else if (dropDownTop >= dropDownCalloutHeight) {
+                dropDownCallout.style.bottom = dropDownWrapperBottom + dropDownHeight + 1 + "px";
+                dropDownCallout.style.left = dropDownWrapperX + "px";
                 dropDownCallout.style.right = "unset";
                 dropDownCallout.style.top = "unset";
-                dropDownCallout.style.bottom = dropDownHeight + 1 + "px";
-                dropDownCallout.style.left = "0px";
             } else if (dropDownWrapperRight >= dropDownCalloutWidth) {
-                dropDownCallout.style.left = dropDownWrapperWidth + 1 + "px";
-                dropDownCallout.style.bottom = 0 - dropDownWrapperBottom + "px";
+                dropDownCallout.style.left = dropDownWrapperX + dropDownWrapperWidth + 1 + "px";
+                dropDownCallout.style.bottom = "2px";
                 dropDownCallout.style.right = "unset";
                 dropDownCallout.style.top = "unset";
             } else {
-                dropDownCallout.style.left = "unset";
-                dropDownCallout.style.top = "unset"
-                dropDownCallout.style.right = dropDownWrapperWidth + "px";
-                dropDownCallout.style.bottom = 0 - dropDownWrapperBottom + "px";
+                dropDownCallout.style.left = dropDownWrapperX - dropDownCalloutWidth - 1 + "px";
+                dropDownCallout.style.bottom = "2px";
+                dropDownCallout.style.top = "unset";
+                dropDownCallout.style.right = "unset";
             }
         }
     }
