@@ -2,8 +2,7 @@
 
 **Prerequisites:**
 
-Install [Visual Studio](https://visualstudio.microsoft.com/vs/) \(16.8 at the moment\) with following workloads:
+Install [Visual Studio](https://visualstudio.microsoft.com/vs/) \(17.0 (VS 2022) at the moment\) with following workloads:
 
-For SPA/PWA =&gt; ASP.NET Core
-
-For Desktop/Mobile =&gt; ASP.NET Core + Xamarin Forms + Universal Windows Platform
+ASP.NET and web development
+Mobile development with .NET (Check .NET MAUI (Preview) in installation details)

@@ -1,22 +1,15 @@
-﻿using Bit.Core.Contracts;
-using Bit.Core.Models;
+﻿using Bit.Core.Models;
 using Bit.Data.Contracts;
 using Bit.OData.ActionFilters;
-using Bit.OData.Contents;
 using Bit.OData.Contracts;
 using Bit.OData.ODataControllers;
 using BitChangeSetManager.Dto;
 using Dapper;
-using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Data.Common;
 using System.Linq;
-using System.Net;
-using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Web.Http.Description;
 
 namespace BitChangeSetManager.Api
 {
@@ -38,7 +31,7 @@ namespace BitChangeSetManager.Api
 
             long total = odataSqlQuery.Parts.GetTotalCountFromDb == false ? cities.LongCount() : ((await dbConnection.ExecuteScalarAsync<long?>(odataSqlQuery.SelectTotalCountQuery, odataSqlQuery.Parts.Parameters, transaction: dbTransaction)) ?? 0);
 
-            Request.Properties["System.Web.OData.TotalCountFunc"] = new Func<long>(() => total);
+            SetODataTotalCount(total);
 
             return cities;
         }

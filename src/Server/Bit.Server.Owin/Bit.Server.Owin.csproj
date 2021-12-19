@@ -16,7 +16,7 @@
   <ItemGroup>
     <PackageReference Include="Autofac.Owin" Version="6.0.1" />
     <PackageReference Include="Lambda2Js" Version="3.1.3" />
-    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.19.0" />
+    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.20.0" />
     <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.7" />
     <PackageReference Include="Microsoft.Owin.Security.Jwt" Version="4.2.0" />
     <PackageReference Include="NodaTime" Version="3.0.9" />
@@ -26,7 +26,7 @@
       <PackageReference Include="Serilog.AspNetCore" Version="4.1.0" />
     <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="6.0.0" />
     <PackageReference Include="NWebsec.AspNetCore.Middleware" Version="3.0.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Owin" Version="6.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Owin" Version="6.0.1" />
   </ItemGroup>
 
   <ItemGroup>

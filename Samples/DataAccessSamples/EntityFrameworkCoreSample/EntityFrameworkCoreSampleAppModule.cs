@@ -73,7 +73,7 @@ namespace EntityFrameworkCoreSample
             return await (await CustomersRepository.GetAllAsync(cancellationToken)).ToListAsync(cancellationToken);
         }
 
-        public virtual async Task AddNewCustomer(CancellationToken cancellationToken, Customer customer)
+        public virtual async Task AddNewCustomer(Customer customer, CancellationToken cancellationToken)
         {
             await CustomersRepository.AddAsync(customer, cancellationToken);
         }
@@ -109,11 +109,11 @@ namespace EntityFrameworkCoreSample
 
         public virtual void OnAppStartup()
         {
-            using (IDependencyResolver dependencyResolver = DependencyManager.CreateChildDependencyResolver())
+            DependencyManager.TransactionAction("CreateDatabase", async resolver =>
             {
-                MyAppDbContext dbContext = dependencyResolver.Resolve<MyAppDbContext>();
+                MyAppDbContext dbContext = resolver.Resolve<MyAppDbContext>();
                 dbContext.Database.EnsureCreated();
-            }
+            }).GetAwaiter().GetResult();
         }
 
         public virtual void OnAppEnd()

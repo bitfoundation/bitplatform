@@ -622,43 +622,15 @@
 
         @include lt-xl {
             font-weight: 500;
-            font-size: rem(16px);
-            line-height: rem(24px);
-        }
-
-        @include lt-lg {
-            font-size: rem(14px);
-        }
-    }
-
-    .list-item {
-        color: $Black1;
-        font-size: rem(14px);
-        line-height: rem(24px);
-        margin-bottom: rem(4px);
-
-        &:last-child {
-            margin-bottom: 0;
-        }
-
-        &:hover {
-            color: $PrimaryColor;
-        }
-
-        @include lg {
             line-height: rem(24px);
         }
 
         @include md {
-            font-size: rem(12px);
-            line-height: rem(16px);
-            margin-bottom: rem(12px);
+            font-size: rem(16px);
         }
 
         @include sm {
-            font-size: rem(14px);
-            line-height: rem(24px);
-            margin-bottom: rem(8px);
+            font-size: rem(15px);
         }
     }
 }
