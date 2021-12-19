@@ -1,10 +1,10 @@
 ﻿using System.Globalization;
 
-namespace Bit.Client.Web.BlazorUI.Utils
+namespace Bit.Client.Web.BlazorUI
 {
-    public static class CultureInfoProvider
+    public static class CultureInfoHelper
     {
-        public static CultureInfo GetPersianCaltureByFinglishNames()
+        public static CultureInfo GetPersianCultureByFinglishNames()
         {
             var cultureInfo = CultureInfo.CreateSpecificCulture("fa-IR");
 
