@@ -2,7 +2,7 @@
 
 <ComponentDemo ComponentName="DropDown" ComponentDescription="A dropdown is a list in which the selected item is always visible while other items are visible on demand by clicking a dropdown button. Dropdowns are typically used for forms."
                ComponentParameters="componentParameters">
-    <ComponentExampleBox Title="BitDropDown" ExampleSourceCodeForCopy="@dropDownSampleCode" ExampleId="example1" IsExamplePreviewScrollable=false>
+    <ComponentExampleBox Title="BitDropDown" ExampleSourceCodeForCopy="@dropDownSampleCode" ExampleId="example1">
         <ExamplePreview>
             <div class="example-desc">To create a dropdown you can use a BitDropDown component.</div>
             <div>
@@ -30,7 +30,7 @@
             <pre>
             &ltBitDropDown Label="Basic Uncontrolled"
                          Items="GetDropdownItems()"
-               flex     Placeholder="Select an option"
+                         Placeholder="Select an option"
                          Style="width: 290px; margin: 20px 0 20px 0">
             &lt/BitDropDown>
             &ltBitDropDown Label="Disabled with defaultSelectedKey"
@@ -105,7 +105,7 @@
         </ExampleSourceCode>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Controlled Single-Select" ExampleSourceCodeForCopy="@singleSelectSampleCode" ExampleId="example2" IsExamplePreviewScrollable=false>
+    <ComponentExampleBox Title="Controlled Single-Select" ExampleSourceCodeForCopy="@singleSelectSampleCode" ExampleId="example2">
         <ExamplePreview>
             <div>
                 <BitDropDown Label="Single-select Controlled"
@@ -184,7 +184,7 @@
         </ExampleSourceCode>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Controlled Multi-Select" ExampleSourceCodeForCopy="@multiSelectSampleCode" ExampleId="example3" IsExamplePreviewScrollable=false>
+    <ComponentExampleBox Title="Controlled Multi-Select" ExampleSourceCodeForCopy="@multiSelectSampleCode" ExampleId="example3">
         <ExamplePreview>
             <div>
                 <BitDropDown Label="Multi-select controlled"
@@ -265,7 +265,7 @@
         </ExampleSourceCode>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Customized Dropdown" ExampleSourceCodeForCopy="@customizedSampleCode" ExampleId="example4" IsExamplePreviewScrollable=false>
+    <ComponentExampleBox Title="Customized Dropdown" ExampleSourceCodeForCopy="@customizedSampleCode" ExampleId="example4">
         <ExamplePreview>
             <div>
                 <BitDropDown Label="Custom Controlled"
@@ -291,7 +291,7 @@
                         <i class="bit-icon bit-icon--CirclePlus"></i>
                     </CaretDownFragment>
                     <ItemTemplate>
-                        <div style="display: flex; flex-flow: row nowrap; align-items: center; justify-content: flex-start">
+                        <div>
                             <i class="bit-icon bit-icon--@((context.Data as DropDownItemData).IconName)"
                                aria-hidden="true"
                                title="@((context.Data as DropDownItemData).IconName)"></i>
@@ -339,7 +339,7 @@
                             &lti class="bit-icon bit-icon--CirclePlus">&lt/i>
                     &lt/CaretDownFragment>
                     &ltItemTemplate>
-                            &ltdiv style="display: flex; flex-flow: row nowrap; align-items: center; justify-content: flex-start">
+                            &ltdiv>
                                     &lti class="bit-icon bit-icon--&#64;((context.Data as DropDownItemData).IconName)"
                                         aria-hidden="true"
                                         title="&#64;((context.Data as DropDownItemData).IconName)">

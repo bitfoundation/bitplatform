@@ -17,7 +17,6 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Components
         [Parameter] public string ExampleSourceCodeForCopy { get; set; }
         [Parameter] public RenderFragment ExamplePreview { get; set; }
         [Parameter] public RenderFragment ExampleSourceCode { get; set; }
-        [Parameter] public bool IsExamplePreviewScrollable { get; set; } = true;
 
         private async Task CopyCodeToClipboard()
         {
