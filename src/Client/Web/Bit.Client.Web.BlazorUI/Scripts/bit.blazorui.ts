@@ -39,6 +39,8 @@ class Bit {
             Bit.currentCallout.update(calloutId, overlayId, obj);
             return;
         }
+        var str = "vdc";
+        str.toLowerCase
 
         if (calloutId !== Bit.currentCallout.calloutId && overlayId !== Bit.currentCallout.overlayId) {
             var callout = document.getElementById(Bit.currentCallout.calloutId) ?? new HTMLElement();
@@ -51,6 +53,8 @@ class Bit {
     }
 }
 
-window.addEventListener('scroll', () => {
+window.addEventListener('scroll', (e: any) => {
+    if (e.target.id && e.target.id.toString().toLowerCase().indexOf("dropdown") > -1) return;
+
     Bit.closeCurrentCalloutIfExists("", "", null);
 }, true);
