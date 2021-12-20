@@ -39,8 +39,6 @@ class Bit {
             Bit.currentCallout.update(calloutId, overlayId, obj);
             return;
         }
-        var str = "vdc";
-        str.toLowerCase
 
         if (calloutId !== Bit.currentCallout.calloutId && overlayId !== Bit.currentCallout.overlayId) {
             var callout = document.getElementById(Bit.currentCallout.calloutId) ?? new HTMLElement();
