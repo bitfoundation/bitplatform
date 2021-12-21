@@ -37,7 +37,25 @@
         </ExampleSourceCode>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Shamsi BitDatePicker" ExampleSourceCodeForCopy="@shamsiDatePickerSampleCode" ExampleId="example3">
+    <ComponentExampleBox Title="Jalali BitDatePicker" ExampleSourceCodeForCopy="@jalaliDatePickerSampleCode" ExampleId="example3">
+        <ExamplePreview>
+            <div class="example-desc">In this sample, you can see the usage of CultureInfoHelper class to specify a particular format for the DatePicker. You can also provide your own class for any custom culture of your interest.</div>
+            <div>
+                <BitDatePicker Culture="@(new System.Globalization.CultureInfo("fa-IR"))"
+                               Style="width: 300px">
+                </BitDatePicker>
+            </div>
+        </ExamplePreview>
+        <ExampleSourceCode>
+            <pre>
+            &ltBitDatePicker Culture="&#64;(new System.Globalization.CultureInfo("fa-IR"))"
+                           Style="width: 300px">
+            &lt/BitDatePicker>
+            </pre>
+        </ExampleSourceCode>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Jalali BitDatePicker with Finglish names" ExampleSourceCodeForCopy="@finglishJalaliDatePickerSampleCode" ExampleId="example4">
         <ExamplePreview>
             <div class="example-desc">In this sample, you can see the usage of CultureInfoHelper class to specify a particular format for the DatePicker. You can also provide your own class for any custom culture of your interest.</div>
             <div>
@@ -55,7 +73,7 @@
         </ExampleSourceCode>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Value two-way binding" ExampleSourceCodeForCopy="@datePickerWithTwoWayBindingSampleCode" ExampleId="example4">
+    <ComponentExampleBox Title="Value two-way binding" ExampleSourceCodeForCopy="@datePickerWithTwoWayBindingSampleCode" ExampleId="example5">
         <ExamplePreview>
             <div>
                 <BitDatePicker @bind-Value="@selectedDate" Style="width: 300px"></BitDatePicker>
@@ -74,7 +92,7 @@
         </ExampleSourceCode>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="DatePicker with custom date formatting" ExampleSourceCodeForCopy="@datePickerWithcustomFormattingSampleCode" ExampleId="example5">
+    <ComponentExampleBox Title="DatePicker with custom date formatting" ExampleSourceCodeForCopy="@datePickerWithcustomFormattingSampleCode" ExampleId="example6">
         <ExamplePreview>
             <div>
                 <BitDatePicker FormatDate="d" Style="width: 300px"></BitDatePicker>

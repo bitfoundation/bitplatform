@@ -187,70 +187,13 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.DatePicker
             }
         };
 
-        private readonly string datePickerSampleCode = $"<BitDatePicker Style='width: 300px' FirstDayOfWeek='firstDayOfWeek'></BitDatePicker>{Environment.NewLine}" +
-            $"<BitDatePicker Style='width: 300px'{Environment.NewLine}" +
-            $"Items='@GetFirstDayOfWeekDropdownItems()'{Environment.NewLine}" +
-            $"Label='Select The First Day Of The Week'{Environment.NewLine}" +
-            $"DefaultSelectedKey='0'{Environment.NewLine}" +
-            $"OnSelectItem='@SelectFirstDayOfWeek'>{Environment.NewLine}" +
-            $"@code {{{Environment.NewLine}" +
-            $"private DayOfWeek firstDayOfWeek = DayOfWeek.Sunday;{Environment.NewLine}" +
-            $"private List<BitDropDownItem> GetFirstDayOfWeekDropdownItems(){Environment.NewLine}" +
-            $"{{{Environment.NewLine}" +
-            $"List<BitDropDownItem> items = new(){Environment.NewLine}" +
-            $"items.Add(new BitDropDownItem(){Environment.NewLine}" +
-            $"{{{Environment.NewLine}" +
-            $"ItemType = BitDropDownItemType.Normal,{Environment.NewLine}" +
-            $"Text = 'Sunday',{Environment.NewLine}" +
-            $"Value = '0'{Environment.NewLine}" +
-            $"}});{Environment.NewLine}" +
-            $"items.Add(new BitDropDownItem(){Environment.NewLine}" +
-            $"{{{Environment.NewLine}" +
-            $"ItemType = BitDropDownItemType.Normal,{Environment.NewLine}" +
-            $"Text = 'Monday',{Environment.NewLine}" +
-            $"Value = '1'{Environment.NewLine}" +
-            $"}});{Environment.NewLine}" +
-            $"items.Add(new BitDropDownItem(){Environment.NewLine}" +
-            $"{{{Environment.NewLine}" +
-            $"ItemType = BitDropDownItemType.Normal,{Environment.NewLine}" +
-            $"Text = 'Tuesday',{Environment.NewLine}" +
-            $"Value = '2'{Environment.NewLine}" +
-            $"}});{Environment.NewLine}" +
-            $"items.Add(new BitDropDownItem(){Environment.NewLine}" +
-            $"{{{Environment.NewLine}" +
-            $"ItemType = BitDropDownItemType.Normal,{Environment.NewLine}" +
-            $"Text = 'Wednesday',{Environment.NewLine}" +
-            $"Value = '3'{Environment.NewLine}" +
-            $"}});{Environment.NewLine}" +
-            $"items.Add(new BitDropDownItem(){Environment.NewLine}" +
-            $"{{{Environment.NewLine}" +
-            $"ItemType = BitDropDownItemType.Normal,{Environment.NewLine}" +
-            $"Text = 'Thursday',{Environment.NewLine}" +
-            $"Value = '4'{Environment.NewLine}" +
-            $"}});{Environment.NewLine}" +
-            $"items.Add(new BitDropDownItem(){Environment.NewLine}" +
-            $"{{{Environment.NewLine}" +
-            $"ItemType = BitDropDownItemType.Normal,{Environment.NewLine}" +
-            $"Text = 'Friday',{Environment.NewLine}" +
-            $"Value = '5'{Environment.NewLine}" +
-            $"items.Add(new BitDropDownItem(){Environment.NewLine}" +
-            $"{{{Environment.NewLine}" +
-            $"ItemType = BitDropDownItemType.Normal,{Environment.NewLine}" +
-            $"Text = 'Saturday',{Environment.NewLine}" +
-            $"Value = '6'{Environment.NewLine}" +
-            $"}});{Environment.NewLine}" +
-            $"}}{Environment.NewLine}" +
-            $"private string SelectFirstDayOfWeek(BitDropDownItem item){Environment.NewLine}" +
-            $"{{{Environment.NewLine}" +
-            $"firstDayOfWeek = (DayOfWeek)int.Parse(item.Value);{Environment.NewLine}" +
-            $"}}{Environment.NewLine}" +
-            $"}}";
-
         private readonly string datePickerWithMonthSampleCode = $"<BitDatePicker Style='width: 300px' ShowMonthPickerAsOverlay='true'></BitDatePicker>";
 
         private readonly string datePickerWithWeekSampleCode = $"<BitDatePicker Style='width: 300px' ShowWeekNumbers='true'></BitDatePicker>";
 
-        private readonly string shamsiDatePickerSampleCode = $"<BitDatePicker Style='width: 300px' CalendarType='CalendarType.Persian' FirstDayOfWeek='DayOfWeek.Saturday'></BitDatePicker>";
+        private readonly string jalaliDatePickerSampleCode = $"<BitDatePicker Style='width: 300px' Culture='@(new System.Globalization.CultureInfo('fa-IR'))'></BitDatePicker>";
+
+        private readonly string finglishJalaliDatePickerSampleCode = $"<BitDatePicker Style='width: 300px' Culture='Bit.Client.Web.BlazorUI.CultureInfoHelper.GetPersianCultureByFinglishNames()'></BitDatePicker>";
 
         private readonly string datePickerWithTwoWayBindingSampleCode = $"<BitDatePicker Style='width: 300px' @bind-Value='selectedDate'></BitDatePicker>{Environment.NewLine}" +
            $"<BitLabel >this is selected date: @selectedDate </BitLabel>{Environment.NewLine}" +
@@ -263,61 +206,5 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.DatePicker
            $"@code {{{Environment.NewLine}" +
            $"private string OnDateFormat(BitDate date) => $'{{date.Year}}/{{date.Month}}/{{date.Day}}';{Environment.NewLine}" +
            $"}}";
-
-        private List<BitDropDownItem> GetFirstDayOfWeekDropdownItems()
-        {
-            List<BitDropDownItem> items = new();
-
-            items.Add(new BitDropDownItem()
-            {
-                ItemType = BitDropDownItemType.Normal,
-                Text = "Sunday",
-                Value = "0"
-            });
-
-            items.Add(new BitDropDownItem()
-            {
-                ItemType = BitDropDownItemType.Normal,
-                Text = "Monday",
-                Value = "1"
-            });
-
-            items.Add(new BitDropDownItem()
-            {
-                ItemType = BitDropDownItemType.Normal,
-                Text = "Tuesday",
-                Value = "2"
-            });
-
-            items.Add(new BitDropDownItem()
-            {
-                ItemType = BitDropDownItemType.Normal,
-                Text = "Wednesday",
-                Value = "3"
-            });
-
-            items.Add(new BitDropDownItem()
-            {
-                ItemType = BitDropDownItemType.Normal,
-                Text = "Thursday",
-                Value = "4"
-            });
-
-            items.Add(new BitDropDownItem()
-            {
-                ItemType = BitDropDownItemType.Normal,
-                Text = "Friday",
-                Value = "5"
-            });
-
-            items.Add(new BitDropDownItem()
-            {
-                ItemType = BitDropDownItemType.Normal,
-                Text = "Saturday",
-                Value = "6"
-            });
-
-            return items;
-        }
     }
 }
