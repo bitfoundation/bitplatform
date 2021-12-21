@@ -17,6 +17,7 @@
 
 class Bit {
     static currentCallout: CalloutComponent = new CalloutComponent();
+    static currentDropDownCalloutId: string = "";
 
     static setProperty(element: { [key: string]: any }, property: string, value: any): void {
         element[property] = value;
@@ -51,6 +52,7 @@ class Bit {
     }
 }
 
-window.addEventListener('scroll', () => {
+window.addEventListener('scroll', (e: any) => {
+    if (e.target.id && Bit.currentDropDownCalloutId === e.target.id) return;
     Bit.closeCurrentCalloutIfExists("", "", null);
 }, true);
