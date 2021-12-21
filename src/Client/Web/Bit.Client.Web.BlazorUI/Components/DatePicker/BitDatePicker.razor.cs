@@ -12,6 +12,7 @@ namespace Bit.Client.Web.BlazorUI
         private const int DEFAULT_WEEK_COUNT = 6;
         private const int DEFAULT_DAY_COUNT_PER_WEEK = 7;
         private bool isOpen;
+        private CultureInfo culture = CultureInfo.CurrentUICulture;
 #pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
         private int[,] currentMonthCalendar = new int[DEFAULT_WEEK_COUNT, DEFAULT_DAY_COUNT_PER_WEEK];
 #pragma warning restore CA1814 // Prefer jagged arrays over multidimensional
@@ -69,7 +70,15 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// CultureInfo for the DatePicker
         /// </summary>
-        [Parameter] public CultureInfo Culture { get; set; } = CultureInfo.CurrentUICulture;
+        [Parameter] public CultureInfo Culture
+        {
+            get => culture;
+            set
+            {
+                culture = value;
+                ClassBuilder.Reset();
+            }
+        }
 
         /// <summary>
         /// FormatDate for the DatePicker
