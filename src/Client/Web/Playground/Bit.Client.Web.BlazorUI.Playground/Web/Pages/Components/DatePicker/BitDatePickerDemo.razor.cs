@@ -191,9 +191,9 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.DatePicker
 
         private readonly string datePickerWithWeekSampleCode = $"<BitDatePicker Style='width: 300px' ShowWeekNumbers='true'></BitDatePicker>";
 
-        private readonly string jalaliDatePickerSampleCode = $"<BitDatePicker Style='width: 300px' Culture='@(new System.Globalization.CultureInfo('fa-IR'))'></BitDatePicker>";
+        private readonly string jalaliDatePickerSampleCode = $"<BitDatePicker Style='width: 300px' Culture='@(new System.Globalization.CultureInfo('fa-IR'))' GoToToday='برو به امروز'></BitDatePicker>";
 
-        private readonly string finglishJalaliDatePickerSampleCode = $"<BitDatePicker Style='width: 300px' Culture='Bit.Client.Web.BlazorUI.CultureInfoHelper.GetPersianCultureByFinglishNames()'></BitDatePicker>";
+        private readonly string finglishJalaliDatePickerSampleCode = $"<BitDatePicker Style='width: 300px' Culture='Bit.Client.Web.BlazorUI.CultureInfoHelper.GetPersianCultureByFinglishNames()' GoToToday='Boro be emrouz'></BitDatePicker>";
 
         private readonly string datePickerWithTwoWayBindingSampleCode = $"<BitDatePicker Style='width: 300px' @bind-Value='selectedDate'></BitDatePicker>{Environment.NewLine}" +
            $"<BitLabel >this is selected date: @selectedDate </BitLabel>{Environment.NewLine}" +
