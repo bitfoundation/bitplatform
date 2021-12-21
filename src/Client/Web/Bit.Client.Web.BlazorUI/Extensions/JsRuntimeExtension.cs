@@ -60,18 +60,6 @@ namespace Microsoft.JSInterop
             await jSRuntime.InvokeVoidAsync("BitColorPicker.abortProcedure", abortControllerId);
         }
 
-        public static async Task RegisterOnDocumentClickEvent(this IJSRuntime jsRuntime, BitComponentBase dontetHelper, string callbackName)
-        {
-            await jsRuntime.InvokeAsync<string>("BitDropDown.registerOnDocumentClickEvent", DotNetObjectReference.Create(dontetHelper),
-                dontetHelper.UniqueId.ToString(), callbackName);
-        }
-
-        public static async Task BitDatePickerRegisterOnDocumentClickEvent(this IJSRuntime jsRuntime, BitComponentBase dontetHelper, string callbackName)
-        {
-            await jsRuntime.InvokeAsync<string>("BitDatePicker.registerOnDocumentClickEvent", DotNetObjectReference.Create(dontetHelper),
-                dontetHelper.UniqueId.ToString(), callbackName);
-        }
-
         public static async Task BitLinkScrollToFragmentOnClickEvent(this IJSRuntime jsRuntime, string targetElementId)
         {
             await jsRuntime.InvokeVoidAsync("BitLink.scrollToFragmentOnClickEvent", targetElementId);
