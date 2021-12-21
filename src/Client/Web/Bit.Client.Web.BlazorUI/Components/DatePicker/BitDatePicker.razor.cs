@@ -156,6 +156,9 @@ namespace Bit.Client.Web.BlazorUI
         {
             ClassBuilder.Register(() => IsEnabled is false
                 ? $"{RootElementClass}-disabled-{VisualClassRegistrar()}" : string.Empty);
+
+            ClassBuilder.Register(() => Culture.TextInfo.IsRightToLeft
+                ? $"{RootElementClass}-rtl" : string.Empty);
         }
 
         protected override Task OnInitializedAsync()
