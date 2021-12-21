@@ -92,7 +92,7 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// Upload is done in the form of chunks and this property shows the progress of upload in each chunk.
         /// </summary>
-        public static long ChunkSize => FileSizeHumanizer.OneMegaByte * 10;
+        [Parameter] public long ChunkSize { get; set; } = FileSizeHumanizer.OneMegaByte * 10;
 
         /// <summary>
         /// All selected files.
