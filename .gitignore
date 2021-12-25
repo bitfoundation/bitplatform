@@ -271,3 +271,14 @@ _book
 /src/Client/Web/Playground/Bit.Client.Web.BlazorUI.Playground/Api/BitFileUploaderFiles
 /src/Client/Web/Playground/Bit.Client.Web.BlazorUI.Playground/Api/Properties/PublishProfiles/bitcomponents - Web Deploy.pubxml
 /src/Client/Web/Playground/Bit.Client.Web.BlazorUI.Playground/Api/Properties/ServiceDependencies/bitcomponents - Web Deploy/profile.arm.json
+
+/src/Tooling/Bit.Tooling.Templates/TodoTemplate/TodoTemplate/App/Contracts
+/src/Tooling/Bit.Tooling.Templates/TodoTemplate/TodoTemplate/App/Extensions
+/src/Tooling/Bit.Tooling.Templates/TodoTemplate/TodoTemplate/App/Implementations
+/src/Tooling/Bit.Tooling.Templates/TodoTemplate/TodoTemplate/App/Pages
+/src/Tooling/Bit.Tooling.Templates/TodoTemplate/TodoTemplate/App/wwwroot/styles
+/src/Tooling/Bit.Tooling.Templates/TodoTemplate/TodoTemplate/**/*.css
+/src/Tooling/Bit.Tooling.Templates/TodoTemplate/TodoTemplate/App/compilerconfig.*
+/src/Tooling/Bit.Tooling.Templates/TodoTemplate/TodoTemplate/App/_Imports.razor
+/src/Tooling/Bit.Tooling.Templates/TodoTemplate/TodoTemplate/App/Main.razor
+/src/Tooling/Bit.Tooling.Templates/TodoTemplate/TodoTemplate/App/appsettings.json

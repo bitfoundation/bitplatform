@@ -1,0 +1,38 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<BlazorEnableTimeZoneSupport>false</BlazorEnableTimeZoneSupport>
+		<BlazorWebAssemblyPreserveCollationData>false</BlazorWebAssemblyPreserveCollationData>
+		<InvariantGlobalization>true</InvariantGlobalization>
+		<RootNamespace>TodoTemplate.App</RootNamespace>
+		<AssemblyName>TodoTemplate.App</AssemblyName>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<Content Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Remove="appsettings.json" />
+		<Content Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Remove="Pages\_Host.cshtml" />
+		<Content Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Remove="Pages\_Layout.cshtml" />
+		<Content Remove="compilerconfig.json" />
+		<None Include="compilerconfig.json" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.0" />
+		<PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="6.0.0" PrivateAssets="all" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Bit.Client.Web.BlazorUI" Version="8.5.3" />
+		<PackageReference Include="BuildWebCompiler" Version="1.12.405" />
+		<ProjectReference Include="..\Shared\TodoTemplate.Shared.csproj" />
+		
+		<Using Include="Microsoft.AspNetCore.Components" />
+		<Using Include="TodoTemplate.App.Contracts" />
+		<Using Include="TodoTemplate.App.Implementations" />
+		<Using Include="Microsoft.Extensions.Configuration" />
+		<Using Include="System.Net.Http" />
+		<Using Include="Microsoft.JSInterop" />
+	</ItemGroup>
+
+</Project>
