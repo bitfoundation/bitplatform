@@ -65,6 +65,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="BuildWebCompiler" Version="1.12.405" />
         <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="6.0.1" />
         <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.5.3">
             <PrivateAssets>all</PrivateAssets>
@@ -74,11 +75,6 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\..\Tooling\Bit.Tooling.SourceGenerators\Bit.Tooling.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <Folder Include="wwwroot\scripts\" />
-        <Folder Include="wwwroot\styles\" />
     </ItemGroup>
 
     <ItemGroup>
@@ -93,11 +89,6 @@
     <Target Name="WebCompiler" AfterTargets="AfterBuild">
         <!--minify js-->
         <Exec Command="dotnet webcompiler ./wwwroot/scripts/bit.blazorui.js -c webcompiler-js.json" StandardOutputImportance="high" StandardErrorImportance="high" />
-        <!--compile and minify scss-->
-        <Exec Command="dotnet webcompiler ./Styles/bit.blazorui.scss -c webcompiler-css.json" StandardOutputImportance="high" StandardErrorImportance="high" />
-        <Exec Command="dotnet webcompiler ./Styles/Cupertino/bit.blazorui.cupertino.scss -c webcompiler-css.json" StandardOutputImportance="high" StandardErrorImportance="high" />
-        <Exec Command="dotnet webcompiler ./Styles/Fluent/bit.blazorui.fluent.scss -c webcompiler-css.json" StandardOutputImportance="high" StandardErrorImportance="high" />
-        <Exec Command="dotnet webcompiler ./Styles/Material/bit.blazorui.material.scss -c webcompiler-css.json" StandardOutputImportance="high" StandardErrorImportance="high" />
     </Target>
 
 </Project>
