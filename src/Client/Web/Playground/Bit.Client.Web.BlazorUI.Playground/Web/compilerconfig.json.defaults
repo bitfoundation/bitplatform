@@ -1,0 +1,20 @@
+{
+  "compilers": {
+    "sass": {
+      "autoPrefix": "",
+      "loadPaths": [],
+      "style": 0,
+      "precision": 10,
+      "quiet": true,
+      "quietDeps": true,
+      "sourceMap": false
+    }
+  },
+  "minifiers": {
+    "css": {
+      "enabled": true,
+      "termSemicolons": true,
+      "gzip": false
+    }
+  }
+}

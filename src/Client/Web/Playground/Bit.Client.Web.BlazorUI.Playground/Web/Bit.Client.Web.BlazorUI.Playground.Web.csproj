@@ -9,21 +9,16 @@
 
     <ItemGroup>
         <Content Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Remove="appsettings.json" />
+        <Content Remove="compilerconfig.json" />
+        <None Include="compilerconfig.json" />
         <Content Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Remove="Pages\_Host.cshtml" />
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="LibSassBuilder" Version="2.0.1" />
+        <PackageReference Include="BuildWebCompiler" Version="1.12.405" />
         <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.1" />
         <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="6.0.1" PrivateAssets="all" />
     </ItemGroup>
-
-    <!--<PropertyGroup>
-        <LibSassOutputStyle>compressed</LibSassOutputStyle>
-        <LibSassOutputStyle Condition="'$(Configuration)' == 'Debug'">expanded</LibSassOutputStyle>
-        <LibSassOutputLevel>verbose</LibSassOutputLevel>
-        <LibSassMessageLevel>High</LibSassMessageLevel>
-    </PropertyGroup>-->
 
     <ItemGroup>
         <Content Update="tsconfig.json">
