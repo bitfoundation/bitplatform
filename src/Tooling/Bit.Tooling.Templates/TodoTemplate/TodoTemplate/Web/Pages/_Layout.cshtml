@@ -1,0 +1,45 @@
+﻿@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+@namespace TodoTemplate.Pages
+
+@using TodoTemplate.Shared;
+@using Microsoft.AspNetCore.Components.Web
+
+@{
+    var isBlazorServer = BlazorModeDetector.Current.IsBlazorServer();
+}
+
+@*
+    Unlike most client-side Blazor projects (WASM Blazor), we use .cshtml instead of .html index file.
+    This provides PreRendering(SSR) to the client blazor projects and the ability to use "asp-append-version".
+    Note that these files(_Host.cshtml & _Layout.cshtml) are being used for both "Client" and "Server" blazor.
+*@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="~/" />
+    <link rel="icon" href="~/favicon.ico" type="image/x-icon" asp-append-version="true">
+    <link rel="stylesheet" href="_content/Bit.Client.Web.BlazorUI/styles/bit.blazorui.min.css" asp-append-version="true" />
+    <link href="styles/app.css" rel="stylesheet" asp-append-version="true" />
+    <link href="TodoTemplate.App.styles.css" rel="stylesheet" asp-append-version="true" />
+    <component type="typeof(HeadOutlet)" render-mode="@(isBlazorServer ? RenderMode.ServerPrerendered : RenderMode.Static)" />
+</head>
+<body>
+
+    @RenderBody()
+
+    <script src="_content/Bit.Client.Web.BlazorUI/scripts/bit.blazorui.min.js" asp-append-version="true"></script>
+
+    @if (isBlazorServer)
+    {
+        <script src="_framework/blazor.server.js" asp-append-version="true"></script>
+    }
+    else
+    {
+        <script src="_framework/blazor.webassembly.js" asp-append-version="true"></script>
+    }
+</body>
+</html>
