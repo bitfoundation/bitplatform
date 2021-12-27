@@ -26,28 +26,22 @@
         </ExamplePreview>
         <ExampleSourceCode>
             <pre>
-            Large stars
-            &ltBitRating Size="BitRatingSize.Large" &#64;bind-Rating="RatingLargeValue" AriaLabelFormat="Select {0} of {1} stars" />
-            Small stars, with 0 stars allowed
-            &ltBitRating AllowZeroStars="true" &#64;bind-Rating="RatingSmallValue" />
-            10 small stars
-            &ltBitRating Max="10" OnChange="&#64;(v => RatingChangedText = $"Rating value changed to {v}")" &#64;bind-Rating="RatingBoundValue" />
-            &ltspan>&#64;RatingChangedText&lt/span>
-            Disabled
-            &ltBitRating IsEnabled="false" &#64;bind-Rating="RatingReadOnlyValue" />
-            Half star in readOnly mode
-            &ltBitRating IsReadOnly="true" &#64;bind-Rating="RatingReadOnlyValue" GetAriaLabel="&#64;((value, max) => $"Half star in readOnly mode rating value is {value.ToString()} of {max.ToString()}")" />
-            Custom icons
-            &ltBitRating Icon="BitIcon.HeartFill" UnselectedIcon="BitIcon.Heart" AllowZeroStars="true" &#64;bind-Rating="RatingCustomIconValue" />
+            <code>&ltBitRating Size="BitRatingSize.Large" &#64;bind-Rating="RatingLargeValue" AriaLabelFormat="Select {0} of {1} stars" />
+&ltBitRating AllowZeroStars="true" &#64;bind-Rating="RatingSmallValue" />
+&ltBitRating Max="10" OnChange="&#64;(v => RatingChangedText = $"Rating value changed to {v}")" &#64;bind-Rating="RatingBoundValue" />
+&ltspan>&#64;RatingChangedText&lt/span>
+&ltBitRating IsEnabled="false" &#64;bind-Rating="RatingReadOnlyValue" />
+&ltBitRating IsReadOnly="true" &#64;bind-Rating="RatingReadOnlyValue" GetAriaLabel="&#64;((value, max) => $"Half star in readOnly mode rating value is {value.ToString()} of {max.ToString()}")" />
+&ltBitRating Icon="BitIcon.HeartFill" UnselectedIcon="BitIcon.Heart" AllowZeroStars="true" &#64;bind-Rating="RatingCustomIconValue" /></code>
 
-            &#64;code {
-                    private string RatingChangedText = string.Empty;
-                    private double RatingBoundValue = 2;
-                    private double RatingLargeValue = 3;
-                    private double RatingSmallValue = 0;
-                    private double RatingReadOnlyValue = 2.5;
-                    private double RatingCustomIconValue = 2.5;
-            }
+            <code>&#64;code {
+        private string RatingChangedText = string.Empty;
+        private double RatingBoundValue = 2;
+        private double RatingLargeValue = 3;
+        private double RatingSmallValue = 0;
+        private double RatingReadOnlyValue = 2.5;
+        private double RatingCustomIconValue = 2.5;
+}</code>
             </pre>
         </ExampleSourceCode>
     </ComponentExampleBox>
@@ -68,14 +62,14 @@
         </ExamplePreview>
         <ExampleSourceCode>
             <pre>
-            &ltBitRating Icon="BitIcon.Emoji2" UnselectedIcon="BitIcon.EmojiNeutral" AllowZeroStars="true" &#64;bind-Rating="RatingOutsideValue" />
-            &ltspan>RatingOutsideValue: &#64;RatingOutsideValue&lt/span>
-            &ltBitButton OnClick="() => RatingOutsideValue = 5">Fully satisfied&lt/BitButton>
-            &ltBitButton OnClick="() => RatingOutsideValue = 0">Have no idea&lt/BitButton>
+            <code>&ltBitRating Icon="BitIcon.Emoji2" UnselectedIcon="BitIcon.EmojiNeutral" AllowZeroStars="true" &#64;bind-Rating="RatingOutsideValue" />
+&ltspan>RatingOutsideValue: &#64;RatingOutsideValue&lt/span>
+&ltBitButton OnClick="() => RatingOutsideValue = 5">Fully satisfied&lt/BitButton>
+&ltBitButton OnClick="() => RatingOutsideValue = 0">Have no idea&lt/BitButton></code>
 
-            &#64;code {
-                    private double RatingOutsideValue = 0;     
-            }
+            <code>&#64;code {
+        private double RatingOutsideValue = 0;     
+}</code>
             </pre>
         </ExampleSourceCode>
     </ComponentExampleBox>

@@ -36,20 +36,20 @@
         </ExamplePreview>
         <ExampleSourceCode>
             <pre>
-            &ltBitToggle Label="Enabled And Checked" &#64;bind-IsChecked="IsToggleChecked" IsEnabled="true" OnText="On" OffText="Off" />
-            &ltBitToggle Label="Enabled And Unchecked" &#64;bind-IsChecked="IsToggleUnChecked" IsEnabled="true" OnText="On" OffText="Off" />
-            &ltBitToggle Label="Disabled And Checked" IsChecked="true" IsEnabled="false" OnText="On" OffText="Off" />
-            &ltBitToggle Label="Disabled And Unchecked" IsChecked="false" IsEnabled="false" OnText="On" OffText="Off" />
-            &ltBitToggle Label="With Inline Label" &#64;bind-IsChecked="IsToggleUnChecked" IsEnabled="true" IsInlineLabel="true" OnText="On" OffText="Off" />
-            &ltBitToggle Label="Disabled With Inline Label" IsChecked="false" IsEnabled="false" IsInlineLabel="true" OnText="On" OffText="Off" />
-            &ltBitToggle Label="With Inline Label And Without OnText And OffText" &#64;bind-IsChecked="IsToggleUnChecked" IsEnabled="true" IsInlineLabel="true" />
-            &ltBitToggle Label="Disabled With Inline Label And Without OnText And OffText" IsChecked="false" IsEnabled="false" IsInlineLabel="true" />
-            &ltBitToggle Label="Enabled And Checked (ARIA 1.0 compatible)" &#64;bind-IsChecked="IsToggleChecked" IsEnabled="true" OnText="On" OffText="Off" Role="Checkbox" />
+            <code>&ltBitToggle Label="Enabled And Checked" &#64;bind-IsChecked="IsToggleChecked" IsEnabled="true" OnText="On" OffText="Off" />
+&ltBitToggle Label="Enabled And Unchecked" &#64;bind-IsChecked="IsToggleUnChecked" IsEnabled="true" OnText="On" OffText="Off" />
+&ltBitToggle Label="Disabled And Checked" IsChecked="true" IsEnabled="false" OnText="On" OffText="Off" />
+&ltBitToggle Label="Disabled And Unchecked" IsChecked="false" IsEnabled="false" OnText="On" OffText="Off" />
+&ltBitToggle Label="With Inline Label" &#64;bind-IsChecked="IsToggleUnChecked" IsEnabled="true" IsInlineLabel="true" OnText="On" OffText="Off" />
+&ltBitToggle Label="Disabled With Inline Label" IsChecked="false" IsEnabled="false" IsInlineLabel="true" OnText="On" OffText="Off" />
+&ltBitToggle Label="With Inline Label And Without OnText And OffText" &#64;bind-IsChecked="IsToggleUnChecked" IsEnabled="true" IsInlineLabel="true" />
+&ltBitToggle Label="Disabled With Inline Label And Without OnText And OffText" IsChecked="false" IsEnabled="false" IsInlineLabel="true" />
+&ltBitToggle Label="Enabled And Checked (ARIA 1.0 compatible)" &#64;bind-IsChecked="IsToggleChecked" IsEnabled="true" OnText="On" OffText="Off" Role="Checkbox" /></code>
 
-            &#64;code {
-                    private bool BindedIsToggleUnChecked = false;
-                    private bool IsToggleUnChecked = false;
-            }
+            <code>&#64;code {
+        private bool BindedIsToggleUnChecked = false;
+        private bool IsToggleUnChecked = false;
+}</code>
             </pre>
         </ExampleSourceCode>
     </ComponentExampleBox>
@@ -76,22 +76,22 @@
         </ExamplePreview>
         <ExampleSourceCode>
             <pre>
-            &ltBitToggle &#64;bind-IsChecked="IsToggleUnChecked" IsEnabled="true" OnText="On" OffText="Off">
-                    &ltLabelFragment>
-                            Custom Inline Label
-                    &lt/LabelFragment>
-            &lt/BitToggle>
-            &ltBitToggle &#64;bind-IsChecked="BindedIsToggleUnChecked" IsEnabled="true" OnText="On" OffText="Off" IsInlineLabel="true">
-                    &ltLabelFragment>
-                            Custom Inline Label
-                    &lt/LabelFragment>
-            &lt/BitToggle>
-            &ltBitButton Class="m-t-15" OnClick="() => BindedIsToggleUnChecked = true">Make Toggle Check&lt/BitButton>
+            <code>&ltBitToggle &#64;bind-IsChecked="IsToggleUnChecked" IsEnabled="true" OnText="On" OffText="Off">
+        &ltLabelFragment>
+                Custom Inline Label
+        &lt/LabelFragment>
+&lt/BitToggle>
+&ltBitToggle &#64;bind-IsChecked="BindedIsToggleUnChecked" IsEnabled="true" OnText="On" OffText="Off" IsInlineLabel="true">
+        &ltLabelFragment>
+                Custom Inline Label
+        &lt/LabelFragment>
+&lt/BitToggle>
+&ltBitButton Class="m-t-15" OnClick="() => BindedIsToggleUnChecked = true">Make Toggle Check&lt/BitButton></code>
 
-            &#64;code {
-                    private bool BindedIsToggleUnChecked = false;
-                    private bool IsToggleUnChecked = false;
-            }
+            <code>&#64;code {
+        private bool BindedIsToggleUnChecked = false;
+        private bool IsToggleUnChecked = false;
+}</code>
             </pre>
         </ExampleSourceCode>
     </ComponentExampleBox>

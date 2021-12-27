@@ -38,41 +38,41 @@
         </ExamplePreview>
         <ExampleSourceCode>
             <pre>
-            &ltBitSlider />
-            &ltBitSlider Label="Snapping Slider"
-                       Min="0"
-                       Max="50"
-                       Step="10"
-                       DefaultValue="20" />
-            &ltBitSlider Label="Disabled"
-                       Min="50"
-                       Max="500"
-                       Step="50"
-                       DefaultValue="300"
-                       IsEnabled="false" />
-            &ltBitSlider Label="Controlled"
-                       Max="10"
-                       &#64;bind-Value="sliderHorizontalValue" />
-            &ltBitButton Class="bit-btn-slider" OnClick="() => sliderHorizontalValue = 7">Change Value&lt/BitButton>
-            &ltBitSlider Label="Formatted value"
-                       Max="100"
-                       DefaultValue="31"
-                       ValueFormat="P00" />
-            &ltBitSlider Label="Formatted Value"
-                       Max="1000"
-                       DefaultValue="319"
-                       ValueFormat="P01" />
-            &ltBitSlider Label="Origin From Zero"
-                       Min="-5"
-                       Max="5"
-                       Step="1"
-                       DefaultValue="2"
-                       IsRanged="true"
-                       IsOriginFromZero="true" />    
+            <code>&ltBitSlider />
+&ltBitSlider Label="Snapping Slider"
+           Min="0"
+           Max="50"
+           Step="10"
+           DefaultValue="20" />
+&ltBitSlider Label="Disabled"
+           Min="50"
+           Max="500"
+           Step="50"
+           DefaultValue="300"
+           IsEnabled="false" />
+&ltBitSlider Label="Controlled"
+           Max="10"
+           &#64;bind-Value="sliderHorizontalValue" />
+&ltBitButton Class="bit-btn-slider" OnClick="() => sliderHorizontalValue = 7">Change Value&lt/BitButton>
+&ltBitSlider Label="Formatted value"
+           Max="100"
+           DefaultValue="31"
+           ValueFormat="P00" />
+&ltBitSlider Label="Formatted Value"
+           Max="1000"
+           DefaultValue="319"
+           ValueFormat="P01" />
+&ltBitSlider Label="Origin From Zero"
+           Min="-5"
+           Max="5"
+           Step="1"
+           DefaultValue="2"
+           IsRanged="true"
+           IsOriginFromZero="true" /></code> 
 
-            &#64;code {
-            private double? sliderHorizontalValue = 2;
-            }
+            <code>&#64;code {
+        private double? sliderHorizontalValue = 2;
+}</code>
             </pre>
         </ExampleSourceCode>
     </ComponentExampleBox>
@@ -106,36 +106,36 @@
         </ExamplePreview>
         <ExampleSourceCode>
             <pre>
-            &ltdiv class="flex-container">
-            &ltBitSlider Label="Basic"
-                       Min="1"
-                       Max="5"
-                       Step="1"
-                       DefaultValue="2"
-                       IsVertical="true" />
-            &ltBitSlider Label="Disabled"
-                       Min="50"
-                       Max="500"
-                       Step="50"
-                       DefaultValue="300"
-                       IsVertical="true" />
-            &ltBitSlider Label="Formatted value"
-                       Max="100" ValueFormat="P00"
-                       IsVertical="true" />
-            &ltBitSlider Label="Origin From Zero"
-                       Min="-5"
-                       Max="15"
-                       Step="1"
-                       DefaultValue="5"
-                       IsVertical="true"
-                       IsOriginFromZero="true" />
-            &lt/div>
+            <code>&ltdiv class="flex-container">
+&ltBitSlider Label="Basic"
+           Min="1"
+           Max="5"
+           Step="1"
+           DefaultValue="2"
+           IsVertical="true" />
+&ltBitSlider Label="Disabled"
+           Min="50"
+           Max="500"
+           Step="50"
+           DefaultValue="300"
+           IsVertical="true" />
+&ltBitSlider Label="Formatted value"
+           Max="100" ValueFormat="P00"
+           IsVertical="true" />
+&ltBitSlider Label="Origin From Zero"
+           Min="-5"
+           Max="15"
+           Step="1"
+           DefaultValue="5"
+           IsVertical="true"
+           IsOriginFromZero="true" />
+&lt/div>
 
-            &ltstyle>
-                    .flex-container {
-                            display: flex;
-                    }
-            &lt/style>
+&ltstyle>
+        .flex-container {
+                display: flex;
+        }
+&lt/style></code>
             </pre>
         </ExampleSourceCode>
     </ComponentExampleBox>
@@ -179,46 +179,46 @@
         </ExamplePreview>
         <ExampleSourceCode>
             <pre>
-            &ltBitSlider Label="Range slider"
-                       Min="0"
-                       Max="10"
-                       DefaultUpperValue="8"
-                       DefaultLowerValue="2"
-                       IsRanged="true" />
-            &ltBitSlider Label="Disabled"
-                       Min="50"
-                       Max="500"
-                       Step="50"
-                       DefaultUpperValue="300"
-                       IsRanged="true"
-                       IsEnabled="false" />
-            &ltBitSlider Label="Controlled example"
-                       Max="10"
-                       &#64;bind-LowerValue="sliderRangedLowerValue"
-                       &#64;bind-UpperValue="sliderRangedUpperValue"
-                       IsRanged="true" />
-            &ltBitButton Class="bit-btn-slider" OnClick="ChangeBitSliderRangedValues">Change Value&lt/BitButton>
-            &ltBitSlider Label="Formatted value"
-                       Max="100"
-                       IsRanged="true"
-                       ValueFormat="P00" />
-            &ltBitSlider Label="Origin from zero"
-                       Min="-5"
-                       Max="5"
-                       Step="1"
-                       DefaultUpperValue="2"
-                       IsRanged="true"
-                       IsOriginFromZero="true" />
+            <code>&ltBitSlider Label="Range slider"
+           Min="0"
+           Max="10"
+           DefaultUpperValue="8"
+           DefaultLowerValue="2"
+           IsRanged="true" />
+&ltBitSlider Label="Disabled"
+           Min="50"
+           Max="500"
+           Step="50"
+           DefaultUpperValue="300"
+           IsRanged="true"
+           IsEnabled="false" />
+&ltBitSlider Label="Controlled example"
+           Max="10"
+           &#64;bind-LowerValue="sliderRangedLowerValue"
+           &#64;bind-UpperValue="sliderRangedUpperValue"
+           IsRanged="true" />
+&ltBitButton Class="bit-btn-slider" OnClick="ChangeBitSliderRangedValues">Change Value&lt/BitButton>
+&ltBitSlider Label="Formatted value"
+           Max="100"
+           IsRanged="true"
+           ValueFormat="P00" />
+&ltBitSlider Label="Origin from zero"
+           Min="-5"
+           Max="5"
+           Step="1"
+           DefaultUpperValue="2"
+           IsRanged="true"
+           IsOriginFromZero="true" /></code>
 
-            &#64;code {
-                    private double? sliderRangedLowerValue = 0;
-                    private double? sliderRangedUpperValue = 0;
-                    private void ChangeBitSliderRangedValues()
-                    {
-                            sliderRangedLowerValue = 3;
-                            sliderRangedUpperValue = 7;
-                    }
-            }
+            <code>&#64;code {
+        private double? sliderRangedLowerValue = 0;
+        private double? sliderRangedUpperValue = 0;
+        private void ChangeBitSliderRangedValues()
+        {
+                sliderRangedLowerValue = 3;
+                sliderRangedUpperValue = 7;
+        }
+}</code>
             </pre>
         </ExampleSourceCode>
     </ComponentExampleBox>
@@ -236,14 +236,14 @@
         </ExamplePreview>
         <ExampleSourceCode>
             <pre>
-            &ltBitSlider Label="Vertical Range Slider"
-                       Min="1"
-                       Max="5"
-                       Step="1"
-                       DefaultUpperValue="2"
-                       DefaultLowerValue="1"
-                       IsRanged="true"
-                       IsVertical="true" />
+            <code>&ltBitSlider Label="Vertical Range Slider"
+           Min="1"
+           Max="5"
+           Step="1"
+           DefaultUpperValue="2"
+           DefaultLowerValue="1"
+           IsRanged="true"
+           IsVertical="true" /></code>
             </pre>
         </ExampleSourceCode>
     </ComponentExampleBox>
@@ -256,16 +256,16 @@
         </ExamplePreview>
         <ExampleSourceCode>
             <pre>
-            &ltBitSlider Max="10"
-                       IsRanged="true"
-                       SliderBoxHtmlAttributes="&#64;BitSliderRangedSliderBoxHtmlAttributes" />
+            <code>&ltBitSlider Max="10"
+           IsRanged="true"
+           SliderBoxHtmlAttributes="&#64;BitSliderRangedSliderBoxHtmlAttributes" /></code>
 
-            &#64;code {
-                    private Dictionary&ltstring, object> BitSliderRangedSliderBoxHtmlAttributes = new()
-                    { 
-                            { "custom-attribute", "demo" }
-                    };
-            }
+            <code>&#64;code {
+        private Dictionary&ltstring, object> BitSliderRangedSliderBoxHtmlAttributes = new()
+        { 
+                { "custom-attribute", "demo" }
+        };
+}</code>
             </pre>
         </ExampleSourceCode>
     </ComponentExampleBox>

@@ -18,33 +18,33 @@
         </ExamplePreview>
         <ExampleSourceCode>
             <pre>
-            &ltBitProgressIndicator Label="Example title" Description="&#64;description" PercentComplete="&#64;CompletedPercent" BarHeight="50">&lt/BitProgressIndicator>
-            &ltBitButton OnClick="&#64;StartProgress">Start Progress&lt/BitButton>
+            <code>&ltBitProgressIndicator Label="Example title" Description="&#64;description" PercentComplete="&#64;CompletedPercent" BarHeight="50">&lt/BitProgressIndicator>
+&ltBitButton OnClick="&#64;StartProgress">Start Progress&lt/BitButton></code>
 
-            &#64;code {
-                    private string description = "Push button to start!";
-                    public int CompletedPercent { get; set; }
-                    private async Task StartProgress()
-                    {
-                            CompletedPercent = 0;
-                            while &#40;CompletedPercent &lt= 100)
-                            {
-                                    if &#40;CompletedPercent == 100)
-                                    {
-                                            description = $"Completed !";
-                                            break;
-                                    }
-                                    else
-                                    {
-                                            CompletedPercent++;
-                                            description = $"{CompletedPercent}%";
-                                    }
+            <code>&#64;code {
+        private string description = "Push button to start!";
+        public int CompletedPercent { get; set; }
+        private async Task StartProgress()
+        {
+                CompletedPercent = 0;
+                while &#40;CompletedPercent &lt= 100)
+                {
+                        if &#40;CompletedPercent == 100)
+                        {
+                                description = $"Completed !";
+                                break;
+                        }
+                        else
+                        {
+                                CompletedPercent++;
+                                description = $"{CompletedPercent}%";
+                        }
 
-                                    StateHasChanged();
-                                    await Task.Delay(100);
-                            }
-                    }
-            }
+                        StateHasChanged();
+                        await Task.Delay(100);
+                }
+        }
+}</code>
             </pre>
         </ExampleSourceCode>
     </ComponentExampleBox>
@@ -55,7 +55,7 @@
         </ExamplePreview>
         <ExampleSourceCode>
             <pre>
-            &ltBitProgressIndicator Label="Example title" Description="Example description" BarHeight="20">&lt/BitProgressIndicator>
+            <code>&ltBitProgressIndicator Label="Example title" Description="Example description" BarHeight="20">&lt/BitProgressIndicator></code>
             </pre>
         </ExampleSourceCode>
     </ComponentExampleBox>

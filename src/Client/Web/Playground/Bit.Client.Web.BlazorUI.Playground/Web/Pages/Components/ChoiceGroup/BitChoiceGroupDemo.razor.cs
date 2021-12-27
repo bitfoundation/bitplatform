@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 
-namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Inputs
+namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ChoiceGroup
 {
     public partial class BitChoiceGroupDemo
     {

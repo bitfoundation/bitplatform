@@ -15,15 +15,15 @@
         </ExamplePreview>
         <ExampleSourceCode>
             <pre>
-            &ltBitCheckbox &#64;bind-IsChecked="IsCheckBoxChecked">Basic Checkbox&lt/BitCheckbox>
-            &ltBitCheckbox IsChecked="true">Checked Checkbox&lt/BitCheckbox>
-            &ltBitCheckbox IsEnabled="false">Disable Checkbox&lt/BitCheckbox>
-            &ltBitCheckbox IsEnabled="false" IsChecked="true">Disable Checked Checkbox&lt/BitCheckbox>
-            &ltBitCheckbox CheckmarkIconName="BitIcon.Heart">Custom checkmark Checkbox&lt/BitCheckbox>
+            <code>&ltBitCheckbox &#64;bind-IsChecked="IsCheckBoxChecked">Basic Checkbox&lt/BitCheckbox>
+&ltBitCheckbox IsChecked="true">Checked Checkbox&lt/BitCheckbox>
+&ltBitCheckbox IsEnabled="false">Disable Checkbox&lt/BitCheckbox>
+&ltBitCheckbox IsEnabled="false" IsChecked="true">Disable Checked Checkbox&lt/BitCheckbox>
+&ltBitCheckbox CheckmarkIconName="BitIcon.Heart">Custom checkmark Checkbox&lt/BitCheckbox></code>
 
-            &#64;code {
-                    private bool IsCheckBoxChecked = false;
-            }
+            <code>&#64;code {
+        private bool IsCheckBoxChecked = false;
+}</code>
             </pre>
         </ExampleSourceCode>
     </ComponentExampleBox>
@@ -31,18 +31,18 @@
     <ComponentExampleBox Title="Reversed" ExampleSourceCodeForCopy="@reversedSampleCode" ExampleId="example2">
         <ExamplePreview>
             <div class="chk-box">
-                <BitCheckbox BoxSide="@BitCheckBoxSide.End">Reversed -- Basic Checkbox</BitCheckbox>
-                <BitCheckbox BoxSide="@BitCheckBoxSide.End">IsChecked="true">Reversed -- Checked Checkbox</BitCheckbox>
-                <BitCheckbox BoxSide="@BitCheckBoxSide.End">IsEnabled="false">Reversed -- Disable Checkbox</BitCheckbox>
-                <BitCheckbox BoxSide="@BitCheckBoxSide.End">IsEnabled="false" IsChecked="true">Reversed -- Disable Checked Checkbox</BitCheckbox>
+                <BitCheckbox BoxSide="@BitCheckBoxSide.End">Reversed - Basic Checkbox</BitCheckbox>
+                <BitCheckbox BoxSide="@BitCheckBoxSide.End">IsChecked="true">Reversed - Checked Checkbox</BitCheckbox>
+                <BitCheckbox BoxSide="@BitCheckBoxSide.End">IsEnabled="false">Reversed - Disable Checkbox</BitCheckbox>
+                <BitCheckbox BoxSide="@BitCheckBoxSide.End">IsEnabled="false" IsChecked="true">Reversed - Disable Checked Checkbox</BitCheckbox>
             </div>
         </ExamplePreview>
         <ExampleSourceCode>
             <pre>
-            &ltBitCheckbox BoxSide="&#64;BitCheckBoxSide.End">Reversed -- Basic Checkbox&lt/BitCheckbox>
-            &ltBitCheckbox BoxSide="&#64;BitCheckBoxSide.End">IsChecked="true">Reversed -- Checked Checkbox&lt/BitCheckbox>
-            &ltBitCheckbox BoxSide="&#64;BitCheckBoxSide.End">IsEnabled="false">Reversed -- Disable Checkbox&lt/BitCheckbox>
-            &ltBitCheckbox BoxSide="&#64;BitCheckBoxSide.End">IsEnabled="false" IsChecked="true">Reversed -- Disable Checked Checkbox&lt/BitCheckbox>
+            <code>&ltBitCheckbox BoxSide="&#64;BitCheckBoxSide.End">Reversed - Basic Checkbox&lt/BitCheckbox>
+&ltBitCheckbox BoxSide="&#64;BitCheckBoxSide.End">IsChecked="true">Reversed - Checked Checkbox&lt/BitCheckbox>
+&ltBitCheckbox BoxSide="&#64;BitCheckBoxSide.End">IsEnabled="false">Reversed - Disable Checkbox&lt/BitCheckbox>
+&ltBitCheckbox BoxSide="&#64;BitCheckBoxSide.End">IsEnabled="false" IsChecked="true">Reversed - Disable Checked Checkbox&lt/BitCheckbox></code>
             </pre>
         </ExampleSourceCode>
     </ComponentExampleBox>
@@ -59,16 +59,16 @@
         </ExamplePreview>
         <ExampleSourceCode>
             <pre>
-            &ltBitCheckbox &#64;bind-IsIndeterminate="IsCheckBoxIndeterminate" &#64;bind-IsChecked="IsCheckBoxChecked">Indeterminated checkbox&lt/BitCheckbox>
-            &ltBitCheckbox IsIndeterminate="true">Indeterminate checkbox&lt/BitCheckbox>
-            &ltBitCheckbox IsIndeterminate="true" IsEnabled="false">Disabled indeterminated checkbox&lt/BitCheckbox>
-            &ltBitCheckbox &#64;bind-IsIndeterminate="IsCheckBoxIndeterminateInCode" &#64;bind-IsChecked="IsCheckBoxChecked">Controlled indeterminated checkbox&lt/BitCheckbox>
-            &ltBitButton OnClick="() => IsCheckBoxIndeterminateInCode = true">Make Checkbox Indeterminate&lt/BitButton>
+            <code>&ltBitCheckbox &#64;bind-IsIndeterminate="IsCheckBoxIndeterminate" &#64;bind-IsChecked="IsCheckBoxChecked">Indeterminated checkbox&lt/BitCheckbox>
+&ltBitCheckbox IsIndeterminate="true">Indeterminate checkbox&lt/BitCheckbox>
+&ltBitCheckbox IsIndeterminate="true" IsEnabled="false">Disabled indeterminated checkbox&lt/BitCheckbox>
+&ltBitCheckbox &#64;bind-IsIndeterminate="IsCheckBoxIndeterminateInCode" &#64;bind-IsChecked="IsCheckBoxChecked">Controlled indeterminated checkbox&lt/BitCheckbox>
+&ltBitButton OnClick="() => IsCheckBoxIndeterminateInCode = true">Make Checkbox Indeterminate&lt/BitButton></code>
 
-            &#64;code {
-                    private bool IsCheckBoxIndeterminate = true;
-                    private bool IsCheckBoxIndeterminateInCode = true;
-            }
+            <code>&#64;code {
+        private bool IsCheckBoxIndeterminate = true;
+        private bool IsCheckBoxIndeterminateInCode = true;
+}</code>
             </pre>
         </ExampleSourceCode>
     </ComponentExampleBox>
@@ -86,12 +86,12 @@
         </ExamplePreview>
         <ExampleSourceCode>
             <pre>
-            &ltBitCheckbox>
-                    Custom-rendered label with a link go to
-                    &lta href="https://github.com/bitfoundation/bitframework">
-                            Bit Foundation repository page
-                    &lt/a>
-            &lt/BitCheckbox>
+            <code>&ltBitCheckbox>
+        Custom-rendered label with a link go to
+        &lta href="https://github.com/bitfoundation/bitframework">
+                Bit Foundation repository page
+        &lt/a>
+&lt/BitCheckbox></code>
             </pre>
         </ExampleSourceCode>
     </ComponentExampleBox>

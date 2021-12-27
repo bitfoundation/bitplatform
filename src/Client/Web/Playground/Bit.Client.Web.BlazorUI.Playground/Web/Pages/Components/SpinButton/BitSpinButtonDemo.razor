@@ -26,29 +26,29 @@
         </ExamplePreview>
         <ExampleSourceCode>
             <pre>
-            &ltBitSpinButton &#64;bind-Value="BasicSpinButtonValue"
-                           Min="0"
-                           Max="100"
-                           Step="1"
-                           Label="Basic SpinButton">
-            &lt/BitSpinButton>
-            &ltBitSpinButton Min="-10"
-                           Max="10"
-                           Step="0.1"
-                           Label="Decimal SpinButton">
-            &lt/BitSpinButton>
-            &ltBitSpinButton &#64;bind-Value="BasicSpinButtonDisableValue"
-                           Min="0"
-                           Max="100"
-                           Step="1"
-                           Label="Disabled SpinButton"
-                           IsEnabled="false">
-            &lt/BitSpinButton>
+            <code>&ltBitSpinButton &#64;bind-Value="BasicSpinButtonValue"
+               Min="0"
+               Max="100"
+               Step="1"
+               Label="Basic SpinButton">
+&lt/BitSpinButton>
+&ltBitSpinButton Min="-10"
+               Max="10"
+               Step="0.1"
+               Label="Decimal SpinButton">
+&lt/BitSpinButton>
+&ltBitSpinButton &#64;bind-Value="BasicSpinButtonDisableValue"
+               Min="0"
+               Max="100"
+               Step="1"
+               Label="Disabled SpinButton"
+               IsEnabled="false">
+&lt/BitSpinButton></code>
 
-            &#64;code {
-                    private double BasicSpinButtonValue = 5;
-                    private double BasicSpinButtonDisableValue = 20;
-            }
+            <code>&#64;code {
+        private double BasicSpinButtonValue = 5;
+        private double BasicSpinButtonDisableValue = 20;
+}</code>
             </pre>
         </ExampleSourceCode>
     </ComponentExampleBox>
@@ -72,19 +72,19 @@
         </ExamplePreview>
         <ExampleSourceCode>
             <pre>
-             &ltBitSpinButton IconName="BitIcon.IncreaseIndentLegacy"
-                           Min="0"
-                           Max="100"
-                           Step="1"
-                           Label="With Icon">
-             &lt/BitSpinButton>
-             &ltBitSpinButton IconName="BitIcon.IncreaseIndentLegacy"
-                           Min="0"
-                           Max="100"
-                           Step="1"
-                           Label="Disabled With Icon"
-                           IsEnabled="false">
-             &lt/BitSpinButton>
+            <code>&ltBitSpinButton IconName="BitIcon.IncreaseIndentLegacy"
+              Min="0"
+              Max="100"
+              Step="1"
+              Label="With Icon">
+&lt/BitSpinButton>
+&ltBitSpinButton IconName="BitIcon.IncreaseIndentLegacy"
+              Min="0"
+              Max="100"
+              Step="1"
+              Label="Disabled With Icon"
+              IsEnabled="false">
+&lt/BitSpinButton></code>
             </pre>
         </ExampleSourceCode>
     </ComponentExampleBox>
@@ -101,12 +101,19 @@
         </ExamplePreview>
         <ExampleSourceCode>
             <pre>
-            &ltBitSpinButton Suffix="Inch"
-                           Min="0"
-                           Max="100"
-                           Step="1"
-                           Label="With suffix">
-            &lt/BitSpinButton>
+            <code>&ltBitSpinButton IconName="BitIcon.IncreaseIndentLegacy"
+              Min="0"
+              Max="100"
+              Step="1"
+              Label="With Icon">
+&lt/BitSpinButton>
+&ltBitSpinButton IconName="BitIcon.IncreaseIndentLegacy"
+              Min="0"
+              Max="100"
+              Step="1"
+              Label="Disabled With Icon"
+              IsEnabled="false">
+&lt/BitSpinButton></code>
             </pre>
         </ExampleSourceCode>
     </ComponentExampleBox>
@@ -125,14 +132,14 @@
         </ExamplePreview>
         <ExampleSourceCode>
             <pre>
-            &ltBitSpinButton &#64;bind-Value="SpinButtonWithLabelAboveValue"
-                           Suffix="cm"
-                           Min="0"
-                           Max="100"
-                           Step="1"
-                           Label="With Labal Above"
-                           LabelPosition="@BitSpinButtonLabelPosition.Top">
-            &lt/BitSpinButton>
+            <code>&ltBitSpinButton &#64;bind-Value="SpinButtonWithLabelAboveValue"
+               Suffix="cm"
+               Min="0"
+               Max="100"
+               Step="1"
+               Label="With Labal Above"
+               LabelPosition="&ltBitSpinButtonLabelPosition.Top">
+&lt/BitSpinButton></code>
             </pre>
         </ExampleSourceCode>
     </ComponentExampleBox>
@@ -148,20 +155,20 @@
         </ExamplePreview>
         <ExampleSourceCode>
             <pre>
-            &ltBitSpinButton Class="custom-spb"
-                           Min="0"
-                           Max="100"
-                           Step="1"
-                           Label="Custom Styled">
-            &lt/BitSpinButton>
+            <code>&ltBitSpinButton Class="custom-spb"
+               Min="0"
+               Max="100"
+               Step="1"
+               Label="Custom Styled">
+&lt/BitSpinButton>
 
-            &ltstyle>
-                    .custom-spb {
-                            .bit-spb-wrapper input {
-                                    background-color : #D7D7D7;
-                            }
-                    }
-            &lt/style>;
+&ltstyle>
+        .custom-spb {
+                .bit-spb-wrapper input {
+                        background-color : #D7D7D7;
+                }
+        }
+&lt/style></code>
             </pre>
         </ExampleSourceCode>
     </ComponentExampleBox>
@@ -188,28 +195,28 @@
         </ExamplePreview>
         <ExampleSourceCode>
             <pre>
-            &ltBitSpinButton Label="Controlled SpinButton with bind-value"
-                           &#64;bind-Value="BitSpinButtonBindValue"
-                           Min="0"
-                           Max="100"
-                           Step="1">
-            &lt/BitSpinButton>
-            &ltBitSpinButton Label="Controlled SpinButton with Value"
-                           Value="BitSpinButtonValueChanged"
-                           ValueChanged="HandleControlledSpinButtonValueChange"
-                           Min="0"
-                           Max="100"
-                           Step="1">
-            &lt/BitSpinButton>
+            <code>&ltBitSpinButton Label="Controlled SpinButton with bind-value"
+               &#64;bind-Value="BitSpinButtonBindValue"
+               Min="0"
+               Max="100"
+               Step="1">
+&lt/BitSpinButton>
+&ltBitSpinButton Label="Controlled SpinButton with Value"
+               Value="BitSpinButtonValueChanged"
+               ValueChanged="HandleControlledSpinButtonValueChange"
+               Min="0"
+               Max="100"
+               Step="1">
+&lt/BitSpinButton></code>
 
-            &#64;code {
-                    private double BitSpinButtonBindValue = 8;
-                    private double BitSpinButtonValueChanged = 16;        
-                    private void HandleControlledSpinButtonValueChange(double value)
-                    {
-                            BitSpinButtonValueChanged = value;
-                    }              
-            }
+            <code>&#64;code {
+        private double BitSpinButtonBindValue = 8;
+        private double BitSpinButtonValueChanged = 16;        
+        private void HandleControlledSpinButtonValueChange(double value)
+        {
+                BitSpinButtonValueChanged = value;
+        }              
+}</code>
             </pre>
         </ExampleSourceCode>
     </ComponentExampleBox>
