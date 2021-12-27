@@ -1,38 +1,3 @@
 ﻿@page "/"
 
-<PageTitle>Contacts</PageTitle>
-<HeadContent>
-    <meta name="description" content="This app shows your contacts!">
-</HeadContent>
-
-<div class="top-bar">
-    Contacts viewer
-    <BitIconButton IconName="BitIcon.Refresh" OnClick="@Reload" />
-</div>
-
-@if (Contacts == null)
-{
-    <div class="loading-container">
-        <BitSpinner Size="BitSpinnerSize.Large">Reload</BitSpinner>
-    </div>
-}
-else
-{
-    <BitBasicList Items="Contacts" Virtualize="true" Style="height: calc(100% - 60px);">
-        <RowTemplate Context="contact">
-            <div class="contact-row">
-                <div class="contact-photo-container">
-                    @if (contact.Image is null)
-                    {
-                        @contact.DisplayName?.Substring(0, 1)
-                    }
-                    else
-                    {
-                        <img src="@contact.Image" class="contact-photo" />
-                    }
-                </div>
-                <div class="contact-name">@contact.DisplayName</div>
-            </div>
-        </RowTemplate>
-    </BitBasicList>
-}
+<PageTitle>Index</PageTitle>
