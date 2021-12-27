@@ -41,7 +41,7 @@
     align-items: flex-start;
     width: 100%;
     height: rem(184px);
-    border: rem(1px) solid #DDDDDD;
+    border-bottom: rem(1px) solid #DDDDDD;
     padding: rem(25px) rem(40px) rem(16px) rem(104px);
     box-sizing: border-box;
     background-color: $Gray5;
@@ -155,7 +155,7 @@
         }
 
         @include lg {
-            height: rem(56px);
+            height: rem(60px);
             padding-left: rem(80px);
             font-size: rem(18px);
             line-height: rem(31px);

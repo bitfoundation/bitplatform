@@ -1,17 +1,21 @@
 ﻿<section class="main-container">
     <div class="left-box">
-        <div class="selected-component">
-            <div class="selected-component-icon @($"{SelectedComponent.CssClassName}-icon")"></div>
-            <div class="selected-component-name">@SelectedComponent.Name</div>
-            <div class="selected-component-desc">@SelectedComponent.Description</div>
-            <a class="demo-btn" href="@SelectedComponent.Url">More about @SelectedComponent.Name</a>
-        </div>
         <div class="component-list">
             @foreach (var com in Components)
             {
-                <div class="component-row @($"{com.CssClassName}-row")" @onclick="@(() => SelectComponent(com))">
-                    @com.Name
-                </div>
+                @if(com.Name == SelectedComponent.Name) {
+                    <div class="selected-component">
+                        <div class="selected-component-icon @($"{SelectedComponent.CssClassName}-icon")"></div>
+                        <div class="selected-component-name">@SelectedComponent.Name</div>
+                        <div class="selected-component-desc">@SelectedComponent.Description</div>
+                        <a class="demo-btn" href="@SelectedComponent.Url">More about @SelectedComponent.Name</a>
+                    </div>
+                } else
+                {
+                    <div class="component-row @($"{com.CssClassName}-row")" @onclick="@(() => SelectComponent(com))">
+                        @com.Name
+                    </div>
+                }
             }
         </div>
     </div>
@@ -214,7 +218,7 @@
 </section>
 
 <section class="card-container">
-    @foreach (var com in AllComponents)
+    @foreach (var com in Components)
     {
         <a class="card @($"{com.CssClassName}-card")" href="@com.Url">
             @com.Name

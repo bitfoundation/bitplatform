@@ -12,7 +12,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Components
         [Inject] public IJSRuntime JSRuntime { get; set; }
         [Inject] public IConfiguration Configuration { get; set; }
 
-        private List<PopularComponent> AllComponents = new List<PopularComponent>
+        private List<PopularComponent> Components = new List<PopularComponent>
         {
             new PopularComponent()
             {
@@ -50,8 +50,6 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Components
                 CssClassName = "nav"
             },
         };
-
-        private List<PopularComponent> Components;
         private PopularComponent SelectedComponent;
         private string ActiveTab = "demo";
         private BitColorPicker ColorPicker;
@@ -71,8 +69,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Components
 
         protected override void OnInitialized()
         {
-            SelectedComponent = AllComponents[0];
-            FilterComponents();
+            SelectedComponent = Components[0];
             base.OnInitialized();
         }
 
@@ -81,15 +78,9 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Components
             await JSRuntime.InvokeVoidAsync("highlightSnippet");
         }
 
-        private void FilterComponents()
-        {
-            Components = AllComponents.FindAll(com => com.Name != SelectedComponent.Name);
-        }
-
         private void SelectComponent(PopularComponent com)
         {
             SelectedComponent = com;
-            FilterComponents();
             StateHasChanged();
         }
 
