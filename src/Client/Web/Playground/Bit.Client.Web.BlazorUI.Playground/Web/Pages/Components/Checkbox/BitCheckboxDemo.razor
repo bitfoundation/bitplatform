@@ -14,14 +14,14 @@
             </div>
         </ExamplePreview>
         <ExampleSourceCode>
-            <pre>
-            <code>&ltBitCheckbox &#64;bind-IsChecked="IsCheckBoxChecked">Basic Checkbox&lt/BitCheckbox>
+            <pre class="code">
+            <code class="html">&ltBitCheckbox &#64;bind-IsChecked="IsCheckBoxChecked">Basic Checkbox&lt/BitCheckbox>
 &ltBitCheckbox IsChecked="true">Checked Checkbox&lt/BitCheckbox>
 &ltBitCheckbox IsEnabled="false">Disable Checkbox&lt/BitCheckbox>
 &ltBitCheckbox IsEnabled="false" IsChecked="true">Disable Checked Checkbox&lt/BitCheckbox>
 &ltBitCheckbox CheckmarkIconName="BitIcon.Heart">Custom checkmark Checkbox&lt/BitCheckbox></code>
 
-            <code>&#64;code {
+            <code class="csharp">&#64;code {
         private bool IsCheckBoxChecked = false;
 }</code>
             </pre>
@@ -38,8 +38,8 @@
             </div>
         </ExamplePreview>
         <ExampleSourceCode>
-            <pre>
-            <code>&ltBitCheckbox BoxSide="&#64;BitCheckBoxSide.End">Reversed - Basic Checkbox&lt/BitCheckbox>
+            <pre class="code">
+            <code class="html">&ltBitCheckbox BoxSide="&#64;BitCheckBoxSide.End">Reversed - Basic Checkbox&lt/BitCheckbox>
 &ltBitCheckbox BoxSide="&#64;BitCheckBoxSide.End">IsChecked="true">Reversed - Checked Checkbox&lt/BitCheckbox>
 &ltBitCheckbox BoxSide="&#64;BitCheckBoxSide.End">IsEnabled="false">Reversed - Disable Checkbox&lt/BitCheckbox>
 &ltBitCheckbox BoxSide="&#64;BitCheckBoxSide.End">IsEnabled="false" IsChecked="true">Reversed - Disable Checked Checkbox&lt/BitCheckbox></code>
@@ -58,14 +58,14 @@
             </div>
         </ExamplePreview>
         <ExampleSourceCode>
-            <pre>
-            <code>&ltBitCheckbox &#64;bind-IsIndeterminate="IsCheckBoxIndeterminate" &#64;bind-IsChecked="IsCheckBoxChecked">Indeterminated checkbox&lt/BitCheckbox>
+            <pre class="code">
+            <code class="html">&ltBitCheckbox &#64;bind-IsIndeterminate="IsCheckBoxIndeterminate" &#64;bind-IsChecked="IsCheckBoxChecked">Indeterminated checkbox&lt/BitCheckbox>
 &ltBitCheckbox IsIndeterminate="true">Indeterminate checkbox&lt/BitCheckbox>
 &ltBitCheckbox IsIndeterminate="true" IsEnabled="false">Disabled indeterminated checkbox&lt/BitCheckbox>
 &ltBitCheckbox &#64;bind-IsIndeterminate="IsCheckBoxIndeterminateInCode" &#64;bind-IsChecked="IsCheckBoxChecked">Controlled indeterminated checkbox&lt/BitCheckbox>
 &ltBitButton OnClick="() => IsCheckBoxIndeterminateInCode = true">Make Checkbox Indeterminate&lt/BitButton></code>
 
-            <code>&#64;code {
+            <code class="csharp">&#64;code {
         private bool IsCheckBoxIndeterminate = true;
         private bool IsCheckBoxIndeterminateInCode = true;
 }</code>
@@ -85,8 +85,8 @@
             </div>
         </ExamplePreview>
         <ExampleSourceCode>
-            <pre>
-            <code>&ltBitCheckbox>
+            <pre class="code">
+            <code class="html">&ltBitCheckbox>
         Custom-rendered label with a link go to
         &lta href="https://github.com/bitfoundation/bitframework">
                 Bit Foundation repository page

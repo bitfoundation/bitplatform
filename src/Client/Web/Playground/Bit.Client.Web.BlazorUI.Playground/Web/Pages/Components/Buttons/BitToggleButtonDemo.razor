@@ -28,8 +28,8 @@
             </div>
         </ExamplePreview>
         <ExampleSourceCode>
-            <pre>
-            <code>&ltBitToggleButton &#64;bind-IsChecked="TogglePrimaryButtonChecked"
+            <pre class="code">
+            <code class="html">&ltBitToggleButton &#64;bind-IsChecked="TogglePrimaryButtonChecked"
                  Class="tgl-btn"
                  Label="&#64;(TogglePrimaryButtonChecked ? "Primary Mute":"Primary Unmute")"
                  IconName=&#64;(TogglePrimaryButtonChecked ? BitIcon.MicOff : BitIcon.Microphone)
@@ -48,7 +48,7 @@
                  IconName=&#64;(ToggleDisabledButtonChecked ? BitIcon.MicOff : BitIcon.Microphone)>
 &lt/BitToggleButton></code>
 
-            <code>&#64;code {
+            <code class="csharp">&#64;code {
         private bool TogglePrimaryButtonChecked;
         private bool ToggleStandardButtonChecked;
         private bool ToggleDisabledButtonChecked;
@@ -69,14 +69,14 @@
             </div>
         </ExamplePreview>
         <ExampleSourceCode>
-            <pre>
-            <code>&ltBitToggleButton &#64;bind-IsChecked="ToggleButtonForOnChange"
+            <pre class="code">
+            <code class="html">&ltBitToggleButton &#64;bind-IsChecked="ToggleButtonForOnChange"
                  Label="&#64;(ToggleButtonForOnChange ? "Mute" : "Unmute")"
                  IconName=&#64;(ToggleButtonForOnChange ? BitIcon.MicOff : BitIcon.Microphone)
                  OnChange="ToggleButtonChanged">
 &lt/BitToggleButton></code>
 
-            <code>&#64;code {
+            <code class="csharp">&#64;code {
         private bool ToggleButtonForOnChange = true;
         private bool OnToggleButtonChanged = true;
 }</code>
@@ -98,14 +98,14 @@
             </div>
         </ExamplePreview>
         <ExampleSourceCode>
-            <pre>
-            <code>&ltlabel class="checkbox-status" for="BitToggleButtonTwoWayValue">Checked Toggle Button&lt/label>
+            <pre class="code">
+            <code class="html">&ltlabel class="checkbox-status" for="BitToggleButtonTwoWayValue">Checked Toggle Button&lt/label>
 &ltBitToggleButton &#64;bind-IsChecked="ToggleButtonTwoWayValue"
                  Label="&#64;(ToggleButtonTwoWayValue ? "Mute" : "Unmute")"
                  IconName=&#64;(ToggleButtonTwoWayValue ? BitIcon.MicOff : BitIcon.Microphone)>
 &lt/BitToggleButton></code>
 
-            <code>&#64;code {
+            <code class="csharp">&#64;code {
         private bool ToggleButtonTwoWayValue = true;
 }</code>
             </pre>
@@ -130,8 +130,8 @@
             </div>
         </ExamplePreview>
         <ExampleSourceCode>
-            <pre>
-            <code>&ltBitToggleButton &#64;bind-IsChecked="ToggleButtonChecked"
+            <pre class="code">
+            <code class="html">&ltBitToggleButton &#64;bind-IsChecked="ToggleButtonChecked"
                  Label="&#64;(ToggleButtonChecked ? "Aria Description Mute" : "Aria Description Unmute")"
                  IconName="&#64;(ToggleButtonChecked ? BitIcon.MicOff : BitIcon.Microphone)"
                  AriaDescription="Detailed description used for screen reader">
@@ -143,7 +143,7 @@
                  AriaHidden="true">
 &lt/BitToggleButton></code>
 
-            <code>&#64;code {
+            <code class="csharp">&#64;code {
         private bool ToggleButtonChecked = false;
 }</code>
             </pre>

@@ -35,8 +35,8 @@
             </div>
         </ExamplePreview>
         <ExampleSourceCode>
-            <pre>
-            <code>&ltBitToggle Label="Enabled And Checked" &#64;bind-IsChecked="IsToggleChecked" IsEnabled="true" OnText="On" OffText="Off" />
+            <pre class="code">
+            <code class="html">&ltBitToggle Label="Enabled And Checked" &#64;bind-IsChecked="IsToggleChecked" IsEnabled="true" OnText="On" OffText="Off" />
 &ltBitToggle Label="Enabled And Unchecked" &#64;bind-IsChecked="IsToggleUnChecked" IsEnabled="true" OnText="On" OffText="Off" />
 &ltBitToggle Label="Disabled And Checked" IsChecked="true" IsEnabled="false" OnText="On" OffText="Off" />
 &ltBitToggle Label="Disabled And Unchecked" IsChecked="false" IsEnabled="false" OnText="On" OffText="Off" />
@@ -46,7 +46,7 @@
 &ltBitToggle Label="Disabled With Inline Label And Without OnText And OffText" IsChecked="false" IsEnabled="false" IsInlineLabel="true" />
 &ltBitToggle Label="Enabled And Checked (ARIA 1.0 compatible)" &#64;bind-IsChecked="IsToggleChecked" IsEnabled="true" OnText="On" OffText="Off" Role="Checkbox" /></code>
 
-            <code>&#64;code {
+            <code class="csharp">&#64;code {
         private bool BindedIsToggleUnChecked = false;
         private bool IsToggleUnChecked = false;
 }</code>
@@ -75,8 +75,8 @@
             </div>
         </ExamplePreview>
         <ExampleSourceCode>
-            <pre>
-            <code>&ltBitToggle &#64;bind-IsChecked="IsToggleUnChecked" IsEnabled="true" OnText="On" OffText="Off">
+            <pre class="code">
+            <code class="html">&ltBitToggle &#64;bind-IsChecked="IsToggleUnChecked" IsEnabled="true" OnText="On" OffText="Off">
         &ltLabelFragment>
                 Custom Inline Label
         &lt/LabelFragment>
@@ -88,7 +88,7 @@
 &lt/BitToggle>
 &ltBitButton Class="m-t-15" OnClick="() => BindedIsToggleUnChecked = true">Make Toggle Check&lt/BitButton></code>
 
-            <code>&#64;code {
+            <code class="csharp">&#64;code {
         private bool BindedIsToggleUnChecked = false;
         private bool IsToggleUnChecked = false;
 }</code>

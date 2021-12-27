@@ -16,8 +16,8 @@
             </div>
         </ExamplePreview>
         <ExampleSourceCode>
-            <pre>
-            <code>&ltBitLabel>Selected Key is : &#64;MySelectedKey&lt/BitLabel>
+            <pre class="code">
+            <code class="html">&ltBitLabel>Selected Key is : &#64;MySelectedKey&lt/BitLabel>
 &ltBitTextField &#64;bind-Value="MySelectedKey" Placeholder="Select one of A, B or C">&lt/BitTextField>
 &ltBitChoiceGroup Name="Group1" Label="Pick one" IsRequired="true" &#64;bind-SelectedKey="MySelectedKey">
         &ltBitChoiceOption Key="A" Text="Option A" Value="1">&lt/BitChoiceOption>
@@ -25,7 +25,7 @@
         &ltBitChoiceOption Key="C" Text="Disabled option C" Value="3" IsEnabled="false">&lt/BitChoiceOption>
 &lt/BitChoiceGroup></code>
 
-            <code>&#64;code {
+            <code class="csharp">&#64;code {
         private string MySelectedKey = "B";
 }</code>
             </pre>
@@ -44,8 +44,8 @@
             </div>
         </ExamplePreview>
         <ExampleSourceCode>
-            <pre>
-            <code>&ltBitChoiceGroup Name="Group2" IsEnabled="false" Label="Pick one" DefaultSelectedKey="C">
+            <pre class="code">
+            <code class="html">&ltBitChoiceGroup Name="Group2" IsEnabled="false" Label="Pick one" DefaultSelectedKey="C">
         &ltBitChoiceOption Key="A" Text="Option A" Value="1">&lt/BitChoiceOption>
         &ltBitChoiceOption Key="B" Text="Option2 B" Value="2">&lt/BitChoiceOption>
         &ltBitChoiceOption Key="C" Text="Disabled option C" Value="3" IsEnabled="false">&lt/BitChoiceOption>
@@ -65,8 +65,8 @@
             </div>
         </ExamplePreview>
         <ExampleSourceCode>
-            <pre>
-            <code>&ltBitChoiceGroup Name="Group1" Label="Pick one image" DefaultSelectedKey="pie">
+            <pre class="code">
+            <code class="html">&ltBitChoiceGroup Name="Group1" Label="Pick one image" DefaultSelectedKey="pie">
         &ltBitChoiceOption Key="bar" 
                            Text="Clustered bar chart" 
                            Value="1" 
@@ -107,8 +107,8 @@
             </div>
         </ExamplePreview>
         <ExampleSourceCode>
-            <pre>
-            <code>&ltBitChoiceGroup Name="Group1" Label="Pick one icon">
+            <pre class="code">
+            <code class="html">&ltBitChoiceGroup Name="Group1" Label="Pick one icon">
         &ltBitChoiceOption Key="day" Text="Day" Value="1" IconName="BitIcon.CalendarDay">&lt/BitChoiceOption>
         &ltBitChoiceOption Key="week" Text="Week" Value="2" IconName="BitIcon.CalendarWeek">&lt/BitChoiceOption>
         &ltBitChoiceOption Key="month" Text="Month" Value="3" IconName="BitIcon.Calendar" IsEnabled="false">&lt/BitChoiceOption>

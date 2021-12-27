@@ -20,8 +20,8 @@
             </BitPivot>
         </ExamplePreview>
         <ExampleSourceCode>
-            <pre>
-            <code>&ltBitPivot>
+            <pre class="code">
+            <code class="html">&ltBitPivot>
         &ltBitPivotItem HeaderText="File">
                 Pivot #1
         &lt/BitPivotItem>
@@ -75,8 +75,8 @@
             </BitPivot>
         </ExamplePreview>
         <ExampleSourceCode>
-            <pre>
-            <code>&ltBitPivot OverflowBehavior="&#64;BitPivotOverflowBehavior.Scroll">
+            <pre class="code">
+            <code class="html">&ltBitPivot OverflowBehavior="&#64;BitPivotOverflowBehavior.Scroll">
         &ltBitPivotItem HeaderText="Files"
                       IconName="BitIcon.Info">
                 Pivot #1
@@ -130,8 +130,8 @@
             </BitPivot>
         </ExamplePreview>
         <ExampleSourceCode>
-            <pre>
-            <code>&ltBitPivot LinkSize="&#64;BitPivotLinkSize.Large">
+            <pre class="code">
+            <code class="html">&ltBitPivot LinkSize="&#64;BitPivotLinkSize.Large">
         &ltBitPivotItem HeaderText="File">
                 Pivot #1
         &lt/BitPivotItem>
@@ -164,8 +164,8 @@
             </BitPivot>
         </ExamplePreview>
         <ExampleSourceCode>
-            <pre>
-            <code>&ltBitPivot LinkFormat="&#64;BitPivotLinkFormat.Tabs">
+            <pre class="code">
+            <code class="html">&ltBitPivot LinkFormat="&#64;BitPivotLinkFormat.Tabs">
         &ltBitPivotItem HeaderText="Foo">
                 Pivot #1
         &lt/BitPivotItem>
@@ -202,8 +202,8 @@
             </BitPivot>
         </ExamplePreview>
         <ExampleSourceCode>
-            <pre>
-            <code>&ltBitPivot LinkFormat="&#64;BitPivotLinkFormat.Tabs"
+            <pre class="code">
+            <code class="html">&ltBitPivot LinkFormat="&#64;BitPivotLinkFormat.Tabs"
           LinkSize="&#64;BitPivotLinkSize.Large">
         &ltBitPivotItem HeaderText="Foo">
                 Pivot #1
@@ -242,8 +242,8 @@
             <BitButton OnClick="(() => OverridePivotSelectedKey = (((int.Parse(OverridePivotSelectedKey) + 1 ) % 3)).ToString())">Next</BitButton>
         </ExamplePreview>
         <ExampleSourceCode>
-            <pre>
-            <code>&ltBitPivot LinkFormat="&#64;BitPivotLinkFormat.Tabs"
+            <pre class="code">
+            <code class="html">&ltBitPivot LinkFormat="&#64;BitPivotLinkFormat.Tabs"
           LinkSize="&#64;BitPivotLinkSize.Large"
           SelectedKey="&#64;OverridePivotSelectedKey"
           SelectedKeyChanged="PivotSelectedKeyChanged">
@@ -260,7 +260,7 @@
 &ltBitButton OnClick="(() => OverridePivotSelectedKey = (((int.Parse(OverridePivotSelectedKey) + 3 - 1) % 3)).ToString())">Prev&lt/BitButton>
 &ltBitButton OnClick="(() => OverridePivotSelectedKey = (((int.Parse(OverridePivotSelectedKey) + 1 ) % 3)).ToString())">Next&lt/BitButton></code>
 
-            <code>&#64;code {
+            <code class="csharp">&#64;code {
         private string OverridePivotSelectedKey = "1";
         private void PivotSelectedKeyChanged(string key)
         {
@@ -303,8 +303,8 @@
             </div>
         </ExamplePreview>
         <ExampleSourceCode>
-            <pre>
-            <code>&ltBitPivot LinkFormat="&#64;BitPivotLinkFormat.Tabs"
+            <pre class="code">
+            <code class="html">&ltBitPivot LinkFormat="&#64;BitPivotLinkFormat.Tabs"
           DefaultSelectedKey="Foo"
           LinkSize="&#64;BitPivotLinkSize.Large"
           HeadersOnly="true"
@@ -331,7 +331,7 @@ else if &#40;SelectedKey == "Biz")
         &ltdiv>Hello I am Biz&lt/div>
 }</code>   
 
-            <code>&#64;code {
+            <code class="csharp">&#64;code {
         private string SelectedKey = "Foo";
 }</code>
             </pre>
@@ -368,8 +368,8 @@ else if &#40;SelectedKey == "Biz")
             <BitButton OnClick="TogglePivotItemVisobility">Hide/Show Biz</BitButton>
         </ExamplePreview>
         <ExampleSourceCode>
-            <pre>
-            <code>&ltBitPivot LinkFormat="&#64;BitPivotLinkFormat.Tabs"
+            <pre class="code">
+            <code class="html">&ltBitPivot LinkFormat="&#64;BitPivotLinkFormat.Tabs"
               LinkSize="&#64;BitPivotLinkSize.Large"
               OnLinkClick="&#64;(item => SelectedPivotItem = item)">
         &ltBitPivotItem HeaderText="Foo">
@@ -393,7 +393,7 @@ else if &#40;SelectedKey == "Biz")
 &lt/BitPivot>
 &ltBitButton OnClick="TogglePivotItemVisobility">Hide/Show Biz&lt/BitButton></code>
 
-            <code>&#64;code {
+            <code class="csharp">&#64;code {
         private BitPivotItem SelectedPivotItem;
         private BitComponentVisibility PivotItemVisibility;
         private void TogglePivotItemVisobility()

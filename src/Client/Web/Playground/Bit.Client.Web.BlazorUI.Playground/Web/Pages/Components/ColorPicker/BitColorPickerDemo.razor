@@ -17,13 +17,13 @@
             </div>
         </ExamplePreview>
         <ExampleSourceCode>
-            <pre>
-            <code>&ltBitColorPicker ShowPreview="&#64;IsToggleChecked" &#64;ref="ColorPicker" &#64;bind-Color="&#64;Color" ShowAlphaSlider="false">Default ColorPicker&lt/BitColorPicker>
+            <pre class="code">
+            <code class="html">&ltBitColorPicker ShowPreview="&#64;IsToggleChecked" &#64;ref="ColorPicker" &#64;bind-Color="&#64;Color" ShowAlphaSlider="false">Default ColorPicker&lt/BitColorPicker>
 &ltBitToggle Label="Show Preview Box" &#64;bind-IsChecked="&#64;IsToggleChecked" IsEnabled="true" />
 &ltBitTextField Label="Hex Code" Value="&#64;Color">&lt/BitTextField>
 &ltBitTextField Label="RGB" Value="&#64;(ColorPicker?.Rgb ?? "rgb(255,255,255)")">&lt/BitTextField></code>
 
-            <code>&#64;code {
+            <code class="csharp">&#64;code {
         private BitColorPicker ColorPicker;
         private string Color = "#FFFFFF";
         private bool IsToggleChecked = false;
@@ -43,12 +43,12 @@
             </div>
         </ExamplePreview>
         <ExampleSourceCode>
-            <pre>
-            <code>&ltBitColorPicker ShowPreview="true" &#64;bind-Alpha="&#64;Alpha" &#64;bind-Color="&#64;ColorRgb">Default ColorPicker&lt/BitColorPicker>
+            <pre class="code">
+            <code class="html">&ltBitColorPicker ShowPreview="true" &#64;bind-Alpha="&#64;Alpha" &#64;bind-Color="&#64;ColorRgb">Default ColorPicker&lt/BitColorPicker>
 &ltBitTextField Label="RGB" Value="&#64;ColorRgb">&lt/BitTextField>
 &ltBitTextField Label="Alpha" Value="&#64;(Alpha.ToString())">&lt/BitTextField></code>
 
-            <code>&#64;code {
+            <code class="csharp">&#64;code {
         private BitColorPicker ColorPicker;
         private string ColorRgb = "rgb(255,255,255)";
         private double Alpha = 1;

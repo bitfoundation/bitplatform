@@ -18,8 +18,8 @@
             </BitBasicList>
         </ExamplePreview>
         <ExampleSourceCode>
-            <pre>
-            <code>&ltBitBasicList Items="People[0]" Virtualize="true" Style="border: 1px #a19f9d solid; border-radius: 3px; ">
+            <pre class="code">
+            <code class="html">&ltBitBasicList Items="People[0]" Virtualize="true" Style="border: 1px #a19f9d solid; border-radius: 3px; ">
         &ltRowTemplate Context="person">
                 &ltdiv style="border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;">
                         &ltimg src="https://picsum.photos/100/100?random=&#64;(person.Id)">
@@ -32,7 +32,7 @@
         &lt/RowTemplate>
 &lt/BitBasicList></code>
 
-            <code>&#64;code {
+            <code class="csharp">&#64;code {
         private readonly List&ltPerson>[] People = new List&ltPerson>[2];
         protected override void OnInitialized()
         {
@@ -84,8 +84,8 @@
             </BitBasicList>
         </ExamplePreview>
         <ExampleSourceCode>
-            <pre>
-            <code>&ltBitBasicList Items="People[1]" Virtualize="false" Style="border: 1px #a19f9d solid; border-radius: 3px; ">
+            <pre class="code">
+            <code class="html">&ltBitBasicList Items="People[1]" Virtualize="false" Style="border: 1px #a19f9d solid; border-radius: 3px; ">
         &ltRowTemplate Context="person">
                 &ltdiv style="border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;">
                         &ltp>Id: &ltstrong>&#64;person.Id&lt/strong>&lt/p>
@@ -95,7 +95,7 @@
         &lt/RowTemplate>
 &lt/BitBasicList></code>
 
-            <code>&#64;code {
+            <code class="csharp">&#64;code {
         private readonly List&ltPerson>[] People = new List&ltPerson>[2];
         protected override void OnInitialized()
         {
@@ -147,8 +147,8 @@
             </BitBasicList>
         </ExamplePreview>
         <ExampleSourceCode>
-            <pre>
-            <code>&ltBitBasicList Items="People[0]" Virtualize="true" Role="list" Style="border: 1px #a19f9d solid; border-radius: 3px;">
+            <pre class="code">
+            <code class="html">&ltBitBasicList Items="People[0]" Virtualize="true" Role="list" Style="border: 1px #a19f9d solid; border-radius: 3px;">
         &ltRowTemplate Context="person">
                 &ltdiv class="lst3-list-item">
                         &ltspan>Id: &ltstrong>&#64;person.Id&lt/strong>&lt/span>
@@ -170,7 +170,7 @@
         }
 &lt/style>;</code>
 
-            <code>&#64;code {
+            <code class="csharp">&#64;code {
         private readonly List&ltPerson>[] People = new List&ltPerson>[2];
         protected override void OnInitialized()
         {
@@ -222,8 +222,8 @@
             </BitBasicList>
         </ExamplePreview>
         <ExampleSourceCode>
-            <pre>
-            <code>&ltBitBasicList Items="People[0]" Virtualize="true" OverscanCount="5" ItemSize="300" Style="border: 1px #a19f9d solid; border-radius: 3px;">
+            <pre class="code">
+            <code class="html">&ltBitBasicList Items="People[0]" Virtualize="true" OverscanCount="5" ItemSize="300" Style="border: 1px #a19f9d solid; border-radius: 3px;">
         &ltRowTemplate Context="person">
                 &ltdiv style="border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;">
                         &ltspan>Id: &ltstrong>&#64;person.Id&lt/strong>&lt/span>
@@ -233,7 +233,7 @@
         &lt/RowTemplate>
 &lt/BitBasicList></code>
 
-            <code>&#64;code {
+            <code class="csharp">&#64;code {
         private readonly List&ltPerson>[] People = new List&ltPerson>[2];
         protected override void OnInitialized()
         {

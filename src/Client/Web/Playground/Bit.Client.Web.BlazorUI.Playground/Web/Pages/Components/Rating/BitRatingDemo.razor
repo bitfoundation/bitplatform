@@ -25,8 +25,8 @@
             </div>
         </ExamplePreview>
         <ExampleSourceCode>
-            <pre>
-            <code>&ltBitRating Size="BitRatingSize.Large" &#64;bind-Rating="RatingLargeValue" AriaLabelFormat="Select {0} of {1} stars" />
+            <pre class="code">
+            <code class="html">&ltBitRating Size="BitRatingSize.Large" &#64;bind-Rating="RatingLargeValue" AriaLabelFormat="Select {0} of {1} stars" />
 &ltBitRating AllowZeroStars="true" &#64;bind-Rating="RatingSmallValue" />
 &ltBitRating Max="10" OnChange="&#64;(v => RatingChangedText = $"Rating value changed to {v}")" &#64;bind-Rating="RatingBoundValue" />
 &ltspan>&#64;RatingChangedText&lt/span>
@@ -34,7 +34,7 @@
 &ltBitRating IsReadOnly="true" &#64;bind-Rating="RatingReadOnlyValue" GetAriaLabel="&#64;((value, max) => $"Half star in readOnly mode rating value is {value.ToString()} of {max.ToString()}")" />
 &ltBitRating Icon="BitIcon.HeartFill" UnselectedIcon="BitIcon.Heart" AllowZeroStars="true" &#64;bind-Rating="RatingCustomIconValue" /></code>
 
-            <code>&#64;code {
+            <code class="csharp">&#64;code {
         private string RatingChangedText = string.Empty;
         private double RatingBoundValue = 2;
         private double RatingLargeValue = 3;
@@ -61,13 +61,13 @@
             </div>
         </ExamplePreview>
         <ExampleSourceCode>
-            <pre>
-            <code>&ltBitRating Icon="BitIcon.Emoji2" UnselectedIcon="BitIcon.EmojiNeutral" AllowZeroStars="true" &#64;bind-Rating="RatingOutsideValue" />
+            <pre class="code">
+            <code class="html">&ltBitRating Icon="BitIcon.Emoji2" UnselectedIcon="BitIcon.EmojiNeutral" AllowZeroStars="true" &#64;bind-Rating="RatingOutsideValue" />
 &ltspan>RatingOutsideValue: &#64;RatingOutsideValue&lt/span>
 &ltBitButton OnClick="() => RatingOutsideValue = 5">Fully satisfied&lt/BitButton>
 &ltBitButton OnClick="() => RatingOutsideValue = 0">Have no idea&lt/BitButton></code>
 
-            <code>&#64;code {
+            <code class="csharp">&#64;code {
         private double RatingOutsideValue = 0;     
 }</code>
             </pre>

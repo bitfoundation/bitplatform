@@ -41,8 +41,8 @@
             </div>
         </ExamplePreview>
         <ExampleSourceCode>
-            <pre>
-            <code>&ltBitTextField Label="Standard">&lt/BitTextField>
+            <pre class="code">
+            <code class="html">&ltBitTextField Label="Standard">&lt/BitTextField>
 &ltBitTextField Label="Standard With Two-Way Binding" &#64;bind-Value="&#64;TextValue">&lt/BitTextField>
 &ltBitLabel>You are typing : &#64;TextValue &lt/BitLabel>
 &ltBitTextField Label="Read-only" IsReadonly="true" DefaultValue="I am read-only">&lt/BitTextField>
@@ -55,7 +55,7 @@
 &ltBitTextField Label="Required" IsRequired="true">&lt/BitTextField>
 &ltBitTextField AriaLabel="Required Without Visible Label" IsRequired="true" IsAriaRequired="true">&lt/BitTextField></code>
 
-            <code>&#64;code {
+            <code class="csharp">&#64;code {
         private string TextValue;
         private BitTextFieldType InputType = BitTextFieldType.Password;
 }</code>
@@ -79,8 +79,8 @@
             </div>
         </ExamplePreview>
         <ExampleSourceCode>
-            <pre>
-            <code>&ltBitTextField Label="Standard" IsMultiline="true" Rows="3">&lt/BitTextField>
+            <pre class="code">
+            <code class="html">&ltBitTextField Label="Standard" IsMultiline="true" Rows="3">&lt/BitTextField>
 &ltBitTextField Label="Limited multi-line text field - 10 chars" IsMultiline="true" MaxLength="10">&lt/BitTextField>
 &ltBitTextField Label="Disabled" IsMultiline="true" IsEnabled="false" Value="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat">&lt/BitTextField>
 &ltBitTextField Label="Non-resizable" IsMultiline="true" IsResizable="false">&lt/BitTextField></code>
@@ -107,8 +107,8 @@
             </div>
         </ExamplePreview>
         <ExampleSourceCode>
-            <pre>
-            <code>&ltBitTextField Label="Standard:" IsUnderlined="true">&lt/BitTextField>
+            <pre class="code">
+            <code class="html">&ltBitTextField Label="Standard:" IsUnderlined="true">&lt/BitTextField>
 &ltBitTextField Label="Disabled:" IsUnderlined="true" IsEnabled="false" DefaultValue="I am disabled">&lt/BitTextField>
 &ltBitTextField Label="Required:" IsUnderlined="true" IsRequired="true">&lt/BitTextField>
 &ltBitTextField Label="Borderless single-line TextField" HasBorder="false">&lt/BitTextField>
@@ -133,8 +133,8 @@
             </div>
         </ExamplePreview>
         <ExampleSourceCode>
-            <pre>
-            <code>&ltBitTextField Label="With Prefix" Prefix="https://">&lt/BitTextField>
+            <pre class="code">
+            <code class="html">&ltBitTextField Label="With Prefix" Prefix="https://">&lt/BitTextField>
 &ltBitTextField Label="With Suffix" Suffix=".com">&lt/BitTextField>
 &ltBitTextField Label="Disabled With Prefix" Prefix="https://" IsEnabled="false">&lt/BitTextField>
 &ltBitTextField Label="With Prefix And Suffix" Prefix="https://" Suffix=".com">&lt/BitTextField></code>
@@ -161,8 +161,8 @@
             </div>
         </ExamplePreview>
         <ExampleSourceCode>
-            <pre>
-            <code>&ltBitTextField Description="Click the (i) icon!">
+            <pre class="code">
+            <code class="html">&ltBitTextField Description="Click the (i) icon!">
         &ltLabelFragment>
                 &ltBitLabel Style="display:inline-block;padding-bottom:10px;">With PrefixCustom Label Rendering&lt/BitLabel>
                 &ltBitIconButton IconName="BitIcon.Info">&lt/BitIconButton>

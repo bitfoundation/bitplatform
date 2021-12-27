@@ -37,8 +37,8 @@
                        IsOriginFromZero="true" />
         </ExamplePreview>
         <ExampleSourceCode>
-            <pre>
-            <code>&ltBitSlider />
+            <pre class="code">
+            <code class="html">&ltBitSlider />
 &ltBitSlider Label="Snapping Slider"
            Min="0"
            Max="50"
@@ -70,7 +70,7 @@
            IsRanged="true"
            IsOriginFromZero="true" /></code> 
 
-            <code>&#64;code {
+            <code class="csharp">&#64;code {
         private double? sliderHorizontalValue = 2;
 }</code>
             </pre>
@@ -105,8 +105,8 @@
             </div>
         </ExamplePreview>
         <ExampleSourceCode>
-            <pre>
-            <code>&ltdiv class="flex-container">
+            <pre class="code">
+            <code class="html">&ltdiv class="flex-container">
 &ltBitSlider Label="Basic"
            Min="1"
            Max="5"
@@ -178,8 +178,8 @@
             </div>
         </ExamplePreview>
         <ExampleSourceCode>
-            <pre>
-            <code>&ltBitSlider Label="Range slider"
+            <pre class="code">
+            <code class="html">&ltBitSlider Label="Range slider"
            Min="0"
            Max="10"
            DefaultUpperValue="8"
@@ -210,7 +210,7 @@
            IsRanged="true"
            IsOriginFromZero="true" /></code>
 
-            <code>&#64;code {
+            <code class="csharp">&#64;code {
         private double? sliderRangedLowerValue = 0;
         private double? sliderRangedUpperValue = 0;
         private void ChangeBitSliderRangedValues()
@@ -235,8 +235,8 @@
                        IsVertical="true" />
         </ExamplePreview>
         <ExampleSourceCode>
-            <pre>
-            <code>&ltBitSlider Label="Vertical Range Slider"
+            <pre class="code">
+            <code class="html">&ltBitSlider Label="Vertical Range Slider"
            Min="1"
            Max="5"
            Step="1"
@@ -255,12 +255,12 @@
                        SliderBoxHtmlAttributes="@BitSliderRangedSliderBoxHtmlAttributes" />
         </ExamplePreview>
         <ExampleSourceCode>
-            <pre>
-            <code>&ltBitSlider Max="10"
+            <pre class="code">
+            <code class="html">&ltBitSlider Max="10"
            IsRanged="true"
            SliderBoxHtmlAttributes="&#64;BitSliderRangedSliderBoxHtmlAttributes" /></code>
 
-            <code>&#64;code {
+            <code class="csharp">&#64;code {
         private Dictionary&ltstring, object> BitSliderRangedSliderBoxHtmlAttributes = new()
         { 
                 { "custom-attribute", "demo" }
