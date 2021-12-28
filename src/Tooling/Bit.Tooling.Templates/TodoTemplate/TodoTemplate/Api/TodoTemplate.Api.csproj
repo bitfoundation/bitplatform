@@ -8,6 +8,11 @@
 		<Content Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="..\Web\Pages\_Host.cshtml" Link="Pages\_Host.cshtml" />
 		<Content Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="..\Web\Pages\_Layout.cshtml" Link="Pages\_Layout.cshtml" />
         <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="6.0.0" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.1">
+          <PrivateAssets>all</PrivateAssets>
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3" />
     </ItemGroup>
 
     <ItemGroup>

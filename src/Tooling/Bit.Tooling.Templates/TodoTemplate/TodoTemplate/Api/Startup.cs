@@ -3,8 +3,13 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.ResponseCompression;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Net.Http.Headers;
+using TodoTemplate.Api.Context;
+using TodoTemplate.Api.Repository.Contracts;
+using TodoTemplate.Api.Repository.Implementations;
 
 #if BlazorWebAssembly
 using System.Net.Http;
@@ -15,6 +20,13 @@ namespace TodoTemplate.Api;
 
 public class Startup
 {
+    public IConfiguration Configuration { get; }
+
+    public Startup(IConfiguration configuration)
+    {
+        Configuration = configuration;
+    }
+
     public void ConfigureServices(IServiceCollection services)
     {
         services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
@@ -33,6 +45,7 @@ public class Startup
 #endif
         services.AddCors();
         services.AddMvcCore();
+        services.AddControllers();
         services.AddResponseCompression(opts =>
         {
             opts.Providers.Add<BrotliCompressionProvider>();
@@ -41,6 +54,16 @@ public class Startup
             .Configure<BrotliCompressionProviderOptions>(opt => opt.Level = CompressionLevel.Fastest)
             .Configure<GzipCompressionProviderOptions>(opt => opt.Level = CompressionLevel.Fastest);
 
+        services.AddDbContext<AppDbContext>(options =>
+        {
+            options.UseSqlServer(Configuration.GetConnectionString("SqlServerConnection"));
+        });
+
+        services.AddEndpointsApiExplorer();
+        services.AddSwaggerGen();
+
+        services.AddScoped<IUserRepository, UserRepository>();
+
         // register backend specific services here, for example services.AddDbContext
     }
 
@@ -48,6 +71,9 @@ public class Startup
     {
         if (env.IsDevelopment())
         {
+            app.UseSwagger();
+            app.UseSwaggerUI();
+
             app.UseDeveloperExceptionPage();
 #if BlazorWebAssembly
                 app.UseWebAssemblyDebugging();
