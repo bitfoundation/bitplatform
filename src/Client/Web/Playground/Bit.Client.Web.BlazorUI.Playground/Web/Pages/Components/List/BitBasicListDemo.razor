@@ -18,55 +18,55 @@
             </BitBasicList>
         </ExamplePreview>
         <ExampleSourceCode>
-            <pre>
-            &ltBitBasicList Items="People[0]" Virtualize="true" Style="border: 1px #a19f9d solid; border-radius: 3px; ">
-                    &ltRowTemplate Context="person">
-                            &ltdiv style="border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;">
-                                    &ltimg src="https://picsum.photos/100/100?random=&#64;(person.Id)">
-                                    &ltdiv style="margin-left:3%; display: inline-block;">
-                                            &ltp>Id: &ltstrong>&#64;person.Id&lt/strong>&lt/p>
-                                            &ltp>Full Name: &ltstrong>&#64;person.FirstName &#64;person.LastName&lt/strong>&lt/p>
-                                            &ltp>Job: &ltstrong>&#64;person.Job&lt/strong>&lt/p>
-                                    &lt/div>
-                            &lt/div>
-                    &lt/RowTemplate>
-            &lt/BitBasicList>
+            <pre class="code">
+            <code class="html">&ltBitBasicList Items="People[0]" Virtualize="true" Style="border: 1px #a19f9d solid; border-radius: 3px; ">
+        &ltRowTemplate Context="person">
+                &ltdiv style="border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;">
+                        &ltimg src="https://picsum.photos/100/100?random=&#64;(person.Id)">
+                        &ltdiv style="margin-left:3%; display: inline-block;">
+                                &ltp>Id: &ltstrong>&#64;person.Id&lt/strong>&lt/p>
+                                &ltp>Full Name: &ltstrong>&#64;person.FirstName &#64;person.LastName&lt/strong>&lt/p>
+                                &ltp>Job: &ltstrong>&#64;person.Job&lt/strong>&lt/p>
+                        &lt/div>
+                &lt/div>
+        &lt/RowTemplate>
+&lt/BitBasicList></code>
 
-            &#64;code {
-                    private readonly List&ltPerson>[] People = new List&ltPerson>[2];
-                    protected override void OnInitialized()
+            <code class="csharp">&#64;code {
+        private readonly List&ltPerson>[] People = new List&ltPerson>[2];
+        protected override void OnInitialized()
+        {
+                Person person = new();
+                People[0] = person.GetPeople(8000);
+                People[1] = person.GetPeople(100);
+                base.OnInitialized();
+        }
+
+        public class Person()
+        {
+                public int Id { get; set; }
+                public string FirstName { get; set; }
+                public string LastName { get; set; }
+                public string Job { get; set; }
+        }
+
+        public List&ltPerson> GetPeople(int itemCount)
+        {
+                List&ltPerson> people = new();
+                for &#40;int i = 0; i &lt itemCount; i++)
+                {
+                    people.Add(new Person
                     {
-                            Person person = new();
-                            People[0] = person.GetPeople(8000);
-                            People[1] = person.GetPeople(100);
-                            base.OnInitialized();
-                    }
+                        Id = i + 1,
+                        FirstName = $"Person {i + 1}",
+                        LastName = $"Person Family {i + 1}",
+                        Job = $"Programmer {i + 1}"
+                    });
+                }
 
-                    public class Person()
-                    {
-                            public int Id { get; set; }
-                            public string FirstName { get; set; }
-                            public string LastName { get; set; }
-                            public string Job { get; set; }
-                    }
-
-                    public List&ltPerson> GetPeople(int itemCount)
-                    {
-                            List&ltPerson> people = new();
-                            for &#40;int i = 0; i &lt itemCount; i++)
-                            {
-                                people.Add(new Person
-                                {
-                                    Id = i + 1,
-                                    FirstName = $"Person {i + 1}",
-                                    LastName = $"Person Family {i + 1}",
-                                    Job = $"Programmer {i + 1}"
-                                });
-                            }
-
-                            return people;
-                    }
-            }
+                return people;
+        }
+}</code>
             </pre>
         </ExampleSourceCode>
     </ComponentExampleBox>
@@ -84,52 +84,52 @@
             </BitBasicList>
         </ExamplePreview>
         <ExampleSourceCode>
-            <pre>
-            &ltBitBasicList Items="People[1]" Virtualize="false" Style="border: 1px #a19f9d solid; border-radius: 3px; ">
-                    &ltRowTemplate Context="person">
-                            &ltdiv style="border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;">
-                                    &ltp>Id: &ltstrong>&#64;person.Id&lt/strong>&lt/p>
-                                    &ltp>Full Name: &ltstrong>&#64;person.FirstName &#64;person.LastName&lt/strong>&lt/p>
-                                    &ltp>Job: &ltstrong>&#64;person.Job&lt/strong>&lt/p>
-                            &lt/div>
-                    &lt/RowTemplate>
-            &lt/BitBasicList>
+            <pre class="code">
+            <code class="html">&ltBitBasicList Items="People[1]" Virtualize="false" Style="border: 1px #a19f9d solid; border-radius: 3px; ">
+        &ltRowTemplate Context="person">
+                &ltdiv style="border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;">
+                        &ltp>Id: &ltstrong>&#64;person.Id&lt/strong>&lt/p>
+                        &ltp>Full Name: &ltstrong>&#64;person.FirstName &#64;person.LastName&lt/strong>&lt/p>
+                        &ltp>Job: &ltstrong>&#64;person.Job&lt/strong>&lt/p>
+                &lt/div>
+        &lt/RowTemplate>
+&lt/BitBasicList></code>
 
-            &#64;code {
-                    private readonly List&ltPerson>[] People = new List&ltPerson>[2];
-                    protected override void OnInitialized()
+            <code class="csharp">&#64;code {
+        private readonly List&ltPerson>[] People = new List&ltPerson>[2];
+        protected override void OnInitialized()
+        {
+                Person person = new();
+                People[0] = person.GetPeople(8000);
+                People[1] = person.GetPeople(100);
+                base.OnInitialized();
+        }
+
+        public class Person()
+        {
+                public int Id { get; set; }
+                public string FirstName { get; set; }
+                public string LastName { get; set; }
+                public string Job { get; set; }
+        }
+
+        public List&ltPerson> GetPeople(int itemCount)
+        {
+                List&ltPerson> people = new();
+                for &#40;int i = 0; i &lt itemCount; i++)
+                {
+                    people.Add(new Person
                     {
-                            Person person = new();
-                            People[0] = person.GetPeople(8000);
-                            People[1] = person.GetPeople(100);
-                            base.OnInitialized();
-                    }
+                        Id = i + 1,
+                        FirstName = $"Person {i + 1}",
+                        LastName = $"Person Family {i + 1}",
+                        Job = $"Programmer {i + 1}"
+                    });
+                }
 
-                    public class Person()
-                    {
-                            public int Id { get; set; }
-                            public string FirstName { get; set; }
-                            public string LastName { get; set; }
-                            public string Job { get; set; }
-                    }
-
-                    public List&ltPerson> GetPeople(int itemCount)
-                    {
-                            List&ltPerson> people = new();
-                            for &#40;int i = 0; i &lt itemCount; i++)
-                            {
-                                people.Add(new Person
-                                {
-                                    Id = i + 1,
-                                    FirstName = $"Person {i + 1}",
-                                    LastName = $"Person Family {i + 1}",
-                                    Job = $"Programmer {i + 1}"
-                                });
-                            }
-
-                            return people;
-                    }
-            }
+                return people;
+        }
+}</code>
             </pre>
         </ExampleSourceCode>
     </ComponentExampleBox>
@@ -147,65 +147,64 @@
             </BitBasicList>
         </ExamplePreview>
         <ExampleSourceCode>
-            <pre>
-            &ltBitBasicList Items="People[0]" Virtualize="true" Role="list" Style="border: 1px #a19f9d solid; border-radius: 3px;">
-                    &ltRowTemplate Context="person">
-                            &ltdiv class="lst3-list-item">
-                                    &ltspan>Id: &ltstrong>&#64;person.Id&lt/strong>&lt/span>
-                                    &ltspan>Full Name: &ltstrong>&#64;person.FirstName&lt/strong>&lt/span>
-                                    &ltspan>Job: &ltstrong>&#64;person.Job&lt/strong>&lt/span>
-                            &lt/div>
-                    &lt/RowTemplate>
-            &lt/BitBasicList>
+            <pre class="code">
+            <code class="html">&ltBitBasicList Items="People[0]" Virtualize="true" Role="list" Style="border: 1px #a19f9d solid; border-radius: 3px;">
+        &ltRowTemplate Context="person">
+                &ltdiv class="lst3-list-item">
+                        &ltspan>Id: &ltstrong>&#64;person.Id&lt/strong>&lt/span>
+                        &ltspan>Full Name: &ltstrong>&#64;person.FirstName&lt/strong>&lt/span>
+                        &ltspan>Job: &ltstrong>&#64;person.Job&lt/strong>&lt/span>
+                &lt/div>
+        &lt/RowTemplate>
+&lt/BitBasicList>
+&ltstyle>
+        .lst3-list-item {
+                padding: 16px 20px;
+                background-color: #f2f2f2;
+                margin: 10px 10px;
+                width: 20%;
+                height: 143px;
+                display: inline-grid;
+                justify-content: center;
+                align-items: center;
+        }
+&lt/style>;</code>
 
-            &#64;code {
-                    private readonly List&ltPerson>[] People = new List&ltPerson>[2];
-                    protected override void OnInitialized()
+            <code class="csharp">&#64;code {
+        private readonly List&ltPerson>[] People = new List&ltPerson>[2];
+        protected override void OnInitialized()
+        {
+                Person person = new();
+                People[0] = person.GetPeople(8000);
+                People[1] = person.GetPeople(100);
+                base.OnInitialized();
+        }
+
+        public class Person()
+        {
+                public int Id { get; set; }
+                public string FirstName { get; set; }
+                public string LastName { get; set; }
+                public string Job { get; set; }
+        }
+
+        public List&ltPerson> GetPeople(int itemCount)
+        {
+                List&ltPerson> people = new();
+                for &#40;int i = 0; i &lt itemCount; i++)
+                {
+                    people.Add(new Person
                     {
-                            Person person = new();
-                            People[0] = person.GetPeople(8000);
-                            People[1] = person.GetPeople(100);
-                            base.OnInitialized();
-                    }
+                        Id = i + 1,
+                        FirstName = $"Person {i + 1}",
+                        LastName = $"Person Family {i + 1}",
+                        Job = $"Programmer {i + 1}"
+                    });
+                }
 
-                    public class Person()
-                    {
-                            public int Id { get; set; }
-                            public string FirstName { get; set; }
-                            public string LastName { get; set; }
-                            public string Job { get; set; }
-                    }
-
-                    public List&ltPerson> GetPeople(int itemCount)
-                    {
-                            List&ltPerson> people = new();
-                            for &#40;int i = 0; i &lt itemCount; i++)
-                            {
-                                people.Add(new Person
-                                {
-                                    Id = i + 1,
-                                    FirstName = $"Person {i + 1}",
-                                    LastName = $"Person Family {i + 1}",
-                                    Job = $"Programmer {i + 1}"
-                                });
-                            }
-
-                            return people;
-                    }
-            }
-
-            &ltstyle>
-                    .lst3-list-item {
-                            padding: 16px 20px;
-                            background-color: #f2f2f2;
-                            margin: 10px 10px;
-                            width: 20%;
-                            height: 143px;
-                            display: inline-grid;
-                            justify-content: center;
-                            align-items: center;
-                    }
-            &lt/style>;
+                return people;
+        }
+}</code>
             </pre>
         </ExampleSourceCode>
     </ComponentExampleBox>
@@ -223,52 +222,52 @@
             </BitBasicList>
         </ExamplePreview>
         <ExampleSourceCode>
-            <pre>
-            &ltBitBasicList Items="People[0]" Virtualize="true" OverscanCount="5" ItemSize="300" Style="border: 1px #a19f9d solid; border-radius: 3px;">
-                    &ltRowTemplate Context="person">
-                            &ltdiv style="border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;">
-                                    &ltspan>Id: &ltstrong>&#64;person.Id&lt/strong>&lt/span>
-                                    &ltspan>Full Name: &ltstrong>&#64;person.FirstName&lt/strong>&lt/span>
-                                    &ltspan>Job: &ltstrong>&#64;person.Job&lt/strong>&lt/span>
-                            &lt/div>
-                    &lt/RowTemplate>
-            &lt/BitBasicList>
+            <pre class="code">
+            <code class="html">&ltBitBasicList Items="People[0]" Virtualize="true" OverscanCount="5" ItemSize="300" Style="border: 1px #a19f9d solid; border-radius: 3px;">
+        &ltRowTemplate Context="person">
+                &ltdiv style="border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;">
+                        &ltspan>Id: &ltstrong>&#64;person.Id&lt/strong>&lt/span>
+                        &ltspan>Full Name: &ltstrong>&#64;person.FirstName&lt/strong>&lt/span>
+                        &ltspan>Job: &ltstrong>&#64;person.Job&lt/strong>&lt/span>
+                &lt/div>
+        &lt/RowTemplate>
+&lt/BitBasicList></code>
 
-            &#64;code {
-                    private readonly List&ltPerson>[] People = new List&ltPerson>[2];
-                    protected override void OnInitialized()
+            <code class="csharp">&#64;code {
+        private readonly List&ltPerson>[] People = new List&ltPerson>[2];
+        protected override void OnInitialized()
+        {
+                Person person = new();
+                People[0] = person.GetPeople(8000);
+                People[1] = person.GetPeople(100);
+                base.OnInitialized();
+        }
+
+        public class Person()
+        {
+                public int Id { get; set; }
+                public string FirstName { get; set; }
+                public string LastName { get; set; }
+                public string Job { get; set; }
+        }
+
+        public List&ltPerson> GetPeople(int itemCount)
+        {
+                List&ltPerson> people = new();
+                for &#40;int i = 0; i &lt itemCount; i++)
+                {
+                    people.Add(new Person
                     {
-                            Person person = new();
-                            People[0] = person.GetPeople(8000);
-                            People[1] = person.GetPeople(100);
-                            base.OnInitialized();
-                    }
+                        Id = i + 1,
+                        FirstName = $"Person {i + 1}",
+                        LastName = $"Person Family {i + 1}",
+                        Job = $"Programmer {i + 1}"
+                    });
+                }
 
-                    public class Person()
-                    {
-                            public int Id { get; set; }
-                            public string FirstName { get; set; }
-                            public string LastName { get; set; }
-                            public string Job { get; set; }
-                    }
-
-                    public List&ltPerson> GetPeople(int itemCount)
-                    {
-                            List&ltPerson> people = new();
-                            for &#40;int i = 0; i &lt itemCount; i++)
-                            {
-                                people.Add(new Person
-                                {
-                                    Id = i + 1,
-                                    FirstName = $"Person {i + 1}",
-                                    LastName = $"Person Family {i + 1}",
-                                    Job = $"Programmer {i + 1}"
-                                });
-                            }
-
-                            return people;
-                    }
-            }
+                return people;
+        }
+}</code>
             </pre>
         </ExampleSourceCode>
     </ComponentExampleBox>

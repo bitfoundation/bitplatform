@@ -13,20 +13,22 @@
                            OnClick="@CopyLinkToClipboard">
             </BitIconButton>
         </div>
-        <BitIconButton Class="com-example-box-copy-btn"
-                       OnClick=CopyCodeToClipboard
-                       IconName="BitIcon.Copy"
-                       Title="Copy source">
-        </BitIconButton>
     </div>
 
-    <div class="box-content">
+    <div class="box-content" style="@(showCode ? "max-height: unset;" : null)">
         @if (!showCode)
         {
-            @ExamplePreview
+            <div class="example-container">
+                @ExamplePreview
+            </div>
         }
         else
         {
+            <BitIconButton Class="com-example-box-copy-btn"
+                       OnClick=CopyCodeToClipboard
+                       IconName="BitIcon.Copy"
+                       Title="Copy source">
+            </BitIconButton>
             @ExampleSourceCode
         }
     </div>

@@ -17,6 +17,10 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Components
         [Parameter] public string ExampleSourceCodeForCopy { get; set; }
         [Parameter] public RenderFragment ExamplePreview { get; set; }
         [Parameter] public RenderFragment ExampleSourceCode { get; set; }
+        protected override async Task OnAfterRenderAsync(bool firstRender)
+        {
+            await JSRuntime.InvokeVoidAsync("highlightSnippet");
+        }
 
         private async Task CopyCodeToClipboard()
         {

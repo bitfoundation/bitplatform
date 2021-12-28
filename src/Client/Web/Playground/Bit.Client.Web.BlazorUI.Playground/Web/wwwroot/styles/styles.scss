@@ -16,11 +16,6 @@ a {
     text-decoration: none;
 }
 
-pre {
-    margin: 0;
-    line-height: rem(30px);
-}
-
 input::-webkit-input-placeholder {
     color: $DarkBlue;
     font-size: rem(14px);
@@ -52,7 +47,7 @@ input::-webkit-input-placeholder {
 .component-list-item {
     max-width: 100%;
     margin-bottom: rem(4px);
-    color: $Black1;
+    color: $Gray1;
     font-size: rem(16px);
     line-height: rem(24px);
     font-family: Axiforma;
@@ -376,7 +371,7 @@ input::-webkit-input-placeholder {
     position: absolute;
     z-index: 1;
     right: rem(24px);
-    top: rem(72px);
+    top: rem(16px);
     width: rem(48px);
     height: rem(48px);
     border-radius: 50%;
@@ -399,7 +394,7 @@ input::-webkit-input-placeholder {
         width: rem(40px);
         height: rem(40px);
         right: rem(16px);
-        top: rem(56px);
+        top: rem(16px);
 
         span {
             i {
@@ -412,7 +407,7 @@ input::-webkit-input-placeholder {
         width: rem(40px);
         height: rem(40px);
         right: rem(8px);
-        top: rem(48px);
+        top: rem(8px);
 
         span {
             i {
@@ -425,7 +420,7 @@ input::-webkit-input-placeholder {
         width: rem(32px);
         height: rem(32px);
         right: rem(8px);
-        top: rem(56px);
+        top: rem(8px);
 
         span {
             i {
@@ -458,6 +453,59 @@ input::-webkit-input-placeholder {
             line-height: rem(12px);
         }
     }
+}
+
+pre {
+    position: relative;
+    display: flex;
+    flex-flow: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+    width: 100%;
+    max-height: rem(464px);
+    min-height: rem(70px);
+    margin: 0;
+    padding: rem(24px) rem(80px) rem(24px) rem(24px);
+    box-sizing: border-box;
+    direction: ltr;
+    overflow: auto;
+
+    &::-webkit-scrollbar {
+        width: rem(10px);
+    }
+
+    &::-webkit-scrollbar:horizontal {
+        height: rem(10px);
+    }
+
+    @include lg {
+        max-height: rem(400px);
+        padding: rem(16px) rem(60px) rem(16px) rem(16px);
+    }
+
+    @include md {
+        max-height: rem(304px);
+        padding: rem(8px) rem(52px) rem(8px) rem(16px);
+    }
+
+    @include sm {
+        padding: rem(16px) rem(45px) rem(16px) rem(8px);
+    }
+}
+
+code {
+    line-height: 1.5;
+    font-family: Consolas, Menlo, Monaco, "Andale Mono", "Ubuntu Mono", monospace !important;
+
+    span {
+        font-family: inherit;
+    }
+}
+
+.hljs {
+    overflow-x: unset !important;
+    padding: 0 !important;
+    background-color: transparent !important;
 }
 
 /* Demo Page =================================================================================== */

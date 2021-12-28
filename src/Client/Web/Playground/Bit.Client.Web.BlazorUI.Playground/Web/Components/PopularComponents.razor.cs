@@ -1,15 +1,18 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Bit.Client.Web.BlazorUI.Playground.Web.Models;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Configuration;
+using Microsoft.JSInterop;
 
 namespace Bit.Client.Web.BlazorUI.Playground.Web.Components
 {
     public partial class PopularComponents
     {
+        [Inject] public IJSRuntime JSRuntime { get; set; }
         [Inject] public IConfiguration Configuration { get; set; }
 
-        private List<PopularComponent> AllComponents = new List<PopularComponent>
+        private List<PopularComponent> Components = new List<PopularComponent>
         {
             new PopularComponent()
             {
@@ -47,10 +50,9 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Components
                 CssClassName = "nav"
             },
         };
-
-        private List<PopularComponent> Components;
         private PopularComponent SelectedComponent;
         private string ActiveTab = "demo";
+        private BitColorPicker ColorPicker;
         private string ColorRgb = "rgb(255,255,255)";
         private double Alpha = 1;
         string UploadUrl => $"{GetBaseUrl()}FileUpload/UploadStreamedFile";
@@ -67,20 +69,18 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Components
 
         protected override void OnInitialized()
         {
-            SelectedComponent = AllComponents[0];
-            FilterComponents();
+            SelectedComponent = Components[0];
             base.OnInitialized();
         }
 
-        private void FilterComponents()
+        protected override async Task OnAfterRenderAsync(bool firstRender)
         {
-            Components = AllComponents.FindAll(com => com.Name != SelectedComponent.Name);
+            await JSRuntime.InvokeVoidAsync("highlightSnippet");
         }
 
         private void SelectComponent(PopularComponent com)
         {
             SelectedComponent = com;
-            FilterComponents();
             StateHasChanged();
         }
 
