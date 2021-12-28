@@ -52,10 +52,6 @@
     "inputFile": "Pages/Components/ColorPicker/BitColorPickerDemo.razor.scss"
   },
   {
-    "outputFile": "Pages/Components/Inputs/BitTextFieldDemo.razor.css",
-    "inputFile": "Pages/Components/Inputs/BitTextFieldDemo.razor.scss"
-  },
-  {
     "outputFile": "Pages/Components/List/BitBasicListDemo.razor.css",
     "inputFile": "Pages/Components/List/BitBasicListDemo.razor.scss"
   },
@@ -102,5 +98,9 @@
   {
     "outputFile": "wwwroot/styles/styles.css",
     "inputFile": "wwwroot/styles/styles.scss"
+  },
+  {
+    "outputFile": "Pages/Components/TextField/BitTextFieldDemo.razor.css",
+    "inputFile": "Pages/Components/TextField/BitTextFieldDemo.razor.scss"
   }
 ]
