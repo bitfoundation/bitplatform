@@ -23,6 +23,6 @@ jobs:
     - name: dotnet build
       run: dotnet msbuild src/Client/Web/Bit.Client.Web.BlazorUI/Bit.Client.Web.BlazorUI.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false
     - name: dotnet pack
-      run: dotnet msbuild src/Client/Web/Bit.Client.Web.BlazorUI/Bit.Client.Web.BlazorUI.csproj /T:pack /P:Configuration=Release
+      run: dotnet pack src/Client/Web/Bit.Client.Web.BlazorUI/Bit.Client.Web.BlazorUI.csproj --output . --configuration Release
     - name: dotnet nuget push
-      run: dotnet nuget push ./src/Client/Web/Bit.Client.Web.BlazorUI/bin/Release/*.nupkg --source https://nuget.pkg.github.com/bitfoundation/index.json --api-key ${{secrets.PACKAGE_API_KEY}}
+      run: dotnet nuget push *.nupkg --source https://nuget.pkg.github.com/bitfoundation/index.json --api-key ${{secrets.PACKAGE_API_KEY}}
