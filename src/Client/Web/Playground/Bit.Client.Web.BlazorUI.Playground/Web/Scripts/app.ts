@@ -1,4 +1,6 @@
-﻿var headerBtn = document.getElementById("headerBtn") ?? new HTMLElement();
+﻿declare var hljs: any;
+
+var headerBtn = document.getElementById("headerBtn") ?? new HTMLElement();
 
 window.addEventListener('scroll', () => {
     if (document.body.scrollTop > 10 || document.documentElement.scrollTop > 10) {
@@ -33,4 +35,10 @@ function scrollToElement(targetElementId: string) {
 
 function copyToClipboard(codeSampleContentForCopy: string) {
     navigator.clipboard.writeText(codeSampleContentForCopy);
+}
+
+function highlightSnippet() {
+    document.querySelectorAll('pre code').forEach((el) => {
+        hljs.highlightBlock(el);
+    });
 }

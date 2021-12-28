@@ -9,9 +9,9 @@
 
     <ItemGroup>
         <Content Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Remove="appsettings.json" />
+        <Content Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Remove="Pages\_Host.cshtml" />
         <Content Remove="compilerconfig.json" />
         <None Include="compilerconfig.json" />
-        <Content Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Remove="Pages\_Host.cshtml" />
     </ItemGroup>
 
     <ItemGroup>

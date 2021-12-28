@@ -282,3 +282,8 @@ _book
 /src/Tooling/Bit.Tooling.Templates/TodoTemplate/TodoTemplate/App/_Imports.razor
 /src/Tooling/Bit.Tooling.Templates/TodoTemplate/TodoTemplate/App/Main.razor
 /src/Tooling/Bit.Tooling.Templates/TodoTemplate/TodoTemplate/App/appsettings.json
+/src/Client/Web/Playground/Bit.Client.Web.BlazorUI.Playground/App/_Imports.razor
+/src/Client/Web/Playground/Bit.Client.Web.BlazorUI.Playground/App/Main.razor
+/src/Client/Web/Playground/Bit.Client.Web.BlazorUI.Playground/App/compilerconfig.json.defaults
+/src/Client/Web/Playground/Bit.Client.Web.BlazorUI.Playground/App/compilerconfig.json
+/src/Client/Web/Playground/Bit.Client.Web.BlazorUI.Playground/App/appsettings.json

@@ -58,10 +58,9 @@
 	<ItemGroup>
 		<Content Remove="Pages\_Host.cshtml" />
 		<Content Remove="Properties\launchSettings.json" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <EmbeddedResource Include="..\Web\appsettings.json" Link="appsettings.json" />
+        <Content Remove="compilerconfig.json" />
+        <None Include="compilerconfig.json" />
+        <EmbeddedResource Include="appsettings.json" />
 	</ItemGroup>
 
 	<ItemGroup>
