@@ -1,18 +1,18 @@
 name: BlazorUI Nuget Package
 on:
   workflow_dispatch:
-  push:
-    branches:
-    - develop
-    paths:
-    - 'src/Client/Web/Bit.Client.Web.BlazorUI/**'
+    push:
+        branches:
+        - develop
+        paths:
+        - 'src/Client/Web/Bit.Client.Web.BlazorUI/**'
 jobs:
   build:
-    runs-on: ubuntu-latest
+    name: build / deploy nuget package
+    runs-on: windows-latest
     steps:
-    - name: Checkout
-      uses: actions/checkout@v2
-    - name: Setup .NET
+    - uses: actions/checkout@v2
+    - name: Setup .NET 6.0.x
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 6.0.x
