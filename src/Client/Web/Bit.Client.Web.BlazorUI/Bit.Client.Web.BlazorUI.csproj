@@ -2,8 +2,6 @@
 
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
-        <ResolveStaticWebAssetsInputsDependsOn>WebCompiler</ResolveStaticWebAssetsInputsDependsOn>
-        <DisableFastUpToDateCheck>true</DisableFastUpToDateCheck>
         <LangVersion>preview</LangVersion>
     </PropertyGroup>
 
@@ -81,14 +79,5 @@
         <Content Remove="compilerconfig.json" />
         <None Include="compilerconfig.json" />
     </ItemGroup>
-
-    <Target Name="ToolRestore" BeforeTargets="PreBuildEvent">
-        <Exec Command="dotnet tool restore" StandardOutputImportance="high" />
-    </Target>
-
-    <Target Name="WebCompiler" AfterTargets="AfterBuild">
-        <!--minify js-->
-        <Exec Command="dotnet webcompiler ./wwwroot/scripts/bit.blazorui.js -c webcompiler-js.json" StandardOutputImportance="high" StandardErrorImportance="high" />
-    </Target>
 
 </Project>
