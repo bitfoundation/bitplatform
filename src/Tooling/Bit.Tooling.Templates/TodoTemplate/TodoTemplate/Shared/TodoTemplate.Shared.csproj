@@ -12,4 +12,8 @@
 		<SupportedPlatform Include="browser" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Folder Include="Models\" />
+	</ItemGroup>
+
 </Project>
