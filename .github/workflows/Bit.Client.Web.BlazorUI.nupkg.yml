@@ -16,6 +16,8 @@ jobs:
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 6.0.x
+    - name: Restore dependencies
+      run: dotnet restore src/Client/Web/Bit.Client.Web.BlazorUI.Tests/Bit.Client.Web.BlazorUI.Tests.csproj
     - name: dotnet build
       run: dotnet msbuild src/Client/Web/Bit.Client.Web.BlazorUI/Bit.Client.Web.BlazorUI.csproj /P:Configuration=Release
     - name: dotnet build
