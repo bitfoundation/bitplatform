@@ -41,7 +41,7 @@
     align-items: flex-start;
     width: 100%;
     height: rem(184px);
-    border: rem(1px) solid #DDDDDD;
+    border-bottom: rem(1px) solid #DDDDDD;
     padding: rem(25px) rem(40px) rem(16px) rem(104px);
     box-sizing: border-box;
     background-color: $Gray5;
@@ -128,10 +128,6 @@
     flex-flow: column nowrap;
     width: 100%;
 
-    @include lg {
-        padding: 0 0 rem(16px) 0;
-    }
-
     .component-row {
         display: flex;
         justify-content: flex-start;
@@ -154,8 +150,12 @@
             border: none;
         }
 
+        &:hover {
+            color: $PrimaryColor;
+        }
+
         @include lg {
-            height: rem(56px);
+            height: rem(60px);
             padding-left: rem(80px);
             font-size: rem(18px);
             line-height: rem(31px);
@@ -166,22 +166,42 @@
 
     .color-picker-row {
         background-image: url('/images/home/color-picker-gray-icon.svg');
+
+        &:hover {
+            background-image: url('/images/home/color-picker-blue-icon.svg');
+        }
     }
 
     .date-picker-row {
         background-image: url('/images/home/date-picker-gray-icon.svg');
+
+        &:hover {
+            background-image: url('/images/home/date-picker-blue-icon.svg');
+        }
     }
 
     .drop-down-row {
         background-image: url('/images/home/drop-down-gray-icon.svg');
+
+        &:hover {
+            background-image: url('/images/home/drop-down-blue-icon.svg');
+        }
     }
 
     .nav-row {
         background-image: url('/images/home/nav-gray-icon.svg');
+
+        &:hover {
+            background-image: url('/images/home/nav-blue-icon.svg');
+        }
     }
 
     .file-upload-row {
         background-image: url('/images/home/file-upload-gray-icon.svg');
+
+        &:hover {
+            background-image: url('/images/home/file-upload-blue-icon.svg');
+        }
     }
 }
 
@@ -228,6 +248,10 @@
         color: $SecondaryColor;
         cursor: pointer;
 
+        &:hover {
+            color: $PrimaryColor;
+        }
+
         @include lg {
             padding: rem(24px) 0 rem(12px);
             font-size: rem(16px);
@@ -255,6 +279,7 @@
         }
 
         pre {
+            height: 100%;
             margin-top: 0;
             margin-bottom: 0;
         }

@@ -1,0 +1,10 @@
+﻿[
+  {
+    "outputFile": "Pages/Index.razor.css",
+    "inputFile": "Pages/Index.razor.scss"
+  },
+  {
+    "outputFile": "wwwroot/styles/app.css",
+    "inputFile": "wwwroot/styles/app.scss"
+  }
+]

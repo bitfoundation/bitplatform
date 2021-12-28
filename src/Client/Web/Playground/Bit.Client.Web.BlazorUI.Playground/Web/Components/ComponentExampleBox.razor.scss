@@ -70,7 +70,6 @@
     border: rem(1px) solid $Gray3;
     border-top: none;
     border-radius: 0 0 rem(10px) rem(10px);
-    padding: rem(24px);
     box-sizing: border-box;
     background-color: $White;
     color: #2E2E2E;
@@ -89,23 +88,43 @@
     @include lg {
         max-height: rem(400px);
         border-radius: 0 0 rem(8px) rem(8px);
-        padding: rem(16px);
         font-size: rem(13px);
     }
 
     @include md {
         max-height: rem(304px);
         border-radius: 0 0 rem(8px) rem(8px);
-        padding: rem(8px) rem(16px);
         font-size: rem(10px);
         line-height: rem(14px);
     }
 
     @include sm {
-        max-height: rem(400px);
         border-radius: 0 0 rem(8px) rem(8px);
-        padding: rem(16px) rem(8px);
         font-size: rem(12px);
         line-height: rem(16px);
+    }
+}
+
+.example-container {
+    padding: rem(24px);
+
+    &::-webkit-scrollbar {
+        width: rem(10px);
+    }
+
+    &::-webkit-scrollbar:horizontal {
+        height: rem(10px);
+    }
+
+    @include lg {
+        padding: rem(16px);
+    }
+
+    @include md {
+        padding: rem(8px) rem(16px);
+    }
+
+    @include sm {
+        padding: rem(16px) rem(8px);
     }
 }

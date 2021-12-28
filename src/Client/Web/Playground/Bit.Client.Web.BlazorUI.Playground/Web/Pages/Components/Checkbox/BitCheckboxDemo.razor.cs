@@ -169,10 +169,10 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Checkbox
               $"private bool IsCheckBoxChecked = false;{Environment.NewLine}" +
               "}";
 
-        private readonly string reversedSampleCode = $"<BitCheckbox BoxSide='@BitCheckBoxSide.End'>Reversed -- Basic Checkbox</BitCheckbox>{Environment.NewLine}" +
-                 $"<BitCheckbox BoxSide='@BitCheckBoxSide.End' IsChecked='true'>Reversed -- Checked Checkbox</BitCheckbox>{Environment.NewLine}" +
-                 $"<BitCheckbox BoxSide='@BitCheckBoxSide.End' IsEnabled='true'>Reversed -- Disable Checkbox</BitCheckbox>{Environment.NewLine}" +
-                 $"<BitCheckbox BoxSide='@BitCheckBoxSide.End' IsEnabled='false' IsChecked='true'>Reversed -- Disable Checked Checkbox</BitCheckbox>";
+        private readonly string reversedSampleCode = $"<BitCheckbox BoxSide='@BitCheckBoxSide.End'>Reversed - Basic Checkbox</BitCheckbox>{Environment.NewLine}" +
+                 $"<BitCheckbox BoxSide='@BitCheckBoxSide.End' IsChecked='true'>Reversed - Checked Checkbox</BitCheckbox>{Environment.NewLine}" +
+                 $"<BitCheckbox BoxSide='@BitCheckBoxSide.End' IsEnabled='true'>Reversed - Disable Checkbox</BitCheckbox>{Environment.NewLine}" +
+                 $"<BitCheckbox BoxSide='@BitCheckBoxSide.End' IsEnabled='false' IsChecked='true'>Reversed - Disable Checked Checkbox</BitCheckbox>";
 
         private readonly string indeterminateSampleCode = $"<BitCheckbox @bind-IsChecked='IsCheckBoxIndeterminate' @bind-IsIndeterminate='IsCheckBoxChecked'>Basic Checkbox</BitCheckbox>{Environment.NewLine}" +
                  $"<BitCheckbox IsIndeterminate='true'>Indeterminate checkbox</BitCheckbox>{Environment.NewLine}" +
