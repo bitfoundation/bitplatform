@@ -17,11 +17,11 @@ jobs:
       with:
         dotnet-version: 6.0.x
     - name: Restore dependencies
-      run: dotnet restore src/Client/Web/Bit.Client.Web.BlazorUI.Tests/Bit.Client.Web.BlazorUI.Tests.csproj
+      run: dotnet restore src/Client/Web/Bit.Client.Web.BlazorUI/Bit.Client.Web.BlazorUI.csproj
     - name: dotnet build
-      run: dotnet msbuild src/Client/Web/Bit.Client.Web.BlazorUI/Bit.Client.Web.BlazorUI.csproj /P:Configuration=Release
+      run: dotnet msbuild src/Client/Web/Bit.Client.Web.BlazorUI/Bit.Client.Web.BlazorUI.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false
     - name: dotnet build
-      run: dotnet msbuild src/Client/Web/Bit.Client.Web.BlazorUI/Bit.Client.Web.BlazorUI.csproj /P:Configuration=Release
+      run: dotnet msbuild src/Client/Web/Bit.Client.Web.BlazorUI/Bit.Client.Web.BlazorUI.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false
     - name: dotnet pack
       run: dotnet msbuild src/Client/Web/Bit.Client.Web.BlazorUI/Bit.Client.Web.BlazorUI.csproj /T:pack /P:Configuration=Release
     - name: dotnet nuget push
