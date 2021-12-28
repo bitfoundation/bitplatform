@@ -16,9 +16,11 @@ jobs:
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 6.0.x
-    - name: Build
-      run: dotnet build src/Client/Web/Bit.Client.Web.BlazorUI/Bit.Client.Web.BlazorUI.csproj --configuration Release
+    - name: dotnet build
+      run: dotnet msbuild Bit.Client.Web.BlazorUI.csproj /P:Configuration=Release
+    - name: dotnet build
+      run: dotnet msbuild Bit.Client.Web.BlazorUI.csproj /P:Configuration=Release
     - name: dotnet pack
-      run: dotnet pack src/Client/Web/Bit.Client.Web.BlazorUI/Bit.Client.Web.BlazorUI.csproj --output . --configuration Release
+      run: dotnet msbuild Bit.Client.Web.BlazorUI.csproj /T:pack /P:Configuration=Release
     - name: dotnet nuget push
-      run: dotnet nuget push *.nupkg --source https://nuget.pkg.github.com/bitfoundation/index.json --api-key ${{secrets.PACKAGE_API_KEY}}
+      run: dotnet nuget push src/Client/Web/Bit.Client.Web.BlazorUI/bin/Release/*.nupkg --source https://nuget.pkg.github.com/bitfoundation/index.json --api-key ${{secrets.PACKAGE_API_KEY}}
