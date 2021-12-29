@@ -7,6 +7,8 @@ using Microsoft.Extensions.Configuration;
 #endif
 using System.IO.Compression;
 using System.Net.Http;
+using TodoTemplate.App.Services;
+using TodoTemplate.App.Services.Extensions;
 
 namespace TodoTemplate.App;
 public class Startup
@@ -32,6 +34,8 @@ public class Startup
             .Configure<BrotliCompressionProviderOptions>(opt => opt.Level = CompressionLevel.Fastest)
             .Configure<GzipCompressionProviderOptions>(opt => opt.Level = CompressionLevel.Fastest);
 #endif
+
+        services.AppServices();
     }
 
 #if BlazorServer

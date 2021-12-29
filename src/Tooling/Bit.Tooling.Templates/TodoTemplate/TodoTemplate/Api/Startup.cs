@@ -62,7 +62,7 @@ public class Startup
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen();
 
-        services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IRoleRepository, RoleRepository>();
 
         // register backend specific services here, for example services.AddDbContext
     }
