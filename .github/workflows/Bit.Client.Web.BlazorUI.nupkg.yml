@@ -1,11 +1,11 @@
 name: BlazorUI Nuget Package
 on:
   workflow_dispatch:
-    push:
-        branches:
-        - develop
-        paths:
-        - 'src/Client/Web/Bit.Client.Web.BlazorUI/**'
+  push:
+    branches:
+    - develop
+    paths:
+    - 'src/Client/Web/Bit.Client.Web.BlazorUI/**'
 jobs:
   build:
     name: build / deploy nuget package
@@ -18,8 +18,6 @@ jobs:
         dotnet-version: 6.0.x
     - name: Restore dependencies
       run: dotnet restore src/Client/Web/Bit.Client.Web.BlazorUI/Bit.Client.Web.BlazorUI.csproj
-    - name: dotnet build
-      run: dotnet msbuild src/Client/Web/Bit.Client.Web.BlazorUI/Bit.Client.Web.BlazorUI.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false
     - name: dotnet build
       run: dotnet msbuild src/Client/Web/Bit.Client.Web.BlazorUI/Bit.Client.Web.BlazorUI.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false
     - name: dotnet pack
