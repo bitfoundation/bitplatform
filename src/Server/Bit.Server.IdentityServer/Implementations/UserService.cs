@@ -57,7 +57,10 @@ namespace Bit.IdentityServer.Implementations
                 if (context.AuthenticateResult == null && ExceptionToHttpErrorMapper.IsKnownError(ex))
                     context.AuthenticateResult = new AuthenticateResult(ExceptionToHttpErrorMapper.GetMessage(ex));
                 else
+                {
+                    await Logger.LogExceptionAsync(ex, "LocalLogin_Failed").ConfigureAwait(false);
                     throw;
+                }
             }
 
             await base.AuthenticateLocalAsync(context).ConfigureAwait(false);
@@ -145,7 +148,10 @@ namespace Bit.IdentityServer.Implementations
                 if (context.AuthenticateResult == null && ExceptionToHttpErrorMapper.IsKnownError(ex))
                     context.AuthenticateResult = new AuthenticateResult(ExceptionToHttpErrorMapper.GetMessage(ex));
                 else
+                {
+                    await Logger.LogExceptionAsync(ex, "ExternalLogin_Failed").ConfigureAwait(false);
                     throw;
+                }
             }
 
             await base.AuthenticateExternalAsync(context).ConfigureAwait(false);
