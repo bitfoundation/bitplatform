@@ -10,8 +10,8 @@
 
   <ItemGroup>
     <PackageReference Include="AntiXSS" Version="4.3.0" />
-    <PackageReference Include="Bit.IdSrv3" Version="0.0.3" />
-    <PackageReference Include="IdentityModel" Version="3.10.10" />
+    <PackageReference Include="Bit.IdSrv3" Version="0.0.4" />
+    <PackageReference Include="IdentityModel" Version="6.0.0" />
     <PackageReference Include="Microsoft.Owin.Security.Facebook" Version="4.2.0" />
     <PackageReference Include="Microsoft.Owin.Security.Google" Version="4.2.0" />
     <PackageReference Include="Microsoft.Owin.Security.MicrosoftAccount" Version="4.2.0" />
@@ -22,7 +22,7 @@
     <PackageReference Include="Microsoft.AspNet.WebApi.Tracing" Version="5.2.7" />
     <PackageReference Include="Microsoft.Owin.Cors" Version="4.2.0" />
     <PackageReference Include="Microsoft.Owin.Security.Cookies" Version="4.2.0" />
-    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="5.6.0" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.15.0" />
   </ItemGroup>
 
   <ItemGroup>
