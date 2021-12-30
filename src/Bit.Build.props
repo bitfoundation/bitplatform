@@ -82,7 +82,7 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-		<PackageReference Include="MSBuild.Sdk.Extras" Version="3.0.38" PrivateAssets="All" />
+		<PackageReference Include="MSBuild.Sdk.Extras" Version="3.0.44" PrivateAssets="All" />
 	</ItemGroup>
 
 	<ItemGroup Condition=" '$(TargetFramework)' == 'monoandroid10.0'">

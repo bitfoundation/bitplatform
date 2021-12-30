@@ -119,6 +119,7 @@ namespace Bit.Test.Server
             };
 
             //chromeOptions.AddArguments("--lang=fa");
+            edgeOptions.AddArgument("--no-sandbox");
 
             EdgeDriver driver = new EdgeDriver(edgeOptions);
 

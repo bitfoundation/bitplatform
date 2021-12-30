@@ -103,7 +103,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
             {
                 await testEnvironment.Server.BuildHttpClient().GetAsync("/Files/V1");
 
-                Assert.IsFalse(testEnvironment.GetObjects<IScopeStatusManager>().Any());
+                Assert.AreEqual(2 /* there's a test app startup which drops/creates db using TransactionAction */, testEnvironment.GetObjects<IScopeStatusManager>().Count());
             }
         }
     }

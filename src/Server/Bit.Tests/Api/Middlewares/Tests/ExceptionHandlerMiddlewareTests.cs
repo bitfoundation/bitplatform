@@ -24,7 +24,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
                 await testEnvironment.Server.LoginWithCredentials("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
                 IScopeStatusManager scopeStatusManager = testEnvironment.GetObjects<IScopeStatusManager>()
-                    .Single();
+                    .Last();
 
                 A.CallTo(() => scopeStatusManager.MarkAsSucceeded())
                     .MustHaveHappenedOnceExactly();
