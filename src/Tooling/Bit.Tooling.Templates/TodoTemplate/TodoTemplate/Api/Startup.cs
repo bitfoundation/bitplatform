@@ -7,9 +7,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Net.Http.Headers;
-using TodoTemplate.Api.Context;
-using TodoTemplate.Api.Repository.Contracts;
-using TodoTemplate.Api.Repository.Implementations;
+using TodoTemplate.Api.Data.Context;
+using TodoTemplate.Api.Data.Repositories.Contracts;
+using TodoTemplate.Api.Data.Repositories.Implementations;
+using TodoTemplate.Shared.Extensions;
 
 #if BlazorWebAssembly
 using System.Net.Http;
@@ -29,8 +30,7 @@ public class Startup
 
     public void ConfigureServices(IServiceCollection services)
     {
-        services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-        services.AddTodoTemplateSharedServices();
+
 #if BlazorWebAssembly
             services.AddTodoTemplateServices();
             services.AddScoped(c =>
@@ -43,9 +43,17 @@ public class Startup
             });
             services.AddRazorPages();
 #endif
+
         services.AddCors();
+
         services.AddMvcCore();
+
         services.AddControllers();
+
+        services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+
+        services.AddTodoTemplateSharedServices();
+
         services.AddResponseCompression(opts =>
         {
             opts.Providers.Add<BrotliCompressionProvider>();
@@ -60,9 +68,12 @@ public class Startup
         });
 
         services.AddEndpointsApiExplorer();
+
         services.AddSwaggerGen();
 
-        services.AddScoped<IRoleRepository, RoleRepository>();
+        services.AddAutoMapper(typeof(Startup).Assembly);
+
+        services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 
         // register backend specific services here, for example services.AddDbContext
     }
@@ -72,9 +83,11 @@ public class Startup
         if (env.IsDevelopment())
         {
             app.UseSwagger();
+
             app.UseSwaggerUI();
 
             app.UseDeveloperExceptionPage();
+
 #if BlazorWebAssembly
                 app.UseWebAssemblyDebugging();
 #endif
@@ -85,6 +98,7 @@ public class Startup
 #endif
 
         app.UseResponseCompression();
+
         app.UseStaticFiles(new StaticFileOptions
         {
             OnPrepareResponse = ctx =>
@@ -98,6 +112,7 @@ public class Startup
         });
 
         app.UseRouting();
+
         app.UseCors(options => options.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
 
         app.UseEndpoints(endpoints =>

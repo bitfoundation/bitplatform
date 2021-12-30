@@ -3,12 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Identity;
 
-namespace TodoTemplate.Shared.Models.Account
+namespace TodoTemplate.Shared.Dtos.Account
 {
-    public class User : IdentityUser<int>
+    public class UserDto
     {
-
     }
 }

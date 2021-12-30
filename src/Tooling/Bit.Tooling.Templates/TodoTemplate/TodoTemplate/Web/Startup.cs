@@ -9,6 +9,7 @@ using System.IO.Compression;
 using System.Net.Http;
 using TodoTemplate.App.Services;
 using TodoTemplate.App.Services.Extensions;
+using TodoTemplate.Shared.Extensions;
 
 namespace TodoTemplate.App;
 public class Startup

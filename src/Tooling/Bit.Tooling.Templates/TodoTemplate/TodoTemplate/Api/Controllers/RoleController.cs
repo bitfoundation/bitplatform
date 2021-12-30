@@ -1,7 +1,10 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using System.Threading;
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-using TodoTemplate.Api.Repository.Contracts;
-using TodoTemplate.Shared.Models.Account;
+using Microsoft.EntityFrameworkCore;
+using TodoTemplate.Api.Data.Models.Account;
+using TodoTemplate.Api.Data.Repositories.Contracts;
+using TodoTemplate.Shared.Dtos.Account;
 
 namespace TodoTemplate.Api.Controllers
 {
@@ -9,90 +12,74 @@ namespace TodoTemplate.Api.Controllers
     [ApiController]
     public class RoleController : ControllerBase
     {
-        private readonly IRoleRepository _roleRepository;
+        private readonly IRepository<Role> _roleRepository;
 
-        public RoleController(IRoleRepository roleRepository)
+        private readonly IMapper _mapper;
+
+        public RoleController(IRepository<Role> roleRepository, IMapper mapper)
         {
             _roleRepository = roleRepository;
+            _mapper = mapper;
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<List<RoleDto>> Get(CancellationToken cancellationToken)
         {
-            try
-            {
-                return Ok(await _roleRepository.GetAllRole());
-            }
-            catch(Exception exception)
-            {
-                return BadRequest(exception);
-            }
+            var roles = await _roleRepository.TableNoTracking.ToListAsync(cancellationToken);
 
+            var mappedRoles = _mapper.Map<List<Role>, List<RoleDto>>(roles);
+
+            return mappedRoles;
         }
 
         [HttpGet("{id:int}")]
-        public async Task<IActionResult> GetById([FromRoute] int id)
+        public async Task<RoleDto> Get(int id, CancellationToken cancellationToken)
         {
-            try
-            {
-                return Ok(await _roleRepository.GetByIdRole(id));
-            }
-            catch (Exception exception)
-            {
-                return BadRequest(exception);
-            }
+            var role = await _roleRepository.GetByIdAsync(cancellationToken,id);
+
+            var mappedRole = _mapper.Map<Role, RoleDto>(role);
+
+            return mappedRole;
         }
 
         [HttpPost]
-        public IActionResult Add([FromBody] Role role)
+        public virtual async Task<RoleDto> Create(RoleDto dto, CancellationToken cancellationToken)
         {
-            try
-            {
-                _roleRepository.AddRole(role);
+            var roleToAdd = _mapper.Map<RoleDto, Role>(dto);
 
-                return Ok();
-            }
-            catch (Exception exception)
-            {
-                return BadRequest(exception);
-            }
+            await _roleRepository.AddAsync(roleToAdd, cancellationToken);
 
+            var role =  await _roleRepository.GetByIdAsync(cancellationToken, roleToAdd.Id);
+
+            var mappedRole = _mapper.Map<Role, RoleDto>(role);
+
+            return mappedRole;
         }
 
         [HttpPut]
-        public async Task<IActionResult> Update([FromBody] Role role)
+        public virtual async Task<RoleDto> Update(RoleDto dto, CancellationToken cancellationToken)
         {
-            try
-            {
-                var toUpdateRole = await _roleRepository.GetByIdRole(role.Id);
+            var roleToUpdate = await _roleRepository.GetByIdAsync(cancellationToken, dto.Id);
 
-                toUpdateRole.Name = role.Name;
+            var updatedRole = _mapper.Map(dto, roleToUpdate);
 
-                _roleRepository.UpdateRole(toUpdateRole);
+            await _roleRepository.UpdateAsync(updatedRole, cancellationToken);
 
-                return Ok();
-            }
-            catch (Exception exception)
-            {
-                return BadRequest(exception);
-            }
+            var role = await _roleRepository.GetByIdAsync(cancellationToken, updatedRole.Id);
+
+            var mappedRole = _mapper.Map<Role, RoleDto>(role);
+
+            return mappedRole;
         }
 
         [HttpDelete("{id:int}")]
-        public async Task<IActionResult> Delete([FromRoute] int id)
+        public virtual async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         {
-            try
-            {
-                var toDeleteRole = await _roleRepository.GetByIdRole(id);
+            var roleToDelete = await _roleRepository.GetByIdAsync(cancellationToken, id);
 
-                _roleRepository.DeleteRole(toDeleteRole);
+            await _roleRepository.DeleteAsync(roleToDelete, cancellationToken);
 
-                return Ok();
-            }
-            catch (Exception exception)
-            {
-                return BadRequest(exception);
-            }
+            return Ok();
         }
     }
 }
