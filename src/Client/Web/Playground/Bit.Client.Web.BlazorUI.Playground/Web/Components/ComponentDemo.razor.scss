@@ -209,9 +209,11 @@
     line-height: rem(24px);
     text-align: left;
     color: $Gray1;
-    text-overflow: ellipsis;
-    white-space: break-spaces;
+    text-overflow: clip;
+    white-space: normal;
     overflow: hidden;
+    word-break: break-word;
+    font-family: ui-monospace,SFMono-Regular,SF Mono,Menlo,Consolas,Liberation Mono,monospace;
 
 
     &:last-child {

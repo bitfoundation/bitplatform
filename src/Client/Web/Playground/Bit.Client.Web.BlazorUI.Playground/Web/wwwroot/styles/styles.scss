@@ -469,6 +469,7 @@ pre {
     box-sizing: border-box;
     direction: ltr;
     overflow: auto;
+    font-family: ui-monospace,SFMono-Regular,SF Mono,Menlo,Consolas,Liberation Mono,monospace;
 
     &::-webkit-scrollbar {
         width: rem(10px);
@@ -495,7 +496,7 @@ pre {
 
 code {
     line-height: 1.5;
-    font-family: Consolas, Menlo, Monaco, "Andale Mono", "Ubuntu Mono", monospace !important;
+    font-family: ui-monospace,SFMono-Regular,SF Mono,Menlo,Consolas,Liberation Mono,monospace;
 
     span {
         font-family: inherit;
