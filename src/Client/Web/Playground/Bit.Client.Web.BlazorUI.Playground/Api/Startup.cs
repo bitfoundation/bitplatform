@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Net.Http.Headers;
-
 #if BlazorWebAssembly
 using System.Net.Http;
 using Microsoft.AspNetCore.Components;
@@ -32,8 +31,11 @@ namespace Bit.Client.Web.BlazorUI.Playground.Api
             services.AddRazorPages();
             services.AddPlaygroundServices();
 #endif
+            services.AddSwaggerGen();
+
             services.AddCors();
-            services.AddMvcCore();
+            services.AddControllers();
+            //services.AddMvcCore(); 
             services.AddResponseCompression(opts =>
             {
                 opts.Providers.Add<BrotliCompressionProvider>();
@@ -68,6 +70,13 @@ namespace Bit.Client.Web.BlazorUI.Playground.Api
                         Public = true
                     };
                 }
+            });
+
+            // Swagger middleware
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "v1");
             });
 
             app.UseRouting();

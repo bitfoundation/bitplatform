@@ -14,6 +14,9 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// Whether the toggle button can have focus in disabled mode.
         /// </summary>
+        /// <defaultValue>
+        /// true
+        /// </defaultValue>
         [Parameter] public bool AllowDisabledFocus { get; set; } = true;
 
         /// <summary>
