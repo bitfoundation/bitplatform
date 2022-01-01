@@ -36,7 +36,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.FileUpload
             {
                 Name = "AutoUploadEnabled",
                 Type = "bool",
-                DefaultValue = "false",
+                DefaultValue = "true",
                 Description = "Uploads immediately after selecting the files.",
             },
             new ComponentParameter()
@@ -45,6 +45,13 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.FileUpload
                 Type = "long",
                 DefaultValue = "10485760",
                 Description = "Upload is done in the form of chunks and this property shows the progress of upload in each chunk.",
+            },
+            new ComponentParameter()
+            {
+                Name = "AutoChunkSizeEnabled",
+                Type = "bool",
+                DefaultValue = "false",
+                Description = "Calculate the chunk size dynamically based on the user's Internet speed between 512 KB and 10 MB.",
             },
             new ComponentParameter()
             {
