@@ -5,10 +5,8 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-using Bit.Client.Web.BlazorUI.Playground.Shared.ExtensionMethods;
 using Bit.Client.Web.BlazorUI.Playground.Shared.DTOs;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
 
 namespace Bit.Client.Web.BlazorUI.Playground.Api.Controllers
 {
@@ -33,19 +31,14 @@ namespace Bit.Client.Web.BlazorUI.Playground.Api.Controllers
             var result = new List<ComponentPropertyDetailsDto>();
 
             var classType = BitComponentAssembly.ExportedTypes
-                .Where(c=> c.Name.ToLower() == componentName.ToLower())
+                .Where(c => c.Name.Equals(componentName, StringComparison.InvariantCultureIgnoreCase))
                 .FirstOrDefault();
 
             if (classType == null) 
                 return NotFound("No component type found!");
 
-            string xml;
-            using (var reader = new StreamReader(System.IO.File.OpenRead(Path.Combine(AppContext.BaseDirectory, "Bit.Client.Web.BlazorUI.xml"))))
-            {
-                xml = await reader.ReadToEndAsync();
-            }
-
-            var xmlFile = XDocument.Parse(xml);
+            var stream = System.IO.File.OpenRead(Path.Combine(AppContext.BaseDirectory, "Bit.Client.Web.BlazorUI.xml"));
+            var xmlFile = await XDocument.LoadAsync(stream, LoadOptions.None, default);
 
             foreach (var item in classType.GetProperties())
             {
@@ -58,8 +51,8 @@ namespace Bit.Client.Web.BlazorUI.Playground.Api.Controllers
                 {
                     Name = item.Name,
                     Type = item.PropertyType.Name,
-                    Summary = xmlProperty?.Parent.Element("summary")?.Value.Fix(),
-                    DefaultValue = xmlProperty?.Parent.Element("defaultValue")?.Value.Fix(),
+                    Summary = xmlProperty?.Parent.Element("summary")?.Value.Trim(),
+                    DefaultValue = xmlProperty?.Parent.Element("defaultValue")?.Value.Trim(),
                 };
                 result.Add(componentDetail);
             }
@@ -77,22 +70,18 @@ namespace Bit.Client.Web.BlazorUI.Playground.Api.Controllers
             var result = new List<ComponentMethodDetailsDto>();
 
             var classType = BitComponentAssembly.ExportedTypes
-                .Where(c => c.Name.ToLower() == componentName.ToLower())
+                .Where(c => c.Name.Equals(componentName,StringComparison.InvariantCultureIgnoreCase))
                 .FirstOrDefault();
 
             if (classType == null)
                 return NotFound("No component type found!");
 
-            string xml;
-            using (var reader = new StreamReader(System.IO.File.OpenRead(Path.Combine(AppContext.BaseDirectory, "Bit.Client.Web.BlazorUI.xml"))))
-            {
-                xml = await reader.ReadToEndAsync();
-            }
-
-            var xmlFile = XDocument.Parse(xml);
+            var stream = System.IO.File.OpenRead(Path.Combine(AppContext.BaseDirectory, "Bit.Client.Web.BlazorUI.xml"));
+            var xmlFile = await XDocument.LoadAsync(stream, LoadOptions.None,default);
 
             var methodList = classType.GetMethods(BindingFlags.Instance | BindingFlags.Public)
                         .Where(m => !m.IsSpecialName).ToList();
+
             foreach (var item in methodList)
             {
                 string propertyAttribute = $"{classType.FullName}.{item.Name}";
@@ -100,14 +89,15 @@ namespace Bit.Client.Web.BlazorUI.Playground.Api.Controllers
                     .Where(attr => attr.Value.Contains(propertyAttribute))
                     .FirstOrDefault();
 
-                var signatures = item.GetParameters();
+                var parameters = item.GetParameters();
                 
                 var componentDetail = new ComponentMethodDetailsDto
                 {
                     Name = item.Name,
-                    Signatures = signatures.Length > 0 ? signatures.Select(v=> v.ParameterType.FullName).Aggregate((a,b)=> $"{a},{b}") : null,
+                    Parameters = parameters.Length > 0 ?
+                        parameters.Select(v=> v.ParameterType.FullName).Aggregate((a,b)=> $"{a},{b}") : null,
                     Output = item.ReturnType.ToString(),
-                    Summary = xmlProperty?.Parent.Element("summary")?.Value.Fix(),
+                    Summary = xmlProperty?.Parent.Element("summary")?.Value.Trim(),
                 };
                 result.Add(componentDetail);
             }
