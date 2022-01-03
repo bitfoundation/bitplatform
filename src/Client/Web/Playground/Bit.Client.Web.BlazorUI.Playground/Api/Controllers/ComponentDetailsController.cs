@@ -14,14 +14,9 @@ namespace Bit.Client.Web.BlazorUI.Playground.Api.Controllers
     [Route("[controller]")]
     public class ComponentDetailsController : ControllerBase
     {
-        public ComponentDetailsController()
-        {
-            BitComponentAssembly = Assembly.GetAssembly(typeof(BitToggleButton));
-        }
-
-        protected Assembly BitComponentAssembly { get;}
-
-        [HttpGet("GetProperties")]
+        private static readonly Assembly _bitComponentAssembly = Assembly.GetAssembly(typeof(BitToggleButton));
+       
+        [HttpGet("Properties")]
         public async Task<ActionResult<List<ComponentPropertyDetailsDto>>>
             GetProperties(string componentName)
         {
@@ -30,15 +25,16 @@ namespace Bit.Client.Web.BlazorUI.Playground.Api.Controllers
 
             var result = new List<ComponentPropertyDetailsDto>();
 
-            var classType = BitComponentAssembly.ExportedTypes
+            var classType = _bitComponentAssembly.ExportedTypes
                 .Where(c => c.Name.Equals(componentName, StringComparison.InvariantCultureIgnoreCase))
                 .FirstOrDefault();
-
+            
             if (classType == null) 
                 return NotFound("No component type found!");
 
             var stream = System.IO.File.OpenRead(Path.Combine(AppContext.BaseDirectory, "Bit.Client.Web.BlazorUI.xml"));
             var xmlFile = await XDocument.LoadAsync(stream, LoadOptions.None, default);
+            var instance = Activator.CreateInstance(classType);
 
             foreach (var item in classType.GetProperties())
             {
@@ -47,12 +43,13 @@ namespace Bit.Client.Web.BlazorUI.Playground.Api.Controllers
                     .Where(attr => attr.Value.Contains(propertyAttribute))
                     .FirstOrDefault();
 
+
                 var componentDetail = new ComponentPropertyDetailsDto
                 {
                     Name = item.Name,
                     Type = item.PropertyType.Name,
                     Summary = xmlProperty?.Parent.Element("summary")?.Value.Trim(),
-                    DefaultValue = xmlProperty?.Parent.Element("defaultValue")?.Value.Trim(),
+                    DefaultValue = item.GetValue(instance)?.ToString(),
                 };
                 result.Add(componentDetail);
             }
@@ -60,7 +57,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Api.Controllers
             return Ok(result);
         }
 
-        [HttpGet("GetMethods")]
+        [HttpGet("Methods")]
         public async Task<ActionResult<List<ComponentMethodDetailsDto>>>
             GetMethods(string componentName)
         {
@@ -69,7 +66,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Api.Controllers
 
             var result = new List<ComponentMethodDetailsDto>();
 
-            var classType = BitComponentAssembly.ExportedTypes
+            var classType = _bitComponentAssembly.ExportedTypes
                 .Where(c => c.Name.Equals(componentName,StringComparison.InvariantCultureIgnoreCase))
                 .FirstOrDefault();
 
