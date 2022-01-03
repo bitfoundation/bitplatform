@@ -11,38 +11,34 @@ using Microsoft.AspNetCore.Mvc;
 namespace Bit.Client.Web.BlazorUI.Playground.Api.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("component-details")]
     public class ComponentDetailsController : ControllerBase
     {
         private static readonly Assembly _bitComponentAssembly = Assembly.GetAssembly(typeof(BitToggleButton));
        
-        [HttpGet("Properties")]
+        [HttpGet("properties")]
         public async Task<ActionResult<List<ComponentPropertyDetailsDto>>>
             GetProperties(string componentName)
         {
             if(string.IsNullOrWhiteSpace(componentName))
                 return BadRequest("Component Name is empty!");
 
-            var result = new List<ComponentPropertyDetailsDto>();
-
-            var classType = _bitComponentAssembly.ExportedTypes
-                .Where(c => c.Name.Equals(componentName, StringComparison.InvariantCultureIgnoreCase))
-                .FirstOrDefault();
+            var classType = GetComponentType(componentName);
             
             if (classType == null) 
                 return NotFound("No component type found!");
 
-            var stream = System.IO.File.OpenRead(Path.Combine(AppContext.BaseDirectory, "Bit.Client.Web.BlazorUI.xml"));
-            var xmlFile = await XDocument.LoadAsync(stream, LoadOptions.None, default);
+            var result = new List<ComponentPropertyDetailsDto>();
+
+            var xmlFile = await LoadXmlFileAsync();
             var instance = Activator.CreateInstance(classType);
 
             foreach (var item in classType.GetProperties())
             {
                 string propertyAttribute = $"{classType.FullName}.{item.Name}";
-                var xmlProperty = xmlFile.Descendants().Attributes()
+                var xmlProperty = xmlFile?.Descendants().Attributes()
                     .Where(attr => attr.Value.Contains(propertyAttribute))
                     .FirstOrDefault();
-
 
                 var componentDetail = new ComponentPropertyDetailsDto
                 {
@@ -57,24 +53,21 @@ namespace Bit.Client.Web.BlazorUI.Playground.Api.Controllers
             return Ok(result);
         }
 
-        [HttpGet("Methods")]
+        [HttpGet("methods")]
         public async Task<ActionResult<List<ComponentMethodDetailsDto>>>
             GetMethods(string componentName)
         {
             if (string.IsNullOrWhiteSpace(componentName))
                 return BadRequest("Component Name is empty!");
 
-            var result = new List<ComponentMethodDetailsDto>();
-
-            var classType = _bitComponentAssembly.ExportedTypes
-                .Where(c => c.Name.Equals(componentName,StringComparison.InvariantCultureIgnoreCase))
-                .FirstOrDefault();
+            var classType = GetComponentType(componentName);
 
             if (classType == null)
                 return NotFound("No component type found!");
 
-            var stream = System.IO.File.OpenRead(Path.Combine(AppContext.BaseDirectory, "Bit.Client.Web.BlazorUI.xml"));
-            var xmlFile = await XDocument.LoadAsync(stream, LoadOptions.None,default);
+            var result = new List<ComponentMethodDetailsDto>();
+            
+            var xmlFile = await LoadXmlFileAsync();
 
             var methodList = classType.GetMethods(BindingFlags.Instance | BindingFlags.Public)
                         .Where(m => !m.IsSpecialName).ToList();
@@ -82,7 +75,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Api.Controllers
             foreach (var item in methodList)
             {
                 string propertyAttribute = $"{classType.FullName}.{item.Name}";
-                var xmlProperty = xmlFile.Descendants().Attributes()
+                var xmlProperty = xmlFile?.Descendants().Attributes()
                     .Where(attr => attr.Value.Contains(propertyAttribute))
                     .FirstOrDefault();
 
@@ -100,6 +93,24 @@ namespace Bit.Client.Web.BlazorUI.Playground.Api.Controllers
             }
 
             return Ok(result);
+        }
+
+        private static async Task<XDocument> LoadXmlFileAsync()
+        {
+            string path = Path.Combine(AppContext.BaseDirectory, "Bit.Client.Web.BlazorUI.xml");
+
+            if (System.IO.File.Exists(path) == false)
+                return null;
+
+            var stream = System.IO.File.OpenRead(path);
+            return await XDocument.LoadAsync(stream, LoadOptions.None, default);
+        }
+
+        private static Type GetComponentType(string name)
+        {
+            return _bitComponentAssembly.ExportedTypes
+                .Where(c => c.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase))
+                .FirstOrDefault();
         }
     }
 
