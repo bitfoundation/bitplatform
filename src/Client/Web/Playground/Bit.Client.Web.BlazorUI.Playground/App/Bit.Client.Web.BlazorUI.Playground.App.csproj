@@ -57,6 +57,7 @@
 
     <ItemGroup>
         <Content Remove="Pages\_Host.cshtml" />
+        <Content Remove="Pages\_Layout.cshtml" />
         <Content Remove="Properties\launchSettings.json" />
         <Content Remove="compilerconfig.json" />
         <None Include="compilerconfig.json" />
