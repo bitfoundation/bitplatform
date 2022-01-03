@@ -61,12 +61,14 @@ class BitFileUpload {
         }
 
         this.request.upload.onprogress = function (e: ProgressEvent) {
-            dotnetReference.invokeMethodAsync("BitHandleUploadProgress", index, e.loaded);
+            if (e.lengthComputable) {
+                dotnetReference.invokeMethodAsync("HandleUploadProgress", index, e.loaded);
+            }
         };
 
         this.request.onreadystatechange = (function (request: XMLHttpRequest, event: Event): any {
             if (request.readyState === 4) {
-                dotnetReference.invokeMethodAsync("BitHandleFileUploaded", index, request.status);
+                dotnetReference.invokeMethodAsync("HandleFileUpload", index, request.status);
             }
         }).bind(this, this.request);
     }

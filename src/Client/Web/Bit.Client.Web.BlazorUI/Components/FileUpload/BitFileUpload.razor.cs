@@ -13,6 +13,8 @@ namespace Bit.Client.Web.BlazorUI
     /// </summary>
     public partial class BitFileUpload : IDisposable
     {
+        private const int MIN_CHUNK_SIZE = 512 * 1024; // 512 kb
+        private const int MAX_CHUNK_SIZE = 10 * 1024 * 1024; // 10 mb
         private DotNetObjectReference<BitFileUpload>? dotnetObjectReference;
         private ElementReference inputFileElement;
 
@@ -62,7 +64,7 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// Single <c>false</c> or multiple <c>true</c> files upload.
         /// </summary>
-        [Parameter] public bool IsMultiSelect { get; set; } = false;
+        [Parameter] public bool IsMultiSelect { get; set; }
 
         /// <summary>
         /// Uploads immediately after selecting the files.
@@ -93,6 +95,11 @@ namespace Bit.Client.Web.BlazorUI
         /// Upload is done in the form of chunks and this property shows the progress of upload in each chunk.
         /// </summary>
         [Parameter] public long ChunkSize { get; set; } = FileSizeHumanizer.OneMegaByte * 10;
+
+        /// <summary>
+        /// Calculate the chunk size dynamically.
+        /// </summary>
+        [Parameter] public bool AutoChunkSizeEnabled { get; set; }
 
         /// <summary>
         /// All selected files.
@@ -156,7 +163,7 @@ namespace Bit.Client.Web.BlazorUI
             if (JSRuntime is null || Files is null) return;
             if (Files[index].UploadStatus == BitUploadStatus.NotAllowed) return;
 
-            var uploadedSize = Files[index].ChunkesUpLoadedSize.Sum();
+            var uploadedSize = Files[index].TotalSizeOfUploaded;
             if (Files[index].Size != 0 && uploadedSize >= Files[index].Size) return;
 
             if (MaxSize > 0 && Files[index].Size > MaxSize)
@@ -183,19 +190,19 @@ namespace Bit.Client.Web.BlazorUI
                 return;
             }
 
-            long from = ChunkSize * Files[index].ChunkCount;
+            long from = Files[index].TotalSizeOfUploaded;
             long to;
             if (Files[index].Size > ChunkSize)
             {
-                to = ChunkSize * (Files[index].ChunkCount + 1);
+                to = ChunkSize + from;
             }
             else
             {
                 to = Files[index].Size;
             }
 
-            Files[index].ChunkesUpLoadedSize.Add(0);
-            Files[index].ChunkCount += 1;
+            Files[index].StartTimeUpload = DateTime.UtcNow;
+            Files[index].SizeOfLastChunkUploaded = 0;
 
             await JSRuntime.UploadFile(from, to, index);
         }
@@ -254,12 +261,12 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
 		/// Receive upload progress notification from underlying javascript.
 		/// </summary>
-		[JSInvokable("BitHandleUploadProgress")]
+		[JSInvokable("HandleUploadProgress")]
         public void HandleUploadProgress(int index, long loaded)
         {
             if (Files is null || Files[index].UploadStatus != BitUploadStatus.InProgress) return;
 
-            Files[index].ChunkesUpLoadedSize[Files[index].ChunkCount - 1] = loaded;
+            Files[index].SizeOfLastChunkUploaded = loaded;
             UpdateStatus(BitUploadStatus.InProgress, index);
             StateHasChanged();
         }
@@ -267,15 +274,18 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// Receive upload finished notification from underlying javascript.
         /// </summary>
-        [JSInvokable("BitHandleFileUploaded")]
-        public async Task HandleFileUploaded(int fileIndex, int responseStatus)
+        [JSInvokable("HandleFileUpload")]
+        public async Task HandleFileUpload(int fileIndex, int responseStatus)
         {
             if (Files is null
                 || UploadStatus == BitUploadStatus.Paused
                 || Files[fileIndex].UploadStatus != BitUploadStatus.InProgress)
                 return;
 
-            if (Files[fileIndex].ChunkesUpLoadedSize.Sum() < Files[fileIndex].Size)
+            Files[fileIndex].TotalSizeOfUploaded += ChunkSize;
+            Files[fileIndex].SizeOfLastChunkUploaded = 0;
+            UpdateChunkSize(fileIndex);
+            if (Files[fileIndex].TotalSizeOfUploaded < Files[fileIndex].Size)
             {
                 await Upload(index: fileIndex);
             }
@@ -291,6 +301,28 @@ namespace Bit.Client.Web.BlazorUI
             }
 
             StateHasChanged();
+        }
+
+        private void UpdateChunkSize(int fileIndex)
+        {
+            if (Files is null || AutoChunkSizeEnabled is false) return;
+
+            var dtNow = DateTime.UtcNow;
+            var duration = (dtNow - Files[fileIndex].StartTimeUpload.GetValueOrDefault(dtNow)).TotalMilliseconds;
+
+            if (duration >= 1000 && duration <= 1500) return;
+
+            ChunkSize = Convert.ToInt64(ChunkSize / (duration / 1000));
+
+            if (ChunkSize > MAX_CHUNK_SIZE)
+            {
+                ChunkSize = MAX_CHUNK_SIZE;
+            }
+
+            if (ChunkSize < MIN_CHUNK_SIZE)
+            {
+                ChunkSize = MIN_CHUNK_SIZE;
+            }
         }
 
         private void UpdateStatus(BitUploadStatus uploadStatus, int index)
@@ -339,7 +371,7 @@ namespace Bit.Client.Web.BlazorUI
                 "pdf" => "PDF",
                 "txt" => "InsertTextBox",
 
-                _ => ""
+                _ => string.Empty
             };
         }
 
@@ -380,11 +412,11 @@ namespace Bit.Client.Web.BlazorUI
 
         private async Task RemoveOneFile(int index)
         {
-            if (Files is null || RemoveUrl is null || HttpClient is null) return;
+            if (Files is null || RemoveUrl.HasNoValue() || HttpClient is null) return;
 
             var url = $"{RemoveUrl}?fileName={Files[index].Name}";
 #pragma warning disable CA2234 // Pass system uri objects instead of strings
-            _ = await HttpClient.DeleteAsync(url);
+            await HttpClient.DeleteAsync(url);
 #pragma warning restore CA2234 // Pass system uri objects instead of strings
         }
 
@@ -422,7 +454,7 @@ namespace Bit.Client.Web.BlazorUI
                         return MaxSizeErrorMessage;
                     }
                 default:
-                    return "";
+                    return string.Empty;
             }
         }
 
@@ -435,14 +467,14 @@ namespace Bit.Client.Web.BlazorUI
 
         private static int GetFileUploadPercent(BitFileInfo file)
         {
-            var uploadedPercent = 0;
-            if (file.ChunkesUpLoadedSize.Sum() >= file.Size)
+            int uploadedPercent;
+            if (file.TotalSizeOfUploaded >= file.Size)
             {
                 uploadedPercent = 100;
             }
             else
             {
-                uploadedPercent = (int)(file.ChunkesUpLoadedSize.Sum() / (float)file.Size * 100);
+                uploadedPercent = (int)((file.TotalSizeOfUploaded + file.SizeOfLastChunkUploaded) / (float)file.Size * 100);
             }
 
             return uploadedPercent;
@@ -451,13 +483,13 @@ namespace Bit.Client.Web.BlazorUI
         private static string GetFileUploadSize(BitFileInfo file)
         {
             long uploadedSize;
-            if (file.ChunkesUpLoadedSize.Sum() >= file.Size)
+            if (file.TotalSizeOfUploaded >= file.Size)
             {
                 uploadedSize = file.Size;
             }
             else
             {
-                uploadedSize = file.ChunkesUpLoadedSize.Sum();
+                uploadedSize = file.TotalSizeOfUploaded + file.SizeOfLastChunkUploaded;
             }
 
             return uploadedSize.Humanize();
