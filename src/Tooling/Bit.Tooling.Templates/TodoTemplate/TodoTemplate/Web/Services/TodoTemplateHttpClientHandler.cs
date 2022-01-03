@@ -4,7 +4,7 @@ using System.Threading;
 
 namespace TodoTemplate.App.Services
 {
-    public class AppHttpClientHandler : HttpClientHandler
+    public class TodoTemplateHttpClientHandler : HttpClientHandler
     {
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {

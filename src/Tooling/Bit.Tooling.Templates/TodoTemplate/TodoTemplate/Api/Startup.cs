@@ -8,8 +8,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Net.Http.Headers;
 using TodoTemplate.Api.Data.Context;
-using TodoTemplate.Api.Data.Repositories.Contracts;
-using TodoTemplate.Api.Data.Repositories.Implementations;
 using TodoTemplate.Shared.Extensions;
 
 #if BlazorWebAssembly
@@ -62,7 +60,7 @@ public class Startup
             .Configure<BrotliCompressionProviderOptions>(opt => opt.Level = CompressionLevel.Fastest)
             .Configure<GzipCompressionProviderOptions>(opt => opt.Level = CompressionLevel.Fastest);
 
-        services.AddDbContext<AppDbContext>(options =>
+        services.AddDbContext<TodoTemplateDbContext>(options =>
         {
             options.UseSqlServer(Configuration.GetConnectionString("SqlServerConnection"));
         });
@@ -72,8 +70,6 @@ public class Startup
         services.AddSwaggerGen();
 
         services.AddAutoMapper(typeof(Startup).Assembly);
-
-        services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 
         // register backend specific services here, for example services.AddDbContext
     }

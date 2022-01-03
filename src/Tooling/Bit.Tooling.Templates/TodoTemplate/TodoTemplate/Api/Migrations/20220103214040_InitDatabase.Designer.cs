@@ -11,8 +11,8 @@ using TodoTemplate.Api.Data.Context;
 
 namespace TodoTemplate.Api.Migrations
 {
-    [DbContext(typeof(AppDbContext))]
-    [Migration("20211230031319_InitDatabase")]
+    [DbContext(typeof(TodoTemplateDbContext))]
+    [Migration("20220103214040_InitDatabase")]
     partial class InitDatabase
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

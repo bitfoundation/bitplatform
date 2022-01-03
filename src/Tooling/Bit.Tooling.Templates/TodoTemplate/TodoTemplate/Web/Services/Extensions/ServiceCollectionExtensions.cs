@@ -6,12 +6,12 @@
         {
             services.AddScoped(sp =>
             {
-                HttpClient httpClient = new(sp.GetRequiredService<AppHttpClientHandler>()) { BaseAddress = new Uri("https://localhost:5001/api/") };
+                HttpClient httpClient = new(sp.GetRequiredService<TodoTemplateHttpClientHandler>()) { BaseAddress = new Uri("https://localhost:5001/api/") };
 
                 return httpClient;
             });
 
-            services.AddScoped<AppHttpClientHandler>();
+            services.AddScoped<TodoTemplateHttpClientHandler>();
 
             return services;
         }

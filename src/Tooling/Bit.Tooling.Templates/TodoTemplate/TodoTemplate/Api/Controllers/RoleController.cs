@@ -1,9 +1,9 @@
 ﻿using System.Threading;
 using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using TodoTemplate.Api.Data.Context;
 using TodoTemplate.Api.Data.Models.Account;
-using TodoTemplate.Api.Data.Repositories.Contracts;
 using TodoTemplate.Shared.Dtos.Account;
 
 namespace TodoTemplate.Api.Controllers
@@ -12,74 +12,62 @@ namespace TodoTemplate.Api.Controllers
     [ApiController]
     public class RoleController : ControllerBase
     {
-        private readonly IRepository<Role> _roleRepository;
+        private readonly TodoTemplateDbContext _context;
 
         private readonly IMapper _mapper;
 
-        public RoleController(IRepository<Role> roleRepository, IMapper mapper)
+        public RoleController(TodoTemplateDbContext context, IMapper mapper)
         {
-            _roleRepository = roleRepository;
+            _context = context;
             _mapper = mapper;
         }
 
         [HttpGet]
-        public async Task<List<RoleDto>> Get(CancellationToken cancellationToken)
+        public IQueryable<RoleDto> Get(CancellationToken cancellationToken)
         {
-            var roles = await _roleRepository.TableNoTracking.ToListAsync(cancellationToken);
-
-            var mappedRoles = _mapper.Map<List<Role>, List<RoleDto>>(roles);
-
-            return mappedRoles;
+            return _context.Roles.ProjectTo<RoleDto>(_mapper.ConfigurationProvider, cancellationToken);
         }
 
         [HttpGet("{id:int}")]
-        public async Task<RoleDto> Get(int id, CancellationToken cancellationToken)
+        public RoleDto Get(int id, CancellationToken cancellationToken)
         {
-            var role = await _roleRepository.GetByIdAsync(cancellationToken,id);
-
-            var mappedRole = _mapper.Map<Role, RoleDto>(role);
-
-            return mappedRole;
+            return Get(cancellationToken).FirstOrDefault(role => role.Id == id);
         }
 
         [HttpPost]
-        public virtual async Task<RoleDto> Create(RoleDto dto, CancellationToken cancellationToken)
+        public RoleDto Create(RoleDto dto, CancellationToken cancellationToken)
         {
-            var roleToAdd = _mapper.Map<RoleDto, Role>(dto);
+            var roleToAdd = _mapper.Map<Role>(dto);
 
-            await _roleRepository.AddAsync(roleToAdd, cancellationToken);
+            _context.Add(roleToAdd);
 
-            var role =  await _roleRepository.GetByIdAsync(cancellationToken, roleToAdd.Id);
+            _context.SaveChanges();
 
-            var mappedRole = _mapper.Map<Role, RoleDto>(role);
-
-            return mappedRole;
+            return Get(roleToAdd.Id, cancellationToken);
         }
 
         [HttpPut]
-        public virtual async Task<RoleDto> Update(RoleDto dto, CancellationToken cancellationToken)
+        public RoleDto Update(RoleDto dto, CancellationToken cancellationToken)
         {
-            var roleToUpdate = await _roleRepository.GetByIdAsync(cancellationToken, dto.Id);
+            var roleToUpdate = _context.Roles.FirstOrDefault(role => role.Id == dto.Id);
 
             var updatedRole = _mapper.Map(dto, roleToUpdate);
 
-            await _roleRepository.UpdateAsync(updatedRole, cancellationToken);
+            _context.Update(updatedRole);
 
-            var role = await _roleRepository.GetByIdAsync(cancellationToken, updatedRole.Id);
+            _context.SaveChanges();
 
-            var mappedRole = _mapper.Map<Role, RoleDto>(role);
-
-            return mappedRole;
+            return Get(updatedRole.Id, cancellationToken);
         }
 
         [HttpDelete("{id:int}")]
-        public virtual async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
+        public void Delete(int id)
         {
-            var roleToDelete = await _roleRepository.GetByIdAsync(cancellationToken, id);
+            var roleToDelete = _context.Roles.FirstOrDefault(role => role.Id == id);
 
-            await _roleRepository.DeleteAsync(roleToDelete, cancellationToken);
+            _context.Remove(roleToDelete);
 
-            return Ok();
+            _context.SaveChanges();
         }
     }
 }

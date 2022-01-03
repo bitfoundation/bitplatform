@@ -1,5 +1,4 @@
-﻿using System.Text.Json.Serialization;
-
+﻿
 namespace TodoTemplate.Shared.Dtos.Account
 {
     public class RoleDto
