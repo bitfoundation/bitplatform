@@ -25,11 +25,11 @@
 		<PackageProjectUrl>https://github.com/bitfoundation/bitframework</PackageProjectUrl>
 		<PackageIconUrl>https://avatars.githubusercontent.com/u/22663390</PackageIconUrl>
 		<PackageReleaseNotes>https://github.com/bitfoundation/bitframework/releases/tag/v7.4.0</PackageReleaseNotes>
-		<PackageVersion>8.6.1</PackageVersion>
+		<PackageVersion>8.7.0</PackageVersion>
 
 		<!-- Version -->
-		<Version>8.6.1</Version>
-		<AssemblyVersion>8.6.1</AssemblyVersion>
+		<Version>8.7.0</Version>
+		<AssemblyVersion>8.7.0</AssemblyVersion>
 
 		<!-- Compile -->
 		<NeutralLanguage>en</NeutralLanguage>

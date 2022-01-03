@@ -24,7 +24,7 @@
             {
                 <tr class="tdata-row">
                     <td class="td-cell">@param.Name</td>
-                    <td class="td-cell" title=@param.Type>
+                    <td class="td-cell">
                         @if (param.LinkType == LinkType.Link)
                         {
                             <BitLink Class="param-table-link" Href="@param.Href">@param.Type</BitLink>
@@ -34,7 +34,7 @@
                             @param.Type
                         }
                     </td>
-                    <td class="td-cell" title=@param.DefaultValue>@param.DefaultValue</td>
+                    <td class="td-cell">@param.DefaultValue</td>
                     <td class="td-cell">@param.Description</td>
                 </tr>
             }
@@ -54,7 +54,7 @@
                 {
                     <tr class="tdata-row">
                         <td class="td-cell">@item.Name</td>
-                        <td class="td-cell" title=@item.Type>
+                        <td class="td-cell">
                             @if (item.LinkType == LinkType.Link)
                             {
                                 <BitLink Class="param-table-link" Href="@item.Href">@item.Type</BitLink>
@@ -64,7 +64,7 @@
                                 @item.Type
                             }
                         </td>
-                        <td class="td-cell" title=@item.DefaultValue>@item.DefaultValue</td>
+                        <td class="td-cell">@item.DefaultValue</td>
                         <td class="td-cell">@item.Description</td>
                     </tr>
                 }

@@ -89,50 +89,50 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Toggle
               $"IsEnabled='true'{Environment.NewLine}" +
               $"OnText='On'{Environment.NewLine}" +
               $"OffText='Off'{Environment.NewLine}" +
-              $"</BitToggle>{Environment.NewLine}" +
+              $" />{Environment.NewLine}" +
               $"<BitToggle Label='Enabled And Unchecked'{Environment.NewLine}" +
               $"@bind-IsChecked='@IsToggleChecked'{Environment.NewLine}" +
               $"IsEnabled='true'{Environment.NewLine}" +
               $"OnText='On'{Environment.NewLine}" +
               $"OffText='Off'{Environment.NewLine}" +
-              $"</BitToggle>{Environment.NewLine}" +
+              $" />{Environment.NewLine}" +
               $"<BitToggle Label='Disabled And Checked'{Environment.NewLine}" +
               $"IsChecked='true'{Environment.NewLine}" +
               $"IsEnabled='true'{Environment.NewLine}" +
               $"OnText='On'{Environment.NewLine}" +
               $"OffText='Off'{Environment.NewLine}" +
-              $"</BitToggle>{Environment.NewLine}" +
+              $" />{Environment.NewLine}" +
               $"<BitToggle Label='Disabled And Unchecked'{Environment.NewLine}" +
               $"IsChecked='false'{Environment.NewLine}" +
               $"IsEnabled='false'{Environment.NewLine}" +
               $"OnText='On'{Environment.NewLine}" +
               $"OffText='Off'{Environment.NewLine}" +
-              $"</BitToggle>{Environment.NewLine}" +
+              $" />{Environment.NewLine}" +
               $"<BitToggle Label='Disabled With Inline Label'{Environment.NewLine}" +
               $"IsChecked='false'{Environment.NewLine}" +
               $"IsEnabled='false'{Environment.NewLine}" +
               $"IsInlineLabel='true'{Environment.NewLine}" +
               $"OnText='On'{Environment.NewLine}" +
               $"OffText='Off'{Environment.NewLine}" +
-              $"</BitToggle>{Environment.NewLine}" +
+              $" />{Environment.NewLine}" +
               $"<BitToggle Label='Enabled And Unchecked'{Environment.NewLine}" +
               $"@bind-IsChecked='@IsToggleUnChecked'{Environment.NewLine}" +
               $"IsEnabled='true'{Environment.NewLine}" +
               $"OnText='On'{Environment.NewLine}" +
               $"OffText='Off'{Environment.NewLine}" +
-              $"</BitToggle>{Environment.NewLine}" +
+              $" />{Environment.NewLine}" +
               $"<BitToggle Label='Disabled With Inline Label'{Environment.NewLine}" +
               $"IsChecked='false'{Environment.NewLine}" +
               $"IsEnabled='false'{Environment.NewLine}" +
               $"IsInlineLabel='true'{Environment.NewLine}" +
-              $"</BitToggle>{Environment.NewLine}" +
+              $" />{Environment.NewLine}" +
               $"<BitToggle Label='Enabled And Checked (ARIA 1.0 compatible)'{Environment.NewLine}" +
               $"@bind-IsChecked='@IsToggleChecked'{Environment.NewLine}" +
               $"IsEnabled='true'{Environment.NewLine}" +
               $"OnText='On'{Environment.NewLine}" +
               $"OffText='Off'{Environment.NewLine}" +
               $"Role='Checkbox'{Environment.NewLine}" +
-              $"</BitToggle>{Environment.NewLine}" +
+              $" />{Environment.NewLine}" +
               $"@code {{ {Environment.NewLine}" +
               $"private bool IsToggleChecked = true;{Environment.NewLine}" +
               $"private bool IsToggleUnChecked = false;{Environment.NewLine}" +
@@ -141,7 +141,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Toggle
         private readonly string customLabelSampleCode = $"<BitToggle @bind-IsChecked='@IsToggleUnChecked'{Environment.NewLine}" +
               $"IsEnabled='true'{Environment.NewLine}" +
               $"OnText='On'{Environment.NewLine}" +
-              $"OffText='Off'{Environment.NewLine}" +
+              $"OffText='Off'>{Environment.NewLine}" +
               $"<LabelFragment>{Environment.NewLine}" +
               $"Custom Inline Label{Environment.NewLine}" +
               $"</LabelFragment>{Environment.NewLine}" +

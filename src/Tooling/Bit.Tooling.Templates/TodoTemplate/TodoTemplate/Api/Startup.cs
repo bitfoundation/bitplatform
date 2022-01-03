@@ -35,6 +35,8 @@ public class Startup
         services.AddMvcCore();
         services.AddResponseCompression(opts =>
         {
+            opts.EnableForHttps = true;
+            opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Where(m => m != "text/html").Concat(new[] { "application/octet-stream" }).ToArray();
             opts.Providers.Add<BrotliCompressionProvider>();
             opts.Providers.Add<GzipCompressionProvider>();
         })

@@ -351,14 +351,14 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.TextField
             "</BitTextField>";
 
         private readonly string customLabelSampleCode = $"<BitTextField Description='Click the (i) icon!'>{Environment.NewLine}" +
-            $"<LabelFragment>'{Environment.NewLine}" +
+            $"<LabelFragment>{Environment.NewLine}" +
             $"<BitLabel Style='display:inline-block;padding-bottom:10px;'>Custom label rendering</BitLabel>{Environment.NewLine}" +
-            $"<BitIconButton IconName='BitIcon.Info'></BitLabel>{Environment.NewLine}" +
+            $"<BitIconButton IconName='BitIcon.Info'></BitIconButton>{Environment.NewLine}" +
             $"</LabelFragment>{Environment.NewLine}" +
             $"</BitTextField>{Environment.NewLine}" +
             $"<BitTextField>{Environment.NewLine}" +
             $"<DescriptionFragment>{Environment.NewLine}" +
-            $"<BitLabel Style='color:green;'>Custom description rendering</BitLabel>'{Environment.NewLine}" +
+            $"<BitLabel Style='color:green;'>Custom description rendering</BitLabel>{Environment.NewLine}" +
             $"</DescriptionFragment>{Environment.NewLine}" +
             "</BitTextField>";
     }

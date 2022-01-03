@@ -33,7 +33,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Buttons
             new ComponentParameter()
             {
                 Name = "ButtonStyle",
-                Type = "ButtonStyle",
+                Type = "BitButtonStyle",
                 LinkType = LinkType.Link,
                 Href = "#button-style-enum",
                 DefaultValue = "BitButtonStyle.Primary",
@@ -126,7 +126,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Buttons
                  $"</style>";
 
         private readonly string visibilitySampleCode = $"<BitCompoundButton Visibility='BitComponentVisibility.Visible' Text='Visible' SecondaryText='This Button is a visible compound button'></BitCompoundButton>{Environment.NewLine}" +
-                 $"<BitCompoundButton Hidden='ComponentHidden.Hidden' Text='Hidden' SecondaryText='This Button is a hidden compound button'></BitCompoundButton>{Environment.NewLine}" +
+                 $"<BitCompoundButton Visibility='BitComponentVisibility.Hidden' Text='Hidden' SecondaryText='This Button is a hidden compound button'></BitCompoundButton>{Environment.NewLine}" +
                  $"<BitCompoundButton Visibility='BitComponentVisibility.Collapsed' Text='Collapsed' SecondaryText='This Button is a collapsed compound button'></BitCompoundButton>";
 
         private readonly string ariasSampleCode = $"<BitCompoundButton AriaDescription='Detailed description used for screen reader' Text='AriaDescription' SecondaryText='This is a compound button with aria description' ButtonStyle='BitButtonStyle.Standard'></BitCompoundButton>{Environment.NewLine}" +

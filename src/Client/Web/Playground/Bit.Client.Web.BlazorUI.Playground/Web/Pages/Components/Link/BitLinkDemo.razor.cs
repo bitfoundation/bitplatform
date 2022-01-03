@@ -52,8 +52,8 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Link
             },
         };
 
-        private readonly string linkSampleCode = $"When a link has an href, <BitLink Href='https://github.com/bitfoundation/bitframework' Target='_blank' HasUnderline='true'>it renders as an anchor tag</BitLink>. Without an href, <BitLink HasUnderline='true'>the link is rendered as a button</BitLink>.{Environment.NewLine}" +
+        private readonly string linkSampleCode = $"<p>When a link has an href, <BitLink Href='https://github.com/bitfoundation/bitframework' Target='_blank' HasUnderline='true'>it renders as an anchor tag</BitLink>. Without an href, <BitLink HasUnderline='true'>the link is rendered as a button</BitLink>.{Environment.NewLine}" +
               $"You can also use the disabled attribute to create a <BitLink Href='https://github.com/bitfoundation/bitframework' IsEnabled='false' HasUnderline='true'>disabled link</BitLink>. It's not recommended to use Links with imgs because{Environment.NewLine}" +
-               "Links are meant to render textual inline content. Buttons are inline-block or in the case of imgs, block. However, it is possible to create a linked image button by making a button with an unstyled variant and adding the img content and href source to that.";
+               "Links are meant to render textual inline content. Buttons are inline-block or in the case of imgs, block. However, it is possible to create a linked image button by making a button with an unstyled variant and adding the img content and href source to that.</p>";
     }
 }

@@ -58,11 +58,12 @@ namespace BitChangeSetManager
 
             dependencyManager.RegisterDefaultAspNetCoreApp();
 
-            services.AddResponseCompression(options =>
+            services.AddResponseCompression(opts =>
             {
-                options.EnableForHttps = true;
-                options.Providers.Add<BrotliCompressionProvider>();
-                options.Providers.Add<GzipCompressionProvider>();
+                opts.EnableForHttps = true;
+                opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Where(m => m != "text/html").Concat(new[] { "application/octet-stream" }).ToArray();
+                opts.Providers.Add<BrotliCompressionProvider>();
+                opts.Providers.Add<GzipCompressionProvider>();
             }).Configure<GzipCompressionProviderOptions>(options =>
             {
                 options.Level = CompressionLevel.Fastest;

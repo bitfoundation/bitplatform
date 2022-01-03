@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Net.Http.Headers;
+using System.Linq;
+
 #if BlazorWebAssembly
 using System.Net.Http;
 using Microsoft.AspNetCore.Components;
@@ -38,6 +40,8 @@ namespace Bit.Client.Web.BlazorUI.Playground.Api
             //services.AddMvcCore(); 
             services.AddResponseCompression(opts =>
             {
+                opts.EnableForHttps = true;
+                opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Where(m => m != "text/html").Concat(new[] { "application/octet-stream" }).ToArray();
                 opts.Providers.Add<BrotliCompressionProvider>();
                 opts.Providers.Add<GzipCompressionProvider>();
             })

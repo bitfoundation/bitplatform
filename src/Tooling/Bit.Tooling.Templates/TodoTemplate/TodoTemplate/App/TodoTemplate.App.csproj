@@ -75,7 +75,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Bit.Client.Web.BlazorUI" Version="8.5.3" />
+        <PackageReference Include="Bit.Client.Web.BlazorUI" Version="8.7.0" />
         <PackageReference Include="BuildWebCompiler" Version="1.12.405" />
         <Content Remove="appsettings.json" />
         <EmbeddedResource Include="appsettings.json" />
