@@ -18,12 +18,8 @@ public class Startup
     {
         services.AddTodoTemplateSharedServices();
         services.AddTodoTemplateServices();
+
 #if BlazorServer
-        services.AddHttpClient("ApiHttpClient", (serviceProvider, httpClient) =>
-        {
-            httpClient.BaseAddress = new Uri(serviceProvider.GetRequiredService<IConfiguration>()["ApiServerAddress"]);
-        });
-        services.AddTransient(c => c.GetRequiredService<IHttpClientFactory>().CreateClient("ApiHttpClient"));
         services.AddRazorPages();
         services.AddServerSideBlazor();
         services.AddResponseCompression(opts =>
@@ -36,7 +32,7 @@ public class Startup
             .Configure<GzipCompressionProviderOptions>(opt => opt.Level = CompressionLevel.Fastest);
 #endif
 
-        services.AppServices();
+        services.ConfigureAppServices();
     }
 
 #if BlazorServer

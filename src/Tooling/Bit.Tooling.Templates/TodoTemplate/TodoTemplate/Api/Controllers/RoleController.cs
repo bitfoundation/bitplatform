@@ -2,6 +2,7 @@
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using TodoTemplate.Api.Data.Context;
 using TodoTemplate.Api.Data.Models.Account;
 using TodoTemplate.Shared.Dtos.Account;
@@ -29,45 +30,45 @@ namespace TodoTemplate.Api.Controllers
         }
 
         [HttpGet("{id:int}")]
-        public RoleDto Get(int id, CancellationToken cancellationToken)
+        public async Task<RoleDto> Get(int id, CancellationToken cancellationToken)
         {
-            return Get(cancellationToken).FirstOrDefault(role => role.Id == id);
+            return await Get(cancellationToken).FirstOrDefaultAsync(role => role.Id == id, cancellationToken);
         }
 
         [HttpPost]
-        public RoleDto Create(RoleDto dto, CancellationToken cancellationToken)
+        public async Task<RoleDto> Create(RoleDto dto, CancellationToken cancellationToken)
         {
             var roleToAdd = _mapper.Map<Role>(dto);
 
-            _context.Add(roleToAdd);
+            await _context.AddAsync(roleToAdd, cancellationToken);
 
-            _context.SaveChanges();
+            await _context.SaveChangesAsync(cancellationToken);
 
-            return Get(roleToAdd.Id, cancellationToken);
+            return await Get(roleToAdd.Id, cancellationToken);
         }
 
         [HttpPut]
-        public RoleDto Update(RoleDto dto, CancellationToken cancellationToken)
+        public async Task<RoleDto> Update(RoleDto dto, CancellationToken cancellationToken)
         {
-            var roleToUpdate = _context.Roles.FirstOrDefault(role => role.Id == dto.Id);
+            var roleToUpdate = await _context.Roles.FirstOrDefaultAsync(role => role.Id == dto.Id, cancellationToken);
 
             var updatedRole = _mapper.Map(dto, roleToUpdate);
 
             _context.Update(updatedRole);
 
-            _context.SaveChanges();
+            await _context.SaveChangesAsync(cancellationToken);
 
-            return Get(updatedRole.Id, cancellationToken);
+            return await Get(updatedRole.Id, cancellationToken);
         }
 
         [HttpDelete("{id:int}")]
-        public void Delete(int id)
+        public async void Delete(int id,CancellationToken cancellationToken)
         {
-            var roleToDelete = _context.Roles.FirstOrDefault(role => role.Id == id);
+            var roleToDelete = await _context.Roles.FirstOrDefaultAsync(role => role.Id == id, cancellationToken);
 
             _context.Remove(roleToDelete);
 
-            _context.SaveChanges();
+            await _context.SaveChangesAsync(cancellationToken);
         }
     }
 }
