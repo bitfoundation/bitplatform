@@ -11,17 +11,19 @@
 		<DefineConstants Condition=" '$(TargetFramework)' == 'net6.0-windows10.0.19041' ">$(DefineConstants);Windows</DefineConstants>
 		<DefineConstants Condition=" '$(TargetFramework)' == 'net6.0-maccatalyst' ">$(DefineConstants);Mac</DefineConstants>
 		<LangVersion>preview</LangVersion>
+        <Nullable>enable</Nullable>
 	</PropertyGroup>
 
 	<ItemGroup>
 		<Using Include="System" />
 		<Using Include="System.IO" />
+        <Using Include="System.Threading" />
 		<Using Include="System.Threading.Tasks" />
 		<Using Include="System.Linq"/>
 		<Using Include="System.Collections.Generic"/>
-		<Using Include="TodoTemplate.Shared.Contracts"/>
 		<Using Include="TodoTemplate.Shared.Implementations"/>
 		<Using Include="Microsoft.Extensions.DependencyInjection" />
+        <Using Include="System.Net.Http" />
     </ItemGroup>
 
 </Project>
