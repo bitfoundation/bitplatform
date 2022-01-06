@@ -27,7 +27,7 @@
     <link rel="stylesheet" href="Bit.Client.Web.BlazorUI.Playground.Web.styles.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/styles/styles.css" asp-append-version="true" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/styles/default.min.css">
-    <component type="typeof(HeadOutlet)" render-mode="@(isBlazorServer ? RenderMode.ServerPrerendered : RenderMode.Static)" />
+    <component type="typeof(HeadOutlet)" render-mode="@(isBlazorServer ? RenderMode.ServerPrerendered : RenderMode.WebAssemblyPrerendered)" />
 </head>
 <body>
 
@@ -47,5 +47,6 @@
     {
         <script src="_framework/blazor.webassembly.js" asp-append-version="true"></script>
     }
+    <persist-component-state />
 </body>
 </html>

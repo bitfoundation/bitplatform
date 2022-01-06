@@ -29,8 +29,6 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web
         {
             var builder = WebAssemblyHostBuilder.CreateDefault();
 
-            builder.RootComponents.Add<App>("app");
-
             builder.Services.AddSingleton(new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 
             new Startup().ConfigureServices(builder.Services);
