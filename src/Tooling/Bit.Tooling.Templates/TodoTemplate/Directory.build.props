@@ -22,7 +22,6 @@
 		<Using Include="TodoTemplate.Shared.Contracts"/>
 		<Using Include="TodoTemplate.Shared.Implementations"/>
 		<Using Include="Microsoft.Extensions.DependencyInjection" />
-		<Using Include="TodoTemplate.Shared.Models" />
-	</ItemGroup>
+    </ItemGroup>
 
 </Project>

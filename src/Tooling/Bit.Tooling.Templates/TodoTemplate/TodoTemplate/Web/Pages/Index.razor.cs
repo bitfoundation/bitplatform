@@ -1,25 +1,20 @@
-﻿namespace TodoTemplate.App.Pages;
+﻿using System.Net.Http.Json;
+using TodoTemplate.Shared.Dtos.Account;
+
+namespace TodoTemplate.App.Pages;
 
 public partial class Index
 {
-    [Inject] public IContactsService ContactsService { get; set; }
-    [Inject] public IToastService ToastService { get; set; }
+    public List<RoleDto> Roles { get; set; } = new();
 
-    public List<ContactInfo> Contacts { get; set; }
+    [Inject]
+    public HttpClient HttpClient { get; set; } = default!;
 
-    public async Task Reload()
+    protected override async Task OnInitializedAsync()
     {
-        Contacts = await ContactsService.GetContacts();
-        await ToastService.ShowToast("Done!");
-    }
+        var response = await HttpClient.GetAsync("Role");
 
-    protected async override Task OnInitializedAsync()
-    {
-#if DEBUG
-        await Task.Delay(TimeSpan.FromSeconds(2));
-#endif
-
-        Contacts = await ContactsService.GetContacts();
+        Roles = await response.Content.ReadFromJsonAsync<List<RoleDto>>();
 
         await base.OnInitializedAsync();
     }

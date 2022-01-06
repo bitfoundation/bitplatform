@@ -7,6 +7,9 @@ using Microsoft.Extensions.Configuration;
 #endif
 using System.IO.Compression;
 using System.Net.Http;
+using TodoTemplate.App.Services;
+using TodoTemplate.App.Services.Extensions;
+using TodoTemplate.Shared.Extensions;
 
 namespace TodoTemplate.App;
 public class Startup
@@ -15,12 +18,8 @@ public class Startup
     {
         services.AddTodoTemplateSharedServices();
         services.AddTodoTemplateServices();
+
 #if BlazorServer
-        services.AddHttpClient("ApiHttpClient", (serviceProvider, httpClient) =>
-        {
-            httpClient.BaseAddress = new Uri(serviceProvider.GetRequiredService<IConfiguration>()["ApiServerAddress"]);
-        });
-        services.AddTransient(c => c.GetRequiredService<IHttpClientFactory>().CreateClient("ApiHttpClient"));
         services.AddRazorPages();
         services.AddServerSideBlazor();
         services.AddResponseCompression(opts =>
@@ -33,6 +32,8 @@ public class Startup
             .Configure<BrotliCompressionProviderOptions>(opt => opt.Level = CompressionLevel.Fastest)
             .Configure<GzipCompressionProviderOptions>(opt => opt.Level = CompressionLevel.Fastest);
 #endif
+
+        services.ConfigureAppServices();
     }
 
 #if BlazorServer
