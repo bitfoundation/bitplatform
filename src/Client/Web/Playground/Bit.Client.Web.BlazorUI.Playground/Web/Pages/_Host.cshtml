@@ -12,7 +12,5 @@
     var isBlazorServer = BlazorModeDetector.Current.IsBlazorServer();
 }
 
-<app>
-        <component type="typeof(App)"
-                   render-mode="@(isBlazorServer ? RenderMode.ServerPrerendered : RenderMode.Static)" />
-</app>
+<component type="typeof(App)"
+            render-mode="@(isBlazorServer ? RenderMode.ServerPrerendered : RenderMode.WebAssemblyPrerendered)" />
