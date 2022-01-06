@@ -2,9 +2,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31611.283
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTemplate.Api", "TodoTemplate\Api\TodoTemplate.Api.csproj", "{AA98BBBD-3F75-4EE5-8701-7C937E074ECF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTemplate.Api", "Api\TodoTemplate.Api.csproj", "{AA98BBBD-3F75-4EE5-8701-7C937E074ECF}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTemplate.Shared", "TodoTemplate\Shared\TodoTemplate.Shared.csproj", "{26FC22CD-8488-4AD4-8417-C749D6B11BC6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTemplate.Shared", "Shared\TodoTemplate.Shared.csproj", "{26FC22CD-8488-4AD4-8417-C749D6B11BC6}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{5CF43F76-BB71-4B5B-B4DF-1C753E042A8F}"
 	ProjectSection(SolutionItems) = preProject
@@ -12,9 +12,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTemplate.App", "TodoTemplate\App\TodoTemplate.App.csproj", "{EAC40D2D-3959-4557-9DB2-7DD60E2A6063}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTemplate.App", "App\TodoTemplate.App.csproj", "{EAC40D2D-3959-4557-9DB2-7DD60E2A6063}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTemplate.Web", "TodoTemplate\Web\TodoTemplate.Web.csproj", "{7C27083E-F333-4034-AC4C-C86DE1D4874E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTemplate.Web", "Web\TodoTemplate.Web.csproj", "{7C27083E-F333-4034-AC4C-C86DE1D4874E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

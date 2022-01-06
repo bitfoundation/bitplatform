@@ -2,7 +2,8 @@
 
 [assembly: XamlCompilation(XamlCompilationOptions.Compile)]
 
-namespace Bit.Client.Web.BlazorUI.Playground.Web;
+namespace TodoTemplate.App;
+
 public partial class App
 {
     public App()

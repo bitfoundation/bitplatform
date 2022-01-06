@@ -1,22 +1,19 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
     <PropertyGroup>
-        <!--<TargetFrameworks>net6.0-android;net6.0-ios;net6.0-maccatalyst</TargetFrameworks>
-		<TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows')) and '$(MSBuildRuntimeType)' == 'Full'">$(TargetFrameworks);net6.0-windows10.0.19041</TargetFrameworks>-->
-        <TargetFrameworks>net6.0-windows10.0.19041</TargetFrameworks>
+        <TargetFrameworks>net6.0-android;net6.0-ios;net6.0-maccatalyst</TargetFrameworks>
+        <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows')) and '$(MSBuildRuntimeType)' == 'Full'">$(TargetFrameworks);net6.0-windows10.0.19041</TargetFrameworks>
         <OutputType>Exe</OutputType>
-        <RootNamespace>Bit.Client.Web.BlazorUI.Playground.Web</RootNamespace>
         <UseMaui>true</UseMaui>
         <SingleProject>true</SingleProject>
-        <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
         <EnableDefaultCssItems>false</EnableDefaultCssItems>
-        <AssemblyName>Bit.Client.Web.BlazorUI.Playground.Web</AssemblyName>
+        <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
 
         <!-- Display name -->
-        <ApplicationTitle>Bit.Client.Web.BlazorUI.Playground.App</ApplicationTitle>
+        <ApplicationTitle>TodoTemplate</ApplicationTitle>
 
         <!-- App Identifier -->
-        <ApplicationId>com.companyname.Bit.Client.Web.BlazorUI.Playground.App</ApplicationId>
+        <ApplicationId>com.companyname.TodoTemplate</ApplicationId>
 
         <!-- Versions -->
         <ApplicationVersion>1</ApplicationVersion>
@@ -31,6 +28,32 @@
         <TargetPlatformMinVersion Condition="$(TargetFramework.Contains('-windows'))">10.0.17763.0</TargetPlatformMinVersion>
     </PropertyGroup>
 
+    <PropertyGroup Condition="$(TargetFramework.Contains('-windows'))">
+        <OutputType>WinExe</OutputType>
+        <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="$(TargetFramework.Contains('-android'))">
+        <AndroidLinkMode Condition="'$(Configuration)' == 'Release'">Full</AndroidLinkMode>
+        <RuntimeIdentifiers Condition="'$(Configuration)' == 'Release'">android-arm64</RuntimeIdentifiers>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Using Include="Microsoft.AspNetCore.Components.WebView.Maui" />
+        <Using Include="Microsoft.Maui" />
+        <Using Include="Microsoft.Maui.Controls.Hosting" />
+        <Using Include="Microsoft.Maui.Essentials" />
+        <Using Include="Microsoft.Maui.Hosting" />
+        <Using Include="Microsoft.AspNetCore.Components" />
+        <Using Include="TodoTemplate.App.Contracts" />
+        <Using Include="TodoTemplate.App.Implementations" />
+        <Using Include="Microsoft.Extensions.Configuration" />
+        <Using Include="System.Net.Http" />
+        <Using Include="Microsoft.JSInterop" />
+        <Using Include="System.Net.Http.Json" />
+        <Using Include="System.Collections.Concurrent" />
+    </ItemGroup>
+
     <ItemGroup>
         <!-- App Icon -->
         <MauiIcon Include="Resources\appicon.svg" ForegroundFile="Resources\appiconfg.svg" Color="#512BD4" />
@@ -42,6 +65,9 @@
         <MauiImage Include="Resources\Images\*" />
 
         <!-- Custom Fonts -->
+        <MauiFont Include="Resources\Fonts\*" />
+
+        <LinkDescription Include="Linker.xml" />
     </ItemGroup>
 
     <ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
@@ -50,27 +76,20 @@
         <PackageReference Include="Microsoft.Graphics.Win2D" Version="1.0.0.30" />
     </ItemGroup>
 
-    <PropertyGroup Condition="$(TargetFramework.Contains('-windows'))">
-        <OutputType>WinExe</OutputType>
-        <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
-    </PropertyGroup>
-
     <ItemGroup>
+        <PackageReference Include="Bit.Client.Web.BlazorUI" Version="8.7.0" />
+        <PackageReference Include="BuildWebCompiler" Version="1.12.405" />
+        <Content Remove="appsettings.json" />
+        <EmbeddedResource Include="appsettings.json" />
         <Content Remove="Pages\_Host.cshtml" />
         <Content Remove="Pages\_Layout.cshtml" />
         <Content Remove="Properties\launchSettings.json" />
         <Content Remove="compilerconfig.json" />
         <None Include="compilerconfig.json" />
-        <EmbeddedResource Include="appsettings.json" />
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="BuildWebCompiler" Version="1.12.405">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
-        <ProjectReference Include="..\..\..\Bit.Client.Web.BlazorUI\Bit.Client.Web.BlazorUI.csproj" />
-        <ProjectReference Include="..\Shared\Bit.Client.Web.BlazorUI.Playground.Shared.csproj" />
+        <ProjectReference Include="..\Shared\TodoTemplate.Shared.csproj" />
     </ItemGroup>
 
     <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
