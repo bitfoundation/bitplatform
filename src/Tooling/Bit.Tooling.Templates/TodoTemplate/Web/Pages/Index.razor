@@ -1,0 +1,13 @@
+﻿@page "/"
+
+@if (Roles is null)
+{
+    <BitSpinner />
+}
+else
+{
+    @foreach (var role in Roles)
+    {
+        <p>@role.Name</p>
+    }
+}
