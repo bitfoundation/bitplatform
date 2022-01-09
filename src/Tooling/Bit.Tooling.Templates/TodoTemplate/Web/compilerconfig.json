@@ -6,5 +6,13 @@
   {
     "outputFile": "wwwroot/styles/app.css",
     "inputFile": "wwwroot/styles/app.scss"
+  },
+  {
+    "outputFile": "Shared/MainLayout.razor.css",
+    "inputFile": "Shared/MainLayout.razor.scss"
+  },
+  {
+    "outputFile": "Components/Header.razor.css",
+    "inputFile": "Components/Header.razor.scss"
   }
 ]
