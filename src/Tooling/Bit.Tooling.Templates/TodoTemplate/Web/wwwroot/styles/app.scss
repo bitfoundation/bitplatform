@@ -6,3 +6,17 @@
 .header-item {
     margin-left: rem(12px);
 }
+
+//HOME PAGE===============================================
+
+.hero-section-cta {
+    height: rem(34px);
+    border: rem(1px) solid $White;
+    color: $White;
+    background-color: $SecondaryColor;
+
+    &:hover {
+        background-color: $SecondaryColor;
+        border-color: $White;
+    }
+}
