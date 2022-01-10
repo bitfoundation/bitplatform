@@ -1,0 +1,12 @@
+﻿@inherits LayoutComponentBase
+
+<Header />
+@if (true)
+{
+    <NavMenu />
+}
+
+<div class="main @(true ? "main--authenticated" : null)">
+    @Body
+    <Footer />
+</div>

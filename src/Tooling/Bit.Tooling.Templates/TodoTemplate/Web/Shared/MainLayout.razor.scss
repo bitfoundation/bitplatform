@@ -1,0 +1,15 @@
+﻿@import '../wwwroot/styles/shared/_shared.scss';
+
+.main {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    padding-top: rem(48px);
+    box-sizing: border-box;
+    background-color: $SecondaryColor;
+}
+
+.main--authenticated {
+    width: calc(100% - #{rem(240px)});
+    margin-left: rem(240px);
+}

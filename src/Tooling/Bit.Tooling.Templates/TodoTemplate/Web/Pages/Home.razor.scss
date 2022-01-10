@@ -1,0 +1,41 @@
+﻿@import '../wwwroot/styles/shared/_shared.scss';
+
+.page-container {
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%;
+}
+
+.page-section {
+    width: 100%;
+}
+
+.hero-section {
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%;
+    padding: rem(144px) 0;
+    box-sizing: border-box;
+}
+
+.hero-section-title {
+    margin-bottom: rem(32px);
+    font-weight: bold;
+    font-size: rem(42px);
+    line-height: rem(62px);
+    color: $White;
+    text-align: center;
+}
+
+.hero-section-desc {
+    max-width: rem(1232px);
+    margin-bottom: rem(40px);
+    font-size: rem(24px);
+    line-height: rem(40px);
+    color: $S4Color;
+    text-align: center;
+}

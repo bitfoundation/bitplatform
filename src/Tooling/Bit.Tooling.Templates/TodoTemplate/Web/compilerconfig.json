@@ -6,5 +6,25 @@
   {
     "outputFile": "wwwroot/styles/app.css",
     "inputFile": "wwwroot/styles/app.scss"
+  },
+  {
+    "outputFile": "Shared/MainLayout.razor.css",
+    "inputFile": "Shared/MainLayout.razor.scss"
+  },
+  {
+    "outputFile": "Components/Header.razor.css",
+    "inputFile": "Components/Header.razor.scss"
+  },
+  {
+    "outputFile": "Pages/Home.razor.css",
+    "inputFile": "Pages/Home.razor.scss"
+  },
+  {
+    "outputFile": "Components/Footer.razor.css",
+    "inputFile": "Components/Footer.razor.scss"
+  },
+  {
+    "outputFile": "Components/NavMenu.razor.css",
+    "inputFile": "Components/NavMenu.razor.scss"
   }
 ]

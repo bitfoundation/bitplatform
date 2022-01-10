@@ -1,0 +1,62 @@
+﻿@import '../wwwroot/styles/shared/_shared.scss';
+
+.footer {
+    position: absolute;
+    bottom: 0;
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    min-height: rem(54px);
+    border-top: rem(1px) solid $S1Color;
+    padding: rem(4px) 0;
+    box-sizing: border-box;
+    background-color: $SecondaryColor;
+}
+
+.footer-contact {
+    margin-bottom: rem(4px);
+    font-size: rem(14px);
+    line-height: rem(20px);
+    color: $S4Color;
+}
+
+.footer-copyright {
+    font-size: rem(12px);
+    line-height: rem(20px);
+    color: $S4Color;
+}
+
+.footer-social-lnk-grp {
+    position: absolute;
+    bottom: rem(55px);
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: center;
+    align-items: center;
+}
+
+.social-lnk {
+    width: rem(32px);
+    height: rem(32px);
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+.twitter-lnk {
+    background-image: url('/images/twitter-icon.svg');
+}
+
+.instagram-lnk {
+    background-image: url('/images/instagram-icon.svg');
+}
+
+.linkedin-lnk {
+    background-image: url('/images/linkedin-icon.svg');
+}
+
+.github-lnk {
+    background-image: url('/images/github-icon.svg');
+}

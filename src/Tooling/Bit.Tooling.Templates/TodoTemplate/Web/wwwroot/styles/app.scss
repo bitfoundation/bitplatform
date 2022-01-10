@@ -1,20 +1,22 @@
-﻿body, html {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    height: 100vh;
-    font-family: Segoe UI;
+﻿@import '../styles/base/_base.scss';
+@import '../styles/shared/_shared.scss';
+
+//HEADER==================================================
+
+.header-item {
+    margin-left: rem(12px);
 }
 
-.bit-ico-btn-fluent {
-    &:hover,
-    &:active,
-    &:focus {
-        background-color: transparent;
-        color: white;
+//HOME PAGE===============================================
+
+.hero-section-cta {
+    height: rem(34px);
+    border: rem(1px) solid $White;
+    color: $White;
+    background-color: $SecondaryColor;
+
+    &:hover {
+        background-color: $SecondaryColor;
+        border-color: $White;
     }
-}
-
-.bit-icon {
-    color: white;
 }

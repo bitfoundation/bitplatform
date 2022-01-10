@@ -12,17 +12,17 @@ public partial class Index
     [Inject]
     public StateService StateService { get; set; } = default!;
 
-    protected override async Task OnInitializedAsync()
-    {
-        Roles = await StateService.GetValue("roles", () => GetRoles());
+    //protected override async Task OnInitializedAsync()
+    //{
+    //    Roles = await StateService.GetValue("roles", () => GetRoles());
 
-        await base.OnInitializedAsync();
-    }
+    //    await base.OnInitializedAsync();
+    //}
 
-    async Task<RoleDto[]> GetRoles()
-    {
-        var response = await HttpClient.GetAsync("Role");
-        var roles = await response.Content.ReadFromJsonAsync<RoleDto[]>();
-        return roles!;
-    }
+    //async Task<RoleDto[]> GetRoles()
+    //{
+    //    //var response = await HttpClient.GetAsync("Role");
+    //    //var roles = await response.Content.ReadFromJsonAsync<RoleDto[]>();
+    //    //return roles!;
+    //}
 }
