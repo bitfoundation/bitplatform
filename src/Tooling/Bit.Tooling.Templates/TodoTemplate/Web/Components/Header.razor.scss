@@ -17,12 +17,11 @@
 
 .logo-lnk {
     width: rem(24px);
+    min-width: rem(24px);
     height: rem(24px);
-    //background-image: url();
-    border-radius: rem(4px);
-    background-color: $SecondaryColor;
+    background-image: url('/images/bit-logo.svg');
     background-position: center;
     background-repeat: no-repeat;
-    background-size: cover;
+    background-size: contain;
     cursor: pointer;
 }
