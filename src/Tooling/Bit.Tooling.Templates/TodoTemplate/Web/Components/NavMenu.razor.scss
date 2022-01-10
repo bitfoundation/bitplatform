@@ -1,0 +1,46 @@
+﻿@import '../wwwroot/styles/shared/_shared.scss';
+
+.main-container {
+    position: fixed;
+    left: 0;
+    top: rem(48px);
+    z-index: 1;
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    width: rem(240px);
+    height: calc(100vh - #{rem(48px)});
+    background-color: $Gray3;
+}
+
+.top-container {
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%;
+    padding: rem(24px) 0 rem(12px);
+    margin-bottom: rem(20px);
+    border-bottom: rem(1px) solid $Gray4;
+}
+
+.user-photo {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: rem(56px);
+    height: rem(56px);
+    margin-bottom: rem(4px);
+    border-radius: 50%;
+    background-color: $S2Color;
+    font-size: rem(18px);
+    line-height: rem(24px);
+    color: $White;
+}
+
+.user-name {
+    margin-bottom: rem(8px);
+    font-size: rem(13px);
+    line-height: rem(21px);
+    color: $S3Color;
+}

@@ -22,5 +22,9 @@
   {
     "outputFile": "Components/Footer.razor.css",
     "inputFile": "Components/Footer.razor.scss"
+  },
+  {
+    "outputFile": "Components/NavMenu.razor.css",
+    "inputFile": "Components/NavMenu.razor.scss"
   }
 ]
