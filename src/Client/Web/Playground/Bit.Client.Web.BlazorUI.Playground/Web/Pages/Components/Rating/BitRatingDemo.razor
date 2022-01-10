@@ -20,7 +20,7 @@
                     <div>Half star in readOnly mode</div>
                     <BitRating IsReadOnly="true" @bind-Rating="RatingReadOnlyValue" GetAriaLabel="@((value, max) => $"Half star in readOnly mode rating value is {value.ToString()} of {max.ToString()}")" />
                     <div>Custom icons</div>
-                    <BitRating Icon="BitIcon.HeartFill" UnselectedIcon="BitIcon.Heart" AllowZeroStars="true" @bind-Rating="RatingCustomIconValue" />
+                    <BitRating Icon="BitIconName.HeartFill" UnselectedIcon="BitIconName.Heart" AllowZeroStars="true" @bind-Rating="RatingCustomIconValue" />
                 </div>
             </div>
         </ExamplePreview>
@@ -32,7 +32,7 @@
 &ltspan>&#64;RatingChangedText&lt/span>
 &ltBitRating IsEnabled="false" &#64;bind-Rating="RatingReadOnlyValue" />
 &ltBitRating IsReadOnly="true" &#64;bind-Rating="RatingReadOnlyValue" GetAriaLabel="&#64;((value, max) => $"Half star in readOnly mode rating value is {value.ToString()} of {max.ToString()}")" />
-&ltBitRating Icon="BitIcon.HeartFill" UnselectedIcon="BitIcon.Heart" AllowZeroStars="true" &#64;bind-Rating="RatingCustomIconValue" /></code>
+&ltBitRating Icon="BitIconName.HeartFill" UnselectedIcon="BitIconName.Heart" AllowZeroStars="true" &#64;bind-Rating="RatingCustomIconValue" /></code>
 
             <code class="csharp">&#64;code {
         private string RatingChangedText = string.Empty;
@@ -50,7 +50,7 @@
         <ExamplePreview>
             <div class="example-desc">BitRating component support two-way binding as well.</div>
             <div>
-                <BitRating Icon="BitIcon.Emoji2" UnselectedIcon="BitIcon.EmojiNeutral" AllowZeroStars="true" @bind-Rating="RatingOutsideValue" />
+                <BitRating Icon="BitIconName.Emoji2" UnselectedIcon="BitIconName.EmojiNeutral" AllowZeroStars="true" @bind-Rating="RatingOutsideValue" />
                 <div>
                     <span>RatingOutsideValue: @RatingOutsideValue</span>
                 </div>
@@ -62,7 +62,7 @@
         </ExamplePreview>
         <ExampleSourceCode>
             <pre class="code">
-            <code class="html">&ltBitRating Icon="BitIcon.Emoji2" UnselectedIcon="BitIcon.EmojiNeutral" AllowZeroStars="true" &#64;bind-Rating="RatingOutsideValue" />
+            <code class="html">&ltBitRating Icon="BitIconName.Emoji2" UnselectedIcon="BitIconName.EmojiNeutral" AllowZeroStars="true" &#64;bind-Rating="RatingOutsideValue" />
 &ltspan>RatingOutsideValue: &#64;RatingOutsideValue&lt/span>
 &ltBitButton OnClick="() => RatingOutsideValue = 5">Fully satisfied&lt/BitButton>
 &ltBitButton OnClick="() => RatingOutsideValue = 0">Have no idea&lt/BitButton></code>

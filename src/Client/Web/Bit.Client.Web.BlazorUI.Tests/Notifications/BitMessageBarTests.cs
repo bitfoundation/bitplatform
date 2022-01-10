@@ -47,23 +47,23 @@ namespace Bit.Client.Web.BlazorUI.Tests.Notifications
 
             var icon = component.Find(".bit-msg-bar-icon > i");
 
-            Dictionary<BitMessageBarType, BitIcon> IconMap = new()
+            Dictionary<BitMessageBarType, BitIconName> IconMap = new()
             {
-                [BitMessageBarType.Info] = BitIcon.Info,
-                [BitMessageBarType.Warning] = BitIcon.Info,
-                [BitMessageBarType.Error] = BitIcon.ErrorBadge,
-                [BitMessageBarType.Blocked] = BitIcon.Blocked2,
-                [BitMessageBarType.SevereWarning] = BitIcon.Warning,
-                [BitMessageBarType.Success] = BitIcon.Completed
+                [BitMessageBarType.Info] = BitIconName.Info,
+                [BitMessageBarType.Warning] = BitIconName.Info,
+                [BitMessageBarType.Error] = BitIconName.ErrorBadge,
+                [BitMessageBarType.Blocked] = BitIconName.Blocked2,
+                [BitMessageBarType.SevereWarning] = BitIconName.Warning,
+                [BitMessageBarType.Success] = BitIconName.Completed
             };
 
             Assert.IsTrue(icon.ClassList.Contains($"bit-icon--{IconMap[messageBarType].GetName()}"));
         }
 
         [DataTestMethod,
-            DataRow(BitIcon.Emoji2)
+            DataRow(BitIconName.Emoji2)
         ]
-        public void BitMessageBarShouldRespectCustomIcon(BitIcon iconName)
+        public void BitMessageBarShouldRespectCustomIcon(BitIconName iconName)
         {
             var component = RenderComponent<BitMessageBarTest>(
                 parameters =>
@@ -118,9 +118,9 @@ namespace Bit.Client.Web.BlazorUI.Tests.Notifications
         }
 
         [DataTestMethod,
-            DataRow(BitIcon.Emoji2)
+            DataRow(BitIconName.Emoji2)
         ]
-        public void BitMessageBarShouldRespectCustomDismissIcon(BitIcon iconName)
+        public void BitMessageBarShouldRespectCustomDismissIcon(BitIconName iconName)
         {
             var component = RenderComponent<BitMessageBarTest>(
                 parameters =>

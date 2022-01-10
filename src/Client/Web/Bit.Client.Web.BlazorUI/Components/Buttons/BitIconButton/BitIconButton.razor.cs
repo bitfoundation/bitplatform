@@ -29,7 +29,7 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// The icon name for the icon shown in the button
         /// </summary>
-        [Parameter] public BitIcon IconName { get; set; }
+        [Parameter] public BitIconName IconName { get; set; }
 
         /// <summary>
         /// The tooltip to show when the mouse is placed on the icon button

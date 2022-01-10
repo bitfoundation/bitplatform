@@ -34,41 +34,41 @@ namespace Bit.Client.Web.BlazorUI
             return null;
         }
 
-        public static string? GetName(this BitIcon? bitIcon, bool ignoreDefaultValue = true)
+        public static string? GetName(this BitIconName? bitIconName, bool ignoreDefaultValue = true)
         {
-            if (!bitIcon.HasValue)
+            if (!bitIconName.HasValue)
             {
                 return null;
             }
 
-            return GetIconName(bitIcon.Value, ignoreDefaultValue);
+            return GetIconName(bitIconName.Value, ignoreDefaultValue);
         }
 
-        public static string? GetName(this BitIcon bitIcon, bool ignoreDefaultValue = true)
+        public static string? GetName(this BitIconName bitIconName, bool ignoreDefaultValue = true)
         {
-            return GetIconName(bitIcon, ignoreDefaultValue);
+            return GetIconName(bitIconName, ignoreDefaultValue);
         }
 
-        private static string? GetIconName(this BitIcon bitIcon, bool ignoreDefaultValue = true)
+        private static string? GetIconName(this BitIconName bitIconName, bool ignoreDefaultValue = true)
         {
             if (ignoreDefaultValue)
             {
-                var attributes = (DefaultValueAttribute[])bitIcon.GetType().GetCustomAttributes(typeof(DefaultValueAttribute), false);
+                var attributes = (DefaultValueAttribute[])bitIconName.GetType().GetCustomAttributes(typeof(DefaultValueAttribute), false);
 
                 if (attributes is not null && attributes.Length > 0 && attributes[0].Value is not null)
                 {
-                    if ((BitIcon)attributes[0].Value! == bitIcon)
+                    if ((BitIconName)attributes[0].Value! == bitIconName)
                     {
                         return null;
                     }
                 }
-                else if (bitIcon == default)
+                else if (bitIconName == default)
                 {
                     return null;
                 }
             }
 
-            return bitIcon.GetDisplayName();
+            return bitIconName.GetDisplayName();
         }
     }
 }

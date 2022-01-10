@@ -264,9 +264,9 @@ namespace Bit.Client.Web.BlazorUI.Tests.Checkboxes
         }
 
         [DataTestMethod,
-            DataRow(BitIcon.Emoji2)
+            DataRow(BitIconName.Emoji2)
         ]
-        public void BitCheckboxCustomCheckmarkIconTest(BitIcon checkmarkIconName)
+        public void BitCheckboxCustomCheckmarkIconTest(BitIconName checkmarkIconName)
         {
             var component = RenderComponent<BitCheckboxTest>(parameters =>
             {

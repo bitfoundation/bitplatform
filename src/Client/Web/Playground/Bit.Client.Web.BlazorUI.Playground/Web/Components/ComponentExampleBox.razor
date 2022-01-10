@@ -4,11 +4,11 @@
         <div class="header-btn-group">
             <BitToggleButton Class="com-example-box-header-btn"
                              @bind-IsChecked="showCode"
-                             IconName="BitIcon.CodeEdit"
+                             IconName="BitIconName.CodeEdit"
                              Title="@(showCode ? "Hide code" : "Show code")">
             </BitToggleButton>
             <BitIconButton Class="com-example-box-header-btn"
-                           IconName="BitIcon.Link"
+                           IconName="BitIconName.Link"
                            Title="Copy link"
                            OnClick="@CopyLinkToClipboard">
             </BitIconButton>
@@ -26,7 +26,7 @@
         {
             <BitIconButton Class="com-example-box-copy-btn"
                        OnClick=CopyCodeToClipboard
-                       IconName="BitIcon.Copy"
+                       IconName="BitIconName.Copy"
                        Title="Copy source">
             </BitIconButton>
             @ExampleSourceCode

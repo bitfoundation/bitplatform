@@ -108,7 +108,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.SearchBox
              $"}}" ;
         
         private readonly string underlineSearchBoxSampleCode = "<BitSearchBox Placeholder='Search' IsUnderlined='true'></BitSearchBox>";
-        private readonly string customIconSearchBoxSampleCode = "<BitSearchBox Placeholder='Filter' IconName='BitIcon.Filter'></BitSearchBox>";
+        private readonly string customIconSearchBoxSampleCode = "<BitSearchBox Placeholder='Filter' IconName='BitIconName.Filter'></BitSearchBox>";
         private readonly string fixedWidthSearchBoxSampleCode = "<BitSearchBox Placeholder='Search' Width='250px'></BitSearchBox>";
         private readonly string disabledSearchBoxSampleCode = "<BitSearchBox Placeholder='Search' IsEnabled='false'></BitSearchBox>";
     }

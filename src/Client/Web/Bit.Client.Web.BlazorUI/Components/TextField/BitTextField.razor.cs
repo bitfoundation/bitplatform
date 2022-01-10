@@ -171,7 +171,7 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// The icon name for the icon shown in the far right end of the text field
         /// </summary>
-        [Parameter] public BitIcon? IconName { get; set; }
+        [Parameter] public BitIconName? IconName { get; set; }
 
         /// <summary>
         /// Prefix displayed before the text field contents. This is not included in the value.

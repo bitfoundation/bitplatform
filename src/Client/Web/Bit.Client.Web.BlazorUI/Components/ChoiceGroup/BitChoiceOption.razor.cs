@@ -26,7 +26,7 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// Icon to display with this option.
         /// </summary>
-        [Parameter] public BitIcon? IconName { get; set; }
+        [Parameter] public BitIconName? IconName { get; set; }
 
         /// <summary>
         /// Image src to display with this option.
