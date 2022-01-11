@@ -289,7 +289,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.TextField
     <BitTextField Label=""Required"" IsRequired=""true""></BitTextField>
 </div>
 <div>
-    <BitTextField AriaLabel=""Required Without Visible Label"" IsRequired=""true"" IsAriaRequired=""true""></BitTextField>
+    <BitTextField AriaLabel=""Required Without Visible Label"" IsRequired=""true""></BitTextField>
 </div>";
 
         private readonly string example1CSharpCode = @"
