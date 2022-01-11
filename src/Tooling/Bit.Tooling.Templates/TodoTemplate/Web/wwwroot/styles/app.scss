@@ -8,7 +8,6 @@
 }
 
 //HOME PAGE===============================================
-
 .hero-section-cta {
     height: rem(34px);
     border: rem(1px) solid $White;
@@ -18,5 +17,11 @@
     &:hover {
         background-color: $SecondaryColor;
         border-color: $White;
+    }
+}
+
+@media all and (max-width: #{em(370px)}) {
+    .header-item--privacy {
+        display: none;
     }
 }
