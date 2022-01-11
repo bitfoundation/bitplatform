@@ -49,13 +49,13 @@
     [Parameter] public double Value { get; set; }
     [Parameter] public EventCallback<double> ValueChanged { get; set; }
     [Parameter] public string Suffix { get; set; } = string.Empty;
-    [Parameter] public BitIcon? IconName { get; set; }
+    [Parameter] public BitIconName? IconName { get; set; }
     [Parameter] public string Label { get; set; } = string.Empty;
     [Parameter] public Dictionary<string, object> InputHtmlAttributes { get; set; } = null;
     [Parameter] public string Title { get; set; }
     [Parameter] public int? Precision { get; set; }
-    [Parameter] public BitIcon DecrementButtonIconName { get; set; }
-    [Parameter] public BitIcon IncrementButtonIconName { get; set; }
+    [Parameter] public BitIconName DecrementButtonIconName { get; set; }
+    [Parameter] public BitIconName IncrementButtonIconName { get; set; }
     [Parameter] public double DefaultValue { get; set; }
     [Parameter] public string IconAriaLabel { get; set; } = string.Empty;
     [Parameter] public string DecrementButtonAriaLabel { get; set; }

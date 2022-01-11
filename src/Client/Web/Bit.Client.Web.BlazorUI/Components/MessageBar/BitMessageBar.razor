@@ -84,7 +84,7 @@
                         <button @onclick="@ToggleExpandSingleLine"
                                 aria-label="@(OverflowButtonAriaLabel.HasValue()? OverflowButtonAriaLabel : null)"
                                 aria-expanded="@(ExpandSingleLine ? "true" : "false")">
-                            <i class=@($"bit-icon bit-icon--{(ExpandSingleLine ? BitIcon.DoubleChevronUp : BitIcon.DoubleChevronDown).GetName()}") aria-hidden="true"></i>
+                            <i class=@($"bit-icon bit-icon--{(ExpandSingleLine ? BitIconName.DoubleChevronUp : BitIconName.DoubleChevronDown).GetName()}") aria-hidden="true"></i>
                         </button>
                     </div>
                 }

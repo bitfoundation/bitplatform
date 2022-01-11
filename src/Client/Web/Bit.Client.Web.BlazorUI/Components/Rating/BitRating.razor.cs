@@ -45,12 +45,12 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// Custom icon name for selected rating elements, If unset, default will be the FavoriteStarFill icon
         /// </summary>
-        [Parameter] public BitIcon Icon { get; set; } = BitIcon.FavoriteStarFill;
+        [Parameter] public BitIconName Icon { get; set; } = BitIconName.FavoriteStarFill;
 
         /// <summary>
         /// Custom icon name for unselected rating elements, If unset, default will be the FavoriteStar icon
         /// </summary>
-        [Parameter] public BitIcon UnselectedIcon { get; set; } = BitIcon.FavoriteStar;
+        [Parameter] public BitIconName UnselectedIcon { get; set; } = BitIconName.FavoriteStar;
 
         /// <summary>
         /// Default rating. Must be a number between min and max. 

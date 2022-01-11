@@ -34,7 +34,7 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// The icon name for the icon shown next to the pivot link
         /// </summary>
-        [Parameter] public BitIcon? IconName { get; set; }
+        [Parameter] public BitIconName? IconName { get; set; }
 
         /// <summary>
         /// Defines an optional item count displayed in parentheses just after the linkText

@@ -178,8 +178,8 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
             Assert.AreEqual(label, optionLabel.TextContent);
         }
 
-        [DataTestMethod, DataRow(BitIcon.Emoji2)]
-        public void BitChoiceOptionShouldrespectIcon(BitIcon iconName)
+        [DataTestMethod, DataRow(BitIconName.Emoji2)]
+        public void BitChoiceOptionShouldrespectIcon(BitIconName iconName)
         {
             var component = RenderComponent<BitChoiceGroupTest>(
                 parameters =>

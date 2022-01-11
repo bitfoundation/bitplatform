@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 namespace Bit.Client.Web.BlazorUI
 {
     [DefaultValue(NotSet)]
-    public enum BitIcon
+    public enum BitIconName
     {
         NotSet,
         [Display(Name = "12PointStar")]

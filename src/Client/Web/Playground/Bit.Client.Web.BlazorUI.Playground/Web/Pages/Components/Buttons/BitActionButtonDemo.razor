@@ -7,14 +7,14 @@
         <ExamplePreview>
             <div class="example-desc">BitActionButton component is a button that acts as a link.</div>
             <div>
-                <BitActionButton IconName="BitIcon.AddFriend">Create account</BitActionButton>
-                <BitActionButton AllowDisabledFocus="false" IsEnabled="false" IconName="BitIcon.UserRemove">Remove user</BitActionButton>
+                <BitActionButton IconName="BitIconName.AddFriend">Create account</BitActionButton>
+                <BitActionButton AllowDisabledFocus="false" IsEnabled="false" IconName="BitIconName.UserRemove">Remove user</BitActionButton>
             </div>
         </ExamplePreview>
         <ExampleSourceCode>
             <pre class="code">
-            <code class="html">&ltBitActionButton IconName="BitIcon.AddFriend">Create account&lt/BitActionButton>
-&ltBitActionButton AllowDisabledFocus="false" IsEnabled="false" IconName="BitIcon.UserRemove">Remove user&lt/BitActionButton></code>
+            <code class="html">&ltBitActionButton IconName="BitIconName.AddFriend">Create account&lt/BitActionButton>
+&ltBitActionButton AllowDisabledFocus="false" IsEnabled="false" IconName="BitIconName.UserRemove">Remove user&lt/BitActionButton></code>
             </pre>
         </ExampleSourceCode>
     </ComponentExampleBox>
@@ -23,20 +23,20 @@
         <ExamplePreview>
             <div class="example-desc">BitActionButton can directly get css class or inline style.</div>
             <div>
-                <BitActionButton IconName="BitIcon.ThisPC" Style="font-family:'Axiforma';font-size:16px;border:2px solid #32385B;justify-content: center;width: 232px;">
+                <BitActionButton IconName="BitIconName.ThisPC" Style="font-family:'Axiforma';font-size:16px;border:2px solid #32385B;justify-content: center;width: 232px;">
                     Styled Action Button
                 </BitActionButton>
-                <BitActionButton IconName="BitIcon.ThisPC" Class="custom-action-button">
+                <BitActionButton IconName="BitIconName.ThisPC" Class="custom-action-button">
                     Classed Action Button
                 </BitActionButton>
             </div>
         </ExamplePreview>
         <ExampleSourceCode>
             <pre class="code">
-            <code class="html">&ltBitActionButton IconName="BitIcon.ThisPC" Style="font-family:'Axiforma';font-size:16px;border:2px solid #32385B;justify-content: center;width: 232px;">
+            <code class="html">&ltBitActionButton IconName="BitIconName.ThisPC" Style="font-family:'Axiforma';font-size:16px;border:2px solid #32385B;justify-content: center;width: 232px;">
         Styled Action Button
 &lt/BitActionButton>
-&ltBitActionButton IconName="BitIcon.ThisPC" Class="custom-action-button">
+&ltBitActionButton IconName="BitIconName.ThisPC" Class="custom-action-button">
         Classed Action Button
 &lt/BitActionButton></code>
             </pre>
@@ -47,14 +47,14 @@
         <ExamplePreview>
             <div class="example-desc">By setting Visibility attribute, BitActionButton can be Visible, Hidden or Collapsed.</div>
             <div class="sample-btn">
-                <BitActionButton IconName="BitIcon.AddEvent" Visibility="BitComponentVisibility.Visible">Add Event</BitActionButton>
+                <BitActionButton IconName="BitIconName.AddEvent" Visibility="BitComponentVisibility.Visible">Add Event</BitActionButton>
                 <div><span>Hidden Button: </span>[<BitActionButton Visibility="BitComponentVisibility.Hidden">Hidden Action Button</BitActionButton>]</div>
                 <div><span>Collapsed Button: </span>[<BitActionButton Visibility="BitComponentVisibility.Collapsed">Collapsed Action Button</BitActionButton>]</div>
             </div>
         </ExamplePreview>
         <ExampleSourceCode>
             <pre class="code">
-            <code class="html">&ltBitActionButton IconName="BitIcon.AddEvent" Visibility="BitComponentVisibility.Visible">Add Event&lt/BitActionButton>
+            <code class="html">&ltBitActionButton IconName="BitIconName.AddEvent" Visibility="BitComponentVisibility.Visible">Add Event&lt/BitActionButton>
 &ltdiv>Hidden Button: [&ltBitActionButton Visibility="BitComponentVisibility.Hidden">Hidden Action Button&lt/BitActionButton>]&lt/div>
 &ltdiv>Collapsed Button: [&ltBitActionButton Visibility="BitComponentVisibility.Collapsed">Collapsed Action Button&lt/BitActionButton>]&lt/div></code>
             </pre>
@@ -65,20 +65,20 @@
         <ExamplePreview>
             <div class="example-desc">Aria attribues can also set for a BitActionButton.</div>
             <div>
-                <BitActionButton IconName="BitIcon.Library" AriaDescription="Detailed description used for screen reader.">
+                <BitActionButton IconName="BitIconName.Library" AriaDescription="Detailed description used for screen reader.">
                     Action Button with Aria Description
                 </BitActionButton>
-                <BitActionButton IconName="BitIcon.Library" AriaHidden="true">
+                <BitActionButton IconName="BitIconName.Library" AriaHidden="true">
                     Action Button with Aria Hidden
                 </BitActionButton>
             </div>
         </ExamplePreview>
         <ExampleSourceCode>
             <pre class="code">
-            <code class="html">&ltBitActionButton IconName="BitIcon.Library" AriaDescription="Detailed description used for screen reader.">
+            <code class="html">&ltBitActionButton IconName="BitIconName.Library" AriaDescription="Detailed description used for screen reader.">
         Action Button with Aria Description
 &lt/BitActionButton>
-&ltBitActionButton IconName="BitIcon.Library" AriaHidden="true">
+&ltBitActionButton IconName="BitIconName.Library" AriaHidden="true">
         Action Button with Aria Hidden
 &lt/BitActionButton></code>
             </pre>
@@ -89,26 +89,26 @@
         <ExamplePreview>
             <div class="example-desc">BitActionButton can act as a link by setting Href and Target attribute, you define how to open your link.</div>
             <div>
-                <BitActionButton IconName="BitIcon.Website" Target="_blank" Href="https://github.com/bitfoundation/bitframework">
+                <BitActionButton IconName="BitIconName.Website" Target="_blank" Href="https://github.com/bitfoundation/bitframework">
                     Open Bit Foundation In New Tab
                 </BitActionButton>
-                <BitActionButton IconName="BitIcon.Website" Href="https://github.com/bitfoundation/bitframework" ButtonStyle="BitButtonStyle.Standard">
+                <BitActionButton IconName="BitIconName.Website" Href="https://github.com/bitfoundation/bitframework" ButtonStyle="BitButtonStyle.Standard">
                     Go To Bit Foundation
                 </BitActionButton>
-                <BitActionButton IconName="BitIcon.Website" Target="_self" Href="https://github.com/bitfoundation/bitframework" IsEnabled="false">
+                <BitActionButton IconName="BitIconName.Website" Target="_self" Href="https://github.com/bitfoundation/bitframework" IsEnabled="false">
                     <span>Bit Foundation From Span</span>
                 </BitActionButton>
             </div>
         </ExamplePreview>
         <ExampleSourceCode>
             <pre class="code">
-            <code class="html">&ltBitActionButton IconName="BitIcon.Website" Target="_blank" Href="https://github.com/bitfoundation/bitframework">
+            <code class="html">&ltBitActionButton IconName="BitIconName.Website" Target="_blank" Href="https://github.com/bitfoundation/bitframework">
         Open Bit Foundation In New Tab
 &lt/BitActionButton>
-&ltBitActionButton IconName="BitIcon.Website" Href="https://github.com/bitfoundation/bitframework" ButtonStyle="BitButtonStyle.Standard">
+&ltBitActionButton IconName="BitIconName.Website" Href="https://github.com/bitfoundation/bitframework" ButtonStyle="BitButtonStyle.Standard">
         Go To Bit Foundation
 &lt/BitActionButton>
-&ltBitActionButton IconName="BitIcon.Website" Target="_self" Href="https://github.com/bitfoundation/bitframework" IsEnabled="false">
+&ltBitActionButton IconName="BitIconName.Website" Target="_self" Href="https://github.com/bitfoundation/bitframework" IsEnabled="false">
         &ltspan>Bit Foundation From Span&lt/span>
 &lt/BitActionButton></code>
             </pre>

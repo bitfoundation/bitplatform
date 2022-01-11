@@ -7,16 +7,16 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
     public class BitActionButtonTests : BunitTestContext
     {
         [DataTestMethod,
-            DataRow(Visual.Fluent, true, BitIcon.AddFriend, "title"),
-            DataRow(Visual.Fluent, false, BitIcon.AddFriend, "title"),
+            DataRow(Visual.Fluent, true, BitIconName.AddFriend, "title"),
+            DataRow(Visual.Fluent, false, BitIconName.AddFriend, "title"),
 
-            DataRow(Visual.Cupertino, true, BitIcon.AddFriend, "title"),
-            DataRow(Visual.Cupertino, false, BitIcon.AddFriend, "title"),
+            DataRow(Visual.Cupertino, true, BitIconName.AddFriend, "title"),
+            DataRow(Visual.Cupertino, false, BitIconName.AddFriend, "title"),
 
-            DataRow(Visual.Material, true, BitIcon.AddFriend, "title"),
-            DataRow(Visual.Material, false, BitIcon.AddFriend, "title"),
+            DataRow(Visual.Material, true, BitIconName.AddFriend, "title"),
+            DataRow(Visual.Material, false, BitIconName.AddFriend, "title"),
         ]
-        public void BitActionButtonTest(Visual visual, bool isEnabled, BitIcon iconName, string title)
+        public void BitActionButtonTest(Visual visual, bool isEnabled, BitIconName iconName, string title)
         {
             var com = RenderComponent<BitActionButtonTest>(parameters =>
             {

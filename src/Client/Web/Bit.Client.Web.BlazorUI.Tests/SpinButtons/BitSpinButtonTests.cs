@@ -37,10 +37,10 @@ namespace Bit.Client.Web.BlazorUI.Tests.SpinButtons
 
         [DataTestMethod,
             DataRow(null, null),
-            DataRow(BitIcon.IncreaseIndentLegacy, null),
-            DataRow(BitIcon.IncreaseIndentLegacy, "BitSpinButtonIcon")
+            DataRow(BitIconName.IncreaseIndentLegacy, null),
+            DataRow(BitIconName.IncreaseIndentLegacy, "BitSpinButtonIcon")
         ]
-        public void SpinButtonShoudRenderCorrectIcon(BitIcon? iconName, string iconAriaLabel)
+        public void SpinButtonShoudRenderCorrectIcon(BitIconName? iconName, string iconAriaLabel)
         {
             var component = RenderComponent<BitSpinButtonTest>(parameters =>
             {
@@ -62,13 +62,13 @@ namespace Bit.Client.Web.BlazorUI.Tests.SpinButtons
         }
 
         [DataTestMethod,
-            DataRow(BitIcon.IncreaseIndentLegacy, null, true),
-            DataRow(BitIcon.IncreaseIndentLegacy, null, false),
+            DataRow(BitIconName.IncreaseIndentLegacy, null, true),
+            DataRow(BitIconName.IncreaseIndentLegacy, null, false),
 
-            DataRow(BitIcon.IncreaseIndentLegacy, "BitSpinButtonIcon", true),
-            DataRow(BitIcon.IncreaseIndentLegacy, "BitSpinButtonIcon", false)
+            DataRow(BitIconName.IncreaseIndentLegacy, "BitSpinButtonIcon", true),
+            DataRow(BitIconName.IncreaseIndentLegacy, "BitSpinButtonIcon", false)
         ]
-        public void SpinButtonShoudRenderCorrectIncrementButton(BitIcon iconName, string iconAriaLabel, bool isEnabled)
+        public void SpinButtonShoudRenderCorrectIncrementButton(BitIconName iconName, string iconAriaLabel, bool isEnabled)
         {
             var component = RenderComponent<BitSpinButtonTest>(parameters =>
             {
@@ -91,13 +91,13 @@ namespace Bit.Client.Web.BlazorUI.Tests.SpinButtons
         }
 
         [DataTestMethod,
-            DataRow(BitIcon.IncreaseIndentLegacy, null, true),
-            DataRow(BitIcon.IncreaseIndentLegacy, null, false),
+            DataRow(BitIconName.IncreaseIndentLegacy, null, true),
+            DataRow(BitIconName.IncreaseIndentLegacy, null, false),
 
-            DataRow(BitIcon.IncreaseIndentLegacy, "BitSpinButtonIcon", true),
-            DataRow(BitIcon.IncreaseIndentLegacy, "BitSpinButtonIcon", false)
+            DataRow(BitIconName.IncreaseIndentLegacy, "BitSpinButtonIcon", true),
+            DataRow(BitIconName.IncreaseIndentLegacy, "BitSpinButtonIcon", false)
         ]
-        public void SpinButtonShoudRenderCorrectDecrementButton(BitIcon iconName, string iconAriaLabel, bool isEnabled)
+        public void SpinButtonShoudRenderCorrectDecrementButton(BitIconName iconName, string iconAriaLabel, bool isEnabled)
         {
             var component = RenderComponent<BitSpinButtonTest>(parameters =>
             {

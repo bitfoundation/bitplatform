@@ -276,7 +276,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.TextField
               $"<BitTextField MaxLength='10'{Environment.NewLine}" +
               $"Label='Controlled TextField limiting length of value to 10'{Environment.NewLine}" +
               $"</BitTextField>{Environment.NewLine}" +
-              $"<BitTextField IconName='BitIcon.CalendarMirrored'{Environment.NewLine}" +
+              $"<BitTextField IconName='BitIconName.CalendarMirrored'{Environment.NewLine}" +
               $"Label='With an icon'{Environment.NewLine}" +
               $"</BitTextField>{Environment.NewLine}" +
               $"<BitTextField Type='@InputType'{Environment.NewLine}" +
@@ -353,7 +353,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.TextField
         private readonly string customLabelSampleCode = $"<BitTextField Description='Click the (i) icon!'>{Environment.NewLine}" +
             $"<LabelFragment>{Environment.NewLine}" +
             $"<BitLabel Style='display:inline-block;padding-bottom:10px;'>Custom label rendering</BitLabel>{Environment.NewLine}" +
-            $"<BitIconButton IconName='BitIcon.Info'></BitIconButton>{Environment.NewLine}" +
+            $"<BitIconButton IconName='BitIconName.Info'></BitIconButton>{Environment.NewLine}" +
             $"</LabelFragment>{Environment.NewLine}" +
             $"</BitTextField>{Environment.NewLine}" +
             $"<BitTextField>{Environment.NewLine}" +

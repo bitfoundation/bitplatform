@@ -68,14 +68,14 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.SpinButton
             new ComponentParameter()
             {
                 Name = "DecrementButtonIconName",
-                Type = "BitIcon",
-                DefaultValue = "BitIcon.ChevronDownSmall",
+                Type = "BitIconName",
+                DefaultValue = "BitIconName.ChevronDownSmall",
                 Description = "Custom icon name for the decrement button.",
             },
             new ComponentParameter()
             {
                 Name = "IconName",
-                Type = "BitIcon",
+                Type = "BitIconName",
                 DefaultValue = "",
                 Description = "Icon name for an icon to display alongside the spin button's label.",
             },
@@ -96,8 +96,8 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.SpinButton
             new ComponentParameter()
             {
                 Name = "IncrementButtonIconName",
-                Type = "BitIcon",
-                DefaultValue = "BitIcon.ChevronUpSmall",
+                Type = "BitIconName",
+                DefaultValue = "BitIconName.ChevronUpSmall",
                 Description = "Custom icon name for the increment button.",
             },
             new ComponentParameter()
@@ -272,13 +272,13 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.SpinButton
               $"private double BasicSpinButtonDisableValue = 20; {Environment.NewLine}" +
               "}";
 
-        private readonly string spinButtonWithIconSampleCode = $"<BitSpinButton IconName='BitIcon.IncreaseIndentLegacy'{Environment.NewLine}" +
+        private readonly string spinButtonWithIconSampleCode = $"<BitSpinButton IconName='BitIconName.IncreaseIndentLegacy'{Environment.NewLine}" +
              $"Min='0'{Environment.NewLine}" +
              $"Max='100'{Environment.NewLine}" +
              $"Step='1'{Environment.NewLine}" +
              $"Label='With Icon'>{Environment.NewLine}" +
              $"</BitSpinButton>{Environment.NewLine}" +
-             $"<BitSpinButton IconName='BitIcon.IncreaseIndentLegacy'{Environment.NewLine}" +
+             $"<BitSpinButton IconName='BitIconName.IncreaseIndentLegacy'{Environment.NewLine}" +
              $"Min='0'{Environment.NewLine}" +
              $"Max='100'{Environment.NewLine}" +
              $"Step='1'{Environment.NewLine}" +

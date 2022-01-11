@@ -7,22 +7,22 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
     public class BitIconButtonTests : BunitTestContext
     {
         [DataTestMethod,
-               DataRow(Visual.Fluent, true, BitIcon.Emoji2, null),
-               DataRow(Visual.Fluent, false, BitIcon.Emoji2, null),
-               DataRow(Visual.Fluent, true, BitIcon.Emoji2, "I'm Happy"),
-               DataRow(Visual.Fluent, false, BitIcon.Emoji2, "I'm Happy"),
+               DataRow(Visual.Fluent, true, BitIconName.Emoji2, null),
+               DataRow(Visual.Fluent, false, BitIconName.Emoji2, null),
+               DataRow(Visual.Fluent, true, BitIconName.Emoji2, "I'm Happy"),
+               DataRow(Visual.Fluent, false, BitIconName.Emoji2, "I'm Happy"),
 
-               DataRow(Visual.Cupertino, true, BitIcon.Emoji2, null),
-               DataRow(Visual.Cupertino, false, BitIcon.Emoji2, null),
-               DataRow(Visual.Cupertino, true, BitIcon.Emoji2, "I'm Happy"),
-               DataRow(Visual.Cupertino, false, BitIcon.Emoji2, "I'm Happy"),
+               DataRow(Visual.Cupertino, true, BitIconName.Emoji2, null),
+               DataRow(Visual.Cupertino, false, BitIconName.Emoji2, null),
+               DataRow(Visual.Cupertino, true, BitIconName.Emoji2, "I'm Happy"),
+               DataRow(Visual.Cupertino, false, BitIconName.Emoji2, "I'm Happy"),
 
-               DataRow(Visual.Material, true, BitIcon.Emoji2, null),
-               DataRow(Visual.Material, false, BitIcon.Emoji2, null),
-               DataRow(Visual.Material, true, BitIcon.Emoji2, "I'm Happy"),
-               DataRow(Visual.Material, false, BitIcon.Emoji2, "I'm Happy"),
+               DataRow(Visual.Material, true, BitIconName.Emoji2, null),
+               DataRow(Visual.Material, false, BitIconName.Emoji2, null),
+               DataRow(Visual.Material, true, BitIconName.Emoji2, "I'm Happy"),
+               DataRow(Visual.Material, false, BitIconName.Emoji2, "I'm Happy"),
            ]
-        public void BitIconButtonTest(Visual visual, bool isEnabled, BitIcon iconName, string title)
+        public void BitIconButtonTest(Visual visual, bool isEnabled, BitIconName iconName, string title)
         {
             var com = RenderComponent<BitIconButtonTest>(parameters =>
             {

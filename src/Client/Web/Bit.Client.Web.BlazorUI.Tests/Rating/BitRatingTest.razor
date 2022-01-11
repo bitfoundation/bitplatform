@@ -17,12 +17,12 @@
     [Parameter] public string AriaLabel { get; set; }
     [Parameter] public string AriaLabelFormat { get; set; }
     [Parameter] public double DefaultRating { get; set; }
-    [Parameter] public BitIcon Icon { get; set; } = BitIcon.FavoriteStarFill;
+    [Parameter] public BitIconName Icon { get; set; } = BitIconName.FavoriteStarFill;
     [Parameter] public bool IsEnabled { get; set; }
     [Parameter] public bool IsReadOnly { get; set; }
     [Parameter] public int Max { get; set; } = 5;
     [Parameter] public double Rating { get; set; }
     [Parameter] public BitRatingSize Size { get; set; }
-    [Parameter] public BitIcon UnselectedIcon { get; set; } = BitIcon.FavoriteStar;
+    [Parameter] public BitIconName UnselectedIcon { get; set; } = BitIconName.FavoriteStar;
     [Parameter] public Visual Visual { get; set; }
 }

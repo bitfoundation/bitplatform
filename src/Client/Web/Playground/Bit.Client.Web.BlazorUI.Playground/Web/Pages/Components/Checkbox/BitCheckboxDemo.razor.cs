@@ -164,7 +164,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Checkbox
         private readonly string checkboxSampleCode = $"<BitCheckbox @bind-IsChecked='IsCheckBoxChecked'>Basic Checkbox</BitCheckbox>{Environment.NewLine}" +
               $"<BitCheckbox IsChecked='true'>Checked Checkbox</BitCheckbox>{Environment.NewLine}" +
               $"<BitCheckbox IsEnabled='false'>Disable Checkbox</BitCheckbox>{Environment.NewLine}" +
-              $"<BitCheckbox CheckmarkIconName='BitIcon.Heart'>Custom checkmark Checkbox</BitCheckbox>{Environment.NewLine}" +
+              $"<BitCheckbox CheckmarkIconName='BitIconName.Heart'>Custom checkmark Checkbox</BitCheckbox>{Environment.NewLine}" +
               $"<@code {{ {Environment.NewLine}" +
               $"private bool IsCheckBoxChecked = false;{Environment.NewLine}" +
               "}";

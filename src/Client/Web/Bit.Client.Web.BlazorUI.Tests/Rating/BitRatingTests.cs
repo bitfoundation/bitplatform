@@ -131,10 +131,10 @@ namespace Bit.Client.Web.BlazorUI.Tests.Rating
         }
 
         [DataTestMethod,
-            DataRow(BitIcon.HeartFill, BitIcon.Heart),
-            DataRow(BitIcon.HeartFill, BitIcon.Heart),
+            DataRow(BitIconName.HeartFill, BitIconName.Heart),
+            DataRow(BitIconName.HeartFill, BitIconName.Heart),
             ]
-        public void BitRatingShouldTakeCustomIcon(BitIcon icon, BitIcon unselectedIcon)
+        public void BitRatingShouldTakeCustomIcon(BitIconName icon, BitIconName unselectedIcon)
         {
             var component = RenderComponent<BitRatingTest>(parameters =>
             {
@@ -203,12 +203,12 @@ namespace Bit.Client.Web.BlazorUI.Tests.Rating
 
 
         [DataTestMethod,
-              DataRow(5, 2, BitIcon.HeartFill, BitIcon.Heart),
-              DataRow(5, 3, BitIcon.HeartFill, BitIcon.Heart),
-              DataRow(5, 1.25, BitIcon.HeartFill, BitIcon.Heart),
-              DataRow(5, 2.5, BitIcon.HeartFill, BitIcon.Heart)
+              DataRow(5, 2, BitIconName.HeartFill, BitIconName.Heart),
+              DataRow(5, 3, BitIconName.HeartFill, BitIconName.Heart),
+              DataRow(5, 1.25, BitIconName.HeartFill, BitIconName.Heart),
+              DataRow(5, 2.5, BitIconName.HeartFill, BitIconName.Heart)
         ]
-        public void BitRatingShouldRespectRatingValue(int max, double rating, BitIcon icon, BitIcon unselectedIcon)
+        public void BitRatingShouldRespectRatingValue(int max, double rating, BitIconName icon, BitIconName unselectedIcon)
         {
             var component = RenderComponent<BitRatingTest>(parameters =>
             {
@@ -227,12 +227,12 @@ namespace Bit.Client.Web.BlazorUI.Tests.Rating
         }
 
         [DataTestMethod,
-             DataRow(5, 2, BitIcon.HeartFill, BitIcon.Heart),
-             DataRow(5, 3, BitIcon.HeartFill, BitIcon.Heart),
-             DataRow(5, 1.25, BitIcon.HeartFill, BitIcon.Heart),
-             DataRow(5, 2.5, BitIcon.HeartFill, BitIcon.Heart)
+             DataRow(5, 2, BitIconName.HeartFill, BitIconName.Heart),
+             DataRow(5, 3, BitIconName.HeartFill, BitIconName.Heart),
+             DataRow(5, 1.25, BitIconName.HeartFill, BitIconName.Heart),
+             DataRow(5, 2.5, BitIconName.HeartFill, BitIconName.Heart)
        ]
-        public void BitRatingShouldRespectDefaultRatingValue(int max, double defaultRating, BitIcon icon, BitIcon unselectedIcon)
+        public void BitRatingShouldRespectDefaultRatingValue(int max, double defaultRating, BitIconName icon, BitIconName unselectedIcon)
         {
             var component = RenderComponent<BitRatingTest>(parameters =>
             {
