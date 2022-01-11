@@ -13,3 +13,9 @@
     width: calc(100% - #{rem(240px)});
     margin-left: rem(240px);
 }
+
+@media all and (max-width: #{em(370px)}) {
+    .main {
+        padding-top: rem(84px);
+    }
+}
