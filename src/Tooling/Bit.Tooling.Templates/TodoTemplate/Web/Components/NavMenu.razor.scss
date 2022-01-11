@@ -4,13 +4,21 @@
     position: fixed;
     left: 0;
     top: rem(48px);
-    z-index: 1;
+    z-index: 2;
     display: flex;
     flex-flow: column nowrap;
     justify-content: flex-start;
     width: rem(240px);
     height: calc(100vh - #{rem(48px)});
     background-color: $Gray3;
+
+    @include lg {
+        width: rem(206px);
+    }
+
+    @include lt-lg {
+        width: rem(306px);
+    }
 }
 
 .top-container {
@@ -22,6 +30,15 @@
     padding: rem(24px) 0 rem(12px);
     margin-bottom: rem(20px);
     border-bottom: rem(1px) solid $Gray4;
+
+    @include lg {
+        padding: rem(24px) 0 rem(8px);
+    }
+
+    @include lt-lg {
+        padding: rem(24px) 0 rem(16px);
+        margin-bottom: rem(24px);
+    }
 }
 
 .user-photo {
@@ -36,6 +53,16 @@
     font-size: rem(18px);
     line-height: rem(24px);
     color: $White;
+
+    @include lg {
+        width: rem(48px);
+        height: rem(48px);
+        margin-bottom: rem(2px);
+    }
+
+    @include lt-lg {
+        font-size: rem(20px);
+    }
 }
 
 .user-name {
@@ -43,4 +70,29 @@
     font-size: rem(13px);
     line-height: rem(21px);
     color: $S3Color;
+
+    @include lg {
+        margin-bottom: rem(6px);
+        font-size: rem(12px);
+        line-height: rem(20px);
+    }
+
+    @include lt-lg {
+        margin-bottom: rem(6px);
+    }
+}
+
+.menu-shadow {
+    position: fixed;
+    left: 0;
+    top: rem(48px);
+    z-index: 1;
+    display: none;
+    width: 100%;
+    height: calc(100vh - #{rem(48px)});
+    background-color: rgba(0, 0, 0, 0.5);
+
+    @include lt-lg {
+        display: block;
+    }
 }

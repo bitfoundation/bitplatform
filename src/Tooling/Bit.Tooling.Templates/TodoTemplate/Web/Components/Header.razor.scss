@@ -43,6 +43,13 @@
     cursor: pointer;
 }
 
+.header-contact {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: flex-start;
+    align-items: center;
+}
+
 @media all and (max-width: #{em(370px)}) {
     .header {
         padding: 0 rem(16px);
@@ -54,5 +61,15 @@
 
     .header-top-row {
         border-bottom: rem(1px) solid $White;
+    }
+
+    .header--authenticated {
+        .header-bottom-row {
+            display: none;
+        }
+
+        .header-top-row {
+            border-bottom: 0;
+        }
     }
 }

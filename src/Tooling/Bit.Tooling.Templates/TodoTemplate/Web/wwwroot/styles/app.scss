@@ -7,6 +7,22 @@
     margin-left: rem(12px);
 }
 
+.header-menu {
+    display: none;
+    margin-right: rem(12px);
+
+    span {
+        i {
+            color: $PrimaryColor;
+        }
+    }
+
+    @include lt-lg {
+        display: block;
+    }
+}
+
+
 //HOME PAGE===============================================
 .hero-section-cta {
     height: rem(34px);
@@ -23,5 +39,11 @@
 @media all and (max-width: #{em(370px)}) {
     .header-item--privacy {
         display: none;
+    }
+
+    .header--authenticated {
+        .header-item--privacy {
+            display: block;
+        }
     }
 }

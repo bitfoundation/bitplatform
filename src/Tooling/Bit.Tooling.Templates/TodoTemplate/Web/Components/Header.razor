@@ -1,9 +1,15 @@
-﻿<header class="header">
+﻿<header class="header @(true ? "header--authenticated" : null)">
     <div class="header-top-row">
-        <a class="logo-lnk" href="/"></a>
-        <div class="header-btn-group">
-            <BitLink Class="header-item--privacy" Href="/privacy" Target="_self">Privacy</BitLink>
+        <div class="header-contact">
             @if (true)
+            {
+                <BitIconButton Class="header-menu" IconName="BitIcon.CollapseMenu" />
+            }
+            <a class="logo-lnk" href="/"></a>
+        </div>
+        <div class="header-contact">
+            <BitLink Class="header-item--privacy" Href="/privacy" Target="_self">Privacy</BitLink>
+            @if (false)
             {
                 <BitActionButton Class="header-item" IconName="BitIcon.AddFriend" Href="/sign-up" Target="_self">Sign up</BitActionButton>
                 <BitActionButton Class="header-item" IconName="BitIcon.AddFriend" Href="/login" Target="_self">Login</BitActionButton>
