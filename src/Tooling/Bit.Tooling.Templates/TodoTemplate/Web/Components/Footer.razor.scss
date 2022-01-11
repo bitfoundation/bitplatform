@@ -13,6 +13,10 @@
     padding: rem(4px) 0;
     box-sizing: border-box;
     background-color: $SecondaryColor;
+
+    @include lt-xl {
+        min-height: rem(50px);
+    }
 }
 
 .footer-contact {
@@ -20,12 +24,26 @@
     font-size: rem(14px);
     line-height: rem(20px);
     color: $S4Color;
+
+    @include lg {
+        font-size: rem(13px);
+        line-height: rem(19px);
+    }
+
+    @include lt-lg {
+        font-size: rem(12px);
+    }
 }
 
 .footer-copyright {
     font-size: rem(12px);
     line-height: rem(20px);
     color: $S4Color;
+
+    @include lt-xl {
+        font-size: rem(10px);
+        line-height: rem(16px);
+    }
 }
 
 .footer-social-lnk-grp {

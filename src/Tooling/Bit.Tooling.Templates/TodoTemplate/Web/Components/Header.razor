@@ -1,11 +1,22 @@
-﻿<header class="header">
-    <a class="logo-lnk" href="/"></a>
-    <div class="header-btn-group">
-        <BitLink Class="header-item" Href="/privacy" Target="_self">Privacy</BitLink>
-        @if (true)
-        {
-            <BitActionButton Class="header-item" IconName="BitIcon.AddFriend" Href="/sign-up" Target="_self">Sign up</BitActionButton>
-            <BitActionButton Class="header-item" IconName="BitIcon.AddFriend" Href="/login" Target="_self">Login</BitActionButton>
-        }
+﻿<header class="header @(true ? "header--authenticated" : null)">
+    <div class="header-top-row">
+        <div class="header-contact">
+            @if (true)
+            {
+                <BitIconButton Class="header-menu" IconName="BitIcon.CollapseMenu" />
+            }
+            <a class="logo-lnk" href="/"></a>
+        </div>
+        <div class="header-contact">
+            <BitLink Class="header-item--privacy" Href="/privacy" Target="_self">Privacy</BitLink>
+            @if (false)
+            {
+                <BitActionButton Class="header-item" IconName="BitIcon.AddFriend" Href="/sign-up" Target="_self">Sign up</BitActionButton>
+                <BitActionButton Class="header-item" IconName="BitIcon.AddFriend" Href="/login" Target="_self">Login</BitActionButton>
+            }
+        </div>
+    </div>
+    <div class="header-bottom-row">
+        <BitLink Href="/privacy" Target="_self">Privacy</BitLink>
     </div>
 </header>

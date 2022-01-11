@@ -12,4 +12,20 @@
 .main--authenticated {
     width: calc(100% - #{rem(240px)});
     margin-left: rem(240px);
+
+    @include lg {
+        width: calc(100% - #{rem(206px)});
+        margin-left: rem(206px);
+    }
+
+    @include lt-lg {
+        width: 100%;
+        margin-left: 0;
+    }
+}
+
+@media all and (max-width: #{em(370px)}) {
+    .main {
+        padding-top: rem(84px);
+    }
 }
