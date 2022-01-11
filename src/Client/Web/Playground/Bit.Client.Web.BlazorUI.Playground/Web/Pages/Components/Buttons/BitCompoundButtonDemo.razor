@@ -3,7 +3,7 @@
 <ComponentDemo ComponentName="CompoundButton" ComponentDescription="Buttons give people a way to trigger an action. They’re typically found in forms, dialog panels, and dialogs.
     Some buttons are specialized for particular tasks, such as navigation, repeated actions, or presenting menus."
                ComponentParameters="componentParameters" EnumParameters="enumParameters">
-    <ComponentExampleBox Title="BitCompoundButton" ExampleSourceCodeForCopy="@compoundButtonSampleCode" ExampleId="example1">
+    <ComponentExampleBox Title="BitCompoundButton" HTMLSourceCode="@example1HTMLCode" ExampleId="example1">
         <ExamplePreview>
             <div class="example-desc">A compound button with SecondaryText attribute.</div>
             <div>
@@ -26,30 +26,9 @@
                 </BitCompoundButton>
             </div>
         </ExamplePreview>
-        <ExampleSourceCode>
-            <pre class="code">
-            <code class="html">&ltBitCompoundButton IsEnabled="true"
-                   Text="Primary"
-                   SecondaryText="This Button is a compound button">
-&lt/BitCompoundButton>
-&ltBitCompoundButton IsEnabled="true"
-                   Text="Standard"
-                   AriaHidden="true"
-                   SecondaryText="This Button is a compound button"
-                   ButtonStyle="BitButtonStyle.Standard">
-&lt/BitCompoundButton>
-&ltBitCompoundButton IsEnabled="false"
-                   AllowDisabledFocus="false"
-                   Text="Disabled"
-                   Class="disable-cmp-btn"
-                   AriaDescription="Detailed description used for screen reader."
-                   SecondaryText="This Button is a disabled compound button">
- &lt/BitCompoundButton></code>
-             </pre>
-        </ExampleSourceCode>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Style & Class" ExampleSourceCodeForCopy="@styleAndClassSampleCode" ExampleId="example2">
+    <ComponentExampleBox Title="Style & Class" HTMLSourceCode="@example2HTMLCode" ExampleId="example2">
         <ExamplePreview>
             <div class="example-desc">BitCompoundButton can directly get css class or inline style.</div>
             <div>
@@ -57,15 +36,9 @@
                 <BitCompoundButton ButtonStyle="BitButtonStyle.Standard" Class="custom-compound-button" Text="Classed" SecondaryText="This is classed compound button"></BitCompoundButton>
             </div>
         </ExamplePreview>
-        <ExampleSourceCode>
-            <pre class="code">
-            <code class="html">&ltBitCompoundButton Style="height: 80px;font-size: 16px;text-decoration: underline;" Text="Styled" SecondaryText="This is styled compound button">&lt/BitCompoundButton>
-&ltBitCompoundButton ButtonStyle="BitButtonStyle.Standard" Class="custom-compound-button" Text="Classed" SecondaryText="This is classed compound button">&lt/BitCompoundButton></code>
-            </pre>
-        </ExampleSourceCode>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Visibility" ExampleSourceCodeForCopy="@visibilitySampleCode" ExampleId="example3">
+    <ComponentExampleBox Title="Visibility" HTMLSourceCode="@example3HTMLCode" ExampleId="example3">
         <ExamplePreview>
             <div class="example-desc">By setting Visibility attribute, BitCompoundButton can be Visible, Hidden or Collapsed.</div>
             <div class="sample-btn">
@@ -74,16 +47,9 @@
                 <div><span>Collapsed Button: </span>[<BitCompoundButton Text="Collapsed" SecondaryText="This Button is a collapsed compound button" Visibility="BitComponentVisibility.Collapsed"></BitCompoundButton>]</div>
             </div>
         </ExamplePreview>
-        <ExampleSourceCode>
-            <pre class="code">
-            <code class="html">&ltBitCompoundButton Visibility="BitComponentVisibility.Visible" Text="Visible" SecondaryText="This Button is a visible compound button">&lt/BitCompoundButton>
-&ltdiv>Hidden Button: [&ltBitCompoundButton Text="Hidden" SecondaryText="This Button is a hidden compound button" Visibility="BitComponentVisibility.Hidden">&lt/BitCompoundButton>]&lt/div>
-&ltdiv>Collapsed Button: [&ltBitCompoundButton Text="Collapsed" SecondaryText="This Button is a collapsed compound button" Visibility="BitComponentVisibility.Collapsed">&lt/BitCompoundButton>]&lt/div></code>
-            </pre>
-        </ExampleSourceCode>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Arias for Screen Reader" ExampleSourceCodeForCopy="@ariasSampleCode" ExampleId="example4">
+    <ComponentExampleBox Title="Arias for Screen Reader" HTMLSourceCode="@example4HTMLCode" ExampleId="example4">
         <ExamplePreview>
             <div class="example-desc">Aria attribues can also set for a BitCompoundButton.</div>
             <div>
@@ -91,15 +57,9 @@
                 <BitCompoundButton Text="AriaHidden" Style="height: 85px;" SecondaryText="This is a compound button with aria hidden" AriaHidden="true"></BitCompoundButton>
             </div>
         </ExamplePreview>
-        <ExampleSourceCode>
-            <pre class="code">
-            <code class="html">&ltBitCompoundButton ButtonStyle="BitButtonStyle.Standard" Text="AriaDescription" SecondaryText="This is a compound button with aria description" AriaDescription="Button with Aria Description">&lt/BitCompoundButton>
-&ltBitCompoundButton Text="AriaHidden" Style="height: 85px;" SecondaryText="This is a compound button with aria hidden" AriaHidden="true">&lt/BitCompoundButton></code>
-            </pre>
-        </ExampleSourceCode>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Button-like Anchor" ExampleSourceCodeForCopy="@compoundButtonLikeAnchorSampleCode" ExampleId="example5">
+    <ComponentExampleBox Title="Button-like Anchor" HTMLSourceCode="@example5HTMLCode" ExampleId="example5">
         <ExamplePreview>
             <div class="example-desc">BitCompoundButton can act as a link by setting Href and Target attributes.</div>
             <div>
@@ -108,12 +68,5 @@
                 <BitCompoundButton Target="_self" Href="https://github.com/bitfoundation/bitframework" IsEnabled="false" Text="Open the site" SecondaryText="Go To Bit Foundation"></BitCompoundButton>
             </div>
         </ExamplePreview>
-        <ExampleSourceCode>
-            <pre class="code">
-            <code class="html">&ltBitCompoundButton Target="_blank" Href="https://github.com/bitfoundation/bitframework" Text="Open the site" SecondaryText="Open Bit Foundation In New Tab">&lt/BitCompoundButton>
-&ltBitCompoundButton Href="https://github.com/bitfoundation/bitframework" ButtonStyle="BitButtonStyle.Standard" Text="Open the site" SecondaryText="Go To Bit Foundation">&lt/BitCompoundButton>
-&ltBitCompoundButton Target="_self" Href="https://github.com/bitfoundation/bitframework" IsEnabled="false" Text="Open the site" SecondaryText="Go To Bit Foundation">&lt/BitCompoundButton></code>
-            </pre>
-        </ExampleSourceCode>
     </ComponentExampleBox>
 </ComponentDemo>

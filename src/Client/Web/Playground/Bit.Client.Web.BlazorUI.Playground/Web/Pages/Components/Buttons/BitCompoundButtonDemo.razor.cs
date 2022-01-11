@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Bit.Client.Web.BlazorUI.Playground.Web.Models;
 using Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 
@@ -108,32 +107,36 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Buttons
             }
         };
 
-        private readonly string compoundButtonSampleCode = $"<BitCompoundButton IsEnabled='true' Text='Primary' AriaLabel='Detailed label used for screen reader.' SecondaryText='This Button is compound button'></BitCompoundButton>{Environment.NewLine}" +
-             $"<BitCompoundButton IsEnabled='true' Text='Primary' AriaHidden='true' SecondaryText='This Button is compound button' ButtonStyle='BitButtonStyle.Standard'></BitCompoundButton>{Environment.NewLine}" +
-             $"<BitCompoundButton IsEnabled='false' Text='Disabled' AriaDescription='Detailed description used for screen reader.' SecondaryText='This Button is a disabled compound button' ButtonStyle='BitButtonStyle.Standard'></BitCompoundButton>";
+        private readonly string example1HTMLCode = @"<BitCompoundButton IsEnabled=""true""
+                   Text=""Primary""
+                   SecondaryText=""This Button is a compound button"">
+</BitCompoundButton>
+<BitCompoundButton IsEnabled=""true""
+                   Text=""Standard""
+                   AriaHidden=""true""
+                   SecondaryText=""This Button is a compound button""
+                   ButtonStyle=""BitButtonStyle.Standard"">
+</BitCompoundButton>
+<BitCompoundButton IsEnabled=""false""
+                   AllowDisabledFocus=""false""
+                   Text=""Disabled""
+                   Class=""disable-cmp-btn""
+                   AriaDescription=""Detailed description used for screen reader.""
+                   SecondaryText=""This Button is a disabled compound button"">
+</BitCompoundButton>";
 
-        private readonly string styleAndClassSampleCode = $"<BitCompoundButton Style='background-color:#32385b;border-color:#32385b' Text='Styled' SecondaryText='This is styled compound button'></BitCompoundButton>{Environment.NewLine}" +
-                 $"<BitCompoundButton Class='custom-compound-button' Text='Classed' SecondaryText='This is classed compound button' ButtonStyle='BitButtonStyle.Standard'></BitCompoundButton>{Environment.NewLine}" +
-                 $"<style>{Environment.NewLine}" +
-                 $".custom-compound-button {{ {Environment.NewLine}" +
-                 $"width:230px;{Environment.NewLine}" +
-                 $"font-family:Axiforma;{Environment.NewLine}" +
-                 $"font-size:16px;{Environment.NewLine}" +
-                 $"color:white;{Environment.NewLine}" +
-                 $"background-color:#2F455A;{Environment.NewLine}" +
-                 $"border-color:#2F455A;{Environment.NewLine}" +
-                 $"}} {Environment.NewLine}" +
-                 $"</style>";
+        private readonly string example2HTMLCode = @"<BitCompoundButton Style=""height: 80px;font-size: 16px;text-decoration: underline;"" Text=""Styled"" SecondaryText=""This is styled compound button""></BitCompoundButton>
+<BitCompoundButton ButtonStyle=""BitButtonStyle.Standard"" Class=""custom-compound-button"" Text=""Classed"" SecondaryText=""This is classed compound button""></BitCompoundButton>";
 
-        private readonly string visibilitySampleCode = $"<BitCompoundButton Visibility='BitComponentVisibility.Visible' Text='Visible' SecondaryText='This Button is a visible compound button'></BitCompoundButton>{Environment.NewLine}" +
-                 $"<BitCompoundButton Visibility='BitComponentVisibility.Hidden' Text='Hidden' SecondaryText='This Button is a hidden compound button'></BitCompoundButton>{Environment.NewLine}" +
-                 $"<BitCompoundButton Visibility='BitComponentVisibility.Collapsed' Text='Collapsed' SecondaryText='This Button is a collapsed compound button'></BitCompoundButton>";
+        private readonly string example3HTMLCode = @"<BitCompoundButton Visibility=""BitComponentVisibility.Visible"" Text=""Visible"" SecondaryText=""This Button is a visible compound button""></BitCompoundButton>
+<div><span>Hidden Button: </span>[<BitCompoundButton Text=""Hidden"" SecondaryText=""This Button is a hidden compound button"" Visibility=""BitComponentVisibility.Hidden""></BitCompoundButton>]</div>
+<div><span>Collapsed Button: </span>[<BitCompoundButton Text=""Collapsed"" SecondaryText=""This Button is a collapsed compound button"" Visibility=""BitComponentVisibility.Collapsed""></BitCompoundButton>]</div>";
 
-        private readonly string ariasSampleCode = $"<BitCompoundButton AriaDescription='Detailed description used for screen reader' Text='AriaDescription' SecondaryText='This is a compound button with aria description' ButtonStyle='BitButtonStyle.Standard'></BitCompoundButton>{Environment.NewLine}" +
-                $"<BitCompoundButton AriaHidden='true' Style='height: 85px;' Text='AriaDescription' SecondaryText='This is a compound button with aria description'></BitCompoundButton>";
+        private readonly string example4HTMLCode = @"<BitCompoundButton ButtonStyle=""BitButtonStyle.Standard"" Text=""AriaDescription"" SecondaryText=""This is a compound button with aria description"" AriaDescription=""Button with Aria Description""></BitCompoundButton>
+<BitCompoundButton Text=""AriaHidden"" Style=""height: 85px;"" SecondaryText=""This is a compound button with aria hidden"" AriaHidden=""true""></BitCompoundButton>";
 
-        private readonly string compoundButtonLikeAnchorSampleCode = $"<BitCompoundButton Target='_blank' Href='https://github.com/bitfoundation/bitframework' Text='Open the site' SecondaryText='Open Bit Foundation In New Tab'></BitCompoundButton>{Environment.NewLine}" +
-                 $"<BitCompoundButton ButtonStyle='BitButtonStyle.Standard' Href='https://github.com/bitfoundation/bitframework' Text='Open the site' SecondaryText='Go To Bit Foundation'></BitCompoundButton>{Environment.NewLine}" +
-                 $"<BitCompoundButton Href='https://github.com/bitfoundation/bitframework' IsEnabled='false' Text='Open the site' SecondaryText='Go To Bit Foundation'></BitCompoundButton>";
+        private readonly string example5HTMLCode = @"<BitCompoundButton Target=""_blank"" Href=""https://github.com/bitfoundation/bitframework"" Text=""Open the site"" SecondaryText=""Open Bit Foundation In New Tab""></BitCompoundButton>
+<BitCompoundButton Href=""https://github.com/bitfoundation/bitframework"" ButtonStyle=""BitButtonStyle.Standard"" Text=""Open the site"" SecondaryText=""Go To Bit Foundation""></BitCompoundButton>
+<BitCompoundButton Target=""_self"" Href=""https://github.com/bitfoundation/bitframework"" IsEnabled=""false"" Text=""Open the site"" SecondaryText=""Go To Bit Foundation""></BitCompoundButton>";
     }
 }

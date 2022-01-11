@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 
 namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Toggle
@@ -84,83 +83,55 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Toggle
             },
         };
 
-        private readonly string toggleSampleCode = $"<BitToggle Label='Enabled And Checked'{Environment.NewLine}" +
-              $"@bind-IsChecked='@IsToggleChecked'{Environment.NewLine}" +
-              $"IsEnabled='true'{Environment.NewLine}" +
-              $"OnText='On'{Environment.NewLine}" +
-              $"OffText='Off'{Environment.NewLine}" +
-              $" />{Environment.NewLine}" +
-              $"<BitToggle Label='Enabled And Unchecked'{Environment.NewLine}" +
-              $"@bind-IsChecked='@IsToggleChecked'{Environment.NewLine}" +
-              $"IsEnabled='true'{Environment.NewLine}" +
-              $"OnText='On'{Environment.NewLine}" +
-              $"OffText='Off'{Environment.NewLine}" +
-              $" />{Environment.NewLine}" +
-              $"<BitToggle Label='Disabled And Checked'{Environment.NewLine}" +
-              $"IsChecked='true'{Environment.NewLine}" +
-              $"IsEnabled='true'{Environment.NewLine}" +
-              $"OnText='On'{Environment.NewLine}" +
-              $"OffText='Off'{Environment.NewLine}" +
-              $" />{Environment.NewLine}" +
-              $"<BitToggle Label='Disabled And Unchecked'{Environment.NewLine}" +
-              $"IsChecked='false'{Environment.NewLine}" +
-              $"IsEnabled='false'{Environment.NewLine}" +
-              $"OnText='On'{Environment.NewLine}" +
-              $"OffText='Off'{Environment.NewLine}" +
-              $" />{Environment.NewLine}" +
-              $"<BitToggle Label='Disabled With Inline Label'{Environment.NewLine}" +
-              $"IsChecked='false'{Environment.NewLine}" +
-              $"IsEnabled='false'{Environment.NewLine}" +
-              $"IsInlineLabel='true'{Environment.NewLine}" +
-              $"OnText='On'{Environment.NewLine}" +
-              $"OffText='Off'{Environment.NewLine}" +
-              $" />{Environment.NewLine}" +
-              $"<BitToggle Label='Enabled And Unchecked'{Environment.NewLine}" +
-              $"@bind-IsChecked='@IsToggleUnChecked'{Environment.NewLine}" +
-              $"IsEnabled='true'{Environment.NewLine}" +
-              $"OnText='On'{Environment.NewLine}" +
-              $"OffText='Off'{Environment.NewLine}" +
-              $" />{Environment.NewLine}" +
-              $"<BitToggle Label='Disabled With Inline Label'{Environment.NewLine}" +
-              $"IsChecked='false'{Environment.NewLine}" +
-              $"IsEnabled='false'{Environment.NewLine}" +
-              $"IsInlineLabel='true'{Environment.NewLine}" +
-              $" />{Environment.NewLine}" +
-              $"<BitToggle Label='Enabled And Checked (ARIA 1.0 compatible)'{Environment.NewLine}" +
-              $"@bind-IsChecked='@IsToggleChecked'{Environment.NewLine}" +
-              $"IsEnabled='true'{Environment.NewLine}" +
-              $"OnText='On'{Environment.NewLine}" +
-              $"OffText='Off'{Environment.NewLine}" +
-              $"Role='Checkbox'{Environment.NewLine}" +
-              $" />{Environment.NewLine}" +
-              $"@code {{ {Environment.NewLine}" +
-              $"private bool IsToggleChecked = true;{Environment.NewLine}" +
-              $"private bool IsToggleUnChecked = false;{Environment.NewLine}" +
-              $"}}";
+        private readonly string example1HTMLCode = @"<div>
+    <BitToggle Label=""Enabled And Checked"" @bind-IsChecked=""IsToggleChecked"" IsEnabled=""true"" OnText=""On"" OffText=""Off"" />
+</div>
+<div>
+    <BitToggle Label=""Enabled And Unchecked"" @bind-IsChecked=""IsToggleUnChecked"" IsEnabled=""true"" OnText=""On"" OffText=""Off"" />
+</div>
+<div>
+    <BitToggle Label=""Disabled And Checked"" IsChecked=""true"" IsEnabled=""false"" OnText=""On"" OffText=""Off"" />
+</div>
+<div>
+    <BitToggle Label=""Disabled And Unchecked"" IsChecked=""false"" IsEnabled=""false"" OnText=""On"" OffText=""Off"" />
+</div>
+<div class=""m-t-15"">
+    <BitToggle Label=""With Inline Label"" @bind-IsChecked=""IsToggleUnChecked"" IsEnabled=""true"" IsInlineLabel=""true"" OnText=""On"" OffText=""Off"" />
+</div>
+<div class=""m-t-15"">
+    <BitToggle Label=""Disabled With Inline Label"" IsChecked=""false"" IsEnabled=""false"" IsInlineLabel=""true"" OnText=""On"" OffText=""Off"" />
+</div>
+<div class=""m-t-15"">
+    <BitToggle Label=""With Inline Label And Without OnText And OffText"" @bind-IsChecked=""IsToggleUnChecked"" IsEnabled=""true"" IsInlineLabel=""true"" />
+</div>
+<div class=""m-t-15"">
+    <BitToggle Label=""Disabled With Inline Label And Without OnText And OffText"" IsChecked=""false"" IsEnabled=""false"" IsInlineLabel=""true"" />
+</div>
+<div>
+    <BitToggle Label=""Enabled And Checked (ARIA 1.0 compatible)"" @bind-IsChecked=""IsToggleChecked"" IsEnabled=""true"" OnText=""On"" OffText=""Off"" Role=""Checkbox"" />
+</div>";
 
-        private readonly string customLabelSampleCode = $"<BitToggle @bind-IsChecked='@IsToggleUnChecked'{Environment.NewLine}" +
-              $"IsEnabled='true'{Environment.NewLine}" +
-              $"OnText='On'{Environment.NewLine}" +
-              $"OffText='Off'>{Environment.NewLine}" +
-              $"<LabelFragment>{Environment.NewLine}" +
-              $"Custom Inline Label{Environment.NewLine}" +
-              $"</LabelFragment>{Environment.NewLine}" +
-              $"</BitToggle>{Environment.NewLine}" +
-              $"<BitToggle @bind-IsChecked='@BindedIsToggleUnChecked'{Environment.NewLine}" +
-              $"IsEnabled='true'{Environment.NewLine}" +
-              $"OnText='On'{Environment.NewLine}" +
-              $"OffText='Off'{Environment.NewLine}" +
-              $"IsInlineLabel='true'>{Environment.NewLine}" +
-              $"<LabelFragment>{Environment.NewLine}" +
-              $"Custom Inline Label{Environment.NewLine}" +
-              $"</LabelFragment>{Environment.NewLine}" +
-              $"</BitToggle>{Environment.NewLine}" +
-              $"<BitButton OnClick='() => BindedIsToggleUnChecked = true'>{Environment.NewLine}" +
-              $"Make Toggle Check{Environment.NewLine}" +
-              $"</BitButton>{Environment.NewLine}" +
-              $"@code {{ {Environment.NewLine}" +
-              $"private bool BindedIsToggleUnChecked = false;{Environment.NewLine}" +
-              $"private bool IsToggleUnChecked = false;{Environment.NewLine}" +
-              $"}}";
+        private readonly string example1CSharpCode = @"@code {
+    private bool BindedIsToggleUnChecked = false;
+    private bool IsToggleUnChecked = false;
+}";
+
+        private readonly string example2HTMLCode = @"<div>
+    <BitToggle @bind-IsChecked=""IsToggleUnChecked"" IsEnabled=""true"" OnText=""On"" OffText=""Off"">
+        <LabelFragment>
+            Custom Inline Label
+        </LabelFragment>
+    </BitToggle>
+</div>
+<div>
+    <BitToggle @bind-IsChecked=""BindedIsToggleUnChecked"" IsEnabled=""true"" OnText=""On"" OffText=""Off"" IsInlineLabel=""true"">
+        <LabelFragment>
+            Custom Inline Label
+        </LabelFragment>
+    </BitToggle>
+    <div class=""m-t-15"">
+        <BitButton Class=""m-t-15"" OnClick=""() => BindedIsToggleUnChecked = true"">Make Toggle Check</BitButton>
+    </div>
+</div>";
     }
 }

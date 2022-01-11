@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Bit.Client.Web.BlazorUI.Playground.Web.Models;
 using Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 
@@ -124,30 +123,48 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Rating
             }
         };
 
-        private readonly string ratingSampleCode = $"<BitRating Size='BitRatingSize.Large'{Environment.NewLine}" +
-            $"@bind-Rating='RatingLargeValue'{Environment.NewLine}" +
-            $"AriaLabelFormat='Select {{0}} of {{1}} stars'{Environment.NewLine}" +
-            $"<BitRating AllowZeroStars='true'{Environment.NewLine}" +
-            $"@bind-Rating='RatingSmallValue'/>{Environment.NewLine}" +
-            $"<BitRating Max='10'{Environment.NewLine}" +
-            $"OnChange='@(v => RatingChangedText = $'Rating value changed to {{v}}')'{Environment.NewLine}" +
-            $"@bind-Rating='RatingBoundValue'/>{Environment.NewLine}" +
-            $"<BitRating IsEnabled='false'{Environment.NewLine}" +
-            $"@bind-Rating='RatingReadOnlyValue'/>{Environment.NewLine}" +
-            $"<BitRating IsReadOnly='true'{Environment.NewLine}" +
-            $"@bind-Rating='RatingReadOnlyValue'{Environment.NewLine}" +
-            $"GetAriaLabel='@((value, max) => $'Half star in readOnly mode rating value is {{value.ToString()}} of {{max.ToString()}}')'/>{Environment.NewLine}" +
-            $"<BitRating Icon='BitIconName.HeartFill'{Environment.NewLine}" +
-            $"UnselectedIcon='BitIconName.Heart'{Environment.NewLine}" +
-            $"AllowZeroStars='true'{Environment.NewLine}" +
-            "@bind-Rating='RatingOutsideValue'/>" ;
+        private readonly string example1HTMLCode = @"<div>Large stars</div>
+<BitRating Size=""BitRatingSize.Large"" @bind-Rating=""RatingLargeValue"" AriaLabelFormat=""Select {0} of {1} stars"" />
+<div>Small stars, with 0 stars allowed</div>
+<BitRating AllowZeroStars=""true"" @bind-Rating=""RatingSmallValue"" />
+<div>10 small stars</div>
+<div>
+    <BitRating Max=""10"" OnChange=""@(v => RatingChangedText = $""Rating value changed to {v}"")"" @bind-Rating=""RatingBoundValue"" />
+    <div>
+        <span>@RatingChangedText</span>
+    </div>
+    <div>Disabled</div>
+    <BitRating IsEnabled=""false"" @bind-Rating=""RatingReadOnlyValue"" />
+    <div>Half star in readOnly mode</div>
+    <BitRating IsReadOnly=""true"" @bind-Rating=""RatingReadOnlyValue"" GetAriaLabel=""@((value, max) => $""Half star in readOnly mode rating value is {value.ToString()} of {max.ToString()}"")"" />
+    <div>Custom icons</div>
+    <BitRating Icon=""BitIconName.HeartFill"" UnselectedIcon=""BitIconName.Heart"" AllowZeroStars=""true"" @bind-Rating=""RatingCustomIconValue"" />
+</div>";
 
-        private readonly string controlledRatingSampleCode = $"<BitRating Icon='BitIconName.Emoji2'{Environment.NewLine}" +
-          $"UnselectedIcon='BitIconName.EmojiNeutral'{Environment.NewLine}" +
-          $"AllowZeroStars='true'{Environment.NewLine}" +
-          $"<BitRating AllowZeroStars='true'{Environment.NewLine}" +
-          $"@bind-Rating='RatingOutsideValue'/>{Environment.NewLine}" +
-          $"<BitButton OnClick='() => RatingOutsideValue = 5'>Fully satisfied</BitButton>{Environment.NewLine}" +
-          "<BitButton OnClick='() => RatingOutsideValue = 0'>Have no idea</BitButton>";
+        private readonly string example1CSharpCode = @"
+@code {
+    private string RatingChangedText = string.Empty;
+    private double RatingBoundValue = 2;
+    private double RatingLargeValue = 3;
+    private double RatingSmallValue = 0;
+    private double RatingReadOnlyValue = 2.5;
+    private double RatingCustomIconValue = 2.5;
+}";
+
+        private readonly string example2HTMLCode = @"<div>
+    <BitRating Icon=""BitIconName.Emoji2"" UnselectedIcon=""BitIconName.EmojiNeutral"" AllowZeroStars=""true"" @bind-Rating=""RatingOutsideValue"" />
+    <div>
+        <span>RatingOutsideValue: @RatingOutsideValue</span>
+    </div>
+    <div>
+        <BitButton OnClick=""() => RatingOutsideValue = 5"">Fully satisfied</BitButton>
+        <BitButton OnClick=""() => RatingOutsideValue = 0"">Have no idea</BitButton>
+    </div>
+</div>";
+
+        private readonly string example2CSharpCode = @"
+@code {
+    private double RatingOutsideValue = 0; 
+}";
     }
 }

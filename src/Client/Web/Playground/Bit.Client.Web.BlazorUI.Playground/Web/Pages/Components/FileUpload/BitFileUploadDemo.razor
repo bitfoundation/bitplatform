@@ -5,7 +5,7 @@
     By automatic, it means the files can be automatically uploaded after being selected. It is possible to specify a maximum size for each file if need be.
     Additionally, by specifying file extensions, the files can be restricted to certain types."
                ComponentParameters="componentParameters" EnumParameters="enumParameters">
-    <ComponentExampleBox Title="BitFileUpload" ExampleSourceCodeForCopy="@fileUploadSampleCode" ExampleId="example1">
+    <ComponentExampleBox Title="BitFileUpload" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
         <ExamplePreview>
             <div class="example-desc">Files can be uploaded automatically after selecting them.</div>
             <div>
@@ -15,22 +15,9 @@
                 </BitFileUpload>
             </div>
         </ExamplePreview>
-        <ExampleSourceCode>
-            <pre class="code">
-            <code class="html">&ltBitFileUpload Label="Select or drag and drop files"
-               UploadUrl="&#64;UploadUrl"
-               RemoveUrl="&#64;RemoveUrl">
-&lt/BitFileUpload></code>
-
-            <code class="csharp">&#64;code {
-        private string UploadUrl;
-        private string RemoveUrl;
-}</code>
-            </pre>
-        </ExampleSourceCode>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Auto & Multiple" ExampleSourceCodeForCopy="@autoSampleCode" ExampleId="example2">
+    <ComponentExampleBox Title="Auto & Multiple" HTMLSourceCode="@example2HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example2">
         <ExamplePreview>
             <div class="example-desc">Multiple files can be selected to upload automatically.</div>
             <div>
@@ -41,23 +28,9 @@
                 </BitFileUpload>
             </div>
         </ExamplePreview>
-        <ExampleSourceCode>
-            <pre class="code">
-            <code class="html">&ltBitFileUpload Label="Select or drag and drop files"
-                IsMultiSelect="true"    
-                UploadUrl="&#64;UploadUrl"
-                RemoveUrl="&#64;RemoveUrl">
-&lt/BitFileUpload></code>
-
-            <code class="csharp">&#64;code {
-        private string UploadUrl;
-        private string RemoveUrl;
-}</code>
-            </pre>
-        </ExampleSourceCode>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Auto & Multiple with max-size limitation" ExampleSourceCodeForCopy="@maxSizeSampleCode" ExampleId="example3">
+    <ComponentExampleBox Title="Auto & Multiple with max-size limitation" HTMLSourceCode="@example3HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example3">
         <ExamplePreview>
             <div class="example-desc">Multiple files can be selected to upload automatically with limited size.</div>
             <div>
@@ -69,23 +42,9 @@
                 </BitFileUpload>
             </div>
         </ExamplePreview>
-        <ExampleSourceCode>
-            <pre class="code">
-            <code class="html">&ltBitFileUpload Label="Select or drag and drop files"
-                IsMultiSelect="true"   
-                MaxSize="1024 * 1024 * 100"
-                UploadUrl="&#64;UploadUrl"
-                RemoveUrl="&#64;RemoveUrl">
-&lt/BitFileUpload></code>
-
-            <code class="csharp">&#64;code {
-        private string UploadUrl;
-        private string RemoveUrl;
-}</code>
-            </pre>
-        </ExampleSourceCode>
     </ComponentExampleBox>
-    <ComponentExampleBox Title="Individual & Multiple (limited by extensions format)" ExampleSourceCodeForCopy="@extensionSampleCode" ExampleId="example4">
+
+    <ComponentExampleBox Title="Individual & Multiple (limited by extensions format)" HTMLSourceCode="@example4HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example4">
         <ExamplePreview>
             <div class="example-desc">Single or multiple file uploading limited only by file extensions, which in this case the allowed file extensions include gif, jpg and mp4.</div>
             <div>
@@ -98,21 +57,5 @@
                 </BitFileUpload>
             </div>
         </ExamplePreview>
-        <ExampleSourceCode>
-            <pre class="code">
-            <code class="html">&ltBitFileUpload Label="Select or drag and drop files"
-                IsMultiSelect="true"   
-                AutoUploadEnabled="false"
-                   AllowedExtensions="&#64;(new List&ltstring> { ".gif",".jpg",".mp4" })"
-                UploadUrl="&#64;UploadUrl"
-                RemoveUrl="&#64;RemoveUrl">
-&lt/BitFileUpload></code>
-
-            <code class="csharp">&#64;code {
-        private string UploadUrl;
-        private string RemoveUrl;
-}</code>
-            </pre>
-        </ExampleSourceCode>
     </ComponentExampleBox>
 </ComponentDemo>

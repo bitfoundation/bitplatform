@@ -2,51 +2,29 @@
 
 <ComponentDemo ComponentName="Rating" ComponentDescription="Ratings show people’s opinions of a product, helping others make more informed purchasing decisions. People can also rate products they’ve purchased."
                ComponentParameters="componentParameters" EnumParameters="enumParameters">
-    <ComponentExampleBox Title="BitRating" ExampleSourceCodeForCopy="@ratingSampleCode" ExampleId="example1">
+    <ComponentExampleBox Title="BitRating" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
         <ExamplePreview>
+            <div>Large stars</div>
+            <BitRating Size="BitRatingSize.Large" @bind-Rating="RatingLargeValue" AriaLabelFormat="Select {0} of {1} stars" />
+            <div>Small stars, with 0 stars allowed</div>
+            <BitRating AllowZeroStars="true" @bind-Rating="RatingSmallValue" />
+            <div>10 small stars</div>
             <div>
-                <div>Large stars</div>
-                <BitRating Size="BitRatingSize.Large" @bind-Rating="RatingLargeValue" AriaLabelFormat="Select {0} of {1} stars" />
-                <div>Small stars, with 0 stars allowed</div>
-                <BitRating AllowZeroStars="true" @bind-Rating="RatingSmallValue" />
-                <div>10 small stars</div>
-                <div>
-                    <BitRating Max="10" OnChange="@(v => RatingChangedText = $"Rating value changed to {v}")" @bind-Rating="RatingBoundValue" />
-                    <div class="m-t-10">
-                        <span>@RatingChangedText</span>
-                    </div>
-                    <div>Disabled</div>
-                    <BitRating IsEnabled="false" @bind-Rating="RatingReadOnlyValue" />
-                    <div>Half star in readOnly mode</div>
-                    <BitRating IsReadOnly="true" @bind-Rating="RatingReadOnlyValue" GetAriaLabel="@((value, max) => $"Half star in readOnly mode rating value is {value.ToString()} of {max.ToString()}")" />
-                    <div>Custom icons</div>
-                    <BitRating Icon="BitIconName.HeartFill" UnselectedIcon="BitIconName.Heart" AllowZeroStars="true" @bind-Rating="RatingCustomIconValue" />
+                <BitRating Max="10" OnChange="@(v => RatingChangedText = $"Rating value changed to {v}")" @bind-Rating="RatingBoundValue" />
+                <div class="m-t-10">
+                    <span>@RatingChangedText</span>
                 </div>
+                <div>Disabled</div>
+                <BitRating IsEnabled="false" @bind-Rating="RatingReadOnlyValue" />
+                <div>Half star in readOnly mode</div>
+                <BitRating IsReadOnly="true" @bind-Rating="RatingReadOnlyValue" GetAriaLabel="@((value, max) => $"Half star in readOnly mode rating value is {value.ToString()} of {max.ToString()}")" />
+                <div>Custom icons</div>
+                <BitRating Icon="BitIconName.HeartFill" UnselectedIcon="BitIconName.Heart" AllowZeroStars="true" @bind-Rating="RatingCustomIconValue" />
             </div>
         </ExamplePreview>
-        <ExampleSourceCode>
-            <pre class="code">
-            <code class="html">&ltBitRating Size="BitRatingSize.Large" &#64;bind-Rating="RatingLargeValue" AriaLabelFormat="Select {0} of {1} stars" />
-&ltBitRating AllowZeroStars="true" &#64;bind-Rating="RatingSmallValue" />
-&ltBitRating Max="10" OnChange="&#64;(v => RatingChangedText = $"Rating value changed to {v}")" &#64;bind-Rating="RatingBoundValue" />
-&ltspan>&#64;RatingChangedText&lt/span>
-&ltBitRating IsEnabled="false" &#64;bind-Rating="RatingReadOnlyValue" />
-&ltBitRating IsReadOnly="true" &#64;bind-Rating="RatingReadOnlyValue" GetAriaLabel="&#64;((value, max) => $"Half star in readOnly mode rating value is {value.ToString()} of {max.ToString()}")" />
-&ltBitRating Icon="BitIconName.HeartFill" UnselectedIcon="BitIconName.Heart" AllowZeroStars="true" &#64;bind-Rating="RatingCustomIconValue" /></code>
-
-            <code class="csharp">&#64;code {
-        private string RatingChangedText = string.Empty;
-        private double RatingBoundValue = 2;
-        private double RatingLargeValue = 3;
-        private double RatingSmallValue = 0;
-        private double RatingReadOnlyValue = 2.5;
-        private double RatingCustomIconValue = 2.5;
-}</code>
-            </pre>
-        </ExampleSourceCode>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Button-controlled rating" ExampleSourceCodeForCopy="@controlledRatingSampleCode" ExampleId="example2">
+    <ComponentExampleBox Title="Button-controlled rating" HTMLSourceCode="@example2HTMLCode" CSharpSourceCode="@example2CSharpCode" ExampleId="example2">
         <ExamplePreview>
             <div class="example-desc">BitRating component support two-way binding as well.</div>
             <div>
@@ -60,17 +38,5 @@
                 </div>
             </div>
         </ExamplePreview>
-        <ExampleSourceCode>
-            <pre class="code">
-            <code class="html">&ltBitRating Icon="BitIconName.Emoji2" UnselectedIcon="BitIconName.EmojiNeutral" AllowZeroStars="true" &#64;bind-Rating="RatingOutsideValue" />
-&ltspan>RatingOutsideValue: &#64;RatingOutsideValue&lt/span>
-&ltBitButton OnClick="() => RatingOutsideValue = 5">Fully satisfied&lt/BitButton>
-&ltBitButton OnClick="() => RatingOutsideValue = 0">Have no idea&lt/BitButton></code>
-
-            <code class="csharp">&#64;code {
-        private double RatingOutsideValue = 0;     
-}</code>
-            </pre>
-        </ExampleSourceCode>
     </ComponentExampleBox>
 </ComponentDemo>

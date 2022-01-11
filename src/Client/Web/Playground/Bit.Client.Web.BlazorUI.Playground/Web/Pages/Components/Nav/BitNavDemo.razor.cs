@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Bit.Client.Web.BlazorUI.Playground.Web.Models;
 using Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 
@@ -462,227 +461,252 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Nav
             }
         };
 
-        private static string basicNavLinks = $"private readonly List<BitNavLinkItem> BasicNavLinks = new(){Environment.NewLine}" +
-           $"{{ {Environment.NewLine}" +
-           $"new BitNavLinkItem {Environment.NewLine}" +
-           $"{{ {Environment.NewLine}" +
-           $"Name = 'Home', {Environment.NewLine}" +
-           $"Url = 'http://example.com', {Environment.NewLine}" +
-           $"ExpandAriaLabel = 'Expand Home section', {Environment.NewLine}" +
-           $"CollapseAriaLabel = 'Collapse Home section', {Environment.NewLine}" +
-           $"IsExpanded = true, {Environment.NewLine}" +
-           $"Links = new List<BitNavLinkItem> {Environment.NewLine}" +
-           $"{{ {Environment.NewLine}" +
-           $"new BitNavLinkItem {{ Name = 'Activity',Url = 'http://msn.com', Key = 'key1', Target='_blank' }}, {Environment.NewLine}" +
-           $"new BitNavLinkItem {{ Name = 'MSN',Url = 'http://msn.com', Key = 'key2', IsEnabled = false, Target = '_blank' }}{Environment.NewLine}" +
-           $"}}{Environment.NewLine}" +
-           $"}},{Environment.NewLine}" +
-           $"new BitNavLinkItem {{ Name = 'Documents',Url = 'http://example.com', Key = 'key3', Target = '_blank', IsExpanded = true }},{Environment.NewLine}" +
-           $"new BitNavLinkItem {{ Name = 'Pages', Url = 'http://msn.com', Key = 'key4', Target = '_parent' }},{Environment.NewLine}" +
-           $"new BitNavLinkItem {{ Name = 'Notebook', Url = 'http://msn.com', Key = 'key5', IsEnabled = false }},{Environment.NewLine}" +
-           $"new BitNavLinkItem {{ Name = 'Communication and Media',Url = 'http://msn.com', Key = 'key6', Target = '_top' }},{Environment.NewLine}" +
-           $"new BitNavLinkItem {{ Name = 'News',Title = 'News', Url = 'http://msn.com', Key = 'key7', Icon = 'News', Target = '_self' }},{Environment.NewLine}" +
-           $"}};";
+        private static string example1HTMLCode = @"<BitNav Style=""width: 208px;
+       height: 350px;
+       box-sizing: border-box;
+       border: 1px solid #eee;
+       overflow-y: auto;""
+        NavLinkItems=""BasicNavLinks""
+        AriaLabel=""Nav basic example""
+        SelectedKey=""key3"">
+</BitNav>";
 
-        private static string basicNavLinksWithoutURL = $"private readonly List<BitNavLinkItem> BasicNavLinksWithoutURL = new(){Environment.NewLine}" +
-         $"{{ {Environment.NewLine}" +
-         $"new BitNavLinkItem {Environment.NewLine}" +
-         $"{{ {Environment.NewLine}" +
-         $"Name = 'Home', {Environment.NewLine}" +
-         $"ExpandAriaLabel = 'Expand Home section', {Environment.NewLine}" +
-         $"CollapseAriaLabel = 'Collapse Home section', {Environment.NewLine}" +
-         $"IsExpanded = true, {Environment.NewLine}" +
-         $"Links = new List<BitNavLinkItem> {Environment.NewLine}" +
-         $"{{ {Environment.NewLine}" +
-         $"new BitNavLinkItem {{ Name = 'Activity', Key = 'key1', Target='_blank' }}, {Environment.NewLine}" +
-         $"new BitNavLinkItem {{ Name = 'MSN', Key = 'key2', IsEnabled = false, Target = '_blank' }}{Environment.NewLine}" +
-         $"}}{Environment.NewLine}" +
-         $"}},{Environment.NewLine}" +
-         $"new BitNavLinkItem {{ Name = 'Documents', Key = 'key3', Target = '_blank', IsExpanded = true }},{Environment.NewLine}" +
-         $"new BitNavLinkItem {{ Name = 'Pages', Key = 'key4', Target = '_parent' }},{Environment.NewLine}" +
-         $"new BitNavLinkItem {{ Name = 'Notebook', Key = 'key5', IsEnabled = false }},{Environment.NewLine}" +
-         $"new BitNavLinkItem {{ Name = 'Communication and Media', Key = 'key6', Target = '_top' }},{Environment.NewLine}" +
-         $"new BitNavLinkItem {{ Name = 'News',Title = 'News', Key = 'key7', Icon = 'News', Target = '_self' }},{Environment.NewLine}" +
-         $"}}; {Environment.NewLine}";
+        private static string example1CSharpCode = @"
+private readonly List<BitNavLinkItem> BasicNavLinks = new()
+{
+    new BitNavLinkItem
+    {
+        Name = ""Home"",
+        Url = ""http://example.com"",
+        ExpandAriaLabel = ""Expand Home section"",
+        CollapseAriaLabel = ""Collapse Home section"",
+        IsExpanded = true,
+        Links = new List<BitNavLinkItem>
+        {
+            new BitNavLinkItem { Name = ""Activity"", Url = ""http://msn.com"", Key = ""key1"", Target=""_blank"" },
+            new BitNavLinkItem { Name = ""MSN"", Url = ""http://msn.com"", Key = ""key2"", IsEnabled = false, Target = ""_blank"" }
+        }
+    },
+    new BitNavLinkItem { Name = ""Documents"", Url = ""http://example.com"", Key = ""key3"", Target = ""_blank"", IsExpanded = true },
+    new BitNavLinkItem { Name = ""Pages"", Url = ""http://msn.com"", Key = ""key4"", Target = ""_parent"" },
+    new BitNavLinkItem { Name = ""Notebook"", Url = ""http://msn.com"", Key = ""key5"", IsEnabled = false },
+    new BitNavLinkItem { Name = ""Communication and Media"", Url = ""http://msn.com"", Key = ""key6"", Target = ""_top"" },
+    new BitNavLinkItem { Name = ""News"", Title = ""News"", Url = ""http://msn.com"", Key = ""key7"", Icon = ""News"", Target = ""_self"" },
+};";
 
-        private static string basicNoToolTipNavLinks = $"private readonly List<BitNavLinkItem> BasicNoToolTipNavLinks = new(){Environment.NewLine}" +
-          $"{{ {Environment.NewLine}" +
-          $"new BitNavLinkItem {Environment.NewLine}" +
-          $"{{ {Environment.NewLine}" +
-          $"Name = 'Home', {Environment.NewLine}" +
-          $"Title = '', {Environment.NewLine}" +
-          $"Url = 'http://example.com', {Environment.NewLine}" +
-          $"ExpandAriaLabel = 'Expand Home section', {Environment.NewLine}" +
-          $"CollapseAriaLabel = 'Collapse Home section', {Environment.NewLine}" +
-          $"IsExpanded = true, {Environment.NewLine}" +
-          $"Links = new List<BitNavLinkItem> {Environment.NewLine}" +
-          $"{{ {Environment.NewLine}" +
-          $"new BitNavLinkItem {{ Name = 'Activity',Url = 'http://msn.com', Key = 'key1', Target='_blank', Title = '' }}, {Environment.NewLine}" +
-          $"new BitNavLinkItem {{ Name = 'MSN',Url = 'http://msn.com', Key = 'key2', IsEnabled = false, Target = '_blank', Title = '' }}{Environment.NewLine}" +
-          $"}}{Environment.NewLine}" +
-          $"}},{Environment.NewLine}" +
-          $"new BitNavLinkItem {{ Name = 'Shared Documents and Files',Url = 'http://example.com', Key = 'key3', Target = '_blank' }},{Environment.NewLine}" +
-          $"new BitNavLinkItem {{ Name = 'Pages', Url = 'http://msn.com', Key = 'key4', Target = '_parent' }},{Environment.NewLine}" +
-          $"new BitNavLinkItem {{ Name = 'Notebook', Url = 'http://msn.com', Key = 'key5', IsEnabled = false }},{Environment.NewLine}" +
-          $"new BitNavLinkItem {{ Name = 'Communication and Media',Url = 'http://msn.com', Key = 'key6', Target = '_top' }},{Environment.NewLine}" +
-          $"new BitNavLinkItem {{ Name = 'News',Title = 'News', Url = 'http://msn.com', Key = 'key7', Icon = 'News', Target = '_self' }},{Environment.NewLine}" +
-          $"}}; {Environment.NewLine}";
+        private static string example2HTMLCode = @"<BitNav Style=""width: 208px;
+       height: 350px;
+       box-sizing: border-box;
+       border: 1px solid #eee;
+       overflow-y: auto;""
+        Class=""bit-nav-wrapped-link""
+        SelectedKey=""key6""
+        AriaLabel=""Nav example with wrapped link text""
+        NavLinkItems=""BasicNoToolTipNavLinks"">
+</BitNav>";
 
-        private static string basicNoUrlNavLinks = $"private readonly List<BitNavLinkItem> BasicNoUrlNavLinks = new(){Environment.NewLine}" +
-          $"{{ {Environment.NewLine}" +
-          $"new BitNavLinkItem {Environment.NewLine}" +
-          $"{{ {Environment.NewLine}" +
-          $"Name = 'Basic components', {Environment.NewLine}" +
-          $"CollapseAriaLabel = 'Collapse Basic components section', {Environment.NewLine}" +
-          $"IsExpanded = true, {Environment.NewLine}" +
-          $"Links = new List<BitNavLinkItem> {Environment.NewLine}" +
-          $"{{ {Environment.NewLine}" +
-          $"new BitNavLinkItem {{ Name = 'ActivityItem',Url = '#/examples/activityitem', Key = 'ActivityItem' }}, {Environment.NewLine}" +
-          $"new BitNavLinkItem {{ Name = 'Breadcrumb',Url = '#/examples/breadcrumb', Key = 'Breadcrumb' }}, {Environment.NewLine}" +
-          $"new BitNavLinkItem {{ Name = 'Button',Url = '#/examples/button', Key = 'Button' }}{Environment.NewLine}" +
-          $"}}{Environment.NewLine}" +
-          $"}},{Environment.NewLine}" +
-          $"new BitNavLinkItem {Environment.NewLine}" +
-          $"{{ {Environment.NewLine}" +
-          $"Name = 'Extended components', {Environment.NewLine}" +
-          $"CollapseAriaLabel = 'Collapse Extended components section', {Environment.NewLine}" +
-          $"IsExpanded = true, {Environment.NewLine}" +
-          $"Links = new List<BitNavLinkItem> {Environment.NewLine}" +
-          $"{{ {Environment.NewLine}" +
-          $"new BitNavLinkItem {{ Name = 'ColorPicker',Url = '#/examples/colorpicker', Key = 'ColorPicker' }}, {Environment.NewLine}" +
-          $"new BitNavLinkItem {{ Name = 'ExtendedPeoplePicker',Url = '#/examples/extendedpeoplepicker', Key = 'ExtendedPeoplePicker' }}, {Environment.NewLine}" +
-          $"new BitNavLinkItem {{ Name = 'GroupedList',Url = '#/examples/groupedlist', Key = 'GroupedList' }}{Environment.NewLine}" +
-          $"}}{Environment.NewLine}" +
-          $"}},{Environment.NewLine}" +
-          $"new BitNavLinkItem {Environment.NewLine}" +
-          $"{{ {Environment.NewLine}" +
-          $"Name = 'Utilities', {Environment.NewLine}" +
-          $"CollapseAriaLabel = 'Collapse Utilities section', {Environment.NewLine}" +
-          $"IsExpanded = true, {Environment.NewLine}" +
-          $"Links = new List<BitNavLinkItem> {Environment.NewLine}" +
-          $"{{ {Environment.NewLine}" +
-          $"new BitNavLinkItem {{ Name = 'FocusTrapZone',Url = '#/examples/focustrapzone', Key = 'FocusTrapZone' }}, {Environment.NewLine}" +
-          $"new BitNavLinkItem {{ Name = 'FocusZone',Url = '#/examples/focuszone', Key = 'FocusZone' }}, {Environment.NewLine}" +
-          $"new BitNavLinkItem {{ Name = 'MarqueeSelection',Url = '#/examples/marqueeselection', Key = 'MarqueeSelection' }}{Environment.NewLine}" +
-          $"}}{Environment.NewLine}" +
-          $"}},{Environment.NewLine}" +
-          $"}}; {Environment.NewLine}";
+        private static string example2CSharpCode = @"
+private readonly List<BitNavLinkItem> BasicNoToolTipNavLinks = new()
+{
+    new BitNavLinkItem
+    {
+        Name = ""Home"",
+        Url = ""http://example.com"",
+        Title = """",
+        IsExpanded = true,
+        CollapseAriaLabel = ""Collapse Home section"",
+        ExpandAriaLabel = ""Expand Home section"",
+        Links = new List<BitNavLinkItem>
+        {
+            new BitNavLinkItem { Name = ""Activity"", Url = ""http://msn.com"", Key = ""key1"", Target=""_blank"", Title = """" },
+            new BitNavLinkItem { Name = ""MSN"", Url = ""http://msn.com"", Key = ""key2"", IsEnabled = false, Target = ""_blank"", Title = """" }
+        }
+    },
+    new BitNavLinkItem { Name = ""Shared Documents and Files"", Url = ""http://example.com"", Key = ""key3"", Target = ""_blank"", Title = """" },
+    new BitNavLinkItem { Name = ""Pages"", Url = ""http://msn.com"", Key = ""key4"", Target = ""_parent"", Title = """" },
+    new BitNavLinkItem { Name = ""Notebook"", Url = ""http://msn.com"", Key = ""key5"", IsEnabled = false, Title = """" },
+    new BitNavLinkItem { Name = ""Communication and Media"", Url = ""http://msn.com"", Key = ""key6"", Target = ""_top"", Title = """" },
+    new BitNavLinkItem { Name = ""News"", Key = ""key7"", Url = ""http://cnn.com"", Icon = ""News"", Target = ""_self"", Title = """" }
+};";
 
-        private static string nestedLinks = $"private readonly List<BitNavLinkItem> NestedLinks = new(){Environment.NewLine}" +
-          $"{{ {Environment.NewLine}" +
-          $"new BitNavLinkItem {Environment.NewLine}" +
-          $"{{ {Environment.NewLine}" +
-          $"Name = 'Parent link 1', {Environment.NewLine}" +
-          $"Url = 'http://example.com', {Environment.NewLine}" +
-          $"Key = 'Key1', {Environment.NewLine}" +
-          $"Title = 'Parent link 1', {Environment.NewLine}" +
-          $"CollapseAriaLabel = 'Collapse Parent link 1', {Environment.NewLine}" +
-          $"Links = new List<BitNavLinkItem> {Environment.NewLine}" +
-          $"{{ {Environment.NewLine}" +
-          $"Name = 'Child link 1', {Environment.NewLine}" +
-          $"Url = 'http://example.com', {Environment.NewLine}" +
-          $"Key = 'Key1-1', {Environment.NewLine}" +
-          $"Title = 'Child link 1', {Environment.NewLine}" +
-          $"Links = new List<BitNavLinkItem> {Environment.NewLine}" +
-          $"{{ {Environment.NewLine}" +
-          $"new BitNavLinkItem {{ Name = '3rd level link 1',Url = 'http://msn.com', Key = 'Key1-1-1', Title = '3rd level link 1' }}, {Environment.NewLine}" +
-          $"new BitNavLinkItem {{ Name = '3rd level link 2',Url = 'http://msn.com', Key = 'Key1-1-2', Title = '3rd level link 2', IsEnabled = false }}{Environment.NewLine}" +
-          $"}}{Environment.NewLine}" +
-          $"}},{Environment.NewLine}" +
-          $"new BitNavLinkItem {{ Name = '3rd level link 2',Url = 'http://msn.com', Key = 'Key1-2', Title = 'Child link 2' }}, {Environment.NewLine}" +
-          $"new BitNavLinkItem {{ Name = '3rd level link 3',Url = 'http://msn.com', Key = 'Key1-3', Title = 'Child link 3', IsEnabled = false }}{Environment.NewLine}" +
-          $"}}{Environment.NewLine}" +
-          $"}},{Environment.NewLine}" +
-          $"new BitNavLinkItem {Environment.NewLine}" +
-          $"{{ {Environment.NewLine}" +
-          $"Name = 'Parent link 2', {Environment.NewLine}" +
-          $"Url = 'http://example.com', {Environment.NewLine}" +
-          $"Key = 'Key2', {Environment.NewLine}" +
-          $"Title = 'Parent link 2', {Environment.NewLine}" +
-          $"CollapseAriaLabel = 'Collapse Parent link 2', {Environment.NewLine}" +
-          $"Links = new List<BitNavLinkItem> {Environment.NewLine}" +
-          $"{{ {Environment.NewLine}" +
-          $"new BitNavLinkItem {{ Name = 'Child link 4',Url = 'http://msn.com', Key = 'Key2-1', Title = 'Child link 4' }}, {Environment.NewLine}" +
-          $"}}{Environment.NewLine}" +
-          $"}}; {Environment.NewLine}";
+        private static string example3HTMLCode = @"<BitNav Style=""width: 300px;""
+        NavLinkItems=""BasicNoUrlNavLinks""
+        RenderType=""BitNavRenderType.Grouped""
+        AriaLabel=""Nav example similar to one found in this demo page"">
+</BitNav>";
 
-        private static string customHeaderLinks = $"private readonly List<BitNavLinkItem> CustomHeaderLinks = new(){Environment.NewLine}" +
-          $"{{ {Environment.NewLine}" +
-          $"new BitNavLinkItem {Environment.NewLine}" +
-          $"{{ {Environment.NewLine}" +
-          $"Name = 'Pages', {Environment.NewLine}" +
-          $"IsExpanded = true, {Environment.NewLine}" +
-          $"Links = new List<BitNavLinkItem> {Environment.NewLine}" +
-          $"{{ {Environment.NewLine}" +
-          $"new BitNavLinkItem {{ Name = 'Activity',Url = 'http://msn.com', Key = 'key1-1', Target='_blank', Title = 'Activity' }}, {Environment.NewLine}" +
-          $"new BitNavLinkItem {{ Name = 'News',Title = 'News',Url = 'http://msn.com', Key = 'key1-2' }}{Environment.NewLine}" +
-          $"}}{Environment.NewLine}" +
-          $"}},{Environment.NewLine}" +
-          $"new BitNavLinkItem {Environment.NewLine}" +
-          $"{{ {Environment.NewLine}" +
-          $"Name = 'Pages', {Environment.NewLine}" +
-          $"IsExpanded = true, {Environment.NewLine}" +
-          $"Links = new List<BitNavLinkItem> {Environment.NewLine}" +
-          $"{{ {Environment.NewLine}" +
-          $"new BitNavLinkItem {{ Name = 'Settings',Url = 'http://example.com', Key = 'key2-1', Target='_blank', Title = 'Settings' }}, {Environment.NewLine}" +
-          $"new BitNavLinkItem {{ Name = 'Notes',Title = 'News',Url = 'http://example.com', Key = 'key2-1' }}{Environment.NewLine}" +
-          $"}}{Environment.NewLine}" +
-          $"}},{Environment.NewLine}" +
-          $"}}; {Environment.NewLine}";
+        private static string example3CSharpCode = @"
+private readonly List<BitNavLinkItem> BasicNoUrlNavLinks = new()
+{
+    new BitNavLinkItem
+    {
+        Name = ""Basic components"",
+        CollapseAriaLabel = ""Collapse Basic components section"",
+        IsExpanded = true,
+        Links = new List<BitNavLinkItem>
+        {
+            new BitNavLinkItem { Name= ""ActivityItem"", Key = ""ActivityItem"", Url = ""#/examples/activityitem"" },
+            new BitNavLinkItem { Name= ""Breadcrumb"", Key = ""Breadcrumb"", Url = ""#/examples/breadcrumb"" },
+            new BitNavLinkItem { Name= ""Button"", Key = ""Button"", Url = ""#/examples/button"" }
+        }
+    },
+    new BitNavLinkItem
+    {
+        Name = ""Extended components"",
+        CollapseAriaLabel = ""Collapse Extended components section"",
+        IsExpanded = true,
+        Links = new List<BitNavLinkItem>
+        {
+            new BitNavLinkItem { Name = ""ColorPicker"", Key = ""ColorPicker"", Url =""#/examples/colorpicker"" },
+            new BitNavLinkItem { Name = ""ExtendedPeoplePicker"", Key = ""ExtendedPeoplePicker"", Url =""#/examples/extendedpeoplepicker"" },
+            new BitNavLinkItem { Name = ""GroupedList"", Key = ""GroupedList"", Url =""#/examples/groupedlist"" }
+        }
+    },
+    new BitNavLinkItem
+    {
+        Name = ""Utilities"",
+        CollapseAriaLabel = ""Collapse Utilities section"",
+        IsExpanded = true,
+        Links = new List<BitNavLinkItem>
+        {
+            new BitNavLinkItem { Name = ""FocusTrapZone"", Key = ""FocusTrapZone"", Url = ""#/examples/focustrapzone"" },
+            new BitNavLinkItem { Name = ""FocusZone"", Key = ""FocusZone"", Url = ""#/examples/focuszone"" },
+            new BitNavLinkItem { Name = ""MarqueeSelection"", Key = ""MarqueeSelection"", Url = ""#/examples/marqueeselection"" }
+        }
+    }
+};";
 
-        private readonly string navLinksSampleCode = $"<BitNav Style='width: 208px;height: 350px;box-sizing: border-box;border: 1px solid #eee;overflow-y: auto;',{Environment.NewLine}" +
-          $"NavLinkItems = 'BasicNavLinks',{Environment.NewLine}" +
-          $"IsOnTop='true',{Environment.NewLine}" +
-          $"AriaLabel = 'Nav basic example',{Environment.NewLine}" +
-          $"SelectedKey = 'key3'>,{Environment.NewLine}" +
-          $"</BitNav>{Environment.NewLine}" + basicNavLinks;
+        private static string example4HTMLCode = @"<BitNav NavLinkItems=""NestedLinks""
+        AriaLabel=""Nav example with nested links""
+        SelectedKey=""Key1-1-2"">
+</BitNav>";
 
-        private readonly string navLinksWithoutTooltipSampleCode = $"<BitNav Style='width: 208px;height: 350px;box-sizing: border-box;border: 1px solid #eee;overflow-y: auto;',{Environment.NewLine}" +
-         $"NavLinkItems = 'BasicNoToolTipNavLinks',{Environment.NewLine}" +
-         $"AriaLabel = 'Nav example with wrapped link text',{Environment.NewLine}" +
-         $"SelectedKey = 'key5'>,{Environment.NewLine}" +
-         $"</BitNav>{Environment.NewLine}" + basicNoToolTipNavLinks;
+        private static string example4CSharpCode = @"
+private readonly List<BitNavLinkItem> NestedLinks = new()
+{
+    new()
+    {
+        Name = ""Parent link 1"",
+        Url = ""http://example.com"",
+        Key = ""Key1"",
+        Title = ""Parent link 1"",
+        CollapseAriaLabel = ""Collapse Parent link 1"",
+        Links = new List<BitNavLinkItem>()
+        {
+            new()
+            {
+                Name = ""Child link 1"",
+                Url = ""http://msn.com"",
+                Key = ""Key1-1"",
+                Title = ""Child link 1"",
+                Links = new List<BitNavLinkItem>()
+                {
+                    new() { Name = ""3rd level link 1"", Title = ""3rd level link 1"", Url = ""http://msn.com"", Key = ""Key1-1-1"" },
+                    new() { Name = ""3rd level link 2"", Title = ""3rd level link 2"", Url = ""http://msn.com"", Key = ""Key1-1-2"", IsEnabled = false }
+                }
+            },
+            new() { Name = ""Child link 2"", Title = ""Child link 2"", Url = ""http://msn.com"", Key = ""Key1-2"" },
+            new() { Name = ""Child link 3"", Title = ""Child link 3"", Url = ""http://msn.com"", Key = ""Key1-3"", IsEnabled = false },
+        }
+    },
+    new()
+    {
+        Name = ""Parent link 2"",
+        Title = ""Parent link 2"",
+        Url = ""http://example.com"",
+        Key = ""Key2"",
+        CollapseAriaLabel = ""Collapse Parent link 2"",
+        Links = new List<BitNavLinkItem>()
+        {
+            new() { Name = ""Child link 4"", Title = ""Child link 4"", Url = ""http://example.com"", Key = ""Key2-1"" }
+        }
+    }
+};";
 
-        private readonly string navLinksWithNoUrlSampleCode = $"<BitNav Style='width: 300px;',{Environment.NewLine}" +
-         $"NavLinkItems = 'BasicNoUrlNavLinks',{Environment.NewLine}" +
-         $"AriaLabel = 'Nav example similar to one found in this demo page',{Environment.NewLine}" +
-         $"RenderType='BitNavRenderType.Grouped'>,{Environment.NewLine}" +
-         $"</BitNav>{Environment.NewLine}" + basicNoUrlNavLinks;
+        private static string example5HTMLCode = @"<BitNav NavLinkItems=""CustomHeaderLinks""
+        RenderType=""BitNavRenderType.Grouped""
+        AriaLabel=""Nav with custom group header"">
+    <HeaderTemplate Context=""link"">
+        <h3> @link.Name </h3>
+    </HeaderTemplate>
+</BitNav>";
 
-        private readonly string navWithNestedLinksSampleCode = $"<BitNav NavLinkItems = 'NestedLinks',{Environment.NewLine}" +
-         $"AriaLabel = 'Nav example with nested links',{Environment.NewLine}" +
-         $"SelectedKey='Key1-1-2'>,{Environment.NewLine}" +
-         $"</BitNav>{Environment.NewLine}" + nestedLinks;
+        private static string example5CSharpCode = @"
+private readonly List<BitNavLinkItem> CustomHeaderLinks = new()
+{
+    new BitNavLinkItem
+    {
+        Name = ""Pages"",
+        IsExpanded = true,
+        Links = new List<BitNavLinkItem>
+        {
+            new BitNavLinkItem { Name = ""Activity"", Url = ""http://msn.com"", Key = ""Key1-1"", Title = ""Activity"" },
+            new BitNavLinkItem { Name = ""News"", Title = ""News"", Url = ""http://msn.com"", Key = ""Key1-2"" },
+        }
+    },
+    new BitNavLinkItem
+    {
+        Name = ""More pages"",
+        IsExpanded = true,
+        Links = new List<BitNavLinkItem>
+        {
+            new BitNavLinkItem { Name= ""Settings"", Title = ""Settings"", Url = ""http://example.com"", Key = ""Key2-1"" },
+            new BitNavLinkItem { Name= ""Notes"", Title = ""Notes"", Url = ""http://example.com"", Key = ""Key2-1"" }
+        }
+    }
+};";
 
-        private readonly string navWithCustomHeaderLinksSampleCode = $"<BitNav NavLinkItems = 'CustomHeaderLinks',{Environment.NewLine}" +
-         $"AriaLabel = 'Nav with custom group header',{Environment.NewLine}" +
-         $"RenderType='BitNavRenderType.Grouped'>,{Environment.NewLine}" +
-         $"<HeaderTemplate Context='link'>,{Environment.NewLine}" +
-         $"<h3> @link.Name </h3>,{Environment.NewLine}" +
-         $"</HeaderTemplate='link'>,{Environment.NewLine}" +
-         $"</BitNav>{Environment.NewLine}" + customHeaderLinks;
+        private static string example6HTMLCode = @"<BitNav Style=""width: 208px;
+                height: 350px;
+                box-sizing: border-box;
+                border: 1px solid #eee;
+                overflow-y: auto;
+                z-index: 2;
+                background-color: white;""
+        NavLinkItems=""BasicNavLinks""
+        AriaLabel=""Nav basic example""
+        SelectedKey=""key3"">
+</BitNav>";
 
-        private readonly string navTopOfAnotherSampleCode = $"<div style='position: relative;'>,{Environment.NewLine}" +
-         $"<div style='width: 200px;height: 500px;background-color: rebeccapurple;'</div>,{Environment.NewLine}" +
-         $"<BitNav Style='width: 208px;height: 350px;box-sizing: border-box;border: 1px solid #eee;overflow-y: auto;background-color: white;'{Environment.NewLine}" +
-         $"NavLinkItems='BasicNavLinks',{Environment.NewLine}" +
-         $"IsOnTop='true',{Environment.NewLine}" +
-         $"AriaLabel='Nav basic example',{Environment.NewLine}" +
-         $"SelectedKey='key3'>,{Environment.NewLine}" +
-         $"</BitNav>{Environment.NewLine}" + basicNavLinks;
+        private static string example7HTMLCode = @"<BitNav Style=""width: 208px;
+       height: 350px;
+       box-sizing: border-box;
+       border: 1px solid #eee;
+       overflow-y: auto;""
+        NavLinkItems=""BasicNavLinksWithoutURL""
+        Mode=""BitNavMode.Manual""
+        AriaLabel=""Nav manual mode example""
+        SelectedKey=""@BitNavManualModeSelectedKey""
+        SelectedKeyChanged=""HandleSelectedKeyChange"">
+</BitNav>";
 
-        private readonly string navWithManualModeLinksSampleCode = $"<BitNav Style = 'width: 208px;height: 350px;box-sizing: border-box;border: 1px solid #eee;overflow-y: auto;',{Environment.NewLine}" +
-         $"AriaLabel = 'Nav manual mode example',{Environment.NewLine}" +
-         $"NavLinkItems='BasicNavLinksWithoutURL'>,{Environment.NewLine}" +
-         $"Mode='BitNavMode.Manual',{Environment.NewLine}" +
-         $"SelectedKey='@BitNavManualModeSelectedKey',{Environment.NewLine}" +
-         $"SelectedKeyChanged='HandleSelectedKeyChange'>,{Environment.NewLine}" +
-         $"</BitNav>{Environment.NewLine}" + $"{basicNavLinksWithoutURL}{Environment.NewLine}" +
-         $"private string BitNavManualModeSelectedKey = 'key3';{Environment.NewLine}" +
-         $"private void HandleSelectedKeyChange(string selectedKey){Environment.NewLine}" +
-         $"{{ {Environment.NewLine}" +
-         $"BitNavManualModeSelectedKey = selectedKey;{Environment.NewLine}" +
-         $"}} {Environment.NewLine}" +
-         $"}},";
+        private static string example7CSharpCode = @"
+private readonly List<BitNavLinkItem> BasicNavLinksWithoutURL = new()
+{
+    new BitNavLinkItem
+    {
+        Name = ""Home"",
+        ExpandAriaLabel = ""Expand Home section"",
+        CollapseAriaLabel = ""Collapse Home section"",
+        IsExpanded = true,
+        Links = new List<BitNavLinkItem>
+        {
+            new BitNavLinkItem { Name = ""Activity"", Key = ""key1"", Target=""_blank"" },
+            new BitNavLinkItem { Name = ""MSN"", Key = ""key2"", IsEnabled = false, Target = ""_blank"" }
+        }
+    },
+    new BitNavLinkItem { Name = ""Documents"", Key = ""key3"", Target = ""_blank"", IsExpanded = true },
+    new BitNavLinkItem { Name = ""Pages"", Key = ""key4"", Target = ""_parent"" },
+    new BitNavLinkItem { Name = ""Notebook"", Key = ""key5"", IsEnabled = false },
+    new BitNavLinkItem { Name = ""Communication and Media"", Key = ""key6"", Target = ""_top"" },
+    new BitNavLinkItem { Name = ""News"", Title = ""News"", Key = ""key7"", Icon = ""News"", Target = ""_self"" },
+};
+
+private string BitNavManualModeSelectedKey = ""key3"";
+
+private void HandleSelectedKeyChange(string selectedKey)
+{
+    BitNavManualModeSelectedKey = selectedKey;
+}";
     }
 }

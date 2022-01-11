@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 
 namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Slider
@@ -14,6 +13,12 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Slider
         {
             { "custom-attribute", "demo" }
         };
+
+        private void ChangeBitSliderRangedValues()
+        {
+            sliderRangedLowerValue = 3;
+            sliderRangedUpperValue = 7;
+        }
 
         private readonly List<ComponentParameter> componentParameters = new()
         {
@@ -174,120 +179,137 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Slider
             },
         };
 
-        private readonly string sliderSampleCode = $"<BitSlider/>{Environment.NewLine}" +
-              $"<BitSlider Label='Snapping Slider'{Environment.NewLine}" +
-              $"Min='0'{Environment.NewLine}" +
-              $"Max='50'{Environment.NewLine}" +
-              $"Step='10'{Environment.NewLine}" +
-              $"DefaultValue='20'/>{Environment.NewLine}" +
-              $"<BitSlider Label='Disabled'{Environment.NewLine}" +
-              $"Min='50'{Environment.NewLine}" +
-              $"Max='500'{Environment.NewLine}" +
-              $"Step='50'{Environment.NewLine}" +
-              $"DefaultValue='300'{Environment.NewLine}" +
-              $"IsEnabled='false'/>{Environment.NewLine}" +
-              $"<BitSlider Label='Controlled'{Environment.NewLine}" +
-              $"Max='10'{Environment.NewLine}" +
-              $"ValueFormat='P00'{Environment.NewLine}" +
-              $"DefaultValue='31'/>{Environment.NewLine}" +
-              $"<BitSlider Label='Formatted Value'{Environment.NewLine}" +
-              $"Max='1000'{Environment.NewLine}" +
-              $"DefaultValue='319'{Environment.NewLine}" +
-              $"ValueFormat='P01/>'{Environment.NewLine}" +
-              $"<BitSlider Label='Origin From Zero'{Environment.NewLine}" +
-              $"Min='-5'{Environment.NewLine}" +
-              $"Max='5'{Environment.NewLine}" +
-              $"Step='1'{Environment.NewLine}" +
-              $"DefaultValue='2'{Environment.NewLine}" +
-              $"IsOriginFromZero='true'/>{Environment.NewLine}" +
-              $"@ code {{ {Environment.NewLine}" +
-              $"private double? sliderHorizontalValue = 2; {Environment.NewLine}" +
-              $"}}";
+        private readonly string example1HTMLCode = @"<BitSlider />
+<BitSlider Label=""Snapping Slider""
+           Min=""0""
+           Max=""50""
+           Step=""10""
+           DefaultValue=""20"" />
+<BitSlider Label=""Disabled""
+           Min=""50""
+           Max=""500""
+           Step=""50""
+           DefaultValue=""300""
+           IsEnabled=""false"" />
+<BitSlider Label=""Controlled""
+           Max=""10""
+           @bind-Value=""sliderHorizontalValue"" />
+<BitButton Class=""bit-btn-slider"" OnClick=""() => sliderHorizontalValue = 7"">Change Value</BitButton>
+<BitSlider Label=""Formatted value""
+           Max=""100""
+           DefaultValue=""31""
+           ValueFormat=""P00"" />
+<BitSlider Label=""Formatted Value""
+           Max=""1000""
+           DefaultValue=""319""
+           ValueFormat=""P01"" />
+<BitSlider Label=""Origin From Zero""
+           Min=""-5""
+           Max=""5""
+           Step=""1""
+           DefaultValue=""2""
+           IsRanged=""true""
+           IsOriginFromZero=""true"" />";
 
-        private readonly string verticalSliderSampleCode = $"<BitSlider Label='Basic'{Environment.NewLine}" +
-               $"Min='1'{Environment.NewLine}" +
-               $"Max='5'{Environment.NewLine}" +
-               $"Step='1'{Environment.NewLine}" +
-               $"DefaultValue='2'{Environment.NewLine}" +
-               $"IsVertical='true'/>{Environment.NewLine}" +
-               $"<BitSlider Label='Disabled'{Environment.NewLine}" +
-               $"Min='50'{Environment.NewLine}" +
-               $"Max='500'{Environment.NewLine}" +
-               $"Step='50'{Environment.NewLine}" +
-               $"DefaultValue='300'{Environment.NewLine}" +
-               $"IsEnabled='false'{Environment.NewLine}" +
-               $"IsVertical='true'/>{Environment.NewLine}" +
-               $"<BitSlider Label='Formatted Value'{Environment.NewLine}" +
-               $"Max='100'{Environment.NewLine}" +
-               $"ValueFormat='P00'{Environment.NewLine}" +
-               $"IsVertical='true'/>{Environment.NewLine}" +
-               $"<BitSlider Label='Origin From Zero'{Environment.NewLine}" +
-               $"Min='-5'{Environment.NewLine}" +
-               $"Max='5'{Environment.NewLine}" +
-               $"Step='1'{Environment.NewLine}" +
-               $"IsVertical='true'{Environment.NewLine}" +
-               $"DefaultValue='2'{Environment.NewLine}" +
-               $"IsOriginFromZero='true'/>";
+        private readonly string example1CSharpCode = @"
+@code {
+    private double? sliderHorizontalValue = 2;
+}";
 
-        private readonly string rangeSliderSampleCode = $"<BitSlider Label='Range Slider'{Environment.NewLine}" +
-               $"Min='0'{Environment.NewLine}" +
-               $"Max='10'{Environment.NewLine}" +
-               $"DefaultUpperValue='8'{Environment.NewLine}" +
-               $"DefaultLowerValue='2'{Environment.NewLine}" +
-               $"IsRanged='true'/>{Environment.NewLine}" +
-               $"<BitSlider Label='Controlled'{Environment.NewLine}" +
-               $"Max='10'{Environment.NewLine}" +
-               $"@bind-LowerValue='sliderRangedLowerValue'{Environment.NewLine}" +
-               $"@bind-UpperValue='sliderRangedUpperValue'{Environment.NewLine}" +
-               $"IsRanged='true'/>{Environment.NewLine}" +
-               $"<BitSlider Label='Formatted Value'{Environment.NewLine}" +
-               $"Max='100'{Environment.NewLine}" +
-               $"ValueFormat='P00'{Environment.NewLine}" +
-               $"IsRanged='true'/>{Environment.NewLine}" +
-               $"<BitSlider Label='Origin From Zero'{Environment.NewLine}" +
-               $"Min='-5'{Environment.NewLine}" +
-               $"Max='5'{Environment.NewLine}" +
-               $"Step='1'{Environment.NewLine}" +
-               $"DefaultUpperValue='2'{Environment.NewLine}" +
-               $"IsOriginFromZero='true'{Environment.NewLine}" +
-               $"IsRanged='true'/>{Environment.NewLine}" +
-               $"@ code {{ {Environment.NewLine}" +
-               $"private double? sliderRangedLowerValue = 0; {Environment.NewLine}" +
-               $"private double? sliderRangedUpperValue = 0; {Environment.NewLine}" +
-               $"private void ChangeBitSliderRangedValues() {{ {Environment.NewLine}" +
-               $"{{ {Environment.NewLine}" +
-               $"sliderRangedLowerValue = 3; {Environment.NewLine}" +
-               $"sliderRangedUpperValue = 7; {Environment.NewLine}" +
-               $"}} {Environment.NewLine}" +
-               $"}}";
+        private readonly string example2HTMLCode = @"<div class=""flex-container"">
+    <BitSlider Label=""Basic""
+               Min=""1""
+               Max=""5""
+               Step=""1""
+               DefaultValue=""2""
+               IsVertical=""true"" />
+    <BitSlider Label=""Disabled""
+               Min=""50""
+               Max=""500""
+               Step=""50""
+               DefaultValue=""300""
+               IsVertical=""true"" />
+    <BitSlider Label=""Formatted value""
+               Max=""100"" ValueFormat=""P00""
+               IsVertical=""true"" />
+    <BitSlider Label=""Origin From Zero""
+               Min=""-5""
+               Max=""15""
+               Step=""1""
+               DefaultValue=""5""
+               IsVertical=""true""
+               IsOriginFromZero=""true"" />
+</div>
 
-        private readonly string verticalSampleCode = $"<BitSlider Label='Vertical Range Slider'{Environment.NewLine}" +
-               $"Min='1'{Environment.NewLine}" +
-               $"Max='5'{Environment.NewLine}" +
-               $"Step='1'{Environment.NewLine}" +
-               $"DefaultUpperValue='2'{Environment.NewLine}" +
-               $"DefaultLowerValue='1'{Environment.NewLine}" +
-               $"IsRanged='true'{Environment.NewLine}" +
-               $"IsVertical='true'/>";
+<style>
+    .flex-container {
+        display: flex;
+    }
+</style>";
 
-        private readonly string sliderBoxHtmlAttributesSampleCode = $"<BitSlider Max='10'{Environment.NewLine}" +
-              $"IsRanged='true'{Environment.NewLine}" +
-              $"SliderBoxHtmlAttributes='@BitSliderRangedSliderBoxHtmlAttributes' /> {Environment.NewLine}" +
-              $"@ code {{ {Environment.NewLine}" +
-              $"private double? sliderRangedLowerValue = 0; {Environment.NewLine}" +
-              $"private double? sliderRangedUpperValue = 0; {Environment.NewLine}" +
-              $"private void ChangeBitSliderRangedValues() {{ {Environment.NewLine}" +
-              $"{{ {Environment.NewLine}" +
-              $" private Dictionary<string, object> BitSliderRangedSliderBoxHtmlAttributes = new() {Environment.NewLine}" +
-              $"{{ {Environment.NewLine}" +
-              $" {{ 'custom-attribute','demo' }} {Environment.NewLine}" +
-              $"}} {Environment.NewLine}" +
-              $"}}";
+        private readonly string example3HTMLCode = @"<BitSlider Label=""Range slider""
+           Min=""0""
+           Max=""10""
+           DefaultUpperValue=""8""
+           DefaultLowerValue=""2""
+           IsRanged=""true"" />
+<BitSlider Label=""Disabled""
+           Min=""50""
+           Max=""500""
+           Step=""50""
+           DefaultUpperValue=""300""
+           IsRanged=""true""
+           IsEnabled=""false"" />
+<BitSlider Label=""Controlled example""
+           Max=""10""
+           @bind-LowerValue=""sliderRangedLowerValue""
+           @bind-UpperValue=""sliderRangedUpperValue""
+           IsRanged=""true"" />
+<BitButton Class=""bit-btn-slider"" OnClick=""ChangeBitSliderRangedValues"">
+    Change Value
+</BitButton>
+<BitSlider Label=""Formatted value""
+           Max=""100""
+           IsRanged=""true""
+           ValueFormat=""P00"" />
+<BitSlider Label=""Origin from zero""
+           Min=""-5""
+           Max=""5""
+           Step=""1""
+           DefaultUpperValue=""2""
+           IsRanged=""true""
+           IsOriginFromZero=""true"" />";
 
-        private void ChangeBitSliderRangedValues()
-        {
+        private readonly string example3CSharpCode = @"
+@code {
+    private double? sliderRangedLowerValue = 0;
+    private double? sliderRangedUpperValue = 0;
+    private void ChangeBitSliderRangedValues()
+    {
             sliderRangedLowerValue = 3;
             sliderRangedUpperValue = 7;
-        }
+    }
+}";
+
+        private readonly string example4HTMLCode = @"<BitSlider Label=""Vertical Range Slider""
+        Min=""1""
+        Max=""5""
+        Step=""1""
+        DefaultUpperValue=""2""
+        DefaultLowerValue=""1""
+        IsRanged=""true""
+        IsVertical=""true"" />";
+
+        private readonly string example5HTMLCode = @"<BitSlider Max=""10""
+        IsRanged=""true""
+        SliderBoxHtmlAttributes=""@BitSliderRangedSliderBoxHtmlAttributes"" />";
+
+        private readonly string example5CSharpCode = @"
+@code {
+    private Dictionary<string, object> BitSliderRangedSliderBoxHtmlAttributes = new()
+    { 
+            { ""custom-attribute"", ""demo"" }
+    };
+}";
     }
 }

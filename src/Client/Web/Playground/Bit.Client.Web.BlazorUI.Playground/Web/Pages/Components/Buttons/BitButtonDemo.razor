@@ -3,7 +3,7 @@
 <ComponentDemo ComponentName="Button" ComponentDescription="Buttons give people a way to trigger an action. They’re typically found in forms, dialog panels, and dialogs.
     Some buttons are specialized for particular tasks, such as navigation, repeated actions, or presenting menus."
                ComponentParameters="componentParameters" EnumParameters="enumParameters">
-    <ComponentExampleBox Title="BitButton" ExampleSourceCodeForCopy="@buttonSampleCode" ExampleId="example1">
+    <ComponentExampleBox Title="BitButton" HTMLSourceCode="@example1HTMLCode" ExampleId="example1">
         <ExamplePreview>
             <div class="example-desc">To create a button you can use a BitButton component.</div>
             <div>
@@ -21,25 +21,9 @@
                 </BitButton>
             </div>
         </ExamplePreview>
-        <ExampleSourceCode>
-            <pre class="code">
-            <code class="html">&ltBitButton IsEnabled="true">
-        Primary
-&lt/BitButton>
-&ltBitButton ButtonStyle="BitButtonStyle.Standard" Style="margin-right: 2px;" IsEnabled="true">
-        Standard
-&lt/BitButton>
-&ltBitButton IsEnabled="false" AllowDisabledFocus="false">
-        Disabled
-&lt/BitButton>
-&ltBitButton Class="label-btn" IsEnabled="true">
-        &ltlabel>A Text from label element&lt/label>
-&lt/BitButton></code>
-            </pre>
-        </ExampleSourceCode>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Style & Class" ExampleSourceCodeForCopy="@styleAndClassSampleCode" ExampleId="example2">
+    <ComponentExampleBox Title="Style & Class" HTMLSourceCode="@example2HTMLCode" ExampleId="example2">
         <ExamplePreview>
             <div class="example-desc">BitButton can directly get css class or inline style.</div>
             <div>
@@ -51,35 +35,18 @@
                 </BitButton>
             </div>
         </ExamplePreview>
-        <ExampleSourceCode>
-            <pre class="code">
-            <code class="html">&ltBitButton Style="height: 40px;width: 166px;font-family: 'Axiforma';font-size: 16px;" Class="styled-btn">
-        Styled Button
-&lt/BitButton>
-&ltBitButton Class="custom-button">
-        Classed Button
-&lt/BitButton></code>
-            </pre>
-        </ExampleSourceCode>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Visibility" ExampleSourceCodeForCopy="@visibilitySampleCode" ExampleId="example3">
+    <ComponentExampleBox Title="Visibility" HTMLSourceCode="@example3HTMLCode" ExampleId="example3">
         <ExamplePreview>
             <div class="example-desc">By setting Visibility attribute, BitButton can be Visible, Hidden or Collapsed.</div>
             <BitButton Style="margin-bottom: 10px;" Visibility="BitComponentVisibility.Visible">Visible Button</BitButton>
             <div>Hidden Button: [<BitButton Visibility="BitComponentVisibility.Hidden">Hidden Button</BitButton>]</div>
             <div>Collapsed Button: [<BitButton Visibility="BitComponentVisibility.Collapsed">Collapsed Button</BitButton>]</div>
         </ExamplePreview>
-        <ExampleSourceCode>
-            <pre class="code">
-            <code class="html">&ltBitButton Style="margin-bottom: 10px;" Visibility="BitComponentVisibility.Visible">Visible Button&lt/BitButton>
-&ltdiv>Hidden Button: [&ltBitButton Visibility="BitComponentVisibility.Hidden">Hidden Button&lt/BitButton>]&lt/div>
-&ltdiv>Collapsed Button: [&ltBitButton Visibility="BitComponentVisibility.Collapsed">Collapsed Button&lt/BitButton>]&lt/div></code>
-            </pre>
-        </ExampleSourceCode>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Arias for Screen Reader" ExampleSourceCodeForCopy="@ariasSampleCode" ExampleId="example4">
+    <ComponentExampleBox Title="Arias for Screen Reader" HTMLSourceCode="@example4HTMLCode" ExampleId="example4">
         <ExamplePreview>
             <div class="example-desc">Aria attribues can also set for a BitButton.</div>
             <div>
@@ -91,19 +58,9 @@
                 </BitButton>
             </div>
         </ExamplePreview>
-        <ExampleSourceCode>
-            <pre class="code">
-            <code class="html">&ltBitButton AriaDescription="Detailed description used for screen reader.">
-        Button with Aria Description
-&lt/BitButton>
-&ltBitButton ButtonStyle="BitButtonStyle.Standard" AriaHidden="true">
-        Button with Aria Hidden
-&lt/BitButton></code>
-            </pre>
-        </ExampleSourceCode>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Button-like Anchor" ExampleSourceCodeForCopy="@buttonLikeAnchorSampleCode" ExampleId="example5">
+    <ComponentExampleBox Title="Button-like Anchor" HTMLSourceCode="@example5HTMLCode" ExampleId="example5">
         <ExamplePreview>
             <div class="example-desc">BitButton can act as a link by setting Href and Target attributes.</div>
             <div class="sample-lnk-btn">
@@ -118,18 +75,5 @@
                 </BitButton>
             </div>
         </ExamplePreview>
-        <ExampleSourceCode>
-            <pre class="code">
-            <code class="html">&ltBitButton Style="margin-right: 10px;" Title="Primary" Target="_blank" Href="https://github.com/bitfoundation/bitframework">
-        Open Bit Foundation In New Tab
-&lt/BitButton>
-&ltBitButton Class="lnk-btn" Style="margin-right: 10px;" Title="Standard" Href="https://github.com/bitfoundation/bitframework" ButtonStyle="BitButtonStyle.Standard">
-        Go To Bit Foundation
-&lt/BitButton>
-&ltBitButton Class="disable-btn" Target="_self" Href="https://github.com/bitfoundation/bitframework" IsEnabled="false">
-        &ltspan>Bit Foundation From Span&lt/span>
-&lt/BitButton></code>
-            </pre>
-        </ExampleSourceCode>
     </ComponentExampleBox>
 </ComponentDemo>

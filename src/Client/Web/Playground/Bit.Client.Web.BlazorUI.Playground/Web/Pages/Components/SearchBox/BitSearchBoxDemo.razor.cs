@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Reflection;
+﻿using System.Collections.Generic;
 using Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 
 namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.SearchBox
@@ -97,19 +95,26 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.SearchBox
             },
         };
 
-        private readonly string searchBoxSampleCode = $"<BitSearchBox Placeholder='Search'></BitSearchBox>{Environment.NewLine}" +
-             $"<BitSearchBox Placeholder='Search' DefaultValue='this is default value'></BitSearchBox>{Environment.NewLine}" +
-             $"<BitSearchBox Placeholder='Search with no animation' DisableAnimation='true'></BitSearchBox>{Environment.NewLine}" +
-             $"<BitSearchBox Placeholder='SearchBox with fixed icon' ShowIcon='true'></BitSearchBox>{Environment.NewLine}" +
-             $"<BitSearchBox Placeholder='Search with Binded value' @bind-Value='@TextValue'></BitSearchBox>{Environment.NewLine}" +
-             $"<BitLabel>The value you are looking for: @TextValue</BitLabel>{Environment.NewLine}" +
-             $"@code {{ {Environment.NewLine}" +
-             $"private string TextValue;{Environment.NewLine}" +
-             $"}}" ;
-        
-        private readonly string underlineSearchBoxSampleCode = "<BitSearchBox Placeholder='Search' IsUnderlined='true'></BitSearchBox>";
-        private readonly string customIconSearchBoxSampleCode = "<BitSearchBox Placeholder='Filter' IconName='BitIconName.Filter'></BitSearchBox>";
-        private readonly string fixedWidthSearchBoxSampleCode = "<BitSearchBox Placeholder='Search' Width='250px'></BitSearchBox>";
-        private readonly string disabledSearchBoxSampleCode = "<BitSearchBox Placeholder='Search' IsEnabled='false'></BitSearchBox>";
+        private readonly string example1HTMLCode = @"<div>
+    <BitSearchBox Placeholder=""Search""></BitSearchBox>
+    <BitSearchBox Placeholder=""Search"" DefaultValue=""this is default value""></BitSearchBox>
+    <BitSearchBox Placeholder=""Search with no animation"" DisableAnimation=true></BitSearchBox>
+    <BitSearchBox Placeholder=""SearchBox with fixed icon"" ShowIcon=""true""></BitSearchBox>
+    <BitSearchBox Placeholder=""Search with Binded value"" @bind-Value=""@TextValue""></BitSearchBox>
+    <BitLabel>The value you are looking for: @TextValue</BitLabel>
+</div>";
+
+        private readonly string example1CSharpCode = @"
+@code {
+    private string TextValue;
+}";
+
+        private readonly string example2HTMLCode = @"<BitSearchBox Placeholder=""Search"" IsUnderlined=""true""></BitSearchBox>";
+
+        private readonly string example3HTMLCode = @"<BitSearchBox Placeholder=""Filter"" IconName=""BitIconName.Filter""></BitSearchBox>";
+
+        private readonly string example4HTMLCode = @"<BitSearchBox Placeholder=""Search"" Width=""250px""></BitSearchBox>";
+
+        private readonly string example5HTMLCode = @"<BitSearchBox Placeholder=""Search"" IsEnabled=""false""></BitSearchBox>";
     }
 }

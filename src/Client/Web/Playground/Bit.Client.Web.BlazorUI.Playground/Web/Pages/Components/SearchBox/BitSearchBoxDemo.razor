@@ -2,7 +2,7 @@
 
 <ComponentDemo ComponentName="SearchBox" ComponentDescription="A search box (SearchBox) provides an input field for searching content within a site or app to find specific items."
                ComponentParameters="componentParameters">
-    <ComponentExampleBox Title="BitSearchBox" ExampleSourceCodeForCopy="@searchBoxSampleCode" ExampleId="example1">
+    <ComponentExampleBox Title="BitSearchBox" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
         <ExamplePreview>
             <div class="example-desc">To create a searchbox you can use a BitSearchbox component.</div>
             <div>
@@ -14,75 +14,33 @@
                 <BitLabel>The value you are looking for: @TextValue</BitLabel>
             </div>
         </ExamplePreview>
-        <ExampleSourceCode>
-            <pre class="code">
-            <code class="html">&ltBitSearchBox Placeholder="Search">&lt/BitSearchBox>
-&ltBitSearchBox Placeholder="Search" DefaultValue="this is default value">&lt/BitSearchBox>
-&ltBitSearchBox Placeholder="Search with no animation" DisableAnimation=true>&lt/BitSearchBox>
-&ltBitSearchBox Placeholder="SearchBox with fixed icon" ShowIcon="true">&lt/BitSearchBox>
-&ltBitSearchBox Placeholder="Search with Binded value" &#64;bind-Value="&#64;TextValue">&lt/BitSearchBox>
-&ltBitLabel>The value you are looking for: &#64;TextValue&lt/BitLabel></code>
-
-            <code class="csharp">&#64;code {
-        private string TextValue;
-}</code>
-            </pre>
-        </ExampleSourceCode>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Underlined SearchBox" ExampleSourceCodeForCopy="@underlineSearchBoxSampleCode" ExampleId="example2">
+    <ComponentExampleBox Title="Underlined SearchBox" HTMLSourceCode="@example2HTMLCode" ExampleId="example2">
         <ExamplePreview>
             <div class="example-desc">BitSearchBox component can be like an underline.</div>
-            <div>
-                <BitSearchBox Placeholder="Search" IsUnderlined="true"></BitSearchBox>
-            </div>
+            <BitSearchBox Placeholder="Search" IsUnderlined="true"></BitSearchBox>
         </ExamplePreview>
-        <ExampleSourceCode>
-            <pre class="code">
-            <code class="html">&ltBitSearchBox Placeholder="Search" IsUnderlined="true">&lt/BitSearchBox></code>
-            </pre>
-        </ExampleSourceCode>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="SearchBox with custom icon" ExampleSourceCodeForCopy="@customIconSearchBoxSampleCode" ExampleId="example3">
+    <ComponentExampleBox Title="SearchBox with custom icon" HTMLSourceCode="@example3HTMLCode" ExampleId="example3">
         <ExamplePreview>
             <div class="example-desc">BitSeachBox component also can get a custom icon.</div>
-            <div>
-                <BitSearchBox Placeholder="Filter" IconName="BitIconName.Filter"></BitSearchBox>
-            </div>
+            <BitSearchBox Placeholder="Filter" IconName="BitIconName.Filter"></BitSearchBox>
         </ExamplePreview>
-        <ExampleSourceCode>
-            <pre class="code">
-            <code class="html">&ltBitSearchBox Placeholder="Filter" IconName="BitIconName.Filter">&lt/BitSearchBox></code>
-            </pre>
-        </ExampleSourceCode>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="SearchBox with fixed width" ExampleSourceCodeForCopy="@fixedWidthSearchBoxSampleCode" ExampleId="example4">
+    <ComponentExampleBox Title="SearchBox with fixed width" HTMLSourceCode="@example4HTMLCode" ExampleId="example4">
         <ExamplePreview>
             <div class="example-desc">You can set width of searchbox by Width attribute.</div>
-            <div>
-                <BitSearchBox Placeholder="Search" Width="250px"></BitSearchBox>
-            </div>
+            <BitSearchBox Placeholder="Search" Width="250px"></BitSearchBox>
         </ExamplePreview>
-        <ExampleSourceCode>
-            <pre class="code">
-            <code class="html">&ltBitSearchBox Placeholder="Search" Width="250px">&lt/BitSearchBox></code>
-            </pre>
-        </ExampleSourceCode>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Disabled SearchBox" ExampleSourceCodeForCopy="@disabledSearchBoxSampleCode" ExampleId="example5">
+    <ComponentExampleBox Title="Disabled SearchBox" HTMLSourceCode="@example5HTMLCode" ExampleId="example5">
         <ExamplePreview>
             <div class="example-desc">BitSearchBox can be disabled or enabled by setting IsEnabled attribute.</div>
-            <div>
-                <BitSearchBox Placeholder="Search" IsEnabled=false></BitSearchBox>
-            </div>
+            <BitSearchBox Placeholder="Search" IsEnabled="false"></BitSearchBox>
         </ExamplePreview>
-        <ExampleSourceCode>
-            <pre class="code">
-            <code class="html">&ltBitSearchBox Placeholder="Search" IsEnabled=false>&lt/BitSearchBox></code>
-            </pre>
-        </ExampleSourceCode>
     </ComponentExampleBox>
 </ComponentDemo>

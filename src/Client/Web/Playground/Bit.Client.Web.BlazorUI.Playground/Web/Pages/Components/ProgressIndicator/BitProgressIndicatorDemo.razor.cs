@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 
@@ -69,33 +68,6 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ProgressIndica
             },
         };
 
-        private readonly string indeterminateSampleCode = $"<BitProgressIndicator Label='Example title' Description='@description' PercentComplete='@CompletedPercent' BarHeight='50'/>{Environment.NewLine}" +
-              $"<BitButton OnClick='@StartProgress'>Start Progress</BitButton>";
-
-        private readonly string progressIndicatorSampleCode = $"<BitProgressIndicator Label='Example title' Description='Example description' BarHeight='20'/>{Environment.NewLine}" +
-              $"<BitButton OnClick='@StartProgress'>Start Progress</BitButton>{Environment.NewLine}" +
-              $"private string description = 'Push button to start!';{Environment.NewLine}" +
-              $"public int CompletedPercent {{ get; set; }}{Environment.NewLine}" +
-              $"private async Task StartProgress(){Environment.NewLine}" +
-              $"{{ {Environment.NewLine}" +
-              $"CompletedPercent = 0;{Environment.NewLine}" +
-              $"while (CompletedPercent <= 100){Environment.NewLine}" +
-              $"{{ {Environment.NewLine}" +
-              $"if (CompletedPercent == 100){Environment.NewLine}" +
-              $"{{ {Environment.NewLine}" +
-              $"description = $'Completed !';{Environment.NewLine}" +
-              $"break;{Environment.NewLine}" +
-              $"}} {Environment.NewLine}" +
-              $"else{Environment.NewLine}" +
-              $"{{ {Environment.NewLine}" +
-              $"CompletedPercent++;{Environment.NewLine}" +
-              $"description = $'{{CompletedPercent}}%';{Environment.NewLine}" +
-              $"}} {Environment.NewLine}" +
-              $"StateHasChanged();{Environment.NewLine}" +
-              $"await Task.Delay(100);{Environment.NewLine}" +
-              $"}} {Environment.NewLine}"+
-              $"}}";
-
         public int CompletedPercent { get; set; }
 
         private async Task StartProgress()
@@ -119,5 +91,37 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ProgressIndica
                 await Task.Delay(100);
             }
         }
+
+        private readonly string example1HTMLCode = @"<BitProgressIndicator Label=""Example title"" Description=""@description"" PercentComplete=""@CompletedPercent"" BarHeight=""50""></BitProgressIndicator>
+<div>
+    <BitButton OnClick=""@StartProgress"">Start Progress</BitButton>
+</div>";
+
+        private readonly string example1CSharpCode = @"@code {
+    private string description = ""Push button to start!"";
+    public int CompletedPercent { get; set; }
+    private async Task StartProgress()
+    {
+            CompletedPercent = 0;
+            while &#40;CompletedPercent &lt= 100)
+            {
+                    if &#40;CompletedPercent == 100)
+                    {
+                            description = $""Completed !"";
+                            break;
+                    }
+                    else
+                    {
+                            CompletedPercent++;
+                            description = $""{CompletedPercent}%"";
+                    }
+
+                    StateHasChanged();
+                    await Task.Delay(100);
+            }
+    }
+}";
+
+        private readonly string example2HTMLCode = @"<BitProgressIndicator Label=""Example title"" Description=""Example description"" BarHeight=""20""></BitProgressIndicator>";
     }
 }

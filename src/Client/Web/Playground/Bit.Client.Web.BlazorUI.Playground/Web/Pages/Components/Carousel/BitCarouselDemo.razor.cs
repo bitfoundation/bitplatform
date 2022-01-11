@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 
 namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Carousel
@@ -45,84 +44,50 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Carousel
             }
         };
 
-        private readonly string carouselSampleCode = $"<BitCarousel>{Environment.NewLine}" +
-            $"<BitCarouselItem>{Environment.NewLine}" +
-            $"<div class='numbertext'>1/4 </div>{Environment.NewLine}" +
-            $"<img src='/images/carousel/img1.jpg' style='width:100%' />{Environment.NewLine}" +
-            $"<div class='text'>Aurora</div>{Environment.NewLine}" +
-            $"</BitCarouselItem>{Environment.NewLine}" +
-            $"<BitCarouselItem>{Environment.NewLine}" +
-            $"<div class='numbertext'>2/4 </div>{Environment.NewLine}" +
-            $"<img src='/images/carousel/img2.jpg' style='width:100%' />{Environment.NewLine}" +
-            $"<div class='text'>Beautiful Mountain</div>{Environment.NewLine}" +
-            $"</BitCarouselItem>{Environment.NewLine}" +
-            $"<BitCarouselItem>{Environment.NewLine}" +
-            $"<div class='numbertext'>3/4 </div>{Environment.NewLine}" +
-            $"<img src='/images/carousel/img3.jpg' style='width:100%' />{Environment.NewLine}" +
-            $"<div class='text'>Forest In The Valley</div>{Environment.NewLine}" +
-            $"</BitCarouselItem>{Environment.NewLine}" +
-            $"<BitCarouselItem>{Environment.NewLine}" +
-            $"<div class='numbertext'>4/4 </div>{Environment.NewLine}" +
-            $"<img src='/images/carousel/img4.jpg' style='width:100%' />{Environment.NewLine}" +
-            $"<div class='text'>Road Among The Mountains</div>{Environment.NewLine}" +
-            $"</BitCarouselItem>{Environment.NewLine}" +
-            $"</BitCarousel>{Environment.NewLine}" +
-            $"<style>{Environment.NewLine}" +
-            $".numbertext {{ {Environment.NewLine}" +
-            $"color: #DDDDDD;{Environment.NewLine}" +
-            $"font-size: 12px;{Environment.NewLine}" +
-            $"padding: 12px;{Environment.NewLine}" +
-            $"position: absolute;{Environment.NewLine}" +
-            $"top: 12px;{Environment.NewLine}" +
-            $"}} {Environment.NewLine}" +
-            $".text {{ {Environment.NewLine}" +
-            $"color: #FFFFFF;{Environment.NewLine}" +
-            $"font-size: 15px;{Environment.NewLine}" +
-            $"position: absolute;{Environment.NewLine}" +
-            $"bottom: 55px;{Environment.NewLine}" +
-            $"width: 100%;{Environment.NewLine}" +
-            $"text-align: center;{Environment.NewLine}" +
-            $"}} {Environment.NewLine}" +
-            $"</style>";
+        private readonly string example1HTMLCode = @"<BitCarousel>
+    <BitCarouselItem>
+        <div class=""numbertext"">1 / 4</div>
+        <img src=""/images/carousel/img1.jpg"" style=""width:100%"">
+        <div class=""text"">Aurora</div>
+    </BitCarouselItem>
+    <BitCarouselItem>
+        <div class=""numbertext"">2 / 4</div>
+        <img src=""/images/carousel/img2.jpg"" style=""width:100%"" />
+        <div class=""text"">Beautiful Mountain</div>
+    </BitCarouselItem>
+    <BitCarouselItem>
+        <div class=""numbertext"">3 / 4</div>
+        <img src=""/images/carousel/img3.jpg"" style=""width:100%"" />
+        <div class=""text"">Forest In The Valley</div>
+    </BitCarouselItem>
+    <BitCarouselItem>
+        <div class=""numbertext"">4 / 4</div>
+        <img src=""/images/carousel/img4.jpg"" style=""width:100%"" />
+        <div class=""text"">Road Among The Mountains</div>
+    </BitCarouselItem>
+</BitCarousel>";
 
-        private readonly string slideShowCarouselSampleCode = $"<BitCarousel IsSlideShow='true'>{Environment.NewLine}" +
-            $"<BitCarouselItem>{Environment.NewLine}" +
-            $"<div class='numbertext'>1/4 </div>{Environment.NewLine}" +
-            $"<img src='/images/carousel/img1.jpg' style='width:100%' />{Environment.NewLine}" +
-            $"<div class='text'>Aurora</div>{Environment.NewLine}" +
-            $"</BitCarouselItem>{Environment.NewLine}" +
-            $"<BitCarouselItem>{Environment.NewLine}" +
-            $"<div class='numbertext'>2/4 </div>{Environment.NewLine}" +
-            $"<img src='/images/carousel/img2.jpg' style='width:100%' />{Environment.NewLine}" +
-            $"<div class='text'>Beautiful Mountain</div>{Environment.NewLine}" +
-            $"</BitCarouselItem>{Environment.NewLine}" +
-            $"<BitCarouselItem>{Environment.NewLine}" +
-            $"<div class='numbertext'>3/4 </div>{Environment.NewLine}" +
-            $"<img src='/images/carousel/img3.jpg' style='width:100%' />{Environment.NewLine}" +
-            $"<div class='text'>Forest In The Valley</div>{Environment.NewLine}" +
-            $"</BitCarouselItem>{Environment.NewLine}" +
-            $"<BitCarouselItem>{Environment.NewLine}" +
-            $"<div class='numbertext'>4/4 </div>{Environment.NewLine}" +
-            $"<img src='/images/carousel/img4.jpg' style='width:100%' />{Environment.NewLine}" +
-            $"<div class='text'>Road Among The Mountains</div>{Environment.NewLine}" +
-            $"</BitCarouselItem>{Environment.NewLine}" +
-            $"</BitCarousel>{Environment.NewLine}" +
-            $"<style>{Environment.NewLine}" +
-            $".numbertext {{ {Environment.NewLine}" +
-            $"color: #DDDDDD;{Environment.NewLine}" +
-            $"font-size: 12px;{Environment.NewLine}" +
-            $"padding: 12px;{Environment.NewLine}" +
-            $"position: absolute;{Environment.NewLine}" +
-            $"top: 12px;{Environment.NewLine}" +
-            $"}} {Environment.NewLine}" +
-            $".text {{ {Environment.NewLine}" +
-            $"color: #FFFFFF;{Environment.NewLine}" +
-            $"font-size: 15px;{Environment.NewLine}" +
-            $"position: absolute;{Environment.NewLine}" +
-            $"bottom: 55px;{Environment.NewLine}" +
-            $"width: 100%;{Environment.NewLine}" +
-            $"text-align: center;{Environment.NewLine}" +
-            $"}} {Environment.NewLine}" +
-            $"</style>";
+        private readonly string example2HTMLCode = @"<BitCarousel IsSlideShow=""true"">
+    <BitCarouselItem>
+        <div class=""numbertext"">1 / 4</div>
+        <img src=""/images/carousel/img1.jpg"" style=""width:100%"" />
+        <div class=""text"">Aurora</div>
+    </BitCarouselItem>
+    <BitCarouselItem>
+        <div class=""numbertext"">2 / 4</div>
+        <img src=""/images/carousel/img2.jpg"" style=""width:100%"" />
+        <div class=""text"">Beautiful Mountain</div>
+    </BitCarouselItem>
+    <BitCarouselItem>
+        <div class=""numbertext"">3 / 4</div>
+        <img src=""/images/carousel/img3.jpg"" style=""width:100%"" />
+        <div class=""text"">Forest In The Valley</div>
+    </BitCarouselItem>
+    <BitCarouselItem>
+        <div class=""numbertext"">4 / 4</div>
+        <img src=""/images/carousel/img4.jpg"" style=""width:100%"" />
+        <div class=""text"">Road Among The Mountains</div>
+    </BitCarouselItem>
+</BitCarousel>";
     }
 }

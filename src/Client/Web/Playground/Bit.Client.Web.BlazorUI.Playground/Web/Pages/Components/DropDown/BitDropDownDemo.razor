@@ -2,7 +2,7 @@
 
 <ComponentDemo ComponentName="DropDown" ComponentDescription="A dropdown is a list in which the selected item is always visible while other items are visible on demand by clicking a dropdown button. Dropdowns are typically used for forms."
                ComponentParameters="componentParameters">
-    <ComponentExampleBox Title="BitDropDown" ExampleSourceCodeForCopy="@dropDownSampleCode" ExampleId="example1">
+    <ComponentExampleBox Title="BitDropDown" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
         <ExamplePreview>
             <div class="example-desc">To create a dropdown you can use a BitDropDown component.</div>
             <div>
@@ -26,466 +26,77 @@
                 </BitDropDown>
             </div>
         </ExamplePreview>
-        <ExampleSourceCode>
-            <pre class="code">
-            <code class="html">&ltBitDropDown Label="Basic Uncontrolled"
-             Items="GetDropdownItems()"
-             Placeholder="Select an option"
-             Style="width: 290px; margin: 20px 0 20px 0">
-&lt/BitDropDown>
-&ltBitDropDown Label="Disabled with defaultSelectedKey"
-             Items="GetDropdownItems()"
-             Placeholder="Select an option"
-             IsEnabled="false"
-             DefaultSelectedKey="Broccoli"
-             Style="width: 290px; margin-bottom: 20px;">
-&lt/BitDropDown>
-&ltBitDropDown Label="Multi-select uncontrolled"
-             Items="GetDropdownItems()"
-             Placeholder="Select options"
-             IsMultiSelect="true"
-             Style="width: 290px; margin-bottom: 20px;">
-&lt/BitDropDown></code>
-
-            <code class="csharp">&#64;code {
-    private List&ltBitDropDownItem> GetDropdownItems()
-    {
-        List&ltBitDropDownItem> items = new();
-    
-        items.Add(new BitDropDownItem()
-        {
-            ItemType = BitDropDownItemType.Header,
-            Text = "Fruits"
-        });
-    
-        items.Add(new BitDropDownItem()
-        {
-            ItemType = BitDropDownItemType.Normal,
-            Text = "Apple",
-            Value = "f-app"
-        });
-    
-        items.Add(new BitDropDownItem()
-        {
-            ItemType = BitDropDownItemType.Normal,
-            Text = "Orange",
-            Value = "f-ora",
-            IsEnabled = false
-        });
-    
-        items.Add(new BitDropDownItem()
-        {
-            ItemType = BitDropDownItemType.Normal,
-            Text = "Banana",
-            Value = "f-ban",
-        });
-    
-        items.Add(new BitDropDownItem()
-        {
-            ItemType = BitDropDownItemType.Divider,
-        });
-    
-        items.Add(new BitDropDownItem()
-        {
-            ItemType = BitDropDownItemType.Header,
-            Text = "Vegetables"
-        });
-    
-        items.Add(new BitDropDownItem()
-        {
-            ItemType = BitDropDownItemType.Normal,
-            Text = "Broccoli",
-            Value = "v-bro",
-        });
-    
-        return items;
-    }
-}</code>
-            </pre>
-        </ExampleSourceCode>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Controlled Single-Select" ExampleSourceCodeForCopy="@singleSelectSampleCode" ExampleId="example2">
+    <ComponentExampleBox Title="Controlled Single-Select" HTMLSourceCode="@example2HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example2">
         <ExamplePreview>
-            <div>
-                <BitDropDown Label="Single-select Controlled"
-                             Items="GetDropdownItems()"
-                             Placeholder="Select an option"
-                             @bind-SelectedKey="ControlledSelectedKey"
-                             Style="width: 290px; margin: 20px 0 20px 0">
-                </BitDropDown>
-            </div>
+            <BitDropDown Label="Single-select Controlled"
+                         Items="GetDropdownItems()"
+                         Placeholder="Select an option"
+                         @bind-SelectedKey="ControlledSelectedKey"
+                         Style="width: 290px; margin: 20px 0 20px 0">
+            </BitDropDown>
         </ExamplePreview>
-        <ExampleSourceCode>
-            <pre class="code">
-            <code class="html">&ltBitDropDown Label="Single-select Controlled"
-             Items="GetDropdownItems()"
-             Placeholder="Select an option"
-             &#64;bind-SelectedKey="ControlledSelectedKey"
-             Style="width: 290px; margin: 20px 0 20px 0">
-&lt/BitDropDown></code>
-
-            <code class="csharp">&#64;code {
-    private string ControlledSelectedKey = "Apple";
-    private List&ltBitDropDownItem> GetDropdownItems()
-    {
-        List&ltBitDropDownItem> items = new();
-
-        items.Add(new BitDropDownItem()
-        {
-            ItemType = BitDropDownItemType.Header,
-            Text = "Fruits"
-        });
-
-        items.Add(new BitDropDownItem()
-        {
-            ItemType = BitDropDownItemType.Normal,
-            Text = "Apple",
-            Value = "f-app"
-        });
-
-        items.Add(new BitDropDownItem()
-        {
-            ItemType = BitDropDownItemType.Normal,
-            Text = "Orange",
-            Value = "f-ora",
-            IsEnabled = false
-        });
-
-        items.Add(new BitDropDownItem()
-        {
-            ItemType = BitDropDownItemType.Normal,
-            Text = "Banana",
-            Value = "f-ban",
-        });
-
-        items.Add(new BitDropDownItem()
-        {
-            ItemType = BitDropDownItemType.Divider,
-        });
-
-        items.Add(new BitDropDownItem()
-        {
-            ItemType = BitDropDownItemType.Header,
-            Text = "Vegetables"
-        });
-
-        items.Add(new BitDropDownItem()
-        {
-            ItemType = BitDropDownItemType.Normal,
-            Text = "Broccoli",
-            Value = "v-bro",
-        });
-
-        return items;
-    }
-}</code>
-            </pre>
-        </ExampleSourceCode>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Controlled Multi-Select" ExampleSourceCodeForCopy="@multiSelectSampleCode" ExampleId="example3">
+    <ComponentExampleBox Title="Controlled Multi-Select" HTMLSourceCode="@example3HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example3">
         <ExamplePreview>
-            <div>
-                <BitDropDown Label="Multi-select controlled"
-                             Items="GetDropdownItems()"
-                             Placeholder="Select options"
-                             @bind-SelectedMultipleKeys="ControlledSelectedMultipleKeys"
-                             IsMultiSelect="true"
-                             Style="width:290px; margin:20px 0 20px 0">
-                </BitDropDown>
-            </div>
+            <BitDropDown Label="Multi-select controlled"
+                         Items="GetDropdownItems()"
+                         Placeholder="Select options"
+                         @bind-SelectedMultipleKeys="ControlledSelectedMultipleKeys"
+                         IsMultiSelect="true"
+                         Style="width:290px; margin:20px 0 20px 0">
+            </BitDropDown>
         </ExamplePreview>
-        <ExampleSourceCode>
-            <pre class="code">
-            <code class="html">&ltBitDropDown Label="Multi-select controlled"
-             Items="GetDropdownItems()"
-             Placeholder="Select options"
-             &#64;bind-SelectedMultipleKeys="ControlledSelectedMultipleKeys"
-             IsMultiSelect="true"
-             Style="width:290px; margin:20px 0 20px 0">
-&lt/BitDropDown></code>
-
-            <code class="csharp">&#64;code {
-    private List&ltstring> ControlledSelectedMultipleKeys = new List&ltstring>() { "Apple", "Banana", "Grape" };
-    private List&ltBitDropDownItem> GetDropdownItems()
-    {
-        List&ltBitDropDownItem> items = new();
-
-        items.Add(new BitDropDownItem()
-        {
-            ItemType = BitDropDownItemType.Header,
-            Text = "Fruits"
-        });
-
-        items.Add(new BitDropDownItem()
-        {
-            ItemType = BitDropDownItemType.Normal,
-            Text = "Apple",
-            Value = "f-app"
-        });
-
-        items.Add(new BitDropDownItem()
-        {
-            ItemType = BitDropDownItemType.Normal,
-            Text = "Orange",
-            Value = "f-ora",
-            IsEnabled = false
-        });
-
-        items.Add(new BitDropDownItem()
-        {
-            ItemType = BitDropDownItemType.Normal,
-            Text = "Banana",
-            Value = "f-ban",
-        });
-
-        items.Add(new BitDropDownItem()
-        {
-            ItemType = BitDropDownItemType.Divider,
-        });
-
-        items.Add(new BitDropDownItem()
-        {
-            ItemType = BitDropDownItemType.Header,
-            Text = "Vegetables"
-        });
-
-        items.Add(new BitDropDownItem()
-        {
-            ItemType = BitDropDownItemType.Normal,
-            Text = "Broccoli",
-            Value = "v-bro",
-        });
-
-        return items;
-    }
-}</code>
-            </pre>
-        </ExampleSourceCode>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Customized Dropdown" ExampleSourceCodeForCopy="@customizedSampleCode" ExampleId="example4">
+    <ComponentExampleBox Title="Customized Dropdown" HTMLSourceCode="@example4HTMLCode" CSharpSourceCode="@example4CSharpCode" ExampleId="example4">
         <ExamplePreview>
-            <div>
-                <BitDropDown Label="Custom Controlled"
-                             Items="GetCustomDropdownItems()"
-                             Placeholder="Select an option"
-                             AriaLabel="Custom dropdown"
-                             Style="width:290px; margin:20px 0 20px 0">
-                    <TextTemplate>
-                        <div>
-                            <i class="bit-icon bit-icon--@((context.Items.Find(i => i.Value == context.SelectedKey).Data as DropDownItemData).IconName)"
-                               aria-hidden="true"
-                               title="@((context.Items.Find(i => i.Value == context.SelectedKey).Data as DropDownItemData).IconName)"></i>
-                            <span>@context.Items.Find(i => i.Value == context.SelectedKey).Text</span>
-                        </div>
-                    </TextTemplate>
-                    <PlaceholderTemplate>
-                        <div>
-                            <i class="bit-icon bit-icon--MessageFill" aria-hidden="true"></i>
-                            <span>@context.Placeholder</span>
-                        </div>
-                    </PlaceholderTemplate>
-                    <CaretDownFragment>
-                        <i class="bit-icon bit-icon--CirclePlus"></i>
-                    </CaretDownFragment>
-                    <ItemTemplate>
-                        <div style="display: flex; flex-flow: row nowrap; justify-content: flex-start; align-items: center;">
-                            <i class="bit-icon bit-icon--@((context.Data as DropDownItemData).IconName)"
-                               aria-hidden="true"
-                               title="@((context.Data as DropDownItemData).IconName)"></i>
-                            <span>@context.Text</span>
-                        </div>
-                    </ItemTemplate>
-                </BitDropDown>
-                <BitDropDown Items="GetCustomDropdownItems()"
-                             Placeholder="Select an option"
-                             Label="Custom Label"
-                             AriaLabel="Custom dropdown label "
-                             Style="width:290px">
-                    <LabelFragment>
-                        <label>Custom label</label>
-                        <button type="button" title="Info" aria-label="Info" class="custom-drp-lbl-ic">
-                            <i class="bit-icon bit-icon--Info"></i>
-                        </button>
-                    </LabelFragment>
-                </BitDropDown>
-            </div>
+            <BitDropDown Label="Custom Controlled"
+                         Items="GetCustomDropdownItems()"
+                         Placeholder="Select an option"
+                         AriaLabel="Custom dropdown"
+                         Style="width:290px; margin:20px 0 20px 0">
+                <TextTemplate>
+                    <div>
+                        <i class="bit-icon bit-icon--@((context.Items.Find(i => i.Value == context.SelectedKey).Data as DropDownItemData).IconName)"
+                           aria-hidden="true"
+                           title="@((context.Items.Find(i => i.Value == context.SelectedKey).Data as DropDownItemData).IconName)"></i>
+                        <span>@context.Items.Find(i => i.Value == context.SelectedKey).Text</span>
+                    </div>
+                </TextTemplate>
+                <PlaceholderTemplate>
+                    <div>
+                        <i class="bit-icon bit-icon--MessageFill" aria-hidden="true"></i>
+                        <span>@context.Placeholder</span>
+                    </div>
+                </PlaceholderTemplate>
+                <CaretDownFragment>
+                    <i class="bit-icon bit-icon--CirclePlus"></i>
+                </CaretDownFragment>
+                <ItemTemplate>
+                    <div style="display: flex; flex-flow: row nowrap; justify-content: flex-start; align-items: center;">
+                        <i class="bit-icon bit-icon--@((context.Data as DropDownItemData).IconName)"
+                           aria-hidden="true"
+                           title="@((context.Data as DropDownItemData).IconName)"></i>
+                        <span>@context.Text</span>
+                    </div>
+                </ItemTemplate>
+            </BitDropDown>
+
+            <BitDropDown Items="GetCustomDropdownItems()"
+                         Placeholder="Select an option"
+                         Label="Custom Label"
+                         AriaLabel="Custom dropdown label "
+                         Style="width:290px">
+                <LabelFragment>
+                    <label>Custom label</label>
+                    <button type="button" title="Info" aria-label="Info" class="custom-drp-lbl-ic">
+                        <i class="bit-icon bit-icon--Info"></i>
+                    </button>
+                </LabelFragment>
+            </BitDropDown>
         </ExamplePreview>
-        <ExampleSourceCode>
-            <pre class="code">
-            <code class="html">&ltBitDropDown Label="Custom Controlled"
-             Items="GetCustomDropdownItems()"
-             Placeholder="Select an option"
-             AriaLabel="Custom dropdown"
-             Style="width:290px; margin:20px 0 20px 0">
-        &ltTextTemplate>
-                &ltdiv>
-                        &lti class="bit-icon bit-icon--&#64;((context.Items.Find(i => i.Value == context.SelectedKey).Data as DropDownItemData).IconName)"
-                            aria-hidden="true"
-                            title="&#64;((context.Items.Find(i => i.Value == context.SelectedKey).Data as DropDownItemData).IconName)">
-                        &lt/i>
-                        &ltspan>&#64;context.Items.Find(i => i.Value == context.SelectedKey).Text&lt/span>
-                &lt/div>
-        &lt/TextTemplate>
-        &ltPlaceholderTemplate>
-                &ltdiv>
-                        &lti class="bit-icon bit-icon--MessageFill" aria-hidden="true">&lt/i>
-                        &ltspan>&#64;context.Placeholder&lt/span>
-                &lt/div>
-        &lt/PlaceholderTemplate>
-        &ltCaretDownFragment>
-                &lti class="bit-icon bit-icon--CirclePlus">&lt/i>
-        &lt/CaretDownFragment>
-        &ltItemTemplate>
-                &ltdiv style="display: flex; flex-flow: row nowrap; justify-content: flex-start; align-items: center;">
-                        &lti class="bit-icon bit-icon--&#64;((context.Data as DropDownItemData).IconName)"
-                            aria-hidden="true"
-                            title="&#64;((context.Data as DropDownItemData).IconName)">
-                        &lt/i>
-                        &ltspan>&#64;context.Text&lt/span>
-                &lt/div>
-        &lt/ItemTemplate>
-&lt/BitDropDown>
-&ltBitDropDown Items="GetCustomDropdownItems()"
-             Placeholder="Select an option"
-             Label="Custom Label"
-             AriaLabel="Custom dropdown label "
-             Style="width:290px">
-        &ltLabelFragment>
-                &ltlabel>Custom label&lt/label>
-                &ltbutton type="button" title="Info" aria-label="Info" class="custom-drp-lbl-ic">
-                        &lti class="bit-icon bit-icon--Info">&lt/i>
-                &lt/button>
-        &lt/LabelFragment>
-&lt/BitDropDown></code>
-
-            <code class="csharp">&#64;code {
-    private List&ltBitDropDownItem> GetDropdownItems()
-    {
-        List&ltBitDropDownItem> items = new();
-        items.Add(new BitDropDownItem()
-        {
-            ItemType = BitDropDownItemType.Header,
-            Text = "Options",
-            Value = "Header"
-        });
-        items.Add(new BitDropDownItem()
-        {
-            ItemType = BitDropDownItemType.Normal,
-            Text = "Option a",
-            Value = "A",
-            Data = new DropDownItemData()
-            {
-                IconName = "Memo"
-            }
-        });
-        items.Add(new BitDropDownItem()
-        {
-            ItemType = BitDropDownItemType.Normal,
-            Text = "Option b",
-            Value = "B",
-            Data = new DropDownItemData()
-            {
-                IconName = "Print"
-            }
-        });
-        items.Add(new BitDropDownItem()
-        {
-            ItemType = BitDropDownItemType.Normal,
-            Text = "Option c",
-            Value = "C",
-            Data = new DropDownItemData()
-            {
-                IconName = "ShoppingCart"
-            }
-        });
-        items.Add(new BitDropDownItem()
-        {
-            ItemType = BitDropDownItemType.Normal,
-            Text = "Option d",
-            Value = "D",
-            Data = new DropDownItemData()
-            {
-                IconName = "Train"
-            }
-        });
-        items.Add(new BitDropDownItem()
-        {
-            ItemType = BitDropDownItemType.Normal,
-            Text = "Option e",
-            Value = "E",
-            Data = new DropDownItemData()
-            {
-                IconName = "Repair"
-            }
-        });
-        items.Add(new BitDropDownItem()
-        {
-            ItemType = BitDropDownItemType.Divider
-        });
-        items.Add(new BitDropDownItem()
-        {
-            ItemType = BitDropDownItemType.Header,
-            Text = "More options",
-            Value = "Header2"
-        });
-        items.Add(new BitDropDownItem()
-        {
-            ItemType = BitDropDownItemType.Normal,
-            Text = "Option f",
-            Value = "F",
-            Data = new DropDownItemData()
-            {
-                IconName = "Running"
-            }
-        });
-        items.Add(new BitDropDownItem()
-        {
-            ItemType = BitDropDownItemType.Normal,
-            Text = "Option g",
-            Value = "G",
-            Data = new DropDownItemData()
-            {
-                IconName = "EmojiNeutral"
-            }
-        });
-        items.Add(new BitDropDownItem()
-        {
-            ItemType = BitDropDownItemType.Normal,
-            Text = "Option h",
-            Value = "H",
-            Data = new DropDownItemData()
-            {
-                IconName = "ChatInviteFriend"
-            }
-        });
-        items.Add(new BitDropDownItem()
-        {
-            ItemType = BitDropDownItemType.Normal,
-            Text = "Option i",
-            Value = "I",
-            Data = new DropDownItemData()
-            {
-                IconName = "SecurityGroup"
-            }
-        });
-        items.Add(new BitDropDownItem()
-        {
-            ItemType = BitDropDownItemType.Normal,
-            Text = "Option j",
-            Value = "J",
-            Data = new DropDownItemData()
-            {
-                IconName = "AddGroup"
-            }
-        });
-
-        return items;
-    }
-}</code>
-            </pre>
-        </ExampleSourceCode>
     </ComponentExampleBox>
 </ComponentDemo>

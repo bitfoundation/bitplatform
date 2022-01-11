@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 
 namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Label
@@ -31,10 +30,10 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Label
             },
         };
 
-        private readonly string labelSampleCode = $"<BitLabel>I'm a Label</BitLabel>{Environment.NewLine}" +
-              $"<BitLabel IsEnabled='false'>I'm a disabled Label</BitLabel>{Environment.NewLine}" +
-              $"<BitLabel IsRequired='true'>I'm a required Label</BitLabel>{Environment.NewLine}" +
-              $"<BitLabel For='labels-container__input'>A Label for An Input</BitLabel>{Environment.NewLine}" +
-              "<input type='text' name='labels-container__input' id='labels-container__input' />";
+        private readonly string example1HTMLCode = @"<BitLabel>I'm a Label</BitLabel>
+<BitLabel IsEnabled=""false"">I'm a disabled Label</BitLabel>
+<BitLabel IsRequired=""true"">I'm a required Label</BitLabel>
+<BitLabel For=""labels-container__input"">A Label for An Input</BitLabel>
+<input type=""text"" name=""labels-container__input"" id=""labels-container__input"" />";
     }
 }

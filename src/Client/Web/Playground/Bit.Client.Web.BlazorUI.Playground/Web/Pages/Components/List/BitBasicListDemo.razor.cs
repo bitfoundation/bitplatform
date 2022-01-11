@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 
 namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.List
@@ -54,110 +53,6 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.List
             },
         };
 
-        private static string listCodeBehinde = $"@code {{ {Environment.NewLine}" +
-             $"private readonly List<Person>[] People = new List<Person>[2];{Environment.NewLine}" +
-             $"protected override void OnInitialized(){Environment.NewLine}" +
-             $"{{ {Environment.NewLine}" +
-             $"Person person = new();{Environment.NewLine}" +
-             $"People[0] = person.GetPeople(8000);{Environment.NewLine}" +
-             $"People[1] = person.GetPeople(100);{Environment.NewLine}" +
-             $"base.OnInitialized();{Environment.NewLine}" +
-             $"}} {Environment.NewLine}" +
-             $"public class Person(){Environment.NewLine}" +
-             $"{{ {Environment.NewLine}" +
-             $"public int Id {{ get;  set; }}{Environment.NewLine}" +
-             $"public int FirstName {{ get;  set; }}{Environment.NewLine}" +
-             $"public int LastName {{ get;  set; }}{Environment.NewLine}" +
-             $"public int Job {{ get;  set; }}{Environment.NewLine}" +
-             $"}} {Environment.NewLine}" +
-             $"public List<Person> GetPeople(int itemCount){Environment.NewLine}" +
-             $"{{ {Environment.NewLine}" +
-             $"List<Person> person = new(); {Environment.NewLine}" +
-             $"for (int i = 0; i < itemCount; i++){Environment.NewLine}" +
-             $"{{ {Environment.NewLine}" +
-             $"people.Add(new Person {Environment.NewLine}" +
-             $"{{ {Environment.NewLine}" +
-             $"Id = i + 1,{Environment.NewLine}" +
-             $"FirstName = $'Person {{i + 1}}',{Environment.NewLine}" +
-             $"LastName = $'Person Family {{ i + 1}}',{Environment.NewLine}" +
-             $"Job = $'Programmer {{i + 1}}'{Environment.NewLine}" +
-             $"}});{Environment.NewLine}" +
-             $"}} {Environment.NewLine}" +
-             $"}} {Environment.NewLine}" +
-             $"}}";
-
-        private readonly string basicListSampleCode = $"<BitBasicList Items='People[0]'{Environment.NewLine}" +
-             $"Virtualize='true'{Environment.NewLine}" +
-             $"Style='border: 1px #a19f9d solid; border-radius: 3px;'>{Environment.NewLine}" +
-             $"<RowTemplate Context='person'>{Environment.NewLine}" +
-             $"<div style='margin-left:3%; display: inline-block;'>{Environment.NewLine}" +
-             $"<img src='https://picsum.photos/100/100?random=@(person.Id)'>{Environment.NewLine}" +
-             $"<div style='margin-left:3%; display: inline-block;'>{Environment.NewLine}" +
-             $"<p>Id: <strong>@person.Id</strong></p>{Environment.NewLine}" +
-             $"<p>Full Name: <strong>@person.FirstName @person.LastName</strong></p>{Environment.NewLine}" +
-             $"<p>Job: <strong>@person.Job</strong></p>{Environment.NewLine}" +
-             $"</div>{Environment.NewLine}" +
-             $"</div>{Environment.NewLine}" +
-             $"</RowTemplate>{Environment.NewLine}" +
-             $"</BitBasicList>{Environment.NewLine}" + listCodeBehinde;
-
-        private readonly string basicListWithoutVirtualizationSampleCode = $"<BitBasicList Items='People[1]'{Environment.NewLine}" +
-            $"Virtualize='false'{Environment.NewLine}" +
-            $"Style='border: 1px #a19f9d solid; border-radius: 3px;'>{Environment.NewLine}" +
-            $"<RowTemplate Context='person'>{Environment.NewLine}" +
-            $"<div style='margin-left:3%; display: inline-block;'>{Environment.NewLine}" +
-            $"<img src='https://picsum.photos/100/100?random=@(person.Id)'>{Environment.NewLine}" +
-            $"<div style='margin-left:3%; display: inline-block;'>{Environment.NewLine}" +
-            $"<p>Id: <strong>@person.Id</strong></p>{Environment.NewLine}" +
-            $"<p>Full Name: <strong>@person.FirstName @person.LastName</strong></p>{Environment.NewLine}" +
-            $"<p>Job: <strong>@person.Job</strong></p>{Environment.NewLine}" +
-            $"</div>{Environment.NewLine}" +
-            $"</div>{Environment.NewLine}" +
-            $"</RowTemplate>{Environment.NewLine}" +
-            $"</BitBasicList>{Environment.NewLine}" + listCodeBehinde;
-
-        private readonly string basicListWithCustomRoleSampleCode = $"<BitBasicList Items='People[0]'{Environment.NewLine}" +
-            $"Virtualize='true'{Environment.NewLine}" +
-            $"Role='list'{Environment.NewLine}" +
-            $"Class='lst-custom-style'{Environment.NewLine}" +
-            $"Style='border: 1px #a19f9d solid; border-radius: 3px;'>{Environment.NewLine}" +
-            $"<RowTemplate Context='person'>{Environment.NewLine}" +
-            $"<div class='lst3-list-item'>{Environment.NewLine}" +
-            $"<span>Id: <strong>@person.Id</strong></span>{Environment.NewLine}" +
-            $"<span>Full Name: <strong>@person.FirstName @person.LastName</strong></span>{Environment.NewLine}" +
-            $"<span>Job: <strong>@person.Job</strong></span>{Environment.NewLine}" +
-            $"</div>{Environment.NewLine}" +
-            $"</RowTemplate>{Environment.NewLine}" +
-            $"</BitBasicList>{Environment.NewLine}" + listCodeBehinde +
-            $"<style>{Environment.NewLine}" +
-            $".lst-custom-style {{ {Environment.NewLine}" +
-            $".lst3-list-item {{ {Environment.NewLine}" +
-            $"padding :16px 20px;{Environment.NewLine}" +
-            $"background-color : #f2f2f2;{Environment.NewLine}" +
-            $"margin : 10px 10px;{Environment.NewLine}" +
-            $"width : 20%;{Environment.NewLine}" +
-            $"height : 143px;{Environment.NewLine}" +
-            $"display : inline-grid;{Environment.NewLine}" +
-            $"justify-content : center;{Environment.NewLine}" +
-            $"align-items : center;{Environment.NewLine}" +
-            $"}} {Environment.NewLine}" +
-            $"}} {Environment.NewLine}" +
-            $"</style>";
-
-        private readonly string basicListWithoverscanSampleCode = $"<BitBasicList Items='People[0]'{Environment.NewLine}" +
-            $"Virtualize='true'{Environment.NewLine}" +
-            $"OverscanCount='5'{Environment.NewLine}" +
-            $"ItemSize='300'{Environment.NewLine}" +
-            $"Style='border: 1px #a19f9d solid; border-radius: 3px;'>{Environment.NewLine}" +
-            $"<RowTemplate Context='person'>{Environment.NewLine}" +
-            $"<div style='border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;'>{Environment.NewLine}" +
-            $"<span>Id: <strong>@person.Id</strong></span>{Environment.NewLine}" +
-            $"<span>Full Name: <strong>@person.FirstName @person.LastName</strong></span>{Environment.NewLine}" +
-            $"<span>Job: <strong>@person.Job</strong></span>{Environment.NewLine}" +
-            $"</div>{Environment.NewLine}" +
-            $"</RowTemplate>{Environment.NewLine}" +
-            $"</BitBasicList>{Environment.NewLine}" + listCodeBehinde;
-
         protected override void OnInitialized()
         {
             Person person = new();
@@ -167,6 +62,86 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.List
 
             base.OnInitialized();
         }
+
+        private readonly string example1HTMLCode = @"<BitBasicList Items=""People[0]"" Virtualize=""true"" Style=""border: 1px #a19f9d solid; border-radius: 3px; "">
+    <RowTemplate Context=""person"">
+        <div style=""border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;"">
+            <img src=""https://picsum.photos/100/100?random=@(person.Id)"">
+            <div style=""margin-left:3%; display: inline-block;"">
+                <p>Id: <strong>@person.Id</strong></p>
+                <p>Full Name: <strong>@person.FirstName @person.LastName</strong></p>
+                <p>Job: <strong>@person.Job</strong></p>
+            </div>
+        </div>
+    </RowTemplate>
+</BitBasicList>";
+
+        private readonly string example1CSharpCode = @"
+protected override void OnInitialized()
+{
+    Person person = new();
+
+    People[0] = person.GetPeople(8000);
+    People[1] = person.GetPeople(100);
+
+    base.OnInitialized();
+}
+
+public class Person
+{
+    public int Id { get; set; }
+    public string FirstName { get; set; }
+    public string LastName { get; set; }
+    public string Job { get; set; }
+
+    public List<Person> GetPeople(int itemCount)
+    {
+        List<Person> people = new();
+
+        for (int i = 0; i < itemCount; i++)
+        {
+            people.Add(new Person
+            {
+                Id = i + 1,
+                FirstName = $""Person {i + 1}"",
+                LastName = $""Person Family {i + 1}"",
+                Job = $""Programmer {i + 1}""
+            });
+        }
+
+        return people;
+    }
+}";
+
+        private readonly string example2HTMLCode = @"<BitBasicList Items=""People[1]"" Virtualize=""false"" Style=""border: 1px #a19f9d solid; border-radius: 3px; "">
+    <RowTemplate Context=""person"">
+        <div style=""border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;"">
+            <p>Id: <strong>@person.Id</strong></p>
+            <p>Full Name: <strong>@person.FirstName @person.LastName</strong></p>
+            <p>Job: <strong>@person.Job</strong></p>
+        </div>
+    </RowTemplate>
+</BitBasicList>";
+
+        private readonly string example3HTMLCode = @"<BitBasicList Items=""People[0]"" Virtualize=""true"" Role=""list"" Style=""border: 1px #a19f9d solid; border-radius: 3px;"">
+    <RowTemplate Context=""person"">
+        <div class=""lst3-list-item"">
+            <span>Id: <strong>@person.Id</strong></span>
+            <span>Full Name: <strong>@person.FirstName</strong></span>
+            <span>Job: <strong>@person.Job</strong></span>
+        </div>
+    </RowTemplate>
+</BitBasicList>";
+
+        private readonly string example4HTMLCode = @"<BitBasicList Items=""People[0]"" Virtualize=""true"" OverscanCount=""5"" ItemSize=""300"" Style=""border: 1px #a19f9d solid; border-radius: 3px; "">
+    <RowTemplate Context=""person"">
+        <div style=""border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;"">
+            <p>Id: <strong>@person.Id</strong></p>
+            <p>Full Name: <strong>@person.FirstName @person.LastName</strong></p>
+            <p>Job: <strong>@person.Job</strong></p>
+        </div>
+    </RowTemplate>
+</BitBasicList>";
     }
 
     public class Person

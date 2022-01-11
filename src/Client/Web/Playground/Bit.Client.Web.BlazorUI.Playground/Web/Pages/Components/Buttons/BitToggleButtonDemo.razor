@@ -3,7 +3,7 @@
 <ComponentDemo ComponentName="ToggleButton" ComponentDescription="Buttons give people a way to trigger an action. They’re typically found in forms, dialog panels, and dialogs.
     Some buttons are specialized for particular tasks, such as navigation, repeated actions, or presenting menus."
                ComponentParameters="componentParameters" EnumParameters="enumParameters">
-    <ComponentExampleBox Title="BitToggleButton" ExampleSourceCodeForCopy="@toggleButtonSampleCode" ExampleId="example1">
+    <ComponentExampleBox Title="BitToggleButton" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
         <ExamplePreview>
             <div class="example-desc">BitToggleButton component represents a button as a checkbox and can use in form pages.</div>
             <div>
@@ -27,37 +27,9 @@
                 </BitToggleButton>
             </div>
         </ExamplePreview>
-        <ExampleSourceCode>
-            <pre class="code">
-            <code class="html">&ltBitToggleButton &#64;bind-IsChecked="TogglePrimaryButtonChecked"
-                 Class="tgl-btn"
-                 Label="&#64;(TogglePrimaryButtonChecked ? "Primary Mute":"Primary Unmute")"
-                 IconName=&#64;(TogglePrimaryButtonChecked ? BitIconName.MicOff : BitIconName.Microphone)
-                 ButtonStyle="BitButtonStyle.Primary">
-&lt/BitToggleButton>
-&ltBitToggleButton &#64;bind-IsChecked="ToggleStandardButtonChecked"
-                 Class="tgl-btn"
-                 Label="&#64;(ToggleStandardButtonChecked ? "Standard Mute":"Standard Unmute")"
-                 IconName=&#64;(ToggleStandardButtonChecked ? BitIconName.MicOff : BitIconName.Microphone)
-                 ButtonStyle="BitButtonStyle.Standard">
-&lt/BitToggleButton>
-&ltBitToggleButton &#64;bind-IsChecked="ToggleDisabledButtonChecked"
-                 Class="tgl-btn"
-                 IsEnabled="false"
-                 Label="&#64;(ToggleDisabledButtonChecked ? "Disabled Mute" : "Disabled Unmute")"
-                 IconName=&#64;(ToggleDisabledButtonChecked ? BitIconName.MicOff : BitIconName.Microphone)>
-&lt/BitToggleButton></code>
-
-            <code class="csharp">&#64;code {
-        private bool TogglePrimaryButtonChecked;
-        private bool ToggleStandardButtonChecked;
-        private bool ToggleDisabledButtonChecked;
-}</code>
-            </pre>
-        </ExampleSourceCode>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Toggle Button with OnChange event" ExampleSourceCodeForCopy="@onChangeSampleCode" ExampleId="example2">
+    <ComponentExampleBox Title="Toggle Button with OnChange event" HTMLSourceCode="@example2HTMLCode" CSharpSourceCode="@example2CSharpCode" ExampleId="example2">
         <ExamplePreview>
             <div class="example-desc">Check status is: @OnToggleButtonChanged</div>
             <div class="m-t-20">
@@ -68,23 +40,9 @@
                 </BitToggleButton>
             </div>
         </ExamplePreview>
-        <ExampleSourceCode>
-            <pre class="code">
-            <code class="html">&ltBitToggleButton &#64;bind-IsChecked="ToggleButtonForOnChange"
-                 Label="&#64;(ToggleButtonForOnChange ? "Mute" : "Unmute")"
-                 IconName=&#64;(ToggleButtonForOnChange ? BitIconName.MicOff : BitIconName.Microphone)
-                 OnChange="ToggleButtonChanged">
-&lt/BitToggleButton></code>
-
-            <code class="csharp">&#64;code {
-        private bool ToggleButtonForOnChange = true;
-        private bool OnToggleButtonChanged = true;
-}</code>
-            </pre>
-        </ExampleSourceCode>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Toggle Button with two way binding" ExampleSourceCodeForCopy="@twoWayBindingSampleCode" ExampleId="example3">
+    <ComponentExampleBox Title="Toggle Button with two way binding" HTMLSourceCode="@example3HTMLCode" CSharpSourceCode="@example3CSharpCode" ExampleId="example3">
         <ExamplePreview>
             <div>
                 <input type=checkbox id="BitToggleButtonTwoWayValue" @bind="ToggleButtonTwoWayValue">
@@ -97,22 +55,9 @@
                 </div>
             </div>
         </ExamplePreview>
-        <ExampleSourceCode>
-            <pre class="code">
-            <code class="html">&ltlabel class="checkbox-status" for="BitToggleButtonTwoWayValue">Checked Toggle Button&lt/label>
-&ltBitToggleButton &#64;bind-IsChecked="ToggleButtonTwoWayValue"
-                 Label="&#64;(ToggleButtonTwoWayValue ? "Mute" : "Unmute")"
-                 IconName=&#64;(ToggleButtonTwoWayValue ? BitIconName.MicOff : BitIconName.Microphone)>
-&lt/BitToggleButton></code>
-
-            <code class="csharp">&#64;code {
-        private bool ToggleButtonTwoWayValue = true;
-}</code>
-            </pre>
-        </ExampleSourceCode>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Arias for Screen Reader" ExampleSourceCodeForCopy="@ariasSampleCode" ExampleId="example4">
+    <ComponentExampleBox Title="Arias for Screen Reader" HTMLSourceCode="@example4HTMLCode" CSharpSourceCode="@example4CSharpCode" ExampleId="example4">
         <ExamplePreview>
             <div class="example-desc">Aria attribues can also set for a BitToggleButton.</div>
             <div>
@@ -129,24 +74,5 @@
                 </BitToggleButton>
             </div>
         </ExamplePreview>
-        <ExampleSourceCode>
-            <pre class="code">
-            <code class="html">&ltBitToggleButton &#64;bind-IsChecked="ToggleButtonChecked"
-                 Label="&#64;(ToggleButtonChecked ? "Aria Description Mute" : "Aria Description Unmute")"
-                 IconName="&#64;(ToggleButtonChecked ? BitIconName.MicOff : BitIconName.Microphone)"
-                 AriaDescription="Detailed description used for screen reader">
-&lt/BitToggleButton>
-&ltBitToggleButton &#64;bind-IsChecked="ToggleButtonChecked"
-                 Class="aria-hidden-tgl-btn"
-                 Label="&#64;(ToggleButtonChecked ? "Aria Hidden Mute" : "Aria Hidden Unmute")"
-                 IconName="&#64;(ToggleButtonChecked ? BitIconName.MicOff : BitIconName.Microphone)"
-                 AriaHidden="true">
-&lt/BitToggleButton></code>
-
-            <code class="csharp">&#64;code {
-        private bool ToggleButtonChecked = false;
-}</code>
-            </pre>
-        </ExampleSourceCode>
     </ComponentExampleBox>
 </ComponentDemo>

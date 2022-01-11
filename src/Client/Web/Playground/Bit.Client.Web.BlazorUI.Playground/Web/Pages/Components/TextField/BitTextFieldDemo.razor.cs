@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Bit.Client.Web.BlazorUI.Playground.Web.Models;
 using Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 
@@ -258,108 +257,103 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.TextField
             }
         };
 
-        private readonly string textFieldSampleCode = $"<BitTextField Label='Standard'></BitTextField>{Environment.NewLine}" +
-              $"<BitTextField IsReadonly='true'{Environment.NewLine}" +
-              $"Label='Read-only'{Environment.NewLine}" +
-              $"DefaultValue='I am read-only'>{Environment.NewLine}" +
-              $"</BitTextField>{Environment.NewLine}" +
-              $"<BitTextField IsEnabled='false'{Environment.NewLine}" +
-              $"Label='Disabled'{Environment.NewLine}" +
-              $"</BitTextField>{Environment.NewLine}" +
-              $"<BitTextField IsEnabled='false'{Environment.NewLine}" +
-              $"Label='Disabled'{Environment.NewLine}" +
-              $"Placeholder='I am disabled'>{Environment.NewLine}" +
-              $"</BitTextField>{Environment.NewLine}" +
-              $"<BitTextField Placeholder='Please enter text here'{Environment.NewLine}" +
-              $"Label='With placeholder'{Environment.NewLine}" +
-              $"</BitTextField>{Environment.NewLine}" +
-              $"<BitTextField MaxLength='10'{Environment.NewLine}" +
-              $"Label='Controlled TextField limiting length of value to 10'{Environment.NewLine}" +
-              $"</BitTextField>{Environment.NewLine}" +
-              $"<BitTextField IconName='BitIconName.CalendarMirrored'{Environment.NewLine}" +
-              $"Label='With an icon'{Environment.NewLine}" +
-              $"</BitTextField>{Environment.NewLine}" +
-              $"<BitTextField Type='@InputType'{Environment.NewLine}" +
-              $"Label='Password with reveal button'{Environment.NewLine}" +
-              $"CanRevealPassword='true'{Environment.NewLine}" +
-              $"</BitTextField>{Environment.NewLine}" +
-              $"<BitTextField IsRequired='true'{Environment.NewLine}" +
-              $"Label='Required'{Environment.NewLine}" +
-              $"</BitTextField>{Environment.NewLine}" +
-              $"<BitTextField AriaLabel='Required without visible label'{Environment.NewLine}" +
-              $"IsRequired='true'{Environment.NewLine}" +
-              $"</BitTextField>{Environment.NewLine}" +
-              $"@code {{ {Environment.NewLine}" +
-              $"private string TextValue;{Environment.NewLine}" +
-              $"private BitTextFieldType InputType = BitTextFieldType.Password;{Environment.NewLine}" +
-              "}}";
+        private readonly string example1HTMLCode = @"<div>
+    <BitTextField Label=""Standard""></BitTextField>
+</div>
+<div>
+    <BitTextField Label=""Standard With Two-Way Binding"" @bind-Value=""@TextValue""></BitTextField>
+    <BitLabel>You are typing : @TextValue </BitLabel>
+</div>
+<div>
+    <BitTextField Label=""Read-only"" IsReadonly=""true"" DefaultValue=""I am read-only""></BitTextField>
+</div>
+<div>
+    <BitTextField Label=""Disabled"" IsEnabled=""false"" DefaultValue=""I am disabled""></BitTextField>
+</div>
+<div>
+    <BitTextField Label=""Disabled With Placeholder"" IsEnabled=""false"" Placeholder=""I am disabled""></BitTextField>
+</div>
+<div>
+    <BitTextField Label=""With Placeholder"" Placeholder=""Please enter text here""></BitTextField>
+</div>
+<div>
+    <BitTextField Label=""Controlled TextField Limiting Length Of Value To 10"" MaxLength=""10""></BitTextField>
+</div>
+<div>
+    <BitTextField Label=""With An Icon"" IconName=""BitIconName.CalendarMirrored""></BitTextField>
+</div>
+<div>
+    <BitTextField Label=""Password With Reveal Button"" Type=""@InputType"" CanRevealPassword=""true""></BitTextField>
+</div>
+<div>
+    <BitTextField Label=""Required"" IsRequired=""true""></BitTextField>
+</div>
+<div>
+    <BitTextField AriaLabel=""Required Without Visible Label"" IsRequired=""true"" IsAriaRequired=""true""></BitTextField>
+</div>";
 
-        private readonly string multiLineSampleCode = $"<BitTextField Label='Standard'>{Environment.NewLine}" +
-              $"<IsMultiline='true'{Environment.NewLine}" +
-              $"Rows='3'{Environment.NewLine}" +
-              $"</BitTextField>{Environment.NewLine}" +
-              $"<BitTextField IsMultiline='true'{Environment.NewLine}" +
-              $"Label='Limited multi-line text field - 10 chars'{Environment.NewLine}" +
-              $"MaxLength='10'{Environment.NewLine}" +
-              $"</BitTextField>{Environment.NewLine}" +
-              $"<BitTextField Label='Disabled'{Environment.NewLine}" +
-              $"IsEnabled='false'{Environment.NewLine}" +
-              $"IsMultiline='true'>{Environment.NewLine}" +
-              $"Value='Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat'>{Environment.NewLine}" +
-              $"</BitTextField>{Environment.NewLine}" +
-              $"<BitTextField Label='Non-resizable'{Environment.NewLine}" +
-              $"IsMultiline='true'{Environment.NewLine}" +
-              $"IsResizable='false'{Environment.NewLine}" +
-              "</BitTextField>";
+        private readonly string example1CSharpCode = @"
+@code {
+    private string TextValue;
+    private BitTextFieldType InputType = BitTextFieldType.Password;
+}";
 
-        private readonly string underlinedSampleCode = $"<BitTextField Label='Standard:'>{Environment.NewLine}" +
-             $"<IsUnderlined='true'{Environment.NewLine}" +
-             $"Rows='3'{Environment.NewLine}" +
-             $"</BitTextField>{Environment.NewLine}" +
-             $"<BitTextField Label='Disabled:'{Environment.NewLine}" +
-             $"IsUnderlined='true'{Environment.NewLine}" +
-             $"IsEnabled='false'{Environment.NewLine}" +
-             $"DefaultValue='I am disabled'>{Environment.NewLine}" +
-             $"</BitTextField>{Environment.NewLine}" +
-             $"<BitTextField Label='Required:'{Environment.NewLine}" +
-             $"IsEnabled='false'{Environment.NewLine}" +
-             $"IsMultiline='true'>{Environment.NewLine}" +
-             $"DefaultValue='I am disabled'>{Environment.NewLine}" +
-             $"</BitTextField>{Environment.NewLine}" +
-             $"<BitTextField Label='Borderless single-line TextField'{Environment.NewLine}" +
-             $"HasBorder='false'{Environment.NewLine}" +
-             $"</BitTextField>{Environment.NewLine}" +
-             $"<BitTextField Label='Borderless multi-line TextField'{Environment.NewLine}" +
-             $"HasBorder='false'{Environment.NewLine}" +
-             $"IsMultiline='true'>{Environment.NewLine}" +
-             "</BitTextField>";
+        private readonly string example2HTMLCode = @"<div>
+    <BitTextField Label=""Standard"" IsMultiline=""true"" Rows=""3""></BitTextField>
+</div>
+<div>
+    <BitTextField Label=""Limited multi-line text field - 10 chars"" IsMultiline=""true"" MaxLength=""10""></BitTextField>
+</div>
+<div>
+    <BitTextField Label=""Disabled"" IsMultiline=""true"" IsEnabled=""false"" Value=""Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat""></BitTextField>
+</div>
+<div>
+    <BitTextField Label=""Non-resizable"" IsMultiline=""true"" IsResizable=""false""></BitTextField>
+</div>";
 
-        private readonly string prefixsuffixSampleCode = $"<BitTextField Label='With Prefix'>{Environment.NewLine}" +
-            $"Prefix='https://'{Environment.NewLine}" +
-            $"Rows='3'{Environment.NewLine}" +
-            $"</BitTextField>{Environment.NewLine}" +
-            $"<BitTextField Label='With Suffix'{Environment.NewLine}" +
-            $"Suffix='.com'{Environment.NewLine}" +
-            $"</BitTextField>{Environment.NewLine}" +
-            $"<BitTextField Label='Disabled With Prefix'{Environment.NewLine}" +
-            $"Prefix='https://'{Environment.NewLine}" +
-            $"IsEnabled='false'{Environment.NewLine}" +
-            $"</BitTextField>{Environment.NewLine}" +
-            $"<BitTextField Label='With Prefix And Suffix'{Environment.NewLine}" +
-            $"Prefix='https://'{Environment.NewLine}" +
-            $"Suffix='.com'{Environment.NewLine}" +
-            "</BitTextField>";
+        private readonly string example3HTMLCode = @"<div>
+    <BitTextField Label=""Standard:"" IsUnderlined=""true""></BitTextField>
+</div>
+<div>
+    <BitTextField Label=""Disabled:"" IsUnderlined=""true"" IsEnabled=""false"" DefaultValue=""I am disabled""></BitTextField>
+</div>
+<div>
+    <BitTextField Label=""Required:"" IsUnderlined=""true"" IsRequired=""true""></BitTextField>
+</div>
+<div>
+    <BitTextField Label=""Borderless single-line TextField"" HasBorder=""false""></BitTextField>
+</div>
+<div>
+    <BitTextField Label=""Borderless multi-line TextField"" IsMultiline=""true"" HasBorder=""false""></BitTextField>
+</div>";
 
-        private readonly string customLabelSampleCode = $"<BitTextField Description='Click the (i) icon!'>{Environment.NewLine}" +
-            $"<LabelFragment>{Environment.NewLine}" +
-            $"<BitLabel Style='display:inline-block;padding-bottom:10px;'>Custom label rendering</BitLabel>{Environment.NewLine}" +
-            $"<BitIconButton IconName='BitIconName.Info'></BitIconButton>{Environment.NewLine}" +
-            $"</LabelFragment>{Environment.NewLine}" +
-            $"</BitTextField>{Environment.NewLine}" +
-            $"<BitTextField>{Environment.NewLine}" +
-            $"<DescriptionFragment>{Environment.NewLine}" +
-            $"<BitLabel Style='color:green;'>Custom description rendering</BitLabel>{Environment.NewLine}" +
-            $"</DescriptionFragment>{Environment.NewLine}" +
-            "</BitTextField>";
+        private readonly string example4HTMLCode = @"<div>
+    <BitTextField Label=""With Prefix"" Prefix=""https://""></BitTextField>
+</div>
+<div>
+    <BitTextField Label=""With Suffix"" Suffix="".com""></BitTextField>
+</div>
+<div>
+    <BitTextField Label=""Disabled With Prefix"" Prefix=""https://"" IsEnabled=""false""></BitTextField>
+</div>
+<div>
+    <BitTextField Label=""With Prefix And Suffix"" Prefix=""https://"" Suffix="".com""></BitTextField>
+</div>";
+
+        private readonly string example5HTMLCode = @"<div>
+    <BitTextField Description=""Click the (i) icon!"">
+        <LabelFragment>
+            <BitLabel Style=""display:inline-block;padding-bottom:10px;"">With PrefixCustom Label Rendering</BitLabel>
+            <BitIconButton IconName=""BitIconName.Info""></BitIconButton>
+        </LabelFragment>
+    </BitTextField>
+</div>
+<div class=""m-t-15"">
+    <BitTextField>
+        <DescriptionFragment>
+            <BitLabel Style=""color:green;"">With PrefixCustom Label Rendering</BitLabel>
+        </DescriptionFragment>
+    </BitTextField>
+</div>";
     }
 }

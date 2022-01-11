@@ -2,9 +2,9 @@
 
 <ComponentDemo ComponentName="BasicList" ComponentDescription="BitBasicList provides a base component for rendering large sets of items. It’s agnostic of layout, the tile component used, and selection management."
                ComponentParameters="componentParameters">
-    <ComponentExampleBox Title="BitBasicList" ExampleSourceCodeForCopy="@basicListSampleCode" ExampleId="example1">
+    <ComponentExampleBox Title="BitBasicList" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
         <ExamplePreview>
-            <BitBasicList Class="how-to-use" Items="People[0]" Virtualize="true" Style="border: 1px #a19f9d solid; border-radius: 3px; ">
+            <BitBasicList Items="People[0]" Virtualize="true" Style="border: 1px #a19f9d solid; border-radius: 3px; ">
                 <RowTemplate Context="person">
                     <div style="border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;">
                         <img src="https://picsum.photos/100/100?random=@(person.Id)">
@@ -17,61 +17,9 @@
                 </RowTemplate>
             </BitBasicList>
         </ExamplePreview>
-        <ExampleSourceCode>
-            <pre class="code">
-            <code class="html">&ltBitBasicList Items="People[0]" Virtualize="true" Style="border: 1px #a19f9d solid; border-radius: 3px; ">
-        &ltRowTemplate Context="person">
-                &ltdiv style="border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;">
-                        &ltimg src="https://picsum.photos/100/100?random=&#64;(person.Id)">
-                        &ltdiv style="margin-left:3%; display: inline-block;">
-                                &ltp>Id: &ltstrong>&#64;person.Id&lt/strong>&lt/p>
-                                &ltp>Full Name: &ltstrong>&#64;person.FirstName &#64;person.LastName&lt/strong>&lt/p>
-                                &ltp>Job: &ltstrong>&#64;person.Job&lt/strong>&lt/p>
-                        &lt/div>
-                &lt/div>
-        &lt/RowTemplate>
-&lt/BitBasicList></code>
-
-            <code class="csharp">&#64;code {
-        private readonly List&ltPerson>[] People = new List&ltPerson>[2];
-        protected override void OnInitialized()
-        {
-                Person person = new();
-                People[0] = person.GetPeople(8000);
-                People[1] = person.GetPeople(100);
-                base.OnInitialized();
-        }
-
-        public class Person()
-        {
-                public int Id { get; set; }
-                public string FirstName { get; set; }
-                public string LastName { get; set; }
-                public string Job { get; set; }
-        }
-
-        public List&ltPerson> GetPeople(int itemCount)
-        {
-                List&ltPerson> people = new();
-                for &#40;int i = 0; i &lt itemCount; i++)
-                {
-                    people.Add(new Person
-                    {
-                        Id = i + 1,
-                        FirstName = $"Person {i + 1}",
-                        LastName = $"Person Family {i + 1}",
-                        Job = $"Programmer {i + 1}"
-                    });
-                }
-
-                return people;
-        }
-}</code>
-            </pre>
-        </ExampleSourceCode>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Basic List without virtualization" ExampleSourceCodeForCopy="@basicListWithoutVirtualizationSampleCode" ExampleId="example2">
+    <ComponentExampleBox Title="Basic List without virtualization" HTMLSourceCode="@example2HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example2">
         <ExamplePreview>
             <BitBasicList Items="People[1]" Virtualize="false" Style="border: 1px #a19f9d solid; border-radius: 3px; ">
                 <RowTemplate Context="person">
@@ -83,58 +31,9 @@
                 </RowTemplate>
             </BitBasicList>
         </ExamplePreview>
-        <ExampleSourceCode>
-            <pre class="code">
-            <code class="html">&ltBitBasicList Items="People[1]" Virtualize="false" Style="border: 1px #a19f9d solid; border-radius: 3px; ">
-        &ltRowTemplate Context="person">
-                &ltdiv style="border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;">
-                        &ltp>Id: &ltstrong>&#64;person.Id&lt/strong>&lt/p>
-                        &ltp>Full Name: &ltstrong>&#64;person.FirstName &#64;person.LastName&lt/strong>&lt/p>
-                        &ltp>Job: &ltstrong>&#64;person.Job&lt/strong>&lt/p>
-                &lt/div>
-        &lt/RowTemplate>
-&lt/BitBasicList></code>
-
-            <code class="csharp">&#64;code {
-        private readonly List&ltPerson>[] People = new List&ltPerson>[2];
-        protected override void OnInitialized()
-        {
-                Person person = new();
-                People[0] = person.GetPeople(8000);
-                People[1] = person.GetPeople(100);
-                base.OnInitialized();
-        }
-
-        public class Person()
-        {
-                public int Id { get; set; }
-                public string FirstName { get; set; }
-                public string LastName { get; set; }
-                public string Job { get; set; }
-        }
-
-        public List&ltPerson> GetPeople(int itemCount)
-        {
-                List&ltPerson> people = new();
-                for &#40;int i = 0; i &lt itemCount; i++)
-                {
-                    people.Add(new Person
-                    {
-                        Id = i + 1,
-                        FirstName = $"Person {i + 1}",
-                        LastName = $"Person Family {i + 1}",
-                        Job = $"Programmer {i + 1}"
-                    });
-                }
-
-                return people;
-        }
-}</code>
-            </pre>
-        </ExampleSourceCode>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Basic List with custom role and class" ExampleSourceCodeForCopy="@basicListWithCustomRoleSampleCode" ExampleId="example3">
+    <ComponentExampleBox Title="Basic List with custom role and class" HTMLSourceCode="@example3HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example3">
         <ExamplePreview>
             <BitBasicList Items="People[0]" Virtualize="true" Role="list" Style="border: 1px #a19f9d solid; border-radius: 3px;">
                 <RowTemplate Context="person">
@@ -146,70 +45,9 @@
                 </RowTemplate>
             </BitBasicList>
         </ExamplePreview>
-        <ExampleSourceCode>
-            <pre class="code">
-            <code class="html">&ltBitBasicList Items="People[0]" Virtualize="true" Role="list" Style="border: 1px #a19f9d solid; border-radius: 3px;">
-        &ltRowTemplate Context="person">
-                &ltdiv class="lst3-list-item">
-                        &ltspan>Id: &ltstrong>&#64;person.Id&lt/strong>&lt/span>
-                        &ltspan>Full Name: &ltstrong>&#64;person.FirstName&lt/strong>&lt/span>
-                        &ltspan>Job: &ltstrong>&#64;person.Job&lt/strong>&lt/span>
-                &lt/div>
-        &lt/RowTemplate>
-&lt/BitBasicList>
-&ltstyle>
-        .lst3-list-item {
-                padding: 16px 20px;
-                background-color: #f2f2f2;
-                margin: 10px 10px;
-                width: 20%;
-                height: 143px;
-                display: inline-grid;
-                justify-content: center;
-                align-items: center;
-        }
-&lt/style>;</code>
-
-            <code class="csharp">&#64;code {
-        private readonly List&ltPerson>[] People = new List&ltPerson>[2];
-        protected override void OnInitialized()
-        {
-                Person person = new();
-                People[0] = person.GetPeople(8000);
-                People[1] = person.GetPeople(100);
-                base.OnInitialized();
-        }
-
-        public class Person()
-        {
-                public int Id { get; set; }
-                public string FirstName { get; set; }
-                public string LastName { get; set; }
-                public string Job { get; set; }
-        }
-
-        public List&ltPerson> GetPeople(int itemCount)
-        {
-                List&ltPerson> people = new();
-                for &#40;int i = 0; i &lt itemCount; i++)
-                {
-                    people.Add(new Person
-                    {
-                        Id = i + 1,
-                        FirstName = $"Person {i + 1}",
-                        LastName = $"Person Family {i + 1}",
-                        Job = $"Programmer {i + 1}"
-                    });
-                }
-
-                return people;
-        }
-}</code>
-            </pre>
-        </ExampleSourceCode>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Basic List with overscan count" ExampleSourceCodeForCopy="@basicListWithoverscanSampleCode" ExampleId="example4">
+    <ComponentExampleBox Title="Basic List with overscan count" HTMLSourceCode="@example4HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example4">
         <ExamplePreview>
             <BitBasicList Items="People[0]" Virtualize="true" OverscanCount="5" ItemSize="300" Style="border: 1px #a19f9d solid; border-radius: 3px; ">
                 <RowTemplate Context="person">
@@ -221,54 +59,5 @@
                 </RowTemplate>
             </BitBasicList>
         </ExamplePreview>
-        <ExampleSourceCode>
-            <pre class="code">
-            <code class="html">&ltBitBasicList Items="People[0]" Virtualize="true" OverscanCount="5" ItemSize="300" Style="border: 1px #a19f9d solid; border-radius: 3px;">
-        &ltRowTemplate Context="person">
-                &ltdiv style="border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;">
-                        &ltspan>Id: &ltstrong>&#64;person.Id&lt/strong>&lt/span>
-                        &ltspan>Full Name: &ltstrong>&#64;person.FirstName&lt/strong>&lt/span>
-                        &ltspan>Job: &ltstrong>&#64;person.Job&lt/strong>&lt/span>
-                &lt/div>
-        &lt/RowTemplate>
-&lt/BitBasicList></code>
-
-            <code class="csharp">&#64;code {
-        private readonly List&ltPerson>[] People = new List&ltPerson>[2];
-        protected override void OnInitialized()
-        {
-                Person person = new();
-                People[0] = person.GetPeople(8000);
-                People[1] = person.GetPeople(100);
-                base.OnInitialized();
-        }
-
-        public class Person()
-        {
-                public int Id { get; set; }
-                public string FirstName { get; set; }
-                public string LastName { get; set; }
-                public string Job { get; set; }
-        }
-
-        public List&ltPerson> GetPeople(int itemCount)
-        {
-                List&ltPerson> people = new();
-                for &#40;int i = 0; i &lt itemCount; i++)
-                {
-                    people.Add(new Person
-                    {
-                        Id = i + 1,
-                        FirstName = $"Person {i + 1}",
-                        LastName = $"Person Family {i + 1}",
-                        Job = $"Programmer {i + 1}"
-                    });
-                }
-
-                return people;
-        }
-}</code>
-            </pre>
-        </ExampleSourceCode>
     </ComponentExampleBox>
 </ComponentDemo>
