@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 
 namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ColorPicker
@@ -65,14 +64,33 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ColorPicker
             },
         };
 
-        private readonly string hexColorPickerSampleCode = $"<BitColorPicker ShowPreview='IsToggleChecked' @ref='ColorPicker' @bind-Color='Color' ShowAlphaSlider='false'>Default ColorPicker</BitColorPicker>{Environment.NewLine}" +
-              $"<BitToggle Label='Show Preview Box' @bind-IsChecked='IsToggleChecked' IsEnabled='true'/>{Environment.NewLine}" +
-              $"<BitTextField Label='Hex Code' Value='@Color'></BitTextField>{Environment.NewLine}" +
-               "<BitTextField Label='RGB' Value='@(ColorPicker?.Rgb ?? 'rgb(255,255,255)')'></BitTextField>";
+        private readonly string example1HTMLCode = @"<BitColorPicker ShowPreview=""@IsToggleChecked"" @ref=""ColorPicker"" @bind-Color=""@Color"" ShowAlphaSlider=""false"">Default ColorPicker</BitColorPicker>
+<div>
+    <BitToggle Label=""Show Preview Box"" @bind-IsChecked=""@IsToggleChecked"" IsEnabled=""true"" />
+</div>
+<div>
+    <BitTextField Label=""Hex Code"" Value=""@Color""></BitTextField>
+    <BitTextField Label=""RGB"" Value=""@(ColorPicker?.Rgb ?? ""rgb(255,255,255)"")""></BitTextField>
+</div>";
 
-        private readonly string rgbColorPickerSampleCode = $"<BitColorPicker ShowPreview='true' @bind-Alpha='Alpha' @bind-Color='ColorRgb'>Default ColorPicker</BitColorPicker>{Environment.NewLine}" +
-             $"<BitTextField Label='RGB' Value='@ColorRgb'></BitTextField>{Environment.NewLine}" +
-             $"<BitTextField Label='Hex Code' Value='@Color'></BitTextField>{Environment.NewLine}" +
-              "<BitTextField Label='Alpha' Value='@(Alpha.ToString())'></BitTextField>";
+        private readonly string example1CSharpCode = @"
+@code {
+    private BitColorPicker ColorPicker;
+    private string Color = ""#FFFFFF"";
+    private bool IsToggleChecked = false;
+}";
+
+        private readonly string example2HTMLCode = @"<BitColorPicker ShowPreview=""true"" @bind-Alpha=""@Alpha"" @bind-Color=""@ColorRgb"">Default ColorPicker</BitColorPicker>
+<div>
+    <BitTextField Label=""RGB"" Value=""@ColorRgb""></BitTextField>
+    <BitTextField Label=""Alpha"" Value=""@(Alpha.ToString())""></BitTextField>
+</div>";
+
+        private readonly string example2CSharpCode = @"
+@code {
+    private BitColorPicker ColorPicker;
+    private string ColorRgb = ""rgb(255,255,255)"";
+    private double Alpha = 1;
+}";
     }
 }

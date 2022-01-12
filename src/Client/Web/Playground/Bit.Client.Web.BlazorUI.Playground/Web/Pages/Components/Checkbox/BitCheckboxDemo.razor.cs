@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Bit.Client.Web.BlazorUI.Playground.Web.Models;
 using Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 
@@ -161,29 +160,39 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Checkbox
             }
         };
 
-        private readonly string checkboxSampleCode = $"<BitCheckbox @bind-IsChecked='IsCheckBoxChecked'>Basic Checkbox</BitCheckbox>{Environment.NewLine}" +
-              $"<BitCheckbox IsChecked='true'>Checked Checkbox</BitCheckbox>{Environment.NewLine}" +
-              $"<BitCheckbox IsEnabled='false'>Disable Checkbox</BitCheckbox>{Environment.NewLine}" +
-              $"<BitCheckbox CheckmarkIconName='BitIconName.Heart'>Custom checkmark Checkbox</BitCheckbox>{Environment.NewLine}" +
-              $"<@code {{ {Environment.NewLine}" +
-              $"private bool IsCheckBoxChecked = false;{Environment.NewLine}" +
-              "}";
+        private readonly string example1HTMLCode = @"<BitCheckbox @bind-IsChecked=""IsCheckBoxChecked"">Basic Checkbox</BitCheckbox>
+<BitCheckbox IsChecked=""true"">Checked Checkbox</BitCheckbox>
+<BitCheckbox IsEnabled=""false"">Disable Checkbox</BitCheckbox>
+<BitCheckbox IsEnabled=""false"" IsChecked=""true"">Disable Checked Checkbox</BitCheckbox>
+<BitCheckbox CheckmarkIconName=""BitIconName.Heart"">Custom checkmark Checkbox</BitCheckbox>";
 
-        private readonly string reversedSampleCode = $"<BitCheckbox BoxSide='@BitCheckBoxSide.End'>Reversed - Basic Checkbox</BitCheckbox>{Environment.NewLine}" +
-                 $"<BitCheckbox BoxSide='@BitCheckBoxSide.End' IsChecked='true'>Reversed - Checked Checkbox</BitCheckbox>{Environment.NewLine}" +
-                 $"<BitCheckbox BoxSide='@BitCheckBoxSide.End' IsEnabled='true'>Reversed - Disable Checkbox</BitCheckbox>{Environment.NewLine}" +
-                 $"<BitCheckbox BoxSide='@BitCheckBoxSide.End' IsEnabled='false' IsChecked='true'>Reversed - Disable Checked Checkbox</BitCheckbox>";
+        private readonly string example1CSharpCode = @"
+@code {
+    private bool IsCheckBoxChecked = false;
+}";
 
-        private readonly string indeterminateSampleCode = $"<BitCheckbox @bind-IsChecked='IsCheckBoxIndeterminate' @bind-IsIndeterminate='IsCheckBoxChecked'>Basic Checkbox</BitCheckbox>{Environment.NewLine}" +
-                 $"<BitCheckbox IsIndeterminate='true'>Indeterminate checkbox</BitCheckbox>{Environment.NewLine}" +
-                 $"<BitCheckbox IsIndeterminate='true' IsEnabled='false'>Disabled indeterminated checkbox</BitCheckbox>{Environment.NewLine}" +
-                 $"<BitCheckbox @bind-IsIndeterminate='IsCheckBoxIndeterminateInCode' @bind-IsChecked='IsCheckBoxChecked' IsChecked='true'>Controlled indeterminated checkbox</BitCheckbox>" +
-                 $"<BitCheckbox OnClick='() => IsCheckBoxIndeterminateInCode = true'>Make Checkbox Indeterminate</BitCheckbox>" +
-                 $"<@code {{ {Environment.NewLine}" +
-                 $"private bool IsCheckBoxChecked = false;{Environment.NewLine}" +
-                 $"private bool IsCheckBoxChecked = false;{Environment.NewLine}" +
-                 "}";
+        private readonly string example2TMLCode = @"<BitCheckbox BoxSide=""@BitCheckBoxSide.End"">Reversed - Basic Checkbox</BitCheckbox>
+<BitCheckbox BoxSide=""@BitCheckBoxSide.End"">IsChecked=""true"">Reversed - Checked Checkbox</BitCheckbox>
+<BitCheckbox BoxSide=""@BitCheckBoxSide.End"">IsEnabled=""false"">Reversed - Disable Checkbox</BitCheckbox>
+<BitCheckbox BoxSide=""@BitCheckBoxSide.End"">IsEnabled=""false"" IsChecked=""true"">Reversed - Disable Checked Checkbox</BitCheckbox>";
 
-        private readonly string customLabelSampleCode = $"<BitCheckbox>Custom-rendered label with a link go to <a href='https://github.com/bitfoundation/bitframework'>bit foundation repository page</a></BitCheckbox>";
+        private readonly string example3HTMLCode = @"<BitCheckbox @bind-IsIndeterminate=""IsCheckBoxIndeterminate"" @bind-IsChecked=""IsCheckBoxChecked"">Indeterminated checkbox</BitCheckbox>
+<BitCheckbox IsIndeterminate=""true"">Indeterminate checkbox</BitCheckbox>
+<BitCheckbox IsIndeterminate=""true"" IsEnabled=""false"">Disabled indeterminated checkbox</BitCheckbox>
+<BitCheckbox @bind-IsIndeterminate=""IsCheckBoxIndeterminateInCode"" @bind-IsChecked=""IsCheckBoxChecked"">Controlled indeterminated checkbox</BitCheckbox>
+<BitButton OnClick=""() => IsCheckBoxIndeterminateInCode = true"">Make Checkbox Indeterminate</BitButton>";
+
+        private readonly string example3CSharpCode = @"
+@code {
+    private bool IsCheckBoxIndeterminate = true;
+    private bool IsCheckBoxIndeterminateInCode = true;
+}";
+
+        private readonly string example4HTMLCode = @"<BitCheckbox>
+    Custom-rendered label with a link go to
+    <a href=""https://github.com/bitfoundation/bitframework"">
+        Bit Foundation repository page
+    </a>
+</BitCheckbox>";
     }
 }

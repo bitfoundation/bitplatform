@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 
 namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.DropDown
@@ -61,6 +60,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.DropDown
 
             return items;
         }
+
         private List<BitDropDownItem> GetCustomDropdownItems()
         {
             List<BitDropDownItem> items = new();
@@ -321,247 +321,261 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.DropDown
             },
         };
 
-        private static string getDropDownItemsSampleCode =
-              $"private List<dropdownitem> GetDropdownItems (){Environment.NewLine}" +
-              $"{{ {Environment.NewLine}" +
-              $"List<dropdownitem> items = new();{Environment.NewLine}" +
-              $"items.Add(new DropDownItem(){Environment.NewLine}" +
-              $"{{ {Environment.NewLine}" +
-              $"ItemType =  DropDownItemType.Header,{Environment.NewLine}" +
-              $"Text = 'Fruits'{Environment.NewLine}" +
-              $"}}); {Environment.NewLine}" +
-              $"items.Add(new DropDownItem(){Environment.NewLine}" +
-              $"{{ {Environment.NewLine}" +
-              $"ItemType = DropDownItemType.Normal,{Environment.NewLine}" +
-              $"Text = 'Apple',{Environment.NewLine}" +
-              $"Value = 'f-app'{Environment.NewLine}" +
-              $"}});{Environment.NewLine}" +
-              $"items.Add(new DropDownItem(){Environment.NewLine}" +
-              $"{{ {Environment.NewLine}" +
-              $"ItemType = DropDownItemType.Normal,{Environment.NewLine}" +
-              $"Text = 'Orange',{Environment.NewLine}" +
-              $"Value = 'f-ora',{Environment.NewLine}" +
-              $"IsEnabled = 'false'{Environment.NewLine}" +
-              $"}}); {Environment.NewLine}" +
-              $"items.Add(new DropDownItem(){Environment.NewLine}" +
-              $"{{ {Environment.NewLine}" +
-              $"ItemType = DropDownItemType.Normal,{Environment.NewLine}" +
-              $"Text = 'Banana',{Environment.NewLine}" +
-              $"Value = 'f-ban'{Environment.NewLine}" +
-              $"}}); {Environment.NewLine}" +
-              $"items.Add(new DropDownItem(){Environment.NewLine}" +
-              $"{{ {Environment.NewLine}" +
-              $"ItemType = DropDownItemType.Divider,{Environment.NewLine}" +
-              $"}}); {Environment.NewLine}" +
-              $"items.Add(new DropDownItem(){Environment.NewLine}" +
-              $"{{ {Environment.NewLine}" +
-              $"ItemType = DropDownItemType.Header,{Environment.NewLine}" +
-              $"Text = 'Vegetables'{Environment.NewLine}" +
-              $"}}); {Environment.NewLine}" +
-              $"items.Add(new DropDownItem(){Environment.NewLine}" +
-              $"ItemType = DropDownItemType.Normal,{Environment.NewLine}" +
-              $"Text = 'Broccoli',{Environment.NewLine}" +
-              $"Value = 'v-bro'{Environment.NewLine}" +
-              $"}}); {Environment.NewLine}" +
-              $"}} {Environment.NewLine}" +
-              $"}}";
+        private readonly string example1HTMLCode = @"<BitDropDown Label=""Basic Uncontrolled""
+             Items=""GetDropdownItems()""
+             Placeholder=""Select an option""
+             Style=""width: 290px; margin: 20px 0 20px 0"">
+</BitDropDown>
+<BitDropDown Label=""Disabled with defaultSelectedKey""
+             Items=""GetDropdownItems()""
+             Placeholder=""Select an option""
+             IsEnabled=""false""
+             DefaultSelectedKey=""Broccoli""
+             Style=""width: 290px; margin-bottom: 20px;"">
+</BitDropDown>
+<BitDropDown Label=""Multi-select uncontrolled""
+             Items=""GetDropdownItems()""
+             Placeholder=""Select options""
+             IsMultiSelect=""true""
+             Style=""width: 290px; margin-bottom: 20px;"">
+</BitDropDown>";
 
-        private readonly string dropDownSampleCode = $"<BitDropDown Label='Basic Uncontrolled'{Environment.NewLine}" +
-              $" Items='GetDropdownItems()'{Environment.NewLine}" +
-              $"Placeholder='Select an option'{Environment.NewLine}" +
-              $"Style='width: 290px; margin: 20px 0 20px 0'>{Environment.NewLine}" +
-              $"</BitDropDown>{Environment.NewLine}" +
-              $"<BitDropDown Label='Disabled with defaultSelectedKey'{Environment.NewLine}" +
-              $"Items='GetDropdownItems()'{Environment.NewLine}" +
-              $"Placeholder='Select an option'>{Environment.NewLine}" +
-              $"IsEnabled='false'{Environment.NewLine}" +
-              $"DefaultSelectedKey='Broccoli'{Environment.NewLine}" +
-              $"Style='width: 290px; margin-bottom: 20px;'>{Environment.NewLine}" +
-              $"</BitDropDown>{Environment.NewLine}" +
-              $"<BitDropDown Label='Multi-select uncontrolled'{Environment.NewLine}" +
-              $"Items='GetDropdownItems()'{Environment.NewLine}" +
-              $"Placeholder='Select options'>{Environment.NewLine}" +
-              $"IsMultiSelect='true'{Environment.NewLine}" +
-              $"Style='width: 290px; margin: 20px 0 20px 0'>{Environment.NewLine}" +
-              $"</BitDropDown>{Environment.NewLine}" +
-              $"@code {{ {Environment.NewLine}" +
-              getDropDownItemsSampleCode +
-              $"}}";
+        private readonly string example1CSharpCode = @"
+private List<BitDropDownItem> GetDropdownItems()
+{
+    List<BitDropDownItem> items = new();
 
-        private readonly string singleSelectSampleCode = $"<BitDropDown Label='Single-select Controlled'{Environment.NewLine}" +
-            $" Items='GetDropdownItems()'{Environment.NewLine}" +
-            $"Placeholder='Select an option'{Environment.NewLine}" +
-            $"@bind-SelectedKey='ControlledSelectedKey'{Environment.NewLine}" +
-            $"Style='width: 290px; margin: 20px 0 20px 0'>{Environment.NewLine}" +
-            $"</BitDropDown>{Environment.NewLine}" +
-            $"@code {{ {Environment.NewLine}" +
-            $"private string ControlledSelectedKey = 'Apple';{Environment.NewLine}" +
-            getDropDownItemsSampleCode +
-            $"}}";
+    items.Add(new BitDropDownItem()
+    {
+        ItemType = BitDropDownItemType.Header,
+        Text = ""Fruits""
+    });
 
-        private readonly string multiSelectSampleCode = $"<BitDropDown Label='Multi-select Controlled'{Environment.NewLine}" +
-           $" Items='GetDropdownItems()'{Environment.NewLine}" +
-           $"Placeholder='Select an option'{Environment.NewLine}" +
-           $"@bind-SelectedMultipleKeys='ControlledSelectedMultipleKeys'{Environment.NewLine}" +
-           $"IsMultiSelect='true'{Environment.NewLine}" +
-           $"Style='width: 290px; margin: 20px 0 20px 0'>{Environment.NewLine}" +
-           $"</BitDropDown>{Environment.NewLine}" +
-           $"@code {{ {Environment.NewLine}" +
-           $"private List<string> ControlledSelectedMultipleKeys = new List<string>() {{ 'Apple','Banana', 'Grape' }};{Environment.NewLine}" +
-           getDropDownItemsSampleCode +
-           $"}}";
+    items.Add(new BitDropDownItem()
+    {
+        ItemType = BitDropDownItemType.Normal,
+        Text = ""Apple"",
+        Value = ""f-app""
+    });
 
-        private readonly string customizedSampleCode = $"<BitDropDown Label='Custom Controlled'{Environment.NewLine}" +
-          $"Items='GetCustomDropdownItems()'{Environment.NewLine}" +
-          $"Placeholder='Select an option'{Environment.NewLine}" +
-          $"AriaLabel='Custom dropdown'{Environment.NewLine}" +
-          $"Style='width: 290px; margin: 20px 0 20px 0'>{Environment.NewLine}" +
-          $"<TextTemplate>{Environment.NewLine}" +
-          $"<div>{Environment.NewLine}" +
-          $"<i class='bit-icon bit-icon--@((context.Items.Find(i => i.Value == context.SelectedKey).Data as DropDownItemData).IconName)'{Environment.NewLine}" +
-          $"aria-hidden='true'{Environment.NewLine}" +
-          $"title='@((context.Items.Find(i => i.Value == context.SelectedKey).Data as DropDownItemData).IconName)'></i>{Environment.NewLine}" +
-          $"<span>@context.Items.Find(i => i.Value == context.SelectedKey).Text</span>{Environment.NewLine}" +
-          $"</div>{Environment.NewLine}" +
-          $"</TextTemplate>{Environment.NewLine}" +
-          $"<PlaceholderTemplate>{Environment.NewLine}" +
-          $"<div>{Environment.NewLine}" +
-          $"<i class='bit-icon bit-icon--MessageFill' aria-hidden='true'></i>{Environment.NewLine}" +
-          $"<span>@context.Placeholder</span>{Environment.NewLine}" +
-          $"</div>{Environment.NewLine}" +
-          $"</PlaceholderTemplate>{Environment.NewLine}" +
-          $"<CaretDownFragment>{Environment.NewLine}" +
-          $"<ItemTemplate>{Environment.NewLine}" +
-          $"<div>{Environment.NewLine}" +
-          $"<i class='bit-icon bit-icon--@((context.Data as DropDownItemData).IconName)'{Environment.NewLine}" +
-          $"aria-hidden='true'{Environment.NewLine}" +
-          $"title='@((context.Data as DropDownItemData).IconName)'></i>{Environment.NewLine}" +
-          $"<span>@context.Text</span>{Environment.NewLine}" +
-          $"</div>{Environment.NewLine}" +
-          $"</ItemTemplate>{Environment.NewLine}" +
-          $"</BitDropDown>{Environment.NewLine}" +
-          $"<BitDropDown Items='GetCustomDropdownItems()'{Environment.NewLine}" +
-          $"Placeholder='Select an option'{Environment.NewLine}" +
-          $"Label='Custom label'{Environment.NewLine}" +
-          $"AriaLabel='Custom dropdown label'{Environment.NewLine}" +
-          $"Style='width:290px'>{Environment.NewLine}" +
-          $"<LabelFragment>{Environment.NewLine}" +
-          $"<label>Custom label</label>{Environment.NewLine}" +
-          $"<button type='button' title='Info' aria-label='Info' class='custom-drp-lbl-ic'>{Environment.NewLine}" +
-          $"<i class='bit-icon bit-icon--Info'></i>{Environment.NewLine}" +
-          $"</button>{Environment.NewLine}" +
-          $"</LabelFragment>{Environment.NewLine}" +
-          $"</BitDropDown>{Environment.NewLine}" +
-          $"@code {{ {Environment.NewLine}" +
-          $"private List<dropdownitem> GetCustomDropdownItems(){Environment.NewLine}" +
-          $"{{ {Environment.NewLine}" +
-          $"List<dropdownitem> items = new();{Environment.NewLine}" +
-          $"items.Add(new DropDownItem(){Environment.NewLine}" +
-          $"{{ {Environment.NewLine}" +
-          $"ItemType = DropDownItemType.Header,{Environment.NewLine}" +
-          $"Text = 'Options',{Environment.NewLine}" +
-          $"Value = 'Header'{Environment.NewLine}" +
-          $"}});{Environment.NewLine}" +
-          $"items.Add(new DropDownItem(){Environment.NewLine}" +
-          $"{{ {Environment.NewLine}" +
-          $"ItemType = DropDownItemType.Normal,{Environment.NewLine}" +
-          $"Text = 'Options a',{Environment.NewLine}" +
-          $"Value = 'A'{Environment.NewLine}" +
-          $"Data = new DropDownItemData(){Environment.NewLine}" +
-          $"{{ {Environment.NewLine}" +
-          $"IconName= 'Memo'{Environment.NewLine}" +
-          $"}}); {Environment.NewLine}" +
-          $"items.Add(new DropDownItem(){Environment.NewLine}" +
-          $"{{ {Environment.NewLine}" +
-          $"ItemType = DropDownItemType.Normal,{Environment.NewLine}" +
-          $"Text = 'Options b',{Environment.NewLine}" +
-          $"Value = 'B'{Environment.NewLine}" +
-          $"Data = new DropDownItemData(){Environment.NewLine}" +
-          $"{{ {Environment.NewLine}" +
-          $"IconName= 'Print'{Environment.NewLine}" +
-          $"}}); {Environment.NewLine}" +
-          $"items.Add(new DropDownItem(){Environment.NewLine}" +
-          $"{{ {Environment.NewLine}" +
-          $"ItemType = DropDownItemType.Normal,{Environment.NewLine}" +
-          $"Text = 'Options c',{Environment.NewLine}" +
-          $"Value = 'C'{Environment.NewLine}" +
-          $"Data = new DropDownItemData(){Environment.NewLine}" +
-          $"{{ {Environment.NewLine}" +
-          $"IconName= 'ShoppingCart'{Environment.NewLine}" +
-          $"}}); {Environment.NewLine}" +
-          $"items.Add(new DropDownItem(){Environment.NewLine}" +
-          $"{{ {Environment.NewLine}" +
-          $"ItemType = DropDownItemType.Normal,{Environment.NewLine}" +
-          $"Text = 'Options d',{Environment.NewLine}" +
-          $"Value = 'D'{Environment.NewLine}" +
-          $"Data = new DropDownItemData(){Environment.NewLine}" +
-          $"{{ {Environment.NewLine}" +
-          $"IconName= 'Train'{Environment.NewLine}" +
-          $"}}); {Environment.NewLine}" +
-          $"items.Add(new DropDownItem(){Environment.NewLine}" +
-          $"{{ {Environment.NewLine}" +
-          $"ItemType = DropDownItemType.Normal,{Environment.NewLine}" +
-          $"Text = 'Options e',{Environment.NewLine}" +
-          $"Value = 'E'{Environment.NewLine}" +
-          $"Data = new DropDownItemData(){Environment.NewLine}" +
-          $"{{ {Environment.NewLine}" +
-          $"IconName= 'Repair'{Environment.NewLine}" +
-          $"}}); {Environment.NewLine}" +
-          $"items.Add(new DropDownItem(){Environment.NewLine}" +
-          $"{{ {Environment.NewLine}" +
-          $"ItemType = DropDownItemType.Divider,{Environment.NewLine}" +
-          $"}}); {Environment.NewLine}" +
-          $"items.Add(new DropDownItem(){Environment.NewLine}" +
-          $"{{ {Environment.NewLine}" +
-          $"ItemType = DropDownItemType.Header,{Environment.NewLine}" +
-          $"Text = 'More options',{Environment.NewLine}" +
-          $"Value = 'Header2'{Environment.NewLine}" +
-          $"}}); {Environment.NewLine}" +
-          $"Data = new DropDownItemData(){Environment.NewLine}" +
-          $"{{ {Environment.NewLine}" +
-          $"IconName= 'Repair'{Environment.NewLine}" +
-          $"}}); {Environment.NewLine}" +
-          $"items.Add(new DropDownItem(){Environment.NewLine}" +
-          $"{{ {Environment.NewLine}" +
-          $"ItemType = DropDownItemType.Normal,{Environment.NewLine}" +
-          $"Text = 'Options f',{Environment.NewLine}" +
-          $"Value = 'F'{Environment.NewLine}" +
-          $"Data = new DropDownItemData(){Environment.NewLine}" +
-          $"{{ {Environment.NewLine}" +
-          $"IconName= 'Running'{Environment.NewLine}" +
-          $"}}); {Environment.NewLine}" +
-          $"items.Add(new DropDownItem(){Environment.NewLine}" +
-          $"{{ {Environment.NewLine}" +
-          $"ItemType = DropDownItemType.Normal,{Environment.NewLine}" +
-          $"Text = 'Options g',{Environment.NewLine}" +
-          $"Value = 'G'{Environment.NewLine}" +
-          $"Data = new DropDownItemData(){Environment.NewLine}" +
-          $"{{ {Environment.NewLine}" +
-          $"IconName= 'EmoijNeutral'{Environment.NewLine}" +
-          $"}}); {Environment.NewLine}" +
-          $"ItemType = DropDownItemType.Normal,{Environment.NewLine}" +
-          $"Text = 'Options h',{Environment.NewLine}" +
-          $"Value = 'H'{Environment.NewLine}" +
-          $"Data = new DropDownItemData(){Environment.NewLine}" +
-          $"{{ {Environment.NewLine}" +
-          $"IconName= 'ChatInviteFriend'{Environment.NewLine}" +
-          $"}}); {Environment.NewLine}" +
-          $"ItemType = DropDownItemType.Normal,{Environment.NewLine}" +
-          $"Text = 'Options i',{Environment.NewLine}" +
-          $"Value = 'I'{Environment.NewLine}" +
-          $"Data = new DropDownItemData(){Environment.NewLine}" +
-          $"{{ {Environment.NewLine}" +
-          $"IconName= 'SecurityGroup'{Environment.NewLine}" +
-          $"}}); {Environment.NewLine}" +
-          $"ItemType = DropDownItemType.Normal,{Environment.NewLine}" +
-          $"Text = 'Options j',{Environment.NewLine}" +
-          $"Value = 'J'{Environment.NewLine}" +
-          $"Data = new DropDownItemData(){Environment.NewLine}" +
-          $"{{ {Environment.NewLine}" +
-          $"IconName= 'AddGroup'{Environment.NewLine}" +
-          $"}}); {Environment.NewLine}" +
-          $"return items; {Environment.NewLine}" +
-          $"}} {Environment.NewLine}" +
-          $"}}";
+    items.Add(new BitDropDownItem()
+    {
+        ItemType = BitDropDownItemType.Normal,
+        Text = ""Orange"",
+        Value = ""f-ora"",
+        IsEnabled = false
+    });
+
+    items.Add(new BitDropDownItem()
+    {
+        ItemType = BitDropDownItemType.Normal,
+        Text = ""Banana"",
+        Value = ""f-ban"",
+    });
+
+    items.Add(new BitDropDownItem()
+    {
+        ItemType = BitDropDownItemType.Divider,
+    });
+
+    items.Add(new BitDropDownItem()
+    {
+        ItemType = BitDropDownItemType.Header,
+        Text = ""Vegetables""
+    });
+
+    items.Add(new BitDropDownItem()
+    {
+        ItemType = BitDropDownItemType.Normal,
+        Text = ""Broccoli"",
+        Value = ""v-bro"",
+    });
+
+    return items;
+}";
+
+        private readonly string example2HTMLCode = @"<BitDropDown Label=""Single-select Controlled""
+             Items=""GetDropdownItems()""
+             Placeholder=""Select an option""
+             @bind-SelectedKey=""ControlledSelectedKey""
+             Style=""width: 290px; margin: 20px 0 20px 0"">
+</BitDropDown>";
+
+        private readonly string example3HTMLCode = @"<BitDropDown Label=""Multi-select controlled""
+             Items=""GetDropdownItems()""
+             Placeholder=""Select options""
+             @bind-SelectedMultipleKeys=""ControlledSelectedMultipleKeys""
+             IsMultiSelect=""true""
+             Style=""width:290px; margin:20px 0 20px 0"">
+</BitDropDown>";
+
+        private readonly string example4HTMLCode = @"<BitDropDown Label=""Custom Controlled""
+             Items=""GetCustomDropdownItems()""
+             Placeholder=""Select an option""
+             AriaLabel=""Custom dropdown""
+             Style=""width:290px; margin:20px 0 20px 0"">
+    <TextTemplate>
+        <div>
+            <i class=""bit-icon bit-icon--@((context.Items.Find(i => i.Value == context.SelectedKey).Data as DropDownItemData).IconName)""
+               aria-hidden=""true""
+               title=""@((context.Items.Find(i => i.Value == context.SelectedKey).Data as DropDownItemData).IconName)""></i>
+            <span>@context.Items.Find(i => i.Value == context.SelectedKey).Text</span>
+        </div>
+    </TextTemplate>
+    <PlaceholderTemplate>
+        <div>
+            <i class=""bit-icon bit-icon--MessageFill"" aria-hidden=""true""></i>
+            <span>@context.Placeholder</span>
+        </div>
+    </PlaceholderTemplate>
+    <CaretDownFragment>
+        <i class=""bit-icon bit-icon--CirclePlus""></i>
+    </CaretDownFragment>
+    <ItemTemplate>
+        <div style=""display: flex; flex-flow: row nowrap; justify-content: flex-start; align-items: center;"">
+            <i class=""bit-icon bit-icon--@((context.Data as DropDownItemData).IconName)""
+               aria-hidden=""true""
+               title=""@((context.Data as DropDownItemData).IconName)""></i>
+            <span>@context.Text</span>
+        </div>
+    </ItemTemplate>
+</BitDropDown>
+
+<BitDropDown Items=""GetCustomDropdownItems()""
+             Placeholder=""Select an option""
+             Label=""Custom Label""
+             AriaLabel=""Custom dropdown label ""
+             Style=""width:290px"">
+    <LabelFragment>
+        <label>Custom label</label>
+        <button type=""button"" title=""Info"" aria-label=""Info"" class=""custom-drp-lbl-ic"">
+            <i class=""bit-icon bit-icon--Info""></i>
+        </button>
+    </LabelFragment>
+</BitDropDown>";
+
+        private readonly string example4CSharpCode = @"
+private List<BitDropDownItem> GetCustomDropdownItems()
+{
+    List<BitDropDownItem> items = new();
+    items.Add(new BitDropDownItem()
+    {
+        ItemType = BitDropDownItemType.Header,
+        Text = ""Options"",
+        Value = ""Header""
+    });
+    items.Add(new BitDropDownItem()
+    {
+        ItemType = BitDropDownItemType.Normal,
+        Text = ""Option a"",
+        Value = ""A"",
+        Data = new DropDownItemData()
+        {
+            IconName = ""Memo""
+        }
+    });
+    items.Add(new BitDropDownItem()
+    {
+        ItemType = BitDropDownItemType.Normal,
+        Text = ""Option b"",
+        Value = ""B"",
+        Data = new DropDownItemData()
+        {
+            IconName = ""Print""
+        }
+    });
+    items.Add(new BitDropDownItem()
+    {
+        ItemType = BitDropDownItemType.Normal,
+        Text = ""Option c"",
+        Value = ""C"",
+        Data = new DropDownItemData()
+        {
+            IconName = ""ShoppingCart""
+        }
+    });
+    items.Add(new BitDropDownItem()
+    {
+        ItemType = BitDropDownItemType.Normal,
+        Text = ""Option d"",
+        Value = ""D"",
+        Data = new DropDownItemData()
+        {
+            IconName = ""Train""
+        }
+    });
+    items.Add(new BitDropDownItem()
+    {
+        ItemType = BitDropDownItemType.Normal,
+        Text = ""Option e"",
+        Value = ""E"",
+        Data = new DropDownItemData()
+        {
+            IconName = ""Repair""
+        }
+    });
+    items.Add(new BitDropDownItem()
+    {
+        ItemType = BitDropDownItemType.Divider
+    });
+    items.Add(new BitDropDownItem()
+    {
+        ItemType = BitDropDownItemType.Header,
+        Text = ""More options"",
+        Value = ""Header2""
+    });
+    items.Add(new BitDropDownItem()
+    {
+        ItemType = BitDropDownItemType.Normal,
+        Text = ""Option f"",
+        Value = ""F"",
+        Data = new DropDownItemData()
+        {
+            IconName = ""Running""
+        }
+    });
+    items.Add(new BitDropDownItem()
+    {
+        ItemType = BitDropDownItemType.Normal,
+        Text = ""Option g"",
+        Value = ""G"",
+        Data = new DropDownItemData()
+        {
+            IconName = ""EmojiNeutral""
+        }
+    });
+    items.Add(new BitDropDownItem()
+    {
+        ItemType = BitDropDownItemType.Normal,
+        Text = ""Option h"",
+        Value = ""H"",
+        Data = new DropDownItemData()
+        {
+            IconName = ""ChatInviteFriend""
+        }
+    });
+    items.Add(new BitDropDownItem()
+    {
+        ItemType = BitDropDownItemType.Normal,
+        Text = ""Option i"",
+        Value = ""I"",
+        Data = new DropDownItemData()
+        {
+            IconName = ""SecurityGroup""
+        }
+    });
+    items.Add(new BitDropDownItem()
+    {
+        ItemType = BitDropDownItemType.Normal,
+        Text = ""Option j"",
+        Value = ""J"",
+        Data = new DropDownItemData()
+        {
+            IconName = ""AddGroup""
+        }
+    });
+
+    return items;
+}";
     }
 }

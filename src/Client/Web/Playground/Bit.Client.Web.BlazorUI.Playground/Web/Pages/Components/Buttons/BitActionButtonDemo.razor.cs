@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 
 namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Buttons
@@ -73,31 +72,35 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Buttons
             },
         };
 
-        private readonly string actionButtonSampleCode = $"<BitActionButton IconName='BitIconName.AddFriend'>Create account</BitActionButton>{Environment.NewLine}" +
-             $"<BitActionButton IconName='BitIconName.UserRemove' AllowDisabledFocus='false' IsEnabled='false'>Remove user</BitActionButton>";
+        private readonly string example1HTMLCode = @"<BitActionButton IconName=""BitIconName.AddFriend"">Create account</BitActionButton>
+<BitActionButton AllowDisabledFocus=""false"" IsEnabled=""false"" IconName=""BitIconName.UserRemove"">Remove user</BitActionButton>";
 
-        private readonly string styleAndClassSampleCode = $"<BitActionButton IconName='BitIconName.ThisPC' Style='font-family:'Axiforma';font-size:16px;border:2px solid #32385B;justify-content: center;width: 232px;'>Styled Action Button</BitActionButton>{Environment.NewLine}" +
-                 $"<BitActionButton IconName='BitIconName.ThisPC' Class='custom-action-button'>Classed Action Button</BitActionButton>{Environment.NewLine}" +
-                 $"<style>{Environment.NewLine}" +
-                 $".custom-action-button {{ {Environment.NewLine}" +
-                 $"width:232px;{Environment.NewLine}" +
-                 $"font-family:Axiforma;{Environment.NewLine}" +
-                 $"font-size:16px;{Environment.NewLine}" +
-                 $"background-color:#D7D7D7;{Environment.NewLine}" +
-                 $"border-color:#D7D7D7;{Environment.NewLine}" +
-                 $"justify-content:center;{Environment.NewLine}" +
-                 $"}} {Environment.NewLine}" +
-                 $"</style>";
+        private readonly string example2HTMLCode = @"<BitActionButton IconName=""BitIconName.ThisPC"" Style=""font-family:'Axiforma';font-size:16px;border:2px solid #32385B;justify-content: center;width: 232px;"">
+    Styled Action Button
+</BitActionButton>
+<BitActionButton IconName=""BitIconName.ThisPC"" Class=""custom-action-button"">
+    Classed Action Button
+</BitActionButton>";
 
-        private readonly string visibilitySampleCode = $"<BitActionButton Visibility='BitComponentVisibility.Visible' IconName='BitIconName.AddEvent'>Add Event</BitActionButton>{Environment.NewLine}" +
-                 $"<BitActionButton Visibility='BitComponentVisibility.Hidden'>Hidden Action Button</BitActionButton>{Environment.NewLine}" +
-                 $"<BitActionButton Visibility='BitComponentVisibility.Collapsed'>Collapsed Action Button</BitActionButton>";
+        private readonly string example3HTMLCode = @"<BitActionButton IconName=""BitIconName.AddEvent"" Visibility=""BitComponentVisibility.Visible"">Add Event</BitActionButton>
+<div><span>Hidden Button: </span>[<BitActionButton Visibility=""BitComponentVisibility.Hidden"">Hidden Action Button</BitActionButton>]</div>
+<div><span>Collapsed Button: </span>[<BitActionButton Visibility=""BitComponentVisibility.Collapsed"">Collapsed Action Button</BitActionButton>]</div>";
 
-        private readonly string ariasSampleCode = $"<BitActionButton AriaDescription='Detailed description used for screen reader.'  IconName='BitIconName.Library'>Action Button with Aria Description</BitActionButton>{Environment.NewLine}" +
-                 $"<BitActionButton AriaHidden='true' IconName='BitIconName.Library'>Action Button with Aria Hidden</BitActionButton>{Environment.NewLine}";
+        private readonly string example4HTMLCode = @"<BitActionButton IconName=""BitIconName.Library"" AriaDescription=""Detailed description used for screen reader."">
+    Action Button with Aria Description
+</BitActionButton>
+<BitActionButton IconName=""BitIconName.Library"" AriaHidden=""true"">
+    Action Button with Aria Hidden
+</BitActionButton>";
 
-        private readonly string actionButtonLikeAnchorSampleCode = $"<BitActionButton IconName='BitIconName.Website' Target='_blank' Href='https://github.com/bitfoundation/bitframework'>Open Bit Foundation In New Tab</BitActionButton>{Environment.NewLine}" +
-                 $"<BitActionButton IconName='BitIconName.Website' ButtonStyle='BitButtonStyle.Standard' Href='https://github.com/bitfoundation/bitframework'>Go To Bit Foundation</BitActionButton>{Environment.NewLine}" +
-                 $"<BitActionButton Target='_self' IconName='BitIconName.Website' Href='https://github.com/bitfoundation/bitframework' IsEnabled='false'<span>Bit Foundation From Span</span></BitActionButton>";
+        private readonly string example5HTMLCode = @"<BitActionButton IconName=""BitIconName.Website"" Target=""_blank"" Href=""https://github.com/bitfoundation/bitframework"">
+    Open Bit Foundation In New Tab
+</BitActionButton>
+<BitActionButton IconName=""BitIconName.Website"" Href=""https://github.com/bitfoundation/bitframework"" ButtonStyle=""BitButtonStyle.Standard"">
+    Go To Bit Foundation
+</BitActionButton>
+<BitActionButton IconName=""BitIconName.Website"" Target=""_self"" Href=""https://github.com/bitfoundation/bitframework"" IsEnabled=""false"">
+    <span>Bit Foundation From Span</span>
+</BitActionButton>";
     }
 }

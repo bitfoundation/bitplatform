@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Bit.Client.Web.BlazorUI.Playground.Web.Models;
 using Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 
@@ -145,81 +144,83 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Notification
             }
         };
 
-        private readonly string successMessagebarSampleCode = $"@if (IsMessageBarHidden1 is false){Environment.NewLine}" +
-              $"{{ {Environment.NewLine}" +
-              $"<BitMessageBar MessageBarType='@itMessageBarType.Success' OnDismiss='HideMessageBar1' Truncated='true' IsMultiline='false' OverflowButtonAriaLabel='see more'>{Environment.NewLine}" +
-              $"Action completed! This is a sample of message bar with dismiss ability{Environment.NewLine}" +
-              $"Action completed! This is a sample of message bar with dismiss ability{Environment.NewLine}" +
-              $"Action completed! This is a sample of message bar with dismiss ability{Environment.NewLine}" +
-              $"Action completed! This is a sample of message bar with dismiss ability{Environment.NewLine}" +
-              $"Action completed! This is a sample of message bar with dismiss ability{Environment.NewLine}" +
-              $"</BitMessageBar>{Environment.NewLine}" +
-              $"<BitMessageBar MessageBarType='@BitMessageBarType.Success' Truncated='true' IsMultiline='false'>{Environment.NewLine}" +
-              $"<ChildContent> {Environment.NewLine}" +
-              $"Action completed! This is a sample of message bar with dismiss ability{Environment.NewLine}" +
-              $"Action completed! This is a sample of message bar with dismiss ability{Environment.NewLine}" +
-              $"Action completed! This is a sample of message bar with dismiss ability{Environment.NewLine}" +
-              $"Action completed! This is a sample of message bar with dismiss ability{Environment.NewLine}" +
-              $"Action completed! This is a sample of message bar with dismiss ability{Environment.NewLine}" +
-              $"</ChildContent>{Environment.NewLine}" +
-              $"<Actions> {Environment.NewLine}" +
-              $"<BitButton>ok</BitButton> {Environment.NewLine}" +
-              $"</Actions> {Environment.NewLine}" +
-              $"</BitMessageBar> {Environment.NewLine}" +
-              $"@if  (IsMessageBarHidden2 is false) {Environment.NewLine}" +
-              $"{{ {Environment.NewLine}" +
-              $"<BitMessageBar MessageBarType='@BitMessageBarType.Success' {Environment.NewLine}" +
-              $"OnDismiss='HideMessageBar2' {Environment.NewLine}" +
-              $"IsMultiline='false' {Environment.NewLine}" +
-              $"DismissIconName='BitIconName.SkypeCheck' {Environment.NewLine}" +
-              $"DismissButtonAriaLabel='close'> {Environment.NewLine}" +
-              $"Action completed! This is a sample of message bar with dismiss ability {Environment.NewLine}" +
-              $"</BitMessageBar> {Environment.NewLine}" +
-              $"}} {Environment.NewLine}" +
-              $"<BitMessageBar MessageBarType='@BitMessageBarType.Success' {Environment.NewLine}" +
-              $"MessageBarIconName='BitIconName.Emoji2'> {Environment.NewLine}" +
-              $"Action completed! This is a sample of message bar with dismiss ability {Environment.NewLine}" +
-              $"</BitMessageBar> {Environment.NewLine}" +
-              $"@code {{ {Environment.NewLine}" +
-              $"private bool IsMessageBarHidden1 = false; {Environment.NewLine}" +
-              $"private bool IsMessageBarHidden2 = false; {Environment.NewLine}" +
-              $"private void HideMessageBar1() {Environment.NewLine}" +
-              $"{{ {Environment.NewLine}" +
-              $"IsMessageBarHidden1 = true; {Environment.NewLine}" +
-              $"}} {Environment.NewLine}" +
-              $"private void HideMessageBar2() {Environment.NewLine}" +
-              $"{{ {Environment.NewLine}" +
-              $"IsMessageBarHidden2 = true; {Environment.NewLine}" +
-              $"}} {Environment.NewLine}" +
-              $"}}";
+        private readonly string example1HTMLCode = @"<div>
+    <BitMessageBar MessageBarType=""@BitMessageBarType.Success"" IsMultiline=""false"" Truncated=""true"" IsEnabled=""false"">
+        <Actions>
+            <BitButton>Ok</BitButton>
+        </Actions>
+        <ChildContent>
+            Action completed! This is a sample of message bar with dismiss ability
+            Action completed! This is a sample of message bar with dismiss ability
+            Action completed! This is a sample of message bar with dismiss ability
+            Action completed! This is a sample of message bar with dismiss ability
+            Action completed! This is a sample of message bar with dismiss ability
+        </ChildContent>
+    </BitMessageBar>
+    @if (IsMessageBarHidden2 is false)
+    {
+        <div class=""m-b-10"">
+            <BitMessageBar MessageBarType=""@BitMessageBarType.Success"" OnDismiss=""HideMessageBar2"" IsMultiline=""false"" DismissIconName=""BitIconName.SkypeCheck"" DismissButtonAriaLabel=""close"">
+                Action completed! This is a sample of message bar with dismiss ability and custom dismiss icon
+            </BitMessageBar>
+        </div>
+    }
+    <BitMessageBar MessageBarType=""@BitMessageBarType.Success"" MessageBarIconName=""BitIconName.Emoji2"">
+        Action completed! This is a sample of message bar with dismiss ability and custom dismiss icon
+    </BitMessageBar>
+</div>
+@if (IsMessageBarHidden1 is false)
+{
+    <div class=""m-b-10"">
+        <BitMessageBar MessageBarType=""@BitMessageBarType.Success"" OnDismiss=""HideMessageBar1"" IsMultiline=""false"" Truncated=""true"" OverflowButtonAriaLabel=""see more"">
+            Action completed! This is a sample of message bar with dismiss ability
+            Action completed! This is a sample of message bar with dismiss ability
+            Action completed! This is a sample of message bar with dismiss ability
+            Action completed! This is a sample of message bar with dismiss ability
+            Action completed! This is a sample of message bar with dismiss ability
+        </BitMessageBar>
+    </div>
+}";
 
-        private readonly string errorMessagebarSampleCode = $"<BitMessageBar MessageBarType='@BitMessageBarType.Error' Truncated='false'>{Environment.NewLine}" +
-             $"<ChildContent> {Environment.NewLine}" +
-             $"This is an error message bar with the ability to truncate your text Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut" +
-             $"aliquip ex ea commodo consequat.Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.{Environment.NewLine}" +
-             $"</ChildContent>{Environment.NewLine}" +
-             $"<Actions> {Environment.NewLine}" +
-             $"<BitButton>ok</BitButton> {Environment.NewLine}" +
-             $"</Actions> {Environment.NewLine}" +
-             $"</BitMessageBar>";
+        private readonly string example1CSharpCode = @"
+@code {
+    private bool IsMessageBarHidden1 = false;
+    private bool IsMessageBarHidden2 = false;
+    private void HideMessageBar1()
+    {
+        IsMessageBarHidden1 = true;
+    }
 
-        private readonly string blockedMessagebarSampleCode = $"<BitMessageBar MessageBarType='@BitMessageBarType.Blocked'>{Environment.NewLine}" +
-            $"Blocked MessageBar - single line Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo" +
-            $"consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.{Environment.NewLine}" +
-            $"</BitMessageBar>";
+    private void HideMessageBar2()
+    {
+        IsMessageBarHidden2 = true;
+    }
+}";
 
-        private readonly string warningMessagebarSampleCode = $"<BitMessageBar MessageBarType='@BitMessageBarType.Warning' IsMultiline='false'>{Environment.NewLine}" +
-             $"Caution! Action may takes long and also this message bar shown multiline messages time Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation" +
-             $"ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.{Environment.NewLine}" +
-             $"</BitMessageBar>" +
-             $"<BitMessageBar MessageBarType='@BitMessageBarType.SevereWarning'> {Environment.NewLine}" +
-             $"Cannot connect to the server {Environment.NewLine}" +
-             $"</BitMessageBar>";
+        private readonly string example2HTMLCode = @"<BitMessageBar MessageBarType=""@BitMessageBarType.Error"" Truncated=""false"">
+    <ChildContent>
+        This is an error message bar with the ability to truncate your text Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+    </ChildContent>
+    <Actions>
+        <BitButton>Ok</BitButton>
+    </Actions>
+</BitMessageBar>";
 
-        private readonly string infoMessagebarSampleCode = $"<BitMessageBar MessageBarType='@BitMessageBarType.Info'>{Environment.NewLine}" +
-          $"Visit repository{Environment.NewLine}" +
-          $"<BitLink HasUnderline='true'>{Environment.NewLine}" +
-          $"the link is rendered as a button{Environment.NewLine}" +
-          $"</BitMessageBar>";
+        private readonly string example3HTMLCode = @"<BitMessageBar MessageBarType=""@BitMessageBarType.Blocked"">
+    Blocked MessageBar - single line Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+</BitMessageBar>";
+
+        private readonly string example4HTMLCode = @"<div>
+    <BitMessageBar MessageBarType=""@BitMessageBarType.Warning"" IsMultiline=""false"">
+        Caution! Action may takes long and also this message bar shown multiline messages time Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+    </BitMessageBar>
+</div>
+<BitMessageBar MessageBarType=""@BitMessageBarType.SevereWarning"">
+    Cannot connect to server
+</BitMessageBar>";
+
+        private readonly string example5HTMLCode = @"<BitMessageBar MessageBarType=""@BitMessageBarType.Info"">
+    Visit repository <BitLink HasUnderline=""true"">the link is rendered as a button</BitLink>
+</BitMessageBar>";
     }
 }

@@ -89,33 +89,35 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ChoiceGroup
             },
         };
 
-        private readonly string choiceGroupSampleCode = $"<BitLabel>Selected Key is : @MySelectedKey</BitLabel>{Environment.NewLine}" +
-                $"<BitTextField @bind-Value='MySelectedKey' Placeholder='Select one of A, B or C'></BitTextField>{Environment.NewLine}" +
-                $"<BitChoiceGroup Name='Group1' Label='Pick one' IsRequired='true' @bind-SelectedKey='MySelectedKey'>{Environment.NewLine}" +
-                $"<BitCheckbox CheckmarkIconName='BitIconName.Heart'>Custom checkmark Checkbox</BitCheckbox>{Environment.NewLine}" +
-                $"<BitChoiceOption Key='A' Text='Option A' Value='1'></BitChoiceOption> {Environment.NewLine}" +
-                $"<BitChoiceOption Key='B' Text='Option B' Value='2'></BitChoiceOption>{Environment.NewLine}" +
-                $"<BitChoiceOption Key='C' Text='Disabled option C' Value='3' IsEnabled='false'></BitChoiceOption>{Environment.NewLine}" +
-                $"<@code {{ {Environment.NewLine}" +
-                $"private string MySelectedKey = 'B';{Environment.NewLine}" +
-                "}";
+        private readonly string example1HTMLCode = @"<BitLabel>Selected Key is : @MySelectedKey</BitLabel>
+<BitTextField @bind-Value=""MySelectedKey"" Placeholder=""Select one of A, B or C""></BitTextField>
+<BitChoiceGroup Name=""Group1"" Label=""Pick one"" IsRequired=""true"" @bind-SelectedKey=""MySelectedKey"">
+    <BitChoiceOption Key=""A"" Text=""Option A"" Value=""1""></BitChoiceOption>
+    <BitChoiceOption Key=""B"" Text=""Option B"" Value=""2""></BitChoiceOption>
+    <BitChoiceOption Key=""C"" Text=""Disabled option C"" Value=""3"" IsEnabled=""false""></BitChoiceOption>
+</BitChoiceGroup>";
 
-        private readonly string disabledSampleCode = $"<BitChoiceGroup Name='Group2' IsEnabled='false' Label='Pick one' DefaultSelectedKey='C'>{Environment.NewLine}" +
-                $"<BitChoiceOption Key='A' Text='Option A' Value='1'></BitChoiceOption>{Environment.NewLine}" +
-                $"<BitChoiceOption Key='B' Text='Option2 B' Value='2'></BitChoiceOption>{Environment.NewLine}" +
-                $"<BitChoiceOption Key='C' Text='Disabled option C' Value='3' IsEnabled='false'></BitChoiceOption>{Environment.NewLine}" +
-                $"</BitChoiceGroup>";
+        private readonly string example1CSharpCode = @"
+@code {
+    private string MySelectedKey = ""B"";
+}";
 
-        private readonly string choiceGroupwithImagesSampleCode = $"<BitChoiceGroup Name='Group1' Label='Pick one image' DefaultSelectedKey='pie'>{Environment.NewLine}" +
-                $"<BitChoiceOption Key='bar' Text='Clustered bar chart' Value='1' ImageSrc='https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png' ImageAlt='alt for image Option 1' SelectedImageSrc='https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png' ImageSize='new System.Drawing.Size( width: 32, height: 32)'></BitChoiceOption>{Environment.NewLine}" +
-                $"<BitChoiceOption Key='pie' Text='Pie chart' Value='2' ImageSrc='https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png' ImageAlt='alt for image Option 2' SelectedImageSrc='https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png' ImageSize='new System.Drawing.Size( width: 32, height: 32)'></BitChoiceOption>{Environment.NewLine}" +
-                $"<BitChoiceOption Key='disabeled_option' Text='Disabeled' IsEnabled='false' Value='3' ImageSrc='https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png' ImageAlt='alt for image Option 2' SelectedImageSrc='https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png' ImageSize='new System.Drawing.Size( width: 32, height: 32)'></BitChoiceOption>{Environment.NewLine}" +
-                $"</BitChoiceGroup>";
+        private readonly string example2HTMLCode = @"<BitChoiceGroup Name=""Group2"" IsEnabled=""false"" Label=""Pick one"" DefaultSelectedKey=""C"">
+    <BitChoiceOption Key=""A"" Text=""Option A"" Value=""1""></BitChoiceOption>
+    <BitChoiceOption Key=""B"" Text=""Option2 B"" Value=""2""></BitChoiceOption>
+    <BitChoiceOption Key=""C"" Text=""Disabled option C"" Value=""3"" IsEnabled=""false""></BitChoiceOption>
+</BitChoiceGroup>";
 
-        private readonly string choiceGroupwithIconsSampleCode = $"<BitChoiceGroup Name='Group1' Label='Pick one icon'>{Environment.NewLine}" +
-                $"<BitChoiceOption Key='day' Text='Day' Value='1' IconName='BitIconName.CalendarDay'></BitChoiceOption>{Environment.NewLine}" +
-                $"<BitChoiceOption Key='week' Text='Week' Value='2' IconName='BitIconName.CalendarWeek'></BitChoiceOption>{Environment.NewLine}" +
-                $"<BitChoiceOption Key='month' Text='Month' Value='3' IconName='BitIconName.Calendar' IsEnabled='false'></BitChoiceOption>{Environment.NewLine}" +
-                "</BitChoiceGroup>";
+        private readonly string example3HTMLCode = @"<BitChoiceGroup Name=""Group1"" Label=""Pick one image"" DefaultSelectedKey=""pie"">
+    <BitChoiceOption Key=""bar"" Text=""Clustered bar chart"" Value=""1"" ImageSrc=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png"" ImageAlt=""alt for image Option 1"" SelectedImageSrc=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png"" ImageSize=""new System.Drawing.Size( width: 32, height: 32)""></BitChoiceOption>
+    <BitChoiceOption Key=""pie"" Text=""Pie chart"" Value=""2"" ImageSrc=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png"" ImageAlt=""alt for image Option 2"" SelectedImageSrc=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png"" ImageSize=""new System.Drawing.Size( width: 32, height: 32)""></BitChoiceOption>
+    <BitChoiceOption Key=""disabeled_option"" Text=""Disabeled"" IsEnabled=""false"" Value=""3"" ImageSrc=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png"" ImageAlt=""alt for image Option 2"" SelectedImageSrc=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png"" ImageSize=""new System.Drawing.Size( width: 32, height: 32)""></BitChoiceOption>
+</BitChoiceGroup>";
+
+        private readonly string example4HTMLCode = @"<BitChoiceGroup Name=""Group1"" Label=""Pick one icon"">
+    <BitChoiceOption Key=""day"" Text=""Day"" Value=""1"" IconName=""BitIconName.CalendarDay""></BitChoiceOption>
+    <BitChoiceOption Key=""week"" Text=""Week"" Value=""2"" IconName=""BitIconName.CalendarWeek""></BitChoiceOption>
+    <BitChoiceOption Key=""month"" Text=""Month"" Value=""3"" IconName=""BitIconName.Calendar"" IsEnabled=""false""></BitChoiceOption>
+</BitChoiceGroup>";
     }
 }

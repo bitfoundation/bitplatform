@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Bit.Client.Web.BlazorUI.Playground.Web.Models;
 using Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 using Microsoft.AspNetCore.Components;
@@ -202,30 +201,36 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.FileUpload
             }
         };
 
-        private readonly string fileUploadSampleCode = $"<BitFileUpload Label='Select or drag and drop files'{Environment.NewLine}" +
-             $"UploadUrl='@UploadUrl'{Environment.NewLine}" +
-             $"RemoveUrl='@RemoveUrl'>{Environment.NewLine}" +
-             "</BitFileUpload>";
+        private readonly string example1HTMLCode = @"<BitFileUpload Label=""Select or drag and drop files""
+               UploadUrl=""@UploadUrl""
+               RemoveUrl=""@RemoveUrl"">
+</BitFileUpload>";
 
-        private readonly string autoSampleCode = $"<BitFileUpload IsMultiSelect='true'{Environment.NewLine}" +
-           $"Label='Select or drag and drop files'{Environment.NewLine}" +
-           $"UploadUrl='@UploadUrl'{Environment.NewLine}" +
-           $"RemoveUrl='@RemoveUrl'>{Environment.NewLine}" +
-           "</BitFileUpload>";
+        private readonly string example1CSharpCode = @"
+@code {
+    private string UploadUrl;
+    private string RemoveUrl;
+}";
 
-        private readonly string maxSizeSampleCode = $"<BitFileUpload IsMultiSelect='true'{Environment.NewLine}" +
-            $"Label='Select or drag and drop files'{Environment.NewLine}" +
-            $"MaxSize='1024 * 1024 * 100'{Environment.NewLine}" +
-            $"UploadUrl='@UploadUrl'{Environment.NewLine}" +
-            $"RemoveUrl='@RemoveUrl'>{Environment.NewLine}" +
-            "</BitFileUpload>";
+        private readonly string example2HTMLCode = @"<BitFileUpload IsMultiSelect=""true""
+               Label=""Select or drag and drop files""
+               UploadUrl=""@UploadUrl""
+               RemoveUrl=""@RemoveUrl"">
+</BitFileUpload>";
 
-        private readonly string extensionSampleCode = $"<BitFileUpload IsMultiSelect='true'{Environment.NewLine}" +
-            $"Label='Select or drag and drop files'{Environment.NewLine}" +
-            $"AllowedExtensions='@(new List<string> {{ '.gif','.jpg','.mp4' }})'{Environment.NewLine}" +
-            $"AutoUploadEnabled='false'{Environment.NewLine}" +
-            $"UploadUrl='@UploadUrl'{Environment.NewLine}" +
-            $"RemoveUrl='@RemoveUrl'>{Environment.NewLine}" +
-            "</BitFileUpload>";
+        private readonly string example3HTMLCode = @"<BitFileUpload IsMultiSelect=""true""
+               Label=""Select or drag and drop files""
+               MaxSize=""1024 * 1024 * 100""
+               UploadUrl=""@UploadUrl""
+               RemoveUrl=""@RemoveUrl"">
+</BitFileUpload>";
+
+        private readonly string example4HTMLCode = @"<BitFileUpload IsMultiSelect=""true""
+               AutoUploadEnabled=""false""
+               AllowedExtensions=""@(new List<string> { "".gif"","".jpg"","".mp4"" })""
+               Label=""Select or drag and drop files""
+               UploadUrl=""@UploadUrl""
+               RemoveUrl=""@RemoveUrl"">
+</BitFileUpload>";
     }
 }

@@ -2,7 +2,7 @@
 
 <ComponentDemo ComponentName="Link" ComponentDescription="Links lead to another part of an app, other pages, or help articles. They can also be used to initiate commands."
                ComponentParameters="componentParameters">
-    <ComponentExampleBox Title="BitLink" ExampleSourceCodeForCopy="@linkSampleCode" ExampleId="example1">
+    <ComponentExampleBox Title="BitLink" HTMLSourceCode="@example1HTMLCode" ExampleId="example1">
         <ExamplePreview>
             <div class="example-desc">To create a link you can use a BitLink component.</div>
             <div>
@@ -13,14 +13,5 @@
                 </p>
             </div>
         </ExamplePreview>
-        <ExampleSourceCode>
-            <pre class="code">
-            <code class="html">&lt;p>
-        When a link has an href, &ltBitLink Href="https://github.com/bitfoundation/bitframework" Target="_blank" HasUnderline="true">it renders as an anchor tag&lt/BitLink>. Without an href, &ltBitLink HasUnderline="true">the link is rendered as a button&lt/BitLink>.
-        You can also use the disabled attribute to create a &ltBitLink Href="https://github.com/bitfoundation/bitframework" IsEnabled="false" HasUnderline="true">disabled link&lt/BitLink>. It's not recommended to use Links with imgs because
-        Links are meant to render textual inline content. Buttons are inline-block or in the case of imgs, block. However, it is possible to create a linked image button by making a button with an unstyled variant and adding the img content and href source to that.
-&lt;/p></code>
-            </pre>
-        </ExampleSourceCode>
     </ComponentExampleBox>
 </ComponentDemo>

@@ -9,54 +9,18 @@
         Instead change the operation description to reflect the change if necessary.
         Bars moving backwards reduce confidence in the service."
                ComponentParameters="componentParameters">
-    <ComponentExampleBox Title="BitProgressIndicator" ExampleSourceCodeForCopy="@progressIndicatorSampleCode" ExampleId="example1">
+    <ComponentExampleBox Title="BitProgressIndicator" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
         <ExamplePreview>
             <BitProgressIndicator Label="Example title" Description="@description" PercentComplete="@CompletedPercent" BarHeight="50"></BitProgressIndicator>
             <div>
                 <BitButton OnClick="@StartProgress">Start Progress</BitButton>
             </div>
         </ExamplePreview>
-        <ExampleSourceCode>
-            <pre class="code">
-            <code class="html">&ltBitProgressIndicator Label="Example title" Description="&#64;description" PercentComplete="&#64;CompletedPercent" BarHeight="50">&lt/BitProgressIndicator>
-&ltBitButton OnClick="&#64;StartProgress">Start Progress&lt/BitButton></code>
-
-            <code class="csharp">&#64;code {
-        private string description = "Push button to start!";
-        public int CompletedPercent { get; set; }
-        private async Task StartProgress()
-        {
-                CompletedPercent = 0;
-                while &#40;CompletedPercent &lt= 100)
-                {
-                        if &#40;CompletedPercent == 100)
-                        {
-                                description = $"Completed !";
-                                break;
-                        }
-                        else
-                        {
-                                CompletedPercent++;
-                                description = $"{CompletedPercent}%";
-                        }
-
-                        StateHasChanged();
-                        await Task.Delay(100);
-                }
-        }
-}</code>
-            </pre>
-        </ExampleSourceCode>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Indeterminate Progress Indicator" ExampleSourceCodeForCopy="@indeterminateSampleCode" ExampleId="example2">
+    <ComponentExampleBox Title="Indeterminate Progress Indicator" HTMLSourceCode="@example2HTMLCode" ExampleId="example2">
         <ExamplePreview>
             <BitProgressIndicator Label="Example title" Description="Example description" BarHeight="20"></BitProgressIndicator>
         </ExamplePreview>
-        <ExampleSourceCode>
-            <pre class="code">
-            <code class="html">&ltBitProgressIndicator Label="Example title" Description="Example description" BarHeight="20">&lt/BitProgressIndicator></code>
-            </pre>
-        </ExampleSourceCode>
     </ComponentExampleBox>
 </ComponentDemo>

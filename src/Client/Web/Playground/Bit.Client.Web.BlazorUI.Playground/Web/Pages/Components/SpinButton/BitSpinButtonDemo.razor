@@ -2,7 +2,7 @@
 
 <ComponentDemo ComponentName="SpinButton" ComponentDescription="A spin button (SpinButton) allows someone to incrementally adjust a value in small steps. It’s mainly used for numeric values, but other values are supported too."
                ComponentParameters="componentParameters" EnumParameters="enumParameters">
-    <ComponentExampleBox Title="BitSpinButton" ExampleSourceCodeForCopy="@spinButtonSampleCode" ExampleId="example1">
+    <ComponentExampleBox Title="BitSpinButton" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
         <ExamplePreview>
             <div class="example-desc">Files can be uploaded automatically after selecting them.</div>
             <BitSpinButton @bind-Value="BasicSpinButtonValue"
@@ -24,36 +24,9 @@
                            IsEnabled="false">
             </BitSpinButton>
         </ExamplePreview>
-        <ExampleSourceCode>
-            <pre class="code">
-            <code class="html">&ltBitSpinButton &#64;bind-Value="BasicSpinButtonValue"
-               Min="0"
-               Max="100"
-               Step="1"
-               Label="Basic SpinButton">
-&lt/BitSpinButton>
-&ltBitSpinButton Min="-10"
-               Max="10"
-               Step="0.1"
-               Label="Decimal SpinButton">
-&lt/BitSpinButton>
-&ltBitSpinButton &#64;bind-Value="BasicSpinButtonDisableValue"
-               Min="0"
-               Max="100"
-               Step="1"
-               Label="Disabled SpinButton"
-               IsEnabled="false">
-&lt/BitSpinButton></code>
-
-            <code class="csharp">&#64;code {
-        private double BasicSpinButtonValue = 5;
-        private double BasicSpinButtonDisableValue = 20;
-}</code>
-            </pre>
-        </ExampleSourceCode>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="SpinButton With Icon" ExampleSourceCodeForCopy="@spinButtonWithIconSampleCode" ExampleId="example2">
+    <ComponentExampleBox Title="SpinButton With Icon" HTMLSourceCode="@example2HTMLCode" ExampleId="example2">
         <ExamplePreview>
             <div class="example-desc">Multiple files can be selected to upload automatically.</div>
             <BitSpinButton IconName="BitIconName.IncreaseIndentLegacy"
@@ -70,26 +43,9 @@
                            IsEnabled="false">
             </BitSpinButton>
         </ExamplePreview>
-        <ExampleSourceCode>
-            <pre class="code">
-            <code class="html">&ltBitSpinButton IconName="BitIconName.IncreaseIndentLegacy"
-              Min="0"
-              Max="100"
-              Step="1"
-              Label="With Icon">
-&lt/BitSpinButton>
-&ltBitSpinButton IconName="BitIconName.IncreaseIndentLegacy"
-              Min="0"
-              Max="100"
-              Step="1"
-              Label="Disabled With Icon"
-              IsEnabled="false">
-&lt/BitSpinButton></code>
-            </pre>
-        </ExampleSourceCode>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="SpinButton With Suffix" ExampleSourceCodeForCopy="@withSuffixSampleCode" ExampleId="example3">
+    <ComponentExampleBox Title="SpinButton With Suffix" HTMLSourceCode="@example3HTMLCode" ExampleId="example3">
         <ExamplePreview>
             <div class="example-desc">Multiple files can be selected to upload automatically with limited size.</div>
             <BitSpinButton Suffix="Inch"
@@ -99,26 +55,9 @@
                            Label="With suffix">
             </BitSpinButton>
         </ExamplePreview>
-        <ExampleSourceCode>
-            <pre class="code">
-            <code class="html">&ltBitSpinButton IconName="BitIconName.IncreaseIndentLegacy"
-              Min="0"
-              Max="100"
-              Step="1"
-              Label="With Icon">
-&lt/BitSpinButton>
-&ltBitSpinButton IconName="BitIconName.IncreaseIndentLegacy"
-              Min="0"
-              Max="100"
-              Step="1"
-              Label="Disabled With Icon"
-              IsEnabled="false">
-&lt/BitSpinButton></code>
-            </pre>
-        </ExampleSourceCode>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="SpinButton With Label Above" ExampleSourceCodeForCopy="@withLabelAboveSampleCode" ExampleId="example4">
+    <ComponentExampleBox Title="SpinButton With Label Above" HTMLSourceCode="@example4HTMLCode" CSharpSourceCode="@example4CSharpCode" ExampleId="example4">
         <ExamplePreview>
             <div class="example-desc">Single or multiple file uploading limited only by file extensions, which in this case the allowed file extensions include gif, jpg and mp4.</div>
             <BitSpinButton @bind-Value="SpinButtonWithLabelAboveValue"
@@ -130,25 +69,9 @@
                            LabelPosition="@BitSpinButtonLabelPosition.Top">
             </BitSpinButton>
         </ExamplePreview>
-        <ExampleSourceCode>
-            <pre class="code">
-            <code class="html">&ltBitSpinButton &#64;bind-Value="SpinButtonWithLabelAboveValue"
-               Suffix="cm"
-               Min="0"
-               Max="100"
-               Step="1"
-               Label="With Labal Above"
-               LabelPosition="&#64;BitSpinButtonLabelPosition.Top">
-&lt/BitSpinButton></code>
-
-            <code class="csharp">&#64;code {
-        private double SpinButtonWithLabelAboveValue = 7;       
-}</code>
-            </pre>
-        </ExampleSourceCode>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Custom Styled SpinButton" ExampleSourceCodeForCopy="@styledSampleCode" ExampleId="example5">
+    <ComponentExampleBox Title="Custom Styled SpinButton" example5HTMLCode="@example5HTMLCode" ExampleId="example5">
         <ExamplePreview>
             <BitSpinButton Class="custom-spb"
                            Min="0"
@@ -157,27 +80,9 @@
                            Label="Custom Styled">
             </BitSpinButton>
         </ExamplePreview>
-        <ExampleSourceCode>
-            <pre class="code">
-            <code class="html">&ltBitSpinButton Class="custom-spb"
-               Min="0"
-               Max="100"
-               Step="1"
-               Label="Custom Styled">
-&lt/BitSpinButton>
-
-&ltstyle>
-        .custom-spb {
-                .bit-spb-wrapper input {
-                        background-color : #D7D7D7;
-                }
-        }
-&lt/style></code>
-            </pre>
-        </ExampleSourceCode>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Controlled SpinButton" ExampleSourceCodeForCopy="@controlledSampleCode" ExampleId="example6">
+    <ComponentExampleBox Title="Controlled SpinButton" HTMLSourceCode="@example6HTMLCode" CSharpSourceCode="@example6CSharpCode" ExampleId="example6">
         <ExamplePreview>
             <div class="example-desc">
                 A controlled BitSpinButton provides two-way binding using either bind-value or Value parameters. With bind-value all the changes to the value can be seen by its parent
@@ -197,31 +102,5 @@
                            Step="1">
             </BitSpinButton>
         </ExamplePreview>
-        <ExampleSourceCode>
-            <pre class="code">
-            <code class="html">&ltBitSpinButton Label="Controlled SpinButton with bind-value"
-               &#64;bind-Value="BitSpinButtonBindValue"
-               Min="0"
-               Max="100"
-               Step="1">
-&lt/BitSpinButton>
-&ltBitSpinButton Label="Controlled SpinButton with Value"
-               Value="BitSpinButtonValueChanged"
-               ValueChanged="HandleControlledSpinButtonValueChange"
-               Min="0"
-               Max="100"
-               Step="1">
-&lt/BitSpinButton></code>
-
-            <code class="csharp">&#64;code {
-        private double BitSpinButtonBindValue = 8;
-        private double BitSpinButtonValueChanged = 16;        
-        private void HandleControlledSpinButtonValueChange(double value)
-        {
-                BitSpinButtonValueChanged = value;
-        }              
-}</code>
-            </pre>
-        </ExampleSourceCode>
     </ComponentExampleBox>
 </ComponentDemo>

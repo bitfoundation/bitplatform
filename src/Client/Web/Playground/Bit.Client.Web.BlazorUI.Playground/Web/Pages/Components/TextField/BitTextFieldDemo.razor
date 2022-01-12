@@ -2,7 +2,7 @@
 
 <ComponentDemo ComponentName="TextField" ComponentDescription="Text fields give people a way to enter and edit text. They’re used in forms, modal dialogs, tables, and other surfaces where text input is required."
                ComponentParameters="componentParameters" EnumParameters="enumParameters">
-    <ComponentExampleBox Title="BitTextField" ExampleSourceCodeForCopy="@textFieldSampleCode" ExampleId="example1">
+    <ComponentExampleBox Title="BitTextField" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
         <ExamplePreview>
             <div class="example-desc">To create a text field you can use a BitTextField component.</div>
             <div>
@@ -37,33 +37,12 @@
                 <BitTextField Label="Required" IsRequired="true"></BitTextField>
             </div>
             <div>
-                <BitTextField AriaLabel="Required Without Visible Label" IsRequired="true" IsAriaRequired="true"></BitTextField>
+                <BitTextField AriaLabel="Required Without Visible Label" IsRequired="true"></BitTextField>
             </div>
         </ExamplePreview>
-        <ExampleSourceCode>
-            <pre class="code">
-            <code class="html">&ltBitTextField Label="Standard">&lt/BitTextField>
-&ltBitTextField Label="Standard With Two-Way Binding" &#64;bind-Value="&#64;TextValue">&lt/BitTextField>
-&ltBitLabel>You are typing : &#64;TextValue &lt/BitLabel>
-&ltBitTextField Label="Read-only" IsReadonly="true" DefaultValue="I am read-only">&lt/BitTextField>
-&ltBitTextField Label="Disabled" IsEnabled="false" DefaultValue="I am disabled">&lt/BitTextField>
-&ltBitTextField Label="Disabled With Placeholder" IsEnabled="false" Placeholder="I am disabled">&lt/BitTextField>
-&ltBitTextField Label="With Placeholder" Placeholder="Please enter text here">&lt/BitTextField>
-&ltBitTextField Label="Controlled TextField Limiting Length Of Value To 10" MaxLength="10">&lt/BitTextField>
-&ltBitTextField Label="With An Icon" IconName="BitIconName.CalendarMirrored">&lt/BitTextField>
-&ltBitTextField Label="Password With Reveal Button" Type="&#64;InputType" CanRevealPassword="true">&lt/BitTextField>
-&ltBitTextField Label="Required" IsRequired="true">&lt/BitTextField>
-&ltBitTextField AriaLabel="Required Without Visible Label" IsRequired="true" IsAriaRequired="true">&lt/BitTextField></code>
-
-            <code class="csharp">&#64;code {
-        private string TextValue;
-        private BitTextFieldType InputType = BitTextFieldType.Password;
-}</code>
-            </pre>
-        </ExampleSourceCode>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Multi-Line TextField" ExampleSourceCodeForCopy="@multiLineSampleCode" ExampleId="example2">
+    <ComponentExampleBox Title="Multi-Line TextField" HTMLSourceCode="@example2HTMLCode" ExampleId="example2">
         <ExamplePreview>
             <div>
                 <BitTextField Label="Standard" IsMultiline="true" Rows="3"></BitTextField>
@@ -78,17 +57,9 @@
                 <BitTextField Label="Non-resizable" IsMultiline="true" IsResizable="false"></BitTextField>
             </div>
         </ExamplePreview>
-        <ExampleSourceCode>
-            <pre class="code">
-            <code class="html">&ltBitTextField Label="Standard" IsMultiline="true" Rows="3">&lt/BitTextField>
-&ltBitTextField Label="Limited multi-line text field - 10 chars" IsMultiline="true" MaxLength="10">&lt/BitTextField>
-&ltBitTextField Label="Disabled" IsMultiline="true" IsEnabled="false" Value="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat">&lt/BitTextField>
-&ltBitTextField Label="Non-resizable" IsMultiline="true" IsResizable="false">&lt/BitTextField></code>
-            </pre>
-        </ExampleSourceCode>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Underlined And Borderless TextFields" ExampleSourceCodeForCopy="@underlinedSampleCode" ExampleId="example3">
+    <ComponentExampleBox Title="Underlined And Borderless TextFields" HTMLSourceCode="@example3HTMLCode" ExampleId="example3">
         <ExamplePreview>
             <div>
                 <BitTextField Label="Standard:" IsUnderlined="true"></BitTextField>
@@ -106,18 +77,9 @@
                 <BitTextField Label="Borderless multi-line TextField" IsMultiline="true" HasBorder="false"></BitTextField>
             </div>
         </ExamplePreview>
-        <ExampleSourceCode>
-            <pre class="code">
-            <code class="html">&ltBitTextField Label="Standard:" IsUnderlined="true">&lt/BitTextField>
-&ltBitTextField Label="Disabled:" IsUnderlined="true" IsEnabled="false" DefaultValue="I am disabled">&lt/BitTextField>
-&ltBitTextField Label="Required:" IsUnderlined="true" IsRequired="true">&lt/BitTextField>
-&ltBitTextField Label="Borderless single-line TextField" HasBorder="false">&lt/BitTextField>
-&ltBitTextField Label="Borderless multi-line TextField" IsMultiline="true" HasBorder="false">&lt/BitTextField></code>
-            </pre>
-        </ExampleSourceCode>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="TextField With Prefix And/Or Suffix" ExampleSourceCodeForCopy="@prefixsuffixSampleCode" ExampleId="example4">
+    <ComponentExampleBox Title="TextField With Prefix And/Or Suffix" HTMLSourceCode="@example4HTMLCode" ExampleId="example4">
         <ExamplePreview>
             <div>
                 <BitTextField Label="With Prefix" Prefix="https://"></BitTextField>
@@ -132,17 +94,9 @@
                 <BitTextField Label="With Prefix And Suffix" Prefix="https://" Suffix=".com"></BitTextField>
             </div>
         </ExamplePreview>
-        <ExampleSourceCode>
-            <pre class="code">
-            <code class="html">&ltBitTextField Label="With Prefix" Prefix="https://">&lt/BitTextField>
-&ltBitTextField Label="With Suffix" Suffix=".com">&lt/BitTextField>
-&ltBitTextField Label="Disabled With Prefix" Prefix="https://" IsEnabled="false">&lt/BitTextField>
-&ltBitTextField Label="With Prefix And Suffix" Prefix="https://" Suffix=".com">&lt/BitTextField></code>
-            </pre>
-        </ExampleSourceCode>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="TextFields With Custom Label/Description" ExampleSourceCodeForCopy="@customLabelSampleCode" ExampleId="example5">
+    <ComponentExampleBox Title="TextFields With Custom Label/Description" HTMLSourceCode="@example5HTMLCode" ExampleId="example5">
         <ExamplePreview>
             <div>
                 <BitTextField Description="Click the (i) icon!">
@@ -160,20 +114,5 @@
                 </BitTextField>
             </div>
         </ExamplePreview>
-        <ExampleSourceCode>
-            <pre class="code">
-            <code class="html">&ltBitTextField Description="Click the (i) icon!">
-        &ltLabelFragment>
-                &ltBitLabel Style="display:inline-block;padding-bottom:10px;">With PrefixCustom Label Rendering&lt/BitLabel>
-                &ltBitIconButton IconName="BitIconName.Info">&lt/BitIconButton>
-        &lt/LabelFragment>
-&lt/BitTextField>
-&ltBitTextField>
-        &ltDescriptionFragment>
-                &ltBitLabel Style="color:green;">With PrefixCustom Label Rendering&lt/BitLabel>
-        &lt/DescriptionFragment>
-&lt/BitTextField></code>
-            </pre>
-        </ExampleSourceCode>
     </ComponentExampleBox>
 </ComponentDemo>

@@ -187,24 +187,32 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.DatePicker
             }
         };
 
-        private readonly string datePickerWithMonthSampleCode = $"<BitDatePicker Style='width: 300px' ShowMonthPickerAsOverlay='true'></BitDatePicker>";
+        private readonly string example1HTMLCode = @"<BitDatePicker Style=""width: 300px""
+               ShowMonthPickerAsOverlay=""true"">
+</BitDatePicker>";
 
-        private readonly string datePickerWithWeekSampleCode = $"<BitDatePicker Style='width: 300px' ShowWeekNumbers='true'></BitDatePicker>";
+        private readonly string example2HTMLCode = @"<BitDatePicker Style=""width: 300px""
+               ShowWeekNumbers=""true"">
+</BitDatePicker>";
 
-        private readonly string jalaliDatePickerSampleCode = $"<BitDatePicker Style='width: 300px' Culture='@(new System.Globalization.CultureInfo('fa-IR'))' GoToToday='برو به امروز'></BitDatePicker>";
+        private readonly string example3HTMLCode = @"<BitDatePicker Culture=""@(new System.Globalization.CultureInfo(""fa-IR""))""
+               GoToToday=""برو به امروز""
+               Style=""width: 300px"">
+</BitDatePicker>";
 
-        private readonly string finglishJalaliDatePickerSampleCode = $"<BitDatePicker Style='width: 300px' Culture='Bit.Client.Web.BlazorUI.CultureInfoHelper.GetPersianCultureByFinglishNames()' GoToToday='Boro be emrouz'></BitDatePicker>";
+        private readonly string example4HTMLCode = @"<BitDatePicker Culture=""Bit.Client.Web.BlazorUI.CultureInfoHelper.GetPersianCultureByFinglishNames()""
+               GoToToday=""Boro be emrouz""
+               Style=""width: 300px"">
+</BitDatePicker>";
 
-        private readonly string datePickerWithTwoWayBindingSampleCode = $"<BitDatePicker Style='width: 300px' @bind-Value='selectedDate'></BitDatePicker>{Environment.NewLine}" +
-           $"<BitLabel >this is selected date: @selectedDate </BitLabel>{Environment.NewLine}" +
-           $"@code {{{Environment.NewLine}" +
-           $"private string selectedDate ='';{Environment.NewLine}" +
-           $"}}";
+        private readonly string example5HTMLCode = @"<BitDatePicker @bind-Value=""@selectedDate"" Style=""width: 300px""></BitDatePicker>
+<BitLabel>this is selected date: @selectedDate.ToString()</BitLabel>";
 
-        private readonly string datePickerWithcustomFormattingSampleCode = $"<BitDatePicker Style='width: 300px' OnSelectDate='OnDateFormat'></BitDatePicker>{Environment.NewLine}" +
-           $"<BitLabel >this is selected date: @selectedDate </BitLabel>{Environment.NewLine}" +
-           $"@code {{{Environment.NewLine}" +
-           $"private string OnDateFormat(BitDate date) => $'{{date.Year}}/{{date.Month}}/{{date.Day}}';{Environment.NewLine}" +
-           $"}}";
+        private readonly string example5CSharpCode = @"
+@code {
+    private DateTimeOffset? selectedDate = new DateTimeOffset(new DateTime(2020, 1, 17), DateTimeOffset.Now.Offset);
+}";
+
+        private readonly string example6HTMLCode = @"<BitDatePicker FormatDate=""d"" Style=""width: 300px""></BitDatePicker>";
     }
 }

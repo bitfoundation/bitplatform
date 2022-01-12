@@ -2,7 +2,7 @@
 
 <ComponentDemo ComponentName="ChoiceGroup" ComponentDescription="Radio buttons (ChoiceGroup) let people select a single option from two or more choices."
                ComponentParameters="componentParameters">
-    <ComponentExampleBox Title="BitChoiceGroup" ExampleSourceCodeForCopy="@choiceGroupSampleCode" ExampleId="example1">
+    <ComponentExampleBox Title="BitChoiceGroup" HTMLSourceCode="@example1HTMLCode" ExampleId="example1">
         <ExamplePreview>
             <div class="example-desc">To create a choicegroup you can use a BitChoiceGroup component</div>
             <div class="ch-group">
@@ -15,24 +15,9 @@
                 </BitChoiceGroup>
             </div>
         </ExamplePreview>
-        <ExampleSourceCode>
-            <pre class="code">
-            <code class="html">&ltBitLabel>Selected Key is : &#64;MySelectedKey&lt/BitLabel>
-&ltBitTextField &#64;bind-Value="MySelectedKey" Placeholder="Select one of A, B or C">&lt/BitTextField>
-&ltBitChoiceGroup Name="Group1" Label="Pick one" IsRequired="true" &#64;bind-SelectedKey="MySelectedKey">
-        &ltBitChoiceOption Key="A" Text="Option A" Value="1">&lt/BitChoiceOption>
-        &ltBitChoiceOption Key="B" Text="Option B" Value="2">&lt/BitChoiceOption>
-        &ltBitChoiceOption Key="C" Text="Disabled option C" Value="3" IsEnabled="false">&lt/BitChoiceOption>
-&lt/BitChoiceGroup></code>
-
-            <code class="csharp">&#64;code {
-        private string MySelectedKey = "B";
-}</code>
-            </pre>
-        </ExampleSourceCode>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Disabled" ExampleSourceCodeForCopy="@disabledSampleCode" ExampleId="example2">
+    <ComponentExampleBox Title="Disabled" HTMLSourceCode="@example2HTMLCode" ExampleId="example2">
         <ExamplePreview>
             <div class="example-desc">BitChoiceGroup in disabled mode.</div>
             <div>
@@ -43,18 +28,9 @@
                 </BitChoiceGroup>
             </div>
         </ExamplePreview>
-        <ExampleSourceCode>
-            <pre class="code">
-            <code class="html">&ltBitChoiceGroup Name="Group2" IsEnabled="false" Label="Pick one" DefaultSelectedKey="C">
-        &ltBitChoiceOption Key="A" Text="Option A" Value="1">&lt/BitChoiceOption>
-        &ltBitChoiceOption Key="B" Text="Option2 B" Value="2">&lt/BitChoiceOption>
-        &ltBitChoiceOption Key="C" Text="Disabled option C" Value="3" IsEnabled="false">&lt/BitChoiceOption>
-&lt/BitChoiceGroup></code>
-            </pre>
-        </ExampleSourceCode>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="ChoiceGroup with images" ExampleSourceCodeForCopy="@choiceGroupwithImagesSampleCode" ExampleId="example3">
+    <ComponentExampleBox Title="ChoiceGroup with images" HTMLSourceCode="@example3HTMLCode" ExampleId="example3">
         <ExamplePreview>
             <div>
                 <BitChoiceGroup Name="Group1" Label="Pick one image" DefaultSelectedKey="pie">
@@ -64,39 +40,9 @@
                 </BitChoiceGroup>
             </div>
         </ExamplePreview>
-        <ExampleSourceCode>
-            <pre class="code">
-            <code class="html">&ltBitChoiceGroup Name="Group1" Label="Pick one image" DefaultSelectedKey="pie">
-        &ltBitChoiceOption Key="bar" 
-                           Text="Clustered bar chart" 
-                           Value="1" 
-                           ImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png" 
-                           ImageAlt="alt for image Option 1" 
-                           SelectedImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png" 
-                           ImageSize="new System.Drawing.Size( width: 32, height: 32)">
-        &lt/BitChoiceOption>
-        &ltBitChoiceOption Key="pie" 
-                           Text="Pie chart" 
-                           Value="2" 
-                           ImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png" 
-                           ImageAlt="alt for image Option 2" 
-                           SelectedImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png" 
-                           ImageSize="new System.Drawing.Size( width: 32, height: 32)">
-        &lt/BitChoiceOption>
-        &ltBitChoiceOption Key="disabeled_option" 
-                           Text="Disabeled" 
-                           IsEnabled="false" 
-                           Value="3" 
-                           ImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png" 
-                           ImageAlt="alt for image Option 2" SelectedImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png" 
-                           ImageSize="new System.Drawing.Size( width: 32, height: 32)">
-        &lt/BitChoiceOption>
-&lt/BitChoiceGroup></code>
-            </pre>
-        </ExampleSourceCode>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="ChoiceGroup with icons" ExampleSourceCodeForCopy="@choiceGroupwithIconsSampleCode" ExampleId="example4">
+    <ComponentExampleBox Title="ChoiceGroup with icons" HTMLSourceCode="@example4HTMLCode" ExampleId="example4">
         <ExamplePreview>
             <div>
                 <BitChoiceGroup Name="Group1" Label="Pick one icon">
@@ -106,14 +52,5 @@
                 </BitChoiceGroup>
             </div>
         </ExamplePreview>
-        <ExampleSourceCode>
-            <pre class="code">
-            <code class="html">&ltBitChoiceGroup Name="Group1" Label="Pick one icon">
-        &ltBitChoiceOption Key="day" Text="Day" Value="1" IconName="BitIconName.CalendarDay">&lt/BitChoiceOption>
-        &ltBitChoiceOption Key="week" Text="Week" Value="2" IconName="BitIconName.CalendarWeek">&lt/BitChoiceOption>
-        &ltBitChoiceOption Key="month" Text="Month" Value="3" IconName="BitIconName.Calendar" IsEnabled="false">&lt/BitChoiceOption>
-&lt/BitChoiceGroup></code>
-            </pre>
-        </ExampleSourceCode>
     </ComponentExampleBox>
 </ComponentDemo>

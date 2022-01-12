@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Bit.Client.Web.BlazorUI.Playground.Web.Models;
 using Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 
@@ -101,33 +100,45 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Buttons
             }
         };
 
-        private readonly string buttonSampleCode = $"<BitButton IsEnabled='true'>Primary</BitButton>{Environment.NewLine}" +
-              $"<BitButton Style = 'margin-right: 2px;' ButtonStyle = 'BitButtonStyle.Standard' IsEnabled = 'true'>Standard</BitButton>{Environment.NewLine}" +
-              $"<BitButton IsEnabled = 'false' AllowDisabledFocus = 'false'>Disabled</BitButton>{Environment.NewLine}" +
-               "<BitButton Class = 'label-btn' IsEnabled = 'true'><label> A Text from label element</label></BitButton>";
+        private readonly string example1HTMLCode = @"<BitButton IsEnabled=""true"">
+    Primary
+</BitButton>
+<BitButton ButtonStyle=""BitButtonStyle.Standard"" Style=""margin-right: 2px;"" IsEnabled=""true"">
+    Standard
+</BitButton>
+<BitButton IsEnabled=""false"" AllowDisabledFocus=""false"">
+    Disabled
+</BitButton>
+<BitButton Class=""label-btn"" IsEnabled=""true"">
+    <label>A Text from label element</label>
+</BitButton>";
 
-        private readonly string styleAndClassSampleCode = $"<BitButton Style='height: 40px;width: 166px;font-family: 'Axiforma';font-size: 16px;'>Styled Button</BitButton>{Environment.NewLine}" +
-                 $"<BitButton Class='custom-button'>Classed Button</BitButton>{Environment.NewLine}" +
-                 $"<style>{Environment.NewLine}" +
-                 $".custom-button {{ {Environment.NewLine}" +
-                 $"height:40px;{Environment.NewLine}" +
-                 $"width:166px;{Environment.NewLine}" +
-                 $"font-family:Axiforma;{Environment.NewLine}" +
-                 $" font-size:16px;{Environment.NewLine}" +
-                 $"background-color:#2F455A;{Environment.NewLine}" +
-                 $"border-color:#2F455A;{Environment.NewLine}" +
-                 $"}} {Environment.NewLine}" +
-                 $"</style>";
+        private readonly string example2HTMLCode = @"<BitButton Style=""height: 40px;width: 166px;font-family: 'Axiforma';font-size: 16px;"" Class=""styled-btn"">
+    Styled Button
+</BitButton>
+<BitButton Class=""custom-button"">
+    Classed Button
+</BitButton>";
 
-        private readonly string visibilitySampleCode = $"<BitButton Style='margin-bottom: 10px;' Visibility='BitComponentVisibility.Visible'>Visible Button</BitButton>{Environment.NewLine}" +
-                 $"<BitButton Visibility='BitComponentVisibility.Hidden'>Hidden Button</BitButton>{Environment.NewLine}" +
-                 $"<BitButton Visibility='BitComponentVisibility.Collapsed'>Collapsed Button</BitButton>";
+        private readonly string example3HTMLCode = @"<BitButton Style=""margin-bottom: 10px;"" Visibility=""BitComponentVisibility.Visible"">Visible Button</BitButton>
+<div>Hidden Button: [<BitButton Visibility=""BitComponentVisibility.Hidden"">Hidden Button</BitButton>]</div>
+<div>Collapsed Button: [<BitButton Visibility=""BitComponentVisibility.Collapsed"">Collapsed Button</BitButton>]</div>";
 
-        private readonly string ariasSampleCode = $"<BitButton AriaDescription='Detailed description used for screen reader.'>Button with Aria Description</BitButton>{Environment.NewLine}" +
-                 $"<BitButton AriaHidden='true'>Button with Aria Hidden</BitButton>";
+        private readonly string example4HTMLCode = @"<BitButton AriaDescription=""Detailed description used for screen reader."">
+    Button with Aria Description
+</BitButton>
+<BitButton ButtonStyle=""BitButtonStyle.Standard"" AriaHidden=""true"">
+    Button with Aria Hidden
+</BitButton>";
 
-        private readonly string buttonLikeAnchorSampleCode = $"<BitButton Style='margin-right: 10px;' Title='Primary' Target='_blank' Href='https://github.com/bitfoundation/bitframework'>Open Bit Foundation In New Tab</BitButton>{Environment.NewLine}" +
-                 $"<BitButton Visibility='BitComponentVisibility.Hidden'>Hidden Button</BitButton>{Environment.NewLine}" +
-                 $"<BitButton Visibility='BitComponentVisibility.Collapsed'>Collapsed Button</BitButton>";
+        private readonly string example5HTMLCode = @"<BitButton Style=""margin-right: 10px;"" Title=""Primary"" Target=""_blank"" Href=""https://github.com/bitfoundation/bitframework"">
+    Open Bit Foundation In New Tab
+</BitButton>
+<BitButton Class=""lnk-btn"" Style=""margin-right: 10px;"" Title=""Standard"" Href=""https://github.com/bitfoundation/bitframework"" ButtonStyle=""BitButtonStyle.Standard"">
+    Go To Bit Foundation
+</BitButton>
+<BitButton Class=""disable-btn"" Target=""_self"" Href=""https://github.com/bitfoundation/bitframework"" IsEnabled=""false"">
+    <span>Bit Foundation From Span</span>
+</BitButton>";
     }
 }
