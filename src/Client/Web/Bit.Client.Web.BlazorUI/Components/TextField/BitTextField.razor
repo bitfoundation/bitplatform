@@ -1,5 +1,5 @@
 ﻿@namespace Bit.Client.Web.BlazorUI
-@inherits BitComponentBase
+@inherits BitInputBase<string?>
 
 <div @ref="RootElement"
      @attributes="HtmlAttributes"
@@ -53,7 +53,7 @@
                       @onchange="@HandleChange"
                       @onkeydown="@HandleKeyDown"
                       @onkeyup="@HandleKeyUp">
-                    @Value
+                    @BindConverter.FormatValue(CurrentValue)
                                                     </textarea>
             }
             else
@@ -64,7 +64,7 @@
                    readonly=@IsReadonly
                    required=@IsRequired
                    type="@ElementType"
-                   value="@Value"
+                   value="@BindConverter.FormatValue(CurrentValue)"
                    placeholder="@Placeholder"
                    maxlength="@MaxLength"
                    aria-label="@AriaLabel"
