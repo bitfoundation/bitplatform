@@ -1,49 +1,9 @@
-﻿@import '../styles/base/_base.scss';
-@import '../styles/shared/_shared.scss';
+﻿@import '../styles/base/_reset.scss';
+@import '../styles/abstracts/_colors.scss';
 
-//HEADER==================================================
-
-.header-item {
-    margin-left: rem(12px);
-}
-
-.header-menu {
-    display: none;
-    margin-right: rem(12px);
-
-    span {
-        i {
-            color: $PrimaryColor;
-        }
-    }
-
-    @include lt-lg {
-        display: block;
-    }
-}
+//Components==========================================
+@import '../styles/components/_header.scss';
 
 
-//HOME PAGE===============================================
-.hero-section-cta {
-    height: rem(34px);
-    border: rem(1px) solid $White;
-    color: $White;
-    background-color: $SecondaryColor;
-
-    &:hover {
-        background-color: $SecondaryColor;
-        border-color: $White;
-    }
-}
-
-@media all and (max-width: #{em(370px)}) {
-    .header-item--privacy {
-        display: none;
-    }
-
-    .header--authenticated {
-        .header-item--privacy {
-            display: block;
-        }
-    }
-}
+//Pages===============================================
+@import '../styles/pages/_home.scss';
