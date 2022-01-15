@@ -1,6 +1,6 @@
 # Introduction
 
-Bit is a full stack frameworkto build high performance yet maintainable api / mobile / web / desktop applications using C# .NET and Blazor
+Bit is a full stack framework to build high performance yet maintainable api / mobile / web / desktop applications using C# .NET and Blazor
 It's a combination of best practices and facilities to implement those best practices. Bit can help you develop high quality apps in less time.
 
 Our primary focus is developing high performance native blazor components which is being done in **src/Bit.Client.Web.BlazorUI.sln**
