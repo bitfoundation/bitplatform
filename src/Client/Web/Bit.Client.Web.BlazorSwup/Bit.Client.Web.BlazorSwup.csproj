@@ -1,0 +1,64 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <LangVersion>preview</LangVersion>
+    </PropertyGroup>
+
+    <!-- Followings are copied from Bit.Build.props for testing purposes.-->
+    <PropertyGroup>
+        <!-- Info -->
+        <Authors>Bit Foundation</Authors>
+        <Company>Bit Foundation</Company>
+        <Product>Bit Framework</Product>
+        <Title>$(MSBuildProjectName)</Title>
+        <Description>Bit Blazor Service Worker up! A simple library in order to show Blazor PWA Update Progress</Description>
+        <Copyright>Copyright © Bit Foundation 2021</Copyright>
+
+        <!-- Repo -->
+        <RepositoryUrl>https://github.com/bitfoundation/bitframework</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+
+        <!-- nupkg -->
+        <PackageId>$(MSBuildProjectName)</PackageId>
+        <PackageTags>Bit PWA Blazor ServiceWorker</PackageTags>
+        <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+        <GeneratePackageOnBuild Condition=" '$(Configuration)' == 'Release' ">true</GeneratePackageOnBuild>
+        <AllowedOutputExtensionsInPackageBuildOutputFolder Condition=" '$(Configuration)' == 'Release' ">$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageProjectUrl>https://github.com/bitfoundation/bitframework</PackageProjectUrl>
+        <PackageIconUrl>https://avatars.githubusercontent.com/u/22663390</PackageIconUrl>
+        <PackageReleaseNotes>https://github.com/bitfoundation/bitframework/releases/</PackageReleaseNotes>
+        <IncludeContentInPack>false</IncludeContentInPack>
+
+        <PackageVersion Condition=" '$(Configuration)' == 'Release' ">$([System.DateTime]::Now.ToString("yyyy.MMdd.HHmm"))</PackageVersion>
+
+        <!-- Version -->
+        <Version Condition=" '$(Configuration)' == 'Release' ">$([System.DateTime]::Now.ToString("yyyy.MMdd.HHmm"))</Version>
+        <AssemblyVersion Condition=" '$(Configuration)' == 'Release' ">$([System.DateTime]::Now.ToString("yyyy.MMdd.HHmm"))</AssemblyVersion>
+
+        <!-- Compile -->
+        <NeutralLanguage>en</NeutralLanguage>
+        <LangVersion>preview</LangVersion>
+        <Nullable>enable</Nullable>
+        <NoWarn>$(NoWarn);NU1605;CS1591;NU1701;NU1605;CA1303;CA2007</NoWarn>
+        <!-- https://stackoverflow.com/a/46815541/2720104 -->
+        <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
+        <EmbedAllSources>True</EmbedAllSources>
+        <DebugType>portable</DebugType>
+        <AnalysisLevel>latest</AnalysisLevel>
+        <AnalysisMode>AllEnabledByDefault</AnalysisMode>
+        <CodeAnalysisTreatWarningsAsErrors>true</CodeAnalysisTreatWarningsAsErrors>
+        <EnableNETAnalyzers>true</EnableNETAnalyzers>
+        <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Configuration)'=='Debug'">
+        <DebugSymbols>true</DebugSymbols>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <SupportedPlatform Include="browser" />
+    </ItemGroup>
+
+</Project>
