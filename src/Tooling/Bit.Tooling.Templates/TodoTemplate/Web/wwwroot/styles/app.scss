@@ -1,9 +1,11 @@
-﻿@import '../styles/base/_reset.scss';
-@import '../styles/abstracts/_colors.scss';
+﻿@import 'base/_reset.scss';
+@import 'abstracts/_colors.scss';
 
 //Components==========================================
-@import '../styles/components/_header.scss';
-
+@import 'components/_header.scss';
 
 //Pages===============================================
-@import '../styles/pages/_home.scss';
+@import 'pages/_home.scss';
+
+//Shared===============================================
+@import 'shared/_form.scss';
