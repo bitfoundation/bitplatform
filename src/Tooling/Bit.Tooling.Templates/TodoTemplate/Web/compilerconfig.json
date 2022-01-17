@@ -26,5 +26,9 @@
   {
     "outputFile": "Components/NavMenu.razor.css",
     "inputFile": "Components/NavMenu.razor.scss"
+  },
+  {
+    "outputFile": "Pages/Privacy.razor.css",
+    "inputFile": "Pages/Privacy.razor.scss"
   }
 ]

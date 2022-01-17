@@ -1,0 +1,62 @@
+﻿@import '../wwwroot/styles/abstracts/_colors.scss';
+@import '../wwwroot/styles/abstracts/_functions.scss';
+
+.page-container {
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%;
+    padding: rem(88px) rem(15px);
+    box-sizing: border-box;
+}
+
+.main-section {
+    width: 100%;
+    max-width: rem(1128px);
+    margin-bottom: rem(24px);
+}
+
+.main-section-title {
+    width: 100%;
+    margin-bottom: rem(24px);
+    text-align: left;
+    color: $White;
+    font-size: rem(34px);
+    font-weight: bold;
+    line-height: rem(56px);
+}
+
+.main-section-desc {
+    width: 100%;
+    font-size: rem(18px);
+    line-height: rem(28px);
+    color: $Gray6;
+}
+
+.sub-section {
+    width: 100%;
+    max-width: rem(1128px);
+    margin-bottom: rem(24px);
+
+    &:last-child {
+        margin-bottom: 0;
+    }
+}
+
+.sub-section-title {
+    width: 100%;
+    margin-bottom: rem(16px);
+    text-align: left;
+    color: $Gray6;
+    font-weight: 600;
+    font-size: rem(24px);
+    line-height: rem(36px);
+}
+
+.sub-section-desc {
+    width: 100%;
+    font-size: rem(18px);
+    line-height: rem(28px);
+    color: $Gray6;
+}
