@@ -1,0 +1,39 @@
+﻿@import '../abstracts/_colors.scss';
+
+.form--white {
+    position: relative;
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: center;
+    row-gap: rem(21px);
+    border-radius: rem(4px);
+    padding: rem(40px) rem(134px);
+    background-color: $Gray6;
+}
+
+.form-message-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    border-radius: rem(4px) rem(4px) 0 0;
+}
+
+.form-title {
+    font-weight: 600;
+    font-size: rem(28px);
+    /*margin-bottom: rem(21px);*/
+    line-height: 158%;
+    color: $SecondaryColor;
+}
+
+.form-input-container {
+    display: flex;
+    flex-flow: column nowrap;
+    width: rem(340px);
+}
+
+.form-input-error {
+    font-size: rem(12px);
+    line-height: rem(16px);
+    color: $ErrorColor;
+}
