@@ -1,10 +1,12 @@
 ﻿@import '../abstracts/_fonts.scss';
+@import '../abstracts/_colors.scss';
 
 html, body {
     width: 100%;
     height: 100vh;
     margin: 0;
     padding: 0;
+    background-color: $SecondaryColor;
     font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
 }
 
