@@ -79,7 +79,7 @@ namespace Bit.Client.Web.BlazorUI
 
                 bool parsingFailed;
 
-                if (_nullableUnderlyingType != null && string.IsNullOrEmpty(value))
+                if (_nullableUnderlyingType is not null && value.HasNoValue())
                 {
                     // Assume if it's a nullable type, null/empty inputs should correspond to default(T)
                     // Then all subclasses get nullable support almost automatically (they just have to
@@ -202,12 +202,12 @@ namespace Bit.Client.Web.BlazorUI
                         break;
                 }
             }
-            if (EditContext != null || CascadedEditContext != null)
+            if (EditContext is not null || CascadedEditContext is not null)
             {
                 // This is the first run
                 // Could put this logic in OnInit, but its nice to avoid forcing people who override OnInit to call base.OnInit()
 
-                if (ValueExpression == null)
+                if (ValueExpression is null)
                 {
                     throw new InvalidOperationException($"{GetType()} requires a value for the 'ValueExpression' " +
                         $"parameter. Normally this is provided automatically when using 'bind-Value'.");
@@ -215,7 +215,7 @@ namespace Bit.Client.Web.BlazorUI
 
                 FieldIdentifier = FieldIdentifier.Create(ValueExpression);
 
-                if (CascadedEditContext != null)
+                if (CascadedEditContext is not null)
                 {
                     EditContext = CascadedEditContext;
                     EditContext.OnValidationStateChanged += _validationStateChangedHandler;
@@ -253,7 +253,7 @@ namespace Bit.Client.Web.BlazorUI
                 return;
             }
 
-            var hasAriaInvalidAttribute = HtmlAttributes != null && HtmlAttributes.ContainsKey("aria-invalid");
+            var hasAriaInvalidAttribute = HtmlAttributes?.ContainsKey("aria-invalid") ?? false;
             if (EditContext.GetValidationMessages(FieldIdentifier).Any())
             {
                 if (hasAriaInvalidAttribute)
@@ -299,7 +299,7 @@ namespace Bit.Client.Web.BlazorUI
         private bool ConvertToDictionary(IReadOnlyDictionary<string, object>? source, out Dictionary<string, object> result)
         {
             var newDictionaryCreated = true;
-            if (source == null)
+            if (source is null)
             {
                 result = new Dictionary<string, object>();
             }
