@@ -1,0 +1,31 @@
+﻿@page "/sign-up"
+
+<div class="page-container">
+    <form class="form--white">
+        <BitMessageBar Class="form-message-bar" MessageBarType="BitMessageBarType.Success" OnDismiss="() => null">
+            Message about the state of this view
+        </BitMessageBar>
+        <h1 class="form-title">
+            Create your free account
+        </h1>
+        <div class="form-input-container">
+            <BitLabel>Email</BitLabel>
+            <BitTextField Placeholder="Email"></BitTextField>
+            <div class="form-input-error">Repeat password and password are not same.</div>
+        </div>
+        <div class="form-input-container">
+            <BitLabel>Password</BitLabel>
+            <BitTextField Type="BitTextFieldType.Password" CanRevealPassword="true" Placeholder="Password"></BitTextField>
+            <div class="form-input-error">Repeat password and password are not same.</div>
+        </div>
+        <BitCheckbox Class="form-checkbox">
+            Accept <BitLink Href="/privacy" Target="_blank">privacy and policy</BitLink>
+        </BitCheckbox>
+        <BitButton Class="form-submit-button" ButtonStyle="BitButtonStyle.Primary" IsEnabled="true">
+            Sign up
+        </BitButton>
+        <div>
+            Already have an account? <BitLink Href="/sign-in">Sign in</BitLink>
+        </div>
+    </form>
+</div>
