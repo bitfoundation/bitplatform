@@ -21,7 +21,6 @@
 .form-title {
     font-weight: 600;
     font-size: rem(28px);
-    /*margin-bottom: rem(21px);*/
     line-height: 158%;
     color: $SecondaryColor;
 }
@@ -35,5 +34,5 @@
 .form-input-error {
     font-size: rem(12px);
     line-height: rem(16px);
-    color: $ErrorColor;
+    color: $Red;
 }
