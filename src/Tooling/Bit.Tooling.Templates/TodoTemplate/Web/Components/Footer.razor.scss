@@ -3,8 +3,14 @@
 @import '../wwwroot/styles/abstracts/_functions.scss';
 
 .footer {
-    position: absolute;
-    bottom: 0;
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+.footer-content {
     display: flex;
     flex-flow: column nowrap;
     justify-content: center;
@@ -14,7 +20,6 @@
     border-top: rem(1px) solid $S1Color;
     padding: rem(4px) 0;
     box-sizing: border-box;
-    background-color: $SecondaryColor;
 
     @include lt-xl {
         min-height: rem(50px);
@@ -49,8 +54,6 @@
 }
 
 .footer-social-lnk-grp {
-    position: absolute;
-    bottom: rem(55px);
     display: flex;
     flex-flow: row nowrap;
     justify-content: center;

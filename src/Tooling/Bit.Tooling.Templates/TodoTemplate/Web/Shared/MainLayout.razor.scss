@@ -5,10 +5,9 @@
 .main {
     position: relative;
     width: 100%;
-    height: 100vh;
+    min-height: calc(100vh - 86px);
     padding-top: rem(48px);
     box-sizing: border-box;
-    background-color: $SecondaryColor;
 }
 
 .main--authenticated {
@@ -27,7 +26,7 @@
 }
 
 @media all and (max-width: #{em(370px)}) {
-    .main {
+    .main--authenticated {
         padding-top: rem(84px);
     }
 }
