@@ -102,7 +102,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ChoiceGroup
     private string MySelectedKey = ""B"";
 }";
 
-        private readonly string example2HTMLCode = @"<BitChoiceGroup Name=""Group2"" IsEnabled=""false"" Label=""Pick one"" DefaultSelectedKey=""C"">
+        private readonly string example2HTMLCode = @"<BitChoiceGroup Name=""Group2"" IsEnabled=""false"" Label=""Pick one"">
     <BitChoiceOption Key=""A"" Text=""Option A"" Value=""1""></BitChoiceOption>
     <BitChoiceOption Key=""B"" Text=""Option2 B"" Value=""2""></BitChoiceOption>
     <BitChoiceOption Key=""C"" Text=""Disabled option C"" Value=""3"" IsEnabled=""false""></BitChoiceOption>
