@@ -25,7 +25,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Nav
             new BitNavLinkItem { Name = "Pages", Url = "http://msn.com", Key = "key4", Target = "_parent" },
             new BitNavLinkItem { Name = "Notebook", Url = "http://msn.com", Key = "key5", IsEnabled = false },
             new BitNavLinkItem { Name = "Communication and Media", Url = "http://msn.com", Key = "key6", Target = "_top" },
-            new BitNavLinkItem { Name = "News", Title = "News", Url = "http://msn.com", Key = "key7", Icon = "News", Target = "_self" },
+            new BitNavLinkItem { Name = "News", Title = "News", Url = "http://msn.com", Key = "key7", IconName = BitIconName.News, Target = "_self" },
         };
 
         private readonly List<BitNavLinkItem> BasicNavLinksWithoutURL = new()
@@ -46,7 +46,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Nav
             new BitNavLinkItem { Name = "Pages", Key = "key4", Target = "_parent" },
             new BitNavLinkItem { Name = "Notebook", Key = "key5", IsEnabled = false },
             new BitNavLinkItem { Name = "Communication and Media", Key = "key6", Target = "_top" },
-            new BitNavLinkItem { Name = "News", Title = "News", Key = "key7", Icon = "News", Target = "_self" },
+            new BitNavLinkItem { Name = "News", Title = "News", Key = "key7", IconName = BitIconName.News, Target = "_self" },
         };
 
         private readonly List<BitNavLinkItem> BasicNoToolTipNavLinks = new()
@@ -69,7 +69,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Nav
             new BitNavLinkItem { Name = "Pages", Url = "http://msn.com", Key = "key4", Target = "_parent", Title = "" },
             new BitNavLinkItem { Name = "Notebook", Url = "http://msn.com", Key = "key5", IsEnabled = false, Title = "" },
             new BitNavLinkItem { Name = "Communication and Media", Url = "http://msn.com", Key = "key6", Target = "_top", Title = "" },
-            new BitNavLinkItem { Name = "News", Key = "key7", Url = "http://cnn.com", Icon = "News", Target = "_self", Title = "" }
+            new BitNavLinkItem { Name = "News", Key = "key7", Url = "http://cnn.com", IconName = BitIconName.News, Target = "_self", Title = "" }
         };
 
         private readonly List<BitNavLinkItem> BasicNoUrlNavLinks = new()
@@ -375,8 +375,8 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Nav
                    },
                    new ComponentParameter()
                    {
-                       Name = "Icon",
-                       Type = "string",
+                       Name = "IconName",
+                       Type = "BitIconName",
                        DefaultValue = "",
                        Description = "Name of an icon to render next to this link button.",
                    },
@@ -491,7 +491,7 @@ private readonly List<BitNavLinkItem> BasicNavLinks = new()
     new BitNavLinkItem { Name = ""Pages"", Url = ""http://msn.com"", Key = ""key4"", Target = ""_parent"" },
     new BitNavLinkItem { Name = ""Notebook"", Url = ""http://msn.com"", Key = ""key5"", IsEnabled = false },
     new BitNavLinkItem { Name = ""Communication and Media"", Url = ""http://msn.com"", Key = ""key6"", Target = ""_top"" },
-    new BitNavLinkItem { Name = ""News"", Title = ""News"", Url = ""http://msn.com"", Key = ""key7"", Icon = ""News"", Target = ""_self"" },
+    new BitNavLinkItem { Name = ""News"", Title = ""News"", Url = ""http://msn.com"", Key = ""key7"", IconName = BitIconName.News, Target = ""_self"" },
 };";
 
         private static string example2HTMLCode = @"<BitNav Style=""width: 208px;
@@ -526,7 +526,7 @@ private readonly List<BitNavLinkItem> BasicNoToolTipNavLinks = new()
     new BitNavLinkItem { Name = ""Pages"", Url = ""http://msn.com"", Key = ""key4"", Target = ""_parent"", Title = """" },
     new BitNavLinkItem { Name = ""Notebook"", Url = ""http://msn.com"", Key = ""key5"", IsEnabled = false, Title = """" },
     new BitNavLinkItem { Name = ""Communication and Media"", Url = ""http://msn.com"", Key = ""key6"", Target = ""_top"", Title = """" },
-    new BitNavLinkItem { Name = ""News"", Key = ""key7"", Url = ""http://cnn.com"", Icon = ""News"", Target = ""_self"", Title = """" }
+    new BitNavLinkItem { Name = ""News"", Key = ""key7"", Url = ""http://cnn.com"", IconName = BitIconName.News, Target = ""_self"", Title = """" }
 };";
 
         private static string example3HTMLCode = @"<BitNav Style=""width: 300px;""
@@ -699,7 +699,7 @@ private readonly List<BitNavLinkItem> BasicNavLinksWithoutURL = new()
     new BitNavLinkItem { Name = ""Pages"", Key = ""key4"", Target = ""_parent"" },
     new BitNavLinkItem { Name = ""Notebook"", Key = ""key5"", IsEnabled = false },
     new BitNavLinkItem { Name = ""Communication and Media"", Key = ""key6"", Target = ""_top"" },
-    new BitNavLinkItem { Name = ""News"", Title = ""News"", Key = ""key7"", Icon = ""News"", Target = ""_self"" },
+    new BitNavLinkItem { Name = ""News"", Title = ""News"", Key = ""key7"", IconName = BitIconName.News, Target = ""_self"" },
 };
 
 private string BitNavManualModeSelectedKey = ""key3"";
