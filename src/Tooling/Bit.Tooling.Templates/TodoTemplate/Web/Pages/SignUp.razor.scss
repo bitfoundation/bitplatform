@@ -1,0 +1,10 @@
+﻿@import '../wwwroot/styles/abstracts/_functions.scss';
+
+.page-container {
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    padding: rem(56px) 0;
+}
