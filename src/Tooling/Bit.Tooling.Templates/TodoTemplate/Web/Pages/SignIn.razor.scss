@@ -1,0 +1,18 @@
+﻿@import '../wwwroot/styles/abstracts/_functions.scss';
+@import '../wwwroot/styles/abstracts/_colors.scss';
+
+.page-container {
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    padding: rem(56px) 0;
+}
+
+.form-forgot-password {
+    margin-bottom: rem(16px);
+    font-size: rem(14px);
+    line-height: rem(24px);
+    color:$PrimaryColor;
+}
