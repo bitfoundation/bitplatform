@@ -1,7 +1,7 @@
-﻿<header class="header @(true ? "header--authenticated" : null)">
+﻿<header class="header @(false ? "header--authenticated" : null)">
     <div class="header-top-row">
         <div class="header-contact">
-            @if (true)
+            @if (false)
             {
                 <BitIconButton Class="header-menu" IconName="BitIconName.CollapseMenu" />
             }
@@ -9,10 +9,10 @@
         </div>
         <div class="header-contact">
             <BitLink Class="header-item--privacy" Href="/privacy" Target="_self">Privacy</BitLink>
-            @if (false)
+            @if (true)
             {
                 <BitActionButton Class="header-item" IconName="BitIconName.AddFriend" Href="/sign-up" Target="_self">Sign up</BitActionButton>
-                <BitActionButton Class="header-item" IconName="BitIconName.AddFriend" Href="/login" Target="_self">Login</BitActionButton>
+                <BitActionButton Class="header-item" IconName="BitIconName.AddFriend" Href="/sign-in" Target="_self">Sign in</BitActionButton>
             }
         </div>
     </div>
