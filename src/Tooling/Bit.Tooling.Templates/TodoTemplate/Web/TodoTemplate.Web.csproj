@@ -23,8 +23,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Bit.Client.Web.BlazorUI" Version="8.7.0" />
 		<PackageReference Include="BuildWebCompiler" Version="1.12.405" />
+		<ProjectReference Include="..\..\..\..\Client\Web\Bit.Client.Web.BlazorUI\Bit.Client.Web.BlazorUI.csproj" />
 		<ProjectReference Include="..\Shared\TodoTemplate.Shared.csproj" />
 		
 		<Using Include="Microsoft.AspNetCore.Components" />
