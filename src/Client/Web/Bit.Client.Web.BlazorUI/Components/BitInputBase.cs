@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
@@ -39,7 +37,7 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public Expression<Func<TValue>>? ValueExpression { get; set; }
 
         /// <summary>
-        /// Gets the associated <see cref="AspNetCore.Components.Forms.EditContext"/>.
+        /// Gets the associated .
         /// This property is uninitialized if the input does not have a parent <see cref="EditForm"/>.
         /// </summary>
         protected EditContext EditContext { get; set; } = default!;
@@ -79,7 +77,7 @@ namespace Bit.Client.Web.BlazorUI
 
                 bool parsingFailed;
 
-                if (_nullableUnderlyingType != null && string.IsNullOrEmpty(value))
+                if (_nullableUnderlyingType is not null && value.HasNoValue())
                 {
                     // Assume if it's a nullable type, null/empty inputs should correspond to default(T)
                     // Then all subclasses get nullable support almost automatically (they just have to
@@ -142,25 +140,9 @@ namespace Bit.Client.Web.BlazorUI
         /// <returns>True if the value could be parsed; otherwise false.</returns>
         protected abstract bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TValue result, [NotNullWhen(false)] out string? validationErrorMessage);
 
-        /// <summary>
-        /// Gets a CSS class string that combines the <c>class</c> attribute and and a string indicating
-        /// the status of the field being edited (a combination of "modified", "valid", and "invalid").
-        /// Derived components should typically use this value for the primary HTML element's 'class' attribute.
-        /// </summary>
-        protected string CssClass
-        {
-            get
-            {
-                var fieldClass = EditContext?.FieldCssClass(FieldIdentifier) ?? string.Empty;
-                return CombineClassNames(HtmlAttributes, fieldClass);
-            }
-        }
 
-
-        /// <inheritdoc />
         public override Task SetParametersAsync(ParameterView parameters)
         {
-            HtmlAttributes.Clear();
             var parametersDictionary = parameters.ToDictionary() as Dictionary<string, object>;
             foreach (var parameter in parametersDictionary!)
             {
@@ -202,20 +184,19 @@ namespace Bit.Client.Web.BlazorUI
                         break;
                 }
             }
-            if (EditContext != null || CascadedEditContext != null)
+            if (EditContext is not null || CascadedEditContext is not null)
             {
-                // This is the first run
-                // Could put this logic in OnInit, but its nice to avoid forcing people who override OnInit to call base.OnInit()
-
-                if (ValueExpression == null)
+                if (ValueExpression is null)
                 {
-                    throw new InvalidOperationException($"{GetType()} requires a value for the 'ValueExpression' " +
+                    Console.WriteLine($"{GetType()} requires a value for the 'ValueExpression' " +
                         $"parameter. Normally this is provided automatically when using 'bind-Value'.");
                 }
+                else
+                {
+                    FieldIdentifier = FieldIdentifier.Create(ValueExpression);
+                }
 
-                FieldIdentifier = FieldIdentifier.Create(ValueExpression);
-
-                if (CascadedEditContext != null)
+                if (CascadedEditContext is not null)
                 {
                     EditContext = CascadedEditContext;
                     EditContext.OnValidationStateChanged += _validationStateChangedHandler;
@@ -223,18 +204,6 @@ namespace Bit.Client.Web.BlazorUI
 
                 _nullableUnderlyingType = Nullable.GetUnderlyingType(typeof(TValue));
             }
-            else if (CascadedEditContext != EditContext)
-            {
-                // Not the first run
-
-                // We don't support changing EditContext because it's messy to be clearing up state and event
-                // handlers for the previous one, and there's no strong use case. If a strong use case
-                // emerges, we can consider changing this.
-                throw new InvalidOperationException($"{GetType()} does not support changing the " +
-                    $"{nameof(Microsoft.AspNetCore.Components.Forms.EditContext)} dynamically.");
-            }
-
-            UpdateHtmlValidationAttributes();
 
             // For derived components, retain the usual lifecycle with OnInit/OnParametersSet/etc.
             return base.SetParametersAsync(ParameterView.Empty);
@@ -242,118 +211,27 @@ namespace Bit.Client.Web.BlazorUI
 
         private void OnValidateStateChanged(object? sender, ValidationStateChangedEventArgs eventArgs)
         {
-            UpdateHtmlValidationAttributes();
             StateHasChanged();
         }
 
-        private void UpdateHtmlValidationAttributes()
+        private bool _disposed;
+
+        public void Dispose()
         {
-            if (EditContext is null)
-            {
-                return;
-            }
-
-            var hasAriaInvalidAttribute = HtmlAttributes != null && HtmlAttributes.ContainsKey("aria-invalid");
-            if (EditContext.GetValidationMessages(FieldIdentifier).Any())
-            {
-                if (hasAriaInvalidAttribute)
-                {
-                    // Do not overwrite the attribute value
-                    return;
-                }
-
-                if (ConvertToDictionary(HtmlAttributes, out var additionalAttributes))
-                {
-                    HtmlAttributes = additionalAttributes;
-                }
-
-                // To make the `Input` components accessible by default
-                // we will automatically render the `aria-invalid` attribute when the validation fails
-                additionalAttributes["aria-invalid"] = true;
-            }
-            else if (hasAriaInvalidAttribute)
-            {
-                // No validation errors. Need to remove `aria-invalid` if it was rendered already
-
-                if (HtmlAttributes!.Count == 1)
-                {
-                    // Only aria-invalid argument is present which we don't need any more
-                    HtmlAttributes = null;
-                }
-                else
-                {
-                    if (ConvertToDictionary(HtmlAttributes, out var additionalAttributes))
-                    {
-                        HtmlAttributes = additionalAttributes;
-                    }
-
-                    additionalAttributes.Remove("aria-invalid");
-                }
-            }
-        }
-
-        /// <summary>
-        /// Returns a dictionary with the same values as the specified <paramref name="source"/>.
-        /// </summary>
-        /// <returns>true, if a new dictrionary with copied values was created. false - otherwise.</returns>
-        private bool ConvertToDictionary(IReadOnlyDictionary<string, object>? source, out Dictionary<string, object> result)
-        {
-            var newDictionaryCreated = true;
-            if (source == null)
-            {
-                result = new Dictionary<string, object>();
-            }
-            else if (source is Dictionary<string, object> currentDictionary)
-            {
-                result = currentDictionary;
-                newDictionaryCreated = false;
-            }
-            else
-            {
-                result = new Dictionary<string, object>();
-                foreach (var item in source)
-                {
-                    result.Add(item.Key, item.Value);
-                }
-            }
-
-            return newDictionaryCreated;
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
         protected virtual void Dispose(bool disposing)
         {
-        }
+            if (_disposed) return;
 
-        void IDisposable.Dispose()
-        {
-            // When initialization in the SetParametersAsync method fails, the EditContext property can remain equal to null
             if (EditContext is not null)
             {
                 EditContext.OnValidationStateChanged -= _validationStateChangedHandler;
             }
-            Dispose(disposing: true);
-        }
 
-        public static string CombineClassNames(IReadOnlyDictionary<string, object>? additionalAttributes, string classNames)
-        {
-            if (additionalAttributes is null || !additionalAttributes.TryGetValue("class", out var @class))
-            {
-                return classNames;
-            }
-
-            var classAttributeValue = Convert.ToString(@class, CultureInfo.InvariantCulture);
-
-            if (string.IsNullOrEmpty(classAttributeValue))
-            {
-                return classNames;
-            }
-
-            if (string.IsNullOrEmpty(classNames))
-            {
-                return classAttributeValue;
-            }
-
-            return $"{classAttributeValue} {classNames}";
+            _disposed = true;
         }
     }
 }
