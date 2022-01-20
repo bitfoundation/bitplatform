@@ -24,6 +24,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Swashbuckle.Application;
 using System.Data.SqlClient;
 using System.IO.Compression;
+using System.Linq;
 using System.Reflection;
 
 [assembly: ODataModule("BitChangeSetManager")]

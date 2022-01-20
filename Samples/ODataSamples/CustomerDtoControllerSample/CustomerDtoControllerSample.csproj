@@ -11,10 +11,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Bit.Server.Data.EntityFramework" Version="8.7.0" />
-		<PackageReference Include="Bit.Server.OData" Version="8.7.0" />
-		<PackageReference Include="Bit.Tooling.CodeAnalyzer" Version="8.7.0" />
-		<PackageReference Include="Bit.Universal.AutoMapper" Version="8.7.0" />
+		<PackageReference Include="Bit.Server.Data.EntityFramework" Version="8.8.0" />
+		<PackageReference Include="Bit.Server.OData" Version="8.8.0" />
+		<PackageReference Include="Bit.Tooling.CodeAnalyzer" Version="8.8.0" />
+		<PackageReference Include="Bit.Universal.AutoMapper" Version="8.8.0" />
 	</ItemGroup>
 
 </Project>
