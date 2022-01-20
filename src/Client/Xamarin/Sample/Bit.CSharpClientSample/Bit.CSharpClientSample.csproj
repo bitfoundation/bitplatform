@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>netstandard2.0;net6.0-android;net6.0-ios;</TargetFrameworks>
+        <TargetFrameworks>netstandard2.0;net6.0-android</TargetFrameworks>
         <LangVersion>preview</LangVersion>
         <Nullable>disable</Nullable>
         <UseMauiEssentials Condition=" '$(TargetFramework)' == 'net6.0-android' OR '$(TargetFramework)' == 'net6.0-ios' ">true</UseMauiEssentials>

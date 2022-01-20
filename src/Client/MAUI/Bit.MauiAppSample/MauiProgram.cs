@@ -55,7 +55,7 @@ namespace Bit.MauiAppSample
             });
             dependencyManager.RegisterIdentityClient();
 
-            const string developerMachineIp = "192.168.42.203";
+            const string developerMachineIp = "192.168.0.179";
 
             dependencyManager.RegisterUsing<IClientAppProfile>(c => new DefaultClientAppProfile
             {

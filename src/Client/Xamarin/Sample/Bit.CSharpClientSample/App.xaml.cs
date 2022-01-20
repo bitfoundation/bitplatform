@@ -96,7 +96,7 @@ namespace Bit.CSharpClientSample
             containerRegistry.RegisterForRegionNav<RegionCView, RegionCViewModel>("RegionC");
             containerRegistry.RegisterForRegionNav<RegionDView, RegionDViewModel>("RegionD");
 
-            const string developerMachineIp = "192.168.42.232";
+            const string developerMachineIp = "192.168.0.179";
 
 #if ANDROID || IOS
             bool isVirtual = Microsoft.Maui.Essentials.DeviceInfo.DeviceType == Microsoft.Maui.Essentials.DeviceType.Virtual;

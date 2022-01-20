@@ -2,6 +2,8 @@ rd Extensions
 rd Pages
 rd Contracts
 rd Implementations
+rd Shared
+rd Components
 del compilerconfig.json
 del compilerconfig.json.defaults
 del _Imports.razor
@@ -11,6 +13,8 @@ mklink /j "Extensions" "../Web/Extensions"
 mklink /j "Pages" "../Web/Pages"
 mklink /j "Contracts" "../Web/Contracts"
 mklink /j "Implementations" "../Web/Implementations"
+mklink /j "Shared" "../Web/Shared"
+mklink /j "Components" "../Web/Components"
 mklink /h "compilerconfig.json" "../Web/compilerconfig.json"
 mklink /h "compilerconfig.json.defaults" "../Web/compilerconfig.json.defaults"
 mklink /h "_Imports.razor" "../Web/_Imports.razor"
