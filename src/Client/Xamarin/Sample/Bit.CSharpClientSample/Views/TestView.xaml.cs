@@ -14,7 +14,7 @@ namespace Bit.CSharpClientSample.Views
 
     public class TestConverter : ValueConverter<int, int>
     {
-        protected override int Convert(int value, Type targetType, object parameter, CultureInfo culture)
+        public override int Convert(int value, Type targetType, object parameter, CultureInfo culture)
         {
             return value;
         }
