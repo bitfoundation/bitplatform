@@ -62,7 +62,7 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// Name of an icon to render next to this link button
         /// </summary>
-        public string? Icon { get; set; }
+        public BitIconName? IconName { get; set; }
 
         /// <summary>
         /// Whether or not the link is in an expanded state
