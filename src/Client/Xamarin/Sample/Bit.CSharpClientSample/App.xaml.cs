@@ -9,6 +9,7 @@ using Bit.Http.Contracts;
 using Bit.Sync.ODataEntityFrameworkCore.Contracts;
 using Bit.Tests.Model.Dto;
 using Bit.View;
+using Bit.ViewModel.Contracts;
 using Bit.ViewModel.Implementations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -95,6 +96,8 @@ namespace Bit.CSharpClientSample
             containerRegistry.RegisterForRegionNav<RegionBView, RegionBViewModel>("RegionB");
             containerRegistry.RegisterForRegionNav<RegionCView, RegionCViewModel>("RegionC");
             containerRegistry.RegisterForRegionNav<RegionDView, RegionDViewModel>("RegionD");
+
+            dependencyManager.RegisterUsing(resolver => new AnimateNavigation(() => true));
 
             const string developerMachineIp = "192.168.0.179";
 

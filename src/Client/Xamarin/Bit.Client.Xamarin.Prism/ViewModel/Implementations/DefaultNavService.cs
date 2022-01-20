@@ -15,14 +15,15 @@ namespace Bit.ViewModel.Implementations
 {
     public class DefaultNavService : INavService
     {
-        public static TINavService INavServiceFactory<TINavService>(INavigationService prismNavService, IPopupNavigation popupNavigation, IRegionManager regionManager)
+        public static TINavService INavServiceFactory<TINavService>(INavigationService prismNavService, IPopupNavigation popupNavigation, IRegionManager regionManager, AnimateNavigation animateNavigation)
             where TINavService : DefaultNavService, new()
         {
             var navService = new TINavService
             {
                 PrismNavigationService = prismNavService,
                 PopupNavigation = popupNavigation,
-                RegionManager = regionManager
+                RegionManager = regionManager,
+                AnimateNavigation = animateNavigation
             };
 
             return navService;
@@ -38,10 +39,10 @@ namespace Bit.ViewModel.Implementations
                 await ClearPopupStackAsync(parameters);
 
                 if (RegionManager.Regions.Any())
-                    await PrismNavigationService.NavigateAsync("/PageWhichWeStayThereUntilRegionsAreDisposed");
+                    await PrismNavigationService.NavigateAsync("/PageWhichWeStayThereUntilRegionsAreDisposed", useModalNavigation: false, animated: false);
             }
 
-            INavigationResult navigationResult = await PrismNavigationService.NavigateAsync(name, parameters, useModalNavigation: false, animated: false);
+            INavigationResult navigationResult = await PrismNavigationService.NavigateAsync(name, parameters, useModalNavigation: false, animated: AnimateNavigation());
 
             if (!navigationResult.Success)
                 throw navigationResult.Exception;
@@ -60,12 +61,12 @@ namespace Bit.ViewModel.Implementations
             if (uri.LocalPath.StartsWith("/", StringComparison.InvariantCultureIgnoreCase))
             {
                 if (RegionManager.Regions.Any())
-                    await PrismNavigationService.NavigateAsync("/PageWhichWeStayThereUntilRegionsAreDisposed");
+                    await PrismNavigationService.NavigateAsync("/PageWhichWeStayThereUntilRegionsAreDisposed", useModalNavigation: false, animated: false);
 
                 await ClearPopupStackAsync(parameters);
             }
 
-            INavigationResult navigationResult = await PrismNavigationService.NavigateAsync(uri, parameters, useModalNavigation: false, animated: false);
+            INavigationResult navigationResult = await PrismNavigationService.NavigateAsync(uri, parameters, useModalNavigation: false, animated: AnimateNavigation());
 
             if (!navigationResult.Success)
                 throw navigationResult.Exception;
@@ -80,7 +81,7 @@ namespace Bit.ViewModel.Implementations
         {
             bool ignoreMeInNavStack = PopupNavigation.PopupStack.LastOrDefault()?.GetType().GetCustomAttribute<IgnoreMeInNavigationStackAttribute>() != null;
 
-            INavigationResult navigationResult = await PrismNavigationService.GoBackAsync(parameters, useModalNavigation: false, animated: false);
+            INavigationResult navigationResult = await PrismNavigationService.GoBackAsync(parameters, useModalNavigation: false, animated: AnimateNavigation());
 
             if (!navigationResult.Success && navigationResult.Exception is ArgumentOutOfRangeException && AppNavService != null)
             {
@@ -142,7 +143,7 @@ namespace Bit.ViewModel.Implementations
 
         public virtual async Task ClearPopupStackAsync(INavigationParameters? parameters = null)
         {
-            INavigationResult navigationResult = await PrismNavigationService.ClearPopupStackAsync(parameters: parameters, animated: false);
+            INavigationResult navigationResult = await PrismNavigationService.ClearPopupStackAsync(parameters: parameters, animated: AnimateNavigation());
             if (!navigationResult.Success)
                 throw navigationResult.Exception;
 
@@ -247,6 +248,8 @@ namespace Bit.ViewModel.Implementations
             PageUtilities.OnNavigatedFrom(currentPage, tabParameters);
             PageUtilities.OnNavigatedTo(target, tabParameters);
         }
+
+        public AnimateNavigation AnimateNavigation { get; set; } = default!;
 
         public INavigationService PrismNavigationService { get; set; } = default!;
 

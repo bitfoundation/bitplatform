@@ -137,7 +137,7 @@ namespace Bit
             return Task.CompletedTask;
         }
 
-        public new INavService NavigationService => (PrismNavigationService == null ? null : Container.Resolve<INavServiceFactory>()(PrismNavigationService, Container.Resolve<IPopupNavigation>(), Container.Resolve<IRegionManager>()))!;
+        public new INavService NavigationService => (PrismNavigationService == null ? null : Container.Resolve<INavServiceFactory>()(PrismNavigationService, Container.Resolve<IPopupNavigation>(), Container.Resolve<IRegionManager>(), Container.Resolve<AnimateNavigation>()))!;
 
         public new static BitApplication Current => (PrismApplicationBase.Current as BitApplication)!;
 

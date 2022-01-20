@@ -6,7 +6,8 @@ using System.Threading.Tasks;
 
 namespace Bit.ViewModel.Contracts
 {
-    public delegate INavService INavServiceFactory(INavigationService navigationService, IPopupNavigation popupNavigation, IRegionManager regionManager);
+    public delegate INavService INavServiceFactory(INavigationService navigationService, IPopupNavigation popupNavigation, IRegionManager regionManager, AnimateNavigation animateNavigation);
+    public delegate bool AnimateNavigation();
 
     /// <summary>
     /// It can be easily mocked.

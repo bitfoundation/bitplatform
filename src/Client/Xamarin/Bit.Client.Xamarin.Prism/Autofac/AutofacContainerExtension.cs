@@ -90,7 +90,7 @@ namespace Prism.Autofac
 
         internal static INavService BuildNavService(ILifetimeScope scope, INavigationService prismNavigationService)
         {
-            return scope!.Resolve<INavServiceFactory>()(prismNavigationService, scope!.Resolve<IPopupNavigation>(), scope!.Resolve<IRegionManager>());
+            return scope!.Resolve<INavServiceFactory>()(prismNavigationService, scope!.Resolve<IPopupNavigation>(), scope.Resolve<IRegionManager>(), scope.Resolve<AnimateNavigation>());
         }
     }
 
