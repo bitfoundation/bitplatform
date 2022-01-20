@@ -10,21 +10,21 @@ namespace TodoTemplate.App.Components
             {
                 Name = "Home",
                 Url = "/",
-                Icon = "Home",
+                IconName = BitIconName.Home,
                 Key = "Home"
             },
             new BitNavLinkItem
             {
-                Name = "To do",
-                Url = "/to-do",
-                Icon = "TaskLogo",
-                Key = "ToDo"
+                Name = "Todos",
+                Url = "/todos",
+                IconName = BitIconName.ToDoLogoOutline,
+                Key = "Todos"
             },
             new BitNavLinkItem
             {
-                Name = "Log out",
-                Icon = "ReleaseGate",
-                Key = "LogOut"
+                Name = "Sign out",
+                IconName = BitIconName.SignOut,
+                Key = "SignOut"
             }
         };
     }

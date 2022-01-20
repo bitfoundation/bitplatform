@@ -18,6 +18,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTemplate.Web", "Web\Tod
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Client.Web.BlazorUI", "..\..\..\Client\Web\Bit.Client.Web.BlazorUI\Bit.Client.Web.BlazorUI.csproj", "{28E58B0B-8C27-49D2-B676-43369296E9F6}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Tooling.SourceGenerators", "..\..\Bit.Tooling.SourceGenerators\Bit.Tooling.SourceGenerators.csproj", "{9664B5F7-B097-4601-B6E4-CB1FFCF6BA7C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -46,6 +48,10 @@ Global
 		{28E58B0B-8C27-49D2-B676-43369296E9F6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{28E58B0B-8C27-49D2-B676-43369296E9F6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{28E58B0B-8C27-49D2-B676-43369296E9F6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9664B5F7-B097-4601-B6E4-CB1FFCF6BA7C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9664B5F7-B097-4601-B6E4-CB1FFCF6BA7C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9664B5F7-B097-4601-B6E4-CB1FFCF6BA7C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9664B5F7-B097-4601-B6E4-CB1FFCF6BA7C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

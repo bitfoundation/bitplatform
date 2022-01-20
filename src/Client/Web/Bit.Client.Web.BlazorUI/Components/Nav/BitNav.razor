@@ -112,9 +112,9 @@
                    @onclick="(()=>HandleLinkClick(navLinkItem))">
 
                     <span class="bit-nav-link-container">
-                        @if (navLinkItem.Icon.HasValue())
+                        @if (navLinkItem.IconName.HasValue)
                         {
-                            <i class=@($"bit-icon bit-icon--{navLinkItem.Icon}") aria-hidden="true"></i>
+                            <i class=@($"bit-icon bit-icon--{navLinkItem.IconName.GetName()}") aria-hidden="true"></i>
                         }
 
                         @if (LinkTemplate is not null)
@@ -139,9 +139,9 @@
                         tabindex="-1"
                         @onclick="(() => HandleLinkClick(navLinkItem))">
                     <span class="bit-nav-link-container">
-                        @if (navLinkItem.Icon.HasValue())
+                        @if (navLinkItem.IconName.HasValue)
                         {
-                            <i class=@($"bit-icon bit-icon--{navLinkItem.Icon}") aria-hidden="true"></i>
+                            <i class=@($"bit-icon bit-icon--{navLinkItem.IconName.GetName()}") aria-hidden="true"></i>
                         }
 
                         @if (LinkTemplate is not null)

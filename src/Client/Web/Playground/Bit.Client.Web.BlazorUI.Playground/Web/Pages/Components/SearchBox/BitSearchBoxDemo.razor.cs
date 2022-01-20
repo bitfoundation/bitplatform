@@ -98,7 +98,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.SearchBox
         private readonly string example1HTMLCode = @"<div>
     <BitSearchBox Placeholder=""Search""></BitSearchBox>
     <BitSearchBox Placeholder=""Search"" DefaultValue=""this is default value""></BitSearchBox>
-    <BitSearchBox Placeholder=""Search with no animation"" DisableAnimation=true></BitSearchBox>
+    <BitSearchBox Placeholder=""Search with no animation"" DisableAnimation=""true""></BitSearchBox>
     <BitSearchBox Placeholder=""SearchBox with fixed icon"" ShowIcon=""true""></BitSearchBox>
     <BitSearchBox Placeholder=""Search with Binded value"" @bind-Value=""@TextValue""></BitSearchBox>
     <BitLabel>The value you are looking for: @TextValue</BitLabel>
