@@ -1,0 +1,100 @@
+﻿@namespace Bit.Client.Web.BlazorUI
+
+@inherits BitComponentBase
+
+<div @ref="RootElement"
+     @attributes="HtmlAttributes"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value">
+
+    <div role="presentation" class="bit-persona-coin">
+        @if (Size != BitPersonaSize.Size8)
+        {
+            string dimension = CoinSize != -1 ? $"{CoinSize.ToString()}px" : Size!;
+
+            <div class="bit-persona-image-area" style="width:@dimension;height:@dimension">
+
+                @if (1 == 2)
+                {
+                    <div class=@($"bit-Persona-initials {(ShowUnknownPersonaCoin? " bit-personal-initials-showUnknownPersonaCoin" : "")}")
+                 aria-hidden="true"
+                 style="background-color:@GetCoinBackgroundColor;">
+
+                        @if (ShowUnknownPersonaCoin)
+                        {
+                            <span>
+                                <i class="bit-icon bit-icon--help"></i>
+                            </span>
+                        }
+                        else
+                        {
+                            var initials = GetInitials(Text, false, AllowPhoneInitials);
+                            if (initials != "")
+                            {
+                                <span>@initials</span>
+                            }
+                            else
+                            {
+                                <span>
+                                    <i class="bit-icon bit-icon--person"></i>
+                                </span>
+                            }
+                        }
+                    </div>
+                }
+                @if (ImageUrl != null)
+                {
+                    <img src="@ImageUrl"
+                 class="bit-persona-img"
+                 alt="@ImageAlt"
+                 width="@dimension"
+                 height="@dimension" />
+                }
+
+                @if (Presence != BitPersonaPresenceStatus.None)
+                {
+                    <div title=@PresenceTitle class="bit-Persona-presence">
+                        <i class=@($"bit-persona-icon bit-icon--{PresenceIcon}") role="presentation"></i>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            if (Presence != BitPersonaPresenceStatus.None)
+            {
+                <div title=@PresenceTitle class="bit-Persona-presence" style="@PresenceStyle">
+                    @if (RenderIcon)
+                    {
+                        <i class=@($"bit-persona-icon bit-icon--{PresenceIcon}") role="presentation" style="@IconStyle"></i>
+                    }
+                </div>
+            }
+            else
+            {
+                <span>
+                    <i class="bit-icon bit-icon--person"></i>
+                </span>
+            }
+        }
+    </div>
+
+    @if (!HidePersonaDetails || Size == BitPersonaSize.Size8)
+    {
+        <div class="bit-Persona-details">
+            <div dir="auto" class="bit-Persona-primaryTex">
+                @Text
+            </div>
+            <div dir="auto" class="bit-Persona-secondaryText">
+                @SecondaryText
+            </div>
+            <div dir="auto" class="bit-Persona-tertiaryText">
+                @TertiaryText
+            </div>
+            <div dir="auto" class="bit-Persona-optionalText">
+                @OptionalText
+            </div>
+        </div>
+    }
+</div>
+
