@@ -545,7 +545,17 @@ namespace Bit.Client.Web.BlazorUI
         {
             int month = GetCorrectTargetMonth(weekIndex, dayIndex);
             int day = currentMonthCalendar[weekIndex, dayIndex];
-            var currentDate = new DateTimeOffset(Culture.Calendar.ToDateTime(currentYear, month, day, 0, 0, 0, 0));
+            int year = currentYear;
+
+            if (weekIndex == 0 && day > 20 && month == 12)
+            {
+                year = displayYear - 1;
+            }
+            else if (weekIndex == 5 && day > 20 && month == 12 && currentYear > displayYear)
+            {
+                year = currentYear - 1;
+            }
+            var currentDate = new DateTimeOffset(Culture.Calendar.ToDateTime(year, month, day, 0, 0, 0, 0));
             return selectedDate is not null && selectedDate == currentDate;
         }
 
