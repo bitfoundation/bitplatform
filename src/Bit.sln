@@ -163,7 +163,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTemplate.Shared", "Tool
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Client.Web.BlazorSwup", "Client\Web\Bit.Client.Web.BlazorSwup\Bit.Client.Web.BlazorSwup.csproj", "{62A38465-3A36-47E4-B16A-8EE78CEC36D0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bit.Client.Web.BlazorSwup.Test", "Client\Web\Bit.Client.Web.BlazorSwup.Test\Bit.Client.Web.BlazorSwup.Test.csproj", "{49783BC3-1A40-4733-A57F-EAF15BF6501D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Client.Web.BlazorSwup.Test", "Client\Web\Bit.Client.Web.BlazorSwup.Test\Bit.Client.Web.BlazorSwup.Test.csproj", "{49783BC3-1A40-4733-A57F-EAF15BF6501D}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
