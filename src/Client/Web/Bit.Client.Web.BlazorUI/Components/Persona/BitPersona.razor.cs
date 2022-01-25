@@ -110,7 +110,7 @@ namespace Bit.Client.Web.BlazorUI
             ClassBuilder.Register(()=> Presence !=BitPersonaPresenceStatus.None? $"bit-persona-{Presence.ToString()}":string.Empty);
         }
 
-        protected static string DetermineIcon(BitPersonaPresenceStatus presence, bool isOutofOffice)
+        private string DetermineIcon(BitPersonaPresenceStatus presence, bool isOutofOffice)
         {
             if (presence == BitPersonaPresenceStatus.None)
                 return "";
