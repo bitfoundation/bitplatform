@@ -29,7 +29,6 @@
             top: 0px;
             left: 0px;
             border: 0px;
-            border-radius: 50%;
             perspective: 1px;
 
             & .bit-persona-img-container {
@@ -550,21 +549,21 @@
 }
 
 
-.bit-persona-online {
+.bit-persona-Online {
 
     & .bit-Persona-presence {
         background-color: #6BB700;
     }
 }
 
-.bit-persona-away {
+.bit-persona-Away {
 
     & .bit-Persona-presence {
         background-color: #FFAA44;
     }
 }
 
-.bit-persona-blocked {
+.bit-persona-Blocked {
 
     & .bit-Persona-presence {
         background-color: #C43148;
@@ -583,28 +582,28 @@
     }
 }
 
-.bit-persona-busy {
+.bit-persona-Busy {
 
     & .bit-Persona-presence {
         background-color: #C43148;
     }
 }
 
-.bit-persona-dnd {
+.bit-persona-Dnd {
 
     & .bit-Persona-presence {
         background-color: #C50F1F;
     }
 }
 
-.bit-persona-offline {
+.bit-persona-Offline {
 
     & .bit-Persona-presence {
         background-color: #8A8886;
     }
 }
 
-.bit-persona-off {
+.bit-persona-Off {
 
     & .bit-Persona-presence {
         background-color: #B4009E;

@@ -68,7 +68,7 @@
                 <div title=@PresenceTitle class="bit-Persona-presence" style="@PresenceStyle">
                     @if (RenderIcon)
                     {
-                        <i class=@($"bit-persona-icon bit-icon--{PresenceIcon}") role="presentation" style="@IconStyle"></i>
+                        <i class=@($"bit-persona-icon bit-icon--{DetermineIcon(Presence, IsOutOfOffice)}") role="presentation" style="@IconStyle"></i>
                     }
                 </div>
             }

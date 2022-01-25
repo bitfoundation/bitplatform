@@ -106,6 +106,25 @@ namespace Bit.Client.Web.BlazorUI
             ClassBuilder.Register(() => IsEnabled is false ? string.Empty : "");
 
             ClassBuilder.Register(() => Size != null ? $"bit-persona-{Size}" : string.Empty);
+
+            ClassBuilder.Register(()=> Presence !=BitPersonaPresenceStatus.None? $"bit-persona-{Presence.ToString()}":string.Empty);
+        }
+
+        protected static string DetermineIcon(BitPersonaPresenceStatus presence, bool isOutofOffice)
+        {
+            if (presence == BitPersonaPresenceStatus.None)
+                return "";
+            string? oofIcon = "presence_oof";
+
+            return presence switch
+            {
+                BitPersonaPresenceStatus.Online => "presence_available",
+                BitPersonaPresenceStatus.Busy => "presence_busy",
+                BitPersonaPresenceStatus.Away => isOutofOffice ? oofIcon : "presence_away",
+                BitPersonaPresenceStatus.DND => "presence_dnd",
+                BitPersonaPresenceStatus.Offline => isOutofOffice ? oofIcon : "presence_offline",
+                _ => "presence_unknown",
+            };
         }
 
         private string GetCoinBackgroundColor()
