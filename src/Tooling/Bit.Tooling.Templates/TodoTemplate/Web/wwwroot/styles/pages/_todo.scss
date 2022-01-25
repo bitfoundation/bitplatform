@@ -1,0 +1,27 @@
+﻿@import '../abstracts/_colors.scss';
+@import '../abstracts/_functions.scss';
+
+.todo-input {
+    width: rem(300px);
+    height: rem(32px);
+}
+
+.todo-button {
+    margin-left: rem(8px);
+}
+
+.todo-date {
+    font-size: rem(12px);
+    line-height: rem(20px);
+    color: $Gray1;
+    margin-left: rem(24px);
+}
+
+.todo-sort-lbl {
+    font-size: rem(12px);
+    line-height: rem(20px);
+}
+
+.todo-pivot-tab {
+    margin-right: rem(40px);
+}
