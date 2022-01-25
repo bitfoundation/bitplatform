@@ -54,13 +54,11 @@ namespace Bit.IdentityServer.Implementations
             catch (Exception ex)
             {
                 ScopeStatusManager.MarkAsFailed("LocalLogin_Failed");
-                if (context.AuthenticateResult == null && ExceptionToHttpErrorMapper.IsKnownError(ex))
-                    context.AuthenticateResult = new AuthenticateResult(ExceptionToHttpErrorMapper.GetMessage(ex));
-                else
-                {
-                    await Logger.LogExceptionAsync(ex, "LocalLogin_Failed").ConfigureAwait(false);
-                    throw;
-                }
+
+                if (context.AuthenticateResult == null)
+                    context.AuthenticateResult = new AuthenticateResult(errorMessage: ExceptionToHttpErrorMapper.GetMessage(ex));
+
+                await Logger.LogExceptionAsync(ex, "LocalLogin_Failed").ConfigureAwait(false);
             }
 
             await base.AuthenticateLocalAsync(context).ConfigureAwait(false);
@@ -145,13 +143,11 @@ namespace Bit.IdentityServer.Implementations
             catch (Exception ex)
             {
                 ScopeStatusManager.MarkAsFailed("ExternalLogin_Failed");
-                if (context.AuthenticateResult == null && ExceptionToHttpErrorMapper.IsKnownError(ex))
-                    context.AuthenticateResult = new AuthenticateResult(ExceptionToHttpErrorMapper.GetMessage(ex));
-                else
-                {
-                    await Logger.LogExceptionAsync(ex, "ExternalLogin_Failed").ConfigureAwait(false);
-                    throw;
-                }
+
+                if (context.AuthenticateResult == null)
+                    context.AuthenticateResult = new AuthenticateResult(errorMessage: ExceptionToHttpErrorMapper.GetMessage(ex));
+
+                await Logger.LogExceptionAsync(ex, "ExternalLogin_Failed").ConfigureAwait(false);
             }
 
             await base.AuthenticateExternalAsync(context).ConfigureAwait(false);

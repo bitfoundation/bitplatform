@@ -88,8 +88,8 @@ namespace Bit.Tests
                         new EnvironmentConfig { Key = "ClientSideAccessibleConfigTest", Value = true, AccessibleInClientSide = true},
                         new EnvironmentConfig { Key = AppEnvironment.KeyValues.HostVirtualPath, Value = AppEnvironment.KeyValues.HostVirtualPathDefaultValue , AccessibleInClientSide = true },
                         new EnvironmentConfig { Key = AppEnvironment.KeyValues.IdentityServer.LoginPagePath , Value = @"src/Server/Bit.Tests/loginPage.html" },
-                        new EnvironmentConfig { Key = AppEnvironment.KeyValues.IdentityServer.GoogleClientId , Value = "563799658385-5vv2jcqml5dv7fosup10e57unahfufdd.apps.googleusercontent.com" },
-                        new EnvironmentConfig { Key = AppEnvironment.KeyValues.IdentityServer.GoogleSecret , Value = "v8zVdioz7K-rnYjz7MdxL_fQ" }
+                        new EnvironmentConfig { Key = AppEnvironment.KeyValues.IdentityServer.GoogleClientId , Value = "529268330628-f2nh88tb74tgjochr3t4j082uror5pub.apps.googleusercontent.com" },
+                        new EnvironmentConfig { Key = AppEnvironment.KeyValues.IdentityServer.GoogleSecret , Value = "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" }
                     }
                 };
             }
