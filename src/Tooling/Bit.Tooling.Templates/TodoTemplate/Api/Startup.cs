@@ -1,12 +1,17 @@
 ﻿using System.IO.Compression;
+using System.Net;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.Net.Http.Headers;
-using TodoTemplate.Api.Data.Context;
+using Microsoft.OpenApi.Models;
+using TodoTemplate.Api.Data.Models.Account;
 
 #if BlazorWebAssembly
 using System.Net.Http;
@@ -66,9 +71,50 @@ public class Startup
 
         services.AddEndpointsApiExplorer();
 
-        services.AddSwaggerGen();
+        services.AddSwaggerGen(options =>
+        {
+            options.AddSecurityDefinition("bearerAuth", new OpenApiSecurityScheme
+            {
+                Name = "Authorization",
+                Type = SecuritySchemeType.Http,
+                Scheme = "bearer",
+                BearerFormat = "JWT",
+                In = ParameterLocation.Header,
+                Description = "JWT Authorization header using the Bearer scheme."
+            });
+        });
 
         services.AddAutoMapper(typeof(Startup).Assembly);
+
+        services.AddIdentity<User, Role>(identityOptions =>
+        {
+            identityOptions.User.RequireUniqueEmail = true;
+
+        }).AddEntityFrameworkStores<TodoTemplateDbContext>().AddDefaultTokenProviders();
+
+        services.AddAuthentication(options =>
+        {
+            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+
+        }).AddJwtBearer(options =>
+        {
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                RequireSignedTokens = true,
+                RequireExpirationTime = true
+            };
+
+            options.Events = new JwtBearerEvents
+            {
+                OnAuthenticationFailed = context => throw new HttpRequestException("Authentication failed.", 
+                    context.Exception, HttpStatusCode.Unauthorized),
+
+                OnChallenge = context => throw new HttpRequestException("You are unauthorized to access this resource.",
+                    context.AuthenticateFailure, HttpStatusCode.Unauthorized)
+            };
+        });
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -108,6 +154,9 @@ public class Startup
 
         app.UseCors(options => options.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
 
+        app.UseAuthentication();
+        app.UseAuthorization();
+
         app.UseEndpoints(endpoints =>
         {
             endpoints.MapDefaultControllerRoute();
@@ -115,6 +164,6 @@ public class Startup
 #if BlazorWebAssembly
                 endpoints.MapFallbackToPage("/_Host");
 #endif
-            });
+        });
     }
 }
