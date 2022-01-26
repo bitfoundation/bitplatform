@@ -46,5 +46,9 @@
   {
     "outputFile": "wwwroot/styles/pages/_todo.css",
     "inputFile": "wwwroot/styles/pages/_todo.scss"
+  },
+  {
+    "outputFile": "Pages/EditProfile.razor.css",
+    "inputFile": "Pages/EditProfile.razor.scss"
   }
 ]

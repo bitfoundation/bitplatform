@@ -1,0 +1,43 @@
+﻿@import '../wwwroot/styles/abstracts/_functions.scss';
+@import '../wwwroot/styles/abstracts/_colors.scss';
+
+.page-container {
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    padding: rem(56px) 0;
+}
+
+.form-choice-container {
+    width: 21.25rem;
+    margin-bottom: rem(21px);
+}
+
+.form-profile-container {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: flex-start;
+    align-items: center;
+    align-self: flex-start;
+    margin-bottom: rem(21px);
+}
+
+.form-profile-photo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: rem(56px);
+    height: rem(56px);
+    border-radius: 50%;
+    margin-right: rem(8px);
+    color: $Gray6;
+    background-color: $S2Color;
+}
+
+.form-profile-email {
+    font-size: rem(14px);
+    line-height: rem(24px);
+    color: $Gray2;
+}
