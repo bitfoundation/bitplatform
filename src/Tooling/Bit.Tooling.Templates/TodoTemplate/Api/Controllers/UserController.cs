@@ -1,5 +1,7 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Text;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.IdentityModel.Tokens;
 using TodoTemplate.Api.Data.Models.Account;
@@ -9,6 +11,7 @@ namespace TodoTemplate.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class UserController : ControllerBase
     {
         private readonly UserManager<User> _userManager;
@@ -42,12 +45,18 @@ namespace TodoTemplate.Api.Controllers
         {
             var userToAdd = _mapper.Map<User>(dto);
 
-            await _userManager.CreateAsync(userToAdd,dto.Password);
+            var identityResult = await _userManager.CreateAsync(userToAdd, dto.Password);
+
+            if (!identityResult.Succeeded)
+            {
+                var identityError = identityResult.Errors.First();
+                throw new BadHttpRequestException(identityError.Code + identityError.Description);
+            }
 
             return await Get(userToAdd.Id, cancellationToken);
         }
 
-        [HttpPost("[action]")]
+        [HttpPost("[action]"), AllowAnonymous]
         public async Task<ActionResult<ResponseTokenDto>> Token(RequestTokenDto dto)
         {
             var user = await _userManager.FindByNameAsync(dto.UserName);
@@ -58,12 +67,24 @@ namespace TodoTemplate.Api.Controllers
 
             if (!isPasswordValid) throw new BadHttpRequestException("Wrong username or password");
 
+            var secretKey = Encoding.UTF8.GetBytes("LongerThan-16Char-SecretKey");
+            var signingCredentials = new SigningCredentials(new SymmetricSecurityKey(secretKey), SecurityAlgorithms.HmacSha256Signature);
+
+            var encryptionKey = Encoding.UTF8.GetBytes("16CharEncryptKey");
+            var encryptingCredentials = new EncryptingCredentials(new SymmetricSecurityKey(encryptionKey), SecurityAlgorithms.Aes128KW, SecurityAlgorithms.Aes128CbcHmacSha256);
+
             var claims = await _userManager.GetClaimsAsync(user);
 
             var securityToken = new JwtSecurityTokenHandler()
                 .CreateJwtSecurityToken(new SecurityTokenDescriptor
                 {
-                    Expires = DateTime.Now.AddDays(10),
+                    Issuer = "MyWebsite",
+                    Audience = "MyWebsite",
+                    IssuedAt = DateTime.Now,
+                    NotBefore = DateTime.Now.AddMinutes(0),
+                    Expires = DateTime.Now.AddMinutes(60),
+                    SigningCredentials = signingCredentials,
+                    EncryptingCredentials = encryptingCredentials,
                     Subject = new ClaimsIdentity(claims)
                 });
 

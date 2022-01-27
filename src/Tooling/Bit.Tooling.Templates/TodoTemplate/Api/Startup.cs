@@ -1,6 +1,7 @@
 ﻿using System.IO.Compression;
 using System.Net;
 using System.Security.Claims;
+using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -82,13 +83,32 @@ public class Startup
                 In = ParameterLocation.Header,
                 Description = "JWT Authorization header using the Bearer scheme."
             });
+
+            options.AddSecurityRequirement(new OpenApiSecurityRequirement
+            {
+                {
+                    new OpenApiSecurityScheme
+                    {
+                        Reference = new OpenApiReference
+                        {
+                            Type = ReferenceType.SecurityScheme,
+                            Id = "bearerAuth"
+                        }
+                    },
+                    new string[] {}
+                }
+            });
         });
 
         services.AddAutoMapper(typeof(Startup).Assembly);
 
-        services.AddIdentity<User, Role>(identityOptions =>
+        services.AddIdentity<User, Role>(options =>
         {
-            identityOptions.User.RequireUniqueEmail = true;
+            options.User.RequireUniqueEmail = true;
+            options.Password.RequireDigit = false;
+            options.Password.RequireLowercase = false;
+            options.Password.RequireUppercase = false;
+            options.Password.RequireNonAlphanumeric = false;
 
         }).AddEntityFrameworkStores<TodoTemplateDbContext>().AddDefaultTokenProviders();
 
@@ -100,20 +120,32 @@ public class Startup
 
         }).AddJwtBearer(options =>
         {
-            options.TokenValidationParameters = new TokenValidationParameters
+            var secretKey = Encoding.UTF8.GetBytes("LongerThan-16Char-SecretKey");
+            var encryptionKey = Encoding.UTF8.GetBytes("16CharEncryptKey");
+
+            var validationParameters = new TokenValidationParameters
             {
+                ClockSkew = TimeSpan.Zero,
                 RequireSignedTokens = true,
-                RequireExpirationTime = true
+
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(secretKey),
+
+                RequireExpirationTime = true,
+                ValidateLifetime = true,
+
+                ValidateAudience = true,
+                ValidAudience = "MyWebsite",
+
+                ValidateIssuer = true,
+                ValidIssuer = "MyWebsite",
+
+                TokenDecryptionKey = new SymmetricSecurityKey(encryptionKey)
             };
 
-            options.Events = new JwtBearerEvents
-            {
-                OnAuthenticationFailed = context => throw new HttpRequestException("Authentication failed.", 
-                    context.Exception, HttpStatusCode.Unauthorized),
-
-                OnChallenge = context => throw new HttpRequestException("You are unauthorized to access this resource.",
-                    context.AuthenticateFailure, HttpStatusCode.Unauthorized)
-            };
+            options.RequireHttpsMetadata = false;
+            options.SaveToken = true;
+            options.TokenValidationParameters = validationParameters;
         });
     }
 
