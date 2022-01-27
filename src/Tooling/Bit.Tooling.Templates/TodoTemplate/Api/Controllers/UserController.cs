@@ -31,8 +31,9 @@ namespace TodoTemplate.Api.Controllers
         public async Task<ActionResult<UserDto>> Get(int id, CancellationToken cancellationToken)
         {
             var user = await Get(cancellationToken).FirstOrDefaultAsync(user => user.Id == id, cancellationToken);
-            if (user is null)
-                return NotFound();
+
+            if (user is null) return NotFound();
+
             return Ok(user);
         }
 
@@ -41,7 +42,7 @@ namespace TodoTemplate.Api.Controllers
         {
             var userToAdd = _mapper.Map<User>(dto);
 
-            await _userManager.CreateAsync(userToAdd);
+            await _userManager.CreateAsync(userToAdd,dto.Password);
 
             return await Get(userToAdd.Id, cancellationToken);
         }
@@ -49,7 +50,7 @@ namespace TodoTemplate.Api.Controllers
         [HttpPost("[action]")]
         public async Task<ActionResult<ResponseTokenDto>> Token(RequestTokenDto dto)
         {
-            var user = await _userManager.FindByNameAsync(dto.Email);
+            var user = await _userManager.FindByNameAsync(dto.UserName);
 
             if (user is null) return NotFound();
 
