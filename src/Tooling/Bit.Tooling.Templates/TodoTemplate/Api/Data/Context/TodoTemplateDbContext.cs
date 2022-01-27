@@ -1,4 +1,5 @@
 ﻿using TodoTemplate.Api.Data.Models.Account;
+using TodoTemplate.Api.Data.Models.Todo;
 
 namespace TodoTemplate.Api.Data.Context;
 
@@ -14,4 +15,5 @@ public class TodoTemplateDbContext : IdentityDbContext<User, Role, int>
 
         builder.ApplyConfigurationsFromAssembly(typeof(TodoTemplateDbContext).Assembly);
     }
+    public DbSet<Todo> Todos { get; set; }
 }
