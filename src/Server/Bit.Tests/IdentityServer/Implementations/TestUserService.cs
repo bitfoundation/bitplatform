@@ -29,8 +29,6 @@ namespace Bit.Tests.IdentityServer.Implementations
             new LocalUser { UserId = "User2" , Password = "ValidPassword"}
         };
 
-        public virtual ILogger Logger { get; set; }
-
         public async override Task<BitJwtToken> LocalLogin(LocalAuthenticationContext context, CancellationToken cancellationToken)
         {
             if (context.SignInMessage.TryGetValueFromAcr("x", out string x))

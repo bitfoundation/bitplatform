@@ -1,0 +1,45 @@
+﻿@page "/edit-profile"
+
+<div class="page-container">
+    <form class="form--white">
+        <BitMessageBar Class="form-message-bar" MessageBarType="BitMessageBarType.Success" OnDismiss="() => null">
+            Message about the state of this view
+        </BitMessageBar>
+        <h1 class="form-title">
+            Edit profile
+        </h1>
+        <div class="form-profile-container">
+            <div class="form-profile-photo">
+                ZA
+            </div>
+            <div class="form-profile-email">
+                zahraeb97@outlook.ie
+            </div>
+        </div>
+        <div class="form-input-container">
+            <BitLabel>Profile photo</BitLabel>
+            <BitFileUpload Label="Select or drag and drops files"></BitFileUpload>
+        </div>
+        <div class="form-input-container">
+            <BitLabel>Full-Name</BitLabel>
+            <BitTextField></BitTextField>
+        </div>
+        <div class="form-input-container">
+            <BitLabel>Birthday</BitLabel>
+            <BitDatePicker></BitDatePicker>
+        </div>
+
+        <div class="form-choice-container">
+            <BitLabel>Gender</BitLabel>
+            <BitChoiceGroup>
+                <BitChoiceOption Text="Male"></BitChoiceOption>
+                <BitChoiceOption Text="Famale"></BitChoiceOption>
+                <BitChoiceOption Text="Other"></BitChoiceOption>
+            </BitChoiceGroup>
+        </div>
+
+        <BitButton Class="form-submit-button" ButtonStyle="BitButtonStyle.Primary" IsEnabled="true">
+            Save
+        </BitButton>
+    </form>
+</div>
