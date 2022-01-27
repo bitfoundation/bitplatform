@@ -125,7 +125,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Rating
 
         private readonly string example1HTMLCode = @"<div>Large stars</div>
 <BitRating Size=""BitRatingSize.Large"" @bind-Rating=""RatingLargeValue"" AriaLabelFormat=""Select {0} of {1} stars"" />
-<div>Small stars, with 0 stars allowed</div>
+<div>Small stars, with @RatingSmallValue stars allowed</div>
 <BitRating AllowZeroStars=""true"" @bind-Rating=""RatingSmallValue"" />
 <div>10 small stars</div>
 <div>
