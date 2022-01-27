@@ -10,18 +10,18 @@
         </h1>
         <div class="form-input-container">
             <BitLabel>Email</BitLabel>
-            <BitTextField Placeholder="Email"></BitTextField>
+            <BitTextField Placeholder="Email" @bind-Value="Email"></BitTextField>
             <div class="form-input-error">Repeat password and password are not same.</div>
         </div>
         <div class="form-input-container">
             <BitLabel>Password</BitLabel>
-            <BitTextField Type="BitTextFieldType.Password" CanRevealPassword="true" Placeholder="Password"></BitTextField>
+            <BitTextField Type="BitTextFieldType.Password" CanRevealPassword="true" Placeholder="Password" @bind-Value="Password"></BitTextField>
             <div class="form-input-error">Repeat password and password are not same.</div>
         </div>
-        <BitCheckbox Class="form-checkbox">
+        <BitCheckbox Class="form-checkbox" @bind-IsChecked="IsAcceptPrivacy">
             Accept <BitLink Href="/privacy" Target="_blank">privacy and policy</BitLink>
         </BitCheckbox>
-        <BitButton Class="form-submit-button" ButtonStyle="BitButtonStyle.Primary" IsEnabled="true">
+        <BitButton Class="form-submit-button" ButtonStyle="BitButtonStyle.Primary" IsEnabled="@(IsAcceptPrivacy)" OnClick="OnClickSignUp">
             Sign up
         </BitButton>
         <div>
