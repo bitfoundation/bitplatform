@@ -3,7 +3,9 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using TodoTemplate.Api.Contracts;
 using TodoTemplate.Api.Data.Models.Account;
 using TodoTemplate.Shared.Dtos.Account;
 
@@ -16,11 +18,14 @@ namespace TodoTemplate.Api.Controllers
     {
         private readonly UserManager<User> _userManager;
 
+        private readonly IJwtService _jwtService;
+
         private readonly IMapper _mapper;
 
-        public UserController(UserManager<User> userManager, IMapper mapper)
+        public UserController(UserManager<User> userManager, IJwtService jwtService, IMapper mapper)
         {
             _userManager = userManager;
+            _jwtService = jwtService;
             _mapper = mapper;
         }
 
@@ -53,7 +58,7 @@ namespace TodoTemplate.Api.Controllers
                 throw new BadHttpRequestException(identityError.Code + identityError.Description);
             }
 
-            return await Get(userToAdd.Id, cancellationToken);
+            return Ok(await Get(userToAdd.Id, cancellationToken));
         }
 
         [HttpPost("[action]"), AllowAnonymous]
@@ -67,28 +72,7 @@ namespace TodoTemplate.Api.Controllers
 
             if (!isPasswordValid) throw new BadHttpRequestException("Wrong username or password");
 
-            var secretKey = Encoding.UTF8.GetBytes("LongerThan-16Char-SecretKey");
-            var signingCredentials = new SigningCredentials(new SymmetricSecurityKey(secretKey), SecurityAlgorithms.HmacSha256Signature);
-
-            var encryptionKey = Encoding.UTF8.GetBytes("16CharEncryptKey");
-            var encryptingCredentials = new EncryptingCredentials(new SymmetricSecurityKey(encryptionKey), SecurityAlgorithms.Aes128KW, SecurityAlgorithms.Aes128CbcHmacSha256);
-
-            var claims = await _userManager.GetClaimsAsync(user);
-
-            var securityToken = new JwtSecurityTokenHandler()
-                .CreateJwtSecurityToken(new SecurityTokenDescriptor
-                {
-                    Issuer = "MyWebsite",
-                    Audience = "MyWebsite",
-                    IssuedAt = DateTime.Now,
-                    NotBefore = DateTime.Now.AddMinutes(0),
-                    Expires = DateTime.Now.AddMinutes(60),
-                    SigningCredentials = signingCredentials,
-                    EncryptingCredentials = encryptingCredentials,
-                    Subject = new ClaimsIdentity(claims)
-                });
-
-            return Ok(new ResponseTokenDto { Token = new JwtSecurityTokenHandler().WriteToken(securityToken) });
+            return Ok(await _jwtService.GenerateToken(dto));
         }
     }
 }

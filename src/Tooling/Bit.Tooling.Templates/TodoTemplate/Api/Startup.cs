@@ -1,18 +1,13 @@
 ﻿using System.IO.Compression;
-using System.Net;
-using System.Security.Claims;
-using System.Text;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.Net.Http.Headers;
-using Microsoft.OpenApi.Models;
-using TodoTemplate.Api.Data.Models.Account;
+using TodoTemplate.Api.Contracts;
+using TodoTemplate.Api.Extensions;
 
 #if BlazorWebAssembly
 using System.Net.Http;
@@ -25,9 +20,13 @@ public class Startup
 {
     public IConfiguration Configuration { get; }
 
+    private readonly AppSettings _appSettings;
+
     public Startup(IConfiguration configuration)
     {
         Configuration = configuration;
+
+        _appSettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>();
     }
 
     public void ConfigureServices(IServiceCollection services)
@@ -70,83 +69,17 @@ public class Startup
             options.UseSqlServer(Configuration.GetConnectionString("SqlServerConnection"));
         });
 
+        services.Configure<AppSettings>(Configuration.GetSection(nameof(AppSettings)));
+
         services.AddEndpointsApiExplorer();
-
-        services.AddSwaggerGen(options =>
-        {
-            options.AddSecurityDefinition("bearerAuth", new OpenApiSecurityScheme
-            {
-                Name = "Authorization",
-                Type = SecuritySchemeType.Http,
-                Scheme = "bearer",
-                BearerFormat = "JWT",
-                In = ParameterLocation.Header,
-                Description = "JWT Authorization header using the Bearer scheme."
-            });
-
-            options.AddSecurityRequirement(new OpenApiSecurityRequirement
-            {
-                {
-                    new OpenApiSecurityScheme
-                    {
-                        Reference = new OpenApiReference
-                        {
-                            Type = ReferenceType.SecurityScheme,
-                            Id = "bearerAuth"
-                        }
-                    },
-                    new string[] {}
-                }
-            });
-        });
 
         services.AddAutoMapper(typeof(Startup).Assembly);
 
-        services.AddIdentity<User, Role>(options =>
-        {
-            options.User.RequireUniqueEmail = true;
-            options.Password.RequireDigit = false;
-            options.Password.RequireLowercase = false;
-            options.Password.RequireUppercase = false;
-            options.Password.RequireNonAlphanumeric = false;
+        services.AddCustomSwaggerGen();
 
-        }).AddEntityFrameworkStores<TodoTemplateDbContext>().AddDefaultTokenProviders();
+        services.AddCustomIdentity(_appSettings.IdentitySettings);
 
-        services.AddAuthentication(options =>
-        {
-            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-
-        }).AddJwtBearer(options =>
-        {
-            var secretKey = Encoding.UTF8.GetBytes("LongerThan-16Char-SecretKey");
-            var encryptionKey = Encoding.UTF8.GetBytes("16CharEncryptKey");
-
-            var validationParameters = new TokenValidationParameters
-            {
-                ClockSkew = TimeSpan.Zero,
-                RequireSignedTokens = true,
-
-                ValidateIssuerSigningKey = true,
-                IssuerSigningKey = new SymmetricSecurityKey(secretKey),
-
-                RequireExpirationTime = true,
-                ValidateLifetime = true,
-
-                ValidateAudience = true,
-                ValidAudience = "MyWebsite",
-
-                ValidateIssuer = true,
-                ValidIssuer = "MyWebsite",
-
-                TokenDecryptionKey = new SymmetricSecurityKey(encryptionKey)
-            };
-
-            options.RequireHttpsMetadata = false;
-            options.SaveToken = true;
-            options.TokenValidationParameters = validationParameters;
-        });
+        services.AddCustomJwt(_appSettings.JwtSettings);
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
