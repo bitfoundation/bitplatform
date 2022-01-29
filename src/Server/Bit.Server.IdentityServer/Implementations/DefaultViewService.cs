@@ -187,7 +187,7 @@ namespace Bit.IdentityServer.Implementations
             }
         }
 
-        async Task<Stream> RedirectToAsync(string url, CancellationToken cancellationToken)
+        protected virtual async Task<Stream> RedirectToAsync(string url, CancellationToken cancellationToken)
         {
             string content = $@"<!DOCTYPE html>
                             <html>
@@ -200,7 +200,7 @@ namespace Bit.IdentityServer.Implementations
             return await ReturnHtmlAsync(content, cancellationToken).ConfigureAwait(false);
         }
 
-        async Task<Stream> ReturnHtmlAsync(string html, CancellationToken cancellationToken)
+        protected virtual async Task<Stream> ReturnHtmlAsync(string html, CancellationToken cancellationToken)
         {
             MemoryStream viewStream = new MemoryStream();
 
