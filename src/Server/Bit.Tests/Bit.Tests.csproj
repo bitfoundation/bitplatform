@@ -18,7 +18,7 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.0.0" />
     <PackageReference Include="MSTest.TestAdapter" Version="2.2.8" />
     <PackageReference Include="MSTest.TestFramework" Version="2.2.8" />
-    <PackageReference Include="Refit" Version="6.1.15" />
+    <PackageReference Include="Refit" Version="6.2.16" />
     <PackageReference Include="Selenium.WebDriver.MSEdgeDriver" Version="97.0.1072.55" />
   </ItemGroup>
 
