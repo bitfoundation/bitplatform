@@ -39,7 +39,6 @@ namespace Bit
 {
     public abstract class BitApplication : PrismApplication, IAsyncDisposable, IDisposable
     {
-        private readonly Lazy<IEventAggregator> _eventAggregator = default!;
         private readonly TaskCompletionSource<object?> _isReadyTaskCompletionSource = new TaskCompletionSource<object?>();
 
         /// <summary>
@@ -62,11 +61,6 @@ namespace Bit
         protected BitApplication(IPlatformInitializer? platformInitializer = null)
             : base(platformInitializer)
         {
-            _eventAggregator = new Lazy<IEventAggregator>(() =>
-            {
-                return Container.Resolve<IEventAggregator>();
-            }, isThreadSafe: true);
-
             if (MainPage == null)
                 MainPage = new ContentPage { Title = "DefaultPage" };
         }
@@ -79,6 +73,7 @@ namespace Bit
                 ISecurityServiceBase securityService = Container.Resolve<ISecurityServiceBase>();
                 IMessageReceiver? messageReceiver = Container.Resolve<ILifetimeScope>().ResolveOptional<IMessageReceiver>();
                 IDeviceService deviceService = Container.Resolve<IDeviceService>();
+                IEventAggregator eventAggregator = Container.Resolve<IEventAggregator>();
 
                 bool isLoggedIn = await securityService.IsLoggedInAsync().ConfigureAwait(false);
                 string? userId = !isLoggedIn ? null : await securityService.GetUserIdAsync(default).ConfigureAwait(false);
@@ -107,13 +102,13 @@ namespace Bit
 #if Xamarin
                     Xamarin.Essentials.Connectivity.ConnectivityChanged += (sender, e) =>
                     {
-                        _eventAggregator.Value.GetEvent<ConnectivityChangedEvent>()
+                        eventAggregator.GetEvent<ConnectivityChangedEvent>()
                             .Publish(new ConnectivityChangedEvent { IsConnected = e.NetworkAccess != Xamarin.Essentials.NetworkAccess.None });
                     };
 #elif NET6_0_ANDROID || NET6_0_IOS
                     Microsoft.Maui.Essentials.Connectivity.ConnectivityChanged += (sender, e) =>
                     {
-                        _eventAggregator.Value.GetEvent<ConnectivityChangedEvent>()
+                        eventAggregator.GetEvent<ConnectivityChangedEvent>()
                             .Publish(new ConnectivityChangedEvent { IsConnected = e.NetworkAccess != Microsoft.Maui.Essentials.NetworkAccess.None });
                     };
 #endif
