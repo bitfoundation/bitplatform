@@ -1,10 +1,12 @@
-﻿using TodoTemplate.Api.Data.Models.Account;
+﻿using Microsoft.AspNetCore.Authorization;
+using TodoTemplate.Api.Data.Models.Account;
 using TodoTemplate.Shared.Dtos.Account;
 
 namespace TodoTemplate.Api.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
+[Authorize]
 public class RoleController : ControllerBase
 {
     private readonly TodoTemplateDbContext _dbContext;

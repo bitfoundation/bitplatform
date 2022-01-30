@@ -6,7 +6,8 @@ using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Net.Http.Headers;
-using TodoTemplate.Api.Data.Context;
+using TodoTemplate.Api.Contracts;
+using TodoTemplate.Api.Extensions;
 
 #if BlazorWebAssembly
 using System.Net.Http;
@@ -19,9 +20,13 @@ public class Startup
 {
     public IConfiguration Configuration { get; }
 
+    private readonly AppSettings _appSettings;
+
     public Startup(IConfiguration configuration)
     {
         Configuration = configuration;
+
+        _appSettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>();
     }
 
     public void ConfigureServices(IServiceCollection services)
@@ -64,11 +69,17 @@ public class Startup
             options.UseSqlServer(Configuration.GetConnectionString("SqlServerConnection"));
         });
 
+        services.Configure<AppSettings>(Configuration.GetSection(nameof(AppSettings)));
+
         services.AddEndpointsApiExplorer();
 
-        services.AddSwaggerGen();
-
         services.AddAutoMapper(typeof(Startup).Assembly);
+
+        services.AddCustomSwaggerGen();
+
+        services.AddCustomIdentity(_appSettings.IdentitySettings);
+
+        services.AddCustomJwt(_appSettings.JwtSettings);
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -108,6 +119,9 @@ public class Startup
 
         app.UseCors(options => options.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
 
+        app.UseAuthentication();
+        app.UseAuthorization();
+
         app.UseEndpoints(endpoints =>
         {
             endpoints.MapDefaultControllerRoute();
@@ -115,6 +129,6 @@ public class Startup
 #if BlazorWebAssembly
                 endpoints.MapFallbackToPage("/_Host");
 #endif
-            });
+        });
     }
 }
