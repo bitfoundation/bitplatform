@@ -107,9 +107,9 @@
                                         @if (ShowWeekNumbers)
                                         {
                                             <th class="week-num-cell"
-                                    title="@($"Week number {GetWeekNumber(week)}")"
-                                    aria-label="@($"Week number {GetWeekNumber(week)}")"
-                                    scope="row">
+                                                title="@($"Week number {GetWeekNumber(week)}")"
+                                                aria-label="@($"Week number {GetWeekNumber(week)}")"
+                                                scope="row">
                                                 <span>@GetWeekNumber(week)</span>
                                             </th>
                                         }
@@ -120,13 +120,13 @@
                                             var localDay = day;
                                             <td class="date-cell @GetDateElClass(localDay, localWeek)" role="presentation" @onclick="() => SelectDate(localDay, localWeek)">
                                                 <button class="day-btn"
-                                            role="gridcell"
-                                            type="button"
-                                            tabindex="@(IsDateSelected(localWeek, localDay) ? 0 : -1)"
-                                            aria-label="@GetDateAriaLabel(localWeek, localDay)"
-                                            aria-selected="@(IsDateSelected(localWeek, localDay) ? "true" : "false")"
-                                            aria-readonly="true"
-                                            aria-disabled="false">
+                                                    role="gridcell"
+                                                    type="button"
+                                                    tabindex="@(week == selectedDateWeek && day == selectedDateDayOfWeek ? 0 : -1)"
+                                                    aria-label="@GetDateAriaLabel(localWeek, localDay)"
+                                                    aria-selected="@(week == selectedDateWeek && day == selectedDateDayOfWeek ? "true" : "false")"
+                                                    aria-readonly="true"
+                                                    aria-disabled="false">
                                                     <span aria-hidden="true">@currentMonthCalendar[localWeek, localDay]</span>
                                                 </button>
                                             </td>
@@ -195,12 +195,12 @@
                                         {
                                             var monthIndex = (rowIndex * 4) + cellIndex;
                                             <button role="gridcell"
-                                    aria-selected="@(IsMonthSelected(monthIndex) ? "true" : "false")"
-                                    aria-readonly="true"
-                                    tabindex="@(IsMonthSelected(monthIndex) ? 0 : -1)"
-                                    type="button"
-                                    aria-label="@Culture?.DateTimeFormat.GetMonthName(monthIndex)"
-                                    @onclick="() => SelectMonth(monthIndex)">
+                                                aria-selected="@(IsMonthSelected(monthIndex) ? "true" : "false")"
+                                                aria-readonly="true"
+                                                tabindex="@(IsMonthSelected(monthIndex) ? 0 : -1)"
+                                                type="button"
+                                                aria-label="@Culture?.DateTimeFormat.GetMonthName(monthIndex)"
+                                                @onclick="() => SelectMonth(monthIndex)">
                                                 <span aria-hidden="true">@Culture?.DateTimeFormat.GetAbbreviatedMonthName(monthIndex)</span>
                                             </button>
                                         }
@@ -244,11 +244,11 @@
                                         {
                                             var year = yearRangeFrom + (rowIndex * 4) + cellIndex;
                                             <button role="gridcell"
-                                    aria-selected="@(IsYearSelected(year) ? "true" : "false")"
-                                    aria-readonly="true"
-                                    tabindex="@(IsYearSelected(year) ? 0 : -1)"
-                                    type="button"
-                                    @onclick="() => SelectYear(year)">
+                                                aria-selected="@(IsYearSelected(year) ? "true" : "false")"
+                                                aria-readonly="true"
+                                                tabindex="@(IsYearSelected(year) ? 0 : -1)"
+                                                type="button"
+                                                @onclick="() => SelectYear(year)">
                                                 <span aria-hidden="true">@year</span>
                                             </button>
                                         }

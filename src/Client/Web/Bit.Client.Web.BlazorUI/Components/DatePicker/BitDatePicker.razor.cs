@@ -23,6 +23,8 @@ namespace Bit.Client.Web.BlazorUI
         private int yearRangeTo;
         private string monthTitle = string.Empty;
         private DateTimeOffset? selectedDate;
+        private int? selectedDateWeek;
+        private int? selectedDateDayOfWeek;
         private bool showMonthPicker = true;
         private bool isMonthPickerOverlayOnTop;
         private int monthLength;
@@ -70,7 +72,8 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// CultureInfo for the DatePicker
         /// </summary>
-        [Parameter] public CultureInfo Culture
+        [Parameter]
+        public CultureInfo Culture
         {
             get => culture;
             set
@@ -239,7 +242,7 @@ namespace Bit.Client.Web.BlazorUI
             if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
             if (JSRuntime is null) return;
 
-            int day = currentMonthCalendar[weekIndex, dayIndex];
+            var currentDay = currentMonthCalendar[weekIndex, dayIndex];
             int selectedMonth = GetCorrectTargetMonth(weekIndex, dayIndex);
             if (selectedMonth < currentMonth && currentMonth == 12 && IsInCurrentMonth(weekIndex, dayIndex) is false)
             {
@@ -256,8 +259,8 @@ namespace Bit.Client.Web.BlazorUI
             IsOpen = false;
             displayYear = currentYear;
             currentMonth = selectedMonth;
+            selectedDate = new DateTimeOffset(Culture.Calendar.ToDateTime(currentYear, currentMonth, currentDay, 0, 0, 0, 0));
             CreateMonthCalendar(currentYear, currentMonth);
-            selectedDate = new DateTimeOffset(Culture.Calendar.ToDateTime(currentYear, currentMonth, day, 0, 0, 0, 0));
             await ValueChanged.InvokeAsync(selectedDate);
             await OnSelectDate.InvokeAsync(selectedDate);
         }
@@ -409,13 +412,10 @@ namespace Bit.Client.Web.BlazorUI
                             currentMonthCalendar[weekIndex, dayIndex] = previousMonthDaysCount + dayIndex - (7 + (int)firstDay.DayOfWeek - 1 - firstDayOfWeek);
                         }
                     }
-                    else
+                    else if (currentDay <= monthLength)
                     {
-                        if (currentDay <= monthLength)
-                        {
-                            currentMonthCalendar[weekIndex, dayIndex] = currentDay;
-                            currentDay++;
-                        }
+                        currentMonthCalendar[weekIndex, dayIndex] = currentDay;
+                        currentDay++;
                     }
 
                     if (currentDay > monthLength)
@@ -430,6 +430,33 @@ namespace Bit.Client.Web.BlazorUI
                     break;
                 }
             }
+
+            SetSelectedDateInMonthCalendar();
+        }
+
+        private void SetSelectedDateInMonthCalendar()
+        {
+            if (Culture is null) return;
+
+            if (selectedDate.HasValue is false || (selectedDateWeek.HasValue && selectedDateDayOfWeek.HasValue)) return;
+
+            var year = Culture.Calendar.GetYear(selectedDate.Value.DateTime);
+            var month = Culture.Calendar.GetMonth(selectedDate.Value.DateTime);
+
+            if (year == currentYear && month == currentMonth)
+            {
+                var day = Culture.Calendar.GetDayOfMonth(selectedDate.Value.DateTime);
+                var firstDayOfWeek = (int)Culture.DateTimeFormat.FirstDayOfWeek;
+                var firstDayOfWeekInMonth = (int)Culture.Calendar.ToDateTime(year, month, 1, 0, 0, 0, 0).DayOfWeek;
+                var firstDayOfWeekInMonthIndex = (firstDayOfWeekInMonth - firstDayOfWeek + DEFAULT_DAY_COUNT_PER_WEEK) % DEFAULT_DAY_COUNT_PER_WEEK;
+                selectedDateDayOfWeek = ((int)selectedDate.Value.DayOfWeek - firstDayOfWeek + DEFAULT_DAY_COUNT_PER_WEEK) % DEFAULT_DAY_COUNT_PER_WEEK;
+                var days = firstDayOfWeekInMonthIndex + day;
+                selectedDateWeek = days % DEFAULT_DAY_COUNT_PER_WEEK == 0 ? (days / DEFAULT_DAY_COUNT_PER_WEEK) - 1 : days / DEFAULT_DAY_COUNT_PER_WEEK;
+                if (firstDayOfWeekInMonthIndex is 0)
+                {
+                    selectedDateWeek++;
+                }
+            }
         }
 
         private void ResetCalendar()
@@ -441,6 +468,9 @@ namespace Bit.Client.Web.BlazorUI
                     currentMonthCalendar[weekIndex, dayIndex] = 0;
                 }
             }
+
+            selectedDateWeek = null;
+            selectedDateDayOfWeek = null;
         }
 
         private string? GetSelectedDateString()
@@ -489,7 +519,7 @@ namespace Bit.Client.Web.BlazorUI
                 className = "date-cell--today";
             }
 
-            if (IsDateSelected(week, day))
+            if (week == selectedDateWeek && day == selectedDateDayOfWeek)
             {
                 className += className.Length == 0 ? "date-cell--selected" : " date-cell--selected";
             }
@@ -539,24 +569,6 @@ namespace Bit.Client.Web.BlazorUI
             }
 
             return $"{currentMonthCalendar[week, day]}, {Culture?.DateTimeFormat.GetMonthName(month)}, {year}";
-        }
-
-        private bool IsDateSelected(int weekIndex, int dayIndex)
-        {
-            int month = GetCorrectTargetMonth(weekIndex, dayIndex);
-            int day = currentMonthCalendar[weekIndex, dayIndex];
-            int year = currentYear;
-
-            if (weekIndex == 0 && day > 20 && month == 12)
-            {
-                year = displayYear - 1;
-            }
-            else if (weekIndex == 5 && day > 20 && month == 12 && currentYear > displayYear)
-            {
-                year = currentYear - 1;
-            }
-            var currentDate = new DateTimeOffset(Culture.Calendar.ToDateTime(year, month, day, 0, 0, 0, 0));
-            return selectedDate is not null && selectedDate == currentDate;
         }
 
         private bool IsMonthSelected(int month)
