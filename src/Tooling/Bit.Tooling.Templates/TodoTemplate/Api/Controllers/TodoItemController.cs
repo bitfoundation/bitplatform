@@ -3,13 +3,13 @@
 
     [Route("api/[controller]")]
     [ApiController]
-    public class TodoController : ControllerBase
+    public class TodoItemController : ControllerBase
     {
         private readonly TodoTemplateDbContext _dbContext;
 
         private readonly IMapper _mapper;
 
-        public TodoController(TodoTemplateDbContext dbContext, IMapper mapper)
+        public TodoItemController(TodoTemplateDbContext dbContext, IMapper mapper)
         {
             _dbContext = dbContext;
             _mapper = mapper;

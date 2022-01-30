@@ -12,8 +12,8 @@ using TodoTemplate.Api.Data.Context;
 namespace TodoTemplate.Api.Migrations
 {
     [DbContext(typeof(TodoTemplateDbContext))]
-    [Migration("20220127121013_Added_Todo_tbl")]
-    partial class Added_Todo_tbl
+    [Migration("20220130134626_Create_TodoItem")]
+    partial class Create_TodoItem
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -227,7 +227,7 @@ namespace TodoTemplate.Api.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("TodoTemplate.Api.Data.Models.Todo.Todo", b =>
+            modelBuilder.Entity("TodoTemplate.Api.Data.Models.TodoItem.TodoItem", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -238,8 +238,8 @@ namespace TodoTemplate.Api.Migrations
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("State")
-                        .HasColumnType("int");
+                    b.Property<bool>("IsDone")
+                        .HasColumnType("bit");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -247,7 +247,7 @@ namespace TodoTemplate.Api.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Todos");
+                    b.ToTable("todoItems");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>

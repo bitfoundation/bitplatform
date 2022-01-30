@@ -225,7 +225,7 @@ namespace TodoTemplate.Api.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("TodoTemplate.Api.Data.Models.Todo.Todo", b =>
+            modelBuilder.Entity("TodoTemplate.Api.Data.Models.TodoItem.TodoItem", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -236,8 +236,8 @@ namespace TodoTemplate.Api.Migrations
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("State")
-                        .HasColumnType("int");
+                    b.Property<bool>("IsDone")
+                        .HasColumnType("bit");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -245,7 +245,7 @@ namespace TodoTemplate.Api.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Todos");
+                    b.ToTable("todoItems");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>

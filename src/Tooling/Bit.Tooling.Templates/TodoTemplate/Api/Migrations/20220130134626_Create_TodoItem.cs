@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace TodoTemplate.Api.Migrations
 {
-    public partial class Added_Todo_tbl : Migration
+    public partial class Create_TodoItem : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -48,18 +48,18 @@ namespace TodoTemplate.Api.Migrations
                 oldNullable: true);
 
             migrationBuilder.CreateTable(
-                name: "Todos",
+                name: "todoItems",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Title = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Date = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    State = table.Column<int>(type: "int", nullable: false)
+                    IsDone = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Todos", x => x.Id);
+                    table.PrimaryKey("PK_todoItems", x => x.Id);
                 });
 
             migrationBuilder.CreateIndex(
@@ -72,7 +72,7 @@ namespace TodoTemplate.Api.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Todos");
+                name: "todoItems");
 
             migrationBuilder.DropIndex(
                 name: "RoleNameIndex",
