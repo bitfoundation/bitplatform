@@ -8,7 +8,7 @@ public partial class Todo
     public HttpClient HttpClient { get; set; } = default!;
 
     public bool IsBussy { get; set; } = false;
-    TodoItemDto todoItemDto = new();
+    TodoItemDto todoItem = new();
     List<TodoModel> todolist = new();
     protected override void OnInitialized()
     {
@@ -21,12 +21,12 @@ public partial class Todo
             });
         }
     }
-    public async Task Add_Todoitem()
+    public async Task AddTodoItem()
     {
         IsBussy = true;
-        todoItemDto.Date = DateTime.Now;
-        await HttpClient.PostAsJsonAsync("TodoItem", todoItemDto);
-        todoItemDto.Title = "";
+        todoItem.Date = DateTime.Now;
+        await HttpClient.PostAsJsonAsync("TodoItem", todoItem);
+        todoItem.Title = "";
         IsBussy = false;
     }
 }
