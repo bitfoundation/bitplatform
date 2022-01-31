@@ -7,8 +7,18 @@
         <div class="todo-content">
             <h2 class="todo-title">Todos</h2>
             <div class="add-todo-container">
-                <BitTextField Placeholder="Add a todo" Class="todo-input"></BitTextField>
-                <BitButton Class="todo-button" IsEnabled="false">Add</BitButton>
+                <BitTextField @bind-Value="todoItem.Title" Placeholder="Add a todo" Class="todo-input"></BitTextField>
+                @if (IsBussy)
+                {
+                    <BitButton Class="todo-button">
+                        <BitSpinner></BitSpinner>-
+                    </BitButton>
+                }
+                else
+                {
+                    <BitButton OnClick="AddTodoItem" Class="todo-button"
+                           IsEnabled="@(todoItem.Title==null||todoItem.Title==""?false:true)">Add</BitButton>
+                }
             </div>
             <div class="todo-items-container">
                 <div class="todo-sort-container">

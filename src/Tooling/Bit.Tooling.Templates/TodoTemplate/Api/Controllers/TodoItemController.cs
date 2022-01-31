@@ -1,4 +1,7 @@
-﻿namespace TodoTemplate.Api.Controllers
+﻿using TodoTemplate.Api.Data.Models.TodoItem;
+using TodoTemplate.Shared.Dtos.TodoItem;
+
+namespace TodoTemplate.Api.Controllers
 {
 
     [Route("api/[controller]")]
@@ -13,6 +16,14 @@
         {
             _dbContext = dbContext;
             _mapper = mapper;
+        }
+
+        [HttpPost]
+        public async Task Post(TodoItemDto dto)
+        {
+            var todoItem = _mapper.Map<TodoItem>(dto);
+            await _dbContext.todoItems.AddAsync(todoItem);
+            await _dbContext.SaveChangesAsync();
         }
     }
 
