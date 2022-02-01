@@ -1,26 +1,24 @@
 ﻿using TodoTemplate.Shared.Dtos.TodoItem;
-
 namespace TodoTemplate.App.Pages;
 
-public partial class Todo
+public partial class TodoPage
 {
     [Inject]
     public HttpClient HttpClient { get; set; } = default!;
 
-    public bool IsLoading { get; set; } = false;
-    TodoItemDto TodoItem = new();
-    List<TodoItemDto>? TodoList = new();
+    private bool IsLoading;
+    private TodoItemDto TodoItem = new();
+    private List<TodoItemDto>? TodoList = new();
 
     protected override async Task OnInitializedAsync()
     {
         await GetTodoItems();
     }
-    public async Task GetTodoItems()
+    private async Task GetTodoItems()
     {
-        var response = await HttpClient.GetAsync("TodoItem");
-        TodoList = await response.Content.ReadFromJsonAsync<List<TodoItemDto>>();
+        TodoList = await HttpClient.GetFromJsonAsync<List<TodoItemDto>>("TodoItem");
     }
-    public async Task AddTodoItem()
+    private async Task AddTodoItem()
     {
         IsLoading = true;
         TodoItem.Date = DateTime.Now;

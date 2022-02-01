@@ -19,10 +19,9 @@ namespace TodoTemplate.Api.Controllers
         }
 
         [HttpGet]
-        public async Task<List<TodoItemDto>> Get()
+        public IQueryable<TodoItemDto> Get()
         {
-            var todoItem = await _dbContext.todoItems.ToListAsync();
-            return _mapper.Map<List<TodoItemDto>>(todoItem);
+            return _dbContext.todoItems.ProjectTo<TodoItemDto>(_mapper.ConfigurationProvider);
         }
 
         [HttpPost]
