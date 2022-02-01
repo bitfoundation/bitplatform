@@ -7,8 +7,8 @@ public partial class Todo
     [Inject]
     public HttpClient HttpClient { get; set; } = default!;
 
-    public bool IsBussy { get; set; } = false;
-    TodoItemDto todoItem = new();
+    public bool IsLoading { get; set; } = false;
+    TodoItemDto TodoItem = new();
     List<TodoItemDto>? TodoList = new();
 
     protected override async Task OnInitializedAsync()
@@ -22,11 +22,11 @@ public partial class Todo
     }
     public async Task AddTodoItem()
     {
-        IsBussy = true;
-        todoItem.Date = DateTime.Now;
-        await HttpClient.PostAsJsonAsync("TodoItem", todoItem);
-        todoItem.Title = "";
+        IsLoading = true;
+        TodoItem.Date = DateTime.Now;
+        await HttpClient.PostAsJsonAsync("TodoItem", TodoItem);
+        TodoItem.Title = "";
         await GetTodoItems();
-        IsBussy = false;
+        IsLoading = false;
     }
 }

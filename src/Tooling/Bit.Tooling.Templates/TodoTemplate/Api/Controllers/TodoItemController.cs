@@ -21,14 +21,8 @@ namespace TodoTemplate.Api.Controllers
         [HttpGet]
         public async Task<List<TodoItemDto>> Get()
         {
-            return await _dbContext.todoItems
-                .Select(t => new TodoItemDto
-                {
-                    Date = t.Date,
-                    Id = t.Id,
-                    IsDone = t.IsDone,
-                    Title = t.Title
-                }).ToListAsync();
+            var todoItem = await _dbContext.todoItems.ToListAsync();
+            return _mapper.Map<List<TodoItemDto>>(todoItem);
         }
 
         [HttpPost]

@@ -7,8 +7,8 @@
         <div class="todo-content">
             <h2 class="todo-title">Todos</h2>
             <div class="add-todo-container">
-                <BitTextField @bind-Value="todoItem.Title" Placeholder="Add a todo" Class="todo-input"></BitTextField>
-                @if (IsBussy)
+                <BitTextField @bind-Value="TodoItem.Title" Placeholder="Add a todo" Class="todo-input"></BitTextField>
+                @if (IsLoading)
                 {
                     <BitButton Class="todo-button">
                         <BitSpinner></BitSpinner>-
@@ -17,7 +17,7 @@
                 else
                 {
                     <BitButton OnClick="AddTodoItem" Class="todo-button"
-                           IsEnabled="@(todoItem.Title==null||todoItem.Title==""?false:true)">Add</BitButton>
+                           IsEnabled="@(TodoItem.Title==null||TodoItem.Title==""?false:true)">Add</BitButton>
                 }
             </div>
             <div class="todo-items-container">
@@ -28,7 +28,7 @@
                 <BitPivot>
                     <BitPivotItem Class="todo-pivot-tab" HeaderText="All">
                         <div class="todo-items">
-                            @if (TodoList?.Count==0)
+                            @if (true)
                             {
                                 <div class="todo-empty">
                                     <img src="/images/empty-todo.svg">
