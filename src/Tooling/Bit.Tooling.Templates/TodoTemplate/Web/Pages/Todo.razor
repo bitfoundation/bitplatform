@@ -28,7 +28,7 @@
                 <BitPivot>
                     <BitPivotItem Class="todo-pivot-tab" HeaderText="All">
                         <div class="todo-items">
-                            @if (true)
+                            @if (TodoList?.Count==0)
                             {
                                 <div class="todo-empty">
                                     <img src="/images/empty-todo.svg">
@@ -37,12 +37,12 @@
                             }
                             else
                             {
-                                <BitBasicList Items="@todolist" Virtualize="true">
-                                    <RowTemplate Context="todoModel">
+                                <BitBasicList Items="@TodoList" Virtualize="true">
+                                    <RowTemplate Context="TodoItem">
                                         <div class="item">
                                             <div class="todo-info">
-                                                <BitCheckbox>@todoModel.Title</BitCheckbox>
-                                                <BitLabel Class="todo-date">@todoModel.Date</BitLabel>
+                                                <BitCheckbox>@TodoItem.Title</BitCheckbox>
+                                                <BitLabel Class="todo-date">@TodoItem.Date.ToString("MMMM dd , yyyy , dddd")</BitLabel>
                                             </div>
                                             <div class="todo-buttons-container">
                                                 <BitIconButton IconName="BitIconName.Edit"></BitIconButton>

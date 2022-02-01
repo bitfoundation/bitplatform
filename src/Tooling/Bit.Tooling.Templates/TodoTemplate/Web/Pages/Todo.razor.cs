@@ -9,17 +9,16 @@ public partial class Todo
 
     public bool IsBussy { get; set; } = false;
     TodoItemDto todoItem = new();
-    List<TodoModel> todolist = new();
-    protected override void OnInitialized()
+    List<TodoItemDto>? TodoList = new();
+
+    protected override async Task OnInitializedAsync()
     {
-        for (int i = 0; i < 3; i++)
-        {
-            todolist.Add(new TodoModel
-            {
-                Date = "January 3, 2022, Monday",
-                Title = "Project name"
-            });
-        }
+        await GetTodoItems();
+    }
+    public async Task GetTodoItems()
+    {
+        var response = await HttpClient.GetAsync("TodoItem");
+        TodoList = await response.Content.ReadFromJsonAsync<List<TodoItemDto>>();
     }
     public async Task AddTodoItem()
     {
@@ -27,11 +26,7 @@ public partial class Todo
         todoItem.Date = DateTime.Now;
         await HttpClient.PostAsJsonAsync("TodoItem", todoItem);
         todoItem.Title = "";
+        await GetTodoItems();
         IsBussy = false;
     }
-}
-public class TodoModel
-{
-    public string? Title { get; set; }
-    public string? Date { get; set; }
 }
