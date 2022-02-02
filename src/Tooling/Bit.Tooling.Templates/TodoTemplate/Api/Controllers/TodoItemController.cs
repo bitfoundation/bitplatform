@@ -18,6 +18,12 @@ namespace TodoTemplate.Api.Controllers
             _mapper = mapper;
         }
 
+        [HttpGet]
+        public IQueryable<TodoItemDto> Get()
+        {
+            return _dbContext.todoItems.ProjectTo<TodoItemDto>(_mapper.ConfigurationProvider);
+        }
+
         [HttpPost]
         public async Task Post(TodoItemDto dto)
         {

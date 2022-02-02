@@ -7,17 +7,15 @@
         <div class="todo-content">
             <h2 class="todo-title">Todos</h2>
             <div class="add-todo-container">
-                <BitTextField @bind-Value="todoItem.Title" Placeholder="Add a todo" Class="todo-input"></BitTextField>
-                @if (IsBussy)
+                <BitTextField @bind-Value="TodoItem.Title" Placeholder="Add a todo" Class="todo-input"></BitTextField>
+                @if (IsLoading)
                 {
-                    <BitButton Class="todo-button">
-                        <BitSpinner></BitSpinner>-
-                    </BitButton>
+                    <BitSpinner Class="todo-spinner"></BitSpinner>
                 }
                 else
                 {
                     <BitButton OnClick="AddTodoItem" Class="todo-button"
-                           IsEnabled="@(todoItem.Title==null||todoItem.Title==""?false:true)">Add</BitButton>
+                           IsEnabled="@(!string.IsNullOrEmpty(TodoItem.Title))">Add</BitButton>
                 }
             </div>
             <div class="todo-items-container">
@@ -28,21 +26,14 @@
                 <BitPivot>
                     <BitPivotItem Class="todo-pivot-tab" HeaderText="All">
                         <div class="todo-items">
-                            @if (true)
+                            @if (TodoList.Count != 0)
                             {
-                                <div class="todo-empty">
-                                    <img src="/images/empty-todo.svg">
-                                    <BitLabel>No todos yet</BitLabel>
-                                </div>
-                            }
-                            else
-                            {
-                                <BitBasicList Items="@todolist" Virtualize="true">
-                                    <RowTemplate Context="todoModel">
+                                <BitBasicList Items="@TodoList" Virtualize="true">
+                                    <RowTemplate Context="TodoItem">
                                         <div class="item">
                                             <div class="todo-info">
-                                                <BitCheckbox>@todoModel.Title</BitCheckbox>
-                                                <BitLabel Class="todo-date">@todoModel.Date</BitLabel>
+                                                <BitCheckbox>@TodoItem.Title</BitCheckbox>
+                                                <BitLabel Class="todo-date">@TodoItem.Date.ToString("MMMM dd , yyyy , dddd")</BitLabel>
                                             </div>
                                             <div class="todo-buttons-container">
                                                 <BitIconButton IconName="BitIconName.Edit"></BitIconButton>
@@ -51,6 +42,13 @@
                                         </div>
                                     </RowTemplate>
                                 </BitBasicList>
+                            }
+                            else
+                            {
+                                <div class="todo-empty">
+                                    <img src="/images/empty-todo.svg">
+                                    <BitLabel>No todos yet</BitLabel>
+                                </div>
                             }
                         </div>
                     </BitPivotItem>
