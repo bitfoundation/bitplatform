@@ -20,6 +20,9 @@ public partial class SignUp
     [Inject]
     public HttpClient HttpClient { get; set; } = default!;
 
+    [Inject]
+    public ITodoTemplateAuthenticationService TodoTemplateAuthenticationService { get; set; } = default!;
+
     private async Task OnClickSignUp()
     {
         EmailError = Email is null ? "Please enter your email" : null;
@@ -34,6 +37,13 @@ public partial class SignUp
             Email = Email,
             Password = Password
         }));
+
+
+        await TodoTemplateAuthenticationService.SignIn(new RequestTokenDto
+        {
+            UserName = Email,
+            Password = Password
+        });
 
         HasMessageBar = true;
     }

@@ -5,13 +5,13 @@ using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.AspNetCore.Builder;
 #endif
 using System.IO.Compression;
+using TodoTemplate.App.Extensions;
 
 namespace TodoTemplate.App;
 public class Startup
 {
     public void ConfigureServices(IServiceCollection services)
     {
-        services.AddTodoTemplateSharedServices();
         services.AddTodoTemplateServices();
 
 #if BlazorServer
