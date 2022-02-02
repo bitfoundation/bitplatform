@@ -40,8 +40,8 @@
     "inputFile": "Pages/SignIn.razor.scss"
   },
   {
-    "outputFile": "Pages/todoPage.razor.css",
-    "inputFile": "Pages/todoPage.razor.scss"
+    "outputFile": "Pages/TodoPage.razor.css",
+    "inputFile": "Pages/TodoPage.razor.scss"
   },
   {
     "outputFile": "wwwroot/styles/pages/_todo.css",
