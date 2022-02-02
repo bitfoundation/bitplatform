@@ -27,4 +27,9 @@ public partial class TodoPage
         await GetTodoItems();
         IsLoading = false;
     }
+    private async Task DeleteTodoItem(int id)
+    {
+        await HttpClient.DeleteAsync($"TodoItem/{id}");
+        await GetTodoItems();
+    }
 }

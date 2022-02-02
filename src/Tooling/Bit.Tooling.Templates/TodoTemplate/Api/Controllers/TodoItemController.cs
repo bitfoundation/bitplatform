@@ -31,6 +31,13 @@ namespace TodoTemplate.Api.Controllers
             await _dbContext.todoItems.AddAsync(todoItem);
             await _dbContext.SaveChangesAsync();
         }
+
+        [HttpDelete("{id:int}")]
+        public async Task Delete(int id)
+        {
+            _dbContext.todoItems.Remove(new TodoItem { Id = id });
+            await _dbContext.SaveChangesAsync();
+        }
     }
 
 }
