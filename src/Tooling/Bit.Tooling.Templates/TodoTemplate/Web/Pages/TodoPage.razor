@@ -37,7 +37,7 @@
                                             </div>
                                             <div class="todo-buttons-container">
                                                 <BitIconButton IconName="BitIconName.Edit"></BitIconButton>
-                                                <BitIconButton IconName="BitIconName.Delete"></BitIconButton>
+                                                <BitIconButton IconName="BitIconName.Delete" OnClick="@(()=> DeleteTodoItem(TodoItem.Id))"></BitIconButton>
                                             </div>
                                         </div>
                                     </RowTemplate>
