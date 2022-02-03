@@ -15,7 +15,9 @@ public partial class SignUp
 
     public bool HasMessageBar { get; set; }
 
-    public HttpResponseMessage OnClickSignUpResponse { get; set; } = new();
+    public bool IsSuccessMessageBar { get; set; }
+
+    public string? MessageBarText { get; set; }
 
     [Inject]
     public HttpClient HttpClient { get; set; } = default!;
@@ -31,19 +33,27 @@ public partial class SignUp
 
         if (EmailError is not null || PasswordError is not null) return;
 
-        OnClickSignUpResponse = await HttpClient.PostAsync("User/Create", JsonContent.Create(new UserDto
+        try
         {
-            UserName = Email,
-            Email = Email,
-            Password = Password
-        }));
+            await HttpClient.PostAsync("User/Create", JsonContent.Create(new UserDto
+            {
+                UserName = Email,
+                Email = Email,
+                Password = Password
+            }));
 
+            await TodoTemplateAuthenticationService.SignIn(new RequestTokenDto
+            {
+                UserName = Email,
+                Password = Password
+            });
 
-        await TodoTemplateAuthenticationService.SignIn(new RequestTokenDto
+            MessageBarText = "Sign-up successfully";
+        }
+        catch (Exception e)
         {
-            UserName = Email,
-            Password = Password
-        });
+            MessageBarText = e.Message;
+        }
 
         HasMessageBar = true;
     }

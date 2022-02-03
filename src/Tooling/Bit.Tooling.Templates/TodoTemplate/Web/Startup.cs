@@ -12,7 +12,6 @@ public class Startup
 {
     public void ConfigureServices(IServiceCollection services)
     {
-        services.AddTodoTemplateServices();
 
 #if BlazorServer
         services.AddRazorPages();
@@ -27,6 +26,8 @@ public class Startup
             .Configure<BrotliCompressionProviderOptions>(opt => opt.Level = CompressionLevel.Fastest)
             .Configure<GzipCompressionProviderOptions>(opt => opt.Level = CompressionLevel.Fastest);
 #endif
+
+        services.AddTodoTemplateServices();
     }
 
 #if BlazorServer
