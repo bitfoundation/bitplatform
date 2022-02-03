@@ -52,7 +52,7 @@ public class Startup
 
         services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
-        services.AddTodoTemplateSharedServices();
+       
 
         services.AddResponseCompression(opts =>
         {

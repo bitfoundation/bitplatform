@@ -1,4 +1,6 @@
-﻿namespace Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.AspNetCore.Components.Authorization;
+
+namespace TodoTemplate.App.Extensions;
 
 public static class IServiceCollectionExtensions
 {
@@ -18,6 +20,13 @@ public static class IServiceCollectionExtensions
             return httpClient;
         });
 #endif
+
+        services.AddScoped<TodoTemplateHttpClientHandler>();
+
+        services.AddAuthorizationCore();
+        services.AddScoped<AuthenticationStateProvider, TodoTemplateAuthenticationStateProvider>();
+        services.AddScoped<ITodoTemplateAuthenticationService, TodoTemplateAuthenticationService>();
+        services.AddScoped(sp => (TodoTemplateAuthenticationStateProvider)sp.GetRequiredService<AuthenticationStateProvider>());
 
         return services;
     }

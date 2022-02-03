@@ -1,11 +1,18 @@
-﻿<PageTitle>To Do app!</PageTitle>
-<Router AppAssembly="@GetType().Assembly">
-	<Found Context="routeData">
-		<RouteView RouteData="@routeData"  DefaultLayout="@typeof(MainLayout)" />
-	</Found>
-	<NotFound>
-		<LayoutView>
-			<p>Sorry, there's nothing at this address.</p>
-		</LayoutView>
-	</NotFound>
-</Router>
+﻿<CascadingAuthenticationState>
+    <PageTitle>To Do app!</PageTitle>
+    <Router AppAssembly="@GetType().Assembly">
+        <Found Context="routeData">
+            <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
+                <NotAuthorized>
+                    <RedirectToSignIn />
+                </NotAuthorized>
+            </AuthorizeRouteView>
+            <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+        </Found>
+        <NotFound>
+            <LayoutView>
+                <p>Sorry, there's nothing at this address.</p>
+            </LayoutView>
+        </NotFound>
+    </Router>
+</CascadingAuthenticationState>

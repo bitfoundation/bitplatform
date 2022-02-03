@@ -45,7 +45,7 @@ namespace TodoTemplate.Api.Controllers
             return Ok(user);
         }
 
-        [HttpPost("[action]")]
+        [HttpPost("[action]"), AllowAnonymous]
         public async Task<ActionResult<UserDto>> Create(UserDto dto, CancellationToken cancellationToken)
         {
             var userToAdd = _mapper.Map<User>(dto);
