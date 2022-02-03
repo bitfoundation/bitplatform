@@ -31,17 +31,28 @@
                                 <BitBasicList Items="@TodoList" Virtualize="true">
                                     <RowTemplate Context="TodoItem">
                                         <div class="item">
+                                            @if (!TodoItem.IsEdit)
+                                        {
                                             <div class="todo-info">
                                                 <BitCheckbox>@TodoItem.Title</BitCheckbox>
                                                 <BitLabel Class="todo-date">@TodoItem.Date.ToString("MMMM dd , yyyy , dddd")</BitLabel>
                                             </div>
                                             <div class="todo-buttons-container">
-                                                <BitIconButton IconName="BitIconName.Edit"></BitIconButton>
+                                                <BitIconButton IconName="BitIconName.Edit" OnClick="@(()=> ToggleItem(TodoItem))"></BitIconButton>
                                                 <BitIconButton IconName="BitIconName.Delete" OnClick="@(()=> DeleteTodoItem(TodoItem.Id))"></BitIconButton>
                                             </div>
-                                        </div>
-                                    </RowTemplate>
-                                </BitBasicList>
+                                        }
+                                        else
+                                        {
+                                            <BitTextField Class="todo-input" @bind-Value="TodoItem.Title"></BitTextField>
+                                            <div>
+                                                <BitButton OnClick="@(()=>EditTodoItem(TodoItem))">Edit</BitButton>
+                                                <BitButton ButtonStyle="BitButtonStyle.Standard" Class="todo-button" OnClick="@(()=> ToggleItem(TodoItem))">Cancel</BitButton>
+                                            </div>
+                                        }
+                                    </div>
+                                </RowTemplate>
+                            </BitBasicList>
                             }
                             else
                             {

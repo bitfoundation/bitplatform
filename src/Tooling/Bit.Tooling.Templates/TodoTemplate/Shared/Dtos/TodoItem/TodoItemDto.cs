@@ -7,5 +7,6 @@ namespace TodoTemplate.Shared.Dtos.TodoItem
         public string Title { get; set; }
         public DateTime Date { get; set; }
         public bool IsDone { get; set; }
+        public bool IsEdit { get; set; }
     }
 }

@@ -32,4 +32,16 @@ public partial class TodoPage
         await HttpClient.DeleteAsync($"TodoItem/{id}");
         await GetTodoItems();
     }
+    private void ToggleItem(TodoItemDto itemDto)
+    {
+        itemDto.IsEdit = !itemDto.IsEdit;
+    }
+    private async Task EditTodoItem(TodoItemDto itemDto)
+    {
+        if (!string.IsNullOrEmpty(itemDto.Title))
+        {
+            ToggleItem(itemDto);
+            await HttpClient.PutAsJsonAsync("TodoItem", itemDto);
+        }
+    }
 }
