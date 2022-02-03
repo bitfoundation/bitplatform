@@ -22,10 +22,14 @@ namespace Bit.Client.Web.Blazor.Implementation
 
         public virtual void Clear(string sharedName)
         {
+#if Android || iOS || UWP
+            Microsoft.Maui.Essentials.Preferences.Clear(sharedName);
+#else
             if (_wasm_js_runtime != null)
                 _wasm_js_runtime.InvokeVoid("localStorage.clear");
             else
                 _keyValues.Clear();
+#endif
         }
 
         public virtual bool ContainsKey(string key)
@@ -77,6 +81,9 @@ namespace Bit.Client.Web.Blazor.Implementation
         {
             string? result = null;
 
+#if Android || iOS || UWP
+            result = Microsoft.Maui.Essentials.Preferences.Get(key, defaultValue);
+#else
             if (_wasm_js_runtime != null)
                 result = _wasm_js_runtime.Invoke<string?>("localStorage.getItem", key);
             else
@@ -85,6 +92,7 @@ namespace Bit.Client.Web.Blazor.Implementation
                     return (string)value;
                 return defaultValue;
             }
+#endif
 
             return result ?? defaultValue;
         }
@@ -138,10 +146,14 @@ namespace Bit.Client.Web.Blazor.Implementation
 
         public virtual void Remove(string key, string sharedName)
         {
+#if Android || iOS || UWP
+            Microsoft.Maui.Essentials.Preferences.Remove(key, sharedName);
+#else
             if (_wasm_js_runtime != null)
                 _wasm_js_runtime.InvokeVoid("localStorage.removeItem", key);
             else
                 _keyValues.TryRemove(key, out object _);
+#endif
         }
 
         public virtual void Set(string key, string value)
@@ -181,10 +193,14 @@ namespace Bit.Client.Web.Blazor.Implementation
 
         public virtual void Set(string key, string value, string sharedName)
         {
+#if Android || iOS || UWP
+            Microsoft.Maui.Essentials.Preferences.Set(key, value, sharedName);
+#else
             if (_wasm_js_runtime != null)
                 _wasm_js_runtime.InvokeVoid("localStorage.setItem", key, value);
             else
                 _keyValues.AddOrUpdate(key, value, (oldKey, oldValue) => value);
+#endif
         }
 
         public virtual void Set(string key, bool value, string sharedName)
