@@ -32,8 +32,20 @@ namespace TodoTemplate.Api.Controllers
             await _dbContext.SaveChangesAsync();
         }
 
+        [HttpPut]
+        public async Task Update(TodoItemDto dto, CancellationToken cancellationToken)
+        {
+            var itemToUpdate = await _dbContext.todoItems.FirstOrDefaultAsync(item => item.Id == dto.Id, cancellationToken);
+            if (itemToUpdate is not null)
+            {
+                var updatedItem = _mapper.Map(dto, itemToUpdate);
+                _dbContext.todoItems.Update(updatedItem);
+                await _dbContext.SaveChangesAsync(cancellationToken);
+            }      
+        }
+
         [HttpDelete("{id:int}")]
-        public async Task Delete(int id)
+        public async Task Delete(int id)    
         {
             _dbContext.todoItems.Remove(new TodoItem { Id = id });
             await _dbContext.SaveChangesAsync();
