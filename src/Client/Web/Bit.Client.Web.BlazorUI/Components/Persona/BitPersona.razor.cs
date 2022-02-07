@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 
@@ -79,7 +80,6 @@ namespace Bit.Client.Web.BlazorUI
 
         [Parameter] public bool AllowPhoneInitials { get; set; }
 
-
         protected override Task OnParametersSetAsync()
         {
             if (CoinSize != -1)
@@ -103,18 +103,16 @@ namespace Bit.Client.Web.BlazorUI
 
         protected override void RegisterComponentClasses()
         {
-            ClassBuilder.Register(() => IsEnabled is false ? string.Empty : "");
+            ClassBuilder.Register(() => Size.HasValue() ? $"bit-persona-{Size}" : string.Empty);
 
-            ClassBuilder.Register(() => Size != null ? $"bit-persona-{Size}" : string.Empty);
-
-            ClassBuilder.Register(()=> Presence !=BitPersonaPresenceStatus.None? $"bit-persona-{Presence.ToString()}":string.Empty);
+            ClassBuilder.Register(() => Presence != BitPersonaPresenceStatus.None ? $"bit-persona-{Presence.ToString()}" : string.Empty);
         }
 
         private string DetermineIcon(BitPersonaPresenceStatus presence, bool isOutofOffice)
         {
             if (presence == BitPersonaPresenceStatus.None)
-                return "";
-            string? oofIcon = "presence_oof";
+                return string.Empty;
+            string oofIcon = "presence_oof";
 
             return presence switch
             {
@@ -157,31 +155,33 @@ namespace Bit.Client.Web.BlazorUI
 
         private static string GetInitialsLatin(string displayName, bool isRtl)
         {
-            string? initials = "";
+            StringBuilder? initials = new("");
 
             string[] splits = displayName.Split(' ');
 
             if (splits.Length == 2)
             {
-                initials += splits[0].ToUpper()[0];
-                initials += splits[1].ToUpper()[0];
+                initials.Append(splits[0].ToUpper()[0]);
+                initials.Append(splits[1].ToUpper()[0]);
             }
             else if (splits.Length == 3)
             {
-                initials += splits[0].ToUpper()[0];
-                initials += splits[2].ToUpper()[0];
+                initials.Append(splits[0].ToUpper()[0]);
+                initials.Append(splits[2].ToUpper()[0]);
             }
             else if (splits.Length != 0)
             {
-                initials += splits[0].ToUpper()[0];
+                initials.Append(splits[0].ToUpper()[0]);
             }
 
             if (isRtl && initials.Length > 1)
             {
-                return "" + initials[1] + initials[0];
+                StringBuilder returnValue = new();
+                returnValue.Append(initials[1].ToString());
+                returnValue.Append(initials[0].ToString());
             }
 
-            return initials;
+            return initials.ToString();
         }
     }
 }

@@ -14,34 +14,6 @@
 
             <div class="bit-persona-image-area" style="width:@dimension;height:@dimension">
 
-                @if (1 == 2)
-                {
-                    <div class=@($"bit-Persona-initials {(ShowUnknownPersonaCoin? " bit-personal-initials-showUnknownPersonaCoin" : "")}")
-                 aria-hidden="true"
-                 style="background-color:@GetCoinBackgroundColor;">
-
-                        @if (ShowUnknownPersonaCoin)
-                        {
-                            <span>
-                                <i class="bit-icon bit-icon--help"></i>
-                            </span>
-                        }
-                        else
-                        {
-                            var initials = GetInitials(Text, false, AllowPhoneInitials);
-                            if (initials != "")
-                            {
-                                <span>@initials</span>
-                            }
-                            else
-                            {
-                                <span>
-                                    <i class="bit-icon bit-icon--person"></i>
-                                </span>
-                            }
-                        }
-                    </div>
-                }
                 @if (ImageUrl != null)
                 {
                     <div class="bit-persona-img-container">
@@ -81,7 +53,7 @@
         }
     </div>
 
-    @if (!HidePersonaDetails || Size == BitPersonaSize.Size8)
+    @if (HidePersonaDetails is false || Size == BitPersonaSize.Size8)
     {
         <div class="bit-Persona-details">
             <div dir="auto" class="bit-Persona-primaryTex">
