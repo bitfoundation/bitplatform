@@ -1,0 +1,14 @@
+﻿
+@code {
+
+    [Inject]
+    public NavigationManager NavigationManager { get; set; } = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        NavigationManager.NavigateTo("/sign-in");
+
+        await base.OnInitializedAsync();
+    }
+
+}

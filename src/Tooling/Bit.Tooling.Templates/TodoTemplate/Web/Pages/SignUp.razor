@@ -5,9 +5,9 @@
         @if (HasMessageBar)
         {
             <BitMessageBar Class="form-message-bar"
-                       MessageBarType="@(OnClickSignUpResponse.IsSuccessStatusCode ? BitMessageBarType.Success : BitMessageBarType.Error)"
+                       MessageBarType="@(IsSuccessMessageBar ? BitMessageBarType.Success : BitMessageBarType.Error)"
                        OnDismiss="() => HasMessageBar = false">
-                @(OnClickSignUpResponse.IsSuccessStatusCode ? "Sign-up successfully" : OnClickSignUpResponse.StatusCode.ToString())
+                @MessageBarText
             </BitMessageBar>
         }
         <h1 class="form-title">
