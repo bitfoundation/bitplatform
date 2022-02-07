@@ -29,25 +29,25 @@ public class RoleController : ControllerBase
     public async Task<ActionResult<RoleDto>> Get(int id, CancellationToken cancellationToken)
     {
         var role = await Get(cancellationToken).FirstOrDefaultAsync(role => role.Id == id, cancellationToken);
-        if (role is null)
+
+        if (role is null) 
             return NotFound();
+
         return Ok(role);
     }
 
     [HttpPost]
-    public async Task<ActionResult<RoleDto>> Create(RoleDto dto, CancellationToken cancellationToken)
+    public async Task Post(RoleDto dto, CancellationToken cancellationToken)
     {
         var roleToAdd = _mapper.Map<Role>(dto);
 
         await _dbContext.AddAsync(roleToAdd, cancellationToken);
 
         await _dbContext.SaveChangesAsync(cancellationToken);
-
-        return await Get(roleToAdd.Id, cancellationToken);
     }
 
     [HttpPut]
-    public async Task<ActionResult<RoleDto>> Update(RoleDto dto, CancellationToken cancellationToken)
+    public async Task<IActionResult> Put(RoleDto dto, CancellationToken cancellationToken)
     {
         var roleToUpdate = await _dbContext.Roles.FirstOrDefaultAsync(role => role.Id == dto.Id, cancellationToken);
 
@@ -60,11 +60,11 @@ public class RoleController : ControllerBase
 
         await _dbContext.SaveChangesAsync(cancellationToken);
 
-        return await Get(updatedRole.Id, cancellationToken);
+        return Ok();
     }
 
     [HttpDelete("{id:int}")]
-    public async void Delete(int id, CancellationToken cancellationToken)
+    public async Task Delete(int id, CancellationToken cancellationToken)
     {
         _dbContext.Remove(new Role { Id = id });
 
