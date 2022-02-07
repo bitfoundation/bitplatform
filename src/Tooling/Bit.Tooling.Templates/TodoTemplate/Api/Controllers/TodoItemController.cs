@@ -19,36 +19,56 @@ namespace TodoTemplate.Api.Controllers
         }
 
         [HttpGet]
-        public IQueryable<TodoItemDto> Get()
+        public IQueryable<TodoItemDto> Get(CancellationToken cancellationToken)
         {
-            return _dbContext.todoItems.ProjectTo<TodoItemDto>(_mapper.ConfigurationProvider);
+            return _dbContext.TodoItems.ProjectTo<TodoItemDto>(_mapper.ConfigurationProvider, cancellationToken);
+        }
+
+        [HttpGet("{id:int}")]
+        public async Task<ActionResult<TodoItemDto>> Get(int id, CancellationToken cancellationToken)
+        {
+            var todoItem = await Get(cancellationToken).FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
+
+            if (todoItem is null) 
+                return NotFound();
+
+            return Ok(todoItem);
         }
 
         [HttpPost]
-        public async Task Post(TodoItemDto dto)
+        public async Task Post(TodoItemDto dto, CancellationToken cancellationToken)
         {
-            var todoItem = _mapper.Map<TodoItem>(dto);
-            await _dbContext.todoItems.AddAsync(todoItem);
-            await _dbContext.SaveChangesAsync();
+            var todoItemToAdd = _mapper.Map<TodoItem>(dto);
+
+            await _dbContext.TodoItems.AddAsync(todoItemToAdd, cancellationToken);
+
+            await _dbContext.SaveChangesAsync(cancellationToken);
         }
 
         [HttpPut]
-        public async Task Update(TodoItemDto dto, CancellationToken cancellationToken)
+        public async Task<IActionResult> Put(TodoItemDto dto, CancellationToken cancellationToken)
         {
-            var itemToUpdate = await _dbContext.todoItems.FirstOrDefaultAsync(item => item.Id == dto.Id, cancellationToken);
-            if (itemToUpdate is not null)
-            {
-                var updatedItem = _mapper.Map(dto, itemToUpdate);
-                _dbContext.todoItems.Update(updatedItem);
-                await _dbContext.SaveChangesAsync(cancellationToken);
-            }      
+            var todoItemToUpdate = await _dbContext.TodoItems.FirstOrDefaultAsync(t => t.Id == dto.Id, cancellationToken);
+
+            if (todoItemToUpdate is null) 
+                return NotFound();
+
+            var updatedTodoItem = _mapper.Map(dto, todoItemToUpdate);
+
+            _dbContext.TodoItems.Update(updatedTodoItem);
+
+            await _dbContext.SaveChangesAsync(cancellationToken);
+
+            return Ok();
+
         }
 
         [HttpDelete("{id:int}")]
-        public async Task Delete(int id)    
+        public async Task Delete(int id, CancellationToken cancellationToken)
         {
-            _dbContext.todoItems.Remove(new TodoItem { Id = id });
-            await _dbContext.SaveChangesAsync();
+            _dbContext.Remove(new TodoItem { Id = id });
+
+            await _dbContext.SaveChangesAsync(cancellationToken);
         }
     }
 

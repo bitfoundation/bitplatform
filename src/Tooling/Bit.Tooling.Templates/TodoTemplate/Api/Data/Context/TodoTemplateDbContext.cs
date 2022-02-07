@@ -15,5 +15,5 @@ public class TodoTemplateDbContext : IdentityDbContext<User, Role, int>
 
         builder.ApplyConfigurationsFromAssembly(typeof(TodoTemplateDbContext).Assembly);
     }
-    public DbSet<TodoItem> todoItems { get; set; }
+    public DbSet<TodoItem> TodoItems { get; set; }
 }

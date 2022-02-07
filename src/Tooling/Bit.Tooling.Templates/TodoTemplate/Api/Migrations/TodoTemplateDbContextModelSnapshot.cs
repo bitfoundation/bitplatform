@@ -245,7 +245,7 @@ namespace TodoTemplate.Api.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("todoItems");
+                    b.ToTable("TodoItems");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>

@@ -48,7 +48,7 @@ namespace TodoTemplate.Api.Migrations
                 oldNullable: true);
 
             migrationBuilder.CreateTable(
-                name: "todoItems",
+                name: "TodoItems",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
@@ -59,7 +59,7 @@ namespace TodoTemplate.Api.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_todoItems", x => x.Id);
+                    table.PrimaryKey("PK_TodoItems", x => x.Id);
                 });
 
             migrationBuilder.CreateIndex(
@@ -72,7 +72,7 @@ namespace TodoTemplate.Api.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "todoItems");
+                name: "TodoItems");
 
             migrationBuilder.DropIndex(
                 name: "RoleNameIndex",

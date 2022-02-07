@@ -9,15 +9,16 @@
         <div class="todo-content">
             <h2 class="todo-title">Todos</h2>
             <div class="add-todo-container">
-                <BitTextField @bind-Value="TodoItem.Title" Placeholder="Add a todo" Class="todo-input"></BitTextField>
+                <BitTextField @bind-Value="NewTodoItemTitle" Placeholder="Add a todo" Class="todo-input"></BitTextField>
                 @if (IsLoading)
                 {
                     <BitSpinner Class="todo-spinner"></BitSpinner>
                 }
                 else
                 {
-                    <BitButton OnClick="AddTodoItem" Class="todo-button"
-                           IsEnabled="@(!string.IsNullOrEmpty(TodoItem.Title))">Add</BitButton>
+                    <BitButton OnClick="AddTodoItem" Class="todo-button" IsEnabled="@(string.IsNullOrEmpty(NewTodoItemTitle) is false)">
+                        Add
+                    </BitButton>
                 }
             </div>
             <div class="todo-items-container">
@@ -28,28 +29,28 @@
                 <BitPivot>
                     <BitPivotItem Class="todo-pivot-tab" HeaderText="All">
                         <div class="todo-items">
-                            @if (TodoList.Count != 0)
+                            @if (TodoItemList?.Count != 0)
                             {
-                                <BitBasicList Items="@TodoList" Virtualize="true">
-                                    <RowTemplate Context="TodoItem">
+                                <BitBasicList Items="@TodoItemList" Virtualize="true">
+                                    <RowTemplate>
                                         <div class="item">
-                                            @if (!TodoItem.IsEdit)
+                                            @if (!context.IsInEditMode)
                                         {
                                             <div class="todo-info">
-                                                <BitCheckbox>@TodoItem.Title</BitCheckbox>
-                                                <BitLabel Class="todo-date">@TodoItem.Date.ToString("MMMM dd , yyyy , dddd")</BitLabel>
+                                                <BitCheckbox>@context.Title</BitCheckbox>
+                                                <BitLabel Class="todo-date">@context.Date.ToString("MMMM dd , yyyy , dddd")</BitLabel>
                                             </div>
                                             <div class="todo-buttons-container">
-                                                <BitIconButton IconName="BitIconName.Edit" OnClick="@(()=> ToggleItem(TodoItem))"></BitIconButton>
-                                                <BitIconButton IconName="BitIconName.Delete" OnClick="@(()=> DeleteTodoItem(TodoItem.Id))"></BitIconButton>
+                                                <BitIconButton IconName="BitIconName.Edit" OnClick="@(() => context.IsInEditMode = true)"></BitIconButton>
+                                                <BitIconButton IconName="BitIconName.Delete" OnClick="@(() => DeleteTodoItem(context.Id))"></BitIconButton>
                                             </div>
                                         }
                                         else
                                         {
-                                            <BitTextField Class="todo-input" @bind-Value="TodoItem.Title"></BitTextField>
+                                            <BitTextField Class="todo-input" @bind-Value="context.Title"></BitTextField>
                                             <div>
-                                                <BitButton OnClick="@(()=>EditTodoItem(TodoItem))">Edit</BitButton>
-                                                <BitButton ButtonStyle="BitButtonStyle.Standard" Class="todo-button" OnClick="@(()=> ToggleItem(TodoItem))">Cancel</BitButton>
+                                                <BitButton OnClick="@(() => EditTodoItem(context))">Edit</BitButton>
+                                                <BitButton ButtonStyle="BitButtonStyle.Standard" Class="todo-button" OnClick="@(()=> context.IsInEditMode = false)">Cancel</BitButton>
                                             </div>
                                         }
                                     </div>
