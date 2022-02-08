@@ -20,7 +20,7 @@ namespace TodoTemplate.App.Implementations
 
         public async Task SignIn(RequestTokenDto dto)
         {
-            var response = await _httpClient.PostAsJsonAsync("User/Token", JsonContent.Create(dto));
+            var response = await _httpClient.PostAsync("User/Token", JsonContent.Create(dto));
 
             var result = await response.Content.ReadFromJsonAsync<ResponseTokenDto>();
 

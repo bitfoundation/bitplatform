@@ -27,9 +27,9 @@ public partial class SignUp
 
     private async Task OnClickSignUp()
     {
-        EmailError = Email is null ? "Please enter your email" : null;
+        EmailError = string.IsNullOrEmpty(Email) ? "Please enter your email" : null;
 
-        PasswordError = Password is null ? "Please enter your password" : null;
+        PasswordError = string.IsNullOrEmpty(Password) ? "Please enter your password" : null;
 
         if (EmailError is not null || PasswordError is not null) return;
 
@@ -48,6 +48,7 @@ public partial class SignUp
                 Password = Password
             });
 
+            IsSuccessMessageBar = true;
             MessageBarText = "Sign-up successfully";
         }
         catch (Exception e)

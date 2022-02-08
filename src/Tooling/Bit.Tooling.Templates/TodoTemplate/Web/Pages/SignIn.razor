@@ -2,20 +2,26 @@
 
 <div class="page-container">
     <div class="form--white">
-        <BitMessageBar Class="form-message-bar" MessageBarType="BitMessageBarType.Success" OnDismiss="() => null">
-            Message about the state of this view
-        </BitMessageBar>
+        @if (HasMessageBar)
+        {
+            <BitMessageBar Class="form-message-bar"
+                       MessageBarType="@(IsSuccessMessageBar ? BitMessageBarType.Success : BitMessageBarType.Error)"
+                       OnDismiss="() => HasMessageBar = false">
+                @MessageBarText
+            </BitMessageBar>
+        }
         <h1 class="form-title">Welcome Back !</h1>
         <div class="form-input-container">
             <BitLabel>Email</BitLabel>
-            <BitTextField Placeholder="Please enter your email"></BitTextField>
+            <BitTextField Placeholder="Please enter your email" @bind-Value="Email"></BitTextField>
+             <div class="form-input-error">@(EmailError ?? string.Empty)</div>
         </div>
         <div class="form-input-container">
             <BitLabel>Password</BitLabel>
-            <BitTextField Type="BitTextFieldType.Password" CanRevealPassword="true" Placeholder="Enter your password"></BitTextField>
-            <div class="form-input-error">Repeat password and password are not same.</div>
+            <BitTextField Type="BitTextFieldType.Password" CanRevealPassword="true" Placeholder="Enter your password" @bind-Value="Password"></BitTextField>
+            <div class="form-input-error">@(PasswordError ?? string.Empty)</div>
         </div>
-        <BitButton Class="form-submit-button" ButtonStyle="BitButtonStyle.Primary" IsEnabled="true">
+        <BitButton Class="form-submit-button" ButtonStyle="BitButtonStyle.Primary" OnClick="OnClickSignIn">
             Sign in
         </BitButton>
         <div class="form-forgot-password">
