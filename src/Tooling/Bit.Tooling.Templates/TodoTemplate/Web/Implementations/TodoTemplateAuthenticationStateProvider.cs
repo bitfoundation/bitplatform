@@ -24,20 +24,6 @@ namespace TodoTemplate.App.Implementations
             return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity(ParseTokenClaims(access_token), "Bearer")));
         }
 
-        public void SetUserSignedIn()
-        {
-            var authUser = new ClaimsPrincipal(new ClaimsIdentity());
-            var authState = Task.FromResult(new AuthenticationState(authUser));
-            NotifyAuthenticationStateChanged(authState);
-        }
-
-        public void SetUserSignedOut()
-        {
-            var anonUser = new ClaimsPrincipal(new ClaimsIdentity());
-            var authState = Task.FromResult(new AuthenticationState(anonUser));
-            NotifyAuthenticationStateChanged(authState);
-        }
-
         private IEnumerable<Claim> ParseTokenClaims(string access_token)
         {
             return Jose.JWT.Payload<Dictionary<string, object>>(access_token)

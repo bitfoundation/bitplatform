@@ -43,7 +43,6 @@ namespace TodoTemplate.Api.Extensions
             }).AddJwtBearer(options =>
             {
                 var secretKey = Encoding.UTF8.GetBytes(settings.SecretKey);
-                var encryptionKey = Encoding.UTF8.GetBytes(settings.EncryptKey);
 
                 var validationParameters = new TokenValidationParameters
                 {
@@ -61,8 +60,6 @@ namespace TodoTemplate.Api.Extensions
 
                     ValidateIssuer = true,
                     ValidIssuer = settings.Issuer,
-
-                    TokenDecryptionKey = new SymmetricSecurityKey(encryptionKey)
                 };
 
                 options.RequireHttpsMetadata = false;

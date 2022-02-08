@@ -1,4 +1,6 @@
 ﻿using TodoTemplate.Shared.Dtos.Account;
+using TodoTemplate.Shared.Enums;
+
 namespace TodoTemplate.App.Pages;
 
 public partial class SignUp

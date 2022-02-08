@@ -29,10 +29,10 @@ namespace TodoTemplate.Api.Controllers
             return _userManager.Users.ProjectTo<UserDto>(_mapper.ConfigurationProvider, cancellationToken);
         }
 
-        [HttpGet("{id:int}")]
-        public async Task<ActionResult<UserDto>> Get(int id, CancellationToken cancellationToken)
+        [HttpGet("{userName}")]
+        public async Task<ActionResult<UserDto>> Get(string userName, CancellationToken cancellationToken)
         {
-            var user = await Get(cancellationToken).FirstOrDefaultAsync(user => user.Id == id, cancellationToken);
+            var user = await Get(cancellationToken).FirstOrDefaultAsync(user => user.UserName == userName, cancellationToken);
 
             if (user is null) return NotFound();
 
@@ -52,7 +52,21 @@ namespace TodoTemplate.Api.Controllers
                 throw new BadHttpRequestException(identityError.Code + identityError.Description);
             }
 
-            return Ok(await Get(userToAdd.Id, cancellationToken));
+            return Ok(await Get(userToAdd.UserName!, cancellationToken));
+        }
+
+        [HttpPut]
+        public async Task<ActionResult<UserDto>> Update(UserDto dto, CancellationToken cancellationToken)
+        {
+            var userToUpdate = await _userManager.Users.FirstOrDefaultAsync(user => user.Id == dto.Id, cancellationToken);
+
+            if (userToUpdate is null) return NotFound();
+
+            var updatedUser = _mapper.Map(dto, userToUpdate);
+
+            await _userManager.UpdateAsync(updatedUser);
+
+            return await Get(updatedUser.UserName!, cancellationToken);
         }
 
         [HttpPost("[action]"), AllowAnonymous]
