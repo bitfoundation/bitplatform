@@ -1,21 +1,19 @@
-﻿#if BlazorWebAssembly
-using TodoTemplate.App.Extensions;
-using TodoTemplate.App.Implementations;
-#endif
-
-using System.IO.Compression;
+﻿using System.IO.Compression;
 using Microsoft.AspNetCore.ResponseCompression;
 using TodoTemplate.Api.Extensions;
+
+#if BlazorWebAssembly
+using TodoTemplate.App.Extensions;
+using TodoTemplate.App.Implementations;
+using Microsoft.AspNetCore.Components;
+#endif
 
 namespace TodoTemplate.Api.Startup;
 
 public static class Services
 {
-    public static void Add(WebApplicationBuilder builder)
+    public static void Add(IServiceCollection services, IConfiguration configuration)
     {
-        var services = builder.Services;
-        var configuration = builder.Configuration;
-
 #if BlazorWebAssembly
         services.AddTodoTemplateServices();
         services.AddScoped(c =>

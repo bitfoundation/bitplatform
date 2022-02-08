@@ -4,11 +4,9 @@ namespace TodoTemplate.Api.Startup
 {
     public class Middlewares
     {
-        public static void Use(WebApplicationBuilder builder)
+        public static void Use(IApplicationBuilder app, IHostEnvironment env)
         {
-            var app = builder.Build();
-
-            if (builder.Environment.IsDevelopment())
+            if (env.IsDevelopment())
             {
                 app.UseSwagger();
 
