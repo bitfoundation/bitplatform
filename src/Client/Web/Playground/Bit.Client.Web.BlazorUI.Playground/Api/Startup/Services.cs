@@ -8,10 +8,8 @@ using Microsoft.AspNetCore.Components;
 namespace Bit.Client.Web.BlazorUI.Playground.Api.Startup;
 public static class Services
 {
-    public static void Add(WebApplicationBuilder builder)
+    public static void Add(IServiceCollection services)
     {
-        var services = builder.Services;
-
         services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 #if BlazorWebAssembly
         services.AddScoped(c =>

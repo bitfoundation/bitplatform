@@ -4,11 +4,9 @@ namespace Bit.Client.Web.BlazorUI.Playground.Api.Startup;
 
 public static class Middlewares
 {
-    public static void Use(WebApplicationBuilder builder)
+    public static void Use(IApplicationBuilder app, IHostEnvironment env)
     {
-        var app = builder.Build();
-
-        if (builder.Environment.IsDevelopment())
+        if (env.IsDevelopment())
         {
             app.UseDeveloperExceptionPage();
 #if BlazorWebAssembly
