@@ -1,7 +1,7 @@
 <Project>
 
     <PropertyGroup>
-        <BlazorMode>BlazorServer</BlazorMode>
+        <BlazorMode>BlazorWebAssembly</BlazorMode>
         <!-- You can use either Server or web assembly or hybrid, for example: <BlazorMode>BlazorWebAssembly</BlazorMode>-->
         <DefineConstants Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' ">$(DefineConstants);BlazorWebAssembly</DefineConstants>
         <DefineConstants Condition=" '$(BlazorMode)' == 'BlazorServer' ">$(DefineConstants);BlazorServer</DefineConstants>
