@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Components.Authorization;
-using TodoTemplate.Shared.Dtos.Account;
+﻿using TodoTemplate.Shared.Dtos.Account;
 
 namespace TodoTemplate.App.Implementations
 {

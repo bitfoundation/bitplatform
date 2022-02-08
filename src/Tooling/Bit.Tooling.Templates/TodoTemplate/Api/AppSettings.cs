@@ -1,4 +1,4 @@
-﻿namespace TodoTemplate.Api.Contracts
+﻿namespace TodoTemplate.Api
 {
     public class AppSettings
     {

@@ -10,8 +10,11 @@ namespace TodoTemplate.Api.Extensions
 {
     public static class IServiceCollectionExtensions
     {
-        public static void AddCustomIdentity(this IServiceCollection services, IdentitySettings settings)
+        public static void AddCustomIdentity(this IServiceCollection services, IConfiguration configuration)
         {
+            var appsettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>();
+            var settings = appsettings.IdentitySettings;
+
             services.AddIdentity<User, Role>(options =>
             {
                 options.User.RequireUniqueEmail = settings.RequireUniqueEmail;
@@ -24,8 +27,11 @@ namespace TodoTemplate.Api.Extensions
             }).AddEntityFrameworkStores<TodoTemplateDbContext>().AddDefaultTokenProviders();
         }
 
-        public static void AddCustomJwt(this IServiceCollection services, JwtSettings settings)
+        public static void AddCustomJwt(this IServiceCollection services, IConfiguration configuration)
         {
+            var appsettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>();
+            var settings = appsettings.JwtSettings;
+
             services.AddScoped<IJwtService, JwtService>();
 
             services.AddAuthentication(options =>

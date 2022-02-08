@@ -2,6 +2,7 @@
 
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
     </PropertyGroup>
 
     <ItemGroup>
@@ -39,6 +40,7 @@
     <ItemGroup>
         <ProjectReference Include="..\Web\TodoTemplate.Web.csproj" Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " />
         <ProjectReference Include="..\Shared\TodoTemplate.Shared.csproj" />
+        <ProjectReference Include="..\Web\TodoTemplate.Web.csproj" />
     </ItemGroup>
 
 </Project>

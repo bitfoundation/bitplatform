@@ -1,10 +1,4 @@
-﻿using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
+﻿using Microsoft.AspNetCore.Authorization;
 using TodoTemplate.Api.Contracts;
 using TodoTemplate.Api.Data.Models.Account;
 using TodoTemplate.Shared.Dtos.Account;
