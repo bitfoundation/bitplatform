@@ -1,5 +1,4 @@
 ﻿@page "/edit-profile"
-@using Microsoft.AspNetCore.Mvc.ViewFeatures
 @attribute [Authorize]
 
 <div class="page-container">
@@ -18,9 +17,9 @@
         <div class="form-profile-container">
             <div class="form-profile-photo">
                 @{
-                    if (!string.IsNullOrEmpty(UserProfilePhoto))
+                    if (!string.IsNullOrEmpty(UserProfilePhotoUrl))
                     {
-                      <img src="@UserProfilePhoto" class="profile-photo"/>
+                      <img src="@UserProfilePhotoUrl" class="profile-photo"/>
                     }
                     else
                     {

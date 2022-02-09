@@ -1,5 +1,5 @@
-﻿using Microsoft.Extensions.FileProviders;
-using System.Reflection;
+﻿using System.Reflection;
+using Microsoft.Extensions.FileProviders;
 
 namespace TodoTemplate.App;
 

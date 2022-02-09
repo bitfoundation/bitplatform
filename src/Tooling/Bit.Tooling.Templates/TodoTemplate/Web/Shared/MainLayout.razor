@@ -2,12 +2,12 @@
 
 <Header />
 
-@if (IsSignedInUser)
+@if (UserIsAuthenticated)
 {
     <NavMenu />
 }
 
-<div class="main @(IsSignedInUser ? "main--authenticated" : null)">
+<div class="main @(UserIsAuthenticated ? "main--authenticated" : null)">
     @Body
 </div>
 

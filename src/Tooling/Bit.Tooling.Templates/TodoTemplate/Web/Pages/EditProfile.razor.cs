@@ -1,5 +1,4 @@
-﻿using System.Security.Claims;
-using Microsoft.AspNetCore.Components.Authorization;
+﻿using Microsoft.AspNetCore.Components.Authorization;
 using TodoTemplate.Shared.Dtos.Account;
 using TodoTemplate.Shared.Enums;
 
@@ -13,7 +12,7 @@ public partial class EditProfile
 
     public string? ProfilePhotoUploadUrl { get; set; }
     public string? ProfilePhotoRemoveUrl { get; set; }
-    public string? UserProfilePhoto { get; set; }
+    public string? UserProfilePhotoUrl { get; set; }
 
     public bool HasMessageBar { get; set; }
     public bool IsSuccessMessageBar { get; set; }
@@ -22,26 +21,27 @@ public partial class EditProfile
     [Inject]
     public HttpClient HttpClient { get; set; } = default!;
 
-    [CascadingParameter]
-    public Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
+#if BlazorServer || BlazorHybrid
+    [Inject]
+    public IConfiguration Configuration { get; set; } = default!;
+#endif
 
     protected override async Task OnInitializedAsync()
     {
-        var authState = await AuthenticationStateTask;
-        var userName = authState.User.Claims.ToList().FirstOrDefault(claim => claim.Type == "name")?.Value;
+        ProfilePhotoUploadUrl = "Attachment/UploadProfilePhoto/";
+        ProfilePhotoRemoveUrl = "Attachment/RemoveProfilePhoto/";
+        UserProfilePhotoUrl = "Attachment/GetProfilePhoto/";
 
-        var userResponse = await HttpClient.GetAsync($"User/{userName}");
+#if BlazorServer || BlazorHybrid
+        var serverUrl = Configuration.GetValue<string>("ApiServerAddress");
+        ProfilePhotoUploadUrl = $"{serverUrl}{ProfilePhotoUploadUrl}";
+        ProfilePhotoRemoveUrl = $"{serverUrl}{ProfilePhotoRemoveUrl}";
+        UserProfilePhotoUrl = $"{serverUrl}{UserProfilePhotoUrl}";
+#endif
+
+        var userResponse = await HttpClient.GetAsync($"User/GetCurrentUser");
         UserDto = await userResponse.Content.ReadFromJsonAsync<UserDto>();
         SelectedGender = UserDto?.Gender.ToString();
-
-        var profilePhotoResponse = await HttpClient.GetAsync($"Attachment/GetProfilePhoto/{userName}");
-        var profilePhotoResult = profilePhotoResponse.Content.ReadAsByteArrayAsync().Result;
-        if (profilePhotoResult.Length is  not 0) // => convert byte to <img> readable format
-            UserProfilePhoto = $"data:image;base64,{Convert.ToBase64String(profilePhotoResult)}";
-
-        // we sent the user name to the upload path because we need to set the user photo name equal to the user name
-        ProfilePhotoUploadUrl = $"https://localhost:5001/api/Attachment/UploadProfilePhoto/{userName}";
-        ProfilePhotoRemoveUrl = $"https://localhost:5001/api/Attachment/RemoveProfilePhoto/{userName}";
 
         await base.OnInitializedAsync();
     }
@@ -63,7 +63,7 @@ public partial class EditProfile
                 UserDto!.Gender = Gender.Custom;
             }
 
-            await HttpClient.PutAsync("User", JsonContent.Create(UserDto));
+            await HttpClient.PutAsJsonAsync("User", UserDto);
 
             IsSuccessMessageBar = true;
 

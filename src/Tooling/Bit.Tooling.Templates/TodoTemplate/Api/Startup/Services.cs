@@ -1,6 +1,5 @@
 ﻿using System.IO.Compression;
 using Microsoft.AspNetCore.ResponseCompression;
-using TodoTemplate.Api.Extensions;
 
 #if BlazorWebAssembly
 using TodoTemplate.App.Extensions;
@@ -14,6 +13,8 @@ public static class Services
 {
     public static void Add(IServiceCollection services, IConfiguration configuration)
     {
+        services.AddToDoTemplateSharedServices();
+
 #if BlazorWebAssembly
         services.AddTodoTemplateServices();
         services.AddScoped(c =>
@@ -56,10 +57,10 @@ public static class Services
 
         services.AddAutoMapper(typeof(Program).Assembly);
 
-        services.AddCustomSwaggerGen();
+        services.AddToDoTemplateSwaggerGen();
 
-        services.AddCustomIdentity(configuration);
+        services.AddToDoTemplateIdentity(configuration);
 
-        services.AddCustomJwt(configuration);
+        services.AddToDoTemplateJwt(configuration);
     }
 }

@@ -1,6 +1,5 @@
-﻿namespace TodoTemplate.App.Components
+﻿namespace TodoTemplate.App.Components;
+
+public partial class Header
 {
-    public partial class Header
-    {
-    }
 }

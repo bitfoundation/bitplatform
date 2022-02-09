@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using TodoTemplate.Api.Data.Models.Account;
+using TodoTemplate.Api.Models.Account;
 using TodoTemplate.Shared.Dtos.Account;
 
 namespace TodoTemplate.Api.Controllers;
@@ -30,7 +30,7 @@ public class RoleController : ControllerBase
     {
         var role = await Get(cancellationToken).FirstOrDefaultAsync(role => role.Id == id, cancellationToken);
 
-        if (role is null) 
+        if (role is null)
             return NotFound();
 
         return Ok(role);
@@ -64,10 +64,15 @@ public class RoleController : ControllerBase
     }
 
     [HttpDelete("{id:int}")]
-    public async Task Delete(int id, CancellationToken cancellationToken)
+    public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
     {
         _dbContext.Remove(new Role { Id = id });
 
-        await _dbContext.SaveChangesAsync(cancellationToken);
+        var affectedRows = await _dbContext.SaveChangesAsync(cancellationToken);
+
+        if (affectedRows < 1)
+            return NotFound();
+
+        return Ok();
     }
 }

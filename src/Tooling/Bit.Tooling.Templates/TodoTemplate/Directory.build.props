@@ -1,28 +1,31 @@
 <Project>
 
-	<PropertyGroup>
-		<BlazorMode>BlazorServer</BlazorMode>
-		<!-- You can use either Server or web assembly or hybrid, for example: <BlazorMode>BlazorWebAssembly</BlazorMode>-->
-		<DefineConstants Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' ">$(DefineConstants);BlazorWebAssembly</DefineConstants>
-		<DefineConstants Condition=" '$(BlazorMode)' == 'BlazorServer' ">$(DefineConstants);BlazorServer</DefineConstants>
-		<DefineConstants Condition=" '$(BlazorMode)' == 'BlazorHybrid' ">$(DefineConstants);BlazorHybrid</DefineConstants>
-		<DefineConstants Condition=" '$(TargetFramework)' == 'net6.0-android' ">$(DefineConstants);Android</DefineConstants>
-		<DefineConstants Condition=" '$(TargetFramework)' == 'net6.0-ios' ">$(DefineConstants);iOS</DefineConstants>
-		<DefineConstants Condition=" '$(TargetFramework)' == 'net6.0-windows10.0.19041' ">$(DefineConstants);Windows</DefineConstants>
-		<DefineConstants Condition=" '$(TargetFramework)' == 'net6.0-maccatalyst' ">$(DefineConstants);Mac</DefineConstants>
-		<LangVersion>preview</LangVersion>
+    <PropertyGroup>
+        <BlazorMode>BlazorServer</BlazorMode>
+        <!-- You can use either Server or web assembly or hybrid, for example: <BlazorMode>BlazorWebAssembly</BlazorMode>-->
+        <DefineConstants Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' ">$(DefineConstants);BlazorWebAssembly</DefineConstants>
+        <DefineConstants Condition=" '$(BlazorMode)' == 'BlazorServer' ">$(DefineConstants);BlazorServer</DefineConstants>
+        <DefineConstants Condition=" '$(BlazorMode)' == 'BlazorHybrid' ">$(DefineConstants);BlazorHybrid</DefineConstants>
+        <DefineConstants Condition=" '$(TargetFramework)' == 'net6.0-android' ">$(DefineConstants);Android</DefineConstants>
+        <DefineConstants Condition=" '$(TargetFramework)' == 'net6.0-ios' ">$(DefineConstants);iOS</DefineConstants>
+        <DefineConstants Condition=" '$(TargetFramework)' == 'net6.0-windows10.0.19041' ">$(DefineConstants);Windows</DefineConstants>
+        <DefineConstants Condition=" '$(TargetFramework)' == 'net6.0-maccatalyst' ">$(DefineConstants);Mac</DefineConstants>
+        <LangVersion>preview</LangVersion>
         <Nullable>enable</Nullable>
-	</PropertyGroup>
+    </PropertyGroup>
 
-	<ItemGroup>
-		<Using Include="System" />
-		<Using Include="System.IO" />
+    <ItemGroup>
+        <Using Include="System" />
+        <Using Include="System.IO" />
         <Using Include="System.Threading" />
-		<Using Include="System.Threading.Tasks" />
-		<Using Include="System.Linq"/>
-		<Using Include="System.Collections.Generic"/>
+        <Using Include="System.Threading.Tasks" />
+        <Using Include="System.Linq"/>
+        <Using Include="System.Collections.Generic"/>
         <Using Include="Microsoft.Extensions.DependencyInjection" />
         <Using Include="System.Net.Http" />
+        <Using Include="System.ComponentModel.DataAnnotations" />
+        <Using Include="TodoTemplate.Shared.Services.Contracts" />
+        <Using Include="System.Security.Claims" />
     </ItemGroup>
 
 </Project>

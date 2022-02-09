@@ -1,73 +1,80 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Options;
-using TodoTemplate.Api.Contracts;
+using MimeTypes;
+using SystemFile = System.IO.File;
 
-namespace TodoTemplate.Api.Controllers
+namespace TodoTemplate.Api.Controllers;
+
+[Route("api/[controller]")]
+[ApiController]
+[Authorize]
+public class AttachmentController : ControllerBase
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    [Authorize]
-    public class AttachmentController : ControllerBase
+    private readonly AppSettings _appSettings;
+
+    public AttachmentController(IOptionsSnapshot<AppSettings> setting)
     {
-        private readonly AppSettings _appSettings;
+        _appSettings = setting.Value;
+    }
 
-        public AttachmentController(IOptionsSnapshot<AppSettings> setting)
-        {
-            _appSettings = setting.Value;
-        }
+    [RequestFormLimits(ValueLengthLimit = int.MaxValue, MultipartBodyLengthLimit = int.MaxValue)]
+    [DisableRequestSizeLimit]
+    [HttpPost("[action]")]
+    public async Task<IActionResult> UploadProfilePhoto(IFormFile? file, CancellationToken cancellationToken)
+    {
+        if (file is null)
+            return BadRequest();
 
-        [RequestFormLimits(ValueLengthLimit = int.MaxValue, MultipartBodyLengthLimit = int.MaxValue)]
-        [DisableRequestSizeLimit]
-        [HttpPost("[action]/{userName}"), AllowAnonymous]
-        public async Task<ActionResult> UploadProfilePhoto(string userName, IFormFile? file, CancellationToken cancellationToken)
-        {
-            if (file is null) throw new BadHttpRequestException("The request couldn't be processed");
+        await using var fileStream = file.OpenReadStream();
 
-            await using var fileStream = file.OpenReadStream();
-            await using var memoryStream = new MemoryStream();
-            await fileStream.CopyToAsync(memoryStream, cancellationToken);
-            memoryStream.Seek(0, SeekOrigin.Begin);
+        Directory.CreateDirectory(_appSettings.UserProfilePhotoPath);
 
-            if (Directory.Exists(_appSettings.UserProfilePhotoPath) is false)
-                Directory.CreateDirectory(_appSettings.UserProfilePhotoPath);
+        var userId = User.GetUserId();
 
-            var oldPath = Path.Combine(Directory.GetFiles(_appSettings.UserProfilePhotoPath)
-                .FirstOrDefault(s => s.Contains(userName)) ?? string.Empty);
+        var path = Path.Combine($"{_appSettings.UserProfilePhotoPath}\\{userId}.{file.FileName.Split(".").LastOrDefault()}");
 
-            if (!string.IsNullOrEmpty(oldPath)) System.IO.File.Delete(oldPath);
+        if (SystemFile.Exists(path))
+            SystemFile.Delete(path);
 
-            var path = Path.Combine($"{_appSettings.UserProfilePhotoPath}\\{userName}.{file.FileName.Split(".").LastOrDefault()}");
+        await using var targetStream = SystemFile.Create(path);
+        await fileStream.CopyToAsync(targetStream, cancellationToken);
 
-            await using var targetStream = System.IO.File.Create(path);
-            await memoryStream.CopyToAsync(targetStream, cancellationToken);
+        return Ok();
+    }
 
-            return Ok();
-        }
+    [HttpDelete("[action]")]
+    public ActionResult RemoveProfilePhoto()
+    {
+        var userId = User.GetUserId();
 
-        [HttpDelete("[action]/{userName}"), AllowAnonymous]
-        public ActionResult RemoveProfilePhoto(string userName, string fileName)
-        {
-            var path = Path.Combine(_appSettings.UserProfilePhotoPath, $"{userName}.{fileName.Split(".").LastOrDefault()}");
-            if (!System.IO.File.Exists(path)) return NotFound();
+        var fileName = Directory.GetFiles(_appSettings.UserProfilePhotoPath, $"{userId}.*")
+            .Single();
 
-            System.IO.File.Delete(path);
-            return Ok();
-        }
+        var path = Path.Combine(_appSettings.UserProfilePhotoPath, $"{userId}.{fileName.Split(".").LastOrDefault()}");
 
-        [HttpGet("[action]/{userName}"), AllowAnonymous]
-        public ActionResult GetProfilePhoto(string userName)
-        {
-            if (!Directory.Exists(_appSettings.UserProfilePhotoPath)) return Ok();
+        if (!SystemFile.Exists(path))
+            return NotFound();
 
-            var filePath = Directory.GetFiles(_appSettings.UserProfilePhotoPath)
-                .FirstOrDefault(s => s.Contains(userName));
+        SystemFile.Delete(path);
 
-            if (filePath is null) return Ok();
+        return Ok();
+    }
 
-            var file = System.IO.File.ReadAllBytes(filePath);
+    [HttpGet("[action]")]
+    public ActionResult GetProfilePhoto()
+    {
+        var userId = User.GetUserId();
 
-            return new FileContentResult(file, $"application/{filePath.Split(".").LastOrDefault()}");
-        }
+        var fileName = Directory.GetFiles(_appSettings.UserProfilePhotoPath, $"{userId}.*")
+            .SingleOrDefault();
+
+        if (fileName is null)
+            return NotFound();
+
+        var path = Path.Combine(_appSettings.UserProfilePhotoPath, $"{userId}.{fileName.Split(".").LastOrDefault()}");
+
+        if (!SystemFile.Exists(path))
+            return NotFound();
+
+        return File(path, MimeTypeMap.GetMimeType(Path.GetExtension(path)));
     }
 }
