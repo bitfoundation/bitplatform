@@ -25,6 +25,8 @@ public class TodoTemplateHttpClientHandler : HttpClientHandler
 
         var response = await base.SendAsync(request, cancellationToken);
 
+        response.EnsureSuccessStatusCode();
+
         return response;
     }
 }
