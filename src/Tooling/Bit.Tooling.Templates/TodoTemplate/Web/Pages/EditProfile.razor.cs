@@ -27,9 +27,9 @@ public partial class EditProfile
 
     protected override async Task OnInitializedAsync()
     {
-        ProfilePhotoUploadUrl = "Attachment/UploadProfilePhoto/";
-        ProfilePhotoRemoveUrl = "Attachment/RemoveProfilePhoto/";
-        UserProfilePhotoUrl = "Attachment/GetProfilePhoto/";
+        ProfilePhotoUploadUrl = "api/Attachment/UploadProfilePhoto/";
+        ProfilePhotoRemoveUrl = "api/Attachment/RemoveProfilePhoto/";
+        UserProfilePhotoUrl = "api/Attachment/GetProfilePhoto/";
 
 #if BlazorServer || BlazorHybrid
         var serverUrl = Configuration.GetValue<string>("ApiServerAddress");

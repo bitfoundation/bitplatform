@@ -45,7 +45,6 @@
     <ItemGroup>
         <ProjectReference Include="..\Web\TodoTemplate.Web.csproj" Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " />
         <ProjectReference Include="..\Shared\TodoTemplate.Shared.csproj" />
-        <ProjectReference Include="..\Web\TodoTemplate.Web.csproj" />
     </ItemGroup>
 
 </Project>

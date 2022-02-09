@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.ResponseCompression;
 
 #if BlazorWebAssembly
 using TodoTemplate.App.Extensions;
-using TodoTemplate.App.Implementations;
+using TodoTemplate.App.Services.Implementations;
 using Microsoft.AspNetCore.Components;
 #endif
 

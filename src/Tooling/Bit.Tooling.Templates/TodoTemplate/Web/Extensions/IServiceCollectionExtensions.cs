@@ -14,7 +14,7 @@ public static class IServiceCollectionExtensions
         {
             HttpClient httpClient = new(sp.GetRequiredService<TodoTemplateHttpClientHandler>())
             {
-                BaseAddress = new Uri(sp.GetRequiredService<IConfiguration>()["ApiServerAddress"])
+                BaseAddress = new Uri($"{sp.GetRequiredService<IConfiguration>()["ApiServerAddress"]}api/")
             };
 
             return httpClient;
