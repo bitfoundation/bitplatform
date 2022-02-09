@@ -14,6 +14,7 @@
 		<Content Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Remove="Pages\_Host.cshtml" />
 		<Content Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Remove="Pages\_Layout.cshtml" />
 		<Content Remove="compilerconfig.json" />
+		<Content Remove="wwwroot\scripts\todoTemplate.ts" />
 		<None Include="compilerconfig.json" />
 	</ItemGroup>
 
@@ -26,13 +27,18 @@
 
 	<ItemGroup>
 		<PackageReference Include="BuildWebCompiler" Version="1.12.405" />
+		<PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.5.3">
+		  <PrivateAssets>all</PrivateAssets>
+		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
 		<ProjectReference Include="..\..\..\..\Client\Web\Bit.Client.Web.BlazorUI\Bit.Client.Web.BlazorUI.csproj" />
 		<ProjectReference Include="..\..\..\Bit.Tooling.SourceGenerators\Bit.Tooling.SourceGenerators.csproj" />
 		<ProjectReference Include="..\Shared\TodoTemplate.Shared.csproj" />
+		<TypeScriptCompile Include="wwwroot\scripts\todoTemplate.ts" />
 		
 		<Using Include="Microsoft.AspNetCore.Components" />
-		<Using Include="TodoTemplate.App.Contracts" />
-		<Using Include="TodoTemplate.App.Implementations" />
+		<Using Include="TodoTemplate.App.Services.Contracts" />
+		<Using Include="TodoTemplate.App.Services.Implementations" />
 		<Using Include="Microsoft.Extensions.Configuration" />
 		<Using Include="Microsoft.JSInterop" />
         <Using Include="System.Net.Http.Json" />

@@ -33,7 +33,7 @@ public partial class SignIn
 
         try
         {
-            await TodoTemplateAuthenticationService.SignIn(new RequestTokenDto
+            await TodoTemplateAuthenticationService.SignIn(new SignInRequestDto
             {
                 UserName = Email,
                 Password = Password

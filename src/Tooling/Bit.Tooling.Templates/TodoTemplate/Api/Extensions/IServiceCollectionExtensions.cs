@@ -2,101 +2,100 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using TodoTemplate.Api.Contracts;
-using TodoTemplate.Api.Data.Models.Account;
-using TodoTemplate.Api.Implementations;
+using TodoTemplate.Api;
+using TodoTemplate.Api.Models.Account;
+using TodoTemplate.Api.Services.Implementations;
 
-namespace TodoTemplate.Api.Extensions
+namespace Microsoft.Extensions.DependencyInjection;
+
+public static class IServiceCollectionExtensions
 {
-    public static class IServiceCollectionExtensions
+    public static void AddToDoTemplateIdentity(this IServiceCollection services, IConfiguration configuration)
     {
-        public static void AddCustomIdentity(this IServiceCollection services, IConfiguration configuration)
+        var appsettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>();
+        var settings = appsettings.IdentitySettings;
+
+        services.AddIdentity<User, Role>(options =>
         {
-            var appsettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>();
-            var settings = appsettings.IdentitySettings;
+            options.User.RequireUniqueEmail = settings.RequireUniqueEmail;
+            options.Password.RequireDigit = settings.PasswordRequireDigit;
+            options.Password.RequireLowercase = settings.PasswordRequireLowercase;
+            options.Password.RequireUppercase = settings.PasswordRequireUppercase;
+            options.Password.RequireNonAlphanumeric = settings.PasswordRequireNonAlphanumeric;
+            options.Password.RequiredLength = settings.PasswordRequiredLength;
+        }).AddEntityFrameworkStores<TodoTemplateDbContext>().AddDefaultTokenProviders();
+    }
 
-            services.AddIdentity<User, Role>(options =>
-            {
-                options.User.RequireUniqueEmail = settings.RequireUniqueEmail;
-                options.Password.RequireDigit = settings.PasswordRequireDigit;
-                options.Password.RequireLowercase = settings.PasswordRequireLowercase;
-                options.Password.RequireUppercase = settings.PasswordRequireUppercase;
-                options.Password.RequireNonAlphanumeric = settings.PasswordRequireNonAlphanumeric;
-                options.Password.RequiredLength = settings.PasswordRequiredLength;
+    public static void AddToDoTemplateJwt(this IServiceCollection services, IConfiguration configuration)
+    {
+        var appsettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>();
+        var settings = appsettings.JwtSettings;
 
-            }).AddEntityFrameworkStores<TodoTemplateDbContext>().AddDefaultTokenProviders();
-        }
+        services.AddScoped<IJwtService, JwtService>();
 
-        public static void AddCustomJwt(this IServiceCollection services, IConfiguration configuration)
+        services.AddAuthentication(options =>
         {
-            var appsettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>();
-            var settings = appsettings.JwtSettings;
+            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+        }).AddJwtBearer(options =>
+        {
+            var secretKey = Encoding.UTF8.GetBytes(settings.SecretKey);
 
-            services.AddScoped<IJwtService, JwtService>();
-
-            services.AddAuthentication(options =>
+            var validationParameters = new TokenValidationParameters
             {
-                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+                ClockSkew = TimeSpan.Zero,
+                RequireSignedTokens = true,
 
-            }).AddJwtBearer(options =>
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(secretKey),
+
+                RequireExpirationTime = true,
+                ValidateLifetime = true,
+
+                ValidateAudience = true,
+                ValidAudience = settings.Audience,
+
+                ValidateIssuer = true,
+                ValidIssuer = settings.Issuer,
+            };
+
+            options.RequireHttpsMetadata = false;
+            options.SaveToken = true;
+            options.TokenValidationParameters = validationParameters;
+        });
+
+        services.AddAuthorization();
+    }
+
+    public static void AddToDoTemplateSwaggerGen(this IServiceCollection services)
+    {
+        services.AddSwaggerGen(options =>
+        {
+            options.AddSecurityDefinition("bearerAuth", new OpenApiSecurityScheme
             {
-                var secretKey = Encoding.UTF8.GetBytes(settings.SecretKey);
-
-                var validationParameters = new TokenValidationParameters
-                {
-                    ClockSkew = TimeSpan.Zero,
-                    RequireSignedTokens = true,
-
-                    ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(secretKey),
-
-                    RequireExpirationTime = true,
-                    ValidateLifetime = true,
-
-                    ValidateAudience = true,
-                    ValidAudience = settings.Audience,
-
-                    ValidateIssuer = true,
-                    ValidIssuer = settings.Issuer,
-                };
-
-                options.RequireHttpsMetadata = false;
-                options.SaveToken = true;
-                options.TokenValidationParameters = validationParameters;
+                Name = "Authorization",
+                Type = SecuritySchemeType.Http,
+                Scheme = "bearer",
+                BearerFormat = "JWT",
+                In = ParameterLocation.Header,
+                Description = "JWT Authorization header using the Bearer scheme."
             });
-        }
 
-        public static void AddCustomSwaggerGen(this IServiceCollection services)
-        {
-            services.AddSwaggerGen(options =>
+            options.AddSecurityRequirement(new OpenApiSecurityRequirement
             {
-                options.AddSecurityDefinition("bearerAuth", new OpenApiSecurityScheme
                 {
-                    Name = "Authorization",
-                    Type = SecuritySchemeType.Http,
-                    Scheme = "bearer",
-                    BearerFormat = "JWT",
-                    In = ParameterLocation.Header,
-                    Description = "JWT Authorization header using the Bearer scheme."
-                });
-
-                options.AddSecurityRequirement(new OpenApiSecurityRequirement
-                {
+                    new OpenApiSecurityScheme
                     {
-                        new OpenApiSecurityScheme
+                        Reference = new OpenApiReference
                         {
-                            Reference = new OpenApiReference
-                            {
-                                Type = ReferenceType.SecurityScheme,
-                                Id = "bearerAuth"
-                            }
-                        },
-                        new string[] {}
-                    }
-                });
+                            Type = ReferenceType.SecurityScheme,
+                            Id = "bearerAuth"
+                        }
+                    },
+                    new string[] {}
+                }
             });
-        }
+        });
     }
 }

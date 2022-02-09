@@ -1,6 +1,5 @@
 ﻿using System.IO.Compression;
 using Microsoft.AspNetCore.ResponseCompression;
-using TodoTemplate.Api.Extensions;
 
 #if BlazorWebAssembly
 using TodoTemplate.App.Extensions;
@@ -14,6 +13,8 @@ public static class Services
 {
     public static void Add(IServiceCollection services, IConfiguration configuration)
     {
+        services.AddToDoTemplateSharedServices();
+
 #if BlazorWebAssembly
         services.AddTodoTemplateServices();
         services.AddScoped(c =>
@@ -25,11 +26,10 @@ public static class Services
             return new HttpClient(new TodoTemplateHttpClientHandler()) { BaseAddress = new Uri($"{c.GetRequiredService<NavigationManager>().BaseUri}api/") };
         });
         services.AddRazorPages();
+        services.AddMvcCore();
 #endif
 
         services.AddCors();
-
-        services.AddMvcCore();
 
         services.AddControllers();
 
@@ -38,7 +38,7 @@ public static class Services
         services.AddResponseCompression(opts =>
         {
             opts.EnableForHttps = true;
-            opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Where(m => m != "text/html").Concat(new[] { "application/octet-stream" }).ToArray();
+            opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(new[] { "application/octet-stream" }).ToArray();
             opts.Providers.Add<BrotliCompressionProvider>();
             opts.Providers.Add<GzipCompressionProvider>();
         })
@@ -56,10 +56,10 @@ public static class Services
 
         services.AddAutoMapper(typeof(Program).Assembly);
 
-        services.AddCustomSwaggerGen();
+        services.AddToDoTemplateSwaggerGen();
 
-        services.AddCustomIdentity(configuration);
+        services.AddToDoTemplateIdentity(configuration);
 
-        services.AddCustomJwt(configuration);
+        services.AddToDoTemplateJwt(configuration);
     }
 }

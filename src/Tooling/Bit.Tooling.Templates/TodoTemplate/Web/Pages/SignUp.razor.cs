@@ -36,14 +36,14 @@ public partial class SignUp
 
         try
         {
-            await HttpClient.PostAsync("User/Create", JsonContent.Create(new UserDto
+            await HttpClient.PostAsJsonAsync("User/SignUp", new UserDto
             {
                 UserName = Email,
                 Email = Email,
                 Password = Password
-            }));
+            });
 
-            await TodoTemplateAuthenticationService.SignIn(new RequestTokenDto
+            await TodoTemplateAuthenticationService.SignIn(new SignInRequestDto
             {
                 UserName = Email,
                 Password = Password

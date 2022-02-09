@@ -1,4 +1,5 @@
-﻿using Microsoft.Net.Http.Headers;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Net.Http.Headers;
 
 namespace TodoTemplate.Api.Startup
 {
@@ -12,10 +13,16 @@ namespace TodoTemplate.Api.Startup
 
                 app.UseSwaggerUI();
 
-                app.UseDeveloperExceptionPage();
+                if (env.IsDevelopment())
+                {
+                    app.UseDeveloperExceptionPage();
+                }
 
 #if BlazorWebAssembly
-                app.UseWebAssemblyDebugging();
+                if (env.IsDevelopment())
+                {
+                    app.UseWebAssemblyDebugging();
+                }
 #endif
             }
 
@@ -37,16 +44,35 @@ namespace TodoTemplate.Api.Startup
                 }
             });
 
+            app.Use(async (context, next) =>
+            {
+                if (!context.Request.Headers.ContainsKey("Authorization"))
+                {
+                    if (context.Request.Cookies?["access_token"] != null)
+                    {
+                        context.Request.Headers.Add("Authorization", new[]
+                        {
+                            $"{JwtBearerDefaults.AuthenticationScheme} {context.Request.Cookies["access_token"]}"
+                        });
+                    }
+                }
+
+                await next();
+            });
+
             app.UseRouting();
 
-            app.UseCors(options => options.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
+            if (env.IsDevelopment())
+            {
+                app.UseCors(options => options.WithOrigins("https://localhost:4001").AllowAnyHeader().AllowAnyMethod().AllowCredentials());
+            }
 
             app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapDefaultControllerRoute();
+                endpoints.MapDefaultControllerRoute().RequireAuthorization();
 
 #if BlazorWebAssembly
                 endpoints.MapFallbackToPage("/_Host");

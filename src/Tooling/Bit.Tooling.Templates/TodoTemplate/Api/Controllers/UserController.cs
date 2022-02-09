@@ -1,86 +1,89 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using TodoTemplate.Api.Contracts;
-using TodoTemplate.Api.Data.Models.Account;
+﻿using TodoTemplate.Api.Models.Account;
 using TodoTemplate.Shared.Dtos.Account;
 
-namespace TodoTemplate.Api.Controllers
+namespace TodoTemplate.Api.Controllers;
+
+[Route("api/[controller]")]
+[ApiController]
+[Authorize]
+public class UserController : ControllerBase
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    [Authorize]
-    public class UserController : ControllerBase
+    private readonly UserManager<User> _userManager;
+
+    private readonly IJwtService _jwtService;
+
+    private readonly IMapper _mapper;
+
+    public UserController(UserManager<User> userManager, IJwtService jwtService, IMapper mapper)
     {
-        private readonly UserManager<User> _userManager;
+        _userManager = userManager;
+        _jwtService = jwtService;
+        _mapper = mapper;
+    }
 
-        private readonly IJwtService _jwtService;
+    [HttpGet]
+    public IQueryable<UserDto> Get(CancellationToken cancellationToken)
+    {
+        return _userManager.Users.ProjectTo<UserDto>(_mapper.ConfigurationProvider, cancellationToken);
+    }
 
-        private readonly IMapper _mapper;
+    [HttpGet("[action]")]
+    public async Task<ActionResult<UserDto>> GetCurrentUser(CancellationToken cancellationToken)
+    {
+        var userId = User.GetUserId();
 
-        public UserController(UserManager<User> userManager, IJwtService jwtService, IMapper mapper)
-        {
-            _userManager = userManager;
-            _jwtService = jwtService;
-            _mapper = mapper;
-        }
+        var user = await Get(cancellationToken).FirstOrDefaultAsync(user => user.Id == userId, cancellationToken);
 
-        [HttpGet]
-        public IQueryable<UserDto> Get(CancellationToken cancellationToken)
-        {
-            return _userManager.Users.ProjectTo<UserDto>(_mapper.ConfigurationProvider, cancellationToken);
-        }
+        if (user is null)
+            return NotFound();
 
-        [HttpGet("{userName}")]
-        public async Task<ActionResult<UserDto>> Get(string userName, CancellationToken cancellationToken)
-        {
-            var user = await Get(cancellationToken).FirstOrDefaultAsync(user => user.UserName == userName, cancellationToken);
+        return Ok(user);
+    }
 
-            if (user is null) return NotFound();
+    [HttpPost("[action]"), AllowAnonymous]
+    public async Task<ActionResult<UserDto>> SignUp(UserDto dto, CancellationToken cancellationToken)
+    {
+        var userToAdd = _mapper.Map<User>(dto);
 
-            return Ok(user);
-        }
+        var isSuceess = (await _userManager.CreateAsync(userToAdd, dto.Password)).Succeeded;
 
-        [HttpPost("[action]"), AllowAnonymous]
-        public async Task<ActionResult<UserDto>> Create(UserDto dto, CancellationToken cancellationToken)
-        {
-            var userToAdd = _mapper.Map<User>(dto);
+        isSuceess = isSuceess && (await _userManager.AddClaimAsync(userToAdd, new Claim(ClaimTypes.Name, userToAdd.UserName!))).Succeeded;
+        isSuceess = isSuceess && (await _userManager.AddClaimAsync(userToAdd, new Claim(ClaimTypes.NameIdentifier, userToAdd.Id.ToString()!))).Succeeded;
 
-            var identityResult = await _userManager.CreateAsync(userToAdd, dto.Password);
+        if (!isSuceess)
+            return BadRequest();
 
-            if (!identityResult.Succeeded)
-            {
-                var identityError = identityResult.Errors.First();
-                throw new BadHttpRequestException(identityError.Code + identityError.Description);
-            }
+        return Ok(await Get(cancellationToken).FirstOrDefaultAsync(u => u.Id == userToAdd.Id, cancellationToken));
+    }
 
-            return Ok(await Get(userToAdd.UserName!, cancellationToken));
-        }
+    [HttpPut]
+    public async Task<ActionResult<UserDto>> Update(UserDto dto, CancellationToken cancellationToken)
+    {
+        var userToUpdate = await _userManager.Users.FirstOrDefaultAsync(user => user.Id == dto.Id, cancellationToken);
 
-        [HttpPut]
-        public async Task<ActionResult<UserDto>> Update(UserDto dto, CancellationToken cancellationToken)
-        {
-            var userToUpdate = await _userManager.Users.FirstOrDefaultAsync(user => user.Id == dto.Id, cancellationToken);
+        if (userToUpdate is null)
+            return NotFound();
 
-            if (userToUpdate is null) return NotFound();
+        var updatedUser = _mapper.Map(dto, userToUpdate);
 
-            var updatedUser = _mapper.Map(dto, userToUpdate);
+        await _userManager.UpdateAsync(updatedUser);
 
-            await _userManager.UpdateAsync(updatedUser);
+        return Ok(await Get(cancellationToken).FirstOrDefaultAsync(u => u.Id == updatedUser.Id, cancellationToken));
+    }
 
-            return await Get(updatedUser.UserName!, cancellationToken);
-        }
+    [HttpPost("[action]"), AllowAnonymous]
+    public async Task<ActionResult<SignInResponseDto>> SignIn(SignInRequestDto requestToken)
+    {
+        var user = await _userManager.FindByNameAsync(requestToken.UserName);
 
-        [HttpPost("[action]"), AllowAnonymous]
-        public async Task<ActionResult<ResponseTokenDto>> Token(RequestTokenDto dto)
-        {
-            var user = await _userManager.FindByNameAsync(dto.UserName);
+        if (user is null)
+            return BadRequest();
 
-            if (user is null) return NotFound();
+        var isPasswordValid = await _userManager.CheckPasswordAsync(user, requestToken.Password);
 
-            var isPasswordValid = await _userManager.CheckPasswordAsync(user, dto.Password);
+        if (!isPasswordValid)
+            return BadRequest();
 
-            if (!isPasswordValid) throw new BadHttpRequestException("Wrong username or password");
-
-            return Ok(await _jwtService.GenerateToken(dto));
-        }
+        return Ok(await _jwtService.GenerateToken(requestToken));
     }
 }

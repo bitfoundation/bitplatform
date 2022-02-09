@@ -12,7 +12,6 @@ public class Startup
 {
     public void ConfigureServices(IServiceCollection services)
     {
-
 #if BlazorServer
         services.AddRazorPages();
         services.AddServerSideBlazor();
@@ -27,6 +26,7 @@ public class Startup
             .Configure<GzipCompressionProviderOptions>(opt => opt.Level = CompressionLevel.Fastest);
 #endif
 
+        services.AddToDoTemplateSharedServices();
         services.AddTodoTemplateServices();
     }
 
