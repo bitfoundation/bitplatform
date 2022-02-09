@@ -1,4 +1,5 @@
-﻿using System.IdentityModel.Tokens.Jwt;
+﻿using System.Collections.Immutable;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.Extensions.Options;
@@ -26,11 +27,10 @@ namespace TodoTemplate.Api.Implementations
             var secretKey = Encoding.UTF8.GetBytes(_appSettings.JwtSettings.SecretKey);
             var signingCredentials = new SigningCredentials(new SymmetricSecurityKey(secretKey), SecurityAlgorithms.HmacSha256Signature);
 
-            var encryptionKey = Encoding.UTF8.GetBytes(_appSettings.JwtSettings.EncryptKey);
-            var encryptingCredentials = new EncryptingCredentials(new SymmetricSecurityKey(encryptionKey), SecurityAlgorithms.Aes128KW, SecurityAlgorithms.Aes128CbcHmacSha256);
-
             var user = await _userManager.FindByNameAsync(dto.UserName);
             var claims = await _userManager.GetClaimsAsync(user);
+
+            claims.Add(new Claim(ClaimTypes.Name, user.UserName!));
 
             var securityToken = new JwtSecurityTokenHandler()
                 .CreateJwtSecurityToken(new SecurityTokenDescriptor
@@ -41,7 +41,6 @@ namespace TodoTemplate.Api.Implementations
                     NotBefore = DateTime.Now.AddMinutes(_appSettings.JwtSettings.NotBeforeMinutes),
                     Expires = DateTime.Now.AddMinutes(_appSettings.JwtSettings.ExpirationMinutes),
                     SigningCredentials = signingCredentials,
-                    EncryptingCredentials = encryptingCredentials,
                     Subject = new ClaimsIdentity(claims)
                 });
 

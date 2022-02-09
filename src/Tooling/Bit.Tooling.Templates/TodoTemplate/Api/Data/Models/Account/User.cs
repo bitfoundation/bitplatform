@@ -1,4 +1,6 @@
-﻿namespace TodoTemplate.Api.Data.Models.Account;
+﻿using TodoTemplate.Shared.Enums;
+
+namespace TodoTemplate.Api.Data.Models.Account;
 
 public class User : IdentityUser<int>
 {
@@ -17,4 +19,8 @@ public class User : IdentityUser<int>
     public override DateTimeOffset? LockoutEnd { get; set; }
     public override bool LockoutEnabled { get; set; }
     public override int AccessFailedCount { get; set; }
+
+    public string? FullName { get; set; }
+    public Gender? Gender { get; set; }
+    public DateTimeOffset? BirthDate { get; set; }
 }

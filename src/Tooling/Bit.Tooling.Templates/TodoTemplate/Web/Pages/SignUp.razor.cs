@@ -1,4 +1,5 @@
 ﻿using TodoTemplate.Shared.Dtos.Account;
+
 namespace TodoTemplate.App.Pages;
 
 public partial class SignUp

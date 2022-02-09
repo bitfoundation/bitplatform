@@ -7,17 +7,15 @@ namespace TodoTemplate.App.Shared
         public bool IsSignedInUser { get; set; }
 
         [CascadingParameter]
-        public Task<AuthenticationState> AuthenticationStateTask { get; set; }
+        public Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
 
         protected override async Task OnInitializedAsync()
         {
             var authState = await AuthenticationStateTask;
-            var user = authState.User;
-
-
+          
             if (AuthenticationStateTask.Result.User.Identity != null)
             {
-                IsSignedInUser = user.Identity!.IsAuthenticated;
+                IsSignedInUser = authState.User.Identity!.IsAuthenticated;
             }
 
             await base.OnInitializedAsync();

@@ -36,6 +36,12 @@
     background-color: $S2Color;
 }
 
+.profile-photo {
+    width: rem(56px);
+    height: rem(56px);
+    border-radius: 50%;
+}
+
 .form-profile-email {
     font-size: rem(14px);
     line-height: rem(24px);

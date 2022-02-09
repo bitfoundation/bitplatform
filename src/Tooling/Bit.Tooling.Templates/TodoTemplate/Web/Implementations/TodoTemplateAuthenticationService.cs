@@ -26,14 +26,14 @@ namespace TodoTemplate.App.Implementations
 
             await _jsRuntime.InvokeVoidAsync("window.localStorage.setItem", "access_token", result?.Token);
 
-            _authenticationStateProvider.SetUserSignedIn();
+            await _authenticationStateProvider.GetAuthenticationStateAsync();
         }
 
         public async Task SignOut()
         {
             await _jsRuntime.InvokeVoidAsync("window.localStorage.removeItem", "access_token");
 
-            _authenticationStateProvider.SetUserSignedOut();
+            await _authenticationStateProvider.GetAuthenticationStateAsync();
         }
     }
 }
