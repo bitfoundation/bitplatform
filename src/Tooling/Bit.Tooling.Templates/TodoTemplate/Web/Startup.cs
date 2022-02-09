@@ -26,7 +26,7 @@ public class Startup
             .Configure<GzipCompressionProviderOptions>(opt => opt.Level = CompressionLevel.Fastest);
 #endif
 
-        services.AddToDoTemplateSharedServices();
+        services.AddTodoTemplateSharedServices();
         services.AddTodoTemplateServices();
     }
 

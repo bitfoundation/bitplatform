@@ -4,7 +4,7 @@ namespace TodoTemplate.App.Services.Implementations;
 
 public class TodoTemplateHttpClientHandler : HttpClientHandler
 {
-#if BlazorServer
+#if BlazorServer || BlazorHybrid
     private readonly IJSRuntime _jsRuntime;
 
     public TodoTemplateHttpClientHandler(IJSRuntime jsRuntime)
@@ -15,9 +15,12 @@ public class TodoTemplateHttpClientHandler : HttpClientHandler
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-#if BlazorServer
+#if BlazorServer || BlazorHybrid
         var access_token = await _jsRuntime.InvokeAsync<string>("todoTemplate.getCookie", cancellationToken, "access_token");
-        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", access_token);
+        if(access_token is not null)
+        {
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", access_token);
+        }
 #endif
 
         var response = await base.SendAsync(request, cancellationToken);

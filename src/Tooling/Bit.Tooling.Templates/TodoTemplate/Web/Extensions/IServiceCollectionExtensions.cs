@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components.Authorization;
 
-namespace TodoTemplate.App.Extensions;
+namespace Microsoft.Extensions.DependencyInjection;
 
 public static class IServiceCollectionExtensions
 {

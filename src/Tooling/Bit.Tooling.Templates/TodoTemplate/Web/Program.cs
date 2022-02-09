@@ -26,7 +26,7 @@ public class Program
         {
             var builder = WebAssemblyHostBuilder.CreateDefault();
 
-            builder.Services.AddSingleton(new HttpClient(new TodoTemplateHttpClientHandler()) { BaseAddress = new Uri($"{builder.HostEnvironment.BaseAddress}api/") });
+            builder.Services.AddSingleton(c => new HttpClient(c.GetRequiredService<TodoTemplateHttpClientHandler>()) { BaseAddress = new Uri($"{builder.HostEnvironment.BaseAddress}api/") });
 
             new Startup().ConfigureServices(builder.Services);
 

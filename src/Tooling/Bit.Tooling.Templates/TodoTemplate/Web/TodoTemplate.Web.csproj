@@ -14,7 +14,6 @@
 		<Content Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Remove="Pages\_Host.cshtml" />
 		<Content Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Remove="Pages\_Layout.cshtml" />
 		<Content Remove="compilerconfig.json" />
-		<Content Remove="wwwroot\scripts\todoTemplate.ts" />
 		<None Include="compilerconfig.json" />
 	</ItemGroup>
 
@@ -34,7 +33,6 @@
 		<ProjectReference Include="..\..\..\..\Client\Web\Bit.Client.Web.BlazorUI\Bit.Client.Web.BlazorUI.csproj" />
 		<ProjectReference Include="..\..\..\Bit.Tooling.SourceGenerators\Bit.Tooling.SourceGenerators.csproj" />
 		<ProjectReference Include="..\Shared\TodoTemplate.Shared.csproj" />
-		<TypeScriptCompile Include="wwwroot\scripts\todoTemplate.ts" />
 		
 		<Using Include="Microsoft.AspNetCore.Components" />
 		<Using Include="TodoTemplate.App.Services.Contracts" />

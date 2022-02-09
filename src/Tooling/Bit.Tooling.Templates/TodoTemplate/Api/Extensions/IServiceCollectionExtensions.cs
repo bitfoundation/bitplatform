@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 
 public static class IServiceCollectionExtensions
 {
-    public static void AddToDoTemplateIdentity(this IServiceCollection services, IConfiguration configuration)
+    public static void AddTodoTemplateIdentity(this IServiceCollection services, IConfiguration configuration)
     {
         var appsettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>();
         var settings = appsettings.IdentitySettings;
@@ -26,7 +26,7 @@ public static class IServiceCollectionExtensions
         }).AddEntityFrameworkStores<TodoTemplateDbContext>().AddDefaultTokenProviders();
     }
 
-    public static void AddToDoTemplateJwt(this IServiceCollection services, IConfiguration configuration)
+    public static void AddTodoTemplateJwt(this IServiceCollection services, IConfiguration configuration)
     {
         var appsettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>();
         var settings = appsettings.JwtSettings;
@@ -68,7 +68,7 @@ public static class IServiceCollectionExtensions
         services.AddAuthorization();
     }
 
-    public static void AddToDoTemplateSwaggerGen(this IServiceCollection services)
+    public static void AddTodoTemplateSwaggerGen(this IServiceCollection services)
     {
         services.AddSwaggerGen(options =>
         {
