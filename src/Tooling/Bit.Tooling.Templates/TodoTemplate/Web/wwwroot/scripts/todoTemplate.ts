@@ -4,6 +4,8 @@
         setCookie: setCookie,
         getCookie: getCookie,
         removeCookie: removeCookie,
+        goBack: goBack,
+        reloadPage: reloadPage,
     };
 
     function setCookie(name, value, seconds) {
@@ -31,5 +33,13 @@
     function trim(value) {
         return value.replace(/^\s+|\s+$/g, '');
     };
+
+    function goBack() {
+        window.history.back();
+    }
+
+    function reloadPage() {
+        location.reload();
+    }
 
 }());

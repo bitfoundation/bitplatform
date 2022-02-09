@@ -1,4 +1,5 @@
 ﻿using TodoTemplate.Shared.Dtos.Account;
+
 namespace TodoTemplate.App.Pages;
 
 public partial class SignIn
@@ -21,6 +22,9 @@ public partial class SignIn
     public HttpClient HttpClient { get; set; } = default!;
 
     [Inject]
+    public NavigationManager NavigationManager { get; set; } = default!;
+
+    [Inject]
     public ITodoTemplateAuthenticationService TodoTemplateAuthenticationService { get; set; } = default!;
 
     private async Task OnClickSignIn()
@@ -41,6 +45,8 @@ public partial class SignIn
 
             IsSuccessMessageBar = true;
             MessageBarText = "Sign-up successfully";
+
+            NavigationManager.NavigateTo("/");
         }
         catch (Exception e)
         {

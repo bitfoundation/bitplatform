@@ -27,6 +27,7 @@ public class Program
             var builder = WebAssemblyHostBuilder.CreateDefault();
 
             builder.Services.AddSingleton(c => new HttpClient(c.GetRequiredService<TodoTemplateHttpClientHandler>()) { BaseAddress = new Uri($"{builder.HostEnvironment.BaseAddress}api/") });
+            builder.Services.AddTransient<ITokenProvider, ClientSideTokenProvider>();
 
             new Startup().ConfigureServices(builder.Services);
 

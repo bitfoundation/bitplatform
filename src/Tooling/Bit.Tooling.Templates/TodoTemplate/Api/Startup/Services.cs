@@ -15,6 +15,7 @@ public static class Services
         services.AddTodoTemplateSharedServices();
 
 #if BlazorWebAssembly
+        services.AddTransient<ITokenProvider, ServerSideTokenProvider>();
         services.AddTodoTemplateServices();
         services.AddScoped(c =>
         {

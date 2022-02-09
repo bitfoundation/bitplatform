@@ -4,11 +4,11 @@ namespace TodoTemplate.App.Services.Implementations
 {
     public class TodoTemplateAuthenticationStateProvider : AuthenticationStateProvider
     {
-        private readonly IJSRuntime _jsRuntime;
+        private readonly ITokenProvider _tokenProvider;
 
-        public TodoTemplateAuthenticationStateProvider(IJSRuntime jsRuntime)
+        public TodoTemplateAuthenticationStateProvider(ITokenProvider tokenProvider)
         {
-            _jsRuntime = jsRuntime;
+            _tokenProvider = tokenProvider;
         }
 
         public void RaiseAuthenticationStateHasChanged()
@@ -18,7 +18,7 @@ namespace TodoTemplate.App.Services.Implementations
 
         public override async Task<AuthenticationState> GetAuthenticationStateAsync()
         {
-            var access_token = await _jsRuntime.InvokeAsync<string>("todoTemplate.getCookie", "access_token");
+            var access_token = await _tokenProvider.GetAcccessToken();
 
             if (string.IsNullOrWhiteSpace(access_token))
             {

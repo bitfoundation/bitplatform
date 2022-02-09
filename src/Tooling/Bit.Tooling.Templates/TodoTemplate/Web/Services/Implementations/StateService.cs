@@ -19,7 +19,7 @@ public class StateService : IAsyncDisposable
 
     public async Task<T?> GetValue<T>(string key, Func<Task<T?>> factory)
     {
-        if (_applicationState.TryTakeFromJson<T>(key, out T? value))
+        if (_applicationState.TryTakeFromJson(key, out T? value))
             return value;
         var result = await factory();
         Persist(key, result);
