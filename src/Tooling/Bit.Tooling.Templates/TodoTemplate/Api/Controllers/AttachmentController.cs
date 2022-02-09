@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using MimeTypes;
+﻿using MimeTypes;
 using SystemFile = System.IO.File;
 
 namespace TodoTemplate.Api.Controllers;
@@ -10,10 +9,12 @@ namespace TodoTemplate.Api.Controllers;
 public class AttachmentController : ControllerBase
 {
     private readonly AppSettings _appSettings;
+    private readonly IWebHostEnvironment _webHostEnvironment;
 
-    public AttachmentController(IOptionsSnapshot<AppSettings> setting)
+    public AttachmentController(IOptionsSnapshot<AppSettings> setting, IWebHostEnvironment webHostEnvironment)
     {
         _appSettings = setting.Value;
+        _webHostEnvironment = webHostEnvironment;
     }
 
     [RequestFormLimits(ValueLengthLimit = int.MaxValue, MultipartBodyLengthLimit = int.MaxValue)]
@@ -30,7 +31,7 @@ public class AttachmentController : ControllerBase
 
         var userId = User.GetUserId();
 
-        var path = Path.Combine($"{_appSettings.UserProfilePhotoPath}\\{userId}.{file.FileName.Split(".").LastOrDefault()}");
+        var path = Path.Combine($"{_appSettings.UserProfilePhotoPath}\\{userId}{Path.GetExtension(file.FileName)}");
 
         if (SystemFile.Exists(path))
             SystemFile.Delete(path);
@@ -46,15 +47,16 @@ public class AttachmentController : ControllerBase
     {
         var userId = User.GetUserId();
 
-        var fileName = Directory.GetFiles(_appSettings.UserProfilePhotoPath, $"{userId}.*")
+        var filePath = Directory.GetFiles(_appSettings.UserProfilePhotoPath, $"{userId}.*")
             .Single();
 
-        var path = Path.Combine(_appSettings.UserProfilePhotoPath, $"{userId}.{fileName.Split(".").LastOrDefault()}");
-
-        if (!SystemFile.Exists(path))
+        if (filePath is null)
             return NotFound();
 
-        SystemFile.Delete(path);
+        if (!SystemFile.Exists(filePath))
+            return NotFound();
+
+        SystemFile.Delete(filePath);
 
         return Ok();
     }
@@ -64,17 +66,15 @@ public class AttachmentController : ControllerBase
     {
         var userId = User.GetUserId();
 
-        var fileName = Directory.GetFiles(_appSettings.UserProfilePhotoPath, $"{userId}.*")
+        var filePath = Directory.GetFiles(_appSettings.UserProfilePhotoPath, $"{userId}.*")
             .SingleOrDefault();
 
-        if (fileName is null)
+        if (filePath is null)
             return NotFound();
 
-        var path = Path.Combine(_appSettings.UserProfilePhotoPath, $"{userId}.{fileName.Split(".").LastOrDefault()}");
-
-        if (!SystemFile.Exists(path))
+        if (!SystemFile.Exists(filePath))
             return NotFound();
 
-        return File(path, MimeTypeMap.GetMimeType(Path.GetExtension(path)));
+        return PhysicalFile(Path.Combine(_webHostEnvironment.ContentRootPath, filePath), MimeTypeMap.GetMimeType(Path.GetExtension(filePath)));
     }
 }

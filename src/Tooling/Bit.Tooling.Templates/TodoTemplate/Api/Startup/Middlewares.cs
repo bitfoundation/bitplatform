@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.Net.Http.Headers;
 
 namespace TodoTemplate.Api.Startup
@@ -15,11 +14,15 @@ namespace TodoTemplate.Api.Startup
                 app.UseSwaggerUI();
 
                 if (env.IsDevelopment())
+                {
                     app.UseDeveloperExceptionPage();
+                }
 
 #if BlazorWebAssembly
                 if (env.IsDevelopment())
+                {
                     app.UseWebAssemblyDebugging();
+                }
 #endif
             }
 
@@ -60,7 +63,9 @@ namespace TodoTemplate.Api.Startup
             app.UseRouting();
 
             if (env.IsDevelopment())
-                app.UseCors(options => options.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
+            {
+                app.UseCors(options => options.WithOrigins("https://localhost:4001").AllowAnyHeader().AllowAnyMethod().AllowCredentials());
+            }
 
             app.UseAuthentication();
             app.UseAuthorization();

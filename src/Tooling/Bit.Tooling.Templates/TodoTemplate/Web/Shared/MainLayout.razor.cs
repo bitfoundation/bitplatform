@@ -25,12 +25,7 @@ namespace TodoTemplate.App.Shared
         {
             try
             {
-                var authState = await AuthenticationStateTask;
-
-                if (AuthenticationStateTask.Result.User.Identity != null)
-                {
-                    UserIsAuthenticated = authState.User.Identity!.IsAuthenticated;
-                }
+                UserIsAuthenticated = (await AuthenticationStateTask).User.Identity?.IsAuthenticated == true;
             }
             finally
             {

@@ -1,5 +1,4 @@
-﻿using System.Security.Claims;
-using Microsoft.AspNetCore.Components.Authorization;
+﻿using Microsoft.AspNetCore.Components.Authorization;
 
 namespace TodoTemplate.App.Services.Implementations
 {
@@ -23,7 +22,7 @@ namespace TodoTemplate.App.Services.Implementations
 
             if (string.IsNullOrWhiteSpace(access_token))
             {
-                return NotLoggedIn();
+                return NotSignedIn();
             }
 
             var identity = new ClaimsIdentity(claims: ParseTokenClaims(access_token), authenticationType: "Bearer", nameType: "name", roleType: "role");
@@ -31,7 +30,7 @@ namespace TodoTemplate.App.Services.Implementations
             return new AuthenticationState(new ClaimsPrincipal(identity));
         }
 
-        AuthenticationState NotLoggedIn()
+        AuthenticationState NotSignedIn()
         {
             return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
         }

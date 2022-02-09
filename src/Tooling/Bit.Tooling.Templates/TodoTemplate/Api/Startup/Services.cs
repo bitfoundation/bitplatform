@@ -26,11 +26,10 @@ public static class Services
             return new HttpClient(new TodoTemplateHttpClientHandler()) { BaseAddress = new Uri($"{c.GetRequiredService<NavigationManager>().BaseUri}api/") };
         });
         services.AddRazorPages();
+        services.AddMvcCore();
 #endif
 
         services.AddCors();
-
-        services.AddMvcCore();
 
         services.AddControllers();
 
@@ -39,7 +38,7 @@ public static class Services
         services.AddResponseCompression(opts =>
         {
             opts.EnableForHttps = true;
-            opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Where(m => m != "text/html").Concat(new[] { "application/octet-stream" }).ToArray();
+            opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(new[] { "application/octet-stream" }).ToArray();
             opts.Providers.Add<BrotliCompressionProvider>();
             opts.Providers.Add<GzipCompressionProvider>();
         })
