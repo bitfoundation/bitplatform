@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.AspNetCore.Builder;
 #endif
 using System.IO.Compression;
-using TodoTemplate.App.Extensions;
 
 namespace TodoTemplate.App;
 public class Startup
@@ -13,6 +12,7 @@ public class Startup
     public void ConfigureServices(IServiceCollection services)
     {
 #if BlazorServer
+        services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
         services.AddRazorPages();
         services.AddServerSideBlazor();
         services.AddResponseCompression(opts =>
@@ -24,9 +24,10 @@ public class Startup
         })
             .Configure<BrotliCompressionProviderOptions>(opt => opt.Level = CompressionLevel.Fastest)
             .Configure<GzipCompressionProviderOptions>(opt => opt.Level = CompressionLevel.Fastest);
+        services.AddTransient<ITokenProvider, ServerSideTokenProvider>();
 #endif
 
-        services.AddToDoTemplateSharedServices();
+        services.AddTodoTemplateSharedServices();
         services.AddTodoTemplateServices();
     }
 

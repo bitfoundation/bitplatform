@@ -23,12 +23,12 @@
                     }
                     else
                     {
-                        @UserDto?.UserName?.ToUpper()[..2]
+                        @User?.UserName?.ToUpper()[..2]
                     }
                 }
             </div>
             <div class="form-profile-email">
-                @UserDto?.UserName
+                @User?.UserName
             </div>
         </div>
         <div class="form-input-container">
@@ -39,11 +39,11 @@
         </div>
         <div class="form-input-container">
             <BitLabel>Full-Name</BitLabel>
-            <BitTextField @bind-Value="UserDto!.FullName"></BitTextField>
+            <BitTextField @bind-Value="User!.FullName"></BitTextField>
         </div>
         <div class="form-input-container">
             <BitLabel>Birthday</BitLabel>
-            <BitDatePicker @bind-Value="UserDto!.BirthDate"></BitDatePicker>
+            <BitDatePicker @bind-Value="User!.BirthDate"></BitDatePicker>
         </div>
         <div class="form-choice-container">
             <BitLabel>Gender</BitLabel>

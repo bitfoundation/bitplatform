@@ -10,22 +10,25 @@ namespace TodoTemplate.App.Shared
         public Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
 
         [Inject]
+        public StateService StateService { get; set; } = default!;
+
+        [Inject]
         public TodoTemplateAuthenticationStateProvider TodoTemplateAuthenticationStateProvider { get; set; } = default!;
 
         protected override async Task OnInitializedAsync()
         {
             TodoTemplateAuthenticationStateProvider.AuthenticationStateChanged += VerifyUserIsAuthenticatedOrNot;
 
-            VerifyUserIsAuthenticatedOrNot();
+            UserIsAuthenticated = await StateService.GetValue(nameof(UserIsAuthenticated), async () => (await AuthenticationStateTask).User.Identity?.IsAuthenticated == true);
 
             await base.OnInitializedAsync();
         }
 
-        async void VerifyUserIsAuthenticatedOrNot(Task<AuthenticationState>? task = null)
+        async void VerifyUserIsAuthenticatedOrNot(Task<AuthenticationState> task)
         {
             try
             {
-                UserIsAuthenticated = (await AuthenticationStateTask).User.Identity?.IsAuthenticated == true;
+                UserIsAuthenticated = await StateService.GetValue(nameof(UserIsAuthenticated), async () => (await AuthenticationStateTask).User.Identity?.IsAuthenticated == true);
             }
             finally
             {

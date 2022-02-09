@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components.Authorization;
 
-namespace TodoTemplate.App.Extensions;
+namespace Microsoft.Extensions.DependencyInjection;
 
 public static class IServiceCollectionExtensions
 {
@@ -14,14 +14,14 @@ public static class IServiceCollectionExtensions
         {
             HttpClient httpClient = new(sp.GetRequiredService<TodoTemplateHttpClientHandler>())
             {
-                BaseAddress = new Uri(sp.GetRequiredService<IConfiguration>()["ApiServerAddress"])
+                BaseAddress = new Uri($"{sp.GetRequiredService<IConfiguration>()["ApiServerAddress"]}api/")
             };
 
             return httpClient;
         });
 #endif
 
-        services.AddScoped<TodoTemplateHttpClientHandler>();
+        services.AddTransient<TodoTemplateHttpClientHandler>();
 
         services.AddAuthorizationCore();
         services.AddScoped<AuthenticationStateProvider, TodoTemplateAuthenticationStateProvider>();

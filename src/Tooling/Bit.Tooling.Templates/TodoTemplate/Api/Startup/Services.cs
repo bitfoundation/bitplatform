@@ -2,8 +2,7 @@
 using Microsoft.AspNetCore.ResponseCompression;
 
 #if BlazorWebAssembly
-using TodoTemplate.App.Extensions;
-using TodoTemplate.App.Implementations;
+using TodoTemplate.App.Services.Implementations;
 using Microsoft.AspNetCore.Components;
 #endif
 
@@ -13,9 +12,10 @@ public static class Services
 {
     public static void Add(IServiceCollection services, IConfiguration configuration)
     {
-        services.AddToDoTemplateSharedServices();
+        services.AddTodoTemplateSharedServices();
 
 #if BlazorWebAssembly
+        services.AddTransient<ITokenProvider, ServerSideTokenProvider>();
         services.AddTodoTemplateServices();
         services.AddScoped(c =>
         {
@@ -23,7 +23,7 @@ public static class Services
             // Using this registration + registrations provided in Program.cs/Startup.cs of TodoTemplate.App project,
             // you can inject HttpClient and call TodoTemplate.Api api controllers in blazor pages.
             // for other usages of http client, for example calling 3rd party apis, please use services.AddHttpClient("NamedHttpClient"), then inject IHttpClientFactory and use its CreateClient("NamedHttpClient") method.
-            return new HttpClient(new TodoTemplateHttpClientHandler()) { BaseAddress = new Uri($"{c.GetRequiredService<NavigationManager>().BaseUri}api/") };
+            return new HttpClient(c.GetRequiredService<TodoTemplateHttpClientHandler>()) { BaseAddress = new Uri($"{c.GetRequiredService<NavigationManager>().BaseUri}api/") };
         });
         services.AddRazorPages();
         services.AddMvcCore();
@@ -56,10 +56,10 @@ public static class Services
 
         services.AddAutoMapper(typeof(Program).Assembly);
 
-        services.AddToDoTemplateSwaggerGen();
+        services.AddTodoTemplateSwaggerGen();
 
-        services.AddToDoTemplateIdentity(configuration);
+        services.AddTodoTemplateIdentity(configuration);
 
-        services.AddToDoTemplateJwt(configuration);
+        services.AddTodoTemplateJwt(configuration);
     }
 }

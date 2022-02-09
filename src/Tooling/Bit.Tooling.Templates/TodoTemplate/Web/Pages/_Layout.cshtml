@@ -25,7 +25,7 @@
     <link rel="stylesheet" href="_content/Bit.Client.Web.BlazorUI/styles/bit.blazorui.min.css" asp-append-version="true" />
     <link href="styles/app.css" rel="stylesheet" asp-append-version="true" />
     <link href="TodoTemplate.App.styles.css" rel="stylesheet" asp-append-version="true" />
-    <component type="typeof(HeadOutlet)" render-mode="@(isBlazorServer ? RenderMode.Server : RenderMode.WebAssembly)" />
+    <component type="typeof(HeadOutlet)" render-mode="@(isBlazorServer ? RenderMode.ServerPrerendered : RenderMode.WebAssemblyPrerendered)" />
 </head>
 <body>
 

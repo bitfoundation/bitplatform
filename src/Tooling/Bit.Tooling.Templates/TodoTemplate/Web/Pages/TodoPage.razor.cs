@@ -6,6 +6,9 @@ public partial class TodoPage
     [Inject]
     public HttpClient HttpClient { get; set; } = default!;
 
+    [Inject]
+    public StateService StateService { get; set; } = default!;
+
     private bool IsLoading;
     private string NewTodoItemTitle = string.Empty;
     private List<TodoItemDto>? TodoItemList = new();
@@ -20,7 +23,7 @@ public partial class TodoPage
         IsLoading = true;
         try
         {
-            TodoItemList = await HttpClient.GetFromJsonAsync<List<TodoItemDto>>("TodoItem");
+            TodoItemList = await StateService.GetValue(nameof(TodoItemList), async () => await HttpClient.GetFromJsonAsync<List<TodoItemDto>>("TodoItem"));
         }
         finally
         {

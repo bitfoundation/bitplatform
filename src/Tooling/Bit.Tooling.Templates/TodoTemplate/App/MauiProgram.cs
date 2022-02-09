@@ -19,6 +19,7 @@ public static class MauiProgram
 
         var services = builder.Services;
 
+        services.AddTransient<ITokenProvider, ClientSideTokenProvider>();
         services.AddTodoTemplateSharedServices();
         services.AddTodoTemplateServices();
         services.AddBlazorWebView();

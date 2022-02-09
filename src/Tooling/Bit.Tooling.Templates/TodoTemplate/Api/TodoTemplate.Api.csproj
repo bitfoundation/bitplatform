@@ -7,6 +7,7 @@
     <ItemGroup>
         <Content Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="..\Web\Pages\_Host.cshtml" Link="Pages\_Host.cshtml" />
         <Content Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="..\Web\Pages\_Layout.cshtml" Link="Pages\_Layout.cshtml" />
+        <Compile Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="..\Web\Services\Implementations\ServerSideTokenProvider.cs" Link="Services\Implementations\ServerSideTokenProvider.cs" />
         <PackageReference Include="AutoMapper" Version="10.1.1" />
         <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="8.1.1" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.1" />
@@ -45,7 +46,6 @@
     <ItemGroup>
         <ProjectReference Include="..\Web\TodoTemplate.Web.csproj" Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " />
         <ProjectReference Include="..\Shared\TodoTemplate.Shared.csproj" />
-        <ProjectReference Include="..\Web\TodoTemplate.Web.csproj" />
     </ItemGroup>
 
 </Project>
