@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.AspNetCore.Builder;
 #endif
 using System.IO.Compression;
-using TodoTemplate.App.Extensions;
 
 namespace TodoTemplate.App;
 public class Startup

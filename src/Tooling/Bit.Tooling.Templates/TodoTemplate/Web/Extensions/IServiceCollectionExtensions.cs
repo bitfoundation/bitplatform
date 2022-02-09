@@ -21,7 +21,7 @@ public static class IServiceCollectionExtensions
         });
 #endif
 
-        services.AddScoped<TodoTemplateHttpClientHandler>();
+        services.AddTransient<TodoTemplateHttpClientHandler>();
 
         services.AddAuthorizationCore();
         services.AddScoped<AuthenticationStateProvider, TodoTemplateAuthenticationStateProvider>();
