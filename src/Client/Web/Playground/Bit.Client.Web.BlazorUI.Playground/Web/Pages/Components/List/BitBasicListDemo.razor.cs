@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Bit.Client.Web.BlazorUI.Playground.Web.Models;
 using Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 
 namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.List
@@ -51,6 +52,46 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.List
                 DefaultValue = "false",
                 Description = "virtualize rendering the list, UI rendering to just the parts that are currently visible.",
             },
+            new ComponentParameter()
+            {
+                Name = "Visibility",
+                Type = "BitComponentVisibility",
+                LinkType = LinkType.Link,
+                Href = "#component-visibility-enum",
+                DefaultValue = "BitComponentVisibility.Visible",
+                Description = "Whether the component is Visible,Hidden,Collapsed.",
+            },
+        };
+
+        private readonly List<EnumParameter> enumParameters = new()
+        {
+            new EnumParameter()
+            {
+                Id = "component-visibility-enum",
+                Title = "BitComponentVisibility Enum",
+                Description = "",
+                EnumList = new List<EnumItem>()
+                {
+                    new EnumItem()
+                    {
+                        Name= "Visible",
+                        Description="Show content of the component.",
+                        Value="0",
+                    },
+                    new EnumItem()
+                    {
+                        Name= "Hidden",
+                        Description="Hide content of the component,though the space it takes on the page remains.",
+                        Value="1",
+                    },
+                    new EnumItem()
+                    {
+                        Name= "Collapsed",
+                        Description="Hide content of the component,though the space it takes on the page gone.",
+                        Value="2",
+                    }
+                }
+            }
         };
 
         protected override void OnInitialized()

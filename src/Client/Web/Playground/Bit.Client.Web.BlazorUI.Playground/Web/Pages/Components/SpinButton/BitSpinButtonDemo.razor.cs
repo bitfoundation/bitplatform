@@ -223,7 +223,16 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.SpinButton
                 Type = "EventCallback<double>",
                 DefaultValue = "",
                 Description = "Callback for when the spin button value change.",
-            }, 
+            },
+            new ComponentParameter()
+            {
+                Name = "Visibility",
+                Type = "BitComponentVisibility",
+                LinkType = LinkType.Link,
+                Href = "#component-visibility-enum",
+                DefaultValue = "BitComponentVisibility.Visible",
+                Description = "Whether the component is Visible,Hidden,Collapsed.",
+            },
         };
 
         private readonly List<EnumParameter> enumParameters = new()
@@ -246,6 +255,33 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.SpinButton
                         Name= "Left",
                         Description="The label shows on the left side of the spin button.",
                         Value="1",
+                    }
+                }
+            },
+            new EnumParameter()
+            {
+                Id = "component-visibility-enum",
+                Title = "BitComponentVisibility Enum",
+                Description = "",
+                EnumList = new List<EnumItem>()
+                {
+                    new EnumItem()
+                    {
+                        Name= "Visible",
+                        Description="Show content of the component.",
+                        Value="0",
+                    },
+                    new EnumItem()
+                    {
+                        Name= "Hidden",
+                        Description="Hide content of the component,though the space it takes on the page remains.",
+                        Value="1",
+                    },
+                    new EnumItem()
+                    {
+                        Name= "Collapsed",
+                        Description="Hide content of the component,though the space it takes on the page gone.",
+                        Value="2",
                     }
                 }
             }
