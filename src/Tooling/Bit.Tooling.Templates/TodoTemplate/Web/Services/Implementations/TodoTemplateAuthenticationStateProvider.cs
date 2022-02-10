@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Components.Authorization;
-
-namespace TodoTemplate.App.Services.Implementations
+﻿namespace TodoTemplate.App.Services.Implementations
 {
     public class TodoTemplateAuthenticationStateProvider : AuthenticationStateProvider
     {
@@ -11,9 +9,9 @@ namespace TodoTemplate.App.Services.Implementations
             _tokenProvider = tokenProvider;
         }
 
-        public void RaiseAuthenticationStateHasChanged()
+        public async Task RaiseAuthenticationStateHasChanged()
         {
-            NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
+            NotifyAuthenticationStateChanged(Task.FromResult(await GetAuthenticationStateAsync()));
         }
 
         public override async Task<AuthenticationState> GetAuthenticationStateAsync()

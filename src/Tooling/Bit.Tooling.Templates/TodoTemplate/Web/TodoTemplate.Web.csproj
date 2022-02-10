@@ -42,6 +42,9 @@
 		<Using Include="Microsoft.JSInterop" />
         <Using Include="System.Net.Http.Json" />
         <Using Include="System.Collections.Concurrent" />
+        <Using Include="Microsoft.AspNetCore.Components.Authorization" />
+        <Using Include="TodoTemplate.App.Components" />
+        <Using Include="Bit.Client.Web.BlazorUI" />
 	</ItemGroup>
 
 </Project>

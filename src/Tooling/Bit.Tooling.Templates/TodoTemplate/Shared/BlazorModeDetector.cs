@@ -24,7 +24,7 @@ public class BlazorModeDetector
         get
         {
 #if BlazorWebAssembly
-                return BlazorMode.BlazorWebAssembly;
+            return BlazorMode.BlazorWebAssembly;
 #elif BlazorHybrid
                 return BlazorMode.BlazorHybrid;
 #else

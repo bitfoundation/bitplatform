@@ -1,13 +1,11 @@
-﻿using Microsoft.AspNetCore.Components.Authorization;
-
-namespace Microsoft.Extensions.DependencyInjection;
+﻿namespace Microsoft.Extensions.DependencyInjection;
 
 public static class IServiceCollectionExtensions
 {
-    public static IServiceCollection AddTodoTemplateServices(this IServiceCollection services)
+    public static IServiceCollection AddTodoTemplateAppServices(this IServiceCollection services)
     {
         services.AddScoped<IToastService, ToastService>();
-        services.AddScoped<StateService>();
+        services.AddScoped<IStateService, StateService>();
 
 #if BlazorServer || BlazorHybrid
         services.AddScoped(sp =>

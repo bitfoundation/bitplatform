@@ -53,6 +53,10 @@
         <Using Include="System.Net.Http.Json" />
         <Using Include="System.Collections.Concurrent" />
 
+        <Using Include="Microsoft.AspNetCore.Components.Authorization" />
+        <Using Include="TodoTemplate.App.Components" />
+        <Using Include="Bit.Client.Web.BlazorUI" />
+
     </ItemGroup>
 
     <ItemGroup>
@@ -90,7 +94,7 @@
         <EmbeddedResource Include="appsettings.json" />
         <Content Remove="Pages\_Host.cshtml" />
         <Content Remove="Pages\_Layout.cshtml" />
-        <Compile Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Remove="Services\Implementations\ServerSideTokenProvider.cs" />
+        <Compile Remove="Services\Implementations\ServerSideTokenProvider.cs" />
         <Content Remove="Properties\launchSettings.json" />
         <Content Remove="compilerconfig.json" />
         <None Include="compilerconfig.json" />

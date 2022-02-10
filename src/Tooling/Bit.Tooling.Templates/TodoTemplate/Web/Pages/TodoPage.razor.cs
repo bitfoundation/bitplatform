@@ -7,11 +7,11 @@ public partial class TodoPage
     public HttpClient HttpClient { get; set; } = default!;
 
     [Inject]
-    public StateService StateService { get; set; } = default!;
+    public IStateService StateService { get; set; } = default!;
 
-    private bool IsLoading;
-    private string NewTodoItemTitle = string.Empty;
-    private List<TodoItemDto>? TodoItemList = new();
+    public bool IsLoading { get; set; }
+    public string NewTodoItemTitle { get; set; } = string.Empty;
+    public List<TodoItemDto>? TodoItemList { get; set; } = new();
 
     protected override async Task OnInitializedAsync()
     {

@@ -1,5 +1,4 @@
 ﻿@page "/sign-in"
-@layout EmptyLayout
 
 <div class="page-container">
     <div class="form--white">
@@ -22,7 +21,7 @@
             <BitTextField Type="BitTextFieldType.Password" CanRevealPassword="true" Placeholder="Enter your password" @bind-Value="Password"></BitTextField>
             <div class="form-input-error">@(PasswordError ?? string.Empty)</div>
         </div>
-        <BitButton Class="form-submit-button" ButtonStyle="BitButtonStyle.Primary" OnClick="OnClickSignIn">
+        <BitButton Class="form-submit-button" ButtonStyle="BitButtonStyle.Primary" OnClick="DoSignIn">
             Sign in
         </BitButton>
         <div class="form-forgot-password">

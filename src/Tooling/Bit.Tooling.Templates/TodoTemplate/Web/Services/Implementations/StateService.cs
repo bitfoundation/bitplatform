@@ -3,7 +3,7 @@
 namespace TodoTemplate.App.Services.Implementations;
 
 #if BlazorWebAssembly || BlazorServer
-public class StateService : IAsyncDisposable
+public class StateService : IStateService, IAsyncDisposable
 {
     private PersistingComponentStateSubscription? _subscription;
     private readonly PersistentComponentState _applicationState;
@@ -48,7 +48,7 @@ public class StateService : IAsyncDisposable
     }
 }
 #else
-public class StateService
+public class StateService : IStateService
 {
     public Task<T?> GetValue<T>(string key, Func<Task<T?>> factory)
     {

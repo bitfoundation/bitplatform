@@ -27,7 +27,10 @@ public partial class SignIn
     [Inject]
     public ITodoTemplateAuthenticationService TodoTemplateAuthenticationService { get; set; } = default!;
 
-    private async Task OnClickSignIn()
+    [CascadingParameter]
+    public Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
+
+    async Task DoSignIn()
     {
         EmailError = string.IsNullOrEmpty(Email) ? "Please enter your email" : null;
         PasswordError = string.IsNullOrEmpty(Password) ? "Please enter your password" : null;
@@ -46,13 +49,25 @@ public partial class SignIn
             IsSuccessMessageBar = true;
             MessageBarText = "Sign-up successfully";
 
-            NavigationManager.NavigateTo("/");
+            if (NavigationManager.Uri.EndsWith("/sign-in", StringComparison.InvariantCultureIgnoreCase))
+                NavigationManager.NavigateTo("/");
         }
         catch (Exception e)
         {
             MessageBarText = e.Message;
         }
         HasMessageBar = true;
+    }
+
+    protected async override Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            if ((await AuthenticationStateTask).User.Identity?.IsAuthenticated == true)
+                NavigationManager.NavigateTo("/");
+        }
+
+        await base.OnAfterRenderAsync(firstRender);
     }
 }
 

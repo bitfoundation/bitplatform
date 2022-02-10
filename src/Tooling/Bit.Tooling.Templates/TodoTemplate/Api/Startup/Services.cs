@@ -16,7 +16,7 @@ public static class Services
 
 #if BlazorWebAssembly
         services.AddTransient<ITokenProvider, ServerSideTokenProvider>();
-        services.AddTodoTemplateServices();
+        services.AddTodoTemplateAppServices();
         services.AddScoped(c =>
         {
             // this is for pre rendering of blazor client/wasm

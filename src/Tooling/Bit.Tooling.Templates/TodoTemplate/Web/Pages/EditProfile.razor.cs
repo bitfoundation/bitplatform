@@ -1,5 +1,4 @@
 ﻿using TodoTemplate.Shared.Dtos.Account;
-using TodoTemplate.Shared.Enums;
 
 namespace TodoTemplate.App.Pages;
 
@@ -21,7 +20,7 @@ public partial class EditProfile
     public HttpClient HttpClient { get; set; } = default!;
 
     [Inject]
-    public StateService StateService { get; set; } = default!;
+    public IStateService StateService { get; set; } = default!;
 
 #if BlazorServer || BlazorHybrid
     [Inject]

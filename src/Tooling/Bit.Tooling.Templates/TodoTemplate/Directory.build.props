@@ -21,6 +21,8 @@
         <Using Include="System.ComponentModel.DataAnnotations" />
         <Using Include="TodoTemplate.Shared.Services.Contracts" />
         <Using Include="System.Security.Claims" />
+        <Using Include="TodoTemplate.Shared.Enums" />
+        <Using Include="TodoTemplate" />
     </ItemGroup>
 
 </Project>

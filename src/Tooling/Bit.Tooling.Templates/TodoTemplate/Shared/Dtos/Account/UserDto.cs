@@ -1,6 +1,4 @@
-﻿using TodoTemplate.Shared.Enums;
-
-namespace TodoTemplate.Shared.Dtos.Account;
+﻿namespace TodoTemplate.Shared.Dtos.Account;
 
 public class UserDto
 {

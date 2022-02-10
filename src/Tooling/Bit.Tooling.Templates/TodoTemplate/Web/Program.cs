@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 #elif BlazorWebAssembly
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 #endif
 
@@ -14,7 +13,6 @@ public class Program
     {
 #if BlazorWebAssembly || BlazorServer
         await CreateHostBuilder(args)
-            .Build()
             .RunAsync();
 #else
             Console.WriteLine("You're in blazor hybrid mode, please run app project isntead of web project.");
@@ -22,23 +20,34 @@ public class Program
     }
 
 #if BlazorWebAssembly
-        public static WebAssemblyHostBuilder CreateHostBuilder(string[] args)
-        {
-            var builder = WebAssemblyHostBuilder.CreateDefault();
+    public static WebAssemblyHost CreateHostBuilder(string[] args)
+    {
+        var builder = WebAssemblyHostBuilder.CreateDefault();
 
-            builder.Services.AddSingleton(c => new HttpClient(c.GetRequiredService<TodoTemplateHttpClientHandler>()) { BaseAddress = new Uri($"{builder.HostEnvironment.BaseAddress}api/") });
-            builder.Services.AddTransient<ITokenProvider, ClientSideTokenProvider>();
+        builder.Services.AddSingleton(c => new HttpClient(c.GetRequiredService<TodoTemplateHttpClientHandler>()) { BaseAddress = new Uri($"{builder.HostEnvironment.BaseAddress}api/") });
+        builder.Services.AddTransient<ITokenProvider, ClientSideTokenProvider>();
 
-            new Startup().ConfigureServices(builder.Services);
+        builder.Services.AddTodoTemplateSharedServices();
+        builder.Services.AddTodoTemplateAppServices();
 
-            return builder;
-        }
+        return builder.Build();
+    }
 #elif BlazorServer
-    public static IHostBuilder CreateHostBuilder(string[] args) =>
-        Host.CreateDefaultBuilder(args)
-            .ConfigureWebHostDefaults(webBuilder =>
-            {
-                webBuilder.UseStartup<Startup>();
-            });
+    public static WebApplication CreateHostBuilder(string[] args)
+    {
+        var builder = WebApplication.CreateBuilder(args);
+
+#if DEBUG
+        builder.WebHost.UseUrls("https://*:4001", "http://*:4000");
+#endif
+
+        Startup.Services.Add(builder.Services, builder.Configuration);
+
+        var app = builder.Build();
+
+        Startup.Middlewares.Use(app, builder.Environment);
+
+        return app;
+    }
 #endif
 }

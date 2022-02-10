@@ -24,7 +24,13 @@ public partial class SignUp
     public HttpClient HttpClient { get; set; } = default!;
 
     [Inject]
+    public NavigationManager NavigationManager { get; set; } = default!;
+
+    [Inject]
     public ITodoTemplateAuthenticationService TodoTemplateAuthenticationService { get; set; } = default!;
+
+    [CascadingParameter]
+    public Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
 
     private async Task OnClickSignUp()
     {
@@ -58,6 +64,17 @@ public partial class SignUp
         }
 
         HasMessageBar = true;
+    }
+
+    protected async override Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        if (firstRender)
+        {
+            if ((await AuthenticationStateTask).User.Identity?.IsAuthenticated == true)
+                NavigationManager.NavigateTo("/");
+        }
     }
 }
 

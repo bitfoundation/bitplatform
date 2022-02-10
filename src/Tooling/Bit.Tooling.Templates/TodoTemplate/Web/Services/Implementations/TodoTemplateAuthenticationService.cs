@@ -26,13 +26,13 @@ public class TodoTemplateAuthenticationService : ITodoTemplateAuthenticationServ
 
         await _jsRuntime.InvokeVoidAsync("todoTemplate.setCookie", "access_token", result!.AccessToken);
 
-        _authenticationStateProvider.RaiseAuthenticationStateHasChanged();
+        await _authenticationStateProvider.RaiseAuthenticationStateHasChanged();
     }
 
     public async Task SignOut()
     {
         await _jsRuntime.InvokeVoidAsync("todoTemplate.removeCookie", "access_token");
 
-        _authenticationStateProvider.RaiseAuthenticationStateHasChanged();
+        await _authenticationStateProvider.RaiseAuthenticationStateHasChanged();
     }
 }

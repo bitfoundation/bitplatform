@@ -1,5 +1,6 @@
-﻿using System.Reflection;
-using Microsoft.JSInterop;
+﻿#if BlazorServer
+using System.Reflection;
+#endif
 
 namespace TodoTemplate.App.Services.Implementations;
 
