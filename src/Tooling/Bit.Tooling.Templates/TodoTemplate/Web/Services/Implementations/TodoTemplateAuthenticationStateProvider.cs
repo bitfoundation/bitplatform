@@ -28,6 +28,11 @@
             return new AuthenticationState(new ClaimsPrincipal(identity));
         }
 
+        public async Task<bool> IsUserAuthenticated()
+        {
+            return (await GetAuthenticationStateAsync()).User.Identity?.IsAuthenticated == true;
+        }
+
         AuthenticationState NotSignedIn()
         {
             return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));

@@ -4,9 +4,6 @@ public partial class Header : IAsyncDisposable
 {
     public bool IsUserAuthenticated { get; set; }
 
-    [CascadingParameter]
-    public Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
-
     [Inject]
     public IStateService StateService { get; set; } = default!;
 
@@ -17,7 +14,7 @@ public partial class Header : IAsyncDisposable
     {
         TodoTemplateAuthenticationStateProvider.AuthenticationStateChanged += VerifyUserIsAuthenticatedOrNot;
 
-        IsUserAuthenticated = await StateService.GetValue(nameof(IsUserAuthenticated), async () => (await AuthenticationStateTask).User.Identity?.IsAuthenticated == true);
+        IsUserAuthenticated = await StateService.GetValue(nameof(IsUserAuthenticated), async () => await TodoTemplateAuthenticationStateProvider.IsUserAuthenticated());
 
         await base.OnInitializedAsync();
     }
@@ -26,7 +23,7 @@ public partial class Header : IAsyncDisposable
     {
         try
         {
-            IsUserAuthenticated = await StateService.GetValue(nameof(IsUserAuthenticated), async () => (await AuthenticationStateTask).User.Identity?.IsAuthenticated == true);
+            IsUserAuthenticated = await StateService.GetValue(nameof(IsUserAuthenticated), async () => await TodoTemplateAuthenticationStateProvider.IsUserAuthenticated());
         }
         finally
         {

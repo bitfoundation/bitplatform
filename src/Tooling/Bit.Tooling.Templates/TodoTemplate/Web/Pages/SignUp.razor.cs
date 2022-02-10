@@ -29,8 +29,8 @@ public partial class SignUp
     [Inject]
     public ITodoTemplateAuthenticationService TodoTemplateAuthenticationService { get; set; } = default!;
 
-    [CascadingParameter]
-    public Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
+    [Inject]
+    public TodoTemplateAuthenticationStateProvider TodoTemplateAuthenticationStateProvider { get; set; } = default!;
 
     private async Task OnClickSignUp()
     {
@@ -72,7 +72,7 @@ public partial class SignUp
 
         if (firstRender)
         {
-            if ((await AuthenticationStateTask).User.Identity?.IsAuthenticated == true)
+            if (await TodoTemplateAuthenticationStateProvider.IsUserAuthenticated())
                 NavigationManager.NavigateTo("/");
         }
     }
