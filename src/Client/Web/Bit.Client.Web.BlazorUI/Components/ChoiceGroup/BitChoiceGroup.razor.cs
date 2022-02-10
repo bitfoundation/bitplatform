@@ -54,6 +54,7 @@ namespace Bit.Client.Web.BlazorUI
             set
             {
                 if (value == selectedKey) return;
+                selectedKey = value;
                 SelectOptionByKey(value);
             }
         }
