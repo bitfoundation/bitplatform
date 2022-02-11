@@ -44,6 +44,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\..\..\Bit.Tooling.CodeAnalyzer\Bit.Tooling.CodeAnalyzer.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
         <ProjectReference Include="..\Web\TodoTemplate.Web.csproj" Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " />
         <ProjectReference Include="..\Shared\TodoTemplate.Shared.csproj" />
     </ItemGroup>

@@ -36,7 +36,8 @@
 		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 		<ProjectReference Include="..\..\..\..\Client\Web\Bit.Client.Web.BlazorUI\Bit.Client.Web.BlazorUI.csproj" />
-		<ProjectReference Include="..\..\..\Bit.Tooling.SourceGenerators\Bit.Tooling.SourceGenerators.csproj" />
+		<ProjectReference Include="..\..\..\Bit.Tooling.CodeAnalyzer\Bit.Tooling.CodeAnalyzer.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+		<ProjectReference Include="..\..\..\Bit.Tooling.SourceGenerators\Bit.Tooling.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
 		<ProjectReference Include="..\Shared\TodoTemplate.Shared.csproj" />
 		
 		<Using Include="Microsoft.AspNetCore.Components" />
