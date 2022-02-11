@@ -30,6 +30,10 @@ public class Program
         builder.Services.AddTodoTemplateSharedServices();
         builder.Services.AddTodoTemplateAppServices();
 
+#if PWA
+        builder.RootComponents.Add<App>("#app");
+#endif
+
         return builder.Build();
     }
 #elif BlazorServer

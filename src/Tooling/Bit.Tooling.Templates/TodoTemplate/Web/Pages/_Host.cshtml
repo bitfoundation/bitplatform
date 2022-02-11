@@ -12,8 +12,16 @@
     var isBlazorServer = BlazorModeDetector.Current.IsBlazorServer();
     var isSpa = WebAppDeploymentTypeDetector.Current.IsSPA();
     var isStatic = WebAppDeploymentTypeDetector.Current.IsStatic();
-    RenderMode renderMode =  isStatic ? RenderMode.Static : isBlazorServer ? isSpa ? RenderMode.Server : RenderMode.ServerPrerendered : isSpa ? RenderMode.WebAssembly : RenderMode.WebAssemblyPrerendered;
+    var isPwa = WebAppDeploymentTypeDetector.Current.IsPWA();
+    RenderMode renderMode =  isStatic ? RenderMode.Static : isBlazorServer ? isSpa || isPwa ? RenderMode.Server : RenderMode.ServerPrerendered : isSpa || isPwa ? RenderMode.WebAssembly : RenderMode.WebAssemblyPrerendered;
 }
 
-<component type="typeof(App)"
+@if (isPwa)
+{
+    <div id="app"></div>
+}
+else
+{
+    <component type="typeof(App)"
            render-mode="@renderMode" />
+}

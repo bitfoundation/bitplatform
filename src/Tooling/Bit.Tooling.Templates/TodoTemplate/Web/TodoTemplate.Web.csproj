@@ -7,6 +7,8 @@
 		<InvariantGlobalization>true</InvariantGlobalization>
 		<RootNamespace>TodoTemplate.App</RootNamespace>
 		<AssemblyName>TodoTemplate.App</AssemblyName>
+        <ServiceWorkerAssetsManifest Condition="'$(WebAppDeploymentType)' == 'PWA'">service-worker-assets.js</ServiceWorkerAssetsManifest>
+        <BlazorCacheBootResources Condition="'$(WebAppDeploymentType)' == 'PWA'">false</BlazorCacheBootResources>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -19,6 +21,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<PackageReference Include="Bit.Client.Web.BlazorSwup" Version="8.8.0" />
 		<PackageReference Include="jose-jwt" Version="3.2.0" />
 		<PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="6.0.1" />
 		<PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.0" />
@@ -26,6 +29,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+        <ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" Condition="'$(WebAppDeploymentType)' == 'PWA'" />
 		<PackageReference Include="BuildWebCompiler" Version="1.12.405" />
 		<PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.5.3">
 		  <PrivateAssets>all</PrivateAssets>

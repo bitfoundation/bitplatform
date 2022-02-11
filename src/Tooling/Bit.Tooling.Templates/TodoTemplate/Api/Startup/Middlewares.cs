@@ -35,8 +35,12 @@ namespace TodoTemplate.Api.Startup
                 {
                     ctx.Context.Response.GetTypedHeaders().CacheControl = new CacheControlHeaderValue()
                     {
+#if PWA
+                        NoStore = true
+#else
                         MaxAge = TimeSpan.FromDays(365),
                         Public = true
+#endif
                     };
                 }
             });
