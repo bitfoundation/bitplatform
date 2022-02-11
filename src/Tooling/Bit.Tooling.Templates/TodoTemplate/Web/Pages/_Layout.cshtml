@@ -2,17 +2,25 @@
 
 @namespace TodoTemplate.Pages
 
-@using TodoTemplate.Shared;
+@using TodoTemplate.Shared.Infra;
 @using Microsoft.AspNetCore.Components.Web
 
 @{
     var isBlazorServer = BlazorModeDetector.Current.IsBlazorServer();
-    var isSpa = WebAppDeploymentTypeDetector.Current.IsSPA();
+    var isDefaultDeploymentType = WebAppDeploymentTypeDetector.Current.IsDefault();
     var isStatic = WebAppDeploymentTypeDetector.Current.IsStatic();
-    var isPreRenderEnabledSpa = WebAppDeploymentTypeDetector.Current.IsPreRenderEnabledSPA();
-    var isPwa = WebAppDeploymentTypeDetector.Current.IsPWA();
+    var isSsr = WebAppDeploymentTypeDetector.Current.IsSsr();
+    var isPwa = WebAppDeploymentTypeDetector.Current.IsPwa();
     var shoudAddAspAppendVersion = !isPwa;
-    RenderMode renderMode = isStatic ? RenderMode.Static : isBlazorServer ? isSpa || isPwa ? RenderMode.Server : RenderMode.ServerPrerendered : isSpa || isPwa ? RenderMode.WebAssembly : RenderMode.WebAssemblyPrerendered;
+    RenderMode renderMode = isStatic 
+                            ? RenderMode.Static 
+                            : isBlazorServer 
+                            ? isDefaultDeploymentType || isPwa 
+                            ? RenderMode.Server 
+                            : RenderMode.ServerPrerendered 
+                            : isDefaultDeploymentType || isPwa 
+                            ? RenderMode.WebAssembly 
+                            : RenderMode.WebAssemblyPrerendered;
 }
 
 @*
@@ -169,7 +177,7 @@
 
     <script src="scripts/todoTemplate.es5.min.js" asp-append-version="@shoudAddAspAppendVersion"></script>
 
-    @if (isPreRenderEnabledSpa)
+    @if (isSsr)
     {
         <persist-component-state />
     }

@@ -1,4 +1,4 @@
-﻿namespace TodoTemplate.Shared;
+﻿namespace TodoTemplate.Shared.Infra;
 
 public class BlazorModeDetector
 {
@@ -32,11 +32,4 @@ public class BlazorModeDetector
 #endif
         }
     }
-}
-
-public enum BlazorMode
-{
-    BlazorServer,
-    BlazorWebAssembly,
-    BlazorHybrid
 }

@@ -3,8 +3,8 @@
     <PropertyGroup>
         <BlazorMode>BlazorServer</BlazorMode>
         <!-- You can use either Server or web assembly or hybrid, for example: <BlazorMode>BlazorWebAssembly</BlazorMode> -->
-        <WebAppDeploymentType>PreRenderEnabledSPA</WebAppDeploymentType>
-        <!-- You can choose either Static, SPA, PWA or PreRenderEnabledSPA. -->
+        <WebAppDeploymentType>Default</WebAppDeploymentType>
+        <!-- You can choose either Static, Default, PWA or SSR. -->
         <DefineConstants Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' ">$(DefineConstants);BlazorWebAssembly</DefineConstants>
         <DefineConstants Condition=" '$(BlazorMode)' == 'BlazorServer' ">$(DefineConstants);BlazorServer</DefineConstants>
         <DefineConstants Condition=" '$(BlazorMode)' == 'BlazorHybrid' ">$(DefineConstants);BlazorHybrid</DefineConstants>
