@@ -32,9 +32,15 @@ public partial class EditProfile
 
     protected override async Task OnInitializedAsync()
     {
-        ProfilePhotoUploadUrl = await StateService.GetValue(nameof(ProfilePhotoUploadUrl), async () => $"api/Attachment/UploadProfilePhoto?access_token={await TokenProvider.GetAcccessToken()}");
-        ProfilePhotoRemoveUrl = await StateService.GetValue(nameof(ProfilePhotoRemoveUrl), async () => $"api/Attachment/RemoveProfilePhoto?access_token={await TokenProvider.GetAcccessToken()}");
-        UserProfilePhotoUrl = await StateService.GetValue(nameof(UserProfilePhotoUrl), async () => $"api/Attachment/GetProfilePhoto?access_token={await TokenProvider.GetAcccessToken()}");
+        User = await StateService.GetValue(nameof(User), async () => await HttpClient.GetFromJsonAsync<UserDto>($"User/GetCurrentUser"));
+
+        SelectedGender = User.Gender.ToString();
+
+        var access_token = await StateService.GetValue("access_token", async () => await TokenProvider.GetAcccessToken());
+
+        ProfilePhotoUploadUrl = $"api/Attachment/UploadProfilePhoto?access_token={access_token}";
+        ProfilePhotoRemoveUrl = $"api/Attachment/RemoveProfilePhoto?access_token={access_token}";
+        UserProfilePhotoUrl = $"api/Attachment/GetProfilePhoto?access_token={access_token}";
 
 #if BlazorServer || BlazorHybrid
         var serverUrl = Configuration.GetValue<string>("ApiServerAddress");
@@ -42,9 +48,6 @@ public partial class EditProfile
         ProfilePhotoRemoveUrl = $"{serverUrl}{ProfilePhotoRemoveUrl}";
         UserProfilePhotoUrl = $"{serverUrl}{UserProfilePhotoUrl}";
 #endif
-        User = await StateService.GetValue(nameof(User), async () => await HttpClient.GetFromJsonAsync<UserDto>($"User/GetCurrentUser"));
-
-        SelectedGender = User.Gender.ToString();
 
         await base.OnInitializedAsync();
     }
