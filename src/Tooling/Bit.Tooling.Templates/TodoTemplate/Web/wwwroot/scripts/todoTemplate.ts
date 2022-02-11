@@ -8,17 +8,16 @@
         reloadPage: reloadPage,
     };
 
-    function setCookie(name, value, seconds) {
-        var date = new Date();
+    function setCookie(name: string, value: string, seconds: number): void {
+        const date = new Date();
         date.setSeconds(date.getSeconds() + seconds);
-        var expires = 'expires=' + date.toUTCString();
-        document.cookie = name + '=' + value + '; ' + expires + '; path=/';
+        document.cookie = `${name}=${value};expires=${date.toUTCString()};path=/`;
     }
 
-    function getCookie(name) {
-        var cookies = document.cookie.split(';');
-        for (var i = 0; i < cookies.length; i++) {
-            var cookie = cookies[i].split('=');
+    function getCookie(name: string): string {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].split('=');
             if (trim(cookie[0]) == escape(name)) {
                 return unescape(trim(cookie[1]));
             }
@@ -26,19 +25,19 @@
         return null;
     }
 
-    function removeCookie(name) {
-        document.cookie = name + '=; Max-Age=0';
+    function removeCookie(name: string): void {
+        document.cookie = `${name}=; Max-Age=0`;
     }
 
-    function trim(value) {
+    function trim(value: string): string {
         return value.replace(/^\s+|\s+$/g, '');
     };
 
-    function goBack() {
+    function goBack(): void {
         window.history.back();
     }
 
-    function reloadPage() {
+    function reloadPage(): void {
         location.reload();
     }
 

@@ -31,9 +31,6 @@
 
     @RenderBody()
 
-    <script src="_content/Bit.Client.Web.BlazorUI/scripts/bit.blazorui.min.js" asp-append-version="true"></script>
-    <script src="scripts/todoTemplate.js" asp-append-version="true"></script>
-
     @if (isBlazorServer)
     {
         <script src="_framework/blazor.server.js" asp-append-version="true"></script>
@@ -42,6 +39,10 @@
     {
         <script src="_framework/blazor.webassembly.js" asp-append-version="true"></script>
     }
+
+    <script src="_content/Bit.Client.Web.BlazorUI/scripts/bit.blazorui.min.js" asp-append-version="true"></script>
+    <script src="scripts/todoTemplate.es5.min.js" asp-append-version="true"></script>
+
     <persist-component-state />
 </body>
 </html>

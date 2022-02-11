@@ -13,10 +13,7 @@ namespace TodoTemplate.Api.Startup
 
                 app.UseSwaggerUI();
 
-                if (env.IsDevelopment())
-                {
-                    app.UseDeveloperExceptionPage();
-                }
+                app.UseDeveloperExceptionPage();
 
 #if BlazorWebAssembly
                 if (env.IsDevelopment())
@@ -48,7 +45,14 @@ namespace TodoTemplate.Api.Startup
             {
                 if (!context.Request.Headers.ContainsKey("Authorization"))
                 {
-                    if (context.Request.Cookies?["access_token"] != null)
+                    if (context.Request.Query["access_token"].Any())
+                    {
+                        context.Request.Headers.Add("Authorization", new[]
+                        {
+                            $"{JwtBearerDefaults.AuthenticationScheme} {context.Request.Query["access_token"]}"
+                        });
+                    }
+                    else if (context.Request.Cookies?["access_token"] != null)
                     {
                         context.Request.Headers.Add("Authorization", new[]
                         {
@@ -62,11 +66,9 @@ namespace TodoTemplate.Api.Startup
 
             app.UseRouting();
 
-            if (env.IsDevelopment())
-            {
-                app.UseCors(options => options.WithOrigins("https://localhost:4001").AllowAnyHeader().AllowAnyMethod().AllowCredentials());
-            }
+            app.UseCors(options => options.WithOrigins("https://localhost:4001", "https://0.0.0.0").AllowAnyHeader().AllowAnyMethod().AllowCredentials());
 
+            app.UseResponseCaching();
             app.UseAuthentication();
             app.UseAuthorization();
 

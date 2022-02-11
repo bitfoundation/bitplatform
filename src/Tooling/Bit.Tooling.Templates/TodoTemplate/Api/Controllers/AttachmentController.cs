@@ -62,6 +62,7 @@ public class AttachmentController : ControllerBase
     }
 
     [HttpGet("[action]")]
+    [ResponseCache(NoStore = true)]
     public ActionResult GetProfilePhoto()
     {
         var userId = User.GetUserId();

@@ -17,6 +17,9 @@ public partial class EditProfile
     public string? MessageBarText { get; set; }
 
     [Inject]
+    public ITokenProvider TokenProvider { get; set; } = default!;
+
+    [Inject]
     public HttpClient HttpClient { get; set; } = default!;
 
     [Inject]
@@ -29,9 +32,9 @@ public partial class EditProfile
 
     protected override async Task OnInitializedAsync()
     {
-        ProfilePhotoUploadUrl = "api/Attachment/UploadProfilePhoto/";
-        ProfilePhotoRemoveUrl = "api/Attachment/RemoveProfilePhoto/";
-        UserProfilePhotoUrl = "api/Attachment/GetProfilePhoto/";
+        ProfilePhotoUploadUrl = await StateService.GetValue(nameof(ProfilePhotoUploadUrl), async () => $"api/Attachment/UploadProfilePhoto?access_token={await TokenProvider.GetAcccessToken()}");
+        ProfilePhotoRemoveUrl = await StateService.GetValue(nameof(ProfilePhotoRemoveUrl), async () => $"api/Attachment/RemoveProfilePhoto?access_token={await TokenProvider.GetAcccessToken()}");
+        UserProfilePhotoUrl = await StateService.GetValue(nameof(UserProfilePhotoUrl), async () => $"api/Attachment/GetProfilePhoto?access_token={await TokenProvider.GetAcccessToken()}");
 
 #if BlazorServer || BlazorHybrid
         var serverUrl = Configuration.GetValue<string>("ApiServerAddress");
