@@ -7,6 +7,10 @@
 
 @{
     var isBlazorServer = BlazorModeDetector.Current.IsBlazorServer();
+    var isSpa = WebAppDeploymentTypeDetector.Current.IsSPA();
+    var isStatic = WebAppDeploymentTypeDetector.Current.IsStatic();
+    var isPreRenderEnabledSpa = WebAppDeploymentTypeDetector.Current.IsPreRenderEnabledSPA();
+    RenderMode renderMode = isStatic ? RenderMode.Static : isBlazorServer ? isSpa ? RenderMode.Server : RenderMode.ServerPrerendered : isSpa ? RenderMode.WebAssembly : RenderMode.WebAssemblyPrerendered;
 }
 
 @*
@@ -25,24 +29,31 @@
     <link rel="stylesheet" href="_content/Bit.Client.Web.BlazorUI/styles/bit.blazorui.min.css" asp-append-version="true" />
     <link href="styles/app.css" rel="stylesheet" asp-append-version="true" />
     <link href="TodoTemplate.App.styles.css" rel="stylesheet" asp-append-version="true" />
-    <component type="typeof(HeadOutlet)" render-mode="@(isBlazorServer ? RenderMode.ServerPrerendered : RenderMode.WebAssemblyPrerendered)" />
+    <component type="typeof(HeadOutlet)" render-mode="@renderMode" />
 </head>
 <body>
 
     @RenderBody()
 
-    @if (isBlazorServer)
+    @if (!isStatic)
     {
-        <script src="_framework/blazor.server.js" asp-append-version="true"></script>
-    }
-    else
-    {
-        <script src="_framework/blazor.webassembly.js" asp-append-version="true"></script>
+        @if (isBlazorServer)
+        {
+            <script src="_framework/blazor.server.js" asp-append-version="true"></script>
+        }
+        else
+        {
+            <script src="_framework/blazor.webassembly.js" asp-append-version="true"></script>
+        }
+
+        <script src="_content/Bit.Client.Web.BlazorUI/scripts/bit.blazorui.min.js" asp-append-version="true"></script>
     }
 
-    <script src="_content/Bit.Client.Web.BlazorUI/scripts/bit.blazorui.min.js" asp-append-version="true"></script>
     <script src="scripts/todoTemplate.es5.min.js" asp-append-version="true"></script>
 
-    <persist-component-state />
+    @if (isPreRenderEnabledSpa)
+    {
+        <persist-component-state />
+    }
 </body>
 </html>

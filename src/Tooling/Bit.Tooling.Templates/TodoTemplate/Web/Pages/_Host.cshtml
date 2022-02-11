@@ -10,7 +10,10 @@
 @{
     Layout = "_Layout";
     var isBlazorServer = BlazorModeDetector.Current.IsBlazorServer();
+    var isSpa = WebAppDeploymentTypeDetector.Current.IsSPA();
+    var isStatic = WebAppDeploymentTypeDetector.Current.IsStatic();
+    RenderMode renderMode =  isStatic ? RenderMode.Static : isBlazorServer ? isSpa ? RenderMode.Server : RenderMode.ServerPrerendered : isSpa ? RenderMode.WebAssembly : RenderMode.WebAssemblyPrerendered;
 }
 
 <component type="typeof(App)"
-           render-mode="@(isBlazorServer ? RenderMode.ServerPrerendered : RenderMode.WebAssemblyPrerendered)" />
+           render-mode="@renderMode" />

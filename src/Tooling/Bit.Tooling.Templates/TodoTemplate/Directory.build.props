@@ -2,10 +2,16 @@
 
     <PropertyGroup>
         <BlazorMode>BlazorServer</BlazorMode>
-        <!-- You can use either Server or web assembly or hybrid, for example: <BlazorMode>BlazorWebAssembly</BlazorMode>-->
+        <!-- You can use either Server or web assembly or hybrid, for example: <BlazorMode>BlazorWebAssembly</BlazorMode> -->
+        <WebAppDeploymentType>PreRenderEnabledSPA</WebAppDeploymentType>
+        <!-- You can choose either Static, SPA, PWA or PreRenderEnabledSPA. -->
         <DefineConstants Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' ">$(DefineConstants);BlazorWebAssembly</DefineConstants>
         <DefineConstants Condition=" '$(BlazorMode)' == 'BlazorServer' ">$(DefineConstants);BlazorServer</DefineConstants>
         <DefineConstants Condition=" '$(BlazorMode)' == 'BlazorHybrid' ">$(DefineConstants);BlazorHybrid</DefineConstants>
+        <DefineConstants Condition=" '$(WebAppDeploymentType)' == 'SPA' ">$(DefineConstants);SPA</DefineConstants>
+        <DefineConstants Condition=" '$(WebAppDeploymentType)' == 'PWA' ">$(DefineConstants);PWA</DefineConstants>
+        <DefineConstants Condition=" '$(WebAppDeploymentType)' == 'PreRenderEnabledSPA' ">$(DefineConstants);PreRenderEnabledSPA</DefineConstants>
+        <DefineConstants Condition=" '$(WebAppDeploymentType)' == 'Static' ">$(DefineConstants);Static</DefineConstants>
         <DefineConstants Condition=" '$(TargetFramework)' == 'net6.0-android' ">$(DefineConstants);Android</DefineConstants>
         <DefineConstants Condition=" '$(TargetFramework)' == 'net6.0-ios' ">$(DefineConstants);iOS</DefineConstants>
         <DefineConstants Condition=" '$(TargetFramework)' == 'net6.0-windows10.0.19041' ">$(DefineConstants);Windows</DefineConstants>
