@@ -32,6 +32,7 @@ public static class Services
         services.AddCors();
 
         services.AddControllers();
+        services.AddResponseCaching();
 
         services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 

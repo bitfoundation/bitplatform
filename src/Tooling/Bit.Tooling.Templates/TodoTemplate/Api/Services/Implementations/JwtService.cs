@@ -38,6 +38,10 @@ public class JwtService : IJwtService
                 Subject = new ClaimsIdentity(claims)
             });
 
-        return new SignInResponseDto { AccessToken = new JwtSecurityTokenHandler().WriteToken(securityToken) };
+        return new SignInResponseDto
+        {
+            AccessToken = new JwtSecurityTokenHandler().WriteToken(securityToken),
+            ExpiresIn = (long)TimeSpan.FromMinutes(_appSettings.JwtSettings.ExpirationMinutes).TotalSeconds
+        };
     }
 }

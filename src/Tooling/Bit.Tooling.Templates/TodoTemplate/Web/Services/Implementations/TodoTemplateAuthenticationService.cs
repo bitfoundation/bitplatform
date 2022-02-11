@@ -24,7 +24,7 @@ public class TodoTemplateAuthenticationService : ITodoTemplateAuthenticationServ
 
         var result = await response.Content.ReadFromJsonAsync<SignInResponseDto>();
 
-        await _jsRuntime.InvokeVoidAsync("todoTemplate.setCookie", "access_token", result!.AccessToken);
+        await _jsRuntime.InvokeVoidAsync("todoTemplate.setCookie", "access_token", result!.AccessToken, result.ExpiresIn);
 
         await _authenticationStateProvider.RaiseAuthenticationStateHasChanged();
     }
