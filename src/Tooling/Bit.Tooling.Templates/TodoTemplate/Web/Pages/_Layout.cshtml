@@ -2,11 +2,25 @@
 
 @namespace TodoTemplate.Pages
 
-@using TodoTemplate.Shared;
+@using TodoTemplate.Shared.Infra;
 @using Microsoft.AspNetCore.Components.Web
 
 @{
     var isBlazorServer = BlazorModeDetector.Current.IsBlazorServer();
+    var isDefaultDeploymentType = WebAppDeploymentTypeDetector.Current.IsDefault();
+    var isStatic = WebAppDeploymentTypeDetector.Current.IsStatic();
+    var isSsr = WebAppDeploymentTypeDetector.Current.IsSsr();
+    var isPwa = WebAppDeploymentTypeDetector.Current.IsPwa();
+    var shoudAddAspAppendVersion = !isPwa;
+    RenderMode renderMode = isStatic 
+                            ? RenderMode.Static 
+                            : isBlazorServer 
+                            ? isDefaultDeploymentType || isPwa 
+                            ? RenderMode.Server 
+                            : RenderMode.ServerPrerendered 
+                            : isDefaultDeploymentType || isPwa 
+                            ? RenderMode.WebAssembly 
+                            : RenderMode.WebAssemblyPrerendered;
 }
 
 @*
@@ -21,26 +35,151 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <base href="~/" />
-    <link rel="icon" href="~/favicon.ico" type="image/x-icon" asp-append-version="true">
-    <link rel="stylesheet" href="_content/Bit.Client.Web.BlazorUI/styles/bit.blazorui.min.css" asp-append-version="true" />
-    <link href="styles/app.css" rel="stylesheet" asp-append-version="true" />
-    <link href="TodoTemplate.App.styles.css" rel="stylesheet" asp-append-version="true" />
-    <component type="typeof(HeadOutlet)" render-mode="@(isBlazorServer ? RenderMode.ServerPrerendered : RenderMode.WebAssemblyPrerendered)" />
+    <link rel="icon" href="~/favicon.ico" type="image/x-icon" asp-append-version="@shoudAddAspAppendVersion">
+    <link rel="stylesheet" href="_content/Bit.Client.Web.BlazorUI/styles/bit.blazorui.min.css" asp-append-version="@shoudAddAspAppendVersion" />
+    <link href="styles/app.css" rel="stylesheet" asp-append-version="@shoudAddAspAppendVersion" />
+    <link href="TodoTemplate.App.styles.css" rel="stylesheet" asp-append-version="@shoudAddAspAppendVersion" />
+    <component type="typeof(HeadOutlet)" render-mode="@renderMode" />
+    <link rel="apple-touch-icon" sizes="512x512" href="images/icons/icon-512.png" />
+    @if (isPwa)
+    {
+        <link rel="manifest" href="manifest.json">
+        <style>
+            #blazor-swup {
+                position: fixed;
+                background: #fff;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                top: 0;
+                padding: 20px;
+                text-align: center;
+                display: none;
+            }
+
+            .blazor-swup-container {
+                width: 70%;
+                margin: 0 auto;
+                margin-top: 45px;
+            }
+
+            .blazor-swup-title,
+            #blazor-swup-percent {
+                font-size: 20px;
+            }
+
+            .blazor-swup-description {
+                font-size: 14px;
+                margin-bottom: 20px;
+            }
+
+            .blazor-swup-progress {
+                border: 1px solid #ebebff;
+                background-color: #f9f9f9;
+                border-radius: 4px;
+                width: 100%;
+                height: 21px;
+            }
+
+            #blazor-swup-progress-bar {
+                background-color: #538fc3;
+                border-radius: 2px;
+                height: 19px;
+            }
+
+            #blazor-swup-reload {
+                display: none;
+                margin-bottom: 8px;
+            }
+
+            #blazor-swup-assets {
+                font-size: 10px;
+                overflow: auto;
+                height: 666px;
+                text-align: left;
+            }
+        </style>
+    }
 </head>
 <body>
 
+    @if (isPwa)
+    {
+        <div id="blazor-swup">
+            <div class="blazor-swup-container">
+                <p class="blazor-swup-title">New version is available</p>
+                <p class="blazor-swup-description">Downloading updates, please wait...</p>
+                <div class="blazor-swup-progress">
+                    <div id="blazor-swup-progress-bar" style="width: 0%"></div>
+                </div>
+                <p id="blazor-swup-percent">0 %</p>
+            </div>
+        </div>
+    }
+
     @RenderBody()
 
-    <script src="_content/Bit.Client.Web.BlazorUI/scripts/bit.blazorui.min.js" asp-append-version="true"></script>
+    @if (!isStatic)
+    {
+        @if (isPwa)
+        {
+            <script>
+                var appEl = document.getElementById('app');
+                var progressEl = document.getElementById('blazor-swup');
+                var progressBar = document.getElementById('blazor-swup-progress-bar');
+                var percentLabel = document.getElementById('blazor-swup-percent');
+                var reloadButton = document.getElementById('blazor-swup-reload');
+                function blazorSwup(type, data) {
+                    switch (type) {
+                        case 'update_found':
+                            return console.log('new version is downloading...');
+                        case 'state_changed':
+                            return console.log('new version state has changed to:', data.currentTarget.state);
+                        case 'installing':
+                            appEl.style.display = 'none';
+                            progressEl.style.display = 'block';
+                            return console.log('installing new version:', data.version);
+                        case 'installed':
+                            console.log('new version installed');
+                            return setTimeout(data.reload, 100);
+                        return console.log('new version installed:', data.version);
+                            case 'progress':
+                            const percent = Math.round(data.percent);
+                            progressBar.style.width = `${percent}%`;
+                            percentLabel.innerHTML = `${percent} %`;
+                            return console.log('asset downloaded:', data);
+                        case 'activate':
+                            return console.log('new version activated:', data.version);
+                    }
+                }
+            </script>
+        }
 
-    @if (isBlazorServer)
-    {
-        <script src="_framework/blazor.server.js" asp-append-version="true"></script>
+        @if (isBlazorServer)
+        {
+            <script src="_framework/blazor.server.js" asp-append-version="true"></script>
+        }
+        else
+        {
+            @if (isPwa)
+            {
+                <script src="_framework/blazor.webassembly.js" autostart=false></script>
+                <script src="_content/Bit.Client.Web.BlazorSwup/bit-bswup.js" scope="/" sw="service-worker.js" handler="blazorSwup"></script>
+            }
+            else
+            {
+                <script src="_framework/blazor.webassembly.js" asp-append-version="true"></script>
+            }
+        }
+
+        <script src="_content/Bit.Client.Web.BlazorUI/scripts/bit.blazorui.min.js" asp-append-version="@shoudAddAspAppendVersion"></script>
     }
-    else
+
+    <script src="scripts/todoTemplate.es5.min.js" asp-append-version="@shoudAddAspAppendVersion"></script>
+
+    @if (isSsr)
     {
-        <script src="_framework/blazor.webassembly.js" asp-append-version="true"></script>
+        <persist-component-state />
     }
-    <persist-component-state />
 </body>
 </html>

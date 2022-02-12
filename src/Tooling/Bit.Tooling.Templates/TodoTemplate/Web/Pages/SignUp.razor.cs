@@ -1,4 +1,5 @@
 ﻿using TodoTemplate.Shared.Dtos.Account;
+
 namespace TodoTemplate.App.Pages;
 
 public partial class SignUp
@@ -23,31 +24,38 @@ public partial class SignUp
     public HttpClient HttpClient { get; set; } = default!;
 
     [Inject]
+    public NavigationManager NavigationManager { get; set; } = default!;
+
+    [Inject]
     public ITodoTemplateAuthenticationService TodoTemplateAuthenticationService { get; set; } = default!;
+
+    [Inject]
+    public TodoTemplateAuthenticationStateProvider TodoTemplateAuthenticationStateProvider { get; set; } = default!;
 
     private async Task OnClickSignUp()
     {
-        EmailError = Email is null ? "Please enter your email" : null;
+        EmailError = string.IsNullOrEmpty(Email) ? "Please enter your email" : null;
 
-        PasswordError = Password is null ? "Please enter your password" : null;
+        PasswordError = string.IsNullOrEmpty(Password) ? "Please enter your password" : null;
 
         if (EmailError is not null || PasswordError is not null) return;
 
         try
         {
-            await HttpClient.PostAsync("User/Create", JsonContent.Create(new UserDto
+            await HttpClient.PostAsJsonAsync("User/SignUp", new UserDto
             {
                 UserName = Email,
                 Email = Email,
                 Password = Password
-            }));
+            });
 
-            await TodoTemplateAuthenticationService.SignIn(new RequestTokenDto
+            await TodoTemplateAuthenticationService.SignIn(new SignInRequestDto
             {
                 UserName = Email,
                 Password = Password
             });
 
+            IsSuccessMessageBar = true;
             MessageBarText = "Sign-up successfully";
         }
         catch (Exception e)
@@ -56,6 +64,17 @@ public partial class SignUp
         }
 
         HasMessageBar = true;
+    }
+
+    protected async override Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        if (firstRender)
+        {
+            if (await TodoTemplateAuthenticationStateProvider.IsUserAuthenticated())
+                NavigationManager.NavigateTo("/");
+        }
     }
 }
 

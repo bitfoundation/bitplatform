@@ -1,10 +1,13 @@
-﻿using Bit.Client.Web.BlazorUI;
+﻿namespace TodoTemplate.App.Components;
 
-namespace TodoTemplate.App.Components
+public partial class NavMenu
 {
-    public partial class NavMenu
+    [Inject]
+    public ITodoTemplateAuthenticationService TodoTemplateAuthenticationService { get; set; } = default!;
+
+    public NavMenu()
     {
-        private readonly List<BitNavLinkItem> NavLinks = new()
+        NavLinks = new()
         {
             new BitNavLinkItem
             {
@@ -15,17 +18,23 @@ namespace TodoTemplate.App.Components
             },
             new BitNavLinkItem
             {
-                Name = "Todos",
-                Url = "/todos",
+                Name = "Todo",
+                Url = "/todo",
                 IconName = BitIconName.ToDoLogoOutline,
-                Key = "Todos"
+                Key = "Todo"
             },
             new BitNavLinkItem
             {
                 Name = "Sign out",
+                OnClick = (item) =>
+                {
+                    TodoTemplateAuthenticationService.SignOut();
+                },
                 IconName = BitIconName.SignOut,
                 Key = "SignOut"
             }
         };
     }
+
+    public List<BitNavLinkItem> NavLinks { get; set; }
 }

@@ -1,9 +1,5 @@
 ﻿[
   {
-    "outputFile": "Pages/Index.razor.css",
-    "inputFile": "Pages/Index.razor.scss"
-  },
-  {
     "outputFile": "wwwroot/styles/app.css",
     "inputFile": "wwwroot/styles/app.scss"
   },
@@ -50,5 +46,9 @@
   {
     "outputFile": "Pages/EditProfile.razor.css",
     "inputFile": "Pages/EditProfile.razor.scss"
+  },
+  {
+    "outputFile": "wwwroot/scripts/todoTemplate.es5.js",
+    "inputFile": "wwwroot/scripts/todoTemplate.js"
   }
 ]

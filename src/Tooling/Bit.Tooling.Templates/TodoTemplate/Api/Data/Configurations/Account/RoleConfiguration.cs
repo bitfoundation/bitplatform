@@ -1,4 +1,4 @@
-﻿using TodoTemplate.Api.Data.Models.Account;
+﻿using TodoTemplate.Api.Models.Account;
 
 namespace TodoTemplate.Api.Data.Configurations.Account;
 

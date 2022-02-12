@@ -1,5 +1,5 @@
-﻿using Microsoft.Extensions.FileProviders;
-using System.Reflection;
+﻿using System.Reflection;
+using Microsoft.Extensions.FileProviders;
 
 namespace TodoTemplate.App;
 
@@ -19,8 +19,9 @@ public static class MauiProgram
 
         var services = builder.Services;
 
+        services.AddTransient<ITokenProvider, ClientSideTokenProvider>();
         services.AddTodoTemplateSharedServices();
-        services.AddTodoTemplateServices();
+        services.AddTodoTemplateAppServices();
         services.AddBlazorWebView();
 
         return builder;

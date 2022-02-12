@@ -1,45 +1,61 @@
 ﻿@page "/edit-profile"
 @attribute [Authorize]
 
+<PageTitle>Edit profile</PageTitle>
+
 <div class="page-container">
     <form class="form--white">
-        <BitMessageBar Class="form-message-bar" MessageBarType="BitMessageBarType.Success" OnDismiss="() => null">
-            Message about the state of this view
-        </BitMessageBar>
+        @if (HasMessageBar)
+        {
+            <BitMessageBar Class="form-message-bar"
+                       MessageBarType="@(IsSuccessMessageBar ? BitMessageBarType.Success : BitMessageBarType.Error)"
+                       OnDismiss="() => HasMessageBar = false">
+                @MessageBarText
+            </BitMessageBar>
+        }
         <h1 class="form-title">
             Edit profile
         </h1>
         <div class="form-profile-container">
             <div class="form-profile-photo">
-                ZA
+                @{
+                    if (!string.IsNullOrEmpty(UserProfilePhotoUrl))
+                    {
+                      <img src="@UserProfilePhotoUrl" class="profile-photo"/>
+                    }
+                    else
+                    {
+                        @User?.UserName?.ToUpper()[..2]
+                    }
+                }
             </div>
             <div class="form-profile-email">
-                zahraeb97@outlook.ie
+                @User?.UserName
             </div>
         </div>
         <div class="form-input-container">
             <BitLabel>Profile photo</BitLabel>
-            <BitFileUpload Label="Select or drag and drops files"></BitFileUpload>
+            <BitFileUpload Label="Select or drag and drops files"
+                           UploadUrl="@ProfilePhotoUploadUrl"
+                           RemoveUrl="@ProfilePhotoRemoveUrl"></BitFileUpload>
         </div>
         <div class="form-input-container">
             <BitLabel>Full-Name</BitLabel>
-            <BitTextField></BitTextField>
+            <BitTextField @bind-Value="User!.FullName"></BitTextField>
         </div>
         <div class="form-input-container">
             <BitLabel>Birthday</BitLabel>
-            <BitDatePicker></BitDatePicker>
+            <BitDatePicker @bind-Value="User!.BirthDate"></BitDatePicker>
         </div>
-
         <div class="form-choice-container">
             <BitLabel>Gender</BitLabel>
-            <BitChoiceGroup>
-                <BitChoiceOption Text="Male"></BitChoiceOption>
-                <BitChoiceOption Text="Famale"></BitChoiceOption>
-                <BitChoiceOption Text="Other"></BitChoiceOption>
+            <BitChoiceGroup @bind-SelectedKey="SelectedGender">
+                <BitChoiceOption Key="@Gender.Male.ToString()" Text="Male"></BitChoiceOption>
+                <BitChoiceOption Key="@Gender.Female.ToString()" Text="Famale"></BitChoiceOption>
+                <BitChoiceOption Key="@Gender.Custom.ToString()" Text="Custom"></BitChoiceOption>
             </BitChoiceGroup>
         </div>
-
-        <BitButton Class="form-submit-button" ButtonStyle="BitButtonStyle.Primary" IsEnabled="true">
+        <BitButton Class="form-submit-button" ButtonStyle="BitButtonStyle.Primary" IsEnabled="true" OnClick="OnClickSave">
             Save
         </BitButton>
     </form>

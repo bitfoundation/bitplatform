@@ -39,19 +39,24 @@
     </PropertyGroup>
 
     <ItemGroup>
+        
         <Using Include="Microsoft.AspNetCore.Components.WebView.Maui" />
         <Using Include="Microsoft.Maui" />
         <Using Include="Microsoft.Maui.Controls.Hosting" />
         <Using Include="Microsoft.Maui.Essentials" />
-        <Using Include="Microsoft.Maui.Hosting" />
+
         <Using Include="Microsoft.AspNetCore.Components" />
-        <Using Include="TodoTemplate.App.Contracts" />
-        <Using Include="TodoTemplate.App.Implementations" />
+        <Using Include="TodoTemplate.App.Services.Contracts" />
+        <Using Include="TodoTemplate.App.Services.Implementations" />
         <Using Include="Microsoft.Extensions.Configuration" />
-        <Using Include="System.Net.Http" />
         <Using Include="Microsoft.JSInterop" />
         <Using Include="System.Net.Http.Json" />
         <Using Include="System.Collections.Concurrent" />
+
+        <Using Include="Microsoft.AspNetCore.Components.Authorization" />
+        <Using Include="TodoTemplate.App.Components" />
+        <Using Include="Bit.Client.Web.BlazorUI" />
+
     </ItemGroup>
 
     <ItemGroup>
@@ -79,17 +84,25 @@
     <ItemGroup>
         <ProjectReference Include="..\..\..\..\Client\Web\Bit.Client.Web.BlazorUI\Bit.Client.Web.BlazorUI.csproj" />
         <PackageReference Include="BuildWebCompiler" Version="1.12.405" />
+        <PackageReference Include="jose-jwt" Version="3.2.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="6.0.1" />
+        <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.5.3">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
         <Content Remove="appsettings.json" />
         <EmbeddedResource Include="appsettings.json" />
         <Content Remove="Pages\_Host.cshtml" />
         <Content Remove="Pages\_Layout.cshtml" />
+        <Compile Remove="Services\Implementations\ServerSideTokenProvider.cs" />
         <Content Remove="Properties\launchSettings.json" />
         <Content Remove="compilerconfig.json" />
         <None Include="compilerconfig.json" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\..\Bit.Tooling.SourceGenerators\Bit.Tooling.SourceGenerators.csproj" />
+        <ProjectReference Include="..\..\..\Bit.Tooling.SourceGenerators\Bit.Tooling.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+        <ProjectReference Include="..\..\..\Bit.Tooling.CodeAnalyzer\Bit.Tooling.CodeAnalyzer.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
         <ProjectReference Include="..\Shared\TodoTemplate.Shared.csproj" />
     </ItemGroup>
 

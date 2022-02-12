@@ -1,20 +1,25 @@
 {
-  "compilers": {
-    "sass": {
-      "autoPrefix": "",
-      "loadPaths": [],
-      "style": 0,
-      "precision": 10,
-      "quiet": true,
-      "quietDeps": true,
-      "sourceMap": false
+    "compilers": {
+        "sass": {
+            "autoPrefix": "",
+            "loadPaths": [],
+            "style": 0,
+            "precision": 10,
+            "quiet": true,
+            "quietDeps": true,
+            "sourceMap": false
+        }
+    },
+    "minifiers": {
+        "css": {
+            "enabled": true,
+            "termSemicolons": true,
+            "gzip": false
+        },
+        "javascript": {
+            "enabled": true,
+            "termSemicolons": true,
+            "gzip": false
+        }
     }
-  },
-  "minifiers": {
-    "css": {
-      "enabled": true,
-      "termSemicolons": true,
-      "gzip": false
-    }
-  }
 }

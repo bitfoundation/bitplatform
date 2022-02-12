@@ -1,0 +1,611 @@
+﻿@import "../../Styles/Fluent/colors.fluent.scss";
+
+.bit-persona {
+    -webkit-font-smoothing: antialiased;
+    font-size: 14px;
+    font-weight: 400;
+    box-shadow: none;
+    margin: 0px;
+    padding: 0px;
+    box-sizing: border-box;
+    color: $Grey160;
+    position: relative;
+    display: flex;
+    align-items: center;
+
+    & .bit-persona-coin {
+        -webkit-font-smoothing: antialiased;
+        font-size: 14px;
+        font-weight: 400;
+
+        & .bit-persona-image-area {
+            overflow: hidden;
+            animation-name: css-0;
+            animation-duration: 0.367s;
+            animation-timing-function: cubic-bezier(0.1, 0.25, 0.75, 0.9);
+            animation-fill-mode: both;
+            position: absolute;
+            margin-right: 10px;
+            top: 0px;
+            left: 0px;
+            border: 0px;
+            perspective: 1px;
+
+            & .bit-persona-img-container {
+                overflow: hidden;
+                animation-name: css-0;
+                animation-duration: 0.367s;
+                animation-timing-function: cubic-bezier(0.1, 0.25, 0.75, 0.9);
+                animation-fill-mode: both;
+                position: absolute;
+                margin-right: 10px;
+                top: 0px;
+                left: 0px;
+                border: 0px;
+                border-radius: 50%;
+                perspective: 1px;
+
+                & .bit-persona-img {
+                    display: block;
+                    opacity: 1;
+                    width: 100%;
+                    height: 100%;
+                    object-fit: cover;
+                }
+            }
+
+            & .bit-Persona-presence {
+                position: absolute;
+                border-radius: 50%;
+                top: auto;
+                right: -2px;
+                bottom: -2px;
+                border: 2px solid rgb(255, 255, 255);
+                text-align: center;
+                box-sizing: content-box;
+                background-clip: border-box;
+                forced-color-adjust: none;
+
+                & .bit-persona-icon {
+                    display: inline-block;
+                    -webkit-font-smoothing: antialiased;
+                    font-style: normal;
+                    font-weight: normal;
+                    speak: none;
+                    color: #ffffff;
+                    vertical-align: top;
+                }
+            }
+        }
+    }
+
+    & .bit-Persona-details {
+        min-width: 0;
+        width: 100%;
+        text-align: left;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-around;
+
+        & .bit-Persona-primaryTex {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            color: $Grey160;
+        }
+
+        & .bit-Persona-secondaryText {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            color: $Grey130;
+        }
+
+        & .bit-Persona-tertiaryText {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            color: $Grey130;
+        }
+
+        & .bit-Persona-optionalText {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            color: $Grey130;
+        }
+    }
+}
+
+
+.bit-persona-24px {
+
+    & .bit-persona-coin {
+
+        & .bit-persona-image-area {
+            position: relative;
+            text-align: center;
+            flex: 0 0 auto;
+            height: 24px;
+            width: 24px;
+
+            & .bit-persona-img-container {
+                width: 24px;
+                height: 24px;
+            }
+
+            & .bit-Persona-presence {
+                height: 8px;
+                width: 8px;
+                border: 2px solid #ffffff;
+            }
+        }
+    }
+
+    & .bit-Persona-details {
+        padding: 0px 8px;
+
+        & .bit-Persona-primaryTex {
+            font-weight: 400;
+            font-size: 14px
+        }
+
+        & .bit-Persona-secondaryText {
+            display: none;
+        }
+
+        & .bit-Persona-tertiaryText {
+            display: none;
+        }
+
+        & .bit-Persona-optionalText {
+            display: none;
+        }
+    }
+}
+
+.bit-persona-32px {
+
+    & .bit-persona-coin {
+
+        & .bit-persona-image-area {
+            position: relative;
+            text-align: center;
+            flex: 0 0 auto;
+            height: 32px;
+            width: 32px;
+
+            & .bit-persona-img-container {
+                width: 32px;
+                height: 32px;
+            }
+
+            & .bit-Persona-presence {
+                height: 8px;
+                width: 8px;
+                border: 2px solid #ffffff;
+            }
+        }
+    }
+
+    & .bit-Persona-details {
+        padding: 0px 8px;
+
+        & .bit-Persona-primaryTex {
+            font-weight: 400;
+            font-size: 14px
+        }
+
+        & .bit-Persona-secondaryText {
+            display: none;
+        }
+
+        & .bit-Persona-tertiaryText {
+            display: none;
+        }
+
+        & .bit-Persona-optionalText {
+            display: none;
+        }
+    }
+}
+
+.bit-persona-40px {
+    height: 40px;
+    min-width: 40px;
+
+    & .bit-persona-coin {
+
+        & .bit-persona-image-area {
+            position: relative;
+            text-align: center;
+            flex: 0 0 auto;
+            height: 40px;
+            width: 40px;
+
+            & .bit-persona-img-container {
+                width: 40px;
+                height: 40px;
+            }
+
+            & .bit-Persona-presence {
+                height: 12px;
+                width: 12px;
+                border: 2px solid #ffffff;
+
+                & .bit-persona-icon {
+                    font-size: 6px;
+                    line-height: 12px;
+                }
+            }
+        }
+    }
+
+    & .bit-Persona-details {
+        padding: 0px 12px;
+
+        & .bit-Persona-primaryTex {
+            font-weight: 400;
+            font-size: 14px
+        }
+
+        & .bit-Persona-secondaryText {
+            font-weight: 400;
+            font-size: 12px;
+        }
+
+        & .bit-Persona-tertiaryText {
+            display: none;
+        }
+
+        & .bit-Persona-optionalText {
+            display: none;
+        }
+    }
+}
+
+.bit-persona-48px {
+    height: 48px;
+    min-width: 48px;
+
+    & .bit-persona-coin {
+
+        & .bit-persona-image-area {
+            position: relative;
+            text-align: center;
+            flex: 0 0 auto;
+            height: 48px;
+            width: 48px;
+
+            & .bit-persona-img-container {
+                width: 48px;
+                height: 48px;
+            }
+
+            & .bit-Persona-presence {
+                height: 12px;
+                width: 12px;
+                border: 2px solid #ffffff;
+
+                & .bit-persona-icon {
+                    font-size: 6px;
+                    line-height: 12px;
+                }
+            }
+        }
+    }
+
+    & .bit-Persona-details {
+        padding: 0px 12px;
+
+        & .bit-Persona-primaryTex {
+            font-weight: 400;
+            font-size: 14px
+        }
+
+        & .bit-Persona-secondaryText {
+            font-weight: 400;
+            font-size: 12px;
+        }
+
+        & .bit-Persona-tertiaryText {
+            display: none;
+        }
+
+        & .bit-Persona-optionalText {
+            display: none;
+        }
+    }
+}
+
+.bit-persona-56px {
+    height: 56px;
+    min-width: 56px;
+
+    & .bit-persona-coin {
+
+        & .bit-persona-image-area {
+            position: relative;
+            text-align: center;
+            flex: 0 0 auto;
+            height: 56px;
+            width: 56px;
+
+            & .bit-persona-img-container {
+                width: 56px;
+                height: 56px;
+            }
+
+            & .bit-Persona-presence {
+                height: 16px;
+                width: 16px;
+                border: 2px solid #ffffff;
+
+                & .bit-persona-icon {
+                    font-size: 8px;
+                    line-height: 16px;
+                }
+            }
+        }
+    }
+
+    & .bit-Persona-details {
+        padding: 0px 24px 0px 16px;
+
+        & .bit-Persona-primaryTex {
+            font-weight: 400;
+            font-size: 20px;
+        }
+
+        & .bit-Persona-secondaryText {
+            font-weight: 400;
+            font-size: 14px;
+        }
+
+        & .bit-Persona-tertiaryText {
+            display: none;
+        }
+
+        & .bit-Persona-optionalText {
+            display: none;
+        }
+    }
+}
+
+.bit-persona-72px {
+    height: 72px;
+    min-width: 72px;
+
+    & .bit-persona-coin {
+
+        & .bit-persona-image-area {
+            position: relative;
+            text-align: center;
+            flex: 0 0 auto;
+            height: 72px;
+            width: 72px;
+
+            & .bit-persona-img-container {
+                width: 72px;
+                height: 72px;
+            }
+
+            & .bit-Persona-presence {
+                height: 20px;
+                width: 20px;
+                border: 2px solid #ffffff;
+
+                & .bit-persona-icon {
+                    font-size: 12px;
+                    line-height: 20px;
+                }
+            }
+        }
+    }
+
+    & .bit-Persona-details {
+        padding: 0px 24px 0px 16px;
+
+        & .bit-Persona-primaryTex {
+            font-weight: 400;
+            font-size: 20px;
+        }
+
+        & .bit-Persona-secondaryText {
+            font-weight: 400;
+            font-size: 14px;
+        }
+
+        & .bit-Persona-tertiaryText {
+            font-weight: 400;
+            font-size: 14px;
+            display: block;
+        }
+
+        & .bit-Persona-optionalText {
+            display: none;
+        }
+    }
+}
+
+.bit-persona-100px {
+    height: 100px;
+    min-width: 100px;
+
+    & .bit-persona-coin {
+
+        & .bit-persona-image-area {
+            position: relative;
+            text-align: center;
+            flex: 0 0 auto;
+            height: 100px;
+            width: 100px;
+        }
+
+        & .bit-persona-img-container {
+            width: 100px;
+            height: 100px;
+        }
+
+        & .bit-Persona-presence {
+            height: 28px;
+            width: 28px;
+            border: 2px solid #ffffff;
+
+            & .bit-persona-icon {
+                font-size: 14px;
+                line-height: 28px;
+            }
+        }
+    }
+
+
+    & .bit-Persona-details {
+        padding: 0px 24px 0px 16px;
+
+        & .bit-Persona-primaryTex {
+            font-weight: 400;
+            font-size: 20px;
+        }
+
+        & .bit-Persona-secondaryText {
+            font-weight: 400;
+            font-size: 14px;
+        }
+
+        & .bit-Persona-tertiaryText {
+            font-weight: 400;
+            font-size: 14px;
+            display: block;
+        }
+
+        & .bit-Persona-optionalText {
+            font-weight: 400;
+            font-size: 14px;
+            display: block;
+        }
+    }
+}
+
+.bit-persona-120px {
+    height: 120px;
+    min-width: 120px;
+
+    & .bit-persona-coin {
+
+        & .bit-persona-image-area {
+            position: relative;
+            text-align: center;
+            flex: 0 0 auto;
+            height: 120px;
+            width: 120px;
+        }
+
+        & .bit-persona-img-container {
+            width: 120px;
+            height: 120px;
+        }
+
+        & .bit-Persona-presence {
+            height: 32px;
+            width: 32px;
+            border: 2px solid #ffffff;
+
+            & .bit-persona-icon {
+                font-size: 14px;
+                line-height: 32px;
+                position: relative;
+                left: 1px;
+            }
+        }
+    }
+
+
+    & .bit-Persona-details {
+        padding: 0px 24px 0px 16px;
+
+        & .bit-Persona-primaryTex {
+            font-weight: 400;
+            font-size: 20px;
+        }
+
+        & .bit-Persona-secondaryText {
+            font-weight: 400;
+            font-size: 14px;
+        }
+
+        & .bit-Persona-tertiaryText {
+            font-weight: 400;
+            font-size: 14px;
+            display: block;
+        }
+
+        & .bit-Persona-optionalText {
+            font-weight: 400;
+            font-size: 14px;
+            display: block;
+        }
+    }
+}
+
+
+.bit-persona-Online {
+
+    & .bit-Persona-presence {
+        background-color: #6BB700;
+    }
+}
+
+.bit-persona-Away {
+
+    & .bit-Persona-presence {
+        background-color: #FFAA44;
+    }
+}
+
+.bit-persona-Blocked {
+
+    & .bit-Persona-presence {
+        background-color: #C43148;
+
+        &::before {
+            content: "";
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0px;
+            left: 0px;
+            border: 2px solid #c43148;
+            border-radius: 50%;
+            box-sizing: border-box;
+        }
+    }
+}
+
+.bit-persona-Busy {
+
+    & .bit-Persona-presence {
+        background-color: #C43148;
+    }
+}
+
+.bit-persona-Dnd {
+
+    & .bit-Persona-presence {
+        background-color: #C50F1F;
+    }
+}
+
+.bit-persona-Offline {
+
+    & .bit-Persona-presence {
+        background-color: #8A8886;
+    }
+}
+
+.bit-persona-Off {
+
+    & .bit-Persona-presence {
+        background-color: #B4009E;
+    }
+}

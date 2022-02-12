@@ -7,7 +7,7 @@
             <BitSearchBox Class="todo-input" Placeholder="Search some todo..."></BitSearchBox>
         </div>
         <div class="todo-content">
-            <h2 class="todo-title">Todos</h2>
+            <h2 class="todo-title">Todo</h2>
             <div class="add-todo-container">
                 <BitTextField @bind-Value="NewTodoItemTitle" Placeholder="Add a todo" Class="todo-input"></BitTextField>
                 @if (IsLoading)
@@ -61,7 +61,7 @@
                             {
                                 <div class="todo-empty">
                                     <img src="/images/empty-todo.svg">
-                                    <BitLabel>No todos yet</BitLabel>
+                                    <BitLabel>No todo yet</BitLabel>
                                 </div>
                             }
                         </div>

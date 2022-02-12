@@ -1,27 +1,13 @@
-﻿using System.Threading.Tasks;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Hosting;
+﻿var builder = WebApplication.CreateBuilder(args);
 
-namespace Bit.Client.Web.BlazorUI.Playground.Api
-{
-    public class Program
-    {
-        public static async Task Main(string[] args)
-        {
-            await CreateHostBuilder(args)
-                .Build()
-                .RunAsync();
-        }
-
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
-                .ConfigureWebHostDefaults(webBuilder =>
-                {
-                    webBuilder.UseStartup<Startup>()
 #if DEBUG
-                        .UseUrls("https://*:5001", "http://*:5000")
+builder.WebHost.UseUrls("https://*:5001", "http://*:5000");
 #endif
-                    ;
-                });
-    }
-}
+
+Bit.Client.Web.BlazorUI.Playground.Api.Startup.Services.Add(builder.Services);
+
+var app = builder.Build();
+
+Bit.Client.Web.BlazorUI.Playground.Api.Startup.Middlewares.Use(app, builder.Environment);
+
+app.Run();

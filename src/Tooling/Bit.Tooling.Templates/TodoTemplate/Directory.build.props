@@ -1,28 +1,34 @@
 <Project>
 
-	<PropertyGroup>
-		<BlazorMode>BlazorServer</BlazorMode>
-		<!-- You can use either Server or web assembly or hybrid, for example: <BlazorMode>BlazorWebAssembly</BlazorMode>-->
-		<DefineConstants Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' ">$(DefineConstants);BlazorWebAssembly</DefineConstants>
-		<DefineConstants Condition=" '$(BlazorMode)' == 'BlazorServer' ">$(DefineConstants);BlazorServer</DefineConstants>
-		<DefineConstants Condition=" '$(BlazorMode)' == 'BlazorHybrid' ">$(DefineConstants);BlazorHybrid</DefineConstants>
-		<DefineConstants Condition=" '$(TargetFramework)' == 'net6.0-android' ">$(DefineConstants);Android</DefineConstants>
-		<DefineConstants Condition=" '$(TargetFramework)' == 'net6.0-ios' ">$(DefineConstants);iOS</DefineConstants>
-		<DefineConstants Condition=" '$(TargetFramework)' == 'net6.0-windows10.0.19041' ">$(DefineConstants);Windows</DefineConstants>
-		<DefineConstants Condition=" '$(TargetFramework)' == 'net6.0-maccatalyst' ">$(DefineConstants);Mac</DefineConstants>
-		<LangVersion>preview</LangVersion>
+    <PropertyGroup>
+        <BlazorMode>BlazorServer</BlazorMode>
+        <!-- You can use either Server or web assembly or hybrid, for example: <BlazorMode>BlazorWebAssembly</BlazorMode> -->
+        <WebAppDeploymentType>Default</WebAppDeploymentType>
+        <!-- You can choose either Static, Default, PWA or SSR. -->
+        <DefineConstants Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' ">$(DefineConstants);BlazorWebAssembly</DefineConstants>
+        <DefineConstants Condition=" '$(BlazorMode)' == 'BlazorServer' ">$(DefineConstants);BlazorServer</DefineConstants>
+        <DefineConstants Condition=" '$(BlazorMode)' == 'BlazorHybrid' ">$(DefineConstants);BlazorHybrid</DefineConstants>
+        <DefineConstants Condition=" '$(WebAppDeploymentType)' == 'SPA' ">$(DefineConstants);SPA</DefineConstants>
+        <DefineConstants Condition=" '$(WebAppDeploymentType)' == 'PWA' ">$(DefineConstants);PWA</DefineConstants>
+        <DefineConstants Condition=" '$(WebAppDeploymentType)' == 'PreRenderEnabledSPA' ">$(DefineConstants);PreRenderEnabledSPA</DefineConstants>
+        <DefineConstants Condition=" '$(WebAppDeploymentType)' == 'Static' ">$(DefineConstants);Static</DefineConstants>
+        <DefineConstants Condition=" '$(TargetFramework)' == 'net6.0-android' ">$(DefineConstants);Android</DefineConstants>
+        <DefineConstants Condition=" '$(TargetFramework)' == 'net6.0-ios' ">$(DefineConstants);iOS</DefineConstants>
+        <DefineConstants Condition=" '$(TargetFramework)' == 'net6.0-windows10.0.19041' ">$(DefineConstants);Windows</DefineConstants>
+        <DefineConstants Condition=" '$(TargetFramework)' == 'net6.0-maccatalyst' ">$(DefineConstants);Mac</DefineConstants>
+        <LangVersion>preview</LangVersion>
         <Nullable>enable</Nullable>
-	</PropertyGroup>
+        <ImplicitUsings>enable</ImplicitUsings>
+    </PropertyGroup>
 
-	<ItemGroup>
-		<Using Include="System" />
-		<Using Include="System.IO" />
-        <Using Include="System.Threading" />
-		<Using Include="System.Threading.Tasks" />
-		<Using Include="System.Linq"/>
-		<Using Include="System.Collections.Generic"/>
+    <ItemGroup>
         <Using Include="Microsoft.Extensions.DependencyInjection" />
         <Using Include="System.Net.Http" />
+        <Using Include="System.ComponentModel.DataAnnotations" />
+        <Using Include="TodoTemplate.Shared.Services.Contracts" />
+        <Using Include="System.Security.Claims" />
+        <Using Include="TodoTemplate.Shared.Enums" />
+        <Using Include="TodoTemplate" />
     </ItemGroup>
 
 </Project>

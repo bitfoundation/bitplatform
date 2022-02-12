@@ -6,9 +6,12 @@ public partial class TodoPage
     [Inject]
     public HttpClient HttpClient { get; set; } = default!;
 
-    private bool IsLoading;
-    private string NewTodoItemTitle = string.Empty;
-    private List<TodoItemDto>? TodoItemList = new();
+    [Inject]
+    public IStateService StateService { get; set; } = default!;
+
+    public bool IsLoading { get; set; }
+    public string NewTodoItemTitle { get; set; } = string.Empty;
+    public List<TodoItemDto>? TodoItemList { get; set; } = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -20,7 +23,7 @@ public partial class TodoPage
         IsLoading = true;
         try
         {
-            TodoItemList = await HttpClient.GetFromJsonAsync<List<TodoItemDto>>("/TodoItem");
+            TodoItemList = await StateService.GetValue(nameof(TodoItemList), async () => await HttpClient.GetFromJsonAsync<List<TodoItemDto>>("TodoItem"));
         }
         finally
         {
@@ -39,7 +42,7 @@ public partial class TodoPage
                 Date = DateTime.Now
             };
 
-            await HttpClient.PostAsJsonAsync("/TodoItem", newTodoItem);
+            await HttpClient.PostAsJsonAsync("TodoItem", newTodoItem);
 
             await LoadTodoItems();
         }
@@ -51,17 +54,18 @@ public partial class TodoPage
 
     private async Task DeleteTodoItem(int id)
     {
-        await HttpClient.DeleteAsync($"/TodoItem/{id}");
+        await HttpClient.DeleteAsync($"TodoItem/{id}");
 
         await LoadTodoItems();
     }
 
     private async Task EditTodoItem(TodoItemDto todoItem)
     {
-        if (string.IsNullOrWhiteSpace(todoItem.Title)) return;
+        if (string.IsNullOrWhiteSpace(todoItem.Title))
+            return;
 
         todoItem.IsInEditMode = false;
 
-        await HttpClient.PutAsJsonAsync("/TodoItem", todoItem);
+        await HttpClient.PutAsJsonAsync("TodoItem", todoItem);
     }
 }

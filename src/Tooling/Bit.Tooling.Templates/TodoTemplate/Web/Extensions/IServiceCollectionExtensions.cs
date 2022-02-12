@@ -1,27 +1,25 @@
-﻿using Microsoft.AspNetCore.Components.Authorization;
-
-namespace TodoTemplate.App.Extensions;
+﻿namespace Microsoft.Extensions.DependencyInjection;
 
 public static class IServiceCollectionExtensions
 {
-    public static IServiceCollection AddTodoTemplateServices(this IServiceCollection services)
+    public static IServiceCollection AddTodoTemplateAppServices(this IServiceCollection services)
     {
         services.AddScoped<IToastService, ToastService>();
-        services.AddScoped<StateService>();
+        services.AddScoped<IStateService, StateService>();
 
 #if BlazorServer || BlazorHybrid
         services.AddScoped(sp =>
         {
             HttpClient httpClient = new(sp.GetRequiredService<TodoTemplateHttpClientHandler>())
             {
-                BaseAddress = new Uri(sp.GetRequiredService<IConfiguration>()["ApiServerAddress"])
+                BaseAddress = new Uri($"{sp.GetRequiredService<IConfiguration>()["ApiServerAddress"]}api/")
             };
 
             return httpClient;
         });
 #endif
 
-        services.AddScoped<TodoTemplateHttpClientHandler>();
+        services.AddTransient<TodoTemplateHttpClientHandler>();
 
         services.AddAuthorizationCore();
         services.AddScoped<AuthenticationStateProvider, TodoTemplateAuthenticationStateProvider>();

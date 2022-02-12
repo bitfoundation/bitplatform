@@ -1,26 +1,39 @@
-﻿using Microsoft.AspNetCore.Components.Authorization;
-
-namespace TodoTemplate.App.Shared
+﻿namespace TodoTemplate.App.Shared
 {
-    public partial class MainLayout
+    public partial class MainLayout : IAsyncDisposable
     {
-        public bool IsSignedInUser { get; set; }
+        public bool IsUserAuthenticated { get; set; }
 
-        [CascadingParameter]
-        public Task<AuthenticationState> AuthenticationStateTask { get; set; }
+        [Inject]
+        public IStateService StateService { get; set; } = default!;
+
+        [Inject]
+        public TodoTemplateAuthenticationStateProvider TodoTemplateAuthenticationStateProvider { get; set; } = default!;
 
         protected override async Task OnInitializedAsync()
         {
-            var authState = await AuthenticationStateTask;
-            var user = authState.User;
+            TodoTemplateAuthenticationStateProvider.AuthenticationStateChanged += VerifyUserIsAuthenticatedOrNot;
 
-
-            if (AuthenticationStateTask.Result.User.Identity != null)
-            {
-                IsSignedInUser = user.Identity!.IsAuthenticated;
-            }
+            IsUserAuthenticated = await StateService.GetValue(nameof(IsUserAuthenticated), async () => await TodoTemplateAuthenticationStateProvider.IsUserAuthenticated());
 
             await base.OnInitializedAsync();
+        }
+
+        async void VerifyUserIsAuthenticatedOrNot(Task<AuthenticationState> task)
+        {
+            try
+            {
+                IsUserAuthenticated = await StateService.GetValue(nameof(IsUserAuthenticated), async () => await TodoTemplateAuthenticationStateProvider.IsUserAuthenticated());
+            }
+            finally
+            {
+                StateHasChanged();
+            }
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            TodoTemplateAuthenticationStateProvider.AuthenticationStateChanged -= VerifyUserIsAuthenticatedOrNot;
         }
     }
 }

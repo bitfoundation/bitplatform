@@ -198,6 +198,33 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.DatePicker
                         Value="1",
                     }
                 }
+            },
+            new EnumParameter()
+            {
+                Id = "component-visibility-enum",
+                Title = "BitComponentVisibility Enum",
+                Description = "",
+                EnumList = new List<EnumItem>()
+                {
+                    new EnumItem()
+                    {
+                        Name= "Visible",
+                        Description="Show content of the component.",
+                        Value="0",
+                    },
+                    new EnumItem()
+                    {
+                        Name= "Hidden",
+                        Description="Hide content of the component,though the space it takes on the page remains.",
+                        Value="1",
+                    },
+                    new EnumItem()
+                    {
+                        Name= "Collapsed",
+                        Description="Hide content of the component,though the space it takes on the page gone.",
+                        Value="2",
+                    }
+                }
             }
         };
 
