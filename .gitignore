@@ -294,6 +294,4 @@ _book
 /src/Tooling/Bit.Tooling.Templates/TodoTemplate/App/Components
 /src/Tooling/Bit.Tooling.Templates/TodoTemplate/App/Shared
 /src/Tooling/Bit.Tooling.Templates/TodoTemplate/Api/Attachments/**/*.*
-/src/Tooling/Bit.Tooling.Templates/TodoTemplate/Web/wwwroot/scripts/todoTemplate.js
-/src/Tooling/Bit.Tooling.Templates/TodoTemplate/Web/wwwroot/scripts/todoTemplate.es5.min.js
-/src/Tooling/Bit.Tooling.Templates/TodoTemplate/Web/wwwroot/scripts/todoTemplate.es5.js
+/src/Tooling/Bit.Tooling.Templates/TodoTemplate/Web/wwwroot/scripts/todoTemplate*.js
