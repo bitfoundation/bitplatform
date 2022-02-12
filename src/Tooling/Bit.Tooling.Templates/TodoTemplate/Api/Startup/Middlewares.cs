@@ -78,7 +78,7 @@ namespace TodoTemplate.Api.Startup
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapDefaultControllerRoute().RequireAuthorization();
+                endpoints.MapControllers().RequireAuthorization();
 
 #if BlazorWebAssembly
                 endpoints.MapFallbackToPage("/_Host");

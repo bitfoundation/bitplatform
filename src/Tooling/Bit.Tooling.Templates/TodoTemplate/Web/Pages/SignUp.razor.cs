@@ -47,7 +47,7 @@ public partial class SignUp
                 UserName = Email,
                 Email = Email,
                 Password = Password
-            });
+            }, ToDoTemplateJsonContext.Default.UserDto);
 
             await TodoTemplateAuthenticationService.SignIn(new SignInRequestDto
             {

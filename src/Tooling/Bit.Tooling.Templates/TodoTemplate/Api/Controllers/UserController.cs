@@ -21,7 +21,7 @@ public class UserController : ControllerBase
         _mapper = mapper;
     }
 
-    [HttpGet]
+    [HttpGet, EnableQuery]
     public IQueryable<UserDto> Get(CancellationToken cancellationToken)
     {
         return _userManager.Users.ProjectTo<UserDto>(_mapper.ConfigurationProvider, cancellationToken);

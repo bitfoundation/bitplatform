@@ -18,7 +18,7 @@ public class RoleController : ControllerBase
         _mapper = mapper;
     }
 
-    [HttpGet]
+    [HttpGet, EnableQuery]
     public IQueryable<RoleDto> Get(CancellationToken cancellationToken)
     {
         return _dbContext.Roles.ProjectTo<RoleDto>(_mapper.ConfigurationProvider, cancellationToken);
