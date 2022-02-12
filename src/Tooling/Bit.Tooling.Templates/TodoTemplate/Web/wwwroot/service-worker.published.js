@@ -1,5 +1,6 @@
 self.assetsInclude = [
-    /\.svg$/
+    /\.svg$/,
+    /FabExMDL*/
 ];
 
 self.assetsExclude = [
