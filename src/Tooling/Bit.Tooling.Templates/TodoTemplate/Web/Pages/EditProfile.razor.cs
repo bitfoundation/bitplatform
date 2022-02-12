@@ -32,7 +32,7 @@ public partial class EditProfile
 
     protected override async Task OnInitializedAsync()
     {
-        User = await StateService.GetValue(nameof(User), async () => await HttpClient.GetFromJsonAsync<UserDto>($"User/GetCurrentUser"));
+        User = await StateService.GetValue(nameof(User), async () => await HttpClient.GetFromJsonAsync($"User/GetCurrentUser", ToDoTemplateJsonContext.Default.UserDto));
 
         SelectedGender = User.Gender.ToString();
 
@@ -69,7 +69,7 @@ public partial class EditProfile
                 User!.Gender = Gender.Custom;
             }
 
-            await HttpClient.PutAsJsonAsync("User", User);
+            await HttpClient.PutAsJsonAsync("User", User, ToDoTemplateJsonContext.Default.UserDto);
 
             IsSuccessMessageBar = true;
 

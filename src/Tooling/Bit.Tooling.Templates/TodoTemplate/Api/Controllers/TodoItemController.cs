@@ -18,7 +18,7 @@ public class TodoItemController : ControllerBase
         _mapper = mapper;
     }
 
-    [HttpGet]
+    [HttpGet, EnableQuery]
     public IQueryable<TodoItemDto> Get(CancellationToken cancellationToken)
     {
         return _dbContext.TodoItems

@@ -23,12 +23,6 @@
                             : RenderMode.WebAssemblyPrerendered;
 }
 
-@*
-    Unlike most client-side Blazor projects (WASM Blazor), we use .cshtml instead of .html index file.
-    This provides PreRendering(SSR) to the client blazor projects and the ability to use "asp-append-version".
-    Note that these files(_Host.cshtml & _Layout.cshtml) are being used for both "Client" and "Server" blazor.
-*@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>

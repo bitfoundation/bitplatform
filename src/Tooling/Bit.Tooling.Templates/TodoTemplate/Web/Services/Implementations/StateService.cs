@@ -2,7 +2,7 @@
 
 namespace TodoTemplate.App.Services.Implementations;
 
-#if (BlazorWebAssembly || BlazorServer) && PreRenderEnabledSPA
+#if (BlazorWebAssembly || BlazorServer) && SSR
 public class StateService : IStateService, IAsyncDisposable
 {
     private PersistingComponentStateSubscription? _subscription;
