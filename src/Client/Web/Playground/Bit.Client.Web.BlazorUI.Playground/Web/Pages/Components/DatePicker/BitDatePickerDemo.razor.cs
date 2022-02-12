@@ -33,7 +33,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.DatePicker
                 Type = "CultureInfo",
                 DefaultValue = "CultureInfo.CurrentUICulture",
                 Description = "CultureInfo for the DatePicker."
-            },    
+            },
             new ComponentParameter()
             {
                 Name = "GoToToday",
@@ -149,7 +149,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.DatePicker
             new ComponentParameter()
             {
                 Name = "Value",
-                Type = "string",
+                Type = "DateTimeOffset",
                 DefaultValue = "",
                 Description = "The value of DatePicker.",
             },
@@ -159,6 +159,20 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.DatePicker
                 Type = "EventCallback<string>",
                 DefaultValue = "",
                 Description = "Callback for when DatePicker value changed.",
+            },
+            new ComponentParameter()
+            {
+                Name = "MaxDate",
+                Type = "DateTimeOffset",
+                DefaultValue = "",
+                Description = "The maximum allowable date.",
+            },
+            new ComponentParameter()
+            {
+                Name = "MinDate",
+                Type = "DateTimeOffset",
+                DefaultValue = "",
+                Description = "The minimum allowable date.",
             },
         };
 
@@ -214,5 +228,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.DatePicker
 }";
 
         private readonly string example6HTMLCode = @"<BitDatePicker FormatDate=""d"" Style=""width: 300px""></BitDatePicker>";
+
+        private readonly string example7HTMLCode = @"<BitDatePicker Style=""width: 300px"" MaxDate=""DateTimeOffset.Now.AddYears(1)"" MinDate=""DateTimeOffset.Now.AddYears(-5)""></BitDatePicker>";
     }
 }

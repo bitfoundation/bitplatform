@@ -171,6 +171,12 @@
         background-color: transparent;
         overflow: visible;
         cursor: pointer;
+
+        &:disabled {
+            pointer-events: none;
+            background-color: transparent;
+            color: $Grey60;
+        }
     }
 
     .date-cell--today {
@@ -332,6 +338,15 @@
             background-color: $Grey30;
         }
 
+        &:disabled {
+            pointer-events: none;
+            background-color: transparent;
+
+            i {
+                color: $Grey60;
+            }
+        }
+
         i {
             display: inline-block;
             speak: none;
@@ -387,6 +402,13 @@
 
             &:last-child {
                 margin: 0;
+            }
+
+
+            &:disabled {
+                pointer-events: none;
+                background-color: transparent;
+                color: $Grey60;
             }
         }
 
