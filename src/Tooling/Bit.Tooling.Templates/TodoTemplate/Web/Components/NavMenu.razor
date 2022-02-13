@@ -1,8 +1,8 @@
 ﻿<div class="menu-shadow"></div>
 <section class="main-container">
     <div class="top-container">
-        <div class="user-photo">BI</div>
-        <div class="user-name">bit@outlook.com</div>
+        <div class="user-photo">@User?.UserName?.ToUpper()[..2]</div>
+        <div class="user-name"> @User?.UserName</div>
         <BitActionButton IconName="BitIconName.Edit" Href="/edit-profile">Edit profile</BitActionButton>
     </div>
     <BitNav NavLinkItems="NavLinks"
