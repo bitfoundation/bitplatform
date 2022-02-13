@@ -52,7 +52,7 @@ public partial class EditProfile
 
         try
         {
-            await HttpClient.GetAsync(ProfilePhotoGetUrl);
+            await StateService.GetValue(nameof(ProfilePhotoGetUrl), async () => await HttpClient.GetAsync(ProfilePhotoGetUrl));
             HasProfilePhoto = true;
         }
         finally
