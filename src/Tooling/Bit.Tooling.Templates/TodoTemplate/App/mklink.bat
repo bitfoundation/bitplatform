@@ -24,12 +24,13 @@ mklink /h "appsettings.json" "../Web/appsettings.json"
 
 cd wwwroot
 
-rd fonts
 rd images
 rd scripts
 rd styles
 
-mklink /j "fonts" "../../Web/wwwroot/fonts"
 mklink /j "images" "../../Web/wwwroot/images"
 mklink /j "scripts" "../../Web/wwwroot/scripts"
 mklink /j "styles" "../../Web/wwwroot/styles"
+
+del service-worker.js
+mklink /h "service-worker.js" "../../Web/wwwroot/service-worker.js"
