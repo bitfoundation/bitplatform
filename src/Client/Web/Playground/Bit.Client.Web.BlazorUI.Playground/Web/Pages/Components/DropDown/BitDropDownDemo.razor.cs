@@ -371,7 +371,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.DropDown
              Items=""GetDropdownItems()""
              Placeholder=""Select an option""
              IsEnabled=""false""
-             DefaultSelectedKey=""Broccoli""
+             DefaultSelectedKey=""v-bro""
              Style=""width: 290px; margin-bottom: 20px;"">
 </BitDropDown>
 <BitDropDown Label=""Multi-select uncontrolled""
