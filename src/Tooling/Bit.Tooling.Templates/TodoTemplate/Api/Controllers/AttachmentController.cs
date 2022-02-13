@@ -48,7 +48,7 @@ public class AttachmentController : ControllerBase
         var userId = User.GetUserId();
 
         var filePath = Directory.GetFiles(_appSettings.UserProfilePhotoPath, $"{userId}.*")
-            .Single();
+            .SingleOrDefault();
 
         if (filePath is null)
             return NotFound();

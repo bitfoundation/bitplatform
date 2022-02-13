@@ -40,22 +40,6 @@ public class UserController : ControllerBase
         return Ok(user);
     }
 
-    [HttpPost("[action]"), AllowAnonymous]
-    public async Task<ActionResult<UserDto>> SignUp(UserDto dto, CancellationToken cancellationToken)
-    {
-        var userToAdd = _mapper.Map<User>(dto);
-
-        var isSuceess = (await _userManager.CreateAsync(userToAdd, dto.Password)).Succeeded;
-
-        isSuceess = isSuceess && (await _userManager.AddClaimAsync(userToAdd, new Claim(ClaimTypes.Name, userToAdd.UserName!))).Succeeded;
-        isSuceess = isSuceess && (await _userManager.AddClaimAsync(userToAdd, new Claim(ClaimTypes.NameIdentifier, userToAdd.Id.ToString()!))).Succeeded;
-
-        if (!isSuceess)
-            return BadRequest();
-
-        return Ok(await Get(cancellationToken).FirstOrDefaultAsync(u => u.Id == userToAdd.Id, cancellationToken));
-    }
-
     [HttpPut]
     public async Task<ActionResult<UserDto>> Update(UserDto dto, CancellationToken cancellationToken)
     {
@@ -69,6 +53,22 @@ public class UserController : ControllerBase
         await _userManager.UpdateAsync(updatedUser);
 
         return Ok(await Get(cancellationToken).FirstOrDefaultAsync(u => u.Id == updatedUser.Id, cancellationToken));
+    }
+
+    [HttpPost("[action]"), AllowAnonymous]
+    public async Task<ActionResult<UserDto>> SignUp(UserDto dto, CancellationToken cancellationToken)
+    {
+        var userToAdd = _mapper.Map<User>(dto);
+
+        var isSucceess = (await _userManager.CreateAsync(userToAdd, dto.Password)).Succeeded;
+
+        isSucceess = isSucceess && (await _userManager.AddClaimAsync(userToAdd, new Claim(ClaimTypes.Name, userToAdd.UserName!))).Succeeded;
+        isSucceess = isSucceess && (await _userManager.AddClaimAsync(userToAdd, new Claim(ClaimTypes.NameIdentifier, userToAdd.Id.ToString()!))).Succeeded;
+
+        if (!isSucceess)
+            return BadRequest();
+
+        return Ok(await Get(cancellationToken).FirstOrDefaultAsync(u => u.Id == userToAdd.Id, cancellationToken));
     }
 
     [HttpPost("[action]"), AllowAnonymous]

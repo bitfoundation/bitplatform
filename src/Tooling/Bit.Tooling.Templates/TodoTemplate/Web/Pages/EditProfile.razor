@@ -18,15 +18,13 @@
         </h1>
         <div class="form-profile-container">
             <div class="form-profile-photo">
-                @{
-                    if (!string.IsNullOrEmpty(UserProfilePhotoUrl))
-                    {
-                      <img src="@UserProfilePhotoUrl" class="profile-photo"/>
-                    }
-                    else
-                    {
-                        @User?.UserName?.ToUpper()[..2]
-                    }
+                @if (HasProfilePhoto)
+                {
+                    <img src="@ProfilePhotoGetUrl" class="profile-photo" />
+                }
+                else
+                {
+                    @User?.UserName?.ToUpper()[..2]
                 }
             </div>
             <div class="form-profile-email">
