@@ -40,6 +40,21 @@ public class UserController : ControllerBase
         return Ok(user);
     }
 
+    [HttpPut]
+    public async Task<ActionResult<UserDto>> Update(UserDto dto, CancellationToken cancellationToken)
+    {
+        var userToUpdate = await _userManager.Users.FirstOrDefaultAsync(user => user.Id == dto.Id, cancellationToken);
+
+        if (userToUpdate is null)
+            return NotFound();
+
+        var updatedUser = _mapper.Map(dto, userToUpdate);
+
+        await _userManager.UpdateAsync(updatedUser);
+
+        return Ok(await Get(cancellationToken).FirstOrDefaultAsync(u => u.Id == updatedUser.Id, cancellationToken));
+    }
+
     [HttpPost("[action]"), AllowAnonymous]
     public async Task<ActionResult<UserDto>> SignUp(UserDto dto, CancellationToken cancellationToken)
     {
@@ -54,21 +69,6 @@ public class UserController : ControllerBase
             return BadRequest();
 
         return Ok(await Get(cancellationToken).FirstOrDefaultAsync(u => u.Id == userToAdd.Id, cancellationToken));
-    }
-
-    [HttpPut]
-    public async Task<ActionResult<UserDto>> Update(UserDto dto, CancellationToken cancellationToken)
-    {
-        var userToUpdate = await _userManager.Users.FirstOrDefaultAsync(user => user.Id == dto.Id, cancellationToken);
-
-        if (userToUpdate is null)
-            return NotFound();
-
-        var updatedUser = _mapper.Map(dto, userToUpdate);
-
-        await _userManager.UpdateAsync(updatedUser);
-
-        return Ok(await Get(cancellationToken).FirstOrDefaultAsync(u => u.Id == updatedUser.Id, cancellationToken));
     }
 
     [HttpPost("[action]"), AllowAnonymous]

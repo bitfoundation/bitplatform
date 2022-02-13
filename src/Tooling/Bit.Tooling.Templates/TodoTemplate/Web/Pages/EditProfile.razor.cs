@@ -10,7 +10,8 @@ public partial class EditProfile
 
     public string? ProfilePhotoUploadUrl { get; set; }
     public string? ProfilePhotoRemoveUrl { get; set; }
-    public string? UserProfilePhotoUrl { get; set; }
+    public string? ProfilePhotoGetUrl { get; set; }
+    public bool HasProfilePhoto { get; set; }
 
     public bool HasMessageBar { get; set; }
     public bool IsSuccessMessageBar { get; set; }
@@ -34,20 +35,31 @@ public partial class EditProfile
     {
         User = await StateService.GetValue(nameof(User), async () => await HttpClient.GetFromJsonAsync($"User/GetCurrentUser", ToDoTemplateJsonContext.Default.UserDto));
 
-        SelectedGender = User.Gender.ToString();
+        SelectedGender = User?.Gender.ToString();
 
         var access_token = await StateService.GetValue("access_token", async () => await TokenProvider.GetAcccessToken());
 
         ProfilePhotoUploadUrl = $"api/Attachment/UploadProfilePhoto?access_token={access_token}";
         ProfilePhotoRemoveUrl = $"api/Attachment/RemoveProfilePhoto?access_token={access_token}";
-        UserProfilePhotoUrl = $"api/Attachment/GetProfilePhoto?access_token={access_token}";
+        ProfilePhotoGetUrl = $"api/Attachment/GetProfilePhoto?access_token={access_token}";
 
 #if BlazorServer || BlazorHybrid
         var serverUrl = Configuration.GetValue<string>("ApiServerAddress");
         ProfilePhotoUploadUrl = $"{serverUrl}{ProfilePhotoUploadUrl}";
         ProfilePhotoRemoveUrl = $"{serverUrl}{ProfilePhotoRemoveUrl}";
-        UserProfilePhotoUrl = $"{serverUrl}{UserProfilePhotoUrl}";
+        ProfilePhotoGetUrl = $"{serverUrl}{ProfilePhotoGetUrl}";
 #endif
+
+        try
+        {
+            await HttpClient.GetAsync(ProfilePhotoGetUrl);
+            HasProfilePhoto = true;
+        }
+        catch
+        {
+            // if GetProfilePhoto service return not found => user has not photo
+            HasProfilePhoto = false;
+        }
 
         await base.OnInitializedAsync();
     }

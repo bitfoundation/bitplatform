@@ -50,9 +50,6 @@ public class AttachmentController : ControllerBase
         var filePath = Directory.GetFiles(_appSettings.UserProfilePhotoPath, $"{userId}.*")
             .Single();
 
-        if (filePath is null)
-            return NotFound();
-
         if (!SystemFile.Exists(filePath))
             return NotFound();
 
