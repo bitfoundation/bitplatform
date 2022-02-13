@@ -57,6 +57,9 @@ public partial class SignUp
 
             IsSuccessMessageBar = true;
             MessageBarText = "Sign-up successfully";
+
+            if (NavigationManager.Uri.EndsWith("/sign-up", StringComparison.InvariantCultureIgnoreCase))
+                NavigationManager.NavigateTo("/");
         }
         catch (Exception e)
         {
@@ -66,7 +69,7 @@ public partial class SignUp
         HasMessageBar = true;
     }
 
-    protected async override Task OnAfterRenderAsync(bool firstRender)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await base.OnAfterRenderAsync(firstRender);
 

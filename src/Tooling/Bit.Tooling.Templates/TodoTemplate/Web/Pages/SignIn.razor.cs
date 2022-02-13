@@ -59,7 +59,7 @@ public partial class SignIn
         HasMessageBar = true;
     }
 
-    protected async override Task OnAfterRenderAsync(bool firstRender)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
