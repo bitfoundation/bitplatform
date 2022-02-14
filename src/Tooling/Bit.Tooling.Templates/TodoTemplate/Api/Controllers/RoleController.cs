@@ -35,19 +35,17 @@ public class RoleController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<RoleDto> Post(RoleDto dto, CancellationToken cancellationToken)
+    public async Task Post(RoleDto dto, CancellationToken cancellationToken)
     {
         var roleToAdd = _mapper.Map<Role>(dto);
 
         await _dbContext.AddAsync(roleToAdd, cancellationToken);
 
         await _dbContext.SaveChangesAsync(cancellationToken);
-
-        return await Get(roleToAdd.Id, cancellationToken);
     }
 
     [HttpPut]
-    public async Task<RoleDto> Put(RoleDto dto, CancellationToken cancellationToken)
+    public async Task Put(RoleDto dto, CancellationToken cancellationToken)
     {
         var roleToUpdate = await _dbContext.Roles.FirstOrDefaultAsync(role => role.Id == dto.Id, cancellationToken);
 
@@ -59,8 +57,6 @@ public class RoleController : ControllerBase
         _dbContext.Update(updatedRole);
 
         await _dbContext.SaveChangesAsync(cancellationToken);
-
-        return await Get(updatedRole.Id, cancellationToken);
     }
 
     [HttpDelete("{id:int}")]

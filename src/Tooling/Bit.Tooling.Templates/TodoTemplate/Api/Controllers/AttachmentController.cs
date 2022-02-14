@@ -63,7 +63,7 @@ public class AttachmentController : ControllerBase
             .SingleOrDefault();
 
         if (filePath is null)
-            throw new ResourceNotFoundException(nameof(ErrorStrings.UserPhotoCouldNotBeFound));
+            return new EmptyResult();
 
         return PhysicalFile(Path.Combine(_webHostEnvironment.ContentRootPath, filePath), MimeTypeMap.GetMimeType(Path.GetExtension(filePath)));
     }

@@ -40,7 +40,7 @@ public class UserController : ControllerBase
     }
 
     [HttpPost("[action]"), AllowAnonymous]
-    public async Task<UserDto> SignUp(UserDto dto, CancellationToken cancellationToken)
+    public async Task SignUp(UserDto dto, CancellationToken cancellationToken)
     {
         var userToAdd = _mapper.Map<User>(dto);
 
@@ -56,12 +56,10 @@ public class UserController : ControllerBase
 
         if (!results.All(r => r.Succeeded))
             throw new ResourceValidationException(results.SelectMany(r => r.Errors).Select(e => $"{e.Code}: {e.Description}").ToArray());
-
-        return await Get(cancellationToken).FirstAsync(u => u.Id == userToAdd.Id, cancellationToken);
     }
 
     [HttpPut]
-    public async Task<UserDto> Update(UserDto dto, CancellationToken cancellationToken)
+    public async Task Update(UserDto dto, CancellationToken cancellationToken)
     {
         var userToUpdate = await _userManager.Users.FirstOrDefaultAsync(user => user.Id == dto.Id, cancellationToken);
 
@@ -71,8 +69,6 @@ public class UserController : ControllerBase
         var updatedUser = _mapper.Map(dto, userToUpdate);
 
         await _userManager.UpdateAsync(updatedUser);
-
-        return await Get(cancellationToken).FirstAsync(u => u.Id == updatedUser.Id, cancellationToken);
     }
 
     [HttpPost("[action]"), AllowAnonymous]
