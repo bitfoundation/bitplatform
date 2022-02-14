@@ -3,6 +3,7 @@ using System.Runtime.Serialization;
 
 namespace TodoTemplate.Shared.Exceptions;
 
+[Serializable]
 public class UnauthorizedException : RestException
 {
     public UnauthorizedException()
