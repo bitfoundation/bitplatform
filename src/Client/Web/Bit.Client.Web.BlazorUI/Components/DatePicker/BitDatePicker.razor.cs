@@ -251,7 +251,7 @@ namespace Bit.Client.Web.BlazorUI
             if (IsEnabled is false) return;
             if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
             if (JSRuntime is null) return;
-            if (IsDayDisabled(dayIndex, weekIndex)) return;
+            if (CheckDayForMaxAndMinDate(dayIndex, weekIndex)) return;
 
             var currentDay = currentMonthCalendar[weekIndex, dayIndex];
             int selectedMonth = GetCorrectTargetMonth(weekIndex, dayIndex);
@@ -276,12 +276,12 @@ namespace Bit.Client.Web.BlazorUI
             await OnSelectDate.InvokeAsync(selectedDate);
         }
 
-        public void HandleMonthChange(bool nextMonth)
+        public void HandleMonthChange(ChangeDirection direction)
         {
             if (IsEnabled is false) return;
-            if (IsMonthChangeDisabled(nextMonth)) return;
+            if (CheckMonthForMaxAndMinDate(direction)) return;
 
-            if (nextMonth)
+            if (direction == ChangeDirection.Next)
             {
                 if (currentMonth + 1 == 13)
                 {
@@ -313,7 +313,7 @@ namespace Bit.Client.Web.BlazorUI
         public void SelectMonth(int month)
         {
             if (IsEnabled is false) return;
-            if (IsMonthDisabled(month)) return;
+            if (CheckMonthForMaxAndMinDate(month)) return;
 
             currentMonth = month;
             currentYear = displayYear;
@@ -326,7 +326,7 @@ namespace Bit.Client.Web.BlazorUI
         public void SelectYear(int year)
         {
             if (IsEnabled is false) return;
-            if (IsYearDisabled(year)) return;
+            if (CheckYearForMaxAndMinDate(year)) return;
 
             currentYear = displayYear = year;
             ChangeYearRanges(currentYear - 1);
@@ -344,12 +344,12 @@ namespace Bit.Client.Web.BlazorUI
             showMonthPicker = !showMonthPicker;
         }
 
-        public void HandleYearChange(bool nextYear)
+        public void HandleYearChange(ChangeDirection direction)
         {
             if (IsEnabled is false) return;
-            if (IsYearChangeDisabled(nextYear)) return;
+            if (CheckYearForMaxAndMinDate(direction)) return;
 
-            if (nextYear)
+            if (direction == ChangeDirection.Next)
             {
                 displayYear++;
             }
@@ -361,9 +361,12 @@ namespace Bit.Client.Web.BlazorUI
             CreateMonthCalendar(currentYear, currentMonth);
         }
 
-        public void HandleYearRangeChange(int fromYear)
+        public void HandleYearRangeChange(ChangeDirection direction)
         {
             if (IsEnabled is false) return;
+            if (CheckYearRangeForMaxAndMinDate(direction)) return;
+
+            var fromYear = direction == ChangeDirection.Next ? yearRangeFrom + 12 : yearRangeFrom - 12;
 
             ChangeYearRanges(fromYear);
         }
@@ -651,53 +654,40 @@ namespace Bit.Client.Web.BlazorUI
             return firstDay > firstDayOfWeek ? firstDayOfWeek : firstDayOfWeek - 7;
         }
 
-        private bool IsMonthChangeDisabled(bool nextMonth)
+        private bool CheckMonthForMaxAndMinDate(ChangeDirection direction)
         {
-            if (nextMonth)
-            {
-                if (MaxDate.HasValue && MaxDate.Value.Year == displayYear && MaxDate.Value.Month == currentMonth)
-                    return true;
-            }
-            else
-            {
-                if (MinDate.HasValue && MinDate.Value.Year == displayYear && MinDate.Value.Month == currentMonth)
-                    return true;
-            }
+            if (direction == ChangeDirection.Next && MaxDate.HasValue && MaxDate.Value.Year == displayYear && MaxDate.Value.Month == currentMonth)
+                return true;
+
+            if (direction == ChangeDirection.Previous && MinDate.HasValue && MinDate.Value.Year == displayYear && MinDate.Value.Month == currentMonth)
+                return true;
+
             return false;
         }
 
-        private bool IsYearChangeDisabled(bool nextYear)
+        private bool CheckYearForMaxAndMinDate(ChangeDirection direction)
         {
-            if (nextYear)
-            {
-                if (MaxDate.HasValue && MaxDate.Value.Year == displayYear)
-                    return true;
-            }
-            else
-            {
-                if (MinDate.HasValue && MinDate.Value.Year == displayYear)
-                    return true;
-            }
+            if (direction == ChangeDirection.Next && MaxDate.HasValue && MaxDate.Value.Year == displayYear)
+                return true;
+
+            if (direction == ChangeDirection.Previous && MinDate.HasValue && MinDate.Value.Year == displayYear)
+                return true;
+
             return false;
         }
 
-
-        private bool IsYearRangeChangeDisabled(bool nextYearRange)
+        private bool CheckYearRangeForMaxAndMinDate(ChangeDirection direction)
         {
-            if (nextYearRange)
-            {
-                if (MaxDate.HasValue && MaxDate.Value.Year < yearRangeFrom + 12)
-                    return true;
-            }
-            else
-            {
-                if (MinDate.HasValue && MinDate.Value.Year >= yearRangeFrom)
-                    return true;
-            }
+            if (direction == ChangeDirection.Next && MaxDate.HasValue && MaxDate.Value.Year < yearRangeFrom + 12)
+                return true;
+
+            if (direction == ChangeDirection.Previous && MinDate.HasValue && MinDate.Value.Year >= yearRangeFrom)
+                return true;
+
             return false;
         }
 
-        private bool IsDayDisabled(int dayIndex, int weekIndex)
+        private bool CheckDayForMaxAndMinDate(int dayIndex, int weekIndex)
         {
             var currentDay = currentMonthCalendar[weekIndex, dayIndex];
 
@@ -710,7 +700,7 @@ namespace Bit.Client.Web.BlazorUI
             return false;
         }
 
-        private bool IsMonthDisabled(int month)
+        private bool CheckMonthForMaxAndMinDate(int month)
         {
             if (MaxDate.HasValue && MaxDate.Value.Year == displayYear && MaxDate.Value.Month < month)
                 return true;
@@ -721,7 +711,7 @@ namespace Bit.Client.Web.BlazorUI
             return false;
         }
 
-        private bool IsYearDisabled(int year)
+        private bool CheckYearForMaxAndMinDate(int year)
         {
             if (MaxDate.HasValue && MaxDate.Value.Year < year)
                 return true;
