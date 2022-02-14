@@ -11,7 +11,7 @@ public partial class EditProfile
     public string? ProfilePhotoUploadUrl { get; set; }
     public string? ProfilePhotoRemoveUrl { get; set; }
     public string? ProfilePhotoGetUrl { get; set; }
-    public bool HasProfilePhoto { get; set; }
+    public string? ProfilePhoto { get; set; }
 
     public bool HasMessageBar { get; set; }
     public bool IsSuccessMessageBar { get; set; }
@@ -50,16 +50,10 @@ public partial class EditProfile
         ProfilePhotoGetUrl = $"{serverUrl}{ProfilePhotoGetUrl}";
 #endif
 
-        try
-        {
-            await StateService.GetValue(nameof(ProfilePhotoGetUrl), async () => await HttpClient.GetAsync(ProfilePhotoGetUrl));
-            HasProfilePhoto = true;
-        }
-        finally
-        {
-            // if GetProfilePhoto service return not found => user has not photo
-            HasProfilePhoto = false;
-        }
+        var response = await StateService.GetValue(nameof(ProfilePhotoGetUrl), async () => await HttpClient.GetAsync(ProfilePhotoGetUrl));
+        var profilePhotoResult = await StateService.GetValue(nameof(ProfilePhoto), async () => await response!.Content.ReadAsByteArrayAsync());
+        if (profilePhotoResult.Length is not 0) // => convert byte to <img> readable format
+            ProfilePhoto = $"data:image;base64,{Convert.ToBase64String(profilePhotoResult)}";
 
         await base.OnInitializedAsync();
     }
@@ -81,7 +75,7 @@ public partial class EditProfile
                 User!.Gender = Gender.Custom;
             }
 
-            await HttpClient.PutAsJsonAsync("User", User, ToDoTemplateJsonContext.Default.UserDto);
+            await HttpClient.PutAsJsonAsync("User", User, ToDoTemplateJsonContext.Default.UserDto!);
 
             IsSuccessMessageBar = true;
 

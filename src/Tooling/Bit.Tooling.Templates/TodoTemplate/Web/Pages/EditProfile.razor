@@ -18,9 +18,9 @@
         </h1>
         <div class="form-profile-container">
             <div class="form-profile-photo">
-                @if (HasProfilePhoto)
+                @if (!string.IsNullOrEmpty(ProfilePhoto))
                 {
-                    <img src="@ProfilePhotoGetUrl" class="profile-photo" />
+                    <img src="@ProfilePhoto" class="profile-photo" />
                 }
                 else
                 {

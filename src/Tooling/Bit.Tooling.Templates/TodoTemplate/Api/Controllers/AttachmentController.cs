@@ -20,7 +20,7 @@ public class AttachmentController : ControllerBase
     [RequestFormLimits(ValueLengthLimit = int.MaxValue, MultipartBodyLengthLimit = int.MaxValue)]
     [DisableRequestSizeLimit]
     [HttpPost("[action]")]
-    public async Task UploadProfilePhoto(IFormFile? file, CancellationToken cancellationToken)
+    public async Task<IActionResult> UploadProfilePhoto(IFormFile? file, CancellationToken cancellationToken)
     {
         if (file is null)
             throw new BadRequestException();
@@ -38,10 +38,12 @@ public class AttachmentController : ControllerBase
 
         await using var targetStream = SystemFile.Create(path);
         await fileStream.CopyToAsync(targetStream, cancellationToken);
+
+        return Ok();
     }
 
     [HttpDelete("[action]")]
-    public async Task RemoveProfilePhoto()
+    public IActionResult RemoveProfilePhoto()
     {
         var userId = User.GetUserId();
 
@@ -55,22 +57,24 @@ public class AttachmentController : ControllerBase
             throw new ResourceNotFoundException();
 
         SystemFile.Delete(filePath);
+
+        return Ok();
     }
 
     [HttpGet("[action]")]
     [ResponseCache(NoStore = true)]
     public IActionResult GetProfilePhoto()
     {
+        if (!Directory.Exists(_appSettings.UserProfilePhotoPath))
+            return Ok();
+
         var userId = User.GetUserId();
 
         var filePath = Directory.GetFiles(_appSettings.UserProfilePhotoPath, $"{userId}.*")
             .SingleOrDefault();
 
         if (filePath is null)
-            throw new ResourceNotFoundException();
-
-        if (!SystemFile.Exists(filePath))
-            throw new ResourceNotFoundException();
+            return Ok();
 
         return PhysicalFile(Path.Combine(_webHostEnvironment.ContentRootPath, filePath), MimeTypeMap.GetMimeType(Path.GetExtension(filePath)));
     }
