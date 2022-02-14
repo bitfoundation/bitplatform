@@ -40,17 +40,19 @@ public partial class NavMenu
 
     public List<BitNavLinkItem> NavLinks { get; set; }
 
-    public UserDto? User { get; set; } = new();
+    public string? UserName { get; set; }
 
     [Inject]
     public HttpClient HttpClient { get; set; } = default!;
 
-    [Inject]
-    public IStateService StateService { get; set; } = default!;
+    [CascadingParameter]
+    public Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
 
     protected override async Task OnInitializedAsync()
     {
-        User = await StateService.GetValue(nameof(User), async () => await HttpClient.GetFromJsonAsync($"User/GetCurrentUser", ToDoTemplateJsonContext.Default.UserDto));
+        var authState = await AuthenticationStateTask;
+
+        UserName = authState.User.GetUserName();
 
         await base.OnInitializedAsync();
     }
