@@ -58,9 +58,9 @@ public partial class SignUp
             IsSuccessMessageBar = true;
             MessageBarText = "Sign-up successfully";
         }
-        catch (Exception e)
+        catch (ResourceValidationException e)
         {
-            MessageBarText = e.Message;
+            MessageBarText = string.Join(Environment.NewLine, e.Details.SelectMany(d => d.Messages));
         }
 
         HasMessageBar = true;

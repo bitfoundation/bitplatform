@@ -3,7 +3,7 @@
 namespace TodoTemplate.Shared.Exceptions;
 
 [Serializable]
-public class KnownException : ApplicationException
+public abstract class KnownException : ApplicationException
 {
     public KnownException()
         : this(nameof(KnownException))

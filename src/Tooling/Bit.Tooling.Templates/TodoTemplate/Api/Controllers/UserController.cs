@@ -35,7 +35,7 @@ public class UserController : ControllerBase
         var user = await Get(cancellationToken).FirstOrDefaultAsync(user => user.Id == userId, cancellationToken);
 
         if (user is null)
-            throw new ResourceNotFoundException();
+            throw new ResourceNotFoundException(nameof(ErrorStrings.UserCouldNotBeFound));
 
         return user;
     }
@@ -45,13 +45,18 @@ public class UserController : ControllerBase
     {
         var userToAdd = _mapper.Map<User>(dto);
 
-        var isSuceess = (await _userManager.CreateAsync(userToAdd, dto.Password)).Succeeded;
+        List<IdentityResult> results = new();
 
-        isSuceess = isSuceess && (await _userManager.AddClaimAsync(userToAdd, new Claim(ClaimTypes.Name, userToAdd.UserName!))).Succeeded;
-        isSuceess = isSuceess && (await _userManager.AddClaimAsync(userToAdd, new Claim(ClaimTypes.NameIdentifier, userToAdd.Id.ToString()!))).Succeeded;
+        results.Add(await _userManager.CreateAsync(userToAdd, dto.Password));
 
-        if (!isSuceess)
-            throw new ResourceNotFoundException();
+        if (results.Last().Succeeded)
+            results.Add(await _userManager.AddClaimAsync(userToAdd, new Claim(ClaimTypes.Name, userToAdd.UserName!)));
+
+        if (results.Last().Succeeded)
+            results.Add(await _userManager.AddClaimAsync(userToAdd, new Claim(ClaimTypes.NameIdentifier, userToAdd.Id.ToString()!)));
+
+        if (!results.All(r => r.Succeeded))
+            throw new ResourceValidationException(results.SelectMany(r => r.Errors).Select(e => $"{e.Code}: {e.Description}").ToArray());
 
         return await Get(cancellationToken).FirstAsync(u => u.Id == userToAdd.Id, cancellationToken);
     }
@@ -62,7 +67,7 @@ public class UserController : ControllerBase
         var userToUpdate = await _userManager.Users.FirstOrDefaultAsync(user => user.Id == dto.Id, cancellationToken);
 
         if (userToUpdate is null)
-            throw new ResourceNotFoundException();
+            throw new ResourceNotFoundException(nameof(ErrorStrings.UserCouldNotBeFound));
 
         var updatedUser = _mapper.Map(dto, userToUpdate);
 
@@ -77,12 +82,12 @@ public class UserController : ControllerBase
         var user = await _userManager.FindByNameAsync(requestToken.UserName);
 
         if (user is null)
-            throw new BadRequestException();
+            throw new BadRequestException(nameof(ErrorStrings.InvalidUserNameAndOrPassword));
 
         var isPasswordValid = await _userManager.CheckPasswordAsync(user, requestToken.Password);
 
         if (!isPasswordValid)
-            throw new BadRequestException();
+            throw new BadRequestException(nameof(ErrorStrings.InvalidUserNameAndOrPassword));
 
         return await _jwtService.GenerateToken(requestToken);
     }

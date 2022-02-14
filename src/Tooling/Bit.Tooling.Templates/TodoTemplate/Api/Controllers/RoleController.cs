@@ -30,7 +30,7 @@ public class RoleController : ControllerBase
         var role = await Get(cancellationToken).FirstOrDefaultAsync(role => role.Id == id, cancellationToken);
 
         if (role is null)
-            throw new ResourceNotFoundException();
+            throw new ResourceNotFoundException(nameof(ErrorStrings.RoleCouldNotBeFound));
 
         return role;
     }
@@ -53,7 +53,7 @@ public class RoleController : ControllerBase
         var roleToUpdate = await _dbContext.Roles.FirstOrDefaultAsync(role => role.Id == dto.Id, cancellationToken);
 
         if (roleToUpdate is null)
-            throw new ResourceNotFoundException();
+            throw new ResourceNotFoundException(nameof(ErrorStrings.RoleCouldNotBeFound));
 
         var updatedRole = _mapper.Map(dto, roleToUpdate);
 
@@ -72,6 +72,6 @@ public class RoleController : ControllerBase
         var affectedRows = await _dbContext.SaveChangesAsync(cancellationToken);
 
         if (affectedRows < 1)
-            throw new ResourceNotFoundException();
+            throw new ResourceNotFoundException(nameof(ErrorStrings.RoleCouldNotBeFound));
     }
 }

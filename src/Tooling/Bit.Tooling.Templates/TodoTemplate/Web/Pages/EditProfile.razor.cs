@@ -52,7 +52,7 @@ public partial class EditProfile
         await base.OnInitializedAsync();
     }
 
-    private async Task OnClickSave()
+    private async Task Save()
     {
         try
         {
@@ -79,7 +79,15 @@ public partial class EditProfile
         {
             IsSuccessMessageBar = false;
 
-            MessageBarText = e.Message;
+            if (e is KnownException)
+            {
+                MessageBarText = ErrorStrings.ResourceManager.GetString(e.Message);
+            }
+            else
+            {
+                MessageBarText = ErrorStrings.UnknownException;
+                throw;
+            }
         }
 
         HasMessageBar = true;

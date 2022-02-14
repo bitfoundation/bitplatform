@@ -54,8 +54,19 @@ public partial class SignIn
         }
         catch (Exception e)
         {
-            MessageBarText = e.Message;
+            IsSuccessMessageBar = false;
+
+            if (e is KnownException)
+            {
+                MessageBarText = ErrorStrings.ResourceManager.GetString(e.Message);
+            }
+            else
+            {
+                MessageBarText = ErrorStrings.UnknownException;
+                throw;
+            }
         }
+
         HasMessageBar = true;
     }
 

@@ -49,10 +49,7 @@ public class AttachmentController : ControllerBase
             .SingleOrDefault();
 
         if (filePath is null)
-            throw new ResourceNotFoundException();
-
-        if (!SystemFile.Exists(filePath))
-            throw new ResourceNotFoundException();
+            throw new ResourceNotFoundException(nameof(ErrorStrings.UserPhotoCouldNotBeFound));
 
         SystemFile.Delete(filePath);
     }
@@ -67,10 +64,7 @@ public class AttachmentController : ControllerBase
             .SingleOrDefault();
 
         if (filePath is null)
-            throw new ResourceNotFoundException();
-
-        if (!SystemFile.Exists(filePath))
-            throw new ResourceNotFoundException();
+            throw new ResourceNotFoundException(nameof(ErrorStrings.UserPhotoCouldNotBeFound));
 
         return PhysicalFile(Path.Combine(_webHostEnvironment.ContentRootPath, filePath), MimeTypeMap.GetMimeType(Path.GetExtension(filePath)));
     }
