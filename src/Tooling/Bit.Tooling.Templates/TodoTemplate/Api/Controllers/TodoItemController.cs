@@ -27,18 +27,18 @@ public class TodoItemController : ControllerBase
     }
 
     [HttpGet("{id:int}")]
-    public async Task<ActionResult<TodoItemDto>> Get(int id, CancellationToken cancellationToken)
+    public async Task<TodoItemDto> Get(int id, CancellationToken cancellationToken)
     {
         var todoItem = await Get(cancellationToken).FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
 
         if (todoItem is null)
-            return NotFound();
+            throw new ResourceNotFoundException();
 
-        return Ok(todoItem);
+        return todoItem;
     }
 
     [HttpPost]
-    public async Task Post(TodoItemDto dto, CancellationToken cancellationToken)
+    public async Task<TodoItemDto> Post(TodoItemDto dto, CancellationToken cancellationToken)
     {
         var todoItemToAdd = _mapper.Map<TodoItem>(dto);
 
@@ -47,15 +47,17 @@ public class TodoItemController : ControllerBase
         await _dbContext.TodoItems.AddAsync(todoItemToAdd, cancellationToken);
 
         await _dbContext.SaveChangesAsync(cancellationToken);
+
+        return await Get(todoItemToAdd.Id, cancellationToken);
     }
 
     [HttpPut]
-    public async Task<IActionResult> Put(TodoItemDto dto, CancellationToken cancellationToken)
+    public async Task<TodoItemDto> Put(TodoItemDto dto, CancellationToken cancellationToken)
     {
         var todoItemToUpdate = await _dbContext.TodoItems.FirstOrDefaultAsync(t => t.Id == dto.Id, cancellationToken);
 
         if (todoItemToUpdate is null)
-            return NotFound();
+            throw new ResourceNotFoundException();
 
         var updatedTodoItem = _mapper.Map(dto, todoItemToUpdate);
 
@@ -63,20 +65,18 @@ public class TodoItemController : ControllerBase
 
         await _dbContext.SaveChangesAsync(cancellationToken);
 
-        return Ok();
+        return await Get(updatedTodoItem.Id, cancellationToken);
     }
 
     [HttpDelete("{id:int}")]
-    public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
+    public async Task Delete(int id, CancellationToken cancellationToken)
     {
         _dbContext.Remove(new TodoItem { Id = id });
 
         var affectedRows = await _dbContext.SaveChangesAsync(cancellationToken);
 
         if (affectedRows < 1)
-            return NotFound();
-
-        return Ok();
+            throw new ResourceNotFoundException();
     }
 }
 

@@ -1,6 +1,7 @@
 ﻿using System.IO.Compression;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.AspNetCore.OData;
+using TodoTemplate.Api.Filters;
 
 #if BlazorWebAssembly
 using TodoTemplate.App.Services.Implementations;
@@ -33,7 +34,7 @@ public static class Services
         services.AddCors();
 
         services
-            .AddControllers()
+            .AddControllers(options => options.Filters.Add<HttpResponseExceptionFilter>())
             .AddOData(options => options.EnableQueryFeatures(maxTopValue: 20))
             .AddJsonOptions(options => options.JsonSerializerOptions.AddContext<ToDoTemplateJsonContext>());
 

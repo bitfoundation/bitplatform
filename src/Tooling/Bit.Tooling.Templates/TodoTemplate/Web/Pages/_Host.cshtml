@@ -16,20 +16,13 @@
     RenderMode renderMode = isStatic
                             ? RenderMode.Static
                             : isBlazorServer
-                            ? isDefaultDeploymentType
+                            ? isDefaultDeploymentType || isPwa
                             ? RenderMode.Server
                             : RenderMode.ServerPrerendered
-                            : isDefaultDeploymentType
+                            : isDefaultDeploymentType || isPwa
                             ? RenderMode.WebAssembly
                             : RenderMode.WebAssemblyPrerendered;
 }
 
-@if (isPwa)
-{
-    <div id="app"></div>
-}
-else
-{
-    <component type="typeof(App)"
+<component type="typeof(App)"
            render-mode="@renderMode" />
-}

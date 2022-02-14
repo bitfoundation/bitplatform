@@ -23,7 +23,7 @@
         {
             try
             {
-                IsUserAuthenticated = await StateService.GetValue(nameof(IsUserAuthenticated), async () => await TodoTemplateAuthenticationStateProvider.IsUserAuthenticated());
+                IsUserAuthenticated = await TodoTemplateAuthenticationStateProvider.IsUserAuthenticated();
             }
             finally
             {

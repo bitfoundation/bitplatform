@@ -36,7 +36,7 @@ namespace TodoTemplate.Api.Startup
                     ctx.Context.Response.GetTypedHeaders().CacheControl = new CacheControlHeaderValue()
                     {
 #if PWA
-                        NoStore = true
+                        NoCache = true
 #else
                         MaxAge = TimeSpan.FromDays(365),
                         Public = true

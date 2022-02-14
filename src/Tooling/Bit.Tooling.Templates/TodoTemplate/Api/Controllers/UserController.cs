@@ -28,62 +28,62 @@ public class UserController : ControllerBase
     }
 
     [HttpGet("[action]")]
-    public async Task<ActionResult<UserDto>> GetCurrentUser(CancellationToken cancellationToken)
+    public async Task<UserDto> GetCurrentUser(CancellationToken cancellationToken)
     {
         var userId = User.GetUserId();
 
         var user = await Get(cancellationToken).FirstOrDefaultAsync(user => user.Id == userId, cancellationToken);
 
         if (user is null)
-            return NotFound();
+            throw new ResourceNotFoundException();
 
-        return Ok(user);
+        return user;
     }
 
     [HttpPut]
-    public async Task<ActionResult<UserDto>> Update(UserDto dto, CancellationToken cancellationToken)
+    public async Task<UserDto> Update(UserDto dto, CancellationToken cancellationToken)
     {
         var userToUpdate = await _userManager.Users.FirstOrDefaultAsync(user => user.Id == dto.Id, cancellationToken);
 
         if (userToUpdate is null)
-            return NotFound();
+            throw new ResourceNotFoundException();
 
         var updatedUser = _mapper.Map(dto, userToUpdate);
 
         await _userManager.UpdateAsync(updatedUser);
 
-        return Ok(await Get(cancellationToken).FirstOrDefaultAsync(u => u.Id == updatedUser.Id, cancellationToken));
+        return await Get(cancellationToken).FirstAsync(u => u.Id == updatedUser.Id, cancellationToken);
     }
 
     [HttpPost("[action]"), AllowAnonymous]
-    public async Task<ActionResult<UserDto>> SignUp(UserDto dto, CancellationToken cancellationToken)
+    public async Task<UserDto> SignUp(UserDto dto, CancellationToken cancellationToken)
     {
         var userToAdd = _mapper.Map<User>(dto);
 
-        var isSucceess = (await _userManager.CreateAsync(userToAdd, dto.Password)).Succeeded;
+        var isSuceess = (await _userManager.CreateAsync(userToAdd, dto.Password)).Succeeded;
 
-        isSucceess = isSucceess && (await _userManager.AddClaimAsync(userToAdd, new Claim(ClaimTypes.Name, userToAdd.UserName!))).Succeeded;
-        isSucceess = isSucceess && (await _userManager.AddClaimAsync(userToAdd, new Claim(ClaimTypes.NameIdentifier, userToAdd.Id.ToString()!))).Succeeded;
+        isSuceess = isSuceess && (await _userManager.AddClaimAsync(userToAdd, new Claim(ClaimTypes.Name, userToAdd.UserName!))).Succeeded;
+        isSuceess = isSuceess && (await _userManager.AddClaimAsync(userToAdd, new Claim(ClaimTypes.NameIdentifier, userToAdd.Id.ToString()!))).Succeeded;
 
-        if (!isSucceess)
-            return BadRequest();
+        if (!isSuceess)
+            throw new ResourceNotFoundException();
 
-        return Ok(await Get(cancellationToken).FirstOrDefaultAsync(u => u.Id == userToAdd.Id, cancellationToken));
+        return await Get(cancellationToken).FirstAsync(u => u.Id == userToAdd.Id, cancellationToken);
     }
 
     [HttpPost("[action]"), AllowAnonymous]
-    public async Task<ActionResult<SignInResponseDto>> SignIn(SignInRequestDto requestToken)
+    public async Task<SignInResponseDto> SignIn(SignInRequestDto requestToken)
     {
         var user = await _userManager.FindByNameAsync(requestToken.UserName);
 
         if (user is null)
-            return BadRequest();
+            throw new BadRequestException();
 
         var isPasswordValid = await _userManager.CheckPasswordAsync(user, requestToken.Password);
 
         if (!isPasswordValid)
-            return BadRequest();
+            throw new BadRequestException();
 
-        return Ok(await _jwtService.GenerateToken(requestToken));
+        return await _jwtService.GenerateToken(requestToken);
     }
 }
