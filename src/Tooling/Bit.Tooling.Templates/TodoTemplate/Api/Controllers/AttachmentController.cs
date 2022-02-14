@@ -20,10 +20,10 @@ public class AttachmentController : ControllerBase
     [RequestFormLimits(ValueLengthLimit = int.MaxValue, MultipartBodyLengthLimit = int.MaxValue)]
     [DisableRequestSizeLimit]
     [HttpPost("[action]")]
-    public async Task<IActionResult> UploadProfilePhoto(IFormFile? file, CancellationToken cancellationToken)
+    public async Task UploadProfilePhoto(IFormFile? file, CancellationToken cancellationToken)
     {
         if (file is null)
-            return BadRequest();
+            throw new BadRequestException();
 
         await using var fileStream = file.OpenReadStream();
 
@@ -38,32 +38,10 @@ public class AttachmentController : ControllerBase
 
         await using var targetStream = SystemFile.Create(path);
         await fileStream.CopyToAsync(targetStream, cancellationToken);
-
-        return Ok();
     }
 
     [HttpDelete("[action]")]
-    public ActionResult RemoveProfilePhoto()
-    {
-        var userId = User.GetUserId();
-
-        var filePath = Directory.GetFiles(_appSettings.UserProfilePhotoPath, $"{userId}.*")
-            .Single();
-
-        if (filePath is null)
-            return NotFound();
-
-        if (!SystemFile.Exists(filePath))
-            return NotFound();
-
-        SystemFile.Delete(filePath);
-
-        return Ok();
-    }
-
-    [HttpGet("[action]")]
-    [ResponseCache(NoStore = true)]
-    public ActionResult GetProfilePhoto()
+    public async Task RemoveProfilePhoto()
     {
         var userId = User.GetUserId();
 
@@ -71,10 +49,28 @@ public class AttachmentController : ControllerBase
             .SingleOrDefault();
 
         if (filePath is null)
-            return NotFound();
+            throw new ResourceNotFoundException();
 
         if (!SystemFile.Exists(filePath))
-            return NotFound();
+            throw new ResourceNotFoundException();
+
+        SystemFile.Delete(filePath);
+    }
+
+    [HttpGet("[action]")]
+    [ResponseCache(NoStore = true)]
+    public IActionResult GetProfilePhoto()
+    {
+        var userId = User.GetUserId();
+
+        var filePath = Directory.GetFiles(_appSettings.UserProfilePhotoPath, $"{userId}.*")
+            .SingleOrDefault();
+
+        if (filePath is null)
+            throw new ResourceNotFoundException();
+
+        if (!SystemFile.Exists(filePath))
+            throw new ResourceNotFoundException();
 
         return PhysicalFile(Path.Combine(_webHostEnvironment.ContentRootPath, filePath), MimeTypeMap.GetMimeType(Path.GetExtension(filePath)));
     }

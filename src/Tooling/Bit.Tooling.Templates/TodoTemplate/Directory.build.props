@@ -32,6 +32,7 @@
         <Using Include="System.ComponentModel.DataAnnotations.Schema" />
         <Using Include="System.Text.Json.Serialization" />
         <Using Include="TodoTemplate.Shared.Dtos" />
+        <Using Include="TodoTemplate.Shared.Exceptions" />
     </ItemGroup>
 
 </Project>
