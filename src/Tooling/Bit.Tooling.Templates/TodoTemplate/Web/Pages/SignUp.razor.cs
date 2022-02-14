@@ -32,7 +32,7 @@ public partial class SignUp
     [Inject]
     public TodoTemplateAuthenticationStateProvider TodoTemplateAuthenticationStateProvider { get; set; } = default!;
 
-    private async Task OnClickSignUp()
+    private async Task DoSignUp()
     {
         EmailError = string.IsNullOrEmpty(Email) ? "Please enter your email" : null;
 

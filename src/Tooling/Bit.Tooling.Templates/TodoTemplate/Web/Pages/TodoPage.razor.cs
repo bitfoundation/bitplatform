@@ -13,9 +13,11 @@ public partial class TodoPage
     public string NewTodoItemTitle { get; set; } = string.Empty;
     public List<TodoItemDto>? TodoItemList { get; set; } = new();
 
-    protected override async Task OnInitializedAsync()
+    protected async override Task OnInitAsync()
     {
         await LoadTodoItems();
+
+        await base.OnInitAsync();
     }
 
     private async Task LoadTodoItems()

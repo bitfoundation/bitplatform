@@ -30,7 +30,7 @@ public partial class EditProfile
     public IConfiguration Configuration { get; set; } = default!;
 #endif
 
-    protected override async Task OnInitializedAsync()
+    protected async override Task OnInitAsync()
     {
         User = await StateService.GetValue(nameof(User), async () => await HttpClient.GetFromJsonAsync($"User/GetCurrentUser", ToDoTemplateJsonContext.Default.UserDto));
 
@@ -49,7 +49,7 @@ public partial class EditProfile
         UserProfilePhotoUrl = $"{serverUrl}{UserProfilePhotoUrl}";
 #endif
 
-        await base.OnInitializedAsync();
+        await base.OnInitAsync();
     }
 
     private async Task Save()

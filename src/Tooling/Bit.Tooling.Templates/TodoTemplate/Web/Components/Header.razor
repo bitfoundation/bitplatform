@@ -1,4 +1,6 @@
-﻿<header class="header @(IsUserAuthenticated ? "header--authenticated" : null)">
+﻿@inherits ToDoTemplateComponentBase;
+
+<header class="header @(IsUserAuthenticated ? "header--authenticated" : null)">
     <div class="header-top-row">
         <div class="header-contact">
             @if (IsUserAuthenticated)

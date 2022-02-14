@@ -5,7 +5,6 @@ namespace TodoTemplate.Api.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-[Authorize]
 public class TodoItemController : ControllerBase
 {
     private readonly TodoTemplateDbContext _dbContext;
