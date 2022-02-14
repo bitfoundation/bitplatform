@@ -5,11 +5,6 @@ namespace TodoTemplate.Shared.Exceptions;
 [Serializable]
 public class DomainLogicException : KnownException
 {
-    public DomainLogicException()
-        : this(nameof(DomainLogicException))
-    {
-    }
-
     public DomainLogicException(string? message)
         : base(message)
     {

@@ -30,7 +30,7 @@ public partial class EditProfile
     public IConfiguration Configuration { get; set; } = default!;
 #endif
 
-    protected override async Task OnInitializedAsync()
+    protected async override Task OnInitAsync()
     {
         User = await StateService.GetValue(nameof(User), async () => await HttpClient.GetFromJsonAsync($"User/GetCurrentUser", ToDoTemplateJsonContext.Default.UserDto));
 
@@ -49,10 +49,10 @@ public partial class EditProfile
         UserProfilePhotoUrl = $"{serverUrl}{UserProfilePhotoUrl}";
 #endif
 
-        await base.OnInitializedAsync();
+        await base.OnInitAsync();
     }
 
-    private async Task OnClickSave()
+    private async Task Save()
     {
         try
         {
@@ -79,7 +79,15 @@ public partial class EditProfile
         {
             IsSuccessMessageBar = false;
 
-            MessageBarText = e.Message;
+            if (e is KnownException)
+            {
+                MessageBarText = ErrorStrings.ResourceManager.GetString(e.Message);
+            }
+            else
+            {
+                MessageBarText = ErrorStrings.UnknownException;
+                throw;
+            }
         }
 
         HasMessageBar = true;

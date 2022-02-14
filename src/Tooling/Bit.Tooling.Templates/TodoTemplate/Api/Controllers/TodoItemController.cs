@@ -5,7 +5,6 @@ namespace TodoTemplate.Api.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-[Authorize]
 public class TodoItemController : ControllerBase
 {
     private readonly TodoTemplateDbContext _dbContext;
@@ -32,7 +31,7 @@ public class TodoItemController : ControllerBase
         var todoItem = await Get(cancellationToken).FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
 
         if (todoItem is null)
-            throw new ResourceNotFoundException();
+            throw new ResourceNotFoundException(nameof(ErrorStrings.ToDoItemCouldNotBeFound));
 
         return todoItem;
     }
@@ -57,7 +56,7 @@ public class TodoItemController : ControllerBase
         var todoItemToUpdate = await _dbContext.TodoItems.FirstOrDefaultAsync(t => t.Id == dto.Id, cancellationToken);
 
         if (todoItemToUpdate is null)
-            throw new ResourceNotFoundException();
+            throw new ResourceNotFoundException(nameof(ErrorStrings.ToDoItemCouldNotBeFound));
 
         var updatedTodoItem = _mapper.Map(dto, todoItemToUpdate);
 
@@ -76,7 +75,7 @@ public class TodoItemController : ControllerBase
         var affectedRows = await _dbContext.SaveChangesAsync(cancellationToken);
 
         if (affectedRows < 1)
-            throw new ResourceNotFoundException();
+            throw new ResourceNotFoundException(nameof(ErrorStrings.ToDoItemCouldNotBeFound));
     }
 }
 

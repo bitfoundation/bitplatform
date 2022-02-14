@@ -33,6 +33,7 @@
         <Using Include="System.Text.Json.Serialization" />
         <Using Include="TodoTemplate.Shared.Dtos" />
         <Using Include="TodoTemplate.Shared.Exceptions" />
+        <Using Include="TodoTemplate.Shared.Resources" />
     </ItemGroup>
 
 </Project>
