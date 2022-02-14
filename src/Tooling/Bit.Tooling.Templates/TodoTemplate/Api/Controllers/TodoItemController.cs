@@ -37,7 +37,7 @@ public class TodoItemController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<TodoItemDto> Post(TodoItemDto dto, CancellationToken cancellationToken)
+    public async Task Post(TodoItemDto dto, CancellationToken cancellationToken)
     {
         var todoItemToAdd = _mapper.Map<TodoItem>(dto);
 
@@ -46,12 +46,10 @@ public class TodoItemController : ControllerBase
         await _dbContext.TodoItems.AddAsync(todoItemToAdd, cancellationToken);
 
         await _dbContext.SaveChangesAsync(cancellationToken);
-
-        return await Get(todoItemToAdd.Id, cancellationToken);
     }
 
     [HttpPut]
-    public async Task<TodoItemDto> Put(TodoItemDto dto, CancellationToken cancellationToken)
+    public async Task Put(TodoItemDto dto, CancellationToken cancellationToken)
     {
         var todoItemToUpdate = await _dbContext.TodoItems.FirstOrDefaultAsync(t => t.Id == dto.Id, cancellationToken);
 
@@ -63,8 +61,6 @@ public class TodoItemController : ControllerBase
         _dbContext.TodoItems.Update(updatedTodoItem);
 
         await _dbContext.SaveChangesAsync(cancellationToken);
-
-        return await Get(updatedTodoItem.Id, cancellationToken);
     }
 
     [HttpDelete("{id:int}")]
