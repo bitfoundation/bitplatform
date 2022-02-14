@@ -58,8 +58,7 @@ public partial class SignUp
             IsSuccessMessageBar = true;
             MessageBarText = "Sign-up successfully";
 
-            if (NavigationManager.Uri.EndsWith("/sign-up", StringComparison.InvariantCultureIgnoreCase))
-                NavigationManager.NavigateTo("/");
+            NavigationManager.NavigateTo("/");
         }
         catch (Exception e)
         {
