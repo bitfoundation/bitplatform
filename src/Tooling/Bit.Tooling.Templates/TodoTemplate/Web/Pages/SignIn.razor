@@ -1,5 +1,7 @@
 ﻿@page "/sign-in"
 
+@inherits ToDoTemplateComponentBase;
+
 <PageTitle>Sign in</PageTitle>
 
 <div class="page-container">
@@ -23,7 +25,7 @@
             <BitTextField Type="BitTextFieldType.Password" CanRevealPassword="true" Placeholder="Enter your password" @bind-Value="Password"></BitTextField>
             <div class="form-input-error">@(PasswordError ?? string.Empty)</div>
         </div>
-        <BitButton Class="form-submit-button" ButtonStyle="BitButtonStyle.Primary" OnClick="DoSignIn">
+        <BitButton Class="form-submit-button" ButtonStyle="BitButtonStyle.Primary" OnClick="() => InvokeAsync(DoSignIn)">
             Sign in
         </BitButton>
         <div class="form-forgot-password">

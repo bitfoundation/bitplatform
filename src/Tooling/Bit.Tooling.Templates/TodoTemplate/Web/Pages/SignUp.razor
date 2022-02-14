@@ -1,5 +1,7 @@
 ﻿@page "/sign-up"
 
+@inherits ToDoTemplateComponentBase;
+
 <PageTitle>Sign up</PageTitle>
 
 <div class="page-container">
@@ -28,7 +30,7 @@
         <BitCheckbox Class="form-checkbox" @bind-IsChecked="IsAcceptPrivacy">
             Accept <BitLink Href="/privacy" Target="_blank">privacy and policy</BitLink>
         </BitCheckbox>
-        <BitButton Class="form-submit-button" ButtonStyle="BitButtonStyle.Primary" IsEnabled="@(IsAcceptPrivacy)" OnClick="OnClickSignUp">
+        <BitButton Class="form-submit-button" ButtonStyle="BitButtonStyle.Primary" IsEnabled="@(IsAcceptPrivacy)" OnClick="() => InvokeAsync(DoSignUp)">
             Sign up
         </BitButton>
         <div>

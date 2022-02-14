@@ -5,7 +5,6 @@ namespace TodoTemplate.Api.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-[Authorize]
 public class AttachmentController : ControllerBase
 {
     private readonly AppSettings _appSettings;
@@ -51,10 +50,7 @@ public class AttachmentController : ControllerBase
             .SingleOrDefault();
 
         if (filePath is null)
-            throw new ResourceNotFoundException();
-
-        if (!SystemFile.Exists(filePath))
-            throw new ResourceNotFoundException();
+            throw new ResourceNotFoundException(nameof(ErrorStrings.UserPhotoCouldNotBeFound));
 
         SystemFile.Delete(filePath);
 

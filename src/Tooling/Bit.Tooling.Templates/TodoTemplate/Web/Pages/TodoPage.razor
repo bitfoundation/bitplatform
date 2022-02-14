@@ -1,6 +1,8 @@
 ﻿@page "/todo"
 @attribute [Authorize]
 
+@inherits ToDoTemplateComponentBase;
+
 <div class="page-container">
     <div class="todo-form-white">
         <div class="search-todo-container">
@@ -16,7 +18,7 @@
                 }
                 else
                 {
-                    <BitButton OnClick="AddTodoItem" Class="todo-button" IsEnabled="@(string.IsNullOrEmpty(NewTodoItemTitle) is false)">
+                    <BitButton OnClick="() => InvokeAsync(AddTodoItem)" Class="todo-button" IsEnabled="@(string.IsNullOrEmpty(NewTodoItemTitle) is false)">
                         Add
                     </BitButton>
                 }
@@ -42,14 +44,14 @@
                                             </div>
                                             <div class="todo-buttons-container">
                                                 <BitIconButton IconName="BitIconName.Edit" OnClick="@(() => context.IsInEditMode = true)"></BitIconButton>
-                                                <BitIconButton IconName="BitIconName.Delete" OnClick="@(() => DeleteTodoItem(context.Id))"></BitIconButton>
+                                                <BitIconButton IconName="BitIconName.Delete" OnClick="@(() => InvokeAsync(() => DeleteTodoItem(context.Id)))"></BitIconButton>
                                             </div>
                                         }
                                         else
                                         {
                                             <BitTextField Class="todo-input" @bind-Value="context.Title"></BitTextField>
                                             <div>
-                                                <BitButton OnClick="@(() => EditTodoItem(context))">Edit</BitButton>
+                                                <BitButton OnClick="@(() => InvokeAsync(() => EditTodoItem(context)))">Edit</BitButton>
                                                 <BitButton ButtonStyle="BitButtonStyle.Standard" Class="todo-button" OnClick="@(()=> context.IsInEditMode = false)">Cancel</BitButton>
                                             </div>
                                         }

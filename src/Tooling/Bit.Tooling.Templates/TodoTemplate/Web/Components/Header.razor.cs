@@ -10,13 +10,16 @@ public partial class Header : IAsyncDisposable
     [Inject]
     public TodoTemplateAuthenticationStateProvider TodoTemplateAuthenticationStateProvider { get; set; } = default!;
 
-    protected override async Task OnInitializedAsync()
+    [Inject]
+    public IExceptionHandler ExceptionHandler { get; set; } = default!;
+
+    protected async override Task OnInitAsync()
     {
         TodoTemplateAuthenticationStateProvider.AuthenticationStateChanged += VerifyUserIsAuthenticatedOrNot;
 
         IsUserAuthenticated = await StateService.GetValue(nameof(IsUserAuthenticated), async () => await TodoTemplateAuthenticationStateProvider.IsUserAuthenticated());
 
-        await base.OnInitializedAsync();
+        await base.OnInitAsync();
     }
 
     async void VerifyUserIsAuthenticatedOrNot(Task<AuthenticationState> task)
@@ -24,6 +27,10 @@ public partial class Header : IAsyncDisposable
         try
         {
             IsUserAuthenticated = await TodoTemplateAuthenticationStateProvider.IsUserAuthenticated();
+        }
+        catch (Exception ex)
+        {
+            ExceptionHandler.OnExceptionReceived(ex);
         }
         finally
         {

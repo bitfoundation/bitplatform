@@ -31,7 +31,7 @@ public partial class EditProfile
     public IConfiguration Configuration { get; set; } = default!;
 #endif
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnInitAsync()
     {
         User = await StateService.GetValue(nameof(User), async () => await HttpClient.GetFromJsonAsync($"User/GetCurrentUser", ToDoTemplateJsonContext.Default.UserDto));
 
@@ -52,13 +52,13 @@ public partial class EditProfile
 
         var response = await StateService.GetValue(nameof(ProfilePhotoGetUrl), async () => await HttpClient.GetAsync(ProfilePhotoGetUrl));
         var profilePhotoResult = await StateService.GetValue(nameof(ProfilePhoto), async () => await response!.Content.ReadAsByteArrayAsync());
-        if (profilePhotoResult.Length is not 0) // => convert byte to <img> readable format
+        if (profilePhotoResult is not null && profilePhotoResult.Length is not 0) // => convert byte to <img> readable format
             ProfilePhoto = $"data:image;base64,{Convert.ToBase64String(profilePhotoResult)}";
 
-        await base.OnInitializedAsync();
+        await base.OnInitAsync();
     }
 
-    private async Task OnClickSave()
+    private async Task Save()
     {
         try
         {
@@ -85,7 +85,15 @@ public partial class EditProfile
         {
             IsSuccessMessageBar = false;
 
-            MessageBarText = e.Message;
+            if (e is KnownException)
+            {
+                MessageBarText = ErrorStrings.ResourceManager.GetString(e.Message);
+            }
+            else
+            {
+                MessageBarText = ErrorStrings.UnknownException;
+                throw;
+            }
         }
 
         HasMessageBar = true;
