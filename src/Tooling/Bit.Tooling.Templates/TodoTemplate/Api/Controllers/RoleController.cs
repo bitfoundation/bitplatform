@@ -25,33 +25,35 @@ public class RoleController : ControllerBase
     }
 
     [HttpGet("{id:int}")]
-    public async Task<ActionResult<RoleDto>> Get(int id, CancellationToken cancellationToken)
+    public async Task<RoleDto> Get(int id, CancellationToken cancellationToken)
     {
         var role = await Get(cancellationToken).FirstOrDefaultAsync(role => role.Id == id, cancellationToken);
 
         if (role is null)
-            return NotFound();
+            throw new ResourceNotFoundException();
 
-        return Ok(role);
+        return role;
     }
 
     [HttpPost]
-    public async Task Post(RoleDto dto, CancellationToken cancellationToken)
+    public async Task<RoleDto> Post(RoleDto dto, CancellationToken cancellationToken)
     {
         var roleToAdd = _mapper.Map<Role>(dto);
 
         await _dbContext.AddAsync(roleToAdd, cancellationToken);
 
         await _dbContext.SaveChangesAsync(cancellationToken);
+
+        return await Get(roleToAdd.Id, cancellationToken);
     }
 
     [HttpPut]
-    public async Task<IActionResult> Put(RoleDto dto, CancellationToken cancellationToken)
+    public async Task<RoleDto> Put(RoleDto dto, CancellationToken cancellationToken)
     {
         var roleToUpdate = await _dbContext.Roles.FirstOrDefaultAsync(role => role.Id == dto.Id, cancellationToken);
 
         if (roleToUpdate is null)
-            return NotFound();
+            throw new ResourceNotFoundException();
 
         var updatedRole = _mapper.Map(dto, roleToUpdate);
 
@@ -59,19 +61,17 @@ public class RoleController : ControllerBase
 
         await _dbContext.SaveChangesAsync(cancellationToken);
 
-        return Ok();
+        return await Get(updatedRole.Id, cancellationToken);
     }
 
     [HttpDelete("{id:int}")]
-    public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
+    public async Task Delete(int id, CancellationToken cancellationToken)
     {
         _dbContext.Remove(new Role { Id = id });
 
         var affectedRows = await _dbContext.SaveChangesAsync(cancellationToken);
 
         if (affectedRows < 1)
-            return NotFound();
-
-        return Ok();
+            throw new ResourceNotFoundException();
     }
 }
