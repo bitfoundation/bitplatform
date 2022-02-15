@@ -57,6 +57,8 @@ public partial class SignUp
 
             IsSuccessMessageBar = true;
             MessageBarText = "Sign-up successfully";
+
+            NavigationManager.NavigateTo("/");
         }
         catch (ResourceValidationException e)
         {
@@ -66,7 +68,7 @@ public partial class SignUp
         HasMessageBar = true;
     }
 
-    protected async override Task OnAfterRenderAsync(bool firstRender)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await base.OnAfterRenderAsync(firstRender);
 
