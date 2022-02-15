@@ -48,11 +48,12 @@ public partial class NavMenu
     [CascadingParameter]
     public Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
 
+    [Inject]
+    public IStateService StateService { get; set; } = default!;
+
     protected override async Task OnInitializedAsync()
     {
-        var authState = await AuthenticationStateTask;
-
-        UserName = authState.User.GetUserName();
+        UserName = await StateService.GetValue(nameof(UserName), async () => (await AuthenticationStateTask).User.GetUserName());
 
         await base.OnInitializedAsync();
     }
