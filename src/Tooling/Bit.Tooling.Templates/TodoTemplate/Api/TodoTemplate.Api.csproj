@@ -13,6 +13,7 @@
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.1" />
         <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="6.0.0" />
         <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="6.0.1" />
+        <PackageReference Include="Microsoft.AspNetCore.OData" Version="8.0.7" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.1">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -41,6 +42,7 @@
         <Using Include="TodoTemplate.Shared.Enums" />
         <Using Include="TodoTemplate.Api.Services.Contracts" />
         <Using Include="Microsoft.AspNetCore.Authorization" />
+        <Using Include="Microsoft.AspNetCore.OData.Query" />
     </ItemGroup>
 
     <ItemGroup>

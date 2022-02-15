@@ -1,4 +1,6 @@
-﻿namespace Microsoft.Extensions.DependencyInjection;
+﻿using TodoTemplate.App.Services.Implementations;
+
+namespace Microsoft.Extensions.DependencyInjection;
 
 public static class IServiceCollectionExtensions
 {
@@ -6,6 +8,7 @@ public static class IServiceCollectionExtensions
     {
         services.AddScoped<IToastService, ToastService>();
         services.AddScoped<IStateService, StateService>();
+        services.AddScoped<IExceptionHandler, ToDoTemplateExceptionHandler>();
 
 #if BlazorServer || BlazorHybrid
         services.AddScoped(sp =>

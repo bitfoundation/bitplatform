@@ -8,6 +8,9 @@
         public IStateService StateService { get; set; } = default!;
 
         [Inject]
+        public IExceptionHandler ExceptionHandler { get; set; } = default!;
+
+        [Inject]
         public TodoTemplateAuthenticationStateProvider TodoTemplateAuthenticationStateProvider { get; set; } = default!;
 
         protected override async Task OnInitializedAsync()
@@ -23,7 +26,11 @@
         {
             try
             {
-                IsUserAuthenticated = await StateService.GetValue(nameof(IsUserAuthenticated), async () => await TodoTemplateAuthenticationStateProvider.IsUserAuthenticated());
+                IsUserAuthenticated = await TodoTemplateAuthenticationStateProvider.IsUserAuthenticated();
+            }
+            catch (Exception ex)
+            {
+                ExceptionHandler.OnExceptionReceived(ex);
             }
             finally
             {

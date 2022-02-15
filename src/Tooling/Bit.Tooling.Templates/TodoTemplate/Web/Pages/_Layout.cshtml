@@ -23,12 +23,6 @@
                             : RenderMode.WebAssemblyPrerendered;
 }
 
-@*
-    Unlike most client-side Blazor projects (WASM Blazor), we use .cshtml instead of .html index file.
-    This provides PreRendering(SSR) to the client blazor projects and the ability to use "asp-append-version".
-    Note that these files(_Host.cshtml & _Layout.cshtml) are being used for both "Client" and "Server" blazor.
-*@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -55,6 +49,7 @@
                 padding: 20px;
                 text-align: center;
                 display: none;
+                z-index: 99999;
             }
 
             .blazor-swup-container {
@@ -124,32 +119,29 @@
         @if (isPwa)
         {
             <script>
-                var appEl = document.getElementById('app');
                 var progressEl = document.getElementById('blazor-swup');
                 var progressBar = document.getElementById('blazor-swup-progress-bar');
                 var percentLabel = document.getElementById('blazor-swup-percent');
                 var reloadButton = document.getElementById('blazor-swup-reload');
                 function blazorSwup(type, data) {
-                    switch (type) {
-                        case 'update_found':
-                            return console.log('new version is downloading...');
-                        case 'state_changed':
-                            return console.log('new version state has changed to:', data.currentTarget.state);
-                        case 'installing':
-                            appEl.style.display = 'none';
-                            progressEl.style.display = 'block';
-                            return console.log('installing new version:', data.version);
-                        case 'installed':
-                            console.log('new version installed');
+                switch (type) {
+                    case 'updatefound':
+                        return console.log('new version is downloading...');
+                    case 'statechange':
+                        return console.log('new version state has changed to:', data.currentTarget.state);
+                    case 'installing':
+                        progressEl.style.display = 'block';
+                        return console.log('installing new version:', data.version);
+                    case 'installed':
+                            console.log('new version installed', data.version);
                             return setTimeout(data.reload, 100);
-                        return console.log('new version installed:', data.version);
-                            case 'progress':
-                            const percent = Math.round(data.percent);
-                            progressBar.style.width = `${percent}%`;
-                            percentLabel.innerHTML = `${percent} %`;
-                            return console.log('asset downloaded:', data);
-                        case 'activate':
-                            return console.log('new version activated:', data.version);
+                    case 'progress':
+                        const percent = Math.round(data.percent);
+                        progressBar.style.width = `${percent}%`;
+                        percentLabel.innerHTML = `${percent} %`;
+                        return console.log('asset downloaded:', data);
+                    case 'activate':
+                        return console.log('new version activated:', data.version);
                     }
                 }
             </script>

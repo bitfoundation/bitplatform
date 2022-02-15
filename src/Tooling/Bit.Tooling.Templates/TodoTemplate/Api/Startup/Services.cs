@@ -1,5 +1,7 @@
 ﻿using System.IO.Compression;
 using Microsoft.AspNetCore.ResponseCompression;
+using Microsoft.AspNetCore.OData;
+using TodoTemplate.Api.Filters;
 
 #if BlazorWebAssembly
 using TodoTemplate.App.Services.Implementations;
@@ -17,13 +19,21 @@ public static class Services
 #if BlazorWebAssembly
         services.AddTransient<ITokenProvider, ServerSideTokenProvider>();
         services.AddTodoTemplateAppServices();
-        services.AddScoped(c =>
+
+        services.AddHttpClient("WebAssemblyPreRenderingHttpClient")
+            .ConfigurePrimaryHttpMessageHandler<TodoTemplateHttpClientHandler>()
+            .ConfigureHttpClient((sp, httpClient) =>
+            {
+                NavigationManager navManager = sp.GetRequiredService<IHttpContextAccessor>().HttpContext!.RequestServices.GetRequiredService<NavigationManager>();
+                httpClient.BaseAddress = new Uri($"{navManager.BaseUri}api/");
+            });
+
+        services.AddScoped(sp =>
         {
+            IHttpClientFactory httpClientFactory = sp.GetRequiredService<IHttpClientFactory>();
+            return httpClientFactory.CreateClient("WebAssemblyPreRenderingHttpClient");
             // this is for pre rendering of blazor client/wasm
-            // Using this registration + registrations provided in Program.cs/Startup.cs of TodoTemplate.App project,
-            // you can inject HttpClient and call TodoTemplate.Api api controllers in blazor pages.
-            // for other usages of http client, for example calling 3rd party apis, please use services.AddHttpClient("NamedHttpClient"), then inject IHttpClientFactory and use its CreateClient("NamedHttpClient") method.
-            return new HttpClient(c.GetRequiredService<TodoTemplateHttpClientHandler>()) { BaseAddress = new Uri($"{c.GetRequiredService<NavigationManager>().BaseUri}api/") };
+            // for other usages of http client, for example calling 3rd party apis, either use services.AddHttpClient("NamedHttpClient") or services.AddHttpClient<TypedHttpClient>();
         });
         services.AddRazorPages();
         services.AddMvcCore();
@@ -31,7 +41,11 @@ public static class Services
 
         services.AddCors();
 
-        services.AddControllers();
+        services
+            .AddControllers(options => options.Filters.Add<HttpResponseExceptionFilter>())
+            .AddOData(options => options.EnableQueryFeatures(maxTopValue: 20))
+            .AddJsonOptions(options => options.JsonSerializerOptions.AddContext<ToDoTemplateJsonContext>());
+
         services.AddResponseCaching();
 
         services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();

@@ -5,7 +5,6 @@ namespace TodoTemplate.Api.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-[Authorize]
 public class UserController : ControllerBase
 {
     private readonly UserManager<User> _userManager;
@@ -21,69 +20,70 @@ public class UserController : ControllerBase
         _mapper = mapper;
     }
 
-    [HttpGet]
+    [HttpGet, EnableQuery]
     public IQueryable<UserDto> Get(CancellationToken cancellationToken)
     {
         return _userManager.Users.ProjectTo<UserDto>(_mapper.ConfigurationProvider, cancellationToken);
     }
 
     [HttpGet("[action]")]
-    public async Task<ActionResult<UserDto>> GetCurrentUser(CancellationToken cancellationToken)
+    public async Task<UserDto> GetCurrentUser(CancellationToken cancellationToken)
     {
         var userId = User.GetUserId();
 
         var user = await Get(cancellationToken).FirstOrDefaultAsync(user => user.Id == userId, cancellationToken);
 
         if (user is null)
-            return NotFound();
+            throw new ResourceNotFoundException(nameof(ErrorStrings.UserCouldNotBeFound));
 
-        return Ok(user);
+        return user;
     }
 
     [HttpPost("[action]"), AllowAnonymous]
-    public async Task<ActionResult<UserDto>> SignUp(UserDto dto, CancellationToken cancellationToken)
+    public async Task SignUp(UserDto dto, CancellationToken cancellationToken)
     {
         var userToAdd = _mapper.Map<User>(dto);
 
-        var isSuceess = (await _userManager.CreateAsync(userToAdd, dto.Password)).Succeeded;
+        List<IdentityResult> results = new();
 
-        isSuceess = isSuceess && (await _userManager.AddClaimAsync(userToAdd, new Claim(ClaimTypes.Name, userToAdd.UserName!))).Succeeded;
-        isSuceess = isSuceess && (await _userManager.AddClaimAsync(userToAdd, new Claim(ClaimTypes.NameIdentifier, userToAdd.Id.ToString()!))).Succeeded;
+        results.Add(await _userManager.CreateAsync(userToAdd, dto.Password));
 
-        if (!isSuceess)
-            return BadRequest();
+        if (results.Last().Succeeded)
+            results.Add(await _userManager.AddClaimAsync(userToAdd, new Claim(ClaimTypes.Name, userToAdd.UserName!)));
 
-        return Ok(await Get(cancellationToken).FirstOrDefaultAsync(u => u.Id == userToAdd.Id, cancellationToken));
+        if (results.Last().Succeeded)
+            results.Add(await _userManager.AddClaimAsync(userToAdd, new Claim(ClaimTypes.NameIdentifier, userToAdd.Id.ToString()!)));
+
+        if (!results.All(r => r.Succeeded))
+            throw new ResourceValidationException(results.SelectMany(r => r.Errors).Select(e => $"{e.Code}: {e.Description}").ToArray());
     }
 
     [HttpPut]
-    public async Task<ActionResult<UserDto>> Update(UserDto dto, CancellationToken cancellationToken)
+    public async Task Update(UserDto dto, CancellationToken cancellationToken)
     {
         var userToUpdate = await _userManager.Users.FirstOrDefaultAsync(user => user.Id == dto.Id, cancellationToken);
 
         if (userToUpdate is null)
-            return NotFound();
+            throw new ResourceNotFoundException(nameof(ErrorStrings.UserCouldNotBeFound));
 
         var updatedUser = _mapper.Map(dto, userToUpdate);
 
         await _userManager.UpdateAsync(updatedUser);
-
-        return Ok(await Get(cancellationToken).FirstOrDefaultAsync(u => u.Id == updatedUser.Id, cancellationToken));
     }
 
     [HttpPost("[action]"), AllowAnonymous]
-    public async Task<ActionResult<SignInResponseDto>> SignIn(SignInRequestDto requestToken)
+    public async Task<SignInResponseDto> SignIn(SignInRequestDto requestToken)
     {
         var user = await _userManager.FindByNameAsync(requestToken.UserName);
 
         if (user is null)
-            return BadRequest();
+            throw new BadRequestException(nameof(ErrorStrings.InvalidUserNameAndOrPassword));
 
         var isPasswordValid = await _userManager.CheckPasswordAsync(user, requestToken.Password);
 
         if (!isPasswordValid)
-            return BadRequest();
+            throw new BadRequestException(nameof(ErrorStrings.InvalidUserNameAndOrPassword));
 
-        return Ok(await _jwtService.GenerateToken(requestToken));
+        return await _jwtService.GenerateToken(requestToken);
     }
 }

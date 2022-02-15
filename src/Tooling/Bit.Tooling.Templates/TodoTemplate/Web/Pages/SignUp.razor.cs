@@ -32,7 +32,7 @@ public partial class SignUp
     [Inject]
     public TodoTemplateAuthenticationStateProvider TodoTemplateAuthenticationStateProvider { get; set; } = default!;
 
-    private async Task OnClickSignUp()
+    private async Task DoSignUp()
     {
         EmailError = string.IsNullOrEmpty(Email) ? "Please enter your email" : null;
 
@@ -47,7 +47,7 @@ public partial class SignUp
                 UserName = Email,
                 Email = Email,
                 Password = Password
-            });
+            }, ToDoTemplateJsonContext.Default.UserDto);
 
             await TodoTemplateAuthenticationService.SignIn(new SignInRequestDto
             {
@@ -57,16 +57,18 @@ public partial class SignUp
 
             IsSuccessMessageBar = true;
             MessageBarText = "Sign-up successfully";
+
+            NavigationManager.NavigateTo("/");
         }
-        catch (Exception e)
+        catch (ResourceValidationException e)
         {
-            MessageBarText = e.Message;
+            MessageBarText = string.Join(Environment.NewLine, e.Details.SelectMany(d => d.Messages));
         }
 
         HasMessageBar = true;
     }
 
-    protected async override Task OnAfterRenderAsync(bool firstRender)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await base.OnAfterRenderAsync(firstRender);
 

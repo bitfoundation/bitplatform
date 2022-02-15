@@ -1,5 +1,4 @@
-﻿
-namespace TodoTemplate.Shared.Dtos.TodoItem;
+﻿namespace TodoTemplate.Shared.Dtos.TodoItem;
 
 public class TodoItemDto
 {

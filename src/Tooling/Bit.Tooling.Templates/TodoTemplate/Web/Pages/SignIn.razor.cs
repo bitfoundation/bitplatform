@@ -49,17 +49,27 @@ public partial class SignIn
             IsSuccessMessageBar = true;
             MessageBarText = "Sign-up successfully";
 
-            if (NavigationManager.Uri.EndsWith("/sign-in", StringComparison.InvariantCultureIgnoreCase))
-                NavigationManager.NavigateTo("/");
+            NavigationManager.NavigateTo("/");
         }
         catch (Exception e)
         {
-            MessageBarText = e.Message;
+            IsSuccessMessageBar = false;
+
+            if (e is KnownException)
+            {
+                MessageBarText = ErrorStrings.ResourceManager.GetString(e.Message);
+            }
+            else
+            {
+                MessageBarText = ErrorStrings.UnknownException;
+                throw;
+            }
         }
+
         HasMessageBar = true;
     }
 
-    protected async override Task OnAfterRenderAsync(bool firstRender)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {

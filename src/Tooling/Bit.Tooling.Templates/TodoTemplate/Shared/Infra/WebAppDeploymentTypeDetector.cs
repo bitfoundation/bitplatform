@@ -28,14 +28,14 @@ public class WebAppDeploymentTypeDetector
     {
         get
         {
-#if SPA
-            return WebAppDeploymentType.Default;
+#if SSR
+            return WebAppDeploymentType.Ssr;
 #elif PWA
             return WebAppDeploymentType.Pwa;
 #elif Static
             return WebAppDeploymentType.Static;
 #else
-            return WebAppDeploymentType.Ssr;
+            return WebAppDeploymentType.Default;
 #endif
         }
     }

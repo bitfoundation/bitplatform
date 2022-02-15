@@ -5,7 +5,6 @@ namespace TodoTemplate.Api.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-[Authorize]
 public class RoleController : ControllerBase
 {
     private readonly TodoTemplateDbContext _dbContext;
@@ -18,21 +17,21 @@ public class RoleController : ControllerBase
         _mapper = mapper;
     }
 
-    [HttpGet]
+    [HttpGet, EnableQuery]
     public IQueryable<RoleDto> Get(CancellationToken cancellationToken)
     {
         return _dbContext.Roles.ProjectTo<RoleDto>(_mapper.ConfigurationProvider, cancellationToken);
     }
 
     [HttpGet("{id:int}")]
-    public async Task<ActionResult<RoleDto>> Get(int id, CancellationToken cancellationToken)
+    public async Task<RoleDto> Get(int id, CancellationToken cancellationToken)
     {
         var role = await Get(cancellationToken).FirstOrDefaultAsync(role => role.Id == id, cancellationToken);
 
         if (role is null)
-            return NotFound();
+            throw new ResourceNotFoundException(nameof(ErrorStrings.RoleCouldNotBeFound));
 
-        return Ok(role);
+        return role;
     }
 
     [HttpPost]
@@ -46,32 +45,28 @@ public class RoleController : ControllerBase
     }
 
     [HttpPut]
-    public async Task<IActionResult> Put(RoleDto dto, CancellationToken cancellationToken)
+    public async Task Put(RoleDto dto, CancellationToken cancellationToken)
     {
         var roleToUpdate = await _dbContext.Roles.FirstOrDefaultAsync(role => role.Id == dto.Id, cancellationToken);
 
         if (roleToUpdate is null)
-            return NotFound();
+            throw new ResourceNotFoundException(nameof(ErrorStrings.RoleCouldNotBeFound));
 
         var updatedRole = _mapper.Map(dto, roleToUpdate);
 
         _dbContext.Update(updatedRole);
 
         await _dbContext.SaveChangesAsync(cancellationToken);
-
-        return Ok();
     }
 
     [HttpDelete("{id:int}")]
-    public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
+    public async Task Delete(int id, CancellationToken cancellationToken)
     {
         _dbContext.Remove(new Role { Id = id });
 
         var affectedRows = await _dbContext.SaveChangesAsync(cancellationToken);
 
         if (affectedRows < 1)
-            return NotFound();
-
-        return Ok();
+            throw new ResourceNotFoundException(nameof(ErrorStrings.RoleCouldNotBeFound));
     }
 }

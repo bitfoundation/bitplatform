@@ -24,15 +24,11 @@ public class Program
     {
         var builder = WebAssemblyHostBuilder.CreateDefault();
 
-        builder.Services.AddSingleton(c => new HttpClient(c.GetRequiredService<TodoTemplateHttpClientHandler>()) { BaseAddress = new Uri($"{builder.HostEnvironment.BaseAddress}api/") });
+        builder.Services.AddSingleton(sp => new HttpClient(sp.GetRequiredService<TodoTemplateHttpClientHandler>()) { BaseAddress = new Uri($"{builder.HostEnvironment.BaseAddress}api/") });
         builder.Services.AddTransient<ITokenProvider, ClientSideTokenProvider>();
 
         builder.Services.AddTodoTemplateSharedServices();
         builder.Services.AddTodoTemplateAppServices();
-
-#if PWA
-        builder.RootComponents.Add<App>("#app");
-#endif
 
         return builder.Build();
     }
