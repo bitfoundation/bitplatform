@@ -1,23 +1,22 @@
-﻿using TodoTemplate.Shared.Dtos.Account;
+﻿using System.Text.RegularExpressions;
+using TodoTemplate.Shared.Dtos.Account;
 
 namespace TodoTemplate.App.Pages;
 
 public partial class SignUp
 {
     public string? Email { get; set; }
-
-    public string? EmailError { get; set; }
-
     public string? Password { get; set; }
-
-    public string? PasswordError { get; set; }
-
     public bool IsAcceptPrivacy { get; set; }
 
+    public string? EmailError { get; set; }
+    public string? PasswordError { get; set; }
+
+    public bool IsValidProperty { get; set; }
+    public bool IsLoading { get; set; }
+
     public bool HasMessageBar { get; set; }
-
     public bool IsSuccessMessageBar { get; set; }
-
     public string? MessageBarText { get; set; }
 
     [Inject]
@@ -32,13 +31,29 @@ public partial class SignUp
     [Inject]
     public TodoTemplateAuthenticationStateProvider TodoTemplateAuthenticationStateProvider { get; set; } = default!;
 
+    private void ValidateSignUp()
+    {
+        if (string.IsNullOrEmpty(Email)) { IsValidProperty = false; return;}
+        if (string.IsNullOrEmpty(Password)) { IsValidProperty = false; return; }
+        if (!IsAcceptPrivacy) { IsValidProperty = false; return; }
+        IsValidProperty = true;
+    }
+
     private async Task DoSignUp()
     {
-        EmailError = string.IsNullOrEmpty(Email) ? "Please enter your email" : null;
+        IsLoading = true;
 
-        PasswordError = string.IsNullOrEmpty(Password) ? "Please enter your password" : null;
+        EmailError = !new Regex(@"^([\w\.\-]+)@([\w\-]+)((\.(\w){2,3})+)$").Match(Email!).Success 
+            ? "The email address format is incorrect." 
+            : null;
 
-        if (EmailError is not null || PasswordError is not null) return;
+        PasswordError = Password!.Length < 6
+            ? "The password must have at least 6 characters."
+            : !new Regex(@"[^a-zA-Z0-9\n\r\t ]").Match(Password!).Success
+                ? "The password must have at least one non alphanumeric character." 
+                : null;
+
+        if (!string.IsNullOrEmpty(EmailError) || !string.IsNullOrEmpty(PasswordError)) return;
 
         try
         {
@@ -66,6 +81,8 @@ public partial class SignUp
         }
 
         HasMessageBar = true;
+
+        IsLoading = false;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
