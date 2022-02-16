@@ -1,0 +1,34 @@
+﻿@import '../wwwroot/styles/abstracts/_functions.scss';
+@import '../wwwroot/styles/abstracts/_media-queries.scss';
+@import '../wwwroot/styles/abstracts/_colors.scss';
+
+.modal-body {
+    position: relative;
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: center;
+    justify-content: center;
+    padding: rem(28px) rem(110px);
+    box-sizing: border-box;
+}
+
+.modal-close-btn-container {
+    position: absolute;
+    right: 0;
+    top: 0;
+}
+
+.modal-title {
+    margin-bottom: rem(12px);
+    font-size: rem(24px);
+    line-height: rem(40px);
+    font-weight: 600;
+    color: $Black;
+}
+
+.modal-desc {
+    margin-bottom: rem(36px);
+    font-size: rem(18px);
+    line-height: rem(24px);
+    color: $Black;
+}
