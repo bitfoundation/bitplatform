@@ -2,7 +2,7 @@
 
 namespace TodoTemplate.App.Services.Implementations;
 
-public class ToDoTemplateExceptionHandler : IExceptionHandler
+public class TodoTemplateExceptionHandler : IExceptionHandler
 {
     public void OnExceptionReceived(Exception exception, IDictionary<string, object?>? parameters = null)
     {

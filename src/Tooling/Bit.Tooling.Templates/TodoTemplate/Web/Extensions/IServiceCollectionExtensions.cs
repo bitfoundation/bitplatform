@@ -8,7 +8,7 @@ public static class IServiceCollectionExtensions
     {
         services.AddScoped<IToastService, ToastService>();
         services.AddScoped<IStateService, StateService>();
-        services.AddScoped<IExceptionHandler, ToDoTemplateExceptionHandler>();
+        services.AddScoped<IExceptionHandler, TodoTemplateExceptionHandler>();
 
 #if BlazorServer || BlazorHybrid
         services.AddScoped(sp =>
