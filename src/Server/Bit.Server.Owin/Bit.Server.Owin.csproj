@@ -19,7 +19,6 @@
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.20.0" />
     <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.7" />
     <PackageReference Include="Microsoft.Owin.Security.Jwt" Version="4.2.0" />
-    <PackageReference Include="NodaTime" Version="3.0.9" />
     <PackageReference Include="NWebsec.Core" Version="3.0.1" />
     <PackageReference Include="NWebsec.Owin" Version="4.0.0" />
     <PackageReference Include="System.Diagnostics.EventLog" Version="6.0.0" />
