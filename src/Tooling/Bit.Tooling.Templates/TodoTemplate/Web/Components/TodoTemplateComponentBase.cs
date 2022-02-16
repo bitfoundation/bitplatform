@@ -2,7 +2,7 @@
 
 namespace TodoTemplate.App.Components;
 
-public class ToDoTemplateComponentBase : ComponentBase
+public class TodoTemplateComponentBase : ComponentBase
 {
     [Inject] IExceptionHandler ExceptionHandler { get; set; } = default!;
 

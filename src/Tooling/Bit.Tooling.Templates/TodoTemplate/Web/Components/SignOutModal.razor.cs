@@ -1,6 +1,6 @@
 ﻿namespace TodoTemplate.App.Components
 {
-    public partial class SignOutModal:ToDoTemplateComponentBase
+    public partial class SignOutModal: TodoTemplateComponentBase
     {
         [Inject]
         public ITodoTemplateAuthenticationService TodoTemplateAuthenticationService { get; set; } = default!;

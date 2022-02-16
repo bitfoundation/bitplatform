@@ -30,7 +30,11 @@ public partial class SignIn
     [Inject]
     public TodoTemplateAuthenticationStateProvider TodoTemplateAuthenticationStateProvider { get; set; } = default!;
 
-    async Task DoSignIn()
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string? RedirectUrl { get; set; }
+
+    private async Task DoSignIn()
     {
         EmailError = string.IsNullOrEmpty(Email) ? "Please enter your email" : null;
         PasswordError = string.IsNullOrEmpty(Password) ? "Please enter your password" : null;
@@ -47,9 +51,9 @@ public partial class SignIn
             });
 
             IsSuccessMessageBar = true;
-            MessageBarText = "Sign-up successfully";
+            MessageBarText = "Sign-in successfully";
 
-            NavigationManager.NavigateTo("/");
+            NavigationManager.NavigateTo(RedirectUrl ?? "/");
         }
         catch (Exception e)
         {

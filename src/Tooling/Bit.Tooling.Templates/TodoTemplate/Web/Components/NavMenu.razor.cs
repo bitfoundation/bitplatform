@@ -1,8 +1,6 @@
-﻿using TodoTemplate.Shared.Dtos.Account;
+﻿namespace TodoTemplate.App.Components;
 
-namespace TodoTemplate.App.Components;
-
-public partial class NavMenu : ToDoTemplateComponentBase
+public partial class NavMenu : TodoTemplateComponentBase
 {
     [Inject]
     public HttpClient HttpClient { get; set; } = default!;
