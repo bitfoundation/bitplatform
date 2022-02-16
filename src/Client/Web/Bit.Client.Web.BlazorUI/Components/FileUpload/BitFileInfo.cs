@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace Bit.Client.Web.BlazorUI
@@ -19,11 +18,11 @@ namespace Bit.Client.Web.BlazorUI
         public BitUploadStatus UploadStatus { get; set; }
 
         public long TotalSizeOfUploaded { get; set; }
-        public long SizeOfLastChunkUploaded { get; set; }
-        public bool RequestToPause { get; set; }
-        public bool RequestToCancell { get; set; }
+        internal long SizeOfLastChunkUploaded { get; set; }
+        internal bool RequestToPause { get; set; }
+        internal bool RequestToCancell { get; set; }
 
         [JsonIgnore]
-        public DateTime? StartTimeUpload { get; set; }
+        internal DateTime? StartTimeUpload { get; set; }
     }
 }
