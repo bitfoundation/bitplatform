@@ -29,9 +29,6 @@ namespace Bit.MauiAppSample
             AssemblyContainer.Current.Init();
 
             var builder = MauiApp.CreateBuilder();
-
-            builder.Host.UseServiceProviderFactory(new BitServiceProviderFactory(ConfigureServicesImpl));
-
             builder
                 .RegisterBlazorMauiWebView()
                 .UseMauiApp<App>()
@@ -39,6 +36,10 @@ namespace Bit.MauiAppSample
                 {
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                 });
+
+            builder.Services.AddBlazorWebView();
+
+            builder.ConfigureContainer(new BitServiceProviderFactory(ConfigureServicesImpl));
 
             return builder.Build();
         }

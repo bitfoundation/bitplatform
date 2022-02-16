@@ -16,14 +16,14 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web
         {
             var builder = MauiApp.CreateBuilder();
 
+            var assembly = typeof(MauiProgram).GetTypeInfo().Assembly;
+
             builder
                 .RegisterBlazorMauiWebView()
                 .UseMauiApp<App>()
-                .Host.ConfigureAppConfiguration((app, config) =>
-                {
-                    var assembly = typeof(MauiProgram).GetTypeInfo().Assembly;
-                    config.AddJsonFile(new EmbeddedFileProvider(assembly), "appsettings.json", optional: false, false);
-                });
+                .Configuration.AddJsonFile(new EmbeddedFileProvider(assembly), "appsettings.json", optional: false, false);
+
+            builder.Services.AddBlazorWebView();
 
             var services = builder.Services;
 

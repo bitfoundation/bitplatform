@@ -12,8 +12,8 @@
     <ItemGroup>
         <PackageReference Include="FakeItEasy" Version="7.3.0" />
         <PackageReference Include="Microsoft.AspNet.SignalR.Client" Version="2.4.3" />
-        <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="6.0.1" />
-        <PackageReference Include="Refit" Version="6.2.16" />
+        <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="6.0.2" />
+        <PackageReference Include="Refit" Version="6.3.2" />
         <PackageReference Include="Selenium.Support" Version="4.1.0" />
         <PackageReference Include="Selenium.WebDriver" Version="4.1.0" />
         <PackageReference Include="Selenium.WebDriver.MSEdgeDriver" Version="97.0.1072.55" />
