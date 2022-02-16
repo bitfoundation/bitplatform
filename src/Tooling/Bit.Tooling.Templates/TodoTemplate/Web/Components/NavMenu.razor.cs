@@ -1,6 +1,4 @@
-﻿using TodoTemplate.Shared.Dtos.Account;
-
-namespace TodoTemplate.App.Components;
+﻿namespace TodoTemplate.App.Components;
 
 public partial class NavMenu
 {
@@ -51,10 +49,10 @@ public partial class NavMenu
     [Inject]
     public IStateService StateService { get; set; } = default!;
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnInitAsync()
     {
         UserName = await StateService.GetValue(nameof(UserName), async () => (await AuthenticationStateTask).User.GetUserName());
 
-        await base.OnInitializedAsync();
+        await base.OnInitAsync();
     }
 }
