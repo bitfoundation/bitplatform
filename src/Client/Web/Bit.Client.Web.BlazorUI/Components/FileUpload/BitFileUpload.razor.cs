@@ -172,7 +172,7 @@ namespace Bit.Client.Web.BlazorUI
                 UploadStatus = BitUploadStatus.InProgress;
             }
 
-            UpdateStatus(BitUploadStatus.InProgress, index);
+            await UpdateStatus(BitUploadStatus.InProgress, index);
             if (index >= 0)
             {
                 await UploadOneFile(index);
@@ -196,13 +196,13 @@ namespace Bit.Client.Web.BlazorUI
 
             if (MaxSize > 0 && Files[index].Size > MaxSize)
             {
-                UpdateStatus(BitUploadStatus.NotAllowed, index);
+                await UpdateStatus(BitUploadStatus.NotAllowed, index);
                 return;
             }
 
             if (IsFileTypeNotAllowed(Files[index]))
             {
-                UpdateStatus(BitUploadStatus.NotAllowed, index);
+                await UpdateStatus(BitUploadStatus.NotAllowed, index);
                 return;
             }
 
@@ -261,7 +261,7 @@ namespace Bit.Client.Web.BlazorUI
             if (JSRuntime is null || Files is null) return;
 
             await JSRuntime.PauseFile(index);
-            UpdateStatus(BitUploadStatus.Paused, index);
+            await UpdateStatus(BitUploadStatus.Paused, index);
             Files[index].RequestToPause = false;
         }
 
@@ -290,12 +290,12 @@ namespace Bit.Client.Web.BlazorUI
 		/// Receive upload progress notification from underlying javascript.
 		/// </summary>
 		[JSInvokable("HandleUploadProgress")]
-        public void HandleUploadProgress(int index, long loaded)
+        public async Task HandleUploadProgress(int index, long loaded)
         {
             if (Files is null || Files[index].UploadStatus != BitUploadStatus.InProgress) return;
 
             Files[index].SizeOfLastChunkUploaded = loaded;
-            UpdateStatus(BitUploadStatus.InProgress, index);
+            await UpdateStatus(BitUploadStatus.InProgress, index);
             StateHasChanged();
         }
 
@@ -319,7 +319,7 @@ namespace Bit.Client.Web.BlazorUI
             }
             else
             {
-                UpdateStatus(GetUploadStatus(responseStatus), fileIndex);
+                await UpdateStatus(GetUploadStatus(responseStatus), fileIndex);
                 var allFilesUploaded = Files.All(c => c.UploadStatus == BitUploadStatus.Completed || c.UploadStatus == BitUploadStatus.Failed);
 
                 if (allFilesUploaded)
@@ -354,14 +354,18 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
-        private async void UpdateStatus(BitUploadStatus uploadStatus, int index)
+        private async Task UpdateStatus(BitUploadStatus uploadStatus, int index)
         {
             if (Files is null) return;
 
             if (index < 0)
             {
                 UploadStatus = uploadStatus;
-                Files.Where(c => c.UploadStatus != BitUploadStatus.NotAllowed).ToList().ForEach(c => c.UploadStatus = uploadStatus);
+                foreach (var file in Files.Where(c => c.UploadStatus != BitUploadStatus.NotAllowed))
+                {
+                    file.UploadStatus = uploadStatus;
+                    await OnChange.InvokeAsync(file);
+                }
             }
             else
             {
@@ -425,7 +429,7 @@ namespace Bit.Client.Web.BlazorUI
             if (JSRuntime is null || Files is null) return;
 
             await JSRuntime.PauseFile(index);
-            UpdateStatus(BitUploadStatus.Canceled, index);
+            await UpdateStatus(BitUploadStatus.Canceled, index);
             Files[index].RequestToCancell = false;
         }
 
