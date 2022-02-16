@@ -102,9 +102,9 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public bool AutoChunkSizeEnabled { get; set; }
 
         /// <summary>
-        /// Callback for when the file status changes.
+        /// Callback for when file or files status change.
         /// </summary>
-        [Parameter] public EventCallback<BitFileInfo> OnChange { get; set; }
+        [Parameter] public EventCallback<BitFileInfo[]> OnChange { get; set; }
 
         /// <summary>
         /// Callback for when the file is in upload process.
@@ -148,10 +148,7 @@ namespace Bit.Client.Web.BlazorUI
 
             if (Files is not null)
             {
-                foreach (var file in Files)
-                {
-                    await OnChange.InvokeAsync(file);
-                }
+                await OnChange.InvokeAsync(Files.ToArray());
             }
 
             if (AutoUploadEnabled)
@@ -361,18 +358,21 @@ namespace Bit.Client.Web.BlazorUI
             if (index < 0)
             {
                 UploadStatus = uploadStatus;
-                foreach (var file in Files.Where(c => c.UploadStatus != BitUploadStatus.NotAllowed))
+
+                var files = Files.Where(c => c.UploadStatus != BitUploadStatus.NotAllowed).ToArray();
+                foreach (var file in files)
                 {
                     file.UploadStatus = uploadStatus;
-                    await OnChange.InvokeAsync(file);
                 }
+
+                await OnChange.InvokeAsync(files);
             }
             else
             {
                 if (Files[index].UploadStatus != uploadStatus)
                 {
                     Files[index].UploadStatus = uploadStatus;
-                    await OnChange.InvokeAsync(Files[index]);
+                    await OnChange.InvokeAsync(new[] { Files[index] });
                 }
 
                 if (uploadStatus == BitUploadStatus.InProgress)
@@ -449,7 +449,7 @@ namespace Bit.Client.Web.BlazorUI
                 await RemoveOneFile(index);
             }
 
-            UpdateStatus(BitUploadStatus.Removed, index);
+            await UpdateStatus(BitUploadStatus.Removed, index);
         }
 
         private async Task RemoveOneFile(int index)
