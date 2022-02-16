@@ -1,6 +1,5 @@
 ﻿using Bit.Core.Contracts;
 using Bit.Owin.Contracts;
-using NodaTime;
 using System;
 
 namespace Bit.Owin.Implementations
@@ -27,31 +26,22 @@ namespace Bit.Owin.Implementations
             }
         }
 
-        protected virtual TimeZoneInfo? GetTimeZoneInfoByName(string? timeZoneName, DateTimeOffset dateTimeOffset)
+        protected virtual TimeZoneInfo? GetTimeZoneInfoByName(string? timeZoneName)
         {
             if (timeZoneName == null)
                 return null;
 
-            DateTimeZone? nodaTimeZone = DateTimeZoneProviders.Tzdb.GetZoneOrNull(timeZoneName) ?? DateTimeZoneProviders.Bcl.GetZoneOrNull(timeZoneName);
-
-            if (nodaTimeZone != null)
-            {
-                var nodaOffset = nodaTimeZone.GetUtcOffset(OffsetDateTime.FromDateTimeOffset(dateTimeOffset).ToInstant());
-
-                return TimeZoneInfo.CreateCustomTimeZone(nodaTimeZone.Id, TimeSpan.FromTicks(nodaOffset.Ticks), timeZoneName, timeZoneName);
-            }
-
-            return null;
+            return TimeZoneInfo.FindSystemTimeZoneById(timeZoneName);
         }
 
         public virtual TimeZoneInfo? GetClientCurrentTimeZone(DateTimeOffset dateTimeOffset)
         {
-            return GetTimeZoneInfoByName(_currentTimeZoneName, dateTimeOffset);
+            return GetTimeZoneInfoByName(_currentTimeZoneName);
         }
 
         public virtual TimeZoneInfo? GetClientDesiredTimeZone(DateTimeOffset dateTimeOffset)
         {
-            return GetTimeZoneInfoByName(_desiredTimeZoneName, dateTimeOffset);
+            return GetTimeZoneInfoByName(_desiredTimeZoneName);
         }
 
         public virtual DateTimeOffset MapFromClientToServer(DateTimeOffset dateTimeOffset)
