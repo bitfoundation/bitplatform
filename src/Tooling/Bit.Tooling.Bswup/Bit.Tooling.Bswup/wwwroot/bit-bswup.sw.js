@@ -54,7 +54,7 @@ function handleMessage(e) {
 async function createNewCache() {
     const assetsInclude = [/\.dll$/, /\.pdb$/, /\.wasm/, /\.html/, /\.js$/, /\.json$/, /\.css$/, /\.woff$/, /\.png$/, /\.jpe?g$/, /\.gif$/, /\.ico$/, /\.blat$/, /\.dat$/]
         .concat(self.assetsInclude || []);
-    const assetsExclude = [/^_content\/Bit.Client.Web.BlazorSwup\/bit-bswup.sw.js$/, /^service-worker\.js$/]
+    const assetsExclude = [/^_content\/Bit.Tooling.Bswup\/bit-bswup.sw.js$/, /^service-worker\.js$/]
         .concat(self.assetsExclude || []);
 
     const assets = self.assetsManifest.assets

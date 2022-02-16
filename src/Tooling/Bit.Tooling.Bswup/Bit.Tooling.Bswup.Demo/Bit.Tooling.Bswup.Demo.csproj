@@ -14,7 +14,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Bit.Client.Web.BlazorSwup\Bit.Client.Web.BlazorSwup.csproj" />
+        <ProjectReference Include="..\Bit.Tooling.Bswup\Bit.Tooling.Bswup.csproj" />
     </ItemGroup>
 
     <ItemGroup>

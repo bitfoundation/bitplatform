@@ -4,11 +4,11 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Bit.Client.Web.BlazorSwup.Test</title>
+    <title>Bit.Tooling.Bswup.Demo</title>
     <base href="/" />
     <link href="css/bootstrap/bootstrap.min.css" rel="stylesheet" />
     <link href="css/app.css" rel="stylesheet" />
-    <link href="Bit.Client.Web.BlazorSwup.Test.styles.css" rel="stylesheet" />
+    <link href="Bit.Tooling.Bswup.Demo.styles.css" rel="stylesheet" />
     <link href="manifest.json" rel="manifest" />
     <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png" />
     <style>
@@ -113,7 +113,9 @@
                 case 'installed':
                     reloadButton.style.display = 'block';
                     console.log('new version installed:', data.version)
-                    return data.reload();
+                    // data.reload();
+                    reloadButton.onclick = data.reload;
+                    return;
                 case 'progress':
                     const li = document.createElement('li');
                     li.innerHTML = `${data.index}: <b>${data.asset.url}</b>: ${data.asset.hash}`
@@ -128,7 +130,7 @@
         }
     </script>
     <script src="_framework/blazor.webassembly.js" autostart=false></script>
-    <script src="_content/Bit.Client.Web.BlazorSwup/bit-bswup.js"
+    <script src="_content/Bit.Tooling.Bswup/bit-bswup.js"
             scope="/"
             log="verbose"
             sw="service-worker.js"
