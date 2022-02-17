@@ -1,0 +1,40 @@
+﻿@page "/components/BreadCrumb"
+
+<ComponentDemo ComponentName="BreadCrumb" ComponentParameters="componentParameters" ComponentDescription="Breadcrumbs should be used as a navigational aid in your app or site. They indicate the current page’s location within a hierarchy and help the user understand where they are in relation to the rest of that hierarchy. They also afford one-click access to higher levels of that hierarchy.
+
+Breadcrumbs are typically placed, in horizontal form, under the masthead or navigation of an experience, above the primary content area.">
+    <ComponentExampleBox Title="Breadcrumb rendering options" HTMLSourceCode="@example1HTMLCode" ExampleId="example1">
+        <ExamplePreview>
+            <div class="example-desc">With items rendered as buttons</div>
+            <Breadcrumb Items=@items
+                        MaxDisplayedItems=6
+                        AriaLabel="Breadcrumb with items rendered as buttons"
+                        OverflowAriaLabel="More" />
+
+            <div class="example-desc">With items rendered as links</div>
+            <Breadcrumb Items=@itemsWithHref
+                        MaxDisplayedItems=3
+                        AriaLabel="Breadcrumb with items rendered as links"
+                        OverflowAriaLabel="More" />
+
+            <div class="example-desc">With last item rendered as heading</div>
+            <Breadcrumb Items=@itemsWithHeading
+                        AriaLabel="With last item rendered as heading"
+                        OverflowAriaLabel="More" />
+
+            <div class="example-desc">With custom rendered divider and overflow icon</div>
+            <Breadcrumb Items=@itemsWithHeading
+                        MaxDisplayedItems=3
+                        AriaLabel="With custom rendered divider and overflow icon"
+                        DividerAs=@_getCustomDivider
+                        OnRenderOverflowIcon=@_getCustomOverflowIcon
+                        OverflowAriaLabel="More" />
+
+            <Breadcrumb Items=@items
+                        MaxDisplayedItems=5
+                        AriaLabel="With items rendered as buttons and tab navigation control"
+                        OverflowAriaLabel="More" />
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+</ComponentDemo>
