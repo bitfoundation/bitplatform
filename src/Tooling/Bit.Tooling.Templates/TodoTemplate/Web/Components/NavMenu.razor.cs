@@ -51,10 +51,10 @@ public partial class NavMenu
     [Inject]
     public IStateService StateService { get; set; } = default!;
 
-    //protected override async Task OnInitializedAsync()
-    //{
-    //    UserName = await StateService.GetValue(nameof(UserName), async () => (await AuthenticationStateTask).User.GetUserName());
+    protected override async Task OnInitializedAsync()
+    {
+        UserName = await StateService.GetValue(nameof(UserName), async () => (await AuthenticationStateTask).User.GetUserName());
 
-    //    await base.OnInitializedAsync();
-    //}
+        await base.OnInitializedAsync();
+    }
 }
