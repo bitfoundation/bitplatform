@@ -11,16 +11,16 @@
         [Parameter]
         public EventCallback ModalClosed { get; set; }
 
-        private async void CloseModal()
+        private async Task CloseModal()
         {
             IsOpen = false;
             await ModalClosed.InvokeAsync();
         }
 
-        private void SignOut()
+        private async Task SignOut()
         {
-            TodoTemplateAuthenticationService.SignOut();
-            CloseModal();
+            await TodoTemplateAuthenticationService.SignOut();
+            await CloseModal();
         }
     }
 }
