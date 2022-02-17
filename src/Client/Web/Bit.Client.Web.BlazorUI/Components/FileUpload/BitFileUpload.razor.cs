@@ -209,7 +209,7 @@ namespace Bit.Client.Web.BlazorUI
                 return;
             }
 
-            if (Files[index].RequestToCancell)
+            if (Files[index].RequestToCancel)
             {
                 await CancelUpload(index);
                 return;
@@ -275,11 +275,11 @@ namespace Bit.Client.Web.BlazorUI
 
             if (index < 0)
             {
-                Files.ToList().ForEach(c => c.RequestToCancell = true);
+                Files.ToList().ForEach(c => c.RequestToCancel = true);
             }
             else
             {
-                Files[index].RequestToCancell = true;
+                Files[index].RequestToCancel = true;
             }
         }
 
@@ -430,7 +430,7 @@ namespace Bit.Client.Web.BlazorUI
 
             await JSRuntime.PauseFile(index);
             await UpdateStatus(BitUploadStatus.Canceled, index);
-            Files[index].RequestToCancell = false;
+            Files[index].RequestToCancel = false;
         }
 
         private async Task RemoveFile(int index)
