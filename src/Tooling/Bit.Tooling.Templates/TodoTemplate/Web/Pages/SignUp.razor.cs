@@ -1,24 +1,22 @@
-﻿using TodoTemplate.Shared.Dtos.Account;
+﻿using System.Text.RegularExpressions;
+using TodoTemplate.Shared.Dtos.Account;
 
 namespace TodoTemplate.App.Pages;
 
 public partial class SignUp
 {
     public string? Email { get; set; }
-
-    public string? EmailError { get; set; }
-
     public string? Password { get; set; }
-
-    public string? PasswordError { get; set; }
-
     public bool IsAcceptPrivacy { get; set; }
 
-    public bool HasMessageBar { get; set; }
+    public string? EmailErrorMessage { get; set; }
+    public string? PasswordErrorMessage { get; set; }
 
-    public bool IsSuccessMessageBar { get; set; }
+    public bool IsEnableSignUpButton { get; set; }
+    public bool IsLoading { get; set; }
 
-    public string? MessageBarText { get; set; }
+    public bool IsSuccessSignUp { get; set; }
+    public string? SignUpMessage { get; set; }
 
     [Inject]
     public HttpClient HttpClient { get; set; } = default!;
@@ -32,13 +30,72 @@ public partial class SignUp
     [Inject]
     public TodoTemplateAuthenticationStateProvider TodoTemplateAuthenticationStateProvider { get; set; } = default!;
 
+    private void CheckSignUpButtonEnable()
+    {
+        if (string.IsNullOrEmpty(Email))
+        {
+            IsEnableSignUpButton = false;
+            return;
+        }
+        if (string.IsNullOrEmpty(Password))
+        {
+            IsEnableSignUpButton = false; 
+            return;
+        }
+        if (IsAcceptPrivacy is false)
+        {
+            IsEnableSignUpButton = false;
+            return;
+        }
+        IsEnableSignUpButton = true;
+    }
+
+    private bool ValidateSignUp()
+    {
+        EmailErrorMessage = string.IsNullOrEmpty(Email)
+            ? "Please enter your email."
+            : null;
+
+        PasswordErrorMessage = string.IsNullOrEmpty(Password)
+            ? "Please enter your password."
+            : null;
+
+        if (string.IsNullOrEmpty(EmailErrorMessage) is false || string.IsNullOrEmpty(PasswordErrorMessage) is false)
+        {
+            return false;
+        }
+
+        var isCorrectEmailFormat = new Regex(@"^([\w\.\-]+)@([\w\-]+)((\.(\w){2,3})+)$");
+
+        var hasNonAlphanumericCharacter = new Regex(@"[^a-zA-Z0-9\n\r\t ]");
+
+        EmailErrorMessage = isCorrectEmailFormat.Match(Email).Success is false
+            ? "The email address format is incorrect."
+            : null;
+
+        PasswordErrorMessage = Password.Length < 6
+            ? "The password must have at least 6 characters."
+            : hasNonAlphanumericCharacter.Match(Password).Success is false
+                ? "The password must have at least one non alphanumeric character."
+                : null;
+
+        if (string.IsNullOrEmpty(EmailErrorMessage) is false || string.IsNullOrEmpty(PasswordErrorMessage) is false)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
     private async Task DoSignUp()
     {
-        EmailError = string.IsNullOrEmpty(Email) ? "Please enter your email" : null;
+        IsLoading = true;
 
-        PasswordError = string.IsNullOrEmpty(Password) ? "Please enter your password" : null;
-
-        if (EmailError is not null || PasswordError is not null) return;
+        if (ValidateSignUp() is false)
+        {
+            IsLoading = false;
+            return;
+        }
 
         try
         {
@@ -55,17 +112,17 @@ public partial class SignUp
                 Password = Password
             });
 
-            IsSuccessMessageBar = true;
-            MessageBarText = "Sign-up successfully";
+            IsSuccessSignUp = true;
+            SignUpMessage = "Sign-up successfully";
 
             NavigationManager.NavigateTo("/");
         }
         catch (ResourceValidationException e)
         {
-            MessageBarText = string.Join(Environment.NewLine, e.Details.SelectMany(d => d.Messages));
+            SignUpMessage = string.Join(Environment.NewLine, e.Details.SelectMany(d => d.Messages));
         }
 
-        HasMessageBar = true;
+        IsLoading = false;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)

@@ -6,12 +6,12 @@
 
 <div class="page-container">
     <form class="form--white">
-        @if (HasMessageBar)
+        @if (string.IsNullOrEmpty(SignUpMessage) is false)
         {
             <BitMessageBar Class="form-message-bar"
-                       MessageBarType="@(IsSuccessMessageBar ? BitMessageBarType.Success : BitMessageBarType.Error)"
-                       OnDismiss="() => HasMessageBar = false">
-                @MessageBarText
+                       MessageBarType="@(IsSuccessSignUp ? BitMessageBarType.Success : BitMessageBarType.Error)"
+                       OnDismiss="() => SignUpMessage = null">
+                @SignUpMessage
             </BitMessageBar>
         }
         <h1 class="form-title">
@@ -19,19 +19,31 @@
         </h1>
         <div class="form-input-container">
             <BitLabel>Email</BitLabel>
-            <BitTextField Placeholder="Email" @bind-Value="Email"></BitTextField>
-            <div class="form-input-error">@(EmailError ?? string.Empty)</div>
+            <BitTextField Placeholder="Email" @bind-Value="Email" 
+                          OnKeyUp="() => InvokeAsync(CheckSignUpButtonEnable)"
+                          OnFocus="() => EmailErrorMessage = null" />
+            <div class="form-input-error">@EmailErrorMessage</div>
         </div>
         <div class="form-input-container">
             <BitLabel>Password</BitLabel>
-            <BitTextField Type="BitTextFieldType.Password" CanRevealPassword="true" Placeholder="Password" @bind-Value="Password"></BitTextField>
-            <div class="form-input-error">@(PasswordError ?? string.Empty)</div>
+            <BitTextField Type="BitTextFieldType.Password" CanRevealPassword="true" Placeholder="Password" @bind-Value="Password"
+                          OnKeyUp="() => InvokeAsync(CheckSignUpButtonEnable)"
+                          OnFocus="() => PasswordErrorMessage = null" />
+            <div class="form-input-error">@PasswordErrorMessage</div>
         </div>
-        <BitCheckbox Class="form-checkbox" @bind-IsChecked="IsAcceptPrivacy">
+        <BitCheckbox Class="form-checkbox" @bind-IsChecked="IsAcceptPrivacy" 
+                     OnChange="() => InvokeAsync(CheckSignUpButtonEnable)">
             Accept <BitLink Href="/privacy" Target="_blank">privacy and policy</BitLink>
         </BitCheckbox>
-        <BitButton Class="form-submit-button" ButtonStyle="BitButtonStyle.Primary" IsEnabled="@(IsAcceptPrivacy)" OnClick="() => InvokeAsync(DoSignUp)">
-            Sign up
+        <BitButton Class="form-submit-button" ButtonStyle="BitButtonStyle.Primary" IsEnabled="@IsEnableSignUpButton" OnClick="() => InvokeAsync(DoSignUp)">
+           @if (IsLoading)
+           {
+               <BitSpinner Size="BitSpinnerSize.Small"></BitSpinner>
+           }
+           else
+           {
+               <span>Sign up</span>
+           }
         </BitButton>
         <div>
             Already have an account? <BitLink Href="/sign-in">Sign in</BitLink>
