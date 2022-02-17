@@ -124,24 +124,24 @@
                 var percentLabel = document.getElementById('blazor-swup-percent');
                 var reloadButton = document.getElementById('blazor-swup-reload');
                 function blazorSwup(type, data) {
-                switch (type) {
-                    case 'updatefound':
-                        return console.log('new version is downloading...');
-                    case 'statechange':
-                        return console.log('new version state has changed to:', data.currentTarget.state);
-                    case 'installing':
-                        progressEl.style.display = 'block';
-                        return console.log('installing new version:', data.version);
-                    case 'installed':
-                            console.log('new version installed', data.version);
-                            return setTimeout(data.reload, 100);
-                    case 'progress':
-                        const percent = Math.round(data.percent);
-                        progressBar.style.width = `${percent}%`;
-                        percentLabel.innerHTML = `${percent} %`;
-                        return console.log('asset downloaded:', data);
-                    case 'activate':
-                        return console.log('new version activated:', data.version);
+                    switch (type) {
+                        case 'updatefound':
+                            return console.log('new version is downloading...');
+                        case 'statechange':
+                            return console.log('new version state has changed to:', data.currentTarget.state);
+                        case 'installing':
+                            progressEl.style.display = 'block';
+                            return console.log('installing new version:', data.version);
+                        case 'installed':
+                                console.log('new version installed', data.version);
+                                return setTimeout(data.reload, 100);
+                        case 'progress':
+                            const percent = Math.round(data.percent);
+                            progressBar.style.width = `${percent}%`;
+                            percentLabel.innerHTML = `${percent} %`;
+                            return console.log('asset downloaded:', data);
+                        case 'activate':
+                            return console.log('new version activated:', data.version);
                     }
                 }
             </script>
@@ -156,7 +156,7 @@
             @if (isPwa)
             {
                 <script src="_framework/blazor.webassembly.js" autostart=false></script>
-                <script src="_content/Bit.Client.Web.BlazorSwup/bit-bswup.js" scope="/" sw="service-worker.js" handler="blazorSwup"></script>
+                <script src="_content/Bit.Tooling.Bswup/bit-bswup.js" scope="/" sw="service-worker.js" handler="blazorSwup"></script>
             }
             else
             {

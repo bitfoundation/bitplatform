@@ -3,10 +3,10 @@
     <TargetFramework>net6.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Bit.Server.Data.EntityFrameworkCore" Version="8.8.0" />
-    <PackageReference Include="Bit.Server.WebApi" Version="8.8.0" />
-    <PackageReference Include="Bit.Tooling.CodeAnalyzer" Version="8.8.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.1" />
+    <PackageReference Include="Bit.Server.Data.EntityFrameworkCore" Version="8.9.0" />
+    <PackageReference Include="Bit.Server.WebApi" Version="8.9.0" />
+    <PackageReference Include="Bit.Tooling.CodeAnalyzer" Version="8.9.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.2" />
   </ItemGroup>
   <ItemGroup>
     <Content Update="environments.json">

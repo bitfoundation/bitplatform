@@ -15,4 +15,4 @@ self.assetsExclude = [
 
 self.defaultUrl = "/";
 
-self.importScripts('_content/Bit.Client.Web.BlazorSwup/bit-bswup.sw.js');
+self.importScripts('_content/Bit.Tooling.Bswup/bit-bswup.sw.js');

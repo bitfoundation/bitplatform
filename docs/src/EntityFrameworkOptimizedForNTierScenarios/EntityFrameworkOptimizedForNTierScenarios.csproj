@@ -7,8 +7,8 @@
 
   <ItemGroup>
     <PackageReference Include="BenchmarkDotNet" Version="0.13.1" />
-    <PackageReference Include="Bit.Server.Data.EntityFramework" Version="8.7.0" />
-    <PackageReference Include="Bit.Server.WebApi" Version="8.7.0" />
+    <PackageReference Include="Bit.Server.Data.EntityFramework" Version="8.9.0" />
+    <PackageReference Include="Bit.Server.WebApi" Version="8.9.0" />
     <PackageReference Include="Bit.System.Diagnostics.CodeAnalysis" Version="1.0.0" />
     <PackageReference Include="SharpRepository.EfRepository" Version="2.1.3" />
   </ItemGroup>
