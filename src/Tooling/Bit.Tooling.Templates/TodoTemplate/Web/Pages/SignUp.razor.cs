@@ -53,7 +53,11 @@ public partial class SignUp
                 ? "The password must have at least one non alphanumeric character." 
                 : null;
 
-        if (!string.IsNullOrEmpty(EmailError) || !string.IsNullOrEmpty(PasswordError)) return;
+        if (!string.IsNullOrEmpty(EmailError) || !string.IsNullOrEmpty(PasswordError))
+        {
+            IsLoading = false;
+            return;
+        }
 
         try
         {
