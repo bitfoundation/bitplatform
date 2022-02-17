@@ -10,7 +10,9 @@
     {
         if (firstRender)
         {
-            NavigationManager.NavigateTo($"/sign-in?redirectUrl={NavigationManager.Uri}");
+            var redirectUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+
+            NavigationManager.NavigateTo($"/sign-in?redirectUrl={redirectUrl}");
         }
 
         base.OnAfterRender(firstRender);
