@@ -34,6 +34,11 @@ async function handleFetch(e) {
     // If you need some URLs to be server-rendered, edit the following check to exclude those URLs
     const shouldServeIndexHtml = e.request.mode === 'navigate';
     const requestUrl = shouldServeIndexHtml ? (self.defaultUrl || 'index.html') : e.request.url;
+
+    if ((self.prohibitedUrls || []).some(url => url.test(requestUrl))) {
+        return new Response(new Blob(), { status: 405, "statusText": `prohibited URL: ${requestUrl}` });
+    }
+
     const asset = self.assetsManifest.assets.find(a => shouldServeIndexHtml ? a.url === requestUrl : new URL(requestUrl).pathname.endsWith(a.url));
     const cacheUrl = asset && `${asset.url}.${asset.hash}`;
 
