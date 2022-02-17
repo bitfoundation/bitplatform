@@ -1,4 +1,4 @@
-using Bit.Client.Web.BlazorSwup.Test;
+﻿using Bit.Tooling.Bswup.Demo;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 

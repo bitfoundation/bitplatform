@@ -1,4 +1,4 @@
-﻿@inherits ToDoTemplateComponentBase;
+﻿@inherits TodoTemplateComponentBase;
 
 @code {
 
@@ -10,7 +10,9 @@
     {
         if (firstRender)
         {
-            NavigationManager.NavigateTo("/sign-in");
+            var redirectUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+
+            NavigationManager.NavigateTo($"/sign-in?redirectUrl={redirectUrl}");
         }
 
         base.OnAfterRender(firstRender);

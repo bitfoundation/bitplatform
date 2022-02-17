@@ -52,7 +52,16 @@
 
     <ComponentExampleBox Title="DatePicker with custom date formatting" HTMLSourceCode="@example6HTMLCode" ExampleId="example6">
         <ExamplePreview>
-                <BitDatePicker FormatDate="d" Style="width: 300px"></BitDatePicker>
+            <BitDatePicker FormatDate="d" Style="width: 300px"></BitDatePicker>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="BitDatePicker with MaxDate and MinDate" HTMLSourceCode="@example7HTMLCode" ExampleId="example7">
+        <ExamplePreview>
+            <BitDatePicker Style="width: 300px"
+                           MaxDate="DateTimeOffset.Now.AddYears(1)"
+                           MinDate="DateTimeOffset.Now.AddYears(-5)">
+            </BitDatePicker>
         </ExamplePreview>
     </ComponentExampleBox>
 </ComponentDemo>

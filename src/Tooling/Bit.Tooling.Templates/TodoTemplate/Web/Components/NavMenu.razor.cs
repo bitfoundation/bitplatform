@@ -37,4 +37,22 @@ public partial class NavMenu
     }
 
     public List<BitNavLinkItem> NavLinks { get; set; }
+
+    public string? UserName { get; set; }
+
+    [Inject]
+    public HttpClient HttpClient { get; set; } = default!;
+
+    [CascadingParameter]
+    public Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
+
+    [Inject]
+    public IStateService StateService { get; set; } = default!;
+
+    protected override async Task OnInitAsync()
+    {
+        UserName = await StateService.GetValue(nameof(UserName), async () => (await AuthenticationStateTask).User.GetUserName());
+
+        await base.OnInitAsync();
+    }
 }

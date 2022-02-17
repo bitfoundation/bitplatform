@@ -60,7 +60,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <!-- App Icon -->
         <MauiIcon Include="Resources\appicon.svg" ForegroundFile="Resources\appiconfg.svg" Color="#512BD4" />
 
         <!-- Splash Screen -->
@@ -71,6 +70,9 @@
 
         <!-- Custom Fonts -->
         <MauiFont Include="Resources\Fonts\*" />
+
+        <!-- Raw Assets (also remove the "Resources\Raw" prefix) -->
+        <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
 
         <LinkDescription Include="Linker.xml" />
     </ItemGroup>
@@ -85,7 +87,7 @@
         <ProjectReference Include="..\..\..\..\Client\Web\Bit.Client.Web.BlazorUI\Bit.Client.Web.BlazorUI.csproj" />
         <PackageReference Include="BuildWebCompiler" Version="1.12.405" />
         <PackageReference Include="jose-jwt" Version="3.2.0" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="6.0.1" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="6.0.2" />
         <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.5.3">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

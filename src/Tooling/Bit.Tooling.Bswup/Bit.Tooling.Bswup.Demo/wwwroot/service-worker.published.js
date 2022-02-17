@@ -1,4 +1,10 @@
-self.importScripts('_content/Bit.Client.Web.BlazorSwup/bit-bswup.sw.js');
+
+self.assetsInclude = [];
+self.assetsExclude = [/\.scp\.css$/, /weather\.json$/];
+self.defaultUrl = "index.html";
+self.prohibitedUrls = [];
+
+self.importScripts('_content/Bit.Tooling.Bswup/bit-bswup.sw.js');
 
 ////// Caution! Be sure you understand the caveats before publishing an application with
 ////// offline support. See https://aka.ms/blazor-offline-considerations

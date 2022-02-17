@@ -34,6 +34,11 @@ async function handleFetch(e) {
     // If you need some URLs to be server-rendered, edit the following check to exclude those URLs
     const shouldServeIndexHtml = e.request.mode === 'navigate';
     const requestUrl = shouldServeIndexHtml ? (self.defaultUrl || 'index.html') : e.request.url;
+
+    if ((self.prohibitedUrls || []).some(url => url.test(requestUrl))) {
+        return new Response(new Blob(), { status: 405, "statusText": `prohibited URL: ${requestUrl}` });
+    }
+
     const asset = self.assetsManifest.assets.find(a => shouldServeIndexHtml ? a.url === requestUrl : new URL(requestUrl).pathname.endsWith(a.url));
     const cacheUrl = asset && `${asset.url}.${asset.hash}`;
 
@@ -54,7 +59,7 @@ function handleMessage(e) {
 async function createNewCache() {
     const assetsInclude = [/\.dll$/, /\.pdb$/, /\.wasm/, /\.html/, /\.js$/, /\.json$/, /\.css$/, /\.woff$/, /\.png$/, /\.jpe?g$/, /\.gif$/, /\.ico$/, /\.blat$/, /\.dat$/]
         .concat(self.assetsInclude || []);
-    const assetsExclude = [/^_content\/Bit.Client.Web.BlazorSwup\/bit-bswup.sw.js$/, /^service-worker\.js$/]
+    const assetsExclude = [/^_content\/Bit.Tooling.Bswup\/bit-bswup.sw.js$/, /^service-worker\.js$/]
         .concat(self.assetsExclude || []);
 
     const assets = self.assetsManifest.assets
