@@ -5,18 +5,16 @@ namespace TodoTemplate.App.Pages;
 public partial class SignIn
 {
     public string? Email { get; set; }
-
-    public string? EmailError { get; set; }
-
     public string? Password { get; set; }
+    
+    public string? EmailErrorMessage { get; set; }
+    public string? PasswordErrorMessage { get; set; }
 
-    public string? PasswordError { get; set; }
+    public bool IsEnableSignInButton { get; set; }
+    public bool IsLoading { get; set; }
 
-    public bool HasMessageBar { get; set; }
-
-    public bool IsSuccessMessageBar { get; set; }
-
-    public string? MessageBarText { get; set; }
+    public bool IsSuccessSignIn { get; set; }
+    public string? SignInMessage { get; set; }
 
     [Inject]
     public HttpClient HttpClient { get; set; } = default!;
@@ -34,13 +32,43 @@ public partial class SignIn
     [SupplyParameterFromQuery]
     public string? RedirectUrl { get; set; }
 
+    private void CheckSignInButtonEnable()
+    {
+        if (string.IsNullOrEmpty(Email))
+        {
+            IsEnableSignInButton = false;
+            return;
+        }
+        if (string.IsNullOrEmpty(Password))
+        {
+            IsEnableSignInButton = false;
+            return;
+        }
+        IsEnableSignInButton = true;
+    }
+
+    private bool ValidateSignIn()
+    {
+        EmailErrorMessage = string.IsNullOrEmpty(Email)
+            ? "Please enter your email."
+            : null;
+
+        PasswordErrorMessage = string.IsNullOrEmpty(Password)
+            ? "Please enter your password."
+            : null;
+
+        return string.IsNullOrEmpty(EmailErrorMessage) is not false && string.IsNullOrEmpty(PasswordErrorMessage) is not false;
+    }
+
     private async Task DoSignIn()
     {
-        EmailError = string.IsNullOrEmpty(Email) ? "Please enter your email" : null;
-        PasswordError = string.IsNullOrEmpty(Password) ? "Please enter your password" : null;
+        IsLoading = true;
 
-        if (EmailError is not null || PasswordError is not null)
+        if (ValidateSignIn() is false)
+        {
+            IsLoading = false;
             return;
+        }
 
         try
         {
@@ -50,27 +78,27 @@ public partial class SignIn
                 Password = Password
             });
 
-            IsSuccessMessageBar = true;
-            MessageBarText = "Sign-in successfully";
+            IsSuccessSignIn = true;
+            SignInMessage = "Sign-in successfully";
 
             NavigationManager.NavigateTo(RedirectUrl ?? "/");
         }
         catch (Exception e)
         {
-            IsSuccessMessageBar = false;
+            IsSuccessSignIn = false;
 
             if (e is KnownException)
             {
-                MessageBarText = ErrorStrings.ResourceManager.GetString(e.Message);
+                SignInMessage = ErrorStrings.ResourceManager.GetString(e.Message);
             }
             else
             {
-                MessageBarText = ErrorStrings.UnknownException;
+                SignInMessage = ErrorStrings.UnknownException;
                 throw;
             }
         }
 
-        HasMessageBar = true;
+        IsLoading = false;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
