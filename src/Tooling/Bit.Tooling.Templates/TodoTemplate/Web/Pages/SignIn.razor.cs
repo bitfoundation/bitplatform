@@ -34,12 +34,7 @@ public partial class SignIn
 
     private void CheckSignInButtonEnable()
     {
-        if (string.IsNullOrEmpty(Email))
-        {
-            IsEnableSignInButton = false;
-            return;
-        }
-        if (string.IsNullOrEmpty(Password))
+        if (string.IsNullOrEmpty(Email) || string.IsNullOrEmpty(Password))
         {
             IsEnableSignInButton = false;
             return;
