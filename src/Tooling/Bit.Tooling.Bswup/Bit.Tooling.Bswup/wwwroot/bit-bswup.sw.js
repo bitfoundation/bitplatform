@@ -1,4 +1,4 @@
-﻿self.importScripts('/service-worker-assets.js');
+﻿self.importScripts(self.assetsUrl || '/service-worker-assets.js');
 
 const VERSION = self.assetsManifest.version;
 const CACHE_NAME_PREFIX = 'bit-bswup-';
