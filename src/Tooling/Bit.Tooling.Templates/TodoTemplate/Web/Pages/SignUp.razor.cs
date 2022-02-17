@@ -9,15 +9,14 @@ public partial class SignUp
     public string? Password { get; set; }
     public bool IsAcceptPrivacy { get; set; }
 
-    public string? EmailError { get; set; }
-    public string? PasswordError { get; set; }
+    public string? EmailErrorMessage { get; set; }
+    public string? PasswordErrorMessage { get; set; }
 
-    public bool IsValidProperty { get; set; }
+    public bool IsEnableSignUpButton { get; set; }
     public bool IsLoading { get; set; }
 
-    public bool HasMessageBar { get; set; }
-    public bool IsSuccessMessageBar { get; set; }
-    public string? MessageBarText { get; set; }
+    public bool IsSuccessSignUp { get; set; }
+    public string? SignUpMessage { get; set; }
 
     [Inject]
     public HttpClient HttpClient { get; set; } = default!;
@@ -31,29 +30,68 @@ public partial class SignUp
     [Inject]
     public TodoTemplateAuthenticationStateProvider TodoTemplateAuthenticationStateProvider { get; set; } = default!;
 
-    private void ValidateSignUp()
+    private void CheckSignUpButtonEnable()
     {
-        if (string.IsNullOrEmpty(Email)) { IsValidProperty = false; return;}
-        if (string.IsNullOrEmpty(Password)) { IsValidProperty = false; return; }
-        if (!IsAcceptPrivacy) { IsValidProperty = false; return; }
-        IsValidProperty = true;
+        if (string.IsNullOrEmpty(Email))
+        {
+            IsEnableSignUpButton = false;
+            return;
+        }
+        if (string.IsNullOrEmpty(Password))
+        {
+            IsEnableSignUpButton = false; 
+            return;
+        }
+        if (IsAcceptPrivacy is false)
+        {
+            IsEnableSignUpButton = false;
+            return;
+        }
+        IsEnableSignUpButton = true;
+    }
+
+    private bool ValidateSignUp()
+    {
+        EmailErrorMessage = string.IsNullOrEmpty(Email)
+            ? "Please enter your email."
+            : null;
+
+        PasswordErrorMessage = string.IsNullOrEmpty(Password)
+            ? "Please enter your password."
+            : null;
+
+        if (string.IsNullOrEmpty(EmailErrorMessage) is false || string.IsNullOrEmpty(PasswordErrorMessage) is false)
+        {
+            return false;
+        }
+
+        var isCorrectEmailFormat = new Regex(@"^([\w\.\-]+)@([\w\-]+)((\.(\w){2,3})+)$");
+
+        var hasNonAlphanumericCharacter = new Regex(@"[^a-zA-Z0-9\n\r\t ]");
+
+        EmailErrorMessage = isCorrectEmailFormat.Match(Email).Success is false
+            ? "The email address format is incorrect."
+            : null;
+
+        PasswordErrorMessage = Password.Length < 6
+            ? "The password must have at least 6 characters."
+            : hasNonAlphanumericCharacter.Match(Password).Success is false
+                ? "The password must have at least one non alphanumeric character."
+                : null;
+
+        if (string.IsNullOrEmpty(EmailErrorMessage) is false || string.IsNullOrEmpty(PasswordErrorMessage) is false)
+        {
+            return false;
+        }
+
+        return true;
     }
 
     private async Task DoSignUp()
     {
         IsLoading = true;
 
-        EmailError = !new Regex(@"^([\w\.\-]+)@([\w\-]+)((\.(\w){2,3})+)$").Match(Email!).Success 
-            ? "The email address format is incorrect." 
-            : null;
-
-        PasswordError = Password!.Length < 6
-            ? "The password must have at least 6 characters."
-            : !new Regex(@"[^a-zA-Z0-9\n\r\t ]").Match(Password!).Success
-                ? "The password must have at least one non alphanumeric character." 
-                : null;
-
-        if (!string.IsNullOrEmpty(EmailError) || !string.IsNullOrEmpty(PasswordError))
+        if (ValidateSignUp() is false)
         {
             IsLoading = false;
             return;
@@ -74,17 +112,15 @@ public partial class SignUp
                 Password = Password
             });
 
-            IsSuccessMessageBar = true;
-            MessageBarText = "Sign-up successfully";
+            IsSuccessSignUp = true;
+            SignUpMessage = "Sign-up successfully";
 
             NavigationManager.NavigateTo("/");
         }
         catch (ResourceValidationException e)
         {
-            MessageBarText = string.Join(Environment.NewLine, e.Details.SelectMany(d => d.Messages));
+            SignUpMessage = string.Join(Environment.NewLine, e.Details.SelectMany(d => d.Messages));
         }
-
-        HasMessageBar = true;
 
         IsLoading = false;
     }
