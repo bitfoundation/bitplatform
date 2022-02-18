@@ -6,15 +6,19 @@ public partial class EditProfile
 {
     public UserDto? User { get; set; } = new();
 
+    public string? FullName { get; set; }
+    public DateTimeOffset? BirthDate { get; set; }
     public string? SelectedGender { get; set; }
 
     public string? ProfilePhotoUploadUrl { get; set; }
     public string? ProfilePhotoRemoveUrl { get; set; }
     public string? UserProfilePhotoUrl { get; set; }
 
-    public bool HasMessageBar { get; set; }
-    public bool IsSuccessMessageBar { get; set; }
-    public string? MessageBarText { get; set; }
+    public bool IsEnableSaveButton { get; set; }
+    public bool IsLoading { get; set; }
+
+    public bool IsSuccessEditProfile { get; set; }
+    public string? EditProfileMessage { get; set; }
 
     [Inject]
     public ITokenProvider TokenProvider { get; set; } = default!;
@@ -30,11 +34,13 @@ public partial class EditProfile
     public IConfiguration Configuration { get; set; } = default!;
 #endif
 
-    protected async override Task OnInitAsync()
+    protected override async Task OnInitAsync()
     {
         User = await StateService.GetValue(nameof(User), async () => await HttpClient.GetFromJsonAsync($"User/GetCurrentUser", ToDoTemplateJsonContext.Default.UserDto));
 
-        SelectedGender = User.Gender.ToString();
+        FullName = User?.FullName;
+        BirthDate = User?.BirthDate;
+        SelectedGender = User?.Gender.ToString();
 
         var access_token = await StateService.GetValue("access_token", async () => await TokenProvider.GetAcccessToken());
 
@@ -52,10 +58,27 @@ public partial class EditProfile
         await base.OnInitAsync();
     }
 
+    private void CheckSaveButtonEnable()
+    {
+        if (User?.FullName == FullName && User?.BirthDate == BirthDate && User?.Gender.ToString() == SelectedGender)
+        {
+            IsEnableSaveButton = false;
+            return;
+        }
+       
+        IsEnableSaveButton = true;
+    }
+
     private async Task Save()
     {
+        IsLoading = true;
+
         try
         {
+            User!.FullName = FullName;
+
+            User!.BirthDate = BirthDate;
+
             if (SelectedGender == Gender.Male.ToString())
             {
                 User!.Gender = Gender.Male;
@@ -71,26 +94,20 @@ public partial class EditProfile
 
             await HttpClient.PutAsJsonAsync("User", User, ToDoTemplateJsonContext.Default.UserDto);
 
-            IsSuccessMessageBar = true;
+            IsSuccessEditProfile = true;
 
-            MessageBarText = "Edit successfully";
+            EditProfileMessage = "Edit successfully";
         }
         catch (Exception e)
         {
-            IsSuccessMessageBar = false;
+            IsSuccessEditProfile = false;
 
-            if (e is KnownException)
-            {
-                MessageBarText = ErrorStrings.ResourceManager.GetString(e.Message);
-            }
-            else
-            {
-                MessageBarText = ErrorStrings.UnknownException;
-                throw;
-            }
+            EditProfileMessage = e is KnownException 
+                ? ErrorStrings.ResourceManager.GetString(e.Message) 
+                : ErrorStrings.UnknownException;
         }
 
-        HasMessageBar = true;
+        IsLoading = false;
     }
 }
 
