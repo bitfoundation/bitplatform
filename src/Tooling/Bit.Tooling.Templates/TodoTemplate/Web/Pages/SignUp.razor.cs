@@ -32,7 +32,17 @@ public partial class SignUp
 
     private void CheckSignUpButtonEnable()
     {
-        if (string.IsNullOrEmpty(Email) || string.IsNullOrEmpty(Password) || IsAcceptPrivacy is false)
+        if (string.IsNullOrEmpty(Email))
+        {
+            IsEnableSignUpButton = false;
+            return;
+        }
+        if (string.IsNullOrEmpty(Password))
+        {
+            IsEnableSignUpButton = false;
+            return;
+        }
+        if (IsAcceptPrivacy is false)
         {
             IsEnableSignUpButton = false;
             return;

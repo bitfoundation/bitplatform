@@ -15,4 +15,21 @@ public class UserDto
     public Gender? Gender { get; set; }
 
     public DateTimeOffset? BirthDate { get; set; }
+
+    [NotMapped]
+    public string? GenderMapper
+    {
+        get
+        {
+            return Gender.ToString();
+        }
+        set
+        {
+            if (string.IsNullOrEmpty(value) is false)
+            {
+                Gender = Enum.Parse<Gender>(value);
+            }
+        }
+    }
+
 }

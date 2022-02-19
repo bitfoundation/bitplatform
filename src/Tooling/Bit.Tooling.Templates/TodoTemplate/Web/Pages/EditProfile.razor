@@ -9,7 +9,7 @@
         @if (string.IsNullOrEmpty(EditProfileMessage) is false)
         {
             <BitMessageBar Class="form-message-bar"
-                       MessageBarType="@(IsSuccessEditProfile ? BitMessageBarType.Success : BitMessageBarType.Error)"
+                       MessageBarType="@EditProfileMessageType"
                        OnDismiss="() => EditProfileMessage = null">
                 @EditProfileMessage
             </BitMessageBar>
@@ -38,28 +38,28 @@
             <BitLabel>Profile photo</BitLabel>
             <BitFileUpload Label="Select or drag and drops files"
                            UploadUrl="@ProfilePhotoUploadUrl"
-                           RemoveUrl="@ProfilePhotoRemoveUrl"></BitFileUpload>
+                           RemoveUrl="@ProfilePhotoRemoveUrl"/>
         </div>
         <div class="form-input-container">
             <BitLabel>Full-Name</BitLabel>
-            <BitTextField @bind-Value="FullName"
-                          OnKeyUp="() => InvokeAsync(CheckSaveButtonEnable)"/>
+            <BitTextField @bind-Value="UserToEdit.FullName"
+                          OnKeyUp="() => InvokeAsync(CheckSaveButtonEnabled)"/>
         </div>
         <div class="form-input-container">
             <BitLabel>Birthday</BitLabel>
-            <BitDatePicker @bind-Value="BirthDate"
-                           OnSelectDate="() => InvokeAsync(CheckSaveButtonEnable)"/>
+            <BitDatePicker @bind-Value="UserToEdit.BirthDate"
+                           OnSelectDate="() => InvokeAsync(CheckSaveButtonEnabled)"/>
         </div>
         <div class="form-choice-container">
             <BitLabel>Gender</BitLabel>
-            <BitChoiceGroup @bind-SelectedKey="SelectedGender" 
-                            OnValueChange="() => InvokeAsync(CheckSaveButtonEnable)">
+            <BitChoiceGroup @bind-SelectedKey="UserToEdit.GenderMapper" 
+                            OnValueChange="() => InvokeAsync(CheckSaveButtonEnabled)">
                 <BitChoiceOption Key="@Gender.Male.ToString()" Text="Male"></BitChoiceOption>
                 <BitChoiceOption Key="@Gender.Female.ToString()" Text="Famale"></BitChoiceOption>
                 <BitChoiceOption Key="@Gender.Custom.ToString()" Text="Custom"></BitChoiceOption>
             </BitChoiceGroup>
         </div>
-        <BitButton Class="form-submit-button" ButtonStyle="BitButtonStyle.Primary" IsEnabled="IsEnableSaveButton" OnClick="() => InvokeAsync(Save)">
+        <BitButton Class="form-submit-button" ButtonStyle="BitButtonStyle.Primary" IsEnabled="IsSaveButtonEnabled" OnClick="() => InvokeAsync(Save)">
             @if (IsLoading)
             {
                 <BitSpinner Size="BitSpinnerSize.Small"></BitSpinner>
