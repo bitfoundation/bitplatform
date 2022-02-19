@@ -39,7 +39,7 @@ public partial class SignUp
         }
         if (string.IsNullOrEmpty(Password))
         {
-            IsEnableSignUpButton = false;
+            IsEnableSignUpButton = false; 
             return;
         }
         if (IsAcceptPrivacy is false)
