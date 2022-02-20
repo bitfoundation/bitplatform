@@ -1,5 +1,6 @@
 ﻿@import '../wwwroot/styles/abstracts/_functions.scss';
 @import '../wwwroot/styles/abstracts/_colors.scss';
+@import '../wwwroot/styles/abstracts/_media-queries.scss';
 
 .page-container {
     display: flex;
@@ -8,11 +9,65 @@
     align-items: center;
     height: 100%;
     padding: rem(56px) 0;
+
+    @include lg {
+        padding: rem(48px) 0;
+    }
+
+    @include sm {
+        padding: rem(16px) 0;
+    }
 }
 
-.form-choice-container {
-    width: 21.25rem;
-    margin-bottom: rem(21px);
+.page-form {
+    position: relative;
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: center;
+    border-radius: rem(4px);
+    padding: rem(32px) rem(134px);
+    background-color: $Gray6;
+
+    @include lg {
+        padding: rem(32px) rem(112px);
+    }
+
+    @include md {
+        padding: rem(40px) rem(134px);
+    }
+
+    @include sm {
+        padding: rem(16px) rem(14px);
+    }
+}
+
+.form-message-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    border-radius: rem(4px) rem(4px) 0 0;
+}
+
+.form-title {
+    margin-bottom: rem(16px);
+    font-weight: 600;
+    font-size: rem(28px);
+    line-height: rem(44px);
+    color: $SecondaryColor;
+
+    @include lg {
+        font-size: rem(24px);
+        line-height: rem(36px);
+    }
+
+    @include md {
+        font-size: rem(22px);
+    }
+
+    @include sm {
+        font-size: rem(18px);
+        line-height: rem(24px);
+    }
 }
 
 .form-profile-container {
@@ -21,7 +76,15 @@
     justify-content: flex-start;
     align-items: center;
     align-self: flex-start;
-    margin-bottom: rem(21px);
+    margin-bottom: rem(17px);
+
+    @include lt-xl {
+        margin-bottom: rem(13px);
+    }
+
+    @include md {
+        margin-bottom: rem(21px);
+    }
 }
 
 .form-profile-photo {
@@ -34,16 +97,67 @@
     margin-right: rem(8px);
     color: $Gray6;
     background-color: $S2Color;
+
+    @include sm {
+        width: rem(40px);
+        height: rem(40px);
+        margin-right: rem(4px);
+    }
 }
 
 .profile-photo {
     width: rem(56px);
     height: rem(56px);
     border-radius: 50%;
+
+    @include sm {
+        width: rem(40px);
+        height: rem(40px);
+    }
 }
 
 .form-profile-email {
     font-size: rem(14px);
     line-height: rem(24px);
     color: $Gray2;
+
+    @include lt-xl {
+        font-size: rem(12px);
+        line-height: rem(20px);
+    }
+
+    @include sm {
+        font-size: rem(10px);
+        line-height: rem(16px);
+    }
+}
+
+.form-input-container {
+    display: flex;
+    flex-flow: column nowrap;
+    width: rem(340px);
+    margin-bottom: rem(17px);
+
+    @include lt-xl {
+        width: rem(300px);
+        margin-bottom: rem(13px);
+    }
+
+    @include md {
+        width: rem(300px);
+        margin-bottom: rem(21px);
+    }
+}
+
+.form-choice-container {
+    width: 100%;
+    margin-bottom: rem(19px);
+
+    @include lt-xl {
+        margin-bottom: rem(17px);
+    }
+
+    @include md {
+        margin-bottom: rem(25px);
+    }
 }

@@ -6,7 +6,7 @@
 <PageTitle>Edit profile</PageTitle>
 
 <div class="page-container">
-    <form class="form--white">
+    <form class="page-form">
         @if (HasMessageBar)
         {
             <BitMessageBar Class="form-message-bar"
@@ -57,7 +57,7 @@
                 <BitChoiceOption Key="@Gender.Custom.ToString()" Text="Custom"></BitChoiceOption>
             </BitChoiceGroup>
         </div>
-        <BitButton Class="form-submit-button" ButtonStyle="BitButtonStyle.Primary" IsEnabled="true" OnClick="() => InvokeAsync(Save)">
+        <BitButton ButtonStyle="BitButtonStyle.Primary" IsEnabled="true" OnClick="() => InvokeAsync(Save)">
             Save
         </BitButton>
     </form>
