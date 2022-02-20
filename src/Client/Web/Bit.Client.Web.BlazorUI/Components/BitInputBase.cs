@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
@@ -49,8 +48,8 @@ namespace Bit.Client.Web.BlazorUI
         /// </summary>
         [Parameter] public string? DisplayName { get; set; }
 
-        [Parameter] public bool? AriaInvalid { get; set; }
-
+        protected bool ValueHasBeenSet { get; set; }
+        protected virtual bool ValueInvalid { get; set; }
         protected EditContext EditContext { get; set; } = default!;
         protected internal FieldIdentifier FieldIdentifier { get; set; }
 
@@ -144,6 +143,7 @@ namespace Bit.Client.Web.BlazorUI
                         break;
 
                     case nameof(Value):
+                        ValueHasBeenSet = true;
                         Value = (TValue?)parameter.Value;
                         parametersDictionary.Remove(parameter.Key);
                         break;
@@ -163,8 +163,8 @@ namespace Bit.Client.Web.BlazorUI
                         parametersDictionary.Remove(parameter.Key);
                         break;
 
-                    case nameof(AriaInvalid):
-                        AriaInvalid = (bool?)parameter.Value;
+                    case nameof(ValueInvalid):
+                        ValueInvalid = (bool)parameter.Value;
                         parametersDictionary.Remove(parameter.Key);
                         break;
                 }
@@ -172,15 +172,9 @@ namespace Bit.Client.Web.BlazorUI
 
             if (_hasInitializedParameters is false)
             {
-                if (ValueExpression is null)
+                if (CascadedEditContext is not null && ValueExpression is not null)
                 {
-                    throw new InvalidOperationException($"{GetType()} requires a value for the 'ValueExpression' parameter. Normally this is provided automatically when using 'bind-Value'.");
-                }
-
-                FieldIdentifier = FieldIdentifier.Create(ValueExpression);
-
-                if (CascadedEditContext is not null)
-                {
+                    FieldIdentifier = FieldIdentifier.Create(ValueExpression);
                     EditContext = CascadedEditContext;
                     EditContext.OnValidationStateChanged += _validationStateChangedHandler;
                 }
@@ -198,7 +192,7 @@ namespace Bit.Client.Web.BlazorUI
                 throw new InvalidOperationException($"{GetType()} does not support changing the {nameof(EditContext)} dynamically.");
             }
 
-            UpdateAriaInvalid();
+            UpdateValueInvalid();
 
             // For derived components, retain the usual lifecycle with OnInit/OnParametersSet/etc.
             return base.SetParametersAsync(ParameterView.FromDictionary(parametersDictionary!));
@@ -206,25 +200,84 @@ namespace Bit.Client.Web.BlazorUI
 
         private void OnValidateStateChanged(object? sender, ValidationStateChangedEventArgs eventArgs)
         {
-            UpdateAriaInvalid();
+            UpdateValueInvalid();
 
             StateHasChanged();
         }
 
-        private void UpdateAriaInvalid()
+        private void UpdateValueInvalid()
         {
             if (EditContext is null) return;
 
+            var hasAriaInvalidAttribute = InputAttributes is not null && InputAttributes.ContainsKey("aria-invalid");
             if (EditContext.GetValidationMessages(FieldIdentifier).Any())
             {
-                if (AriaInvalid.HasValue) return; // Do not overwrite the attribute value
+                if (hasAriaInvalidAttribute) return; // Do not overwrite the attribute value
 
-                AriaInvalid = true;
+                if (ConvertToDictionary(InputAttributes, out var inputAttributes))
+                {
+                    InputAttributes = inputAttributes;
+                }
+
+                // To make the `Input` components accessible by default
+                // we will automatically render the `aria-invalid` attribute when the validation fails
+                // value must be "true" see https://www.w3.org/TR/wai-aria-1.1/#aria-invalid
+                inputAttributes["aria-invalid"] = "true";
+
+                ValueInvalid = true;
             }
             else
             {
-                AriaInvalid = false;
+                if (hasAriaInvalidAttribute)
+                {
+                    // No validation errors. Need to remove `aria-invalid` if it was rendered already
+
+                    if (InputAttributes!.Count == 1)
+                    {
+                        // Only aria-invalid argument is present which we don't need any more
+                        InputAttributes = null;
+                    }
+                    else
+                    {
+                        if (ConvertToDictionary(InputAttributes, out var inputAttributes))
+                        {
+                            InputAttributes = inputAttributes;
+                        }
+
+                        inputAttributes.Remove("aria-invalid");
+                    }
+                }
+
+                ValueInvalid = false;
             }
+        }
+
+        /// <summary>
+        /// Returns a dictionary with the same values as the specified <paramref name="source"/>.
+        /// </summary>
+        /// <returns>true, if a new dictionary with copied values was created. false - otherwise.</returns>
+        private static bool ConvertToDictionary(IReadOnlyDictionary<string, object>? source, out Dictionary<string, object> result)
+        {
+            var newDictionaryCreated = true;
+            if (source == null)
+            {
+                result = new Dictionary<string, object>();
+            }
+            else if (source is Dictionary<string, object> currentDictionary)
+            {
+                result = currentDictionary;
+                newDictionaryCreated = false;
+            }
+            else
+            {
+                result = new Dictionary<string, object>();
+                foreach (var item in source)
+                {
+                    result.Add(item.Key, item.Value);
+                }
+            }
+
+            return newDictionaryCreated;
         }
 
         private bool _disposed;
