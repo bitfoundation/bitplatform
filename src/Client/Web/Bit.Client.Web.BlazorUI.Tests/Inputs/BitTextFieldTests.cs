@@ -411,5 +411,31 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
             var input = component.Find(".txt-field");
             Assert.AreEqual(label.HasValue(), input.HasAttribute("aria-labelledby"));
         }
+
+        [DataTestMethod,
+            DataRow(null),
+            DataRow("off"),
+            DataRow("email")
+        ]
+        public void BitTextFieldAutoCompleteTest(string autoComplete)
+        {
+            var component = RenderComponent<BitTextFieldTest>(parameters =>
+            {
+                parameters.Add(p => p.IsMultiline, false);
+                parameters.Add(p => p.AutoComplete, autoComplete);
+            });
+
+            var input = component.Find(".txt-field");
+
+            if (autoComplete.HasValue())
+            {
+                Assert.IsTrue(input.HasAttribute("autocomplete"));
+                Assert.AreEqual(autoComplete, input.GetAttribute("autocomplete"));
+            }
+            else
+            {
+                Assert.IsFalse(input.HasAttribute("autocomplete"));
+            }
+        }
     }
 }
