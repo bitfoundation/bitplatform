@@ -6,27 +6,47 @@
 
 <div class="page-container">
     <div class="form--white">
-        @if (HasMessageBar)
+        @if (string.IsNullOrEmpty(SignInMessage) is false)
         {
             <BitMessageBar Class="form-message-bar"
-                       MessageBarType="@(IsSuccessMessageBar ? BitMessageBarType.Success : BitMessageBarType.Error)"
-                       OnDismiss="() => HasMessageBar = false">
-                @MessageBarText
+                       MessageBarType="@SignInMessageType"
+                       OnDismiss="() => SignInMessage = null">
+                @SignInMessage
             </BitMessageBar>
         }
         <h1 class="form-title">Welcome Back !</h1>
         <div class="form-input-container">
             <BitLabel>Email</BitLabel>
-            <BitTextField Placeholder="Please enter your email" @bind-Value="Email"></BitTextField>
-             <div class="form-input-error">@(EmailError ?? string.Empty)</div>
+            <BitTextField
+                @bind-Value="Email"
+                Placeholder="Please enter your email"
+                OnKeyUp="() => InvokeAsync(CheckSignInButtonEnabled)"
+                OnFocus="() => EmailErrorMessage = null" />
+             <div class="form-input-error">@EmailErrorMessage</div>
         </div>
         <div class="form-input-container">
             <BitLabel>Password</BitLabel>
-            <BitTextField Type="BitTextFieldType.Password" CanRevealPassword="true" Placeholder="Enter your password" @bind-Value="Password"></BitTextField>
-            <div class="form-input-error">@(PasswordError ?? string.Empty)</div>
+            <BitTextField 
+                @bind-Value="Password"
+                Type="BitTextFieldType.Password" 
+                CanRevealPassword="true"
+                Placeholder="Enter your password"
+                OnKeyUp="() => InvokeAsync(CheckSignInButtonEnabled)"
+                OnFocus="() => PasswordErrorMessage = null" />
+            <div class="form-input-error">@PasswordErrorMessage</div>
         </div>
-        <BitButton Class="form-submit-button" ButtonStyle="BitButtonStyle.Primary" OnClick="() => InvokeAsync(DoSignIn)">
-            Sign in
+        <BitButton Class="form-submit-button"
+            ButtonStyle="BitButtonStyle.Primary"
+            IsEnabled="@IsSignInButtonEnabled"
+            OnClick="() => InvokeAsync(DoSignIn)">
+            @if (IsLoading)
+            {
+                <BitSpinner Size="BitSpinnerSize.Small"></BitSpinner>
+            }
+            else
+            {
+                <span>Sign in</span>
+            }
         </BitButton>
         <div class="form-forgot-password">
           Forgot password?
