@@ -244,3 +244,9 @@
         border: none;
     }
 }
+
+.bit-txt-invalid-fluent {
+    .bit-txt-field-grp {
+        border-color: $ErrorBlockRed;
+    }
+}
