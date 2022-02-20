@@ -59,7 +59,10 @@
                 <BitChoiceOption Key="@Gender.Custom.ToString()" Text="Custom"></BitChoiceOption>
             </BitChoiceGroup>
         </div>
-        <BitButton Class="form-submit-button" ButtonStyle="BitButtonStyle.Primary" IsEnabled="IsSaveButtonEnabled" OnClick="() => InvokeAsync(Save)">
+        <BitButton Class="form-submit-button" 
+                   ButtonStyle="BitButtonStyle.Primary" 
+                   IsEnabled="IsSaveButtonEnabled" 
+                   OnClick="() => InvokeAsync(Save)">
             @if (IsLoading)
             {
                 <BitSpinner Size="BitSpinnerSize.Small"></BitSpinner>
