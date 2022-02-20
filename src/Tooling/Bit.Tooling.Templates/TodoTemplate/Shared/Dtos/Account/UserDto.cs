@@ -17,7 +17,7 @@ public class UserDto
     public DateTimeOffset? BirthDate { get; set; }
 
     [NotMapped]
-    public string? GenderMapper
+    public string? GenderValue
     {
         get
         {

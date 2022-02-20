@@ -52,7 +52,7 @@
         </div>
         <div class="form-choice-container">
             <BitLabel>Gender</BitLabel>
-            <BitChoiceGroup @bind-SelectedKey="UserToEdit.GenderMapper" 
+            <BitChoiceGroup @bind-SelectedKey="UserToEdit.GenderValue" 
                             OnValueChange="() => InvokeAsync(CheckSaveButtonEnabled)">
                 <BitChoiceOption Key="@Gender.Male.ToString()" Text="Male"></BitChoiceOption>
                 <BitChoiceOption Key="@Gender.Female.ToString()" Text="Famale"></BitChoiceOption>
