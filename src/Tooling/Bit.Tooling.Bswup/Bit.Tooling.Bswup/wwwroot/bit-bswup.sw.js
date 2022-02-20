@@ -83,7 +83,8 @@ async function createNewCache() {
     async function addCache(asset, index) {
         const request = new Request(asset.url, asset.hash ? { integrity: asset.hash } : {});
         const cacheUrl = `${asset.url}.${asset.hash || ''}`;
-        if (oldCache) {
+
+        if (oldCache && asset.hash) {
             const oldResponse = await oldCache.match(cacheUrl);
             if (oldResponse) {
                 await cache.put(cacheUrl, oldResponse);
@@ -91,6 +92,7 @@ async function createNewCache() {
                 return Promise.resolve();
             }
         }
+
         return new Promise((resolve, reject) => {
             setTimeout(async () => {
                 try {
