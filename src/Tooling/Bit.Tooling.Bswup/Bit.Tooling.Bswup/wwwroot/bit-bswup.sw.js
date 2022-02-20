@@ -40,7 +40,7 @@ async function handleFetch(e) {
     }
 
     const asset = self.assetsManifest.assets.find(a => shouldServeIndexHtml ? a.url === requestUrl : new URL(requestUrl).pathname.endsWith(a.url));
-    const cacheUrl = asset && `${asset.url}.${asset.hash}`;
+    const cacheUrl = asset && `${asset.url}.${asset.hash || ''}`;
 
     const cache = await caches.open(CACHE_NAME);
     const cachedResponse = await cache.match(cacheUrl || requestUrl);
@@ -64,7 +64,8 @@ async function createNewCache() {
 
     const assets = self.assetsManifest.assets
         .filter(asset => assetsInclude.some(pattern => pattern.test(asset.url)))
-        .filter(asset => !assetsExclude.some(pattern => pattern.test(asset.url)));
+        .filter(asset => !assetsExclude.some(pattern => pattern.test(asset.url)))
+        .concat(self.externalAssets || []);
 
     let current = 0;
     const total = assets.length;
@@ -80,9 +81,10 @@ async function createNewCache() {
     return Promise.all(assets.map(addCache));
 
     async function addCache(asset, index) {
-        const request = new Request(asset.url, { integrity: asset.hash });
-        const cacheUrl = `${asset.url}.${asset.hash}`;
-        if (oldCache) {
+        const request = new Request(asset.url, asset.hash ? { integrity: asset.hash } : {});
+        const cacheUrl = `${asset.url}.${asset.hash || ''}`;
+
+        if (oldCache && asset.hash) {
             const oldResponse = await oldCache.match(cacheUrl);
             if (oldResponse) {
                 await cache.put(cacheUrl, oldResponse);
@@ -90,6 +92,7 @@ async function createNewCache() {
                 return Promise.resolve();
             }
         }
+
         return new Promise((resolve, reject) => {
             setTimeout(async () => {
                 try {
