@@ -162,11 +162,6 @@ namespace Bit.Client.Web.BlazorUI
                         DisplayName = (string?)parameter.Value;
                         parametersDictionary.Remove(parameter.Key);
                         break;
-
-                    case nameof(ValueInvalid):
-                        ValueInvalid = (bool)parameter.Value;
-                        parametersDictionary.Remove(parameter.Key);
-                        break;
                 }
             }
 
@@ -252,10 +247,6 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
-        /// <summary>
-        /// Returns a dictionary with the same values as the specified <paramref name="source"/>.
-        /// </summary>
-        /// <returns>true, if a new dictionary with copied values was created. false - otherwise.</returns>
         private static bool ConvertToDictionary(IReadOnlyDictionary<string, object>? source, out Dictionary<string, object> result)
         {
             var newDictionaryCreated = true;
