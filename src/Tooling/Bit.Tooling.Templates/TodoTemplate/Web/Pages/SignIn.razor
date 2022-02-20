@@ -9,7 +9,7 @@
         @if (string.IsNullOrEmpty(SignInMessage) is false)
         {
             <BitMessageBar Class="form-message-bar"
-                       MessageBarType="@(IsSuccessSignIn ? BitMessageBarType.Success : BitMessageBarType.Error)"
+                       MessageBarType="@SignInMessageType"
                        OnDismiss="() => SignInMessage = null">
                 @SignInMessage
             </BitMessageBar>
@@ -18,18 +18,18 @@
         <div class="form-input-container">
             <BitLabel>Email</BitLabel>
             <BitTextField Placeholder="Please enter your email" @bind-Value="Email"
-                          OnKeyUp="() => InvokeAsync(CheckSignInButtonEnable)"
+                          OnKeyUp="() => InvokeAsync(CheckSignInButtonEnabled)"
                           OnFocus="() => EmailErrorMessage = null" />
              <div class="form-input-error">@EmailErrorMessage</div>
         </div>
         <div class="form-input-container">
             <BitLabel>Password</BitLabel>
             <BitTextField Type="BitTextFieldType.Password" CanRevealPassword="true" Placeholder="Enter your password" @bind-Value="Password"
-                          OnKeyUp="() => InvokeAsync(CheckSignInButtonEnable)"
+                          OnKeyUp="() => InvokeAsync(CheckSignInButtonEnabled)"
                           OnFocus="() => PasswordErrorMessage = null" />
             <div class="form-input-error">@PasswordErrorMessage</div>
         </div>
-        <BitButton Class="form-submit-button" ButtonStyle="BitButtonStyle.Primary" IsEnabled="@IsEnableSignInButton" OnClick="() => InvokeAsync(DoSignIn)">
+        <BitButton Class="form-submit-button" ButtonStyle="BitButtonStyle.Primary" IsEnabled="@IsSignInButtonEnabled" OnClick="() => InvokeAsync(DoSignIn)">
             @if (IsLoading)
             {
                 <BitSpinner Size="BitSpinnerSize.Small"></BitSpinner>
