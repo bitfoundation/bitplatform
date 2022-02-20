@@ -265,7 +265,7 @@ namespace Bit.Client.Web.BlazorUI
             ClassBuilder.Register(() => FocusClass.HasValue()
                                         ? $"{RootElementClass}-{(IsUnderlined ? "underlined-" : "")}{FocusClass}-{VisualClassRegistrar()}" : string.Empty);
 
-            ClassBuilder.Register(() => ValueInvalid
+            ClassBuilder.Register(() => ValueInvalid is true
                                        ? $"{RootElementClass}-invalid-{VisualClassRegistrar()}" : string.Empty);
         }
 
