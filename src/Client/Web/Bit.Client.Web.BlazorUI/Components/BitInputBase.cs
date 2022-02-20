@@ -48,8 +48,8 @@ namespace Bit.Client.Web.BlazorUI
         /// </summary>
         [Parameter] public string? DisplayName { get; set; }
 
+        protected bool ValueInvalid { get; set; }
         protected bool ValueHasBeenSet { get; set; }
-        protected virtual bool ValueInvalid { get; set; }
         protected EditContext EditContext { get; set; } = default!;
         protected internal FieldIdentifier FieldIdentifier { get; set; }
 
@@ -220,6 +220,7 @@ namespace Bit.Client.Web.BlazorUI
                 inputAttributes["aria-invalid"] = "true";
 
                 ValueInvalid = true;
+                ClassBuilder.Reset();
             }
             else
             {
@@ -244,6 +245,7 @@ namespace Bit.Client.Web.BlazorUI
                 }
 
                 ValueInvalid = false;
+                ClassBuilder.Reset();
             }
         }
 

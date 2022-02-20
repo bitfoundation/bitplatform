@@ -243,16 +243,6 @@ namespace Bit.Client.Web.BlazorUI
         public string LabelId { get; set; } = string.Empty;
         public string DescriptionId { get; set; } = string.Empty;
 
-        protected override bool ValueInvalid
-        {
-            get => base.ValueInvalid;
-            set
-            {
-                base.ValueInvalid = value;
-                ClassBuilder.Reset();
-            }
-        }
-
         protected override string RootElementClass => "bit-txt";
 
         protected override void RegisterComponentClasses()
