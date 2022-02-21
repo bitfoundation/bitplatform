@@ -12,41 +12,42 @@
             <h2 class="todo-title">Todo</h2>
             <div class="add-todo-container">
                 <BitTextField @bind-Value="NewTodoItemTitle" Placeholder="Add a todo" Class="todo-input"></BitTextField>
-                @if (IsAddLoading)
-                {
-                   <BitButton Class="add-todo-button">
-                       <BitSpinner/>
-                   </BitButton>
-                }
-                else
-                {
-                    <BitButton OnClick="() => InvokeAsync(AddTodoItem)" Class="add-todo-button" IsEnabled="@(string.IsNullOrEmpty(NewTodoItemTitle) is false)">
-                        Add
-                    </BitButton>
-                }
+
+                <BitButton OnClick="() => InvokeAsync(AddTodoItem)" Class="add-todo-button" IsEnabled="@(string.IsNullOrEmpty(NewTodoItemTitle) is false)">
+                    @if (IsAddLoading)
+                    {
+                        <BitSpinner Size="BitSpinnerSize.Small"></BitSpinner>
+                    }
+                    else
+                    {
+                        <span>Add</span>
+                    }
+                </BitButton>
+
             </div>
             <div class="todo-items-container">
                 <div class="todo-sort-container">
-                    <BitDropDown  OnSelectItem="TodoItemSort" Class="sort-todo-dropdown" Items="SortItemList">
+                    <BitDropDown OnSelectItem="TodoItemSort" Class="sort-todo-dropdown" Items="SortItemList">
                         <CaretDownFragment>
-                              <BitActionButton IconName="BitIconName.Sort">Sort by @SelectedSortTodoItem</BitActionButton>
+                            <BitActionButton IconName="BitIconName.Sort">Sort by @SelectedSortTodoItem</BitActionButton>
                         </CaretDownFragment>
                     </BitDropDown>
                 </div>
                 <BitPivot>
                     <BitPivotItem Class="todo-pivot-tab" HeaderText="All">
                         <div class="todo-items">
-                           @if(IsLoading){
-                               <BitSpinner Class="todo-list-spinner"></BitSpinner>
+                            @if (IsLoading)
+                            {
+                                <BitSpinner Class="todo-list-spinner"></BitSpinner>
                             }
                             else
                             {
-                                 @if (FilteredAllTodoItemList?.Count != 0)
-                            {
-                                <BitBasicList Items="@FilteredAllTodoItemList" Virtualize="true">
-                                    <RowTemplate>
-                                        <div class="item">
-                                            @if (!context.IsInEditMode)
+                                @if (FilteredAllTodoItemList?.Count != 0)
+                                {
+                                    <BitBasicList Items="@FilteredAllTodoItemList" Virtualize="true">
+                                        <RowTemplate>
+                                            <div class="item">
+                                                @if (!context.IsInEditMode)
                                         {
                                             <div class="todo-info">
                                                 <BitCheckbox DefaultIsChecked="context.IsDone" OnChange="()=>ToggleTodoItem(context)">@context.Title</BitCheckbox>
@@ -68,14 +69,14 @@
                                     </div>
                                 </RowTemplate>
                             </BitBasicList>
-                            }
-                            else
-                            {
-                                <div class="todo-empty">
-                                    <img src="/images/empty-todo.svg">
-                                    <BitLabel>No todo yet</BitLabel>
-                                </div>
-                            }
+                                }
+                                else
+                                {
+                                    <div class="todo-empty">
+                                        <img src="/images/empty-todo.svg">
+                                        <BitLabel>No todo yet</BitLabel>
+                                    </div>
+                                }
                             }
                         </div>
                     </BitPivotItem>
