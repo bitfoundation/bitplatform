@@ -278,7 +278,7 @@ namespace Bit.Client.Web.BlazorUI
         {
             if (DefaultValue.HasValue())
             {
-                Value = DefaultValue;
+                CurrentValue = DefaultValue;
             }
 
             TextFieldId = $"TextField{UniqueId}";
