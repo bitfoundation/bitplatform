@@ -95,17 +95,6 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Breadcrumb
                         OverflowAriaLabel=""More"" />
 
             <div class=""example-desc"">With last item rendered as heading</div>
-            <Breadcrumb Items = @itemsWithHeading
-                        AriaLabel=""With last item rendered as heading""
-                        OverflowAriaLabel=""More"" />
-
-            <div class=""example-desc"">With custom rendered divider and overflow icon</div>
-            <Breadcrumb Items = @itemsWithHeading
-                        MaxDisplayedItems=3
-                        AriaLabel=""With custom rendered divider and overflow icon""
-                        DividerAs=@_getCustomDivider
-                        OnRenderOverflowIcon = @_getCustomOverflowIcon
-                        OverflowAriaLabel=""More"" />
 
             <Breadcrumb Items = @items
                         MaxDisplayedItems=5
@@ -138,14 +127,6 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Breadcrumb
             new BreadcrumbItem() { Text = "Folder 3", Key = "f3", href = "#/controls/web/Breadcrumb" },
             new BreadcrumbItem() { Text = "Folder 4(non-clickable)" },
             new BreadcrumbItem() { Text = "Folder 5", Key = "f5", href = "#/controls/web/Breadcrumb", IsCurrentItem = true },
-        };
-        private readonly List<BreadcrumbItem> itemsWithHeading = new()
-        {
-            new BreadcrumbItem() { Text = "Files", Key = "Files", OnClick = _onBreadcrumbItemClicked },
-            new BreadcrumbItem() { Text = "Folder 1", Key = "d1", OnClick = _onBreadcrumbItemClicked },
-            // Generally, only the last item should ever be a heading.
-            // It would typically be h1 or h2, but we're using h4 here to better fit the structure of the page.
-            new BreadcrumbItem() { Text = "Folder 2", Key = "d2", IsCurrentItem = true, As = RenderMode.h4 },
         };
 
         private readonly string _getCustomDivider = "bit-icon--chevron-circle-right";

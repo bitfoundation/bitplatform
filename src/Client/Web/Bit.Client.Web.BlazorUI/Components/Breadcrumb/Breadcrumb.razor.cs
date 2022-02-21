@@ -7,7 +7,7 @@ namespace Bit.Client.Web.BlazorUI
 {
     public partial class Breadcrumb
     {
-        protected override string RootElementClass => "bit-brdcrumb";
+        protected override string RootElementClass => "bit-brc";
         /// <summary>
         /// Collection of breadcrumbs to render
         /// </summary>

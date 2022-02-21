@@ -16,20 +16,7 @@ Breadcrumbs are typically placed, in horizontal form, under the masthead or navi
                         MaxDisplayedItems=3
                         AriaLabel="Breadcrumb with items rendered as links"
                         OverflowAriaLabel="More" />
-
-            <div class="example-desc">With last item rendered as heading</div>
-            <Breadcrumb Items=@itemsWithHeading
-                        AriaLabel="With last item rendered as heading"
-                        OverflowAriaLabel="More" />
-
             <div class="example-desc">With custom rendered divider and overflow icon</div>
-            <Breadcrumb Items=@itemsWithHeading
-                        MaxDisplayedItems=3
-                        AriaLabel="With custom rendered divider and overflow icon"
-                        DividerAs=@_getCustomDivider
-                        OnRenderOverflowIcon=@_getCustomOverflowIcon
-                        OverflowAriaLabel="More" />
-
             <Breadcrumb Items=@items
                         MaxDisplayedItems=5
                         AriaLabel="With items rendered as buttons and tab navigation control"

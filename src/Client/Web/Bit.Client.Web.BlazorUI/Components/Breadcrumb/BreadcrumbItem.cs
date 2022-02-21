@@ -33,23 +33,6 @@ namespace Bit.Client.Web.BlazorUI
         /// Callback for when the dropdown clicked
         /// </summary>
         public EventCallback<MouseEventArgs> OnClick { get; set; }
-        /// <summary>
-        /// Optional prop to render the item as a heading of your choice.
-        /// You can also use this to force items to render as links instead of buttons 
-        /// (by default, any item with a href renders as a link, and any item without a href renders as a button).
-        /// This is not generally recommended because it may prevent activating the link using the keyboard.
-        /// </summary>
-        public RenderMode As { get; set; }
 
-    }
-    public enum RenderMode
-    {
-        a,
-        h1,
-        h2,
-        h3,
-        h4,
-        h5,
-        h6,
     }
 }
