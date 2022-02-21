@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -12,10 +12,8 @@ namespace Bit.Client.Web.BlazorUI
         private bool isRequired;
         private bool isUnderlined;
         private bool hasBorder = true;
-        private string focusClass = "";
+        private string focusClass = string.Empty;
         private BitTextFieldType type = BitTextFieldType.Text;
-        private string? textValue;
-        private bool ValueHasBeenSet;
         private bool isResizable = true;
 
         /// <summary>
@@ -103,27 +101,6 @@ namespace Bit.Client.Web.BlazorUI
         }
 
         /// <summary>
-        /// Current value of the text field
-        /// </summary>
-        [Parameter]
-        public string? Value
-        {
-            get => textValue;
-            set
-            {
-                if (value == textValue) return;
-                textValue = value;
-
-                _ = ValueChanged.InvokeAsync(value);
-            }
-        }
-
-        /// <summary>
-        /// Callback for when the input value changes
-        /// </summary>
-        [Parameter] public EventCallback<string?> ValueChanged { get; set; }
-
-        /// <summary>
         /// Callback for when the input value changes. This is called on both input and change events. 
         /// </summary>
         [Parameter] public EventCallback<string?> OnChange { get; set; }
@@ -204,6 +181,11 @@ namespace Bit.Client.Web.BlazorUI
         /// Aria label for the reveal password button
         /// </summary>
         [Parameter] public string? RevealPasswordAriaLabel { get; set; }
+
+        /// <summary>
+        /// AutoComplete is a string that maps to the autocomplete attribute of the HTML input element
+        /// </summary>
+        [Parameter] public string? AutoComplete { get; set; }
 
         /// <summary>
         /// Input type
@@ -287,13 +269,16 @@ namespace Bit.Client.Web.BlazorUI
 
             ClassBuilder.Register(() => FocusClass.HasValue()
                                         ? $"{RootElementClass}-{(IsUnderlined ? "underlined-" : "")}{FocusClass}-{VisualClassRegistrar()}" : string.Empty);
+
+            ClassBuilder.Register(() => ValueInvalid is true
+                                       ? $"{RootElementClass}-invalid-{VisualClassRegistrar()}" : string.Empty);
         }
 
         protected override Task OnInitializedAsync()
         {
             if (DefaultValue.HasValue())
             {
-                Value = DefaultValue;
+                CurrentValue = DefaultValue;
             }
 
             TextFieldId = $"TextField{UniqueId}";
@@ -334,7 +319,8 @@ namespace Bit.Client.Web.BlazorUI
         {
             if (IsEnabled is false) return;
             if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
-            Value = e.Value?.ToString();
+
+            CurrentValue = e.Value?.ToString();
             await OnChange.InvokeAsync(Value);
         }
 
@@ -365,6 +351,14 @@ namespace Bit.Client.Web.BlazorUI
         public void TogglePasswordRevealIcon()
         {
             ElementType = ElementType == BitTextFieldType.Text ? BitTextFieldType.Password : BitTextFieldType.Text;
+        }
+
+        /// <inheritdoc />
+        protected override bool TryParseValueFromString(string? value, out string? result, [NotNullWhen(false)] out string? validationErrorMessage)
+        {
+            result = value;
+            validationErrorMessage = null;
+            return true;
         }
     }
 }

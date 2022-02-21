@@ -1,5 +1,5 @@
 ﻿@namespace Bit.Client.Web.BlazorUI
-@inherits BitComponentBase
+@inherits BitInputBase<string?>
 
 <div @ref="RootElement"
      @attributes="HtmlAttributes"
@@ -33,7 +33,8 @@
 
             @if (IsMultiline && Type == BitTextFieldType.Text)
             {
-                <textarea id="@TextFieldId"
+                <textarea @attributes="InputAttributes"
+                      id="@TextFieldId"
                       class="txt-field"
                       rows="@Rows"
                       disabled=@(!IsEnabled)
@@ -44,7 +45,6 @@
                       aria-label="@AriaLabel"
                       aria-labelledby="@(Label.HasValue() || LabelFragment is not null ? LabelId : null)"
                       aria-aria-describedby="@(Description.HasValue() || DescriptionFragment is not null ? DescriptionId : null)"
-                      aria-invalid="false"
                       @onclick="@HandleClick"
                       @onfocusin="@HandleFocusIn"
                       @onfocusout="@HandleFocusOut"
@@ -53,24 +53,25 @@
                       @onchange="@HandleChange"
                       @onkeydown="@HandleKeyDown"
                       @onkeyup="@HandleKeyUp">
-                    @Value
-                                                    </textarea>
+                    @CurrentValue
+                 </textarea>
             }
             else
             {
-                <input id="@TextFieldId"
+                <input @attributes="InputAttributes"
+                   id="@TextFieldId"
                    class="txt-field"
                    disabled=@(!IsEnabled)
                    readonly=@IsReadonly
                    required=@IsRequired
                    type="@ElementType"
-                   value="@Value"
+                   value="@CurrentValue"
                    placeholder="@Placeholder"
                    maxlength="@MaxLength"
                    aria-label="@AriaLabel"
                    aria-labelledby="@(Label.HasValue() || LabelFragment is not null ? LabelId : null)"
                    aria-aria-describedby="@(Description.HasValue() || DescriptionFragment is not null ? DescriptionId : null)"
-                   aria-invalid="false"
+                   autocomplete="@AutoComplete"
                    @onclick="@HandleClick"
                    @onfocusin="@HandleFocusIn"
                    @onfocusout="@HandleFocusOut"
