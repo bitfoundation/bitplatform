@@ -20,7 +20,7 @@ namespace Bit.Client.Web.BlazorUI
         public long TotalSizeOfUploaded { get; set; }
         internal long SizeOfLastChunkUploaded { get; set; }
         internal bool RequestToPause { get; set; }
-        internal bool RequestToCancell { get; set; }
+        internal bool RequestToCancel { get; set; }
 
         [JsonIgnore]
         internal DateTime? StartTimeUpload { get; set; }

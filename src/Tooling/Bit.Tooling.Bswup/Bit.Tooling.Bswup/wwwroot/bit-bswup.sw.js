@@ -1,4 +1,4 @@
-﻿self.importScripts('/service-worker-assets.js');
+﻿self.importScripts(self.assetsUrl || '/service-worker-assets.js');
 
 const VERSION = self.assetsManifest.version;
 const CACHE_NAME_PREFIX = 'bit-bswup-';
@@ -40,7 +40,7 @@ async function handleFetch(e) {
     }
 
     const asset = self.assetsManifest.assets.find(a => shouldServeIndexHtml ? a.url === requestUrl : new URL(requestUrl).pathname.endsWith(a.url));
-    const cacheUrl = asset && `${asset.url}.${asset.hash}`;
+    const cacheUrl = asset && `${asset.url}.${asset.hash || ''}`;
 
     const cache = await caches.open(CACHE_NAME);
     const cachedResponse = await cache.match(cacheUrl || requestUrl);
@@ -57,14 +57,15 @@ function handleMessage(e) {
 // ============================================================================
 
 async function createNewCache() {
-    const assetsInclude = [/\.dll$/, /\.pdb$/, /\.wasm/, /\.html/, /\.js$/, /\.json$/, /\.css$/, /\.woff$/, /\.png$/, /\.jpe?g$/, /\.gif$/, /\.ico$/, /\.blat$/, /\.dat$/]
+    const assetsInclude = [/\.dll$/, /\.pdb$/, /\.wasm/, /\.html/, /\.js$/, /\.json$/, /\.css$/, /\.woff$/, /\.png$/, /\.jpe?g$/, /\.gif$/, /\.ico$/, /\.blat$/, /\.dat$/, /\.svg$/]
         .concat(self.assetsInclude || []);
     const assetsExclude = [/^_content\/Bit.Tooling.Bswup\/bit-bswup.sw.js$/, /^service-worker\.js$/]
         .concat(self.assetsExclude || []);
 
     const assets = self.assetsManifest.assets
         .filter(asset => assetsInclude.some(pattern => pattern.test(asset.url)))
-        .filter(asset => !assetsExclude.some(pattern => pattern.test(asset.url)));
+        .filter(asset => !assetsExclude.some(pattern => pattern.test(asset.url)))
+        .concat(self.externalAssets || []);
 
     let current = 0;
     const total = assets.length;
@@ -80,9 +81,10 @@ async function createNewCache() {
     return Promise.all(assets.map(addCache));
 
     async function addCache(asset, index) {
-        const request = new Request(asset.url, { integrity: asset.hash });
-        const cacheUrl = `${asset.url}.${asset.hash}`;
-        if (oldCache) {
+        const request = new Request(asset.url, asset.hash ? { integrity: asset.hash } : {});
+        const cacheUrl = `${asset.url}.${asset.hash || ''}`;
+
+        if (oldCache && asset.hash) {
             const oldResponse = await oldCache.match(cacheUrl);
             if (oldResponse) {
                 await cache.put(cacheUrl, oldResponse);
@@ -90,6 +92,7 @@ async function createNewCache() {
                 return Promise.resolve();
             }
         }
+
         return new Promise((resolve, reject) => {
             setTimeout(async () => {
                 try {

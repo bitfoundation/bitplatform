@@ -1,10 +1,26 @@
 ﻿@import '../wwwroot/styles/abstracts/_functions.scss';
+@import '../wwwroot/styles/abstracts/_media-queries.scss';
 
 .page-container {
     display: flex;
     flex-flow: column nowrap;
     justify-content: center;
     align-items: center;
-    height: 100%;
-    padding: rem(56px) 0;
+    height: calc(100vh - 138px);
+    padding: rem(56px) rem(16px);
+    box-sizing: border-box;
+
+    @include lg {
+        height: calc(100vh - 134px);
+        padding: rem(48px) rem(16px);
+    }
+
+    @include md {
+        height: calc(100vh - 134px);
+    }
+
+    @include sm {
+        height: calc(100vh - 170px);
+        padding: rem(40px) rem(16px);
+    }
 }
