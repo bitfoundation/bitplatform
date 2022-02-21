@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
+
 namespace Bit.Client.Web.BlazorUI
 {
     public class BreadcrumbItem
@@ -29,6 +30,7 @@ namespace Bit.Client.Web.BlazorUI
         /// If true, aria-current="page" will be applied to this breadcrumb item.
         /// </summary>
         public bool IsCurrentItem { get; set; }
+
         /// <summary>
         /// Callback for when the dropdown clicked
         /// </summary>
