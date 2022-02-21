@@ -54,7 +54,7 @@
                                                 <BitLabel Class="todo-date">@context.Date.ToString("MMMM dd , yyyy , dddd")</BitLabel>
                                             </div>
                                             <div class="todo-buttons-container">
-                                                <BitIconButton IconName="BitIconName.Edit" OnClick="@(() => context.IsInEditMode = true)"></BitIconButton>
+                                                <BitIconButton IconName="BitIconName.Edit" OnClick="@(() => InvokeAsync(() => ToggleToEditMode(context)))"></BitIconButton>
                                                 <BitIconButton IconName="BitIconName.Delete" OnClick="@(() => InvokeAsync(() => DeleteTodoItem(context)))"></BitIconButton>
                                             </div>
                                         }
@@ -63,7 +63,7 @@
                                             <BitTextField Class="todo-input" @bind-Value="context.Title"></BitTextField>
                                             <div>
                                                 <BitButton OnClick="@(() => InvokeAsync(() => EditTodoItem(context)))">Edit</BitButton>
-                                                <BitButton ButtonStyle="BitButtonStyle.Standard" Class="todo-button" OnClick="@(()=> context.IsInEditMode = false)">Cancel</BitButton>
+                                                <BitButton ButtonStyle="BitButtonStyle.Standard" Class="todo-button" OnClick="@(() => InvokeAsync(() => CancelEditMode(context)))">Cancel</BitButton>
                                             </div>
                                         }
                                     </div>

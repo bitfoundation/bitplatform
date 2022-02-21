@@ -10,6 +10,7 @@ public partial class TodoPage
     public IStateService StateService { get; set; } = default!;
 
     public bool IsLoading { get; set; }
+    public string? EditModeTodoItemText { get; set; }
     public bool IsAddLoading { get; set; }
     public string? SelectedSortTodoItem { get; set; }
     public string? SearchTextTodoItem { get; set; }
@@ -103,6 +104,17 @@ public partial class TodoPage
             FilteredCompletedTodoItemList = FilteredCompletedTodoItemList?.Where(td => td.IsDone is true).OrderBy(td => td.Date).ToList();
             FilteredAllTodoItemList = FilteredAllTodoItemList?.OrderBy(td => td.Date).ToList();
         }
+    }
+    private void CancelEditMode(TodoItemDto todoItem)
+    {
+        todoItem.Title = EditModeTodoItemText;
+        todoItem.IsInEditMode = false;
+    }
+
+    private void ToggleToEditMode(TodoItemDto todoItem)
+    {
+        EditModeTodoItemText = todoItem.Title;
+        todoItem.IsInEditMode = true;
     }
 
     private void TodoItemSort()
