@@ -71,6 +71,7 @@
                    aria-label="@AriaLabel"
                    aria-labelledby="@(Label.HasValue() || LabelFragment is not null ? LabelId : null)"
                    aria-aria-describedby="@(Description.HasValue() || DescriptionFragment is not null ? DescriptionId : null)"
+                   autocomplete="@AutoComplete"
                    @onclick="@HandleClick"
                    @onfocusin="@HandleFocusIn"
                    @onfocusout="@HandleFocusOut"

@@ -26,7 +26,8 @@
                   Prefix="@Prefix"
                   Suffix="@Suffix"
                   Rows="Rows"
-                  IsResizable="IsResizable">
+                  IsResizable="IsResizable"
+                  AutoComplete="@AutoComplete">
     </BitTextField>
 </CascadingValue>
 
@@ -54,6 +55,7 @@
     [Parameter] public bool HasBorder { get; set; }
     [Parameter] public bool IsResizable { get; set; }
     [Parameter] public int Rows { get; set; }
+    [Parameter] public string AutoComplete { get; set; }
 
     public int CurrentCount { get; set; }
     public int FocusedValue { get; set; }
@@ -61,7 +63,7 @@
     public int FocusedInValue { get; set; }
     public string KeyDownedValue { get; set; }
     public string KeyUpedValue { get; set; }
-    
+
     public void HandleKeyDown(KeyboardEventArgs e)
     {
         KeyDownedValue = e.Key;
