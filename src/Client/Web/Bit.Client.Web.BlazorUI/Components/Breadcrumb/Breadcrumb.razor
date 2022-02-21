@@ -1,0 +1,29 @@
+﻿@namespace Bit.Client.Web.BlazorUI
+@inherits BitComponentBase
+
+<div @ref="RootElement"
+     @attributes="HtmlAttributes"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value">
+    <ul class="bit-brc">
+        @for (int i = 0; i < Items.Count; i++)
+        {
+            if (i == 0 && MaxDisplayedItems.HasValue && Items.Count > MaxDisplayedItems)
+            {
+                <li class="bit-icon @OnRenderOverflowIcon"><a href="@Items[i].href" onclick="@Items[i].OnClick">@Items[i].Text</a></li>
+            }
+            else if (OverflowIndex.HasValue && i == OverflowIndex)
+            {
+                <li class="bit-icon @OnRenderOverflowIcon"><a href="@Items[i].href" onclick="@Items[i].OnClick">@Items[i].Text</a></li>
+            }
+            else if (OverflowIndex.HasValue && i > OverflowIndex && i != Items.Count - 1)
+            {
+                continue;
+            }
+            else
+            {
+                <li class="bit-icon @DividerAs"><a href="@Items[i].href" onclick="@Items[i].OnClick">@Items[i].Text</a></li>
+            }
+        }
+    </ul>
+</div>
