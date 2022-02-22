@@ -61,6 +61,15 @@ namespace TodoTemplate.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Your account has been locked out. Try again in 5 minutes..
+        /// </summary>
+        public static string AccountIsLockedOut {
+            get {
+                return ResourceManager.GetString("AccountIsLockedOut", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid request.
         /// </summary>
         public static string BadRequestException {

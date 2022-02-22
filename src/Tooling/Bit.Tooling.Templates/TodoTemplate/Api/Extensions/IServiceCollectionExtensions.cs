@@ -60,7 +60,15 @@ public static class IServiceCollectionExtensions
                 ValidIssuer = settings.Issuer,
             };
 
-            options.RequireHttpsMetadata = false;
+            options.Events = new JwtBearerEvents
+            {
+                OnMessageReceived = context =>
+                {
+                    context.Token = context.Request.Cookies["access_token"];
+                    return Task.CompletedTask;
+                }
+            };
+
             options.SaveToken = true;
             options.TokenValidationParameters = validationParameters;
         });
