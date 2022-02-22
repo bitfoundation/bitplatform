@@ -21,7 +21,7 @@ public class UserDto
     {
         get
         {
-            return Gender.ToString();
+            return Gender?.ToString();
         }
         set
         {

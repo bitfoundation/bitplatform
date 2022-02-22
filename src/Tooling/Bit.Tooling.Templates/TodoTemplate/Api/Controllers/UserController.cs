@@ -13,11 +13,14 @@ public class UserController : ControllerBase
 
     private readonly IMapper _mapper;
 
-    public UserController(UserManager<User> userManager, IJwtService jwtService, IMapper mapper)
+    private readonly SignInManager<User> _signInManager;
+
+    public UserController(SignInManager<User> signInManager, UserManager<User> userManager, IJwtService jwtService, IMapper mapper)
     {
         _userManager = userManager;
         _jwtService = jwtService;
         _mapper = mapper;
+        _signInManager = signInManager;
     }
 
     [HttpGet, EnableQuery]
@@ -44,18 +47,10 @@ public class UserController : ControllerBase
     {
         var userToAdd = _mapper.Map<User>(dto);
 
-        List<IdentityResult> results = new();
+        var result = await _userManager.CreateAsync(userToAdd, dto.Password);
 
-        results.Add(await _userManager.CreateAsync(userToAdd, dto.Password));
-
-        if (results.Last().Succeeded)
-            results.Add(await _userManager.AddClaimAsync(userToAdd, new Claim(ClaimTypes.Name, userToAdd.UserName!)));
-
-        if (results.Last().Succeeded)
-            results.Add(await _userManager.AddClaimAsync(userToAdd, new Claim(ClaimTypes.NameIdentifier, userToAdd.Id.ToString()!)));
-
-        if (!results.All(r => r.Succeeded))
-            throw new ResourceValidationException(results.SelectMany(r => r.Errors).Select(e => $"{e.Code}: {e.Description}").ToArray());
+        if (!result.Succeeded)
+            throw new ResourceValidationException(result.Errors.Select(e => $"{e.Code}: {e.Description}").ToArray());
     }
 
     [HttpPut]
@@ -79,11 +74,14 @@ public class UserController : ControllerBase
         if (user is null)
             throw new BadRequestException(nameof(ErrorStrings.InvalidUserNameAndOrPassword));
 
-        var isPasswordValid = await _userManager.CheckPasswordAsync(user, requestToken.Password);
+        var checkPasswordResult = await _signInManager.CheckPasswordSignInAsync(user, requestToken.Password, lockoutOnFailure: true);
 
-        if (!isPasswordValid)
+        if (checkPasswordResult.IsLockedOut)
+            throw new BadRequestException(nameof(ErrorStrings.AccountIsLockedOut));
+
+        if (!checkPasswordResult.Succeeded)
             throw new BadRequestException(nameof(ErrorStrings.InvalidUserNameAndOrPassword));
 
-        return await _jwtService.GenerateToken(requestToken);
+        return await _jwtService.GenerateToken(user);
     }
 }

@@ -9,7 +9,7 @@ public static class Services
 {
     public static void Add(IServiceCollection services, IConfiguration configuration)
     {
-        services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+        services.AddHttpContextAccessor();
         services.AddRazorPages();
         services.AddServerSideBlazor();
         services.AddResponseCompression(opts =>

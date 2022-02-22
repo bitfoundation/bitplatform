@@ -1,62 +1,58 @@
 ﻿[
-  {
-    "outputFile": "wwwroot/styles/app.css",
-    "inputFile": "wwwroot/styles/app.scss"
-  },
-  {
-    "outputFile": "Shared/MainLayout.razor.css",
-    "inputFile": "Shared/MainLayout.razor.scss"
-  },
-  {
-    "outputFile": "Components/Header.razor.css",
-    "inputFile": "Components/Header.razor.scss"
-  },
-  {
-    "outputFile": "Pages/Home.razor.css",
-    "inputFile": "Pages/Home.razor.scss"
-  },
-  {
-    "outputFile": "Components/Footer.razor.css",
-    "inputFile": "Components/Footer.razor.scss"
-  },
-  {
-    "outputFile": "Components/NavMenu.razor.css",
-    "inputFile": "Components/NavMenu.razor.scss"
-  },
-  {
-    "outputFile": "Pages/Privacy.razor.css",
-    "inputFile": "Pages/Privacy.razor.scss"
-  },
-  {
-    "outputFile": "Pages/SignUp.razor.css",
-    "inputFile": "Pages/SignUp.razor.scss"
-  },
-  {
-    "outputFile": "Pages/SignIn.razor.css",
-    "inputFile": "Pages/SignIn.razor.scss"
-  },
-  {
-    "outputFile": "Pages/TodoPage.razor.css",
-    "inputFile": "Pages/TodoPage.razor.scss"
-  },
-  {
-    "outputFile": "wwwroot/styles/pages/_todo.css",
-    "inputFile": "wwwroot/styles/pages/_todo.scss"
-  },
-  {
-    "outputFile": "Pages/EditProfile.razor.css",
-    "inputFile": "Pages/EditProfile.razor.scss"
-  },
-  {
-    "outputFile": "wwwroot/scripts/todoTemplate.es5.js",
-    "inputFile": "wwwroot/scripts/todoTemplate.js"
-  },
-  {
-    "outputFile": "wwwroot/service-worker.published.js",
-    "inputFile": "wwwroot/service-worker.js"
-  },
-  {
-    "outputFile": "Components/SignOutConfirmModal.razor.css",
-    "inputFile": "Components/SignOutConfirmModal.razor.scss"
-  }
+    {
+        "outputFile": "wwwroot/styles/app.css",
+        "inputFile": "Styles/app.scss"
+    },
+    {
+        "outputFile": "Pages/Home.razor.css",
+        "inputFile": "Pages/Home.razor.scss"
+    },
+    {
+        "outputFile": "Pages/Privacy.razor.css",
+        "inputFile": "Pages/Privacy.razor.scss"
+    },
+    {
+        "outputFile": "Pages/SignUp.razor.css",
+        "inputFile": "Pages/SignUp.razor.scss"
+    },
+    {
+        "outputFile": "Pages/SignIn.razor.css",
+        "inputFile": "Pages/SignIn.razor.scss"
+    },
+    {
+        "outputFile": "Pages/TodoPage.razor.css",
+        "inputFile": "Pages/TodoPage.razor.scss"
+    },
+    {
+        "outputFile": "Pages/EditProfile.razor.css",
+        "inputFile": "Pages/EditProfile.razor.scss"
+    },
+    {
+        "outputFile": "Shared/MainLayout.razor.css",
+        "inputFile": "Shared/MainLayout.razor.scss"
+    },
+    {
+        "outputFile": "Components/Header.razor.css",
+        "inputFile": "Components/Header.razor.scss"
+    },
+    {
+        "outputFile": "Components/Footer.razor.css",
+        "inputFile": "Components/Footer.razor.scss"
+    },
+    {
+        "outputFile": "Components/NavMenu.razor.css",
+        "inputFile": "Components/NavMenu.razor.scss"
+    },
+    {
+        "outputFile": "Components/SignOutConfirmModal.razor.css",
+        "inputFile": "Components/SignOutConfirmModal.razor.scss"
+    },
+    {
+        "outputFile": "wwwroot/scripts/todoTemplate.es5.js",
+        "inputFile": "wwwroot/scripts/todoTemplate.js"
+    },
+    {
+        "outputFile": "wwwroot/service-worker.published.js",
+        "inputFile": "wwwroot/service-worker.js"
+    }
 ]

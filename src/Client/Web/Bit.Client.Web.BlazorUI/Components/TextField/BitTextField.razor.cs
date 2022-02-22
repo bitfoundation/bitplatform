@@ -183,6 +183,11 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public string? RevealPasswordAriaLabel { get; set; }
 
         /// <summary>
+        /// AutoComplete is a string that maps to the autocomplete attribute of the HTML input element
+        /// </summary>
+        [Parameter] public string? AutoComplete { get; set; }
+
+        /// <summary>
         /// Input type
         /// </summary>
         [Parameter]
@@ -273,7 +278,7 @@ namespace Bit.Client.Web.BlazorUI
         {
             if (DefaultValue.HasValue())
             {
-                Value = DefaultValue;
+                CurrentValue = DefaultValue;
             }
 
             TextFieldId = $"TextField{UniqueId}";
