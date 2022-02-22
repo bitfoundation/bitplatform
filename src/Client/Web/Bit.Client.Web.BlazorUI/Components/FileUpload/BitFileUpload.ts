@@ -68,7 +68,7 @@ class BitFileUpload {
 
         this.request.onreadystatechange = (function (request: XMLHttpRequest, event: Event): any {
             if (request.readyState === 4) {
-                dotnetReference.invokeMethodAsync("HandleFileUpload", index, request.status);
+                dotnetReference.invokeMethodAsync("HandleFileUpload", index, request.status, request.responseText);
             }
         }).bind(this, this.request);
     }

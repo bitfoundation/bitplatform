@@ -1,6 +1,6 @@
 ﻿namespace Bit.Client.Web.BlazorUI
 {
-    public enum BitUploadStatus
+    public enum BitFileUploadStatus
     {
         /// <summary>
         /// File uploading progress is pended because the server cannot be contacted
@@ -36,6 +36,11 @@
         /// The uploaded file removed by the user
         /// </summary>
         Removed,
+
+        /// <summary>
+        /// The file removal failed
+        /// </summary>
+        RemoveFailed,
 
         /// <summary>
         /// The type of uploaded file is not allowed
