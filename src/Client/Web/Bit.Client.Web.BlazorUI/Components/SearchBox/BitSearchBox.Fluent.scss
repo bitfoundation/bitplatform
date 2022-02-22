@@ -276,3 +276,14 @@
         background-color: transparent;
     }
 }
+
+
+.bit-srch-box-invalid-fluent {
+    border-color: $ErrorBlockRed;
+
+    .bit-srch-box-icon-container {
+        i {
+            color: $ErrorBlockIconRed;
+        }
+    }
+}
