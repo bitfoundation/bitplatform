@@ -4,6 +4,15 @@ self.assetsExclude = [/\.scp\.css$/, /weather\.json$/];
 self.defaultUrl = "index.html";
 self.prohibitedUrls = [];
 self.assetsUrl = '/service-worker-assets.js';
+self.externalAssets = [
+    {
+        "hash": "sha256-lDAEEaul32OkTANWkZgjgs4sFCsMdLsR5NJxrjVcXdo=",
+        "url": "css/app.css"
+    },
+    {
+        "url": "/"
+    },
+];
 
 self.importScripts('_content/Bit.Tooling.Bswup/bit-bswup.sw.js');
 
