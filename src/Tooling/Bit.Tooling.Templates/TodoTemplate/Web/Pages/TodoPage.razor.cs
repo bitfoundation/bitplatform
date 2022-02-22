@@ -10,15 +10,14 @@ public partial class TodoPage
     public IStateService StateService { get; set; } = default!;
 
     public bool IsLoading { get; set; }
+    public string? SelectedPivotName { get; set; }
     public string? EditModeTodoItemText { get; set; }
     public bool IsAddLoading { get; set; }
-    public string? SelectedSortTodoItem { get; set; }
+    public string? SelectedSortTodoItemName { get; set; }
     public string? SearchTextTodoItem { get; set; }
     public string NewTodoItemTitle { get; set; } = string.Empty;
-    public List<TodoItemDto>? TodoItemList { get; set; } = new();
-    public List<TodoItemDto>? FilteredAllTodoItemList { get; set; } = new();
-    public List<TodoItemDto>? FilteredCompletedTodoItemList { get; set; } = new();
-    public List<TodoItemDto>? FilteredActiveTodoItemList { get; set; } = new();
+    public List<TodoItemDto>? AllTodoItemList { get; set; } = new();
+    public List<TodoItemDto>? ViewTodoItemList { get; set; } = new();
 
     public List<BitDropDownItem> SortItemList = new()
     {
@@ -44,8 +43,8 @@ public partial class TodoPage
         IsLoading = true;
         try
         {
-            TodoItemList = await StateService.GetValue(nameof(TodoItemList), async () => await HttpClient.GetFromJsonAsync("TodoItem", ToDoTemplateJsonContext.Default.ListTodoItemDto));
-            GenarateTodoItemList();
+            AllTodoItemList = await StateService.GetValue(nameof(AllTodoItemList), async () => await HttpClient.GetFromJsonAsync("TodoItem", ToDoTemplateJsonContext.Default.ListTodoItemDto));
+            GenarateViewTodoItemList();
         }
         finally
         {
@@ -53,20 +52,42 @@ public partial class TodoPage
         }
     }
 
-    private void GenarateTodoItemList()
+    private void GenarateViewTodoItemList()
     {
-
-        FilteredActiveTodoItemList = TodoItemList?.Where(td => td.IsDone is false).ToList();
-        FilteredCompletedTodoItemList = TodoItemList?.Where(td => td.IsDone is true).ToList();
-        FilteredAllTodoItemList = TodoItemList;
+        ViewTodoItemList = AllTodoItemList?.ToList();
+        FilterTodoItemList(SelectedPivotName);
 
         if (SearchTextTodoItem != null)
         {
             HandlerTodoItemSearch(SearchTextTodoItem);
         }
-        if (SelectedSortTodoItem != null)
+        if (SelectedSortTodoItemName != null)
         {
             HandlerTodoItemSort();
+        }
+    }
+
+    private void NavigatePivotItem(BitPivotItem bitPivotItem)
+    {
+        SelectedPivotName = bitPivotItem.HeaderText;
+        GenarateViewTodoItemList();
+    }
+
+    private void FilterTodoItemList(string filtername)
+    {
+        if (filtername == "All")
+        {
+
+            ViewTodoItemList = AllTodoItemList?.ToList();
+        }
+        if (filtername == "Active")
+        {
+
+            ViewTodoItemList = AllTodoItemList?.Where(c => c.IsDone == false).ToList();
+        }
+        if (filtername == "Completed")
+        {
+            ViewTodoItemList = AllTodoItemList?.Where(c => c.IsDone == true).ToList();
         }
     }
 
@@ -74,37 +95,33 @@ public partial class TodoPage
     {
         todoItem.IsDone = !todoItem.IsDone;
         await EditTodoItem(todoItem);
-        GenarateTodoItemList();
+        GenarateViewTodoItemList();
     }
 
     private void HandlerTodoItemSearch(string searchStr)
     {
-        FilteredActiveTodoItemList = FilteredActiveTodoItemList?.Where(td => td.IsDone is false).Where(td => td.Title.Contains(searchStr)).ToList();
-        FilteredCompletedTodoItemList = FilteredCompletedTodoItemList?.Where(td => td.IsDone is true).Where(td => td.Title.Contains(searchStr)).ToList();
-        FilteredAllTodoItemList = FilteredAllTodoItemList?.Where(td => td.Title.Contains(searchStr)).ToList();
+        FilterTodoItemList(SelectedPivotName);
+        ViewTodoItemList = ViewTodoItemList?.Where(td => td.Title.Contains(searchStr)).ToList();
     }
 
     private void TodoItemSearch(string searchStr)
     {
         SearchTextTodoItem = searchStr;
-        GenarateTodoItemList();
+        GenarateViewTodoItemList();
     }
 
     private void HandlerTodoItemSort()
     {
-        if (SelectedSortTodoItem == "Alphabetical")
+        if (SelectedSortTodoItemName == "Alphabetical")
         {
-            FilteredActiveTodoItemList = FilteredActiveTodoItemList?.Where(td => td.IsDone is false).OrderBy(td => td.Title).ToList();
-            FilteredCompletedTodoItemList = FilteredCompletedTodoItemList?.Where(td => td.IsDone is true).OrderBy(td => td.Title).ToList();
-            FilteredAllTodoItemList = FilteredAllTodoItemList?.OrderBy(td => td.Title).ToList();
+            ViewTodoItemList = ViewTodoItemList?.OrderBy(td => td.Title).ToList();
         }
         else
         {
-            FilteredActiveTodoItemList = FilteredActiveTodoItemList?.Where(td => td.IsDone is false).OrderBy(td => td.Date).ToList();
-            FilteredCompletedTodoItemList = FilteredCompletedTodoItemList?.Where(td => td.IsDone is true).OrderBy(td => td.Date).ToList();
-            FilteredAllTodoItemList = FilteredAllTodoItemList?.OrderBy(td => td.Date).ToList();
+            ViewTodoItemList = ViewTodoItemList?.OrderBy(td => td.Date).ToList();
         }
     }
+
     private void CancelEditMode(TodoItemDto todoItem)
     {
         todoItem.Title = EditModeTodoItemText;
@@ -119,8 +136,8 @@ public partial class TodoPage
 
     private void TodoItemSort()
     {
-        SelectedSortTodoItem = SortItemList.Where(s => s.IsSelected is true).Single().Text;
-        GenarateTodoItemList();
+        SelectedSortTodoItemName = SortItemList.Where(s => s.IsSelected is true).Single().Text;
+        GenarateViewTodoItemList();
     }
 
     private async Task AddTodoItem()
@@ -149,8 +166,8 @@ public partial class TodoPage
     private async Task DeleteTodoItem(TodoItemDto todoItem)
     {
         await HttpClient.DeleteAsync($"TodoItem/{todoItem.Id}");
-        TodoItemList?.Remove(todoItem);
-        GenarateTodoItemList();
+        AllTodoItemList?.Remove(todoItem);
+        GenarateViewTodoItemList();
     }
 
     private async Task EditTodoItem(TodoItemDto todoItem)
@@ -161,6 +178,6 @@ public partial class TodoPage
         todoItem.IsInEditMode = false;
 
         await HttpClient.PutAsJsonAsync("TodoItem", todoItem, ToDoTemplateJsonContext.Default.TodoItemDto);
-        GenarateTodoItemList();
+        GenarateViewTodoItemList();
     }
 }
