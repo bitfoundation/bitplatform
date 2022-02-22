@@ -18,6 +18,8 @@ namespace Bit.Client.Web.BlazorUI
         private ValidationMessageStore? _parsingValidationMessagesStore;
         private readonly EventHandler<ValidationStateChangedEventArgs> _validationStateChangedHandler;
 
+        protected event EventHandler OnCurrentValueChanged;
+
         [CascadingParameter] private EditContext? CascadedEditContext { get; set; }
 
         /// <summary>
@@ -73,6 +75,11 @@ namespace Bit.Client.Web.BlazorUI
                     Value = value;
                     _ = ValueChanged.InvokeAsync(Value);
                     EditContext?.NotifyFieldChanged(FieldIdentifier);
+
+                    if (OnCurrentValueChanged is not null)
+                    {
+                        OnCurrentValueChanged(this, EventArgs.Empty);
+                    }
                 }
             }
         }

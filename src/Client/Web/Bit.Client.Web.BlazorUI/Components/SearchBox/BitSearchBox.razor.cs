@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
@@ -11,8 +13,6 @@ namespace Bit.Client.Web.BlazorUI
         private bool isUnderlined;
         private bool inputHasFocus;
         private bool showIcon;
-        private bool ValueHasBeenSet;
-        private string? inputValue;
         private string? width;
         private bool InputHasFocus
         {
@@ -88,23 +88,6 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public string? Placeholder { get; set; }
 
         /// <summary>
-        /// The value of the text in the search box
-        /// </summary>
-        [Parameter]
-        public string? Value
-        {
-            get => inputValue;
-            set
-            {
-                if (value == inputValue) return;
-                
-                inputValue = value;
-                ClassBuilder.Reset();
-                _ = ValueChanged.InvokeAsync(value);
-            }
-        }
-
-        /// <summary>
         /// Specifies the width of the search box
         /// </summary>
         [Parameter]
@@ -139,19 +122,16 @@ namespace Bit.Client.Web.BlazorUI
         /// </summary>
         [Parameter] public EventCallback<string> OnSearch { get; set; }
 
-        /// <summary>
-        /// Callback for when the input value changes
-        /// </summary>
-        [Parameter] public EventCallback<string?> ValueChanged { get; set; }
-
         public string InputId { get; set; } = string.Empty;
 
         protected override Task OnInitializedAsync()
         {
             if (DefaultValue.HasValue())
             {
-                Value = DefaultValue;
+                CurrentValue = DefaultValue;
             }
+
+            OnCurrentValueChanged += HandleOnCurrentValueChanged;
 
             InputId = $"SearchBox{UniqueId}";
             return base.OnInitializedAsync();
@@ -161,10 +141,11 @@ namespace Bit.Client.Web.BlazorUI
 
         protected override void RegisterComponentClasses()
         {
-            ClassBuilder.Register(() => Value.HasValue() ? $"{RootElementClass}{(ShowIcon ? "-fixed-icon" : string.Empty)}-has-value-{VisualClassRegistrar()}" : string.Empty);
+            ClassBuilder.Register(() => CurrentValue.HasValue() ? $"{RootElementClass}{(ShowIcon ? "-fixed-icon" : string.Empty)}-has-value-{VisualClassRegistrar()}" : string.Empty);
             ClassBuilder.Register(() => DisableAnimation ? $"{RootElementClass}-no-animation-{VisualClassRegistrar()}" : string.Empty);
             ClassBuilder.Register(() => IsUnderlined ? $"{RootElementClass}-underlined-{VisualClassRegistrar()}" : string.Empty);
             ClassBuilder.Register(() => InputHasFocus ? $"{RootElementClass}{(ShowIcon ? "-fixed-icon" : string.Empty)}-focused-{VisualClassRegistrar()}" : string.Empty);
+            ClassBuilder.Register(() => ValueInvalid is true ? $"{RootElementClass}-invalid-{VisualClassRegistrar()}" : string.Empty);
         }
 
         protected override void RegisterComponentStyles()
@@ -186,7 +167,7 @@ namespace Bit.Client.Web.BlazorUI
         {
             if (IsEnabled is false) return;
 
-            Value = string.Empty;
+            CurrentValue = string.Empty;
             await InputRef.FocusAsync();
             await OnClear.InvokeAsync();
         }
@@ -195,8 +176,8 @@ namespace Bit.Client.Web.BlazorUI
         {
             if (IsEnabled is false) return;
             if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
-            
-            Value = e.Value?.ToString();
+
+            CurrentValue = e.Value?.ToString();
             await OnChange.InvokeAsync(Value);
         }
 
@@ -206,16 +187,39 @@ namespace Bit.Client.Web.BlazorUI
 
             if (eventArgs.Code == "Escape")
             {
-                Value = string.Empty;
+                CurrentValue = string.Empty;
                 await InputRef.FocusAsync();
                 await OnEscape.InvokeAsync();
                 await OnClear.InvokeAsync();
             }
             else if (eventArgs.Code == "Enter")
             {
-                Value = await JSRuntime.GetProperty(InputRef, "value");
+                CurrentValue = await JSRuntime.GetProperty(InputRef, "value");
                 await OnSearch.InvokeAsync(Value);
             }
+        }
+
+        private void HandleOnCurrentValueChanged(object? sender, EventArgs args)
+        {
+            ClassBuilder.Reset();
+        }
+
+        /// <inheritdoc />
+        protected override bool TryParseValueFromString(string? value, out string? result, [NotNullWhen(false)] out string? validationErrorMessage)
+        {
+            result = value;
+            validationErrorMessage = null;
+            return true;
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                OnCurrentValueChanged -= HandleOnCurrentValueChanged;
+            }
+
+            base.Dispose(disposing);
         }
     }
 }
