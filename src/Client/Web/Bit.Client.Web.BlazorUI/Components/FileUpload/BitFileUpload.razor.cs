@@ -112,14 +112,19 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public EventCallback<BitFileInfo> OnProgress { get; set; }
 
         /// <summary>
-        /// Callback for when the file is uploaded.
+        /// Callback for when all files are uploaded.
         /// </summary>
         [Parameter] public EventCallback<BitFileInfo[]> OnAllUploadsComplete { get; set; }
 
         /// <summary>
-        /// Callback for when all files are uploaded.
+        /// Callback for when a file upload is done.
         /// </summary>
         [Parameter] public EventCallback<BitFileInfo> OnUploadComplete { get; set; }
+
+        /// <summary>
+        /// Callback for when a remove file is done.
+        /// </summary>
+        [Parameter] public EventCallback<BitFileInfo> OnRemoveComplete { get; set; }
 
         /// <summary>
         /// All selected files.
@@ -376,10 +381,19 @@ namespace Bit.Client.Web.BlazorUI
                 }
 
                 if (uploadStatus == BitUploadStatus.InProgress)
+                {
                     await OnProgress.InvokeAsync(Files[index]);
+                }
 
                 if (uploadStatus == BitUploadStatus.Completed)
+                {
                     await OnUploadComplete.InvokeAsync(Files[index]);
+                }
+
+                if (uploadStatus == BitUploadStatus.Removed)
+                {
+                    await OnRemoveComplete.InvokeAsync(Files[index]);
+                }
             }
         }
 
