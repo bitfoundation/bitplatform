@@ -48,7 +48,7 @@ public static class Services
 
         services.AddResponseCaching();
 
-        services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+        services.AddHttpContextAccessor();
 
         services.AddResponseCompression(opts =>
         {
@@ -62,7 +62,11 @@ public static class Services
 
         services.AddDbContext<TodoTemplateDbContext>(options =>
         {
-            options.UseSqlServer(configuration.GetConnectionString("SqlServerConnection"));
+            options
+            .UseSqlServer(configuration.GetConnectionString("SqlServerConnection"), sqlOpt =>
+            {
+                sqlOpt.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+            });
         });
 
         services.Configure<AppSettings>(configuration.GetSection(nameof(AppSettings)));
