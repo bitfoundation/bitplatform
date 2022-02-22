@@ -6,15 +6,17 @@
 <div class="page-container">
     <div class="todo-form-white">
         <div class="search-todo-container">
-            <BitSearchBox
-            OnChange="TodoItemSearch"
-            OnClear="@(()=>TodoItemSearch(""))" 
-            Class="todo-input" Placeholder="Search some todo..."/>
+            <BitSearchBox OnChange="TodoItemSearch"
+                          OnClear="@(()=>TodoItemSearch(""))" 
+                          Class="todo-input" 
+                          Placeholder="Search some todo..."/>
         </div>
         <div class="todo-content">
             <h2 class="todo-title">Todo</h2>
             <div class="add-todo-container">
-                <BitTextField @bind-Value="NewTodoItemTitle" Placeholder="Add a todo" Class="todo-input"></BitTextField>
+                <BitTextField @bind-Value="NewTodoItemTitle" 
+                              Placeholder="Add a todo" 
+                              Class="todo-input"/>
 
                 <BitButton OnClick="() => InvokeAsync(AddTodoItem)"
                            Class="add-todo-button"
@@ -31,7 +33,9 @@
             </div>
             <div class="todo-items-container">
                 <div class="todo-sort-container">
-                    <BitDropDown OnSelectItem="TodoItemSort" Class="sort-todo-dropdown" Items="SortItemList">
+                    <BitDropDown OnSelectItem="TodoItemSort" 
+                                 Class="sort-todo-dropdown" 
+                                 Items="SortItemList">
                         <CaretDownFragment>
                             <BitActionButton IconName="BitIconName.Sort">Sort by @SelectedSortTodoItemName</BitActionButton>
                         </CaretDownFragment>
@@ -66,14 +70,16 @@
                                             <BitTextField Class="todo-input" @bind-Value="context.Title"/>
                                             <div>
                                               <BitButton OnClick="(() => InvokeAsync(() => EditTodoItem(context)))">Edit</BitButton>
-                                              <BitButton ButtonStyle="BitButtonStyle.Standard" Class="todo-button" OnClick="@(() => InvokeAsync(() => CancelEditMode(context)))">Cancel</BitButton>
+                                              <BitButton ButtonStyle="BitButtonStyle.Standard" 
+                                                         Class="todo-button" 
+                                                         OnClick="@(() => InvokeAsync(() => CancelEditMode(context)))">Cancel</BitButton>
                                             </div>
                                          }
                                           else
                                          {
                                             <div class="todo-info">
                                                  <BitCheckbox DefaultIsChecked="context.IsDone" 
-                                                  OnChange="()=>ToggleTodoItem(context)">@context.Title
+                                                              OnChange="()=>ToggleTodoItem(context)">@context.Title
                                                  </BitCheckbox>
 
                                                  <BitLabel 
@@ -81,13 +87,11 @@
                                                  </BitLabel>
                                             </div>
                                             <div class="todo-buttons-container">
-                                                 <BitIconButton 
-                                                  IconName="BitIconName.Edit"
-                                                  OnClick="(() => InvokeAsync(() => ToggleToEditMode(context)))"/>
+                                                 <BitIconButton IconName="BitIconName.Edit"
+                                                                OnClick="(() => InvokeAsync(() => ToggleToEditMode(context)))"/>
                                              
-                                                 <BitIconButton 
-                                                  IconName="BitIconName.Delete" 
-                                                  OnClick="(() => InvokeAsync(() => DeleteTodoItem(context)))"/>
+                                                 <BitIconButton IconName="BitIconName.Delete" 
+                                                                OnClick="(() => InvokeAsync(() => DeleteTodoItem(context)))"/>
                                             </div>
                                          }
                                     </div>
