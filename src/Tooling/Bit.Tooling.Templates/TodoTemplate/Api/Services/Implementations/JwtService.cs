@@ -8,25 +8,26 @@ namespace TodoTemplate.Api.Services.Implementations;
 
 public class JwtService : IJwtService
 {
-    private readonly UserManager<User> _userManager;
+    private readonly SignInManager<User> _signInManager;
 
     private readonly AppSettings _appSettings;
 
-    public JwtService(UserManager<User> userManager, IOptionsSnapshot<AppSettings> setting)
+    public JwtService(SignInManager<User> signInManager, IOptionsSnapshot<AppSettings> setting)
     {
-        _userManager = userManager;
+        _signInManager = signInManager;
         _appSettings = setting.Value;
     }
 
-    public async Task<SignInResponseDto> GenerateToken(SignInRequestDto dto)
+    public async Task<SignInResponseDto> GenerateToken(User user)
     {
         var secretKey = Encoding.UTF8.GetBytes(_appSettings.JwtSettings.SecretKey);
         var signingCredentials = new SigningCredentials(new SymmetricSecurityKey(secretKey), SecurityAlgorithms.HmacSha256Signature);
 
-        var user = await _userManager.FindByNameAsync(dto.UserName);
-        var claims = await _userManager.GetClaimsAsync(user);
+        var claims = (await _signInManager.ClaimsFactory.CreateAsync(user)).Claims;
 
-        var securityToken = new JwtSecurityTokenHandler()
+        var jwtSecurityTokenHandler = new JwtSecurityTokenHandler();
+
+        var securityToken = jwtSecurityTokenHandler
             .CreateJwtSecurityToken(new SecurityTokenDescriptor
             {
                 Issuer = _appSettings.JwtSettings.Issuer,
@@ -40,7 +41,7 @@ public class JwtService : IJwtService
 
         return new SignInResponseDto
         {
-            AccessToken = new JwtSecurityTokenHandler().WriteToken(securityToken),
+            AccessToken = jwtSecurityTokenHandler.WriteToken(securityToken),
             ExpiresIn = (long)TimeSpan.FromMinutes(_appSettings.JwtSettings.ExpirationMinutes).TotalSeconds
         };
     }

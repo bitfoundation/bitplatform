@@ -45,29 +45,6 @@ namespace TodoTemplate.Api.Startup
                 }
             });
 
-            app.Use(async (context, next) =>
-            {
-                if (!context.Request.Headers.ContainsKey("Authorization"))
-                {
-                    if (context.Request.Query["access_token"].Any())
-                    {
-                        context.Request.Headers.Add("Authorization", new[]
-                        {
-                            $"{JwtBearerDefaults.AuthenticationScheme} {context.Request.Query["access_token"]}"
-                        });
-                    }
-                    else if (context.Request.Cookies?["access_token"] != null)
-                    {
-                        context.Request.Headers.Add("Authorization", new[]
-                        {
-                            $"{JwtBearerDefaults.AuthenticationScheme} {context.Request.Cookies["access_token"]}"
-                        });
-                    }
-                }
-
-                await next();
-            });
-
             app.UseRouting();
 
             app.UseCors(options => options.WithOrigins("https://localhost:4001", "https://0.0.0.0").AllowAnyHeader().AllowAnyMethod().AllowCredentials());
