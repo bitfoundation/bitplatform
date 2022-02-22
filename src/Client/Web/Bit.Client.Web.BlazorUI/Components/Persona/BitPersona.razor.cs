@@ -35,27 +35,41 @@ namespace Bit.Client.Web.BlazorUI
         public string? PresenceAfterStyle { get; set; }
         public string? PresenceBeforeStyle { get; set; }
 
-        //Whether to not render persona details, and just render the persona image/initials.
+        /// <summary>
+        /// Whether to not render persona details, and just render the persona image/initials.
+        /// </summary>
         [Parameter] public bool HidePersonaDetails { get; set; }
 
-        //This flag can be used to signal the persona is out of office. This will change the way the presence icon looks for statuses that support dual-presence.
+        /// <summary>
+        /// This flag can be used to signal the persona is out of office. This will change the way the presence icon looks for statuses that support dual-presence.
+        /// </summary>
         [Parameter] public bool IsOutOfOffice { get; set; }
 
-        //If true renders the initials while the image is loading. This only applies when an imageUrl is provided.
+        /// <summary>
+        /// If true renders the initials while the image is loading. This only applies when an imageUrl is provided.
+        /// </summary>
         [Parameter] public bool ShowInitialsUntilImageLoads { get; set; }
 
-        //Optional custom persona coin size in pixel.
+        /// <summary>
+        /// Optional custom persona coin size in pixel.
+        /// </summary>
         [Parameter] public int CoinSize { get; set; } = -1;
 
-        //Url to the image to use, should be a square aspect ratio and big enough to fit in the image area.
+        /// <summary>
+        /// Url to the image to use, should be a square aspect ratio and big enough to fit in the image area.
+        /// </summary>
         [Parameter] public string? ImageUrl { get; set; }
 
-        //Presence title to be shown as a tooltip on hover over the presence icon.
+        /// <summary>
+        /// Presence title to be shown as a tooltip on hover over the presence icon.
+        /// </summary>
         [Parameter] public string? PresenceTitle { get; set; }
         
         [Parameter] public string? PresenceIcon { get; set; }
 
-        //Decides the size of the control.
+        /// <summary>
+        /// Decides the size of the control.
+        /// </summary>
         [Parameter]
         public string? Size
         {
@@ -67,34 +81,57 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
-        //Alt text for the image to use. default is empty string.
+        /// <summary>
+        /// Alt text for the image to use. default is empty string.
+        /// </summary>
         [Parameter] public string? ImageAlt { get; set; }
 
-        //The background color when the user's initials are displayed.
+        /// <summary>
+        /// The background color when the user's initials are displayed.
+        /// </summary>
         [Parameter] public BitPersonaInitialsColor? InitialsColor { get; set; }
 
-        //The user's initials to display in the image area when there is no image.
+        /// <summary>
+        /// The user's initials to display in the image area when there is no image.
+        /// </summary>
         [Parameter] public string? ImageInitials { get; set; }
 
-        //Primary text to display, usually the name of the person.
+        /// <summary>
+        /// Primary text to display, usually the name of the person.
+        /// </summary>
         [Parameter] public string? Text { get; set; }
 
-        //Secondary text to display, usually the role of the user.
+        /// <summary>
+        /// Secondary text to display, usually the role of the user.
+        /// </summary>
         [Parameter] public string? SecondaryText { get; set; }
 
-        //Tertiary text to display, usually the status of the user. The tertiary text will only be shown when using size72 or size100.
+        /// <summary>
+        /// Tertiary text to display, usually the status of the user.
+        /// The tertiary text will only be shown when using size72 or size100.
+        /// </summary>
         [Parameter] public string? TertiaryText { get; set; }
 
-        //Optional text to display, usually a custom message set. The optional text will only be shown when using size100.
+        /// <summary>
+        /// Optional text to display, usually a custom message set.
+        /// The optional text will only be shown when using size100.
+        /// </summary>
         [Parameter] public string? OptionalText { get; set; }
 
-        //If true, show the special coin for unknown persona. It has '?' in place of initials, with static font and background colors.
+        /// <summary>
+        /// If true, show the special coin for unknown persona. 
+        /// It has '?' in place of initials, with static font and background colors.
+        /// </summary>
         [Parameter] public bool ShowUnknownPersonaCoin { get; set; }
 
-        //Presence of the person to display - will not display presence if undefined.
+        /// <summary>
+        /// Presence of the person to display - will not display presence if undefined.
+        /// </summary>
         [Parameter] public BitPersonaPresenceStatus Presence { get; set; } = BitPersonaPresenceStatus.None;
 
-        //Whether initials are calculated for phone numbers and number sequences.
+        /// <summary>
+        /// Whether initials are calculated for phone numbers and number sequences.
+        /// </summary>
         [Parameter] public bool AllowPhoneInitials { get; set; }
 
         protected override Task OnParametersSetAsync()
