@@ -7,9 +7,10 @@ public partial class EditProfile
     public UserDto? User { get; set; } = new();
     public UserDto UserToEdit { get; set; } = new();
 
-    public string? ProfilePhotoUploadUrl { get; set; }
-    public string? ProfilePhotoRemoveUrl { get; set; }
-    public string? UserProfilePhotoUrl { get; set; }
+    public string? ProfileImageUploadUrl { get; set; }
+    public string? ProfileImageRemoveUrl { get; set; }
+    public string? ProfileImageUrl { get; set; }
+    public string? ProfileImageError { get; set; }
 
     public bool IsSaveButtonEnabled { get; set; }
     public bool IsLoading { get; set; }
@@ -29,28 +30,33 @@ public partial class EditProfile
 
     protected override async Task OnInitAsync()
     {
-        User = await StateService.GetValue(nameof(User), async () =>
-            await HttpClient.GetFromJsonAsync("User/GetCurrentUser", ToDoTemplateJsonContext.Default.UserDto));
+        await InitEditProfileData();
 
-        UserToEdit.FullName = User.FullName;
-        UserToEdit.BirthDate = User.BirthDate;
-        UserToEdit.Gender = User.Gender;
-
-        var access_token = await StateService.GetValue("access_token", async () =>
+         var access_token = await StateService.GetValue("access_token", async () =>
             await TokenProvider.GetAcccessToken());
 
-        ProfilePhotoUploadUrl = $"api/Attachment/UploadProfilePhoto?access_token={access_token}";
-        ProfilePhotoRemoveUrl = $"api/Attachment/RemoveProfilePhoto?access_token={access_token}";
-        UserProfilePhotoUrl = $"api/Attachment/GetProfilePhoto?access_token={access_token}";
+        ProfileImageUploadUrl = $"api/Attachment/UploadProfileImage?access_token={access_token}";
+        ProfileImageRemoveUrl = $"api/Attachment/RemoveProfileImage?access_token={access_token}";
+        ProfileImageUrl = $"api/Attachment/GetProfileImage?access_token={access_token}";
 
 #if BlazorServer || BlazorHybrid
         var serverUrl = Configuration.GetValue<string>("ApiServerAddress");
-        ProfilePhotoUploadUrl = $"{serverUrl}{ProfilePhotoUploadUrl}";
-        ProfilePhotoRemoveUrl = $"{serverUrl}{ProfilePhotoRemoveUrl}";
-        UserProfilePhotoUrl = $"{serverUrl}{UserProfilePhotoUrl}";
+        ProfileImageUploadUrl = $"{serverUrl}{ProfileImageUploadUrl}";
+        ProfileImageRemoveUrl = $"{serverUrl}{ProfileImageRemoveUrl}";
+        ProfileImageUrl = $"{serverUrl}{ProfileImageUrl}";
 #endif
 
         await base.OnInitAsync();
+    }
+
+    private async Task InitEditProfileData()
+    {
+        User = await StateService.GetValue(nameof(User), async () =>
+            await HttpClient.GetFromJsonAsync("User/GetCurrentUser", ToDoTemplateJsonContext.Default.UserDto));
+
+        UserToEdit.FullName = User?.FullName;
+        UserToEdit.BirthDate = User?.BirthDate;
+        UserToEdit.Gender = User?.Gender;
     }
 
     private void CheckSaveButtonEnabled()

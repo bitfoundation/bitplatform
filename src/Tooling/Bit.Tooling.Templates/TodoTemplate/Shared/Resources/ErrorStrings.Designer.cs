@@ -88,6 +88,24 @@ namespace TodoTemplate.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to An error occurred while removing file.
+        /// </summary>
+        public static string FileRemoveFailed {
+            get {
+                return ResourceManager.GetString("FileRemoveFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to An error occurred while uploading file.
+        /// </summary>
+        public static string FileUploadFailed {
+            get {
+                return ResourceManager.GetString("FileUploadFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Access to the requested resource is forbidden.
         /// </summary>
         public static string ForbiddenException {
@@ -169,11 +187,11 @@ namespace TodoTemplate.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to User&apos;s photo could not be found.
+        ///   Looks up a localized string similar to User&apos;s Image could not be found.
         /// </summary>
-        public static string UserPhotoCouldNotBeFound {
+        public static string UserImageCouldNotBeFound {
             get {
-                return ResourceManager.GetString("UserPhotoCouldNotBeFound", resourceCulture);
+                return ResourceManager.GetString("UserImageCouldNotBeFound", resourceCulture);
             }
         }
     }

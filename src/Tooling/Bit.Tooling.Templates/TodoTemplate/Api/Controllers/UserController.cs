@@ -42,17 +42,6 @@ public class UserController : ControllerBase
         return user;
     }
 
-    [HttpPost("[action]"), AllowAnonymous]
-    public async Task SignUp(UserDto dto, CancellationToken cancellationToken)
-    {
-        var userToAdd = _mapper.Map<User>(dto);
-
-        var result = await _userManager.CreateAsync(userToAdd, dto.Password);
-
-        if (!result.Succeeded)
-            throw new ResourceValidationException(result.Errors.Select(e => $"{e.Code}: {e.Description}").ToArray());
-    }
-
     [HttpPut]
     public async Task Update(UserDto dto, CancellationToken cancellationToken)
     {
@@ -64,6 +53,17 @@ public class UserController : ControllerBase
         var updatedUser = _mapper.Map(dto, userToUpdate);
 
         await _userManager.UpdateAsync(updatedUser);
+    }
+
+    [HttpPost("[action]"), AllowAnonymous]
+    public async Task SignUp(UserDto dto)
+    {
+        var userToAdd = _mapper.Map<User>(dto);
+
+        var result = await _userManager.CreateAsync(userToAdd, dto.Password);
+
+        if (!result.Succeeded)
+            throw new ResourceValidationException(result.Errors.Select(e => $"{e.Code}: {e.Description}").ToArray());
     }
 
     [HttpPost("[action]"), AllowAnonymous]
