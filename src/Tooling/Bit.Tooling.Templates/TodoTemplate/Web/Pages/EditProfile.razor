@@ -17,28 +17,35 @@
         <h1 class="form-title">
             Edit profile
         </h1>
-        <div class="form-profile-container">
-            <div class="form-profile-img">
-                @if (User?.ProfileImageName != null)
-                {
-                    <img src="@ProfileImageUrl" class="profile-img" />
-                }
-                else if (User?.FullName != null && User?.FullName.Length >= 2)
-                {
-                    @User?.FullName?.ToUpper()[..2]
-                }
-                else
-                {
-                    @User?.FullName?.ToUpper()[..2]
-                }
+
+        @if (IsLoadingPage)
+        {
+            <BitSpinner Size="BitSpinnerSize.Large"></BitSpinner>
+        }
+        else
+        {
+            <div class="form-profile-container">
+                <div class="form-profile-img">
+                    @if (User?.ProfileImageName != null)
+                    {
+                        <img src="@ProfileImageUrl" class="profile-img" />
+                    }
+                    else if (User?.FullName != null && User?.FullName.Length >= 2)
+                    {
+                        @User?.FullName?.ToUpper()[..2]
+                    }
+                    else
+                    {
+                        @User?.UserName?.ToUpper()[..2]
+                    }
+                </div>
+                <div class="form-profile-email">
+                    @User?.UserName
+                </div>
             </div>
-            <div class="form-profile-email">
-                @User?.UserName
-            </div>
-        </div>
-        <div class="form-input-container">
-            <BitLabel>Profile Image</BitLabel>
-            <BitFileUpload Label="Select or drag and drops files"
+            <div class="form-input-container">
+                <BitLabel>Profile Image</BitLabel>
+                <BitFileUpload Label="Select or drag and drops files"
                            UploadUrl="@ProfileImageUploadUrl"
                            RemoveUrl="@ProfileImageRemoveUrl"
                            OnUploadComplete="() => InvokeAsync(InitEditProfileData)"
@@ -46,39 +53,41 @@
                            OnUploadFailed="Invoke(() => ProfileImageError = ErrorStrings.FileUploadFailed)"
                            OnRemoveFailed="Invoke(() => ProfileImageError = ErrorStrings.FileRemoveFailed)"
                            @onfocus="Invoke(() => ProfileImageError = null)" />
-            <div class="form-input-error">@ProfileImageError</div>
-        </div>
-        <div class="form-input-container">
-            <BitLabel>Full-Name</BitLabel>
-            <BitTextField @bind-Value="UserToEdit.FullName"
+                <div class="form-input-error">@ProfileImageError</div>
+            </div>
+            <div class="form-input-container">
+                <BitLabel>Full-Name</BitLabel>
+                <BitTextField @bind-Value="UserToEdit.FullName"
                           OnKeyUp="() => InvokeAsync(CheckSaveButtonEnabled)" />
-        </div>
-        <div class="form-input-container">
-            <BitLabel>Birthday</BitLabel>
-            <BitDatePicker @bind-Value="UserToEdit.BirthDate"
+            </div>
+            <div class="form-input-container">
+                <BitLabel>Birthday</BitLabel>
+                <BitDatePicker @bind-Value="UserToEdit.BirthDate"
                            OnSelectDate="() => InvokeAsync(CheckSaveButtonEnabled)" />
-        </div>
-        <div class="form-choice-container">
-            <BitLabel>Gender</BitLabel>
-            <BitChoiceGroup @bind-SelectedKey="UserToEdit.GenderValue"
+            </div>
+            <div class="form-choice-container">
+                <BitLabel>Gender</BitLabel>
+                <BitChoiceGroup @bind-SelectedKey="UserToEdit.GenderValue"
                             OnValueChange="() => InvokeAsync(CheckSaveButtonEnabled)">
-                <BitChoiceOption Key="@Gender.Male.ToString()" Text="Male"></BitChoiceOption>
-                <BitChoiceOption Key="@Gender.Female.ToString()" Text="Famale"></BitChoiceOption>
-                <BitChoiceOption Key="@Gender.Custom.ToString()" Text="Custom"></BitChoiceOption>
-            </BitChoiceGroup>
-        </div>
-        <BitButton Class="form-submit-button"
+                    <BitChoiceOption Key="@Gender.Male.ToString()" Text="Male"></BitChoiceOption>
+                    <BitChoiceOption Key="@Gender.Female.ToString()" Text="Famale"></BitChoiceOption>
+                    <BitChoiceOption Key="@Gender.Custom.ToString()" Text="Custom"></BitChoiceOption>
+                </BitChoiceGroup>
+            </div>
+            <BitButton Class="form-submit-button"
                    ButtonStyle="BitButtonStyle.Primary"
                    IsEnabled="IsSaveButtonEnabled"
                    OnClick="() => InvokeAsync(Save)">
-            @if (IsLoading)
-            {
-                <BitSpinner Size="BitSpinnerSize.Small"></BitSpinner>
-            }
-            else
-            {
-                <span>Save</span>
-            }
-        </BitButton>
+                @if (IsLoadingSaveButton)
+                {
+                    <BitSpinner Size="BitSpinnerSize.Small"></BitSpinner>
+                }
+                else
+                {
+                    <span>Save</span>
+                }
+            </BitButton>
+        }
+
     </form>
 </div>

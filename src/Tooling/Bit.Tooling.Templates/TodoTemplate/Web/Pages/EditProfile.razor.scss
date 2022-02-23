@@ -27,17 +27,21 @@
     border-radius: rem(4px);
     padding: rem(32px) rem(134px);
     background-color: $Gray6;
+    min-height: rem(592px);
 
     @include lg {
         padding: rem(32px) rem(112px);
+        min-height: rem(538px);
     }
 
     @include md {
         padding: rem(40px) rem(134px);
+        min-height: rem(602px);
     }
 
     @include sm {
         padding: rem(16px) rem(14px);
+        min-height: rem(482px);
     }
 }
 

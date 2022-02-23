@@ -13,7 +13,8 @@ public partial class EditProfile
     public string? ProfileImageError { get; set; }
 
     public bool IsSaveButtonEnabled { get; set; }
-    public bool IsLoading { get; set; }
+    public bool IsLoadingSaveButton { get; set; }
+    public bool IsLoadingPage { get; set; }
 
     public BitMessageBarType EditProfileMessageType { get; set; }
     public string? EditProfileMessage { get; set; }
@@ -30,6 +31,8 @@ public partial class EditProfile
 
     protected override async Task OnInitAsync()
     {
+        IsLoadingPage = true;
+
         await InitEditProfileData();
 
          var access_token = await StateService.GetValue("access_token", async () =>
@@ -45,6 +48,7 @@ public partial class EditProfile
         ProfileImageRemoveUrl = $"{serverUrl}{ProfileImageRemoveUrl}";
         ProfileImageUrl = $"{serverUrl}{ProfileImageUrl}";
 #endif
+        IsLoadingPage = false;
 
         await base.OnInitAsync();
     }
@@ -74,7 +78,7 @@ public partial class EditProfile
 
     private async Task Save()
     {
-        IsLoading = true;
+        IsLoadingSaveButton = true;
 
         try
         {
@@ -83,6 +87,8 @@ public partial class EditProfile
             User.Gender = UserToEdit.Gender;
 
             await HttpClient.PutAsJsonAsync("User", User, ToDoTemplateJsonContext.Default.UserDto);
+
+            IsSaveButtonEnabled = false;
 
             EditProfileMessageType = BitMessageBarType.Success;
 
@@ -98,7 +104,7 @@ public partial class EditProfile
         }
         finally
         {
-            IsLoading = false;
+            IsLoadingSaveButton = false;
         }
     }
 }
