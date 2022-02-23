@@ -320,7 +320,7 @@ namespace Bit.Client.Web.BlazorUI
             if (IsEnabled is false) return;
             if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
 
-            CurrentValue = e.Value?.ToString();
+            CurrentValueAsString = e.Value?.ToString();
             await OnChange.InvokeAsync(Value);
         }
 
