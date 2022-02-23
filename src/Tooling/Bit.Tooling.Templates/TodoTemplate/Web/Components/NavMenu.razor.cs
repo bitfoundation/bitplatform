@@ -48,10 +48,7 @@ public partial class NavMenu
             }
         };
     }
-    private void OnModalCloseHandler()
-    {
-        IsSignOutModalOpen = false;
-    }
+
     protected override async Task OnInitAsync()
     {
         UserName = await StateService.GetValue(nameof(UserName), async () => (await AuthenticationStateTask).User.GetUserName());
