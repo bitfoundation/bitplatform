@@ -6,7 +6,7 @@
     height: rem(32px);
 }
 
-.todo-button {
+.add-todo-button {
     margin-left: rem(8px);
 }
 
@@ -25,6 +25,33 @@
 .todo-pivot-tab {
     margin-right: rem(40px);
 }
-.todo-spinner{
-    margin-left:rem(40px);
+
+.todo-spinner {
+    margin-left: rem(40px);
+}
+.todo-list-spinner{
+    position:relative;
+    top:rem(105px);
+}
+
+.sort-todo-dropdown {
+    width: rem(150px);
+    height: rem(32px);
+
+    .bit-act-btn-fluent > span:first-child i {
+        color: black;
+        font-size: rem(11px);
+    }
+
+    .bit-drp-items-wrapper button {
+        font-size: rem(12px);
+    }
+
+    .bit-act-btn-fluent > span:last-child {
+        font-size: rem(12px);
+    }
+
+    .bit-drp-wrapper .bit-drp-wrapper-txt {
+        display: none;
+    }
 }
