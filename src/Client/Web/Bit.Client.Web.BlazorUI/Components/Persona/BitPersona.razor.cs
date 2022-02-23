@@ -65,8 +65,6 @@ namespace Bit.Client.Web.BlazorUI
         /// </summary>
         [Parameter] public string? PresenceTitle { get; set; }
         
-        [Parameter] public string? PresenceIcon { get; set; }
-
         /// <summary>
         /// Decides the size of the control.
         /// </summary>
