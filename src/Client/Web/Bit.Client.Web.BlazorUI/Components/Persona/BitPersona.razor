@@ -28,7 +28,7 @@
                 @if (Presence != BitPersonaPresenceStatus.None)
                 {
                     <div title=@PresenceTitle class="bit-Persona-presence">
-                        <i class=@($"bit-persona-icon bit-icon--{PresenceIcon}") role="presentation"></i>
+                        <i class=@($"bit-persona-icon bit-icon--{DetermineIcon(Presence, IsOutOfOffice)}") role="presentation"></i>
                     </div>
                 }
             </div>
