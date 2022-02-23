@@ -1,10 +1,10 @@
 ﻿@inherits LayoutComponentBase
 
-<Header />
+<Header MenuToggled=OnMenuToggle/>
 
 @if (IsUserAuthenticated)
 {
-    <NavMenu />
+    <NavMenu @bind-IsMenuOpen=IsMenuOpen/>
 }
 
 <div class="main @(IsUserAuthenticated ? "main--authenticated" : null)">

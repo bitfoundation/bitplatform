@@ -2,7 +2,7 @@
 
 public partial class Header : IAsyncDisposable
 {
-    public bool IsUserAuthenticated { get; set; }
+    [Parameter] public EventCallback MenuToggled { get; set; }
 
     [Inject]
     public IStateService StateService { get; set; } = default!;
@@ -12,6 +12,8 @@ public partial class Header : IAsyncDisposable
 
     [Inject]
     public IExceptionHandler ExceptionHandler { get; set; } = default!;
+
+    public bool IsUserAuthenticated { get; set; }
 
     protected async override Task OnInitAsync()
     {
@@ -36,6 +38,11 @@ public partial class Header : IAsyncDisposable
         {
             StateHasChanged();
         }
+    }
+
+    private async Task ToggleMenu()
+    {
+        await MenuToggled.InvokeAsync();
     }
 
     public async ValueTask DisposeAsync()
