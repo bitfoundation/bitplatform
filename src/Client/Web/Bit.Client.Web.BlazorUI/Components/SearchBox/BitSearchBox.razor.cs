@@ -167,7 +167,7 @@ namespace Bit.Client.Web.BlazorUI
         {
             if (IsEnabled is false) return;
 
-            CurrentValue = string.Empty;
+            CurrentValueAsString = string.Empty;
             await InputRef.FocusAsync();
             await OnClear.InvokeAsync();
         }
@@ -177,8 +177,8 @@ namespace Bit.Client.Web.BlazorUI
             if (IsEnabled is false) return;
             if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
 
-            CurrentValue = e.Value?.ToString();
-            await OnChange.InvokeAsync(Value);
+            CurrentValueAsString = e.Value?.ToString();
+            await OnChange.InvokeAsync(CurrentValue);
         }
 
         private async Task HandleOnKeyDown(KeyboardEventArgs eventArgs)
@@ -187,15 +187,15 @@ namespace Bit.Client.Web.BlazorUI
 
             if (eventArgs.Code == "Escape")
             {
-                CurrentValue = string.Empty;
+                CurrentValueAsString = string.Empty;
                 await InputRef.FocusAsync();
                 await OnEscape.InvokeAsync();
                 await OnClear.InvokeAsync();
             }
             else if (eventArgs.Code == "Enter")
             {
-                CurrentValue = await JSRuntime.GetProperty(InputRef, "value");
-                await OnSearch.InvokeAsync(Value);
+                CurrentValueAsString = await JSRuntime.GetProperty(InputRef, "value");
+                await OnSearch.InvokeAsync(CurrentValue);
             }
         }
 
