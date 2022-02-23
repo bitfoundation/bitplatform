@@ -6,6 +6,8 @@ namespace Bit.Client.Web.BlazorUI.Tests.Modal
     [TestClass]
     public class BitModalTests : BunitTestContext
     {
+        private bool isModalOpen = true;
+
         [DataTestMethod,
             DataRow(Visual.Fluent, null),
             DataRow(Visual.Fluent, false),
@@ -48,7 +50,8 @@ namespace Bit.Client.Web.BlazorUI.Tests.Modal
             {
                 parameters.Add(p => p.Visual, visual);
                 parameters.Add(p => p.IsBlocking, isBlocking);
-                parameters.Add(p => p.IsOpen, true);
+                parameters.Add(p => p.IsOpen, isModalOpen);
+                parameters.Add(p => p.IsOpenChanged, HandleIsOpenChanged);
             });
 
             var bitModel = com.FindAll(".bit-mdl");
@@ -217,7 +220,8 @@ namespace Bit.Client.Web.BlazorUI.Tests.Modal
             var com = RenderComponent<BitModal>(parameters =>
             {
                 parameters.Add(p => p.Visual, visual);
-                parameters.Add(p => p.IsOpen, true);
+                parameters.Add(p => p.IsOpen, isModalOpen);
+                parameters.Add(p => p.IsOpenChanged, HandleIsOpenChanged);
             });
 
             var bitModel = com.FindAll(".bit-mdl");
@@ -248,6 +252,11 @@ namespace Bit.Client.Web.BlazorUI.Tests.Modal
             var overlayElement = com.Find(".bit-mdl-overlay");
             overlayElement.Click();
             Assert.AreEqual(1, com.Instance.CurrentCount);
+        }
+
+        private void HandleIsOpenChanged(bool isOpen)
+        {
+            isModalOpen = isOpen;
         }
     }
 }
