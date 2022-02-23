@@ -39,7 +39,7 @@
             }
         }
 
-        private void OnMenuToggle()
+        private void ToggleMenuHandler()
         {
             IsMenuOpen = !IsMenuOpen;
         }

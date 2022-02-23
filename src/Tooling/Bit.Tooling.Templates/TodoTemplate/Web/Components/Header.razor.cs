@@ -2,7 +2,7 @@
 
 public partial class Header : IAsyncDisposable
 {
-    [Parameter] public EventCallback MenuToggled { get; set; }
+    [Parameter] public EventCallback OnToggleMenu { get; set; }
 
     [Inject]
     public IStateService StateService { get; set; } = default!;
@@ -42,7 +42,7 @@ public partial class Header : IAsyncDisposable
 
     private async Task ToggleMenu()
     {
-        await MenuToggled.InvokeAsync();
+        await OnToggleMenu.InvokeAsync();
     }
 
     public async ValueTask DisposeAsync()
