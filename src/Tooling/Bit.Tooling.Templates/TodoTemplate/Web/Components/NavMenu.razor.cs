@@ -63,10 +63,6 @@ public partial class NavMenu
             }
         };
     }
-    private void OnModalCloseHandler()
-    {
-        IsSignOutModalOpen = false;
-    }
 
     private void CloseMenu()
     {
