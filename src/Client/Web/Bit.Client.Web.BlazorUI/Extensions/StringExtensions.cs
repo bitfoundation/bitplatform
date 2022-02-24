@@ -15,5 +15,17 @@
                 ? string.IsNullOrWhiteSpace(value)
                 : string.IsNullOrEmpty(value);
         }
+
+        public static string? RemoveSuffix(this string? value, string? suffix)
+        {
+            if (value.HasNoValue() || suffix.HasNoValue()) return value;
+
+            if (value!.EndsWith(suffix!, System.StringComparison.Ordinal))
+            {
+                return value.Remove(value.Length - suffix!.Length);
+            }
+
+            return value;
+        }
     }
 }

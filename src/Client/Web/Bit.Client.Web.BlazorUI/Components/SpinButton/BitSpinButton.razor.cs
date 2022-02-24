@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -9,18 +9,16 @@ using Microsoft.AspNetCore.Components.Web;
 
 namespace Bit.Client.Web.BlazorUI
 {
-    public partial class BitSpinButton : IDisposable
+    public partial class BitSpinButton
     {
         const int INITIAL_STEP_DELAY = 400;
         const int STEP_DELAY = 75;
-        private double inputValue;
         private BitSpinButtonLabelPosition labelPosition = BitSpinButtonLabelPosition.Left;
         private int precision;
         private double min;
         private double max;
         private string InputId = $"input{Guid.NewGuid()}";
         private string IntermediateValue = string.Empty;
-        private bool ValueHasBeenSet;
         private Timer? timer;
 
         /// <summary>
@@ -61,26 +59,6 @@ namespace Bit.Client.Web.BlazorUI
         /// Max value of the spin button. If not provided, the spin button has max value of double type
         /// </summary>
         [Parameter] public double? Max { get; set; }
-
-        /// <summary>
-        /// Current value of the spin button
-        /// </summary>
-        [Parameter]
-        public double Value
-        {
-            get => inputValue;
-            set
-            {
-                if (value == inputValue) return;
-                inputValue = value;
-                _ = ValueChanged.InvokeAsync(value);
-            }
-        }
-
-        /// <summary>
-        /// Callback for when the spin button value change
-        /// </summary>
-        [Parameter] public EventCallback<double> ValueChanged { get; set; }
 
         /// <summary>
         /// Callback for when the spin button value change
@@ -186,13 +164,6 @@ namespace Bit.Client.Web.BlazorUI
         /// </summary>
         [Parameter] public int? Precision { get; set; }
 
-        /// <summary>
-        /// Additional props for the input field
-        /// </summary>
-#pragma warning disable CA2227 // Collection properties should be read only
-        [Parameter] public Dictionary<string, object>? InputHtmlAttributes { get; set; }
-#pragma warning restore CA2227 // Collection properties should be read only
-
         [Parameter] public EventCallback<BitSpinButtonAction> ChangeHandler { get; set; }
 
         protected override string RootElementClass => "bit-spb";
@@ -202,6 +173,10 @@ namespace Bit.Client.Web.BlazorUI
             ClassBuilder.Register(() => LabelPosition == BitSpinButtonLabelPosition.Left
                                                 ? $"{RootElementClass}-label-left-{VisualClassRegistrar()}"
                                                 : $"{RootElementClass}-label-top-{VisualClassRegistrar()}");
+
+            ClassBuilder.Register(() => ValueInvalid is true
+                                                ? $"{RootElementClass}-invalid-{VisualClassRegistrar()}"
+                                                : string.Empty);
         }
 
         protected async override Task OnParametersSetAsync()
@@ -218,11 +193,11 @@ namespace Bit.Client.Web.BlazorUI
             precision = Precision is not null ? Precision.Value : CalculatePrecision(Step);
             if (ValueHasBeenSet is false)
             {
-                Value = DefaultValue ?? Math.Min(0, min);
+                CurrentValue = DefaultValue ?? Math.Min(0, min);
             }
 
             CheckValue();
-            IntermediateValue = $"{Value}";
+            IntermediateValue = CurrentValueAsString ?? string.Empty;
             if (ChangeHandler.HasDelegate is false)
             {
                 ChangeHandler = EventCallback.Factory.Create(this, async (BitSpinButtonAction action) =>
@@ -233,12 +208,12 @@ namespace Bit.Client.Web.BlazorUI
                     switch (action)
                     {
                         case BitSpinButtonAction.Increment:
-                            result = Value + Step;
+                            result = CurrentValue + Step;
                             isValid = result <= max && result >= min;
                             break;
 
                         case BitSpinButtonAction.Decrement:
-                            result = Value - Step;
+                            result = CurrentValue - Step;
                             isValid = result <= max && result >= min;
                             break;
 
@@ -248,10 +223,10 @@ namespace Bit.Client.Web.BlazorUI
 
                     if (isValid is false) return;
 
-                    Value = Normalize(result);
+                    CurrentValue = Normalize(result);
                     CheckValue();
-                    IntermediateValue = $"{Value}";
-                    await OnChange.InvokeAsync(Value);
+                    IntermediateValue = $"{CurrentValue}";
+                    await OnChange.InvokeAsync(CurrentValue);
                 });
             }
 
@@ -282,7 +257,7 @@ namespace Bit.Client.Web.BlazorUI
             if (IsEnabled is false) return;
             if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
 
-            IntermediateValue = $"{e.Value}";
+            CurrentValueAsString = e.Value?.ToString().RemoveSuffix(Suffix);
         }
 
         private async Task HandleMouseDownAction(BitSpinButtonAction action, MouseEventArgs e)
@@ -295,7 +270,7 @@ namespace Bit.Client.Web.BlazorUI
             {
                 var args = new BitSpinButtonChangeValue
                 {
-                    Value = Value,
+                    Value = CurrentValue,
                     MouseEventArgs = e
                 };
                 await OnIncrement.InvokeAsync(args);
@@ -305,7 +280,7 @@ namespace Bit.Client.Web.BlazorUI
             {
                 var args = new BitSpinButtonChangeValue
                 {
-                    Value = Value,
+                    Value = CurrentValue,
                     MouseEventArgs = e
                 };
                 await OnDecrement.InvokeAsync(args);
@@ -328,19 +303,19 @@ namespace Bit.Client.Web.BlazorUI
                     break;
 
                 case "Enter":
-                    if (IntermediateValue == $"{Value}") break;
+                    if (IntermediateValue == CurrentValueAsString) break;
 
                     var isNumber = double.TryParse(IntermediateValue, out var numericValue);
                     if (isNumber)
                     {
-                        Value = Normalize(numericValue);
+                        CurrentValue = Normalize(numericValue);
                         CheckValue();
-                        await OnChange.InvokeAsync(Value);
+                        await OnChange.InvokeAsync(CurrentValue);
                     }
                     else
                     {
                         await Task.Delay(1);
-                        IntermediateValue = $"{Value}";
+                        IntermediateValue = CurrentValueAsString ?? string.Empty;
                         StateHasChanged();
                     }
                     break;
@@ -353,7 +328,7 @@ namespace Bit.Client.Web.BlazorUI
             {
                 var args = new BitSpinButtonChangeValue
                 {
-                    Value = Value,
+                    Value = CurrentValue,
                     KeyboardEventArgs = e
                 };
                 await OnIncrement.InvokeAsync(args);
@@ -363,7 +338,7 @@ namespace Bit.Client.Web.BlazorUI
             {
                 var args = new BitSpinButtonChangeValue
                 {
-                    Value = Value,
+                    Value = CurrentValue,
                     KeyboardEventArgs = e
                 };
                 await OnDecrement.InvokeAsync(args);
@@ -375,19 +350,19 @@ namespace Bit.Client.Web.BlazorUI
             if (IsEnabled is false) return;
             await OnBlur.InvokeAsync(e);
             if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
-            if (IntermediateValue == $"{Value}") return;
+            if (IntermediateValue == CurrentValueAsString) return;
 
             var isNumber = double.TryParse(IntermediateValue, out var numericValue);
             if (isNumber)
             {
-                Value = Normalize(numericValue);
+                CurrentValue = Normalize(numericValue);
                 CheckValue();
-                IntermediateValue = $"{Value}";
-                await OnChange.InvokeAsync(Value);
+                IntermediateValue = CurrentValueAsString ?? string.Empty;
+                await OnChange.InvokeAsync(CurrentValue);
             }
             else
             {
-                IntermediateValue = $"{Value}";
+                IntermediateValue = CurrentValueAsString ?? string.Empty;
                 StateHasChanged();
             }
         }
@@ -424,32 +399,29 @@ namespace Bit.Client.Web.BlazorUI
 
         private void CheckValue()
         {
-            if (Value > max) Value = max;
-            if (Value < min) Value = min;
+            if (CurrentValue > max) CurrentValue = max;
+            if (CurrentValue < min) CurrentValue = min;
         }
 
         private double Normalize(double value) => Math.Round(value, precision);
 
-        private double? GetAriaValueNow => AriaValueNow is not null ? AriaValueNow : Suffix.HasNoValue() ? Value : null;
-        private string? GetAriaValueText => AriaValueText.HasValue() ? AriaValueText : Suffix.HasValue() ? $"{Normalize(Value)}{Suffix}" : null;
+        private double? GetAriaValueNow => AriaValueNow is not null ? AriaValueNow : Suffix.HasNoValue() ? CurrentValue : null;
+        private string? GetAriaValueText => AriaValueText.HasValue() ? AriaValueText : Suffix.HasValue() ? $"{Normalize(CurrentValue)}{Suffix}" : null;
         private string? GetIconRole => IconAriaLabel.HasValue() ? "img" : null;
         private string GetLabelId => Label.HasValue() ? $"label{Guid.NewGuid()}" : string.Empty;
 
-        private bool _disposed;
-
-        public void Dispose()
+        protected override void Dispose(bool disposing)
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
+            if (disposing)
+            {
+                timer?.Dispose();
+            }
+
+            base.Dispose(disposing);
         }
 
-        protected virtual void Dispose(bool disposing)
-        {
-            if (_disposed) return;
-
-            timer?.Dispose();
-
-            _disposed = true;
-        }
+        /// <inheritdoc />
+        protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out double result, [NotNullWhen(false)] out string? validationErrorMessage)
+            => this.TryParseSelectableValueFromString(value, out result, out validationErrorMessage);
     }
 }
