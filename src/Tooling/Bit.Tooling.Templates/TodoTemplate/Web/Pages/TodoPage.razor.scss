@@ -1,5 +1,6 @@
 ﻿@import '../Styles/abstracts/_functions.scss';
 @import '../Styles/abstracts/_colors.scss';
+@import '../Styles/abstracts/_media-queries.scss';
 
 .page-container {
     display: flex;
@@ -10,6 +11,24 @@
     padding: rem(56px) 0;
     box-sizing: border-box;
 
+    @include lg {
+        padding: rem(48px) 0;
+    }
+
+    @include md {
+        padding: rem(72px) 0;
+    }
+
+    @media screen and (max-width:em(420px)) {
+        padding: rem(24px) 0;
+    }
+}
+
+.todo-item-date {
+    font-size: rem(12px);
+    line-height: rem(20px);
+    color: $Gray1;
+    margin-left: rem(24px);
 }
 
 .todo-form-white {
@@ -25,10 +44,34 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    height: rem(96px);
-    width: rem(816px);
+    padding: rem(24px) rem(258px);
     border-bottom: 1px solid $Gray4;
+
+    @include lg {
+        padding: rem(24px) rem(258px);
+    }
+
+    @include md {
+        padding: rem(32px) rem(219px);
+    }
+
+    @media screen and (max-width:em(1024px)) {
+        padding: rem(32px) rem(170px);
+    }
+
+    @media screen and (max-width:em(630px)) {
+        padding: rem(32px) rem(90px);
+    }
+
+    @media screen and (max-width:em(490px)) {
+        padding: rem(32px) rem(60px);
+    }
+
+    @media screen and (max-width:em(420px)) {
+        padding: rem(20px) rem(14px);
+    }
 }
+
 .todo-content {
     display: flex;
     flex-flow: column nowrap;
@@ -36,8 +79,47 @@
     align-items: start stretch;
     padding: 0 rem(126px);
     padding-top: rem(24px);
+    padding-bottom: rem(64px);
     box-sizing: border-box;
     width: 100%;
+
+
+    @include lg {
+        padding: 0 rem(123px);
+        padding-top: rem(20px);
+        padding-bottom: rem(64px);
+    }
+
+    @include md {
+        padding: 0 rem(84px);
+        padding-top: rem(24px);
+        padding-bottom: rem(60px);
+    }
+
+    @media screen and (max-width:em(1024px)) {
+        padding: 0 rem(75px);
+        padding-top: rem(24px);
+        padding-bottom: rem(60px);
+    }
+
+    @media screen and (max-width:em(630px)) {
+        position: relative;
+        padding: 0 rem(40px);
+        padding-top: rem(18px);
+        padding-bottom: rem(50px);
+    }
+
+    @media screen and (max-width:em(490px)) {
+        padding-top: rem(15px);
+        padding-bottom: rem(40px);
+        padding: 0 rem(15px);
+    }
+
+    @media screen and (max-width:em(420px)) {
+        padding: 0 rem(14px);
+        padding-top: rem(16px);
+        padding-bottom: rem(5px);
+    }
 }
 
 .todo-title {
@@ -45,6 +127,19 @@
     font-size: rem(22px);
     color: $SecondaryColor;
     line-height: rem(37px);
+
+    @include lt-xl {
+        line-height: rem(28px);
+    }
+
+    @include lt-lg {
+        margin-bottom: rem(24px);
+    }
+
+
+    @media screen and (max-width:em(420px)) {
+        line-height: rem(24px);
+    }
 }
 
 .add-todo-container {
@@ -52,44 +147,79 @@
     flex-flow: row nowrap;
     justify-content: start;
     margin-bottom: rem(24px);
+
+    @include md {
+        margin-bottom: rem(44px);
+    }
+
+    @media screen and (max-width:em(420px)) {
+        margin-bottom: rem(36px);
+    }
 }
 
 .todo-items-container {
     position: relative;
-    margin-bottom: rem(64px);
+
+    @media screen and (max-width:em(630px)) {
+        position: static;
+    }
 }
 
 .todo-sort-container {
     position: absolute;
     display: flex;
     flex-flow: row nowrap;
-    top: rem(12px);
+    top: rem(8px);
     right: 0;
 }
-.todo-empty{
-    display:flex;
-    flex-flow:column nowrap;
-    justify-content:center;
-    align-items:center;
-    height:100%;
+
+.todo-empty {
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
 }
+
 .todo-items {
     display: flex;
     flex-flow: column nowrap;
     justify-content: start;
     border: 1px solid $Gray4;
-    height: rem(242px);
+    height: rem(240px);
     width: 100%;
+
+    @include lg {
+        height: rem(228px);
+    }
+
+    @include md {
+        height: rem(588px);
+    }
+
+    @media screen and (max-width:em(490px)) {
+        height: rem(450px);
+    }
+
+    @media screen and (max-width:em(420px)) {
+        height: rem(234px);
+    }
 }
 
 .item {
     display: flex;
     justify-content: space-between;
     height: rem(80px);
-    padding: rem(18px) rem(20px);
+    padding: rem(16px) rem(20px);
     box-sizing: border-box;
     border-bottom: 1px solid $Gray4;
+
+    @include md {
+        padding: rem(20px) rem(20px);
+    }
+    
 }
+
 .todo-buttons-container {
     display: flex;
     justify-content: center;
@@ -101,6 +231,3 @@
     flex-flow: column nowrap;
     justify-content: center;
 }
-
-
-

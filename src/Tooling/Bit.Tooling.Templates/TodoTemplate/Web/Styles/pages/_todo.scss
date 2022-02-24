@@ -1,20 +1,20 @@
 ﻿@import '../abstracts/_colors.scss';
 @import '../abstracts/_functions.scss';
 
-.todo-input {
+.search-todo-input {
     width: rem(300px);
-    height: rem(32px);
+}
+
+.add-todo-input {
+    width: rem(300px);
+
+    @media screen and (max-width:em(490px)) {
+        width: rem(228px);
+    }
 }
 
 .add-todo-button {
     margin-left: rem(8px);
-}
-
-.todo-date {
-    font-size: rem(12px);
-    line-height: rem(20px);
-    color: $Gray1;
-    margin-left: rem(24px);
 }
 
 .todo-sort-lbl {
@@ -29,6 +29,10 @@
 .todo-spinner {
     margin-left: rem(40px);
 }
+.todo-item-list {
+    height: 100%;
+}
+
 .todo-list-spinner{
     position:relative;
     top:rem(105px);
