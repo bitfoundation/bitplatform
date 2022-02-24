@@ -2,14 +2,29 @@
 
 public partial class NavMenu
 {
-    [Inject]
-    public HttpClient HttpClient { get; set; } = default!;
+    private bool IsMenuOpenHasBeenSet;
+    private bool isMenuOpen;
 
     [CascadingParameter]
     public Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
 
-    [Inject]
-    public IStateService StateService { get; set; } = default!;
+    [Parameter] 
+    public bool IsMenuOpen
+    {
+        get => isMenuOpen;
+        set
+        {
+            if (value == isMenuOpen) return;
+            isMenuOpen = value;
+            _ = IsMenuOpenChanged.InvokeAsync(value);
+        }
+    }
+
+    [Parameter] public EventCallback<bool> IsMenuOpenChanged { get; set; }
+
+    [Inject] public HttpClient HttpClient { get; set; } = default!;
+
+    [Inject] public IStateService StateService { get; set; } = default!;
 
     public List<BitNavLinkItem> NavLinks { get; set; }
 
@@ -47,6 +62,17 @@ public partial class NavMenu
                 Key = "SignOut"
             }
         };
+    }
+    private void OnModalCloseHandler()
+    {
+        IsSignOutModalOpen = false;
+    }
+
+    private void CloseMenu()
+    {
+        if (IsMenuOpenHasBeenSet && IsMenuOpenChanged.HasDelegate is false) return;
+
+        IsMenuOpen = false;
     }
 
     protected override async Task OnInitAsync()
