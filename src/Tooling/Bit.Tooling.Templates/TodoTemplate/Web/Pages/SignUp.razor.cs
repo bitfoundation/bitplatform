@@ -39,7 +39,7 @@ public partial class SignUp
         }
         if (string.IsNullOrEmpty(Password))
         {
-            IsEnableSignUpButton = false; 
+            IsEnableSignUpButton = false;
             return;
         }
         if (IsAcceptPrivacy is false)
@@ -67,7 +67,9 @@ public partial class SignUp
 
         var isCorrectEmailFormat = new Regex(@"^([\w\.\-]+)@([\w\-]+)((\.(\w){2,3})+)$");
 
-        var hasNonAlphanumericCharacter = new Regex(@"[^a-zA-Z0-9\n\r\t ]");
+        var hasAlphanumericCharacter = new Regex(@"(?=.*?[0-9])");
+
+        var containNonEnglishCharacter = new Regex(@"^[a-zA-Z0-9. -_?]*$");
 
         EmailErrorMessage = isCorrectEmailFormat.Match(Email).Success is false
             ? "The email address format is incorrect."
@@ -75,9 +77,14 @@ public partial class SignUp
 
         PasswordErrorMessage = Password.Length < 6
             ? "The password must have at least 6 characters."
-            : hasNonAlphanumericCharacter.Match(Password).Success is false
-                ? "The password must have at least one non alphanumeric character."
-                : null;
+
+            : containNonEnglishCharacter.Match(Password).Success is false
+                ? "The password should not contain non-English letters." 
+
+                : hasAlphanumericCharacter.Match(Password).Success is false 
+                    ? "The password must have at least one alphanumeric character." 
+
+                    : null;
 
         if (string.IsNullOrEmpty(EmailErrorMessage) is false || string.IsNullOrEmpty(PasswordErrorMessage) is false)
         {
