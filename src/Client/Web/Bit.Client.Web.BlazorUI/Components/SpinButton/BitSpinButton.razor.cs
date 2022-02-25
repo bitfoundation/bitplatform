@@ -257,7 +257,7 @@ namespace Bit.Client.Web.BlazorUI
             if (IsEnabled is false) return;
             if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
 
-            CurrentValueAsString = e.Value?.ToString().RemoveSuffix(Suffix);
+            IntermediateValue = $"{e.Value}";
         }
 
         private async Task HandleMouseDownAction(BitSpinButtonAction action, MouseEventArgs e)
