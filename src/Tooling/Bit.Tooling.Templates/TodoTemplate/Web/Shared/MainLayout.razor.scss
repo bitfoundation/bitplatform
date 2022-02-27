@@ -35,14 +35,19 @@
     @include md {
         height: calc(100vh - 134px);
     }
-
-    @include sm {
-        height: calc(100vh - 170px);
-    }
 }
 
 @media all and (max-width: #{em(370px)}) {
     .main--authenticated {
         padding-top: rem(84px);
+    }
+
+    .main {
+        padding-top: rem(84px);
+        min-height: calc(100vh - 170px);
+    }
+
+    .main-content {
+        height: calc(100vh - 170px);
     }
 }
