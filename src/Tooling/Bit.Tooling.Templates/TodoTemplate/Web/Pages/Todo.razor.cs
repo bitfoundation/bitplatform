@@ -1,7 +1,8 @@
 ﻿using TodoTemplate.Shared.Dtos.TodoItem;
+
 namespace TodoTemplate.App.Pages;
 
-public partial class TodoPage
+public partial class Todo
 {
     [Inject]
     public HttpClient HttpClient { get; set; } = default!;
