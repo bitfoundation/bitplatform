@@ -25,6 +25,22 @@
     }
 }
 
+.main-content {
+    height: calc(100vh - 138px);
+
+    @include lg {
+        height: calc(100vh - 134px);
+    }
+
+    @include md {
+        height: calc(100vh - 134px);
+    }
+
+    @include sm {
+        height: calc(100vh - 170px);
+    }
+}
+
 @media all and (max-width: #{em(370px)}) {
     .main--authenticated {
         padding-top: rem(84px);
