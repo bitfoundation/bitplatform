@@ -112,9 +112,6 @@ public partial class SignUp
                 Password = Password
             });
 
-            IsSuccessSignUp = true;
-            SignUpMessage = "Sign-up successfully";
-
             NavigationManager.NavigateTo("/");
         }
         catch (ResourceValidationException e)
