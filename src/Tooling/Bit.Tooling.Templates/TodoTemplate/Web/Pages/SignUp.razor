@@ -15,38 +15,46 @@
             </BitMessageBar>
         }
         <h1 class="form-title">
-            Create your free account
+            Sign up
         </h1>
         <div class="form-input-container">
             <BitLabel>Email</BitLabel>
-            <BitTextField Placeholder="Email" @bind-Value="Email" 
+            <BitTextField Placeholder="Email"
+                          @bind-Value="Email"
                           OnKeyUp="() => InvokeAsync(CheckSignUpButtonEnable)"
                           OnFocus="() => EmailErrorMessage = null" />
             <div class="form-input-error">@EmailErrorMessage</div>
         </div>
         <div class="form-input-container">
             <BitLabel>Password</BitLabel>
-            <BitTextField Type="BitTextFieldType.Password" CanRevealPassword="true" Placeholder="Password" @bind-Value="Password"
+            <BitTextField Type="BitTextFieldType.Password"
+                          CanRevealPassword="true" Placeholder="Password"
+                          @bind-Value="Password"
                           OnKeyUp="() => InvokeAsync(CheckSignUpButtonEnable)"
                           OnFocus="() => PasswordErrorMessage = null" />
             <div class="form-input-error">@PasswordErrorMessage</div>
         </div>
-        <BitCheckbox Class="form-checkbox" @bind-IsChecked="IsAcceptPrivacy" 
+        <BitCheckbox Class="form-checkbox" @bind-IsChecked="IsAcceptPrivacy"
                      OnChange="() => InvokeAsync(CheckSignUpButtonEnable)">
-            Accept <BitLink Href="/privacy" Target="_blank">privacy and policy</BitLink>
+            I agree to the <BitLink Href="/privacy" Target="_blank">Bit Privacy Policy</BitLink>
         </BitCheckbox>
-        <BitButton Class="form-submit-button" ButtonStyle="BitButtonStyle.Primary" IsEnabled="@IsEnableSignUpButton" OnClick="() => InvokeAsync(DoSignUp)">
-           @if (IsLoading)
-           {
-               <BitSpinner Size="BitSpinnerSize.Small"></BitSpinner>
-           }
-           else
-           {
-               <span>Sign up</span>
-           }
+        <BitButton Class="form-submit-button"
+                   ButtonStyle="BitButtonStyle.Primary"
+                   Title="Sign up"
+                   AriaLabel="Sign up"
+                   IsEnabled="@IsEnableSignUpButton"
+                   OnClick="() => InvokeAsync(DoSignUp)">
+            @if (IsLoading)
+            {
+                <BitSpinner Size="BitSpinnerSize.Small"></BitSpinner>
+            }
+            else
+            {
+                <span>Sign up</span>
+            }
         </BitButton>
         <div>
-            Already have an account? <BitLink Href="/sign-in">Sign in</BitLink>
+            Already on Bit? <BitLink Href="/sign-in">Sign in</BitLink>
         </div>
     </form>
 </div>
