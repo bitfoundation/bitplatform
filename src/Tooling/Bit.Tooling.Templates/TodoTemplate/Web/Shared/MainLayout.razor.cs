@@ -3,6 +3,7 @@
     public partial class MainLayout : IAsyncDisposable
     {
         public bool IsUserAuthenticated { get; set; }
+        public bool IsMenuOpen { get; set; } = false;
 
         [Inject]
         public IStateService StateService { get; set; } = default!;
@@ -36,6 +37,11 @@
             {
                 StateHasChanged();
             }
+        }
+
+        private void ToggleMenuHandler()
+        {
+            IsMenuOpen = !IsMenuOpen;
         }
 
         public async ValueTask DisposeAsync()

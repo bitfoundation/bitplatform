@@ -6,7 +6,7 @@
     position: fixed;
     left: 0;
     top: rem(48px);
-    z-index: 2;
+    z-index: 16;
     display: flex;
     flex-flow: column nowrap;
     justify-content: flex-start;
@@ -20,6 +20,14 @@
 
     @include lt-lg {
         width: rem(306px);
+    }
+}
+
+.main-container--closed {
+    display: none;
+
+    @include gt-md {
+        display: flex;
     }
 }
 
@@ -88,7 +96,7 @@
     position: fixed;
     left: 0;
     top: rem(48px);
-    z-index: 1;
+    z-index: 15;
     display: none;
     width: 100%;
     height: calc(100vh - #{rem(48px)});

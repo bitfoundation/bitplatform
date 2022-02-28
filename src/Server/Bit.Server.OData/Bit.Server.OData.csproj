@@ -10,7 +10,7 @@
 
   <ItemGroup>
     <PackageReference Include="Bit.Swashbuckle.OData" Version="4.0.9" />
-	<PackageReference Include="Microsoft.AspNet.OData" Version="7.5.12" />
+	<PackageReference Include="Microsoft.AspNet.OData" Version="7.5.13" />
     <PackageReference Include="LambdaSqlBuilder" Version="0.9.0" />
     <PackageReference Include="Microsoft.OData.Core" Version="7.10.0" />
   </ItemGroup>

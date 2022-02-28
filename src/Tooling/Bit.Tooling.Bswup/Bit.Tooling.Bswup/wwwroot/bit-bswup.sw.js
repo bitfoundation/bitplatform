@@ -39,7 +39,10 @@ async function handleFetch(e) {
         return new Response(new Blob(), { status: 405, "statusText": `prohibited URL: ${requestUrl}` });
     }
 
-    const asset = self.assetsManifest.assets.find(a => shouldServeIndexHtml ? a.url === requestUrl : new URL(requestUrl).pathname.endsWith(a.url));
+    const caseMethod = self.caseInsensitiveUrl ? 'toLowerCase' : 'toString';
+    const asset = self.assetsManifest.assets.find(a => shouldServeIndexHtml
+        ? a.url[caseMethod]() === requestUrl[caseMethod]()
+        : new URL(requestUrl).pathname.endsWith(a.url));
     const cacheUrl = asset && `${asset.url}.${asset.hash || ''}`;
 
     const cache = await caches.open(CACHE_NAME);
@@ -57,7 +60,7 @@ function handleMessage(e) {
 // ============================================================================
 
 async function createNewCache() {
-    const assetsInclude = [/\.dll$/, /\.pdb$/, /\.wasm/, /\.html/, /\.js$/, /\.json$/, /\.css$/, /\.woff$/, /\.png$/, /\.jpe?g$/, /\.gif$/, /\.ico$/, /\.blat$/, /\.dat$/, /\.svg$/]
+    const assetsInclude = [/\.dll$/, /\.pdb$/, /\.wasm/, /\.html/, /\.js$/, /\.json$/, /\.css$/, /\.woff$/, /\.png$/, /\.jpe?g$/, /\.gif$/, /\.ico$/, /\.blat$/, /\.dat$/, /\.svg$/, /\.woff2$/, /\.ttf$/]
         .concat(self.assetsInclude || []);
     const assetsExclude = [/^_content\/Bit.Tooling.Bswup\/bit-bswup.sw.js$/, /^service-worker\.js$/]
         .concat(self.assetsExclude || []);

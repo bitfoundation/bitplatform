@@ -1,16 +1,25 @@
 ﻿@inherits TodoTemplateComponentBase;
 
-<div class="menu-shadow"></div>
-<section class="main-container">
+@if (IsMenuOpen)
+{
+    <div class="menu-shadow" @onclick=CloseMenu></div>
+}
+
+<section class="main-container @(IsMenuOpen ? null : "main-container--closed")">
     <div class="top-container">
         <div class="user-img">@UserName?.ToUpper()[..2]</div>
-        <div class="user-name"> @UserName</div>
-        <BitActionButton IconName="BitIconName.Edit" Href="/edit-profile">Edit profile</BitActionButton>
+        <div class="user-name">@UserName</div>
+        <BitActionButton IconName="BitIconName.Edit"
+                         Href="/edit-profile"
+                         OnClick=CloseMenu>
+            Edit profile
+        </BitActionButton>
     </div>
     <BitNav NavLinkItems="NavLinks"
             AriaLabel="NavMenu"
-            SelectedKey="Home">
+            SelectedKey="Home"
+            OnLinkClick=CloseMenu>
     </BitNav>
 </section>
 
-<SignOutConfirmModal IsOpen="IsSignOutModalOpen" ModalClosed="OnModalCloseHandler"></SignOutConfirmModal>
+<SignOutConfirmModal @bind-IsOpen=IsSignOutModalOpen></SignOutConfirmModal>

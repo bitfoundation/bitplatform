@@ -24,6 +24,7 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// Whether the dialog can be light dismissed by clicking outside the dialog (on the overlay).
         /// </summary>
+        
         [Parameter] public bool IsBlocking { get; set; }
 
         /// <summary>
@@ -46,7 +47,6 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
         [Parameter] public EventCallback<bool> IsOpenChanged { get; set; }
-
 
         /// <summary>
         /// The content of the Modal, it can be any custom tag or text.
@@ -73,6 +73,8 @@ namespace Bit.Client.Web.BlazorUI
 
         private void CloseCallout(MouseEventArgs e)
         {
+            if (IsOpenHasBeenSet && IsOpenChanged.HasDelegate is false) return;
+
             if (IsBlocking == false)
             {
                 IsOpen = false;
