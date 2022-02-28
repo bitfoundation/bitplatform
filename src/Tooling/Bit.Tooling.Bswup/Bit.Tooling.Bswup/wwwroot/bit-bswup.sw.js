@@ -1,4 +1,5 @@
-﻿self.importScripts(self.assetsUrl || '/service-worker-assets.js');
+﻿const ASSETS_URL = typeof self.assetsUrl === 'string' ? self.assetsUrl : '/service-worker-assets.js';
+self.importScripts(ASSETS_URL);
 
 const VERSION = self.assetsManifest.version;
 const CACHE_NAME_PREFIX = 'bit-bswup-';
@@ -27,15 +28,21 @@ async function handleActivate(e) {
     postMessage({ type: 'activate', data: { version: VERSION } });
 }
 
+const DEFAULT_URL = (typeof self.defaultUrl === 'string') ? self.defaultUrl : 'index.html';
+const PROHIBITED_URLS = self.prohibitedUrls
+    ? (self.prohibitedUrls instanceof Array
+        ? self.prohibitedUrls
+        : [self.prohibitedUrls])
+    : [];
 async function handleFetch(e) {
     if (e.request.method !== 'GET') return fetch(e.request);
 
     // For all navigation requests, try to serve index.html from cache
     // If you need some URLs to be server-rendered, edit the following check to exclude those URLs
     const shouldServeIndexHtml = e.request.mode === 'navigate';
-    const requestUrl = shouldServeIndexHtml ? (self.defaultUrl || 'index.html') : e.request.url;
+    const requestUrl = shouldServeIndexHtml ? DEFAULT_URL : e.request.url;
 
-    if ((self.prohibitedUrls || []).some(url => url.test(requestUrl))) {
+    if (PROHIBITED_URLS.some(url => url.test(requestUrl))) {
         return new Response(new Blob(), { status: 405, "statusText": `prohibited URL: ${requestUrl}` });
     }
 
@@ -60,18 +67,62 @@ function handleMessage(e) {
 // ============================================================================
 
 async function createNewCache() {
+    const userAssetsInclude = self.assetsInclude
+        ? (self.assetsInclude instanceof Array
+            ? self.assetsInclude
+            : [self.assetsInclude])
+        : [];
+
+    const userAssetsExclude = self.assetsExclude
+        ? (self.assetsExclude instanceof Array
+            ? self.assetsExclude
+            : [self.assetsExclude])
+        : [];
+
+    const externalAssets = (
+        self.externalAssets
+            ? (self.externalAssets instanceof Array
+                ? self.externalAssets
+                : [self.externalAssets])
+            : [])
+        .map(asset => {
+            if (asset && asset.url) {
+                return asset;
+            }
+            if (typeof asset === 'string') {
+                return ({ url: asset });
+            }
+            return null;
+        })
+        .filter(asset => asset !== null);
+
+    // ================================================
+
     const assetsInclude = [/\.dll$/, /\.pdb$/, /\.wasm/, /\.html/, /\.js$/, /\.json$/, /\.css$/, /\.woff$/, /\.png$/, /\.jpe?g$/, /\.gif$/, /\.ico$/, /\.blat$/, /\.dat$/, /\.svg$/, /\.woff2$/, /\.ttf$/]
-        .concat(self.assetsInclude || []);
+        .concat(userAssetsInclude).filter(pattern => pattern instanceof RegExp);
     const assetsExclude = [/^_content\/Bit.Tooling.Bswup\/bit-bswup.sw.js$/, /^service-worker\.js$/]
-        .concat(self.assetsExclude || []);
+        .concat(userAssetsExclude).filter(pattern => pattern instanceof RegExp);
 
     const assets = self.assetsManifest.assets
-        .filter(asset => assetsInclude.some(pattern => pattern.test(asset.url)))
-        .filter(asset => !assetsExclude.some(pattern => pattern.test(asset.url)))
-        .concat(self.externalAssets || []);
+        .filter(asset => assetsInclude.some(pattern => {
+            try {
+                return pattern.test(asset.url);
+            } catch (e) {
+                return false;
+            }
+        }))
+        .filter(asset => !assetsExclude.some(pattern => {
+            try {
+                return pattern.test(asset.url);
+            } catch (e) {
+                return false;
+            }
+        }))
+        .concat(externalAssets);
+    const uniqueAssets = distinct(assets);
 
     let current = 0;
-    const total = assets.length;
+    const total = uniqueAssets.length;
 
     const cacheKeys = await caches.keys();
     const oldCacheKey = cacheKeys.find(key => key.startsWith(CACHE_NAME_PREFIX));
@@ -81,7 +132,7 @@ async function createNewCache() {
     }
 
     const cache = await caches.open(CACHE_NAME);
-    return Promise.all(assets.map(addCache));
+    return Promise.all(uniqueAssets.map(addCache));
 
     async function addCache(asset, index) {
         const request = new Request(asset.url, asset.hash ? { integrity: asset.hash } : {});
@@ -110,6 +161,17 @@ async function createNewCache() {
                 }
             }, 1.000 * (index + 1));
         });
+    }
+
+    function distinct(assets) {
+        const unique = {};
+        const distinct = [];
+        for (let i = 0; i < assets.length; i++) {
+            if (unique[assets[i].url]) continue;
+            distinct.push(assets[i]);
+            unique[assets[i].url] = 1;
+        }
+        return distinct;
     }
 }
 
