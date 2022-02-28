@@ -138,7 +138,6 @@ public partial class Todo
             IsEnabledAddButton = false;
             return;
         }
-
         IsEnabledAddButton = true;
     }
 

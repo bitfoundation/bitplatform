@@ -9,7 +9,7 @@
         @if (string.IsNullOrEmpty(SignUpMessage) is false)
         {
             <BitMessageBar Class="form-message-bar"
-                       MessageBarType="@(IsSuccessSignUp ? BitMessageBarType.Success : BitMessageBarType.Error)"
+                       MessageBarType="@SignUpMessageType"
                        OnDismiss="() => SignUpMessage = null">
                 @SignUpMessage
             </BitMessageBar>
@@ -19,17 +19,17 @@
         </h1>
         <div class="form-input-container">
             <BitLabel>Email</BitLabel>
-            <BitTextField Placeholder="Email"
-                          @bind-Value="Email"
+            <BitTextField @bind-Value="Email"
+                          Placeholder="Email"
                           OnKeyUp="() => InvokeAsync(CheckSignUpButtonEnable)"
                           OnFocus="() => EmailErrorMessage = null" />
             <div class="form-input-error">@EmailErrorMessage</div>
         </div>
         <div class="form-input-container">
             <BitLabel>Password</BitLabel>
-            <BitTextField Type="BitTextFieldType.Password"
+            <BitTextField @bind-Value="Password"
+                          Type="BitTextFieldType.Password"
                           CanRevealPassword="true" Placeholder="Password"
-                          @bind-Value="Password"
                           OnKeyUp="() => InvokeAsync(CheckSignUpButtonEnable)"
                           OnFocus="() => PasswordErrorMessage = null" />
             <div class="form-input-error">@PasswordErrorMessage</div>
@@ -42,9 +42,9 @@
                    ButtonStyle="BitButtonStyle.Primary"
                    Title="Sign up"
                    AriaLabel="Sign up"
-                   IsEnabled="@IsEnableSignUpButton"
+                   IsEnabled="@IsSignUpButtonEnabled"
                    OnClick="() => InvokeAsync(DoSignUp)">
-            @if (IsLoading)
+            @if (IsLoadingPage)
             {
                 <BitSpinner Size="BitSpinnerSize.Small"></BitSpinner>
             }
