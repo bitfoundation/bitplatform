@@ -8,23 +8,24 @@
 <div class="page-container">
     <div class="todo-form-white">
         <div class="search-todo-container">
-            <BitSearchBox Class="search-todo-container"
-                          Placeholder="Search some todo..."
-                          OnChange="SetSearchText"
-                          OnClear="() => SetSearchText(String.Empty)"/>
+            <BitSearchBox OnChange="TodoItemSearch"
+                          OnClear="@(()=>TodoItemSearch(""))"
+                          Class="search-todo-input"
+                          Placeholder="Search some todo..." />
         </div>
         <div class="todo-content">
             <h2 class="todo-title">Todo</h2>
             <div class="add-todo-container">
-                <BitTextField @bind-Value="TitleToAdd"
-                              OnKeyUp="() => InvokeAsync(CheckAddButtonEnable)"
+                <BitTextField @bind-Value="NewTodoItemTitle"
                               Placeholder="Add a todo"
                               Class="add-todo-input" />
 
                 <BitButton OnClick="() => InvokeAsync(AddTodoItem)"
                            Class="add-todo-button"
-                           IsEnabled="IsAddButtonEnabled">
-                    @if (IsLoadingAddButton)
+                           Title="Add"
+                           AriaLabel="Add"
+                           IsEnabled="(string.IsNullOrEmpty(NewTodoItemTitle) is false)">
+                    @if (IsAddLoading)
                     {
                         <BitSpinner Size="BitSpinnerSize.Small"></BitSpinner>
                     }
@@ -36,25 +37,26 @@
             </div>
             <div class="todo-items-container">
                 <div class="todo-sort-container">
-                    <BitDropDown OnSelectItem="SetSelectedSortName"
+                    <BitDropDown OnSelectItem="TodoItemSort"
                                  Class="sort-todo-dropdown"
                                  Items="SortItemList">
                         <CaretDownFragment>
-                            <BitActionButton IconName="BitIconName.Sort">
-                                Sort by @SelectedSortName
-                            </BitActionButton>
+                            <BitActionButton IconName="BitIconName.Sort">Sort by @SelectedSortTodoItemName</BitActionButton>
                         </CaretDownFragment>
                     </BitDropDown>
                 </div>
-                <BitPivot OnLinkClick="SetSelectedPivotName">
-                    <BitPivotItem Class="todo-pivot-tab" HeaderText="All"/>
-                    <BitPivotItem Class="todo-pivot-tab" HeaderText="Active"/>
-                    <BitPivotItem Class="todo-pivot-tab" HeaderText="Completed"/>
+                <BitPivot OnLinkClick="NavigatePivotItem">
+                    <BitPivotItem Class="todo-pivot-tab" HeaderText="All" AriaLabel="All" />
+                    <BitPivotItem Class="todo-pivot-tab" HeaderText="Active" AriaLabel="Active" />
+                    <BitPivotItem Class="todo-pivot-tab" HeaderText="Completed" AriaLabel="Completed" />
                 </BitPivot>
                 <div class="todo-items">
-                    @if (IsLoadingPage)
+                    @if (IsLoading)
                     {
-                        <BitSpinner Class="todo-list-spinner"></BitSpinner>
+                        <div>
+                            <BitSpinner Class="todo-list-spinner"></BitSpinner>
+                        </div>
+
                     }
                     else
                     {
@@ -73,59 +75,45 @@
                                 <RowTemplate>
                                     <div class="item">
                                         @if (context.IsInEditMode)
-                                        {
-                                            <BitTextField @bind-Value="TitleToEdit"
-                                                          Class="todo-input"
-                                                          OnKeyUp="() => InvokeAsync(() => CheckEditButtonEnable(context.Id))"/>
-                                            <div>
-                                                <BitButton Title="Edit"
-                                                           AriaLabel="Edit"
-                                                           IsEnabled="IsEditButtonEnabled"
-                                                           OnClick="(() => InvokeAsync(() => EditTodoItem(context)))">
-                                                    @if (IsLoadingEditButton)
-                                                    {
-                                                        <BitSpinner Size="BitSpinnerSize.Small"></BitSpinner>
-                                                    }
-                                                    else
-                                                    {
-                                                        <span>Edit</span>
-                                                    }
-                                                </BitButton>
-                                                <BitButton ButtonStyle="BitButtonStyle.Standard"
-                                                           Class="todo-button"
-                                                           Title="Cancel"
-                                                           AriaLabel="Cancel"
-                                                           OnClick="@(() => InvokeAsync(() => CancelEditMode(context)))">
-                                                    Cancel
-                                                </BitButton>
-                                            </div>
-                                        }
-                                        else
-                                        {
-                                            <div class="todo-info">
-                                                <BitCheckbox DefaultIsChecked="context.IsDone"
-                                                             OnChange="() => InvokeAsync(() => ToggleTodoItem(context))">
-                                                    @context.Title
-                                                </BitCheckbox>
-
-                                                <div Class="todo-item-date">
-                                                    @context.Date.ToString("MMMM dd , yyyy , dddd")
-                                                </div>
-                                            </div>
-                                            <div class="todo-buttons-container">
-                                                <BitIconButton IconName="BitIconName.Edit"
-                                                               Title="Edit"
-                                                               AriaLabel="Edit"
-                                                               OnClick="() => InvokeAsync(() => ChangeToEditMode(context))"/>
-
-                                                <BitIconButton IconName="BitIconName.Delete"
-                                                               Title="Remove"
-                                                               AriaLabel="Remove"
-                                                               OnClick="() => InvokeAsync(() => DeleteTodoItem(context))"/>
-                                            </div>
-                                        }
+                                {
+                                    <BitTextField Class="todo-input" @bind-Value="context.Title" />
+                                    <div>
+                                        <BitButton Title="Edit"
+                                               AriaLabel="Edit"
+                                               OnClick="(() => InvokeAsync(() => EditTodoItem(context)))">Edit</BitButton>
+                                        <BitButton ButtonStyle="BitButtonStyle.Standard"
+                                               Class="todo-button"
+                                               Title="Cancel"
+                                               AriaLabel="Cancel"
+                                               OnClick="@(() => InvokeAsync(() => CancelEditMode(context)))">Cancel</BitButton>
                                     </div>
-                                </RowTemplate>
+                                }
+                                else
+                                {
+                                    <div class="todo-info">
+                                        <BitCheckbox DefaultIsChecked="context.IsDone"
+                                                 OnChange="()=>ToggleTodoItem(context)">
+                                            @context.Title
+                                        </BitCheckbox>
+
+                                        <div Class="todo-item-date">
+                                            @context.Date.ToString("MMMM dd , yyyy , dddd")
+                                        </div>
+                                    </div>
+                                    <div class="todo-buttons-container">
+                                        <BitIconButton IconName="BitIconName.Edit"
+                                                   Title="Edit"
+                                                   AriaLabel="Edit"
+                                                   OnClick="(() => InvokeAsync(() => ToggleToEditMode(context)))" />
+
+                                        <BitIconButton IconName="BitIconName.Delete"
+                                                   Title="Remove"
+                                                   AriaLabel="Remove"
+                                                   OnClick="(() => InvokeAsync(() => DeleteTodoItem(context)))" />
+                                    </div>
+                                }
+                            </div>
+                        </RowTemplate>
                     </BitBasicList>
                         }
                     }

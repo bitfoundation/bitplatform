@@ -4,227 +4,181 @@ namespace TodoTemplate.App.Pages;
 
 public partial class Todo
 {
-    public List<TodoItemDto> AllTodoItemList { get; set; } = new();
+    [Inject]
+    public HttpClient HttpClient { get; set; } = default!;
 
-    public List<TodoItemDto> ViewTodoItemList { get; set; } = new();
+    [Inject]
+    public IStateService StateService { get; set; } = default!;
+
+    public bool IsLoading { get; set; }
+    public string? SelectedPivotName { get; set; }
+    public string? EditModeTodoItemText { get; set; }
+    public bool IsAddLoading { get; set; }
+    public string? SelectedSortTodoItemName { get; set; }
+    public string? SearchTextTodoItem { get; set; }
+    public string NewTodoItemTitle { get; set; } = string.Empty;
+    public List<TodoItemDto>? AllTodoItemList { get; set; } = new();
+    public List<TodoItemDto>? ViewTodoItemList { get; set; } = new();
 
     public List<BitDropDownItem> SortItemList = new()
     {
         new BitDropDownItem
         {
-            Text = "Alphabetical"
+            Text = "Alphabetical",
         },
         new BitDropDownItem
         {
-            Text = "Date"
+            Text = "Date",
         }
     };
-    public string? SelectedPivotName { get; set; }
-    public string? SelectedSortName { get; set; }
-    public string? SearchText { get; set; }
 
-    public string? TitleToAdd { get; set; }
-    public string? TitleToEdit { get; set; }
-
-    public bool IsLoadingPage { get; set; }
-    public bool IsAddButtonEnabled { get; set; }
-    public bool IsEditButtonEnabled { get; set; }
-    public bool IsLoadingAddButton { get; set; }
-    public bool IsLoadingEditButton { get; set; }
-
-    [Inject] public HttpClient HttpClient { get; set; } = default!;
-
-    [Inject] public IStateService StateService { get; set; } = default!;
-
-    protected override async Task OnInitAsync()
+    protected async override Task OnInitAsync()
     {
-        IsLoadingPage = true;
-
-        await LoadTodoItemsData();
-
-        IsLoadingPage = false;
+        await LoadTodoItems();
 
         await base.OnInitAsync();
     }
 
-    private async Task LoadTodoItemsData()
+    private async Task LoadTodoItems()
     {
-        AllTodoItemList = await StateService.GetValue(nameof(AllTodoItemList), async () =>
-            await HttpClient.GetFromJsonAsync("TodoItem", ToDoTemplateJsonContext.Default.ListTodoItemDto))
-            ?? new List<TodoItemDto>();
-
-        ViewTodoItemList = AllTodoItemList;
-
-        GenerateViewTodoItemList();
-    }
-
-    private void GenerateViewTodoItemList()
-    {
-        TodoItemListPivotHandler(SelectedPivotName ?? String.Empty);
-
-        if (SearchText is not null)
-        {
-            TodoItemSearchHandler(SearchText);
-        }
-        if (SortItemList.Any(item => item.IsSelected))
-        {
-            TodoItemSortHandler();
-        }
-    }
-
-    private void TodoItemListPivotHandler(string filterName)
-    {
-        switch (filterName)
-        {
-            case "All":
-                ViewTodoItemList = AllTodoItemList;
-                break;
-
-            case "Active":
-                ViewTodoItemList = AllTodoItemList.Where(c => c.IsDone == false).ToList();
-                break;
-
-            case "Completed":
-                ViewTodoItemList = AllTodoItemList.Where(c => c.IsDone).ToList();
-                break;
-
-            default:
-                ViewTodoItemList = AllTodoItemList;
-                break;
-        }
-    }
-
-    private void TodoItemSortHandler()
-    {
-        ViewTodoItemList = SelectedSortName == "Alphabetical"
-            ? ViewTodoItemList.OrderBy(td => td.Title).ToList()
-            : ViewTodoItemList.OrderBy(td => td.Date).ToList();
-    }
-
-    private void SetSearchText(string? text)
-    {
-        SearchText = text;
-        GenerateViewTodoItemList();
-    }
-
-    private void TodoItemSearchHandler(string searchStr)
-    {
-        ViewTodoItemList = ViewTodoItemList.Where(td => td.Title != null && td.Title.Contains(searchStr)).ToList();
-    }
-
-    private void SetSelectedPivotName(BitPivotItem bitPivotItem)
-    {
-        SelectedPivotName = bitPivotItem.HeaderText;
-        GenerateViewTodoItemList();
-    }
-
-    private void SetSelectedSortName(BitDropDownItem bitDropDownItem)
-    {
-        SelectedSortName = bitDropDownItem.Text;
-        GenerateViewTodoItemList();
-    }
-
-    private async void ToggleTodoItem(TodoItemDto todoItem)
-    {
-        todoItem.IsDone = !todoItem.IsDone;
-        TitleToEdit = todoItem.Title;
-        await EditTodoItem(todoItem);
-    }
-
-    private void CheckAddButtonEnable()
-    {
-        if (string.IsNullOrEmpty(TitleToAdd))
-        {
-            IsAddButtonEnabled = false;
-            return;
-        }
-        IsAddButtonEnabled = true;
-    }
-
-    private async Task AddTodoItem()
-    {
-        IsLoadingAddButton = true;
-
+        IsLoading = true;
         try
         {
-            var todoItemToAdd = new TodoItemDto
-            {
-                Title = TitleToAdd,
-                Date = DateTime.Now
-            };
-
-            await HttpClient.PostAsJsonAsync("TodoItem", todoItemToAdd, ToDoTemplateJsonContext.Default.TodoItemDto);
-
-            await LoadTodoItemsData();
-
-            TitleToAdd = String.Empty;
+            AllTodoItemList = await StateService.GetValue(nameof(AllTodoItemList), async () => await HttpClient.GetFromJsonAsync("TodoItem", ToDoTemplateJsonContext.Default.ListTodoItemDto));
+            GenarateViewTodoItemList();
         }
         finally
         {
-            IsLoadingAddButton = false;
+            IsLoading = false;
         }
     }
 
-    private void ChangeToEditMode(TodoItemDto todoItem)
+    private void GenarateViewTodoItemList()
     {
-        TitleToEdit = todoItem.Title;
-        IsEditButtonEnabled = false;
-        todoItem.IsInEditMode = true;
+        ViewTodoItemList = AllTodoItemList?.ToList();
+        FilterTodoItemList(SelectedPivotName);
+
+        if (SearchTextTodoItem != null)
+        {
+            HandlerTodoItemSearch(SearchTextTodoItem);
+        }
+        if (SelectedSortTodoItemName != null)
+        {
+            HandlerTodoItemSort();
+        }
+    }
+
+    private void NavigatePivotItem(BitPivotItem bitPivotItem)
+    {
+        SelectedPivotName = bitPivotItem.HeaderText;
+        GenarateViewTodoItemList();
+    }
+
+    private void FilterTodoItemList(string filtername)
+    {
+        if (filtername == "All")
+        {
+
+            ViewTodoItemList = AllTodoItemList?.ToList();
+        }
+        if (filtername == "Active")
+        {
+
+            ViewTodoItemList = AllTodoItemList?.Where(c => c.IsDone == false).ToList();
+        }
+        if (filtername == "Completed")
+        {
+            ViewTodoItemList = AllTodoItemList?.Where(c => c.IsDone == true).ToList();
+        }
+    }
+
+    private async Task ToggleTodoItem(TodoItemDto todoItem)
+    {
+        todoItem.IsDone = !todoItem.IsDone;
+        await EditTodoItem(todoItem);
+        GenarateViewTodoItemList();
+    }
+
+    private void HandlerTodoItemSearch(string searchStr)
+    {
+        FilterTodoItemList(SelectedPivotName);
+        ViewTodoItemList = ViewTodoItemList?.Where(td => td.Title.Contains(searchStr)).ToList();
+    }
+
+    private void TodoItemSearch(string searchStr)
+    {
+        SearchTextTodoItem = searchStr;
+        GenarateViewTodoItemList();
+    }
+
+    private void HandlerTodoItemSort()
+    {
+        if (SelectedSortTodoItemName == "Alphabetical")
+        {
+            ViewTodoItemList = ViewTodoItemList?.OrderBy(td => td.Title).ToList();
+        }
+        else
+        {
+            ViewTodoItemList = ViewTodoItemList?.OrderBy(td => td.Date).ToList();
+        }
     }
 
     private void CancelEditMode(TodoItemDto todoItem)
     {
-        TitleToEdit = String.Empty;
-        IsEditButtonEnabled = false;
+        todoItem.Title = EditModeTodoItemText;
         todoItem.IsInEditMode = false;
     }
 
-    private void CheckEditButtonEnable(int todoItemId)
+    private void ToggleToEditMode(TodoItemDto todoItem)
     {
-        if (string.IsNullOrEmpty(TitleToEdit)
-            || AllTodoItemList.Find(dto => dto.Id == todoItemId)?.Title == TitleToEdit)
-        {
-            IsEditButtonEnabled = false;
-            return;
-        }
-
-        IsEditButtonEnabled = true;
+        EditModeTodoItemText = todoItem.Title;
+        todoItem.IsInEditMode = true;
     }
 
-    private async Task EditTodoItem(TodoItemDto todoItem)
+    private void TodoItemSort()
     {
-        IsLoadingEditButton = true;
+        SelectedSortTodoItemName = SortItemList.Where(s => s.IsSelected is true).Single().Text;
+        GenarateViewTodoItemList();
+    }
 
+    private async Task AddTodoItem()
+    {
+        IsAddLoading = true;
         try
         {
-            var todoItemToEdit = new TodoItemDto
+            var newTodoItem = new TodoItemDto
             {
-                Id = todoItem.Id,
-                Title = TitleToEdit,
-                Date = todoItem.Date,
-                IsDone = todoItem.IsDone
+                Title = NewTodoItemTitle,
+                Date = DateTime.Now,
             };
 
-            await HttpClient.PutAsJsonAsync("TodoItem", todoItemToEdit, ToDoTemplateJsonContext.Default.TodoItemDto);
+            await HttpClient.PostAsJsonAsync("TodoItem", newTodoItem, ToDoTemplateJsonContext.Default.TodoItemDto);
 
-            todoItem.Title = TitleToEdit;
-            todoItem.IsInEditMode = false;
-            IsEditButtonEnabled = false;
+            await LoadTodoItems();
 
-            GenerateViewTodoItemList();
+            NewTodoItemTitle = "";
         }
         finally
         {
-            IsLoadingEditButton = false;
+            IsAddLoading = false;
         }
     }
 
     private async Task DeleteTodoItem(TodoItemDto todoItem)
     {
         await HttpClient.DeleteAsync($"TodoItem/{todoItem.Id}");
+        AllTodoItemList?.Remove(todoItem);
+        GenarateViewTodoItemList();
+    }
 
-        AllTodoItemList.Remove(todoItem);
+    private async Task EditTodoItem(TodoItemDto todoItem)
+    {
+        if (string.IsNullOrWhiteSpace(todoItem.Title))
+            return;
 
-        GenerateViewTodoItemList();
+        todoItem.IsInEditMode = false;
+
+        await HttpClient.PutAsJsonAsync("TodoItem", todoItem, ToDoTemplateJsonContext.Default.TodoItemDto);
+        GenarateViewTodoItemList();
     }
 }
