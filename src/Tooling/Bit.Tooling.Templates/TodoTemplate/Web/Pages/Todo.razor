@@ -6,20 +6,19 @@
 <PageTitle>Todo</PageTitle>
 
 <div class="page-container">
-    <div class="todo-form-white">
-        <div class="search-todo-container">
+    <div class="page-content--white">
+        <div class="search-box-container">
             <BitSearchBox OnChange="TodoItemSearch"
                           OnClear="@(()=>TodoItemSearch(""))"
-                          Class="search-todo-input"
+                          Style="width: 300px"
                           Placeholder="Search some todo..." />
         </div>
         <div class="todo-content">
-            <h2 class="todo-title">Todo</h2>
+            <h1 class="main-title">Todo</h1>
             <div class="add-todo-container">
                 <BitTextField @bind-Value="NewTodoItemTitle"
                               Placeholder="Add a todo"
                               Class="add-todo-input" />
-
                 <BitButton OnClick="() => InvokeAsync(AddTodoItem)"
                            Class="add-todo-button"
                            Title="Add"
@@ -35,45 +34,46 @@
                     }
                 </BitButton>
             </div>
-            <div class="todo-items-container">
-                <div class="todo-sort-container">
-                    <BitDropDown OnSelectItem="TodoItemSort"
-                                 Class="sort-todo-dropdown"
-                                 Items="SortItemList">
-                        <CaretDownFragment>
-                            <BitActionButton IconName="BitIconName.Sort">Sort by @SelectedSortTodoItemName</BitActionButton>
-                        </CaretDownFragment>
-                    </BitDropDown>
+            <div class="todo-list-container">
+                <div class="filter-container">
+                    <BitPivot Class="filter-pivot" OnLinkClick="NavigatePivotItem">
+                        <BitPivotItem Class="todo-pivot-tab" HeaderText="All" AriaLabel="All" />
+                        <BitPivotItem Class="todo-pivot-tab" HeaderText="Active" AriaLabel="Active" />
+                        <BitPivotItem Class="todo-pivot-tab" HeaderText="Completed" AriaLabel="Completed" />
+                    </BitPivot>
+                    <div class="sort-drp-container">
+                        <BitDropDown OnSelectItem="TodoItemSort"
+                                     Class="sort-todo-drp"
+                                     Items="SortItemList">
+                            <CaretDownFragment>
+                                <BitActionButton IconName="BitIconName.Sort">Sort by @SelectedSortTodoItemName</BitActionButton>
+                            </CaretDownFragment>
+                        </BitDropDown>
+                    </div>
                 </div>
-                <BitPivot OnLinkClick="NavigatePivotItem">
-                    <BitPivotItem Class="todo-pivot-tab" HeaderText="All" AriaLabel="All" />
-                    <BitPivotItem Class="todo-pivot-tab" HeaderText="Active" AriaLabel="Active" />
-                    <BitPivotItem Class="todo-pivot-tab" HeaderText="Completed" AriaLabel="Completed" />
-                </BitPivot>
-                <div class="todo-items">
+                <div class="todo-list">
                     @if (IsLoading)
                     {
-                        <div>
-                            <BitSpinner Class="todo-list-spinner"></BitSpinner>
+                        <div class="todo-list-spinner">
+                            <BitSpinner></BitSpinner>
                         </div>
-
                     }
                     else
                     {
                         if (ViewTodoItemList?.Count == 0)
                         {
-                            <div class="todo-empty">
+                            <div class="todo-list--empty-state">
                                 <img src="/images/backgrounds/empty-todo-list-bg.svg">
                                 <BitLabel>No todos yet</BitLabel>
                             </div>
                         }
                         else
                         {
-                            <BitBasicList Class="todo-item-list"
+                            <BitBasicList Style="width: 100%; height: inherit"
                                   Items="ViewTodoItemList"
                                   Virtualize="true">
                                 <RowTemplate>
-                                    <div class="item">
+                                    <div class="todo-item">
                                         @if (context.IsInEditMode)
                                 {
                                     <BitTextField Class="todo-input" @bind-Value="context.Title" />
@@ -100,7 +100,7 @@
                                             @context.Date.ToString("MMMM dd , yyyy , dddd")
                                         </div>
                                     </div>
-                                    <div class="todo-buttons-container">
+                                    <div class="todo-btn-group">
                                         <BitIconButton IconName="BitIconName.Edit"
                                                    Title="Edit"
                                                    AriaLabel="Edit"
