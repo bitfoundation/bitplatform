@@ -422,6 +422,17 @@ namespace Bit.Client.Web.BlazorUI
 
         /// <inheritdoc />
         protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out double result, [NotNullWhen(false)] out string? validationErrorMessage)
-            => this.TryParseSelectableValueFromString(value, out result, out validationErrorMessage);
+        {
+            if (double.TryParse(value, out var parsedValue))
+            {
+                result = parsedValue;
+                validationErrorMessage = null;
+                return true;
+            }
+
+            result = default;
+            validationErrorMessage = $"The {DisplayName ?? FieldIdentifier.FieldName} field is not valid.";
+            return false;
+        }
     }
 }
