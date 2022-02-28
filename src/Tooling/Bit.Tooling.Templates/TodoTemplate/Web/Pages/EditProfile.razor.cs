@@ -18,7 +18,7 @@ public partial class EditProfile
     public BitMessageBarType EditProfileMessageType { get; set; }
     public string? EditProfileMessage { get; set; }
 
-    [Inject] public ITokenProvider TokenProvider { get; set; } = default!;
+    [Inject] public IAuthTokenProvider AuthTokenProvider { get; set; } = default!;
 
     [Inject] public HttpClient HttpClient { get; set; } = default!;
 
@@ -34,8 +34,8 @@ public partial class EditProfile
 
         await InitEditProfileData();
 
-         var access_token = await StateService.GetValue("access_token", async () =>
-            await TokenProvider.GetAcccessToken());
+        var access_token = await StateService.GetValue("access_token", async () =>
+            await AuthTokenProvider.GetAcccessToken());
 
         ProfileImageUploadUrl = $"api/Attachment/UploadProfileImage?access_token={access_token}";
         ProfileImageUrl = $"api/Attachment/GetProfileImage?access_token={access_token}";

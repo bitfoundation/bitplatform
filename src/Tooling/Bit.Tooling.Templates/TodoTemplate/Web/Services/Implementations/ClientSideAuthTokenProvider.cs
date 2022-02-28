@@ -1,10 +1,10 @@
 ﻿namespace TodoTemplate.App.Services.Implementations;
 
-public class ClientSideTokenProvider : ITokenProvider
+public class ClientSideAuthTokenProvider : IAuthTokenProvider
 {
     private readonly IJSRuntime _jsRuntime;
 
-    public ClientSideTokenProvider(IJSRuntime jsRuntime)
+    public ClientSideAuthTokenProvider(IJSRuntime jsRuntime)
     {
         _jsRuntime = jsRuntime;
     }
