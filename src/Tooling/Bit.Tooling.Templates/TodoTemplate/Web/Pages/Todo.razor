@@ -23,7 +23,7 @@
 
                 <BitButton OnClick="() => InvokeAsync(AddTodoItem)"
                            Class="add-todo-button"
-                           IsEnabled="IsEnabledAddButton">
+                           IsEnabled="IsAddButtonEnabled">
                     @if (IsLoadingAddButton)
                     {
                         <BitSpinner Size="BitSpinnerSize.Small"></BitSpinner>
@@ -80,7 +80,7 @@
                                             <div>
                                                 <BitButton Title="Edit"
                                                            AriaLabel="Edit"
-                                                           IsEnabled="IsEnabledEditButton"
+                                                           IsEnabled="IsEditButtonEnabled"
                                                            OnClick="(() => InvokeAsync(() => EditTodoItem(context)))">
                                                     @if (IsLoadingEditButton)
                                                     {

@@ -27,8 +27,8 @@ public partial class Todo
     public string? TitleToEdit { get; set; }
 
     public bool IsLoadingPage { get; set; }
-    public bool IsEnabledAddButton { get; set; }
-    public bool IsEnabledEditButton { get; set; }
+    public bool IsAddButtonEnabled { get; set; }
+    public bool IsEditButtonEnabled { get; set; }
     public bool IsLoadingAddButton { get; set; }
     public bool IsLoadingEditButton { get; set; }
 
@@ -135,10 +135,10 @@ public partial class Todo
     {
         if (string.IsNullOrEmpty(TitleToAdd))
         {
-            IsEnabledAddButton = false;
+            IsAddButtonEnabled = false;
             return;
         }
-        IsEnabledAddButton = true;
+        IsAddButtonEnabled = true;
     }
 
     private async Task AddTodoItem()
@@ -168,14 +168,14 @@ public partial class Todo
     private void ChangeToEditMode(TodoItemDto todoItem)
     {
         TitleToEdit = todoItem.Title;
-        IsEnabledEditButton = false;
+        IsEditButtonEnabled = false;
         todoItem.IsInEditMode = true;
     }
 
     private void CancelEditMode(TodoItemDto todoItem)
     {
         TitleToEdit = String.Empty;
-        IsEnabledEditButton = false;
+        IsEditButtonEnabled = false;
         todoItem.IsInEditMode = false;
     }
 
@@ -184,11 +184,11 @@ public partial class Todo
         if (string.IsNullOrEmpty(TitleToEdit)
             || AllTodoItemList.Find(dto => dto.Id == todoItemId)?.Title == TitleToEdit)
         {
-            IsEnabledEditButton = false;
+            IsEditButtonEnabled = false;
             return;
         }
 
-        IsEnabledEditButton = true;
+        IsEditButtonEnabled = true;
     }
 
     private async Task EditTodoItem(TodoItemDto todoItem)
@@ -209,7 +209,7 @@ public partial class Todo
 
             todoItem.Title = TitleToEdit;
             todoItem.IsInEditMode = false;
-            IsEnabledEditButton = false;
+            IsEditButtonEnabled = false;
 
             GenerateViewTodoItemList();
         }
