@@ -170,7 +170,6 @@ async function createNewCache() {
             if (unique[assets[i].url]) continue;
             distinct.push(assets[i]);
             unique[assets[i].url] = 1;
-
         }
         return distinct;
     }
