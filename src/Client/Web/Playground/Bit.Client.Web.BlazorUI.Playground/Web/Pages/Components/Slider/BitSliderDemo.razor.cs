@@ -253,9 +253,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Slider
            IsOriginFromZero=""true"" />";
 
         private readonly string example1CSharpCode = @"
-@code {
-    private double? sliderHorizontalValue = 2;
-}";
+private double? sliderHorizontalValue = 2;";
 
         private readonly string example2HTMLCode = @"<div class=""flex-container"">
     <BitSlider Label=""Basic""
@@ -322,14 +320,12 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Slider
            IsOriginFromZero=""true"" />";
 
         private readonly string example3CSharpCode = @"
-@code {
-    private double? sliderRangedLowerValue = 0;
-    private double? sliderRangedUpperValue = 0;
-    private void ChangeBitSliderRangedValues()
-    {
-            sliderRangedLowerValue = 3;
-            sliderRangedUpperValue = 7;
-    }
+private double? sliderRangedLowerValue = 0;
+private double? sliderRangedUpperValue = 0;
+private void ChangeBitSliderRangedValues()
+{
+    sliderRangedLowerValue = 3;
+    sliderRangedUpperValue = 7;
 }";
 
         private readonly string example4HTMLCode = @"<BitSlider Label=""Vertical Range Slider""
@@ -346,11 +342,9 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Slider
         SliderBoxHtmlAttributes=""@BitSliderRangedSliderBoxHtmlAttributes"" />";
 
         private readonly string example5CSharpCode = @"
-@code {
-    private Dictionary<string, object> BitSliderRangedSliderBoxHtmlAttributes = new()
-    { 
-            { ""custom-attribute"", ""demo"" }
-    };
-}";
+private Dictionary<string, object> BitSliderRangedSliderBoxHtmlAttributes = new()
+{ 
+    { ""custom-attribute"", ""demo"" }
+};";
     }
 }

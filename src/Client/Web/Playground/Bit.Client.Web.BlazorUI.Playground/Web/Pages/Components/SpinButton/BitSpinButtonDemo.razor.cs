@@ -307,10 +307,8 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.SpinButton
 </BitSpinButton>";
 
         private readonly string example1CSharpCode = @"
-@code {
-    private double BasicSpinButtonValue = 5;
-    private double BasicSpinButtonDisableValue = 20;
-}";
+private double BasicSpinButtonValue = 5;
+private double BasicSpinButtonDisableValue = 20;";
 
         private readonly string example2HTMLCode = @"<BitSpinButton IconName=""BitIconName.IncreaseIndentLegacy""
                Min=""0""
@@ -343,9 +341,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.SpinButton
 </BitSpinButton>";
 
         private readonly string example4CSharpCode = @"
-@code {
-    private double SpinButtonWithLabelAboveValue = 7;
-}";
+private double SpinButtonWithLabelAboveValue = 7;";
 
         private readonly string example5HTMLCode = @"<BitSpinButton Class=""custom-spb""
                Min=""0""
@@ -363,13 +359,11 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.SpinButton
 </style>";
 
         private readonly string example6CSharpCode = @"
-@code {
-    private double BitSpinButtonBindValue = 8;
-    private double BitSpinButtonValueChanged = 16;        
-    private void HandleControlledSpinButtonValueChange(double value)
-    {
-            BitSpinButtonValueChanged = value;
-    } 
+private double BitSpinButtonBindValue = 8;
+private double BitSpinButtonValueChanged = 16;        
+private void HandleControlledSpinButtonValueChange(double value)
+{
+    BitSpinButtonValueChanged = value;
 }";
 
         private readonly string example6HTMLCode = @"<BitSpinButton Label=""Controlled SpinButton with bind-value""

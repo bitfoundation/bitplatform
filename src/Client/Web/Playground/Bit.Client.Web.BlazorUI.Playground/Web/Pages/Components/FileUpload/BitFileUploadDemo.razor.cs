@@ -243,10 +243,8 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.FileUpload
 </BitFileUpload>";
 
         private readonly string example1CSharpCode = @"
-@code {
-    private string UploadUrl;
-    private string RemoveUrl;
-}";
+private string UploadUrl;
+private string RemoveUrl;";
 
         private readonly string example2HTMLCode = @"<BitFileUpload IsMultiSelect=""true""
                Label=""Select or drag and drop files""

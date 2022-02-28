@@ -115,11 +115,9 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ColorPicker
 </div>";
 
         private readonly string example1CSharpCode = @"
-@code {
-    private BitColorPicker ColorPicker;
-    private string Color = ""#FFFFFF"";
-    private bool IsToggleChecked = false;
-}";
+private BitColorPicker ColorPicker;
+private string Color = ""#FFFFFF"";
+private bool IsToggleChecked = false;";
 
         private readonly string example2HTMLCode = @"<BitColorPicker ShowPreview=""true"" @bind-Alpha=""@Alpha"" @bind-Color=""@ColorRgb"">Default ColorPicker</BitColorPicker>
 <div>
@@ -128,10 +126,8 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ColorPicker
 </div>";
 
         private readonly string example2CSharpCode = @"
-@code {
-    private BitColorPicker ColorPicker;
-    private string ColorRgb = ""rgb(255,255,255)"";
-    private double Alpha = 1;
-}";
+private BitColorPicker ColorPicker;
+private string ColorRgb = ""rgb(255,255,255)"";
+private double Alpha = 1;";
     }
 }

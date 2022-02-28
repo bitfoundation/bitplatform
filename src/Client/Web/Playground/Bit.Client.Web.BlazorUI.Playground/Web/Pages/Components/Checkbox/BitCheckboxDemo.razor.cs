@@ -203,9 +203,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Checkbox
 <BitCheckbox CheckmarkIconName=""BitIconName.Heart"">Custom checkmark Checkbox</BitCheckbox>";
 
         private readonly string example1CSharpCode = @"
-@code {
-    private bool IsCheckBoxChecked = false;
-}";
+private bool IsCheckBoxChecked = false;";
 
         private readonly string example2TMLCode = @"<BitCheckbox BoxSide=""@BitCheckBoxSide.End"">Reversed - Basic Checkbox</BitCheckbox>
 <BitCheckbox BoxSide=""@BitCheckBoxSide.End"">IsChecked=""true"">Reversed - Checked Checkbox</BitCheckbox>
@@ -219,10 +217,8 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Checkbox
 <BitButton OnClick=""() => IsCheckBoxIndeterminateInCode = true"">Make Checkbox Indeterminate</BitButton>";
 
         private readonly string example3CSharpCode = @"
-@code {
-    private bool IsCheckBoxIndeterminate = true;
-    private bool IsCheckBoxIndeterminateInCode = true;
-}";
+private bool IsCheckBoxIndeterminate = true;
+private bool IsCheckBoxIndeterminateInCode = true;";
 
         private readonly string example4HTMLCode = @"<BitCheckbox>
     Custom-rendered label with a link go to

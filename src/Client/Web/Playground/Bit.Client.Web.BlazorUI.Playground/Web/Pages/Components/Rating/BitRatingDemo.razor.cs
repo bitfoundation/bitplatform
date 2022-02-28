@@ -178,14 +178,12 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Rating
 </div>";
 
         private readonly string example1CSharpCode = @"
-@code {
-    private string RatingChangedText = string.Empty;
-    private double RatingBoundValue = 2;
-    private double RatingLargeValue = 3;
-    private double RatingSmallValue = 0;
-    private double RatingReadOnlyValue = 2.5;
-    private double RatingCustomIconValue = 2.5;
-}";
+private string RatingChangedText = string.Empty;
+private double RatingBoundValue = 2;
+private double RatingLargeValue = 3;
+private double RatingSmallValue = 0;
+private double RatingReadOnlyValue = 2.5;
+private double RatingCustomIconValue = 2.5;";
 
         private readonly string example2HTMLCode = @"<div>
     <BitRating Icon=""BitIconName.Emoji2"" UnselectedIcon=""BitIconName.EmojiNeutral"" AllowZeroStars=""true"" @bind-Rating=""RatingOutsideValue"" />
@@ -199,8 +197,6 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Rating
 </div>";
 
         private readonly string example2CSharpCode = @"
-@code {
-    private double RatingOutsideValue = 0; 
-}";
+private double RatingOutsideValue = 0; ";
     }
 }

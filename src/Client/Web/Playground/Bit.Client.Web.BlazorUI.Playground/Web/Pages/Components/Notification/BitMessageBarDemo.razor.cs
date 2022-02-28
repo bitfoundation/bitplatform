@@ -219,18 +219,16 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Notification
 }";
 
         private readonly string example1CSharpCode = @"
-@code {
-    private bool IsMessageBarHidden1 = false;
-    private bool IsMessageBarHidden2 = false;
-    private void HideMessageBar1()
-    {
-        IsMessageBarHidden1 = true;
-    }
+private bool IsMessageBarHidden1 = false;
+private bool IsMessageBarHidden2 = false;
+private void HideMessageBar1()
+{
+    IsMessageBarHidden1 = true;
+}
 
-    private void HideMessageBar2()
-    {
-        IsMessageBarHidden2 = true;
-    }
+private void HideMessageBar2()
+{
+    IsMessageBarHidden2 = true;
 }";
 
         private readonly string example2HTMLCode = @"<BitMessageBar MessageBarType=""@BitMessageBarType.Error"" Truncated=""false"">
