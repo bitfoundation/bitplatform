@@ -33,7 +33,7 @@
 
             @if (IsMultiline && Type == BitTextFieldType.Text)
             {
-                <textarea @attributes="InputAttributes"
+                <textarea @attributes="InputHtmlAttributes"
                       id="@TextFieldId"
                       class="txt-field"
                       rows="@Rows"
@@ -58,7 +58,7 @@
             }
             else
             {
-                <input @attributes="InputAttributes"
+                <input @attributes="InputHtmlAttributes"
                    id="@TextFieldId"
                    class="txt-field"
                    disabled=@(!IsEnabled)
