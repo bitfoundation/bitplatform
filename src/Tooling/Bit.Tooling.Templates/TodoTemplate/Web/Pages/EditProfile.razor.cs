@@ -8,7 +8,6 @@ public partial class EditProfile
     public UserDto UserToEdit { get; set; } = new();
 
     public string? ProfileImageUploadUrl { get; set; }
-    public string? ProfileImageRemoveUrl { get; set; }
     public string? ProfileImageUrl { get; set; }
     public string? ProfileImageError { get; set; }
 
@@ -39,13 +38,11 @@ public partial class EditProfile
             await TokenProvider.GetAcccessToken());
 
         ProfileImageUploadUrl = $"api/Attachment/UploadProfileImage?access_token={access_token}";
-        ProfileImageRemoveUrl = $"api/Attachment/RemoveProfileImage?access_token={access_token}";
         ProfileImageUrl = $"api/Attachment/GetProfileImage?access_token={access_token}";
 
 #if BlazorServer || BlazorHybrid
         var serverUrl = Configuration.GetValue<string>("ApiServerAddress");
         ProfileImageUploadUrl = $"{serverUrl}{ProfileImageUploadUrl}";
-        ProfileImageRemoveUrl = $"{serverUrl}{ProfileImageRemoveUrl}";
         ProfileImageUrl = $"{serverUrl}{ProfileImageUrl}";
 #endif
 

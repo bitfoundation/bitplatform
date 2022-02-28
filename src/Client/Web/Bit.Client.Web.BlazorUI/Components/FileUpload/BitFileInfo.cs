@@ -17,7 +17,7 @@ namespace Bit.Client.Web.BlazorUI
         internal bool RequestToCancel { get; set; }
         internal long SizeOfLastChunkUploaded { get; set; }
 
-        [JsonIgnore] public string? Message { get; set; }
+         public string? Message { get; set; }
         [JsonIgnore] public BitFileUploadStatus Status { get; set; }
         [JsonIgnore] internal DateTime? StartTimeUpload { get; set; }
     }

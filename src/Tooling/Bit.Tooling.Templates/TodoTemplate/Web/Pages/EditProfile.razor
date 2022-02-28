@@ -46,13 +46,10 @@
             <div class="form-input-container">
                 <BitLabel>Profile Image</BitLabel>
                 <BitFileUpload Label="Select or drag and drops files"
-                           UploadUrl="@ProfileImageUploadUrl"
-                           RemoveUrl="@ProfileImageRemoveUrl"
-                           OnUploadComplete="() => InvokeAsync(InitEditProfileData)"
-                           OnRemoveComplete="() => InvokeAsync(InitEditProfileData)"
-                           OnUploadFailed="Invoke(() => ProfileImageError = ErrorStrings.FileUploadFailed)"
-                           OnRemoveFailed="Invoke(() => ProfileImageError = ErrorStrings.FileRemoveFailed)"
-                           @onclick="() => ProfileImageError = null" />
+                               UploadUrl="@ProfileImageUploadUrl"
+                               OnUploadComplete="() => InvokeAsync(InitEditProfileData)"
+                               OnUploadFailed="Invoke(() => ProfileImageError = ErrorStrings.FileUploadFailed)"
+                               @onfocus="() => ProfileImageError = null" />
                 <div class="form-input-error">@ProfileImageError</div>
             </div>
             <div class="form-input-container">
