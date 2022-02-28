@@ -48,6 +48,7 @@ public partial class EditProfile
         ProfileImageRemoveUrl = $"{serverUrl}{ProfileImageRemoveUrl}";
         ProfileImageUrl = $"{serverUrl}{ProfileImageUrl}";
 #endif
+
         IsLoadingPage = false;
 
         await base.OnInitAsync();

@@ -52,7 +52,7 @@
                            OnRemoveComplete="() => InvokeAsync(InitEditProfileData)"
                            OnUploadFailed="Invoke(() => ProfileImageError = ErrorStrings.FileUploadFailed)"
                            OnRemoveFailed="Invoke(() => ProfileImageError = ErrorStrings.FileRemoveFailed)"
-                           @onfocus="Invoke(() => ProfileImageError = null)" />
+                           @onclick="() => ProfileImageError = null" />
                 <div class="form-input-error">@ProfileImageError</div>
             </div>
             <div class="form-input-container">

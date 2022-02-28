@@ -35,9 +35,6 @@ public class AttachmentController : ControllerBase
 
         var path = Path.Combine($"{_appSettings.UserProfileImagePath}\\{profileImageName}{Path.GetExtension(file.FileName)}");
 
-        if (SystemFile.Exists(path))
-            SystemFile.Delete(path);
-
         await using var targetStream = SystemFile.Create(path);
         await fileStream.CopyToAsync(targetStream, cancellationToken);
 
@@ -47,6 +44,17 @@ public class AttachmentController : ControllerBase
 
         if (user is null)
             throw new ResourceNotFoundException(nameof(ErrorStrings.UserCouldNotBeFound));
+
+        if (user.ProfileImageName is not null)
+        {
+            var filePath = Directory.GetFiles(_appSettings.UserProfileImagePath, $"{user.ProfileImageName}.*")
+                .SingleOrDefault();
+
+            if (filePath is null)
+                throw new ResourceNotFoundException(nameof(ErrorStrings.UserImageCouldNotBeFound));
+
+            SystemFile.Delete(filePath);
+        }
 
         user.ProfileImageName = profileImageName;
 
