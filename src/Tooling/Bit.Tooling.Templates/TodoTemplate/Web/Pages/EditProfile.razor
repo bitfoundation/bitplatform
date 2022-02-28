@@ -36,18 +36,20 @@
         </div>
         <div class="form-input-container">
             <BitLabel>Profile photo</BitLabel>
-            <BitFileUpload Label="Select or drag and drops files"
+            <BitFileUpload Label="Upload a new profile photo"
                            UploadUrl="@ProfilePhotoUploadUrl"
                            RemoveUrl="@ProfilePhotoRemoveUrl" />
         </div>
         <div class="form-input-container">
-            <BitLabel>Full-Name</BitLabel>
+            <BitLabel>Full name</BitLabel>
             <BitTextField @bind-Value="UserToEdit.FullName"
+                          Placeholder="Full name"
                           OnKeyUp="() => InvokeAsync(CheckSaveButtonEnabled)" />
         </div>
         <div class="form-input-container">
             <BitLabel>Birthday</BitLabel>
             <BitDatePicker Class="edit-profile-dtp"
+                           Label="Select your birth date"
                            @bind-Value="UserToEdit.BirthDate"
                            OnSelectDate="() => InvokeAsync(CheckSaveButtonEnabled)" />
         </div>
@@ -61,6 +63,8 @@
             </BitChoiceGroup>
         </div>
         <BitButton Class="form-submit-button"
+                   Title="Save"
+                   AriaLabel="Save"
                    ButtonStyle="BitButtonStyle.Primary"
                    IsEnabled="IsSaveButtonEnabled"
                    OnClick="() => InvokeAsync(Save)">

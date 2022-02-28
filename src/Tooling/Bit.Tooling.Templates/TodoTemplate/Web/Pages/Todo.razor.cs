@@ -1,7 +1,8 @@
 ﻿using TodoTemplate.Shared.Dtos.TodoItem;
+
 namespace TodoTemplate.App.Pages;
 
-public partial class TodoPage
+public partial class Todo
 {
     public List<TodoItemDto> AllTodoItemList { get; set; } = new();
 

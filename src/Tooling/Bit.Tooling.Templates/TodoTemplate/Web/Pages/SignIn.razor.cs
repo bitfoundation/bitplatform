@@ -71,10 +71,6 @@ public partial class SignIn
                 Password = Password
             });
 
-            SignInMessageType = BitMessageBarType.Success;
-
-            SignInMessage = "Sign-in successfully";
-
             NavigationManager.NavigateTo(RedirectUrl ?? "/");
         }
         catch (Exception e)
