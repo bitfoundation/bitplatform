@@ -17,7 +17,7 @@ public static class Services
         services.AddTodoTemplateSharedServices();
 
 #if BlazorWebAssembly
-        services.AddTransient<ITokenProvider, ServerSideTokenProvider>();
+        services.AddTransient<IAuthTokenProvider, ServerSideTokenProvider>();
         services.AddTodoTemplateAppServices();
 
         services.AddHttpClient("WebAssemblyPreRenderingHttpClient")

@@ -2,9 +2,9 @@
 {
     public class TodoTemplateAuthenticationStateProvider : AuthenticationStateProvider
     {
-        private readonly ITokenProvider _tokenProvider;
+        private readonly IAuthTokenProvider _tokenProvider;
 
-        public TodoTemplateAuthenticationStateProvider(ITokenProvider tokenProvider)
+        public TodoTemplateAuthenticationStateProvider(IAuthTokenProvider tokenProvider)
         {
             _tokenProvider = tokenProvider;
         }

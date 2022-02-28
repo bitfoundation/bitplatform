@@ -1,6 +1,6 @@
 ﻿namespace TodoTemplate.Shared.Services.Contracts;
 
-public interface ITokenProvider
+public interface IAuthTokenProvider
 {
     Task<string?> GetAcccessToken();
 }
