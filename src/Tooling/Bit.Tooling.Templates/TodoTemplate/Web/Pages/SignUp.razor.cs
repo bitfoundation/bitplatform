@@ -13,7 +13,7 @@ public partial class SignUp
     public string? PasswordErrorMessage { get; set; }
 
     public bool IsSignUpButtonEnabled { get; set; }
-    public bool IsLoadingPage { get; set; }
+    public bool IsLoading { get; set; }
 
     public BitMessageBarType SignUpMessageType { get; set; }
     public string? SignUpMessage { get; set; }
@@ -71,11 +71,11 @@ public partial class SignUp
 
     private async Task DoSignUp()
     {
-        IsLoadingPage = true;
+        IsLoading = true;
 
         if (ValidateSignUp() is false)
         {
-            IsLoadingPage = false;
+            IsLoading = false;
             return;
         }
 
@@ -100,7 +100,7 @@ public partial class SignUp
         }
         finally
         {
-            IsLoadingPage = false;
+            IsLoading = false;
         }
     }
 

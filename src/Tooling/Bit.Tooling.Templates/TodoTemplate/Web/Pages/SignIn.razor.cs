@@ -11,7 +11,7 @@ public partial class SignIn
     public string? PasswordErrorMessage { get; set; }
 
     public bool IsSignInButtonEnabled { get; set; }
-    public bool IsLoadingPage { get; set; }
+    public bool IsLoading { get; set; }
 
     public BitMessageBarType SignInMessageType { get; set; }
     public string? SignInMessage { get; set; }
@@ -55,11 +55,11 @@ public partial class SignIn
 
     private async Task DoSignIn()
     {
-        IsLoadingPage = true;
+        IsLoading = true;
 
         if (ValidateSignIn() is false)
         {
-            IsLoadingPage = false;
+            IsLoading = false;
             return;
         }
 
@@ -83,7 +83,7 @@ public partial class SignIn
         }
         finally
         {
-            IsLoadingPage = false;
+            IsLoading = false;
         }
     }
 

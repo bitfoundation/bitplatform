@@ -44,7 +44,7 @@
                    AriaLabel="Sign up"
                    IsEnabled="@IsSignUpButtonEnabled"
                    OnClick="() => InvokeAsync(DoSignUp)">
-            @if (IsLoadingPage)
+            @if (IsLoading)
             {
                 <BitSpinner Size="BitSpinnerSize.Small"></BitSpinner>
             }
