@@ -97,7 +97,7 @@ public partial class Todo
     private void TodoItemSortHandler()
     {
         ViewTodoItemList = SelectedSortName == "Alphabetical"
-            ? ViewTodoItemList.OrderBy(td => td.Title).ToList() 
+            ? ViewTodoItemList.OrderBy(td => td.Title).ToList()
             : ViewTodoItemList.OrderBy(td => td.Date).ToList();
     }
 
@@ -182,7 +182,7 @@ public partial class Todo
 
     private void CheckEditButtonEnable(int todoItemId)
     {
-        if (string.IsNullOrEmpty(TitleToEdit) 
+        if (string.IsNullOrEmpty(TitleToEdit)
             || AllTodoItemList.Find(dto => dto.Id == todoItemId)?.Title == TitleToEdit)
         {
             IsEnabledEditButton = false;
