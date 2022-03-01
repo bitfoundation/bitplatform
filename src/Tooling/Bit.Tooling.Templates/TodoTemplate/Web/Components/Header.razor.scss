@@ -10,8 +10,6 @@
     justify-content: flex-start;
     align-items: center;
     width: 100%;
-    padding: 0 rem(32px);
-    box-sizing: border-box;
     background-color: $Gray5;
 }
 
@@ -22,6 +20,8 @@
     align-items: center;
     width: 100%;
     height: rem(48px);
+    padding: 0 rem(32px);
+    box-sizing: border-box;
 }
 
 .header-bottom-row {
@@ -31,6 +31,8 @@
     align-items: center;
     width: 100%;
     height: rem(36px);
+    padding: 0 rem(32px);
+    box-sizing: border-box;
 }
 
 .logo-lnk {
@@ -52,16 +54,17 @@
 }
 
 @media all and (max-width: #{em(370px)}) {
-    .header {
-        padding: 0 rem(16px);
-    }
-
     .header-bottom-row {
         display: flex;
     }
 
     .header-top-row {
+        padding: 0 rem(16px);
         border-bottom: rem(1px) solid $White;
+    }
+
+    .header-bottom-row {
+        padding: 0 rem(16px);
     }
 
     .header--authenticated {
