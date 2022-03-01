@@ -16,7 +16,7 @@ public class UserDto
 
     public DateTimeOffset? BirthDate { get; set; }
 
-    public Guid? ProfileImageName { get; set; }
+    public string? ProfileImageName { get; set; }
 
     [NotMapped]
     public string? GenderValue

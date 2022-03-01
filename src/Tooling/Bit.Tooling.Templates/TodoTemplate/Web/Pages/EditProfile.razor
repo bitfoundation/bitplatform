@@ -47,7 +47,7 @@
                 <BitLabel>Profile Image</BitLabel>
                 <BitFileUpload Label="Select or drag and drops files"
                                UploadUrl="@ProfileImageUploadUrl"
-                               OnUploadComplete="() => InvokeAsync(InitEditProfileData)"
+                               OnUploadComplete="() => InvokeAsync(LoadEditProfileData)"
                                OnUploadFailed="Invoke(() => ProfileImageError = ErrorStrings.FileUploadFailed)"
                                @onfocus="() => ProfileImageError = null" />
                 <div class="form-input-error">@ProfileImageError</div>

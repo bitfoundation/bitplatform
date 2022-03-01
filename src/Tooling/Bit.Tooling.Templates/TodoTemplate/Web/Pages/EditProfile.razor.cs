@@ -32,26 +32,32 @@ public partial class EditProfile
     {
         IsLoadingPage = true;
 
-        await InitEditProfileData();
+        try
+        {
+            await LoadEditProfileData();
 
-        var access_token = await StateService.GetValue("access_token", async () =>
-            await AuthTokenProvider.GetAcccessToken());
+            var access_token = await StateService.GetValue("access_token", async () =>
+                await AuthTokenProvider.GetAcccessToken());
 
-        ProfileImageUploadUrl = $"api/Attachment/UploadProfileImage?access_token={access_token}";
-        ProfileImageUrl = $"api/Attachment/GetProfileImage?access_token={access_token}";
+            ProfileImageUploadUrl = $"api/Attachment/UploadProfileImage?access_token={access_token}";
+            ProfileImageUrl = $"api/Attachment/GetProfileImage?access_token={access_token}";
 
 #if BlazorServer || BlazorHybrid
-        var serverUrl = Configuration.GetValue<string>("ApiServerAddress");
-        ProfileImageUploadUrl = $"{serverUrl}{ProfileImageUploadUrl}";
-        ProfileImageUrl = $"{serverUrl}{ProfileImageUrl}";
+            var serverUrl = Configuration.GetValue<string>("ApiServerAddress");
+            ProfileImageUploadUrl = $"{serverUrl}{ProfileImageUploadUrl}";
+            ProfileImageUrl = $"{serverUrl}{ProfileImageUrl}";
 #endif
 
-        IsLoadingPage = false;
+        }
+        finally
+        {
+            IsLoadingPage = false;
+        }
 
         await base.OnInitAsync();
     }
 
-    private async Task InitEditProfileData()
+    private async Task LoadEditProfileData()
     {
         User = await StateService.GetValue(nameof(User), async () =>
             await HttpClient.GetFromJsonAsync("User/GetCurrentUser", ToDoTemplateJsonContext.Default.UserDto));

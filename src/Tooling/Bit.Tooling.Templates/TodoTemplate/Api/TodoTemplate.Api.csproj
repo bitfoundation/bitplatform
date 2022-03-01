@@ -51,8 +51,4 @@
         <ProjectReference Include="..\Shared\TodoTemplate.Shared.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Attachments\Profiles\" />
-    </ItemGroup>
-
 </Project>
