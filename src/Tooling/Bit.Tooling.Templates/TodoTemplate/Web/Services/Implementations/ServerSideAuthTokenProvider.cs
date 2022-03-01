@@ -5,12 +5,12 @@ using System.Reflection;
 namespace TodoTemplate.App.Services.Implementations;
 
 #if BlazorServer
-public class ServerSideTokenProvider : ITokenProvider
+public class ServerSideAuthTokenProvider : IAuthTokenProvider
 {
     private readonly IJSRuntime _jsRuntime;
     private readonly IHttpContextAccessor _httpContextAccessor;
 
-    public ServerSideTokenProvider(IJSRuntime jsRuntime, IHttpContextAccessor httpContextAccessor)
+    public ServerSideAuthTokenProvider(IJSRuntime jsRuntime, IHttpContextAccessor httpContextAccessor)
     {
         _jsRuntime = jsRuntime;
         _httpContextAccessor = httpContextAccessor;
@@ -33,11 +33,11 @@ public class ServerSideTokenProvider : ITokenProvider
     }
 }
 #else
-public class ServerSideTokenProvider : ITokenProvider
+public class ServerSideAuthTokenProvider : IAuthTokenProvider
 {
     private readonly IHttpContextAccessor _httpContextAccessor;
 
-    public ServerSideTokenProvider(IHttpContextAccessor httpContextAccessor)
+    public ServerSideAuthTokenProvider(IHttpContextAccessor httpContextAccessor)
     {
         _httpContextAccessor = httpContextAccessor;
     }

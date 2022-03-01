@@ -5,9 +5,9 @@ namespace TodoTemplate.App.Services.Implementations;
 
 public class TodoTemplateHttpClientHandler : HttpClientHandler
 {
-    private readonly ITokenProvider _tokenProvider;
+    private readonly IAuthTokenProvider _tokenProvider;
 
-    public TodoTemplateHttpClientHandler(ITokenProvider tokenProvider)
+    public TodoTemplateHttpClientHandler(IAuthTokenProvider tokenProvider)
     {
         _tokenProvider = tokenProvider;
     }

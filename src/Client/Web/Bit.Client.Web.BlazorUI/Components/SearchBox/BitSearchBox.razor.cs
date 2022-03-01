@@ -122,6 +122,11 @@ namespace Bit.Client.Web.BlazorUI
         /// </summary>
         [Parameter] public EventCallback<string> OnSearch { get; set; }
 
+        /// <summary>
+        /// Specifies the value of the autocomplete attribute of the input component
+        /// </summary>
+        [Parameter] public string? Autocomplete { get; set; }
+
         public string InputId { get; set; } = string.Empty;
 
         protected override Task OnInitializedAsync()

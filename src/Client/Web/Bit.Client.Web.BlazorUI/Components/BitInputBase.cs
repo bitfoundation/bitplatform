@@ -25,7 +25,7 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// Gets or sets a collection of additional attributes that will be applied to the created element.
         /// </summary>
-        [Parameter] public IReadOnlyDictionary<string, object>? InputAttributes { get; set; }
+        [Parameter] public IReadOnlyDictionary<string, object>? InputHtmlAttributes { get; set; }
 
         /// <summary>
         /// Gets or sets the value of the input. This should be used with two-way binding.
@@ -153,8 +153,8 @@ namespace Bit.Client.Web.BlazorUI
                         parametersDictionary.Remove(parameter.Key);
                         break;
 
-                    case nameof(InputAttributes):
-                        InputAttributes = (IReadOnlyDictionary<string, object>?)parameter.Value;
+                    case nameof(InputHtmlAttributes):
+                        InputHtmlAttributes = (IReadOnlyDictionary<string, object>?)parameter.Value;
                         parametersDictionary.Remove(parameter.Key);
                         break;
 
@@ -220,20 +220,20 @@ namespace Bit.Client.Web.BlazorUI
         {
             if (EditContext is null) return;
 
-            var hasAriaInvalidAttribute = InputAttributes is not null && InputAttributes.ContainsKey("aria-invalid");
+            var hasAriaInvalidAttribute = InputHtmlAttributes is not null && InputHtmlAttributes.ContainsKey("aria-invalid");
             if (EditContext.GetValidationMessages(FieldIdentifier).Any())
             {
                 if (hasAriaInvalidAttribute) return; // Do not overwrite the attribute value
 
-                if (ConvertToDictionary(InputAttributes, out var inputAttributes))
+                if (ConvertToDictionary(InputHtmlAttributes, out var inputHtmlAttributes))
                 {
-                    InputAttributes = inputAttributes;
+                    InputHtmlAttributes = inputHtmlAttributes;
                 }
 
                 // To make the `Input` components accessible by default
                 // we will automatically render the `aria-invalid` attribute when the validation fails
                 // value must be "true" see https://www.w3.org/TR/wai-aria-1.1/#aria-invalid
-                inputAttributes["aria-invalid"] = "true";
+                inputHtmlAttributes["aria-invalid"] = "true";
 
                 ValueInvalid = true;
             }
@@ -243,19 +243,19 @@ namespace Bit.Client.Web.BlazorUI
                 {
                     // No validation errors. Need to remove `aria-invalid` if it was rendered already
 
-                    if (InputAttributes!.Count == 1)
+                    if (InputHtmlAttributes!.Count == 1)
                     {
                         // Only aria-invalid argument is present which we don't need any more
-                        InputAttributes = null;
+                        InputHtmlAttributes = null;
                     }
                     else
                     {
-                        if (ConvertToDictionary(InputAttributes, out var inputAttributes))
+                        if (ConvertToDictionary(InputHtmlAttributes, out var inputHtmlAttributes))
                         {
-                            InputAttributes = inputAttributes;
+                            InputHtmlAttributes = inputHtmlAttributes;
                         }
 
-                        inputAttributes.Remove("aria-invalid");
+                        inputHtmlAttributes.Remove("aria-invalid");
                     }
                 }
 

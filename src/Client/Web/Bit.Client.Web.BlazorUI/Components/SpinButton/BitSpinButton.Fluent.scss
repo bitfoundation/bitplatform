@@ -167,3 +167,9 @@
         }
     }
 }
+
+.bit-spb-invalid-fluent {
+    .bit-spb-wrapper {
+        border-color: $ErrorBlockRed;
+    }
+}
