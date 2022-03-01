@@ -81,13 +81,18 @@ public partial class SignUp
 
         try
         {
-            await HttpClient.PostAsJsonAsync("User/SignUp",
-                new UserDto {UserName = Email, Email = Email, Password = Password},
-                ToDoTemplateJsonContext.Default.UserDto);
+            await HttpClient.PostAsJsonAsync("User/SignUp", new UserDto
+            {
+                UserName = Email,
+                Email = Email,
+                Password = Password
+
+            }, ToDoTemplateJsonContext.Default.UserDto);
 
             await TodoTemplateAuthenticationService.SignIn(new SignInRequestDto
             {
-                UserName = Email, Password = Password
+                UserName = Email,
+                Password = Password
             });
 
             NavigationManager.NavigateTo("/");
