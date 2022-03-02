@@ -146,9 +146,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.SearchBox
 </div>";
 
         private readonly string example1CSharpCode = @"
-@code {
-    private string TextValue;
-}";
+private string TextValue;";
 
         private readonly string example2HTMLCode = @"<BitSearchBox Placeholder=""Search"" IsUnderlined=""true""></BitSearchBox>";
 

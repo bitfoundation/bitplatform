@@ -250,9 +250,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.DatePicker
 <BitLabel>this is selected date: @selectedDate.ToString()</BitLabel>";
 
         private readonly string example5CSharpCode = @"
-@code {
-    private DateTimeOffset? selectedDate = new DateTimeOffset(new DateTime(2020, 1, 17), DateTimeOffset.Now.Offset);
-}";
+private DateTimeOffset? selectedDate = new DateTimeOffset(new DateTime(2020, 1, 17), DateTimeOffset.Now.Offset);";
 
         private readonly string example6HTMLCode = @"<BitDatePicker FormatDate=""d"" Style=""width: 300px""></BitDatePicker>";
 

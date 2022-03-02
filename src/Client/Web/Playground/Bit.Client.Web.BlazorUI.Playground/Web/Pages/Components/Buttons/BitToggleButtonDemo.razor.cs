@@ -192,11 +192,10 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Buttons
 </BitToggleButton>";
 
         private readonly string example1CSharpCode = @"
-@code {
-    private bool ToggleStandardButtonChecked;
-    private bool ToggleDisabledButtonChecked;
-    private bool TogglePrimaryButtonChecked;
-}";
+private bool ToggleStandardButtonChecked;
+private bool ToggleDisabledButtonChecked;
+private bool TogglePrimaryButtonChecked;
+";
 
         private readonly string example2HTMLCode = @"<BitToggleButton @bind-IsChecked=""ToggleButtonForOnChange""
                  Label=""@(ToggleButtonForOnChange ? ""Mute"" : ""Unmute"")""
@@ -205,14 +204,12 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Buttons
 </BitToggleButton>";
 
         private readonly string example2CSharpCode = @"
-@code {
-    private bool ToggleButtonForOnChange = true;
-    private bool OnToggleButtonChanged = true;
+private bool ToggleButtonForOnChange = true;
+private bool OnToggleButtonChanged = true;
 
-    private void ToggleButtonChanged(bool newValue)
-    {
-        OnToggleButtonChanged = newValue;
-    }
+private void ToggleButtonChanged(bool newValue)
+{
+    OnToggleButtonChanged = newValue;
 }";
 
         private readonly string example3HTMLCode = @"<input type=checkbox id=""BitToggleButtonTwoWayValue"" @bind=""ToggleButtonTwoWayValue"">
@@ -225,9 +222,8 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Buttons
 </div>";
 
         private readonly string example3CSharpCode = @"
-@code {
-    private bool ToggleButtonTwoWayValue = true;
-}";
+private bool ToggleButtonTwoWayValue = true;
+";
 
         private readonly string example4HTMLCode = @"<BitToggleButton @bind-IsChecked=""ToggleButtonChecked""
                  Label=""@(ToggleButtonChecked ? ""Aria Description Mute"" : ""Aria Description Unmute"")""
@@ -242,8 +238,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Buttons
 </BitToggleButton>";
 
         private readonly string example4CSharpCode = @"
-@code {
-    private bool ToggleButtonChecked = false;
-}";
+private bool ToggleButtonChecked = false;
+";
     }
 }

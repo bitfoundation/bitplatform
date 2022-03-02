@@ -138,28 +138,27 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ProgressIndica
     <BitButton OnClick=""@StartProgress"">Start Progress</BitButton>
 </div>";
 
-        private readonly string example1CSharpCode = @"@code {
-    private string description = ""Push button to start!"";
-    public int CompletedPercent { get; set; }
-    private async Task StartProgress()
+        private readonly string example1CSharpCode = @"
+private string description = ""Push button to start!"";
+public int CompletedPercent { get; set; }
+private async Task StartProgress()
+{
+    CompletedPercent = 0;
+    while &#40;CompletedPercent &lt= 100)
     {
-            CompletedPercent = 0;
-            while &#40;CompletedPercent &lt= 100)
-            {
-                    if &#40;CompletedPercent == 100)
-                    {
-                            description = $""Completed !"";
-                            break;
-                    }
-                    else
-                    {
-                            CompletedPercent++;
-                            description = $""{CompletedPercent}%"";
-                    }
+        if &#40;CompletedPercent == 100)
+        {
+                description = $""Completed !"";
+                break;
+        }
+        else
+        {
+                CompletedPercent++;
+                description = $""{CompletedPercent}%"";
+        }
 
-                    StateHasChanged();
-                    await Task.Delay(100);
-            }
+        StateHasChanged();
+        await Task.Delay(100);
     }
 }";
 

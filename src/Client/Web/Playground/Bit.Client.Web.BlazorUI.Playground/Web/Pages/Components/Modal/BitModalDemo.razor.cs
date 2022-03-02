@@ -159,8 +159,6 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Modal
 </BitModal>";
 
         private readonly string example1CSharpCode = @"
-@code {
-    private bool IsOpen = false;
-}";
+private bool IsOpen = false;";
     }
 }

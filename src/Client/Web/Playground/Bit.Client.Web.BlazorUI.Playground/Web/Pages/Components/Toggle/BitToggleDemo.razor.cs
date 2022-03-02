@@ -152,10 +152,9 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Toggle
     <BitToggle Label=""Enabled And Checked (ARIA 1.0 compatible)"" @bind-IsChecked=""IsToggleChecked"" IsEnabled=""true"" OnText=""On"" OffText=""Off"" Role=""Checkbox"" />
 </div>";
 
-        private readonly string example1CSharpCode = @"@code {
-    private bool BindedIsToggleUnChecked = false;
-    private bool IsToggleUnChecked = false;
-}";
+        private readonly string example1CSharpCode = @"
+private bool BindedIsToggleUnChecked = false;
+private bool IsToggleUnChecked = false;";
 
         private readonly string example2HTMLCode = @"<div>
     <BitToggle @bind-IsChecked=""IsToggleUnChecked"" IsEnabled=""true"" OnText=""On"" OffText=""Off"">

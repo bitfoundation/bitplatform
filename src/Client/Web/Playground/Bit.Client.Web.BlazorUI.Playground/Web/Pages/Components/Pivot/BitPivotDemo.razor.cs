@@ -361,12 +361,10 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Pivot
 <BitButton OnClick=""(() => OverridePivotSelectedKey = (((int.Parse(OverridePivotSelectedKey) + 1 ) % 3)).ToString())"">Next</BitButton>";
 
         private readonly string example6CSharpCode = @"
-@code {
-    private string OverridePivotSelectedKey = ""1"";
-    private void PivotSelectedKeyChanged(string key)
-    {
-            OverridePivotSelectedKey = key;
-    }
+private string OverridePivotSelectedKey = ""1"";
+private void PivotSelectedKeyChanged(string key)
+{
+    OverridePivotSelectedKey = key;
 }";
 
         private readonly string example7HTMLCode = @"<BitPivot LinkFormat=""@BitPivotLinkFormat.Tabs""
@@ -399,9 +397,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Pivot
 </div>";
 
         private readonly string example7CSharpCode = @"
-@code {
-    private string SelectedKey = ""Foo"";
-}";
+private string SelectedKey = ""Foo"";";
 
         private readonly string example8HTMLCode = @"<div>
     <BitPivot LinkFormat=""@BitPivotLinkFormat.Tabs""
@@ -430,13 +426,11 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Pivot
 <BitButton OnClick=""TogglePivotItemVisobility"">Hide/Show Biz</BitButton>";
 
         private readonly string example8CSharpCode = @"
-@code {
-    private BitPivotItem SelectedPivotItem;
-    private BitComponentVisibility PivotItemVisibility;
-    private void TogglePivotItemVisobility()
-    {
-            PivotItemVisibility = PivotItemVisibility == BitComponentVisibility.Visible ? BitComponentVisibility.Collapsed : BitComponentVisibility.Visible;
-    }
+private BitPivotItem SelectedPivotItem;
+private BitComponentVisibility PivotItemVisibility;
+private void TogglePivotItemVisobility()
+{
+    PivotItemVisibility = PivotItemVisibility == BitComponentVisibility.Visible ? BitComponentVisibility.Collapsed : BitComponentVisibility.Visible;
 }";
     }
 }
