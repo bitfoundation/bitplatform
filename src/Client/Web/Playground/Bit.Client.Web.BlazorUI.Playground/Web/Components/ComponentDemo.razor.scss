@@ -30,7 +30,7 @@
     font-weight: bold;
     font-size: rem(38px);
     line-height: rem(56px);
-    color: $SecondaryColor;
+    color: $B2Color;
 
     @include lg {
         font-size: rem(32px);
@@ -80,12 +80,12 @@
 
 .section-title {
     width: 100%;
-    border-bottom: rem(2px) solid $Gray3;
+    border-bottom: rem(2px) solid $B5Color;
     margin-bottom: rem(40px);
     font-weight: 500;
     font-size: rem(22px);
     line-height: rem(40px);
-    color: $SecondaryColor;
+    color: $B2Color;
 
     @include lg {
         margin-bottom: rem(32px);
@@ -113,7 +113,7 @@
     font-weight: 500;
     font-size: rem(20px);
     line-height: rem(32px);
-    color: $SecondaryColor;
+    color: $B2Color;
 
     @include lt-xl {
         font-size: rem(16px);
@@ -128,7 +128,7 @@
 .table-view {
     width: 100%;
     margin-bottom: rem(40px);
-    border: rem(1px) solid $Gray3;
+    border: rem(1px) solid $B5Color;
     border-radius: rem(10px);
     box-sizing: border-box;
     background-color: $White;
@@ -144,7 +144,7 @@
     display: flex;
     width: 100%;
     min-height: rem(48px);
-    background-color: $SecondaryColor;
+    background-color: $B5Color;
 
     @include lt-xl {
         min-height: rem(40px);
@@ -154,7 +154,7 @@
 .tdata-row {
     display: flex;
     width: 100%;
-    border-bottom: rem(1px) solid $Gray3;
+    border-bottom: rem(1px) solid $B5Color;
 
     &:last-child {
         border: none;
@@ -167,12 +167,12 @@
     align-items: center;
     min-height: 100%;
     padding: rem(5px) rem(16px) rem(5px) rem(16px);
-    border-right: rem(1px) solid $Gray3;
+    border-right: rem(1px) solid $B5Color;
     box-sizing: border-box;
     font-size: rem(18px);
     line-height: rem(31px);
     text-align: left;
-    color: $Gray5;
+    color: $B2Color;
     background-color: transparent;
 
     &:last-child {
@@ -203,7 +203,7 @@
     justify-content: flex-start;
     align-items: flex-start;
     padding: rem(16px);
-    border-right: rem(1px) solid $Gray3;
+    border-right: rem(1px) solid $B5Color;
     box-sizing: border-box;
     font-size: rem(14px);
     line-height: rem(24px);
