@@ -31,7 +31,7 @@ public class AttachmentController : ControllerBase
 
         var userId = User.GetUserId();
 
-        var user = await _userManager.Users.FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
+        var user = await _userManager.FindByIdAsync(userId.ToString());
 
         if (user is null)
             throw new ResourceNotFoundException(nameof(ErrorStrings.UserCouldNotBeFound));
@@ -76,7 +76,7 @@ public class AttachmentController : ControllerBase
         {
             SystemFile.Delete(path);
 
-            throw new BadRequestException();
+            throw;
         }
     }
 
@@ -104,7 +104,7 @@ public class AttachmentController : ControllerBase
         }
         catch
         {
-            throw new BadRequestException();
+            throw;
         }
 
         SystemFile.Delete(filePath);
