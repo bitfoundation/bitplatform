@@ -52,7 +52,7 @@
     height: 100vh;
     justify-content: flex-start;
     align-items: flex-start;
-    background-color: $SecondaryColor;
+    background-color: $Gray2;
     opacity: 0.4;
 
     @include sm {
@@ -63,7 +63,7 @@
 .search-box-container {
     width: 100%;
     padding: rem(24px) rem(22px);
-    border-bottom: rem(1px) solid #DDDDDD;
+    border-bottom: rem(1px) solid $B5Color;
     box-sizing: border-box;
 
     @include lt-xl {

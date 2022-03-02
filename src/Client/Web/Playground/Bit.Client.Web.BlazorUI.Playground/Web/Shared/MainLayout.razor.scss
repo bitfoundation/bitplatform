@@ -68,7 +68,7 @@
         font-size: rem(15px);
         line-height: rem(24px);
         color: $Gray1;
-        background-color: $Gray4;
+        background-color: $B6Color;
 
         @include lt-xl {
             font-weight: 500;
@@ -122,6 +122,29 @@
             width: rem(24px);
             height: rem(24px);
             margin: 0 rem(4px);
+        }
+    }
+
+    .contact-link-container--home {
+        @include xl {
+            left: rem(160px);
+        }
+
+        @include gt-md {
+            position: fixed;
+            left: rem(50px);
+            top: 50%;
+            transform: translateY(-50%);
+            justify-content: center;
+            flex-flow: column nowrap;
+        }
+
+        .footer-link {
+            margin: rem(8px) 0;
+
+            @include lg {
+                margin: rem(4px) 0;
+            }
         }
     }
 

@@ -8,136 +8,117 @@
     justify-content: center;
     align-items: center;
     height: 100%;
-    padding: rem(56px) 0;
+    padding: rem(56px) rem(16px);
     box-sizing: border-box;
 
     @include lg {
-        padding: rem(48px) 0;
+        padding: rem(48px) rem(16px);
     }
 
     @include md {
-        padding: rem(72px) 0;
+        padding: rem(72px) rem(16px);
     }
 
-    @media screen and (max-width:em(420px)) {
-        padding: rem(24px) 0;
+    @include sm {
+        padding: rem(24px) rem(16px);
     }
 }
 
-.todo-item-date {
-    font-size: rem(12px);
-    line-height: rem(20px);
-    color: $Gray1;
-    margin-left: rem(24px);
-}
-
-.todo-form-white {
+.page-content--white {
     position: relative;
     display: flex;
     flex-flow: column nowrap;
     align-items: center;
+    width: 100%;
+    max-width: rem(860px);
     border-radius: rem(4px);
     background-color: $Gray6;
-}
-
-.search-todo-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: rem(24px) rem(258px);
-    border-bottom: 1px solid $Gray4;
 
     @include lg {
-        padding: rem(24px) rem(258px);
+        max-width: rem(816px);
     }
 
     @include md {
-        padding: rem(32px) rem(219px);
+        max-width: rem(738px);
     }
 
-    @media screen and (max-width:em(1024px)) {
-        padding: rem(32px) rem(170px);
+    @include sm {
+        max-width: 100%;
+    }
+}
+
+.search-box-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    padding: rem(32px) rem(14px);
+    border-bottom: rem(1px) solid $Gray4;
+
+    @include lg {
+        padding: rem(24px) rem(14px);
     }
 
-    @media screen and (max-width:em(630px)) {
-        padding: rem(32px) rem(90px);
+    @include md {
+        padding: rem(32px) rem(14px);
     }
 
-    @media screen and (max-width:em(490px)) {
-        padding: rem(32px) rem(60px);
-    }
-
-    @media screen and (max-width:em(420px)) {
+    @include sm {
         padding: rem(20px) rem(14px);
     }
 }
 
 .todo-content {
+    position: relative;
     display: flex;
     flex-flow: column nowrap;
-    justify-content: start;
-    align-items: start stretch;
-    padding: 0 rem(126px);
-    padding-top: rem(24px);
-    padding-bottom: rem(64px);
-    box-sizing: border-box;
+    justify-content: flex-start;
+    align-items: flex-start;
     width: 100%;
+    max-width: rem(608px);
+    padding: rem(24px) rem(14px) rem(64px);
+    box-sizing: border-box;
 
 
     @include lg {
-        padding: 0 rem(123px);
-        padding-top: rem(20px);
-        padding-bottom: rem(64px);
+        max-width: rem(570px);
+        padding: rem(20px) rem(14px) rem(56px);
     }
 
     @include md {
-        padding: 0 rem(84px);
-        padding-top: rem(24px);
-        padding-bottom: rem(60px);
+        max-width: rem(570px);
+        padding: rem(24px) rem(14px) rem(60px);
     }
 
-    @media screen and (max-width:em(1024px)) {
-        padding: 0 rem(75px);
-        padding-top: rem(24px);
-        padding-bottom: rem(60px);
-    }
-
-    @media screen and (max-width:em(630px)) {
-        position: relative;
-        padding: 0 rem(40px);
-        padding-top: rem(18px);
-        padding-bottom: rem(50px);
-    }
-
-    @media screen and (max-width:em(490px)) {
-        padding-top: rem(15px);
-        padding-bottom: rem(40px);
-        padding: 0 rem(15px);
-    }
-
-    @media screen and (max-width:em(420px)) {
-        padding: 0 rem(14px);
-        padding-top: rem(16px);
-        padding-bottom: rem(5px);
+    @include sm {
+        max-width: rem(570px);
+        padding: rem(16px) rem(14px) rem(36px);
     }
 }
 
-.todo-title {
+.main-title {
+    margin: 0;
     margin-bottom: rem(20px);
+    font-weight: 600;
     font-size: rem(22px);
     color: $SecondaryColor;
-    line-height: rem(37px);
+    line-height: rem(36px);
 
-    @include lt-xl {
+    @include lg {
+        font-size: rem(20px);
         line-height: rem(28px);
     }
 
-    @include lt-lg {
+    @include md {
         margin-bottom: rem(24px);
+        font-size: rem(18px);
+        line-height: rem(28px);
     }
 
 
-    @media screen and (max-width:em(420px)) {
+    @include sm {
+        margin-bottom: rem(24px);
+        font-size: rem(16px);
         line-height: rem(24px);
     }
 }
@@ -145,35 +126,41 @@
 .add-todo-container {
     display: flex;
     flex-flow: row nowrap;
-    justify-content: start;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%;
     margin-bottom: rem(24px);
 
     @include md {
         margin-bottom: rem(44px);
     }
 
-    @media screen and (max-width:em(420px)) {
+    @include sm {
         margin-bottom: rem(36px);
     }
 }
 
-.todo-items-container {
-    position: relative;
+.todo-list-container {
+    width: 100%;
+}
 
-    @media screen and (max-width:em(630px)) {
-        position: static;
+.filter-container {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.sort-drp-container {
+    @include lt-lg {
+        position: absolute;
+        top: rem(18px);
+        right: 0;
     }
 }
 
-.todo-sort-container {
-    position: absolute;
-    display: flex;
-    flex-flow: row nowrap;
-    top: rem(8px);
-    right: 0;
-}
-
-.todo-empty {
+.todo-list--empty-state {
     display: flex;
     flex-flow: column nowrap;
     justify-content: center;
@@ -181,53 +168,75 @@
     height: 100%;
 }
 
-.todo-items {
+.todo-list {
     display: flex;
     flex-flow: column nowrap;
-    justify-content: start;
-    border: 1px solid $Gray4;
-    height: rem(240px);
+    justify-content: flex-start;
+    align-items: center;
     width: 100%;
+    height: rem(240px);
+    border: rem(1px) solid $Gray4;
 
-    @include lg {
-        height: rem(228px);
-    }
-
-    @include md {
-        height: rem(588px);
-    }
-
-    @media screen and (max-width:em(490px)) {
-        height: rem(450px);
-    }
-
-    @media screen and (max-width:em(420px)) {
-        height: rem(234px);
+    @include sm {
+        height: rem(198px);
     }
 }
 
-.item {
+.todo-item {
     display: flex;
+    flex-flow: row nowrap;
     justify-content: space-between;
+    align-items: center;
+    width: 100%;
     height: rem(80px);
-    padding: rem(16px) rem(20px);
+    padding: rem(16px);
+    border-bottom: rem(1px) solid $Gray4;
     box-sizing: border-box;
-    border-bottom: 1px solid $Gray4;
+
+    &:last-child {
+        border-bottom: none;
+    }
 
     @include md {
-        padding: rem(20px) rem(20px);
+        padding: rem(20px) rem(16px);
     }
-    
-}
 
-.todo-buttons-container {
-    display: flex;
-    justify-content: center;
-    margin-top: rem(18px);
+    @include sm {
+        height: rem(66px);
+        padding: rem(14px) rem(18px);
+    }
 }
 
 .todo-info {
     display: flex;
     flex-flow: column nowrap;
     justify-content: center;
+    align-items: flex-start;
+}
+
+.todo-item-date {
+    margin-top: rem(4px);
+    margin-left: rem(28px);
+    font-size: rem(12px);
+    line-height: rem(20px);
+    color: $Gray1;
+    white-space: nowrap;
+
+    @include lt-xl {
+        font-size: rem(10px);
+    }
+}
+
+.todo-btn-group {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: center;
+}
+
+.todo-list-spinner {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
 }

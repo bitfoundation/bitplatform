@@ -17,25 +17,25 @@ a {
 }
 
 input::-webkit-input-placeholder {
-    color: $DarkBlue;
+    color: $B4Color;
     font-size: rem(14px);
     font-weight: 500;
 }
 
 ::-webkit-scrollbar {
-    width: rem(16px);
+    width: rem(6px);
 }
 
 ::-webkit-scrollbar-thumb {
-    background: $Gray3;
+    background: $B5Color;
     border-radius: rem(8px);
-    border: rem(5px) solid $Gray3;
+    border: rem(5px) solid $B5Color;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: $Gray2;
+    background: $B3Color;
     border-radius: rem(8px);
-    border: rem(4px) solid $Gray2;
+    border: rem(4px) solid $B3Color;
 }
 
 ::-webkit-scrollbar-button {
@@ -100,7 +100,7 @@ input::-webkit-input-placeholder {
     max-height: rem(24px);
     margin-right: rem(18px);
     border-radius: 50%;
-    background-color: $SecondaryColor;
+    background-color: $B3Color;
 
     .bit-icon {
         font-size: rem(12px);
@@ -108,7 +108,7 @@ input::-webkit-input-placeholder {
     }
 
     &:hover {
-        background-color: $SecondaryColor;
+        background-color: $B2Color;
     }
 
     @include gt-md {
@@ -150,7 +150,7 @@ input::-webkit-input-placeholder {
 
         &:hover {
             background-color: $Gray4;
-            color: $PrimaryColor;
+            color: $B2Color;
             text-decoration: none;
         }
     }
@@ -192,13 +192,12 @@ input::-webkit-input-placeholder {
 .side-nav-demo-link--active {
     a {
         padding-left: rem(40px);
-        background-color: $Gray4;
-        color: $SecondaryColor;
-        border-left: rem(4px) solid $SecondaryColor;
+        background-color: $B5Color;
+        color: $B2Color;
+        border-left: rem(4px) solid $B2Color;
 
         &:hover {
             background-color: $Gray4;
-            color: $PrimaryColor;
         }
 
         @include lg {
@@ -230,10 +229,10 @@ input::-webkit-input-placeholder {
         font-weight: 500;
         font-size: rem(16px);
         line-height: rem(32px);
-        color: $Gray1;
+        color: $Gray2;
 
         &:hover {
-            color: $PrimaryColor;
+            color: $B2Color;
         }
 
         i {
@@ -287,7 +286,7 @@ input::-webkit-input-placeholder {
         color: $Gray1;
 
         &:hover {
-            color: $PrimaryColor;
+            color: $B2Color;
         }
 
         @include lg {
@@ -312,10 +311,10 @@ input::-webkit-input-placeholder {
 
     .bit-nav-selected-fluent {
         font-weight: unset;
-        color: $SecondaryColor;
+        color: $B2Color;
 
         &:after {
-            border-left: rem(4px) solid $SecondaryColor;
+            border-left: rem(4px) solid $B2Color;
         }
     }
 }

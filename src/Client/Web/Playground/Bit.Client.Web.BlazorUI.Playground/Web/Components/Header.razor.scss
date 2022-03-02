@@ -25,14 +25,14 @@
     }
 
     @include md {
-        height: rem(40px);
+        height: rem(48px);
         padding: 0 rem(32px);
     }
 
     @include sm {
         height: rem(48px);
         padding: 0 rem(16px);
-        border-bottom: rem(1px) solid $Gray4;
+        border-bottom: rem(1px) solid $B5Color;
     }
 }
 
@@ -50,29 +50,29 @@
 }
 
 .header-logo {
-    width: rem(48px);
-    height: rem(48px);
+    width: rem(45px);
+    height: rem(30px);
     background-image: url('/images/bit-logo.svg');
     background-position: center;
     background-repeat: no-repeat;
     background-size: contain;
     cursor: pointer;
-    margin-right: rem(104px);
+    margin-right: rem(140px);
 
     @include lg {
-        width: rem(28px);
-        height: rem(28px);
+        width: rem(36px);
+        height: rem(24px);
     }
 
     @include md {
-        width: rem(24px);
-        height: rem(24px);
-        margin-right: rem(57px);
+        width: rem(30px);
+        height: rem(20px);
+        margin-right: rem(70px);
     }
 
     @include sm {
-        width: rem(32px);
-        height: rem(32px);
+        width: rem(30px);
+        height: rem(20px);
         margin-right: rem(8px);
     }
 }
@@ -84,7 +84,7 @@
     box-sizing: border-box;
     font-size: rem(20px);
     line-height: rem(32px);
-    color: $Gray1;
+    color: $Gray2;
     text-decoration: none;
     cursor: pointer;
 
@@ -97,7 +97,7 @@
 
     @include md {
         padding: rem(16px) 0 rem(8px);
-        margin-right: rem(25px);
+        margin-right: rem(24px);
         font-size: rem(12px);
         line-height: rem(16px);
     }
@@ -112,8 +112,8 @@
 
 .header-link--active {
     font-weight: 500;
-    color: $SecondaryColor;
-    border-bottom: rem(2px) solid $SecondaryColor;
+    color: $B2Color;
+    border-bottom: rem(2px) solid $B2Color;
 }
 
 .btn--primary {
@@ -121,35 +121,34 @@
 }
 
 .github-btn {
-    width: rem(48px);
-    height: rem(48px);
-    background-image: url('/images/github-secondary-icon.svg');
+    width: rem(56px);
+    height: rem(56px);
+    background-image: url('/images/github-blue-icon.svg');
     background-position: center;
     background-repeat: no-repeat;
     background-size: contain;
     cursor: pointer;
-    margin-left: rem(19px);
+    margin-left: rem(16px);
 
     &:hover {
         background-image: url('/images/github-black-icon.svg');
     }
 
     @include lg {
-        width: rem(28px);
-        height: rem(28px);
+        width: rem(38px);
+        height: rem(38px);
         margin-left: rem(26px);
     }
 
     @include md {
-        width: rem(21px);
-        height: rem(21px);
-        margin-left: 0;
+        width: rem(24px);
+        height: rem(24px);
+        margin-left: rem(18px);
     }
 
     @include sm {
-        width: rem(21px);
-        height: rem(32px);
-        background-size: rem(21px);
+        width: rem(20px);
+        height: rem(20px);
         margin-left: 0;
     }
 }
@@ -157,7 +156,7 @@
 .header-second-row {
     display: none;
     flex-flow: row nowrap;
-    justify-content: space-evenly;
+    justify-content: space-around;
     align-items: center;
     width: 100%;
     height: rem(44px);
