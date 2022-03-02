@@ -126,6 +126,12 @@
   <data name="ConflicException" xml:space="preserve">
     <value>Request could not be processed because of conflict in the request</value>
   </data>
+  <data name="FileRemoveFailed" xml:space="preserve">
+    <value>An error occurred while removing file</value>
+  </data>
+  <data name="FileUploadFailed" xml:space="preserve">
+    <value>An error occurred while uploading file</value>
+  </data>
   <data name="ForbiddenException" xml:space="preserve">
     <value>Access to the requested resource is forbidden</value>
   </data>
@@ -153,7 +159,7 @@
   <data name="UserCouldNotBeFound" xml:space="preserve">
     <value>User could not be found</value>
   </data>
-  <data name="UserPhotoCouldNotBeFound" xml:space="preserve">
-    <value>User's photo could not be found</value>
+  <data name="UserImageCouldNotBeFound" xml:space="preserve">
+    <value>User image could not be found</value>
   </data>
 </root>

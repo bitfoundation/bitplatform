@@ -64,7 +64,15 @@ public static class IServiceCollectionExtensions
             {
                 OnMessageReceived = context =>
                 {
-                    context.Token = context.Request.Cookies["access_token"];
+                    var access_token = context.Request.Cookies["access_token"];
+
+                    if (string.IsNullOrEmpty(access_token))
+                    {
+                        access_token = context.Request.Query["access_token"];
+                    }
+
+                    context.Token = access_token;
+
                     return Task.CompletedTask;
                 }
             };

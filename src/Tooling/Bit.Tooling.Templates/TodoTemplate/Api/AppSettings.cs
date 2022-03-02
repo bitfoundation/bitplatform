@@ -6,7 +6,7 @@
 
         public JwtSettings JwtSettings { get; set; }
 
-        public string UserProfilePhotoPath { get; set; }
+        public string UserProfileImagePath { get; set; }
     }
 
     public class IdentitySettings
