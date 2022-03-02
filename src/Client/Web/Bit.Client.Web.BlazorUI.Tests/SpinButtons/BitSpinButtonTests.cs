@@ -13,6 +13,12 @@ namespace Bit.Client.Web.BlazorUI.Tests.SpinButtons
     {
         private double BitSpinButtonTwoWayBoundValue;
 
+        [TestInitialize]
+        public void SetupJsInteropMode()
+        {
+            Context.JSInterop.Mode = JSRuntimeMode.Loose;
+        }
+
         [DataTestMethod,
             DataRow(null),
             DataRow("Button Label")

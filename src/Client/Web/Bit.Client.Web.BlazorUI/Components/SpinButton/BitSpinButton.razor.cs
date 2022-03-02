@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.JSInterop;
 
 namespace Bit.Client.Web.BlazorUI
 {
@@ -17,9 +18,14 @@ namespace Bit.Client.Web.BlazorUI
         private int precision;
         private double min;
         private double max;
+        private string? intermediateValue;
         private string InputId = $"input{Guid.NewGuid()}";
-        private string IntermediateValue = string.Empty;
         private Timer? timer;
+        private ElementReference inputRef;
+        private ElementReference buttonIncrement;
+        private ElementReference buttonDecrement;
+
+        [Inject] public IJSRuntime? JSRuntime { get; set; }
 
         /// <summary>
         /// Detailed description of the input for the benefit of screen readers
@@ -181,23 +187,25 @@ namespace Bit.Client.Web.BlazorUI
 
         protected async override Task OnParametersSetAsync()
         {
-            min = Min is not null ? Min.Value : double.MinValue;
-            max = Max is not null ? Max.Value : double.MaxValue;
+            min = Min.HasValue ? Min.Value : double.MinValue;
+            max = Max.HasValue ? Max.Value : double.MaxValue;
             if (min > max)
             {
-                min = min + max;
+                min += max;
                 max = min - max;
-                min = min - max;
+                min -= max;
             }
 
             precision = Precision is not null ? Precision.Value : CalculatePrecision(Step);
             if (ValueHasBeenSet is false)
             {
-                CurrentValue = DefaultValue ?? Math.Min(0, min);
+                SetValue(DefaultValue ?? Math.Min(0, min));
+            }
+            else
+            {
+                SetDisplayValue();
             }
 
-            CheckValue();
-            IntermediateValue = CurrentValueAsString ?? string.Empty;
             if (ChangeHandler.HasDelegate is false)
             {
                 ChangeHandler = EventCallback.Factory.Create(this, async (BitSpinButtonAction action) =>
@@ -223,9 +231,7 @@ namespace Bit.Client.Web.BlazorUI
 
                     if (isValid is false) return;
 
-                    CurrentValue = Normalize(result);
-                    CheckValue();
-                    IntermediateValue = $"{CurrentValue}";
+                    SetValue(result);
                     await OnChange.InvokeAsync(CurrentValue);
                 });
             }
@@ -235,6 +241,17 @@ namespace Bit.Client.Web.BlazorUI
 
         private async void HandleMouseDown(BitSpinButtonAction action, MouseEventArgs e)
         {
+            //Change focus from input to spin button
+            if (action == BitSpinButtonAction.Increment)
+            {
+                await buttonIncrement.FocusAsync();
+            }
+            else
+            {
+                await buttonDecrement.FocusAsync();
+            }
+
+
             await HandleMouseDownAction(action, e);
             timer = new Timer((_) =>
             {
@@ -257,7 +274,7 @@ namespace Bit.Client.Web.BlazorUI
             if (IsEnabled is false) return;
             if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
 
-            IntermediateValue = $"{e.Value}";
+            intermediateValue = GetCleanValue(e.Value?.ToString());
         }
 
         private async Task HandleMouseDownAction(BitSpinButtonAction action, MouseEventArgs e)
@@ -295,28 +312,27 @@ namespace Bit.Client.Web.BlazorUI
             switch (e.Key)
             {
                 case "ArrowUp":
+                    await CheckIntermediateValueAndSetValue();
                     await ChangeHandler.InvokeAsync(BitSpinButtonAction.Increment);
                     break;
 
                 case "ArrowDown":
+                    await CheckIntermediateValueAndSetValue();
                     await ChangeHandler.InvokeAsync(BitSpinButtonAction.Decrement);
                     break;
 
                 case "Enter":
-                    if (IntermediateValue == CurrentValueAsString) break;
+                    if (intermediateValue == CurrentValueAsString) break;
 
-                    var isNumber = double.TryParse(IntermediateValue, out var numericValue);
+                    var isNumber = double.TryParse(intermediateValue, out var numericValue);
                     if (isNumber)
                     {
-                        CurrentValue = Normalize(numericValue);
-                        CheckValue();
+                        SetValue(numericValue);
                         await OnChange.InvokeAsync(CurrentValue);
                     }
                     else
                     {
-                        await Task.Delay(1);
-                        IntermediateValue = CurrentValueAsString ?? string.Empty;
-                        StateHasChanged();
+                        SetDisplayValue();
                     }
                     break;
 
@@ -349,22 +365,8 @@ namespace Bit.Client.Web.BlazorUI
         {
             if (IsEnabled is false) return;
             await OnBlur.InvokeAsync(e);
-            if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
-            if (IntermediateValue == CurrentValueAsString) return;
 
-            var isNumber = double.TryParse(IntermediateValue, out var numericValue);
-            if (isNumber)
-            {
-                CurrentValue = Normalize(numericValue);
-                CheckValue();
-                IntermediateValue = CurrentValueAsString ?? string.Empty;
-                await OnChange.InvokeAsync(CurrentValue);
-            }
-            else
-            {
-                IntermediateValue = CurrentValueAsString ?? string.Empty;
-                StateHasChanged();
-            }
+            await CheckIntermediateValueAndSetValue();
         }
 
         private async Task HandleFocus(FocusEventArgs e)
@@ -372,6 +374,7 @@ namespace Bit.Client.Web.BlazorUI
             if (IsEnabled)
             {
                 await OnFocus.InvokeAsync(e);
+                await JSRuntime!.SelectText(inputRef);
             }
         }
 
@@ -397,16 +400,68 @@ namespace Bit.Client.Web.BlazorUI
             return 0;
         }
 
-        private void CheckValue()
+        private void SetValue(double value)
         {
-            if (CurrentValue > max) CurrentValue = max;
-            if (CurrentValue < min) CurrentValue = min;
+            value = Normalize(value);
+
+            if (value > max)
+            {
+                CurrentValue = max;
+            }
+            else if (value < min)
+            {
+                CurrentValue = min;
+            }
+            else
+            {
+                CurrentValue = value;
+            }
+            SetDisplayValue();
+        }
+
+        private void SetDisplayValue()
+        {
+            intermediateValue = CurrentValueAsString + Suffix;
+        }
+
+        private static string? GetCleanValue(string? value)
+        {
+            if (value.HasNoValue()) return value;
+
+            if (char.IsDigit(value![0]))
+            {
+                Regex pattern = new Regex(@"-?\d+(?:\.\d+)?");
+                var match = pattern.Match(value);
+                if (match.Success)
+                {
+                    return match.Value;
+                }
+            }
+
+            return value;
+        }
+
+        private async Task CheckIntermediateValueAndSetValue()
+        {
+            if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+            if (intermediateValue == CurrentValueAsString) return;
+
+            var isNumber = double.TryParse(intermediateValue, out var numericValue);
+            if (isNumber)
+            {
+                SetValue(numericValue);
+                await OnChange.InvokeAsync(CurrentValue);
+            }
+            else
+            {
+                SetDisplayValue();
+            }
         }
 
         private double Normalize(double value) => Math.Round(value, precision);
 
         private double? GetAriaValueNow => AriaValueNow is not null ? AriaValueNow : Suffix.HasNoValue() ? CurrentValue : null;
-        private string? GetAriaValueText => AriaValueText.HasValue() ? AriaValueText : Suffix.HasValue() ? $"{Normalize(CurrentValue)}{Suffix}" : null;
+        private string? GetAriaValueText => AriaValueText.HasValue() ? AriaValueText : Suffix.HasValue() ? CurrentValueAsString + Suffix : null;
         private string? GetIconRole => IconAriaLabel.HasValue() ? "img" : null;
         private string GetLabelId => Label.HasValue() ? $"label{Guid.NewGuid()}" : string.Empty;
 
@@ -425,7 +480,7 @@ namespace Bit.Client.Web.BlazorUI
         {
             if (double.TryParse(value, out var parsedValue))
             {
-                result = parsedValue;
+                result = Normalize(parsedValue);
                 validationErrorMessage = null;
                 return true;
             }

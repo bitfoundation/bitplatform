@@ -16,6 +16,7 @@ namespace Microsoft.JSInterop
         {
             return await jsRuntime.InvokeAsync<string>("Bit.getProperty", element, property);
         }
+
         public static async Task<int> GetClientHeight(this IJSRuntime jsRuntime, ElementReference element)
         {
             return await jsRuntime.InvokeAsync<int>("Bit.getClientHeight", element);
@@ -63,6 +64,11 @@ namespace Microsoft.JSInterop
         public static async Task BitLinkScrollToFragmentOnClickEvent(this IJSRuntime jsRuntime, string targetElementId)
         {
             await jsRuntime.InvokeVoidAsync("BitLink.scrollToFragmentOnClickEvent", targetElementId);
+        }
+
+        public static async Task SelectText(this IJSRuntime jsRuntime, ElementReference element)
+        {
+            await jsRuntime.InvokeVoidAsync("Bit.selectText", element);
         }
     }
 
