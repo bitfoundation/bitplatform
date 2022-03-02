@@ -30,7 +30,7 @@
                     {
                         <img src="@ProfileImageUrl" class="profile-img" />
                     }
-                    else if (User?.FullName != null && User?.FullName.Length >= 2)
+                    else if (string.IsNullOrEmpty(User?.FullName) is false && User?.FullName.Length >= 2)
                     {
                         @User?.FullName?.ToUpper()[..2]
                     }
