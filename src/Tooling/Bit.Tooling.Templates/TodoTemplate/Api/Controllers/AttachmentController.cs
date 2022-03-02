@@ -12,7 +12,9 @@ public class AttachmentController : ControllerBase
     private readonly UserManager<User> _userManager;
     private readonly IWebHostEnvironment _webHostEnvironment;
 
-    public AttachmentController(IOptionsSnapshot<AppSettings> setting, UserManager<User> userManager, IWebHostEnvironment webHostEnvironment)
+    public AttachmentController(IOptionsSnapshot<AppSettings> setting,
+        UserManager<User> userManager,
+        IWebHostEnvironment webHostEnvironment)
     {
         _appSettings = setting.Value;
         _userManager = userManager;
@@ -27,46 +29,63 @@ public class AttachmentController : ControllerBase
         if (file is null)
             throw new BadRequestException();
 
-        await using var fileStream = file.OpenReadStream();
-
-        Directory.CreateDirectory(_appSettings.UserProfileImagePath);
-
-        var profileImageName = Guid.NewGuid();
-
-        var path = Path.Combine($"{_appSettings.UserProfileImagePath}\\{profileImageName}{Path.GetExtension(file.FileName)}");
-
-        await using var targetStream = SystemFile.Create(path);
-        await fileStream.CopyToAsync(targetStream, cancellationToken);
-
         var userId = User.GetUserId();
 
-        var user = await _userManager.Users.FirstOrDefaultAsync(user => user.Id == userId, cancellationToken);
+        var user = await _userManager.Users.FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
 
         if (user is null)
             throw new ResourceNotFoundException(nameof(ErrorStrings.UserCouldNotBeFound));
 
+        var profileImageName = Guid.NewGuid();
+
+        await using var fileStream = file.OpenReadStream();
+
+        Directory.CreateDirectory(_appSettings.UserProfileImagePath);
+
+        var path = Path.Combine($"{_appSettings.UserProfileImagePath}\\{profileImageName}{Path.GetExtension(file.FileName)}");
+
+        await using var targetStream = SystemFile.Create(path);
+
+        await fileStream.CopyToAsync(targetStream, cancellationToken);
+
         if (user.ProfileImageName is not null)
         {
-            var filePath = Directory.GetFiles(_appSettings.UserProfileImagePath, $"{user.ProfileImageName}.*")
-                .SingleOrDefault();
+            try
+            {
+                var filePath = Directory.GetFiles(_appSettings.UserProfileImagePath,
+                    $"{user.ProfileImageName}.*").FirstOrDefault();
 
-            if (filePath is null)
-                throw new ResourceNotFoundException(nameof(ErrorStrings.UserImageCouldNotBeFound));
-
-            SystemFile.Delete(filePath);
+                if (filePath != null)
+                {
+                    SystemFile.Delete(filePath);
+                }
+            }
+            catch
+            {
+                // not important
+            }
         }
 
-        user.ProfileImageName = profileImageName;
+        try
+        { 
+            user.ProfileImageName = profileImageName;
 
-        await _userManager.UpdateAsync(user);
+            await _userManager.UpdateAsync(user);
+        }
+        catch
+        {
+            SystemFile.Delete(path);
+
+            throw new BadRequestException();
+        }
     }
 
     [HttpDelete("[action]")]
-    public async Task RemoveProfileImage(CancellationToken cancellationToken)
+    public async Task RemoveProfileImage()
     {
         var userId = User.GetUserId();
 
-        var user = await _userManager.Users.FirstOrDefaultAsync(user => user.Id == userId, cancellationToken);
+        var user = await _userManager.FindByIdAsync(userId.ToString());
 
         if (user is null)
             throw new ResourceNotFoundException(nameof(ErrorStrings.UserCouldNotBeFound));
@@ -77,11 +96,18 @@ public class AttachmentController : ControllerBase
         if (filePath is null)
             throw new ResourceNotFoundException(nameof(ErrorStrings.UserImageCouldNotBeFound));
 
+        try
+        {
+            user.ProfileImageName = null;
+
+            await _userManager.UpdateAsync(user);
+        }
+        catch
+        {
+            throw new BadRequestException();
+        }
+
         SystemFile.Delete(filePath);
-
-        user.ProfileImageName = null;
-
-        await _userManager.UpdateAsync(user);
     }
 
     [HttpGet("[action]")]
@@ -90,7 +116,7 @@ public class AttachmentController : ControllerBase
     {
         var userId = User.GetUserId();
 
-        var user = await _userManager.Users.FirstOrDefaultAsync(user => user.Id == userId, cancellationToken);
+        var user = await _userManager.FindByIdAsync(userId.ToString());
 
         if (user is null)
             throw new ResourceNotFoundException(nameof(ErrorStrings.UserCouldNotBeFound));
@@ -101,6 +127,7 @@ public class AttachmentController : ControllerBase
         if (filePath is null)
             return new EmptyResult();
 
-        return PhysicalFile(Path.Combine(_webHostEnvironment.ContentRootPath, filePath), MimeTypeMap.GetMimeType(Path.GetExtension(filePath)));
+        return PhysicalFile(Path.Combine(_webHostEnvironment.ContentRootPath, filePath),
+            MimeTypeMap.GetMimeType(Path.GetExtension(filePath)));
     }
 }
