@@ -25,7 +25,7 @@ namespace Bit.Client.Web.BlazorUI
         private ElementReference buttonIncrement;
         private ElementReference buttonDecrement;
 
-        [Inject] public IJSRuntime? JSRuntime { get; set; }
+        [Inject] public IJSRuntime JSRuntime { get; set; } = default!;
 
         /// <summary>
         /// Detailed description of the input for the benefit of screen readers
@@ -374,7 +374,7 @@ namespace Bit.Client.Web.BlazorUI
             if (IsEnabled)
             {
                 await OnFocus.InvokeAsync(e);
-                await JSRuntime!.SelectText(inputRef);
+                await JSRuntime.SelectText(inputRef);
             }
         }
 
