@@ -17,8 +17,7 @@
         <h1 class="form-title">Sign in</h1>
         <div class="form-input-container">
             <BitLabel>Email</BitLabel>
-            <BitTextField
-                @bind-Value="Email"
+            <BitTextField @bind-Value="Email"
                 Placeholder="Email"
                 OnKeyUp="() => InvokeAsync(CheckSignInButtonEnabled)"
                 OnFocus="() => EmailErrorMessage = null" />
@@ -26,8 +25,7 @@
         </div>
         <div class="form-input-container">
             <BitLabel>Password</BitLabel>
-            <BitTextField 
-                @bind-Value="Password"
+            <BitTextField @bind-Value="Password"
                 Type="BitTextFieldType.Password" 
                 CanRevealPassword="true"
                 Placeholder="Password"

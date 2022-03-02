@@ -12,42 +12,29 @@ public partial class SignUp
     public string? EmailErrorMessage { get; set; }
     public string? PasswordErrorMessage { get; set; }
 
-    public bool IsEnableSignUpButton { get; set; }
+    public bool IsSignUpButtonEnabled { get; set; }
     public bool IsLoading { get; set; }
 
-    public bool IsSuccessSignUp { get; set; }
+    public BitMessageBarType SignUpMessageType { get; set; }
     public string? SignUpMessage { get; set; }
 
-    [Inject]
-    public HttpClient HttpClient { get; set; } = default!;
+    [Inject] public HttpClient HttpClient { get; set; } = default!;
 
-    [Inject]
-    public NavigationManager NavigationManager { get; set; } = default!;
+    [Inject] public NavigationManager NavigationManager { get; set; } = default!;
 
-    [Inject]
-    public ITodoTemplateAuthenticationService TodoTemplateAuthenticationService { get; set; } = default!;
+    [Inject] public ITodoTemplateAuthenticationService TodoTemplateAuthenticationService { get; set; } = default!;
 
-    [Inject]
-    public TodoTemplateAuthenticationStateProvider TodoTemplateAuthenticationStateProvider { get; set; } = default!;
+    [Inject] public TodoTemplateAuthenticationStateProvider TodoTemplateAuthenticationStateProvider { get; set; } = default!;
 
     private void CheckSignUpButtonEnable()
     {
-        if (string.IsNullOrEmpty(Email))
+        if (string.IsNullOrEmpty(Email) || string.IsNullOrEmpty(Password) || IsAcceptPrivacy is false)
         {
-            IsEnableSignUpButton = false;
+            IsSignUpButtonEnabled = false;
             return;
         }
-        if (string.IsNullOrEmpty(Password))
-        {
-            IsEnableSignUpButton = false;
-            return;
-        }
-        if (IsAcceptPrivacy is false)
-        {
-            IsEnableSignUpButton = false;
-            return;
-        }
-        IsEnableSignUpButton = true;
+
+        IsSignUpButtonEnabled = true;
     }
 
     private bool ValidateSignUp()
@@ -100,6 +87,7 @@ public partial class SignUp
                 UserName = Email,
                 Email = Email,
                 Password = Password
+
             }, ToDoTemplateJsonContext.Default.UserDto);
 
             await TodoTemplateAuthenticationService.SignIn(new SignInRequestDto
@@ -112,10 +100,14 @@ public partial class SignUp
         }
         catch (ResourceValidationException e)
         {
+            SignUpMessageType = BitMessageBarType.Error;
+
             SignUpMessage = string.Join(Environment.NewLine, e.Details.SelectMany(d => d.Messages));
         }
-
-        IsLoading = false;
+        finally
+        {
+            IsLoading = false;
+        }
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
