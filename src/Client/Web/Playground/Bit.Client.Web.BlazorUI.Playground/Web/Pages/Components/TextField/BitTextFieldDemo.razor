@@ -115,4 +115,40 @@
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
+
+    <ComponentExampleBox Title="TextField validation"
+                         HTMLSourceCode="@example6HTMLCode"
+                         CSharpSourceCode="@example6CSharpCode"
+                         ExampleId="example6">
+        <ExamplePreview>
+            <EditForm Model="validationTextFieldModel">
+                <DataAnnotationsValidator />
+                <div>
+                    <BitTextField Label="Required"
+                                  IsRequired=true @bind-Value="validationTextFieldModel.Text" />
+                    <ValidationMessage For="()=> validationTextFieldModel.Text" />
+                </div>
+                <div>
+                    <BitTextField Label="numeric validation" 
+                                  @bind-Value="validationTextFieldModel.NumericText" />
+                    <ValidationMessage For="()=> validationTextFieldModel.NumericText" />
+                </div>
+                <div>
+                    <BitTextField Label="Character validation"
+                                  @bind-Value="validationTextFieldModel.CharacterText" />
+                    <ValidationMessage For="()=> validationTextFieldModel.CharacterText" />
+                </div>
+                <div>
+                    <BitTextField Label="Email validation"
+                                  @bind-Value="validationTextFieldModel.EmailText" />
+                    <ValidationMessage For="()=> validationTextFieldModel.EmailText" />
+                </div>
+                <div>
+                    <BitTextField Label="Length character validation"
+                                  @bind-Value="validationTextFieldModel.RangeText" />
+                    <ValidationMessage For="()=> validationTextFieldModel.RangeText" />
+                </div>
+            </EditForm>
+        </ExamplePreview>
+    </ComponentExampleBox>
 </ComponentDemo>
