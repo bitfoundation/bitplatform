@@ -100,7 +100,7 @@ input::-webkit-input-placeholder {
     max-height: rem(24px);
     margin-right: rem(18px);
     border-radius: 50%;
-    background-color: $SecondaryColor;
+    background-color: $B3Color;
 
     .bit-icon {
         font-size: rem(12px);
@@ -108,7 +108,7 @@ input::-webkit-input-placeholder {
     }
 
     &:hover {
-        background-color: $SecondaryColor;
+        background-color: $B2Color;
     }
 
     @include gt-md {
