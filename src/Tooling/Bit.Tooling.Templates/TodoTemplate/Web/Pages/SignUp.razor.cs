@@ -33,6 +33,7 @@ public partial class SignUp
             IsSignUpButtonEnabled = false;
             return;
         }
+
         IsSignUpButtonEnabled = true;
     }
 
