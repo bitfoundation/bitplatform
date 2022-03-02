@@ -17,7 +17,7 @@
     cursor: pointer;
 
     &:hover {
-        background-color: $B1Color;
+        background-color: $B2Color;
     }
 
     @include lg {
@@ -54,7 +54,7 @@
     cursor: pointer;
 
     &:hover {
-        background-color: $B1Color;
+        background-color: $B2Color;
     }
 
     @include lg {
@@ -94,8 +94,8 @@
 
     &:hover {
         background-color: $Gray5;
-        border-color: $B1Color;
-        color: $B1Color;
+        border-color: $B2Color;
+        color: $B2Color;
     }
 
     @include lg {
