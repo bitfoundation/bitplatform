@@ -160,6 +160,6 @@
     <value>User could not be found</value>
   </data>
   <data name="UserImageCouldNotBeFound" xml:space="preserve">
-    <value>User's Image could not be found</value>
+    <value>User image could not be found</value>
   </data>
 </root>

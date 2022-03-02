@@ -187,7 +187,7 @@ namespace TodoTemplate.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to User&apos;s Image could not be found.
+        ///   Looks up a localized string similar to User image could not be found.
         /// </summary>
         public static string UserImageCouldNotBeFound {
             get {
