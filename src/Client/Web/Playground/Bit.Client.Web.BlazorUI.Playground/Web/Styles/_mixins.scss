@@ -2,282 +2,6 @@
 @import '_media-queries.scss';
 @import '_colors.scss';
 
-/* Global Mixins */
-
-@mixin create-btn($color) {
-    display: inline-block;
-    text-align: center;
-    border-radius: 3px;
-    width: 76px;
-    height: 22px;
-    float: right;
-    background: $color;
-}
-
-@mixin table-content($color) {
-    padding-bottom: rem(12px);
-    text-align: left;
-    overflow-wrap: break-word;
-    color: $color;
-}
-
-@mixin code-button {
-    padding: rem(10px);
-    border-radius: rem(4px);
-    border: rem(1px) solid $SecondaryColor;
-
-    @include subtitle2-xl;
-
-    @include lg {
-        @include subtitle2-lg;
-    }
-
-    @include md {
-        @include subtitle2-md;
-    }
-
-    @include sm {
-        @include subtitle2-sm;
-    }
-}
-
-/* Titles */
-
-@mixin set-title($font-size, $font-weight) {
-    font-size: $font-size;
-    font-weight: $font-weight;
-}
-
-@mixin h1-xl() {
-    @include set-title(rem(76px), 500);
-}
-
-@mixin h1-lg() {
-    @include set-title(rem(60px), 500);
-}
-
-@mixin h1-md() {
-    @include set-title(rem(36px), 500);
-}
-
-@mixin h1-sm() {
-    @include set-title(rem(30px), 500);
-}
-
-@mixin h2-xl() {
-    @include set-title(rem(58px), bold);
-}
-
-@mixin h2-lg() {
-    @include set-title(rem(54px), bold);
-}
-
-@mixin h2-md() {
-    @include set-title(rem(32px), bold);
-}
-
-@mixin h2-sm() {
-    @include set-title(rem(28px), bold);
-}
-
-@mixin h3-xl() {
-    @include set-title(rem(58px), 800);
-    font-style: italic;
-}
-
-@mixin h3-lg() {
-    @include set-title(rem(54px), 800);
-    font-style: italic;
-}
-
-@mixin h3-md() {
-    @include set-title(rem(32px), 800);
-    font-style: italic;
-}
-
-@mixin h3-sm() {
-    @include set-title(rem(28px), 800);
-    font-style: italic;
-}
-
-@mixin h4-xl() {
-    @include set-title(rem(52px), bold);
-}
-
-@mixin h4-lg() {
-    @include set-title(rem(40px), bold);
-}
-
-@mixin h4-md() {
-    @include set-title(rem(24px), bold);
-}
-
-@mixin h4-sm() {
-    @include set-title(rem(20px), bold);
-}
-
-@mixin h5-xl() {
-    @include set-title(rem(32px), bold);
-}
-
-@mixin h5-lg() {
-    @include set-title(rem(28px), bold);
-}
-
-@mixin h5-md() {
-    @include set-title(rem(24px), bold);
-}
-
-@mixin h5-sm() {
-    @include set-title(rem(18px), bold);
-}
-
-@mixin h6-xl() {
-    @include set-title(rem(16px), 600);
-}
-
-@mixin h6-lg() {
-    @include set-title(rem(20px), 600);
-}
-
-@mixin h6-md() {
-    @include set-title(rem(18px), 600);
-}
-
-@mixin subtitle1-xl() {
-    @include set-title(rem(24px), 400);
-}
-
-@mixin subtitle1-lg() {
-    @include set-title(rem(18px), 400);
-}
-
-@mixin subtitle1-md() {
-    @include set-title(rem(16px), 400);
-}
-
-@mixin subtitle1-sm() {
-    @include set-title(rem(16px), 400);
-}
-
-@mixin subtitle2-xl() {
-    line-height: 175%;
-    @include set-title(rem(18px), 400);
-}
-
-@mixin subtitle2-lg() {
-    line-height: 175%;
-    @include set-title(rem(16px), 400);
-}
-
-@mixin subtitle2-md() {
-    line-height: 175%;
-    @include set-title(rem(14px), 400);
-}
-
-@mixin subtitle2-sm() {
-    line-height: 175%;
-    @include set-title(rem(12px), 400);
-}
-
-@mixin body1-xl() {
-    @include set-title(rem(28px), 500);
-}
-
-@mixin body1-lg() {
-    @include set-title(rem(24px), 500);
-}
-
-@mixin body1-md() {
-    @include set-title(rem(16px), 500);
-}
-
-@mixin body1-sm() {
-    @include set-title(rem(14px), 500);
-}
-
-@mixin body2-xl() {
-    @include set-title(rem(24px), 500);
-}
-
-@mixin body2-lg() {
-    @include set-title(rem(20px), 500);
-}
-
-@mixin body2-md() {
-    @include set-title(rem(14px), 500);
-}
-
-@mixin body2-sm() {
-    @include set-title(rem(12px), 500);
-}
-
-@mixin button1-xl() {
-    @include set-title(rem(24px), 600);
-}
-
-@mixin button1-lg() {
-    @include set-title(rem(24px), 600);
-}
-
-@mixin button1-md() {
-    @include set-title(rem(14px), 600);
-}
-
-@mixin button1-sm() {
-    @include set-title(rem(16px), 600);
-}
-
-@mixin button2-xl() {
-    @include set-title(rem(18px), bold);
-}
-
-@mixin button2-lg() {
-    @include set-title(rem(18px), bold);
-}
-
-@mixin button2-md() {
-    @include set-title(rem(12px), bold);
-}
-
-@mixin button2-sm() {
-    @include set-title(rem(14px), bold);
-}
-
-@mixin caption1-xl() {
-    @include set-title(rem(16px), 500);
-}
-
-@mixin caption1-lg() {
-    @include set-title(rem(14px), 500);
-}
-
-@mixin caption1-md() {
-    @include set-title(rem(12px), 500);
-}
-
-@mixin caption1-sm() {
-    @include set-title(rem(12px), 500);
-}
-
-@mixin caption2-xl() {
-    @include set-title(rem(16px), 300);
-}
-
-@mixin caption2-lg() {
-    @include set-title(rem(14px), 300);
-}
-
-@mixin caption2-md() {
-    @include set-title(rem(12px), 300);
-}
-
-@mixin caption2-sm() {
-    @include set-title(rem(10px), 300);
-}
-
-//==============================================
-
 @mixin PrimaryBtn {
     display: flex;
     justify-content: center;
@@ -285,7 +9,7 @@
     width: rem(213px);
     height: rem(56px);
     border-radius: rem(4px);
-    background-color: $PrimaryColor;
+    background-color: $B3Color;
     font-weight: 600;
     font-size: rem(18px);
     line-height: rem(32px);
@@ -293,7 +17,7 @@
     cursor: pointer;
 
     &:hover {
-        background-color: $SecondaryColor;
+        background-color: $B2Color;
     }
 
     @include lg {
@@ -322,7 +46,7 @@
     width: rem(181px);
     height: rem(48px);
     border-radius: rem(4px);
-    background-color: $PrimaryColor;
+    background-color: $B3Color;
     font-weight: 600;
     font-size: rem(18px);
     line-height: rem(32px);
@@ -330,7 +54,7 @@
     cursor: pointer;
 
     &:hover {
-        background-color: $SecondaryColor;
+        background-color: $B2Color;
     }
 
     @include lg {
@@ -340,7 +64,14 @@
         line-height: rem(24px);
     }
 
-    @include lt-lg {
+    @include md {
+        width: rem(138px);
+        height: rem(36px);
+        font-size: rem(12px);
+        line-height: rem(16px);
+    }
+
+    @include sm {
         display: none;
     }
 }
@@ -353,18 +84,18 @@
     height: rem(56px);
     border-radius: rem(4px);
     background-color: $White;
-    border: rem(2px) solid $PrimaryColor;
+    border: rem(2px) solid $B3Color;
     box-sizing: border-box;
     font-weight: 600;
     font-size: rem(18px);
     line-height: rem(32px);
-    color: $PrimaryColor;
+    color: $B3Color;
     cursor: pointer;
 
     &:hover {
         background-color: $Gray5;
-        border-color: $SecondaryColor;
-        color: $SecondaryColor;
+        border-color: $B2Color;
+        color: $B2Color;
     }
 
     @include lg {
