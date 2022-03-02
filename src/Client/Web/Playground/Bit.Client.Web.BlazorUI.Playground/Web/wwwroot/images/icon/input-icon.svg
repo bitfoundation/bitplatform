@@ -1,7 +1,7 @@
-<svg width="68" height="68" viewBox="0 0 68 68" fill="none" xmlns="http://www.w3.org/2000/svg">
-<rect width="68" height="68" fill="#1C5BFF"/>
-<rect width="34" height="68" fill="white"/>
-<circle cx="42.1237" cy="33.799" r="14.0349" fill="#EF9C00"/>
-<circle cx="25.9206" cy="33.799" r="14.0349" fill="#1C5BFF"/>
-<path fill-rule="evenodd" clip-rule="evenodd" d="M33.984 45.4476C37.57 42.905 39.9104 38.7211 39.9104 33.9906C39.9104 29.2601 37.57 25.0763 33.984 22.5337C30.398 25.0763 28.0576 29.2601 28.0576 33.9906C28.0576 38.7211 30.398 42.905 33.984 45.4476Z" fill="white"/>
+<svg width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect width="56" height="56" fill="#0065EF"/>
+<rect width="28" height="56" fill="white"/>
+<circle cx="34.6902" cy="27.8345" r="11.5581" fill="#FFA0ED"/>
+<circle cx="21.3465" cy="27.8345" r="11.5581" fill="#0065EF"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M27.9869 37.4273C30.9401 35.3335 32.8674 31.8879 32.8674 27.9922C32.8674 24.0965 30.9401 20.651 27.9869 18.5571C25.0338 20.651 23.1064 24.0965 23.1064 27.9922C23.1064 31.8879 25.0338 35.3335 27.9869 37.4273Z" fill="white"/>
 </svg>
