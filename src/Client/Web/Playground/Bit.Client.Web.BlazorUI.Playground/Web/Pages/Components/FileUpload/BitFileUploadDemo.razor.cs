@@ -36,98 +36,98 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.FileUpload
                 Name = "AutoUploadEnabled",
                 Type = "bool",
                 DefaultValue = "true",
-                Description = "Uploads immediately after selecting the files.",
+                Description = "Uploads immediately after selecting the files."
             },
             new ComponentParameter
             {
                 Name = "ChunkSize",
                 Type = "long",
                 DefaultValue = "10485760",
-                Description = "Upload is done in the form of chunks and this property shows the progress of upload in each chunk.",
+                Description = "Upload is done in the form of chunks and this property shows the progress of upload in each chunk."
             },
             new ComponentParameter
             {
                 Name = "AutoChunkSizeEnabled",
                 Type = "bool",
                 DefaultValue = "false",
-                Description = "Calculate the chunk size dynamically based on the user's Internet speed between 512 KB and 10 MB.",
+                Description = "Calculate the chunk size dynamically based on the user's Internet speed between 512 KB and 10 MB."
             },
             new ComponentParameter
             {
                 Name = "FailedUploadedResultMessage",
                 Type = "string",
                 DefaultValue = "Uploading failed",
-                Description = "Filters files by extension.",
+                Description = "Filters files by extension."
             },
             new ComponentParameter
             {
                 Name = "Files",
                 Type = "IReadOnlyList<BitFileInfo>",
                 DefaultValue = "",
-                Description = "All selected files.",
+                Description = "All selected files."
             },
             new ComponentParameter
             {
                 Name = "FileCount",
                 Type = "int",
                 DefaultValue = "0",
-                Description = "Total count of files uploaded.",
+                Description = "Total count of files uploaded."
             },
             new ComponentParameter
             {
                 Name = "IsMultiFile",
                 Type = "bool",
                 DefaultValue = "false",
-                Description = "Single is false or multiple is true files upload.",
+                Description = "Single is false or multiple is true files upload."
             },
             new ComponentParameter
             {
                 Name = "Label",
                 Type = "string",
                 DefaultValue = "Browse",
-                Description = "Custom label for browse button.",
+                Description = "Custom label for browse button."
             },
             new ComponentParameter
             {
                 Name = "MaxSize",
                 Type = "long",
                 DefaultValue = "0",
-                Description = "Specifies the maximum size of the file.",
+                Description = "Specifies the maximum size of the file."
             },
             new ComponentParameter
             {
                 Name = "MaxSizeMessage",
                 Type = "string",
                 DefaultValue = "File size is too large",
-                Description = "Specifies the message for the failed uploading progress due to exceeding the maximum size.",
+                Description = "Specifies the message for the failed uploading progress due to exceeding the maximum size."
             },
             new ComponentParameter
             {
                 Name = "SuccessfulUploadedResultMessage",
                 Type = "string",
                 DefaultValue = "File uploaded",
-                Description = "Custom label for Failed Status.",
+                Description = "Custom label for Failed Status."
             },
             new ComponentParameter
             {
                 Name = "TotalSize",
                 Type = "long",
                 DefaultValue = "0",
-                Description = "Total size of files.",
+                Description = "Total size of files."
             },
             new ComponentParameter
             {
                 Name = "UploadUrl",
                 Type = "string",
                 DefaultValue = "",
-                Description = "URL of the server endpoint receiving the files.",
+                Description = "URL of the server endpoint receiving the files."
             },
             new ComponentParameter
             {
                 Name = "UploadedSize",
                 Type = "long",
                 DefaultValue = "0",
-                Description = "Total size of uploaded files.",
+                Description = "Total size of uploaded files."
             },
             new ComponentParameter
             {
@@ -237,34 +237,40 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.FileUpload
             }
         };
 
-        private const string Example1HtmlCode = @"<BitFileUpload Label=""Select or drag and drop files""
-               UploadUrl=""@UploadUrl""
-               RemoveUrl=""@RemoveUrl"">
-</BitFileUpload>";
-
         private const string Example1CSharpCode = @"
+private string UploadUrl;";
+
+        private const string Example2CSharpCode = @"
 private string UploadUrl;
 private string RemoveUrl;";
 
+        private const string Example1HtmlCode = @"<BitFileUpload Label=""Select or drag and drop files""
+               UploadUrl=""@UploadUrl"">
+</BitFileUpload>";
+
         private const string Example2HtmlCode = @"<BitFileUpload IsMultiSelect=""true""
                Label=""Select or drag and drop files""
-               UploadUrl=""@UploadUrl""
-               RemoveUrl=""@RemoveUrl"">
+               UploadUrl=""@UploadUrl"">
 </BitFileUpload>";
 
         private const string Example3HtmlCode = @"<BitFileUpload IsMultiSelect=""true""
                Label=""Select or drag and drop files""
                MaxSize=""1024 * 1024 * 100""
-               UploadUrl=""@UploadUrl""
-               RemoveUrl=""@RemoveUrl"">
+               UploadUrl=""@UploadUrl"">
 </BitFileUpload>";
 
         private const string Example4HtmlCode = @"<BitFileUpload IsMultiSelect=""true""
                AutoUploadEnabled=""false""
                AllowedExtensions=""@(new List<string> { "".gif"","".jpg"","".mp4"" })""
                Label=""Select or drag and drop files""
-               UploadUrl=""@UploadUrl""
-               RemoveUrl=""@RemoveUrl"">
+               UploadUrl=""@UploadUrl"">
+</BitFileUpload>";
+
+        private const string Example5HtmlCode = @"<BitFileUpload IsMultiSelect=""true""
+            Label=""Select or drag and drop files""
+            UploadUrl=""@UploadUrl""
+            RemoveUrl=""@RemoveUrl""
+            EnableRemoveButton=""true"">
 </BitFileUpload>";
     }
 }

@@ -10,8 +10,7 @@
             <div class="example-desc">Files can be uploaded automatically after selecting them.</div>
             <div>
                 <BitFileUpload Label="Select or drag and drop files"
-                               UploadUrl="@UploadUrl"
-                               RemoveUrl="@RemoveUrl">
+                               UploadUrl="@UploadUrl">
                 </BitFileUpload>
             </div>
         </ExamplePreview>
@@ -23,8 +22,7 @@
             <div>
                 <BitFileUpload IsMultiSelect="true"
                                Label="Select or drag and drop files"
-                               UploadUrl="@UploadUrl"
-                               RemoveUrl="@RemoveUrl">
+                               UploadUrl="@UploadUrl">
                 </BitFileUpload>
             </div>
         </ExamplePreview>
@@ -37,8 +35,7 @@
                 <BitFileUpload IsMultiSelect="true"
                                Label="Select or drag and drop files"
                                MaxSize="1024 * 1024 * 100"
-                               UploadUrl="@UploadUrl"
-                               RemoveUrl="@RemoveUrl">
+                               UploadUrl="@UploadUrl">
                 </BitFileUpload>
             </div>
         </ExamplePreview>
@@ -52,8 +49,21 @@
                                AutoUploadEnabled="false"
                                AllowedExtensions="@(new List<string> { ".gif",".jpg",".mp4" })"
                                Label="Select or drag and drop files"
+                               UploadUrl="@UploadUrl">
+                </BitFileUpload>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+    
+    <ComponentExampleBox Title="Removable" HTMLSourceCode="@Example5HtmlCode" CSharpSourceCode="@Example2CSharpCode" ExampleId="example5">
+        <ExamplePreview>
+            <div class="example-desc">Single or multiple file uploading with remove functionality enabled.</div>
+            <div>
+                <BitFileUpload IsMultiSelect="true"
+                               Label="Select or drag and drop files"
                                UploadUrl="@UploadUrl"
-                               RemoveUrl="@RemoveUrl">
+                               RemoveUrl="@RemoveUrl"
+                               EnableRemoveButton="true">
                 </BitFileUpload>
             </div>
         </ExamplePreview>

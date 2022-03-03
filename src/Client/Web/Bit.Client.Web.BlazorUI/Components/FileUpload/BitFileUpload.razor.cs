@@ -102,6 +102,11 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public bool AutoChunkSizeEnabled { get; set; }
 
         /// <summary>
+        /// Show/Hide after upload remove button.
+        /// </summary>
+        [Parameter] public bool EnableRemoveButton { get; set; } = false;
+
+        /// <summary>
         /// Callback for when file or files status change.
         /// </summary>
         [Parameter] public EventCallback<BitFileInfo[]> OnChange { get; set; }

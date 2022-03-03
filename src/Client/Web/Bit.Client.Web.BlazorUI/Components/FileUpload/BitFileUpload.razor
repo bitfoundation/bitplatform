@@ -84,7 +84,7 @@
                                 <i title="cancel" class="bit-icon bit-icon--Cancel" aria-hidden="true"></i>
                             </div>
                         }
-                        else
+                        else if(EnableRemoveButton)
                         {
                             <div class="upload-status-icon" @onclick="@(() =>RemoveFile(index))">
                                 <i title="remove" class="bit-icon bit-icon--Delete" aria-hidden="true"></i>
