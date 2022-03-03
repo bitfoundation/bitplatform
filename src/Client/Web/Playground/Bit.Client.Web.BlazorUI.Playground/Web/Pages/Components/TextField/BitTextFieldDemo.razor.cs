@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using Bit.Client.Web.BlazorUI.Playground.Web.Models;
 using Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 
@@ -8,6 +9,8 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.TextField
     {
         private BitTextFieldType InputType = BitTextFieldType.Password;
         private string TextValue;
+
+        ValidationTextFieldModel validationTextFieldModel = new();
 
         private readonly List<ComponentParameter> componentParameters = new()
         {
@@ -164,7 +167,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.TextField
                 Type = "string",
                 DefaultValue = "",
                 Description = "Input placeholder text.",
-            },  
+            },
             new ComponentParameter()
             {
                 Name = "Prefix",
@@ -218,7 +221,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.TextField
             },
             new ComponentParameter()
             {
-                Name = "Value",
+                Name = "CurrentValue",
                 Type = "string",
                 DefaultValue = "",
                 Description = "Current value of the text field.",
@@ -392,5 +395,80 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.TextField
         </DescriptionFragment>
     </BitTextField>
 </div>";
+
+        private readonly string example6HTMLCode = @" <EditForm Model=""validationTextFieldModel"">
+    <DataAnnotationsValidator />
+     <div>
+         <BitTextField Label = ""Required""
+                       IsRequired=true @bind-Value=""validationTextFieldModel.Text"" />
+         <ValidationMessage For = ""()=> validationTextFieldModel.Text"" />
+     </div>
+     <div>
+         <BitTextField Label=""Numberic validation""
+                       @bind-Value=""validationTextFieldModel.NumericText"" />
+         <ValidationMessage For = ""()=> validationTextFieldModel.NumericText"" />
+     </div>
+     <div>
+         <BitTextField Label=""Character validation""
+                       @bind-Value=""validationTextFieldModel.CharacterText"" />
+         <ValidationMessage For = ""()=> validationTextFieldModel.CharacterText"" />
+     </div>
+     <div>
+         <BitTextField Label=""Email validation""
+                       @bind-Value=""validationTextFieldModel.EmailText"" />
+         <ValidationMessage For = ""()=> validationTextFieldModel.EmailText"" />
+     </div>
+     <div>
+         <BitTextField Label=""Length character validation""
+                       @bind-Value=""validationTextFieldModel.RangeText"" />
+         <ValidationMessage For = ""()=> validationTextFieldModel.RangeText"" />
+     </div>
+ </EditForm>";
+
+        private readonly string example6CSharpCode = @"
+ValidationTextFieldModel validationTextFieldModel = new();
+public class ValidationTextFieldModel
+{
+    [Required]
+    public string Text { get; set; }
+
+    [RegularExpression(""0*[1-9][0-9]*"",
+    ErrorMessage = ""Only numeric values are allow in Field."")]
+    public string NumericText { get; set; }
+
+    [RegularExpression(@""^[a-zA-Z0-9.]*$"",
+    ErrorMessage = ""Sorry. only letters(a-z), numbers(0-9), and periods(.) are allowed."")]
+    public string CharacterText { get; set; }
+
+    [RegularExpression(@""^([\w\.\-]+)@([\w\-]+)((\.(\w){2,3})+)$"",
+    ErrorMessage = ""Invalid email address."")]
+    public string EmailText { get; set; }
+
+    [RegularExpression(""^.{3,5}$"",
+    ErrorMessage = ""The field  must be between 3 and 5."")]
+    public string RangeText { get; set; }
+}";
+    }
+
+    public class ValidationTextFieldModel
+    {
+        [Required]
+        public string Text { get; set; }
+
+        [RegularExpression("0*[1-9][0-9]*",
+        ErrorMessage = "Only numeric values are allow in Field")]
+        public string NumericText { get; set; }
+
+        [RegularExpression(@"^[a-zA-Z0-9.]*$",
+        ErrorMessage = "Sorry. only letters(a-z), numbers(0-9), and periods(.) are allowed")]
+        public string CharacterText { get; set; }
+
+        [RegularExpression(@"^([\w\.\-]+)@([\w\-]+)((\.(\w){2,3})+)$",
+        ErrorMessage = "Invalid email address")]
+        public string EmailText { get; set; }
+
+        [RegularExpression("^.{3,5}$",
+        ErrorMessage = "The field  must be between 3 and 5.")]
+        public string RangeText { get; set; }
     }
 }
