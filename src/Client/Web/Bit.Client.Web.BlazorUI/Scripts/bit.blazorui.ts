@@ -50,6 +50,10 @@ class Bit {
             Bit.currentCallout.update(calloutId, overlayId, obj);
         }
     }
+
+    static selectText(element: any) {
+        element.select();
+    }
 }
 
 window.addEventListener('scroll', (e: any) => {
