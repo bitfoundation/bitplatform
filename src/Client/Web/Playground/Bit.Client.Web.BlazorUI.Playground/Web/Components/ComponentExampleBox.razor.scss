@@ -27,8 +27,8 @@
     padding: 0 rem(24px);
     border-radius: rem(10px) rem(10px) 0 0;
     box-sizing: border-box;
-    background-color: $SecondaryColor;
-    color: $White;
+    background-color: $B5Color;
+    color: $B2Color;
 
     @include lt-xl {
         height: rem(40px);
@@ -67,22 +67,22 @@
     width: 100%;
     max-height: rem(464px);
     min-height: rem(70px);
-    border: rem(1px) solid $Gray3;
+    border: rem(1px) solid $B5Color;
     border-top: none;
     border-radius: 0 0 rem(10px) rem(10px);
     box-sizing: border-box;
     background-color: $White;
-    color: #2E2E2E;
+    color: $Gray1;
     font-size: rem(16px);
     line-height: rem(24px);
     overflow: auto;
 
     &::-webkit-scrollbar {
-        width: rem(10px);
+        width: rem(6px);
     }
 
     &::-webkit-scrollbar:horizontal {
-        height: rem(10px);
+        height: rem(6px);
     }
 
     @include lg {

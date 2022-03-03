@@ -119,6 +119,19 @@ input::-webkit-input-placeholder {
 .side-nav-search-box {
     width: 100%;
     height: rem(40px);
+    border-color: $B5Color;
+
+    .bit-icon {
+        color: $B3Color;
+    }
+
+    &:hover {
+        border-color: $B5Color;
+
+        .bit-icon {
+            color: $B3Color;
+        }
+    }
 
     @include lg {
         height: rem(36px);
@@ -331,7 +344,7 @@ input::-webkit-input-placeholder {
         i {
             width: unset;
             font-size: rem(32px);
-            color: $White;
+            color: $B2Color !important;
         }
     }
 
@@ -374,19 +387,19 @@ input::-webkit-input-placeholder {
     width: rem(48px);
     height: rem(48px);
     border-radius: 50%;
-    background-color: $Gray5;
+    background-color: $B5Color;
 
     span {
         i {
             width: unset;
-            color: $SecondaryColor;
+            color: $B2Color;
             margin: 0;
             font-size: rem(28px);
         }
     }
 
     &:hover {
-        background-color: $Gray4;
+        background-color: $B5Color;
     }
 
     @include lg {
@@ -433,7 +446,7 @@ input::-webkit-input-placeholder {
     a {
         font-family: Axiforma;
         cursor: pointer;
-        color: $PrimaryColor;
+        color: $B2Color;
         font-size: rem(14px);
         line-height: rem(24px);
 
@@ -556,8 +569,8 @@ code {
     width: rem(166px);
     font-family: Axiforma;
     font-size: rem(16px);
-    background-color: $DarkBlue;
-    border-color: $DarkBlue;
+    background-color: $B1Color;
+    border-color: $B1Color;
 }
 
 .custom-action-button, .custom-action-button:hover {
@@ -600,8 +613,8 @@ code {
     font-family: Axiforma;
     font-size: rem(16px);
     color: $White;
-    background-color: $DarkBlue;
-    border-color: $DarkBlue;
+    background-color: $B1Color;
+    border-color: $B1Color;
 }
 
 .custom-spb {
