@@ -51,7 +51,7 @@
     }
 }
 
-.user-img {
+.user-img-container {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -72,6 +72,17 @@
 
     @include lt-lg {
         font-size: rem(20px);
+    }
+}
+
+.user-img {
+    width: rem(56px);
+    height: rem(56px);
+    border-radius: 50%;
+
+    @include lg {
+        width: rem(48px);
+        height: rem(48px);
     }
 }
 

@@ -33,7 +33,8 @@
          aria-label="@AriaLabel"
          aria-setsize="@AriaSetSize"
          aria-posinset="@AriaPositionInSet">
-        <input value="@($"{IntermediateValue}{Suffix}")"
+        <input @ref="@inputRef"
+               value="@intermediateValue"
                id="@InputId"
                type="text"
                autocomplete="off"
@@ -53,7 +54,8 @@
                @onkeydown="e => HandleKeyDown(e)"
                @attributes="@InputHtmlAttributes" />
         <span>
-            <button type="button"
+            <button @ref="buttonIncrement"
+                    type="button"
                     disabled="@(IsEnabled is false)"
                     aria-disabled="@(IsEnabled is false)"
                     date-is-focusable="false"
@@ -67,7 +69,8 @@
                 </span>
             </button>
 
-            <button type="button"
+            <button @ref="buttonDecrement"
+                    type="button"
                     disabled="@(IsEnabled is false)"
                     aria-disabled="@(IsEnabled is false)"
                     date-is-focusable="false"
