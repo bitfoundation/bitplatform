@@ -82,7 +82,13 @@ public partial class EditProfile
 
     private async Task Save()
     {
+        if (IsLoadingSaveButton)
+        {
+            return;
+        }
+
         IsLoadingSaveButton = true;
+        IsSaveButtonEnabled = false;
 
         try
         {
@@ -109,6 +115,7 @@ public partial class EditProfile
         finally
         {
             IsLoadingSaveButton = false;
+            IsSaveButtonEnabled = true;
         }
     }
 }

@@ -32,7 +32,7 @@ public partial class Todo
         }
     };
 
-    protected async override Task OnInitAsync()
+    protected override async Task OnInitAsync()
     {
         await LoadTodoItems();
 
@@ -143,7 +143,13 @@ public partial class Todo
 
     private async Task AddTodoItem()
     {
+        if (IsLoading)
+        {
+            return;
+        }
+
         IsAddLoading = true;
+
         try
         {
             var newTodoItem = new TodoItemDto

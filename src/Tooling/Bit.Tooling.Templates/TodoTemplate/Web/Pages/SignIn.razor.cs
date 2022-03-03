@@ -55,11 +55,18 @@ public partial class SignIn
 
     private async Task DoSignIn()
     {
+        if (IsLoading)
+        {
+            return;
+        }
+
         IsLoading = true;
+        IsSignInButtonEnabled = false;
 
         if (ValidateSignIn() is false)
         {
             IsLoading = false;
+            IsSignInButtonEnabled = true;
             return;
         }
 
@@ -84,6 +91,7 @@ public partial class SignIn
         finally
         {
             IsLoading = false;
+            IsSignInButtonEnabled = true;
         }
     }
 
