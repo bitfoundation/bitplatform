@@ -247,6 +247,12 @@
 
 .bit-txt-invalid-fluent {
     .bit-txt-field-grp {
-        border-color: $ErrorBlockRed;
+        border-color: $Red20;
+    }
+
+    &.bit-txt-focused-fluent {
+        .bit-txt-field-grp::after {
+            border-color: $Red20;
+        }
     }
 }
