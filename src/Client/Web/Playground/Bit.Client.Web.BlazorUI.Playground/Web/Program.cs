@@ -1,47 +1,51 @@
-﻿#if BlazorWebAssembly
+﻿using System.Threading.Tasks;
+#if BlazorWebAssembly
+using System.Net.Http;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.DependencyInjection;
-using System.Net.Http;
 #elif BlazorServer
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Hosting;
+using Microsoft.AspNetCore.Builder;
 #endif
-using System;
-using System.Threading.Tasks;
 
-namespace Bit.Client.Web.BlazorUI.Playground.Web
+namespace Bit.Client.Web.BlazorUI.Playground.Web;
+
+public class Program
 {
-    public class Program
-    {
-        public static async Task Main(string[] args)
-        {
 #if BlazorWebAssembly || BlazorServer
-            await CreateHostBuilder(args)
-                .Build()
-                .RunAsync();
+    public static async Task Main(string[] args)
+    {
+        await CreateHostBuilder(args)
+            .RunAsync();
+    }
 #else
-            Console.WriteLine("You're in blazor hybrid mode, please run app project isntead of web project.");
+    public static void Main(string[] args)
+    {
+        System.Console.WriteLine("You're in blazor hybrid mode, please run app project instead of web project.");
+    }
 #endif
-        }
 
 #if BlazorWebAssembly
-        public static WebAssemblyHostBuilder CreateHostBuilder(string[] args)
-        {
-            var builder = WebAssemblyHostBuilder.CreateDefault();
+    public static WebAssemblyHost CreateHostBuilder(string[] args)
+    {
+        var builder = WebAssemblyHostBuilder.CreateDefault(args);
+        builder.Services.AddSingleton(new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 
-            builder.Services.AddSingleton(new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
+        builder.Services.AddPlaygroundServices();
 
-            new Startup().ConfigureServices(builder.Services);
-
-            return builder;
-        }
-#elif BlazorServer
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
-                .ConfigureWebHostDefaults(webBuilder =>
-                {
-                    webBuilder.UseStartup<Startup>();
-                });
-#endif
+        return builder.Build();
     }
+#elif BlazorServer
+    public static WebApplication CreateHostBuilder(string[] args)
+    {
+        var builder = WebApplication.CreateBuilder(args);
+
+        Startup.Services.Add(builder.Services, builder.Configuration);
+
+        var app = builder.Build();
+
+        Startup.Middlewares.Use(app, builder.Environment);
+
+        return app;
+    }
+#endif
 }
