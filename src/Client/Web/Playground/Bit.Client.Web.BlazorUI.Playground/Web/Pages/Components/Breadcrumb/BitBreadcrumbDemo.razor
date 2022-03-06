@@ -1,0 +1,40 @@
+﻿@page "/components/breadcrumb"
+
+<ComponentDemo ComponentName="Breadcrumb" ComponentDescription="Breadcrumbs should be used as a navigational aid in your app or site. They indicate the current page’s location within a hierarchy and help the user understand where they are in relation to the rest of that hierarchy. They also afford one-click access to higher levels of that hierarchy."
+               ComponentParameters="componentParameters" EnumParameters="enumParameters">
+    <ComponentExampleBox Title="BitBreadcrumb" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
+        <ExamplePreview>
+            <div class="example-desc">With items rendered as links</div>
+            <div>
+                <Breadcrumb Items=GetBreadcrumbItems()></Breadcrumb>
+            </div>
+
+            <div class="example-desc">With custom rendered divider and overflow icon</div>
+            <div>
+                <Breadcrumb Items=GetBreadcrumbItems()
+                            DividerAs="bit-icon--Separator"
+                            OverflowIndex="1"
+                            MaxDisplayedItems="2"
+                            OnRenderOverflowIcon="bit-icon--ChevronRight"></Breadcrumb>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+    <ComponentExampleBox Title="Breadcrumb collapsing options" HTMLSourceCode="@example2HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example2">
+        <ExamplePreview>
+            <div class="example-desc">With no maxDisplayedItems</div>
+            <div>
+                <Breadcrumb Items=GetBreadcrumbItems() AriaLabel="Breadcrumb with no maxDisplayedItems"></Breadcrumb>
+            </div>
+
+            <div class="example-desc">With maxDisplayedItems set to 3</div>
+            <div>
+                <Breadcrumb Items=GetBreadcrumbItems() MaxDisplayedItems="3" AriaLabel="Breadcrumb with 3 maxDisplayedItems"></Breadcrumb>
+            </div>
+
+            <div class="example-desc"> With maxDisplayedItems set to 2 and overflowIndex set to 1 (second element)"</div>
+            <div>
+                <Breadcrumb Items=GetBreadcrumbItems() MaxDisplayedItems="2" OverflowIndex="1"></Breadcrumb>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+</ComponentDemo>
