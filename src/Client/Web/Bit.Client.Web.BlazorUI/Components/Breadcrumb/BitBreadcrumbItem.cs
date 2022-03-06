@@ -7,7 +7,7 @@ using Microsoft.JSInterop;
 
 namespace Bit.Client.Web.BlazorUI
 {
-    public class BreadcrumbItem
+    public class BitBreadcrumbItem
     {
         /// <summary>
         /// Arbitrary unique string associated with the breadcrumb item.
