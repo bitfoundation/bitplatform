@@ -237,6 +237,12 @@
     border-radius: 0;
     border-width: 0 0 rem(1px);
 
+    &:hover {
+        border-top-width: 0;
+        border-left-width: 0;
+        border-right-width: 0;
+    }
+
     &.bit-srch-box-focused-fluent {
         border-bottom: rem(2px) solid $ThemePrimary;
 
@@ -279,11 +285,31 @@
 
 
 .bit-srch-box-invalid-fluent {
-    border-color: $ErrorBlockRed;
+    border-color: $Red20;
 
     .bit-srch-box-icon-container {
         i {
-            color: $ErrorBlockIconRed;
+            color: $Red20;
+        }
+    }
+
+    &:hover {
+        border-color: $Red20;
+
+        .bit-srch-box-icon-container {
+            i {
+                color: $Red20;
+            }
+        }
+    }
+
+    &.bit-srch-box-underlined-fluent {
+        &.bit-srch-box-focused-fluent {
+            border-color: $Red20;
+
+            &:hover {
+                border-color: $Red20;
+            }
         }
     }
 }

@@ -246,12 +246,19 @@
 }
 
 .bit-txt-invalid-fluent {
-    .bit-txt-field-grp {
+    .bit-txt-field-grp, 
+    .bit-txt-wrapper {
         border-color: $Red20;
     }
 
     &.bit-txt-focused-fluent {
         .bit-txt-field-grp::after {
+            border-color: $Red20;
+        }
+    }
+
+    &.bit-txt-underlined-focused-fluent {
+        .bit-txt-wrapper::after {
             border-color: $Red20;
         }
     }
