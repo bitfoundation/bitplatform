@@ -122,9 +122,9 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Breadcrumb
             }
         };
 
-        private List<BreadcrumbItem> GetBreadcrumbItems()
+        private List<BitBreadcrumbItem> GetBreadcrumbItems()
         {
-            return new List<BreadcrumbItem>()
+            return new List<BitBreadcrumbItem>()
             {
                 new()
                 {
