@@ -5,14 +5,14 @@ using Microsoft.AspNetCore.Components.Web;
 
 namespace Bit.Client.Web.BlazorUI
 {
-    public partial class Breadcrumb
+    public partial class BitBreadcrumb
     {
         protected override string RootElementClass => "bit-brc";
         
         /// <summary>
         /// Collection of breadcrumbs to render
         /// </summary>
-        [Parameter] public List<BreadcrumbItem> Items { get; set; } = new List<BreadcrumbItem>();
+        [Parameter] public List<BitBreadcrumbItem> Items { get; set; } = new List<BitBreadcrumbItem>();
         
         /// <summary>
         /// The maximum number of breadcrumbs to display before coalescing.
