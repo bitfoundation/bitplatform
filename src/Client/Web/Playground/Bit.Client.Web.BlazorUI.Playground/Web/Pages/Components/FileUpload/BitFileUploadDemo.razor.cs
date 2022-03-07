@@ -22,7 +22,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.FileUpload
 #endif
         }
 
-        private readonly List<ComponentParameter> _componentParameters = new()
+        private readonly List<ComponentParameter> componentParameters = new()
         {
             new ComponentParameter
             {
@@ -149,7 +149,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.FileUpload
             },
         };
 
-        private readonly List<EnumParameter> _enumParameters = new()
+        private readonly List<EnumParameter> enumParameters = new()
         {
             new EnumParameter()
             {
@@ -237,36 +237,36 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.FileUpload
             }
         };
 
-        private const string Example1CSharpCode = @"
+        private readonly string example1CSharpCode = @"
 private string UploadUrl;";
 
-        private const string Example2CSharpCode = @"
+        private readonly string example2CSharpCode = @"
 private string UploadUrl;
 private string RemoveUrl;";
 
-        private const string Example1HtmlCode = @"<BitFileUpload Label=""Select or drag and drop files""
+        private readonly string example1HtmlCode = @"<BitFileUpload Label=""Select or drag and drop files""
                UploadUrl=""@UploadUrl"">
 </BitFileUpload>";
 
-        private const string Example2HtmlCode = @"<BitFileUpload IsMultiSelect=""true""
+        private readonly string example2HtmlCode = @"<BitFileUpload IsMultiSelect=""true""
                Label=""Select or drag and drop files""
                UploadUrl=""@UploadUrl"">
 </BitFileUpload>";
 
-        private const string Example3HtmlCode = @"<BitFileUpload IsMultiSelect=""true""
+        private readonly string example3HtmlCode = @"<BitFileUpload IsMultiSelect=""true""
                Label=""Select or drag and drop files""
                MaxSize=""1024 * 1024 * 100""
                UploadUrl=""@UploadUrl"">
 </BitFileUpload>";
 
-        private const string Example4HtmlCode = @"<BitFileUpload IsMultiSelect=""true""
+        private readonly string example4HtmlCode = @"<BitFileUpload IsMultiSelect=""true""
                AutoUploadEnabled=""false""
                AllowedExtensions=""@(new List<string> { "".gif"","".jpg"","".mp4"" })""
                Label=""Select or drag and drop files""
                UploadUrl=""@UploadUrl"">
 </BitFileUpload>";
 
-        private const string Example5HtmlCode = @"<BitFileUpload IsMultiSelect=""true""
+        private readonly string example5HtmlCode = @"<BitFileUpload IsMultiSelect=""true""
             Label=""Select or drag and drop files""
             UploadUrl=""@UploadUrl""
             RemoveUrl=""@RemoveUrl""
