@@ -1,6 +1,9 @@
-﻿.bit-crsl-fluent {
+﻿@import "../../Styles/Fluent/colors.fluent.scss";
+@import "../../Styles/functions.scss";
+
+.bit-crsl-fluent {
     max-width: 90%;
-    min-height: 50px;
+    min-height: rem(50px);
     position: relative;
     margin: auto;
 }
@@ -13,11 +16,11 @@
         position: absolute;
         top: 45%;
         width: auto;
-        margin-top: -22px;
-        padding: 4px 0;
-        color: white;
+        margin-top: rem(-22px);
+        padding: rem(4px) 0;
+        color: $White;
         font-weight: bold;
-        font-size: 10px;
+        font-size: rem(10px);
         transition: 0.6s ease;
         border-radius: 60%;
         user-select: none;
@@ -29,33 +32,33 @@
 
     & .bit-crsl-next-btn:hover, .bit-crsl-previuse-btn:hover {
         background-color: rgba(255, 255, 255,0.4);
-        margin: 0 10px;
-        margin-top: -22px;
+        margin: 0 rem(10px);
+        margin-top: rem(-22px);
     }
 }
 
 .bit-crsl-dots {
     text-align: center;
-    margin-top: 10px;
+    margin-top: rem(10px);
 
     & > div {
         cursor: pointer;
-        height: 8px;
-        width: 8px;
-        margin: 0 4px;
-        background-color: #484644;
+        height: rem(8px);
+        width: rem(8px);
+        margin: 0 rem(4px);
+        background-color: $Grey120;
         border-radius: 50%;
         display: inline-block;
         transition: background-color 0.6s ease;
 
         &:hover, &.bit-crsl-dot-current {
-            background-color: #001dff;
+            background-color: $Primary;
         }
     }
 }
 
 .bit-crslitm {
     img {
-        border-radius: 5px;
+        border-radius: rem(5px);
     }
 }
