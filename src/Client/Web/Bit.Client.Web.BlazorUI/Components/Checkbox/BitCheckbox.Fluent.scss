@@ -5,12 +5,14 @@
 
     .bit-chb-lbl {
         display: flex;
-        align-items: flex-start;
+        align-items: center;
         font-size: rem(14px);
         font-weight: 400;
         cursor: pointer;
         position: relative;
         user-select: none;
+        width: 100%;
+        height: 100%;
     }
 
     .bit-chb-checkbox {
