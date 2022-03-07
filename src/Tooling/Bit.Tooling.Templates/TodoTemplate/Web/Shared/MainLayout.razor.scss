@@ -26,14 +26,17 @@
 }
 
 .main-content {
-    height: calc(100vh - 138px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - 138px);
 
     @include lg {
-        height: calc(100vh - 134px);
+        min-height: calc(100vh - 134px);
     }
 
     @include md {
-        height: calc(100vh - 134px);
+        min-height: calc(100vh - 134px);
     }
 }
 
@@ -48,6 +51,6 @@
     }
 
     .main-content {
-        height: calc(100vh - 170px);
+        min-height: calc(100vh - 170px);
     }
 }
