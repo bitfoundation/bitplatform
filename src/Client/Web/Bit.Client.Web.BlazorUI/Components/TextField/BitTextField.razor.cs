@@ -197,7 +197,6 @@ namespace Bit.Client.Web.BlazorUI
             set
             {
                 type = value;
-                ElementType = value;
                 ClassBuilder.Reset();
             }
         }
@@ -280,6 +279,8 @@ namespace Bit.Client.Web.BlazorUI
             {
                 CurrentValue = DefaultValue;
             }
+
+            ElementType = type;
 
             TextFieldId = $"TextField{UniqueId}";
             LabelId = $"TextFieldLabel{UniqueId}";
