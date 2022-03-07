@@ -104,7 +104,7 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// Show/Hide after upload remove button.
         /// </summary>
-        [Parameter] public bool EnableRemoveButton { get; set; } = false;
+        [Parameter] public bool ShowRemoveButton { get; set; } = false;
 
         /// <summary>
         /// Callback for when file or files status change.

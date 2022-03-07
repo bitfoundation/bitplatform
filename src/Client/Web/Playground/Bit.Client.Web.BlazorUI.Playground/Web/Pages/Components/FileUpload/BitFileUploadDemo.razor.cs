@@ -270,7 +270,7 @@ private string RemoveUrl;";
             Label=""Select or drag and drop files""
             UploadUrl=""@UploadUrl""
             RemoveUrl=""@RemoveUrl""
-            EnableRemoveButton=""true"">
+            ShowRemoveButton=""true"">
 </BitFileUpload>";
     }
 }
