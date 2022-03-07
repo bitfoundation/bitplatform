@@ -27,6 +27,10 @@
     @include sm {
         padding: rem(32px) rem(14px);
     }
+
+    .bit-lbl-fluent {
+        text-align: left;
+    }
 }
 
 .form-message-bar {

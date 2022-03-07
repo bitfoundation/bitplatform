@@ -158,6 +158,10 @@
         top: rem(18px);
         right: 0;
     }
+
+    @include sm {
+        top: rem(8px);
+    }
 }
 
 .todo-list--empty-state {
