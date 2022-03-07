@@ -11,15 +11,15 @@
     & .bit-crsl-next-btn, .bit-crsl-previuse-btn {
         cursor: pointer;
         position: absolute;
-        top: 38%;
+        top: 45%;
         width: auto;
         margin-top: -22px;
-        padding: 11px 16px;
+        padding: 4px 0;
         color: white;
         font-weight: bold;
-        font-size: 18px;
+        font-size: 10px;
         transition: 0.6s ease;
-        border-radius: 50%;
+        border-radius: 60%;
         user-select: none;
     }
 
@@ -28,26 +28,34 @@
     }
 
     & .bit-crsl-next-btn:hover, .bit-crsl-previuse-btn:hover {
-        background-color: rgba(0,0,0,0.8);
+        background-color: rgba(255, 255, 255,0.4);
+        margin: 0 10px;
+        margin-top: -22px;
     }
 }
 
 .bit-crsl-dots {
     text-align: center;
-    margin-top: 15px;
+    margin-top: 10px;
 
     & > div {
         cursor: pointer;
-        height: 15px;
-        width: 15px;
-        margin: 0 2px;
-        background-color: #bbb;
+        height: 8px;
+        width: 8px;
+        margin: 0 4px;
+        background-color: #484644;
         border-radius: 50%;
         display: inline-block;
         transition: background-color 0.6s ease;
 
         &:hover, &.bit-crsl-dot-current {
-            background-color: #717171;
+            background-color: #001dff;
         }
+    }
+}
+
+.bit-crslitm {
+    img {
+        border-radius: 5px;
     }
 }
