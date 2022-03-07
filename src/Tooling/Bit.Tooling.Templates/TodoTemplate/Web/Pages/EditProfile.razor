@@ -14,13 +14,15 @@
                 @EditProfileMessage
             </BitMessageBar>
         }
+
         <h1 class="form-title">
             Edit profile
         </h1>
-
         @if (IsLoadingPage)
         {
-            <BitSpinner Size="BitSpinnerSize.Large"></BitSpinner>
+            <div class="loading-container">
+                <BitSpinner Size="BitSpinnerSize.Large"></BitSpinner>
+            </div>
         }
         else
         {
@@ -44,35 +46,39 @@
                 </div>
             </div>
             <div class="form-input-container">
-                <BitLabel>Profile Image</BitLabel>
-                <BitFileUpload Label="Select or drag and drops files"
-                               UploadUrl="@ProfileImageUploadUrl"
-                               OnUploadComplete="() => InvokeAsync(LoadEditProfileData)"
-                               OnUploadFailed="Invoke(() => ProfileImageError = ErrorStrings.FileUploadFailed)"
-                               @onfocus="() => ProfileImageError = null" />
+                <BitLabel>Profile image</BitLabel>
+                <BitFileUpload Label="Upload a new profile image"
+                           UploadUrl="@ProfileImageUploadUrl"
+                           OnUploadComplete="() => InvokeAsync(LoadEditProfileData)"
+                           OnUploadFailed="Invoke(() => ProfileImageError = ErrorStrings.FileUploadFailed)"
+                           @onfocus="() => ProfileImageError = null" />
                 <div class="form-input-error">@ProfileImageError</div>
             </div>
             <div class="form-input-container">
-                <BitLabel>Full-Name</BitLabel>
+                <BitLabel>Full name</BitLabel>
                 <BitTextField @bind-Value="UserToEdit.FullName"
+                          Placeholder="Full name"
                           OnKeyUp="() => InvokeAsync(CheckSaveButtonEnabled)" />
             </div>
             <div class="form-input-container">
                 <BitLabel>Birthday</BitLabel>
-                <BitDatePicker @bind-Value="UserToEdit.BirthDate"
+                <BitDatePicker Class="edit-profile-dtp"
+                           @bind-Value="UserToEdit.BirthDate"
+                           Label="Select your birth date"
                            OnSelectDate="() => InvokeAsync(CheckSaveButtonEnabled)" />
             </div>
             <div class="form-choice-container">
                 <BitLabel>Gender</BitLabel>
                 <BitChoiceGroup @bind-SelectedKey="UserToEdit.GenderValue"
-                                OnValueChange="() => InvokeAsync(CheckSaveButtonEnabled)">
-                    <BitChoiceOption Key="@Gender.Male.ToString()" Text="Male"></BitChoiceOption>
-                    <BitChoiceOption Key="@Gender.Female.ToString()" Text="Famale"></BitChoiceOption>
-                    <BitChoiceOption Key="@Gender.Custom.ToString()" Text="Custom"></BitChoiceOption>
+                            OnValueChange="() => InvokeAsync(CheckSaveButtonEnabled)">
+                    <BitChoiceOption Key="@Gender.Male.ToString()" Text="Male" AriaLabel="Male"></BitChoiceOption>
+                    <BitChoiceOption Key="@Gender.Female.ToString()" Text="Famale" AriaLabel="Famale"></BitChoiceOption>
+                    <BitChoiceOption Key="@Gender.Custom.ToString()" Text="Custom" AriaLabel="Custom"></BitChoiceOption>
                 </BitChoiceGroup>
             </div>
-            <BitButton Class="form-submit-button"
-                   ButtonStyle="BitButtonStyle.Primary"
+            <BitButton ButtonStyle="BitButtonStyle.Primary"
+                   AriaLabel="Save"
+                   Title="Save"
                    IsEnabled="IsSaveButtonEnabled"
                    OnClick="() => InvokeAsync(Save)">
                 @if (IsLoadingSaveButton)
@@ -85,6 +91,5 @@
                 }
             </BitButton>
         }
-
     </form>
 </div>
