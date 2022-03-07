@@ -82,9 +82,9 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public string MaxSizeErrorMessage { get; set; } = "The file size is larger than the max size";
 
         /// <summary>
-        /// Specifies the message for the failed uploading progress due to the allowed extentions.
+        /// Specifies the message for the failed uploading progress due to the allowed extensions.
         /// </summary>
-        [Parameter] public string NotAllowedExtentionErrorMessage { get; set; } = "The file type is not allowed";
+        [Parameter] public string NotAllowedExtensionErrorMessage { get; set; } = "The file type is not allowed";
 
         /// <summary>
         /// General upload status.
@@ -100,6 +100,11 @@ namespace Bit.Client.Web.BlazorUI
         /// Calculate the chunk size dynamically.
         /// </summary>
         [Parameter] public bool AutoChunkSizeEnabled { get; set; }
+
+        /// <summary>
+        /// Show/Hide after upload remove button.
+        /// </summary>
+        [Parameter] public bool ShowRemoveButton { get; set; } = false;
 
         /// <summary>
         /// Callback for when file or files status change.
@@ -333,7 +338,7 @@ namespace Bit.Client.Web.BlazorUI
             {
                 Files[fileIndex].Message = responseText;
                 await UpdateStatus(GetUploadStatus(responseStatus), fileIndex);
-                var allFilesUploaded = Files.All(c => c.Status == BitFileUploadStatus.Completed || c.Status == BitFileUploadStatus.Failed);
+                var allFilesUploaded = Files.All(c => c.Status is BitFileUploadStatus.Completed or BitFileUploadStatus.Failed);
 
                 if (allFilesUploaded)
                 {
@@ -352,7 +357,7 @@ namespace Bit.Client.Web.BlazorUI
             var dtNow = DateTime.UtcNow;
             var duration = (dtNow - Files[fileIndex].StartTimeUpload.GetValueOrDefault(dtNow)).TotalMilliseconds;
 
-            if (duration >= 1000 && duration <= 1500) return;
+            if (duration is >= 1000 and <= 1500) return;
 
             ChunkSize = Convert.ToInt64(ChunkSize / (duration / 1000));
 
@@ -420,8 +425,8 @@ namespace Bit.Client.Web.BlazorUI
 
         private static string GetFileIcon(string fileName)
         {
-            var fileSections = fileName?.Split('.')?.ToList();
-            var extension = fileSections?.Last();
+            var fileSections = fileName.Split('.').ToList();
+            var extension = fileSections.Last();
 
             return extension switch
             {
@@ -454,7 +459,7 @@ namespace Bit.Client.Web.BlazorUI
 
         private static BitFileUploadStatus GetUploadStatus(int responseStatus)
         {
-            return responseStatus >= 200 && responseStatus <= 299 ?
+            return responseStatus is >= 200 and <= 299 ?
                     BitFileUploadStatus.Completed :
                     (responseStatus == 0 ? BitFileUploadStatus.Paused : BitFileUploadStatus.Failed);
         }
@@ -530,14 +535,7 @@ namespace Bit.Client.Web.BlazorUI
                 case BitFileUploadStatus.Failed:
                     return UploadingFailedMessage;
                 case BitFileUploadStatus.NotAllowed:
-                    if (IsFileTypeNotAllowed(file))
-                    {
-                        return NotAllowedExtentionErrorMessage;
-                    }
-                    else
-                    {
-                        return MaxSizeErrorMessage;
-                    }
+                    return IsFileTypeNotAllowed(file) ? NotAllowedExtensionErrorMessage : MaxSizeErrorMessage;
                 default:
                     return string.Empty;
             }
@@ -545,9 +543,9 @@ namespace Bit.Client.Web.BlazorUI
 
         private bool IsFileTypeNotAllowed(BitFileInfo file)
         {
-            var fileSections = file.Name?.Split('.')?.ToList();
+            var fileSections = file.Name.Split('.').ToList();
             var extension = $".{fileSections?.Last()}";
-            return AllowedExtensions.Count > 0 && !AllowedExtensions.Any(ext => ext == "*") && !AllowedExtensions.Any(ext => ext == extension);
+            return AllowedExtensions.Count > 0 && AllowedExtensions.All(ext => ext != "*") && AllowedExtensions.All(ext => ext != extension);
         }
 
         private static int GetFileUploadPercent(BitFileInfo file)
