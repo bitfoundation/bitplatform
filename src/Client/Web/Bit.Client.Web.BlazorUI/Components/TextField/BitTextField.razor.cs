@@ -15,6 +15,7 @@ namespace Bit.Client.Web.BlazorUI
         private string focusClass = string.Empty;
         private BitTextFieldType type = BitTextFieldType.Text;
         private bool isResizable = true;
+        private bool _isPasswordRevealed;
 
         /// <summary>
         /// Whether or not the text field is a Multiline text field
@@ -197,7 +198,7 @@ namespace Bit.Client.Web.BlazorUI
             set
             {
                 type = value;
-                ElementType = value;
+                SetElementType();
                 ClassBuilder.Reset();
             }
         }
@@ -288,6 +289,13 @@ namespace Bit.Client.Web.BlazorUI
             return base.OnInitializedAsync();
         }
 
+        private void SetElementType()
+        {
+            ElementType = CanRevealPassword && type == BitTextFieldType.Password && _isPasswordRevealed
+                ? BitTextFieldType.Text
+                : type;
+        }
+
         private async Task HandleFocusIn(FocusEventArgs e)
         {
             if (IsEnabled)
@@ -348,9 +356,10 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
-        public void TogglePasswordRevealIcon()
+        public void ToggleRevealPassword()
         {
-            ElementType = ElementType == BitTextFieldType.Text ? BitTextFieldType.Password : BitTextFieldType.Text;
+            _isPasswordRevealed = !_isPasswordRevealed;
+            SetElementType();
         }
 
         /// <inheritdoc />

@@ -87,7 +87,7 @@
                 <button class="password-reveal-btn"
                     type="button"
                     aria-label="@RevealPasswordAriaLabel"
-                    @onclick="TogglePasswordRevealIcon"
+                    @onclick="ToggleRevealPassword"
                     aria-pressed="@(ElementType == BitTextFieldType.Text ? "true" : "false")">
                     <span>
                         <i class="bit-icon bit-icon--@(ElementType == BitTextFieldType.Text ? "Hide" : "RedEye")"
