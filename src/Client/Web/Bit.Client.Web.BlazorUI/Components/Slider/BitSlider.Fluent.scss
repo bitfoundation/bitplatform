@@ -183,12 +183,13 @@ input::-moz-range-thumb {
 
     .bit-slider-value {
         text-align: center;
+        padding-top: rem(50px);
+        box-sizing:border-box;
     }
 
     .bit-slider-container {
         width: rem(50px);
         height: 100%;
-        padding: 0;
         margin-left: 0;
         display: block;
     }
@@ -196,6 +197,8 @@ input::-moz-range-thumb {
     input {
         transform-origin: left;
         margin: 0 rem(25px);
+        margin-top: rem(10px);
+        height: rem(60px);
     }
 
     .zero-tick {
