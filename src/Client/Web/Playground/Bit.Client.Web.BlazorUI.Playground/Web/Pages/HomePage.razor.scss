@@ -299,6 +299,7 @@
 }
 
 .benefits-section {
+    position: relative;
     flex-flow: column nowrap;
     justify-content: flex-start;
     align-items: center;
@@ -336,6 +337,48 @@
         }
     }
 
+    .section-clipart {
+        position: absolute;
+        display: block;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: cover;
+
+        @include lt-lg {
+            display: none;
+        }
+    }
+
+    .section-clipart--top {
+        top: rem(140px);
+        right: rem(-345px);
+        width: rem(200px);
+        height: rem(400px);
+        background-image: url('/images/home/benefit-top-clipart.png');
+
+        @include lg {
+            top: rem(405px);
+            right: rem(-140px);
+            width: rem(160px);
+            height: rem(320px);
+        }
+    }
+
+    .section-clipart--bottom {
+        bottom: rem(-45px);
+        left: rem(-345px);
+        width: rem(200px);
+        height: rem(400px);
+        background-image: url('/images/home/benefit-bottom-clipart.png');
+
+        @include lg {
+            bottom: rem(50px);
+            left: rem(-140px);
+            width: rem(170px);
+            height: rem(340px);
+        }
+    }
+
     @include lg {
         padding: rem(80px) rem(32px);
     }
@@ -347,33 +390,6 @@
     @include sm {
         padding: rem(48px) rem(16px);
     }
-
-    .section-title {
-        font-weight: bold;
-        font-size: rem(32px);
-        line-height: rem(48px);
-        margin-bottom: rem(72px);
-        color: $SecondaryColor;
-        text-align: center;
-
-        @include lg {
-            font-size: rem(24px);
-            line-height: rem(32px);
-            margin-bottom: rem(32px);
-        }
-
-        @include md {
-            font-size: rem(20px);
-            line-height: rem(32px);
-            margin-bottom: rem(32px);
-        }
-
-        @include sm {
-            font-size: rem(16px);
-            line-height: rem(24px);
-            margin-bottom: rem(24px);
-        }
-    }
 }
 
 .benefit-card {
@@ -382,6 +398,7 @@
     justify-content: flex-start;
     align-items: flex-start;
     width: 100%;
+    max-width: rem(1232px);
     border: rem(1px) solid $B5Color;
     border-radius: rem(10px);
     padding: rem(24px);
@@ -423,15 +440,18 @@
     }
 
     @include lg {
+        max-width: rem(864px);
         padding: rem(24px) rem(16px);
     }
 
     @include md {
+        max-width: rem(690px);
         padding: rem(20px) rem(16px);
         margin-bottom: rem(8px);
     }
 
     @include sm {
+        max-width: 100%;
         padding: rem(16px) rem(8px);
         margin-bottom: rem(8px);
     }
@@ -482,7 +502,7 @@
     }
 
     .pink-text {
-        color: $P3Color;
+        color: $P2Color;
         white-space: pre;
     }
 
