@@ -2,7 +2,7 @@
 
 namespace Microsoft.JSInterop
 {
-    public static class JsRuntimeExtension
+    public static class PlaygroundJsRuntimeExtension
     {
         public static async Task SetToggleBodyOverflow(this IJSRuntime jsRuntime, bool isNavOpen)
         {

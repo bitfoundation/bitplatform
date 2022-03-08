@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Bit.Client.Web.BlazorUI;
 using Microsoft.AspNetCore.Components;
@@ -22,11 +23,11 @@ namespace Microsoft.JSInterop
             return await jsRuntime.InvokeAsync<int>("Bit.getClientHeight", element);
         }
 
-        public static async Task<BitFileInfo[]?> InitUploader(this IJSRuntime jsRuntime, ElementReference element, DotNetObjectReference<BitFileUpload>? dotnetObjectReference, string uploadAddress)
+        public static async Task<BitFileInfo[]?> InitUploader(this IJSRuntime jsRuntime, ElementReference element, DotNetObjectReference<BitFileUpload>? dotnetObjectReference, string uploadAddress, IReadOnlyDictionary<string, string> uploadRequestHttpHeaders)
         {
             if (uploadAddress.HasNoValue() || dotnetObjectReference is null) return null;
 
-            return await jsRuntime.InvokeAsync<BitFileInfo[]>("BitFileUploader.init", element, dotnetObjectReference, uploadAddress);
+            return await jsRuntime.InvokeAsync<BitFileInfo[]>("BitFileUploader.init", element, dotnetObjectReference, uploadAddress, uploadRequestHttpHeaders);
         }
 
         public static async Task UploadFile(this IJSRuntime jsRuntime, long to, long from, int index = -1)

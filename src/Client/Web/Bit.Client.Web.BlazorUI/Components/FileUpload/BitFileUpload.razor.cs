@@ -104,7 +104,7 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// Show/Hide after upload remove button.
         /// </summary>
-        [Parameter] public bool ShowRemoveButton { get; set; } = false;
+        [Parameter] public bool ShowRemoveButton { get; set; } = true;
 
         /// <summary>
         /// Callback for when file or files status change.
@@ -142,6 +142,16 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public EventCallback<BitFileInfo> OnRemoveFailed { get; set; }
 
         /// <summary>
+        /// Custom http headers for upload request
+        /// </summary>
+        [Parameter] public IReadOnlyDictionary<string, string> UploadRequestHttpHeaders { get; set; } = new Dictionary<string, string>();
+
+        /// <summary>
+        /// Custom http headers for upload request
+        /// </summary>
+        [Parameter] public IReadOnlyDictionary<string, string> RemoveRequestHttpHeaders { get; set; } = new Dictionary<string, string>();
+
+        /// <summary>
         /// All selected files.
         /// </summary>
         public IReadOnlyList<BitFileInfo>? Files { get; private set; }
@@ -151,6 +161,7 @@ namespace Bit.Client.Web.BlazorUI
         protected override Task OnInitializedAsync()
         {
             InputId = $"{UniqueId}FileInput";
+
             return base.OnInitializedAsync();
         }
 
@@ -163,8 +174,15 @@ namespace Bit.Client.Web.BlazorUI
         private async Task HandleOnChange()
         {
             if (JSRuntime is null || UploadUrl is null) return;
+
+            if (dotnetObjectReference != null)
+            {
+                dotnetObjectReference.Dispose();
+            }
+
             dotnetObjectReference = DotNetObjectReference.Create(this);
-            Files = await JSRuntime.InitUploader(inputFileElement, dotnetObjectReference, UploadUrl);
+
+            Files = await JSRuntime.InitUploader(inputFileElement, dotnetObjectReference, UploadUrl, UploadRequestHttpHeaders);
 
             if (Files is not null)
             {
@@ -505,9 +523,12 @@ namespace Bit.Client.Web.BlazorUI
             if (Files is null || RemoveUrl.HasNoValue() || HttpClient is null) return;
 
             var url = $"{RemoveUrl}?fileName={Files[index].Name}";
-#pragma warning disable CA2234 // Pass system uri objects instead of strings
-            await HttpClient.DeleteAsync(url);
-#pragma warning restore CA2234 // Pass system uri objects instead of strings
+            using var request = new HttpRequestMessage(HttpMethod.Delete, url);
+            foreach (var header in RemoveRequestHttpHeaders)
+            {
+                request.Headers.Add(header.Key, header.Value);
+            }
+            await HttpClient.SendAsync(request);
         }
 
         private static string GetFileElClass(BitFileUploadStatus status)
