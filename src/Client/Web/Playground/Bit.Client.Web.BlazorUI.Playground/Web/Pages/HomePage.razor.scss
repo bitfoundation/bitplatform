@@ -299,7 +299,42 @@
 }
 
 .benefits-section {
-    padding: rem(88px) rem(32px);
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    align-items: center;
+
+    .section-title {
+        margin: 0;
+        margin-bottom: rem(72px);
+        font-weight: bold;
+        font-size: rem(32px);
+        line-height: rem(48px);
+        color: $B2Color;
+
+        @include lg {
+            margin-bottom: rem(56px);
+            font-size: rem(24px);
+            line-height: rem(32px);
+        }
+
+        @include md {
+            margin-bottom: rem(48px);
+            font-size: rem(20px);
+            line-height: rem(32px);
+        }
+
+        @include sm {
+            margin-bottom: rem(24px);
+            font-size: rem(16px);
+            line-height: rem(24px);
+        }
+
+        .text--underlined {
+            .text-border {
+                bottom: rem(10px);
+            }
+        }
+    }
 
     @include lg {
         padding: rem(80px) rem(32px);
@@ -346,8 +381,8 @@
     flex-flow: column nowrap;
     justify-content: flex-start;
     align-items: flex-start;
-    max-width: rem(1232px);
-    border: rem(1px) solid $Gray4;
+    width: 100%;
+    border: rem(1px) solid $B5Color;
     border-radius: rem(10px);
     padding: rem(24px);
     margin-bottom: rem(16px);
@@ -360,22 +395,43 @@
     }
 
     &:hover {
-        background-color: $Gray5;
+        background-color: $B6Color;
+
+        .native-icon {
+            background-image: url('/images/home/native-white-icon.png');
+        }
+
+        .customize-icon {
+            background-image: url('/images/home/customize-white-icon.png');
+        }
+
+        .open-source-icon {
+            background-image: url('/images/home/open-source-white-icon.png');
+        }
+
+        .special-components-icon {
+            background-image: url('/images/home/special-components-white-icon.png');
+        }
+
+        .design-system-icon {
+            background-image: url('/images/home/design-system-white-icon.png');
+        }
+
+        .benefit-card-title {
+            color: $B2Color;
+        }
     }
 
     @include lg {
-        max-width: rem(864px);
         padding: rem(24px) rem(16px);
     }
 
     @include md {
-        max-width: rem(770px);
         padding: rem(20px) rem(16px);
         margin-bottom: rem(8px);
     }
 
     @include sm {
-        max-width: 100%;
         padding: rem(16px) rem(8px);
         margin-bottom: rem(8px);
     }
@@ -392,10 +448,10 @@
         margin-bottom: rem(16px);
         padding-left: rem(80px);
         box-sizing: border-box;
-        color: $SecondaryColor;
+        color: #2E2E2E;
         background-position: center left;
         background-repeat: no-repeat;
-        background-size: rem(64px);
+        background-size: rem(64px) rem(60px);
 
         @include lg {
             min-height: rem(56px);
@@ -425,29 +481,29 @@
         }
     }
 
-    .orange-text {
-        color: $OrangeColor;
+    .pink-text {
+        color: $P3Color;
         white-space: pre;
     }
 
     .native-icon {
-        background-image: url('/images/home/native-icon.svg');
+        background-image: url('/images/home/native-orange-icon.png');
     }
 
     .customize-icon {
-        background-image: url('/images/home/customize-icon.svg');
+        background-image: url('/images/home/customize-orange-icon.png');
     }
 
     .open-source-icon {
-        background-image: url('/images/home/open-source-icon.svg');
+        background-image: url('/images/home/open-source-orange-icon.png');
     }
 
     .special-components-icon {
-        background-image: url('/images/home/special-components-icon.svg');
+        background-image: url('/images/home/special-components-orange-icon.png');
     }
 
     .design-system-icon {
-        background-image: url('/images/home/design-system-icon.svg');
+        background-image: url('/images/home/design-system-orange-icon.png');
     }
 
     .benefit-card-desc {
