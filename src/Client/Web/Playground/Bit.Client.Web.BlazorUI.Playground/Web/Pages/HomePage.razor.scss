@@ -553,96 +553,111 @@
 }
 
 .contribution-section {
-    padding: rem(88px) rem(32px);
-    background: linear-gradient(0deg, rgba(35, 49, 132, 0.9), rgba(35, 49, 132, 0.9)), url('/images/home/open-source-section-bg.svg');
-    background-position: center;
-    background-size: cover;
-    background-repeat: no-repeat;
+    position: relative;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    align-items: flex-start;
+    padding: rem(40px) rem(104px);
+    margin: rem(160px) 0;
+    border-radius: rem(10px);
+    background-color: $B5Color;
 
     @include lg {
-        padding: rem(80px) rem(32px);
+        padding: rem(28px) rem(88px);
+        margin: rem(148px) 0;
     }
 
     @include md {
-        padding: rem(56px) rem(32px);
+        padding: rem(40px);
+        margin: rem(80px) 0;
     }
 
     @include sm {
-        padding: rem(40px) rem(16px);
+        align-items: center;
+        padding: rem(77px) rem(8px);
+        margin: rem(126px) 0;
     }
 
-    .section-icon {
-        width: rem(72px);
-        height: rem(72px);
-        margin-bottom: rem(32px);
-        background-image: url('/images/home/open-source-icon.svg');
+    .section-clipart {
+        position: absolute;
+        right: 0;
+        top: 0;
+        width: rem(360px);
+        height: 100%;
+        background-image: url('/images/home/contribution-clipart.png');
         background-position: center;
-        background-size: contain;
+        background-size: rem(360px) 100%;
         background-repeat: no-repeat;
 
         @include lt-xl {
-            width: rem(64px);
-            height: rem(64px);
+            right: 0;
+            top: 0;
+            width: rem(300px);
+            background-size: rem(300px) 100%;
+        }
+
+        @include lt-xl {
+            right: 0;
+            top: 0;
+            background-size: rem(256px) 100%;
         }
 
         @include sm {
-            width: rem(40px);
-            height: rem(40px);
-            margin-bottom: rem(16px);
+            display: none;
         }
     }
 
     .section-title {
+        margin: 0;
+        margin-bottom: rem(24px);
         font-weight: bold;
         font-size: rem(32px);
         line-height: rem(48px);
-        margin-bottom: rem(24px);
-        color: $White;
-        text-align: center;
+        color: $B2Color;
 
         @include lg {
             font-size: rem(24px);
             line-height: rem(32px);
-            margin-bottom: rem(24px);
+            margin-bottom: rem(16px);
         }
 
         @include md {
             font-size: rem(20px);
             line-height: rem(32px);
-            margin-bottom: rem(16px);
+            margin-bottom: rem(8px);
         }
 
         @include sm {
+            text-align: center;
             font-size: rem(16px);
             line-height: rem(24px);
-            margin-bottom: rem(8px);
+            margin-bottom: rem(16px);
         }
     }
 
     .secion-desc {
-        max-width: rem(1024px);
-        margin-bottom: rem(40px);
+        max-width: rem(688px);
+        margin-bottom: rem(24px);
         font-weight: 500;
         font-size: rem(20px);
         line-height: rem(32px);
-        text-align: center;
-        color: #DDDDDD;
+        color: $Gray1;
 
         @include lg {
-            max-width: rem(864px);
-            margin-bottom: rem(24px);
+            margin-bottom: rem(40px);
             font-size: rem(18px);
-            line-height: rem(31px);
+            line-height: rem(32px);
         }
 
         @include md {
-            max-width: 100%;
-            margin-bottom: rem(40px);
+            max-width: rem(560px);
+            margin-bottom: rem(24px);
             font-size: rem(14px);
             line-height: rem(24px);
         }
 
         @include sm {
+            text-align: center;
             max-width: 100%;
             margin-bottom: rem(24px);
             font-size: rem(10px);
@@ -657,13 +672,13 @@
         align-items: center;
         width: rem(209px);
         height: rem(56px);
-        border: rem(2px) solid $PrimaryColor;
+        border: rem(2px) solid $B2Color;
         border-radius: rem(4px);
         box-sizing: border-box;
         font-weight: 600;
         font-size: rem(18px);
         line-height: rem(32px);
-        color: $PrimaryColor;
+        color: $B2Color;
         background-color: $White;
         cursor: pointer;
 
@@ -693,7 +708,7 @@
             width: rem(40px);
             height: rem(40px);
             margin-right: rem(8px);
-            background-image: url('/images/home/github-btn-blue-icon.svg');
+            background-image: url('/images/github-blue-icon.svg');
             background-position: center;
             background-size: contain;
             background-repeat: no-repeat;
@@ -715,12 +730,12 @@
         }
 
         &:hover {
-            border-color: $SecondaryColor;
-            color: $SecondaryColor;
+            border-color: $B3Color;
+            color: $B3Color;
             background-color: $Gray5;
 
             .github-icon {
-                background-image: url('/images/home/github-btn-dark-icon.svg');
+                background-image: url('/images/github-light-icon.svg');
             }
         }
     }
