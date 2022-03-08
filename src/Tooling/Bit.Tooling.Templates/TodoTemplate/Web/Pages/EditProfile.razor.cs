@@ -89,6 +89,7 @@ public partial class EditProfile
 
         IsLoadingSaveButton = true;
         IsSaveButtonEnabled = false;
+        EditProfileMessage = null;
 
         try
         {

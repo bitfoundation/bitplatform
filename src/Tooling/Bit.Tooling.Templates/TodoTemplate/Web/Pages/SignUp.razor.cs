@@ -79,6 +79,7 @@ public partial class SignUp
 
         IsLoading = true;
         IsSignUpButtonEnabled = false;
+        SignUpMessage = null;
 
         if (ValidateSignUp() is false)
         {

@@ -62,6 +62,7 @@ public partial class SignIn
 
         IsLoading = true;
         IsSignInButtonEnabled = false;
+        SignInMessage = null;
 
         if (ValidateSignIn() is false)
         {
