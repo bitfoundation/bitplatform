@@ -247,48 +247,53 @@
 }
 
 .popular-components-section {
-    padding: rem(88px) 0;
-    background: linear-gradient(0deg, rgba(35, 49, 132, 0.9), rgba(35, 49, 132, 0.9)), url('/images/home/most-popular-components-bg.svg');
-    background-position: center;
-    background-size: cover;
-    background-repeat: no-repeat;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    align-items: center;
+    padding: rem(148px) 0 rem(288px);
 
     @include lg {
-        padding: rem(80px) 0;
+        padding: rem(160px) 0 rem(160px);
     }
 
     @include md {
-        padding: rem(56px) 0;
+        padding: rem(80px) 0 rem(56px);
     }
 
     @include sm {
-        padding: rem(24px) 0;
+        padding: rem(80px) 0 rem(64px);
     }
 
     .section-title {
+        margin: 0;
         margin-bottom: rem(72px);
         font-weight: bold;
         font-size: rem(32px);
         line-height: rem(48px);
-        color: $White;
-        text-align: center;
+        color: $B2Color;
 
         @include lg {
+            margin-bottom: rem(56px);
             font-size: rem(24px);
             line-height: rem(32px);
-            margin-bottom: rem(46px);
         }
 
         @include md {
+            margin-bottom: rem(88px);
             font-size: rem(20px);
             line-height: rem(32px);
-            margin-bottom: rem(32px);
         }
 
         @include sm {
+            margin-bottom: rem(16px);
             font-size: rem(16px);
             line-height: rem(24px);
-            margin-bottom: rem(16px);
+        }
+
+        .text--underlined {
+            .text-border {
+                bottom: rem(10px);
+            }
         }
     }
 }

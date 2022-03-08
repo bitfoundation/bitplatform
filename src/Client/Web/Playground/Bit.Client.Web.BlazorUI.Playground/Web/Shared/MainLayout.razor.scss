@@ -134,6 +134,7 @@
             position: fixed;
             left: rem(50px);
             top: 50%;
+            right: unset;
             transform: translateY(-50%);
             justify-content: center;
             flex-flow: column nowrap;
