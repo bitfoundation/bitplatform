@@ -130,7 +130,7 @@
             left: rem(160px);
         }
 
-        @include gt-md {
+        @media all and (min-width: #{em(1335px)}) {
             position: fixed;
             left: rem(50px);
             top: 50%;

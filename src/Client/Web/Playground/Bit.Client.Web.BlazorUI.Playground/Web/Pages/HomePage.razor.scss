@@ -1,43 +1,107 @@
 ﻿@import '../Styles/_shared.scss';
 
-.page-section {
+.page-container {
     display: flex;
     flex-flow: column nowrap;
     justify-content: flex-start;
     align-items: center;
     width: 100%;
+    padding: 0 rem(16px);
     box-sizing: border-box;
 }
 
-.hero-section {
-    padding: rem(112px) rem(200px) rem(105px);
-    background-image: url('/images/home/hero-section-bg.svg');
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: cover;
+.page-section {
+    display: flex;
+    width: 100%;
+    max-width: rem(1232px);
+    box-sizing: border-box;
 
     @include lg {
-        padding: rem(112px) rem(100px) rem(105px);
+        max-width: rem(1160px);
     }
 
     @include md {
-        padding: rem(64px) rem(32px) rem(56px);
+        max-width: rem(960px);
     }
 
     @include sm {
-        padding: rem(40px) rem(16px) rem(48px);
+        max-width: 100%;
+    }
+}
+
+.text--underlined {
+    position: relative;
+    display: inline-block;
+    padding-right: rem(20px);
+
+    .text-border {
+        position: absolute;
+        bottom: rem(14px);
+        left: 0;
+        z-index: -1;
+        display: inline-block;
+        width: 100%;
+        height: rem(10px);
+        background-color: $Y1Color;
+
+        @include lg {
+            height: rem(8px);
+        }
+
+        @include md {
+            height: rem(6px);
+        }
+
+        @include sm {
+            height: rem(4px);
+        }
+    }
+}
+
+.hero-section {
+    flex-flow: row nowrap;
+    justify-content: space-between;
+    align-items: center;
+    padding: rem(56px) 0;
+
+    @include lg {
+        padding: rem(72px) 0;
+    }
+
+    @include md {
+        padding: rem(35px) 0 rem(64px);
+    }
+
+    @include sm {
+        flex-flow: column-reverse nowrap;
+        justify-content: flex-start;
+        align-items: center;
+        padding: rem(32px) 0 rem(40px);
+    }
+
+    .flex-container {
+        display: flex;
+        flex-flow: column nowrap;
+        justify-content: flex-start;
+        align-items: flex-start;
+
+        @include sm {
+            align-items: center;
+        }
     }
 
     .section-title {
-        width: 100%;
+        position: relative;
+        margin: 0;
         margin-bottom: rem(32px);
         font-weight: bold;
         font-size: rem(38px);
         line-height: rem(56px);
-        text-align: center;
-        color: $SecondaryColor;
+        color: $B2Color;
+
 
         @include lg {
+            margin-bottom: rem(23px);
             font-size: rem(32px);
             line-height: rem(48px);
         }
@@ -49,31 +113,65 @@
         }
 
         @include sm {
-            margin-bottom: rem(24px);
+            display: none;
+        }
+    }
+
+    .hero-title-bg {
+        position: absolute;
+        z-index: -1;
+        top: rem(-65px);
+        left: rem(-85px);
+        display: block;
+        width: rem(228px);
+        height: rem(216px);
+        background-image: url('/images/home/hero-title-bg.png');
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: cover;
+
+        @include lg {
+            top: rem(-75px);
+            width: rem(222px);
+        }
+
+        @include md {
+            display: none;
+        }
+    }
+
+    .section-title--sm {
+        display: none;
+
+        @include sm {
+            display: block;
+            margin-bottom: rem(32px);
+            font-weight: bold;
             font-size: rem(18px);
-            line-height: rem(31px);
+            line-height: rem(32px);
+            color: $B2Color;
+            text-align: center;
         }
     }
 
     .section-subtitle {
-        max-width: rem(811px);
+        max-width: rem(712px);
         margin-bottom: rem(80px);
         font-weight: 500;
         font-size: rem(20px);
         line-height: rem(32px);
-        text-align: center;
         color: $Gray1;
 
         @include lg {
-            max-width: rem(688px);
-            margin-bottom: rem(64px);
+            max-width: rem(600px);
+            margin-bottom: rem(65px);
             font-size: rem(16px);
             line-height: rem(24px);
         }
 
         @include md {
-            max-width: rem(572px);
-            margin-bottom: rem(48px);
+            max-width: rem(373px);
+            margin-bottom: rem(40px);
             font-size: rem(14px);
             line-height: rem(24px);
         }
@@ -83,6 +181,7 @@
             margin-bottom: rem(32px);
             font-size: rem(14px);
             line-height: rem(24px);
+            text-align: center;
         }
     }
 
@@ -90,20 +189,27 @@
         display: flex;
         flex-flow: row nowrap;
         align-items: center;
-        //margin-bottom: rem(80px);
-        //@include lg {
-        //    margin-bottom: rem(64px);
-        //}
-        //@include md {
-        //    margin-bottom: rem(40px);
-        //}
-        //@include sm {
-        //    margin-bottom: rem(32px);
-        //}
+
+        @media all and (max-width: #{em(610px)}) and (min-width: #{em(551px)}) {
+            flex-flow: row wrap;
+        }
     }
 
     .section-btn {
-        margin: 0 rem(4px);
+        &:first-child {
+            margin-right: rem(4px);
+        }
+
+        &:last-child {
+            margin-left: rem(4px);
+        }
+
+        @media all and (max-width: #{em(610px)}) and (min-width: #{em(551px)}) {
+            &:last-child {
+                margin-left: 0;
+                margin-top: rem(8px);
+            }
+        }
     }
 
     .btn--primary {
@@ -112,6 +218,31 @@
 
     .btn--secondary {
         @include SecondaryBtn;
+    }
+
+    .hero-banner {
+        width: rem(501px);
+        height: rem(526px);
+        background-image: url('/images/home/hero-banner.png');
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: cover;
+
+        @include lg {
+            width: rem(495px);
+            height: rem(526px);
+        }
+
+        @include md {
+            width: rem(334px);
+            height: rem(353px);
+        }
+
+        @include sm {
+            width: rem(270px);
+            height: rem(292px);
+            margin-bottom: rem(24px);
+        }
     }
 }
 

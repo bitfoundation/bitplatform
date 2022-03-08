@@ -1,134 +1,143 @@
 ﻿@page "/"
 
-<section class="page-section hero-section">
-    <div class="section-title">Create a High Performance Experience for Free!</div>
-    <div class="section-subtitle">Using the Bit’s native Blazor UI components that are easy-to-customize and work on all Blazor modes (WASM, Server, Hybrid, pre-rendering), save time and make working enjoyable.</div>
-    <div class="section-btn-group">
-        <a class="section-btn btn--primary" href="/get-started">Try for Free!</a>
-        <a class="section-btn btn--secondary" href="/components/overview">Demo</a>
-    </div>
-</section>
-<section class="page-section popular-components-section">
-    <div class="section-title">Most Popular Components</div>
-    <PopularComponents />
-</section>
-<section class="page-section benefits-section">
-    <div class="section-title">Why Bit Components?</div>
-    <div class="benefit-card">
-        <div class="benefit-card-title native-icon">
-            Bit’s Blazor UI Components are Native
-        </div>
-        <div class="benefit-card-desc">
-            Written entirely in C#, Bit’s Blazor UI components are native and therefore have high performance. These components can be used in all Blazor modes (WASM, Server, Hybrid, pre-rendering) while the size of your project will eventually increase up to 80kb!
-        </div>
-    </div>
-
-    <div class="benefit-card">
-        <div class="benefit-card-title open-source-icon">
-            Open source contribution with a professional dedicated development team
-        </div>
-        <div class="benefit-card-desc">
-            Since Bit components are developed by a professional dedicated team, you can get sufficient technical support from them, and even make open source contributions on GitHub. Bit components have a fast release cycle and are updated at short intervals.
-        </div>
-    </div>
-
-    <div class="benefit-card">
-        <div class="benefit-card-title customize-icon">
-            Customize Bit components easily
-        </div>
-        <div class="benefit-card-desc">
-            By using Bit components that have been implemented in a standard format, you will no longer have the challenge of customizing the styles and functionalities of the components, and you can easily meet your development needs in a short time!
-        </div>
-    </div>
-
-    <div class="benefit-card">
-        <div class="benefit-card-title special-components-icon">
-            Find some special components you are looking for
-        </div>
-        <div class="benefit-card-desc">
-            Are you looking for special components that are difficult to implement?!
-            The Bit component package includes some special components such as file uploader or Jalali date picker that you can not find anywhere for free!
-        </div>
-    </div>
-
-    <div class="benefit-card">
-        <div class="benefit-card-title design-system-icon">
-            Achieve multiple design systems<span class="orange-text"> (coming soon)</span>
-        </div>
-        <div class="benefit-card-desc">
-            Using Bit components allows you to switch between multiple provided design systems such as Microsoft Fluent, Material, and Cupertino easily or create your own custom design system.
-        </div>
-    </div>
-</section>
-
-<section class="page-section contribution-section">
-    <div class="section-icon"></div>
-    <div class="section-title">Open Source Contribution</div>
-    <div class="secion-desc">Backed by a professional dedicated development team and an active community, you are well supported to work out all challenges. Since all open source components are on GitHub, you can follow the production flow of the components.  Feel free to report bugs, fork the repo, and submit pull request.</div>
-    <a class="section-btn" target="_blank" href="https://github.com/bitfoundation/bitframework"><span class="github-icon"></span>GitHub</a>
-</section>
-
-<section class="page-section component-list-section">
-    <div class="section-title">Components</div>
-    <div class="list-group">
-        <div class="list-col">
-            <div class="list">
-                <div class="list-title">Basic inputs</div>
-                <BitLink Class="component-list-item" Href="/components/button" title="Button">Button</BitLink>
-                <BitLink Class="component-list-item" Href="/components/action-button" title="ActionButton">ActionButton</BitLink>
-                <BitLink Class="component-list-item" Href="/components/compound-button" title="CompoundButton">CompoundButton</BitLink>
-                <BitLink Class="component-list-item" Href="/components/icon-button" title="IconButton">IconButton</BitLink>
-                <BitLink Class="component-list-item" Href="/components/toggle-button" title="ToggleButton">ToggleButton</BitLink>
-                <BitLink Class="component-list-item" Href="/components/check-box" title="Checkbox">Checkbox</BitLink>
-                <BitLink Class="component-list-item" Href="/components/choice-group" title="ChoiceGroup (RadioGroup)">ChoiceGroup (RadioGroup)</BitLink>
-                <BitLink Class="component-list-item" Href="/components/drop-down" title="DropDown">DropDown</BitLink>
-                <BitLink Class="component-list-item" Href="/components/file-upload" title="FileUpload">FileUpload</BitLink>
-                <BitLink Class="component-list-item" Href="/components/label" title="Label">Label</BitLink>
-                <BitLink Class="component-list-item" Href="/components/link" title="Link">Link</BitLink>
-                <BitLink Class="component-list-item" Href="/components/rating" title="Rating">Rating</BitLink>
-                <BitLink Class="component-list-item" Href="/components/search-box" title="SearchBox">SearchBox</BitLink>
-                <BitLink Class="component-list-item" Href="/components/slider" title="Slider">Slider</BitLink>
-                <BitLink Class="component-list-item" Href="/components/spin-button" title="SpinButton (NumericTextField)">SpinButton (NumericTextField)</BitLink>
-                <BitLink Class="component-list-item" Href="/components/text-field" title="TextField">TextField</BitLink>
-                <BitLink Class="component-list-item" Href="/components/toggle" title="Toggle (Switch)">Toggle (Switch)</BitLink>
+<div class="page-container">
+    <section class="page-section hero-section">
+        <div class="flex-container">
+            <h1 class="section-title">
+                <span class="hero-title-bg"></span>
+                Bit <span class="text--underlined">Components<span class="text-border"></span></span>
+            </h1>
+            <div class="section-subtitle">Using the Bit’s native Blazor UI components that are easy-to-customize and work on all Blazor modes (WASM, Server, Hybrid, pre-rendering), save time and make working enjoyable.</div>
+            <div class="section-btn-group">
+                <a class="section-btn btn--primary" href="/get-started">Try for Free!</a>
+                <a class="section-btn btn--secondary" href="/components/overview">Demo</a>
             </div>
         </div>
-        <div class="list-col">
-            <div class="list">
-                <div class="list-title">Galleries & Pickers</div>
-                <BitLink Class="component-list-item" Href="/components/carousel" title="Carousel">Carousel</BitLink>
-                <BitLink Class="component-list-item" Href="/components/color-picker" title="ColorPicker">ColorPicker</BitLink>
-                <BitLink Class="component-list-item" Href="/components/date-picker" title="DatePicker">DatePicker</BitLink>
+        <div class="hero-banner"></div>
+        <h1 class="section-title--sm">Bit <span class="text--underlined">Components<span class="text-border"></span></span></h1>
+    </section>
+    <section class="page-section popular-components-section">
+        <div class="section-title">Most Popular Components</div>
+        <PopularComponents />
+    </section>
+    <section class="page-section benefits-section">
+        <div class="section-title">Why Bit Components?</div>
+        <div class="benefit-card">
+            <div class="benefit-card-title native-icon">
+                Bit’s Blazor UI Components are Native
             </div>
-            <div class="list">
-                <div class="list-title">Items & Lists</div>
-                <BitLink Class="component-list-item" Href="/components/basic-list" title="BasicList">BasicList</BitLink>
-            </div>
-            <div class="list">
-                <div class="list-title">Commands, Menus & Navs</div>
-                <BitLink Class="component-list-item" Href="/components/nav" title="Nav (TreeList)">Nav (TreeList)</BitLink>
-                <BitLink Class="component-list-item" Href="/components/pivot" title="Pivot (Tab)">Pivot (Tab)</BitLink>
-            </div>
-        </div>
-        <div class="list-col">
-            <div class="list">
-                <div class="list-title">Notification & Engagement</div>
-                <BitLink Class="component-list-item" Href="/components/message-bar" title="MessageBar">MessageBar</BitLink>
-            </div>
-            <div class="list">
-                <div class="list-title">Progress</div>
-                <BitLink Class="component-list-item" Href="/components/progress-indicator" title="ProgressIndicator">ProgressIndicator</BitLink>
-                <BitLink Class="component-list-item" Href="/components/spinner" title="Spinner">Spinner</BitLink>
-            </div>
-            <div class="list">
-                <div class="list-title">Surfaces</div>
-                <BitLink Class="component-list-item" Href="/components/modal" title="Modal">Modal</BitLink>
+            <div class="benefit-card-desc">
+                Written entirely in C#, Bit’s Blazor UI components are native and therefore have high performance. These components can be used in all Blazor modes (WASM, Server, Hybrid, pre-rendering) while the size of your project will eventually increase up to 80kb!
             </div>
         </div>
-    </div>
-</section>
 
-<section class="page-section bottom-section">
-    <div class="section-title">Ready to Try it Out?</div>
-    <a class="section-btn" href="/get-started">Try for Free!</a>
-</section>
+        <div class="benefit-card">
+            <div class="benefit-card-title open-source-icon">
+                Open source contribution with a professional dedicated development team
+            </div>
+            <div class="benefit-card-desc">
+                Since Bit components are developed by a professional dedicated team, you can get sufficient technical support from them, and even make open source contributions on GitHub. Bit components have a fast release cycle and are updated at short intervals.
+            </div>
+        </div>
+
+        <div class="benefit-card">
+            <div class="benefit-card-title customize-icon">
+                Customize Bit components easily
+            </div>
+            <div class="benefit-card-desc">
+                By using Bit components that have been implemented in a standard format, you will no longer have the challenge of customizing the styles and functionalities of the components, and you can easily meet your development needs in a short time!
+            </div>
+        </div>
+
+        <div class="benefit-card">
+            <div class="benefit-card-title special-components-icon">
+                Find some special components you are looking for
+            </div>
+            <div class="benefit-card-desc">
+                Are you looking for special components that are difficult to implement?!
+                The Bit component package includes some special components such as file uploader or Jalali date picker that you can not find anywhere for free!
+            </div>
+        </div>
+
+        <div class="benefit-card">
+            <div class="benefit-card-title design-system-icon">
+                Achieve multiple design systems<span class="orange-text"> (coming soon)</span>
+            </div>
+            <div class="benefit-card-desc">
+                Using Bit components allows you to switch between multiple provided design systems such as Microsoft Fluent, Material, and Cupertino easily or create your own custom design system.
+            </div>
+        </div>
+    </section>
+
+    <section class="page-section contribution-section">
+        <div class="section-icon"></div>
+        <div class="section-title">Open Source Contribution</div>
+        <div class="secion-desc">Backed by a professional dedicated development team and an active community, you are well supported to work out all challenges. Since all open source components are on GitHub, you can follow the production flow of the components.  Feel free to report bugs, fork the repo, and submit pull request.</div>
+        <a class="section-btn" target="_blank" href="https://github.com/bitfoundation/bitframework"><span class="github-icon"></span>GitHub</a>
+    </section>
+
+    <section class="page-section component-list-section">
+        <div class="section-title">Components</div>
+        <div class="list-group">
+            <div class="list-col">
+                <div class="list">
+                    <div class="list-title">Basic inputs</div>
+                    <BitLink Class="component-list-item" Href="/components/button" title="Button">Button</BitLink>
+                    <BitLink Class="component-list-item" Href="/components/action-button" title="ActionButton">ActionButton</BitLink>
+                    <BitLink Class="component-list-item" Href="/components/compound-button" title="CompoundButton">CompoundButton</BitLink>
+                    <BitLink Class="component-list-item" Href="/components/icon-button" title="IconButton">IconButton</BitLink>
+                    <BitLink Class="component-list-item" Href="/components/toggle-button" title="ToggleButton">ToggleButton</BitLink>
+                    <BitLink Class="component-list-item" Href="/components/check-box" title="Checkbox">Checkbox</BitLink>
+                    <BitLink Class="component-list-item" Href="/components/choice-group" title="ChoiceGroup (RadioGroup)">ChoiceGroup (RadioGroup)</BitLink>
+                    <BitLink Class="component-list-item" Href="/components/drop-down" title="DropDown">DropDown</BitLink>
+                    <BitLink Class="component-list-item" Href="/components/file-upload" title="FileUpload">FileUpload</BitLink>
+                    <BitLink Class="component-list-item" Href="/components/label" title="Label">Label</BitLink>
+                    <BitLink Class="component-list-item" Href="/components/link" title="Link">Link</BitLink>
+                    <BitLink Class="component-list-item" Href="/components/rating" title="Rating">Rating</BitLink>
+                    <BitLink Class="component-list-item" Href="/components/search-box" title="SearchBox">SearchBox</BitLink>
+                    <BitLink Class="component-list-item" Href="/components/slider" title="Slider">Slider</BitLink>
+                    <BitLink Class="component-list-item" Href="/components/spin-button" title="SpinButton (NumericTextField)">SpinButton (NumericTextField)</BitLink>
+                    <BitLink Class="component-list-item" Href="/components/text-field" title="TextField">TextField</BitLink>
+                    <BitLink Class="component-list-item" Href="/components/toggle" title="Toggle (Switch)">Toggle (Switch)</BitLink>
+                </div>
+            </div>
+            <div class="list-col">
+                <div class="list">
+                    <div class="list-title">Galleries & Pickers</div>
+                    <BitLink Class="component-list-item" Href="/components/carousel" title="Carousel">Carousel</BitLink>
+                    <BitLink Class="component-list-item" Href="/components/color-picker" title="ColorPicker">ColorPicker</BitLink>
+                    <BitLink Class="component-list-item" Href="/components/date-picker" title="DatePicker">DatePicker</BitLink>
+                </div>
+                <div class="list">
+                    <div class="list-title">Items & Lists</div>
+                    <BitLink Class="component-list-item" Href="/components/basic-list" title="BasicList">BasicList</BitLink>
+                </div>
+                <div class="list">
+                    <div class="list-title">Commands, Menus & Navs</div>
+                    <BitLink Class="component-list-item" Href="/components/nav" title="Nav (TreeList)">Nav (TreeList)</BitLink>
+                    <BitLink Class="component-list-item" Href="/components/pivot" title="Pivot (Tab)">Pivot (Tab)</BitLink>
+                </div>
+            </div>
+            <div class="list-col">
+                <div class="list">
+                    <div class="list-title">Notification & Engagement</div>
+                    <BitLink Class="component-list-item" Href="/components/message-bar" title="MessageBar">MessageBar</BitLink>
+                </div>
+                <div class="list">
+                    <div class="list-title">Progress</div>
+                    <BitLink Class="component-list-item" Href="/components/progress-indicator" title="ProgressIndicator">ProgressIndicator</BitLink>
+                    <BitLink Class="component-list-item" Href="/components/spinner" title="Spinner">Spinner</BitLink>
+                </div>
+                <div class="list">
+                    <div class="list-title">Surfaces</div>
+                    <BitLink Class="component-list-item" Href="/components/modal" title="Modal">Modal</BitLink>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="page-section bottom-section">
+        <div class="section-title">Ready to Try it Out?</div>
+        <a class="section-btn" href="/get-started">Try for Free!</a>
+    </section>
+</div>
