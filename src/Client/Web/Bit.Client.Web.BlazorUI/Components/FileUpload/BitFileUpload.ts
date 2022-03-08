@@ -3,7 +3,6 @@
 class BitFileUploader {
     static bitFileUploads: BitFileUpload[];
     static headers: any;
-    static removeHeaders: any;
 
     static init(inputElement: HTMLInputElement,
         dotnetReference: any,
@@ -37,9 +36,9 @@ class BitFileUploader {
 
     static pause(index: number): void {
         if (index === -1) {
-            this.bitFileUploads.forEach((value) => {
-                value.pause();
-            })
+            this.bitFileUploads.forEach(bitFileUpload => {
+                bitFileUpload.pause();
+            });
         } else {
             const uploader = this.bitFileUploads.filter(c => c.index === index)[0];
             uploader.pause();
