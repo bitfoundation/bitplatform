@@ -1,43 +1,47 @@
 ﻿interface IFiles { name: string; size: number, type: string }
 
 class BitFileUploader {
-    static bitFileUploaded: BitFileUpload[];
+    static bitFileUploads: BitFileUpload[];
+    static headers: any;
+    static removeHeaders: any;
 
-    static init(inputElement: HTMLInputElement, dotnetReference: any, uploadEndpointUrl: string): IFiles[] {
+    static init(inputElement: HTMLInputElement,
+        dotnetReference: any,
+        uploadEndpointUrl: string,
+        headers: any[]): IFiles[] {
         let filesArray: IFiles[] = Array.from<IFiles>(inputElement.files!).map(file => ({
             name: file.name,
             size: file.size,
             type: file.type
         }));
-        this.bitFileUploaded = [];
+        this.bitFileUploads = [];
+        this.headers = headers;
 
         filesArray.forEach((value, index) => {
-            let uploader: BitFileUpload = new BitFileUpload(dotnetReference, uploadEndpointUrl, inputElement, index);
-            this.bitFileUploaded.push(uploader);
+            let uploader: BitFileUpload = new BitFileUpload(dotnetReference, uploadEndpointUrl, inputElement, index, this.headers);
+            this.bitFileUploads.push(uploader);
         });
         return filesArray;
     }
 
     static upload(index: number, to: number, from: number): void {
         if (index === -1) {
-            this.bitFileUploaded.forEach((value) => {
-                value.upload(to, from);
-            })
-        }
-        else {
-            var uploader = this.bitFileUploaded.filter(c => c.index === index)[0];
+            this.bitFileUploads.forEach(bitFileUpload => {
+                bitFileUpload.upload(to, from);
+            });
+        } else {
+            const uploader = this.bitFileUploads.filter(f => f.index === index)[0];
             uploader.upload(to, from);
         }
     }
 
     static pause(index: number): void {
         if (index === -1) {
-            this.bitFileUploaded.forEach((value) => {
+            this.bitFileUploads.forEach((value) => {
                 value.pause();
             })
-        }
-        else {
-            var uploader = this.bitFileUploaded.filter(c => c.index === index)[0];
+        } else {
+            const uploader = this.bitFileUploads.filter(c => c.index === index)[0];
             uploader.pause();
         }
     }
@@ -48,45 +52,51 @@ class BitFileUpload {
     uploadEndpointUrl: string;
     inputElement: HTMLInputElement;
     index: number;
-    request: XMLHttpRequest = new XMLHttpRequest();
+    headers: any;
+    xhr: XMLHttpRequest = new XMLHttpRequest();
 
-    constructor(dotnetReference: any, uploadEndpointUrl: string, inputElement: HTMLInputElement, index: number) {
+    constructor(dotnetReference: any, uploadEndpointUrl: string, inputElement: HTMLInputElement, index: number, headers: any) {
         this.dotnetReference = dotnetReference;
         this.uploadEndpointUrl = uploadEndpointUrl;
         this.inputElement = inputElement;
         this.index = index;
+        this.headers = headers;
 
-        if (index < 0) {
-            return;
-        }
+        if (index < 0) return;
 
-        this.request.upload.onprogress = function (e: ProgressEvent) {
+        this.xhr.upload.onprogress = function (e: ProgressEvent) {
             if (e.lengthComputable) {
                 dotnetReference.invokeMethodAsync("HandleUploadProgress", index, e.loaded);
             }
         };
 
-        this.request.onreadystatechange = (function (request: XMLHttpRequest, event: Event): any {
-            if (request.readyState === 4) {
-                dotnetReference.invokeMethodAsync("HandleFileUpload", index, request.status, request.responseText);
+        const me = this;
+        this.xhr.onreadystatechange = function (event: Event): any {
+            if (me.xhr.readyState === 4) {
+                dotnetReference.invokeMethodAsync("HandleFileUpload", index, me.xhr.status, me.xhr.responseText);
             }
-        }).bind(this, this.request);
+        };
     }
 
     upload(to: number, from: number): void {
         const files = this.inputElement.files;
-        if (files === null) {
-            return;
-        }
+        if (files === null) return;
+
         const file = files[this.index];
-        let data: FormData = new FormData()
-        let chunk = file.slice(to, from);
+        const data: FormData = new FormData();
+        const chunk = file.slice(to, from);
         data.append('file', chunk, file.name);
-        this.request.open('POST', this.uploadEndpointUrl, true);
-        this.request.send(data);
+
+        this.xhr.open('POST', this.uploadEndpointUrl, true);
+
+        Object.keys(this.headers).forEach(h => {
+            this.xhr.setRequestHeader(h, this.headers[h]);
+        });
+
+        this.xhr.send(data);
     }
 
     pause(): void {
-        this.request.abort();
+        this.xhr.abort();
     }
 }
