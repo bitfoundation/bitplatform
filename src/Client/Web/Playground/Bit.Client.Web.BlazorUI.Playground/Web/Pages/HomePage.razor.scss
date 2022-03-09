@@ -786,52 +786,66 @@
 }
 
 .component-list-section {
-    padding: rem(88px) rem(32px);
-
-    @include lg {
-        padding: rem(80px) rem(32px);
-    }
-
-    @include md {
-        padding: rem(56px) rem(32px);
-    }
-
-    @include sm {
-        padding: rem(48x) rem(16px);
-    }
+    position: relative;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    align-items: center;
 
     .section-title {
+        margin: 0;
+        margin-bottom: rem(72px);
         font-weight: bold;
         font-size: rem(32px);
         line-height: rem(48px);
-        margin-bottom: rem(80px);
-        color: $SecondaryColor;
-        text-align: center;
+        color: $B2Color;
 
         @include lg {
+            margin-bottom: rem(56px);
             font-size: rem(24px);
             line-height: rem(32px);
-            margin-bottom: rem(72px);
         }
 
         @include md {
+            margin-bottom: rem(48px);
             font-size: rem(20px);
             line-height: rem(32px);
-            margin-bottom: rem(31px);
         }
 
         @include sm {
-            font-size: rem(18px);
-            line-height: rem(31px);
-            margin-bottom: rem(32px);
+            margin-bottom: rem(24px);
+            font-size: rem(16px);
+            line-height: rem(24px);
+        }
+
+        .text--underlined {
+            .text-border {
+                bottom: rem(10px);
+            }
         }
     }
 
     .list-group {
         display: flex;
         flex-flow: row wrap;
-        justify-content: flex-start;
+        justify-content: space-between;
         align-items: flex-start;
+        width: 100%;
+        border-radius: rem(8px);
+        padding: rem(48px);
+        box-sizing: border-box;
+        background-color: $Gray5;
+
+        @include lg {
+            padding: rem(32px) rem(60px);
+        }
+
+        @include md {
+            padding: rem(36px) rem(60px);
+        }
+
+        @include sm {
+            padding: rem(16px);
+        }
     }
 
     .list-col {
@@ -888,8 +902,8 @@
     .list-title {
         margin-bottom: rem(8px);
         font-size: rem(18px);
-        line-height: rem(31px);
-        color: $SecondaryColor;
+        line-height: rem(32px);
+        color: $B3Color;
 
         @include lt-xl {
             font-weight: 500;
@@ -902,6 +916,51 @@
 
         @include sm {
             font-size: rem(15px);
+        }
+    }
+
+    .section-clipart {
+        position: absolute;
+        z-index: -1;
+        width: rem(180px);
+        height: rem(180px);
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: cover;
+
+        @include md {
+            width: rem(104px);
+            height: rem(104px);
+        }
+
+        @include sm {
+            display: none;
+        }
+    }
+
+    .section-clipart--top {
+        top: rem(20px);
+        right: rem(-100px);
+        background-image: url('/images/home/components-clipart-top.png');
+
+        @include lg {
+            top: rem(-15px);
+        }
+
+        @include md {
+            top: rem(20px);
+            right: rem(-60px);
+        }
+    }
+
+    .section-clipart--bottom {
+        bottom: rem(-110px);
+        left: rem(-110px);
+        background-image: url('/images/home/components-clipart-bottom.png');
+
+        @include md {
+            bottom: rem(-60px);
+            left: rem(-60px);
         }
     }
 }
