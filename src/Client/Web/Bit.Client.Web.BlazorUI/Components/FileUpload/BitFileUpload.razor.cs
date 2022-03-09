@@ -22,39 +22,6 @@ namespace Bit.Client.Web.BlazorUI
 
         [Inject] public HttpClient? HttpClient { get; set; }
 
-        /// <summary>
-        /// URL of the server endpoint receiving the files.
-        /// </summary>
-#pragma warning disable CA1056 // URI-like properties should not be strings
-        [Parameter] public string? UploadUrl { get; set; }
-#pragma warning restore CA1056 // URI-like properties should not be strings
-
-        /// <summary>
-        /// URL of the server endpoint removing the files.
-        /// </summary>
-#pragma warning disable CA1056 // URI-like properties should not be strings
-        [Parameter] public string? RemoveUrl { get; set; }
-#pragma warning restore CA1056 // URI-like properties should not be strings
-
-        /// <summary>
-        /// label text for browse button.
-        /// </summary>
-        [Parameter] public string Label { get; set; } = "Browse";
-
-        /// <summary>
-        /// Custom label for browse button.
-        /// </summary>
-        [Parameter] public RenderFragment? LabelFragment { get; set; }
-
-        /// <summary>
-        /// Custom label for Uploaded Status.
-        /// </summary>
-        [Parameter] public string SuccessfullyUploadedMessage { get; set; } = "File uploaded";
-
-        /// <summary>
-        /// Custom label for Failed Status.
-        /// </summary>
-        [Parameter] public string UploadingFailedMessage { get; set; } = "Uploading failed";
 
         /// <summary>
         /// Filters files by extension.
@@ -62,17 +29,37 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public IReadOnlyCollection<string> AllowedExtensions { get; set; } = new List<string> { "*" };
 
         /// <summary>
-        /// Single <c>false</c> or multiple <c>true</c> files upload.
+        /// Calculate the chunk size dynamically based on the user's Internet speed between 512 KB and 10 MB.
+        /// </summary>
+        [Parameter] public bool AutoChunkSizeEnabled { get; set; }
+
+        /// <summary>
+        /// Automatically starts the upload file(s) process immediately after selecting the file(s).
+        /// </summary>
+        [Parameter] public bool AutoUploadEnabled { get; set; }
+
+        /// <summary>
+        /// The size of each chunk of file upload in bytes.
+        /// </summary>
+        [Parameter] public long ChunkSize { get; set; } = FileSizeHumanizer.OneMegaByte * 10;
+
+        /// <summary>
+        /// Enables multi-file select & upload.
         /// </summary>
         [Parameter] public bool IsMultiSelect { get; set; }
 
         /// <summary>
-        /// Uploads immediately after selecting the files.
+        /// The text of select file button.
         /// </summary>
-        [Parameter] public bool AutoUploadEnabled { get; set; } = true;
+        [Parameter] public string Label { get; set; } = "Browse";
 
         /// <summary>
-        /// Specifies the maximum size of the file.
+        /// A custom razor fragment for select button.
+        /// </summary>
+        [Parameter] public RenderFragment? LabelFragment { get; set; }
+
+        /// <summary>
+        /// Specifies the maximum size of the file (0 for unlimited).
         /// </summary>
         [Parameter] public long MaxSize { get; set; }
 
@@ -87,24 +74,9 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public string NotAllowedExtensionErrorMessage { get; set; } = "The file type is not allowed";
 
         /// <summary>
-        /// General upload status.
+        /// Callback for when all files are uploaded.
         /// </summary>
-        public BitFileUploadStatus UploadStatus { get; set; }
-
-        /// <summary>
-        /// Upload is done in the form of chunks and this property shows the progress of upload in each chunk.
-        /// </summary>
-        [Parameter] public long ChunkSize { get; set; } = FileSizeHumanizer.OneMegaByte * 10;
-
-        /// <summary>
-        /// Calculate the chunk size dynamically.
-        /// </summary>
-        [Parameter] public bool AutoChunkSizeEnabled { get; set; }
-
-        /// <summary>
-        /// Show/Hide after upload remove button.
-        /// </summary>
-        [Parameter] public bool ShowRemoveButton { get; set; } = true;
+        [Parameter] public EventCallback<BitFileInfo[]> OnAllUploadsComplete { get; set; }
 
         /// <summary>
         /// Callback for when file or files status change.
@@ -112,19 +84,9 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public EventCallback<BitFileInfo[]> OnChange { get; set; }
 
         /// <summary>
-        /// Callback for when the file is in upload process.
+        /// Callback for when the file upload is progressed.
         /// </summary>
         [Parameter] public EventCallback<BitFileInfo> OnProgress { get; set; }
-
-        /// <summary>
-        /// Callback for when all files are uploaded.
-        /// </summary>
-        [Parameter] public EventCallback<BitFileInfo[]> OnAllUploadsComplete { get; set; }
-
-        /// <summary>
-        /// Callback for when a file upload is done.
-        /// </summary>
-        [Parameter] public EventCallback<BitFileInfo> OnUploadComplete { get; set; }
 
         /// <summary>
         /// Callback for when a remove file is done.
@@ -132,14 +94,46 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public EventCallback<BitFileInfo> OnRemoveComplete { get; set; }
 
         /// <summary>
+        /// Callback for when a remove file is failed.
+        /// </summary>
+        [Parameter] public EventCallback<BitFileInfo> OnRemoveFailed { get; set; }
+
+        /// <summary>
+        /// Callback for when a file upload is done.
+        /// </summary>
+        [Parameter] public EventCallback<BitFileInfo> OnUploadComplete { get; set; }
+
+        /// <summary>
         /// Callback for when an upload file is failed.
         /// </summary>
         [Parameter] public EventCallback<BitFileInfo> OnUploadFailed { get; set; }
 
         /// <summary>
-        /// Callback for when a remove file is failed.
+        /// Custom http headers for upload request.
         /// </summary>
-        [Parameter] public EventCallback<BitFileInfo> OnRemoveFailed { get; set; }
+        [Parameter] public IReadOnlyDictionary<string, string> RemoveRequestHttpHeaders { get; set; } = new Dictionary<string, string>();
+
+        /// <summary>
+        /// URL of the server endpoint removing the files.
+        /// </summary>
+#pragma warning disable CA1056 // URI-like properties should not be strings
+        [Parameter] public string? RemoveUrl { get; set; }
+#pragma warning restore CA1056 // URI-like properties should not be strings
+
+        /// <summary>
+        /// Show/Hide after upload remove button.
+        /// </summary>
+        [Parameter] public bool ShowRemoveButton { get; set; }
+
+        /// <summary>
+        /// The message shown for successful file uploads.
+        /// </summary>
+        [Parameter] public string SuccessfullUploadMessage { get; set; } = "File upload succesfull";
+
+        /// <summary>
+        /// The message shown for failed file uploads.
+        /// </summary>
+        [Parameter] public string FailedUploadMessage { get; set; } = "File upload failed";
 
         /// <summary>
         /// Custom http headers for upload request
@@ -147,16 +141,29 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public IReadOnlyDictionary<string, string> UploadRequestHttpHeaders { get; set; } = new Dictionary<string, string>();
 
         /// <summary>
-        /// Custom http headers for upload request
+        /// General upload status.
         /// </summary>
-        [Parameter] public IReadOnlyDictionary<string, string> RemoveRequestHttpHeaders { get; set; } = new Dictionary<string, string>();
+        public BitFileUploadStatus UploadStatus { get; set; }
+
+        /// <summary>
+        /// URL of the server endpoint receiving the files.
+        /// </summary>
+#pragma warning disable CA1056 // URI-like properties should not be strings
+        [Parameter] public string? UploadUrl { get; set; }
+#pragma warning restore CA1056 // URI-like properties should not be strings
+
 
         /// <summary>
         /// All selected files.
         /// </summary>
         public IReadOnlyList<BitFileInfo>? Files { get; private set; }
 
+        /// <summary>
+        /// The id of the input element
+        /// </summary>
         public string InputId { get; set; } = string.Empty;
+
+
 
         protected override Task OnInitializedAsync()
         {
@@ -552,9 +559,9 @@ namespace Bit.Client.Web.BlazorUI
             switch (file.Status)
             {
                 case BitFileUploadStatus.Completed:
-                    return SuccessfullyUploadedMessage;
+                    return SuccessfullUploadMessage;
                 case BitFileUploadStatus.Failed:
-                    return UploadingFailedMessage;
+                    return FailedUploadMessage;
                 case BitFileUploadStatus.NotAllowed:
                     return IsFileTypeNotAllowed(file) ? NotAllowedExtensionErrorMessage : MaxSizeErrorMessage;
                 default:
