@@ -554,34 +554,55 @@
 
 .contribution-section {
     position: relative;
-    flex-flow: column nowrap;
-    justify-content: flex-start;
-    align-items: flex-start;
-    padding: rem(40px) rem(104px);
+    flex-flow: row nowrap;
+    justify-content: space-between;
+    align-items: center;
     margin: rem(160px) 0;
     border-radius: rem(10px);
     background-color: $B5Color;
 
     @include lg {
-        padding: rem(28px) rem(88px);
         margin: rem(148px) 0;
     }
 
     @include md {
-        padding: rem(40px);
         margin: rem(80px) 0;
     }
 
     @include sm {
-        align-items: center;
-        padding: rem(77px) rem(8px);
         margin: rem(126px) 0;
+    }
+
+    .flex-container {
+        display: flex;
+        flex-flow: column nowrap;
+        justify-content: flex-start;
+        align-items: flex-start;
+        width: calc(100% - #{rem(360px)});
+        padding: rem(40px) rem(5px) rem(40px) rem(104px);
+        box-sizing: border-box;
+
+        @include lg {
+            width: calc(100% - #{rem(300px)});
+            padding: rem(28px) rem(5px) rem(28px) rem(88px);
+        }
+
+        @include md {
+            width: calc(100% - #{rem(256px)});
+            padding: rem(40px);
+        }
+
+        @include sm {
+            align-items: center;
+            width: 100%;
+            padding: rem(77px) rem(8px);
+        }
     }
 
     .section-clipart {
         position: absolute;
         right: 0;
-        top: 0;
+        display: inline-block;
         width: rem(360px);
         height: 100%;
         background-image: url('/images/home/contribution-clipart.png');
@@ -590,21 +611,44 @@
         background-repeat: no-repeat;
 
         @include lt-xl {
-            right: 0;
-            top: 0;
             width: rem(300px);
             background-size: rem(300px) 100%;
         }
 
-        @include lt-xl {
-            right: 0;
-            top: 0;
+        @include md {
+            width: rem(256px);
             background-size: rem(256px) 100%;
         }
 
         @include sm {
             display: none;
         }
+    }
+
+    .section-clipart--small {
+        position: absolute;
+        display: inline-block;
+        width: rem(128px);
+        height: rem(128px);
+        background-position: center;
+        background-size: cover;
+        background-repeat: no-repeat;
+
+        @include gt-sm {
+            display: none;
+        }
+    }
+
+    .section-clipart--top {
+        top: rem(-50px);
+        left: 0;
+        background-image: url('/images/home/contribution-clipart-top.png');
+    }
+
+    .section-clipart--bottom {
+        bottom: rem(-50px);
+        right: 0;
+        background-image: url('/images/home/contribution-clipart-bottom.png');
     }
 
     .section-title {
