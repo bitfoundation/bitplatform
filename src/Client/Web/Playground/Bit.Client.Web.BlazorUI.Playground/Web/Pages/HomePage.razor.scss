@@ -8,6 +8,7 @@
     width: 100%;
     padding: 0 rem(16px);
     box-sizing: border-box;
+    overflow: hidden;
 }
 
 .page-section {
@@ -966,52 +967,153 @@
 }
 
 .bottom-section {
-    padding: rem(184px) 0 rem(168px);
-    background: linear-gradient(0deg, rgba(35, 49, 132, 0.9), rgba(35, 49, 132, 0.9)), url('/images/home/bottom-section-bg.png');
-    background-position: center;
-    background-size: cover;
-    background-repeat: no-repeat;
-
-    @include lg {
-        padding: rem(148px) 0 rem(125px);
-    }
-
-    @include md {
-        padding: rem(56px) 0 rem(112px);
-    }
+    position: relative;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    align-items: center;
+    height: rem(920px);
+    padding: rem(160px) 0;
 
     @include sm {
-        padding: rem(40px) 0 rem(92px);
+        height: rem(320px);
+        padding: rem(80px) 0;
     }
 
     .section-title {
+        margin: 0;
+        margin-bottom: rem(160px);
         font-weight: bold;
-        font-size: rem(38px);
-        line-height: rem(56px);
-        margin-bottom: rem(72px);
-        color: $White;
-        text-align: center;
+        font-size: rem(32px);
+        line-height: rem(48px);
+        color: $B2Color;
 
         @include lg {
-            font-size: rem(32px);
-            line-height: rem(48px);
-            margin-bottom: rem(56px);
+            margin-bottom: rem(120px);
+            font-size: rem(24px);
+            line-height: rem(32px);
         }
 
         @include md {
-            font-size: rem(24px);
-            line-height: rem(40px);
-            margin-bottom: rem(44px);
+            margin-bottom: rem(157px);
+            font-size: rem(20px);
+            line-height: rem(32px);
         }
 
         @include sm {
-            font-size: rem(18px);
-            line-height: rem(31px);
-            margin-bottom: rem(32px);
+            margin-bottom: rem(54px);
+            font-size: rem(16px);
+            line-height: rem(24px);
+        }
+
+        .text--underlined {
+            .text-border {
+                bottom: rem(10px);
+            }
         }
     }
 
     .section-btn {
-        @include SecondaryBtn;
+        @include PrimaryBtn;
+
+        @include md {
+            position: relative;
+            left: rem(180px);
+        }
+    }
+
+    .section-girl-clipart {
+        position: absolute;
+        top: rem(150px);
+        right: 50%;
+        transform: translateX(rem(-155px));
+        width: rem(553px);
+        height: rem(585px);
+        background-image: url('/images/home/bottom-section-girl-clipart.png');
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: cover;
+
+        @include lg {
+            width: rem(497px);
+            height: rem(526px);
+            transform: translateX(rem(-90px));
+        }
+
+        @include md {
+            width: rem(392px);
+            height: rem(455px);
+            transform: translateX(rem(95px));
+            top: rem(215px);
+        }
+
+        @include sm {
+            display: none;
+        }
+    }
+
+    .section-light-clipart {
+        position: absolute;
+        width: rem(73px);
+        height: rem(69px);
+        background-image: url('/images/home/light-clipart.png');
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: cover;
+
+        @include lg {
+            width: rem(57px);
+            height: rem(54px);
+        }
+
+        @include md {
+            width: rem(56px);
+            height: rem(50px);
+        }
+
+        @include sm {
+            width: rem(37px);
+            height: rem(33px);
+        }
+    }
+
+    .light-clipart--top {
+        top: rem(310px);
+        right: 50%;
+        transform: translateX(rem(165px)) rotate(10deg);
+
+        @include lg {
+            top: rem(265px);
+            transform: translateX(rem(140px)) rotate(10deg);
+        }
+
+        @include md {
+            transform: translateX(rem(295px)) rotate(10deg);
+        }
+
+        @include sm {
+            top: rem(130px);
+            transform: translateX(rem(90px)) rotate(10deg);
+        }
+    }
+
+    .light-clipart--bottom {
+        top: rem(418px);
+        right: 50%;
+        transform: translateX(rem(-95px)) rotate(190deg);
+
+        @include lg {
+            top: rem(355px);
+            transform: translateX(rem(-90px)) rotate(190deg);
+        }
+
+        @include md {
+            top: rem(380px);
+            transform: translateX(rem(118px)) rotate(190deg);
+        }
+
+        @include sm {
+            top: rem(195px);
+            transform: translateX(rem(-53px)) rotate(190deg);
+        }
     }
 }
