@@ -21,17 +21,17 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Toggle
             },
             new ComponentParameter()
             {
-                Name = "IsChecked",
+                Name = "Value",
                 Type = "bool",
                 DefaultValue = "false",
                 Description = "Checked state of the toggle.",
             },
             new ComponentParameter()
             {
-                Name = "IsCheckedChanged",
+                Name = "ValueChanged",
                 Type = "EventCallback<bool>",
                 DefaultValue = "",
-                Description = "Callback that is called when the IsChecked parameter changed.",
+                Description = "Callback that is called when the Value parameter changed.",
             },
             new ComponentParameter()
             {
@@ -125,31 +125,31 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Toggle
         };
 
         private readonly string example1HTMLCode = @"<div>
-    <BitToggle Label=""Enabled And Checked"" @bind-IsChecked=""IsToggleChecked"" IsEnabled=""true"" OnText=""On"" OffText=""Off"" />
+    <BitToggle Label=""Enabled And Checked"" @bind-Value=""IsToggleChecked"" IsEnabled=""true"" OnText=""On"" OffText=""Off"" />
 </div>
 <div>
-    <BitToggle Label=""Enabled And Unchecked"" @bind-IsChecked=""IsToggleUnChecked"" IsEnabled=""true"" OnText=""On"" OffText=""Off"" />
+    <BitToggle Label=""Enabled And Unchecked"" @bind-Value=""IsToggleUnChecked"" IsEnabled=""true"" OnText=""On"" OffText=""Off"" />
 </div>
 <div>
-    <BitToggle Label=""Disabled And Checked"" IsChecked=""true"" IsEnabled=""false"" OnText=""On"" OffText=""Off"" />
+    <BitToggle Label=""Disabled And Checked"" Value=""true"" IsEnabled=""false"" OnText=""On"" OffText=""Off"" />
 </div>
 <div>
-    <BitToggle Label=""Disabled And Unchecked"" IsChecked=""false"" IsEnabled=""false"" OnText=""On"" OffText=""Off"" />
+    <BitToggle Label=""Disabled And Unchecked"" Value=""false"" IsEnabled=""false"" OnText=""On"" OffText=""Off"" />
 </div>
 <div class=""m-t-15"">
-    <BitToggle Label=""With Inline Label"" @bind-IsChecked=""IsToggleUnChecked"" IsEnabled=""true"" IsInlineLabel=""true"" OnText=""On"" OffText=""Off"" />
+    <BitToggle Label=""With Inline Label"" @bind-Value=""IsToggleUnChecked"" IsEnabled=""true"" IsInlineLabel=""true"" OnText=""On"" OffText=""Off"" />
 </div>
 <div class=""m-t-15"">
-    <BitToggle Label=""Disabled With Inline Label"" IsChecked=""false"" IsEnabled=""false"" IsInlineLabel=""true"" OnText=""On"" OffText=""Off"" />
+    <BitToggle Label=""Disabled With Inline Label"" Value=""false"" IsEnabled=""false"" IsInlineLabel=""true"" OnText=""On"" OffText=""Off"" />
 </div>
 <div class=""m-t-15"">
-    <BitToggle Label=""With Inline Label And Without OnText And OffText"" @bind-IsChecked=""IsToggleUnChecked"" IsEnabled=""true"" IsInlineLabel=""true"" />
+    <BitToggle Label=""With Inline Label And Without OnText And OffText"" @bind-Value=""IsToggleUnChecked"" IsEnabled=""true"" IsInlineLabel=""true"" />
 </div>
 <div class=""m-t-15"">
-    <BitToggle Label=""Disabled With Inline Label And Without OnText And OffText"" IsChecked=""false"" IsEnabled=""false"" IsInlineLabel=""true"" />
+    <BitToggle Label=""Disabled With Inline Label And Without OnText And OffText"" Value=""false"" IsEnabled=""false"" IsInlineLabel=""true"" />
 </div>
 <div>
-    <BitToggle Label=""Enabled And Checked (ARIA 1.0 compatible)"" @bind-IsChecked=""IsToggleChecked"" IsEnabled=""true"" OnText=""On"" OffText=""Off"" Role=""Checkbox"" />
+    <BitToggle Label=""Enabled And Checked (ARIA 1.0 compatible)"" @bind-Value=""IsToggleChecked"" IsEnabled=""true"" OnText=""On"" OffText=""Off"" Role=""Checkbox"" />
 </div>";
 
         private readonly string example1CSharpCode = @"
@@ -157,14 +157,14 @@ private bool BindedIsToggleUnChecked = false;
 private bool IsToggleUnChecked = false;";
 
         private readonly string example2HTMLCode = @"<div>
-    <BitToggle @bind-IsChecked=""IsToggleUnChecked"" IsEnabled=""true"" OnText=""On"" OffText=""Off"">
+    <BitToggle @bind-Value=""IsToggleUnChecked"" IsEnabled=""true"" OnText=""On"" OffText=""Off"">
         <LabelFragment>
             Custom Inline Label
         </LabelFragment>
     </BitToggle>
 </div>
 <div>
-    <BitToggle @bind-IsChecked=""BindedIsToggleUnChecked"" IsEnabled=""true"" OnText=""On"" OffText=""Off"" IsInlineLabel=""true"">
+    <BitToggle @bind-Value=""BindedIsToggleUnChecked"" IsEnabled=""true"" OnText=""On"" OffText=""Off"" IsInlineLabel=""true"">
         <LabelFragment>
             Custom Inline Label
         </LabelFragment>

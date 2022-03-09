@@ -159,3 +159,33 @@
         }
     }
 }
+
+.bit-tgl-invalid-fluent {
+    &.bit-tgl-enabled-unchecked-fluent {
+        div {
+            button {
+                border-color: $Red20;
+            }
+
+            label {
+                color: $Red20;
+            }
+        }
+    }
+
+    &.bit-tgl-enabled-checked-fluent {
+        div {
+            button {
+                background-color: $Red20;
+
+                &:hover {
+                    background-color: $PinkRed10;
+                }
+            }
+
+            label {
+                color: $Red20;
+            }
+        }
+    }
+}

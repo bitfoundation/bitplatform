@@ -1,12 +1,12 @@
 ﻿@namespace Bit.Client.Web.BlazorUI
-@inherits BitComponentBase
+@inherits BitInputBase<bool>
 
 <div @ref="RootElement"
      @attributes="HtmlAttributes"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
 
-    @if (LabelFragment != null)
+    @if (LabelFragment is not null)
     {
         <label for="@Id">
             @LabelFragment
@@ -39,4 +39,5 @@
             </label>
         }
     </div>
+    <input @attributes="InputHtmlAttributes" type="checkbox" value="@CurrentValueAsString" class="bit-input-hidden" />
 </div>

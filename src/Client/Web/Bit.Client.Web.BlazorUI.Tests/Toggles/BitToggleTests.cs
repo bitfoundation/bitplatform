@@ -1,5 +1,4 @@
-﻿using System;
-using Bunit;
+﻿using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.Client.Web.BlazorUI.Tests.Toggles
@@ -23,20 +22,20 @@ namespace Bit.Client.Web.BlazorUI.Tests.Toggles
            DataRow(Visual.Material, false, true),
            DataRow(Visual.Material, false, false),
        ]
-        public void BitToggleTest(Visual visual, bool isEnabled, bool isChecked)
+        public void BitToggleTest(Visual visual, bool isEnabled, bool value)
         {
             var com = RenderComponent<BitToggleTest>(parameters =>
             {
                 parameters.Add(p => p.Visual, visual);
                 parameters.Add(p => p.IsEnabled, isEnabled);
-                parameters.Add(p => p.IsChecked, isChecked);
+                parameters.Add(p => p.Value, value);
             });
 
             var bitToggle = com.Find(".bit-tgl");
 
             var isEnabledClass = isEnabled ? "enabled" : "disabled";
             var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
-            var ischeckedClass = isChecked ? "checked" : "unchecked";
+            var ischeckedClass = value ? "checked" : "unchecked";
 
             Assert.IsTrue(bitToggle.ClassList.Contains($"bit-tgl-{isEnabledClass}-{ischeckedClass}-{visualClass}"));
         }
@@ -127,17 +126,17 @@ namespace Bit.Client.Web.BlazorUI.Tests.Toggles
             Assert.AreEqual(bitToggleButton.GetAttribute("aria-label"), ariaLabel);
         }
 
-        [DataTestMethod, 
+        [DataTestMethod,
             DataRow(true, "on", "off", "This is the first defaultText", "This is the first label"),
             DataRow(false, "off", "on", "This is the second defaultText", "This is the second label"),
             DataRow(true, "on", "on", "This is the Third defaultText", "This is the Third label"),
             DataRow(false, "off", "off", "This is the fourth defaultText", "This is the fourth label")
         ]
-        public void BitToggleAriaLabelledyTest(bool isChecked, string onText, string offText, string defaultText, string label)
+        public void BitToggleAriaLabelledyTest(bool value, string onText, string offText, string defaultText, string label)
         {
             var com = RenderComponent<BitToggleTest>(parameters =>
             {
-                parameters.Add(p => p.IsChecked, isChecked);
+                parameters.Add(p => p.Value, value);
                 parameters.Add(p => p.OnText, onText);
                 parameters.Add(p => p.OffText, offText);
                 parameters.Add(p => p.DefaultText, defaultText);
@@ -149,8 +148,8 @@ namespace Bit.Client.Web.BlazorUI.Tests.Toggles
             var bitToggleButtonId = bitToggleButton.Id;
             var labelId = bitToggleButtonId + "-label";
             var stateTextId = bitToggleButtonId + "-stateText";
-            var ariaLabelledById = "";
-            var stateText = (isChecked ? onText : offText) ?? defaultText ?? "";
+            var ariaLabelledById = string.Empty;
+            var stateText = (value ? onText : offText) ?? defaultText ?? string.Empty;
 
             if (label.HasValue())
             {
@@ -158,24 +157,24 @@ namespace Bit.Client.Web.BlazorUI.Tests.Toggles
             }
             if (stateText.HasValue())
             {
-                ariaLabelledById = ariaLabelledById.HasValue() ? labelId + " " + stateTextId : stateTextId;
+                ariaLabelledById = ariaLabelledById.HasValue() ? $"{labelId} {stateTextId}" : stateTextId;
             }
 
             Assert.AreEqual(bitToggleButton.GetAttribute("aria-labelledby"), ariaLabelledById);
         }
 
-        [DataTestMethod, 
+        [DataTestMethod,
             DataRow(true),
             DataRow(false)
         ]
-        public void BitToggleAriaCheckedTest(bool isChecked)
+        public void BitToggleAriaCheckedTest(bool value)
         {
             var com = RenderComponent<BitToggleTest>(parameters =>
             {
-                parameters.Add(p => p.IsChecked, isChecked);
+                parameters.Add(p => p.Value, value);
             });
 
-            var ariaChecked = isChecked ? "true" : "false";
+            var ariaChecked = value ? "true" : "false";
             var bitToggleButton = com.Find(".bit-tgl button");
             Assert.AreEqual(bitToggleButton.GetAttribute("aria-checked"), ariaChecked);
         }
