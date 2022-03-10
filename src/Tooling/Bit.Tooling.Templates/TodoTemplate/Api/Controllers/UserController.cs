@@ -23,23 +23,17 @@ public class UserController : ControllerBase
         _signInManager = signInManager;
     }
 
-    [HttpGet, EnableQuery]
-    public IQueryable<UserDto> Get(CancellationToken cancellationToken)
-    {
-        return _userManager.Users.ProjectTo<UserDto>(_mapper.ConfigurationProvider, cancellationToken);
-    }
-
     [HttpGet("[action]")]
     public async Task<UserDto> GetCurrentUser(CancellationToken cancellationToken)
     {
         var userId = User.GetUserId();
 
-        var user = await Get(cancellationToken).FirstOrDefaultAsync(user => user.Id == userId, cancellationToken);
-
+        var user = await _userManager.Users.FirstOrDefaultAsync(user => user.Id == userId, cancellationToken);
+        
         if (user is null)
             throw new ResourceNotFoundException(nameof(ErrorStrings.UserCouldNotBeFound));
 
-        return user;
+        return _mapper.Map<User, UserDto>(user);
     }
 
     [HttpPut]
