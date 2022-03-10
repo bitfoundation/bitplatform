@@ -39,7 +39,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        
+
         <Using Include="Microsoft.AspNetCore.Components.WebView.Maui" />
         <Using Include="Microsoft.Maui" />
         <Using Include="Microsoft.Maui.Controls.Hosting" />
@@ -96,7 +96,7 @@
         <EmbeddedResource Include="appsettings.json" />
         <Content Remove="Pages\_Host.cshtml" />
         <Content Remove="Pages\_Layout.cshtml" />
-        <Compile Remove="Services\Implementations\ServerSideTokenProvider.cs" />
+        <Compile Remove="Services\Implementations\ServerSideAuthTokenProvider.cs" />
         <Content Remove="Properties\launchSettings.json" />
         <Content Remove="compilerconfig.json" />
         <None Include="compilerconfig.json" />
