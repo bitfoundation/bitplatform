@@ -91,14 +91,14 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.DatePicker
             new ComponentParameter()
             {
                 Name = "OnSelectDate",
-                Type = "DateTimeOffset",
+                Type = "EventCallback<DateTimeOffset?>",
                 DefaultValue = "",
                 Description = "Callback for when the on selected date changed.",
             },
             new ComponentParameter()
             {
                 Name = "ValueChanged",
-                Type = "DateTimeOffset",
+                Type = "EventCallback<DateTimeOffset?>",
                 DefaultValue = "",
                 Description = "Callback for when the on date value changed.",
             },
@@ -149,7 +149,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.DatePicker
                 Name = "FormatDate",
                 Type = "string",
                 DefaultValue = "",
-                Description = "Date format like yy/mm/dd.",
+                Description = @"Date format like ""yyyy/MM/dd"".",
             },
             new ComponentParameter()
             {
