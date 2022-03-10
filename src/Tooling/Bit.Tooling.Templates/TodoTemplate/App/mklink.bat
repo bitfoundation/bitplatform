@@ -3,12 +3,14 @@ rd Extensions
 rd Pages
 rd Services
 rd Shared
+rd Styles
 
 mklink /j "Components" "../Web/Components"
 mklink /j "Extensions" "../Web/Extensions"
 mklink /j "Pages" "../Web/Pages"
 mklink /j "Services" "../Web/Services"
 mklink /j "Shared" "../Web/Shared"
+mklink /j "Styles" "../Web/Styles"
 
 del compilerconfig.json
 del compilerconfig.json.defaults
