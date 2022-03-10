@@ -23,6 +23,8 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
         ]
         public void BitDropDownShouldTakeCorrectVisual(Visual visual, bool isEnabled)
         {
+            Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
             var component = RenderComponent<BitDropDownTest>(parameters =>
             {
                 parameters.Add(p => p.Visual, visual);
@@ -68,6 +70,8 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
         ]
         public void BitDropDownIsMultiSelectShouldWorkCorrect(Visual visual, bool isMultiSelect)
         {
+            Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
             var items = GetDropdownItems();
             var component = RenderComponent<BitDropDownTest>(parameters =>
             {
@@ -104,6 +108,8 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
         ]
         public void BitDropDownItemsShouldRenderCorrect(Visual visual, bool isMultiSelect)
         {
+            Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
             var items = GetDropdownItems();
             var component = RenderComponent<BitDropDownTest>(parameters =>
             {
@@ -134,6 +140,8 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
         ]
         public void BitDropDownTextWithSelectedItemsShouldInitCorrect(bool isMultiSelect, string multiSelectDelimiter)
         {
+            Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
             var items = GetDropdownItems();
             var component = RenderComponent<BitDropDownTest>(parameters =>
             {
@@ -175,6 +183,8 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
         ]
         public void BitDropDownTextWithDefaultSelectedKeyShouldInitCorrect(string defaultSelectedKey)
         {
+            Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
             var items = GetDropdownItems();
             var component = RenderComponent<BitDropDown>(parameters =>
             {
@@ -194,6 +204,8 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
         ]
         public void BitDropDownTextWithDefaultSelectedMultipleKeysShouldInitCorrect(string defaultSelectedMultipleKeys)
         {
+            Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
             var items = GetDropdownItems();
             var defaultSelectedMultipleKeyList = defaultSelectedMultipleKeys.Split(",").ToList();
             var component = RenderComponent<BitDropDown>(parameters =>
@@ -229,6 +241,8 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
         ]
         public void BitDropDownTextWithSelectedKeyShouldInitCorrect(string selectedKey, string defaultSelectedKey)
         {
+            Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
             var items = GetDropdownItems();
             var component = RenderComponent<BitDropDown>(parameters =>
             {
@@ -288,6 +302,8 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
         ]
         public void BitDropDownPlaceholderShouldWorkCorrect(string selectedKey, string selectedMultipleKeys, bool isMultiSelect, string placeholder)
         {
+            Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
             var items = GetRawDropdownItems();
             var selectedMultipleKeyList = selectedMultipleKeys is not null ? selectedMultipleKeys.Split(",").ToList() : new List<string>();
             var component = RenderComponent<BitDropDown>(parameters =>
@@ -343,6 +359,8 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
         ]
         public void BitDropDownLabelShouldWorkCorrect(string label)
         {
+            Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
             var component = RenderComponent<BitDropDown>(parameters =>
             {
                 parameters.Add(p => p.Label, label);
@@ -363,6 +381,8 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
         ]
         public void BitDropDownLabelFragmentTest(string labelFragment)
         {
+            Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
             var component = RenderComponent<BitDropDownTest>(parameters =>
             {
                 parameters.Add(p => p.LabelFragment, labelFragment);
@@ -378,6 +398,8 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
         ]
         public void BitDropDownTitleTest(string title)
         {
+            Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
             var component = RenderComponent<BitDropDownTest>(parameters =>
             {
                 parameters.Add(p => p.Title, title);
@@ -504,6 +526,8 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
         ]
         public void BitDropDownMultiSelectTwoWayBoundWithCustomHandlerShouldWorkCorrect(string selectedMultipleKeys)
         {
+            Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
             BitDropDownSelectedMultipleKeys = selectedMultipleKeys.Split(",").ToList();
             var initialSelectedKeysCount = BitDropDownSelectedMultipleKeys.Count;
             var items = GetRawDropdownItems();
