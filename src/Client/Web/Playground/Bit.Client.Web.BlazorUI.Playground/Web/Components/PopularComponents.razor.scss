@@ -17,20 +17,62 @@
 }
 
 .left-box {
+    position: relative;
     display: flex;
     flex-flow: column nowrap;
     width: rem(608px);
     height: 100%;
     margin-right: rem(16px);
     border-radius: rem(10px);
-    border: rem(1px) solid #DDDDDD;
+    border: rem(1px) solid $B5Color;
     box-sizing: border-box;
     background-color: $White;
-    overflow: hidden;
 
     @include lg {
         width: rem(512px);
     }
+
+    .box-clipart {
+        position: absolute;
+        z-index: -1;
+        bottom: -120px;
+        left: -120px;
+        width: rem(384px);
+        height: rem(384px);
+        background-image: url('/images/home/most-popular-components-box-clipart.svg');
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: cover;
+
+        @include lg {
+            width: rem(360px);
+            height: rem(360px);
+        }
+    }
+}
+
+.plane-clipart {
+    position: absolute;
+    display: block;
+    background-image: url('/images/home/plane-clipart.png');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+}
+
+.plane-clipart--top {
+    top: rem(-225px);
+    left: rem(-65px);
+    width: rem(120px);
+    height: rem(116px);
+}
+
+.plane-clipart--bottom {
+    bottom: rem(-85px);
+    right: rem(-85px);
+    width: rem(110px);
+    height: rem(110px);
+    transform: scaleX(-1) rotate(-90deg);
 }
 
 .selected-component {
@@ -41,10 +83,10 @@
     align-items: flex-start;
     width: 100%;
     height: rem(184px);
-    border-bottom: rem(1px) solid #DDDDDD;
+    border-bottom: rem(1px) solid $B5Color;
     padding: rem(25px) rem(40px) rem(16px) rem(104px);
     box-sizing: border-box;
-    background-color: $Gray5;
+    background-color: $B6Color;
 
     @include lg {
         height: rem(202px);
@@ -70,23 +112,23 @@
     }
 
     .color-picker-icon {
-        background-image: url('/images/home/color-picker-blue-icon.svg');
+        background-image: url('/images/home/color-picker-blue-icon.png');
     }
 
     .date-picker-icon {
-        background-image: url('/images/home/date-picker-blue-icon.svg');
+        background-image: url('/images/home/date-picker-blue-icon.png');
     }
 
     .drop-down-icon {
-        background-image: url('/images/home/drop-down-blue-icon.svg');
+        background-image: url('/images/home/drop-down-blue-icon.png');
     }
 
     .nav-icon {
-        background-image: url('/images/home/nav-blue-icon.svg');
+        background-image: url('/images/home/nav-blue-icon.png');
     }
 
     .file-upload-icon {
-        background-image: url('/images/home/file-upload-blue-icon.svg');
+        background-image: url('/images/home/file-upload-blue-icon.png');
     }
 
     .selected-component-name {
@@ -94,7 +136,7 @@
         font-size: rem(20px);
         line-height: rem(32px);
         margin-bottom: rem(8px);
-        color: $SecondaryColor;
+        color: $B2Color;
 
         @include lg {
             font-size: rem(18px);
@@ -118,7 +160,7 @@
     .demo-btn {
         font-size: rem(14px);
         line-height: rem(24px);
-        color: $PrimaryColor;
+        color: $B3Color;
         cursor: pointer;
     }
 }
@@ -135,7 +177,7 @@
         width: 100%;
         height: rem(80px);
         padding-left: rem(104px);
-        border-bottom: rem(1px) solid #DDDDDD;
+        border-bottom: rem(1px) solid $B5Color;
         box-sizing: border-box;
         font-weight: 500;
         font-size: rem(20px);
@@ -151,7 +193,7 @@
         }
 
         &:hover {
-            color: $PrimaryColor;
+            color: $B2Color;
         }
 
         @include lg {
@@ -165,56 +207,56 @@
     }
 
     .color-picker-row {
-        background-image: url('/images/home/color-picker-gray-icon.svg');
+        background-image: url('/images/home/color-picker-light-icon.png');
 
         &:hover {
-            background-image: url('/images/home/color-picker-blue-icon.svg');
+            background-image: url('/images/home/color-picker-blue-icon.png');
         }
     }
 
     .date-picker-row {
-        background-image: url('/images/home/date-picker-gray-icon.svg');
+        background-image: url('/images/home/date-picker-light-icon.png');
 
         &:hover {
-            background-image: url('/images/home/date-picker-blue-icon.svg');
+            background-image: url('/images/home/date-picker-blue-icon.png');
         }
     }
 
     .drop-down-row {
-        background-image: url('/images/home/drop-down-gray-icon.svg');
+        background-image: url('/images/home/drop-down-light-icon.png');
 
         &:hover {
-            background-image: url('/images/home/drop-down-blue-icon.svg');
+            background-image: url('/images/home/drop-down-blue-icon.png');
         }
     }
 
     .nav-row {
-        background-image: url('/images/home/nav-gray-icon.svg');
+        background-image: url('/images/home/nav-light-icon.png');
 
         &:hover {
-            background-image: url('/images/home/nav-blue-icon.svg');
+            background-image: url('/images/home/nav-blue-icon.png');
         }
     }
 
     .file-upload-row {
-        background-image: url('/images/home/file-upload-gray-icon.svg');
+        background-image: url('/images/home/file-upload-light-icon.png');
 
         &:hover {
-            background-image: url('/images/home/file-upload-blue-icon.svg');
+            background-image: url('/images/home/file-upload-blue-icon.png');
         }
     }
 }
 
 .right-box {
+    position: relative;
     display: flex;
     flex-flow: column nowrap;
     width: rem(512px);
     height: 100%;
-    border: rem(1px) solid #DDDDDD;
+    border: rem(1px) solid $B5Color;
     border-radius: rem(10px);
     box-sizing: border-box;
     background-color: $White;
-    overflow: hidden;
 
     @include lg {
         width: rem(512px);
@@ -229,7 +271,8 @@
         height: rem(72px);
         padding-left: rem(48px);
         box-sizing: border-box;
-        background-color: $Gray5;
+        border-bottom: rem(1px) solid $B5Color;
+        background-color: $B6Color;
 
         @include lg {
             height: rem(60px);
@@ -245,11 +288,11 @@
         font-weight: 600;
         font-size: rem(18px);
         line-height: rem(32px);
-        color: $SecondaryColor;
+        color: $B3Color;
         cursor: pointer;
 
         &:hover {
-            color: $PrimaryColor;
+            color: $B2Color;
         }
 
         @include lg {
@@ -260,8 +303,8 @@
     }
 
     .actvie-tab {
-        border-bottom: rem(1px) solid $PrimaryColor;
-        color: $PrimaryColor;
+        border-bottom: rem(1px) solid $B2Color;
+        color: $B2Color;
     }
 
     .tab-content {
@@ -305,14 +348,15 @@
     width: rem(175px);
     height: rem(136px);
     border-radius: rem(10px);
+    border: rem(1px) solid $B5Color;
     margin: 0 rem(12px) rem(24px);
     padding-top: rem(88px);
     box-sizing: border-box;
     font-weight: 500;
     font-size: rem(14px);
     line-height: rem(24px);
-    color: $SecondaryColor;
-    background-color: $Gray5;
+    color: #2E2E2E;
+    background-color: $B6Color;
     background-repeat: no-repeat;
     background-position: top rem(24px) center;
     background-size: rem(48px);
@@ -324,23 +368,23 @@
 }
 
 .color-picker-card {
-    background-image: url('/images/home/color-picker-blue-icon.svg');
+    background-image: url('/images/home/color-picker-blue-icon.png');
 }
 
 .date-picker-card {
-    background-image: url('/images/home/date-picker-blue-icon.svg');
+    background-image: url('/images/home/date-picker-blue-icon.png');
 }
 
 .drop-down-card {
-    background-image: url('/images/home/drop-down-blue-icon.svg');
+    background-image: url('/images/home/drop-down-blue-icon.png');
 }
 
 .nav-card {
-    background-image: url('/images/home/nav-blue-icon.svg');
+    background-image: url('/images/home/nav-blue-icon.png');
 }
 
 .file-upload-card {
-    background-image: url('/images/home/file-upload-blue-icon.svg');
+    background-image: url('/images/home/file-upload-blue-icon.png');
 }
 
 @media all and (max-width: em(1100px)) {

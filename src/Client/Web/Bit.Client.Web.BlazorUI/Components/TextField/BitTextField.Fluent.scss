@@ -107,6 +107,11 @@
     text-overflow: ellipsis;
     font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
     -webkit-font-smoothing: antialiased;
+
+    &[type="password"]::-ms-reveal,
+    &[type="password"]::-ms-clear {
+        display: none;
+    }
 }
 
 .bit-icon {
@@ -246,7 +251,7 @@
 }
 
 .bit-txt-invalid-fluent {
-    .bit-txt-field-grp, 
+    .bit-txt-field-grp,
     .bit-txt-wrapper {
         border-color: $Red20;
     }

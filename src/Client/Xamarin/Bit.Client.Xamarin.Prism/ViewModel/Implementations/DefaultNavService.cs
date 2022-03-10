@@ -147,7 +147,8 @@ namespace Bit.ViewModel.Implementations
             if (!navigationResult.Success)
                 throw navigationResult.Exception;
 
-            await PopupNavigation.PopAllAsync(animate: false); // all popups which are not managed by prism's nav service.
+            if (PopupNavigation.PopupStack.Any())
+                await PopupNavigation.PopAllAsync(animate: false); // all popups which are not managed by prism's nav service.
         }
 
         public virtual async Task GoBackToAsync(string name, params (string key, object value)[] parameters)

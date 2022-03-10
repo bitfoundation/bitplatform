@@ -297,3 +297,4 @@ _book
 /src/Tooling/Bit.Tooling.Templates/TodoTemplate/Web/wwwroot/scripts/todoTemplate*.js
 /src/Tooling/Bit.Tooling.Templates/TodoTemplate/Web/wwwroot/service-worker.published*.js
 /src/Tooling/Bit.Tooling.Templates/TodoTemplate/App/wwwroot/service-worker*.js
+/src/Tooling/Bit.Tooling.Templates/TodoTemplate/App/Styles
