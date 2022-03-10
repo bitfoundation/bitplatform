@@ -70,13 +70,15 @@ namespace Bit
             try
             {
                 IEnumerable<ITelemetryService> allTelemetryServices = Container.Resolve<IEnumerable<ITelemetryService>>();
-                ISecurityServiceBase securityService = Container.Resolve<ISecurityServiceBase>();
+                ISecurityServiceBase? securityService = Container.Resolve<ILifetimeScope>().ResolveOptional<ISecurityServiceBase>();
                 IMessageReceiver? messageReceiver = Container.Resolve<ILifetimeScope>().ResolveOptional<IMessageReceiver>();
                 IDeviceService deviceService = Container.Resolve<IDeviceService>();
                 IEventAggregator eventAggregator = Container.Resolve<IEventAggregator>();
 
-                bool isLoggedIn = await securityService.IsLoggedInAsync().ConfigureAwait(false);
-                string? userId = !isLoggedIn ? null : await securityService.GetUserIdAsync(default).ConfigureAwait(false);
+                bool isLoggedIn = false;
+                if (securityService is not null)
+                    isLoggedIn = await securityService.IsLoggedInAsync().ConfigureAwait(false);
+                string? userId = !isLoggedIn ? null : await securityService!.GetUserIdAsync(default).ConfigureAwait(false);
 
                 foreach (TelemetryServiceBase telemetryService in Container.Resolve<IEnumerable<ITelemetryService>>().OfType<TelemetryServiceBase>())
                 {
