@@ -54,4 +54,12 @@
             }
         }
     }
+
+    static setDropDownCallourWidth(dropDownWrapperId: string,
+        dropDownCalloutId: string) {
+        const dropDownWrapper = document.getElementById(dropDownWrapperId) ?? new HTMLElement();
+        const dropDownCallout = document.getElementById(dropDownCalloutId) ?? new HTMLElement();
+        var dropDownWrapperWidth = dropDownWrapper.offsetWidth;
+        dropDownCallout.style.width = dropDownWrapperWidth + 'px';
+    }
 }
