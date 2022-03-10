@@ -13,13 +13,13 @@
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.20.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="6.0.2" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="6.0.3" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.3" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.1.0" />
     <PackageReference Include="MSTest.TestAdapter" Version="2.2.8" />
     <PackageReference Include="MSTest.TestFramework" Version="2.2.8" />
     <PackageReference Include="Refit" Version="6.3.2" />
-    <PackageReference Include="Selenium.WebDriver.MSEdgeDriver" Version="98.0.1108.56" />
+    <PackageReference Include="Selenium.WebDriver.MSEdgeDriver" Version="99.0.1150.25" />
   </ItemGroup>
 
   <ItemGroup>

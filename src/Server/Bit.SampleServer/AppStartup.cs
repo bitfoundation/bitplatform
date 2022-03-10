@@ -74,13 +74,8 @@ namespace Bit.SampleServer
         public string GetVal() => "!";
     }
 
-    public class SampleServerModule : IAppModule, IAppModulesProvider
+    public class SampleServerModule : IAppModule
     {
-        public IEnumerable<IAppModule> GetAppModules()
-        {
-            yield return this;
-        }
-
         public virtual void ConfigureDependencies(IServiceCollection services, IDependencyManager dependencyManager)
         {
             services.AddSingleton(Log.Logger);
@@ -111,7 +106,7 @@ namespace Bit.SampleServer
 
             dependencyManager.RegisterAspNetCoreSingleSignOnClient();
 
-            services.AddControllers();
+            services.AddControllers().AddApplicationPart(typeof(AppStartup).Assembly);
             dependencyManager.RegisterAspNetCoreMiddlewareUsing(aspNetCoreApp => aspNetCoreApp.UseEndpoints(endpoints => endpoints.MapControllers()));
 
             dependencyManager.Register<IODataModelBuilderProvider, AppODataModelBuilderProvider>(lifeCycle: DependencyLifeCycle.SingleInstance);
