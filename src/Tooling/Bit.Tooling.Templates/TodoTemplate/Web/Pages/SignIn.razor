@@ -19,7 +19,7 @@
             <BitLabel>Email</BitLabel>
             <BitTextField @bind-Value="Email"
                 Placeholder="Email"
-                OnKeyUp="() => InvokeAsync(CheckSignInButtonEnabled)"
+                OnKeyUp="() => Invoke(CheckSignInButtonEnabled)"
                 OnFocus="() => EmailErrorMessage = null" />
              <div class="form-input-error">@EmailErrorMessage</div>
         </div>
@@ -29,7 +29,7 @@
                 Type="BitTextFieldType.Password" 
                 CanRevealPassword="true"
                 Placeholder="Password"
-                OnKeyUp="() => InvokeAsync(CheckSignInButtonEnabled)"
+                OnKeyUp="() => Invoke(CheckSignInButtonEnabled)"
                 OnFocus="() => PasswordErrorMessage = null" />
             <div class="form-input-error">@PasswordErrorMessage</div>
         </div>
@@ -38,7 +38,7 @@
             Title="Sign in"
             AriaLabel="Sign in"
             IsEnabled="@IsSignInButtonEnabled"
-            OnClick="() => InvokeAsync(DoSignIn)">
+            OnClick="() => Invoke(DoSignIn)">
             @if (IsLoading)
             {
                 <BitSpinner Size="BitSpinnerSize.Small"></BitSpinner>

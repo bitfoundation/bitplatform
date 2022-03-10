@@ -19,7 +19,7 @@
                 <BitTextField @bind-Value="NewTodoItemTitle"
                               Placeholder="Add a todo"
                               Class="add-todo-input" />
-                <BitButton OnClick="() => InvokeAsync(AddTodoItem)"
+                <BitButton OnClick="() => Invoke(AddTodoItem)"
                            Class="add-todo-button"
                            Title="Add"
                            AriaLabel="Add"
@@ -80,12 +80,12 @@
                                     <div>
                                         <BitButton Title="Edit"
                                                AriaLabel="Edit"
-                                               OnClick="(() => InvokeAsync(() => EditTodoItem(context)))">Edit</BitButton>
+                                               OnClick="(() => Invoke(() => EditTodoItem(context)))">Edit</BitButton>
                                         <BitButton ButtonStyle="BitButtonStyle.Standard"
                                                Class="todo-button"
                                                Title="Cancel"
                                                AriaLabel="Cancel"
-                                               OnClick="@(() => InvokeAsync(() => CancelEditMode(context)))">Cancel</BitButton>
+                                               OnClick="@(() => Invoke(() => CancelEditMode(context)))">Cancel</BitButton>
                                     </div>
                                 }
                                 else
@@ -104,12 +104,12 @@
                                         <BitIconButton IconName="BitIconName.Edit"
                                                    Title="Edit"
                                                    AriaLabel="Edit"
-                                                   OnClick="(() => InvokeAsync(() => ToggleToEditMode(context)))" />
+                                                   OnClick="(() => Invoke(() => ToggleToEditMode(context)))" />
 
                                         <BitIconButton IconName="BitIconName.Delete"
                                                    Title="Remove"
                                                    AriaLabel="Remove"
-                                                   OnClick="(() => InvokeAsync(() => DeleteTodoItem(context)))" />
+                                                   OnClick="(() => Invoke(() => DeleteTodoItem(context)))" />
                                     </div>
                                 }
                             </div>
