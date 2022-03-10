@@ -25,7 +25,7 @@
       <PackageReference Include="Serilog.AspNetCore" Version="5.0.0" />
     <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="6.0.0" />
     <PackageReference Include="NWebsec.AspNetCore.Middleware" Version="3.0.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Owin" Version="6.0.2" />
+    <PackageReference Include="Microsoft.AspNetCore.Owin" Version="6.0.3" />
   </ItemGroup>
 
   <ItemGroup>

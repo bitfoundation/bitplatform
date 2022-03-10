@@ -21,17 +21,17 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Bit.Tooling.Bswup" Version="8.9.0" />
+		<PackageReference Include="Bit.Tooling.Bswup" Version="9.0.0" />
 		<PackageReference Include="jose-jwt" Version="3.2.0" />
-		<PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="6.0.2" />
-		<PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.2" />
-		<PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="6.0.2" PrivateAssets="all" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="6.0.3" />
+		<PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.3" />
+		<PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="6.0.3" PrivateAssets="all" />
 	</ItemGroup>
 
 	<ItemGroup>
         <ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" Condition="'$(WebAppDeploymentType)' == 'PWA'" />
         <PackageReference Include="BuildWebCompiler" Version="1.12.405" />
-		<PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.5.3">
+		<PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.6.2">
 		  <PrivateAssets>all</PrivateAssets>
 		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
