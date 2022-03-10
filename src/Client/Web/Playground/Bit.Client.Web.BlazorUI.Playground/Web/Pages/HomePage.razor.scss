@@ -1,43 +1,108 @@
 ﻿@import '../Styles/_shared.scss';
 
-.page-section {
+.page-container {
     display: flex;
     flex-flow: column nowrap;
     justify-content: flex-start;
     align-items: center;
     width: 100%;
+    padding: 0 rem(16px);
     box-sizing: border-box;
+    overflow: hidden;
 }
 
-.hero-section {
-    padding: rem(112px) rem(200px) rem(105px);
-    background-image: url('/images/home/hero-section-bg.svg');
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: cover;
+.page-section {
+    display: flex;
+    width: 100%;
+    max-width: rem(1232px);
+    box-sizing: border-box;
 
     @include lg {
-        padding: rem(112px) rem(100px) rem(105px);
+        max-width: rem(1160px);
     }
 
     @include md {
-        padding: rem(64px) rem(32px) rem(56px);
+        max-width: rem(960px);
     }
 
     @include sm {
-        padding: rem(40px) rem(16px) rem(48px);
+        max-width: 100%;
+    }
+}
+
+.text--underlined {
+    position: relative;
+    display: inline-block;
+    padding-right: rem(20px);
+
+    .text-border {
+        position: absolute;
+        bottom: rem(14px);
+        left: 0;
+        z-index: -1;
+        display: inline-block;
+        width: 100%;
+        height: rem(10px);
+        background-color: $Y1Color;
+
+        @include lg {
+            height: rem(8px);
+        }
+
+        @include md {
+            height: rem(6px);
+        }
+
+        @include sm {
+            height: rem(4px);
+        }
+    }
+}
+
+.hero-section {
+    flex-flow: row nowrap;
+    justify-content: space-between;
+    align-items: center;
+    padding: rem(56px) 0;
+
+    @include lg {
+        padding: rem(72px) 0;
+    }
+
+    @include md {
+        padding: rem(35px) 0 rem(64px);
+    }
+
+    @include sm {
+        flex-flow: column-reverse nowrap;
+        justify-content: flex-start;
+        align-items: center;
+        padding: rem(32px) 0 rem(40px);
+    }
+
+    .flex-container {
+        display: flex;
+        flex-flow: column nowrap;
+        justify-content: flex-start;
+        align-items: flex-start;
+
+        @include sm {
+            align-items: center;
+        }
     }
 
     .section-title {
-        width: 100%;
+        position: relative;
+        margin: 0;
         margin-bottom: rem(32px);
         font-weight: bold;
         font-size: rem(38px);
         line-height: rem(56px);
-        text-align: center;
-        color: $SecondaryColor;
+        color: $B2Color;
+
 
         @include lg {
+            margin-bottom: rem(23px);
             font-size: rem(32px);
             line-height: rem(48px);
         }
@@ -49,31 +114,65 @@
         }
 
         @include sm {
-            margin-bottom: rem(24px);
+            display: none;
+        }
+    }
+
+    .hero-title-bg {
+        position: absolute;
+        z-index: -1;
+        top: rem(-65px);
+        left: rem(-85px);
+        display: block;
+        width: rem(228px);
+        height: rem(216px);
+        background-image: url('/images/home/hero-title-bg.svg');
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: cover;
+
+        @include lg {
+            top: rem(-75px);
+            width: rem(222px);
+        }
+
+        @include md {
+            display: none;
+        }
+    }
+
+    .section-title--sm {
+        display: none;
+
+        @include sm {
+            display: block;
+            margin-bottom: rem(32px);
+            font-weight: bold;
             font-size: rem(18px);
-            line-height: rem(31px);
+            line-height: rem(32px);
+            color: $B2Color;
+            text-align: center;
         }
     }
 
     .section-subtitle {
-        max-width: rem(811px);
+        max-width: rem(712px);
         margin-bottom: rem(80px);
         font-weight: 500;
         font-size: rem(20px);
         line-height: rem(32px);
-        text-align: center;
         color: $Gray1;
 
         @include lg {
-            max-width: rem(688px);
-            margin-bottom: rem(64px);
+            max-width: rem(600px);
+            margin-bottom: rem(65px);
             font-size: rem(16px);
             line-height: rem(24px);
         }
 
         @include md {
-            max-width: rem(572px);
-            margin-bottom: rem(48px);
+            max-width: rem(373px);
+            margin-bottom: rem(40px);
             font-size: rem(14px);
             line-height: rem(24px);
         }
@@ -83,6 +182,7 @@
             margin-bottom: rem(32px);
             font-size: rem(14px);
             line-height: rem(24px);
+            text-align: center;
         }
     }
 
@@ -90,20 +190,27 @@
         display: flex;
         flex-flow: row nowrap;
         align-items: center;
-        //margin-bottom: rem(80px);
-        //@include lg {
-        //    margin-bottom: rem(64px);
-        //}
-        //@include md {
-        //    margin-bottom: rem(40px);
-        //}
-        //@include sm {
-        //    margin-bottom: rem(32px);
-        //}
+
+        @media all and (max-width: #{em(610px)}) and (min-width: #{em(551px)}) {
+            flex-flow: row wrap;
+        }
     }
 
     .section-btn {
-        margin: 0 rem(4px);
+        &:first-child {
+            margin-right: rem(4px);
+        }
+
+        &:last-child {
+            margin-left: rem(4px);
+        }
+
+        @media all and (max-width: #{em(610px)}) and (min-width: #{em(551px)}) {
+            &:last-child {
+                margin-left: 0;
+                margin-top: rem(8px);
+            }
+        }
     }
 
     .btn--primary {
@@ -113,57 +220,165 @@
     .btn--secondary {
         @include SecondaryBtn;
     }
+
+    .hero-banner {
+        width: rem(501px);
+        height: rem(526px);
+        background-image: url('/images/home/hero-banner.png');
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: cover;
+
+        @include lg {
+            width: rem(495px);
+            height: rem(526px);
+        }
+
+        @include md {
+            width: rem(334px);
+            height: rem(353px);
+        }
+
+        @include sm {
+            width: rem(270px);
+            height: rem(292px);
+            margin-bottom: rem(24px);
+        }
+    }
 }
 
 .popular-components-section {
-    padding: rem(88px) 0;
-    background: linear-gradient(0deg, rgba(35, 49, 132, 0.9), rgba(35, 49, 132, 0.9)), url('/images/home/most-popular-components-bg.svg');
-    background-position: center;
-    background-size: cover;
-    background-repeat: no-repeat;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    align-items: center;
+    padding: rem(148px) 0 rem(288px);
 
     @include lg {
-        padding: rem(80px) 0;
+        padding: rem(160px) 0 rem(160px);
     }
 
     @include md {
-        padding: rem(56px) 0;
+        padding: rem(80px) 0 rem(56px);
     }
 
     @include sm {
-        padding: rem(24px) 0;
+        padding: rem(80px) 0 rem(64px);
     }
 
     .section-title {
+        margin: 0;
         margin-bottom: rem(72px);
         font-weight: bold;
         font-size: rem(32px);
         line-height: rem(48px);
-        color: $White;
-        text-align: center;
+        color: $B2Color;
 
         @include lg {
+            margin-bottom: rem(56px);
             font-size: rem(24px);
             line-height: rem(32px);
-            margin-bottom: rem(46px);
         }
 
         @include md {
+            margin-bottom: rem(88px);
             font-size: rem(20px);
             line-height: rem(32px);
-            margin-bottom: rem(32px);
         }
 
         @include sm {
+            margin-bottom: rem(16px);
             font-size: rem(16px);
             line-height: rem(24px);
-            margin-bottom: rem(16px);
+        }
+
+        .text--underlined {
+            .text-border {
+                bottom: rem(10px);
+            }
         }
     }
 }
 
 .benefits-section {
-    padding: rem(88px) rem(32px);
+    position: relative;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    align-items: center;
+
+    .section-title {
+        margin: 0;
+        margin-bottom: rem(72px);
+        font-weight: bold;
+        font-size: rem(32px);
+        line-height: rem(48px);
+        color: $B2Color;
+
+        @include lg {
+            margin-bottom: rem(56px);
+            font-size: rem(24px);
+            line-height: rem(32px);
+        }
+
+        @include md {
+            margin-bottom: rem(48px);
+            font-size: rem(20px);
+            line-height: rem(32px);
+        }
+
+        @include sm {
+            margin-bottom: rem(24px);
+            font-size: rem(16px);
+            line-height: rem(24px);
+        }
+
+        .text--underlined {
+            .text-border {
+                bottom: rem(10px);
+            }
+        }
+    }
+
+    .section-clipart {
+        position: absolute;
+        display: block;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: cover;
+
+        @include lt-lg {
+            display: none;
+        }
+    }
+
+    .section-clipart--top {
+        top: rem(140px);
+        right: rem(-345px);
+        width: rem(200px);
+        height: rem(400px);
+        background-image: url('/images/home/benefit-top-clipart.svg');
+
+        @include lg {
+            top: rem(405px);
+            right: rem(-140px);
+            width: rem(160px);
+            height: rem(320px);
+        }
+    }
+
+    .section-clipart--bottom {
+        bottom: rem(-45px);
+        left: rem(-345px);
+        width: rem(200px);
+        height: rem(400px);
+        background-image: url('/images/home/benefit-bottom-clipart.svg');
+
+        @include lg {
+            bottom: rem(50px);
+            left: rem(-140px);
+            width: rem(170px);
+            height: rem(340px);
+        }
+    }
 
     @include lg {
         padding: rem(80px) rem(32px);
@@ -176,33 +391,6 @@
     @include sm {
         padding: rem(48px) rem(16px);
     }
-
-    .section-title {
-        font-weight: bold;
-        font-size: rem(32px);
-        line-height: rem(48px);
-        margin-bottom: rem(72px);
-        color: $SecondaryColor;
-        text-align: center;
-
-        @include lg {
-            font-size: rem(24px);
-            line-height: rem(32px);
-            margin-bottom: rem(32px);
-        }
-
-        @include md {
-            font-size: rem(20px);
-            line-height: rem(32px);
-            margin-bottom: rem(32px);
-        }
-
-        @include sm {
-            font-size: rem(16px);
-            line-height: rem(24px);
-            margin-bottom: rem(24px);
-        }
-    }
 }
 
 .benefit-card {
@@ -210,8 +398,9 @@
     flex-flow: column nowrap;
     justify-content: flex-start;
     align-items: flex-start;
+    width: 100%;
     max-width: rem(1232px);
-    border: rem(1px) solid $Gray4;
+    border: rem(1px) solid $B5Color;
     border-radius: rem(10px);
     padding: rem(24px);
     margin-bottom: rem(16px);
@@ -224,7 +413,31 @@
     }
 
     &:hover {
-        background-color: $Gray5;
+        background-color: $B6Color;
+
+        .native-icon {
+            background-image: url('/images/home/native-white-icon.png');
+        }
+
+        .customize-icon {
+            background-image: url('/images/home/customize-white-icon.png');
+        }
+
+        .open-source-icon {
+            background-image: url('/images/home/open-source-white-icon.png');
+        }
+
+        .special-components-icon {
+            background-image: url('/images/home/special-components-white-icon.png');
+        }
+
+        .design-system-icon {
+            background-image: url('/images/home/design-system-white-icon.png');
+        }
+
+        .benefit-card-title {
+            color: $B2Color;
+        }
     }
 
     @include lg {
@@ -233,7 +446,7 @@
     }
 
     @include md {
-        max-width: rem(770px);
+        max-width: rem(690px);
         padding: rem(20px) rem(16px);
         margin-bottom: rem(8px);
     }
@@ -256,10 +469,10 @@
         margin-bottom: rem(16px);
         padding-left: rem(80px);
         box-sizing: border-box;
-        color: $SecondaryColor;
+        color: #2E2E2E;
         background-position: center left;
         background-repeat: no-repeat;
-        background-size: rem(64px);
+        background-size: rem(64px) rem(60px);
 
         @include lg {
             min-height: rem(56px);
@@ -289,29 +502,29 @@
         }
     }
 
-    .orange-text {
-        color: $OrangeColor;
+    .pink-text {
+        color: $P2Color;
         white-space: pre;
     }
 
     .native-icon {
-        background-image: url('/images/home/native-icon.svg');
+        background-image: url('/images/home/native-orange-icon.png');
     }
 
     .customize-icon {
-        background-image: url('/images/home/customize-icon.svg');
+        background-image: url('/images/home/customize-orange-icon.png');
     }
 
     .open-source-icon {
-        background-image: url('/images/home/open-source-icon.svg');
+        background-image: url('/images/home/open-source-orange-icon.png');
     }
 
     .special-components-icon {
-        background-image: url('/images/home/special-components-icon.svg');
+        background-image: url('/images/home/special-components-orange-icon.png');
     }
 
     .design-system-icon {
-        background-image: url('/images/home/design-system-icon.svg');
+        background-image: url('/images/home/design-system-orange-icon.png');
     }
 
     .benefit-card-desc {
@@ -341,96 +554,155 @@
 }
 
 .contribution-section {
-    padding: rem(88px) rem(32px);
-    background: linear-gradient(0deg, rgba(35, 49, 132, 0.9), rgba(35, 49, 132, 0.9)), url('/images/home/open-source-section-bg.svg');
-    background-position: center;
-    background-size: cover;
-    background-repeat: no-repeat;
+    position: relative;
+    flex-flow: row nowrap;
+    justify-content: space-between;
+    align-items: center;
+    margin: rem(160px) 0;
+    border-radius: rem(10px);
+    background-color: $B5Color;
 
     @include lg {
-        padding: rem(80px) rem(32px);
+        margin: rem(148px) 0;
     }
 
     @include md {
-        padding: rem(56px) rem(32px);
+        margin: rem(80px) 0;
     }
 
     @include sm {
-        padding: rem(40px) rem(16px);
+        margin: rem(126px) 0;
     }
 
-    .section-icon {
-        width: rem(72px);
-        height: rem(72px);
-        margin-bottom: rem(32px);
-        background-image: url('/images/home/open-source-icon.svg');
-        background-position: center;
-        background-size: contain;
-        background-repeat: no-repeat;
+    .flex-container {
+        display: flex;
+        flex-flow: column nowrap;
+        justify-content: flex-start;
+        align-items: flex-start;
+        width: calc(100% - #{rem(360px)});
+        padding: rem(40px) rem(5px) rem(40px) rem(104px);
+        box-sizing: border-box;
 
-        @include lt-xl {
-            width: rem(64px);
-            height: rem(64px);
+        @include lg {
+            width: calc(100% - #{rem(300px)});
+            padding: rem(28px) rem(5px) rem(28px) rem(88px);
+        }
+
+        @include md {
+            width: calc(100% - #{rem(256px)});
+            padding: rem(40px);
         }
 
         @include sm {
-            width: rem(40px);
-            height: rem(40px);
-            margin-bottom: rem(16px);
+            align-items: center;
+            width: 100%;
+            padding: rem(77px) rem(8px);
         }
     }
 
+    .section-clipart {
+        position: absolute;
+        right: 0;
+        display: inline-block;
+        width: rem(360px);
+        height: 100%;
+        background-image: url('/images/home/contribution-clipart.svg');
+        background-position: center;
+        background-size: rem(360px) 100%;
+        background-repeat: no-repeat;
+
+        @include lt-xl {
+            width: rem(300px);
+            background-size: rem(300px) 100%;
+        }
+
+        @include md {
+            width: rem(256px);
+            background-size: rem(256px) 100%;
+        }
+
+        @include sm {
+            display: none;
+        }
+    }
+
+    .section-clipart--small {
+        position: absolute;
+        display: inline-block;
+        width: rem(128px);
+        height: rem(128px);
+        background-position: center;
+        background-size: cover;
+        background-repeat: no-repeat;
+
+        @include gt-sm {
+            display: none;
+        }
+    }
+
+    .section-clipart--top {
+        top: rem(-50px);
+        left: 0;
+        background-image: url('/images/home/contribution-clipart-top.svg');
+    }
+
+    .section-clipart--bottom {
+        bottom: rem(-50px);
+        right: 0;
+        background-image: url('/images/home/contribution-clipart-bottom.svg');
+    }
+
     .section-title {
+        margin: 0;
+        margin-bottom: rem(24px);
         font-weight: bold;
         font-size: rem(32px);
         line-height: rem(48px);
-        margin-bottom: rem(24px);
-        color: $White;
-        text-align: center;
+        color: $B2Color;
 
         @include lg {
             font-size: rem(24px);
             line-height: rem(32px);
-            margin-bottom: rem(24px);
+            margin-bottom: rem(16px);
         }
 
         @include md {
             font-size: rem(20px);
             line-height: rem(32px);
-            margin-bottom: rem(16px);
+            margin-bottom: rem(8px);
         }
 
         @include sm {
+            text-align: center;
             font-size: rem(16px);
             line-height: rem(24px);
-            margin-bottom: rem(8px);
+            margin-bottom: rem(16px);
         }
     }
 
     .secion-desc {
-        max-width: rem(1024px);
-        margin-bottom: rem(40px);
+        max-width: rem(688px);
+        margin-bottom: rem(24px);
         font-weight: 500;
         font-size: rem(20px);
         line-height: rem(32px);
-        text-align: center;
-        color: #DDDDDD;
+        color: $Gray1;
 
         @include lg {
-            max-width: rem(864px);
-            margin-bottom: rem(24px);
+            margin-bottom: rem(40px);
             font-size: rem(18px);
-            line-height: rem(31px);
+            line-height: rem(32px);
         }
 
         @include md {
-            max-width: 100%;
-            margin-bottom: rem(40px);
+            max-width: rem(560px);
+            margin-bottom: rem(24px);
             font-size: rem(14px);
             line-height: rem(24px);
         }
 
         @include sm {
+            text-align: center;
             max-width: 100%;
             margin-bottom: rem(24px);
             font-size: rem(10px);
@@ -445,13 +717,13 @@
         align-items: center;
         width: rem(209px);
         height: rem(56px);
-        border: rem(2px) solid $PrimaryColor;
+        border: rem(2px) solid $B2Color;
         border-radius: rem(4px);
         box-sizing: border-box;
         font-weight: 600;
         font-size: rem(18px);
         line-height: rem(32px);
-        color: $PrimaryColor;
+        color: $B2Color;
         background-color: $White;
         cursor: pointer;
 
@@ -481,7 +753,7 @@
             width: rem(40px);
             height: rem(40px);
             margin-right: rem(8px);
-            background-image: url('/images/home/github-btn-blue-icon.svg');
+            background-image: url('/images/github-blue-icon.svg');
             background-position: center;
             background-size: contain;
             background-repeat: no-repeat;
@@ -503,64 +775,78 @@
         }
 
         &:hover {
-            border-color: $SecondaryColor;
-            color: $SecondaryColor;
+            border-color: $B3Color;
+            color: $B3Color;
             background-color: $Gray5;
 
             .github-icon {
-                background-image: url('/images/home/github-btn-dark-icon.svg');
+                background-image: url('/images/github-light-icon.svg');
             }
         }
     }
 }
 
 .component-list-section {
-    padding: rem(88px) rem(32px);
-
-    @include lg {
-        padding: rem(80px) rem(32px);
-    }
-
-    @include md {
-        padding: rem(56px) rem(32px);
-    }
-
-    @include sm {
-        padding: rem(48x) rem(16px);
-    }
+    position: relative;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    align-items: center;
 
     .section-title {
+        margin: 0;
+        margin-bottom: rem(72px);
         font-weight: bold;
         font-size: rem(32px);
         line-height: rem(48px);
-        margin-bottom: rem(80px);
-        color: $SecondaryColor;
-        text-align: center;
+        color: $B2Color;
 
         @include lg {
+            margin-bottom: rem(56px);
             font-size: rem(24px);
             line-height: rem(32px);
-            margin-bottom: rem(72px);
         }
 
         @include md {
+            margin-bottom: rem(48px);
             font-size: rem(20px);
             line-height: rem(32px);
-            margin-bottom: rem(31px);
         }
 
         @include sm {
-            font-size: rem(18px);
-            line-height: rem(31px);
-            margin-bottom: rem(32px);
+            margin-bottom: rem(24px);
+            font-size: rem(16px);
+            line-height: rem(24px);
+        }
+
+        .text--underlined {
+            .text-border {
+                bottom: rem(10px);
+            }
         }
     }
 
     .list-group {
         display: flex;
         flex-flow: row wrap;
-        justify-content: flex-start;
+        justify-content: space-between;
         align-items: flex-start;
+        width: 100%;
+        border-radius: rem(8px);
+        padding: rem(48px);
+        box-sizing: border-box;
+        background-color: $Gray5;
+
+        @include lg {
+            padding: rem(32px) rem(60px);
+        }
+
+        @include md {
+            padding: rem(36px) rem(60px);
+        }
+
+        @include sm {
+            padding: rem(16px);
+        }
     }
 
     .list-col {
@@ -617,8 +903,8 @@
     .list-title {
         margin-bottom: rem(8px);
         font-size: rem(18px);
-        line-height: rem(31px);
-        color: $SecondaryColor;
+        line-height: rem(32px);
+        color: $B3Color;
 
         @include lt-xl {
             font-weight: 500;
@@ -633,55 +919,201 @@
             font-size: rem(15px);
         }
     }
-}
 
-.bottom-section {
-    padding: rem(184px) 0 rem(168px);
-    background: linear-gradient(0deg, rgba(35, 49, 132, 0.9), rgba(35, 49, 132, 0.9)), url('/images/home/bottom-section-bg.png');
-    background-position: center;
-    background-size: cover;
-    background-repeat: no-repeat;
-
-    @include lg {
-        padding: rem(148px) 0 rem(125px);
-    }
-
-    @include md {
-        padding: rem(56px) 0 rem(112px);
-    }
-
-    @include sm {
-        padding: rem(40px) 0 rem(92px);
-    }
-
-    .section-title {
-        font-weight: bold;
-        font-size: rem(38px);
-        line-height: rem(56px);
-        margin-bottom: rem(72px);
-        color: $White;
-        text-align: center;
-
-        @include lg {
-            font-size: rem(32px);
-            line-height: rem(48px);
-            margin-bottom: rem(56px);
-        }
+    .section-clipart {
+        position: absolute;
+        z-index: -1;
+        width: rem(180px);
+        height: rem(180px);
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: cover;
 
         @include md {
-            font-size: rem(24px);
-            line-height: rem(40px);
-            margin-bottom: rem(44px);
+            width: rem(104px);
+            height: rem(104px);
         }
 
         @include sm {
-            font-size: rem(18px);
-            line-height: rem(31px);
-            margin-bottom: rem(32px);
+            display: none;
+        }
+    }
+
+    .section-clipart--top {
+        top: rem(20px);
+        right: rem(-100px);
+        background-image: url('/images/home/components-clipart-top.svg');
+
+        @include lg {
+            top: rem(-15px);
+        }
+
+        @include md {
+            top: rem(20px);
+            right: rem(-60px);
+        }
+    }
+
+    .section-clipart--bottom {
+        bottom: rem(-110px);
+        left: rem(-110px);
+        background-image: url('/images/home/components-clipart-bottom.svg');
+
+        @include md {
+            bottom: rem(-60px);
+            left: rem(-60px);
+        }
+    }
+}
+
+.bottom-section {
+    position: relative;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    align-items: center;
+    height: rem(920px);
+    padding: rem(160px) 0;
+
+    @include sm {
+        height: rem(320px);
+        padding: rem(80px) 0;
+    }
+
+    .section-title {
+        margin: 0;
+        margin-bottom: rem(160px);
+        font-weight: bold;
+        font-size: rem(32px);
+        line-height: rem(48px);
+        color: $B2Color;
+
+        @include lg {
+            margin-bottom: rem(120px);
+            font-size: rem(24px);
+            line-height: rem(32px);
+        }
+
+        @include md {
+            margin-bottom: rem(157px);
+            font-size: rem(20px);
+            line-height: rem(32px);
+        }
+
+        @include sm {
+            margin-bottom: rem(54px);
+            font-size: rem(16px);
+            line-height: rem(24px);
+        }
+
+        .text--underlined {
+            .text-border {
+                bottom: rem(10px);
+            }
         }
     }
 
     .section-btn {
-        @include SecondaryBtn;
+        @include PrimaryBtn;
+
+        @include md {
+            position: relative;
+            left: rem(180px);
+        }
+    }
+
+    .section-girl-clipart {
+        position: absolute;
+        top: rem(150px);
+        right: 50%;
+        transform: translateX(rem(-155px));
+        width: rem(553px);
+        height: rem(585px);
+        background-image: url('/images/home/bottom-section-girl-clipart.png');
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: cover;
+
+        @include lg {
+            width: rem(497px);
+            height: rem(526px);
+            transform: translateX(rem(-90px));
+        }
+
+        @include md {
+            width: rem(392px);
+            height: rem(455px);
+            transform: translateX(rem(95px));
+            top: rem(215px);
+        }
+
+        @include sm {
+            display: none;
+        }
+    }
+
+    .section-light-clipart {
+        position: absolute;
+        width: rem(73px);
+        height: rem(69px);
+        background-image: url('/images/home/light-clipart.png');
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: cover;
+
+        @include lg {
+            width: rem(57px);
+            height: rem(54px);
+        }
+
+        @include md {
+            width: rem(56px);
+            height: rem(50px);
+        }
+
+        @include sm {
+            width: rem(37px);
+            height: rem(33px);
+        }
+    }
+
+    .light-clipart--top {
+        top: rem(310px);
+        right: 50%;
+        transform: translateX(rem(165px)) rotate(10deg);
+
+        @include lg {
+            top: rem(265px);
+            transform: translateX(rem(140px)) rotate(10deg);
+        }
+
+        @include md {
+            transform: translateX(rem(295px)) rotate(10deg);
+        }
+
+        @include sm {
+            top: rem(130px);
+            transform: translateX(rem(90px)) rotate(10deg);
+        }
+    }
+
+    .light-clipart--bottom {
+        top: rem(418px);
+        right: 50%;
+        transform: translateX(rem(-95px)) rotate(190deg);
+
+        @include lg {
+            top: rem(355px);
+            transform: translateX(rem(-90px)) rotate(190deg);
+        }
+
+        @include md {
+            top: rem(380px);
+            transform: translateX(rem(118px)) rotate(190deg);
+        }
+
+        @include sm {
+            top: rem(195px);
+            transform: translateX(rem(-53px)) rotate(190deg);
+        }
     }
 }

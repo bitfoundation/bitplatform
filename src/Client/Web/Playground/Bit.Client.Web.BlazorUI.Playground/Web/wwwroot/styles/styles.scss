@@ -61,7 +61,7 @@ input::-webkit-input-placeholder {
         font-family: inherit;
 
         &:hover, &:active {
-            color: $PrimaryColor;
+            color: $B2Color;
             text-decoration: none;
         }
     }
@@ -71,7 +71,7 @@ input::-webkit-input-placeholder {
     }
 
     &:hover {
-        color: $PrimaryColor;
+        color: $B2Color;
     }
 
     @include lg {

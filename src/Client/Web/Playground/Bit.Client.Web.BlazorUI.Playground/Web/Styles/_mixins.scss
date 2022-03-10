@@ -9,7 +9,7 @@
     width: rem(213px);
     height: rem(56px);
     border-radius: rem(4px);
-    background-color: $B3Color;
+    background-color: $B2Color;
     font-weight: 600;
     font-size: rem(18px);
     line-height: rem(32px);
@@ -17,7 +17,7 @@
     cursor: pointer;
 
     &:hover {
-        background-color: $B2Color;
+        background-color: $B3Color;
     }
 
     @include lg {
@@ -46,7 +46,7 @@
     width: rem(181px);
     height: rem(48px);
     border-radius: rem(4px);
-    background-color: $B3Color;
+    background-color: $B2Color;
     font-weight: 600;
     font-size: rem(18px);
     line-height: rem(32px);
@@ -54,7 +54,7 @@
     cursor: pointer;
 
     &:hover {
-        background-color: $B2Color;
+        background-color: $B3Color;
     }
 
     @include lg {
@@ -84,18 +84,18 @@
     height: rem(56px);
     border-radius: rem(4px);
     background-color: $White;
-    border: rem(2px) solid $B3Color;
+    border: rem(2px) solid $B2Color;
     box-sizing: border-box;
     font-weight: 600;
     font-size: rem(18px);
     line-height: rem(32px);
-    color: $B3Color;
+    color: $B2Color;
     cursor: pointer;
 
     &:hover {
         background-color: $Gray5;
-        border-color: $B2Color;
-        color: $B2Color;
+        border-color: $B3Color;
+        color: $B3Color;
     }
 
     @include lg {
