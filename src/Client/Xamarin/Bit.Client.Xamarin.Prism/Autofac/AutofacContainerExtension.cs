@@ -24,7 +24,7 @@ namespace Prism.Autofac
         public virtual IScopedProvider CurrentScope => this;
         public virtual IScopedProvider CreateScope() => this;
 
-        private bool isDisposed;
+        public bool IsDisposed { get; private set; }
 
         public virtual void Dispose()
         {
@@ -34,9 +34,10 @@ namespace Prism.Autofac
 
         protected virtual void Dispose(bool disposing)
         {
-            if (isDisposed) return;
+            if (IsDisposed) return;
             Scope.Dispose();
-            isDisposed = true;
+            Scope = null!;
+            IsDisposed = true;
         }
 
         ~AutofacScopeProvider()
@@ -94,9 +95,10 @@ namespace Prism.Autofac
         }
     }
 
-    public class AutofacContainerExtension : IAutofacContainerExtension
+    public class AutofacContainerExtension : IAutofacContainerExtension, IDisposable
     {
         private AutofacScopeProvider _currentScope;
+        private AutofacScopeProvider _rootScope;
 
         public virtual IContainer Instance { get; protected set; }
 
@@ -122,7 +124,10 @@ namespace Prism.Autofac
         public virtual void FinalizeExtension()
         {
             if (Instance == null)
+            {
                 Instance = Builder.Build();
+                _rootScope = new AutofacScopeProvider(Instance);
+            }
         }
 
         public virtual IContainerRegistry RegisterInstance(Type type, object instance)
@@ -226,16 +231,7 @@ namespace Prism.Autofac
 
         public object Resolve(Type type, string name, params (Type Type, object Instance)[] parameters)
         {
-            try
-            {
-                var autofacParameters = AutofacScopeProvider.PrepareParameters(Instance, parameters);
-
-                return name != null ? Instance.ResolveNamed(name, type, autofacParameters) : Instance.Resolve(type, autofacParameters);
-            }
-            catch (Exception ex)
-            {
-                throw new ContainerResolutionException(type, name, ex);
-            }
+            return (_currentScope is not null && _currentScope.IsDisposed == false ? _currentScope : _rootScope).Resolve(type, name, parameters);
         }
 
         public bool IsRegistered(Type type)
@@ -256,6 +252,27 @@ namespace Prism.Autofac
             var child = Instance.BeginLifetimeScope();
             _currentScope = new AutofacScopeProvider(child);
             return _currentScope;
+        }
+
+        private bool isDisposed;
+
+        public virtual void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (isDisposed) return;
+            _currentScope?.Dispose();
+            _currentScope = null!;
+            isDisposed = true;
+        }
+
+        ~AutofacContainerExtension()
+        {
+            Dispose(false);
         }
     }
 }
