@@ -39,80 +39,10 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.RadioButtonLis
         {
             new ComponentParameter()
             {
-                Name = "ValueChanged",
-                Type = "EventCallback<TValue>",
-                DefaultValue = "",
-                Description = "Callback for when the input value changes.",
-            },
-            new ComponentParameter()
-            {
-                Name = "Items",
-                Type = "IEnumerable<TItem>",
-                DefaultValue = "",
-                Description = "Sets the data source that populates the items of the list.",
-            },
-            new ComponentParameter()
-            {
-                Name = "TextField",
-                Type = "string",
-                DefaultValue = "Text",
-                Description = "The name of the field from the model that will be shown to the user.",
-            },
-            new ComponentParameter()
-            {
-                Name = "ValueField",
-                Type = "string",
-                DefaultValue = "Value",
-                Description = "The name of the field from the model that will be the underlying value.",
-            },
-            new ComponentParameter()
-            {
                 Name = "IconNameField",
                 Type = "string",
                 DefaultValue = "IconName",
                 Description = "The name of the field from the model that will be the BitIconName.",
-            },
-            new ComponentParameter()
-            {
-                Name = "ImageSrcField",
-                Type = "string",
-                DefaultValue = "ImageSrc",
-                Description = "The name of the field from the model that will be the image src.",
-            },
-            new ComponentParameter()
-            {
-                Name = "SelectedImageSrcField",
-                Type = "string",
-                DefaultValue = "SelectedImageSrc",
-                Description = "The name of the field from the model that will be the selected image src.",
-            },
-            new ComponentParameter()
-            {
-                Name = "ImageAltField",
-                Type = "string",
-                DefaultValue = "ImageAlt",
-                Description = "The name of the field from the model that will be the image alternate text.",
-            },
-            new ComponentParameter()
-            {
-                Name = "IsEnabledField",
-                Type = "string",
-                DefaultValue = "IsEnabled",
-                Description = "The name of the field from the model that will be enable item.",
-            },
-            new ComponentParameter()
-            {
-                Name = "TextSelector",
-                Type = "Expression<Func<TItem, object>>",
-                DefaultValue = "",
-                Description = "The field from the model that will be shown to the user.",
-            },
-            new ComponentParameter()
-            {
-                Name = "ValueSelector",
-                Type = "Expression<Func<TItem, object>>",
-                DefaultValue = "",
-                Description = "The field from the model that will be the underlying value.",
             },
             new ComponentParameter()
             {
@@ -123,6 +53,20 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.RadioButtonLis
             },
             new ComponentParameter()
             {
+                Name = "ImageSrcField",
+                Type = "string",
+                DefaultValue = "ImageSrc",
+                Description = "The name of the field from the model that will be the image src.",
+            },
+            new ComponentParameter()
+            {
+                Name = "ImageSize",
+                Type = "Size",
+                DefaultValue = "",
+                Description = "The width and height of the image in px for item field.",
+            },
+            new ComponentParameter()
+            {
                 Name = "ImageSrcSelector",
                 Type = "Expression<Func<TItem, object>>",
                 DefaultValue = "",
@@ -130,10 +74,10 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.RadioButtonLis
             },
             new ComponentParameter()
             {
-                Name = "SelectedImageSrcSelector",
-                Type = "Expression<Func<TItem, object>>",
-                DefaultValue = "",
-                Description = "The field from the model that will be the selected image src.",
+                Name = "ImageAltField",
+                Type = "string",
+                DefaultValue = "ImageAlt",
+                Description = "The name of the field from the model that will be the image alternate text.",
             },
             new ComponentParameter()
             {
@@ -151,10 +95,17 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.RadioButtonLis
             },
             new ComponentParameter()
             {
-                Name = "ImageSize",
-                Type = "Size",
+                Name = "IsEnabledField",
+                Type = "string",
+                DefaultValue = "IsEnabled",
+                Description = "The name of the field from the model that will be enable item.",
+            },
+            new ComponentParameter()
+            {
+                Name = "Items",
+                Type = "IEnumerable<TItem>",
                 DefaultValue = "",
-                Description = "The width and height of the image in px for item field.",
+                Description = "Sets the data source that populates the items of the list.",
             },
             new ComponentParameter()
             {
@@ -170,7 +121,55 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.RadioButtonLis
                 DefaultValue = "",
                 Description = "Callback for when the option has been changed.",
             },
-
+            new ComponentParameter()
+            {
+                Name = "SelectedImageSrcSelector",
+                Type = "Expression<Func<TItem, object>>",
+                DefaultValue = "",
+                Description = "The field from the model that will be the selected image src.",
+            },
+            new ComponentParameter()
+            {
+                Name = "SelectedImageSrcField",
+                Type = "string",
+                DefaultValue = "SelectedImageSrc",
+                Description = "The name of the field from the model that will be the selected image src.",
+            },
+            new ComponentParameter()
+            {
+                Name = "TextField",
+                Type = "string",
+                DefaultValue = "Text",
+                Description = "The name of the field from the model that will be shown to the user.",
+            },
+            new ComponentParameter()
+            {
+                Name = "TextSelector",
+                Type = "Expression<Func<TItem, object>>",
+                DefaultValue = "",
+                Description = "The field from the model that will be shown to the user.",
+            },
+            new ComponentParameter()
+            {
+                Name = "ValueChanged",
+                Type = "EventCallback<TValue>",
+                DefaultValue = "",
+                Description = "Callback for when the input value changes.",
+            },     
+            new ComponentParameter()
+            {
+                Name = "ValueField",
+                Type = "string",
+                DefaultValue = "Value",
+                Description = "The name of the field from the model that will be the underlying value.",
+            },
+            new ComponentParameter()
+            {
+                Name = "ValueSelector",
+                Type = "Expression<Func<TItem, object>>",
+                DefaultValue = "",
+                Description = "The field from the model that will be the underlying value.",
+            },
         };
 
         private readonly string example1CSharpCode = @"
