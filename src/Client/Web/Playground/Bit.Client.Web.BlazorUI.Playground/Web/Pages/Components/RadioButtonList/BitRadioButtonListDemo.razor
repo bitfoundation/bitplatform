@@ -1,0 +1,61 @@
+﻿@page "/components/radio-button-list"
+
+<ComponentDemo ComponentName="RadioButtonList"
+               ComponentDescription="RadiobuttonList let people select a single option from two or more choices."
+               ComponentParameters="componentParameters">
+
+    <ComponentExampleBox Title="BitRadioButtonList"
+                         CSharpSourceCode="@example1CSharpCode"
+                         HTMLSourceCode="@example1HTMLCode">
+        <ExamplePreview>
+            <div class="example-desc">To create a RadioButtonList you can use a BitRadioButtonList component</div>
+            <div>Chosen gender: @( ChosenGenderExample1 == 0 ? "no selection yet" : ChosenGenderExample1.ToString() )</div>
+            <BitRadioButtonList @bind-Value="@ChosenGenderExample2"
+                                TextField="@nameof(GenderModel.GenderText)"
+                                ValueField="@nameof(GenderModel.GenderId)"
+                                Items="GenderOptionsExample1" />
+
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Disabled"
+                         CSharpSourceCode="@example2CSharpCode"
+                         HTMLSourceCode="@example2HTMLCode">
+        <ExamplePreview>
+            <div class="example-desc">BitRadioButtonList in disabled mode.</div>
+            <BitRadioButtonList @bind-Value="@ChosenGenderExample1"
+                                TextField="@nameof(GenderModel.GenderText)"
+                                ValueField="@nameof(GenderModel.GenderId)"
+                                Items="GenderOptionsExample1"
+                                IsEnabled="false" />
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="BitRadioButtonList with images"
+                         CSharpSourceCode="@example3CSharpCode"
+                         HTMLSourceCode="@example3HTMLCode">
+        <ExamplePreview>
+            <BitRadioButtonList @bind-Value="@ChosenGenderExample3"
+                                TextField="@nameof(GenderModel.GenderText)"
+                                ValueField="@nameof(GenderModel.GenderId)"
+                                Items="GenderOptionsExample3"
+                                ImageSrcField="@nameof(GenderModel.ImageName)"
+                                ImageAltField="alt for image"
+                                SelectedImageSrcField="@nameof(GenderModel.ImageName)"
+                                ImageSize="new System.Drawing.Size( width: 32, height: 32)" />
+
+        </ExamplePreview>
+    </ComponentExampleBox>
+    <ComponentExampleBox Title="BitRadioButtonList with images" 
+                         CSharpSourceCode="@example4CSharpCode" 
+                         HTMLSourceCode="@example4HTMLCode">
+        <ExamplePreview>
+            <BitRadioButtonList @bind-Value="@ChosenGenderExample4"
+                                TextField="@nameof(GenderModel.GenderText)"
+                                ValueField="@nameof(GenderModel.GenderId)"
+                                Items="GenderOptionsExample4"
+                                IconNameField="@nameof(GenderModel.IconName)" />
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+</ComponentDemo>
