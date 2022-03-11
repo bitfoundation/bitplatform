@@ -86,7 +86,11 @@
     border: rem(1px) solid $Grey130;
     box-sizing: border-box;
     background-color: $White;
-    cursor: text;
+    cursor: text !important;
+
+    .txt-field {
+        cursor: text;
+    }
 }
 
 .txt-field {
@@ -133,7 +137,7 @@
     border: none;
     color: $Primary;
     background-color: transparent;
-    cursor: pointer;
+    cursor: default;
 
     &:hover {
         background-color: $Grey30;
