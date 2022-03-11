@@ -8,7 +8,7 @@ public class TodoItem
 {
     public int Id { get; set; }
     public string? Title { get; set; }
-    public DateTime Date { get; set; }
+    public DateTimeOffset Date { get; set; }
     public bool IsDone { get; set; }
 
     [ForeignKey(nameof(UserId))]
