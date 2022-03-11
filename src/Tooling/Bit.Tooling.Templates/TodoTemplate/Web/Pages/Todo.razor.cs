@@ -155,7 +155,7 @@ public partial class Todo
             var newTodoItem = new TodoItemDto
             {
                 Title = NewTodoItemTitle,
-                Date = DateTime.Now,
+                Date = DateTimeOffset.Now,
             };
 
             await HttpClient.PostAsJsonAsync("TodoItem", newTodoItem, ToDoTemplateJsonContext.Default.TodoItemDto);
