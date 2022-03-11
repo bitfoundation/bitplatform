@@ -12,5 +12,5 @@ public class User : IdentityUser<int>
     public DateTimeOffset? BirthDate { get; set; }
 
     [PersonalData]
-    public Guid? ProfileImageName { get; set; }
+    public string? ProfileImageName { get; set; }
 }
