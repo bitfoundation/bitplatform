@@ -105,13 +105,11 @@ public partial class EditProfile
 
             EditProfileMessage = "Edit successfully";
         }
-        catch (Exception e)
+        catch (KnownException e)
         {
             EditProfileMessageType = BitMessageBarType.Error;
 
-            EditProfileMessage = e is KnownException
-                ? ErrorStrings.ResourceManager.GetString(e.Message)
-                : ErrorStrings.UnknownException;
+            EditProfileMessage = ErrorStrings.ResourceManager.GetString(e.Message);
         }
         finally
         {

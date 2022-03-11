@@ -81,13 +81,11 @@ public partial class SignIn
 
             NavigationManager.NavigateTo(RedirectUrl ?? "/");
         }
-        catch (Exception e)
+        catch (KnownException e)
         {
             SignInMessageType = BitMessageBarType.Error;
 
-            SignInMessage = e is KnownException
-                ? ErrorStrings.ResourceManager.GetString(e.Message)
-                : ErrorStrings.UnknownException;
+            SignInMessage = ErrorStrings.ResourceManager.GetString(e.Message);
         }
         finally
         {

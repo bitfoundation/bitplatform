@@ -67,7 +67,7 @@ public class AttachmentController : ControllerBase
         }
 
         try
-        { 
+        {
             user.ProfileImageName = profileImageName;
 
             await _userManager.UpdateAsync(user);
@@ -96,16 +96,9 @@ public class AttachmentController : ControllerBase
         if (filePath is null)
             throw new ResourceNotFoundException(nameof(ErrorStrings.UserImageCouldNotBeFound));
 
-        try
-        {
-            user.ProfileImageName = null;
+        user.ProfileImageName = null;
 
-            await _userManager.UpdateAsync(user);
-        }
-        catch
-        {
-            throw;
-        }
+        await _userManager.UpdateAsync(user);
 
         SystemFile.Delete(filePath);
     }
