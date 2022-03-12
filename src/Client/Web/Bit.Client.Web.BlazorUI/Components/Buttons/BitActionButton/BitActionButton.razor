@@ -28,7 +28,7 @@ else
             @attributes="HtmlAttributes"
             style="@StyleBuilder.Value"
             class="@ClassBuilder.Value"
-            type="button"
+            type="@ButtonType.GetDisplayName(toLowerDisplayName: true)"
             aria-label="@AriaLabel"
             aria-describedby="@AriaDescription"
             aria-hidden="@AriaHidden"

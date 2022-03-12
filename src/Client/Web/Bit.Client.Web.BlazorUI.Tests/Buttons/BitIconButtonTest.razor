@@ -8,7 +8,8 @@
                    IconName="@IconName"
                    Title="@Title"
                    Href="@Href"
-                   Target="@Target">
+                   Target="@Target"
+                   ButtonType="@ButtonType">
     </BitIconButton>
 </CascadingValue>
 
@@ -23,6 +24,7 @@
     [Parameter] public string Title { get; set; }
     [Parameter] public string Href { get; set; }
     [Parameter] public string Target { get; set; }
+    [Parameter] public BitButtonType ButtonType { get; set; }
 
     public int CurrentCount { get; set; }
 

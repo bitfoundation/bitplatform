@@ -8,7 +8,8 @@
                AriaHidden="AriaHidden"
                Href="@Href"
                Title="@Title"
-               Target="@Target">
+               Target="@Target"
+               ButtonType="@ButtonType">
         <label>Other test label</label>
     </BitButton>
 </CascadingValue>
@@ -24,6 +25,7 @@
     [Parameter] public string Href { get; set; }
     [Parameter] public string Title { get; set; }
     [Parameter] public string Target { get; set; }
+    [Parameter] public BitButtonType ButtonType { get; set; }
 
     public int CurrentCount { get; set; }
 

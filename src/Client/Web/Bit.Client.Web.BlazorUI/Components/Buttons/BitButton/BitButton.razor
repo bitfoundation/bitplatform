@@ -27,7 +27,7 @@ else
             aria-describedby="@AriaDescription"
             aria-hidden="@AriaHidden"
             tabindex="@tabIndex"
-            type="button"
+            type="@ButtonType.GetDisplayName(toLowerDisplayName: true)"
             title="@Title"
             @onclick="HandleOnClick">
         @ChildContent

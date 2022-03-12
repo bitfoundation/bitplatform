@@ -51,6 +51,11 @@ namespace Bit.Client.Web.BlazorUI
         /// </summary>
         [Parameter] public string? Target { get; set; }
 
+        /// <summary>
+        /// The type of the button.
+        /// </summary>
+        [Parameter] public BitButtonType ButtonType { get; set; } = BitButtonType.Button;
+
         protected override string RootElementClass => "bit-ico-btn";
 
         protected override async Task OnInitializedAsync()

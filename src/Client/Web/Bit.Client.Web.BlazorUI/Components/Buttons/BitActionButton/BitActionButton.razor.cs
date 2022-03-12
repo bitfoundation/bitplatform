@@ -49,6 +49,11 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public string? Title { get; set; }
 
         /// <summary>
+        /// The type of the button.
+        /// </summary>
+        [Parameter] public BitButtonType ButtonType { get; set; } = BitButtonType.Button;
+
+        /// <summary>
         /// Callback for when the button clicked
         /// </summary>
         [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }

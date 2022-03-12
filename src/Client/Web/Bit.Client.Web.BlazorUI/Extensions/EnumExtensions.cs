@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 
@@ -8,7 +9,7 @@ namespace Bit.Client.Web.BlazorUI
 {
     public static class EnumExtensions
     {
-        public static string? GetDisplayName(this Enum enumValue, bool showNameIfHasNoDisplayName = true)
+        public static string? GetDisplayName(this Enum enumValue, bool showNameIfHasNoDisplayName = true, bool toLowerDisplayName = false)
         {
             if (enumValue is null)
             {
@@ -21,17 +22,22 @@ namespace Bit.Client.Web.BlazorUI
               .GetCustomAttribute<DisplayAttribute>()
               ?.GetName();
 
+            string? displayName = null;
             if (name.HasValue())
             {
-                return name!;
+                displayName = name!;
             }
-
-            if (showNameIfHasNoDisplayName)
+            else if (showNameIfHasNoDisplayName)
             {
-                return enumValue.ToString();
+                displayName = enumValue.ToString();
             }
 
-            return null;
+            if (displayName.HasValue() && toLowerDisplayName)
+            {
+                displayName = displayName!.ToLower(CultureInfo.CurrentUICulture);
+            }
+
+            return displayName;
         }
 
         public static string? GetName(this BitIconName? bitIconName, bool ignoreDefaultValue = true)
