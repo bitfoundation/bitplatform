@@ -112,6 +112,12 @@ public partial class SignUp
 
             SignUpMessage = string.Join(Environment.NewLine, e.Details.SelectMany(d => d.Messages));
         }
+        catch (KnownException e)
+        {
+            SignUpMessageType = BitMessageBarType.Error;
+
+            SignUpMessage = ErrorStrings.ResourceManager.GetString(e.Message);
+        }
         finally
         {
             IsLoading = false;
