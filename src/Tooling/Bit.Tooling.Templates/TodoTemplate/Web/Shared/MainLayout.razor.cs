@@ -16,11 +16,18 @@
 
         protected override async Task OnInitializedAsync()
         {
-            TodoTemplateAuthenticationStateProvider.AuthenticationStateChanged += VerifyUserIsAuthenticatedOrNot;
+            try
+            {
+                TodoTemplateAuthenticationStateProvider.AuthenticationStateChanged += VerifyUserIsAuthenticatedOrNot;
 
-            IsUserAuthenticated = await StateService.GetValue(nameof(IsUserAuthenticated), async () => await TodoTemplateAuthenticationStateProvider.IsUserAuthenticated());
+                IsUserAuthenticated = await StateService.GetValue(nameof(IsUserAuthenticated), async () => await TodoTemplateAuthenticationStateProvider.IsUserAuthenticated());
 
-            await base.OnInitializedAsync();
+                await base.OnInitializedAsync();
+            }
+            catch (Exception exp)
+            {
+                ExceptionHandler.OnExceptionReceived(exp);
+            }
         }
 
         async void VerifyUserIsAuthenticatedOrNot(Task<AuthenticationState> task)
