@@ -40,6 +40,15 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Buttons
             },
             new ComponentParameter()
             {
+                Name = "ButtonType",
+                Type = "BitButtonType",
+                LinkType = LinkType.Link,
+                Href = "#button-type-enum",
+                DefaultValue = "BitButtonType.Button",
+                Description = "The type of the button.",
+            },
+            new ComponentParameter()
+            {
                 Name = "ChildContent",
                 Type = "RenderFragment",
                 DefaultValue = "",
@@ -104,6 +113,33 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Buttons
                         Name= "Standard",
                         Description="The button with black text on a white background.",
                         Value="1",
+                    }
+                }
+            },
+            new EnumParameter()
+            {
+                Id = "button-type-enum",
+                Title = "BitButtonType Enum",
+                Description = "",
+                EnumList = new List<EnumItem>()
+                {
+                    new EnumItem()
+                    {
+                        Name= "Button",
+                        Description="The button is a clickable button.",
+                        Value="0",
+                    },
+                    new EnumItem()
+                    {
+                        Name= "Submit",
+                        Description="The button is a submit button (submits form-data).",
+                        Value="1",
+                    },
+                    new EnumItem()
+                    {
+                        Name= "Reset",
+                        Description="The button is a reset button (resets the form-data to its initial values).",
+                        Value="2",
                     }
                 }
             },

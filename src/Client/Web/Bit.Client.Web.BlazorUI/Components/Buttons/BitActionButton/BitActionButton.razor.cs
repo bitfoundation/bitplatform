@@ -49,7 +49,7 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public string? Title { get; set; }
 
         /// <summary>
-        /// The type of the button.
+        /// The type of the button
         /// </summary>
         [Parameter] public BitButtonType ButtonType { get; set; } = BitButtonType.Button;
 
