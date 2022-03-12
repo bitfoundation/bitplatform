@@ -1,4 +1,4 @@
-﻿<EditForm Model="@TestModel" OnValidSubmit="@HandleValidSubmit" OnInvalidSubmit="@HandleInvalidFSubmit">
+﻿<EditForm Model="@TestModel" OnValidSubmit="@HandleValidSubmit" OnInvalidSubmit="@HandleInvalidSubmit">
     <DataAnnotationsValidator />
 
     <CascadingValue Value="Visual">
@@ -45,7 +45,7 @@
         ValidCount++;
     }
 
-    private void HandleInvalidFSubmit()
+    private void HandleInvalidSubmit()
     {
         InvalidCount++;
     }
