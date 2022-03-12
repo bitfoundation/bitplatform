@@ -20,6 +20,10 @@
             Bit.closeCurrentCalloutIfExists(dropDownCalloutId, dropDownOverlayId, dotnetObjReference);
             dropDownCallout.style.display = "block";
             dropDownOverlay.style.display = "block";
+
+            var dropDownWrapperWidth = dropDownWrapper.offsetWidth;
+            dropDownCallout.style.width = dropDownWrapperWidth + 'px';
+
             var dropDownCalloutHeight = dropDownCallout.offsetHeight;
             var dropDownCalloutWidth = dropDownCallout.offsetWidth;
             var dropDownHeight = dropDown.offsetHeight;
