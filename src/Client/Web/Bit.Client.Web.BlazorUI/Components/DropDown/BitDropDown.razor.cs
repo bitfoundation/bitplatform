@@ -234,14 +234,6 @@ namespace Bit.Client.Web.BlazorUI
             await base.OnParametersSetAsync();
         }
 
-        protected async override Task OnAfterRenderAsync(bool firstRender)
-        {
-            if (JSRuntime is null) return;
-
-            await JSRuntime.InvokeVoidAsync("BitDropDown.setDropDownCallourWidth", DropDownId, DropDownCalloutId);
-            await base.OnAfterRenderAsync(firstRender);
-        }
-
         private void ChangeAllItemsIsSelected(bool value)
         {
             foreach (var item in Items)

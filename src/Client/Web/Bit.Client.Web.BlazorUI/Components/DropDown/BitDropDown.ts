@@ -20,6 +20,10 @@
             Bit.closeCurrentCalloutIfExists(dropDownCalloutId, dropDownOverlayId, dotnetObjReference);
             dropDownCallout.style.display = "block";
             dropDownOverlay.style.display = "block";
+
+            var dropDownWrapperWidth = dropDownWrapper.offsetWidth;
+            dropDownCallout.style.width = dropDownWrapperWidth + 'px';
+
             var dropDownCalloutHeight = dropDownCallout.offsetHeight;
             var dropDownCalloutWidth = dropDownCallout.offsetWidth;
             var dropDownHeight = dropDown.offsetHeight;
@@ -53,13 +57,5 @@
                 dropDownCallout.style.right = "unset";
             }
         }
-    }
-
-    static setDropDownCallourWidth(dropDownWrapperId: string,
-        dropDownCalloutId: string) {
-        const dropDownWrapper = document.getElementById(dropDownWrapperId) ?? new HTMLElement();
-        const dropDownCallout = document.getElementById(dropDownCalloutId) ?? new HTMLElement();
-        var dropDownWrapperWidth = dropDownWrapper.offsetWidth;
-        dropDownCallout.style.width = dropDownWrapperWidth + 'px';
     }
 }
