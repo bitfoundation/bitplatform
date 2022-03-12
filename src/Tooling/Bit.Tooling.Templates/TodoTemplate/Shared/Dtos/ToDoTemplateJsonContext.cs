@@ -8,6 +8,8 @@ namespace TodoTemplate.Shared.Dtos;
 [JsonSerializable(typeof(List<TodoItemDto>))]
 [JsonSerializable(typeof(UserDto))]
 [JsonSerializable(typeof(List<UserDto>))]
+[JsonSerializable(typeof(SignInRequestDto))]
+[JsonSerializable(typeof(SignInResponseDto))]
 [JsonSerializable(typeof(RestExceptionPayload))]
 public partial class ToDoTemplateJsonContext : JsonSerializerContext
 {
