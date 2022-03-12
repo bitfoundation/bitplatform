@@ -36,7 +36,7 @@ public class AttachmentController : ControllerBase
         if (user is null)
             throw new ResourceNotFoundException(nameof(ErrorStrings.UserCouldNotBeFound));
 
-        var profileImageName = Guid.NewGuid();
+        var profileImageName = Guid.NewGuid().ToString();
 
         await using var fileStream = file.OpenReadStream();
 
