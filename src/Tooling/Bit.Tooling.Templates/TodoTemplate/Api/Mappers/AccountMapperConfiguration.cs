@@ -10,5 +10,6 @@ public class AccountMapperConfiguration : Profile
         CreateMap<Role, RoleDto>().ReverseMap();
 
         CreateMap<User, UserDto>().ReverseMap();
+        CreateMap<User, EditUserDto>().ReverseMap();
     }
 }

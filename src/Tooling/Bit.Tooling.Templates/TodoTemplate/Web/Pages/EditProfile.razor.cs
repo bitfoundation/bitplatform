@@ -97,7 +97,7 @@ public partial class EditProfile
             User.BirthDate = UserToEdit.BirthDate;
             User.Gender = UserToEdit.Gender;
 
-            await HttpClient.PutAsJsonAsync("User", User, ToDoTemplateJsonContext.Default.UserDto);
+            await HttpClient.PutAsJsonAsync("User", User, ToDoTemplateJsonContext.Default.EditUserDto);
 
             IsSaveButtonEnabled = false;
 
