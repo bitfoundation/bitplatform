@@ -18,8 +18,8 @@ public class UserDto
 
     public string? ProfileImageName { get; set; }
 
-    [NotMapped]
-    public string? GenderValue
+    [JsonIgnore]
+    public string? GenderAsString
     {
         get
         {
