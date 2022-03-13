@@ -11,7 +11,7 @@ public partial class Todo
     public IStateService StateService { get; set; } = default!;
 
     public bool IsLoading { get; set; }
-    public string? SelectedPivotName { get; set; }
+    public string SelectedPivotName { get; set; } = "All";
     public string? EditModeTodoItemText { get; set; }
     public bool IsAddLoading { get; set; }
     public string? SelectedSortTodoItemName { get; set; }
@@ -44,7 +44,7 @@ public partial class Todo
         IsLoading = true;
         try
         {
-            AllTodoItemList = await StateService.GetValue(nameof(AllTodoItemList), async () => await HttpClient.GetFromJsonAsync("TodoItem", ToDoTemplateJsonContext.Default.ListTodoItemDto));
+            AllTodoItemList = await StateService.GetValue($"{nameof(Todo)}-{nameof(AllTodoItemList)}", async () => await HttpClient.GetFromJsonAsync("TodoItem", ToDoTemplateJsonContext.Default.ListTodoItemDto));
             GenarateViewTodoItemList();
         }
         finally
@@ -55,8 +55,7 @@ public partial class Todo
 
     private void GenarateViewTodoItemList()
     {
-        ViewTodoItemList = AllTodoItemList?.ToList();
-        FilterTodoItemList(SelectedPivotName);
+        FilterTodoItemList();
 
         if (SearchTextTodoItem != null)
         {
@@ -74,19 +73,17 @@ public partial class Todo
         GenarateViewTodoItemList();
     }
 
-    private void FilterTodoItemList(string filtername)
+    private void FilterTodoItemList()
     {
-        if (filtername == "All")
+        if (SelectedPivotName == "All")
         {
-
             ViewTodoItemList = AllTodoItemList?.ToList();
         }
-        if (filtername == "Active")
+        if (SelectedPivotName == "Active")
         {
-
             ViewTodoItemList = AllTodoItemList?.Where(c => c.IsDone == false).ToList();
         }
-        if (filtername == "Completed")
+        if (SelectedPivotName == "Completed")
         {
             ViewTodoItemList = AllTodoItemList?.Where(c => c.IsDone == true).ToList();
         }
@@ -101,8 +98,8 @@ public partial class Todo
 
     private void HandlerTodoItemSearch(string searchStr)
     {
-        FilterTodoItemList(SelectedPivotName);
-        ViewTodoItemList = ViewTodoItemList?.Where(td => td.Title.Contains(searchStr)).ToList();
+        FilterTodoItemList();
+        ViewTodoItemList = ViewTodoItemList?.Where(td => td.Title!.Contains(searchStr, StringComparison.OrdinalIgnoreCase)).ToList();
     }
 
     private void TodoItemSearch(string searchStr)
