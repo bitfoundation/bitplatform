@@ -223,7 +223,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Toggles
         {
             var com = RenderComponent<BitToggleValidationTest>(parameters =>
             {
-                parameters.Add(p => p.TestModel, new BitToggleValidationTest.BitToggleTestModel { Value = value });
+                parameters.Add(p => p.TestModel, new BitToggleTestModel { Value = value });
                 parameters.Add(p => p.IsEnabled, true);
             });
 
@@ -250,7 +250,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Toggles
         {
             var com = RenderComponent<BitToggleValidationTest>(parameters =>
             {
-                parameters.Add(p => p.TestModel, new BitToggleValidationTest.BitToggleTestModel { Value = value });
+                parameters.Add(p => p.TestModel, new BitToggleTestModel { Value = value });
                 parameters.Add(p => p.IsEnabled, true);
             });
 
@@ -284,7 +284,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Toggles
         {
             var com = RenderComponent<BitToggleValidationTest>(parameters =>
             {
-                parameters.Add(p => p.TestModel, new BitToggleValidationTest.BitToggleTestModel { Value = value });
+                parameters.Add(p => p.TestModel, new BitToggleTestModel { Value = value });
                 parameters.Add(p => p.Visual, visual);
                 parameters.Add(p => p.IsEnabled, true);
             });

@@ -31,12 +31,6 @@
     [Parameter] public RenderFragment LabelFragment { get; set; }
     [Parameter] public BitToggleTestModel TestModel { get; set; }
 
-    public class BitToggleTestModel
-    {
-        [Range(typeof(bool), "false", "false")]
-        public bool Value { get; set; }
-    }
-
     public int ValidCount { get; set; }
     public int InvalidCount { get; set; }
 
