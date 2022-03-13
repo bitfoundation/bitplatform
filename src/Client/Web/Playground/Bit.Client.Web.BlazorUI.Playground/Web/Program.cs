@@ -5,24 +5,23 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 #elif BlazorServer
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 #endif
 
 namespace Bit.Client.Web.BlazorUI.Playground.Web;
 
 public class Program
 {
-#if BlazorWebAssembly || BlazorServer
     public static async Task Main(string[] args)
     {
+#if BlazorWebAssembly || BlazorServer
         await CreateHostBuilder(args)
             .RunAsync();
-    }
 #else
-    public static void Main(string[] args)
-    {
         System.Console.WriteLine("You're in blazor hybrid mode, please run app project instead of web project.");
-    }
+
 #endif
+    }
 
 #if BlazorWebAssembly
     public static WebAssemblyHost CreateHostBuilder(string[] args)
@@ -38,6 +37,10 @@ public class Program
     public static WebApplication CreateHostBuilder(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
+
+#if DEBUG
+        builder.WebHost.UseUrls("https://*:4001", "http://*:4000");
+#endif
 
         Startup.Services.Add(builder.Services, builder.Configuration);
 
