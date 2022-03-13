@@ -25,7 +25,7 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// Aria label for the overflow button.
         /// </summary>
-        [Parameter] public string? OverflowAriaLabel { get; set; } = "bit-icon--More";
+        [Parameter] public string? OverflowAriaLabel { get; set; }
 
         /// <summary>
         /// Optional index where overflow items will be collapsed.
@@ -35,9 +35,9 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// Render a custom divider in place of the default chevron >
         /// </summary>
-        [Parameter] public string DividerAs { get; set; } = "bit-icon--ChevronRight";
+        [Parameter] public BitIconName DividerAs { get; set; } = BitIconName.ChevronRight;
 
-        [Parameter] public string OnRenderOverflowIcon { get; set; } = "bit-icon--More";
+        [Parameter] public BitIconName OnRenderOverflowIcon { get; set; } = BitIconName.More;
 
 
         private List<BitBreadcrumbItem> _overflowItems = new();
