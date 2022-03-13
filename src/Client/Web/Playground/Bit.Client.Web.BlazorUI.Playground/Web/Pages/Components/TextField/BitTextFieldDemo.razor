@@ -2,7 +2,11 @@
 
 <ComponentDemo ComponentName="TextField" ComponentDescription="Text fields give people a way to enter and edit text. They’re used in forms, modal dialogs, tables, and other surfaces where text input is required."
                ComponentParameters="componentParameters" EnumParameters="enumParameters">
-    <ComponentExampleBox Title="BitTextField" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
+
+    <ComponentExampleBox Title="Standard TextField"
+                         HTMLSourceCode="@example1HTMLCode"
+                         CSharpSourceCode="@example1CSharpCode"
+                         ExampleId="example2">
         <ExamplePreview>
             <div class="example-desc">To create a text field you can use a BitTextField component.</div>
             <div>
@@ -12,27 +16,77 @@
                 <BitTextField Label="Standard With Two-Way Binding" @bind-Value="@TextValue"></BitTextField>
                 <BitLabel>You are typing : @TextValue </BitLabel>
             </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Read-only TextField"
+                         HTMLSourceCode="@example2HTMLCode"
+                         ExampleId="example2">
+        <ExamplePreview>
             <div>
                 <BitTextField Label="Read-only" IsReadonly="true" DefaultValue="I am read-only"></BitTextField>
             </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="With Placeholder TextField"
+                         HTMLSourceCode="@example3HTMLCode"
+                         ExampleId="example3">
+        <ExamplePreview>
+            <div>
+                <BitTextField Label="With Placeholder" Placeholder="Please enter text here"></BitTextField>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Disabled TextField" 
+                         HTMLSourceCode="@example4HTMLCode" 
+                         ExampleId="example4">
+        <ExamplePreview>
             <div>
                 <BitTextField Label="Disabled" IsEnabled="false" DefaultValue="I am disabled"></BitTextField>
             </div>
             <div>
                 <BitTextField Label="Disabled With Placeholder" IsEnabled="false" Placeholder="I am disabled"></BitTextField>
             </div>
-            <div>
-                <BitTextField Label="With Placeholder" Placeholder="Please enter text here"></BitTextField>
-            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Controlled TextField" 
+                         HTMLSourceCode="@example5HTMLCode" 
+                         ExampleId="example5">
+        <ExamplePreview>
             <div>
                 <BitTextField Label="Controlled TextField Limiting Length Of Value To 10" MaxLength="10"></BitTextField>
             </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="With An Icon TextField" 
+                         HTMLSourceCode="@example6HTMLCode" 
+                         ExampleId="example6">
+        <ExamplePreview>
             <div>
                 <BitTextField Label="With An Icon" IconName="BitIconName.CalendarMirrored"></BitTextField>
             </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Password With Reveal Button TextField" 
+                         HTMLSourceCode="@example7HTMLCode" 
+                         CSharpSourceCode="@example7CSharpCode" 
+                         ExampleId="example7">
+        <ExamplePreview>
             <div>
                 <BitTextField Label="Password With Reveal Button" Type="@InputType" CanRevealPassword="true"></BitTextField>
             </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Required TextField" 
+                         HTMLSourceCode="@example8HTMLCode" 
+                         ExampleId="example8">
+        <ExamplePreview>
             <div>
                 <BitTextField Label="Required" IsRequired="true"></BitTextField>
             </div>
@@ -42,7 +96,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Multi-Line TextField" HTMLSourceCode="@example2HTMLCode" ExampleId="example2">
+    <ComponentExampleBox Title="Multi-Line TextField" HTMLSourceCode="@example9HTMLCode" ExampleId="example9">
         <ExamplePreview>
             <div>
                 <BitTextField Label="Standard" IsMultiline="true" Rows="3"></BitTextField>
@@ -59,7 +113,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Underlined And Borderless TextFields" HTMLSourceCode="@example3HTMLCode" ExampleId="example3">
+    <ComponentExampleBox Title="Underlined And Borderless TextFields" HTMLSourceCode="@example10HTMLCode" ExampleId="example10">
         <ExamplePreview>
             <div>
                 <BitTextField Label="Standard:" IsUnderlined="true"></BitTextField>
@@ -79,7 +133,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="TextField With Prefix And/Or Suffix" HTMLSourceCode="@example4HTMLCode" ExampleId="example4">
+    <ComponentExampleBox Title="TextField With Prefix And/Or Suffix" HTMLSourceCode="@example11HTMLCode" ExampleId="example11">
         <ExamplePreview>
             <div>
                 <BitTextField Label="With Prefix" Prefix="https://"></BitTextField>
@@ -96,7 +150,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="TextFields With Custom Label/Description" HTMLSourceCode="@example5HTMLCode" ExampleId="example5">
+    <ComponentExampleBox Title="TextFields With Custom Label/Description" HTMLSourceCode="@example12HTMLCode" ExampleId="example12">
         <ExamplePreview>
             <div>
                 <BitTextField Description="Click the (i) icon!">
@@ -117,9 +171,9 @@
     </ComponentExampleBox>
 
     <ComponentExampleBox Title="TextField validation"
-                         HTMLSourceCode="@example6HTMLCode"
-                         CSharpSourceCode="@example6CSharpCode"
-                         ExampleId="example6">
+                         HTMLSourceCode="@example13HTMLCode"
+                         CSharpSourceCode="@example13CSharpCode"
+                         ExampleId="example13">
         <ExamplePreview>
             <EditForm Model="validationTextFieldModel">
                 <DataAnnotationsValidator />
@@ -129,7 +183,7 @@
                     <ValidationMessage For="()=> validationTextFieldModel.Text" />
                 </div>
                 <div>
-                    <BitTextField Label="numeric validation" 
+                    <BitTextField Label="numeric validation"
                                   @bind-Value="validationTextFieldModel.NumericText" />
                     <ValidationMessage For="()=> validationTextFieldModel.NumericText" />
                 </div>
