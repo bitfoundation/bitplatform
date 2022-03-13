@@ -8,7 +8,8 @@
                        AriaDescription="@AriaDescription"
                        AriaLabel="@AriaLabel"
                        AriaHidden="AriaHidden"
-                       Href="@Href">
+                       Href="@Href"
+                       ButtonType="@ButtonType">
     </BitCompoundButton>
 </CascadingValue>
 
@@ -21,6 +22,7 @@
     [Parameter] public string AriaLabel { get; set; }
     [Parameter] public bool AriaHidden { get; set; }
     [Parameter] public string Href { get; set; }
+    [Parameter] public BitButtonType ButtonType { get; set; }
 
     public int CurrentCount { get; set; }
 
@@ -28,5 +30,4 @@
     {
         CurrentCount++;
     }
-
 }

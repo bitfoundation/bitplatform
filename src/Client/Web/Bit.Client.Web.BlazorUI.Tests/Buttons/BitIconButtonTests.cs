@@ -143,5 +143,23 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
 
             Assert.AreEqual(expectedElement, tagName, ignoreCase: true);
         }
+
+        [DataTestMethod,
+            DataRow(BitButtonType.Button),
+            DataRow(BitButtonType.Submit),
+            DataRow(BitButtonType.Reset)
+        ]
+        public void BitIconButtonTypeOfButtonTest(BitButtonType buttonType)
+        {
+            var component = RenderComponent<BitIconButton>(parameters =>
+            {
+                parameters.Add(p => p.ButtonType, buttonType);
+            });
+
+            var bitIconButton = component.Find(".bit-ico-btn");
+
+            var buttonTypeName = buttonType == BitButtonType.Button ? "button" : buttonType == BitButtonType.Submit ? "submit" : "reset";
+            Assert.AreEqual(bitIconButton.GetAttribute("type"), buttonTypeName);
+        }
     }
 }

@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using Bunit;
+﻿using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.Client.Web.BlazorUI.Tests.Buttons
@@ -158,6 +157,24 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
             var bitButton = com.Find(".bit-btn");
 
             Assert.AreEqual(bitButton.HasAttribute("aria-hidden"), expectedResult);
+        }
+
+        [DataTestMethod,
+            DataRow(BitButtonType.Button),
+            DataRow(BitButtonType.Submit),
+            DataRow(BitButtonType.Reset)
+        ]
+        public void BitButtonTypeOfButtonTest(BitButtonType buttonType)
+        {
+            var com = RenderComponent<BitButtonTest>(parameters =>
+            {
+                parameters.Add(p => p.ButtonType, buttonType);
+            });
+
+            var bitButton = com.Find(".bit-btn");
+
+            var buttonTypeName = buttonType == BitButtonType.Button ? "button" : buttonType == BitButtonType.Submit ? "submit" : "reset";
+            Assert.AreEqual(bitButton.GetAttribute("type"), buttonTypeName);
         }
     }
 }

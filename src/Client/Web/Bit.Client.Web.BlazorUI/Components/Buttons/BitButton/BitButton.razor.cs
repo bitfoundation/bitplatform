@@ -64,6 +64,11 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
+        /// <summary>
+        /// The type of the button
+        /// </summary>
+        [Parameter] public BitButtonType ButtonType { get; set; } = BitButtonType.Button;
+
         protected override string RootElementClass => "bit-btn";
 
         protected override void RegisterComponentClasses()
