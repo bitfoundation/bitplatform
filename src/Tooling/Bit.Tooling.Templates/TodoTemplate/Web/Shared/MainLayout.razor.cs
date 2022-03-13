@@ -26,7 +26,7 @@
             }
             catch (Exception exp)
             {
-                ExceptionHandler.OnExceptionReceived(exp);
+                ExceptionHandler.Handle(exp);
             }
         }
 
@@ -38,7 +38,7 @@
             }
             catch (Exception ex)
             {
-                ExceptionHandler.OnExceptionReceived(ex);
+                ExceptionHandler.Handle(ex);
             }
             finally
             {

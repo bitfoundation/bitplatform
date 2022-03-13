@@ -49,8 +49,8 @@
                 <BitLabel>Profile image</BitLabel>
                 <BitFileUpload Label="Upload a new profile image"
                            UploadUrl="@ProfileImageUploadUrl"
-                           OnUploadComplete="() => Invoke(LoadEditProfileData)"
-                           OnUploadFailed="Invoke(() => ProfileImageError = ErrorStrings.FileUploadFailed)"
+                           OnUploadComplete="WrapHandled(LoadEditProfileData)"
+                           OnUploadFailed="() => ProfileImageError = ErrorStrings.FileUploadFailed"
                            @onfocus="() => ProfileImageError = null" />
                 <div class="form-input-error">@ProfileImageError</div>
             </div>
@@ -58,19 +58,19 @@
                 <BitLabel>Full name</BitLabel>
                 <BitTextField @bind-Value="UserToEdit.FullName"
                           Placeholder="Full name"
-                          OnKeyUp="() => Invoke(CheckSaveButtonEnabled)" />
+                          OnKeyUp="WrapHandled(CheckSaveButtonEnabled)" />
             </div>
             <div class="form-input-container">
                 <BitLabel>Birthday</BitLabel>
                 <BitDatePicker Class="edit-profile-dtp"
                            @bind-Value="UserToEdit.BirthDate"
                            Label="Select your birth date"
-                           OnSelectDate="() => Invoke(CheckSaveButtonEnabled)" />
+                           OnSelectDate="WrapHandled(CheckSaveButtonEnabled)" />
             </div>
             <div class="form-choice-container">
                 <BitLabel>Gender</BitLabel>
                 <BitChoiceGroup @bind-SelectedKey="UserToEdit.GenderValue"
-                            OnValueChange="() => Invoke(CheckSaveButtonEnabled)">
+                            OnValueChange="WrapHandled(CheckSaveButtonEnabled)">
                     <BitChoiceOption Key="@Gender.Male.ToString()" Text="Male" AriaLabel="Male"></BitChoiceOption>
                     <BitChoiceOption Key="@Gender.Female.ToString()" Text="Famale" AriaLabel="Famale"></BitChoiceOption>
                     <BitChoiceOption Key="@Gender.Custom.ToString()" Text="Custom" AriaLabel="Custom"></BitChoiceOption>
@@ -80,7 +80,7 @@
                    AriaLabel="Save"
                    Title="Save"
                    IsEnabled="IsSaveButtonEnabled"
-                   OnClick="() => Invoke(Save)">
+                   OnClick="WrapHandled(Save)">
                 @if (IsLoadingSaveButton)
                 {
                     <BitSpinner Size="BitSpinnerSize.Small"></BitSpinner>

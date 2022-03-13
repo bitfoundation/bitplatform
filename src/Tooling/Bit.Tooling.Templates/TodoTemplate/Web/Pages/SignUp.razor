@@ -21,7 +21,7 @@
             <BitLabel>Email</BitLabel>
             <BitTextField @bind-Value="Email"
                           Placeholder="Email"
-                          OnKeyUp="() => Invoke(CheckSignUpButtonEnable)"
+                          OnKeyUp="WrapHandled(CheckSignUpButtonEnable)"
                           OnFocus="() => EmailErrorMessage = null" />
             <div class="form-input-error">@EmailErrorMessage</div>
         </div>
@@ -30,20 +30,21 @@
             <BitTextField @bind-Value="Password"
                           Type="BitTextFieldType.Password"
                           CanRevealPassword="true" Placeholder="Password"
-                          OnKeyUp="() => Invoke(CheckSignUpButtonEnable)"
+                          OnKeyUp="WrapHandled(CheckSignUpButtonEnable)"
                           OnFocus="() => PasswordErrorMessage = null" />
             <div class="form-input-error">@PasswordErrorMessage</div>
         </div>
         <BitCheckbox Class="form-checkbox" @bind-IsChecked="IsAcceptPrivacy"
-                     OnChange="() => Invoke(CheckSignUpButtonEnable)">
+                     OnChange="WrapHandled(CheckSignUpButtonEnable)">
             I agree to the <BitLink Href="/privacy" Target="_blank">Bit Privacy Policy</BitLink>
         </BitCheckbox>
+
         <BitButton Class="form-submit-button"
                    ButtonStyle="BitButtonStyle.Primary"
                    Title="Sign up"
                    AriaLabel="Sign up"
                    IsEnabled="@IsSignUpButtonEnabled"
-                   OnClick="() => Invoke(DoSignUp)">
+                   OnClick="WrapHandled(DoSignUp)">
             @if (IsLoading)
             {
                 <BitSpinner Size="BitSpinnerSize.Small"></BitSpinner>
