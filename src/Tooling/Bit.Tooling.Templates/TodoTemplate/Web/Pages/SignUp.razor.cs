@@ -90,7 +90,7 @@ public partial class SignUp
 
         try
         {
-            await HttpClient.PostAsJsonAsync("User/SignUp", new UserDto
+            await HttpClient.PostAsJsonAsync("Auth/SignUp", new()
             {
                 UserName = Email,
                 Email = Email,
