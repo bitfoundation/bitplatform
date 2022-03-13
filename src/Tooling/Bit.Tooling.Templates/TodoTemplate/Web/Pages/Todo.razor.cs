@@ -44,7 +44,7 @@ public partial class Todo
         IsLoading = true;
         try
         {
-            AllTodoItemList = await StateService.GetValue(nameof(AllTodoItemList), async () => await HttpClient.GetFromJsonAsync("TodoItem", ToDoTemplateJsonContext.Default.ListTodoItemDto));
+            AllTodoItemList = await StateService.GetValue($"{nameof(Todo)}-{nameof(AllTodoItemList)}", async () => await HttpClient.GetFromJsonAsync("TodoItem", ToDoTemplateJsonContext.Default.ListTodoItemDto));
             GenarateViewTodoItemList();
         }
         finally
