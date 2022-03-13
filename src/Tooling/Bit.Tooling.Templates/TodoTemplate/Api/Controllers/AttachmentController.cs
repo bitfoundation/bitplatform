@@ -34,7 +34,7 @@ public class AttachmentController : ControllerBase
         var user = await _userManager.FindByIdAsync(userId.ToString());
 
         if (user is null)
-            throw new ResourceNotFoundException(nameof(ErrorStrings.UserCouldNotBeFound));
+            throw new ResourceNotFoundException();
 
         var profileImageName = Guid.NewGuid().ToString();
 
@@ -88,7 +88,7 @@ public class AttachmentController : ControllerBase
         var user = await _userManager.FindByIdAsync(userId.ToString());
 
         if (user is null)
-            throw new ResourceNotFoundException(nameof(ErrorStrings.UserCouldNotBeFound));
+            throw new ResourceNotFoundException();
 
         var filePath = Directory.GetFiles(_appSettings.UserProfileImagePath, $"{user.ProfileImageName}.*")
             .SingleOrDefault();
@@ -112,7 +112,7 @@ public class AttachmentController : ControllerBase
         var user = await _userManager.FindByIdAsync(userId.ToString());
 
         if (user is null)
-            throw new ResourceNotFoundException(nameof(ErrorStrings.UserCouldNotBeFound));
+            throw new ResourceNotFoundException();
 
         var filePath = Directory.GetFiles(_appSettings.UserProfileImagePath, $"{user.ProfileImageName}.*")
             .SingleOrDefault();

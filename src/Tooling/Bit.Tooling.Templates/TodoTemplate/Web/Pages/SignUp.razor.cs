@@ -110,13 +110,13 @@ public partial class SignUp
         {
             SignUpMessageType = BitMessageBarType.Error;
 
-            SignUpMessage = string.Join(Environment.NewLine, e.Details.SelectMany(d => d.Messages));
+            SignUpMessage = string.Join(Environment.NewLine, e.Details.SelectMany(d => d.Messages).Select(e => ErrorStrings.ResourceManager.Translate(e, Email!)));
         }
         catch (KnownException e)
         {
             SignUpMessageType = BitMessageBarType.Error;
 
-            SignUpMessage = ErrorStrings.ResourceManager.GetString(e.Message);
+            SignUpMessage = ErrorStrings.ResourceManager.Translate(e.Message);
         }
         finally
         {

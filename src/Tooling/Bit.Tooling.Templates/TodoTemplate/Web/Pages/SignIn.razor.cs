@@ -85,7 +85,7 @@ public partial class SignIn
         {
             SignInMessageType = BitMessageBarType.Error;
 
-            SignInMessage = ErrorStrings.ResourceManager.GetString(e.Message);
+            SignInMessage = ErrorStrings.ResourceManager.Translate(e.Message, Email!);
         }
         finally
         {
