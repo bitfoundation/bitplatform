@@ -20,7 +20,7 @@
             {
                 TodoTemplateAuthenticationStateProvider.AuthenticationStateChanged += VerifyUserIsAuthenticatedOrNot;
 
-                IsUserAuthenticated = await StateService.GetValue(nameof(IsUserAuthenticated), async () => await TodoTemplateAuthenticationStateProvider.IsUserAuthenticated());
+                IsUserAuthenticated = await StateService.GetValue($"{nameof(MainLayout)}-{nameof(IsUserAuthenticated)}", async () => await TodoTemplateAuthenticationStateProvider.IsUserAuthenticated());
 
                 await base.OnInitializedAsync();
             }
