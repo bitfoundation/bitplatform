@@ -31,7 +31,7 @@ public class UserController : ControllerBase
         var user = await _userManager.Users.FirstOrDefaultAsync(user => user.Id == userId, cancellationToken);
         
         if (user is null)
-            throw new ResourceNotFoundException(nameof(ErrorStrings.UserCouldNotBeFound));
+            throw new ResourceNotFoundException();
 
         return _mapper.Map<User, UserDto>(user);
     }
@@ -42,7 +42,7 @@ public class UserController : ControllerBase
         var userToUpdate = await _userManager.Users.FirstOrDefaultAsync(user => user.Id == dto.Id, cancellationToken);
 
         if (userToUpdate is null)
-            throw new ResourceNotFoundException(nameof(ErrorStrings.UserCouldNotBeFound));
+            throw new ResourceNotFoundException();
 
         var updatedUser = _mapper.Map(dto, userToUpdate);
 
@@ -57,7 +57,7 @@ public class UserController : ControllerBase
         var result = await _userManager.CreateAsync(userToAdd, dto.Password);
 
         if (!result.Succeeded)
-            throw new ResourceValidationException(result.Errors.Select(e => $"{e.Code}: {e.Description}").ToArray());
+            throw new ResourceValidationException(result.Errors.Select(e => e.Code).ToArray());
     }
 
     [HttpPost("[action]"), AllowAnonymous]
@@ -66,15 +66,15 @@ public class UserController : ControllerBase
         var user = await _userManager.FindByNameAsync(requestToken.UserName);
 
         if (user is null)
-            throw new BadRequestException(nameof(ErrorStrings.InvalidUserNameAndOrPassword));
+            throw new BadRequestException(nameof(ErrorStrings.UserNameNotFound));
 
         var checkPasswordResult = await _signInManager.CheckPasswordSignInAsync(user, requestToken.Password, lockoutOnFailure: true);
 
         if (checkPasswordResult.IsLockedOut)
-            throw new BadRequestException(nameof(ErrorStrings.AccountIsLockedOut));
+            throw new BadRequestException(nameof(ErrorStrings.UserLockedOut));
 
         if (!checkPasswordResult.Succeeded)
-            throw new BadRequestException(nameof(ErrorStrings.InvalidUserNameAndOrPassword));
+            throw new BadRequestException(nameof(ErrorStrings.UserNameNotFound));
 
         return await _jwtService.GenerateToken(user);
     }
