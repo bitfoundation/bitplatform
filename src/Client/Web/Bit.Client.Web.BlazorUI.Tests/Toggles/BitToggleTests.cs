@@ -140,7 +140,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Toggles
                 parameters.Add(p => p.OnText, onText);
                 parameters.Add(p => p.OffText, offText);
                 parameters.Add(p => p.DefaultText, defaultText);
-                parameters.Add(p => p.AriaLabel, "");
+                parameters.Add(p => p.AriaLabel, string.Empty);
                 parameters.Add(p => p.Label, label);
             });
 
@@ -213,6 +213,96 @@ namespace Bit.Client.Web.BlazorUI.Tests.Toggles
 
             var bitToggleLabelChild = com.Find(".bit-tgl > label").ChildNodes;
             bitToggleLabelChild.MarkupMatches(labelFragment);
+        }
+
+        [DataTestMethod,
+            DataRow(true),
+            DataRow(false)
+        ]
+        public void BitToggleValidationFormTest(bool value)
+        {
+            var com = RenderComponent<BitToggleValidationTest>(parameters =>
+            {
+                parameters.Add(p => p.TestModel, new BitToggleTestModel { Value = value });
+                parameters.Add(p => p.IsEnabled, true);
+            });
+
+            var form = com.Find("form");
+            form.Submit();
+
+            Assert.AreEqual(com.Instance.ValidCount, value ? 0 : 1);
+            Assert.AreEqual(com.Instance.InvalidCount, value ? 1 : 0);
+
+            var button = com.Find("button");
+            button.Click();
+            form.Submit();
+
+            Assert.AreEqual(com.Instance.ValidCount, 1);
+            Assert.AreEqual(com.Instance.InvalidCount, 1);
+            Assert.AreEqual(com.Instance.ValidCount, com.Instance.InvalidCount);
+        }
+
+        [DataTestMethod,
+            DataRow(true),
+            DataRow(false)
+        ]
+        public void BitToggleValidationInvalidHtmlAttributeTest(bool value)
+        {
+            var com = RenderComponent<BitToggleValidationTest>(parameters =>
+            {
+                parameters.Add(p => p.TestModel, new BitToggleTestModel { Value = value });
+                parameters.Add(p => p.IsEnabled, true);
+            });
+
+            var checkBox = com.Find("input[type='checkbox']");
+            Assert.IsFalse(checkBox.HasAttribute("aria-invalid"));
+
+            var form = com.Find("form");
+            form.Submit();
+
+            Assert.AreEqual(checkBox.HasAttribute("aria-invalid"), value);
+            if (checkBox.HasAttribute("aria-invalid"))
+            {
+                Assert.AreEqual(checkBox.GetAttribute("aria-invalid"), "true");
+            }
+
+            var button = com.Find("button");
+            button.Click();
+
+            Assert.AreEqual(checkBox.HasAttribute("aria-invalid"), !value);
+        }
+
+        [DataTestMethod,
+            DataRow(Visual.Fluent, true),
+            DataRow(Visual.Fluent, false),
+            DataRow(Visual.Cupertino, true),
+            DataRow(Visual.Cupertino, false),
+            DataRow(Visual.Material, true),
+            DataRow(Visual.Material, false),
+        ]
+        public void BitToggleValidationInvalidCssClassTest(Visual visual, bool value)
+        {
+            var com = RenderComponent<BitToggleValidationTest>(parameters =>
+            {
+                parameters.Add(p => p.TestModel, new BitToggleTestModel { Value = value });
+                parameters.Add(p => p.Visual, visual);
+                parameters.Add(p => p.IsEnabled, true);
+            });
+
+            var bitToggle = com.Find(".bit-tgl");
+            var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
+
+            Assert.IsFalse(bitToggle.ClassList.Contains($"bit-tgl-invalid-{visualClass}"));
+
+            var form = com.Find("form");
+            form.Submit();
+
+            Assert.AreEqual(bitToggle.ClassList.Contains($"bit-tgl-invalid-{visualClass}"), value);
+
+            var button = com.Find("button");
+            button.Click();
+
+            Assert.AreEqual(bitToggle.ClassList.Contains($"bit-tgl-invalid-{visualClass}"), !value);
         }
     }
 }
