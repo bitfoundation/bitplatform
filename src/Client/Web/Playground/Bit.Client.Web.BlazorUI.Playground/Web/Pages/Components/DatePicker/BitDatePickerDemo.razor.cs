@@ -20,15 +20,6 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.DatePicker
             },
             new ComponentParameter()
             {
-                Name = "CalendarType",
-                Type = "BitCalendarType",
-                LinkType = LinkType.Link,
-                Href = "#calendar-type-enum",
-                DefaultValue = "BitCalendarType.gregorian",
-                Description = "Calendar type for the DatePicker.",
-            },
-            new ComponentParameter()
-            {
                 Name = "Culture",
                 Type = "CultureInfo",
                 DefaultValue = "CultureInfo.CurrentUICulture",
@@ -99,31 +90,17 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.DatePicker
             },
             new ComponentParameter()
             {
-                Name = "OnMonthChange",
-                Type = "EventCallback<int>",
-                DefaultValue = "",
-                Description = "Callback for when the month changes.",
-            },
-            new ComponentParameter()
-            {
-                Name = "OnYearChange",
-                Type = "EventCallback<int>",
-                DefaultValue = "",
-                Description = "Callback for when the year changes.",
-            },
-            new ComponentParameter()
-            {
-                Name = "OnDateSet",
-                Type = "EventCallback<string>",
-                DefaultValue = "",
-                Description = "Callback for when the date changes.",
-            },
-            new ComponentParameter()
-            {
                 Name = "OnSelectDate",
-                Type = "Func<BitDate, string>",
+                Type = "EventCallback<DateTimeOffset?>",
                 DefaultValue = "",
                 Description = "Callback for when the on selected date changed.",
+            },
+            new ComponentParameter()
+            {
+                Name = "ValueChanged",
+                Type = "EventCallback<DateTimeOffset?>",
+                DefaultValue = "",
+                Description = "Callback for when the on date value changed.",
             },
             new ComponentParameter()
             {
@@ -155,13 +132,6 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.DatePicker
             },
             new ComponentParameter()
             {
-                Name = "CalueChanged",
-                Type = "EventCallback<string>",
-                DefaultValue = "",
-                Description = "Callback for when DatePicker value changed.",
-            },
-            new ComponentParameter()
-            {
                 Name = "MaxDate",
                 Type = "DateTimeOffset",
                 DefaultValue = "",
@@ -173,32 +143,25 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.DatePicker
                 Type = "DateTimeOffset",
                 DefaultValue = "",
                 Description = "The minimum allowable date.",
+            }, 
+            new ComponentParameter()
+            {
+                Name = "FormatDate",
+                Type = "string",
+                DefaultValue = "",
+                Description = @"Date format like ""yyyy/MM/dd"".",
             },
+            new ComponentParameter()
+            {
+                Name = "ShowWeekNumbers",
+                Type = "bool",
+                DefaultValue = "",
+                Description = "Show week number in the year.",
+            }
         };
 
         private readonly List<EnumParameter> enumParameters = new()
         {
-            new EnumParameter()
-            {
-                Id = "calendar-type-enum",
-                Title = "CalendarType Enum",
-                Description = "",
-                EnumList = new List<EnumItem>()
-                {
-                    new EnumItem()
-                    {
-                        Name= "Gregorian",
-                        Description="Show DatePicker in Gregorian calendar.",
-                        Value="0",
-                    },
-                    new EnumItem()
-                    {
-                        Name= "Persian",
-                        Description="Show DatePicker in Persian calendar.",
-                        Value="1",
-                    }
-                }
-            },
             new EnumParameter()
             {
                 Id = "component-visibility-enum",
