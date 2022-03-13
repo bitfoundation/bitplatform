@@ -7,13 +7,22 @@
      class="@ClassBuilder.Value">
     <ul class="bit-brc">
 
-        @foreach (var item in GetBreadcrumbItemsToShow())
+        @foreach ((BitBreadcrumbItem item, int index) item in GetBreadcrumbItemsToShow().Select((item, index) => (item, index)))
         {
             <li>
+                @if (_overflowItems.Any() && item.index == OverflowIndex)
+                {
+                    <button aria-label="@OverflowAriaLabel" class="bit-icon @OnRenderOverflowIcon"></button>
+                }
+                else
+                {
+                    <a href="@item.item.href" onclick="@item.item.OnClick">@item.item.Text</a>
+                }
 
-                <a href="@item.href" onclick="@item.OnClick">@item.Text</a>
-
-                <i class="bit-icon @DividerAs"></i>
+                @if (_itemsToShowInBreadcrumb.Count - 1 != item.index)
+                {
+                    <i class="bit-icon @DividerAs"></i>
+                }
 
             </li>
         }

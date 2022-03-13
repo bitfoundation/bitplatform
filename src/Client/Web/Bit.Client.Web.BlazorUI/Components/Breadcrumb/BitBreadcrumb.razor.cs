@@ -20,7 +20,7 @@ namespace Bit.Client.Web.BlazorUI
         /// The maximum number of breadcrumbs to display before coalescing.
         /// If not specified, all breadcrumbs will be rendered.
         /// </summary>
-        [Parameter] public byte? MaxDisplayedItems { get; set; }
+        [Parameter] public int MaxDisplayedItems { get; set; }
 
         /// <summary>
         /// Aria label for the overflow button.
@@ -30,7 +30,7 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// Optional index where overflow items will be collapsed.
         /// </summary>
-        [Parameter] public byte OverflowIndex { get; set; }
+        [Parameter] public int OverflowIndex { get; set; }
 
         /// <summary>
         /// Render a custom divider in place of the default chevron >
@@ -40,38 +40,37 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public string OnRenderOverflowIcon { get; set; } = "bit-icon--More";
 
 
-        private List<BitBreadcrumbItem> _removedItemsFromBreadcrumb = new();
+        private List<BitBreadcrumbItem> _overflowItems = new();
+        private List<BitBreadcrumbItem> _itemsToShowInBreadcrumb = new();
 
         private List<BitBreadcrumbItem> GetBreadcrumbItemsToShow()
         {
-            if (MaxDisplayedItems == null || MaxDisplayedItems >= Items.Count)
+            if (MaxDisplayedItems == 0 || MaxDisplayedItems >= Items.Count)
             {
-                return Items;
+                return _itemsToShowInBreadcrumb = Items;
             }
 
-            if (OverflowIndex >= MaxDisplayedItems!)
+            if (OverflowIndex >= MaxDisplayedItems)
                 OverflowIndex = 0;
 
-            var overFlowItemsCount = Items.Count - (int)MaxDisplayedItems;
-
-            var itemsToShowInBreadcrumb = new List<BitBreadcrumbItem>();
+            var overflowItemsCount = Items.Count - MaxDisplayedItems;
 
             foreach ((BitBreadcrumbItem item, int index) item in Items.Select((item, index) => (item, index)))
             {
-                if (OverflowIndex <= item.index && item.index < overFlowItemsCount + (int)OverflowIndex)
+                if (OverflowIndex <= item.index && item.index < overflowItemsCount + OverflowIndex)
                 {
                     if (item.index == OverflowIndex)
-                        itemsToShowInBreadcrumb.Add(item.item);
+                        _itemsToShowInBreadcrumb.Add(item.item);
 
-                    _removedItemsFromBreadcrumb.Add(item.item);
+                    _overflowItems.Add(item.item);
                 }
                 else
                 {
-                    itemsToShowInBreadcrumb.Add(item.item);
+                    _itemsToShowInBreadcrumb.Add(item.item);
                 }
             }
 
-            return itemsToShowInBreadcrumb;
+            return _itemsToShowInBreadcrumb;
         }
     }
 }
