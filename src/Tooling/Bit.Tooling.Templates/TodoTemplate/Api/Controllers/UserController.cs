@@ -37,14 +37,16 @@ public class UserController : ControllerBase
     }
 
     [HttpPut]
-    public async Task Update(UserDto dto, CancellationToken cancellationToken)
+    public async Task Update(EditUserDto userDto, CancellationToken cancellationToken)
     {
-        var userToUpdate = await _userManager.Users.FirstOrDefaultAsync(user => user.Id == dto.Id, cancellationToken);
+        var userId = User.GetUserId();
 
-        if (userToUpdate is null)
+        var user = await _userManager.Users.FirstOrDefaultAsync(user => user.Id == userId, cancellationToken);
+
+        if (user is null)
             throw new ResourceNotFoundException(nameof(ErrorStrings.UserCouldNotBeFound));
 
-        var updatedUser = _mapper.Map(dto, userToUpdate);
+        var updatedUser = _mapper.Map(userDto, user);
 
         await _userManager.UpdateAsync(updatedUser);
     }
