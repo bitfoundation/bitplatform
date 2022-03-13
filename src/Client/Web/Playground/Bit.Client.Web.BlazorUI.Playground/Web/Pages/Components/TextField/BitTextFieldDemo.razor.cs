@@ -304,41 +304,54 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.TextField
     <BitTextField Label=""Standard With Two-Way Binding"" @bind-Value=""@TextValue""></BitTextField>
     <BitLabel>You are typing : @TextValue </BitLabel>
 </div>
-<div>
+<div>";
+
+        private readonly string example1CSharpCode = @"
+private string TextValue;
+";
+
+        private readonly string example2HTMLCode = @"<div>
     <BitTextField Label=""Read-only"" IsReadonly=""true"" DefaultValue=""I am read-only""></BitTextField>
-</div>
-<div>
+</div>";
+
+        private readonly string example3HTMLCode = @"<div>
+    <BitTextField Label=""With Placeholder"" Placeholder=""Please enter text here""></BitTextField>
+</div>";
+
+        private readonly string example4HTMLCode = @"<div>
     <BitTextField Label=""Disabled"" IsEnabled=""false"" DefaultValue=""I am disabled""></BitTextField>
 </div>
 <div>
     <BitTextField Label=""Disabled With Placeholder"" IsEnabled=""false"" Placeholder=""I am disabled""></BitTextField>
-</div>
-<div>
-    <BitTextField Label=""With Placeholder"" Placeholder=""Please enter text here""></BitTextField>
-</div>
-<div>
+</div>";
+
+        private readonly string example5HTMLCode = @"<div>
     <BitTextField Label=""Controlled TextField Limiting Length Of Value To 10"" MaxLength=""10""></BitTextField>
-</div>
-<div>
+</div>";
+
+        private readonly string example6HTMLCode = @"<div>
     <BitTextField Label=""With An Icon"" IconName=""BitIconName.CalendarMirrored""></BitTextField>
-</div>
-<div>
-    <BitTextField Label=""Password With Reveal Button"" Type=""@InputType"" CanRevealPassword=""true""></BitTextField>
-</div>
-<div>
+</div>";
+
+        private readonly string example7HTMLCode = @"<div>
+    <BitTextField Label=""Password With Reveal Button""
+                  Type=""@InputType""
+                  CanRevealPassword=""true""></BitTextField>
+</div>";
+
+        private readonly string example7CSharpCode = @"
+
+private BitTextFieldType InputType = BitTextFieldType.Password;
+";
+
+        private readonly string example8HTMLCode = @"<div>
     <BitTextField Label=""Required"" IsRequired=""true""></BitTextField>
 </div>
 <div>
     <BitTextField AriaLabel=""Required Without Visible Label"" IsRequired=""true""></BitTextField>
 </div>";
-
-        private readonly string example1CSharpCode = @"
-@code {
-    private string TextValue;
-    private BitTextFieldType InputType = BitTextFieldType.Password;
-}";
-
-        private readonly string example2HTMLCode = @"<div>
+       
+        private readonly string example9HTMLCode = @"<div>
     <BitTextField Label=""Standard"" IsMultiline=""true"" Rows=""3""></BitTextField>
 </div>
 <div>
@@ -351,7 +364,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.TextField
     <BitTextField Label=""Non-resizable"" IsMultiline=""true"" IsResizable=""false""></BitTextField>
 </div>";
 
-        private readonly string example3HTMLCode = @"<div>
+        private readonly string example10HTMLCode = @"<div>
     <BitTextField Label=""Standard:"" IsUnderlined=""true""></BitTextField>
 </div>
 <div>
@@ -367,7 +380,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.TextField
     <BitTextField Label=""Borderless multi-line TextField"" IsMultiline=""true"" HasBorder=""false""></BitTextField>
 </div>";
 
-        private readonly string example4HTMLCode = @"<div>
+        private readonly string example11HTMLCode = @"<div>
     <BitTextField Label=""With Prefix"" Prefix=""https://""></BitTextField>
 </div>
 <div>
@@ -380,7 +393,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.TextField
     <BitTextField Label=""With Prefix And Suffix"" Prefix=""https://"" Suffix="".com""></BitTextField>
 </div>";
 
-        private readonly string example5HTMLCode = @"<div>
+        private readonly string example12HTMLCode = @"<div>
     <BitTextField Description=""Click the (i) icon!"">
         <LabelFragment>
             <BitLabel Style=""display:inline-block;padding-bottom:10px;"">With PrefixCustom Label Rendering</BitLabel>
@@ -396,7 +409,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.TextField
     </BitTextField>
 </div>";
 
-        private readonly string example6HTMLCode = @" <EditForm Model=""validationTextFieldModel"">
+        private readonly string example13HTMLCode = @" <EditForm Model=""validationTextFieldModel"">
     <DataAnnotationsValidator />
      <div>
          <BitTextField Label = ""Required""
@@ -425,7 +438,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.TextField
      </div>
  </EditForm>";
 
-        private readonly string example6CSharpCode = @"
+        private readonly string example13CSharpCode = @"
 ValidationTextFieldModel validationTextFieldModel = new();
 public class ValidationTextFieldModel
 {
