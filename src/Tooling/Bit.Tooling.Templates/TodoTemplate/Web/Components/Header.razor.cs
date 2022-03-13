@@ -32,7 +32,7 @@ public partial class Header : IAsyncDisposable
         }
         catch (Exception ex)
         {
-            ExceptionHandler.OnExceptionReceived(ex);
+            ExceptionHandler.Handle(ex);
         }
         finally
         {

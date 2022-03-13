@@ -2,5 +2,5 @@
 
 public interface IExceptionHandler
 {
-    void OnExceptionReceived(Exception exception, IDictionary<string, object?>? parameters = null);
+    void Handle(Exception exception, IDictionary<string, object?>? parameters = null);
 }

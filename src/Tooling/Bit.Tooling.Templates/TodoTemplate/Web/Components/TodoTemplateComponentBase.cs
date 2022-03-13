@@ -15,7 +15,7 @@ public class TodoTemplateComponentBase : ComponentBase
         }
         catch (Exception exp)
         {
-            ExceptionHandler.OnExceptionReceived(exp);
+            ExceptionHandler.Handle(exp);
         }
     }
 
@@ -28,7 +28,7 @@ public class TodoTemplateComponentBase : ComponentBase
         }
         catch (Exception exp)
         {
-            ExceptionHandler.OnExceptionReceived(exp);
+            ExceptionHandler.Handle(exp);
         }
     }
 
@@ -42,20 +42,37 @@ public class TodoTemplateComponentBase : ComponentBase
         return Task.CompletedTask;
     }
 
-    public virtual T? Evaluate<T>(Func<T> func)
+    public virtual Action WrapHandled(Action action)
     {
-        try
+        return () =>
         {
-            return func();
-        }
-        catch (Exception exp)
-        {
-            ExceptionHandler.OnExceptionReceived(exp);
-            return default;
-        }
+            try
+            {
+                action();
+            }
+            catch (Exception exp)
+            {
+                ExceptionHandler.Handle(exp);
+            }
+        };
     }
 
-    public virtual Func<Task> Invoke(Func<Task> func)
+    public virtual Action<T> WrapHandled<T>(Action<T> func)
+    {
+        return (e) =>
+        {
+            try
+            {
+                func(e);
+            }
+            catch (Exception exp)
+            {
+                ExceptionHandler.Handle(exp);
+            }
+        };
+    }
+
+    public virtual Func<Task> WrapHandled(Func<Task> func)
     {
         return async () =>
         {
@@ -65,29 +82,12 @@ public class TodoTemplateComponentBase : ComponentBase
             }
             catch (Exception exp)
             {
-                ExceptionHandler.OnExceptionReceived(exp);
+                ExceptionHandler.Handle(exp);
             }
         };
     }
 
-
-    public virtual Action Invoke(Action action)
-    {
-        return () =>
-        {
-            try
-            {
-                action();
-                Invoke(StateHasChanged);
-            }
-            catch (Exception exp)
-            {
-                ExceptionHandler.OnExceptionReceived(exp);
-            }
-        };
-    }
-
-    public virtual Func<EventArgs, Task> Invoke(Func<EventArgs, Task> func)
+    public virtual Func<T, Task> WrapHandled<T>(Func<T, Task> func)
     {
         return async (e) =>
         {
@@ -97,22 +97,7 @@ public class TodoTemplateComponentBase : ComponentBase
             }
             catch (Exception exp)
             {
-                ExceptionHandler.OnExceptionReceived(exp);
-            }
-        };
-    }
-
-    public virtual Func<MouseEventArgs, Task> Invoke(Func<MouseEventArgs, Task> func)
-    {
-        return async (e) =>
-        {
-            try
-            {
-                await func(e);
-            }
-            catch (Exception exp)
-            {
-                ExceptionHandler.OnExceptionReceived(exp);
+                ExceptionHandler.Handle(exp);
             }
         };
     }
