@@ -109,7 +109,7 @@ public partial class EditProfile
         {
             EditProfileMessageType = BitMessageBarType.Error;
 
-            EditProfileMessage = ErrorStrings.ResourceManager.GetString(e.Message);
+            EditProfileMessage = ErrorStrings.ResourceManager.Translate(e.Message);
         }
         finally
         {

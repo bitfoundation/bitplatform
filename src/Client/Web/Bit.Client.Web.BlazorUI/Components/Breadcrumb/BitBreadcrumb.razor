@@ -12,7 +12,7 @@
             <li>
                 @if (_overflowItems.Any() && item.index == OverflowIndex)
                 {
-                    <button aria-label="@OverflowAriaLabel" class="bit-icon @OnRenderOverflowIcon"></button>
+                    <button aria-label="@OverflowAriaLabel" class=@($"bit-icon bit-icon--{OnRenderOverflowIcon.GetName()}")></button>
                 }
                 else
                 {
@@ -21,7 +21,7 @@
 
                 @if (_itemsToShowInBreadcrumb.Count - 1 != item.index)
                 {
-                    <i class="bit-icon @DividerAs"></i>
+                    <i class=@($"bit-icon bit-icon--{DividerAs.GetName()}")></i>
                 }
 
             </li>
