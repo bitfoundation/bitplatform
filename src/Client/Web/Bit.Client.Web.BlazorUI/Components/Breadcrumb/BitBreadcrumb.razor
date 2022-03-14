@@ -5,24 +5,31 @@
      @attributes="HtmlAttributes"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
-    <ul class="bit-brc">
+    <ul>
 
         @foreach ((BitBreadcrumbItem item, int index) item in GetBreadcrumbItemsToShow().Select((item, index) => (item, index)))
         {
             <li>
                 @if (_overflowItems.Any() && item.index == OverflowIndex)
                 {
-                    <button aria-label="@OverflowAriaLabel" class=@($"bit-icon bit-icon--{OnRenderOverflowIcon.GetName()}")></button>
+                    <button aria-label="@OverflowAriaLabel">
+                        <span>
+                            <i class=@($"bit-icon bit-icon--{OnRenderOverflowIcon.GetName()}")></i>
+                        </span>
+                    </button>
                 }
                 else
                 {
-                    <a href="@item.item.href" onclick="@item.item.OnClick">@item.item.Text</a>
+                    <a href="@item.item.href"
+                       onclick="@item.item.OnClick"
+                       aria-current=@(IsLastItem(item.index) ? "page" : "undefined")
+                       class=@(IsLastItem(item.index) ? "bit-brc-lst-itm-fluent" :"bit-brc-itm-fluent")>@item.item.Text</a>
                 }
 
-                @if (_itemsToShowInBreadcrumb.Count - 1 != item.index)
-                {
-                    <i class=@($"bit-icon bit-icon--{DividerAs.GetName()}")></i>
-                }
+                 @if (IsLastItem(item.index) is false)
+                 {
+                     <i class=@($"bit-icon bit-icon--{DividerAs.GetName()}")></i>
+                 }
 
             </li>
         }

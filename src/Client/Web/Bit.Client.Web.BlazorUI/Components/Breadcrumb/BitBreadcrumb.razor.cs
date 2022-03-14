@@ -72,5 +72,11 @@ namespace Bit.Client.Web.BlazorUI
 
             return _itemsToShowInBreadcrumb;
         }
+
+
+        private bool IsLastItem(int index)
+        {
+            return index == _itemsToShowInBreadcrumb.Count - 1;
+        }
     }
 }
