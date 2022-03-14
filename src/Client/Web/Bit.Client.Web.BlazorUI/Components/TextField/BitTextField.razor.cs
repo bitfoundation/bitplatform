@@ -273,6 +273,9 @@ namespace Bit.Client.Web.BlazorUI
 
             ClassBuilder.Register(() => ValueInvalid is true
                                        ? $"{RootElementClass}-invalid-{VisualClassRegistrar()}" : string.Empty);
+
+            ClassBuilder.Register(() => IsRequired && Label is null
+                                       ? $"{RootElementClass}-required-no-label-{VisualClassRegistrar()}" : string.Empty);
         }
 
         protected override Task OnInitializedAsync()
