@@ -8,6 +8,8 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.FileUpload
 {
     public partial class BitFileUploadDemo
     {
+        private string onAllUploadsCompleteText = "No File";
+
         string UploadUrl => $"{GetBaseUrl()}FileUpload/UploadStreamedFile";
         string RemoveUrl => $"{GetBaseUrl()}FileUpload/RemoveFile";
 
@@ -168,14 +170,14 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.FileUpload
             {
                 Name = "SuccessfullUploadMessage",
                 Type = "string",
-                DefaultValue = "File uploaded",
+                DefaultValue = "File upload succesfull",
                 Description = "The message shown for successful file uploads."
             },
             new ComponentParameter
             {
-                Name = "FailUploadMessage",
+                Name = "FailedUploadMessage",
                 Type = "string",
-                DefaultValue = "File uploaded",
+                DefaultValue = "File upload failed",
                 Description = "The message shown for failed file uploads."
             },
             new ComponentParameter
@@ -187,26 +189,10 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.FileUpload
             },
             new ComponentParameter
             {
-                Name = "UploadStatus",
-                Type = "BitFileUploadStatus",
-                DefaultValue = "",
-                Description = "General upload status."
-            },
-            new ComponentParameter
-            {
                 Name = "UploadUrl",
                 Type = "string",
                 DefaultValue = "",
                 Description = "URL of the server endpoint receiving the files."
-            },
-            new ComponentParameter
-            {
-                Name = "Visibility",
-                Type = "BitComponentVisibility",
-                LinkType = LinkType.Link,
-                Href = "#component-visibility-enum",
-                DefaultValue = "BitComponentVisibility.Visible",
-                Description = "Whether the component is Visible,Hidden,Collapsed.",
             },
         };
 
@@ -274,33 +260,6 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.FileUpload
                         Value = "8",
                     }
                 }
-            },
-            new EnumParameter()
-            {
-                Id = "component-visibility-enum",
-                Title = "BitComponentVisibility Enum",
-                Description = "",
-                EnumList = new List<EnumItem>()
-                {
-                    new()
-                    {
-                        Name= "Visible",
-                        Description="Show content of the component.",
-                        Value="0",
-                    },
-                    new()
-                    {
-                        Name= "Hidden",
-                        Description="Hide content of the component,though the space it takes on the page remains.",
-                        Value="1",
-                    },
-                    new()
-                    {
-                        Name= "Collapsed",
-                        Description="Hide content of the component,though the space it takes on the page gone.",
-                        Value="2",
-                    }
-                }
             }
         };
 
@@ -321,6 +280,7 @@ private string RemoveUrl = $""/Remove"";
 
         private readonly string example2HtmlCode = @"
 <BitFileUpload IsMultiSelect=""true""
+               AutoUploadEnabled=""true""
                Label=""Select or drag and drop files""
                UploadUrl=""@UploadUrl"">
 </BitFileUpload>
@@ -328,8 +288,9 @@ private string RemoveUrl = $""/Remove"";
 
         private readonly string example3HtmlCode = @"
 <BitFileUpload IsMultiSelect=""true""
-               Label=""Select or drag and drop files""
+               AutoUploadEnabled=""true""
                MaxSize=""1024 * 1024 * 100""
+               Label=""Select or drag and drop files""
                UploadUrl=""@UploadUrl"">
 </BitFileUpload>
 ";
@@ -349,6 +310,15 @@ private string RemoveUrl = $""/Remove"";
             UploadUrl=""@UploadUrl""
             RemoveUrl=""@RemoveUrl""
             ShowRemoveButton=""true"">
+</BitFileUpload>
+";
+
+        private readonly string example6HtmlCode = @"
+<BitFileUpload IsMultiSelect=""true""
+               AutoUploadEnabled=""true""
+               OnAllUploadsComplete=""@(() => onAllUploadsCompleteText = ""All File Uploaded"")""
+               Label=""Select or drag and drop files""
+               UploadUrl=""@UploadUrl"">
 </BitFileUpload>
 ";
     }
