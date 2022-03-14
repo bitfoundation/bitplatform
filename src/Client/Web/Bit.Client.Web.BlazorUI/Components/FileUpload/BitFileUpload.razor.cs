@@ -143,12 +143,12 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public string FailedUploadMessage { get; set; } = "File upload failed";
 
         /// <summary>
-        /// Custom http headers for upload request
+        /// Custom http headers for upload request.
         /// </summary>
         [Parameter] public IReadOnlyDictionary<string, string> UploadRequestHttpHeaders { get; set; } = new Dictionary<string, string>();
 
         /// <summary>
-        /// Custom query strings for upload request
+        /// Custom query strings for upload request.
         /// </summary>
         [Parameter] public IReadOnlyDictionary<string, string> UploadRequestQueryStrings { get; set; } = new Dictionary<string, string>();
 

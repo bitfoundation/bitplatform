@@ -150,7 +150,14 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.FileUpload
                 Name = "RemoveRequestHttpHeaders",
                 Type = "IReadOnlyDictionary<string, string>",
                 DefaultValue = "new Dictionary<string, string>()",
-                Description = "Custom http headers for remove file request."
+                Description = "Custom http headers for remove request."
+            },
+            new ComponentParameter
+            {
+                Name = "RemoveRequestQueryStrings",
+                Type = "IReadOnlyDictionary<string, string>",
+                DefaultValue = "new Dictionary<string, string>()",
+                Description = "Custom query strings for remove request."
             },
             new ComponentParameter
             {
@@ -185,7 +192,14 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.FileUpload
                 Name = "UploadRequestHttpHeaders",
                 Type = "IReadOnlyDictionary<string, string>",
                 DefaultValue = "new Dictionary<string, string>()",
-                Description = "Custom http headers for upload file request."
+                Description = "Custom http headers for upload request."
+            },
+            new ComponentParameter
+            {
+                Name = "UploadRequestQueryStrings",
+                Type = "IReadOnlyDictionary<string, string>",
+                DefaultValue = "new Dictionary<string, string>()",
+                Description = "Custom query strings for upload request."
             },
             new ComponentParameter
             {
@@ -321,5 +335,18 @@ private string RemoveUrl = $""/Remove"";
                UploadUrl=""@UploadUrl"">
 </BitFileUpload>
 ";
+
+        private readonly string example7HtmlCode = @"
+<BitFileUpload IsMultiSelect=""true""
+               Label=""Select or drag and drop files""
+               UploadUrl=""@UploadUrl""
+               UploadRequestHttpHeaders=""@(new Dictionary<string, string>{ {""header1"", ""value1"" } })""
+               UploadRequestQueryStrings=""@(new Dictionary<string, string>{ {""qs1"", ""qsValue1"" } })""
+               RemoveUrl=""@RemoveUrl""
+               RemoveRequestHttpHeaders=""@(new Dictionary<string, string>{ {""header2"", ""value2"" } })""
+               RemoveRequestQueryStrings=""@(new Dictionary<string, string>{ {""qs2"", ""qsValue2"" } })"">
+</BitFileUpload>
+";
+
     }
 }
