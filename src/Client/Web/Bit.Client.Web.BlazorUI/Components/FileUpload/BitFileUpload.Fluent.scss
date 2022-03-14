@@ -22,9 +22,6 @@
 
     .upload-status {
         width: 100%;
-        height: rem(16px);
-        padding-top: rem(8px);
-        margin-top: rem(8px);
         text-overflow: ellipsis;
         white-space: nowrap;
         color: $color;
@@ -99,9 +96,8 @@
     flex-flow: row nowrap;
     justify-content: space-between;
     align-items: center;
-    height: rem(80px);
     border-radius: rem(5px);
-    margin: rem(3px) 0;
+    margin-top: rem(3px);
     font-size: rem(14px);
     font-weight: 100;
     overflow: hidden;
@@ -121,8 +117,6 @@
     .file-name-container {
         display: flex;
         width: 100%;
-        height: rem(16px);
-        margin-bottom: rem(8px);
 
         i {
             padding-top: rem(8px);
@@ -142,7 +136,6 @@
 .file-size-container {
     display: flex;
     width: 100%;
-    height: rem(16px);
 }
 
 .file-siz {
