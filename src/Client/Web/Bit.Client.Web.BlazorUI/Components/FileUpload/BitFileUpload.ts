@@ -5,14 +5,16 @@ class BitFileUploader {
     static headers: any;
 
     static init(inputElement: HTMLInputElement,
-        dotnetReference: any,
-        uploadEndpointUrl: string,
-        headers: any[]): IFiles[] {
+                dotnetReference: any,
+                uploadEndpointUrl: string,
+                headers: any[]): IFiles[] {
+
         let filesArray: IFiles[] = Array.from<IFiles>(inputElement.files!).map(file => ({
             name: file.name,
             size: file.size,
             type: file.type
         }));
+
         this.bitFileUploads = [];
         this.headers = headers;
 
@@ -20,6 +22,7 @@ class BitFileUploader {
             let uploader: BitFileUpload = new BitFileUpload(dotnetReference, uploadEndpointUrl, inputElement, index, this.headers);
             this.bitFileUploads.push(uploader);
         });
+
         return filesArray;
     }
 
