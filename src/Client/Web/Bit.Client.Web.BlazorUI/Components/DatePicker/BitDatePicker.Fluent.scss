@@ -1,18 +1,5 @@
 ﻿@import "../../Styles/Fluent/colors.fluent.scss", "../../Styles/functions.scss";
 
-.bit-txt-enabled-fluent {
-    div {
-        div {
-            cursor: pointer;
-            color: $Grey130;
-        }
-    }
-
-    input {
-        cursor: pointer;
-    }
-}
-
 .editable-input {
     input {
         cursor: default;
@@ -34,6 +21,19 @@
 .bit-dtp-wrapper {
     position: relative;
     z-index: 1000;
+
+    .bit-txt-enabled-fluent {
+        div {
+            div {
+                cursor: pointer;
+                color: $Grey130;
+            }
+        }
+
+        input {
+            cursor: pointer;
+        }
+    }
 }
 
 .bit-dtp-callout {
