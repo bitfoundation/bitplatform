@@ -1,8 +1,22 @@
-﻿.bit-brc-fluent {
-    padding: 16px;
-    list-style: none;
-}
+﻿@import "../../Styles/Fluent/colors.fluent.scss", "../../Styles/functions.scss";
 
 .bit-brc-fluent li {
-    display: inline;
+    display: inline-flex;
+}
+
+.bit-brc-fluent ul {
+    padding-inline-start: 0;
+}
+
+.bit-brc-itm-fluent {
+    font-size: rem(20px);
+    padding: 0px 0 rem(8px);
+    color: $Grey90;
+}
+
+.bit-brc-lst-itm-fluent {
+    font-size: rem(20px);
+    font-weight: 600;
+    padding: 0px 0 rem(8px);
+    color: $Grey160;
 }
