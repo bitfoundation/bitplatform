@@ -24,25 +24,25 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("[action]"),]
-    public async Task SignUp(UserDto dto)
+    public async Task SignUp(SignUpRequestDto signUpRequest)
     {
-        var userToAdd = _mapper.Map<User>(dto);
+        var userToAdd = _mapper.Map<User>(signUpRequest);
 
-        var result = await _userManager.CreateAsync(userToAdd, dto.Password);
+        var result = await _userManager.CreateAsync(userToAdd, signUpRequest.Password);
 
         if (!result.Succeeded)
             throw new ResourceValidationException(result.Errors.Select(e => e.Code).ToArray());
     }
 
     [HttpPost("[action]")]
-    public async Task<SignInResponseDto> SignIn(SignInRequestDto requestToken)
+    public async Task<SignInResponseDto> SignIn(SignInRequestDto signInRequest)
     {
-        var user = await _userManager.FindByNameAsync(requestToken.UserName);
+        var user = await _userManager.FindByNameAsync(signInRequest.UserName);
 
         if (user is null)
             throw new BadRequestException(nameof(ErrorStrings.UserNameNotFound));
 
-        var checkPasswordResult = await _signInManager.CheckPasswordSignInAsync(user, requestToken.Password, lockoutOnFailure: true);
+        var checkPasswordResult = await _signInManager.CheckPasswordSignInAsync(user, signInRequest.Password, lockoutOnFailure: true);
 
         if (checkPasswordResult.IsLockedOut)
             throw new BadRequestException(nameof(ErrorStrings.UserLockedOut));
