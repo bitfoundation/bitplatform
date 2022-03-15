@@ -57,4 +57,37 @@
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Toggle validation" HTMLSourceCode="@example3HTMLCode" CSharpSourceCode="@example3CSharpCode" ExampleId="example3">
+        <ExamplePreview>
+            <div class="m-t-15">
+                @if (string.IsNullOrEmpty(SuccessMessage))
+                {
+                    <EditForm Model="ValidationForm" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
+                        <DataAnnotationsValidator />
+
+                        <div class="validation-summary">
+                            <ValidationSummary />
+                        </div>
+
+                        <div>
+                            <BitToggle @bind-Value="ValidationForm.TermsAgreement" IsEnabled="true" DefaultText="I agree with the terms and conditions." />
+
+                            <ValidationMessage For="@(() => ValidationForm.TermsAgreement)" />
+                        </div>
+
+                        <BitButton ButtonType="BitButtonType.Submit" IsEnabled="true">
+                            Submit
+                        </BitButton>
+                    </EditForm>
+                }
+                else
+                {
+                    <BitMessageBar MessageBarType="BitMessageBarType.Success" IsMultiline="false">
+                        @SuccessMessage
+                    </BitMessageBar>
+                }
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
 </ComponentDemo>

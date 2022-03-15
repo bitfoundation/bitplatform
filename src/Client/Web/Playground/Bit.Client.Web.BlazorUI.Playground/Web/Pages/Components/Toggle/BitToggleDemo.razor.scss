@@ -3,3 +3,13 @@
 .m-t-15 {
     margin-top: rem(15px);
 }
+
+.validation-summary {
+    border-left: 5px solid $Red10;
+    background-color: $ErrorBlockRed;
+    overflow: hidden;
+
+    .validation-errors {
+        margin: rem(5px);
+    }
+}
