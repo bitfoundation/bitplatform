@@ -301,7 +301,7 @@
 
 @keyframes trans {
     0% {
-        transform: translate3d(10px, 0px, 0px);
+        transform: translate3d(0px, -10px, 0px);
         pointer-events: none;
     }
 
