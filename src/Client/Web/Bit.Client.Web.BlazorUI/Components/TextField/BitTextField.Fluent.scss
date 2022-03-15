@@ -244,6 +244,16 @@
     }
 }
 
+.bit-txt-required-no-label-fluent {
+    .bit-txt-field-grp::before {
+        position: absolute;
+        content: "*";
+        color: $Red20;
+        right: rem(-10px);
+        top: rem(-5px);
+    }
+}
+
 .bit-txt-no-border-fluent {
     .bit-txt-field-grp {
         border: none;
