@@ -14,3 +14,7 @@ There are many ways to contribute
 * Fork / Star this project! (":
 * Code review
 * Engage with other developers on [stackoverflow](http://stackoverflow.com/questions/tagged/bit-framework)
+
+## **Contributions**
+
+![Alt](https://repobeats.axiom.co/api/embed/115c6953ca07a17b42b892b19671d1166e9af701.svg "Bit Open Source Contributions Report")
