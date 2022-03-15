@@ -60,3 +60,7 @@ window.addEventListener('scroll', (e: any) => {
     if (e.target.id && Bit.currentDropDownCalloutId === e.target.id) return;
     Bit.closeCurrentCalloutIfExists("", "", null);
 }, true);
+
+window.addEventListener('resize', (e: any) => {
+    Bit.closeCurrentCalloutIfExists("", "", null);
+}, true);
