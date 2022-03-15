@@ -85,4 +85,21 @@
             <div class="example-desc">@onAllUploadsCompleteText</div>
         </ExamplePreview>
     </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Auto & Multiple with custom http headers and query strings" HTMLSourceCode="@example7HtmlCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example7">
+        <ExamplePreview>
+            <div class="example-desc">Multiple files can be selected to upload and remove with custom http headers and query strings.</div>
+            <div>
+                <BitFileUpload IsMultiSelect="true"
+                               Label="Select or drag and drop files"
+                               UploadUrl="@UploadUrl"
+                               UploadRequestHttpHeaders="@(new Dictionary<string, string>{ {"header1", "value1" } })"
+                               UploadRequestQueryStrings="@(new Dictionary<string, string>{ {"qs1", "qsValue1" } })"
+                               RemoveUrl="@RemoveUrl"
+                               RemoveRequestHttpHeaders="@(new Dictionary<string, string>{ {"header2", "value2" } })"
+                               RemoveRequestQueryStrings="@(new Dictionary<string, string>{ {"qs2", "qsValue2" } })">
+                </BitFileUpload>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
 </ComponentDemo>

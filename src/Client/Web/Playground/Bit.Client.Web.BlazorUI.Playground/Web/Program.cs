@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 #if BlazorWebAssembly
+using System;
 using System.Net.Http;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.DependencyInjection;

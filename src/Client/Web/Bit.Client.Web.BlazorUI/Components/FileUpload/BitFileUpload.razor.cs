@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Text;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
@@ -109,9 +111,14 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public EventCallback<BitFileInfo> OnUploadFailed { get; set; }
 
         /// <summary>
-        /// Custom http headers for upload request.
+        /// Custom http headers for remove request.
         /// </summary>
         [Parameter] public IReadOnlyDictionary<string, string> RemoveRequestHttpHeaders { get; set; } = new Dictionary<string, string>();
+
+        /// <summary>
+        /// Custom query strings for remove request.
+        /// </summary>
+        [Parameter] public IReadOnlyDictionary<string, string> RemoveRequestQueryStrings { get; set; } = new Dictionary<string, string>();
 
         /// <summary>
         /// URL of the server endpoint removing the files.
@@ -136,9 +143,14 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public string FailedUploadMessage { get; set; } = "File upload failed";
 
         /// <summary>
-        /// Custom http headers for upload request
+        /// Custom http headers for upload request.
         /// </summary>
         [Parameter] public IReadOnlyDictionary<string, string> UploadRequestHttpHeaders { get; set; } = new Dictionary<string, string>();
+
+        /// <summary>
+        /// Custom query strings for upload request.
+        /// </summary>
+        [Parameter] public IReadOnlyDictionary<string, string> UploadRequestQueryStrings { get; set; } = new Dictionary<string, string>();
 
         /// <summary>
         /// General upload status.
@@ -189,7 +201,9 @@ namespace Bit.Client.Web.BlazorUI
 
             dotnetObjectReference = DotNetObjectReference.Create(this);
 
-            Files = await JSRuntime.InitUploader(inputFileElement, dotnetObjectReference, UploadUrl, UploadRequestHttpHeaders);
+            var url = AddQueryString(UploadUrl, UploadRequestQueryStrings);
+
+            Files = await JSRuntime.InitUploader(inputFileElement, dotnetObjectReference, url, UploadRequestHttpHeaders);
 
             if (Files is not null)
             {
@@ -529,12 +543,16 @@ namespace Bit.Client.Web.BlazorUI
         {
             if (Files is null || RemoveUrl.HasNoValue() || HttpClient is null) return;
 
-            var url = $"{RemoveUrl}?fileName={Files[index].Name}";
+            var url = AddQueryString(RemoveUrl!, "fileName", Files[index].Name);
+            url = AddQueryString(url, RemoveRequestQueryStrings);
+
             using var request = new HttpRequestMessage(HttpMethod.Delete, url);
+
             foreach (var header in RemoveRequestHttpHeaders)
             {
                 request.Headers.Add(header.Key, header.Value);
             }
+
             await HttpClient.SendAsync(request);
         }
 
@@ -604,6 +622,46 @@ namespace Bit.Client.Web.BlazorUI
             }
 
             return uploadedSize.Humanize();
+        }
+
+        private static string AddQueryString(string uri, string name, string value)
+        {
+            return AddQueryString(uri, new Dictionary<string, string> { { name, value } });
+        }
+
+        private static string AddQueryString(string uri, IReadOnlyDictionary<string, string> queryStrings)
+        {
+            // this method is copied from:
+            // https://github.com/aspnet/HttpAbstractions/blob/master/src/Microsoft.AspNetCore.WebUtilities/QueryHelpers.cs
+
+            var anchorIndex = uri.IndexOf('#', StringComparison.InvariantCultureIgnoreCase);
+            var uriToBeAppended = uri;
+            var anchorText = "";
+
+            // If there is an anchor, then the query string must be inserted before its first occurence.
+            if (anchorIndex != -1)
+            {
+                anchorText = uri[anchorIndex..];
+                uriToBeAppended = uri[..anchorIndex];
+            }
+
+            var queryIndex = uriToBeAppended.IndexOf('?', StringComparison.InvariantCultureIgnoreCase);
+            var hasQuery = queryIndex != -1;
+
+            var sb = new StringBuilder();
+            sb.Append(uriToBeAppended);
+
+            foreach (var parameter in queryStrings)
+            {
+                sb.Append(hasQuery ? '&' : '?');
+                sb.Append(UrlEncoder.Default.Encode(parameter.Key));
+                sb.Append('=');
+                sb.Append(UrlEncoder.Default.Encode(parameter.Value));
+                hasQuery = true;
+            }
+
+            sb.Append(anchorText);
+            return sb.ToString();
         }
 
         public void Dispose()

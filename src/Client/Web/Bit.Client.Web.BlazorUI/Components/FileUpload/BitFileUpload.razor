@@ -20,15 +20,15 @@
             </label>
         }
 
-        <input @ref="@inputFileElement"
+        <input @ref="inputFileElement"
                class="file-input"
                id="@InputId"
                type="file"
                disabled="@(IsEnabled is false)"
                aria-labelledby="@(Label.HasValue() ? Label : null)"
                multiple="@IsMultiSelect"
-               accept="@(string.Join(",",AllowedExtensions))"
-               @onchange="@(HandleOnChange)" />
+               accept="@(string.Join(",", AllowedExtensions))"
+               @onchange="HandleOnChange" />
     </div>
 
     @if (Files is not null)
@@ -66,27 +66,27 @@
                         </div>
                         @if (file.Status is BitFileUploadStatus.Pending or BitFileUploadStatus.Paused)
                         {
-                            <div class="upload-status-icon" @onclick="@(() =>Upload(index))">
+                            <div class="upload-status-icon" @onclick="() => Upload(index)">
                                 <i title="upload" class="bit-icon bit-icon--Play" aria-hidden="true"></i>
                             </div>
                         }
 
                         @if (file.Status == BitFileUploadStatus.InProgress)
                         {
-                            <div class="upload-status-icon" @onclick="@(() =>RequestToPause(index))">
+                            <div class="upload-status-icon" @onclick="() => RequestToPause(index)">
                                 <i title="pause" class="bit-icon bit-icon--Pause" aria-hidden="true"></i>
                             </div>
                         }
 
                         @if (file.Status is BitFileUploadStatus.InProgress or BitFileUploadStatus.Paused)
                         {
-                            <div class="upload-status-icon" @onclick="@(() =>RequestToCancel(index))">
+                            <div class="upload-status-icon" @onclick="() => RequestToCancel(index)">
                                 <i title="cancel" class="bit-icon bit-icon--Cancel" aria-hidden="true"></i>
                             </div>
                         }
-                        else if(ShowRemoveButton)
+                        else if (ShowRemoveButton)
                         {
-                            <div class="upload-status-icon" @onclick="@(() =>RemoveFile(index))">
+                            <div class="upload-status-icon" @onclick="() => RemoveFile(index)">
                                 <i title="remove" class="bit-icon bit-icon--Delete" aria-hidden="true"></i>
                             </div>
                         }
