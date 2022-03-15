@@ -1,6 +1,6 @@
 ﻿@import "../../Styles/Fluent/colors.fluent.scss", "../../Styles/functions.scss";
 
-.bit-cho-fluent {
+.bit-rbo-fluent {
     position: relative;
     display: flex;
     align-items: center;
@@ -15,7 +15,7 @@
     -webkit-font-smoothing: antialiased;
 }
 
-.bit-cho-input {
+.bit-rbo-input {
     position: absolute;
     top: 0;
     right: 0;
@@ -25,7 +25,7 @@
     opacity: 0;
 }
 
-.bit-cho-lbl {
+.bit-rbo-lbl {
     position: relative;
     display: inline-block;
     min-height: rem(20px);
@@ -61,13 +61,13 @@
         transition: border-width 0.2s cubic-bezier(0.4, 0, 0.23, 1);
     }
 
-    .bit-cho-txt {
+    .bit-rbo-txt {
         display: inline-block;
         padding-left: rem(26px);
     }
 
     &:hover {
-        .bit-cho-txt {
+        .bit-rbo-txt {
             color: $Grey190;
         }
 
@@ -86,7 +86,7 @@
     }
 }
 
-.bit-cho-with-img-fluent {
+.bit-rbo-with-img-fluent {
     display: inline-flex;
     height: 100%;
     margin: 0 rem(4px) rem(4px) 0;
@@ -95,7 +95,7 @@
     background-color: $Grey20;
 }
 
-.bit-cho-lbl-with-img {
+.bit-rbo-lbl-with-img {
     position: relative;
     display: flex;
     justify-content: center;
@@ -151,7 +151,7 @@
     }
 }
 
-.bit-cho-txt-wrapper {
+.bit-rbo-txt-wrapper {
     position: relative;
     display: block;
     max-width: rem(64px);
@@ -165,13 +165,13 @@
     -webkit-font-smoothing: antialiased;
     overflow: hidden;
 
-    .bit-cho-txt {
+    .bit-rbo-txt {
         display: inline-block;
         padding-left: 0;
     }
 }
 
-.bit-cho-img-inner-field {
+.bit-rbo-img-inner-field {
     position: relative;
     display: inline-block;
     height: rem(32px);
@@ -179,12 +179,12 @@
     padding: 0 rem(30px);
 }
 
-.bit-cho-img-wrapper {
+.bit-rbo-img-wrapper {
     padding-bottom: rem(2px);
     transition: opacity 0.2s ease;
 }
 
-.bit-cho-img {
+.bit-rbo-img {
     display: inline-block;
     border-style: none;
 
@@ -196,13 +196,13 @@
     }
 }
 
-.bit-cho-icon-inner-field {
+.bit-rbo-icon-inner-field {
     position: relative;
     display: inline-block;
     padding: 0 rem(30px);
 }
 
-.bit-cho-icon-wrapper {
+.bit-rbo-icon-wrapper {
     height: rem(32px);
     font-size: rem(32px);
     line-height: rem(32px);
@@ -214,8 +214,8 @@
     }
 }
 
-.bit-cho-checked-fluent {
-    .bit-cho-lbl {
+.bit-rbo-checked-fluent {
+    .bit-rbo-lbl {
         border-color: $Primary;
 
         &:before {
@@ -243,7 +243,7 @@
         }
     }
 
-    .bit-cho-lbl-with-img {
+    .bit-rbo-lbl-with-img {
         border-color: $Primary;
 
         &:before {
@@ -277,8 +277,8 @@
     }
 }
 
-.bit-cho-disabled-fluent {
-    .bit-cho-lbl {
+.bit-rbo-disabled-fluent {
+    .bit-rbo-lbl {
         cursor: default;
         pointer-events: none;
         color: $Grey90;
@@ -291,12 +291,12 @@
             border-color: $Grey60;
         }
 
-        .bit-cho-txt {
+        .bit-rbo-txt {
             color: $Grey90;
         }
 
         &:hover {
-            .bit-cho-txt {
+            .bit-rbo-txt {
                 color: $Grey90;
             }
 
@@ -306,7 +306,7 @@
         }
     }
 
-    .bit-cho-lbl-with-img {
+    .bit-rbo-lbl-with-img {
         color: $Grey90;
         cursor: default;
 
@@ -324,7 +324,7 @@
         }
     }
 
-    .bit-cho-icon-wrapper {
+    .bit-rbo-icon-wrapper {
         color: $Grey90;
 
         i {

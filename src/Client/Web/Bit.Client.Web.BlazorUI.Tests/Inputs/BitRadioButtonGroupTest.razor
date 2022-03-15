@@ -1,46 +1,46 @@
 ﻿<CascadingValue Value="Visual">
-    <BitChoiceGroup Name="@ChoiceGroupName"
-                    IsEnabled="@ChoiceGroupIsEnabled"
+    <BitRadioButtonGroup Name="@RadioButtonGroupName"
+                    IsEnabled="@RadioButtonGroupIsEnabled"
                     OnValueChange="HandleValueChange"
                     IsRequired="IsRequired"
                     Label="@Label">
-        <BitChoiceOption Value="@Value"
-                         IsEnabled="@ChoiceOptionIsEnabled"
+        <BitRadioButtonOption Value="@Value"
+                         IsEnabled="@RadioButtonOptionIsEnabled"
                          Text="@Text"
-                         Name="@ChoiceOptionName"
+                         Name="@RadioButtonOptionName"
                          IsChecked="IsChecked"
                          OnClick="HandleClick"
                          OnChange="HandleChange">
-        </BitChoiceOption>
-        <BitChoiceOption Value="option2"
-                         IsEnabled="@ChoiceOptionIsEnabled">
-        </BitChoiceOption>
-        <BitChoiceOption Value="@Value"
-                         IsEnabled="@ChoiceOptionIsEnabled"
+        </BitRadioButtonOption>
+        <BitRadioButtonOption Value="option2"
+                         IsEnabled="@RadioButtonOptionIsEnabled">
+        </BitRadioButtonOption>
+        <BitRadioButtonOption Value="@Value"
+                         IsEnabled="@RadioButtonOptionIsEnabled"
                          Text="@Text"
                          ImageSrc="@ImageSrc"
                          ImageAlt="@ImageAlt"
                          SelectedImageSrc="@SelectedImageSrc"
                          ImageSize="ImageSize">
-        </BitChoiceOption>
-        <BitChoiceOption Value="@Value"
-                         IsEnabled="@ChoiceOptionIsEnabled"
+        </BitRadioButtonOption>
+        <BitRadioButtonOption Value="@Value"
+                         IsEnabled="@RadioButtonOptionIsEnabled"
                          Text="@Text"
                          IconName="@IconName">
-        </BitChoiceOption>
-    </BitChoiceGroup>
+        </BitRadioButtonOption>
+    </BitRadioButtonGroup>
 </CascadingValue>
 @code {
     [Parameter] public Visual Visual { get; set; }
-    [Parameter] public bool ChoiceGroupIsEnabled { get; set; } = true;
-    [Parameter] public string ChoiceGroupName { get; set; }
+    [Parameter] public bool RadioButtonGroupIsEnabled { get; set; } = true;
+    [Parameter] public string RadioButtonGroupName { get; set; }
     [Parameter] public bool IsRequired { get; set; }
     [Parameter] public string Label { get; set; }
 
-    [Parameter] public bool ChoiceOptionIsEnabled { get; set; } = true;
+    [Parameter] public bool RadioButtonOptionIsEnabled { get; set; } = true;
     [Parameter] public string Value { get; set; }
     [Parameter] public string Text { get; set; }
-    [Parameter] public string ChoiceOptionName { get; set; }
+    [Parameter] public string RadioButtonOptionName { get; set; }
     [Parameter] public bool IsChecked { get; set; }
 
     [Parameter] public string ImageSrc { get; set; }
@@ -49,21 +49,21 @@
     [Parameter] public System.Drawing.Size? ImageSize { get; set; }
     [Parameter] public BitIconName? IconName { get; set; }
 
-    public int ChoiceOptionClickedValue { get; set; }
-    public int ChoiceOptionChangedValue { get; set; }
-    public string ChoiceGroupChangedValue { get; set; } = "";
+    public int RadioButtonOptionClickedValue { get; set; }
+    public int RadioButtonOptionChangedValue { get; set; }
+    public string RadioButtonGroupChangedValue { get; set; } = "";
 
     public void HandleClick(MouseEventArgs e)
     {
-        ChoiceOptionClickedValue++;
+        RadioButtonOptionClickedValue++;
     }
     public void HandleValueChange(string value)
     {
-        ChoiceGroupChangedValue = value;
+        RadioButtonGroupChangedValue = value;
     }
     public void HandleChange(bool isChecked)
     {
-        ChoiceOptionChangedValue++;
+        RadioButtonOptionChangedValue++;
         //Count2++;
     }
 }

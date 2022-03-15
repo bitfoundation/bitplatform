@@ -1,6 +1,6 @@
 ﻿@import "../../Styles/Fluent/colors.fluent.scss", "../../Styles/functions.scss";
 
-.bit-chg-fluent {
+.bit-rbg-fluent {
     display: block;
     font-size: rem(14px);
     font-weight: 400;
@@ -8,7 +8,7 @@
     -webkit-font-smoothing: antialiased;
 }
 
-.bit-chg-label-fluent {
+.bit-rbg-label-fluent {
     display: block;
     margin: 0;
     padding: rem(5px) 0;
@@ -21,8 +21,8 @@
     -webkit-font-smoothing: antialiased;
 }
 
-.bit-chg-required-fluent {
-    .bit-chg-label-fluent {
+.bit-rbg-required-fluent {
+    .bit-rbg-label-fluent {
         &::after {
             content: " *";
             padding-right: rem(12px);
