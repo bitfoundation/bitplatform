@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using Bit.Client.Web.BlazorUI.Playground.Web.Models;
 using Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 
@@ -8,8 +9,17 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.SearchBox
     {
         private string TextValue;
 
+        ValidationSearchBoxModel validationSearchBoxModel = new();
+
         private readonly List<ComponentParameter> componentParameters = new()
         {
+            new ComponentParameter()
+            {
+                Name = "Autocomplete",
+                Type = "string",
+                DefaultValue = "",
+                Description = "Specifies the value of the autocomplete attribute of the input component.",
+            },
             new ComponentParameter()
             {
                 Name = "DefaultValue",
@@ -155,5 +165,29 @@ private string TextValue;";
         private readonly string example4HTMLCode = @"<BitSearchBox Placeholder=""Search"" Width=""250px""></BitSearchBox>";
 
         private readonly string example5HTMLCode = @"<BitSearchBox Placeholder=""Search"" IsEnabled=""false""></BitSearchBox>";
+
+        private readonly string example6HTMLCode = @"<EditForm Model=""validationSearchBoxModel"">
+     <DataAnnotationsValidator/>
+     <BitSearchBox DefaultValue = ""This is default value"" @bind-Value=""validationSearchBoxModel.text""/>
+     <ValidationMessage For = ""()=>validationSearchBoxModel.Text"" ></ ValidationMessage >
+</EditForm> ";
+
+        private readonly string example6CSharpCode = @"
+ValidationSearchBoxModel validationSearchBoxModel = new();
+
+public class ValidationSearchBoxModel
+{
+    [RegularExpression("" ^.{2,6}$"",
+    ErrorMessage = ""The field  must be between 2 and 6."")]
+    public string Text { get; set; }
+}
+";
+    }
+
+    public class ValidationSearchBoxModel
+    {
+        [RegularExpression("^.{2,6}$",
+        ErrorMessage = "The field  must be between 2 and 6.")]
+        public string Text { get; set; }
     }
 }
