@@ -5,7 +5,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Bit.Client.Web.BlazorUI.Tests.Inputs
 {
     [TestClass]
-    public class BitChoiceGroupTests : BunitTestContext
+    public class BitRadioButtonGroupTests : BunitTestContext
     {
         [DataTestMethod,
           DataRow(Visual.Fluent, true, true),
@@ -24,77 +24,77 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
           DataRow(Visual.Material, false, false)
 
       ]
-        public void BitChoiceGroupShouldTakeCorrectVisual(Visual visual, bool groupIsEnabled, bool optionIsEnabled)
+        public void BitRadioButtonGroupShouldTakeCorrectVisual(Visual visual, bool groupIsEnabled, bool optionIsEnabled)
         {
-            var component = RenderComponent<BitChoiceGroupTest>(
+            var component = RenderComponent<BitRadioButtonGroupTest>(
                 parameters =>
                 {
                     parameters.Add(p => p.Visual, visual);
-                    parameters.Add(p => p.ChoiceGroupIsEnabled, groupIsEnabled);
-                    parameters.Add(p => p.ChoiceOptionIsEnabled, optionIsEnabled);
+                    parameters.Add(p => p.RadioButtonGroupIsEnabled, groupIsEnabled);
+                    parameters.Add(p => p.RadioButtonOptionIsEnabled, optionIsEnabled);
                 });
 
-            var bitChoiceGroup = component.Find(".bit-chg");
-            var bitChoiceOption = component.Find(".bit-cho");
+            var bitRadioButtonGroup = component.Find(".bit-rbg");
+            var bitRadioButtonOption = component.Find(".bit-rbo");
 
             var groupIsEnabledClass = groupIsEnabled ? "enabled" : "disabled";
             var optionIsEnabledClass = (optionIsEnabled && groupIsEnabled) ? "enabled" : "disabled";
 
             var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
 
-            Assert.IsTrue(bitChoiceGroup.ClassList.Contains($"bit-chg-{groupIsEnabledClass}-{visualClass}"));
+            Assert.IsTrue(bitRadioButtonGroup.ClassList.Contains($"bit-rbg-{groupIsEnabledClass}-{visualClass}"));
 
             //TODO: bypassed - BUnit two-way bind issue
-            //Assert.IsTrue(bitChoiceOption.ClassList.Contains($"bit-cho-{optionIsEnabledClass}-{visualClass}"));
+            //Assert.IsTrue(bitRadioButtonOption.ClassList.Contains($"bit-rbo-{optionIsEnabledClass}-{visualClass}"));
         }
 
         [DataTestMethod, DataRow("groupName", "optionName")]
-        public void BitChoiceGroupShouldGiveNameToChoiceOptions(string groupName, string optionName)
+        public void BitRadioButtonGroupShouldGiveNameToRadioButtonOptions(string groupName, string optionName)
         {
-            var component = RenderComponent<BitChoiceGroupTest>(
+            var component = RenderComponent<BitRadioButtonGroupTest>(
                 parameters =>
                 {
-                    parameters.Add(p => p.ChoiceGroupName, groupName);
-                    parameters.Add(p => p.ChoiceOptionName, optionName);
+                    parameters.Add(p => p.RadioButtonGroupName, groupName);
+                    parameters.Add(p => p.RadioButtonOptionName, optionName);
                 });
 
-            var bitChoiceOptionInput = component.Find(".bit-cho-input");
+            var bitRadioButtonOptionInput = component.Find(".bit-rbo-input");
 
-            Assert.IsTrue(bitChoiceOptionInput.HasAttribute("name"));
-            Assert.AreEqual(optionName, bitChoiceOptionInput.GetAttribute("name"));
+            Assert.IsTrue(bitRadioButtonOptionInput.HasAttribute("name"));
+            Assert.AreEqual(optionName, bitRadioButtonOptionInput.GetAttribute("name"));
         }
 
 
         [DataTestMethod, DataRow("this is label")]
-        public void BitChoiceGroupShouldTakeLabel(string label)
+        public void BitRadioButtonGroupShouldTakeLabel(string label)
         {
-            var component = RenderComponent<BitChoiceGroupTest>(
+            var component = RenderComponent<BitRadioButtonGroupTest>(
                 parameters =>
                 {
                     parameters.Add(p => p.Label, label);
                 });
 
-            var bitChoiceGroupLabel = component.Find(".bit-chg-label-fluent");
+            var bitRadioButtonGroupLabel = component.Find(".bit-rbg-label-fluent");
 
-            Assert.AreEqual(label, bitChoiceGroupLabel.TextContent);
+            Assert.AreEqual(label, bitRadioButtonGroupLabel.TextContent);
         }
 
         [DataTestMethod,
             DataRow(true),
             DataRow(false)
         ]
-        public void BitChoiceGroupShouldRespectIsRequired(bool isRequired)
+        public void BitRadioButtonGroupShouldRespectIsRequired(bool isRequired)
         {
-            var component = RenderComponent<BitChoiceGroupTest>(
+            var component = RenderComponent<BitRadioButtonGroupTest>(
                 parameters =>
                 {
                     parameters.Add(p => p.IsRequired, isRequired);
                 });
 
-            var bitChoiceGroup = component.Find(".bit-chg");
-            var input = component.Find(".bit-cho-input");
+            var bitRadioButtonGroup = component.Find(".bit-rbg");
+            var input = component.Find(".bit-rbo-input");
 
-            Assert.AreEqual(isRequired, bitChoiceGroup.ClassList.Contains("bit-chg-required-fluent"));
+            Assert.AreEqual(isRequired, bitRadioButtonGroup.ClassList.Contains("bit-rbg-required-fluent"));
 
             Assert.AreEqual(isRequired, input.HasAttribute("required"));
         }
@@ -103,59 +103,59 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
            DataRow(true, "value1"),
            DataRow(false, "value2")
         ]
-        public void BitChoiceOptionMustRespondToTheClickAndChangeValueEvent(bool isEnabled, string value)
+        public void BitRadioButtonOptionMustRespondToTheClickAndChangeValueEvent(bool isEnabled, string value)
         {
-            var component = RenderComponent<BitChoiceGroupTest>(
+            var component = RenderComponent<BitRadioButtonGroupTest>(
                 parameters =>
                 {
                     parameters.Add(p => p.Value, value);
-                    parameters.Add(p => p.ChoiceGroupIsEnabled, isEnabled);
+                    parameters.Add(p => p.RadioButtonGroupIsEnabled, isEnabled);
                 });
 
-            var input = component.Find(".bit-cho-input");
+            var input = component.Find(".bit-rbo-input");
 
             input.Click();
 
             //TODO: bypassed - BUnit onchange event issue
-            //Assert.AreEqual(isEnabled ? 1 : 0, component.Instance.ChoiceOptionClickedValue);
-            //Assert.AreEqual(isEnabled ? value : "", component.Instance.ChoiceGroupChangedValue);
+            //Assert.AreEqual(isEnabled ? 1 : 0, component.Instance.RadioButtonOptionClickedValue);
+            //Assert.AreEqual(isEnabled ? value : "", component.Instance.RadioButtonGroupChangedValue);
         }
 
         [DataTestMethod, DataRow("test value")]
-        public void BitChoiceOptionShouldTakeCorrectValue(string value)
+        public void BitRadioButtonOptionShouldTakeCorrectValue(string value)
         {
-            var component = RenderComponent<BitChoiceGroupTest>(
+            var component = RenderComponent<BitRadioButtonGroupTest>(
                 parameters =>
                 {
                     parameters.Add(p => p.Value, value);
                 });
 
-            var input = component.Find(".bit-cho-input");
+            var input = component.Find(".bit-rbo-input");
 
             Assert.IsTrue(input.HasAttribute("value"));
             Assert.AreEqual(value, input.GetAttribute("value"));
         }
 
         [DataTestMethod, DataRow("hello world")]
-        public void BitChoiceOptionShouldUseTextInLabel(string text)
+        public void BitRadioButtonOptionShouldUseTextInLabel(string text)
         {
-            var component = RenderComponent<BitChoiceGroupTest>(
+            var component = RenderComponent<BitRadioButtonGroupTest>(
                 parameters =>
                 {
                     parameters.Add(p => p.Text, text);
                 });
 
-            var bitChoiceOptionLabelText = component.Find(".bit-cho-txt");
+            var bitRadioButtonOptionLabelText = component.Find(".bit-rbo-txt");
 
-            Assert.AreEqual(text, bitChoiceOptionLabelText.TextContent);
+            Assert.AreEqual(text, bitRadioButtonOptionLabelText.TextContent);
         }
 
         [DataTestMethod,
            DataRow("https://picsum.photos/100", "this is alt", 50, 50, "this is label")
         ]
-        public void BitChoiceOptionShouldRespectImage(string imageSrc, string imageAlt, int width, int height, string label)
+        public void BitRadioButtonOptionShouldRespectImage(string imageSrc, string imageAlt, int width, int height, string label)
         {
-            var component = RenderComponent<BitChoiceGroupTest>(
+            var component = RenderComponent<BitRadioButtonGroupTest>(
                 parameters =>
                 {
                     parameters.Add(p => p.Text, label);
@@ -164,30 +164,30 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                     parameters.Add(p => p.ImageSize, new Size(width, height));
                 });
 
-            var image = component.Find(".bit-cho-img img");
+            var image = component.Find(".bit-rbo-img img");
             Assert.IsTrue(image.HasAttribute("src"));
             Assert.AreEqual(imageSrc, image.GetAttribute("src"));
             Assert.IsTrue(image.HasAttribute("alt"));
             Assert.AreEqual(imageAlt, image.GetAttribute("alt"));
 
-            var imageContainer = component.Find(".bit-cho-img");
+            var imageContainer = component.Find(".bit-rbo-img");
             Assert.IsTrue(imageContainer.HasAttribute("style"));
             Assert.AreEqual($" width:{width}px; height:{height}px;", imageContainer.GetAttribute("style"));
 
-            var optionLabel = component.Find(".bit-cho-txt");
+            var optionLabel = component.Find(".bit-rbo-txt");
             Assert.AreEqual(label, optionLabel.TextContent);
         }
 
         [DataTestMethod, DataRow(BitIconName.Emoji2)]
-        public void BitChoiceOptionShouldrespectIcon(BitIconName iconName)
+        public void BitRadioButtonOptionShouldrespectIcon(BitIconName iconName)
         {
-            var component = RenderComponent<BitChoiceGroupTest>(
+            var component = RenderComponent<BitRadioButtonGroupTest>(
                 parameters =>
                 {
                     parameters.Add(p => p.IconName, iconName);
                 });
 
-            var icon = component.Find(".bit-cho-icon-wrapper i");
+            var icon = component.Find(".bit-rbo-icon-wrapper i");
             Assert.IsTrue(icon.ClassList.Contains($"bit-icon--{iconName.GetName()}"));
         }
 
@@ -195,15 +195,15 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
           DataRow(true),
           DataRow(false)
         ]
-        public void BitChoiceOptionShouldAcceptGivenCheckStatus(bool isChecked)
+        public void BitRadioButtonOptionShouldAcceptGivenCheckStatus(bool isChecked)
         {
-            var component = RenderComponent<BitChoiceGroupTest>(
+            var component = RenderComponent<BitRadioButtonGroupTest>(
                 parameters =>
                 {
                     parameters.Add(p => p.IsChecked, isChecked);
                 });
 
-            var input = component.Find(".bit-cho-input");
+            var input = component.Find(".bit-rbo-input");
            
             // TODO: bypassed - BUnit two-way binding issue
             //Assert.AreEqual(isChecked, input.HasAttribute("checked"));
@@ -216,16 +216,16 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
            DataRow(false, true),
            DataRow(false, false),
         ]
-        public void BitChoiceOptionMustRespondToTheClickEvent(bool groupIsEnabled, bool optionIsEnabled)
+        public void BitRadioButtonOptionMustRespondToTheClickEvent(bool groupIsEnabled, bool optionIsEnabled)
         {
-            var component = RenderComponent<BitChoiceGroupTest>(
+            var component = RenderComponent<BitRadioButtonGroupTest>(
                 parameters =>
                 {
-                    parameters.Add(p => p.ChoiceGroupIsEnabled, groupIsEnabled);
-                    parameters.Add(p => p.ChoiceOptionIsEnabled, optionIsEnabled);
+                    parameters.Add(p => p.RadioButtonGroupIsEnabled, groupIsEnabled);
+                    parameters.Add(p => p.RadioButtonOptionIsEnabled, optionIsEnabled);
                 });
 
-            var input1 = component.Find(".bit-cho:nth-child(1) input");
+            var input1 = component.Find(".bit-rbo:nth-child(1) input");
             input1.Click();
 
             if (groupIsEnabled && optionIsEnabled)
@@ -234,7 +234,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                 //Assert.IsTrue(input1.HasAttribute("checked"));
             }
 
-            var input2 = component.Find($".bit-cho:nth-child(2) input");
+            var input2 = component.Find($".bit-rbo:nth-child(2) input");
             input2.Click();
 
             if (groupIsEnabled && optionIsEnabled)
@@ -244,7 +244,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
             }
 
             //TODO: bypassed - BUnit onchange event issue
-            //Assert.AreEqual(groupIsEnabled && optionIsEnabled ? 1 : 0, component.Instance.ChoiceOptionClickedValue);
+            //Assert.AreEqual(groupIsEnabled && optionIsEnabled ? 1 : 0, component.Instance.RadioButtonOptionClickedValue);
         }
 
         [DataTestMethod,
@@ -253,16 +253,16 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
            DataRow(false, true, 2),
            DataRow(false, false, 2),
        ]
-        public void BitChoiceOptionMustRespondToTheChangeEvent(bool groupIsEnabled, bool optionIsEnabled, int count)
+        public void BitRadioButtonOptionMustRespondToTheChangeEvent(bool groupIsEnabled, bool optionIsEnabled, int count)
         {
-            var component = RenderComponent<BitChoiceGroupTest>(
+            var component = RenderComponent<BitRadioButtonGroupTest>(
                 parameters =>
                 {
-                    parameters.Add(p => p.ChoiceGroupIsEnabled, groupIsEnabled);
-                    parameters.Add(p => p.ChoiceOptionIsEnabled, optionIsEnabled);
+                    parameters.Add(p => p.RadioButtonGroupIsEnabled, groupIsEnabled);
+                    parameters.Add(p => p.RadioButtonOptionIsEnabled, optionIsEnabled);
                 });
 
-            var input = component.Find(".bit-cho-input");
+            var input = component.Find(".bit-rbo-input");
 
             input.Click();
 
@@ -274,7 +274,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
 
             //TODO: bypassed - BUnit onchange event issue
             //Assert.AreEqual(groupIsEnabled && optionIsEnabled ? count.ToString() : null, component.Instance.Value);
-            //Assert.AreEqual(groupIsEnabled && optionIsEnabled ? 1 : 0, component.Instance.ChoiceOptionChangedValue);
+            //Assert.AreEqual(groupIsEnabled && optionIsEnabled ? 1 : 0, component.Instance.RadioButtonOptionChangedValue);
         }
     }
 }
