@@ -13,9 +13,9 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Toggle
         private bool BindedIsToggleUnChecked;
 
         private string SuccessMessage = string.Empty;
-        public Form ValidationForm { get; set; }
+        public FormModel ValidationForm { get; set; }
 
-        public class Form
+        public class FormModel
         {
             [Range(typeof(bool), "true", "true", ErrorMessage = "You must agree to the terms and conditions.")]
             public bool TermsAgreement { get; set; }
@@ -23,7 +23,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Toggle
 
         protected override void OnInitialized()
         {
-            ValidationForm = new Form();
+            ValidationForm = new FormModel();
         }
 
         private async void HandleValidSubmit()
@@ -205,9 +205,9 @@ private bool IsToggleUnChecked = false;";
 
         private readonly string example3CSharpCode = @"
 private string SuccessMessage = string.Empty;
-public Form ValidationForm { get; set; }
+public FormModel ValidationForm { get; set; }
 
-public class Form
+public class FormModel
 {
     [Range(typeof(bool), ""true"", ""true"", ErrorMessage = ""You must agree to the terms and conditions."")]
     public bool TermsAgreement { get; set; }
@@ -215,7 +215,7 @@ public class Form
 
 protected override void OnInitialized()
 {
-    ValidationForm = new Form();
+    ValidationForm = new FormModel();
 }
 
 private async void HandleValidSubmit()
@@ -241,12 +241,12 @@ private void HandleInvalidSubmit()
         </div>
 
         <div>
-            <BitToggle @bind-Value=""ValidationForm.TermsAgreement"" IsEnabled=""true"" DefaultText=""I agree with the terms and conditions."" />
+            <BitToggle @bind-Value=""ValidationForm.TermsAgreement"" DefaultText=""I agree with the terms and conditions."" />
 
             <ValidationMessage For=""@(() => ValidationForm.TermsAgreement)"" />
         </div>
 
-        <BitButton ButtonType=""BitButtonType.Submit"" IsEnabled=""true"">
+        <BitButton ButtonType=""BitButtonType.Submit"">
             Submit
         </BitButton>
     </EditForm>

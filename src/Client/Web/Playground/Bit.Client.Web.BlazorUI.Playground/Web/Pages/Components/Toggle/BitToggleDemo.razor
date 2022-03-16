@@ -71,12 +71,12 @@
                         </div>
 
                         <div>
-                            <BitToggle @bind-Value="ValidationForm.TermsAgreement" IsEnabled="true" DefaultText="I agree with the terms and conditions." />
+                            <BitToggle @bind-Value="ValidationForm.TermsAgreement" DefaultText="I agree with the terms and conditions." />
 
                             <ValidationMessage For="@(() => ValidationForm.TermsAgreement)" />
                         </div>
 
-                        <BitButton ButtonType="BitButtonType.Submit" IsEnabled="true">
+                        <BitButton ButtonType="BitButtonType.Submit">
                             Submit
                         </BitButton>
                     </EditForm>
