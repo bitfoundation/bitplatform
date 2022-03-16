@@ -98,7 +98,6 @@ namespace Bit.Client.Web.BlazorUI
         {
             if (RadioButtonGroup is not null)
             {
-                RadioButtonGroup.RegisterOption(this);
                 if (Name.HasNoValue())
                 {
                     Name = RadioButtonGroup.Name;
@@ -116,6 +115,11 @@ namespace Bit.Client.Web.BlazorUI
             if (ImageSize is not null)
             {
                 imageSizeStyle = $" width:{ImageSize.Value.Width}px; height:{ImageSize.Value.Height}px;";
+            }
+
+            if (RadioButtonGroup is not null)
+            {
+                RadioButtonGroup.RegisterOption(this);
             }
 
             return base.OnParametersSetAsync();

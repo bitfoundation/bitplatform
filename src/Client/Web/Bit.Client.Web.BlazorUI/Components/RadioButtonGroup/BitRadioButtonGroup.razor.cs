@@ -120,10 +120,7 @@ namespace Bit.Client.Web.BlazorUI
 
         internal void RegisterOption(BitRadioButtonOption option)
         {
-            if (IsEnabled is false)
-            {
-                option.IsEnabled = false;
-            }
+            option.IsEnabled = IsEnabled is true;
 
             if (IsRequired)
             {
