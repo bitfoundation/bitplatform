@@ -5,7 +5,7 @@
 }
 
 .validation-summary {
-    border-left: 5px solid $Red10;
+    border-left: rem(5px) solid $Red10;
     background-color: $ErrorBlockRed;
     overflow: hidden;
 
