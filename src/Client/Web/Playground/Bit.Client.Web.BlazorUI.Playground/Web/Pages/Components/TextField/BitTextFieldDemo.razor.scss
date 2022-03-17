@@ -3,3 +3,13 @@
 .m-t-15 {
     margin-top: rem(15px);
 }
+
+.form-item {
+    line-height: 0;
+    margin-bottom: rem(15px);
+}
+
+::deep div.validation-message {
+    color: $Red20;
+    font-size: rem(12px);
+}
