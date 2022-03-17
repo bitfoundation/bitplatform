@@ -4,8 +4,12 @@ namespace TodoTemplate.App.Pages;
 
 public partial class EmailConfirmation
 {
-    private string? email;
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string? Email { get; set; }
 
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "email-confirmed")]
     public bool EmailConfirmed { get; set; }
 
     public bool IsResendButtonEnabled { get; set; }
@@ -18,50 +22,20 @@ public partial class EmailConfirmation
 
     [Inject] public NavigationManager NavigationManager { get; set; } = default!;
 
-    protected override void OnInitialized()
-    {
-        base.OnInitialized();
-
-        var uri = new Uri(NavigationManager.Uri);
-        var queryParam = HttpUtility.ParseQueryString(uri.Query);
-        email = queryParam["email"];
-    }
-
     protected override async Task OnInitAsync()
     {
-        await CheckConfirmation();
-
         await base.OnInitAsync();
-    }
-    
-    private async Task CheckConfirmation()
-    {
-        try
+
+        if (EmailConfirmed)
         {
-            var response = await HttpClient.PostAsJsonAsync("Auth/EmailConfirmed", new()
-            {
-                Email = email
-            }, ToDoTemplateJsonContext.Default.EmailConfirmedRequestDto);
-
-            EmailConfirmed = Convert.ToBoolean(response.Content.ReadAsStringAsync().Result);
-
-            if (EmailConfirmed)
-            {
-                EmailConfirmationMessageType = BitMessageBarType.Success;
-                EmailConfirmationMessage = "Congratulation! Your email is confirmed.";
-            }
-            else
-            {
-                EmailConfirmationMessageType = BitMessageBarType.Warning;
-                EmailConfirmationMessage = "Oops! Unfortunately, your email was not confirmed.";
-                IsResendButtonEnabled = true;
-            }
+            EmailConfirmationMessageType = BitMessageBarType.Success;
+            EmailConfirmationMessage = "Congratulation! Your email is confirmed.";
         }
-        catch (KnownException e)
+        else
         {
-            EmailConfirmationMessageType = BitMessageBarType.Error;
-
-            EmailConfirmationMessage = ErrorStrings.ResourceManager.Translate(e.Message);
+            EmailConfirmationMessageType = BitMessageBarType.Warning;
+            EmailConfirmationMessage = "Oops! Unfortunately, your email was not confirmed.";
+            IsResendButtonEnabled = true;
         }
     }
 
@@ -85,7 +59,7 @@ public partial class EmailConfirmation
         {
             await HttpClient.PostAsJsonAsync("Auth/SendEmailConfirmLink", new()
             {
-                Email = email
+                Email = Email
             }, ToDoTemplateJsonContext.Default.SendEmailConfirmLinkRequestDto);
 
             EmailConfirmationMessageType = BitMessageBarType.Success;
@@ -96,12 +70,11 @@ public partial class EmailConfirmation
         {
             EmailConfirmationMessageType = BitMessageBarType.Error;
 
-            EmailConfirmationMessage = ErrorStrings.ResourceManager.Translate(e.Message, email!);
-
-            IsResendButtonEnabled = true;
+            EmailConfirmationMessage = ErrorStrings.ResourceManager.Translate(e.Message, Email!);
         }
         finally
         {
+            IsResendButtonEnabled = true;
             IsLoading = false;
         }
     }

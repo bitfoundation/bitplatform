@@ -1,9 +1,8 @@
 ﻿using TodoTemplate.Api.Models.Account;
 using TodoTemplate.Shared.Dtos.Account;
-using Microsoft.AspNetCore.Hosting.Server;
 using FluentEmail.Core;
 using TodoTemplate.Api.Resources;
-using System.Net;
+using TodoTemplate.Api.Models.Emailing;
 
 namespace TodoTemplate.Api.Controllers;
 
@@ -21,11 +20,14 @@ public class AuthController : ControllerBase
 
     private readonly AppSettings _appSettings;
 
+    private readonly IFluentEmail _fluentEmail;
+
     public AuthController(SignInManager<User> signInManager,
         UserManager<User> userManager,
         IJwtService jwtService,
         IMapper mapper,
-        IOptionsSnapshot<AppSettings> setting
+        IOptionsSnapshot<AppSettings> setting,
+        IFluentEmail fluentEmail
         )
     {
         _userManager = userManager;
@@ -33,10 +35,11 @@ public class AuthController : ControllerBase
         _mapper = mapper;
         _signInManager = signInManager;
         _appSettings = setting.Value;
+        _fluentEmail = fluentEmail;
     }
 
     [HttpPost("[action]")]
-    public async Task SignUp(SignUpRequestDto signUpRequest)
+    public async Task SignUp(SignUpRequestDto signUpRequest, CancellationToken cancellationToken)
     {
         var existingUserIfAny = await _userManager.FindByNameAsync(signUpRequest.UserName);
 
@@ -59,11 +62,11 @@ public class AuthController : ControllerBase
         if (!result.Succeeded)
             throw new ResourceValidationException(result.Errors.Select(e => e.Code).ToArray());
 
-        await SendEmailConfirmLink(new() { Email = userToAdd.Email });
+        await SendEmailConfirmLink(new() { Email = userToAdd.Email }, cancellationToken);
     }
 
     [HttpPost("[action]")]
-    public async Task SendEmailConfirmLink(SendEmailConfirmLinkRequestDto sendConfirmLinkEmailRequest)
+    public async Task SendEmailConfirmLink(SendEmailConfirmLinkRequestDto sendConfirmLinkEmailRequest, CancellationToken cancellationToken)
     {
         var user = await _userManager.FindByEmailAsync(sendConfirmLinkEmailRequest.Email);
 
@@ -77,14 +80,17 @@ public class AuthController : ControllerBase
 
         var assembly = typeof(Program).Assembly;
 
-        var result = await Email
-            .From(_appSettings.EmailSettings.FromEmailAddress)
+        var result = await _fluentEmail
             .To(user.Email, user.DisplayName)
             .Subject(EmailStrings.ConfirmationLinkEmailSubject)
             .UsingTemplateFromEmbedded("TodoTemplate.Api.Resources.EmailConfirmation.cshtml",
-                                    new { DisplayName = user.DisplayName, Email = user.Email, ConfirmationLink = confirmationLink },
+                                    new EmailConfirmationModel
+                                    {
+                                        DisplayName = user.DisplayName,
+                                        ConfirmationLink = confirmationLink
+                                    },
                                     assembly)
-            .SendAsync();
+            .SendAsync(cancellationToken);
 
         if (!result.Successful)
             throw new ResourceValidationException(result.ErrorMessages.ToArray());
@@ -99,35 +105,17 @@ public class AuthController : ControllerBase
             throw new BadRequestException(nameof(ErrorStrings.UserNameNotFound));
 
         if (user.EmailConfirmed)
-            throw new BadRequestException(nameof(ErrorStrings.BadRequestException));
+            throw new BadRequestException();
 
         var result = await _userManager.ConfirmEmailAsync(user, token);
 
-        if (!result.Succeeded)
-            throw new ResourceValidationException(result.Errors.Select(e => e.Code).ToArray());
+        string url = $"email-confirmation?email={email}&email-confirmed={result.Succeeded}";
 
 #if BlazorServer
-        var url = $"{_appSettings.WebServerAddress}email-confirmation?email={email}";
-#else
-        var url = "/email-confirmation?email={email}";
+        url = $"{_appSettings.WebServerAddress}{url}";
 #endif
+
         return Redirect(url);
-    }
-
-    [HttpPost("[action]")]
-    public async Task<bool> EmailConfirmed(EmailConfirmedRequestDto emailConfirmedRequest)
-    {
-        var user = await _userManager.FindByNameAsync(emailConfirmedRequest.Email);
-
-        if (user is null)
-            throw new BadRequestException(nameof(ErrorStrings.UserNameNotFound));
-
-        var emailConfirmed = await _userManager.IsEmailConfirmedAsync(user);
-
-        if (!emailConfirmed)
-            throw new BadRequestException(nameof(ErrorStrings.EmailNotConfirmed));
-
-        return true;
     }
 
     [HttpPost("[action]")]

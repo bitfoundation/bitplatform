@@ -2,15 +2,22 @@
 
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
+        <!-- For razor light cshtml files -->
+        <MvcRazorExcludeRefAssembliesFromPublish>false</MvcRazorExcludeRefAssembliesFromPublish>
+        <PreserveCompilationReferences>true</PreserveCompilationReferences>
+        <PreserveCompilationContext>true</PreserveCompilationContext>
+        <!-- For razor light cshtml files -->
     </PropertyGroup>
 
     <ItemGroup>
         <Content Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="..\Web\Pages\_Host.cshtml" Link="Pages\_Host.cshtml" />
         <Content Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="..\Web\Pages\_Layout.cshtml" Link="Pages\_Layout.cshtml" />
         <Compile Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="..\Web\Services\Implementations\ServerSideAuthTokenProvider.cs" Link="Services\Implementations\ServerSideAuthTokenProvider.cs" />
+        <EmbeddedResource Include="Resources\*.cshtml" />
         <PackageReference Include="AutoMapper" Version="10.1.1" />
         <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="8.1.1" />
-        <PackageReference Include="FluentEmail.Core" Version="3.0.0" />
+        <PackageReference Include="FluentEmail.Razor" Version="3.0.1" />
+        <PackageReference Include="FluentEmail.Smtp" Version="3.0.1" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.3" />
         <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="6.0.2" />
         <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="6.0.3" />
@@ -63,5 +70,5 @@
             <LastGenOutput>%(Filename).Designer.cs</LastGenOutput>
         </EmbeddedResource>
     </ItemGroup>
-    
+
 </Project>

@@ -80,5 +80,16 @@ public static class Services
         services.AddTodoTemplateIdentity(configuration);
 
         services.AddTodoTemplateJwt(configuration);
+
+        services.AddFluentEmail("info@todo.com", "Todo")
+            .AddRazorRenderer()
+            .AddSmtpSender("localhost", 25);
+
+        // install Smtp4dev (fake smtp server) using following command:
+        // dotnet tool install - g Rnwood.Smtp4dev
+        // and run it using following command:
+        // smtp4dev --urls=https://localhost:6001/
+        // you'll be able to see sent emails by opening https://localhost:6001/
+        // For production, either use production ready smtp server or use fluent email integration packages such as sendgrid, mailgun etc.
     }
 }
