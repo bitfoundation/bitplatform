@@ -7,6 +7,8 @@
         public JwtSettings JwtSettings { get; set; }
 
         public string UserProfileImagePath { get; set; }
+    
+        public string WebServerAddress { get; set; }
     }
 
     public class IdentitySettings

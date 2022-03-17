@@ -97,13 +97,8 @@ public partial class SignUp
                 Password = Password
             }, ToDoTemplateJsonContext.Default.SignUpRequestDto);
 
-            await TodoTemplateAuthenticationService.SignIn(new SignInRequestDto
-            {
-                UserName = Email,
-                Password = Password
-            });
-
-            NavigationManager.NavigateTo("/");
+            SignUpMessageType = BitMessageBarType.Success;
+            SignUpMessage = "Confirmation link has sent to your email. Please follow the link.";
         }
         catch (ResourceValidationException e)
         {
