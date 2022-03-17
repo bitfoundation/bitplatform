@@ -168,8 +168,8 @@ private string TextValue;";
 
         private readonly string example6HTMLCode = @"<EditForm Model=""validationSearchBoxModel"">
      <DataAnnotationsValidator/>
-     <BitSearchBox DefaultValue = ""This is default value"" @bind-Value=""validationSearchBoxModel.text""/>
-     <ValidationMessage For = ""()=>validationSearchBoxModel.Text"" ></ ValidationMessage >
+     <BitSearchBox DefaultValue = ""This is default value"" @bind-Value=""validationSearchBoxModel.Text""/>
+     <ValidationMessage For = ""()=>validationSearchBoxModel.Text""></ValidationMessage>
 </EditForm> ";
 
         private readonly string example6CSharpCode = @"
@@ -177,8 +177,8 @@ ValidationSearchBoxModel validationSearchBoxModel = new();
 
 public class ValidationSearchBoxModel
 {
-    [RegularExpression("" ^.{2,6}$"",
-    ErrorMessage = ""The field  must be between 2 and 6."")]
+    [StringLength(6, MinimumLength = 2,
+    ErrorMessage = ""The text field length must be between 6 and 2 characters in length."")]
     public string Text { get; set; }
 }
 ";
@@ -186,8 +186,8 @@ public class ValidationSearchBoxModel
 
     public class ValidationSearchBoxModel
     {
-        [RegularExpression("^.{2,6}$",
-        ErrorMessage = "The field  must be between 2 and 6.")]
+        [StringLength(6, MinimumLength = 2,
+        ErrorMessage = "The text field length must be between 6 and 2 characters in length.")]
         public string Text { get; set; }
     }
 }
