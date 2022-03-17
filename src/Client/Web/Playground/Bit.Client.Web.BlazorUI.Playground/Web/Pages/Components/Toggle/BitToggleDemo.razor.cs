@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Threading.Tasks;
 using Bit.Client.Web.BlazorUI.Playground.Web.Models;
 using Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 
@@ -7,8 +9,35 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Toggle
     public partial class BitToggleDemo
     {
         private bool IsToggleChecked = true;
-        private bool IsToggleUnChecked = false;
+        private bool IsToggleUnChecked;
         private bool BindedIsToggleUnChecked;
+
+        private string SuccessMessage = string.Empty;
+        public FormModel ValidationForm { get; set; }
+
+        public class FormModel
+        {
+            [Range(typeof(bool), "true", "true", ErrorMessage = "You must agree to the terms and conditions.")]
+            public bool TermsAgreement { get; set; }
+        }
+
+        protected override void OnInitialized()
+        {
+            ValidationForm = new FormModel();
+        }
+
+        private async void HandleValidSubmit()
+        {
+            SuccessMessage = "Form Submitted Successfully!";
+            await Task.Delay(3000);
+            SuccessMessage = string.Empty;
+            StateHasChanged();
+        }
+
+        private void HandleInvalidSubmit()
+        {
+            SuccessMessage = string.Empty;
+        }
 
         private readonly List<ComponentParameter> componentParameters = new()
         {
@@ -173,5 +202,61 @@ private bool IsToggleUnChecked = false;";
         <BitButton Class=""m-t-15"" OnClick=""() => BindedIsToggleUnChecked = true"">Make Toggle Check</BitButton>
     </div>
 </div>";
+
+        private readonly string example3CSharpCode = @"
+private string SuccessMessage = string.Empty;
+public FormModel ValidationForm { get; set; }
+
+public class FormModel
+{
+    [Range(typeof(bool), ""true"", ""true"", ErrorMessage = ""You must agree to the terms and conditions."")]
+    public bool TermsAgreement { get; set; }
+}
+
+protected override void OnInitialized()
+{
+    ValidationForm = new FormModel();
+}
+
+private async void HandleValidSubmit()
+{
+    SuccessMessage = ""Form Submitted Successfully!"";
+    await Task.Delay(3000);
+    SuccessMessage = string.Empty;
+    StateHasChanged();
+}
+
+private void HandleInvalidSubmit()
+{
+    SuccessMessage = string.Empty;
+}";
+
+        private readonly string example3HTMLCode = @"@if (string.IsNullOrEmpty(SuccessMessage))
+{
+    <EditForm Model=""ValidationForm"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
+        <DataAnnotationsValidator />
+
+        <div class=""validation-summary"">
+            <ValidationSummary />
+        </div>
+
+        <div>
+            <BitToggle @bind-Value=""ValidationForm.TermsAgreement"" DefaultText=""I agree with the terms and conditions."" />
+
+            <ValidationMessage For=""@(() => ValidationForm.TermsAgreement)"" />
+        </div>
+
+        <BitButton ButtonType=""BitButtonType.Submit"">
+            Submit
+        </BitButton>
+    </EditForm>
+}
+else
+{
+    <BitMessageBar MessageBarType=""BitMessageBarType.Success"" IsMultiline=""false"">
+        @SuccessMessage
+    </BitMessageBar>
+}";
+
     }
 }
