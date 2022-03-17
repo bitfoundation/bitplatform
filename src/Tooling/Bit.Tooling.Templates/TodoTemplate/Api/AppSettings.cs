@@ -6,7 +6,11 @@
 
         public JwtSettings JwtSettings { get; set; }
 
+        public EmailSettings EmailSettings { get; set; }
+
         public string UserProfileImagePath { get; set; }
+    
+        public string WebServerAddress { get; set; }
     }
 
     public class IdentitySettings
@@ -26,5 +30,10 @@
         public string Audience { get; set; }
         public int NotBeforeMinutes { get; set; }
         public int ExpirationMinutes { get; set; }
+    }
+
+    public class EmailSettings
+    {
+        public string FromEmailAddress { get; set; }
     }
 }

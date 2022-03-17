@@ -27,4 +27,10 @@
         </EmbeddedResource>
     </ItemGroup>
 
+    <ItemGroup>
+      <Compile Update="Resources\ErrorStrings.Designer.cs">
+        <DesignTime>True</DesignTime>
+      </Compile>
+    </ItemGroup>
+
 </Project>

@@ -1,0 +1,53 @@
+﻿@page "/email-confirmation"
+
+@inherits TodoTemplateComponentBase;
+
+<PageTitle>Email Confirmation</PageTitle>
+
+<div class="page-container">
+    <div class="form--white">
+        @if (string.IsNullOrEmpty(EmailConfirmationMessage) is false)
+        {
+            <BitMessageBar Class="form-message-bar"
+                       MessageBarType="@EmailConfirmationMessageType"
+                       OnDismiss="() => EmailConfirmationMessage = null">
+                @EmailConfirmationMessage
+            </BitMessageBar>
+        }
+        <h1 class="form-title">Email Confirmation</h1>
+        <BitMessageBar Class="form-message-bar"
+                    MessageBarType="@EmailConfirmationMessageType"
+                    OnDismiss="() => EmailConfirmationMessage = null">
+            @EmailConfirmationMessage
+        </BitMessageBar>
+        @if (EmailConfirmed)
+        {
+            <BitButton Class="form-submit-button"
+                ButtonStyle="BitButtonStyle.Primary"
+                Title="Sign in"
+                AriaLabel="Sign in"
+                OnClick="WrapHandled(RedirectToSignIn)">
+                <span>Sign in</span>
+            </BitButton>
+        }
+        else
+        {
+            <BitButton Class="form-submit-button"
+                ButtonStyle="BitButtonStyle.Primary"
+                Title="Re-send link"
+                AriaLabel="Re-send link"
+                IsEnabled="@IsResendButtonEnabled"
+                OnClick="WrapHandled(ResendLink)">
+                @if (IsLoading)
+                {
+                    <BitSpinner Size="BitSpinnerSize.Small"></BitSpinner>
+                }
+                else
+                {
+                    <span>Re-send Link</span>
+                }
+            </BitButton>
+        }
+
+    </div>
+</div>

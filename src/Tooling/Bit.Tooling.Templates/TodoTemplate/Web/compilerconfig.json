@@ -20,6 +20,10 @@
         "inputFile": "Pages/SignIn.razor.scss"
     },
     {
+        "outputFile": "Pages/EmailConfirmation.razor.css",
+        "inputFile": "Pages/EmailConfirmation.razor.scss"
+    },
+    {
         "outputFile": "Pages/Todo.razor.css",
         "inputFile": "Pages/Todo.razor.scss"
     },
