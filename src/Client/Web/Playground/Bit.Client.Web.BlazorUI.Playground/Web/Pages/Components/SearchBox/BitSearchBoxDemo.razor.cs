@@ -9,7 +9,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.SearchBox
     {
         private string TextValue;
 
-        ValidationSearchBoxModel validationSearchBoxModel = new();
+        private ValidationSearchBoxModel validationSearchBoxModel = new();
 
         private readonly List<ComponentParameter> componentParameters = new()
         {
@@ -173,7 +173,7 @@ private string TextValue;";
 </EditForm> ";
 
         private readonly string example6CSharpCode = @"
-ValidationSearchBoxModel validationSearchBoxModel = new();
+private ValidationSearchBoxModel validationSearchBoxModel = new();
 
 public class ValidationSearchBoxModel
 {
