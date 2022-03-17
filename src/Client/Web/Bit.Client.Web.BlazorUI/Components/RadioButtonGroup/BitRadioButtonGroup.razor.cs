@@ -120,13 +120,6 @@ namespace Bit.Client.Web.BlazorUI
 
         internal void RegisterOption(BitRadioButtonOption option)
         {
-            option.IsEnabled = IsEnabled is true;
-
-            if (IsRequired)
-            {
-                option.IsRequired = true;
-            }
-
             if (option.Key.HasNoValue())
             {
                 option.Key = AllOptions.Count.ToString(CultureInfo.InvariantCulture);
@@ -134,9 +127,9 @@ namespace Bit.Client.Web.BlazorUI
 
             if (SelectedKey == option.Key)
             {
-                option.SetState(true);
                 SelectedOption = option;
             }
+
             AllOptions.Add(option);
         }
 

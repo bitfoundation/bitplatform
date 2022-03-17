@@ -8,8 +8,9 @@ namespace Bit.Client.Web.BlazorUI
 {
     public partial class BitRadioButtonOption : IDisposable
     {
-        internal bool IsRequired { get; set; }
         private bool isChecked;
+        private bool isEnabled;
+        private bool IsRequired;
         private string? imageSizeStyle;
         private bool IsCheckedHasBeenSet;
 
@@ -103,9 +104,13 @@ namespace Bit.Client.Web.BlazorUI
                     Name = RadioButtonGroup.Name;
                 }
 
+                RadioButtonGroup.RegisterOption(this);
+
                 InputId = $"RadioButtonGroup{RadioButtonGroup.UniqueId}-{Key}";
                 TextId = $"RadioButtonGroupLabel{RadioButtonGroup.UniqueId}-{Key}";
             }
+
+            isEnabled = IsEnabled;
 
             return base.OnInitializedAsync();
         }
@@ -119,9 +124,26 @@ namespace Bit.Client.Web.BlazorUI
 
             if (RadioButtonGroup is not null)
             {
-                RadioButtonGroup.RegisterOption(this);
-            }
+                if (RadioButtonGroup.IsEnabled is false)
+                {
+                    IsEnabled = false;
+                }
+                else
+                {
+                    IsEnabled = isEnabled;
+                }
 
+                if (RadioButtonGroup.IsRequired)
+                {
+                    IsRequired = true;
+                }
+
+                if (RadioButtonGroup.SelectedKey == Key)
+                {
+                    SetState(true);
+                }
+            }
+         
             return base.OnParametersSetAsync();
         }
 
