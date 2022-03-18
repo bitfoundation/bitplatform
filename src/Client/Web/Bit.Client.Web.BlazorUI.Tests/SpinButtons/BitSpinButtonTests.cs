@@ -23,7 +23,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.SpinButtons
             DataRow(null),
             DataRow("Button Label")
         ]
-        public void SpinButtonShoudHaveCorrectLabel(string label)
+        public void BitSpinButtonShoudHaveCorrectLabel(string label)
         {
             var component = RenderComponent<BitSpinButton>(parameters =>
             {
@@ -46,7 +46,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.SpinButtons
             DataRow(BitIconName.IncreaseIndentLegacy, null),
             DataRow(BitIconName.IncreaseIndentLegacy, "BitSpinButtonIcon")
         ]
-        public void SpinButtonShoudRenderCorrectIcon(BitIconName? iconName, string iconAriaLabel)
+        public void BitSpinButtonShoudRenderCorrectIcon(BitIconName? iconName, string iconAriaLabel)
         {
             var component = RenderComponent<BitSpinButtonTest>(parameters =>
             {
@@ -74,7 +74,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.SpinButtons
             DataRow(BitIconName.IncreaseIndentLegacy, "BitSpinButtonIcon", true),
             DataRow(BitIconName.IncreaseIndentLegacy, "BitSpinButtonIcon", false)
         ]
-        public void SpinButtonShoudRenderCorrectIncrementButton(BitIconName iconName, string iconAriaLabel, bool isEnabled)
+        public void BitSpinButtonShoudRenderCorrectIncrementButton(BitIconName iconName, string iconAriaLabel, bool isEnabled)
         {
             var component = RenderComponent<BitSpinButtonTest>(parameters =>
             {
@@ -103,7 +103,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.SpinButtons
             DataRow(BitIconName.IncreaseIndentLegacy, "BitSpinButtonIcon", true),
             DataRow(BitIconName.IncreaseIndentLegacy, "BitSpinButtonIcon", false)
         ]
-        public void SpinButtonShoudRenderCorrectDecrementButton(BitIconName iconName, string iconAriaLabel, bool isEnabled)
+        public void BitSpinButtonShoudRenderCorrectDecrementButton(BitIconName iconName, string iconAriaLabel, bool isEnabled)
         {
             var component = RenderComponent<BitSpinButtonTest>(parameters =>
             {
@@ -130,7 +130,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.SpinButtons
             DataRow(" Inch"),
             DataRow(" foot")
         ]
-        public void SpinButtonShouldHaveSuffixWhenItsPropertySet(string suffix)
+        public void BitSpinButtonShouldHaveSuffixWhenItsPropertySet(string suffix)
         {
             var component = RenderComponent<BitSpinButtonTest>(parameters => parameters.Add(p => p.Suffix, suffix));
 
@@ -150,7 +150,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.SpinButtons
             DataRow(Visual.Material, BitSpinButtonLabelPosition.Left),
             DataRow(Visual.Material, BitSpinButtonLabelPosition.Top),
         ]
-        public void SpinButtonShouldHaveLabelPositionClassName(Visual visual, BitSpinButtonLabelPosition labelPosition)
+        public void BitSpinButtonShouldHaveLabelPositionClassName(Visual visual, BitSpinButtonLabelPosition labelPosition)
         {
             var component = RenderComponent<BitSpinButtonTest>(parameters =>
             {
@@ -169,7 +169,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.SpinButtons
             DataRow("dir", "ltr"),
             DataRow("type", "number")
         ]
-        public void SpinButtonInputShouldHaveHtmlAttributes(string attrKey, string attrValue)
+        public void BitSpinButtonInputShouldHaveHtmlAttributes(string attrKey, string attrValue)
         {
             var inputHtmlAttributes = new Dictionary<string, object> {
                 {attrKey, attrValue }
@@ -189,7 +189,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.SpinButtons
             DataRow("SpbWrapper", "SpbAriaLabel", 5, 3),
             DataRow(null, null, 5, 3)
         ]
-        public void SpinButtonWrapperShouldHaveCorrectAttributes(string title, string ariaLabel, int? ariaSetSize, int? ariaPositionInSet)
+        public void BitSpinButtonWrapperShouldHaveCorrectAttributes(string title, string ariaLabel, int? ariaSetSize, int? ariaPositionInSet)
         {
             var component = RenderComponent<BitSpinButtonTest>(parameters =>
             {
@@ -225,7 +225,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.SpinButtons
             DataRow(0.0, 100.0),
             DataRow(50.0, 1.0)
         ]
-        public void SpinButtonShouldHaveCorrectMaxMin(double? min, double? max)
+        public void BitSpinButtonShouldHaveCorrectMaxMin(double? min, double? max)
         {
             var component = RenderComponent<BitSpinButton>(parameters =>
             {
@@ -275,7 +275,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.SpinButtons
             DataRow(4),
             DataRow(12)
         ]
-        public void SpinButtonOnIncrementTest(int countOfCliks)
+        public void BitSpinButtonOnIncrementTest(int countOfCliks)
         {
             var component = RenderComponent<BitSpinButtonTest>();
 
@@ -292,7 +292,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.SpinButtons
            DataRow(4),
            DataRow(12)
         ]
-        public void SpinButtonOnDecrementTest(int countOfCliks)
+        public void BitSpinButtonOnDecrementTest(int countOfCliks)
         {
             var component = RenderComponent<BitSpinButtonTest>();
 
@@ -310,7 +310,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.SpinButtons
            DataRow(4),
            DataRow(12)
         ]
-        public void SpinButtonInputOnBlurEventCallbackTest(int countOfBlur)
+        public void BitSpinButtonInputOnBlurEventCallbackTest(int countOfBlur)
         {
             var component = RenderComponent<BitSpinButtonTest>();
 
@@ -327,7 +327,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.SpinButtons
            DataRow(4),
            DataRow(12)
         ]
-        public void SpinButtonInputOnFocusTest(int countOfFocus)
+        public void BitSpinButtonInputOnFocusTest(int countOfFocus)
         {
             var component = RenderComponent<BitSpinButtonTest>();
 
@@ -344,7 +344,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.SpinButtons
            DataRow(4),
            DataRow(12)
         ]
-        public void SpinButtonOnChangeTest(double inputValue)
+        public void BitSpinButtonOnChangeTest(double inputValue)
         {
             var component = RenderComponent<BitSpinButtonTest>();
 
@@ -361,7 +361,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.SpinButtons
            DataRow(null),
            DataRow("AriaDescription")
         ]
-        public void SpinButtonShoudHaveCorrectAriaDecription(string ariaDescription)
+        public void BitSpinButtonShoudHaveCorrectAriaDecription(string ariaDescription)
         {
             var component = RenderComponent<BitSpinButtonTest>(parameters =>
             {
@@ -378,7 +378,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.SpinButtons
            DataRow(3.0, " cm"),
            DataRow(null, null)
         ]
-        public void SpinButtonInputShoudHaveCorrectAriaValueNow(double? ariaValueNow, string suffix)
+        public void BitSpinButtonInputShoudHaveCorrectAriaValueNow(double? ariaValueNow, string suffix)
         {
             var component = RenderComponent<BitSpinButtonTest>(parameters =>
             {
@@ -396,7 +396,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.SpinButtons
            DataRow(null, " cm", 0),
            DataRow(null, null, 0)
         ]
-        public void SpinButtonInputShoudHaveCorrectAriaValueText(string ariaValueText, string suffix, int precision)
+        public void BitSpinButtonInputShoudHaveCorrectAriaValueText(string ariaValueText, string suffix, int precision)
         {
             var component = RenderComponent<BitSpinButtonTest>(parameters =>
             {
@@ -417,7 +417,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.SpinButtons
             DataRow(8, 2, 9),
             DataRow(8, 5, 9)
         ]
-        public void SpinButtonIncrementButtonClickTest(double defaultValue, double step, double max)
+        public void BitSpinButtonIncrementButtonClickTest(double defaultValue, double step, double max)
         {
             var component = RenderComponent<BitSpinButton>(parameters =>
             {
@@ -442,7 +442,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.SpinButtons
             DataRow(8, 2, 9),
             DataRow(8, 5, 9)
         ]
-        public void SpinButtonArrowUpKeyDownTest(double defaultValue, double step, double max)
+        public void BitSpinButtonArrowUpKeyDownTest(double defaultValue, double step, double max)
         {
             var component = RenderComponent<BitSpinButton>(parameters =>
             {
@@ -467,7 +467,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.SpinButtons
             DataRow(3, 4, 0),
             DataRow(0, 1, 0)
         ]
-        public void SpinButtonDecrementButtonClickTest(double defaultValue, double step, double min)
+        public void BitSpinButtonDecrementButtonClickTest(double defaultValue, double step, double min)
         {
             var component = RenderComponent<BitSpinButton>(parameters =>
             {
@@ -491,7 +491,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.SpinButtons
             DataRow(3, 4, 0),
             DataRow(0, 1, 0)
         ]
-        public void SpinButtonArrowDownKeyDownTest(double defaultValue, double step, double min)
+        public void BitSpinButtonArrowDownKeyDownTest(double defaultValue, double step, double min)
         {
             var component = RenderComponent<BitSpinButton>(parameters =>
             {
@@ -516,7 +516,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.SpinButtons
             DataRow(5, 0, 100, "-5"),
             DataRow(5, 0, 100, "text123")
         ]
-        public void SpinButtonEnterKeyDownTest(double defaultValue, double min, double max, string userInput)
+        public void BitSpinButtonEnterKeyDownTest(double defaultValue, double min, double max, string userInput)
         {
             var component = RenderComponent<BitSpinButton>(parameters =>
             {
@@ -555,7 +555,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.SpinButtons
             DataRow(5, 0, 100, "-5"),
             DataRow(5, 0, 100, "text123")
         ]
-        public void SpinButtonOnBlurTest(double defaultValue, double min, double max, string userInput)
+        public void BitSpinButtonOnBlurTest(double defaultValue, double min, double max, string userInput)
         {
             var component = RenderComponent<BitSpinButton>(parameters =>
             {
@@ -593,7 +593,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.SpinButtons
             DataRow(0, 10, 0.25, "12.6"),
             DataRow(13, 100, 0.25, "12.6")
         ]
-        public void SpinButtonPrecisionTest(double min, double max, double step, string userInput)
+        public void BitSpinButtonPrecisionTest(double min, double max, double step, string userInput)
         {
             var component = RenderComponent<BitSpinButton>(parameters =>
             {
@@ -620,7 +620,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.SpinButtons
             DataRow(5, 2, 4),
             DataRow(1, 15, 1)
         ]
-        public void SpinButtonTwoWayBoundWithCustomHandlerShouldWorkCurrect(double value, int countOfIncrements, double step)
+        public void BitSpinButtonTwoWayBoundWithCustomHandlerShouldWorkCurrect(double value, int countOfIncrements, double step)
         {
             BitSpinButtonTwoWayBoundValue = value;
 
@@ -660,7 +660,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.SpinButtons
             DataRow(3, 1, 100, 475),
             DataRow(3, 1, 100, 550)
         ]
-        public void SpinButtonContinuousIncrementOnMouseDownTest(double defaultValue, double step, double max, int timeout)
+        public void BitSpinButtonContinuousIncrementOnMouseDownTest(double defaultValue, double step, double max, int timeout)
         {
             var component = RenderComponent<BitSpinButton>(parameters =>
             {
@@ -683,7 +683,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.SpinButtons
             DataRow(50, 1, 0, 475),
             DataRow(50, 1, 0, 550)
         ]
-        public void SpinButtonContinuousDecrementOnMouseDownTest(double defaultValue, double step, double min, int timeout)
+        public void BitSpinButtonContinuousDecrementOnMouseDownTest(double defaultValue, double step, double min, int timeout)
         {
             var component = RenderComponent<BitSpinButton>(parameters =>
             {
@@ -700,6 +700,135 @@ namespace Bit.Client.Web.BlazorUI.Tests.SpinButtons
             incrementButton.MouseDown();
 
             component.WaitForAssertion(() => Assert.AreEqual(expectedResult.ToString(), input.GetAttribute("value")), TimeSpan.FromMilliseconds(timeout));
+        }
+
+        [DataTestMethod,
+            DataRow(4),
+            DataRow(10),
+            DataRow(0),
+            DataRow(-1),
+            DataRow(6),
+            DataRow(18),
+        ]
+        public void BitSpinButtonValidationFormTest(double value)
+        {
+            var component = RenderComponent<BitSpinButtonValidationTest>(parameters =>
+            {
+                parameters.Add(p => p.TestModel, new BitSpinButtonTestModel { Value = value });
+                parameters.Add(p => p.IsEnabled, true);
+            });
+
+            var isValid = value >= 6 && value <= 18;
+
+            var form = component.Find("form");
+            form.Submit();
+
+            Assert.AreEqual(component.Instance.ValidCount, isValid ? 1 : 0);
+            Assert.AreEqual(component.Instance.InvalidCount, isValid ? 0 : 1);
+
+            var input = component.Find("input");
+            if (isValid)
+            {
+                input.Change(2);
+            }
+            else
+            {
+                input.Change(8);
+            }
+
+            input.Blur();
+            form.Submit();
+
+            Assert.AreEqual(component.Instance.ValidCount, 1);
+            Assert.AreEqual(component.Instance.InvalidCount, 1);
+            Assert.AreEqual(component.Instance.ValidCount, component.Instance.InvalidCount);
+        }
+
+        [DataTestMethod,
+            DataRow(4),
+            DataRow(10),
+            DataRow(0),
+            DataRow(-1),
+            DataRow(6),
+            DataRow(18),
+        ]
+        public void BitSpinButtonValidationInvalidHtmlAttributeTest(double value)
+        {
+            var component = RenderComponent<BitSpinButtonValidationTest>(parameters =>
+            {
+                parameters.Add(p => p.TestModel, new BitSpinButtonTestModel { Value = value });
+                parameters.Add(p => p.IsEnabled, true);
+            });
+
+            var isInvalid = value < 6 || value > 18;
+
+            var input = component.Find("input");
+            Assert.IsFalse(input.HasAttribute("aria-invalid"));
+
+            var form = component.Find("form");
+            form.Submit();
+
+            Assert.AreEqual(input.HasAttribute("aria-invalid"), isInvalid);
+            if (input.HasAttribute("aria-invalid"))
+            {
+                Assert.AreEqual(input.GetAttribute("aria-invalid"), "true");
+            }
+
+            if (isInvalid)
+            {
+                input.Change(10);
+                input.Blur();
+                Assert.IsFalse(input.HasAttribute("aria-invalid"));
+            }
+            else
+            {
+                input.Change(4);
+                input.Blur();
+                Assert.IsTrue(input.HasAttribute("aria-invalid"));
+            }
+        }
+
+        [DataTestMethod,
+            DataRow(Visual.Fluent, 2),
+            DataRow(Visual.Fluent, 8),
+            DataRow(Visual.Cupertino, 2),
+            DataRow(Visual.Cupertino, 8),
+            DataRow(Visual.Material, 2),
+            DataRow(Visual.Material, 8),
+        ]
+        public void BitSpinButtonValidationInvalidCssClassTest(Visual visual, double value)
+        {
+            var component = RenderComponent<BitSpinButtonValidationTest>(parameters =>
+            {
+                parameters.Add(p => p.TestModel, new BitSpinButtonTestModel { Value = value });
+                parameters.Add(p => p.IsEnabled, true);
+                parameters.Add(p => p.Visual, visual);
+            });
+
+            var isInvalid = value < 6 || value > 18;
+
+            var bitSpinButton = component.Find(".bit-spb");
+            var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
+
+            Assert.IsFalse(bitSpinButton.ClassList.Contains($"bit-spb-invalid-{visualClass}"));
+
+            var form = component.Find("form");
+            form.Submit();
+
+            Assert.AreEqual(bitSpinButton.ClassList.Contains($"bit-spb-invalid-{visualClass}"), isInvalid);
+
+            var input = component.Find("input");
+            if (isInvalid)
+            {
+                input.Change(10);
+            }
+            else
+            {
+                input.Change(3);
+            }
+            input.Blur();
+
+            Assert.AreEqual(bitSpinButton.ClassList.Contains($"bit-spb-invalid-{visualClass}"), !isInvalid);
         }
 
         private double Normalize(double value, int precision) => Math.Round(value, precision);
