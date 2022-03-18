@@ -15,6 +15,7 @@
             dropDownOverlay.style.display = "none";
             Bit.currentCallout.update("", "", null);
             Bit.currentDropDownCalloutId = "";
+            document.body.classList.remove("overflow-hidden");
         } else {
             Bit.currentDropDownCalloutId = dropDownCalloutId;
             Bit.closeCurrentCalloutIfExists(dropDownCalloutId, dropDownOverlayId, dotnetObjReference);
@@ -56,6 +57,8 @@
                 dropDownCallout.style.top = "unset";
                 dropDownCallout.style.right = "unset";
             }
+
+            document.body.classList.add("overflow-hidden");
         }
     }
 }
