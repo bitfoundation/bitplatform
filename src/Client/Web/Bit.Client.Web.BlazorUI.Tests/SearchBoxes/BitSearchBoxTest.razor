@@ -6,25 +6,20 @@
               AriaLabel="@AriaLabel"
               DefaultValue="@DefaultValue"
               ShowIcon="ShowIcon"
-              OnChange="HandleChange">
+              OnChange="HandleChange"
+              Autocomplete="@AutoComplete">
 </BitSearchBox>
 
 @code {
     [Parameter] public string Value { get; set; }
-
     [Parameter] public string Placeholder { get; set; }
-
     [Parameter] public bool DisableAnimation { get; set; }
-
     [Parameter] public bool IsUnderlined { get; set; }
-
     [Parameter] public string AriaLabel { get; set; }
-
     [Parameter] public string DefaultValue { get; set; }
-
     [Parameter] public bool ShowIcon { get; set; }
-
     [Parameter] public bool IsEnabled { get; set; }
+    [Parameter] public string AutoComplete { get; set; }
 
     public int CurrentCount { get; set; }
 
