@@ -3,7 +3,7 @@
     "compilerOptions": {
         "strict": true,
         "lib": [ "DOM", "ESNext" ],
-        "outFile": "wwwroot/scripts/app.js",
+        "outFile": "wwwroot/scripts/todoTemplate.js",
         "sourceMap": true
     }
 }
