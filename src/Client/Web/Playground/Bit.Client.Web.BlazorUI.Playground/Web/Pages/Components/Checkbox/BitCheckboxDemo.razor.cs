@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Threading.Tasks;
 using Bit.Client.Web.BlazorUI.Playground.Web.Models;
 using Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 
@@ -6,9 +8,31 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Checkbox
 {
     public partial class BitCheckboxDemo
     {
-        private bool IsCheckBoxChecked = false;
+        private bool IsCheckBoxChecked;
         private bool IsCheckBoxIndeterminate = true;
         private bool IsCheckBoxIndeterminateInCode = true;
+
+        private FormModel ValidationForm = new();
+        private string SuccessMessage = string.Empty;
+
+        public class FormModel
+        {
+            [Range(typeof(bool), "true", "true", ErrorMessage = "You must agree to the terms and conditions.")]
+            public bool TermsAgreement { get; set; }
+        }
+
+        private async void HandleValidSubmit()
+        {
+            SuccessMessage = "Form Submitted Successfully!";
+            await Task.Delay(3000);
+            SuccessMessage = string.Empty;
+            StateHasChanged();
+        }
+
+        private void HandleInvalidSubmit()
+        {
+            SuccessMessage = string.Empty;
+        }
 
         private readonly List<ComponentParameter> componentParameters = new()
         {
@@ -79,17 +103,10 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Checkbox
             },
             new ComponentParameter()
             {
-                Name = "IsChecked",
+                Name = "DefaultValue",
                 Type = "bool",
                 DefaultValue = "",
-                Description = "Checkbox state, control the checked state at a higher level.",
-            },
-            new ComponentParameter()
-            {
-                Name = "IsCheckedChanged",
-                Type = "EventCallback<bool>",
-                DefaultValue = "",
-                Description = "Callback that is called when the IsChecked parameter changed.",
+                Description = "Use this if you want an uncontrolled component, meaning the Checkbox instance maintains its own state.",
             },
             new ComponentParameter()
             {
@@ -103,7 +120,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Checkbox
                 Name = "IsIndeterminateChanged",
                 Type = "EventCallback<bool>",
                 DefaultValue = "",
-                Description = "An indeterminate visual state for checkbox. Setting indeterminate state takes visual precedence over checked given but does not affect on IsChecked state.",
+                Description = "An indeterminate visual state for checkbox. Setting indeterminate state takes visual precedence over checked given but does not affect on Value state.",
             },
             new ComponentParameter()
             {
@@ -132,6 +149,21 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Checkbox
                 Type = "string",
                 DefaultValue = "",
                 Description = "Title text applied to the root element and the hidden checkbox input.",
+            },
+
+            new ComponentParameter()
+            {
+                Name = "Value",
+                Type = "bool",
+                DefaultValue = "",
+                Description = "Checkbox state, control the checked state at a higher level.",
+            },
+            new ComponentParameter()
+            {
+                Name = "ValueChanged",
+                Type = "EventCallback<bool>",
+                DefaultValue = "",
+                Description = "Callback that is called when the Value parameter changed.",
             },
             new ComponentParameter()
             {
@@ -196,24 +228,24 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Checkbox
             }
         };
 
-        private readonly string example1HTMLCode = @"<BitCheckbox @bind-IsChecked=""IsCheckBoxChecked"">Basic Checkbox</BitCheckbox>
-<BitCheckbox IsChecked=""true"">Checked Checkbox</BitCheckbox>
+        private readonly string example1HTMLCode = @"<BitCheckbox @bind-Value=""IsCheckBoxChecked"">Basic Checkbox</BitCheckbox>
+<BitCheckbox Value=""true"">Checked Checkbox</BitCheckbox>
 <BitCheckbox IsEnabled=""false"">Disable Checkbox</BitCheckbox>
-<BitCheckbox IsEnabled=""false"" IsChecked=""true"">Disable Checked Checkbox</BitCheckbox>
+<BitCheckbox IsEnabled=""false"" Value=""true"">Disable Checked Checkbox</BitCheckbox>
 <BitCheckbox CheckmarkIconName=""BitIconName.Heart"">Custom checkmark Checkbox</BitCheckbox>";
 
         private readonly string example1CSharpCode = @"
 private bool IsCheckBoxChecked = false;";
 
         private readonly string example2TMLCode = @"<BitCheckbox BoxSide=""@BitCheckBoxSide.End"">Reversed - Basic Checkbox</BitCheckbox>
-<BitCheckbox BoxSide=""@BitCheckBoxSide.End"">IsChecked=""true"">Reversed - Checked Checkbox</BitCheckbox>
+<BitCheckbox BoxSide=""@BitCheckBoxSide.End"">Value=""true"">Reversed - Checked Checkbox</BitCheckbox>
 <BitCheckbox BoxSide=""@BitCheckBoxSide.End"">IsEnabled=""false"">Reversed - Disable Checkbox</BitCheckbox>
-<BitCheckbox BoxSide=""@BitCheckBoxSide.End"">IsEnabled=""false"" IsChecked=""true"">Reversed - Disable Checked Checkbox</BitCheckbox>";
+<BitCheckbox BoxSide=""@BitCheckBoxSide.End"">IsEnabled=""false"" Value=""true"">Reversed - Disable Checked Checkbox</BitCheckbox>";
 
-        private readonly string example3HTMLCode = @"<BitCheckbox @bind-IsIndeterminate=""IsCheckBoxIndeterminate"" @bind-IsChecked=""IsCheckBoxChecked"">Indeterminated checkbox</BitCheckbox>
+        private readonly string example3HTMLCode = @"<BitCheckbox @bind-IsIndeterminate=""IsCheckBoxIndeterminate"" @bind-Value=""IsCheckBoxChecked"">Indeterminated checkbox</BitCheckbox>
 <BitCheckbox IsIndeterminate=""true"">Indeterminate checkbox</BitCheckbox>
 <BitCheckbox IsIndeterminate=""true"" IsEnabled=""false"">Disabled indeterminated checkbox</BitCheckbox>
-<BitCheckbox @bind-IsIndeterminate=""IsCheckBoxIndeterminateInCode"" @bind-IsChecked=""IsCheckBoxChecked"">Controlled indeterminated checkbox</BitCheckbox>
+<BitCheckbox @bind-IsIndeterminate=""IsCheckBoxIndeterminateInCode"" @bind-Value=""IsCheckBoxChecked"">Controlled indeterminated checkbox</BitCheckbox>
 <BitButton OnClick=""() => IsCheckBoxIndeterminateInCode = true"">Make Checkbox Indeterminate</BitButton>";
 
         private readonly string example3CSharpCode = @"
@@ -226,5 +258,59 @@ private bool IsCheckBoxIndeterminateInCode = true;";
         Bit Foundation repository page
     </a>
 </BitCheckbox>";
+
+        private readonly string example5HTMLCode = @"@if (string.IsNullOrEmpty(SuccessMessage))
+{
+    <EditForm Model=""ValidationForm"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
+        <DataAnnotationsValidator />
+
+        <div class=""validation-summary"">
+            <ValidationSummary />
+        </div>
+
+        <div>
+            <BitCheckbox @bind-Value=""ValidationForm.TermsAgreement"">
+                I agree with the terms and conditions.
+            </BitCheckbox>
+
+            <ValidationMessage For=""@(() => ValidationForm.TermsAgreement)"" />
+        </div>
+
+        <br />
+
+        <BitButton ButtonType=""BitButtonType.Submit"">
+            Submit
+        </BitButton>
+    </EditForm>
+}
+else
+{
+    <BitMessageBar MessageBarType=""BitMessageBarType.Success"" IsMultiline=""false"">
+        @SuccessMessage
+    </BitMessageBar>
+}";
+
+        private readonly string example5CSharpCode = @"
+private FormModel ValidationForm = new();
+private string SuccessMessage = string.Empty;
+
+public class FormModel
+{
+    [Range(typeof(bool), ""true"", ""true"", ErrorMessage = ""You must agree to the terms and conditions."")]
+    public bool TermsAgreement { get; set; }
+}
+
+private async void HandleValidSubmit()
+{
+    SuccessMessage = ""Form Submitted Successfully!"";
+    await Task.Delay(3000);
+    SuccessMessage = string.Empty;
+    StateHasChanged();
+}
+
+private void HandleInvalidSubmit()
+{
+    SuccessMessage = string.Empty;
+}";
     }
 }
