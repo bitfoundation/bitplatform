@@ -3,6 +3,7 @@ using TodoTemplate.Shared.Dtos.Account;
 using FluentEmail.Core;
 using TodoTemplate.Api.Resources;
 using TodoTemplate.Api.Models.Emailing;
+using Microsoft.AspNetCore.Hosting.Server;
 
 namespace TodoTemplate.Api.Controllers;
 
@@ -21,13 +22,16 @@ public class AuthController : ControllerBase
     private readonly AppSettings _appSettings;
 
     private readonly IFluentEmail _fluentEmail;
+    
+    private readonly IServer _server;
 
     public AuthController(SignInManager<User> signInManager,
         UserManager<User> userManager,
         IJwtService jwtService,
         IMapper mapper,
         IOptionsSnapshot<AppSettings> setting,
-        IFluentEmail fluentEmail
+        IFluentEmail fluentEmail,
+        IServer server
         )
     {
         _userManager = userManager;
@@ -36,6 +40,7 @@ public class AuthController : ControllerBase
         _signInManager = signInManager;
         _appSettings = setting.Value;
         _fluentEmail = fluentEmail;
+        _server = server;
     }
 
     [HttpPost("[action]")]
@@ -83,11 +88,49 @@ public class AuthController : ControllerBase
         var result = await _fluentEmail
             .To(user.Email, user.DisplayName)
             .Subject(EmailStrings.ConfirmationLinkEmailSubject)
-            .UsingTemplateFromEmbedded("TodoTemplate.Api.Resources.EmailConfirmation.cshtml",
-                                    new EmailConfirmationModel
+            .UsingTemplateFromEmbedded($"TodoTemplate.Api.Resources.EmailConfirmation.cshtml",
+                                    new EmailLinksModel
                                     {
                                         DisplayName = user.DisplayName,
-                                        ConfirmationLink = confirmationLink
+                                        Link = confirmationLink
+                                    },
+                                    assembly)
+            .SendAsync(cancellationToken);
+
+        if (!result.Successful)
+            throw new ResourceValidationException(result.ErrorMessages.ToArray());
+    }
+
+    [HttpPost("[action]")]
+    public async Task SendEmailForgotPasswordLink(SendEmailForgotPasswordLinkRequestDto sendConfirmLinkEmailRequest, CancellationToken cancellationToken)
+    {
+        var user = await _userManager.FindByEmailAsync(sendConfirmLinkEmailRequest.Email);
+
+        if (user is null)
+            throw new BadRequestException(nameof(ErrorStrings.UserNameNotFound));
+
+        var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+
+        var tokenBase64 = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(token));
+
+        var resetPasswordLink = $"reset-password?email={user.Email}&token={tokenBase64}";
+
+#if BlazorServer
+        resetPasswordLink = $"{_appSettings.WebServerAddress}{resetPasswordLink}";
+#else
+        resetPasswordLink = $"{_server.GetHostUri()}{resetPasswordLink}";
+#endif
+
+        var assembly = typeof(Program).Assembly;
+
+        var result = await _fluentEmail
+            .To(user.Email, user.DisplayName)
+            .Subject(EmailStrings.ResetPasswordLinkEmailSubject)
+            .UsingTemplateFromEmbedded($"TodoTemplate.Api.Resources.ResetPassword.cshtml",
+                                    new EmailLinksModel
+                                    {
+                                        DisplayName = user.DisplayName,
+                                        Link = resetPasswordLink
                                     },
                                     assembly)
             .SendAsync(cancellationToken);
@@ -116,6 +159,20 @@ public class AuthController : ControllerBase
 #endif
 
         return Redirect(url);
+    }
+
+    [HttpPost("[action]")]
+    public async Task ResetPassword(ResetPasswordRequestDto resetPasswordRequest)
+    {
+        var user = await _userManager.FindByEmailAsync(resetPasswordRequest.Email);
+
+        if (user is null)
+            throw new BadRequestException(nameof(ErrorStrings.UserNameNotFound));
+
+        var result = await _userManager.ResetPasswordAsync(user, resetPasswordRequest.Token, resetPasswordRequest.Password);
+
+        if (!result.Succeeded)
+            throw new ResourceValidationException(result.Errors.Select(e => e.Code).ToArray());
     }
 
     [HttpPost("[action]")]

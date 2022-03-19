@@ -118,6 +118,9 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="ConfirmationLinkEmailSubject" xml:space="preserve">
-    <value>Confirm your email address</value>
+    <value>Bit.TodoTemplate - Confirm your email address</value>
+  </data>
+  <data name="ResetPasswordLinkEmailSubject" xml:space="preserve">
+    <value>Bit.TodoTemplate - Reset your password</value>
   </data>
 </root>
