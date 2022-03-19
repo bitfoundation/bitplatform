@@ -22,7 +22,7 @@
                 return unescape(trim(cookie[1]));
             }
         }
-        return null;
+        return "";
     }
 
     function removeCookie(name: string): void {
