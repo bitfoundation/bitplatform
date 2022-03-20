@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 
@@ -36,7 +37,6 @@ namespace Bit.Client.Web.BlazorUI
         /// </summary>
         [Parameter] public string? AriaLabelFormat { get; set; }
 
-
         /// <summary>
         /// Maximum rating. Must be >= min (0 if AllowZeroStars is true, 1 otherwise)
         /// </summary>
@@ -53,27 +53,10 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public BitIconName UnselectedIcon { get; set; } = BitIconName.FavoriteStar;
 
         /// <summary>
-        /// Default rating. Must be a number between min and max. 
-        /// Only provide this if the Rating is an uncontrolled component; otherwise, use the rating property.
+        /// Default value. Must be a number between min and max. 
+        /// Only provide this if the CurrentValue is an uncontrolled component; otherwise, use the rating property.
         /// </summary>
-        [Parameter] public double? DefaultRating { get; set; }
-
-        /// <summary>
-        /// Current rating value. Must be a number between min (0 if AllowZeroStars is true, 1 otherwise) and max.
-        /// </summary>
-        [Parameter]
-        public double Rating
-        {
-            get => ratingValue;
-            set
-            {
-                if (value == ratingValue) return;
-                ratingValue = value;
-
-                ClassBuilder.Reset();
-                _ = RatingChanged.InvokeAsync(value);
-            }
-        }
+        [Parameter] public double? DefaultValue { get; set; }
 
         /// <summary>
         /// Size of rating
@@ -86,23 +69,21 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public Func<double, double, string>? GetAriaLabel { get; set; }
 
         /// <summary>
-        /// Callback that is called when the rating value changed
-        /// </summary>
-        [Parameter] public EventCallback<double> RatingChanged { get; set; }
-
-        /// <summary>
         /// Callback that is called when the rating has changed
         /// </summary>
         [Parameter] public EventCallback<double> OnChange { get; set; }
 
         protected override async Task OnInitializedAsync()
         {
-            if (DefaultRating != null)
+            OnCurrentValueChanged += HandleOnCurrentValueChanged;
+
+            if (DefaultValue != null)
             {
-                Rating = (double)DefaultRating;
+                CurrentValue = (double)DefaultValue;
             }
 
-            Rating = Math.Min(Math.Max(Rating, (AllowZeroStars ? 0 : 1)), Max);
+            CurrentValue = Math.Min(Math.Max(CurrentValue, (AllowZeroStars ? 0 : 1)), Max);
+            
             await base.OnInitializedAsync();
         }
 
@@ -113,23 +94,28 @@ namespace Bit.Client.Web.BlazorUI
             ClassBuilder.Register(() => IsReadOnly
                                                 ? $"{RootElementClass}-readonly-{VisualClassRegistrar()}"
                                                 : string.Empty);
+
             ClassBuilder.Register(() => Size == BitRatingSize.Large
                                                 ? $"{RootElementClass}-large-{VisualClassRegistrar()}"
                                                 : $"{RootElementClass}-small-{VisualClassRegistrar()}");
+
+            ClassBuilder.Register(() => ValueInvalid is true
+                                                ? $"{RootElementClass}-invalid-{VisualClassRegistrar()}"
+                                                : string.Empty);
         }
 
         private double GetPercentageOf(int starNumber)
         {
-            double fullRating = Math.Ceiling(Rating);
+            double fullRating = Math.Ceiling(CurrentValue);
             double fullStar = 100;
 
-            if (starNumber == Rating)
+            if (starNumber == CurrentValue)
             {
                 fullStar = 100;
             }
             else if (starNumber == fullRating)
             {
-                fullStar = 100 * (Rating % 1);
+                fullStar = 100 * (CurrentValue % 1);
             }
             else if (starNumber > fullRating)
             {
@@ -141,13 +127,30 @@ namespace Bit.Client.Web.BlazorUI
 
         private async Task HandleClick(int index)
         {
-            if ((AllowZeroStars is false && index == 0) || 
-                IsReadOnly is true || 
-                IsEnabled is false || 
-                RatingChanged.HasDelegate is false) return;
+            if ((AllowZeroStars is false && index == 0) ||
+                IsReadOnly is true ||
+                IsEnabled is false ||
+                ValueChanged.HasDelegate is false) return;
 
-            Rating = index;
-            await OnChange.InvokeAsync(Rating);
+            CurrentValue = index;
+            await OnChange.InvokeAsync(CurrentValue);
+        }
+
+        private void HandleOnCurrentValueChanged(object? sender, EventArgs args) => ClassBuilder.Reset();
+
+        /// <inheritdoc />
+        protected override bool TryParseValueFromString(string? value, out double result, [NotNullWhen(false)] out string? validationErrorMessage)
+        {
+            if (double.TryParse(value, out var parsedValue))
+            {
+                result = parsedValue;
+                validationErrorMessage = null;
+                return true;
+            }
+
+            result = default;
+            validationErrorMessage = $"The {DisplayName ?? FieldIdentifier.FieldName} field is not valid.";
+            return false;
         }
     }
 }

@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Threading.Tasks;
 using Bit.Client.Web.BlazorUI.Playground.Web.Models;
 using Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 
@@ -6,6 +8,10 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Rating
 {
     public partial class BitRatingDemo
     {
+
+        private string SuccessMessage = string.Empty;
+        public FormModel ValidationForm { get; set; }
+
         private string RatingChangedText = string.Empty;
 
         private double RatingBoundValue = 2;
@@ -14,6 +20,31 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Rating
         private double RatingReadOnlyValue = 2.5;
         private double RatingCustomIconValue = 2.5;
         private double RatingOutsideValue = 0;
+
+        public class FormModel
+        {
+            [Range(typeof(double), "1", "5", ErrorMessage = "Your rate must be between {1} and {2}")]
+            public double Value { get; set; }
+        }
+
+        protected override void OnInitialized()
+        {
+            ValidationForm = new FormModel();
+        }
+
+        private async void HandleValidSubmit()
+        {
+            SuccessMessage = "Form Submitted Successfully!";
+            await Task.Delay(3000);
+            SuccessMessage = string.Empty;
+            ValidationForm.Value = default;
+            StateHasChanged();
+        }
+
+        private void HandleInvalidSubmit()
+        {
+            SuccessMessage = string.Empty;
+        }
 
         private readonly List<ComponentParameter> componentParameters = new()
         {
@@ -33,7 +64,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Rating
             },
             new ComponentParameter()
             {
-                Name = "DefaultRating",
+                Name = "DefaultValue",
                 Type = "double",
                 DefaultValue = "0",
                 Description = "Default rating. Must be a number between min and max. Only provide this if the Rating is an uncontrolled component; otherwise, use the rating property.",
@@ -198,5 +229,50 @@ private double RatingCustomIconValue = 2.5;";
 
         private readonly string example2CSharpCode = @"
 private double RatingOutsideValue = 0; ";
+
+        private readonly string example3HTMLCode = @"<div>
+                @if (string.IsNullOrEmpty(SuccessMessage))
+                {
+                    <EditForm Model=""ValidationForm"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
+        <DataAnnotationsValidator/>
+
+        <BitRating AllowZeroStars=""true"" @bind-Value=""ValidationForm.Value""/>
+        <ValidationMessage For=""@(() => ValidationForm.Value)"" />
+
+            <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
+        </EditForm>
+    }
+    else
+    {
+        <BitMessageBar MessageBarType=""BitMessageBarType.Success"" IsMultiline=""false"">
+            @SuccessMessage
+            </BitMessageBar>
+    }
+    </div>";
+
+        private readonly string example3CSharpCode = @"private string SuccessMessage = string.Empty;
+        public FormModel ValidationForm { get; set; }
+
+        public class FormModel
+        {
+            [Range(typeof(double), ""1"", ""5"", ErrorMessage=""Your rate must be between {1}
+        and {0}
+        "")]
+        public double Value { get; set; }
+    }
+
+    protected override void OnInitialized()
+    {
+        ValidationForm = new FormModel();
+    }
+
+    private async void HandleValidSubmit()
+    {
+        SuccessMessage = ""Form Submitted Successfully!"";
+        await Task.Delay(3000);
+        SuccessMessage = string.Empty;
+        ValidationForm.Value = default;
+        StateHasChanged();
+    }";
     }
 }

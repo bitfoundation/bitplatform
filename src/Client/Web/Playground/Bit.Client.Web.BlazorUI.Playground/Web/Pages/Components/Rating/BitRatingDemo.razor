@@ -5,21 +5,22 @@
     <ComponentExampleBox Title="BitRating" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
         <ExamplePreview>
             <div>Large stars</div>
-            <BitRating Size="BitRatingSize.Large" @bind-Rating="RatingLargeValue" AriaLabelFormat="Select {0} of {1} stars" />
+            <BitRating Size="BitRatingSize.Large" @bind-Value="RatingLargeValue" AriaLabelFormat="Select {0} of {1} stars" />
+
             <div>Small stars, with 0 stars allowed</div>
-            <BitRating AllowZeroStars="true" @bind-Rating="RatingSmallValue" />
+            <BitRating AllowZeroStars="true" @bind-Value="RatingSmallValue" />
             <div>10 small stars</div>
             <div>
-                <BitRating Max="10" OnChange="@(v => RatingChangedText = $"Rating value changed to {v}")" @bind-Rating="RatingBoundValue" />
+                <BitRating Max="10" OnChange="@(v => RatingChangedText = $"Rating value changed to {v}")" @bind-Value="RatingBoundValue" />
                 <div class="m-t-10">
                     <span>@RatingChangedText</span>
                 </div>
                 <div>Disabled</div>
-                <BitRating IsEnabled="false" @bind-Rating="RatingReadOnlyValue" />
+                <BitRating IsEnabled="false" @bind-Value="RatingReadOnlyValue"/>
                 <div>Half star in readOnly mode</div>
-                <BitRating IsReadOnly="true" @bind-Rating="RatingReadOnlyValue" GetAriaLabel="@((value, max) => $"Half star in readOnly mode rating value is {value.ToString()} of {max.ToString()}")" />
+                <BitRating IsReadOnly="true" @bind-Value="RatingReadOnlyValue" GetAriaLabel="@((value, max) => $"Half star in readOnly mode rating value is {value.ToString()} of {max.ToString()}")"/>
                 <div>Custom icons</div>
-                <BitRating Icon="BitIconName.HeartFill" UnselectedIcon="BitIconName.Heart" AllowZeroStars="true" @bind-Rating="RatingCustomIconValue" />
+                <BitRating Icon="BitIconName.HeartFill" UnselectedIcon="BitIconName.Heart" AllowZeroStars="true" @bind-Value="RatingCustomIconValue"/>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -28,7 +29,7 @@
         <ExamplePreview>
             <div class="example-desc">BitRating component support two-way binding as well.</div>
             <div>
-                <BitRating Icon="BitIconName.Emoji2" UnselectedIcon="BitIconName.EmojiNeutral" AllowZeroStars="true" @bind-Rating="RatingOutsideValue" />
+                <BitRating Icon="BitIconName.Emoji2" UnselectedIcon="BitIconName.EmojiNeutral" AllowZeroStars="true" @bind-Value="RatingOutsideValue" />
                 <div>
                     <span>RatingOutsideValue: @RatingOutsideValue</span>
                 </div>
@@ -36,6 +37,31 @@
                     <BitButton OnClick="() => RatingOutsideValue = 5">Fully satisfied</BitButton>
                     <BitButton OnClick="() => RatingOutsideValue = 0">Have no idea</BitButton>
                 </div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="BitRating with validation" HTMLSourceCode="@example3HTMLCode" CSharpSourceCode="@example3CSharpCode" ExampleId="example2">
+        <ExamplePreview>
+            <div class="example-desc">BitRating component support validation as well.</div>
+            <div>
+                @if (string.IsNullOrEmpty(SuccessMessage))
+                {
+                    <EditForm Model="ValidationForm" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
+                        <DataAnnotationsValidator/>
+
+                        <BitRating AllowZeroStars="true" @bind-Value="ValidationForm.Value"/>
+                        <ValidationMessage For="@(() => ValidationForm.Value)"/>
+
+                        <BitButton ButtonType="BitButtonType.Submit">Submit</BitButton>
+                    </EditForm>
+                }
+                else
+                {
+                    <BitMessageBar MessageBarType="BitMessageBarType.Success" IsMultiline="false">
+                        @SuccessMessage
+                    </BitMessageBar>
+                }
             </div>
         </ExamplePreview>
     </ComponentExampleBox>

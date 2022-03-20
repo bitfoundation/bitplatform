@@ -212,7 +212,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Rating
         {
             var component = RenderComponent<BitRatingTest>(parameters =>
             {
-                parameters.Add(p => p.Rating, rating);
+                parameters.Add(p => p.Value, rating);
                 parameters.Add(p => p.Max, max);
             });
 
@@ -236,7 +236,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Rating
         {
             var component = RenderComponent<BitRatingTest>(parameters =>
             {
-                parameters.Add(p => p.DefaultRating, defaultRating);
+                parameters.Add(p => p.DefaultValue, defaultRating);
                 parameters.Add(p => p.Max, max);
             });
 
