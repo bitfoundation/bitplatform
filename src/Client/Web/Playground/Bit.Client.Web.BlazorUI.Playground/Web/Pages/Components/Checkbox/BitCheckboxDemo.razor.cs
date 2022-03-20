@@ -12,14 +12,8 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Checkbox
         private bool IsCheckBoxIndeterminate = true;
         private bool IsCheckBoxIndeterminateInCode = true;
 
-        private FormModel ValidationForm = new();
+        private BitCheckboxValidationModel ValidationForm = new();
         private string SuccessMessage = string.Empty;
-
-        public class FormModel
-        {
-            [Range(typeof(bool), "true", "true", ErrorMessage = "You must agree to the terms and conditions.")]
-            public bool TermsAgreement { get; set; }
-        }
 
         private async void HandleValidSubmit()
         {
@@ -291,10 +285,10 @@ else
 }";
 
         private readonly string example5CSharpCode = @"
-private FormModel ValidationForm = new();
+private BitCheckboxValidationModel ValidationForm = new();
 private string SuccessMessage = string.Empty;
 
-public class FormModel
+public class BitCheckboxValidationModel
 {
     [Range(typeof(bool), ""true"", ""true"", ErrorMessage = ""You must agree to the terms and conditions."")]
     public bool TermsAgreement { get; set; }
