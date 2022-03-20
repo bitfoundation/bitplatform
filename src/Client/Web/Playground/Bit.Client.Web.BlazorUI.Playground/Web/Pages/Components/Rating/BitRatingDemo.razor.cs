@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 using Bit.Client.Web.BlazorUI.Playground.Web.Models;
 using Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
@@ -8,9 +7,8 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Rating
 {
     public partial class BitRatingDemo
     {
-
         private string SuccessMessage = string.Empty;
-        public FormModel ValidationForm { get; set; }
+        public BitRatingDemoFormModel ValidationForm { get; set; }
 
         private string RatingChangedText = string.Empty;
 
@@ -21,15 +19,9 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Rating
         private double RatingCustomIconValue = 2.5;
         private double RatingOutsideValue = 0;
 
-        public class FormModel
-        {
-            [Range(typeof(double), "1", "5", ErrorMessage = "Your rate must be between {1} and {2}")]
-            public double Value { get; set; }
-        }
-
         protected override void OnInitialized()
         {
-            ValidationForm = new FormModel();
+            ValidationForm = new BitRatingDemoFormModel();
         }
 
         private async void HandleValidSubmit()
@@ -251,9 +243,9 @@ private double RatingOutsideValue = 0; ";
     </div>";
 
         private readonly string example3CSharpCode = @"private string SuccessMessage = string.Empty;
-        public FormModel ValidationForm { get; set; }
+        public BitRatingDemoFormModel ValidationForm { get; set; }
 
-        public class FormModel
+        public class BitRatingDemoFormModel
         {
             [Range(typeof(double), ""1"", ""5"", ErrorMessage=""Your rate must be between {1}
         and {0}
@@ -263,7 +255,7 @@ private double RatingOutsideValue = 0; ";
 
     protected override void OnInitialized()
     {
-        ValidationForm = new FormModel();
+        ValidationForm = new BitRatingDemoFormModel();
     }
 
     private async void HandleValidSubmit()

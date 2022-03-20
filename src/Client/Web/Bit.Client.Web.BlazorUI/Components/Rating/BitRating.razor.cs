@@ -54,7 +54,7 @@ namespace Bit.Client.Web.BlazorUI
 
         /// <summary>
         /// Default value. Must be a number between min and max. 
-        /// Only provide this if the CurrentValue is an uncontrolled component; otherwise, use the rating property.
+        /// Only provide this if the CurrentValue is an uncontrolled component; otherwise, use the Value property.
         /// </summary>
         [Parameter] public double? DefaultValue { get; set; }
 
