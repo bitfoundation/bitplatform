@@ -8,7 +8,8 @@
      class="@ClassBuilder.Value"
      id="@($"Rating{@UniqueId}")"
      role=@(!IsReadOnly ? "radiogroup" : null)
-     style="@StyleBuilder.Value">
+     style="@StyleBuilder.Value"
+     @onkeydown="HandleKeyDown">
 
     @for (int item = 1; item <= Max; item++)
     {

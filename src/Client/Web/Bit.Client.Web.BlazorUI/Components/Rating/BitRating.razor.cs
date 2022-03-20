@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 
 namespace Bit.Client.Web.BlazorUI
 {
@@ -148,6 +149,20 @@ namespace Bit.Client.Web.BlazorUI
 
             Rating = index;
             await OnChange.InvokeAsync(Rating);
+        }
+
+        private async Task HandleKeyDown(KeyboardEventArgs e)
+        {
+            
+            switch (e.Key)
+            {
+                case "ArrowLeft" when ((AllowZeroStars && Rating > 0) || Rating > 1):
+                    await HandleClick((int)Rating - 1);
+                    break;
+                case "ArrowRight" when Rating < Max:
+                    await HandleClick((int)Rating + 1);
+                    break;
+            }
         }
     }
 }
