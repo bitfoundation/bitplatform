@@ -1,5 +1,33 @@
 ﻿@import "../../Styles/Fluent/colors.fluent.scss", "../../Styles/functions.scss";
 
+@mixin getUnderlineStyle($isEnabel: true) {
+    .bit-dtp-wrapper {
+        display: flex;
+        width: 100%;
+        border-bottom: rem(1px) solid;
+
+        @if($isEnabel == true) {
+            border-bottom-color: $Grey130;
+        }
+        @else {
+            border-bottom-color: $Grey20;
+        }
+    }
+
+    .bit-dtp-label {
+        height: rem(32px);
+        padding: rem(5px) 0 rem(5px) rem(12px);
+        margin: 0 rem(8px) 0 0;
+        line-height: rem(22px);
+    }
+
+    .bit-dtp-field-grp {
+        border: none;
+        flex: 1 1 0px;
+        text-align: left;
+    }
+}
+
 .editable-input {
     input {
         cursor: default;
@@ -33,6 +61,51 @@
         input {
             cursor: pointer;
         }
+    }
+}
+
+.bit-dtp-field-grp {
+    position: relative;
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    height: rem(32px);
+    margin: 0;
+    padding: 0;
+    box-shadow: none;
+    border-radius: rem(2px);
+    border: rem(1px) solid $Grey130;
+    box-sizing: border-box;
+    background-color: $White;
+    cursor: text;
+}
+
+.bit-dtp-underlined-fluent {
+    @include getUnderlineStyle();
+}
+
+.bit-dtp-underlined-disabled-fluent {
+    @include getUnderlineStyle( $isEnabel: false);
+}
+
+.bit-dtp-focused-fluent {
+    .bit-dtp-field-grp::after {
+        position: absolute;
+        inset: rem(-1px);
+        border: rem(2px) solid $Primary;
+        border-radius: rem(2px);
+        content: "";
+        pointer-events: none;
+    }
+}
+
+.bit-dtp-underlined-focused-fluent {
+    .bit-dtp-wrapper::after {
+        position: absolute;
+        border-bottom: rem(2px) solid $Primary;
+        inset: rem(32px) 0;
+        content: "";
+        pointer-events: none;
     }
 }
 

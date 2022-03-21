@@ -28,6 +28,7 @@ namespace Bit.Client.Web.BlazorUI
         private bool showMonthPicker = true;
         private bool isMonthPickerOverlayOnTop;
         private int monthLength;
+        private string focusClass = string.Empty;
         private bool ValueHasBeenSet;
 
         [Inject] public IJSRuntime? JSRuntime { get; set; }
@@ -114,6 +115,11 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public EventCallback<FocusEventArgs> OnFocusOut { get; set; }
 
         /// <summary>
+        /// Callback for when focus moves into the input
+        /// </summary>
+        [Parameter] public EventCallback<FocusEventArgs> OnFocus { get; set; }
+
+        /// <summary>
         /// Callback for when the date changes
         /// </summary>
         [Parameter] public EventCallback<DateTimeOffset?> OnSelectDate { get; set; }
@@ -160,11 +166,23 @@ namespace Bit.Client.Web.BlazorUI
         /// </summary>
         [Parameter] public bool ShowWeekNumbers { get; set; }
 
+        public string FocusClass
+        {
+            get => focusClass;
+            set
+            {
+                focusClass = value;
+                ClassBuilder.Reset();
+            }
+        }
+
         public string CalloutId { get; set; } = string.Empty;
         public string OverlayId { get; set; } = string.Empty;
         public string WrapperId { get; set; } = string.Empty;
         public string MonthAndYearId { get; set; } = Guid.NewGuid().ToString();
         public string ActiveDescendantId { get; set; } = Guid.NewGuid().ToString();
+        public string TextFieldId { get; set; } = string.Empty;
+        public string LabelId { get; set; } = string.Empty;
 
         [JSInvokable("CloseCallout")]
         public void CloseCalloutBeforeAnotherCalloutIsOpened()
@@ -181,6 +199,15 @@ namespace Bit.Client.Web.BlazorUI
 
             ClassBuilder.Register(() => Culture.TextInfo.IsRightToLeft
                 ? $"{RootElementClass}-rtl" : string.Empty);
+
+            ClassBuilder.Register(() => IsUnderlined
+                ? $"{RootElementClass}-underlined-{(IsEnabled is false ? "disabled-" : string.Empty)}{VisualClassRegistrar()}" : string.Empty);
+
+            ClassBuilder.Register(() => HasBorder is false
+                ? $"{RootElementClass}-no-border-{VisualClassRegistrar()}" : string.Empty);
+
+            ClassBuilder.Register(() => FocusClass.HasValue()
+                ? $"{RootElementClass}-{(IsUnderlined ? "underlined-" : null)}{FocusClass}-{VisualClassRegistrar()}" : string.Empty);
         }
 
         protected override Task OnInitializedAsync()
@@ -188,6 +215,9 @@ namespace Bit.Client.Web.BlazorUI
             CalloutId = $"DatePicker-Callout{UniqueId}";
             OverlayId = $"DatePicker-Overlay{UniqueId}";
             WrapperId = $"DatePicker-Wrapper{UniqueId}";
+            TextFieldId = $"DatePicker-TextField{UniqueId}";
+            LabelId = $"DatePicker-Label{UniqueId}";
+
             return base.OnInitializedAsync();
         }
 
@@ -219,6 +249,7 @@ namespace Bit.Client.Web.BlazorUI
         {
             if (IsEnabled)
             {
+                FocusClass = "focused";
                 await OnFocusIn.InvokeAsync(eventArgs);
             }
         }
@@ -227,8 +258,28 @@ namespace Bit.Client.Web.BlazorUI
         {
             if (IsEnabled)
             {
+                FocusClass = string.Empty;
                 await OnFocusOut.InvokeAsync(eventArgs);
             }
+        }
+
+        private async Task HandleFocus(FocusEventArgs e)
+        {
+            if (IsEnabled)
+            {
+                FocusClass = "focused";
+                await OnFocus.InvokeAsync(e);
+            }
+        }
+
+        private async Task HandleChange(ChangeEventArgs e)
+        {
+            if (IsEnabled is false) return;
+            if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+
+            //CurrentValueAsString = e.Value?.ToString();
+            //await OnChange.InvokeAsync(Value);
+            await HandleTextInputChanged(e.Value?.ToString());
         }
 
         public async Task HandleTextInputChanged(string value)

@@ -62,7 +62,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Pickers
                     parameters.Add(p => p.IsEnabled, isEnabled);
                 });
 
-            var bitDatePickerInput = component.Find(".bit-txt-fluent>div input");
+            var bitDatePickerInput = component.Find(".bit-dtp-wrapper");
             bitDatePickerInput.Click();
 
             Assert.AreEqual(component.Instance.ClickedValue, count);
