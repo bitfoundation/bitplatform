@@ -21,7 +21,7 @@
             <BitLabel>Email</BitLabel>
             <BitTextField @bind-Value="Email"
                           Placeholder="Email"
-                          OnChange="WrapHandled(CheckSignUpButtonEnable)"
+                          OnKeyUp="WrapHandled(CheckSignUpButtonEnable)"
                           OnFocus="() => EmailErrorMessage = null" />
             <div class="form-input-error">@EmailErrorMessage</div>
         </div>
@@ -30,7 +30,7 @@
             <BitTextField @bind-Value="Password"
                           Type="BitTextFieldType.Password"
                           CanRevealPassword="true" Placeholder="Password"
-                          OnChange="WrapHandled(CheckSignUpButtonEnable)"
+                          OnKeyUp="WrapHandled(CheckSignUpButtonEnable)"
                           OnFocus="() => PasswordErrorMessage = null" />
             <div class="form-input-error">@PasswordErrorMessage</div>
         </div>

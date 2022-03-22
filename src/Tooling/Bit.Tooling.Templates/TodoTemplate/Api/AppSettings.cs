@@ -36,7 +36,7 @@
     {
         public string Host { get; set; }
         public int Port { get; set; }
-        public string DefaultEmailFrom { get; set; }
+        public string DefaulFromEmail { get; set; }
         public string DefaultFromName { get; set; }
     }
 }

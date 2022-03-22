@@ -83,7 +83,7 @@ public static class Services
 
         services.AddTodoTemplateJwt(configuration);
 
-        services.AddFluentEmail(appSettings.EmailSettings.DefaultEmailFrom, appSettings.EmailSettings.DefaultFromName)
+        services.AddFluentEmail(appSettings.EmailSettings.DefaulFromEmail, appSettings.EmailSettings.DefaultFromName)
             .AddRazorRenderer()
             .AddSmtpSender(appSettings.EmailSettings.Host, appSettings.EmailSettings.Port);
 

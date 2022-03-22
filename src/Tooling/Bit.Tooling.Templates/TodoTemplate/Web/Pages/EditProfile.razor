@@ -58,7 +58,7 @@
                 <BitLabel>Full name</BitLabel>
                 <BitTextField @bind-Value="UserToEdit.FullName"
                           Placeholder="Full name"
-                          OnChange="WrapHandled(CheckSaveButtonEnabled)" />
+                          OnKeyUp="WrapHandled(CheckSaveButtonEnabled)" />
             </div>
             <div class="form-input-container">
                 <BitLabel>Birthday</BitLabel>

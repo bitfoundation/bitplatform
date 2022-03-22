@@ -28,14 +28,6 @@ public partial class ResetPassword
     public BitMessageBarType ResetPasswordMessageType { get; set; }
     public string? ResetPasswordMessage { get; set; }
 
-    protected override void OnInitialized()
-    {
-        base.OnInitialized();
-
-        var base64EncodedBytes = Convert.FromBase64String(Token!);
-        Token = System.Text.Encoding.UTF8.GetString(base64EncodedBytes);
-    }
-
     private void CheckSubmitButtonEnabled()
     {
         if (string.IsNullOrEmpty(Email))
@@ -89,16 +81,16 @@ public partial class ResetPassword
             return;
         }
 
-        IsLoading = true;
-        IsSubmitButtonEnabled = false;
-        ResetPasswordMessage = null;
-
         if (ValidateResetPassword() is false)
         {
             IsLoading = false;
             IsSubmitButtonEnabled = true;
             return;
         }
+
+        IsLoading = true;
+        IsSubmitButtonEnabled = false;
+        ResetPasswordMessage = null;
 
         try
         {

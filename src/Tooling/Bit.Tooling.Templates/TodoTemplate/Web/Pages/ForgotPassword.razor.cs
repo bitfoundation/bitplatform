@@ -58,10 +58,6 @@ public partial class ForgotPassword
             return;
         }
 
-        IsLoading = true;
-        IsSubmitButtonEnabled = false;
-        ForgotPasswordMessage = null;
-
         if (ValidateForgotPassword() is false)
         {
             IsLoading = false;
@@ -69,12 +65,16 @@ public partial class ForgotPassword
             return;
         }
 
+        IsLoading = true;
+        IsSubmitButtonEnabled = false;
+        ForgotPasswordMessage = null;
+
         try
         {
-            await HttpClient.PostAsJsonAsync("Auth/SendEmailForgotPasswordLink", new()
+            await HttpClient.PostAsJsonAsync("Auth/SendResetPasswordEmail", new()
             {
                 Email = Email
-            }, ToDoTemplateJsonContext.Default.SendEmailConfirmLinkRequestDto);
+            }, ToDoTemplateJsonContext.Default.SendResetPasswordEmailRequestDto);
 
             ForgotPasswordMessageType = BitMessageBarType.Success;
 

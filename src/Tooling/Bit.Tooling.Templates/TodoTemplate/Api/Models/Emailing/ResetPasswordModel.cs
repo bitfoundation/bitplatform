@@ -1,8 +1,8 @@
 ﻿namespace TodoTemplate.Api.Models.Emailing;
 
-public class EmailConfirmationModel
+public class ResetPasswordModel
 {
     public string? DisplayName { get; set; }
 
-    public string? ConfirmationLink { get; set; }
+    public string? ResetPasswordLink { get; set; }
 }

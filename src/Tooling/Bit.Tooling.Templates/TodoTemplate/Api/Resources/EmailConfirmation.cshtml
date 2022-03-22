@@ -1,6 +1,6 @@
 @using TodoTemplate.Api.Models.Emailing
 
-@model EmailLinksModel
+@model EmailConfirmationModel
 
 <!DOCTYPE html>
 <html lang="en">
@@ -19,13 +19,13 @@
     <br />
     Please verify your email address.
     <hr />
-    <a href="@Model.Link">Click to confirm!</a>
+    <a href="@Model.ConfirmationLink">Click to confirm!</a>
     <br />
     <br />
     Or, copy the link below to your browser address bar:
     <br />
     <br />
-    @Model.Link
+    @Model.ConfirmationLink
     <hr />
 </body>
 </html>

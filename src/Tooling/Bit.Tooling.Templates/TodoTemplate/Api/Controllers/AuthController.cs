@@ -4,6 +4,7 @@ using FluentEmail.Core;
 using TodoTemplate.Api.Resources;
 using TodoTemplate.Api.Models.Emailing;
 using Microsoft.AspNetCore.Hosting.Server;
+using System.Web;
 
 namespace TodoTemplate.Api.Controllers;
 
@@ -67,13 +68,13 @@ public class AuthController : ControllerBase
         if (!result.Succeeded)
             throw new ResourceValidationException(result.Errors.Select(e => e.Code).ToArray());
 
-        await SendEmailConfirmLink(new() { Email = userToAdd.Email }, cancellationToken);
+        await SendConfirmationEmail(new() { Email = userToAdd.Email }, cancellationToken);
     }
 
     [HttpPost("[action]")]
-    public async Task SendEmailConfirmLink(SendEmailConfirmLinkRequestDto sendConfirmLinkEmailRequest, CancellationToken cancellationToken)
+    public async Task SendConfirmationEmail(SendConfirmationEmailRequestDto sendConfirmationEmailRequest, CancellationToken cancellationToken)
     {
-        var user = await _userManager.FindByEmailAsync(sendConfirmLinkEmailRequest.Email);
+        var user = await _userManager.FindByEmailAsync(sendConfirmationEmailRequest.Email);
 
         var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
 
@@ -87,12 +88,12 @@ public class AuthController : ControllerBase
 
         var result = await _fluentEmail
             .To(user.Email, user.DisplayName)
-            .Subject(EmailStrings.ConfirmationLinkEmailSubject)
-            .UsingTemplateFromEmbedded($"TodoTemplate.Api.Resources.EmailConfirmation.cshtml",
-                                    new EmailLinksModel
+            .Subject(EmailStrings.ConfirmationEmailSubject)
+            .UsingTemplateFromEmbedded("TodoTemplate.Api.Resources.EmailConfirmation.cshtml",
+                                    new EmailConfirmationModel
                                     {
                                         DisplayName = user.DisplayName,
-                                        Link = confirmationLink
+                                        ConfirmationLink = confirmationLink
                                     },
                                     assembly)
             .SendAsync(cancellationToken);
@@ -102,18 +103,17 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("[action]")]
-    public async Task SendEmailForgotPasswordLink(SendEmailForgotPasswordLinkRequestDto sendConfirmLinkEmailRequest, CancellationToken cancellationToken)
+    public async Task SendResetPasswordEmail(SendResetPasswordEmailRequestDto sendResetPasswordEmailRequest
+        , CancellationToken cancellationToken)
     {
-        var user = await _userManager.FindByEmailAsync(sendConfirmLinkEmailRequest.Email);
+        var user = await _userManager.FindByEmailAsync(sendResetPasswordEmailRequest.Email);
 
         if (user is null)
             throw new BadRequestException(nameof(ErrorStrings.UserNameNotFound));
 
         var token = await _userManager.GeneratePasswordResetTokenAsync(user);
 
-        var tokenBase64 = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(token));
-
-        var resetPasswordLink = $"reset-password?email={user.Email}&token={tokenBase64}";
+        var resetPasswordLink = $"reset-password?email={user.Email}&token={HttpUtility.UrlEncode(token)}";
 
 #if BlazorServer
         resetPasswordLink = $"{_appSettings.WebServerAddress}{resetPasswordLink}";
@@ -125,12 +125,12 @@ public class AuthController : ControllerBase
 
         var result = await _fluentEmail
             .To(user.Email, user.DisplayName)
-            .Subject(EmailStrings.ResetPasswordLinkEmailSubject)
-            .UsingTemplateFromEmbedded($"TodoTemplate.Api.Resources.ResetPassword.cshtml",
-                                    new EmailLinksModel
+            .Subject(EmailStrings.ResetPasswordEmailSubject)
+            .UsingTemplateFromEmbedded("TodoTemplate.Api.Resources.ResetPassword.cshtml",
+                                    new ResetPasswordModel
                                     {
                                         DisplayName = user.DisplayName,
-                                        Link = resetPasswordLink
+                                        ResetPasswordLink = resetPasswordLink
                                     },
                                     assembly)
             .SendAsync(cancellationToken);
@@ -142,6 +142,9 @@ public class AuthController : ControllerBase
     [HttpGet("[action]")]
     public async Task<ActionResult> ConfirmEmail(string email, string token)
     {
+        email = HttpUtility.UrlDecode(email);
+        token = HttpUtility.UrlDecode(token);
+
         var user = await _userManager.FindByEmailAsync(email);
 
         if (user is null)
