@@ -78,10 +78,49 @@
     box-sizing: border-box;
     background-color: $White;
     cursor: text;
+
+    input {
+        width: 100%;
+        min-width: 0;
+        height: 100%;
+        border: none;
+        border-radius: 0;
+        outline: 0;
+        padding: 0 rem(8px);
+        margin: 0;
+        box-shadow: none;
+        box-sizing: border-box;
+        background: none transparent;
+        font-size: rem(14px);
+        font-weight: 400;
+        color: $Grey160;
+        text-overflow: ellipsis;
+        font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+        -webkit-font-smoothing: antialiased;
+    }
 }
 
 .bit-dtp-underlined-fluent {
     @include getUnderlineStyle();
+}
+
+.bit-dtp-disabled-fluent {
+    .bit-dtp-label {
+        color: $Grey90;
+    }
+
+    .bit-dtp-field-grp {
+        border: rem(1px) solid $Grey20;
+        background: $White;
+        color: $Grey90;
+        cursor: default;
+        border: none $Grey20;
+        background: none $Grey20;
+    }
+
+    input {
+        color: $Grey90;
+    }
 }
 
 .bit-dtp-underlined-disabled-fluent {
@@ -106,6 +145,12 @@
         inset: rem(32px) 0;
         content: "";
         pointer-events: none;
+    }
+}
+
+.bit-dtp-no-border-fluent {
+    .bit-dtp-field-grp {
+        border: none;
     }
 }
 
@@ -551,6 +596,12 @@
     .header-title {
         padding: 0 rem(10px) 0 rem(4px);
         text-align: right;
+    }
+}
+
+.bit-dtp-invalid-fluent {
+    .bit-dtp-field-grp {
+        border-color: $Red20;
     }
 }
 

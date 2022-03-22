@@ -1,5 +1,5 @@
 ﻿@namespace Bit.Client.Web.BlazorUI
-@inherits BitComponentBase
+@inherits BitInputBase<DateTimeOffset?>
 
 <div @ref="RootElement"
      @attributes="HtmlAttributes"
@@ -19,13 +19,13 @@
          @onclick="HandleClick">
 
         <div class="bit-dtp-field-grp @(AllowTextInput ? "editable-input" : null)">
-            <input id="@TextFieldId"
-                   class="txt-field"
+            <input @attributes="InputHtmlAttributes"
+                   id="@TextFieldId"
                    disabled=@(!IsEnabled)
                    role="combobox"
                    readonly=@(!AllowTextInput)
                    type="text"
-                   value="@GetSelectedDateString()"
+                   value="@CurrentValueAsString"
                    placeholder="@Placeholder"
                    tabindex="@TabIndex"
                    aria-label="@AriaLabel"
@@ -53,7 +53,7 @@
             <div class="bit-dtp-group"
                  role="group"
                  aria-label="">
-                <div aria-live="polite" aria-atomic="true">Selected date @selectedDate</div>
+                <div aria-live="polite" aria-atomic="true">Selected date @CurrentValueAsString</div>
                 @if ((ShowMonthPickerAsOverlay && !isMonthPickerOverlayOnTop) || !ShowMonthPickerAsOverlay)
                 {
                     <div class="day-picker-wrapper">

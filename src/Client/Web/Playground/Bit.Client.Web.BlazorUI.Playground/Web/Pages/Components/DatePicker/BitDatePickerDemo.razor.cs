@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Bit.Client.Web.BlazorUI.Playground.Web.Models;
 using Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 
@@ -8,6 +9,21 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.DatePicker
     public partial class BitDatePickerDemo
     {
         private DateTimeOffset? selectedDate = new DateTimeOffset(new DateTime(2020, 1, 17), DateTimeOffset.Now.Offset);
+        private FormValidationDatePickerModel formValidationDatePickerModel = new();
+        private string SuccessMessage = string.Empty;
+
+        private async void HandleValidSubmit()
+        {
+            SuccessMessage = "Form Submitted Successfully!";
+            await Task.Delay(3000);
+            SuccessMessage = string.Empty;
+            StateHasChanged();
+        }
+
+        private void HandleInvalidSubmit()
+        {
+            SuccessMessage = string.Empty;
+        }
 
         private readonly List<ComponentParameter> componentParameters = new()
         {

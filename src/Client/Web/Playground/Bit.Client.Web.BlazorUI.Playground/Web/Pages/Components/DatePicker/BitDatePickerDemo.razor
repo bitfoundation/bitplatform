@@ -64,4 +64,37 @@
             </BitDatePicker>
         </ExamplePreview>
     </ComponentExampleBox>
+
+    <ComponentExampleBox Title="BitDatePicker validation" HTMLSourceCode="@example7HTMLCode" ExampleId="example8">
+        <ExamplePreview>
+            @if (string.IsNullOrEmpty(SuccessMessage))
+            {
+                <EditForm Model="formValidationDatePickerModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
+                    <DataAnnotationsValidator />
+
+                    <div class="validation-summary">
+                        <ValidationSummary />
+                    </div>
+
+                    <div>
+                        <BitDatePicker Style="width: 300px" @bind-Value="formValidationDatePickerModel.Date" />
+
+                        <ValidationMessage For="@(() => formValidationDatePickerModel.Date)" />
+                    </div>
+
+                    <br />
+
+                    <BitButton ButtonType="BitButtonType.Submit">
+                        Submit
+                    </BitButton>
+                </EditForm>
+            }
+            else
+            {
+                <BitMessageBar MessageBarType="BitMessageBarType.Success" IsMultiline="false">
+                    @SuccessMessage
+                </BitMessageBar>
+            }
+        </ExamplePreview>
+    </ComponentExampleBox>
 </ComponentDemo>
