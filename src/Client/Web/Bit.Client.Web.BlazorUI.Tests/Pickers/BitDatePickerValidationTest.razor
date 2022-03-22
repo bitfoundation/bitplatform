@@ -1,0 +1,54 @@
+﻿@using System.Globalization
+
+<EditForm Model="@TestModel" OnValidSubmit="@HandleValidSubmit" OnInvalidSubmit="@HandleInvalidSubmit">
+    <DataAnnotationsValidator />
+
+    <CascadingValue Value="Visual">
+        <BitDatePicker IsEnabled="IsEnabled"
+                       Culture="Culture"
+                       @bind-Value="@TestModel.Value"
+                       Placeholder="@Placeholder"
+                       GoToToday="@GoToToday"
+                       IsOpen="IsOpen"
+                       OnClick="HandleClick"
+                       OnSelectDate="HandleSelectDate">
+        </BitDatePicker>
+    </CascadingValue>
+
+</EditForm>
+
+@code {
+    [Parameter] public Visual Visual { get; set; }
+    [Parameter] public bool IsEnabled { get; set; }
+    [Parameter] public CultureInfo Culture { get; set; } = CultureInfo.CurrentUICulture;
+    [Parameter] public BitDatePickerTestModel TestModel { get; set; }
+    [Parameter] public DateTimeOffset? Value { get; set; }
+    [Parameter] public string Placeholder { get; set; }
+    [Parameter] public string GoToToday { get; set; }
+    [Parameter] public bool IsOpen { get; set; }
+
+    public int ClickedValue { get; set; }
+    public int SelectedDateValue { get; set; }
+    public int ValidCount { get; set; }
+    public int InvalidCount { get; set; }
+
+    public void HandleClick(MouseEventArgs e)
+    {
+        ClickedValue++;
+    }
+
+    public void HandleSelectDate(DateTimeOffset? value)
+    {
+        SelectedDateValue++;
+    }
+
+    private void HandleValidSubmit()
+    {
+        ValidCount++;
+    }
+
+    private void HandleInvalidSubmit()
+    {
+        InvalidCount++;
+    }
+}
