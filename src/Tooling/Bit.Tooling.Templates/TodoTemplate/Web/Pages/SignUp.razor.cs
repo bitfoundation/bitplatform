@@ -72,15 +72,9 @@ public partial class SignUp
 
     private async Task DoSignUp()
     {
-        if (IsLoading)
+        var isSignUpInValid = ValidateSignUp() is false;
+        if (IsLoading || isSignUpInValid)
         {
-            return;
-        }
-
-        if (ValidateSignUp() is false)
-        {
-            IsLoading = false;
-            IsSignUpButtonEnabled = true;
             return;
         }
 

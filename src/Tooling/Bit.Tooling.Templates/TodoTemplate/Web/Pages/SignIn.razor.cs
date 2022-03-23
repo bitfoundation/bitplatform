@@ -6,7 +6,7 @@ public partial class SignIn
 {
     public string? Email { get; set; }
     public string? Password { get; set; }
-    
+
     public string? EmailErrorMessage { get; set; }
     public string? PasswordErrorMessage { get; set; }
 
@@ -55,18 +55,12 @@ public partial class SignIn
 
     private async Task DoSignIn()
     {
-        if (IsLoading)
+        var isSigninInValid = ValidateSignIn() is false;
+        if (IsLoading || isSigninInValid)
         {
             return;
         }
-
-        if (ValidateSignIn() is false)
-        {
-            IsLoading = false;
-            IsSignInButtonEnabled = true;
-            return;
-        }
-
+        
         IsLoading = true;
         IsSignInButtonEnabled = false;
         SignInMessage = null;
