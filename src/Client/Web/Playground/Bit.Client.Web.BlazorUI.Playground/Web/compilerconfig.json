@@ -102,5 +102,9 @@
   {
     "outputFile": "Pages/Components/TextField/BitTextFieldDemo.razor.css",
     "inputFile": "Pages/Components/TextField/BitTextFieldDemo.razor.scss"
+  },
+  {
+    "outputFile": "Pages/Components/RadioButtonList/BitRadioButtonListDemo.razor.css",
+    "inputFile": "Pages/Components/RadioButtonList/BitRadioButtonListDemo.razor.scss"
   }
 ]

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.Linq.Expressions;
 using System.Text;
@@ -13,8 +14,6 @@ namespace Bit.Client.Web.BlazorUI
     {
         private bool isRequired;
         private string? imageSizeStyle;
-        private TValue? value;
-        private bool ValueHasBeenSet;
 
         /// <summary>
         /// If true, an option must be selected in the RadioButtonList.
@@ -49,27 +48,6 @@ namespace Bit.Client.Web.BlazorUI
         /// Name of RadioButtonList, this name is used to group each item into the same logical RadioButtonList
         /// </summary>
         [Parameter] public string Name { get; set; } = Guid.NewGuid().ToString();
-
-        /// <summary>
-        /// Value of RadioButtonList, the value of selected item set on it
-        /// </summary>
-        [Parameter]
-        public TValue? Value
-        {
-            get => value;
-            set
-            {
-                if (EqualityComparer<TValue>.Default.Equals(value, this.value)) return;
-
-                this.value = value;
-                _ = ValueChanged.InvokeAsync(value);
-            }
-        }
-
-        /// <summary>
-        /// Callback for when the input value changes
-        /// </summary>
-        [Parameter] public EventCallback<TValue?> ValueChanged { get; set; }
 
         /// <summary>
         /// Sets the data source that populates the items of the list.
@@ -169,6 +147,9 @@ namespace Bit.Client.Web.BlazorUI
         {
             ClassBuilder.Register(() => IsEnabled && IsRequired
                                        ? $"{RootElementClass}-required-{VisualClassRegistrar()}" : string.Empty);
+
+            ClassBuilder.Register(() => ValueInvalid is true 
+                                       ? $"{RootElementClass}-invalid-{VisualClassRegistrar()}" : string.Empty);
         }
 
         protected override Task OnInitializedAsync()
@@ -234,7 +215,7 @@ namespace Bit.Client.Web.BlazorUI
         {
             if (IsEnabled is false) return;
 
-            Value = e.Value.ConvertTo<TValue>();
+            CurrentValue = e.Value.ConvertTo<TValue>();
 
             await OnChange.InvokeAsync(e);
         }
@@ -271,7 +252,7 @@ namespace Bit.Client.Web.BlazorUI
 
         private bool GetIsCheckedItem(TItem item)
         {
-            if (Value is null) return false;
+            if (CurrentValue is null) return false;
 
             var itemValue = item.GetValueFromProperty<TValue>(ValueField);
 
@@ -316,5 +297,9 @@ namespace Bit.Client.Web.BlazorUI
         }
 
         private string GetLabelClassNameItem(TItem item) => GetImageSrcItem(item).HasValue() || GetIconNameItem(item).HasValue ? "bit-rbli-lbl-with-img" : "bit-rbli-lbl";
+
+        /// <inheritdoc />
+        protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TValue result, [NotNullWhen(false)] out string? validationErrorMessage)
+            => throw new NotSupportedException($"This component does not parse string inputs. Bind to the '{nameof(CurrentValue)}' property, not '{nameof(CurrentValueAsString)}'.");
     }
 }
