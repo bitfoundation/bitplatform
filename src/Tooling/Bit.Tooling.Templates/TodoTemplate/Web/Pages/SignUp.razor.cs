@@ -77,16 +77,16 @@ public partial class SignUp
             return;
         }
 
-        IsLoading = true;
-        IsSignUpButtonEnabled = false;
-        SignUpMessage = null;
-
         if (ValidateSignUp() is false)
         {
             IsLoading = false;
             IsSignUpButtonEnabled = true;
             return;
         }
+
+        IsLoading = true;
+        IsSignUpButtonEnabled = false;
+        SignUpMessage = null;
 
         try
         {

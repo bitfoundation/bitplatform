@@ -60,16 +60,16 @@ public partial class SignIn
             return;
         }
 
-        IsLoading = true;
-        IsSignInButtonEnabled = false;
-        SignInMessage = null;
-
         if (ValidateSignIn() is false)
         {
             IsLoading = false;
             IsSignInButtonEnabled = true;
             return;
         }
+
+        IsLoading = true;
+        IsSignInButtonEnabled = false;
+        SignInMessage = null;
 
         try
         {
