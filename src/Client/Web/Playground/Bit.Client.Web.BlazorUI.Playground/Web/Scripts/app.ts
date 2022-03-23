@@ -1,15 +1,18 @@
 ﻿declare var hljs: any;
 
-var headerBtn = document.getElementById("headerBtn") ?? new HTMLElement();
+const headerBtn = document.getElementById("headerBtn");
 
-window.addEventListener('scroll', () => {
-    if (document.body.scrollTop > 10 || document.documentElement.scrollTop > 10) {
-        headerBtn.style.display = "flex";
-    } else {
-        headerBtn.style.display = "none";
-    }
-}, true);
+if (headerBtn instanceof HTMLElement) {
+    window.addEventListener('scroll', () => {
 
+        if (document.body.scrollTop > 10 || document.documentElement.scrollTop > 10) {
+            headerBtn.style.display = "flex";
+        } else {
+            headerBtn.style.display = "none";
+        }
+
+    }, true);
+}
 
 function toggleBodyOverflow(isMenuOpen: boolean) {
     if (window.innerWidth < 1024) {
