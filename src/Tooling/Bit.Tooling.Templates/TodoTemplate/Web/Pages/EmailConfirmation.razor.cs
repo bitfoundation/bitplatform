@@ -1,6 +1,4 @@
-﻿using System.Web;
-
-namespace TodoTemplate.App.Pages;
+﻿namespace TodoTemplate.App.Pages;
 
 public partial class EmailConfirmation
 {
@@ -57,10 +55,10 @@ public partial class EmailConfirmation
 
         try
         {
-            await HttpClient.PostAsJsonAsync("Auth/SendEmailConfirmLink", new()
+            await HttpClient.PostAsJsonAsync("Auth/SendConfirmationEmail", new()
             {
                 Email = Email
-            }, ToDoTemplateJsonContext.Default.SendEmailConfirmLinkRequestDto);
+            }, ToDoTemplateJsonContext.Default.SendConfirmationEmailRequestDto);
 
             EmailConfirmationMessageType = BitMessageBarType.Success;
 

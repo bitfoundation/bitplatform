@@ -39,8 +39,8 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Disabled TextField" 
-                         HTMLSourceCode="@example4HTMLCode" 
+    <ComponentExampleBox Title="Disabled TextField"
+                         HTMLSourceCode="@example4HTMLCode"
                          ExampleId="example4">
         <ExamplePreview>
             <div>
@@ -52,8 +52,8 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Controlled TextField" 
-                         HTMLSourceCode="@example5HTMLCode" 
+    <ComponentExampleBox Title="Controlled TextField"
+                         HTMLSourceCode="@example5HTMLCode"
                          ExampleId="example5">
         <ExamplePreview>
             <div>
@@ -62,8 +62,8 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="TextField With An Icon" 
-                         HTMLSourceCode="@example6HTMLCode" 
+    <ComponentExampleBox Title="TextField With An Icon"
+                         HTMLSourceCode="@example6HTMLCode"
                          ExampleId="example6">
         <ExamplePreview>
             <div>
@@ -72,9 +72,9 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Password TextField With Reveal Button" 
-                         HTMLSourceCode="@example7HTMLCode" 
-                         CSharpSourceCode="@example7CSharpCode" 
+    <ComponentExampleBox Title="Password TextField With Reveal Button"
+                         HTMLSourceCode="@example7HTMLCode"
+                         CSharpSourceCode="@example7CSharpCode"
                          ExampleId="example7">
         <ExamplePreview>
             <div>
@@ -83,8 +83,8 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Required TextField" 
-                         HTMLSourceCode="@example8HTMLCode" 
+    <ComponentExampleBox Title="Required TextField"
+                         HTMLSourceCode="@example8HTMLCode"
                          ExampleId="example8">
         <ExamplePreview>
             <div>
@@ -175,34 +175,41 @@
                          CSharpSourceCode="@example13CSharpCode"
                          ExampleId="example13">
         <ExamplePreview>
-            <EditForm Model="validationTextFieldModel">
-                <DataAnnotationsValidator />
-                <div>
-                    <BitTextField Label="Required"
-                                  IsRequired=true @bind-Value="validationTextFieldModel.Text" />
-                    <ValidationMessage For="()=> validationTextFieldModel.Text" />
-                </div>
-                <div>
-                    <BitTextField Label="numeric validation"
-                                  @bind-Value="validationTextFieldModel.NumericText" />
-                    <ValidationMessage For="()=> validationTextFieldModel.NumericText" />
-                </div>
-                <div>
-                    <BitTextField Label="Character validation"
-                                  @bind-Value="validationTextFieldModel.CharacterText" />
-                    <ValidationMessage For="()=> validationTextFieldModel.CharacterText" />
-                </div>
-                <div>
-                    <BitTextField Label="Email validation"
-                                  @bind-Value="validationTextFieldModel.EmailText" />
-                    <ValidationMessage For="()=> validationTextFieldModel.EmailText" />
-                </div>
-                <div>
-                    <BitTextField Label="Length character validation"
-                                  @bind-Value="validationTextFieldModel.RangeText" />
-                    <ValidationMessage For="()=> validationTextFieldModel.RangeText" />
-                </div>
-            </EditForm>
+            @if (formIsValidSubmit is false)
+            {
+                <EditForm Model="validationTextFieldModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
+                    <DataAnnotationsValidator />
+                    <div class="form-item">
+                        <BitTextField Label="Required" @bind-Value="validationTextFieldModel.Text" />
+                        <ValidationMessage For="() => validationTextFieldModel.Text" />
+                    </div>
+                    <div class="form-item">
+                        <BitTextField Label="Numeric validation" @bind-Value="validationTextFieldModel.NumericText" />
+                        <ValidationMessage For="() => validationTextFieldModel.NumericText" />
+                    </div>
+                    <div class="form-item">
+                        <BitTextField Label="Character validation" @bind-Value="validationTextFieldModel.CharacterText" />
+                        <ValidationMessage For="() => validationTextFieldModel.CharacterText" />
+                    </div>
+                    <div class="form-item">
+                        <BitTextField Label="Email validation" @bind-Value="validationTextFieldModel.EmailText" />
+                        <ValidationMessage For="() => validationTextFieldModel.EmailText" />
+                    </div>
+                    <div class="form-item">
+                        <BitTextField Label="Length character validation" @bind-Value="validationTextFieldModel.RangeText" />
+                        <ValidationMessage For="() => validationTextFieldModel.RangeText" />
+                    </div>
+                    <BitButton ButtonType="BitButtonType.Submit">
+                        Submit
+                    </BitButton>
+                </EditForm>
+            }
+            else
+            {
+                <BitMessageBar MessageBarType="BitMessageBarType.Success" IsMultiline="false">
+                    The form is valid to submit successfully.
+                </BitMessageBar>
+            }
         </ExamplePreview>
     </ComponentExampleBox>
 </ComponentDemo>

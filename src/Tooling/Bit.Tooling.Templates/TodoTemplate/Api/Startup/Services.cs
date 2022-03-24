@@ -14,6 +14,8 @@ public static class Services
 {
     public static void Add(IServiceCollection services, IConfiguration configuration)
     {
+        var appSettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>();
+
         services.AddTodoTemplateSharedServices();
 
 #if BlazorWebAssembly
@@ -81,12 +83,12 @@ public static class Services
 
         services.AddTodoTemplateJwt(configuration);
 
-        services.AddFluentEmail("info@todo.com", "Todo")
+        services.AddFluentEmail(appSettings.EmailSettings.DefaulFromEmail, appSettings.EmailSettings.DefaultFromName)
             .AddRazorRenderer()
-            .AddSmtpSender("localhost", 25);
+            .AddSmtpSender(appSettings.EmailSettings.Host, appSettings.EmailSettings.Port);
 
         // install Smtp4dev (fake smtp server) using following command:
-        // dotnet tool install - g Rnwood.Smtp4dev
+        // dotnet tool install -g Rnwood.Smtp4dev
         // and run it using following command:
         // smtp4dev --urls=https://localhost:6001/
         // you'll be able to see sent emails by opening https://localhost:6001/

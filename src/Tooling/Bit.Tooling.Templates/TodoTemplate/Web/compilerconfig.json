@@ -24,6 +24,14 @@
         "inputFile": "Pages/EmailConfirmation.razor.scss"
     },
     {
+        "outputFile": "Pages/ForgotPassword.razor.css",
+        "inputFile": "Pages/ForgotPassword.razor.scss"
+    },
+    {
+        "outputFile": "Pages/ResetPassword.razor.css",
+        "inputFile": "Pages/ResetPassword.razor.scss"
+    },
+    {
         "outputFile": "Pages/Todo.razor.css",
         "inputFile": "Pages/Todo.razor.scss"
     },

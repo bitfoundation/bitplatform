@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Threading.Tasks;
 using Bit.Client.Web.BlazorUI.Playground.Web.Models;
 using Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 
@@ -11,6 +13,29 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.SpinButton
         private double SpinButtonWithLabelAboveValue = 7;
         private double BitSpinButtonBindValue = 8;
         private double BitSpinButtonValueChanged = 16;
+
+        private string SuccessMessage = string.Empty;
+        private BitSpinButtonValidationModel ValidationModel = new();
+
+        public class BitSpinButtonValidationModel
+        {
+            [Required(ErrorMessage = "Enter an age")]
+            [Range(1, 200, ErrorMessage = "Nobody is that old")]
+            public double AgeInYears { get; set; }
+        }
+
+        private async void HandleValidSubmit()
+        {
+            SuccessMessage = "Form Submitted Successfully!";
+            await Task.Delay(3000);
+            SuccessMessage = string.Empty;
+            StateHasChanged();
+        }
+
+        private void HandleInvalidSubmit()
+        {
+            SuccessMessage = string.Empty;
+        }
 
         private void HandleControlledSpinButtonValueChange(double value)
         {
@@ -379,5 +404,55 @@ private void HandleControlledSpinButtonValueChange(double value)
                Max=""100""
                Step=""1"">
 </BitSpinButton>";
+
+        private readonly string example7CSharpCode = @"private string SuccessMessage = string.Empty;
+private BitSpinButtonValidationModel ValidationModel = new();
+
+public class BitSpinButtonValidationModel
+{
+    [Required(ErrorMessage = ""Enter an age"")]
+    [Range(1, 200, ErrorMessage = ""Nobody is that old"")]
+    public double AgeInYears { get; set; }
+}
+
+private async void HandleValidSubmit()
+{
+    SuccessMessage = ""Form Submitted Successfully!"";
+    await Task.Delay(3000);
+    SuccessMessage = string.Empty;
+    StateHasChanged();
+}
+
+private void HandleInvalidSubmit()
+{
+    SuccessMessage = string.Empty;
+}";
+
+        private readonly string example7HTMLCode = @"@if (string.IsNullOrEmpty(SuccessMessage))
+{
+    <EditForm Model=""@ValidationModel"" OnValidSubmit=""@HandleValidSubmit"" OnInvalidSubmit=""@HandleInvalidSubmit"">
+        <DataAnnotationsValidator />
+
+        <div class=""validation-summary"">
+            <ValidationSummary />
+        </div>
+
+        <div>
+            <BitSpinButton Label=""Age"" @bind-Value=""@ValidationModel.AgeInYears""></BitSpinButton>
+
+            <ValidationMessage For=""@(() => ValidationModel.AgeInYears)"" />
+        </div>
+
+        <BitButton ButtonType=""BitButtonType.Submit"">
+            Submit
+        </BitButton>
+    </EditForm>
+}
+else
+{
+    <BitMessageBar MessageBarType=""BitMessageBarType.Success"" IsMultiline=""false"">
+        @SuccessMessage
+    </BitMessageBar>
+}";
     }
 }

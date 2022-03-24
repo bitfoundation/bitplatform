@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Bit.Client.Web.BlazorUI.Playground.Web.Models;
 using Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 
@@ -8,6 +9,21 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.DatePicker
     public partial class BitDatePickerDemo
     {
         private DateTimeOffset? selectedDate = new DateTimeOffset(new DateTime(2020, 1, 17), DateTimeOffset.Now.Offset);
+        private FormValidationDatePickerModel formValidationDatePickerModel = new();
+        private string SuccessMessage = string.Empty;
+
+        private async void HandleValidSubmit()
+        {
+            SuccessMessage = "Form Submitted Successfully!";
+            await Task.Delay(3000);
+            SuccessMessage = string.Empty;
+            StateHasChanged();
+        }
+
+        private void HandleInvalidSubmit()
+        {
+            SuccessMessage = string.Empty;
+        }
 
         private readonly List<ComponentParameter> componentParameters = new()
         {
@@ -218,5 +234,56 @@ private DateTimeOffset? selectedDate = new DateTimeOffset(new DateTime(2020, 1, 
         private readonly string example6HTMLCode = @"<BitDatePicker FormatDate=""d"" Style=""width: 300px""></BitDatePicker>";
 
         private readonly string example7HTMLCode = @"<BitDatePicker Style=""width: 300px"" MaxDate=""DateTimeOffset.Now.AddYears(1)"" MinDate=""DateTimeOffset.Now.AddYears(-5)""></BitDatePicker>";
+
+        private readonly string example8HTMLCode = @"@if (string.IsNullOrEmpty(SuccessMessage))
+{
+    <EditForm Model=""formValidationDatePickerModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
+        <DataAnnotationsValidator />
+
+        <div class=""validation-summary"">
+            <ValidationSummary />
+        </div>
+
+        <div>
+            <BitDatePicker Style=""width: 300px"" @bind-Value=""formValidationDatePickerModel.Date"" />
+
+            <ValidationMessage For=""@(() => formValidationDatePickerModel.Date)"" />
+        </div>
+
+        <br />
+
+        <BitButton ButtonType=""BitButtonType.Submit"">
+            Submit
+        </BitButton>
+    </EditForm>
+}
+else
+{
+    <BitMessageBar MessageBarType=""BitMessageBarType.Success"" IsMultiline=""false"">
+        @SuccessMessage
+    </BitMessageBar>
+}";
+
+        private readonly string example8CSharpCode = @"public class FormValidationDatePickerModel
+{
+    [Required]
+    public DateTimeOffset? Date { get; set; }
+}
+
+private FormValidationDatePickerModel formValidationDatePickerModel = new();
+private string SuccessMessage = string.Empty;
+
+private async void HandleValidSubmit()
+{
+    SuccessMessage = ""Form Submitted Successfully!"";
+    await Task.Delay(3000);
+    SuccessMessage = string.Empty;
+    StateHasChanged();
+}
+
+private void HandleInvalidSubmit()
+{
+    SuccessMessage = string.Empty;
+}";
     }
 }
