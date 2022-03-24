@@ -1,12 +1,12 @@
 ﻿@import "../../Styles/Fluent/colors.fluent.scss", "../../Styles/functions.scss";
 
-@mixin getUnderlineStyle($isEnabel: true) {
+@mixin getUnderlineStyle($isEnabled: true) {
     .bit-dtp-wrapper {
         display: flex;
         width: 100%;
         border-bottom: rem(1px) solid;
 
-        @if($isEnabel == true) {
+        @if($isEnabled == true) {
             border-bottom-color: $Grey130;
         }
         @else {
@@ -124,7 +124,7 @@
 }
 
 .bit-dtp-underlined-disabled-fluent {
-    @include getUnderlineStyle( $isEnabel: false);
+    @include getUnderlineStyle( $isEnabled: false);
 }
 
 .bit-dtp-focused-fluent {
