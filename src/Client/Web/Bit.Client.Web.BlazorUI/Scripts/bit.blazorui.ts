@@ -51,11 +51,11 @@ class Bit {
 
         if (calloutId !== Bit.currentCallout.calloutId && overlayId !== Bit.currentCallout.overlayId) {
             const callout = document.getElementById(Bit.currentCallout.calloutId);
-            if (!(callout instanceof HTMLElement))
+            if (callout == null)
                 return;
 
             const overlay = document.getElementById(Bit.currentCallout.overlayId);
-            if (!(overlay instanceof HTMLElement))
+            if (overlay == null)
                 return;
 
             callout.style.display = "none";

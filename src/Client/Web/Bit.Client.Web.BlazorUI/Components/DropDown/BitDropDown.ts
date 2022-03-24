@@ -7,19 +7,19 @@
         isOpen: boolean) {
 
         const dropDownWrapper = document.getElementById(dropDownWrapperId);
-        if (!(dropDownWrapper instanceof HTMLElement))
+        if (dropDownWrapper == null)
             return;
 
         const dropDown = document.getElementById(dropDownId);
-        if (!(dropDown instanceof HTMLElement))
+        if (dropDown == null)
             return;
 
         const dropDownCallout = document.getElementById(dropDownCalloutId);
-        if (!(dropDownCallout instanceof HTMLElement))
+        if (dropDownCallout == null)
             return;
 
         const dropDownOverlay = document.getElementById(dropDownOverlayId);
-        if (!(dropDownOverlay instanceof HTMLElement))
+        if (dropDownOverlay == null)
             return;
 
         if (isOpen) {

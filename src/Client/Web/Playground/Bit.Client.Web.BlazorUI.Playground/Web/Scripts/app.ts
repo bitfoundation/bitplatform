@@ -2,7 +2,7 @@
 
 const headerBtn = document.getElementById("headerBtn");
 
-if (headerBtn instanceof HTMLElement) {
+if (headerBtn != null) {
     window.addEventListener('scroll', () => {
 
         if (document.body.scrollTop > 10 || document.documentElement.scrollTop > 10) {
@@ -27,7 +27,7 @@ function toggleBodyOverflow(isMenuOpen: boolean) {
 function scrollToElement(targetElementId: string) {
     const element = document.getElementById(targetElementId);
 
-    if (element instanceof HTMLElement) {
+    if (element != null) {
         element.scrollIntoView({
             behavior: "smooth",
             block: "start",

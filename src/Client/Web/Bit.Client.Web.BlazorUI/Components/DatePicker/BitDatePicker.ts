@@ -6,15 +6,15 @@
         isOpen: boolean) {
 
         const datePicker = document.getElementById(datePickerId);
-        if (!(datePicker instanceof HTMLElement))
+        if (datePicker == null)
             return;
 
         const datePickerCallout = document.getElementById(datePickerCalloutId);
-        if (!(datePickerCallout instanceof HTMLElement))
+        if (datePickerCallout == null)
             return;
 
         const datePickerOverlay = document.getElementById(datePickerOverlayId);
-        if (!(datePickerOverlay instanceof HTMLElement))
+        if (datePickerOverlay == null)
             return;
 
         if (isOpen) {
