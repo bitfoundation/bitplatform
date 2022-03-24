@@ -81,7 +81,7 @@ public class AuthController : ControllerBase
         var controller = RouteData.Values["controller"]!.ToString();
 
         var confirmationLink = Url.Action(nameof(ConfirmEmail), controller,
-            new { user.Email, token },
+            new { user.Email, token = HttpUtility.UrlEncode(token) },
             HttpContext.Request.Scheme);
 
         var assembly = typeof(Program).Assembly;
@@ -142,7 +142,6 @@ public class AuthController : ControllerBase
     [HttpGet("[action]")]
     public async Task<ActionResult> ConfirmEmail(string email, string token)
     {
-        email = HttpUtility.UrlDecode(email);
         token = HttpUtility.UrlDecode(token);
 
         var user = await _userManager.FindByEmailAsync(email);
