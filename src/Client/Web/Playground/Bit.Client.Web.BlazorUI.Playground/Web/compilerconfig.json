@@ -102,5 +102,9 @@
   {
     "outputFile": "Pages/Components/TextField/BitTextFieldDemo.razor.css",
     "inputFile": "Pages/Components/TextField/BitTextFieldDemo.razor.scss"
+  },
+  {
+    "outputFile": "Pages/Components/SpinButton/BitSpinButtonDemo.razor.css",
+    "inputFile": "Pages/Components/SpinButton/BitSpinButtonDemo.razor.scss"
   }
 ]
