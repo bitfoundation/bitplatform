@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
@@ -22,13 +23,12 @@ namespace Bit.Client.Web.BlazorUI
         private int yearRangeFrom;
         private int yearRangeTo;
         private string monthTitle = string.Empty;
-        private DateTimeOffset? selectedDate;
         private int? selectedDateWeek;
         private int? selectedDateDayOfWeek;
         private bool showMonthPicker = true;
         private bool isMonthPickerOverlayOnTop;
         private int monthLength;
-        private bool ValueHasBeenSet;
+        private string focusClass = string.Empty;
 
         [Inject] public IJSRuntime? JSRuntime { get; set; }
 
@@ -43,19 +43,6 @@ namespace Bit.Client.Web.BlazorUI
             {
                 isOpen = value;
                 ClassBuilder.Reset();
-            }
-        }
-
-        [Parameter]
-        public DateTimeOffset? Value
-        {
-            get => selectedDate;
-            set
-            {
-                if (value == selectedDate) return;
-                selectedDate = value;
-
-                _ = ValueChanged.InvokeAsync(value);
             }
         }
 
@@ -114,11 +101,14 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public EventCallback<FocusEventArgs> OnFocusOut { get; set; }
 
         /// <summary>
+        /// Callback for when focus moves into the input
+        /// </summary>
+        [Parameter] public EventCallback<FocusEventArgs> OnFocus { get; set; }
+
+        /// <summary>
         /// Callback for when the date changes
         /// </summary>
         [Parameter] public EventCallback<DateTimeOffset?> OnSelectDate { get; set; }
-
-        [Parameter] public EventCallback<DateTimeOffset?> ValueChanged { get; set; }
 
         /// <summary>
         /// Label for the DatePicker
@@ -160,11 +150,23 @@ namespace Bit.Client.Web.BlazorUI
         /// </summary>
         [Parameter] public bool ShowWeekNumbers { get; set; }
 
+        public string FocusClass
+        {
+            get => focusClass;
+            set
+            {
+                focusClass = value;
+                ClassBuilder.Reset();
+            }
+        }
+
         public string CalloutId { get; set; } = string.Empty;
         public string OverlayId { get; set; } = string.Empty;
         public string WrapperId { get; set; } = string.Empty;
         public string MonthAndYearId { get; set; } = Guid.NewGuid().ToString();
         public string ActiveDescendantId { get; set; } = Guid.NewGuid().ToString();
+        public string TextFieldId { get; set; } = string.Empty;
+        public string LabelId { get; set; } = string.Empty;
 
         [JSInvokable("CloseCallout")]
         public void CloseCalloutBeforeAnotherCalloutIsOpened()
@@ -181,6 +183,18 @@ namespace Bit.Client.Web.BlazorUI
 
             ClassBuilder.Register(() => Culture.TextInfo.IsRightToLeft
                 ? $"{RootElementClass}-rtl" : string.Empty);
+
+            ClassBuilder.Register(() => IsUnderlined
+                ? $"{RootElementClass}-underlined-{(IsEnabled is false ? "disabled-" : string.Empty)}{VisualClassRegistrar()}" : string.Empty);
+
+            ClassBuilder.Register(() => HasBorder is false
+                ? $"{RootElementClass}-no-border-{VisualClassRegistrar()}" : string.Empty);
+
+            ClassBuilder.Register(() => FocusClass.HasValue()
+                ? $"{RootElementClass}-{(IsUnderlined ? "underlined-" : null)}{FocusClass}-{VisualClassRegistrar()}" : string.Empty);
+
+            ClassBuilder.Register(() => ValueInvalid is true
+                                       ? $"{RootElementClass}-invalid-{VisualClassRegistrar()}" : string.Empty);
         }
 
         protected override Task OnInitializedAsync()
@@ -188,12 +202,15 @@ namespace Bit.Client.Web.BlazorUI
             CalloutId = $"DatePicker-Callout{UniqueId}";
             OverlayId = $"DatePicker-Overlay{UniqueId}";
             WrapperId = $"DatePicker-Wrapper{UniqueId}";
+            TextFieldId = $"DatePicker-TextField{UniqueId}";
+            LabelId = $"DatePicker-Label{UniqueId}";
+
             return base.OnInitializedAsync();
         }
 
         protected override Task OnParametersSetAsync()
         {
-            var dateTime = Value.GetValueOrDefault(DateTimeOffset.Now).DateTime;
+            var dateTime = CurrentValue.GetValueOrDefault(DateTimeOffset.Now).DateTime;
             CreateMonthCalendar(dateTime);
 
             return base.OnParametersSetAsync();
@@ -219,6 +236,7 @@ namespace Bit.Client.Web.BlazorUI
         {
             if (IsEnabled)
             {
+                FocusClass = "focused";
                 await OnFocusIn.InvokeAsync(eventArgs);
             }
         }
@@ -227,23 +245,28 @@ namespace Bit.Client.Web.BlazorUI
         {
             if (IsEnabled)
             {
+                FocusClass = string.Empty;
                 await OnFocusOut.InvokeAsync(eventArgs);
             }
         }
 
-        public async Task HandleTextInputChanged(string value)
+        private async Task HandleFocus(FocusEventArgs e)
         {
-            if (IsEnabled && AllowTextInput && value.HasValue() && DateTime.TryParse(value, Culture, DateTimeStyles.None, out DateTime date))
+            if (IsEnabled)
             {
-                var dateTimeOffset = new DateTimeOffset(date);
-
-                if (selectedDate != dateTimeOffset)
-                {
-                    selectedDate = date;
-                    await ValueChanged.InvokeAsync(dateTimeOffset);
-                    await OnSelectDate.InvokeAsync(dateTimeOffset);
-                }
+                FocusClass = "focused";
+                await OnFocus.InvokeAsync(e);
             }
+        }
+
+        private async Task HandleChange(ChangeEventArgs e)
+        {
+            if (IsEnabled is false) return;
+            if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+            if (AllowTextInput is false) return;
+
+            CurrentValueAsString = e.Value?.ToString();
+            await OnSelectDate.InvokeAsync(CurrentValue);
         }
 
         public async Task SelectDate(int dayIndex, int weekIndex)
@@ -270,10 +293,9 @@ namespace Bit.Client.Web.BlazorUI
             IsOpen = false;
             displayYear = currentYear;
             currentMonth = selectedMonth;
-            selectedDate = new DateTimeOffset(Culture.Calendar.ToDateTime(currentYear, currentMonth, currentDay, 0, 0, 0, 0));
+            CurrentValue = new DateTimeOffset(Culture.Calendar.ToDateTime(currentYear, currentMonth, currentDay, 0, 0, 0, 0), DateTimeOffset.Now.Offset);
             CreateMonthCalendar(currentYear, currentMonth);
-            await ValueChanged.InvokeAsync(selectedDate);
-            await OnSelectDate.InvokeAsync(selectedDate);
+            await OnSelectDate.InvokeAsync(CurrentValue);
         }
 
         public void HandleMonthChange(ChangeDirection direction)
@@ -456,18 +478,18 @@ namespace Bit.Client.Web.BlazorUI
         {
             if (Culture is null) return;
 
-            if (selectedDate.HasValue is false || (selectedDateWeek.HasValue && selectedDateDayOfWeek.HasValue)) return;
+            if (CurrentValue.HasValue is false || (selectedDateWeek.HasValue && selectedDateDayOfWeek.HasValue)) return;
 
-            var year = Culture.Calendar.GetYear(selectedDate.Value.DateTime);
-            var month = Culture.Calendar.GetMonth(selectedDate.Value.DateTime);
+            var year = Culture.Calendar.GetYear(CurrentValue.Value.DateTime);
+            var month = Culture.Calendar.GetMonth(CurrentValue.Value.DateTime);
 
             if (year == currentYear && month == currentMonth)
             {
-                var day = Culture.Calendar.GetDayOfMonth(selectedDate.Value.DateTime);
+                var day = Culture.Calendar.GetDayOfMonth(CurrentValue.Value.DateTime);
                 var firstDayOfWeek = (int)Culture.DateTimeFormat.FirstDayOfWeek;
                 var firstDayOfWeekInMonth = (int)Culture.Calendar.ToDateTime(year, month, 1, 0, 0, 0, 0).DayOfWeek;
                 var firstDayOfWeekInMonthIndex = (firstDayOfWeekInMonth - firstDayOfWeek + DEFAULT_DAY_COUNT_PER_WEEK) % DEFAULT_DAY_COUNT_PER_WEEK;
-                selectedDateDayOfWeek = ((int)selectedDate.Value.DayOfWeek - firstDayOfWeek + DEFAULT_DAY_COUNT_PER_WEEK) % DEFAULT_DAY_COUNT_PER_WEEK;
+                selectedDateDayOfWeek = ((int)CurrentValue.Value.DayOfWeek - firstDayOfWeek + DEFAULT_DAY_COUNT_PER_WEEK) % DEFAULT_DAY_COUNT_PER_WEEK;
                 var days = firstDayOfWeekInMonthIndex + day;
                 selectedDateWeek = days % DEFAULT_DAY_COUNT_PER_WEEK == 0 ? (days / DEFAULT_DAY_COUNT_PER_WEEK) - 1 : days / DEFAULT_DAY_COUNT_PER_WEEK;
                 if (firstDayOfWeekInMonthIndex is 0)
@@ -489,18 +511,6 @@ namespace Bit.Client.Web.BlazorUI
 
             selectedDateWeek = null;
             selectedDateDayOfWeek = null;
-        }
-
-        private string? GetSelectedDateString()
-        {
-            if (Value.HasValue)
-            {
-                return Value.Value.ToString(FormatDate, Culture);
-            }
-            else
-            {
-                return null;
-            }
         }
 
         private void ChangeYearRanges(int fromYear)
@@ -720,6 +730,40 @@ namespace Bit.Client.Web.BlazorUI
                 return true;
 
             return false;
+        }
+
+        /// <inheritdoc />
+        protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out DateTimeOffset? result, [NotNullWhen(false)] out string? validationErrorMessage)
+        {
+            if (value.HasNoValue())
+            {
+                result = null;
+                validationErrorMessage = null;
+                return true;
+            }
+
+            if (DateTime.TryParse(value, Culture, DateTimeStyles.None, out DateTime parsedValue))
+            {
+                result = new DateTimeOffset(parsedValue, DateTimeOffset.Now.Offset);
+                validationErrorMessage = null;
+                return true;
+            }
+
+            result = default;
+            validationErrorMessage = $"The {DisplayName ?? FieldIdentifier.FieldName} field is not valid.";
+            return false;
+        }
+
+        protected override string? FormatValueAsString(DateTimeOffset? value)
+        {
+            if (value.HasValue)
+            {
+                return value.Value.ToString(FormatDate, Culture);
+            }
+            else
+            {
+                return null;
+            }
         }
     }
 }
