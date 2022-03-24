@@ -1,40 +1,45 @@
-﻿<CascadingValue Value="Visual">
-    <BitSpinButton Min="@Min"
-                   Max="@Max"
-                   Step="@Step"
-                   @bind-Value="@Value"
-                   IsEnabled="@IsEnabled"
-                   AriaDescription="@AriaDescription"
-                   AriaPositionInSet="@AriaPositionInSet"
-                   AriaSetSize="@AriaSetSize"
-                   AriaValueNow="@AriaValueNow"
-                   AriaValueText="@AriaValueText"
-                   AriaLabel="@AriaLabel"
-                   Suffix="@Suffix"
-                   LabelPosition="@LabelPosition"
-                   IconName="@IconName"
-                   IconAriaLabel="@IconAriaLabel"
-                   DecrementButtonIconName="@DecrementButtonIconName"
-                   IncrementButtonIconName="@IncrementButtonIconName"
-                   DecrementButtonAriaLabel="@DecrementButtonAriaLabel"
-                   IncrementButtonAriaLabel="@IncrementButtonAriaLabel"
-                   Label="@Label"
-                   InputHtmlAttributes="@InputHtmlAttributes"
-                   Title="@Title"
-                   Precision="@Precision"
-                   DefaultValue="@DefaultValue"
-                   OnChange="@HandleChange"
-                   OnBlur="@HandleBlur"
-                   OnFocus="@HandleFocus"
-                   OnIncrement="HandleIncrement"
-                   OnDecrement="@HandleDecrement">
-        <LabelFragment>
-            @LabelFragment
-        </LabelFragment>
-    </BitSpinButton>
-</CascadingValue>
+﻿<EditForm Model="@TestModel" OnValidSubmit="@HandleValidSubmit" OnInvalidSubmit="@HandleInvalidSubmit">
+    <DataAnnotationsValidator />
 
-@code{
+    <CascadingValue Value="Visual">
+        <BitSpinButton Min="@Min"
+                       Max="@Max"
+                       Step="@Step"
+                       @bind-Value="@TestModel.Value"
+                       IsEnabled="@IsEnabled"
+                       AriaDescription="@AriaDescription"
+                       AriaPositionInSet="@AriaPositionInSet"
+                       AriaSetSize="@AriaSetSize"
+                       AriaValueNow="@AriaValueNow"
+                       AriaValueText="@AriaValueText"
+                       AriaLabel="@AriaLabel"
+                       Suffix="@Suffix"
+                       LabelPosition="@LabelPosition"
+                       IconName="@IconName"
+                       IconAriaLabel="@IconAriaLabel"
+                       DecrementButtonIconName="@DecrementButtonIconName"
+                       IncrementButtonIconName="@IncrementButtonIconName"
+                       DecrementButtonAriaLabel="@DecrementButtonAriaLabel"
+                       IncrementButtonAriaLabel="@IncrementButtonAriaLabel"
+                       Label="@Label"
+                       InputHtmlAttributes="@InputHtmlAttributes"
+                       Title="@Title"
+                       Precision="@Precision"
+                       DefaultValue="@DefaultValue"
+                       OnChange="@HandleChange"
+                       OnBlur="@HandleBlur"
+                       OnFocus="@HandleFocus"
+                       OnIncrement="HandleIncrement"
+                       OnDecrement="@HandleDecrement">
+            <LabelFragment>
+                @LabelFragment
+            </LabelFragment>
+        </BitSpinButton>
+    </CascadingValue>
+
+</EditForm>
+
+@code {
     [Parameter] public Visual Visual { get; set; }
     [Parameter] public BitSpinButtonLabelPosition LabelPosition { get; set; } = BitSpinButtonLabelPosition.Left;
     [Parameter] public string AriaDescription { get; set; }
@@ -46,7 +51,7 @@
     [Parameter] public double Step { get; set; } = 1;
     [Parameter] public double? Min { get; set; }
     [Parameter] public double? Max { get; set; }
-    [Parameter] public double Value { get; set; }
+    [Parameter] public BitSpinButtonTestModel TestModel { get; set; }
     [Parameter] public EventCallback<double> ValueChanged { get; set; }
     [Parameter] public string Suffix { get; set; } = string.Empty;
     [Parameter] public BitIconName? IconName { get; set; }
@@ -68,6 +73,8 @@
     public int OnFocusEventCounter { get; set; }
     public int OnDecrementEventCounter { get; set; } = 20;
     public double OnChangeEventValue { get; set; }
+    public int ValidCount { get; set; }
+    public int InvalidCount { get; set; }
 
     private void HandleChange(double value)
     {
@@ -92,5 +99,15 @@
     private void HandleIncrement(BitSpinButtonChangeValue args)
     {
         OnIncrementEventCounter++;
+    }
+
+    private void HandleValidSubmit()
+    {
+        ValidCount++;
+    }
+
+    private void HandleInvalidSubmit()
+    {
+        InvalidCount++;
     }
 }
