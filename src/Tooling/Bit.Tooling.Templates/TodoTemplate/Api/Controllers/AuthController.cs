@@ -142,9 +142,6 @@ public class AuthController : ControllerBase
     [HttpGet("[action]")]
     public async Task<ActionResult> ConfirmEmail(string email, string token)
     {
-        email = HttpUtility.UrlDecode(email);
-        token = HttpUtility.UrlDecode(token);
-
         var user = await _userManager.FindByEmailAsync(email);
 
         if (user is null)
