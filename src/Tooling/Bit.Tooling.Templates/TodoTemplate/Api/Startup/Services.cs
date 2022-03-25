@@ -83,9 +83,13 @@ public static class Services
 
         services.AddTodoTemplateJwt(configuration);
 
-        services.AddFluentEmail(appSettings.EmailSettings.DefaulFromEmail, appSettings.EmailSettings.DefaultFromName)
-            .AddRazorRenderer()
-            .AddSmtpSender(appSettings.EmailSettings.Host, appSettings.EmailSettings.Port);
+        var fluentEmailServiceBuilder = services.AddFluentEmail(appSettings.EmailSettings.DefaulFromEmail, appSettings.EmailSettings.DefaultFromName)
+            .AddRazorRenderer();
+
+        if (appSettings.EmailSettings.HasCredential)
+            fluentEmailServiceBuilder.AddSmtpSender(appSettings.EmailSettings.Host, appSettings.EmailSettings.Port, appSettings.EmailSettings.Username, appSettings.EmailSettings.Password);
+        else
+            fluentEmailServiceBuilder.AddSmtpSender(appSettings.EmailSettings.Host, appSettings.EmailSettings.Port);
 
         // install Smtp4dev (fake smtp server) using following command:
         // dotnet tool install -g Rnwood.Smtp4dev
