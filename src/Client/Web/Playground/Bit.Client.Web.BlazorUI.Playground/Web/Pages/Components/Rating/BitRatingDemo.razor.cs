@@ -98,14 +98,14 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Rating
             },
             new ComponentParameter()
             {
-                Name = "Rating",
+                Name = "Value",
                 Type = "double",
                 DefaultValue = "0",
                 Description = "Current rating value. Must be a number between min (0 if AllowZeroStars is true, 1 otherwise) and max.",
             },
             new ComponentParameter()
             {
-                Name = "RatingChanged",
+                Name = "ValueChanged",
                 Type = "EventCallback<double>",
                 DefaultValue = "",
                 Description = "Callback that is called when the rating value changed.",
@@ -222,8 +222,7 @@ private double RatingCustomIconValue = 2.5;";
         private readonly string example2CSharpCode = @"
 private double RatingOutsideValue = 0; ";
 
-        private readonly string example3HTMLCode = @"<div>
-                @if (string.IsNullOrEmpty(SuccessMessage))
+        private readonly string example3HTMLCode = @"@if (string.IsNullOrEmpty(SuccessMessage))
                 {
                     <EditForm Model=""ValidationForm"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
         <DataAnnotationsValidator/>
@@ -239,8 +238,7 @@ private double RatingOutsideValue = 0; ";
         <BitMessageBar MessageBarType=""BitMessageBarType.Success"" IsMultiline=""false"">
             @SuccessMessage
             </BitMessageBar>
-    }
-    </div>";
+    }";
 
         private readonly string example3CSharpCode = @"private string SuccessMessage = string.Empty;
         public BitRatingDemoFormModel ValidationForm { get; set; }

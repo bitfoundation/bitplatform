@@ -8,8 +8,6 @@ namespace Bit.Client.Web.BlazorUI
     public partial class BitRating
     {
         private bool isReadOnly;
-        private bool RatingHasBeenSet;
-        private double ratingValue;
 
         /// <summary>
         /// A flag to mark rating control as readOnly
@@ -77,9 +75,9 @@ namespace Bit.Client.Web.BlazorUI
         {
             OnCurrentValueChanged += HandleOnCurrentValueChanged;
 
-            if (DefaultValue != null)
+            if (DefaultValue.HasValue)
             {
-                CurrentValue = (double)DefaultValue;
+                CurrentValue = DefaultValue.Value;
             }
 
             CurrentValue = Math.Min(Math.Max(CurrentValue, (AllowZeroStars ? 0 : 1)), Max);
@@ -151,6 +149,16 @@ namespace Bit.Client.Web.BlazorUI
             result = default;
             validationErrorMessage = $"The {DisplayName ?? FieldIdentifier.FieldName} field is not valid.";
             return false;
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                OnCurrentValueChanged -= HandleOnCurrentValueChanged;
+            }
+
+            base.Dispose(disposing);
         }
     }
 }
