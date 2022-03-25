@@ -21,7 +21,7 @@
                 disabled=@(!IsEnabled|| IsReadOnly)
                 id="@($"Rating{UniqueId}-star-{index}")"
                 role="radio"
-                tabindex=@(IsReadOnly ? null : (index == Rating ? "0" : "-1" ))
+                tabindex=@(IsReadOnly ? null : (index == CurrentValue ? "0" : "-1" ))
                 type="button"
                 @onclick="() => HandleClick(index)">
 
