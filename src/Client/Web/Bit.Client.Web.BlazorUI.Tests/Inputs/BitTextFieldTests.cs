@@ -437,5 +437,207 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                 Assert.IsFalse(input.HasAttribute("autocomplete"));
             }
         }
+
+        [DataTestMethod,
+            DataRow(null),
+            DataRow("abc123"),
+            DataRow("test@bit-components.com"),
+            DataRow("test@bit.com"),
+        ]
+        public void BitTextFieldValidationFormTest(string value)
+        {
+            var component = RenderComponent<BitTextFieldValidationTest>(parameters =>
+            {
+                parameters.Add(p => p.TestModel, new BitTextFieldTestModel { Value = value });
+                parameters.Add(p => p.IsEnabled, true);
+            });
+
+            var isValid = value == "test@bit.com";
+
+            var form = component.Find("form");
+            form.Submit();
+
+            Assert.AreEqual(component.Instance.ValidCount, isValid ? 1 : 0);
+            Assert.AreEqual(component.Instance.InvalidCount, isValid ? 0 : 1);
+
+            var input = component.Find("input");
+            if (isValid)
+            {
+                input.Change("");
+            }
+            else
+            {
+                input.Change("test@bit.com");
+            }
+
+            form.Submit();
+
+            Assert.AreEqual(component.Instance.ValidCount, 1);
+            Assert.AreEqual(component.Instance.InvalidCount, 1);
+            Assert.AreEqual(component.Instance.ValidCount, component.Instance.InvalidCount);
+        }
+
+        [DataTestMethod,
+            DataRow(null),
+            DataRow("abc123"),
+            DataRow("test@bit-components.com"),
+            DataRow("test@bit.com"),
+        ]
+        public void BitTextFieldValidationFormTestWhenItIsMultiline(string value)
+        {
+            var component = RenderComponent<BitTextFieldValidationTest>(parameters =>
+            {
+                parameters.Add(p => p.TestModel, new BitTextFieldTestModel { Value = value });
+                parameters.Add(p => p.IsEnabled, true);
+                parameters.Add(p => p.IsMultiline, true);
+            });
+
+            var isValid = value == "test@bit.com";
+
+            var form = component.Find("form");
+            form.Submit();
+
+            Assert.AreEqual(component.Instance.ValidCount, isValid ? 1 : 0);
+            Assert.AreEqual(component.Instance.InvalidCount, isValid ? 0 : 1);
+
+            var textarea = component.Find("textarea");
+            if (isValid)
+            {
+                textarea.Change("");
+            }
+            else
+            {
+                textarea.Change("test@bit.com");
+            }
+
+            form.Submit();
+
+            Assert.AreEqual(component.Instance.ValidCount, 1);
+            Assert.AreEqual(component.Instance.InvalidCount, 1);
+            Assert.AreEqual(component.Instance.ValidCount, component.Instance.InvalidCount);
+        }
+
+        [DataTestMethod,
+            DataRow(null),
+            DataRow("abc123"),
+            DataRow("test@bit-components.com"),
+            DataRow("test@bit.com"),
+        ]
+        public void BitTextFieldValidationInvalidHtmlAttributeTest(string value)
+        {
+            var component = RenderComponent<BitTextFieldValidationTest>(parameters =>
+            {
+                parameters.Add(p => p.TestModel, new BitTextFieldTestModel { Value = value });
+                parameters.Add(p => p.IsEnabled, true);
+            });
+
+            var isInvalid = value != "test@bit.com";
+
+            var input = component.Find("input");
+            Assert.IsFalse(input.HasAttribute("aria-invalid"));
+
+            var form = component.Find("form");
+            form.Submit();
+
+            Assert.AreEqual(input.HasAttribute("aria-invalid"), isInvalid);
+            if (input.HasAttribute("aria-invalid"))
+            {
+                Assert.AreEqual(input.GetAttribute("aria-invalid"), "true");
+            }
+
+            if (isInvalid)
+            {
+                input.Change("test@bit.com");
+                Assert.IsFalse(input.HasAttribute("aria-invalid"));
+            }
+            else
+            {
+                input.Change("");
+                Assert.IsTrue(input.HasAttribute("aria-invalid"));
+            }
+        }
+
+        [DataTestMethod,
+            DataRow(null),
+            DataRow("abc123"),
+            DataRow("test@bit-components.com"),
+            DataRow("test@bit.com"),
+        ]
+        public void BitTextFieldValidationInvalidHtmlAttributeTestWhenItIsMultiline(string value)
+        {
+            var component = RenderComponent<BitTextFieldValidationTest>(parameters =>
+            {
+                parameters.Add(p => p.TestModel, new BitTextFieldTestModel { Value = value });
+                parameters.Add(p => p.IsEnabled, true);
+                parameters.Add(p => p.IsMultiline, true);
+            });
+
+            var isInvalid = value != "test@bit.com";
+
+            var textarea = component.Find("textarea");
+            Assert.IsFalse(textarea.HasAttribute("aria-invalid"));
+
+            var form = component.Find("form");
+            form.Submit();
+
+            Assert.AreEqual(textarea.HasAttribute("aria-invalid"), isInvalid);
+            if (textarea.HasAttribute("aria-invalid"))
+            {
+                Assert.AreEqual(textarea.GetAttribute("aria-invalid"), "true");
+            }
+
+            if (isInvalid)
+            {
+                textarea.Change("test@bit.com");
+                Assert.IsFalse(textarea.HasAttribute("aria-invalid"));
+            }
+            else
+            {
+                textarea.Change("");
+                Assert.IsTrue(textarea.HasAttribute("aria-invalid"));
+            }
+        }
+
+        [DataTestMethod,
+            DataRow(Visual.Fluent, "abc123"),
+            DataRow(Visual.Fluent, "test@bit.com"),
+            DataRow(Visual.Cupertino, "abc123"),
+            DataRow(Visual.Cupertino, "test@bit.com"),
+            DataRow(Visual.Material, "abc123"),
+            DataRow(Visual.Material, "test@bit.com"),
+        ]
+        public void BitTextFieldValidationInvalidCssClassTest(Visual visual, string value)
+        {
+            var component = RenderComponent<BitTextFieldValidationTest>(parameters =>
+            {
+                parameters.Add(p => p.TestModel, new BitTextFieldTestModel { Value = value });
+                parameters.Add(p => p.IsEnabled, true);
+                parameters.Add(p => p.Visual, visual);
+            });
+
+            var isInvalid = value != "test@bit.com";
+
+            var bitTextField = component.Find(".bit-txt");
+            var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
+
+            Assert.IsFalse(bitTextField.ClassList.Contains($"bit-txt-invalid-{visualClass}"));
+
+            var form = component.Find("form");
+            form.Submit();
+
+            Assert.AreEqual(bitTextField.ClassList.Contains($"bit-txt-invalid-{visualClass}"), isInvalid);
+
+            var input = component.Find("input");
+            if (isInvalid)
+            {
+                input.Change("test@bit.com");
+            }
+            else
+            {
+                input.Change("abc123");
+            }
+
+            Assert.AreEqual(bitTextField.ClassList.Contains($"bit-txt-invalid-{visualClass}"), !isInvalid);
+        }
     }
 }
