@@ -87,9 +87,13 @@ public static class Services
             .AddRazorRenderer();
 
         if (appSettings.EmailSettings.HasCredential)
+        {
             fluentEmailServiceBuilder.AddSmtpSender(appSettings.EmailSettings.Host, appSettings.EmailSettings.Port, appSettings.EmailSettings.Username, appSettings.EmailSettings.Password);
+        }
         else
+        {
             fluentEmailServiceBuilder.AddSmtpSender(appSettings.EmailSettings.Host, appSettings.EmailSettings.Port);
+        }
 
         // install Smtp4dev (fake smtp server) using following command:
         // dotnet tool install -g Rnwood.Smtp4dev

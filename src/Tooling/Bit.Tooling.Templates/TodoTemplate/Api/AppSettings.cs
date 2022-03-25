@@ -40,6 +40,6 @@
         public string Password { get; set; }
         public string DefaulFromEmail { get; set; }
         public string DefaultFromName { get; set; }
-        public bool HasCredential => !string.IsNullOrEmpty(Username) && !string.IsNullOrEmpty(Password);
+        public bool HasCredential => (string.IsNullOrEmpty(Username) is false) && (string.IsNullOrEmpty(Password) is false);
     }
 }
