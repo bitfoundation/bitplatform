@@ -61,11 +61,20 @@ namespace TodoTemplate.Api.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Confirm your email address.
+        ///   Looks up a localized string similar to Bit.TodoTemplate - Confirm your email address.
         /// </summary>
-        public static string ConfirmationLinkEmailSubject {
+        public static string ConfirmationEmailSubject {
             get {
-                return ResourceManager.GetString("ConfirmationLinkEmailSubject", resourceCulture);
+                return ResourceManager.GetString("ConfirmationEmailSubject", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Bit.TodoTemplate - Reset your password.
+        /// </summary>
+        public static string ResetPasswordEmailSubject {
+            get {
+                return ResourceManager.GetString("ResetPasswordEmailSubject", resourceCulture);
             }
         }
     }

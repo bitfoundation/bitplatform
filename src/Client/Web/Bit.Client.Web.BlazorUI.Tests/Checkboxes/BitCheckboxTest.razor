@@ -8,7 +8,7 @@
                  AriaSetSize="@AriaSetSize"
                  Name="@Name"
                  Title="@Title"
-                 DefaultIsChecked="@DefaultIsChecked"
+                 DefaultValue="@DefaultValue"
                  CheckmarkIconAriaLabel="@CheckmarkIconAriaLabel"
                  BoxSide="@BoxSide"
                  DefaultIsIndeterminate="@DefaultIsIndeterminate"
@@ -23,7 +23,7 @@
 @code {
     [Parameter] public Visual Visual { get; set; }
     [Parameter] public bool IsEnabled { get; set; }
-    [Parameter] public bool IsChecked { get; set; }
+    [Parameter] public bool Value { get; set; }
     [Parameter] public bool IsIndeterminate { get; set; }
     [Parameter] public string AriaLabel { get; set; }
     [Parameter] public BitIconName CheckmarkIconName { get; set; }
@@ -35,20 +35,20 @@
     [Parameter] public string Name { get; set; }
     [Parameter] public string Title { get; set; }
     [Parameter] public BitCheckBoxSide BoxSide { get; set; }
-    [Parameter] public bool? DefaultIsChecked { get; set; }
+    [Parameter] public bool? DefaultValue { get; set; }
     [Parameter] public bool? DefaultIsIndeterminate { get; set; }
     [Parameter] public RenderFragment ChildContent { get; set; }
 
-    public int ClickCounter { get; set; } = 0;
-    public bool IsCheckedChanged { get; set; } = false;
+    public int ClickCounter { get; set; }
+    public bool ValueChanged { get; set; }
 
     public void HandleOnClick(MouseEventArgs args)
     {
         ClickCounter++;
     }
 
-    public void HandleOnChange(bool isChecked)
+    public void HandleOnChange(bool value)
     {
-        IsCheckedChanged = true;
+        ValueChanged = true;
     }
 }

@@ -9,7 +9,7 @@
      id="@($"Rating{@UniqueId}")"
      role=@(!IsReadOnly ? "radiogroup" : null)
      style="@StyleBuilder.Value">
-
+     
     @for (int item = 1; item <= Max; item++)
     {
         var index = item;
@@ -17,13 +17,13 @@
 
         <button aria-checked="@(index == CurrentValue ? "true" : "false")"
                 aria-hidden=@(IsReadOnly ? "true" : null)
-                data-is-current="@(index + 1 == CurrentValue ? "true" : null)"
+                data-is-current="@(index == CurrentValue ? "true" : null)"
                 disabled=@(!IsEnabled|| IsReadOnly)
                 id="@($"Rating{UniqueId}-star-{index}")"
                 role="radio"
-                tabindex=@(IsReadOnly ? "0" : "-1" )
+                tabindex=@(IsReadOnly ? null : (index == Rating ? "0" : "-1" ))
                 type="button"
-                @onclick="() => HandleClick(index )">
+                @onclick="() => HandleClick(index)">
 
             <span id="@($"RatingLabel{UniqueId}-{index }"))">@(AriaLabelFormat.HasValue() ? string.Format(AriaLabelFormat!, index , Max) : string.Empty)</span>
             <div>

@@ -1,4 +1,7 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
@@ -8,8 +11,6 @@ namespace Bit.Client.Web.BlazorUI
     public partial class BitCheckbox
     {
         private bool isIndeterminate;
-        private bool isChecked;
-        private bool IsCheckedHasBeenSet;
         private bool IsIndeterminateHasBeenSet;
         private BitCheckBoxSide boxSide;
 
@@ -51,28 +52,7 @@ namespace Bit.Client.Web.BlazorUI
         /// Default checkbox state
         /// Use this if you want an uncontrolled component, meaning the Checkbox instance maintains its own state.
         /// </summary>
-        [Parameter] public bool? DefaultIsChecked { get; set; }
-
-        /// <summary>
-        /// Checkbox state, control the checked state at a higher level
-        /// </summary>
-        [Parameter]
-        public bool IsChecked
-        {
-            get => isChecked;
-            set
-            {
-                if (value == isChecked) return;
-                isChecked = value;
-                ClassBuilder.Reset();
-                _ = IsCheckedChanged.InvokeAsync(value);
-            }
-        }
-
-        /// <summary>
-        /// Callback that is called when the IsChecked parameter changed
-        /// </summary>
-        [Parameter] public EventCallback<bool> IsCheckedChanged { get; set; }
+        [Parameter] public bool? DefaultValue { get; set; }
 
         /// <summary>
         /// Custom icon for the check mark rendered by the checkbox instade of default check mark icon
@@ -106,7 +86,7 @@ namespace Bit.Client.Web.BlazorUI
 
         /// <summary>
         /// An indeterminate visual state for checkbox. 
-        /// Setting indeterminate state takes visual precedence over checked given but does not affect on IsChecked state
+        /// Setting indeterminate state takes visual precedence over checked given but does not affect on Value state
         /// </summary>
         [Parameter]
         public bool IsIndeterminate
@@ -149,19 +129,28 @@ namespace Bit.Client.Web.BlazorUI
         protected override void RegisterComponentClasses()
         {
             ClassBuilder.Register(() => IsIndeterminate ? $"{RootElementClass}-indeterminate-{VisualClassRegistrar()}" : string.Empty);
-            ClassBuilder.Register(() => IsChecked ? $"{RootElementClass}-checked-{VisualClassRegistrar()}" : string.Empty);
+            ClassBuilder.Register(() => CurrentValue ? $"{RootElementClass}-checked-{VisualClassRegistrar()}" : string.Empty);
 
             ClassBuilder.Register(() => BoxSide == BitCheckBoxSide.End
                                         ? $"{RootElementClass}-end-{VisualClassRegistrar()}"
                                         : string.Empty);
 
-            ClassBuilder.Register(() => IsEnabled is false && IsChecked
+            ClassBuilder.Register(() => IsEnabled is false && CurrentValue
                                         ? $"{RootElementClass}-checked-disabled-{VisualClassRegistrar()}"
                                         : string.Empty);
 
             ClassBuilder.Register(() => IsEnabled is false && IsIndeterminate
                                         ? $"{RootElementClass}-indeterminate-disabled-{VisualClassRegistrar()}"
                                         : string.Empty);
+
+            ClassBuilder.Register(() => ValueInvalid is true ? $"{RootElementClass}-invalid-{VisualClassRegistrar()}" : string.Empty);
+        }
+
+        protected override async Task OnInitializedAsync()
+        {
+            OnCurrentValueChanged += HandleOnCurrentValueChanged;
+
+            await base.OnInitializedAsync();
         }
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -176,9 +165,9 @@ namespace Bit.Client.Web.BlazorUI
 
         protected override async Task OnParametersSetAsync()
         {
-            if (IsCheckedHasBeenSet is false && DefaultIsChecked is not null)
+            if (ValueHasBeenSet is false && DefaultValue is not null)
             {
-                IsChecked = DefaultIsChecked.Value;
+                CurrentValue = DefaultValue.Value;
             }
 
             if (IsIndeterminateHasBeenSet is false && DefaultIsIndeterminate is not null)
@@ -202,10 +191,32 @@ namespace Bit.Client.Web.BlazorUI
             }
             else
             {
-                if (IsCheckedHasBeenSet && IsCheckedChanged.HasDelegate is false) return;
-                IsChecked = !IsChecked;
-                await OnChange.InvokeAsync(IsChecked);
+                if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+
+                CurrentValue = !CurrentValue;
+                await OnChange.InvokeAsync(CurrentValue);
             }
+        }
+
+        private void HandleOnCurrentValueChanged(object? sender, EventArgs args)
+        {
+            ClassBuilder.Reset();
+        }
+
+        /// <inheritdoc />
+        protected override bool TryParseValueFromString(string? value, out bool result, [NotNullWhen(false)] out string? validationErrorMessage)
+            => throw new NotSupportedException($"This component does not parse string inputs. Bind to the '{nameof(CurrentValue)}' property, not '{nameof(CurrentValueAsString)}'.");
+
+        protected override string? FormatValueAsString(bool value) => value.ToString().ToLower(CultureInfo.CurrentUICulture);
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                OnCurrentValueChanged -= HandleOnCurrentValueChanged;
+            }
+
+            base.Dispose(disposing);
         }
     }
 }

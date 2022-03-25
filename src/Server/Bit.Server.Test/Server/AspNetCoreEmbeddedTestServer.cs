@@ -6,6 +6,7 @@ using Autofac.Extensions.DependencyInjection;
 using Bit.Owin;
 using Bit.Test.Implementations;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -40,6 +41,8 @@ namespace Bit.Test.Server
                 });
 
             _server = hostBuilder.Start().GetTestServer();
+
+            _server.Features.Set<IServerAddressesFeature>(new TestServerAddressesFeature(uri));
         }
 
         protected override void Dispose(bool disposing)

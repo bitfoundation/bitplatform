@@ -62,7 +62,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Rating
                 Assert.IsTrue(button.HasAttribute("aria-hidden"));
                 Assert.AreEqual("true", button.GetAttribute("aria-hidden"));
                 Assert.IsTrue(button.HasAttribute("disabled"));
-                Assert.AreEqual("0", button.GetAttribute("tabindex"));
+                Assert.AreEqual(null, button.GetAttribute("tabindex"));
             }
 
         }
@@ -181,7 +181,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Rating
             var unselectedBitRatingIconCount = bitRatingIcons.Where(r => r.ClassList.Contains("bit-icon--FavoriteStar")).Count();
 
             Assert.AreEqual(bitRatingButtons.Count(), max);
-
+            
             //TODO: bypassed - BUnit 2-way bound parameters issue
             //Assert.AreEqual((!isEnabled || isReadonly) ? 1 : clickedIndex, filledBitRatingIconCount);
             //Assert.AreEqual((!isEnabled || isReadonly) ? max - 1 : max - clickedIndex, unselectedBitRatingIconCount);

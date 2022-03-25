@@ -52,6 +52,12 @@
         margin: 0 0 0 rem(4px);
     }
 
+    &.bit-chb-invalid-fluent {
+        .bit-chb-checkbox {
+            border-color: $Red20;
+        }
+    }
+
     &:hover {
         .bit-chb-checkmark {
             opacity: 1;
@@ -86,6 +92,13 @@
         opacity: 1;
     }
 
+    &.bit-chb-invalid-fluent {
+        .bit-chb-checkbox {
+            background-color: $Red20;
+            border-color: $Red20;
+        }
+    }
+
     &:hover {
         .bit-chb-checkbox {
             border-color: $Dark;
@@ -94,6 +107,13 @@
 
         .bit-chb-checkmark {
             color: $White;
+        }
+    }
+
+    &.bit-chb-invalid-fluent:hover {
+        .bit-chb-checkbox {
+            border-color: $PinkRed10;
+            background-color: $PinkRed10;
         }
     }
 }
@@ -117,6 +137,12 @@
         }
     }
 
+    &.bit-chb-invalid-fluent {
+        .bit-chb-checkmark {
+            background-color: $Red20;
+        }
+    }
+
     &:hover {
         .bit-chb-checkbox {
             border-color: $Dark;
@@ -125,6 +151,16 @@
 
         .bit-chb-checkmark {
             background-color: $Dark;
+        }
+    }
+
+    &.bit-chb-invalid-fluent:hover {
+        .bit-chb-checkbox {
+            border-color: $PinkRed10;
+        }
+
+        .bit-chb-checkmark {
+            background-color: $PinkRed10;
         }
     }
 }

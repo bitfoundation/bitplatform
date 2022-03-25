@@ -63,33 +63,33 @@
     [Parameter] public bool IsEnabled { get; set; } = true;
     [Parameter] public RenderFragment LabelFragment { get; set; }
 
-    public int OnIncrementEventCounter { get; set; } = 0;
-    public int OnBlurEventCounter { get; set; } = 0;
-    public int OnFocusEventCounter { get; set; } = 0;
+    public int OnIncrementEventCounter { get; set; }
+    public int OnBlurEventCounter { get; set; }
+    public int OnFocusEventCounter { get; set; }
     public int OnDecrementEventCounter { get; set; } = 20;
-    public double OnChangeEventValue { get; set; } = 0;
+    public double OnChangeEventValue { get; set; }
 
-    public void HandleChange(double value)
+    private void HandleChange(double value)
     {
         OnChangeEventValue = value;
     }
 
-    public void HandleBlur(FocusEventArgs args)
+    private void HandleBlur(FocusEventArgs args)
     {
         OnBlurEventCounter++;
     }
 
-    public void HandleFocus(FocusEventArgs args)
+    private void HandleFocus(FocusEventArgs args)
     {
         OnFocusEventCounter++;
     }
 
-    public void HandleDecrement(BitSpinButtonChangeValue args)
+    private void HandleDecrement(BitSpinButtonChangeValue args)
     {
         OnDecrementEventCounter--;
     }
 
-    public void HandleIncrement(BitSpinButtonChangeValue args)
+    private void HandleIncrement(BitSpinButtonChangeValue args)
     {
         OnIncrementEventCounter++;
     }
