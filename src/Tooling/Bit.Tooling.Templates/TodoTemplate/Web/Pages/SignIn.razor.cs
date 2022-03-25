@@ -55,8 +55,8 @@ public partial class SignIn
 
     private async Task DoSignIn()
     {
-        var isSigninInValid = ValidateSignIn() is false;
-        if (IsLoading || isSigninInValid)
+        var isSignInInvalid = ValidateSignIn() is false;
+        if (IsLoading || isSignInInvalid)
         {
             return;
         }
@@ -64,7 +64,7 @@ public partial class SignIn
         IsLoading = true;
         IsSignInButtonEnabled = false;
         SignInMessage = null;
-
+        
         try
         {
             await TodoTemplateAuthenticationService.SignIn(new SignInRequestDto
