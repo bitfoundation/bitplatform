@@ -1,15 +1,15 @@
 ﻿class BitColorPicker {
     static listOfAbortControllers: BitAbortController[] = [];
 
-    static registerOnWindowMouseUpEvent(dotnetHelper: any, callback: string): string {
+    static registerOnWindowMouseUpEvent(dotnetHelper: DotNetObject, callback: string): string {
         const controller = new BitAbortController();
 
-        var listenerOptions = new BitEventListenerOptions();
+        const listenerOptions = new BitEventListenerOptions();
         listenerOptions.signal = controller.abortController.signal;
 
         document.addEventListener('mouseup', (e) => {
 
-            var eventArgs = BitColorPicker.toMouseEventArgsMapper(e);
+            const eventArgs = BitColorPicker.toMouseEventArgsMapper(e);
 
             dotnetHelper.invokeMethodAsync(callback, eventArgs);
         }, listenerOptions);
@@ -19,15 +19,15 @@
         return controller.id;
     }
 
-    static registerOnWindowMouseMoveEvent(dotnetHelper: any, callback: string): string {
+    static registerOnWindowMouseMoveEvent(dotnetHelper: DotNetObject, callback: string): string {
         const controller = new BitAbortController();
 
-        var listenerOptions = new BitEventListenerOptions();
+        const listenerOptions = new BitEventListenerOptions();
         listenerOptions.signal = controller.abortController.signal;
 
         document.addEventListener('mousemove', (e) => {
 
-            var eventArgs = BitColorPicker.toMouseEventArgsMapper(e);
+            const eventArgs = BitColorPicker.toMouseEventArgsMapper(e);
 
             dotnetHelper.invokeMethodAsync(callback, eventArgs);
         }, listenerOptions);
@@ -52,12 +52,12 @@
             screenY: e.screenY,
             screenX: e.screenX,
             shiftKey: e.shiftKey,
-            type: e.type,
+            type: e.type
         };
     }
 
     static abortProcedure(id: string): void {
-        var aborController = BitColorPicker.listOfAbortControllers.find(ac => ac.id == id)?.abortController;
+        const aborController = BitColorPicker.listOfAbortControllers.find(ac => ac.id == id)?.abortController;
 
         if (aborController) {
             aborController.abort();
