@@ -147,15 +147,14 @@ public class AuthController : ControllerBase
         if (user is null)
             throw new BadRequestException(nameof(ErrorStrings.UserNameNotFound));
 
-        if (user.EmailConfirmed)
-            throw new BadRequestException();
+        var emailConfirmed = user.EmailConfirmed || (await _userManager.ConfirmEmailAsync(user, token)).Succeeded;
 
-        var result = await _userManager.ConfirmEmailAsync(user, token);
-
-        string url = $"email-confirmation?email={email}&email-confirmed={result.Succeeded}";
+        string url = $"email-confirmation?email={email}&email-confirmed={emailConfirmed}";
 
 #if BlazorServer
         url = $"{_appSettings.WebServerAddress}{url}";
+#else
+        url = $"/{url}";
 #endif
 
         return Redirect(url);
