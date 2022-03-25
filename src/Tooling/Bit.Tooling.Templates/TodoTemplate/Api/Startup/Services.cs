@@ -88,7 +88,7 @@ public static class Services
 
         if (appSettings.EmailSettings.HasCredential)
         {
-            fluentEmailServiceBuilder.AddSmtpSender(appSettings.EmailSettings.Host, appSettings.EmailSettings.Port, appSettings.EmailSettings.Username, appSettings.EmailSettings.Password);
+            fluentEmailServiceBuilder.AddSmtpSender(appSettings.EmailSettings.Host, appSettings.EmailSettings.Port, appSettings.EmailSettings.UserName, appSettings.EmailSettings.Password);
         }
         else
         {
