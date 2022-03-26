@@ -35,8 +35,15 @@
             var dropDownWrapperY = dropDownWrapper.getBoundingClientRect().y;
             var dropDownWrapperBottom = window.innerHeight - (dropDownWrapperHeight + dropDownWrapperY);
             var dropDownWrapperRight = window.innerWidth - (dropDownWrapperWidth + dropDownWrapperX);
+            
+            const minimumWidthForDropDownNormalOpen = 640;
 
-            if (dropDownWrapperBottom >= dropDownCalloutHeight) {
+            if (window.innerWidth < minimumWidthForDropDownNormalOpen) {
+                dropDownCallout.style.top = "0";
+                dropDownCallout.style.left = "unset";
+                dropDownCallout.style.right = "0";
+                dropDownCallout.style.bottom = "unset";
+            } else if (dropDownWrapperBottom >= dropDownCalloutHeight) {
                 dropDownCallout.style.top = dropDownWrapperY + dropDownWrapperHeight + 1 + "px";
                 dropDownCallout.style.left = dropDownWrapperX + "px";
                 dropDownCallout.style.right = "unset";

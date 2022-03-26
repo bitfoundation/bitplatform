@@ -290,19 +290,15 @@
 }
 
 .overflow-hidden {
-    overflow: hidden !important;
+    overflow: hidden;
 }
 
-@media only screen and (min-width: 0) and (max-width: rem(639px)) {
+@media only screen and (max-width: em(639px)) {
     .bit-drp-items-wrapper {
         box-shadow: rgb(0 0 0 / 22%) 0 25.6px 57.6px 0, rgb(0 0 0 / 18%) 0 4.8px 14.4px 0;
-        position: fixed !important;
-        top: 0 !important;
-        left: unset !important;
-        right: 0 !important;
-        bottom: unset !important;
-        height: 100% !important;
-        width: rem(272px) !important;
+        position: fixed;
+        height: 100%;
+        width: rem(272px);
         padding: em(24px) em(20px);
         z-index: 10000;
         animation-name: opacity, trans-x;
