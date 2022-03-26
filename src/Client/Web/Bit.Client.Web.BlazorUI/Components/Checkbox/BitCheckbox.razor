@@ -1,14 +1,16 @@
 ﻿@namespace Bit.Client.Web.BlazorUI
-@inherits BitComponentBase
+@inherits BitInputBase<bool>
 
 <div @ref="RootElement"
      @attributes="HtmlAttributes"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
     <input @ref="CheckboxElement"
+           @attributes="InputHtmlAttributes"
            id="@InputId"
            type="checkbox"
-           checked="@IsChecked"
+           checked="@CurrentValueAsString"
+           value="@CurrentValueAsString"
            disabled="@(IsEnabled is false)"
            aria-disabled="@(IsEnabled ? null : "true")"
            aria-label="@AriaLabel"
@@ -18,7 +20,7 @@
            aria-posinset="@AriaPositionInSet"
            name="@Name"
            title="@Title"
-           hidden>
+           hidden />
     <label class="bit-chb-lbl" for="@InputId" @onclick="@HandleCheckboxClick">
         <div class="bit-chb-checkbox">
             <i class=@($"{RootElementClass}-checkmark bit-icon bit-icon--{CheckmarkIconName.GetName()}")

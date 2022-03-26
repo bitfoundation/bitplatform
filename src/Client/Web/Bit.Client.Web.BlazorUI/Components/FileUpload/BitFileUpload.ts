@@ -2,12 +2,12 @@
 
 class BitFileUploader {
     static bitFileUploads: BitFileUpload[];
-    static headers: any;
+    static headers: Record<string, string>;
 
     static init(inputElement: HTMLInputElement,
-                dotnetReference: any,
-                uploadEndpointUrl: string,
-                headers: any[]): IFiles[] {
+        dotnetReference: DotNetObject,
+        uploadEndpointUrl: string,
+        headers: Record<string, string>): IFiles[] {
 
         let filesArray: IFiles[] = Array.from<IFiles>(inputElement.files!).map(file => ({
             name: file.name,
@@ -50,14 +50,14 @@ class BitFileUploader {
 }
 
 class BitFileUpload {
-    dotnetReference: any;
+    dotnetReference: DotNetObject;
     uploadEndpointUrl: string;
     inputElement: HTMLInputElement;
     index: number;
-    headers: any;
+    headers: Record<string, string>;
     xhr: XMLHttpRequest = new XMLHttpRequest();
 
-    constructor(dotnetReference: any, uploadEndpointUrl: string, inputElement: HTMLInputElement, index: number, headers: any) {
+    constructor(dotnetReference: DotNetObject, uploadEndpointUrl: string, inputElement: HTMLInputElement, index: number, headers: Record<string, string>) {
         this.dotnetReference = dotnetReference;
         this.uploadEndpointUrl = uploadEndpointUrl;
         this.inputElement = inputElement;
@@ -73,7 +73,7 @@ class BitFileUpload {
         };
 
         const me = this;
-        this.xhr.onreadystatechange = function (event: Event): any {
+        this.xhr.onreadystatechange = function (event) {
             if (me.xhr.readyState === 4) {
                 dotnetReference.invokeMethodAsync("HandleFileUpload", index, me.xhr.status, me.xhr.responseText);
             }

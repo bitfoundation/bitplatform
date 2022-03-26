@@ -102,12 +102,159 @@ namespace Bit.Client.Web.BlazorUI.Tests.SearchBoxes
             var component = RenderComponent<BitSearchBoxTest>(
                 parameters =>
                 {
-                    parameters.Add(p => p.IsEnabled, isEnabled);                    
+                    parameters.Add(p => p.IsEnabled, isEnabled);
                 });
             var input = component.Find(".srch-box-input");
             //TODO: bypassed - BUnit oninput event issue
             //input.KeyDown("a");
             //Assert.AreEqual(isEnabled ? 1 : 0, component.Instance.CurrentCount);
+        }
+
+        [DataTestMethod,
+            DataRow(null),
+            DataRow("off"),
+            DataRow("email")
+        ]
+        public void BitSearchBoxAutoCompleteTest(string autoComplete)
+        {
+            var component = RenderComponent<BitSearchBoxTest>(parameters =>
+            {
+                parameters.Add(p => p.AutoComplete, autoComplete);
+                parameters.Add(p => p.IsEnabled, true);
+            });
+
+            var input = component.Find(".srch-box-input");
+
+            if (autoComplete.HasValue())
+            {
+                Assert.IsTrue(input.HasAttribute("autocomplete"));
+                Assert.AreEqual(autoComplete, input.GetAttribute("autocomplete"));
+            }
+            else
+            {
+                Assert.IsFalse(input.HasAttribute("autocomplete"));
+            }
+        }
+
+        [DataTestMethod,
+            DataRow(null),
+            DataRow("abc123"),
+            DataRow("test@bit-components.com"),
+            DataRow("test@bit.com"),
+        ]
+        public void BitSearchBoxValidationFormTest(string value)
+        {
+            var component = RenderComponent<BitSearchBoxValidationTest>(parameters =>
+            {
+                parameters.Add(p => p.TestModel, new BitSearchBoxTestModel { Value = value });
+                parameters.Add(p => p.IsEnabled, true);
+            });
+
+            var isValid = value == "test@bit.com" || value == "test@bit-components.com";
+
+            var form = component.Find("form");
+            form.Submit();
+
+            Assert.AreEqual(component.Instance.ValidCount, isValid ? 1 : 0);
+            Assert.AreEqual(component.Instance.InvalidCount, isValid ? 0 : 1);
+
+            var input = component.Find("input.srch-box-input");
+            if (isValid)
+            {
+                input.Input("bit.com");
+            }
+            else
+            {
+                input.Input("test@bit.com");
+            }
+
+            form.Submit();
+
+            Assert.AreEqual(component.Instance.ValidCount, 1);
+            Assert.AreEqual(component.Instance.InvalidCount, 1);
+            Assert.AreEqual(component.Instance.ValidCount, component.Instance.InvalidCount);
+        }
+
+        [DataTestMethod,
+            DataRow(null),
+            DataRow("abc123"),
+            DataRow("test@bit-components.com"),
+            DataRow("test@bit.com"),
+        ]
+        public void BitSearchBoxValidationInvalidHtmlAttributeTest(string value)
+        {
+            var component = RenderComponent<BitSearchBoxValidationTest>(parameters =>
+            {
+                parameters.Add(p => p.TestModel, new BitSearchBoxTestModel { Value = value });
+                parameters.Add(p => p.IsEnabled, true);
+            });
+
+            var isInvalid = value != "test@bit.com" && value != "test@bit-components.com";
+
+            var input = component.Find("input");
+            Assert.IsFalse(input.HasAttribute("aria-invalid"));
+
+            var form = component.Find("form");
+            form.Submit();
+
+            Assert.AreEqual(input.HasAttribute("aria-invalid"), isInvalid);
+            if (input.HasAttribute("aria-invalid"))
+            {
+                Assert.AreEqual(input.GetAttribute("aria-invalid"), "true");
+            }
+
+            if (isInvalid)
+            {
+                input.Input("test@bit.com");
+                Assert.IsFalse(input.HasAttribute("aria-invalid"));
+            }
+            else
+            {
+                input.Input("bit-components");
+                Assert.IsTrue(input.HasAttribute("aria-invalid"));
+            }
+        }
+
+        [DataTestMethod,
+            DataRow(Visual.Fluent, "abc123"),
+            DataRow(Visual.Fluent, "test@bit.com"),
+            DataRow(Visual.Cupertino, "abc123"),
+            DataRow(Visual.Cupertino, "test@bit.com"),
+            DataRow(Visual.Material, "abc123"),
+            DataRow(Visual.Material, "test@bit.com"),
+        ]
+        public void BitSearchBoxValidationInvalidCssClassTest(Visual visual, string value)
+        {
+            var component = RenderComponent<BitSearchBoxValidationTest>(parameters =>
+            {
+                parameters.Add(p => p.TestModel, new BitSearchBoxTestModel { Value = value });
+                parameters.Add(p => p.IsEnabled, true);
+                parameters.Add(p => p.Visual, visual);
+            });
+
+            var isInvalid = value != "test@bit.com";
+
+            var bitSearchBox = component.Find(".bit-srch-box");
+            var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
+
+            Assert.IsFalse(bitSearchBox.ClassList.Contains($"bit-srch-box-invalid-{visualClass}"));
+
+            var form = component.Find("form");
+            form.Submit();
+
+            Assert.AreEqual(bitSearchBox.ClassList.Contains($"bit-srch-box-invalid-{visualClass}"), isInvalid);
+
+            var input = component.Find("input");
+            if (isInvalid)
+            {
+                input.Input("test@bit.com");
+            }
+            else
+            {
+                input.Input("abc123");
+            }
+
+            Assert.AreEqual(bitSearchBox.ClassList.Contains($"bit-srch-box-invalid-{visualClass}"), !isInvalid);
         }
     }
 }

@@ -1,14 +1,26 @@
 ﻿class BitDropDown {
-    static toggleDropDownCallout(dotnetObjReference: any,
+    static toggleDropDownCallout(dotnetObjReference: DotNetObject,
         dropDownWrapperId: string,
         dropDownId: string,
         dropDownCalloutId: string,
         dropDownOverlayId: string,
         isOpen: boolean) {
-        const dropDownWrapper = document.getElementById(dropDownWrapperId) ?? new HTMLElement();
-        const dropDown = document.getElementById(dropDownId) ?? new HTMLElement();
-        const dropDownCallout = document.getElementById(dropDownCalloutId) ?? new HTMLElement();
-        const dropDownOverlay = document.getElementById(dropDownOverlayId) ?? new HTMLElement();
+
+        const dropDownWrapper = document.getElementById(dropDownWrapperId);
+        if (dropDownWrapper == null)
+            return;
+
+        const dropDown = document.getElementById(dropDownId);
+        if (dropDown == null)
+            return;
+
+        const dropDownCallout = document.getElementById(dropDownCalloutId);
+        if (dropDownCallout == null)
+            return;
+
+        const dropDownOverlay = document.getElementById(dropDownOverlayId);
+        if (dropDownOverlay == null)
+            return;
 
         if (isOpen) {
             dropDownCallout.style.display = "none";
@@ -22,20 +34,18 @@
             dropDownCallout.style.display = "block";
             dropDownOverlay.style.display = "block";
 
-            var dropDownWrapperWidth = dropDownWrapper.offsetWidth;
+            const dropDownWrapperWidth = dropDownWrapper.offsetWidth;
             dropDownCallout.style.width = dropDownWrapperWidth + 'px';
 
-            var dropDownCalloutHeight = dropDownCallout.offsetHeight;
-            var dropDownCalloutWidth = dropDownCallout.offsetWidth;
-            var dropDownHeight = dropDown.offsetHeight;
-            var dropDownTop = dropDown.getBoundingClientRect().y;
-            var dropDownWrapperHeight = dropDownWrapper.offsetHeight;
-            var dropDownWrapperWidth = dropDownWrapper.offsetWidth;
-            var dropDownWrapperX = dropDownWrapper.getBoundingClientRect().x;
-            var dropDownWrapperY = dropDownWrapper.getBoundingClientRect().y;
-            var dropDownWrapperBottom = window.innerHeight - (dropDownWrapperHeight + dropDownWrapperY);
-            var dropDownWrapperRight = window.innerWidth - (dropDownWrapperWidth + dropDownWrapperX);
-            
+            const dropDownCalloutHeight = dropDownCallout.offsetHeight;
+            const dropDownCalloutWidth = dropDownCallout.offsetWidth;
+            const dropDownHeight = dropDown.offsetHeight;
+            const dropDownTop = dropDown.getBoundingClientRect().y;
+            const dropDownWrapperHeight = dropDownWrapper.offsetHeight;
+            const dropDownWrapperX = dropDownWrapper.getBoundingClientRect().x;
+            const dropDownWrapperY = dropDownWrapper.getBoundingClientRect().y;
+            const dropDownWrapperBottom = window.innerHeight - (dropDownWrapperHeight + dropDownWrapperY);
+            const dropDownWrapperRight = window.innerWidth - (dropDownWrapperWidth + dropDownWrapperX);
             const minimumWidthForDropDownNormalOpen = 640;
 
             if (window.innerWidth < minimumWidthForDropDownNormalOpen) {

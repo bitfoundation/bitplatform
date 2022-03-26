@@ -380,3 +380,61 @@
         }
     }
 }
+
+.bit-rbl-invalid-fluent {
+    .bit-rbli-lbl {
+        color: $Red20;
+
+        &:before {
+            border-color: $Red20;
+        }
+
+        &:after {
+            border-color: $Red20;
+            background-color: $Red20;
+        }
+
+        &:hover {
+            .bit-rbli-txt {
+                color: $PinkRed10;
+            }
+
+            &:after {
+                background-color: $PinkRed10;
+                border-color: $PinkRed10;
+            }
+
+            &:before {
+                border-color: $PinkRed10;
+            }
+        }
+    }
+
+    .bit-rbli-lbl-with-img {
+        color: $Red20;
+        border-color: $Red20;
+
+        &:before {
+            border-color: $Red20;
+        }
+
+        &:after {
+            border-color: $Red20;
+            background-color: $Red20;
+        }
+
+        &:hover {
+            border-color: $Red20;
+
+            &:before {
+                border-color: $PinkRed10;
+                opacity: 1;
+            }
+
+            &:after {
+                border-color: $PinkRed10;
+                background-color: $PinkRed10;
+            }
+        }
+    }
+}

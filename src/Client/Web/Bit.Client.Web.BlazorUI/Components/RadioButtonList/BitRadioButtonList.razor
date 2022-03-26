@@ -1,5 +1,5 @@
 ﻿@namespace Bit.Client.Web.BlazorUI
-@inherits BitComponentBase
+@inherits BitInputBase<TValue>
 @typeparam TItem
 @typeparam TValue
 
@@ -26,7 +26,8 @@
             {
                 <div class="@GetDivClassNameItem(item)">
                     <div class="bit-rbli-wrapper">
-                        <input id="@GetInputIdItem(item)"
+                        <input @attributes="InputHtmlAttributes"
+                           id="@GetInputIdItem(item)"
                            class="bit-rbli-input"
                            aria-label="@AriaLabel"
                            type="radio"

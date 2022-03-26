@@ -54,6 +54,7 @@
 		<DesignTimeBuild>True</DesignTimeBuild>
 		<AndroidResgenFile>False</AndroidResgenFile>
 		<AndroidUseIntermediateDesignerFile>False</AndroidUseIntermediateDesignerFile>
+		<ProduceReferenceAssembly>True</ProduceReferenceAssembly>
 
 		<TargetFrameworkVersion Condition=" '$(TargetFramework)' == 'monoandroid10.0' ">v10.0</TargetFrameworkVersion>
 		<SupportedOSPlatformVersion Condition="'$(TargetFramework)' == 'net6.0-ios'">12.0</SupportedOSPlatformVersion>
