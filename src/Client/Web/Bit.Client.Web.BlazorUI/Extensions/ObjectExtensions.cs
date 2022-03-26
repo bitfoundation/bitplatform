@@ -31,10 +31,10 @@ namespace Bit.Client.Web.BlazorUI
                 return default;
             }
 
-            Type conversionType = typeof(T);
-            conversionType = Nullable.GetUnderlyingType(conversionType) ?? conversionType;
+            Type targetType = typeof(T);
+            targetType = Nullable.GetUnderlyingType(targetType) ?? targetType;
 
-            return (T)Convert.ChangeType(value, conversionType, CultureInfo.InvariantCulture);
+            return (T)Convert.ChangeType(value, targetType, CultureInfo.InvariantCulture);
         }
 
         public static T? GetValueFromProperty<T>(this object? obj, string propertyName, T? defaultValue)
@@ -46,10 +46,10 @@ namespace Bit.Client.Web.BlazorUI
                 return defaultValue;
             }
 
-            Type conversionType = typeof(T);
-            conversionType = Nullable.GetUnderlyingType(conversionType) ?? conversionType;
+            Type targetType = typeof(T);
+            targetType = Nullable.GetUnderlyingType(targetType) ?? targetType;
 
-            return (T)Convert.ChangeType(value, conversionType, CultureInfo.InvariantCulture);
+            return (T)Convert.ChangeType(value, targetType, CultureInfo.InvariantCulture);
         }
 
         public static T? ConvertTo<T>(this object? obj)
@@ -64,10 +64,10 @@ namespace Bit.Client.Web.BlazorUI
             }
             else
             {
-                Type conversionType = typeof(T);
-                conversionType = Nullable.GetUnderlyingType(conversionType) ?? conversionType;
+                Type targetType = typeof(T);
+                targetType = Nullable.GetUnderlyingType(targetType) ?? targetType;
 
-                return (T)Convert.ChangeType(obj, conversionType, CultureInfo.InvariantCulture);
+                return (T)Convert.ChangeType(obj, targetType, CultureInfo.InvariantCulture);
             }
         }
     }
