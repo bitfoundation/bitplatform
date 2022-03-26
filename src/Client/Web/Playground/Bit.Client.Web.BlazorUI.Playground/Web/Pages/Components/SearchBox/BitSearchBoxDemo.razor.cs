@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using Bit.Client.Web.BlazorUI.Playground.Web.Models;
 using Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 
@@ -168,8 +167,8 @@ private string TextValue;";
 
         private readonly string example6HTMLCode = @"<EditForm Model=""validationSearchBoxModel"">
      <DataAnnotationsValidator/>
-     <BitSearchBox DefaultValue = ""This is default value"" @bind-Value=""validationSearchBoxModel.Text""/>
-     <ValidationMessage For = ""()=>validationSearchBoxModel.Text""></ValidationMessage>
+     <BitSearchBox DefaultValue=""This is default value"" @bind-Value=""validationSearchBoxModel.Text""/>
+     <ValidationMessage For=""() => validationSearchBoxModel.Text""></ValidationMessage>
 </EditForm> ";
 
         private readonly string example6CSharpCode = @"
@@ -182,12 +181,5 @@ public class ValidationSearchBoxModel
     public string Text { get; set; }
 }
 ";
-    }
-
-    public class ValidationSearchBoxModel
-    {
-        [StringLength(6, MinimumLength = 2,
-        ErrorMessage = "The text field length must be between 6 and 2 characters in length.")]
-        public string Text { get; set; }
     }
 }

@@ -44,13 +44,12 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Validation SearchBox" HTMLSourceCode="@example6HTMLCode" CSharpSourceCode="@example6CSharpCode" ExampleId="example6">
+    <ComponentExampleBox Title="SearchBox Validation" HTMLSourceCode="@example6HTMLCode" CSharpSourceCode="@example6CSharpCode" ExampleId="example6">
         <ExamplePreview>
-            <div class="example-desc">BitSearchBox can be validation value.</div>
             <EditForm Model="validationSearchBoxModel">
                 <DataAnnotationsValidator />
                 <BitSearchBox DefaultValue="This is default value" @bind-Value="validationSearchBoxModel.Text" />
-                <ValidationMessage For="()=>validationSearchBoxModel.Text"></ValidationMessage>
+                <ValidationMessage For="() => validationSearchBoxModel.Text"></ValidationMessage>
             </EditForm>
         </ExamplePreview>
     </ComponentExampleBox>
