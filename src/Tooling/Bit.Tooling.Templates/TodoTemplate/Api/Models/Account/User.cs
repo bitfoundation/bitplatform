@@ -14,5 +14,9 @@ public class User : IdentityUser<int>
     [PersonalData]
     public string? ProfileImageName { get; set; }
 
+    public DateTimeOffset? ConfirmationEmailLastTimeSent { get; set; }
+    
+    public DateTimeOffset? ResetPasswordEmailLastTimeSent { get; set; }
+
     public string DisplayName => FullName ?? NormalizedUserName;
 }

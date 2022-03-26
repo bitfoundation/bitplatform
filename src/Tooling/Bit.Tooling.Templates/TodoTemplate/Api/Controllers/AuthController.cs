@@ -74,6 +74,11 @@ public class AuthController : ControllerBase
     [HttpPost("[action]")]
     public async Task SendConfirmationEmail(SendConfirmationEmailRequestDto sendConfirmationEmailRequest, CancellationToken cancellationToken)
     {
+        if (ConfirmationEmailAllowedToSent(sendConfirmationEmailRequest.Email!).Result == false)
+        {
+            throw new BadRequestException(nameof(ErrorStrings.RepetitiveSendingEmailNotAllowed));
+        }
+
         var user = await _userManager.FindByEmailAsync(sendConfirmationEmailRequest.Email);
 
         var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
@@ -102,10 +107,26 @@ public class AuthController : ControllerBase
             throw new ResourceValidationException(result.ErrorMessages.ToArray());
     }
 
+    private async Task<bool> ConfirmationEmailAllowedToSent(string email)
+    {
+        var user = await _userManager.FindByEmailAsync(email);
+
+        var emailSentMinutesSpan = (DateTimeOffset.Now - (user.ConfirmationEmailLastTimeSent ?? DateTimeOffset.MinValue)).TotalMinutes;
+
+        var result = emailSentMinutesSpan > _appSettings.EmailSettings.RepetitiveSendingDelayMinutes;
+
+        return result;
+    }
+
     [HttpPost("[action]")]
     public async Task SendResetPasswordEmail(SendResetPasswordEmailRequestDto sendResetPasswordEmailRequest
         , CancellationToken cancellationToken)
     {
+        if (ResetPasswordEmailAllowedToSent(sendResetPasswordEmailRequest.Email!).Result == false)
+        {
+            throw new BadRequestException(nameof(ErrorStrings.RepetitiveSendingEmailNotAllowed));
+        }
+        
         var user = await _userManager.FindByEmailAsync(sendResetPasswordEmailRequest.Email);
 
         if (user is null)
@@ -137,6 +158,17 @@ public class AuthController : ControllerBase
 
         if (!result.Successful)
             throw new ResourceValidationException(result.ErrorMessages.ToArray());
+    }
+
+    private async Task<bool> ResetPasswordEmailAllowedToSent(string email)
+    {
+        var user = await _userManager.FindByEmailAsync(email);
+
+        var emailSentMinutesSpan = (DateTimeOffset.Now - (user.ResetPasswordEmailLastTimeSent ?? DateTimeOffset.MinValue)).TotalMinutes;
+
+        var result = emailSentMinutesSpan > _appSettings.EmailSettings.RepetitiveSendingDelayMinutes;
+
+        return result;
     }
 
     [HttpGet("[action]")]

@@ -268,6 +268,15 @@ namespace TodoTemplate.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to An email has already been sent to &apos;{0}&apos;. Try again later..
+        /// </summary>
+        public static string RepetitiveSendingEmailNotAllowed {
+            get {
+                return ResourceManager.GetString("RepetitiveSendingEmailNotAllowed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Request data is not valid.
         /// </summary>
         public static string ResourceValidationException {

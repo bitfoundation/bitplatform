@@ -246,4 +246,8 @@
     <value>Email '{0}' is not confirmed.</value>
     <comment>Error when a email is not confirmed by the confirmation link</comment>
   </data>
+  <data name="RepetitiveSendingEmailNotAllowed" xml:space="preserve">
+    <value>An email has already been sent to '{0}'. Try again later.</value>
+    <comment>Error when a user request to send another email less than allowed delay</comment>
+  </data>
 </root>
