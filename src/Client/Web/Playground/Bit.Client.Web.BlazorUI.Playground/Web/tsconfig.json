@@ -2,6 +2,7 @@
     "compileOnSave": true,
     "compilerOptions": {
         "strict": true,
+        "noImplicitAny": true,
         "lib": [ "DOM", "ESNext" ],
         "outFile": "wwwroot/scripts/app.js"
     }

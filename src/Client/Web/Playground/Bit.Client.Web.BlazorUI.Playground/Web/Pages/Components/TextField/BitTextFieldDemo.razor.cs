@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+using System.Threading.Tasks;
 using Bit.Client.Web.BlazorUI.Playground.Web.Models;
 using Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 
@@ -9,8 +9,8 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.TextField
     {
         private BitTextFieldType InputType = BitTextFieldType.Password;
         private string TextValue;
-
-        ValidationTextFieldModel validationTextFieldModel = new();
+        private ValidationTextFieldModel validationTextFieldModel = new();
+        public bool formIsValidSubmit;
 
         private readonly List<ComponentParameter> componentParameters = new()
         {
@@ -350,7 +350,7 @@ private BitTextFieldType InputType = BitTextFieldType.Password;
 <div>
     <BitTextField AriaLabel=""Required Without Visible Label"" IsRequired=""true""></BitTextField>
 </div>";
-       
+
         private readonly string example9HTMLCode = @"<div>
     <BitTextField Label=""Standard"" IsMultiline=""true"" Rows=""3""></BitTextField>
 </div>
@@ -409,79 +409,93 @@ private BitTextFieldType InputType = BitTextFieldType.Password;
     </BitTextField>
 </div>";
 
-        private readonly string example13HTMLCode = @" <EditForm Model=""validationTextFieldModel"">
-    <DataAnnotationsValidator />
-     <div>
-         <BitTextField Label = ""Required""
-                       IsRequired=true @bind-Value=""validationTextFieldModel.Text"" />
-         <ValidationMessage For = ""()=> validationTextFieldModel.Text"" />
-     </div>
-     <div>
-         <BitTextField Label=""Numberic validation""
-                       @bind-Value=""validationTextFieldModel.NumericText"" />
-         <ValidationMessage For = ""()=> validationTextFieldModel.NumericText"" />
-     </div>
-     <div>
-         <BitTextField Label=""Character validation""
-                       @bind-Value=""validationTextFieldModel.CharacterText"" />
-         <ValidationMessage For = ""()=> validationTextFieldModel.CharacterText"" />
-     </div>
-     <div>
-         <BitTextField Label=""Email validation""
-                       @bind-Value=""validationTextFieldModel.EmailText"" />
-         <ValidationMessage For = ""()=> validationTextFieldModel.EmailText"" />
-     </div>
-     <div>
-         <BitTextField Label=""Length character validation""
-                       @bind-Value=""validationTextFieldModel.RangeText"" />
-         <ValidationMessage For = ""()=> validationTextFieldModel.RangeText"" />
-     </div>
- </EditForm>";
+        private readonly string example13HTMLCode = @"@if (formIsValidSubmit is false)
+{
+    <EditForm Model=""validationTextFieldModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
+        <DataAnnotationsValidator />
+        <div class=""form-item"">
+            <BitTextField Label=""Required"" @bind-Value=""validationTextFieldModel.Text"" />
+            <ValidationMessage For=""() => validationTextFieldModel.Text"" />
+        </div>
+        <div class=""form-item"">
+            <BitTextField Label=""Numeric validation"" @bind-Value=""validationTextFieldModel.NumericText"" />
+            <ValidationMessage For=""() => validationTextFieldModel.NumericText"" />
+        </div>
+        <div class=""form-item"">
+            <BitTextField Label=""Character validation"" @bind-Value=""validationTextFieldModel.CharacterText"" />
+            <ValidationMessage For=""() => validationTextFieldModel.CharacterText"" />
+        </div>
+        <div class=""form-item"">
+            <BitTextField Label=""Email validation"" @bind-Value=""validationTextFieldModel.EmailText"" />
+            <ValidationMessage For=""() => validationTextFieldModel.EmailText"" />
+        </div>
+        <div class=""form-item"">
+            <BitTextField Label=""Length character validation"" @bind-Value=""validationTextFieldModel.RangeText"" />
+            <ValidationMessage For=""() => validationTextFieldModel.RangeText"" />
+        </div>
+        <BitButton ButtonType=""BitButtonType.Submit"">
+            Submit
+        </BitButton>
+    </EditForm>
+}
+else
+{
+    <BitMessageBar MessageBarType=""BitMessageBarType.Success"" IsMultiline=""false"">
+        The form is valid to submit successfully.
+    </BitMessageBar>
+}";
 
-        private readonly string example13CSharpCode = @"
-ValidationTextFieldModel validationTextFieldModel = new();
+        private readonly string example13CSharpCode = @"private ValidationTextFieldModel validationTextFieldModel = new();
+public bool formIsValidSubmit;
+	
+private async void HandleValidSubmit()
+{
+    formIsValidSubmit = true;
+
+    await Task.Delay(3000);
+
+    formIsValidSubmit = false;
+
+    StateHasChanged();
+}
+
+private void HandleInvalidSubmit()
+{
+    formIsValidSubmit = false;
+}
+
 public class ValidationTextFieldModel
 {
     [Required]
     public string Text { get; set; }
 
-    [RegularExpression(""0*[1-9][0-9]*"",
-    ErrorMessage = ""Only numeric values are allow in Field."")]
+    [RegularExpression(""0*[1-9][0-9]*"", ErrorMessage = ""Only numeric values are allow in field."")]
     public string NumericText { get; set; }
 
-    [RegularExpression(@""^[a-zA-Z0-9.]*$"",
-    ErrorMessage = ""Sorry. only letters(a-z), numbers(0-9), and periods(.) are allowed."")]
+    [RegularExpression(""^[a-zA-Z0-9.]*$"", ErrorMessage = ""Sorry, only letters(a-z), numbers(0-9), and periods(.) are allowed."")]
     public string CharacterText { get; set; }
 
-    [RegularExpression(@""^([\w\.\-]+)@([\w\-]+)((\.(\w){2,3})+)$"",
-    ErrorMessage = ""Invalid email address."")]
+    [EmailAddress(ErrorMessage = ""Invalid e-mail address."")]
     public string EmailText { get; set; }
 
-    [RegularExpression(""^.{3,5}$"",
-    ErrorMessage = ""The field  must be between 3 and 5."")]
+    [StringLength(5, MinimumLength = 3, ErrorMessage = ""The text length much be between 3 and 5 characters in length."")]
     public string RangeText { get; set; }
 }";
-    }
 
-    public class ValidationTextFieldModel
-    {
-        [Required]
-        public string Text { get; set; }
+        private async void HandleValidSubmit()
+        {
+            formIsValidSubmit = true;
 
-        [RegularExpression("0*[1-9][0-9]*",
-        ErrorMessage = "Only numeric values are allow in Field")]
-        public string NumericText { get; set; }
+            await Task.Delay(3000);
 
-        [RegularExpression(@"^[a-zA-Z0-9.]*$",
-        ErrorMessage = "Sorry. only letters(a-z), numbers(0-9), and periods(.) are allowed")]
-        public string CharacterText { get; set; }
+            formIsValidSubmit = false;
 
-        [RegularExpression(@"^([\w\.\-]+)@([\w\-]+)((\.(\w){2,3})+)$",
-        ErrorMessage = "Invalid email address")]
-        public string EmailText { get; set; }
+            StateHasChanged();
+        }
 
-        [RegularExpression("^.{3,5}$",
-        ErrorMessage = "The field  must be between 3 and 5.")]
-        public string RangeText { get; set; }
+        private void HandleInvalidSubmit()
+        {
+            formIsValidSubmit = false;
+        }
     }
 }

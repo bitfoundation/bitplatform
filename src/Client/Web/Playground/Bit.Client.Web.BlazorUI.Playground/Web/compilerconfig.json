@@ -104,6 +104,18 @@
     "inputFile": "Pages/Components/TextField/BitTextFieldDemo.razor.scss"
   },
   {
+    "outputFile": "Pages/Components/SpinButton/BitSpinButtonDemo.razor.css",
+    "inputFile": "Pages/Components/SpinButton/BitSpinButtonDemo.razor.scss"
+  },
+  {
+    "outputFile": "Pages/Components/DatePicker/BitDatePickerDemo.razor.css",
+    "inputFile": "Pages/Components/DatePicker/BitDatePickerDemo.razor.scss"
+  },
+  {
+    "outputFile": "Pages/Components/Checkbox/BitCheckboxDemo.razor.css",
+    "inputFile": "Pages/Components/Checkbox/BitCheckboxDemo.razor.scss"
+  },
+  {
     "outputFile": "Pages/Components/RadioButtonList/BitRadioButtonListDemo.razor.css",
     "inputFile": "Pages/Components/RadioButtonList/BitRadioButtonListDemo.razor.scss"
   }

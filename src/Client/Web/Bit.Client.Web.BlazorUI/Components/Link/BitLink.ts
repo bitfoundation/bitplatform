@@ -2,7 +2,7 @@
     static scrollToFragmentOnClickEvent(targetElementId: string) {
         const element = document.getElementById(targetElementId);
 
-        if (element instanceof HTMLElement) {
+        if (element != null) {
             element.scrollIntoView({
                 behavior: "smooth",
                 block: "start",
