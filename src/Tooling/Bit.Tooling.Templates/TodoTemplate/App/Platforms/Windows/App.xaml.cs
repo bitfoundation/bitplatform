@@ -10,11 +10,4 @@ public partial class App
     }
 
     protected override MauiApp CreateMauiApp() => MauiProgram.CreateMauiAppBuilder().Build();
-
-    protected override void OnLaunched(LaunchActivatedEventArgs args)
-    {
-        base.OnLaunched(args);
-
-        Platform.OnLaunched(args);
-    }
 }

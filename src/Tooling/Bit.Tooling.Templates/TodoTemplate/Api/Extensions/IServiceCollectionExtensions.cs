@@ -18,6 +18,7 @@ public static class IServiceCollectionExtensions
         services.AddIdentity<User, Role>(options =>
         {
             options.User.RequireUniqueEmail = settings.RequireUniqueEmail;
+            options.SignIn.RequireConfirmedEmail = true;
             options.Password.RequireDigit = settings.PasswordRequireDigit;
             options.Password.RequireLowercase = settings.PasswordRequireLowercase;
             options.Password.RequireUppercase = settings.PasswordRequireUppercase;

@@ -6,7 +6,11 @@
 
         public JwtSettings JwtSettings { get; set; }
 
+        public EmailSettings EmailSettings { get; set; }
+
         public string UserProfileImagePath { get; set; }
+
+        public string WebServerAddress { get; set; }
     }
 
     public class IdentitySettings
@@ -26,5 +30,16 @@
         public string Audience { get; set; }
         public int NotBeforeMinutes { get; set; }
         public int ExpirationMinutes { get; set; }
+    }
+
+    public class EmailSettings
+    {
+        public string Host { get; set; }
+        public int Port { get; set; }
+        public string UserName { get; set; }
+        public string Password { get; set; }
+        public string DefaulFromEmail { get; set; }
+        public string DefaultFromName { get; set; }
+        public bool HasCredential => (string.IsNullOrEmpty(UserName) is false) && (string.IsNullOrEmpty(Password) is false);
     }
 }

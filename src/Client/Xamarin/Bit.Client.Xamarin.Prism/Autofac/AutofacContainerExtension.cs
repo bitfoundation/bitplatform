@@ -95,7 +95,7 @@ namespace Prism.Autofac
         }
     }
 
-    public class AutofacContainerExtension : IAutofacContainerExtension, IDisposable
+    public class AutofacContainerExtension : IAutofacContainerExtension
     {
         private AutofacScopeProvider _currentScope;
         private AutofacScopeProvider _rootScope;
@@ -252,27 +252,6 @@ namespace Prism.Autofac
             var child = Instance.BeginLifetimeScope();
             _currentScope = new AutofacScopeProvider(child);
             return _currentScope;
-        }
-
-        private bool isDisposed;
-
-        public virtual void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (isDisposed) return;
-            _currentScope?.Dispose();
-            _currentScope = null!;
-            isDisposed = true;
-        }
-
-        ~AutofacContainerExtension()
-        {
-            Dispose(false);
         }
     }
 }

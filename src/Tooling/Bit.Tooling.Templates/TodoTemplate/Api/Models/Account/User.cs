@@ -13,4 +13,6 @@ public class User : IdentityUser<int>
 
     [PersonalData]
     public string? ProfileImageName { get; set; }
+
+    public string DisplayName => FullName ?? NormalizedUserName;
 }

@@ -14,6 +14,8 @@ public static class Services
 {
     public static void Add(IServiceCollection services, IConfiguration configuration)
     {
+        var appSettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>();
+
         services.AddTodoTemplateSharedServices();
 
 #if BlazorWebAssembly
@@ -80,5 +82,24 @@ public static class Services
         services.AddTodoTemplateIdentity(configuration);
 
         services.AddTodoTemplateJwt(configuration);
+
+        var fluentEmailServiceBuilder = services.AddFluentEmail(appSettings.EmailSettings.DefaulFromEmail, appSettings.EmailSettings.DefaultFromName)
+            .AddRazorRenderer();
+
+        if (appSettings.EmailSettings.HasCredential)
+        {
+            fluentEmailServiceBuilder.AddSmtpSender(appSettings.EmailSettings.Host, appSettings.EmailSettings.Port, appSettings.EmailSettings.UserName, appSettings.EmailSettings.Password);
+        }
+        else
+        {
+            fluentEmailServiceBuilder.AddSmtpSender(appSettings.EmailSettings.Host, appSettings.EmailSettings.Port);
+        }
+
+        // install Smtp4dev (fake smtp server) using following command:
+        // dotnet tool install -g Rnwood.Smtp4dev
+        // and run it using following command:
+        // smtp4dev --urls=https://localhost:6001/
+        // you'll be able to see sent emails by opening https://localhost:6001/
+        // For production, either use production ready smtp server or use fluent email integration packages such as sendgrid, mailgun etc.
     }
 }
