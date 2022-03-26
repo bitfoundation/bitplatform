@@ -1,5 +1,5 @@
 ﻿@namespace Bit.Client.Web.BlazorUI
-@inherits BitComponentBase
+@inherits BitInputBase<double>
 
 <div @ref="RootElement"
      @attributes="HtmlAttributes"
@@ -15,13 +15,13 @@
         var index = item;
         var percentage = GetPercentageOf(index);
 
-        <button aria-checked="@(index == Rating ? "true" : "false")"
+        <button aria-checked="@(index == CurrentValue ? "true" : "false")"
                 aria-hidden=@(IsReadOnly ? "true" : null)
-                data-is-current="@(index == Rating ? "true" : null)"
+                data-is-current="@(index == CurrentValue ? "true" : null)"
                 disabled=@(!IsEnabled|| IsReadOnly)
                 id="@($"Rating{UniqueId}-star-{index}")"
                 role="radio"
-                tabindex=@(IsReadOnly ? null : (index == Rating ? "0" : "-1" ))
+                tabindex=@(IsReadOnly ? null : (index == CurrentValue ? "0" : "-1" ))
                 type="button"
                 @onclick="() => HandleClick(index)">
 
@@ -39,4 +39,5 @@
             </div>
         </button>
     }
+    <input @attributes="InputHtmlAttributes" type="number" min="@(AllowZeroStars ? 0 : 1)" max="@Max" value="@CurrentValueAsString" class="bit-input-hidden" />
 </div>
