@@ -34,7 +34,7 @@
                           OnFocus="() => PasswordErrorMessage = null" />
             <div class="form-input-error">@PasswordErrorMessage</div>
         </div>
-        <BitCheckbox Class="form-checkbox" @bind-IsChecked="IsAcceptPrivacy"
+        <BitCheckbox Class="form-checkbox" @bind-Value="IsAcceptPrivacy"
                      OnChange="WrapHandled(CheckSignUpButtonEnable)">
             I agree to the <BitLink Href="/privacy" Target="_blank">Bit Privacy Policy</BitLink>
         </BitCheckbox>
