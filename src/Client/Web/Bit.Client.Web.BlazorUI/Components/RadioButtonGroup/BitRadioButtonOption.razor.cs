@@ -8,8 +8,7 @@ namespace Bit.Client.Web.BlazorUI
 {
     public partial class BitRadioButtonOption : IDisposable
     {
-        private bool isChecked;
-        private bool isEnabled;
+        private bool isChecked;    
         private bool IsRequired;
         private string? imageSizeStyle;
         private bool IsCheckedHasBeenSet;
@@ -104,13 +103,18 @@ namespace Bit.Client.Web.BlazorUI
                     Name = RadioButtonGroup.Name;
                 }
 
+                if (RadioButtonGroup.SelectedKey == Key)
+                {
+                    SetState(true);
+                }
+
+                IsRequired = RadioButtonGroup.IsRequired;
+
                 RadioButtonGroup.RegisterOption(this);
 
                 InputId = $"RadioButtonGroup{RadioButtonGroup.UniqueId}-{Key}";
                 TextId = $"RadioButtonGroupLabel{RadioButtonGroup.UniqueId}-{Key}";
             }
-
-            isEnabled = IsEnabled;
 
             return base.OnInitializedAsync();
         }
@@ -120,25 +124,6 @@ namespace Bit.Client.Web.BlazorUI
             if (ImageSize is not null)
             {
                 imageSizeStyle = $" width:{ImageSize.Value.Width}px; height:{ImageSize.Value.Height}px;";
-            }
-
-            if (RadioButtonGroup is not null)
-            {
-                if (RadioButtonGroup.IsEnabled is false)
-                {
-                    isEnabled = false;
-                }
-                else
-                {
-                    isEnabled = IsEnabled;
-                }
-
-                IsRequired = RadioButtonGroup.IsRequired;
-
-                if (RadioButtonGroup.SelectedKey == Key)
-                {
-                    SetState(true);
-                }
             }
 
             return base.OnParametersSetAsync();
@@ -155,7 +140,8 @@ namespace Bit.Client.Web.BlazorUI
             ? $"{RootElementClass}-checked-{VisualClassRegistrar()}" : string.Empty);
 
             ClassBuilder.Register(() =>
-            $"{RootElementClass}-{(isEnabled ? "enabled" : "disabled")}-{VisualClassRegistrar()}");
+            $"{RootElementClass}-{((IsEnabled && RadioButtonGroup is not null && RadioButtonGroup.IsEnabled) 
+            ? "enabled" : "disabled")}-{VisualClassRegistrar()}");
         }
 
         internal void SetState(bool status)
@@ -172,19 +158,16 @@ namespace Bit.Client.Web.BlazorUI
 
         private async Task HandleClick(MouseEventArgs e)
         {
-            if (isEnabled is false) return;
+            if (IsEnabled is false || RadioButtonGroup is null || RadioButtonGroup.IsEnabled is false) return;
 
-            if (RadioButtonGroup is not null)
-            {
-                await RadioButtonGroup.SelectOption(this);
-            }
+            await RadioButtonGroup.SelectOption(this);
 
             await OnClick.InvokeAsync(e);
         }
 
         private async Task HandleChange(ChangeEventArgs e)
         {
-            if (isEnabled is false) return;
+            if (IsEnabled is false || RadioButtonGroup is null || RadioButtonGroup.IsEnabled is false) return;
 
             if (IsCheckedHasBeenSet && IsCheckedChanged.HasDelegate is false) return;
 
