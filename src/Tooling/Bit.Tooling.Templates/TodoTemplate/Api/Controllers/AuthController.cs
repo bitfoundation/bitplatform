@@ -49,6 +49,8 @@ public class AuthController : ControllerBase
     {
         var existingUserIfAny = await _userManager.FindByNameAsync(signUpRequest.UserName);
 
+        var userToAdd = _mapper.Map<User>(signUpRequest);
+
         if (existingUserIfAny is not null)
         {
             if (await _userManager.IsEmailConfirmedAsync(existingUserIfAny))
@@ -57,12 +59,10 @@ public class AuthController : ControllerBase
             }
             else
             {
-                await SendConfirmationEmail(new() { Email = signUpRequest.Email }, cancellationToken);
-                return;
+                await _userManager.DeleteAsync(existingUserIfAny);
+                userToAdd.ConfirmationEmailRequestedOn = existingUserIfAny.ConfirmationEmailRequestedOn;
             }
         }
-
-        var userToAdd = _mapper.Map<User>(signUpRequest);
 
         var result = await _userManager.CreateAsync(userToAdd, signUpRequest.Password);
 
