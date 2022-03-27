@@ -126,24 +126,21 @@ namespace Bit.Client.Web.BlazorUI
             {
                 if (RadioButtonGroup.IsEnabled is false)
                 {
-                    IsEnabled = false;
+                    isEnabled = false;
                 }
                 else
                 {
-                    IsEnabled = isEnabled;
+                    isEnabled = IsEnabled;
                 }
 
-                if (RadioButtonGroup.IsRequired)
-                {
-                    IsRequired = true;
-                }
+                IsRequired = RadioButtonGroup.IsRequired;
 
                 if (RadioButtonGroup.SelectedKey == Key)
                 {
                     SetState(true);
                 }
             }
-         
+
             return base.OnParametersSetAsync();
         }
 
@@ -152,10 +149,13 @@ namespace Bit.Client.Web.BlazorUI
         protected override void RegisterComponentClasses()
         {
             ClassBuilder.Register(() => ImageSrc.HasValue() || IconName.HasValue
-                                        ? $"{RootElementClass}-with-img-{VisualClassRegistrar()}" : string.Empty);
+            ? $"{RootElementClass}-with-img-{VisualClassRegistrar()}" : string.Empty);
 
             ClassBuilder.Register(() => IsChecked
-                            ? $"{RootElementClass}-checked-{VisualClassRegistrar()}" : string.Empty);
+            ? $"{RootElementClass}-checked-{VisualClassRegistrar()}" : string.Empty);
+
+            ClassBuilder.Register(() =>
+            $"{RootElementClass}-{(isEnabled ? "enabled" : "disabled")}-{VisualClassRegistrar()}");
         }
 
         internal void SetState(bool status)
@@ -172,7 +172,8 @@ namespace Bit.Client.Web.BlazorUI
 
         private async Task HandleClick(MouseEventArgs e)
         {
-            if (IsEnabled is false) return;
+            if (isEnabled is false) return;
+
             if (RadioButtonGroup is not null)
             {
                 await RadioButtonGroup.SelectOption(this);
@@ -183,7 +184,8 @@ namespace Bit.Client.Web.BlazorUI
 
         private async Task HandleChange(ChangeEventArgs e)
         {
-            if (IsEnabled is false) return;
+            if (isEnabled is false) return;
+
             if (IsCheckedHasBeenSet && IsCheckedChanged.HasDelegate is false) return;
 
             await OnChange.InvokeAsync(IsChecked);
