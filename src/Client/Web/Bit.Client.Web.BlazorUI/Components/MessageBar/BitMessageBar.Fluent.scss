@@ -67,6 +67,8 @@
 
 .bit-msg-bar-content {
     display: flex;
+    width: 100%;
+    line-height: normal;
 }
 
 .bit-msg-bar-icon {
@@ -112,6 +114,13 @@
 
 .bit-msg-bar-truncate,
 .bit-msg-bar-dismiss {
+
+    .bit-icon {
+        font-size: rem(10px);
+        height: rem(10px);
+        line-height: rem(10px);
+    }
+
     button {
         outline: transparent;
         position: relative;
@@ -138,6 +147,10 @@
             flex-wrap: nowrap;
             justify-content: center;
             align-items: center;
+        }
+
+        i {
+            vertical-align: middle;
         }
     }
 }

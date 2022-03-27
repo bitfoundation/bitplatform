@@ -57,6 +57,16 @@
     font-size: rem(14px);
     font-weight: 400;
     font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+
+    .bit-icon {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: rem(32px);
+        height: 100%;
+        font-size: rem(16);
+        color: $Grey160;
+    }
 }
 
 .bit-txt-label {
@@ -112,16 +122,6 @@
     &[type="password"]::-ms-clear {
         display: none;
     }
-}
-
-.bit-icon {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: rem(32px);
-    height: 100%;
-    font-size: rem(16);
-    color: $Grey160;
 }
 
 .password-reveal-btn {
