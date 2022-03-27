@@ -24,20 +24,20 @@
     align-items: center;
     width: 100%;
     height: rem(48px);
-    padding: 0 rem(24px);
+    padding-left: rem(24px);
     border-radius: rem(10px) rem(10px) 0 0;
     box-sizing: border-box;
-    background-color: $B5Color;
+    border-bottom: rem(1px) solid $B5Color;
     color: $B2Color;
 
     @include lt-xl {
         height: rem(40px);
-        padding: 0 rem(16px);
+        padding-left: rem(16px);
         border-radius: rem(8px) rem(8px) 0 0;
     }
 
     @include sm {
-        padding: 0 rem(8px);
+        padding-left: rem(8px);
     }
 }
 
@@ -60,15 +60,13 @@
     display: flex;
     align-items: center;
     flex-flow: row nowrap;
+    height: 100%;
 }
 
 .box-content {
     position: relative;
     width: 100%;
     min-height: rem(70px);
-    border: rem(1px) solid $B5Color;
-    border-top: none;
-    border-radius: 0 0 rem(10px) rem(10px);
     box-sizing: border-box;
     background-color: $White;
     color: $Gray1;
