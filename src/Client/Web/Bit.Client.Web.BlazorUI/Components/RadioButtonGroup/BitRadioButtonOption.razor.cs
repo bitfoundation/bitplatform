@@ -133,8 +133,8 @@ namespace Bit.Client.Web.BlazorUI
 
             ClassBuilder.Register(() =>
             {
-                var isEnabled = IsEnabled is false || (RadioButtonGroup is not null && RadioButtonGroup.IsEnabled is false);
-                return $"{RootElementClass}-{(isEnabled ? "disabled" : "enabled")}-{VisualClassRegistrar()}";
+                var isDisabled = IsEnabled is false || (RadioButtonGroup is not null && RadioButtonGroup.IsEnabled is false);
+                return $"{RootElementClass}-{(isDisabled ? "disabled" : "enabled")}-{VisualClassRegistrar()}";
             });
         }
 
