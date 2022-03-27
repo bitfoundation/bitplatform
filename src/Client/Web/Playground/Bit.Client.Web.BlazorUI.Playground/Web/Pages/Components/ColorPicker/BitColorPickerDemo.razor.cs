@@ -107,7 +107,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ColorPicker
 
         private readonly string example1HTMLCode = @"<BitColorPicker ShowPreview=""@IsToggleChecked"" @ref=""ColorPicker"" @bind-Color=""@Color"" ShowAlphaSlider=""false"">Default ColorPicker</BitColorPicker>
 <div>
-    <BitToggle Label=""Show Preview Box"" @bind-IsChecked=""@IsToggleChecked"" IsEnabled=""true"" />
+    <BitToggle Label=""Show Preview Box"" @bind-Value=""@IsToggleChecked"" IsEnabled=""true"" />
 </div>
 <div>
     <BitTextField Label=""Hex Code"" Value=""@Color""></BitTextField>

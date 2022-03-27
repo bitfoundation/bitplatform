@@ -8,7 +8,7 @@
             <div>
                 <BitColorPicker ShowPreview="@IsToggleChecked" @ref="ColorPicker" @bind-Color="@Color" ShowAlphaSlider="false">Default ColorPicker</BitColorPicker>
                 <div class="p-12">
-                    <BitToggle Label="Show Preview Box" @bind-IsChecked="@IsToggleChecked" IsEnabled="true" />
+                    <BitToggle Label="Show Preview Box" @bind-Value="@IsToggleChecked" IsEnabled="true" />
                 </div>
                 <div class="p-12 max-w-300">
                     <BitTextField Label="Hex Code" Value="@Color"></BitTextField>
