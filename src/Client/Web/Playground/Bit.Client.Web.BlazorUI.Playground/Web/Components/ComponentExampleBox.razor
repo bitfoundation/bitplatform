@@ -35,7 +35,9 @@
 
                 @if(CSharpSourceCode.HasValue())
                 {
-                    <code class="csharp">@CSharpSourceCode</code>
+                    <code class="csharp">
+&#64code {@CSharpSourceCode.Replace("\n", "\n     ")
+}</code>
                 }
             </pre>
         }
