@@ -57,7 +57,8 @@ public class AuthController : ControllerBase
             }
             else
             {
-                await _userManager.DeleteAsync(existingUserIfAny);
+                await SendConfirmationEmail(new() { Email = signUpRequest.Email }, cancellationToken);
+                return;
             }
         }
 
@@ -75,6 +76,9 @@ public class AuthController : ControllerBase
     public async Task SendConfirmationEmail(SendConfirmationEmailRequestDto sendConfirmationEmailRequest, CancellationToken cancellationToken)
     {
         var user = await _userManager.FindByEmailAsync(sendConfirmationEmailRequest.Email);
+
+        if ((DateTimeOffset.Now - user.ConfirmationEmailRequestedOn) < _appSettings.IdentitySettings.ConfirmationEmailResendDelay)
+            throw new TooManyRequestsExceptions(nameof(ErrorStrings.WaitForConfirmationEmailResendDelay));
 
         var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
 
@@ -98,6 +102,10 @@ public class AuthController : ControllerBase
                                     assembly)
             .SendAsync(cancellationToken);
 
+        user.ConfirmationEmailRequestedOn = DateTimeOffset.Now;
+
+        await _userManager.UpdateAsync(user);
+
         if (!result.Successful)
             throw new ResourceValidationException(result.ErrorMessages.ToArray());
     }
@@ -107,6 +115,9 @@ public class AuthController : ControllerBase
         , CancellationToken cancellationToken)
     {
         var user = await _userManager.FindByEmailAsync(sendResetPasswordEmailRequest.Email);
+
+        if ((DateTimeOffset.Now - user.ResetPasswordEmailRequestedOn) < _appSettings.IdentitySettings.ResetPasswordEmailResendDelay)
+            throw new TooManyRequestsExceptions(nameof(ErrorStrings.WaitForResetPasswordEmailResendDelay));
 
         if (user is null)
             throw new BadRequestException(nameof(ErrorStrings.UserNameNotFound));
@@ -134,6 +145,10 @@ public class AuthController : ControllerBase
                                     },
                                     assembly)
             .SendAsync(cancellationToken);
+
+        user.ResetPasswordEmailRequestedOn = DateTimeOffset.Now;
+
+        await _userManager.UpdateAsync(user);
 
         if (!result.Successful)
             throw new ResourceValidationException(result.ErrorMessages.ToArray());
