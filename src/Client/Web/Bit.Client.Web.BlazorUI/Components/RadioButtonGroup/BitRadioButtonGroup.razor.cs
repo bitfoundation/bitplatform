@@ -127,6 +127,7 @@ namespace Bit.Client.Web.BlazorUI
 
             if (SelectedKey == option.Key)
             {
+                option.SetState(true);
                 SelectedOption = option;
             }
 

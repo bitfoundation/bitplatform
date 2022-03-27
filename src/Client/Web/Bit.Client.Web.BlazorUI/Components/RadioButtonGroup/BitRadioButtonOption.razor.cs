@@ -8,8 +8,7 @@ namespace Bit.Client.Web.BlazorUI
 {
     public partial class BitRadioButtonOption : IDisposable
     {
-        private bool isChecked;    
-        private bool IsRequired;
+        private bool isChecked;
         private string? imageSizeStyle;
         private bool IsCheckedHasBeenSet;
 
@@ -103,13 +102,6 @@ namespace Bit.Client.Web.BlazorUI
                     Name = RadioButtonGroup.Name;
                 }
 
-                if (RadioButtonGroup.SelectedKey == Key)
-                {
-                    SetState(true);
-                }
-
-                IsRequired = RadioButtonGroup.IsRequired;
-
                 RadioButtonGroup.RegisterOption(this);
 
                 InputId = $"RadioButtonGroup{RadioButtonGroup.UniqueId}-{Key}";
@@ -134,14 +126,13 @@ namespace Bit.Client.Web.BlazorUI
         protected override void RegisterComponentClasses()
         {
             ClassBuilder.Register(() => ImageSrc.HasValue() || IconName.HasValue
-            ? $"{RootElementClass}-with-img-{VisualClassRegistrar()}" : string.Empty);
+                                     ? $"{RootElementClass}-with-img-{VisualClassRegistrar()}" : string.Empty);
 
             ClassBuilder.Register(() => IsChecked
-            ? $"{RootElementClass}-checked-{VisualClassRegistrar()}" : string.Empty);
+                                     ? $"{RootElementClass}-checked-{VisualClassRegistrar()}" : string.Empty);
 
-            ClassBuilder.Register(() =>
-            $"{RootElementClass}-{((IsEnabled && RadioButtonGroup is not null && RadioButtonGroup.IsEnabled) 
-            ? "enabled" : "disabled")}-{VisualClassRegistrar()}");
+            var isEnabled = IsEnabled is false || (RadioButtonGroup is not null && RadioButtonGroup.IsEnabled is false);
+            ClassBuilder.Register(() => $"{RootElementClass}-{(isEnabled ? "disabled" : "enabled")}-{VisualClassRegistrar()}");
         }
 
         internal void SetState(bool status)
@@ -158,16 +149,19 @@ namespace Bit.Client.Web.BlazorUI
 
         private async Task HandleClick(MouseEventArgs e)
         {
-            if (IsEnabled is false || RadioButtonGroup is null || RadioButtonGroup.IsEnabled is false) return;
+            if (IsEnabled is false || (RadioButtonGroup is not null && RadioButtonGroup.IsEnabled is false)) return;
 
-            await RadioButtonGroup.SelectOption(this);
+            if (RadioButtonGroup is not null)
+            {
+                await RadioButtonGroup.SelectOption(this);
+            }
 
             await OnClick.InvokeAsync(e);
         }
 
         private async Task HandleChange(ChangeEventArgs e)
         {
-            if (IsEnabled is false || RadioButtonGroup is null || RadioButtonGroup.IsEnabled is false) return;
+            if (IsEnabled is false || (RadioButtonGroup is not null && RadioButtonGroup.IsEnabled is false)) return;
 
             if (IsCheckedHasBeenSet && IsCheckedChanged.HasDelegate is false) return;
 

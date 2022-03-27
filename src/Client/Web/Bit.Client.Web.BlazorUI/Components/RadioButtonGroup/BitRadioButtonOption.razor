@@ -13,7 +13,7 @@
                name="@Name"
                value="@Value"
                hidden
-               required="@(IsRequired is true)"
+               required="@(RadioButtonGroup != null ? RadioButtonGroup.IsRequired : false)"
                @onclick="@HandleClick"
                @onchange="@HandleChange" />
 
