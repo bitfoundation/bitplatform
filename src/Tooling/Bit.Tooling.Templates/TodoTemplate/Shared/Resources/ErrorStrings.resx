@@ -246,4 +246,10 @@
     <value>Email '{0}' is not confirmed.</value>
     <comment>Error when a email is not confirmed by the confirmation link</comment>
   </data>
+  <data name="WaitForConfirmationEmailResendDelay" xml:space="preserve">
+    <value>You have already requested for the confirmation email for '{0}'. Try again later.</value>
+  </data>
+  <data name="WaitForResetPasswordEmailResendDelay" xml:space="preserve">
+    <value>You have already requested for the reset password email for '{0}'. Try again later.</value>
+  </data>
 </root>

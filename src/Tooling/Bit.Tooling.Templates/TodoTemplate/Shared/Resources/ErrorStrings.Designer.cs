@@ -374,5 +374,23 @@ namespace TodoTemplate.Shared.Resources {
                 return ResourceManager.GetString("UserNotInRole", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You have already requested for the confirmation email for &apos;{0}&apos;. Try again later..
+        /// </summary>
+        public static string WaitForConfirmationEmailResendDelay {
+            get {
+                return ResourceManager.GetString("WaitForConfirmationEmailResendDelay", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You have already requested for the reset password email for &apos;{0}&apos;. Try again later..
+        /// </summary>
+        public static string WaitForResetPasswordEmailResendDelay {
+            get {
+                return ResourceManager.GetString("WaitForResetPasswordEmailResendDelay", resourceCulture);
+            }
+        }
     }
 }
