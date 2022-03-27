@@ -65,7 +65,6 @@
 .box-content {
     position: relative;
     width: 100%;
-    max-height: rem(464px);
     min-height: rem(70px);
     border: rem(1px) solid $B5Color;
     border-top: none;
@@ -86,13 +85,11 @@
     }
 
     @include lg {
-        max-height: rem(400px);
         border-radius: 0 0 rem(8px) rem(8px);
         font-size: rem(13px);
     }
 
     @include md {
-        max-height: rem(304px);
         border-radius: 0 0 rem(8px) rem(8px);
         font-size: rem(10px);
         line-height: rem(14px);
