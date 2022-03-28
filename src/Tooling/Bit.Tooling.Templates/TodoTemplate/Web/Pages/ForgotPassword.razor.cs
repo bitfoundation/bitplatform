@@ -53,15 +53,8 @@ public partial class ForgotPassword
 
     private async Task Submit()
     {
-        if (IsLoading)
+        if (IsLoading || ValidateForgotPassword() is false)
         {
-            return;
-        }
-
-        if (ValidateForgotPassword() is false)
-        {
-            IsLoading = false;
-            IsSubmitButtonEnabled = true;
             return;
         }
 
