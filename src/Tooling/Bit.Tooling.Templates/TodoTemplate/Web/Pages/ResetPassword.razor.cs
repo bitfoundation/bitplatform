@@ -76,8 +76,7 @@ public partial class ResetPassword
 
     private async Task Submit()
     {
-        var isResetPasswordInvalid  = ValidateResetPassword() is false;
-        if (IsLoading || isResetPasswordInvalid)
+        if (IsLoading || ValidateResetPassword() is false)
         {
             return;
         }

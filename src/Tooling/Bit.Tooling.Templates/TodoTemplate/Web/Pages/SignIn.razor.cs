@@ -55,8 +55,7 @@ public partial class SignIn
 
     private async Task DoSignIn()
     {
-        var isSignInInvalid = ValidateSignIn() is false;
-        if (IsLoading || isSignInInvalid)
+        if (IsLoading || ValidateSignIn() is false)
         {
             return;
         }
