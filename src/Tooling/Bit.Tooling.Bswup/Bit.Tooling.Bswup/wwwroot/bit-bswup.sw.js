@@ -32,17 +32,25 @@ const DEFAULT_URL = (typeof self.defaultUrl === 'string') ? self.defaultUrl : 'i
 const PROHIBITED_URLS = self.prohibitedUrls
     ? (self.prohibitedUrls instanceof Array
         ? self.prohibitedUrls
-        : [self.prohibitedUrls])
+        : [self.prohibitedUrls]).filter(pattern => pattern instanceof RegExp)
+    : [];
+
+const SERVER_HANDLED_URLS = self.serverHandledUrls
+    ? (self.serverHandledUrls instanceof Array
+        ? self.serverHandledUrls
+        : [self.serverHandledUrls]).filter(pattern => pattern instanceof RegExp)
     : [];
 async function handleFetch(e) {
-    if (e.request.method !== 'GET') return fetch(e.request);
+    if (e.request.method !== 'GET' || SERVER_HANDLED_URLS.some(pattern => pattern.test(e.request.url))) {
+        return fetch(e.request);
+    }
 
     // For all navigation requests, try to serve index.html from cache
     // If you need some URLs to be server-rendered, edit the following check to exclude those URLs
     const shouldServeIndexHtml = e.request.mode === 'navigate';
     const requestUrl = shouldServeIndexHtml ? DEFAULT_URL : e.request.url;
 
-    if (PROHIBITED_URLS.some(url => url.test(requestUrl))) {
+    if (PROHIBITED_URLS.some(pattern => pattern.test(requestUrl))) {
         return new Response(new Blob(), { status: 405, "statusText": `prohibited URL: ${requestUrl}` });
     }
 

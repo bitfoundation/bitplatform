@@ -16,6 +16,8 @@ self.externalAssets = [
 
 self.caseInsensitiveUrl = true;
 
+self.serverHandledUrls = [/\/api\//];
+
 self.importScripts('_content/Bit.Tooling.Bswup/bit-bswup.sw.js');
 
 ////// Caution! Be sure you understand the caveats before publishing an application with
