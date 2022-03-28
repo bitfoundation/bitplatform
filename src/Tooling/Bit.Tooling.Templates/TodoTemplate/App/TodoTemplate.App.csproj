@@ -90,7 +90,7 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="jose-jwt" Version="3.2.0" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="6.0.2" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="6.0.3" />
         <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.6.2">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

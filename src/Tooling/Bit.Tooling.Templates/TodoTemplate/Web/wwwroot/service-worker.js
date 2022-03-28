@@ -21,6 +21,8 @@ self.externalAssets = [
     },
 ];
 
+self.serverHandledUrls = [/\/api\//];
+
 self.defaultUrl = "/";
 
 self.caseInsensitiveUrl = true;
