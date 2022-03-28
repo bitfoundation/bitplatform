@@ -46,6 +46,7 @@
 
     <ComponentExampleBox Title="SearchBox Validation" HTMLSourceCode="@example6HTMLCode" CSharpSourceCode="@example6CSharpCode" ExampleId="example6">
         <ExamplePreview>
+             <div class="example-desc">The BitSearchBox supports DataAnnotation validation in the Blazor EditForm. It provides snappy validation feedback as you type.</div>
             <EditForm Model="validationSearchBoxModel">
                 <DataAnnotationsValidator />
                 <BitSearchBox DefaultValue="This is default value" @bind-Value="validationSearchBoxModel.Text" />
