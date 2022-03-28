@@ -29,25 +29,16 @@ async function handleActivate(e) {
 }
 
 const DEFAULT_URL = (typeof self.defaultUrl === 'string') ? self.defaultUrl : 'index.html';
-const PROHIBITED_URLS = self.prohibitedUrls
-    ? (self.prohibitedUrls instanceof Array
-        ? self.prohibitedUrls
-        : [self.prohibitedUrls]).filter(pattern => pattern instanceof RegExp)
-    : [];
+const PROHIBITED_URLS = prepareRegExpArray(self.prohibitedUrls);
+const SERVER_HANDLED_URLS = prepareRegExpArray(self.serverHandledUrls);
+const SERVER_RENDERED_URLS = prepareRegExpArray(self.serverRenderedUrls);
 
-const SERVER_HANDLED_URLS = self.serverHandledUrls
-    ? (self.serverHandledUrls instanceof Array
-        ? self.serverHandledUrls
-        : [self.serverHandledUrls]).filter(pattern => pattern instanceof RegExp)
-    : [];
 async function handleFetch(e) {
     if (e.request.method !== 'GET' || SERVER_HANDLED_URLS.some(pattern => pattern.test(e.request.url))) {
         return fetch(e.request);
     }
 
-    // For all navigation requests, try to serve index.html from cache
-    // If you need some URLs to be server-rendered, edit the following check to exclude those URLs
-    const shouldServeIndexHtml = e.request.mode === 'navigate';
+    const shouldServeIndexHtml = (e.request.mode === 'navigate' && !SERVER_RENDERED_URLS.some(pattern => pattern.test(e.request.url)));
     const requestUrl = shouldServeIndexHtml ? DEFAULT_URL : e.request.url;
 
     if (PROHIBITED_URLS.some(pattern => pattern.test(requestUrl))) {
@@ -74,58 +65,20 @@ function handleMessage(e) {
 
 // ============================================================================
 
+const DEFAULT_ASSETS_INCLUDE = [/\.dll$/, /\.pdb$/, /\.wasm/, /\.html/, /\.js$/, /\.json$/, /\.css$/, /\.woff$/, /\.png$/, /\.jpe?g$/, /\.gif$/, /\.ico$/, /\.blat$/, /\.dat$/, /\.svg$/, /\.woff2$/, /\.ttf$/];
+const DEFAULT_ASSETS_EXCLUDE = [/^_content\/Bit.Tooling.Bswup\/bit-bswup.sw.js$/, /^service-worker\.js$/];
+
 async function createNewCache() {
-    const userAssetsInclude = self.assetsInclude
-        ? (self.assetsInclude instanceof Array
-            ? self.assetsInclude
-            : [self.assetsInclude])
-        : [];
+    const userAssetsInclude = prepareRegExpArray(self.assetsInclude);
+    const userAssetsExclude = prepareRegExpArray(self.assetsExclude);
+    const externalAssets = prepareExternalAssetsArray(self.externalAssets);
 
-    const userAssetsExclude = self.assetsExclude
-        ? (self.assetsExclude instanceof Array
-            ? self.assetsExclude
-            : [self.assetsExclude])
-        : [];
-
-    const externalAssets = (
-        self.externalAssets
-            ? (self.externalAssets instanceof Array
-                ? self.externalAssets
-                : [self.externalAssets])
-            : [])
-        .map(asset => {
-            if (asset && asset.url) {
-                return asset;
-            }
-            if (typeof asset === 'string') {
-                return ({ url: asset });
-            }
-            return null;
-        })
-        .filter(asset => asset !== null);
-
-    // ================================================
-
-    const assetsInclude = [/\.dll$/, /\.pdb$/, /\.wasm/, /\.html/, /\.js$/, /\.json$/, /\.css$/, /\.woff$/, /\.png$/, /\.jpe?g$/, /\.gif$/, /\.ico$/, /\.blat$/, /\.dat$/, /\.svg$/, /\.woff2$/, /\.ttf$/]
-        .concat(userAssetsInclude).filter(pattern => pattern instanceof RegExp);
-    const assetsExclude = [/^_content\/Bit.Tooling.Bswup\/bit-bswup.sw.js$/, /^service-worker\.js$/]
-        .concat(userAssetsExclude).filter(pattern => pattern instanceof RegExp);
+    const assetsInclude = DEFAULT_ASSETS_INCLUDE.concat(userAssetsInclude);
+    const assetsExclude = DEFAULT_ASSETS_EXCLUDE.concat(userAssetsExclude);
 
     const assets = self.assetsManifest.assets
-        .filter(asset => assetsInclude.some(pattern => {
-            try {
-                return pattern.test(asset.url);
-            } catch (e) {
-                return false;
-            }
-        }))
-        .filter(asset => !assetsExclude.some(pattern => {
-            try {
-                return pattern.test(asset.url);
-            } catch (e) {
-                return false;
-            }
-        }))
+        .filter(asset => assetsInclude.some(pattern => pattern.test(asset.url)))
+        .filter(asset => !assetsExclude.some(pattern => pattern.test(asset.url)))
         .concat(externalAssets);
     const uniqueAssets = distinct(assets);
 
@@ -199,4 +152,24 @@ function postMessage(message) {
 
 function log(value) {
     //console.info('BitBSWUP:sw:', value);
+}
+
+function prepareExternalAssetsArray(value) {
+    const array = value ? (value instanceof Array ? value : [value]) : [];
+
+    return array.map(asset => {
+        if (asset && asset.url) {
+            return asset;
+        }
+
+        if (typeof asset === 'string') {
+            return ({ url: asset });
+        }
+
+        return null;
+    }).filter(asset => asset !== null);
+}
+
+function prepareRegExpArray(value) {
+    return value ? (value instanceof Array ? value : [value]).filter(p => p instanceof RegExp) : [];
 }
