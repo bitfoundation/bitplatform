@@ -1,0 +1,86 @@
+﻿@import '../Styles/_shared.scss';
+
+.page-container {
+    width: 100%;
+    max-width: rem(1044px);
+    margin: 0 auto;
+    padding: rem(112px) 0;
+
+    @include lg {
+        max-width: rem(792px);
+    }
+
+    @include md {
+        max-width: rem(596px);
+        padding: rem(72px) 0;
+    }
+
+    @include sm {
+        padding: rem(32px) 0 rem(56px);
+    }
+}
+
+.page-title {
+    position: relative;
+    margin-bottom: rem(16px);
+    padding-left: rem(10px);
+    box-sizing: border-box;
+    font-weight: bold;
+    font-size: rem(32px);
+    line-height: rem(48px);
+    color: $B2Color;
+
+    @include lg {
+        padding-left: rem(8px);
+        font-size: rem(24px);
+        line-height: rem(32px);
+    }
+
+    @include md {
+        font-size: rem(20px);
+        padding-left: rem(12px);
+        line-height: rem(32px);
+    }
+
+    @include sm {
+        margin-bottom: rem(8px);
+        padding-left: rem(8px);
+        font-size: rem(16px);
+        line-height: rem(24px);
+    }
+}
+
+.page-desc {
+    margin-bottom: rem(96px);
+    padding-left: rem(10px);
+    box-sizing: border-box;
+    font-size: rem(18px);
+    line-height: rem(31px);
+    color: #2E2E2E;
+
+    @include lg {
+        padding-left: rem(8px);
+        margin-bottom: rem(80px);
+        font-size: rem(16px);
+        line-height: rem(24px);
+    }
+
+    @include md {
+        padding-left: rem(12px);
+        margin-bottom: rem(40px);
+        font-size: rem(14px);
+        line-height: rem(24px);
+        font-weight: 500;
+    }
+
+    @include sm {
+        padding-left: rem(8px);
+        margin-bottom: rem(48px);
+        font-size: rem(12px);
+        line-height: rem(24px);
+        font-weight: 500;
+    }
+}
+
+.page-box {
+}
