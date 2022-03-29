@@ -72,8 +72,8 @@ class Bit {
 
 window.addEventListener('scroll', (e: any) => {
     const minimumWidthForDropDownNormalOpen = 640;
-    if (window.innerWidth < minimumWidthForDropDownNormalOpen ||
-        e.target.id && Bit.currentDropDownCalloutId === e.target.id) return;
+    if ((Bit.currentDropDownCalloutId && window.innerWidth < minimumWidthForDropDownNormalOpen) ||
+        (e.target.id && Bit.currentDropDownCalloutId === e.target.id)) return;
 
     Bit.closeCurrentCalloutIfExists("", "", null);
 }, true);
