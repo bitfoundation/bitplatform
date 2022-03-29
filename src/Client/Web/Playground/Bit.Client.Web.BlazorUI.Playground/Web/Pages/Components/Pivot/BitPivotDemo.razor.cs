@@ -242,11 +242,6 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Pivot
             }
         };
 
-        private void PivotSelectedKeyChanged(string key)
-        {
-            OverridePivotSelectedKey = key;
-        }
-
         private void TogglePivotItemVisobility()
         {
             PivotItemVisibility = PivotItemVisibility == BitComponentVisibility.Visible ? BitComponentVisibility.Collapsed : BitComponentVisibility.Visible;
@@ -345,9 +340,8 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Pivot
 
         private readonly string example6HTMLCode = @"<BitPivot LinkFormat=""@BitPivotLinkFormat.Tabs""
           LinkSize=""@BitPivotLinkSize.Large""
-          SelectedKey=""@OverridePivotSelectedKey""
-          SelectedKeyChanged=""PivotSelectedKeyChanged""
-          OnLinkClick=""@(item => OverridePivotSelectedKey = item.Key)"">
+          @bind-SelectedKey=""OverridePivotSelectedKey""
+          OnLinkClick=""(item => OverridePivotSelectedKey = item.Key)"">
     <BitPivotItem Key=""1"" HeaderText=""Samples"">
         Pivot #1
     </BitPivotItem>
@@ -358,17 +352,13 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Pivot
         Pivot #3
     </BitPivotItem>
 </BitPivot>
-<BitButton IsEnabled=""@(OverridePivotSelectedKey == ""1"" ? false : true)""
-           OnClick=""(() => OverridePivotSelectedKey = (((int.Parse(OverridePivotSelectedKey) + 3 - 1) % 3)).ToString())"">Prev</BitButton>
-<BitButton IsEnabled=""@(OverridePivotSelectedKey == ""3"" ? false : true)""
-           OnClick=""(() => OverridePivotSelectedKey = (((int.Parse(OverridePivotSelectedKey) + 1 ) % 4)).ToString())"">Next</BitButton>";
+<BitButton IsEnabled=""@(OverridePivotSelectedKey != ""1"")""
+           OnClick=""() => OverridePivotSelectedKey = (((int.Parse(OverridePivotSelectedKey) + 3 - 1) % 3)).ToString()"">Prev</BitButton>
+<BitButton IsEnabled=""@(OverridePivotSelectedKey != ""3"")""
+           OnClick=""() => OverridePivotSelectedKey = (((int.Parse(OverridePivotSelectedKey) + 1 ) % 4)).ToString()"">Next</BitButton>";
 
         private readonly string example6CSharpCode = @"
-private string OverridePivotSelectedKey = ""1"";
-private void PivotSelectedKeyChanged(string key)
-{
-    OverridePivotSelectedKey = key;
-}";
+private string OverridePivotSelectedKey = ""1"";";
 
         private readonly string example7HTMLCode = @"<BitPivot LinkFormat=""@BitPivotLinkFormat.Tabs""
           DefaultSelectedKey=""Foo""

@@ -120,9 +120,8 @@
         <ExamplePreview>
             <BitPivot LinkFormat="@BitPivotLinkFormat.Tabs"
                       LinkSize="@BitPivotLinkSize.Large"
-                      SelectedKey="@OverridePivotSelectedKey"
-                      OnLinkClick="@(item => OverridePivotSelectedKey = item.Key)"
-                      SelectedKeyChanged="PivotSelectedKeyChanged">
+                      OnLinkClick="(item => OverridePivotSelectedKey = item.Key)"
+                      @bind-SelectedKey="OverridePivotSelectedKey">
                 <BitPivotItem Key="1" HeaderText="Samples">
                     Pivot #1
                 </BitPivotItem>
@@ -133,9 +132,9 @@
                     Pivot #3
                 </BitPivotItem>
             </BitPivot>
-            <BitButton IsEnabled="@(OverridePivotSelectedKey == "1" ? false : true)"
+            <BitButton IsEnabled="@(OverridePivotSelectedKey != "1")"
                        OnClick="(() => OverridePivotSelectedKey = (((int.Parse(OverridePivotSelectedKey) + 3 - 1) % 3)).ToString())">Prev</BitButton>
-            <BitButton IsEnabled="@(OverridePivotSelectedKey == "3" ? false : true)"
+            <BitButton IsEnabled="@(OverridePivotSelectedKey != "3")"
                        OnClick="(() => OverridePivotSelectedKey = (((int.Parse(OverridePivotSelectedKey) + 1 ) % 4)).ToString())">Next</BitButton>
         </ExamplePreview>
     </ComponentExampleBox>
