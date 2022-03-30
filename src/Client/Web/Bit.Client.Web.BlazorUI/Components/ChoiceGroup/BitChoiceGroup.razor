@@ -1,0 +1,87 @@
+﻿@namespace Bit.Client.Web.BlazorUI
+@using Bit.Client.Web.BlazorUI.Components.ChoiceGroup
+@inherits BitInputBase<BitChoiceGroupOption?>
+
+<div @ref="RootElement"
+     @attributes="HtmlAttributes"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value">
+
+    <div role="radiogroup" aria-labelledby="@GetGroupAriaLabelledBy()">
+        <label class="bit-chg-label-@(VisualClassRegistrar())" id="@GetGroupLabelId()" disabled="@(IsEnabled is false)">
+            @if (LabelFragment is not null)
+            {
+                @LabelFragment
+            }
+            else
+            {
+                @Label
+            }
+        </label>
+
+        <div class="choice-field-group">
+            @foreach (var option in Options)
+            {
+                <div class="@GetOptionDivClassName(option)">
+                    <div class="bit-chgo-wrapper">
+                        <input @attributes="InputHtmlAttributes"
+                           id="@GetOptionInputId(option)"
+                           class="bit-chgo-input"
+                           aria-label="@AriaLabel"
+                           type="radio"
+                           checked="@GetOptionIsChecked(option)"
+                           name="@Name"
+                           value="@option.Key"
+                           hidden="hidden"
+                           required="@IsRequired"
+                           @onclick="@HandleClick"
+                           @onchange="@HandleChange"
+                           disabled="@(option.IsEnabled is false)" />
+
+                        <label for="@GetOptionInputId(option)" class="@GetOptionLabelClassName(option)">
+
+                            @if (option.ImageSrc.HasValue())
+                            {
+                                <div class="bit-chgo-img-inner-field">
+                                    <div class="bit-chgo-img-wrapper">
+                                        <div class="bit-chgo-img" style="@GetOptionImageSizeStyle(option)">
+                                            <img src="@GetOptionImageSrc(option)" alt="@option.ImageAlt">
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                            
+                            @if (option.iconName is not null)
+                            {
+                                <div class="bit-chgo-icon-inner-field">
+                                    <div class="bit-chgo-icon-wrapper">
+                                        <i aria-hidden="true" class="bit-icon bit-icon--@option.iconName.GetName()"></i>
+                                    </div>
+                                </div>
+                            }
+                            
+                             @if (option.ImageSrc.HasValue() || option.iconName is not null)
+                            {
+                                <div class="bit-chgo-txt-wrapper">
+                                    <span class="bit-chgo-txt" id="@GetOptionLabelId(option)">
+                                       @option.Text
+                                    </span>
+                                </div>
+                            }
+                            else
+                            {
+                                <span class="bit-chgo-txt" id="@GetOptionLabelId(option)">
+                                    @option.Text
+                                </span>
+                            }
+
+                        </label>
+
+                    </div>
+                </div>
+            }
+        </div>
+
+    </div>
+
+</div>
