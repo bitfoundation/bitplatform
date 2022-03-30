@@ -19,7 +19,7 @@
     <PackageReference Include="MSTest.TestAdapter" Version="2.2.8" />
     <PackageReference Include="MSTest.TestFramework" Version="2.2.8" />
     <PackageReference Include="Refit" Version="6.3.2" />
-    <PackageReference Include="Selenium.WebDriver.MSEdgeDriver" Version="99.0.1150.25" />
+    <PackageReference Include="Selenium.WebDriver.MSEdgeDriver" Version="99.0.1150.46" />
   </ItemGroup>
 
   <ItemGroup>

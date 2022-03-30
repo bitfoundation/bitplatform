@@ -107,6 +107,8 @@ namespace Bit.Client.Web.BlazorUI
             SelectedItem = item;
             selectedKey = item.Key;
 
+            _ = SelectedKeyChanged.InvokeAsync(selectedKey);
+
             StateHasChanged();
 
             await OnLinkClick.InvokeAsync(item);
