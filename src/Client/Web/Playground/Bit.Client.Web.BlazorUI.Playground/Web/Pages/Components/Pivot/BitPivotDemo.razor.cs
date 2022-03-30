@@ -340,8 +340,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Pivot
 
         private readonly string example6HTMLCode = @"<BitPivot LinkFormat=""@BitPivotLinkFormat.Tabs""
           LinkSize=""@BitPivotLinkSize.Large""
-          @bind-SelectedKey=""OverridePivotSelectedKey""
-          OnLinkClick=""(item => OverridePivotSelectedKey = item.Key)"">
+          @bind-SelectedKey=""OverridePivotSelectedKey"">
     <BitPivotItem Key=""1"" HeaderText=""Samples"">
         Pivot #1
     </BitPivotItem>
