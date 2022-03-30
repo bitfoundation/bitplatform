@@ -6,7 +6,6 @@
      @attributes="HtmlAttributes"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
-
     <div role="radiogroup" aria-labelledby="@GetGroupAriaLabelledBy()">
         <label class="bit-chg-label-@(VisualClassRegistrar())" id="@GetGroupLabelId()" disabled="@(IsEnabled is false)">
             @if (LabelFragment is not null)
@@ -18,7 +17,6 @@
                 @Label
             }
         </label>
-
         <div class="choice-field-group">
             @foreach (var option in Options)
             {
@@ -34,12 +32,10 @@
                            value="@option.Key"
                            hidden="hidden"
                            required="@IsRequired"
-                           @onclick="@HandleClick"
-                           @onchange="@HandleChange"
+                           @onclick="(e) => HandleClick(e,option)"
+                           @onchange="(e) => HandleChange(e,option)"
                            disabled="@(option.IsEnabled is false)" />
-
                         <label for="@GetOptionInputId(option)" class="@GetOptionLabelClassName(option)">
-
                             @if (option.ImageSrc.HasValue())
                             {
                                 <div class="bit-chgo-img-inner-field">
@@ -50,7 +46,6 @@
                                     </div>
                                 </div>
                             }
-                            
                             @if (option.iconName is not null)
                             {
                                 <div class="bit-chgo-icon-inner-field">
@@ -59,12 +54,11 @@
                                     </div>
                                 </div>
                             }
-                            
-                             @if (option.ImageSrc.HasValue() || option.iconName is not null)
+                            @if (option.ImageSrc.HasValue() || option.iconName is not null)
                             {
                                 <div class="bit-chgo-txt-wrapper">
                                     <span class="bit-chgo-txt" id="@GetOptionLabelId(option)">
-                                       @option.Text
+                                        @option.Text
                                     </span>
                                 </div>
                             }
@@ -74,14 +68,10 @@
                                     @option.Text
                                 </span>
                             }
-
                         </label>
-
                     </div>
                 </div>
             }
         </div>
-
     </div>
-
 </div>

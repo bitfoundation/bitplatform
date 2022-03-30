@@ -100,8 +100,8 @@ namespace Bit.Client.Web.BlazorUI
         private bool GetOptionIsChecked(BitChoiceGroupOption option) =>
             CurrentValue is not null && CurrentValue.Key == option.Key;
 
-        private string? GetOptionImageSrc(BitChoiceGroupOption option) => 
-            GetOptionIsChecked(option) && option.SelectedImageSrc.HasValue() 
+        private string? GetOptionImageSrc(BitChoiceGroupOption option) =>
+            GetOptionIsChecked(option) && option.SelectedImageSrc.HasValue()
             ? option.SelectedImageSrc
             : option.ImageSrc;
 
@@ -147,18 +147,16 @@ namespace Bit.Client.Web.BlazorUI
             return cssClass.ToString();
         }
 
-        private async Task HandleClick(MouseEventArgs e)
+        private async Task HandleClick(MouseEventArgs e, BitChoiceGroupOption option)
         {
-            if (CurrentValue?.IsEnabled is false || IsEnabled is false) return;
+            if (option.IsEnabled is false || IsEnabled is false) return;
 
             await OnClick.InvokeAsync(e);
         }
 
-        private async Task HandleChange(ChangeEventArgs e)
+        private async Task HandleChange(ChangeEventArgs e, BitChoiceGroupOption option)
         {
-            var option = Options.FirstOrDefault(o => o.Key == e.Value?.ToString());
-
-            if (option?.IsEnabled is false || IsEnabled is false) return;
+            if (option.IsEnabled is false || IsEnabled is false) return;
 
             CurrentValue = option;
 
