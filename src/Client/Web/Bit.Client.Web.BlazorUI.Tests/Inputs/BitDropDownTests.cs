@@ -88,11 +88,11 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
             if (isMultiSelect)
             {
                 Assert.IsTrue(bitDrp.ClassList.Contains($"bit-drp-{multiSelectCalss}{visualClass}"));
-                Assert.AreEqual(items.FindAll(i => i.ItemType == BitDropDownItemType.Normal).Count, component.FindAll(".bit-drpo").Count);
+                Assert.AreEqual(items.FindAll(i => i.ItemType == BitDropDownItemType.Normal).Count, component.FindAll(".bit-drp-chb").Count);
             }
             else
             {
-                Assert.ThrowsException<ElementNotFoundException>(() => component.Find(".bit-drpo"));
+                Assert.ThrowsException<ElementNotFoundException>(() => component.Find(".bit-drp-chb"));
             }
         }
 
@@ -126,7 +126,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
 
             if (isMultiSelect)
             {
-                Assert.AreEqual(items.FindAll(i => i.ItemType == BitDropDownItemType.Normal).Count, component.FindAll(".bit-drpo").Count);
+                Assert.AreEqual(items.FindAll(i => i.ItemType == BitDropDownItemType.Normal).Count, component.FindAll(".bit-drp-chb").Count);
             }
             else
             {
@@ -477,7 +477,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
 
             if (isMultiSelect)
             {
-                var drpItems = component.FindAll(".bit-drpo", true);
+                var drpItems = component.FindAll(".bit-drp-chb", true);
                 drpItems[0].GetElementsByTagName("label").First().Click();
                 drpItems[1].GetElementsByTagName("label").First().Click();
                 var expectedResult = itemIsEnabled ? 2 : 0;
@@ -541,7 +541,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                 parameters.Add(p => p.ValuesChanged, HandleValuesChanged);
             });
 
-            var drpItems = component.FindAll(".bit-drpo");
+            var drpItems = component.FindAll(".bit-drp-chb");
             drpItems[3].Children[0].Children[0].Click();
 
             int expectedResult;
@@ -634,10 +634,10 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                 drp.Click();
 
                 // select items
-                var drpItemFirst = component.Find(".bit-drpo:first-child");
+                var drpItemFirst = component.Find(".bit-drp-chb:first-child");
                 drpItemFirst.Children[0].Click();
 
-                var drpItemLast = component.Find(".bit-drpo:last-child");
+                var drpItemLast = component.Find(".bit-drp-chb:last-child");
                 drpItemLast.Children[0].Click();
 
                 form.Submit();
@@ -734,10 +734,10 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                 drp.Click();
 
                 // select items
-                var drpItemFirst = component.Find(".bit-drpo:first-child");
+                var drpItemFirst = component.Find(".bit-drp-chb:first-child");
                 drpItemFirst.Children[0].Click();
 
-                var drpItemLast = component.Find(".bit-drpo:last-child");
+                var drpItemLast = component.Find(".bit-drp-chb:last-child");
                 drpItemLast.Children[0].Click();
 
                 form.Submit();
