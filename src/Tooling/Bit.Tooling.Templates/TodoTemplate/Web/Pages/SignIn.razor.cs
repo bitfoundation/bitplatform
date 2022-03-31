@@ -6,7 +6,7 @@ public partial class SignIn
 {
     public string? Email { get; set; }
     public string? Password { get; set; }
-    
+
     public string? EmailErrorMessage { get; set; }
     public string? PasswordErrorMessage { get; set; }
 
@@ -55,22 +55,15 @@ public partial class SignIn
 
     private async Task DoSignIn()
     {
-        if (IsLoading)
+        if (IsLoading || ValidateSignIn() is false)
         {
             return;
         }
-
+        
         IsLoading = true;
         IsSignInButtonEnabled = false;
         SignInMessage = null;
-
-        if (ValidateSignIn() is false)
-        {
-            IsLoading = false;
-            IsSignInButtonEnabled = true;
-            return;
-        }
-
+        
         try
         {
             await TodoTemplateAuthenticationService.SignIn(new SignInRequestDto

@@ -8,8 +8,17 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.SearchBox
     {
         private string TextValue;
 
+        private ValidationSearchBoxModel validationSearchBoxModel = new();
+
         private readonly List<ComponentParameter> componentParameters = new()
         {
+            new ComponentParameter()
+            {
+                Name = "Autocomplete",
+                Type = "string",
+                DefaultValue = "",
+                Description = "Specifies the value of the autocomplete attribute of the input component.",
+            },
             new ComponentParameter()
             {
                 Name = "DefaultValue",
@@ -155,5 +164,22 @@ private string TextValue;";
         private readonly string example4HTMLCode = @"<BitSearchBox Placeholder=""Search"" Width=""250px""></BitSearchBox>";
 
         private readonly string example5HTMLCode = @"<BitSearchBox Placeholder=""Search"" IsEnabled=""false""></BitSearchBox>";
+
+        private readonly string example6HTMLCode = @"<EditForm Model=""validationSearchBoxModel"">
+     <DataAnnotationsValidator/>
+     <BitSearchBox DefaultValue=""This is default value"" @bind-Value=""validationSearchBoxModel.Text""/>
+     <ValidationMessage For=""() => validationSearchBoxModel.Text""></ValidationMessage>
+</EditForm> ";
+
+        private readonly string example6CSharpCode = @"
+private ValidationSearchBoxModel validationSearchBoxModel = new();
+
+public class ValidationSearchBoxModel
+{
+    [StringLength(6, MinimumLength = 2,
+    ErrorMessage = ""The text field length must be between 6 and 2 characters in length."")]
+    public string Text { get; set; }
+}
+";
     }
 }

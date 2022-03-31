@@ -334,47 +334,46 @@ input::-webkit-input-placeholder {
 
 /* Component Example Box =================================================================================== */
 .com-example-box-header-btn {
-    min-width: rem(32px);
+    min-width: rem(64px);
     min-height: rem(32px);
+    height: 100%;
     border: none;
-    padding: 0;
+    padding: 0 rem(16px);
     background-color: transparent;
+    color: #2E2E2E !important;
+    border-radius: rem(4px) rem(4px) 0 0;
+    border: rem(1px) solid $B5Color !important;
+    border-bottom: none !important;
+
+    &:hover,
+    &:active,
+    &:focus {
+        background-color: $White;
+    }
 
     span {
         i {
             width: unset;
-            font-size: rem(32px);
+            font-size: rem(26px);
             color: $B2Color !important;
         }
-    }
-
-    &:first-child {
-        margin-right: rem(40px);
-    }
-
-    &:hover {
-        background-color: transparent;
-        border: none;
     }
 
     @include lt-xl {
         span {
             i {
-                font-size: rem(24px);
+                font-size: rem(20px);
             }
-        }
-
-        &:first-child {
-            margin-right: rem(33px);
         }
     }
 
     @include sm {
-        min-width: rem(28px);
         min-height: rem(28px);
 
-        &:first-child {
-            margin-right: rem(40px);
+        span {
+            span {
+                display: none;
+            }
         }
     }
 }
@@ -482,6 +481,9 @@ pre {
     direction: ltr;
     overflow: auto;
     font-family: ui-monospace,SFMono-Regular,SF Mono,Menlo,Consolas,Liberation Mono,monospace;
+    border: rem(1px) solid $B5Color;
+    border-top: none;
+    border-radius: 0 0 rem(10px) rem(10px);
 
     &::-webkit-scrollbar {
         width: rem(10px);
@@ -494,15 +496,18 @@ pre {
     @include lg {
         max-height: rem(400px);
         padding: rem(16px) rem(60px) rem(16px) rem(16px);
+        border-radius: 0 0 rem(8px) rem(8px);
     }
 
     @include md {
         max-height: rem(304px);
         padding: rem(8px) rem(52px) rem(8px) rem(16px);
+        border-radius: 0 0 rem(8px) rem(8px);
     }
 
     @include sm {
         padding: rem(16px) rem(45px) rem(16px) rem(8px);
+        border-radius: 0 0 rem(8px) rem(8px);
     }
 }
 

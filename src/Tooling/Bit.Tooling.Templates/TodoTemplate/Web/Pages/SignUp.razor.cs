@@ -72,7 +72,7 @@ public partial class SignUp
 
     private async Task DoSignUp()
     {
-        if (IsLoading)
+        if (IsLoading || ValidateSignUp() is false)
         {
             return;
         }
@@ -80,13 +80,6 @@ public partial class SignUp
         IsLoading = true;
         IsSignUpButtonEnabled = false;
         SignUpMessage = null;
-
-        if (ValidateSignUp() is false)
-        {
-            IsLoading = false;
-            IsSignUpButtonEnabled = true;
-            return;
-        }
 
         try
         {
