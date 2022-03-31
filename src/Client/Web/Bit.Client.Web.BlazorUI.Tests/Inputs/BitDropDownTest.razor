@@ -5,15 +5,15 @@
                  IsOpen="IsOpen"
                  Items="Items"
                  MultiSelectDelimiter="@MultiSelectDelimiter"
-                 DefaultSelectedMultipleKeys="DefaultSelectedMultipleKeys"
-                 DefaultSelectedKey="@DefaultSelectedKey"
+                 DefaultValues="DefaultValues"
+                 DefaultValue="@DefaultValue"
                  Placeholder="@Placeholder"
                  Label="@Label"
                  Title="@Title"
                  NotifyOnReselect="NotifyOnReselect"
                  OnSelectItem="HandleSelectItem"
-                 @bind-SelectedMultipleKeys="SelectedMultipleKeys"
-                 @bind-SelectedKey="@SelectedKey"
+                 @bind-Values="Values"
+                 @bind-Value="@Value"
                  IsRequired="IsRequired">
         <LabelFragment>
             @LabelFragment
@@ -27,10 +27,10 @@
     [Parameter] public bool IsRequired { get; set; }
     [Parameter] public bool IsOpen { get; set; }
     [Parameter] public List<BitDropDownItem> Items { get; set; } = new List<BitDropDownItem>();
-    [Parameter] public List<string> SelectedMultipleKeys { get; set; } = new List<string>();
-    [Parameter] public string SelectedKey { get; set; }
-    [Parameter] public List<string> DefaultSelectedMultipleKeys { get; set; } = new List<string>();
-    [Parameter] public string DefaultSelectedKey { get; set; }
+    [Parameter] public List<string> Values { get; set; } = new List<string>();
+    [Parameter] public string Value { get; set; }
+    [Parameter] public List<string> DefaultValues { get; set; } = new List<string>();
+    [Parameter] public string DefaultValue { get; set; }
     [Parameter] public string Placeholder { get; set; }
     [Parameter] public string Label { get; set; }
     [Parameter] public string Title { get; set; }
@@ -40,8 +40,8 @@
     [Parameter] public bool NotifyOnReselect { get; set; } = false;
     [Parameter] public RenderFragment LabelFragment { get; set; }
 
-    public int Counter = 0;
-    public int SelectItemCounter = 0;
+    public int Counter { get; set; }
+    public int SelectItemCounter { get; set; }
 
     public void HandleClick(MouseEventArgs args)
     {

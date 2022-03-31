@@ -110,6 +110,30 @@
     }
 }
 
+.bit-drp-invalid-fluent {
+    .bit-drp-wrapper {
+        &:hover {
+            .bit-drp-wrapper-txt {
+                border-color: $PinkRed10;
+            }
+        }
+
+        &:active {
+            .bit-drp-wrapper-txt {
+                border-color: $PinkRed10;
+            }
+        }
+
+        &:focus::after {
+            border-color: $PinkRed10;
+        }
+
+        .bit-drp-wrapper-txt {
+            border-color: $Red20;
+        }
+    }
+}
+
 .bit-drp-disabled-fluent {
     .bit-drp-wrapper {
         background-color: $Grey20;
@@ -254,7 +278,7 @@
         background-color: $Grey30;
     }
 
-    .bit-chb-fluent {
+    .bit-drpo-fluent {
         width: 100%;
         height: 36px;
         display: flex;
@@ -280,7 +304,7 @@
         }
     }
 
-    .bit-chb-fluent.bit-drp-slc-fluent {
+    .bit-drpo-fluent.bit-drp-slc-fluent {
         background-color: $Grey30;
 
         &:hover {
@@ -308,5 +332,145 @@
     100% {
         transform: translate3d(0px, 0px, 0px);
         pointer-events: auto;
+    }
+}
+
+.bit-drpo-fluent {
+    .bit-drpo-lbl {
+        display: flex;
+        align-items: center;
+        font-size: rem(14px);
+        font-weight: 400;
+        cursor: pointer;
+        position: relative;
+        user-select: none;
+        width: 100%;
+        height: 100%;
+    }
+
+    .bit-drpo-checkbox {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: rem(20px);
+        height: rem(20px);
+        border: rem(1px) solid $Grey160;
+        border-radius: rem(2px);
+        margin: 0 rem(4px) 0 0;
+        box-sizing: border-box;
+        transition-property: background, border, border-color;
+        transition-duration: 200ms;
+        transition-timing-function: cubic-bezier(0.4, 0, 0.23, 1);
+        overflow: hidden;
+        position: relative;
+    }
+
+    .bit-drpo-checkmark {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: $White;
+        font-size: 11px;
+        transition: 0.1s;
+        font-family: 'Fabric MDL2 Assets';
+        -webkit-font-smoothing: antialiased;
+        opacity: 0;
+    }
+
+    .bit-drpo-txt {
+        color: $Grey190;
+        line-height: rem(20px);
+        margin: 0 0 0 rem(4px);
+    }
+
+    &:hover {
+        .bit-drpo-checkmark {
+            opacity: 1;
+            color: $Grey120;
+        }
+    }
+}
+
+.bit-drpo-checked-fluent {
+    .bit-drpo-checkbox {
+        border-color: $Primary;
+        background-color: $Primary;
+    }
+
+    .bit-drpo-checkmark {
+        color: $White;
+        opacity: 1;
+    }
+
+    &:hover {
+        .bit-drpo-checkbox {
+            border-color: $Dark;
+            background-color: $Dark;
+        }
+
+        .bit-drpo-checkmark {
+            color: $White;
+        }
+    }
+}
+
+.bit-drpo-disabled-fluent {
+    pointer-events: none;
+
+    .bit-drpo-lbl {
+        cursor: default;
+    }
+
+    .bit-drpo-checkbox {
+        border-color: $Grey60;
+        background-color: $White;
+    }
+
+    .bit-drpo-checkmark {
+        opacity: 1;
+        color: $White;
+        background-color: $White;
+    }
+
+    .bit-drpo-txt {
+        color: $Grey60;
+    }
+
+    &:hover {
+        .bit-drpo-checkbox {
+            border-color: $Grey60;
+        }
+
+        .bit-drpo-checkmark {
+            opacity: 0;
+        }
+    }
+}
+
+.bit-drpo-checked-disabled-fluent {
+    .bit-drpo-checkbox {
+        border-color: $Grey60;
+        background-color: $Grey60;
+    }
+
+    .bit-drpo-checkmark {
+        color: $White;
+        background-color: $Grey60;
+        opacity: 1;
+    }
+
+    &:hover {
+        .bit-drpo-checkbox {
+            border-color: $Grey60;
+            background-color: $Grey60;
+        }
+
+        .bit-drpo-checkmark {
+            color: $White;
+            background-color: $Grey60;
+            opacity: 1;
+        }
     }
 }

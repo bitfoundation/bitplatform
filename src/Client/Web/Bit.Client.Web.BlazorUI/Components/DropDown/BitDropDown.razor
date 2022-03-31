@@ -1,5 +1,5 @@
 ﻿@namespace Bit.Client.Web.BlazorUI
-@inherits BitComponentBase
+@inherits BitInputBase<string>
 <div @ref="RootElement"
      id="@UniqueId"
      style="@StyleBuilder.Value"
@@ -75,12 +75,11 @@
          tabindex="0"
          role="listbox"
          aria-labelledby="@DropdownLabelId">
-        @foreach ((BitDropDownItem item, Int32 index) in Items.Select((item, index) => (item, index)))
+        @foreach ((BitDropDownItem item, int index) in Items.Select((item, index) => (item, index)))
         {
             if (item.ItemType == BitDropDownItemType.Header)
             {
-                <div class="@RootElementClass-head-@VisualClassRegistrar()"
-             id="@($"{DropDownId}{item.Text?.ToLower()}Header")">
+                <div class="@RootElementClass-head-@VisualClassRegistrar()" id="@($"{DropDownId}{item.Text?.ToLower()}Header")">
                     @item.Text
                 </div>
             }
@@ -88,52 +87,46 @@
             {
                 @if (IsMultiSelect)
                 {
-                    <BitCheckbox Class="@(item.IsSelected ? $"{RootElementClass}-slc-{VisualClassRegistrar()}" :"")"
-                     Style="@(item.IsHidden ? "display: none" : "")"
-                     IsChecked="item.IsSelected"
-                     IsEnabled="item.IsEnabled"
-                     OnClick="(e) => HandleItemClick(item)"
-                     id="@($"{DropDownId}-list{index}")"
-                     type="checkbox"
-                     role="option"
-                     data-is-focusable="@(item.IsEnabled ? "true" : "false")"
-                     disabled=@(!item.IsEnabled)
-                     data-index="@index"
-                     aria-disabled="@(!item.IsEnabled)"
-                     aria-selected="@(item.IsSelected ? "true" : "false")"
-                     aria-setsize="@NormalDropDownItems.Count"
-                     aria-posinset="@GetItemPosInSet(item)"
-                     tabindex="@(item.IsEnabled ? 0 : -1)"
-                     title="@item.Title"
-                     AriaLabel="@item.AriaLabel">
-                        @if (ItemTemplate is not null)
-                        {
-                            @ItemTemplate(item)
-                        }
-                        else
-                        {
-                            @item.Text
-                        }
-                    </BitCheckbox>
+                    <div style="@(item.IsHidden ? "display: none" : string.Empty)"
+                         class="@GetCssClassForItem(item)">
+                        <label class="bit-drpo-lbl" for="@($"{DropDownId}-list{index}")" @onclick="@((e) => HandleItemClick(item))">
+                            <div class="bit-drpo-checkbox">
+                                <i class=@($"bit-drpo-checkmark bit-icon bit-icon--{BitIconName.Accept.GetName()}")
+                                   aria-hidden="true"
+                                   aria-label="@item.Text"></i>
+                            </div>
+
+                            <span class="bit-drpo-txt no-text-select">
+                                @if (ItemTemplate is not null)
+                                {
+                                    @ItemTemplate(item)
+                                }
+                                else
+                                {
+                                    @item.Text
+                                }
+                            </span>
+                        </label>
+                    </div>
                 }
                 else
                 {
-                    <button class="@(item.IsSelected ? $"{RootElementClass}-slc-{VisualClassRegistrar()}" :"")"
-                style="@(item.IsHidden ? "display: none" : "")"
-                id="@($"{DropDownId}-list{index}")"
-                type="button"
-                role="option"
-                data-is-focusable="@(item.IsEnabled ? "true" : "false")"
-                disabled=@(!item.IsEnabled)
-                data-index="@index"
-                aria-disabled="@(!item.IsEnabled)"
-                aria-selected="@(item.IsSelected ? "true" : "false")"
-                aria-setsize="@NormalDropDownItems.Count"
-                aria-posinset="@GetItemPosInSet(item)"
-                tabindex="@(item.IsEnabled ? 0 : -1)"
-                title="@item.Title"
-                aria-label="@item.AriaLabel"
-                @onclick="()=> HandleItemClick(item)">
+                    <button class="@(item.IsSelected ? $"{RootElementClass}-slc-{VisualClassRegistrar()}" : string.Empty)"
+                        style="@(item.IsHidden ? "display: none" : string.Empty)"
+                        id="@($"{DropDownId}-list{index}")"
+                        type="button"
+                        role="option"
+                        data-is-focusable="@(item.IsEnabled ? "true" : "false")"
+                        disabled=@(!item.IsEnabled)
+                        data-index="@index"
+                        aria-disabled="@(!item.IsEnabled)"
+                        aria-selected="@(item.IsSelected ? "true" : "false")"
+                        aria-setsize="@NormalDropDownItems.Count"
+                        aria-posinset="@GetItemPosInSet(item)"
+                        tabindex="@(item.IsEnabled ? 0 : -1)"
+                        title="@item.Title"
+                        aria-label="@item.AriaLabel"
+                        @onclick="()=> HandleItemClick(item)">
                         @if (ItemTemplate is not null)
                         {
                             @ItemTemplate(item)
@@ -147,10 +140,21 @@
             }
             else if (item.ItemType == BitDropDownItemType.Divider)
             {
-                <div class="@RootElementClass-div-@VisualClassRegistrar()"
-             role="separator">
-                </div>
+                <div class="@RootElementClass-div-@VisualClassRegistrar()" role="separator"></div>
             }
         }
     </div>
+    <select @attributes="InputHtmlAttributes" class="bit-input-hidden" multiple>
+        @foreach (BitDropDownItem item in Items.Where(i => i.ItemType == BitDropDownItemType.Normal))
+        {
+            @if (item.IsSelected)
+            {
+                <option value="@item.Value" selected>@item.Text</option>
+            }
+            else
+            {
+                <option value="@item.Value">@item.Text</option>
+            }
+        }
+    </select>
 </div>

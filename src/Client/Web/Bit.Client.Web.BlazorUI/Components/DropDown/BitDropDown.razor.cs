@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -13,11 +16,9 @@ namespace Bit.Client.Web.BlazorUI
         private bool isOpen;
         private bool isMultiSelect;
         private bool isRequired;
-        private List<string> selectedMultipleKeys = new();
-        private string selectedKey = string.Empty;
-        private bool SelectedMultipleKeysHasBeenSet;
-        private bool SelectedKeyHasBeenSet;
-        private bool IsSelectedMultipleKeysChanged;
+        private List<string> values = new();
+        private bool ValuesHasBeenSet;
+        private bool isValuesChanged;
         private List<BitDropDownItem> NormalDropDownItems = new();
 
         [Inject] public IJSRuntime? JSRuntime { get; set; }
@@ -69,7 +70,7 @@ namespace Bit.Client.Web.BlazorUI
         /// </summary>
 #pragma warning disable CA1002 // Do not expose generic lists
 #pragma warning disable CA2227 // Collection properties should be read only
-        [Parameter] public List<BitDropDownItem> Items { get; set; } = new List<BitDropDownItem>();
+        [Parameter] public List<BitDropDownItem> Items { get; set; } = new();
 #pragma warning restore CA2227 // Collection properties should be read only
 #pragma warning restore CA1002 // Do not expose generic lists
 
@@ -80,53 +81,40 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter]
 #pragma warning disable CA1002 // Do not expose generic lists
 #pragma warning disable CA2227 // Collection properties should be read only
-        public List<string> SelectedMultipleKeys
+        public List<string> Values
 #pragma warning restore CA2227 // Collection properties should be read only
 #pragma warning restore CA1002 // Do not expose generic lists
         {
-            get => selectedMultipleKeys;
+            get => values;
             set
             {
                 if (value == null) return;
-                if (selectedMultipleKeys.All(value.Contains) && selectedMultipleKeys.Count == value.Count) return;
-                selectedMultipleKeys = value;
-                _ = SelectedMultipleKeysChanged.InvokeAsync(value);
+                if (values.All(value.Contains) && values.Count == value.Count) return;
+                values = value;
+                _ = ValuesChanged.InvokeAsync(value);
             }
         }
 
-        [Parameter] public EventCallback<List<string>> SelectedMultipleKeysChanged { get; set; }
+        [Parameter] public EventCallback<List<string>> ValuesChanged { get; set; }
 
         /// <summary>
-        /// Key of the selected item
-        /// If you provide this, you must maintain selection state by observing onChange events and passing a new value in when changed
+        /// Gets or sets an expression that identifies the bound values.
         /// </summary>
-        [Parameter]
-        public string SelectedKey
-        {
-            get => selectedKey;
-            set
-            {
-                if (selectedKey == value) return;
-                selectedKey = value;
-                _ = SelectedKeyChanged.InvokeAsync(value);
-            }
-        }
-
-        [Parameter] public EventCallback<string> SelectedKeyChanged { get; set; }
+        [Parameter] public Expression<Func<List<string>>>? ValuesExpression { get; set; }
 
         /// <summary>
         /// Keys that will be initially used to set selected items for multiSelect scenarios
         /// </summary>
 #pragma warning disable CA1002 // Do not expose generic lists
 #pragma warning disable CA2227 // Collection properties should be read only
-        [Parameter] public List<string> DefaultSelectedMultipleKeys { get; set; } = new List<string>();
+        [Parameter] public List<string> DefaultValues { get; set; } = new();
 #pragma warning restore CA2227 // Collection properties should be read only
 #pragma warning restore CA1002 // Do not expose generic lists
 
         /// <summary>
         /// Key that will be initially used to set selected item
         /// </summary>
-        [Parameter] public string? DefaultSelectedKey { get; set; }
+        [Parameter] public string? DefaultValue { get; set; }
 
         /// <summary>
         /// Input placeholder Text, Displayed until an option is selected
@@ -161,7 +149,7 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// Optional preference to have OnSelectItem still be called when an already selected item is clicked in single select mode
         /// </summary>
-        [Parameter] public bool NotifyOnReselect { get; set; } = false;
+        [Parameter] public bool NotifyOnReselect { get; set; }
 
         /// <summary>
         /// Optional custom template for label
@@ -218,6 +206,10 @@ namespace Bit.Client.Web.BlazorUI
             ClassBuilder.Register(() => IsMultiSelect is false
                 ? string.Empty
                 : $"{RootElementClass}-{"multi"}-{VisualClassRegistrar()}");
+
+            ClassBuilder.Register(() => ValueInvalid is true
+                ? $"{RootElementClass}-invalid-{VisualClassRegistrar()}"
+                : string.Empty);
         }
 
         protected async override Task OnParametersSetAsync()
@@ -264,19 +256,19 @@ namespace Bit.Client.Web.BlazorUI
 
         private async Task HandleItemClick(BitDropDownItem selectedItem)
         {
-            if (!IsEnabled || !selectedItem.IsEnabled) return;
+            if (IsEnabled is false || selectedItem.IsEnabled is false) return;
 
             if (isMultiSelect &&
-                    SelectedMultipleKeysHasBeenSet &&
-                    SelectedMultipleKeysChanged.HasDelegate is false) return;
+                    ValuesHasBeenSet &&
+                    ValuesChanged.HasDelegate is false) return;
 
-            if (!isMultiSelect &&
-                SelectedKeyHasBeenSet &&
-                SelectedKeyChanged.HasDelegate is false) return;
+            if (isMultiSelect is false &&
+                ValueHasBeenSet &&
+                ValueChanged.HasDelegate is false) return;
 
             if (isMultiSelect)
             {
-                if (IsSelectedMultipleKeysChanged is false) IsSelectedMultipleKeysChanged = true;
+                if (isValuesChanged is false) isValuesChanged = true;
 
                 selectedItem.IsSelected = !selectedItem.IsSelected;
                 if (selectedItem.IsSelected)
@@ -305,7 +297,7 @@ namespace Bit.Client.Web.BlazorUI
                     }
                 }
 
-                SelectedMultipleKeys = Items.FindAll(i => i.IsSelected && i.ItemType == BitDropDownItemType.Normal).Select(i => i.Value).ToList();
+                Values = Items.FindAll(i => i.IsSelected && i.ItemType == BitDropDownItemType.Normal).Select(i => i.Value).ToList();
                 await OnSelectItem.InvokeAsync(selectedItem);
             }
             else
@@ -317,7 +309,7 @@ namespace Bit.Client.Web.BlazorUI
                 if (oldSelectedItem is not null) oldSelectedItem.IsSelected = false;
                 selectedItem.IsSelected = true;
                 Text = selectedItem.Text;
-                SelectedKey = selectedItem.Value;
+                CurrentValueAsString = selectedItem.Value;
                 var obj = DotNetObjectReference.Create(this);
                 await JSRuntime.InvokeVoidAsync("BitDropDown.toggleDropDownCallout", obj, UniqueId, DropDownId, DropDownCalloutId, DropDownOverlayId, isOpen);
                 isOpen = false;
@@ -332,15 +324,15 @@ namespace Bit.Client.Web.BlazorUI
         {
             if (isMultiSelect)
             {
-                if (SelectedMultipleKeysHasBeenSet || IsSelectedMultipleKeysChanged)
+                if (ValuesHasBeenSet || isValuesChanged)
                 {
                     ChangeAllItemsIsSelected(false);
-                    Items.FindAll(i => SelectedMultipleKeys.Contains(i.Value) && i.ItemType == BitDropDownItemType.Normal).ForEach(i => { i.IsSelected = true; });
+                    Items.FindAll(i => Values.Contains(i.Value) && i.ItemType == BitDropDownItemType.Normal).ForEach(i => { i.IsSelected = true; });
                 }
-                else if (DefaultSelectedMultipleKeys.Count != 0)
+                else if (DefaultValues.Count != 0)
                 {
                     ChangeAllItemsIsSelected(false);
-                    Items.FindAll(i => DefaultSelectedMultipleKeys.Contains(i.Value) && i.ItemType == BitDropDownItemType.Normal).ForEach(i => { i.IsSelected = true; });
+                    Items.FindAll(i => DefaultValues.Contains(i.Value) && i.ItemType == BitDropDownItemType.Normal).ForEach(i => { i.IsSelected = true; });
                 }
 
                 Text = string.Empty;
@@ -359,28 +351,75 @@ namespace Bit.Client.Web.BlazorUI
             }
             else
             {
-                if (SelectedKey.HasValue() && Items.Find(i => i.Value == SelectedKey && i.ItemType == BitDropDownItemType.Normal) is not null)
+                if (CurrentValue.HasValue() && Items.Find(i => i.Value == CurrentValue && i.ItemType == BitDropDownItemType.Normal) is not null)
                 {
-                    Items.Find(i => i.Value == SelectedKey)!.IsSelected = true;
-                    Items.FindAll(i => i.Value != SelectedKey).ForEach(i => { i.IsSelected = false; });
-                    Text = Items.Find(i => i.Value == SelectedKey)!.Text;
+                    Items.Find(i => i.Value == CurrentValue)!.IsSelected = true;
+                    Items.FindAll(i => i.Value != CurrentValue).ForEach(i => i.IsSelected = false);
+                    Text = Items.Find(i => i.Value == CurrentValue)!.Text;
                 }
-                else if (DefaultSelectedKey.HasValue() && Items.Find(i => i.Value == DefaultSelectedKey && i.ItemType == BitDropDownItemType.Normal) is not null)
+                else if (DefaultValue.HasValue() && Items.Any(i => i.Value == DefaultValue && i.ItemType == BitDropDownItemType.Normal))
                 {
-                    Items.Find(i => i.Value == DefaultSelectedKey && i.ItemType == BitDropDownItemType.Normal)!.IsSelected = true;
-                    Items.FindAll(i => i.Value != DefaultSelectedKey && i.ItemType == BitDropDownItemType.Normal).ForEach(i => { i.IsSelected = false; });
-                    Text = Items.Find(i => i.Value == DefaultSelectedKey && i.ItemType == BitDropDownItemType.Normal)!.Text;
+                    Items.Find(i => i.Value == DefaultValue && i.ItemType == BitDropDownItemType.Normal)!.IsSelected = true;
+                    Items.FindAll(i => i.Value != DefaultValue && i.ItemType == BitDropDownItemType.Normal).ForEach(i => i.IsSelected = false);
+                    Text = Items.Find(i => i.Value == DefaultValue && i.ItemType == BitDropDownItemType.Normal)!.Text;
                 }
                 else if (Items.FindAll(item => item.IsSelected is true && item.ItemType == BitDropDownItemType.Normal).Count != 0)
                 {
                     var firstSelectedItem = Items.Find(i => i.IsSelected && i.ItemType == BitDropDownItemType.Normal)!;
                     Text = firstSelectedItem.Text;
-                    Items.FindAll(i => i.Value != firstSelectedItem.Value).ForEach(i => { i.IsSelected = false; });
+                    Items.FindAll(i => i.Value != firstSelectedItem.Value).ForEach(i => i.IsSelected = false);
                 }
             }
         }
 
         private string GetDropdownAriaLabelledby => Label.HasValue() ? $"{DropDownId}-label {DropDownId}-option" : $"{DropDownId}-option";
         private int GetItemPosInSet(BitDropDownItem item) => NormalDropDownItems.IndexOf(item) + 1;
+
+        private string GetCssClassForItem(BitDropDownItem item)
+        {
+            StringBuilder stringBuilder = new StringBuilder("bit-drpo");
+            stringBuilder.Append(' ').Append("bit-drpo-").Append(VisualClassRegistrar());
+
+            if (item.IsSelected)
+            {
+                stringBuilder
+                    .Append(' ').Append(RootElementClass).Append("-slc-").Append(VisualClassRegistrar())
+                    .Append(' ').Append("bit-drpo-checked-").Append(VisualClassRegistrar());
+            }
+
+            if (item.IsEnabled is false && item.IsSelected)
+            {
+                stringBuilder
+                    .Append(' ').Append(RootElementClass).Append("-slc-").Append(VisualClassRegistrar())
+                    .Append(' ').Append("bit-drpo-checked-disabled-").Append(VisualClassRegistrar());
+            }
+
+            stringBuilder
+                .Append(' ').Append("bit-drpo-")
+                .Append(item.IsEnabled ? "enabled" : "disabled")
+                .Append('-').Append(VisualClassRegistrar());
+
+            return stringBuilder.ToString();
+        }
+
+        /// <inheritdoc />
+        protected override bool TryParseValueFromString(string? value, out string? result, [NotNullWhen(false)] out string? validationErrorMessage)
+        {
+            result = value;
+            validationErrorMessage = null;
+            return true;
+        }
+
+        protected override void RegisterFieldIdentifier()
+        {
+            if (IsMultiSelect)
+            {
+                RegisterFieldIdentifier(ValuesExpression, typeof(List<string>));
+            }
+            else
+            {
+                base.RegisterFieldIdentifier();
+            }
+        }
     }
 }
