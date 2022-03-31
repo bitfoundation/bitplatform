@@ -29,7 +29,7 @@ public class TodoTemplateHttpClientHandler : HttpClientHandler
         {
             if (response.Headers.TryGetValues("Request-ID", out IEnumerable<string>? values) && values is not null && values.Any())
             {
-                RestExceptionPayload restError = await response.Content.ReadFromJsonAsync(ToDoTemplateJsonContext.Default.RestExceptionPayload);
+                RestExceptionPayload restError = await response.Content.ReadFromJsonAsync(TodoTemplateJsonContext.Default.RestExceptionPayload);
 
                 Type exceptionType = typeof(RestExceptionPayload).Assembly.GetType(restError.ExceptionType) ?? typeof(UnknownException);
 

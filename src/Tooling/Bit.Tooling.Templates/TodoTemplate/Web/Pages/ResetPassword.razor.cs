@@ -92,7 +92,7 @@ public partial class ResetPassword
                 Email = Email,
                 Token = Token,
                 Password = NewPassword
-            }, ToDoTemplateJsonContext.Default.ResetPasswordRequestDto);
+            }, TodoTemplateJsonContext.Default.ResetPasswordRequestDto);
 
             ResetPasswordMessageType = BitMessageBarType.Success;
 
