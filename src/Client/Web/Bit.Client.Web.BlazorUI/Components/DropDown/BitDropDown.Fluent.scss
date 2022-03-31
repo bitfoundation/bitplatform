@@ -201,7 +201,7 @@
     box-sizing: border-box;
     border-radius: 0 0 rem(2px) rem(2px);
     box-shadow: rgba(0,0,0,0.13) 0px 3.2px 7.2px 0px, rgba(0,0,0,0.11) 0px 0.6px 1.8px 0px;
-    animation-name: opacity, trans;
+    animation-name: opacity, trans-y;
     animation-duration: 0.367s;
     animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
     animation-fill-mode: both;
@@ -313,6 +313,33 @@
     }
 }
 
+@media only screen and (max-width: rem(639px)) {
+    .bit-drp-items-wrapper {
+        box-shadow: rgb(0 0 0 / 22%) 0 25.6px 57.6px 0, rgb(0 0 0 / 18%) 0 4.8px 14.4px 0;
+        position: fixed;
+        height: 100%;
+        width: rem(272px);
+        padding: em(24px) em(20px);
+        z-index: 10000;
+        animation-name: opacity, trans-x;
+        animation-duration: 0.367s;
+        animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
+        animation-fill-mode: both;
+    }
+
+    .bit-drp-overlay {
+        background: rgba(255, 255, 255, 0.4);
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 100%;
+        z-index: 10000;
+        pointer-events: auto;
+        cursor: pointer;
+    }
+}
+
 @keyframes opacity {
     0% {
         opacity: 0;
@@ -323,9 +350,21 @@
     }
 }
 
-@keyframes trans {
+@keyframes trans-y {
     0% {
         transform: translate3d(0px, -10px, 0px);
+        pointer-events: none;
+    }
+
+    100% {
+        transform: translate3d(0px, 0px, 0px);
+        pointer-events: auto;
+    }
+}
+
+@keyframes trans-x {
+    0% {
+        transform: translate3d(40px, 0px, 0px);
         pointer-events: none;
     }
 

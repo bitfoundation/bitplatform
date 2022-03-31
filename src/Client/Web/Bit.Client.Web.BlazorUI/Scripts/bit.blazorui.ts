@@ -71,7 +71,10 @@ class Bit {
 }
 
 window.addEventListener('scroll', (e: any) => {
-    if (e.target.id && Bit.currentDropDownCalloutId === e.target.id) return;
+    const minimumWidthForDropDownNormalOpen = 640;
+    if ((Bit.currentDropDownCalloutId && window.innerWidth < minimumWidthForDropDownNormalOpen) ||
+        (e.target.id && Bit.currentDropDownCalloutId === e.target.id)) return;
+
     Bit.closeCurrentCalloutIfExists("", "", null);
 }, true);
 
