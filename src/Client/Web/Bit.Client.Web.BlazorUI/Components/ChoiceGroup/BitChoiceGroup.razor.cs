@@ -81,9 +81,9 @@ namespace Bit.Client.Web.BlazorUI
 
         protected override async Task OnInitializedAsync()
         {
-            if (DefaultSelectedKey.HasValue())
+            if (DefaultSelectedKey.HasValue() && Options.Any(o => o.Key == DefaultSelectedKey))
             {
-                CurrentValue = Options.FirstOrDefault(o => o.Key == DefaultSelectedKey);
+                CurrentValue = DefaultSelectedKey;
             }
 
             await base.OnInitializedAsync();
@@ -98,7 +98,7 @@ namespace Bit.Client.Web.BlazorUI
         private string GetOptionLabelId(BitChoiceGroupOption option) => $"ChoiceGroupOptionLabel{UniqueId}-{option.Key}";
 
         private bool GetOptionIsChecked(BitChoiceGroupOption option) =>
-            CurrentValue is not null && CurrentValue.Key == option.Key;
+            CurrentValue.HasValue() && CurrentValue == option.Key;
 
         private string? GetOptionImageSrc(BitChoiceGroupOption option) =>
             GetOptionIsChecked(option) && option.SelectedImageSrc.HasValue()
@@ -158,18 +158,19 @@ namespace Bit.Client.Web.BlazorUI
         {
             if (option.IsEnabled is false || IsEnabled is false) return;
 
-            CurrentValue = option;
+            CurrentValue = option.Key;
 
             await OnChange.InvokeAsync(e);
         }
 
         /// <inheritdoc />
         protected override bool TryParseValueFromString(string? value,
-            [MaybeNullWhen(false)] out BitChoiceGroupOption result,
+            [MaybeNullWhen(false)] out string result,
             [NotNullWhen(false)] out string? validationErrorMessage)
         {
-            throw new NotSupportedException($"This component does not parse string inputs." +
-                $" Bind to the '{nameof(CurrentValue)}' property, not '{nameof(CurrentValueAsString)}'.");
+            result = value;
+            validationErrorMessage = null;
+            return true;
         }
 
     }
