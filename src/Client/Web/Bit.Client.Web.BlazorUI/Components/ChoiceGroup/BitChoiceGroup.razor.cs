@@ -29,12 +29,12 @@ namespace Bit.Client.Web.BlazorUI
         }
 
         /// <summary>
-        /// List of options, each of which is a selection in the ChoiceGroup
+        /// List of options, each of which is a selection in the ChoiceGroup.
         /// </summary>
         [Parameter] public List<BitChoiceGroupOption> Options { get; set; } = new();
 
         /// <summary>
-        /// Name of ChoiceGroup, this name is used to group each option into the same logical ChoiceGroup
+        /// Name of ChoiceGroup, this name is used to group each option into the same logical ChoiceGroup.
         /// </summary>
         [Parameter] public string Name { get; set; } = Guid.NewGuid().ToString();
 
