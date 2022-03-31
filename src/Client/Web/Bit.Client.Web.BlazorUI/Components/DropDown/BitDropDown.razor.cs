@@ -377,25 +377,25 @@ namespace Bit.Client.Web.BlazorUI
 
         private string GetCssClassForItem(BitDropDownItem item)
         {
-            StringBuilder stringBuilder = new StringBuilder("bit-drpo");
-            stringBuilder.Append(' ').Append("bit-drpo-").Append(VisualClassRegistrar());
+            StringBuilder stringBuilder = new StringBuilder("bit-drp-chb");
+            stringBuilder.Append(' ').Append("bit-drp-chb-").Append(VisualClassRegistrar());
 
             if (item.IsSelected)
             {
                 stringBuilder
                     .Append(' ').Append(RootElementClass).Append("-slc-").Append(VisualClassRegistrar())
-                    .Append(' ').Append("bit-drpo-checked-").Append(VisualClassRegistrar());
+                    .Append(' ').Append("bit-drp-chb-checked-").Append(VisualClassRegistrar());
             }
 
             if (item.IsEnabled is false && item.IsSelected)
             {
                 stringBuilder
                     .Append(' ').Append(RootElementClass).Append("-slc-").Append(VisualClassRegistrar())
-                    .Append(' ').Append("bit-drpo-checked-disabled-").Append(VisualClassRegistrar());
+                    .Append(' ').Append("bit-drp-chb-checked-disabled-").Append(VisualClassRegistrar());
             }
 
             stringBuilder
-                .Append(' ').Append("bit-drpo-")
+                .Append(' ').Append("bit-drp-chb-")
                 .Append(item.IsEnabled ? "enabled" : "disabled")
                 .Append('-').Append(VisualClassRegistrar());
 

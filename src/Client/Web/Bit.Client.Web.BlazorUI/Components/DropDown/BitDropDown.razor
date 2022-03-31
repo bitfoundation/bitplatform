@@ -89,14 +89,14 @@
                 {
                     <div style="@(item.IsHidden ? "display: none" : string.Empty)"
                          class="@GetCssClassForItem(item)">
-                        <label class="bit-drpo-lbl" for="@($"{DropDownId}-list{index}")" @onclick="@((e) => HandleItemClick(item))">
-                            <div class="bit-drpo-checkbox">
-                                <i class=@($"bit-drpo-checkmark bit-icon bit-icon--{BitIconName.Accept.GetName()}")
+                        <label class="bit-drp-chb-lbl" for="@($"{DropDownId}-list{index}")" @onclick="@((e) => HandleItemClick(item))">
+                            <div class="bit-drp-chb-checkbox">
+                                <i class=@($"bit-drp-chb-checkmark bit-icon bit-icon--{BitIconName.Accept.GetName()}")
                                    aria-hidden="true"
                                    aria-label="@item.Text"></i>
                             </div>
 
-                            <span class="bit-drpo-txt no-text-select">
+                            <span class="bit-drp-chb-txt no-text-select">
                                 @if (ItemTemplate is not null)
                                 {
                                     @ItemTemplate(item)
