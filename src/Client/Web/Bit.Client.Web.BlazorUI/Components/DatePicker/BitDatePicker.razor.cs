@@ -354,8 +354,6 @@ namespace Bit.Client.Web.BlazorUI
             ChangeYearRanges(currentYear - 1);
             CreateMonthCalendar(currentYear, currentMonth);
 
-            if (ShowMonthPickerAsOverlay is false) return;
-
             ToggleBetweenMonthAndYearPicker();
         }
 
