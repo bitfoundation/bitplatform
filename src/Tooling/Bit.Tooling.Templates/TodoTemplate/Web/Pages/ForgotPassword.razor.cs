@@ -67,7 +67,7 @@ public partial class ForgotPassword
             await HttpClient.PostAsJsonAsync("Auth/SendResetPasswordEmail", new()
             {
                 Email = Email
-            }, ToDoTemplateJsonContext.Default.SendResetPasswordEmailRequestDto);
+            }, TodoTemplateJsonContext.Default.SendResetPasswordEmailRequestDto);
 
             ForgotPasswordMessageType = BitMessageBarType.Success;
 

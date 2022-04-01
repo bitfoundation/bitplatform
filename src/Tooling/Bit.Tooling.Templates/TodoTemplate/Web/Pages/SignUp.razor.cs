@@ -88,7 +88,7 @@ public partial class SignUp
                 UserName = Email,
                 Email = Email,
                 Password = Password
-            }, ToDoTemplateJsonContext.Default.SignUpRequestDto);
+            }, TodoTemplateJsonContext.Default.SignUpRequestDto);
 
             SignUpMessageType = BitMessageBarType.Success;
             SignUpMessage = "Confirmation link has sent to your email. Please follow the link.";

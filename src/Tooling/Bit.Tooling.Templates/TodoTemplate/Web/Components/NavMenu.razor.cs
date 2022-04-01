@@ -84,7 +84,7 @@ public partial class NavMenu
     protected override async Task OnInitAsync()
     {
         User = await StateService.GetValue($"{nameof(NavMenu)}-{nameof(User)}", async () =>
-            await HttpClient.GetFromJsonAsync("User/GetCurrentUser", ToDoTemplateJsonContext.Default.UserDto));
+            await HttpClient.GetFromJsonAsync("User/GetCurrentUser", TodoTemplateJsonContext.Default.UserDto));
 
         var access_token = await StateService.GetValue($"{nameof(NavMenu)}-access_token", async () =>
             await AuthTokenProvider.GetAcccessToken());
