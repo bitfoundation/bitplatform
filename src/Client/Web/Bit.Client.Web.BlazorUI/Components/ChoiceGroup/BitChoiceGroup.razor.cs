@@ -72,7 +72,7 @@ namespace Bit.Client.Web.BlazorUI
 
         protected override void RegisterComponentClasses()
         {
-            ClassBuilder.Register(() => IsEnabled && IsRequired
+            ClassBuilder.Register(() => IsEnabled && Options.Any(o => o.IsEnabled) && IsRequired
                                        ? $"{RootElementClass}-required-{VisualClassRegistrar()}" : string.Empty);
 
             ClassBuilder.Register(() => ValueInvalid is true
@@ -106,7 +106,7 @@ namespace Bit.Client.Web.BlazorUI
             : option.ImageSrc;
 
         private string GetOptionLabelClassName(BitChoiceGroupOption option) =>
-            option.ImageSrc.HasValue() || option.iconName is not null ? "bit-chgo-lbl-with-img" : "bit-chgo-lbl";
+            option.ImageSrc.HasValue() || option.IconName is not null ? "bit-chgo-lbl-with-img" : "bit-chgo-lbl";
 
         private string GetOptionImageSizeStyle(BitChoiceGroupOption option) => option.ImageSize is not null
                 ? $"width:{option.ImageSize.Value.Width}px; height:{option.ImageSize.Value.Height}px;"
@@ -126,7 +126,7 @@ namespace Bit.Client.Web.BlazorUI
                    .Append(VisualClassRegistrar());
             }
 
-            if (option.ImageSrc.HasValue() || option.iconName is not null)
+            if (option.ImageSrc.HasValue() || option.IconName is not null)
             {
                 cssClass
                     .Append(' ')

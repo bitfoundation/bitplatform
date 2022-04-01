@@ -1,0 +1,18 @@
+﻿@using Bit.Client.Web.BlazorUI.Components.ChoiceGroup
+
+<CascadingValue Value="@Visual">
+    <BitChoiceGroup Options="@Options"
+                    IsEnabled="@IsEnabled"
+                    Name="@Name"
+                    Label="@Label"
+                    DefaultSelectedKey="@DefaultSelectedKey" />
+</CascadingValue>
+
+@code {
+    [Parameter] public Visual Visual { get; set; }
+    [Parameter] public bool IsEnabled { get; set; } = true;
+    [Parameter] public List<BitChoiceGroupOption> Options { get; set; } = new();
+    [Parameter] public string Name { get; set; }
+    [Parameter] public string Label { get; set; }
+    [Parameter] public string DefaultSelectedKey { get; set; }
+}
