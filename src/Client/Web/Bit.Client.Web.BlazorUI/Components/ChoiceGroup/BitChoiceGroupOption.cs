@@ -15,7 +15,7 @@ namespace Bit.Client.Web.BlazorUI.Components.ChoiceGroup
 
         public bool IsEnabled { get; set; } = true;
 
-        public BitIconName? iconName { get; set; }
+        public BitIconName? IconName { get; set; }
 
         public string? ImageAlt { get; set; }
 

@@ -84,19 +84,19 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ChoiceGroup
             {
                Text = "Day",
                Key = "Day",
-               iconName = BitIconName.CalendarDay
+               IconName = BitIconName.CalendarDay
             },
             new BitChoiceGroupOption()
             {
                 Text = "Week",
                 Key = "Week",
-                iconName = BitIconName.CalendarWeek
+                IconName = BitIconName.CalendarWeek
             },
             new BitChoiceGroupOption()
             {
                 Text = "Month",
                 Key = "Month",
-                iconName = BitIconName.Calendar,
+                IconName = BitIconName.Calendar,
                 IsEnabled = false
             }
         };
@@ -245,19 +245,19 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ChoiceGroup
             {
                Text = ""Day"",
                Key = ""Day"",
-               iconName = BitIconName.CalendarDay
+               IconName = BitIconName.CalendarDay
             },
             new BitChoiceGroupOption()
             {
                 Text = ""Week"",
                 Key = ""Week"",
-                iconName = BitIconName.CalendarWeek
+                IconName = BitIconName.CalendarWeek
             },
             new BitChoiceGroupOption()
             {
                 Text = ""Month"",
                 Key = ""Month"",
-                iconName = BitIconName.Calendar,
+                IconName = BitIconName.Calendar,
                 IsEnabled = false
             }
         };
