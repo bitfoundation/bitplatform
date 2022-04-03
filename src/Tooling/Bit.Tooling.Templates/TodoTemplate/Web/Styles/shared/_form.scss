@@ -88,7 +88,6 @@
 .form-checkbox {
     width: 100%;
     max-width: rem(340px);
-    margin-bottom: rem(32px);
 
     @include lt-xl {
         max-width: rem(300px);
@@ -100,6 +99,7 @@
 }
 
 .form-submit-button {
+    margin-top: rem(32px);
     margin-bottom: rem(24px);
 
     @include lg {
