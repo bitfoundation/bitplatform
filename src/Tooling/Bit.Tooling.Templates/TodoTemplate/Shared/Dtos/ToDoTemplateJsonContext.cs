@@ -18,6 +18,6 @@ namespace TodoTemplate.Shared.Dtos;
 [JsonSerializable(typeof(SendResetPasswordEmailRequestDto))]
 [JsonSerializable(typeof(ResetPasswordRequestDto))]
 
-public partial class ToDoTemplateJsonContext : JsonSerializerContext
+public partial class TodoTemplateJsonContext : JsonSerializerContext
 {
 }

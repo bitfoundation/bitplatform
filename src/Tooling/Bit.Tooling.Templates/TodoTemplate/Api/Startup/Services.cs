@@ -46,7 +46,7 @@ public static class Services
         services
             .AddControllers(options => options.Filters.Add<HttpResponseExceptionFilter>())
             .AddOData(options => options.EnableQueryFeatures(maxTopValue: 20))
-            .AddJsonOptions(options => options.JsonSerializerOptions.AddContext<ToDoTemplateJsonContext>());
+            .AddJsonOptions(options => options.JsonSerializerOptions.AddContext<TodoTemplateJsonContext>());
 
         services.AddResponseCaching();
 
