@@ -6,6 +6,21 @@ namespace Bit.Client.Web.BlazorUI.Tests.Persona
     [TestClass]
     public class BitPersonaTests : BunitTestContext
     {
+        private string DetermineIcon(BitPersonaPresenceStatus presence, bool isOutofOffice)
+        {
+            string oofIcon = "presence_oof";
+
+            return presence switch
+            {
+                BitPersonaPresenceStatus.Online => "presence_available",
+                BitPersonaPresenceStatus.Busy => "presence_busy",
+                BitPersonaPresenceStatus.Away => isOutofOffice ? oofIcon : "presence_away",
+                BitPersonaPresenceStatus.DND => "presence_dnd",
+                BitPersonaPresenceStatus.Offline => isOutofOffice ? oofIcon : "presence_offline",
+                _ => "presence_unknown",
+            };
+        }
+
         [DataTestMethod,
          DataRow(Visual.Fluent, true),
          DataRow(Visual.Fluent, false),
@@ -44,8 +59,8 @@ namespace Bit.Client.Web.BlazorUI.Tests.Persona
                        parameters.Add(p => p.SecondaryText, secondaryText);
                        parameters.Add(p => p.TertiaryText, tertiaryText);
                        parameters.Add(p => p.OptionalText, optionalText);
-
                    });
+
             var textClassName = component.Find(".bit-Persona-primaryTex");
             var secendryTextClassName = component.Find(".bit-Persona-secondaryText");
             var tertiaryTextClassName = component.Find(".bit-Persona-tertiaryText");
@@ -78,20 +93,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Persona
                       parameters.Add(p => p.Presence, presenceStatus);
                       parameters.Add(p => p.IsOutOfOffice, isOutOfOffice);
                   });
-            string DetermineIcon(BitPersonaPresenceStatus presence, bool isOutofOffice)
-            {
-                string oofIcon = "presence_oof";
 
-                return presence switch
-                {
-                    BitPersonaPresenceStatus.Online => "presence_available",
-                    BitPersonaPresenceStatus.Busy => "presence_busy",
-                    BitPersonaPresenceStatus.Away => isOutofOffice ? oofIcon : "presence_away",
-                    BitPersonaPresenceStatus.DND => "presence_dnd",
-                    BitPersonaPresenceStatus.Offline => isOutofOffice ? oofIcon : "presence_offline",
-                    _ => "presence_unknown",
-                };
-            }
             var presenceStatusClassName = DetermineIcon(presenceStatus, isOutOfOffice);
             var personaStatus = component.Find(".bit-Persona-presence > i");
 
