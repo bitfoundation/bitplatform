@@ -1,4 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -233,6 +235,11 @@ namespace Bit.Client.Web.BlazorUI
         /// </summary>
         [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
+        /// <summary>
+        /// The error message used when displaying an a parsing error.
+        /// </summary>
+        [Parameter] public string ParsingErrorMessage { get; set; } = "The {0} field must be a number.";
+
         public BitTextFieldType ElementType { get; set; }
 
         public string FocusClass
@@ -282,7 +289,7 @@ namespace Bit.Client.Web.BlazorUI
         {
             if (DefaultValue.HasValue())
             {
-                CurrentValue = DefaultValue;
+                CurrentValueAsString = DefaultValue;
             }
 
             TextFieldId = $"TextField{UniqueId}";
@@ -368,6 +375,13 @@ namespace Bit.Client.Web.BlazorUI
         /// <inheritdoc />
         protected override bool TryParseValueFromString(string? value, out string? result, [NotNullWhen(false)] out string? validationErrorMessage)
         {
+            if (Type == BitTextFieldType.Number && value.HasValue() && decimal.TryParse(value!, out decimal _) is false)
+            {
+                result = null;
+                validationErrorMessage = string.Format(CultureInfo.InvariantCulture, ParsingErrorMessage, DisplayName ?? FieldIdentifier.FieldName);
+                return false;
+            }
+
             result = value;
             validationErrorMessage = null;
             return true;
