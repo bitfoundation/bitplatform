@@ -60,7 +60,7 @@ public partial class EditProfile
     private async Task LoadEditProfileData()
     {
         User = await StateService.GetValue($"{nameof(EditProfile)}-{nameof(User)}", async () =>
-            await HttpClient.GetFromJsonAsync("User/GetCurrentUser", ToDoTemplateJsonContext.Default.UserDto));
+            await HttpClient.GetFromJsonAsync("User/GetCurrentUser", TodoTemplateJsonContext.Default.UserDto));
 
         UserToEdit.FullName = User?.FullName;
         UserToEdit.BirthDate = User?.BirthDate;
@@ -97,7 +97,7 @@ public partial class EditProfile
             User.BirthDate = UserToEdit.BirthDate;
             User.Gender = UserToEdit.Gender;
 
-            await HttpClient.PutAsJsonAsync("User", User, ToDoTemplateJsonContext.Default.EditUserDto);
+            await HttpClient.PutAsJsonAsync("User", User, TodoTemplateJsonContext.Default.EditUserDto);
 
             IsSaveButtonEnabled = false;
 

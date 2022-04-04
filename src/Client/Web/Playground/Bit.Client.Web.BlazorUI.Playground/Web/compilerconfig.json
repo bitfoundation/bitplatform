@@ -120,7 +120,7 @@
     "inputFile": "Pages/Components/RadioButtonList/BitRadioButtonListDemo.razor.scss"
   },
   {
-    "outputFile": "Pages/Components/ChoiceGroup/BitChoiceGroupDemo.razor.css",
-    "inputFile": "Pages/Components/ChoiceGroup/BitChoiceGroupDemo.razor.scss"
+    "outputFile": "Pages/Components/DropDown/BitDropDownDemo.razor.css",
+    "inputFile": "Pages/Components/DropDown/BitDropDownDemo.razor.scss"
   }
 ]
