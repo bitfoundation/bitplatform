@@ -7,7 +7,7 @@
         public string? NewPassword { get; set; }
 
         [Required(ErrorMessage = "Please enter your confirmation of the new password.")]
-        [Compare(nameof(NewPassword), ErrorMessage = "Password confirmation doesn't match Password.")]
+        [Compare(nameof(NewPassword), ErrorMessage = "Password confirmation doesn't match the new password.")]
         public string? ConfirmNewPassword { get; set; }
     }
 }

@@ -10,7 +10,7 @@
         [MinLength(6,ErrorMessage = "The password must have at least 6 characters.")]
         public string? Password { get; set; }
 
-        [Range(typeof(bool), "true", "true", ErrorMessage = "You must accept Privacy.")]
+        [Range(typeof(bool), "true", "true", ErrorMessage = "You must accept the privacy.")]
         public bool IsAcceptPrivacy { get; set; }
     }
 }
