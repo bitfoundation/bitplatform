@@ -185,6 +185,31 @@ namespace Bit.Client.Web.BlazorUI.Tests.Breadcrumb
             Assert.IsTrue(breadcrumb.ClassList.Contains($"{customClass}"));
         }
 
+        [DataTestMethod,
+          DataRow(BitComponentVisibility.Visible),
+          DataRow(BitComponentVisibility.Hidden),
+          DataRow(BitComponentVisibility.Collapsed),
+        ]
+        public void BitBreadcrumbShouldTakeCustomVisibility(BitComponentVisibility visibility)
+        {
+            var component = RenderComponent<BitBreadcrumb>(parameters =>
+            {
+                parameters.Add(p => p.Items, GetBreadcrumbItems());
+                parameters.Add(p => p.Visibility, visibility);
+            });
+
+            var breadcrumb = component.Find($".bit-brc");
+
+            if (visibility == BitComponentVisibility.Visible)
+                Assert.IsTrue(breadcrumb.GetAttribute("style").Contains(""));
+
+            else if (visibility == BitComponentVisibility.Hidden)
+                Assert.IsTrue(breadcrumb.GetAttribute("style").Contains("visibility:hidden"));
+
+            else if (visibility == BitComponentVisibility.Collapsed)
+                Assert.IsTrue(breadcrumb.GetAttribute("style").Contains("display:none"));
+        }
+
         private List<BitBreadcrumbItem> GetBreadcrumbItems()
         {
             return new List<BitBreadcrumbItem>()

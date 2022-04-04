@@ -2,6 +2,7 @@
     <BitBreadcrumb DividerAs="DividerAs"
                    Style ="Style"
                    Class="Class"
+                   Visibility="Visibility"
                    Items="Items"
                    MaxDisplayedItems="MaxDisplayedItems"
                    OnRenderOverflowIcon="OnRenderOverflowIcon"
@@ -15,6 +16,7 @@
     [Parameter] public BitIconName DividerAs { get; set; } = BitIconName.ChevronRight;
     [Parameter] public BitIconName OnRenderOverflowIcon { get; set; } = BitIconName.More;
     [Parameter] public List<BitBreadcrumbItem> Items { get; set; } = new();
+    [Parameter] public BitComponentVisibility Visibility { get; set; }
     [Parameter] public string Style { get; set; }
     [Parameter] public string Class { get; set; }
     [Parameter] public string OverflowAriaLabel { get; set; }
