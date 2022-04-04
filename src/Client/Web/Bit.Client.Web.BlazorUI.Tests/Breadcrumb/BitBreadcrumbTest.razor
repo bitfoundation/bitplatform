@@ -1,0 +1,23 @@
+﻿<CascadingValue Value="Visual">
+    <BitBreadcrumb DividerAs="DividerAs"
+                   Style ="Style"
+                   Class="Class"
+                   Items="Items"
+                   MaxDisplayedItems="MaxDisplayedItems"
+                   OnRenderOverflowIcon="OnRenderOverflowIcon"
+                   OverflowAriaLabel="OverflowAriaLabel"
+                   OverflowIndex="OverflowIndex">
+    </BitBreadcrumb>
+</CascadingValue>
+
+@code {
+    [Parameter] public Visual Visual { get; set; }
+    [Parameter] public BitIconName DividerAs { get; set; } = BitIconName.ChevronRight;
+    [Parameter] public BitIconName OnRenderOverflowIcon { get; set; } = BitIconName.More;
+    [Parameter] public List<BitBreadcrumbItem> Items { get; set; } = new();
+    [Parameter] public string Style { get; set; }
+    [Parameter] public string Class { get; set; }
+    [Parameter] public string OverflowAriaLabel { get; set; }
+    [Parameter] public int MaxDisplayedItems { get; set; }
+    [Parameter] public int OverflowIndex { get; set; }
+}
