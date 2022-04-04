@@ -17,14 +17,15 @@ public partial class ResetPassword
 
     public bool IsLoading { get; set; }
 
+    public BitMessageBarType ResetPasswordMessageType { get; set; }
+
+    public string? ResetPasswordMessage { get; set; }
+
     [Inject] public HttpClient HttpClient { get; set; } = default!;
 
     [Inject] public NavigationManager NavigationManager { get; set; } = default!;
 
     [Inject] public ITodoTemplateAuthenticationService TodoTemplateAuthenticationService { get; set; } = default!;
-
-    public BitMessageBarType ResetPasswordMessageType { get; set; }
-    public string? ResetPasswordMessage { get; set; }
 
     private async Task DoResetPassword()
     {
