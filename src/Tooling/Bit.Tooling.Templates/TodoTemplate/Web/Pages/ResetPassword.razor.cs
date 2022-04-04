@@ -27,7 +27,7 @@ public partial class ResetPassword
 
     [Inject] public ITodoTemplateAuthenticationService TodoTemplateAuthenticationService { get; set; } = default!;
 
-    private async Task DoResetPassword()
+    private async Task Submit()
     {
         if (IsLoading)
         {

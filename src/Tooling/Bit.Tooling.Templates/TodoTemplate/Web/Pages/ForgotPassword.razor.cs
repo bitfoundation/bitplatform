@@ -14,7 +14,7 @@ public partial class ForgotPassword
 
     [Inject] public HttpClient HttpClient { get; set; } = default!;
 
-    private async Task DoForgotPassword()
+    private async Task Submit()
     {
         if (IsLoading)
         {
