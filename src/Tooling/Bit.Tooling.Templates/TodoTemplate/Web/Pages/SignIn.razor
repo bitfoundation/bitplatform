@@ -5,7 +5,10 @@
 <PageTitle>Sign in</PageTitle>
 
 <div class="page-container">
-    <div class="form--white">
+    <EditForm Model="SignInModel" OnValidSubmit="WrapHandled(DoSignIn)" class="form--white">
+
+          <DataAnnotationsValidator />
+
         @if (string.IsNullOrEmpty(SignInMessage) is false)
         {
             <BitMessageBar Class="form-message-bar"
@@ -17,28 +20,27 @@
         <h1 class="form-title">Sign in</h1>
         <div class="form-input-container">
             <BitLabel>Email</BitLabel>
-            <BitTextField @bind-Value="Email"
-                Placeholder="Email"
-                OnChange="WrapHandled(CheckSignInButtonEnabled)"
-                OnFocus="() => EmailErrorMessage = null" />
-             <div class="form-input-error">@EmailErrorMessage</div>
+            <BitTextField Placeholder="Email" @bind-Value="SignInModel.Email" />
+            <div class="form-input-error">
+                 <ValidationMessage For="@(() => SignInModel.Email)" />
+            </div>
         </div>
         <div class="form-input-container">
             <BitLabel>Password</BitLabel>
-            <BitTextField @bind-Value="Password"
-                Type="BitTextFieldType.Password" 
-                CanRevealPassword="true"
-                Placeholder="Password"
-                OnChange="WrapHandled(CheckSignInButtonEnabled)"
-                OnFocus="() => PasswordErrorMessage = null" />
-            <div class="form-input-error">@PasswordErrorMessage</div>
+            <BitTextField @bind-Value="SignInModel.Password"
+                          Type="BitTextFieldType.Password"
+                          CanRevealPassword="true"
+                          Placeholder="Password" />
+            <div class="form-input-error">
+                 <ValidationMessage For="@(() => SignInModel.Password)" />
+            </div>
         </div>
         <BitButton Class="form-submit-button"
-            ButtonStyle="BitButtonStyle.Primary"
-            Title="Sign in"
-            AriaLabel="Sign in"
-            IsEnabled="@IsSignInButtonEnabled"
-            OnClick="WrapHandled(DoSignIn)">
+                   ButtonStyle="BitButtonStyle.Primary"
+                   Title="Sign in"
+                   AriaLabel="Sign in"
+                   IsEnabled="@context.Validate()"
+                   ButtonType="BitButtonType.Submit">
             @if (IsLoading)
             {
                 <BitSpinner Size="BitSpinnerSize.Small"></BitSpinner>
@@ -54,5 +56,5 @@
         <div>
             Don’t have an account? <BitLink Href="/sign-up">Sign up</BitLink>
         </div>
-    </div>
+    </EditForm>
 </div>
