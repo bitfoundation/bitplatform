@@ -25,7 +25,12 @@ public partial class SignIn
     public string? RedirectUrl { get; set; }
 
     private async Task DoSignIn()
-    {        
+    {
+        if (IsLoading)
+        {
+            return;
+        }
+
         IsLoading = true;
         SignInMessage = null;
         

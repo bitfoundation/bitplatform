@@ -1,4 +1,5 @@
-﻿using TodoTemplate.Shared.Dtos.Account;
+﻿using TodoTemplate.App.Models;
+using TodoTemplate.Shared.Dtos.Account;
 
 namespace TodoTemplate.App.Pages;
 
@@ -7,16 +8,13 @@ public partial class ResetPassword
     [Parameter]
     [SupplyParameterFromQuery]
     public string? Email { get; set; }
+
     [Parameter]
     [SupplyParameterFromQuery]
     public string? Token { get; set; }
-    public string? NewPassword { get; set; }
-    public string? ConfirmNewPassword { get; set; }
 
-    public string? NewPasswordErrorMessage { get; set; }
-    public string? ConfirmNewPasswordErrorMessage { get; set; }
+    public ResetPasswordModel ResetPasswordModel { get; set; } = new();
 
-    public bool IsSubmitButtonEnabled { get; set; }
     public bool IsLoading { get; set; }
 
     [Inject] public HttpClient HttpClient { get; set; } = default!;
@@ -28,61 +26,14 @@ public partial class ResetPassword
     public BitMessageBarType ResetPasswordMessageType { get; set; }
     public string? ResetPasswordMessage { get; set; }
 
-    private void CheckSubmitButtonEnabled()
+    private async Task DoResetPassword()
     {
-        if (string.IsNullOrEmpty(Email))
-        {
-            IsSubmitButtonEnabled = false;
-            return;
-        }
-        IsSubmitButtonEnabled = true;
-    }
-
-    private bool ValidateResetPassword()
-    {
-        NewPasswordErrorMessage = string.IsNullOrEmpty(NewPassword)
-            ? "Please enter your new password."
-            : null;
-
-        ConfirmNewPasswordErrorMessage = string.IsNullOrEmpty(ConfirmNewPassword)
-            ? "Please enter your confirmation of the new password."
-            : null;
-
-        if (string.IsNullOrEmpty(NewPasswordErrorMessage) is false || string.IsNullOrEmpty(ConfirmNewPasswordErrorMessage) is false)
-        {
-            return false;
-        }
-
-        ConfirmNewPasswordErrorMessage = NewPassword != ConfirmNewPassword
-            ? "Password confirmation doesn't match Password."
-            : null;
-
-        if (string.IsNullOrEmpty(ConfirmNewPasswordErrorMessage) is false)
-        {
-            return false;
-        }
-
-        NewPasswordErrorMessage = NewPassword!.Length < 6
-            ? "The password must have at least 6 characters."
-            : null;
-
-        if (string.IsNullOrEmpty(NewPasswordErrorMessage) is false)
-        {
-            return false;
-        }
-
-        return true;
-    }
-
-    private async Task Submit()
-    {
-        if (IsLoading || ValidateResetPassword() is false)
+        if (IsLoading)
         {
             return;
         }
 
         IsLoading = true;
-        IsSubmitButtonEnabled = false;
         ResetPasswordMessage = null;
 
         try
@@ -91,7 +42,7 @@ public partial class ResetPassword
             {
                 Email = Email,
                 Token = Token,
-                Password = NewPassword
+                Password = ResetPasswordModel.NewPassword
             }, TodoTemplateJsonContext.Default.ResetPasswordRequestDto);
 
             ResetPasswordMessageType = BitMessageBarType.Success;
@@ -101,7 +52,7 @@ public partial class ResetPassword
             await TodoTemplateAuthenticationService.SignIn(new SignInRequestDto
             {
                 UserName = Email,
-                Password = NewPassword
+                Password = ResetPasswordModel.NewPassword
             });
 
             NavigationManager.NavigateTo("/");
@@ -115,7 +66,6 @@ public partial class ResetPassword
         finally
         {
             IsLoading = false;
-            IsSubmitButtonEnabled = true;
         }
     }
 }
