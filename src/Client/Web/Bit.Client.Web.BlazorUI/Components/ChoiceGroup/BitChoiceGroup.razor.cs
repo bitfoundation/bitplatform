@@ -164,9 +164,7 @@ namespace Bit.Client.Web.BlazorUI
         }
 
         /// <inheritdoc />
-        protected override bool TryParseValueFromString(string? value,
-            [MaybeNullWhen(false)] out string result,
-            [NotNullWhen(false)] out string? validationErrorMessage)
+        protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out string? result, [NotNullWhen(false)] out string? validationErrorMessage)
         {
             result = value;
             validationErrorMessage = null;

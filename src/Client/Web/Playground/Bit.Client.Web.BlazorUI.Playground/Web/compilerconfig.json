@@ -118,5 +118,9 @@
   {
     "outputFile": "Pages/Components/RadioButtonList/BitRadioButtonListDemo.razor.css",
     "inputFile": "Pages/Components/RadioButtonList/BitRadioButtonListDemo.razor.scss"
+  },
+  {
+    "outputFile": "Pages/Components/ChoiceGroup/BitChoiceGroupDemo.razor.css",
+    "inputFile": "Pages/Components/ChoiceGroup/BitChoiceGroupDemo.razor.scss"
   }
 ]

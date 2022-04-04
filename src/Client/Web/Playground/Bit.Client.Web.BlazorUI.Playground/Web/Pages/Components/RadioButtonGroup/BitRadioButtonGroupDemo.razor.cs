@@ -90,6 +90,13 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.RadioButtonGro
             },
             new ComponentParameter()
             {
+                Name = "Value",
+                Type = "string?",
+                DefaultValue = "",
+                Description = "Value of RadioButtonGroup, the value of selected RadioButtonOption set on it.",
+            },
+            new ComponentParameter()
+            {
                 Name = "Visibility",
                 Type = "BitComponentVisibility",
                 LinkType = LinkType.Link,

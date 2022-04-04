@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Threading.Tasks;
 using Bit.Client.Web.BlazorUI.Components.ChoiceGroup;
 using Bit.Client.Web.BlazorUI.Playground.Web.Models;
 using Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
@@ -7,7 +9,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ChoiceGroup
 {
     public partial class BitChoiceGroupDemo
     {
-        public List<BitChoiceGroupOption> Example1And5Options { get; set; } = new()
+        public List<BitChoiceGroupOption> Example_1_5_6_Options { get; set; } = new()
         {
             new BitChoiceGroupOption()
             {
@@ -101,6 +103,15 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ChoiceGroup
             }
         };
 
+        public ChoiceGroupValidationModel ValidationModel = new();
+        public string SuccessMessage { get; set; } = string.Empty;
+
+        public class ChoiceGroupValidationModel
+        {
+            [Required(ErrorMessage = "Pick one")]
+            public string Value { get; set; }
+        }
+
         private readonly List<ComponentParameter> componentParameters = new()
         {
             new ComponentParameter
@@ -150,19 +161,33 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ChoiceGroup
                 Name = "OnChange",
                 Type = "EventCallback<ChangeEventArgs>",
                 DefaultValue = "null",
-                Description = "Callback for when the option has been changed"
+                Description = "Callback for when the option has been changed."
             },
             new ComponentParameter
             {
                 Name = "OnClick",
                 Type = "EventCallback<ChangeEventArgs>",
                 DefaultValue = "null",
-                Description = "Callback for when the option clicked"
+                Description = "Callback for when the option clicked."
             },
+            new ComponentParameter()
+            {
+                Name = "ValueChanged",
+                Type = "EventCallback<string?>",
+                DefaultValue = "",
+                Description = "Callback for when the option has been changed.",
+            },
+            new ComponentParameter()
+            {
+                Name = "Value",
+                Type = "string?",
+                DefaultValue = "",
+                Description = "Value of ChoiceGroup, the value of selected ChoiceGroupOption set on it.",
+            }
         };
 
-        private readonly string example1And5CSharpCode = @"
-        public List<BitChoiceGroupOption> Example1And5Options { get; set; } = new()
+        private readonly string example_1_5_CSharpCode = @"
+        public List<BitChoiceGroupOption> Example_1_5_6_Options { get; set; } = new()
         {
             new BitChoiceGroupOption()
             {
@@ -213,7 +238,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ChoiceGroup
             }
         };
 ";
-        
+
         private readonly string example3CSharpCode = @"
         public List<BitChoiceGroupOption> Example3Options { get; set; } = new()
         {
@@ -263,8 +288,57 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ChoiceGroup
         };
 ";
 
+        private readonly string example6CSharpCode = @"
+        public List<BitChoiceGroupOption> Example_1_5_6_Options { get; set; } = new()
+        {
+            new BitChoiceGroupOption()
+            {
+               Text = ""Option A"",
+               Key = ""A""
+            },
+            new BitChoiceGroupOption()
+            {
+                Text = ""Option B"",
+                Key = ""B""
+            },
+            new BitChoiceGroupOption()
+            {
+                Text = ""Option C"",
+                Key = ""C""
+            },
+            new BitChoiceGroupOption()
+            {
+                Text = ""Option D"",
+                Key = ""D""
+            }
+        };
+
+        public ChoiceGroupValidationModel ValidationModel = new();
+
+        public string SuccessMessage { get; set; } = string.Empty;
+
+        public class ChoiceGroupValidationModel
+        {
+            [Required(ErrorMessage = ""Pick one"")]
+            public string Value { get; set; }
+        }
+
+        private async void HandleValidSubmit()
+        {
+            SuccessMessage = ""Form Submitted Successfully!"";
+            await Task.Delay(3000);
+            SuccessMessage = string.Empty;
+            StateHasChanged();
+        }
+
+        private void HandleInvalidSubmit()
+        {
+            SuccessMessage = string.Empty;
+        }
+";
+
         private readonly string example1HtmlCode = @"
-<BitChoiceGroup Label=""Pick one"" Options=""Example1And5Options"">
+<BitChoiceGroup Label=""Pick one"" Options=""Example_1_5_6_Options"">
 </BitChoiceGroup>";
 
         private readonly string example2HtmlCode = @"
@@ -280,11 +354,46 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ChoiceGroup
 </BitChoiceGroup>";
 
         private readonly string example5HtmlCode = @"
-<BitChoiceGroup Options=""Example1And5Options"" >
+<BitChoiceGroup Options=""Example_1_5_6_Options"" >
     <LabelFragment>
         Custom label <BitIconButton IconName= ""BitIconName.Filter"" ></ BitIconButton >
     </ LabelFragment >
 </ BitChoiceGroup >";
 
+        private readonly string example6HtmlCode = @"
+@if (string.IsNullOrEmpty(SuccessMessage))
+{
+    <EditForm Model=""@ValidationModel"" OnValidSubmit=""@HandleValidSubmit"" OnInvalidSubmit=""@HandleInvalidSubmit"">
+        <DataAnnotationsValidator />
+        <div class=""validation-summary"">
+            <ValidationSummary />
+        </div>
+        <div>
+            <BitChoiceGroup Options = ""Example_1_5_6_Options"" @bind-Value=""ValidationModel.Value"">
+            </BitChoiceGroup>
+            <ValidationMessage For = ""@(() => ValidationModel.Value)"" />
+        </ div >
+        < BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
+    </EditForm>
+}
+else
+{
+    <BitMessageBar MessageBarType = ""BitMessageBarType.Success"" IsMultiline=""false"">
+        @SuccessMessage
+    </BitMessageBar>
+}";
+
+        private async void HandleValidSubmit()
+        {
+            SuccessMessage = "Form Submitted Successfully!";
+            await Task.Delay(3000);
+            SuccessMessage = string.Empty;
+            StateHasChanged();
+        }
+
+        private void HandleInvalidSubmit()
+        {
+            SuccessMessage = string.Empty;
+        }
     }
 }

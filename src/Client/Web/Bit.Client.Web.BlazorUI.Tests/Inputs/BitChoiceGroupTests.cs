@@ -49,6 +49,10 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
             {
                 Assert.IsTrue(bitChoiceGroupOptions.ClassList.Contains($"bit-chgo-disabled-{visualClass}"));
             }
+            else
+            {
+                Assert.IsFalse(bitChoiceGroupOptions.ClassList.Contains($"bit-chgo-disabled-{visualClass}"));
+            }
         }
 
         [DataTestMethod, DataRow("key1")]
