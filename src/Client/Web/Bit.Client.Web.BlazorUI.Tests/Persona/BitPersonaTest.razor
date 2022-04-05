@@ -1,0 +1,29 @@
+﻿<CascadingValue Value="Visual">
+    <BitPersona HidePersonaDetails="@HidePersonaDetails"
+                IsOutOfOffice="@IsOutOfOffice"
+                IsEnabled=@IsEnable
+                ImageUrl="@ImageUrl"
+                Text="@Text"
+                SecondaryText="@SecondaryText"
+                TertiaryText="@TertiaryText"
+                OptionalText="@OptionalText"
+                Size="@Size"
+                Presence="@Presence"
+                PresenceTitle="@PresenceTitle" />
+</CascadingValue>
+
+@code {
+    [Parameter] public Visual Visual { get; set; }
+    [Parameter] public bool HidePersonaDetails { get; set; }
+    [Parameter] public bool IsOutOfOffice { get; set; }
+    [Parameter] public bool IsEnable { get; set; }
+    [Parameter] public string ImageUrl { get; set; }
+    [Parameter] public string Text { get; set; }
+    [Parameter] public string SecondaryText { get; set; }
+    [Parameter] public string TertiaryText { get; set; }
+    [Parameter] public string OptionalText { get; set; }
+    [Parameter] public string Size { get; set; }
+    [Parameter] public BitPersonaPresenceStatus Presence { get; set; } = BitPersonaPresenceStatus.None;
+    [Parameter] public string PresenceTitle { get; set; }
+
+}
