@@ -5,7 +5,10 @@
 <PageTitle>Sign up</PageTitle>
 
 <div class="page-container">
-    <form class="form--white">
+    <EditForm Model="SignUpModel" OnValidSubmit="WrapHandled(DoSignUp)" class="form--white">
+
+        <DataAnnotationsValidator />
+
         @if (string.IsNullOrEmpty(SignUpMessage) is false)
         {
             <BitMessageBar Class="form-message-bar"
@@ -19,32 +22,31 @@
         </h1>
         <div class="form-input-container">
             <BitLabel>Email</BitLabel>
-            <BitTextField @bind-Value="Email"
-                          Placeholder="Email"
-                          OnChange="WrapHandled(CheckSignUpButtonEnable)"
-                          OnFocus="() => EmailErrorMessage = null" />
-            <div class="form-input-error">@EmailErrorMessage</div>
+            <BitTextField @bind-Value="SignUpModel.Email" Placeholder="Email" />
+            <ValidationMessage For="@(() => SignUpModel.Email)" />
         </div>
         <div class="form-input-container">
             <BitLabel>Password</BitLabel>
-            <BitTextField @bind-Value="Password"
+            <BitTextField @bind-Value="SignUpModel.Password"
                           Type="BitTextFieldType.Password"
-                          CanRevealPassword="true" Placeholder="Password"
-                          OnChange="WrapHandled(CheckSignUpButtonEnable)"
-                          OnFocus="() => PasswordErrorMessage = null" />
-            <div class="form-input-error">@PasswordErrorMessage</div>
+                          CanRevealPassword="true"
+                          Placeholder="Password" />
+            <ValidationMessage For="@(() => SignUpModel.Password)" />
         </div>
-        <BitCheckbox Class="form-checkbox" @bind-Value="IsAcceptPrivacy"
-                     OnChange="WrapHandled(CheckSignUpButtonEnable)">
-            I agree to the <BitLink Href="/privacy" Target="_blank">Bit Privacy Policy</BitLink>
-        </BitCheckbox>
+
+        <div>
+            <BitCheckbox Class="form-checkbox" @bind-Value="SignUpModel.IsAcceptPrivacy">
+                I agree to the <BitLink Href="/privacy" Target="_blank">Bit Privacy Policy</BitLink>
+            </BitCheckbox>
+            <ValidationMessage For="@(() => SignUpModel.IsAcceptPrivacy)" />
+        </div>
 
         <BitButton Class="form-submit-button"
                    ButtonStyle="BitButtonStyle.Primary"
                    Title="Sign up"
                    AriaLabel="Sign up"
-                   IsEnabled="@IsSignUpButtonEnabled"
-                   OnClick="WrapHandled(DoSignUp)">
+                   IsEnabled="@context.Validate()"
+                   ButtonType="BitButtonType.Submit">
             @if (IsLoading)
             {
                 <BitSpinner Size="BitSpinnerSize.Small"></BitSpinner>
@@ -54,8 +56,9 @@
                 <span>Sign up</span>
             }
         </BitButton>
+
         <div>
             Already on Bit? <BitLink Href="/sign-in">Sign in</BitLink>
         </div>
-    </form>
+    </EditForm>
 </div>
