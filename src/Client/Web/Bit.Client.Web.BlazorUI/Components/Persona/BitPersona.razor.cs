@@ -64,7 +64,7 @@ namespace Bit.Client.Web.BlazorUI
         /// Presence title to be shown as a tooltip on hover over the presence icon.
         /// </summary>
         [Parameter] public string? PresenceTitle { get; set; }
-        
+
         /// <summary>
         /// Decides the size of the control.
         /// </summary>
@@ -157,7 +157,7 @@ namespace Bit.Client.Web.BlazorUI
         {
             ClassBuilder.Register(() => Size.HasValue() ? $"bit-persona-{Size}" : string.Empty);
 
-            ClassBuilder.Register(() => Presence != BitPersonaPresenceStatus.None ? $"bit-persona-{Presence.ToString()}" : string.Empty);
+            ClassBuilder.Register(() => Presence != BitPersonaPresenceStatus.None ? $"bit-persona-{Presence.ToString().ToLower()}" : string.Empty);
         }
 
         private string DetermineIcon(BitPersonaPresenceStatus presence, bool isOutofOffice)

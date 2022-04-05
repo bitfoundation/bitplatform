@@ -54,7 +54,7 @@
                 }
             }
 
-            & .bit-Persona-presence {
+            & .bit-persona-presence {
                 position: absolute;
                 border-radius: 50%;
                 top: auto;
@@ -79,7 +79,7 @@
         }
     }
 
-    & .bit-Persona-details {
+    & .bit-persona-details {
         min-width: 0;
         width: 100%;
         text-align: left;
@@ -87,28 +87,28 @@
         flex-direction: column;
         justify-content: space-around;
 
-        & .bit-Persona-primaryTex {
+        & .bit-persona-primary-text {
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
             color: $Grey160;
         }
 
-        & .bit-Persona-secondaryText {
+        & .bit-persona-secondary-text {
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
             color: $Grey130;
         }
 
-        & .bit-Persona-tertiaryText {
+        & .bit-persona-tertiary-text {
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
             color: $Grey130;
         }
 
-        & .bit-Persona-optionalText {
+        & .bit-persona-optional-text {
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
@@ -134,7 +134,7 @@
                 height: 24px;
             }
 
-            & .bit-Persona-presence {
+            & .bit-persona-presence {
                 height: 8px;
                 width: 8px;
                 border: 2px solid #ffffff;
@@ -142,23 +142,23 @@
         }
     }
 
-    & .bit-Persona-details {
+    & .bit-persona-details {
         padding: 0px 8px;
 
-        & .bit-Persona-primaryTex {
+        & .bit-persona-primary-text {
             font-weight: 400;
             font-size: 14px
         }
 
-        & .bit-Persona-secondaryText {
+        & .bit-persona-secondary-text {
             display: none;
         }
 
-        & .bit-Persona-tertiaryText {
+        & .bit-persona-tertiary-text {
             display: none;
         }
 
-        & .bit-Persona-optionalText {
+        & .bit-persona-optional-text {
             display: none;
         }
     }
@@ -180,7 +180,7 @@
                 height: 32px;
             }
 
-            & .bit-Persona-presence {
+            & .bit-persona-presence {
                 height: 8px;
                 width: 8px;
                 border: 2px solid #ffffff;
@@ -188,23 +188,23 @@
         }
     }
 
-    & .bit-Persona-details {
+    & .bit-persona-details {
         padding: 0px 8px;
 
-        & .bit-Persona-primaryTex {
+        & .bit-persona-primary-text {
             font-weight: 400;
             font-size: 14px
         }
 
-        & .bit-Persona-secondaryText {
+        & .bit-persona-secondary-text {
             display: none;
         }
 
-        & .bit-Persona-tertiaryText {
+        & .bit-persona-tertiary-text {
             display: none;
         }
 
-        & .bit-Persona-optionalText {
+        & .bit-persona-optional-text {
             display: none;
         }
     }
@@ -228,7 +228,7 @@
                 height: 40px;
             }
 
-            & .bit-Persona-presence {
+            & .bit-persona-presence {
                 height: 12px;
                 width: 12px;
                 border: 2px solid #ffffff;
@@ -241,24 +241,24 @@
         }
     }
 
-    & .bit-Persona-details {
+    & .bit-persona-details {
         padding: 0px 12px;
 
-        & .bit-Persona-primaryTex {
+        & .bit-persona-primary-text {
             font-weight: 400;
             font-size: 14px
         }
 
-        & .bit-Persona-secondaryText {
+        & .bit-persona-secondary-text {
             font-weight: 400;
             font-size: 12px;
         }
 
-        & .bit-Persona-tertiaryText {
+        & .bit-persona-tertiary-text {
             display: none;
         }
 
-        & .bit-Persona-optionalText {
+        & .bit-persona-optional-text {
             display: none;
         }
     }
@@ -282,7 +282,7 @@
                 height: 48px;
             }
 
-            & .bit-Persona-presence {
+            & .bit-persona-presence {
                 height: 12px;
                 width: 12px;
                 border: 2px solid #ffffff;
@@ -295,24 +295,24 @@
         }
     }
 
-    & .bit-Persona-details {
+    & .bit-persona-details {
         padding: 0px 12px;
 
-        & .bit-Persona-primaryTex {
+        & .bit-persona-primary-text {
             font-weight: 400;
             font-size: 14px
         }
 
-        & .bit-Persona-secondaryText {
+        & .bit-persona-secondary-text {
             font-weight: 400;
             font-size: 12px;
         }
 
-        & .bit-Persona-tertiaryText {
+        & .bit-persona-tertiary-text {
             display: none;
         }
 
-        & .bit-Persona-optionalText {
+        & .bit-persona-optional-text {
             display: none;
         }
     }
@@ -336,7 +336,7 @@
                 height: 56px;
             }
 
-            & .bit-Persona-presence {
+            & .bit-persona-presence {
                 height: 16px;
                 width: 16px;
                 border: 2px solid #ffffff;
@@ -349,24 +349,24 @@
         }
     }
 
-    & .bit-Persona-details {
+    & .bit-persona-details {
         padding: 0px 24px 0px 16px;
 
-        & .bit-Persona-primaryTex {
+        & .bit-persona-primary-text {
             font-weight: 400;
             font-size: 20px;
         }
 
-        & .bit-Persona-secondaryText {
+        & .bit-persona-secondary-text {
             font-weight: 400;
             font-size: 14px;
         }
 
-        & .bit-Persona-tertiaryText {
+        & .bit-persona-tertiary-text {
             display: none;
         }
 
-        & .bit-Persona-optionalText {
+        & .bit-persona-optional-text {
             display: none;
         }
     }
@@ -390,7 +390,7 @@
                 height: 72px;
             }
 
-            & .bit-Persona-presence {
+            & .bit-persona-presence {
                 height: 20px;
                 width: 20px;
                 border: 2px solid #ffffff;
@@ -403,26 +403,26 @@
         }
     }
 
-    & .bit-Persona-details {
+    & .bit-persona-details {
         padding: 0px 24px 0px 16px;
 
-        & .bit-Persona-primaryTex {
+        & .bit-persona-primary-text {
             font-weight: 400;
             font-size: 20px;
         }
 
-        & .bit-Persona-secondaryText {
+        & .bit-persona-secondary-text {
             font-weight: 400;
             font-size: 14px;
         }
 
-        & .bit-Persona-tertiaryText {
+        & .bit-persona-tertiary-text {
             font-weight: 400;
             font-size: 14px;
             display: block;
         }
 
-        & .bit-Persona-optionalText {
+        & .bit-persona-optional-text {
             display: none;
         }
     }
@@ -447,7 +447,7 @@
             height: 100px;
         }
 
-        & .bit-Persona-presence {
+        & .bit-persona-presence {
             height: 28px;
             width: 28px;
             border: 2px solid #ffffff;
@@ -460,26 +460,26 @@
     }
 
 
-    & .bit-Persona-details {
+    & .bit-persona-details {
         padding: 0px 24px 0px 16px;
 
-        & .bit-Persona-primaryTex {
+        & .bit-persona-primary-text {
             font-weight: 400;
             font-size: 20px;
         }
 
-        & .bit-Persona-secondaryText {
+        & .bit-persona-secondary-text {
             font-weight: 400;
             font-size: 14px;
         }
 
-        & .bit-Persona-tertiaryText {
+        & .bit-persona-tertiary-text {
             font-weight: 400;
             font-size: 14px;
             display: block;
         }
 
-        & .bit-Persona-optionalText {
+        & .bit-persona-optional-text {
             font-weight: 400;
             font-size: 14px;
             display: block;
@@ -506,7 +506,7 @@
             height: 120px;
         }
 
-        & .bit-Persona-presence {
+        & .bit-persona-presence {
             height: 32px;
             width: 32px;
             border: 2px solid #ffffff;
@@ -521,26 +521,26 @@
     }
 
 
-    & .bit-Persona-details {
+    & .bit-persona-details {
         padding: 0px 24px 0px 16px;
 
-        & .bit-Persona-primaryTex {
+        & .bit-persona-primary-text {
             font-weight: 400;
             font-size: 20px;
         }
 
-        & .bit-Persona-secondaryText {
+        & .bit-persona-secondary-text {
             font-weight: 400;
             font-size: 14px;
         }
 
-        & .bit-Persona-tertiaryText {
+        & .bit-persona-tertiary-text {
             font-weight: 400;
             font-size: 14px;
             display: block;
         }
 
-        & .bit-Persona-optionalText {
+        & .bit-persona-optional-text {
             font-weight: 400;
             font-size: 14px;
             display: block;
@@ -549,23 +549,23 @@
 }
 
 
-.bit-persona-Online {
+.bit-persona-online {
 
-    & .bit-Persona-presence {
+    & .bit-persona-presence {
         background-color: #6BB700;
     }
 }
 
-.bit-persona-Away {
+.bit-persona-away {
 
-    & .bit-Persona-presence {
+    & .bit-persona-presence {
         background-color: #FFAA44;
     }
 }
 
-.bit-persona-Blocked {
+.bit-persona-blocked {
 
-    & .bit-Persona-presence {
+    & .bit-persona-presence {
         background-color: #C43148;
 
         &::before {
@@ -582,30 +582,30 @@
     }
 }
 
-.bit-persona-Busy {
+.bit-persona-busy {
 
-    & .bit-Persona-presence {
+    & .bit-persona-presence {
         background-color: #C43148;
     }
 }
 
-.bit-persona-Dnd {
+.bit-persona-dnd {
 
-    & .bit-Persona-presence {
+    & .bit-persona-presence {
         background-color: #C50F1F;
     }
 }
 
-.bit-persona-Offline {
+.bit-persona-offline {
 
-    & .bit-Persona-presence {
+    & .bit-persona-presence {
         background-color: #8A8886;
     }
 }
 
-.bit-persona-Off {
+.bit-persona-off {
 
-    & .bit-Persona-presence {
+    & .bit-persona-presence {
         background-color: #B4009E;
     }
 }
