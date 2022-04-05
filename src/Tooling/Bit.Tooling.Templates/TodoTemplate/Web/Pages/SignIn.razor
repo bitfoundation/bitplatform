@@ -7,7 +7,7 @@
 <div class="page-container">
     <EditForm Model="SignInModel" OnValidSubmit="WrapHandled(DoSignIn)" class="form--white">
 
-          <DataAnnotationsValidator />
+        <DataAnnotationsValidator />
 
         @if (string.IsNullOrEmpty(SignInMessage) is false)
         {
@@ -21,9 +21,7 @@
         <div class="form-input-container">
             <BitLabel>Email</BitLabel>
             <BitTextField Placeholder="Email" @bind-Value="SignInModel.Email" />
-            <div class="form-input-error">
-                 <ValidationMessage For="@(() => SignInModel.Email)" />
-            </div>
+            <ValidationMessage For="@(() => SignInModel.Email)" />
         </div>
         <div class="form-input-container">
             <BitLabel>Password</BitLabel>
@@ -31,9 +29,7 @@
                           Type="BitTextFieldType.Password"
                           CanRevealPassword="true"
                           Placeholder="Password" />
-            <div class="form-input-error">
-                 <ValidationMessage For="@(() => SignInModel.Password)" />
-            </div>
+            <ValidationMessage For="@(() => SignInModel.Password)" />
         </div>
         <BitButton Class="form-submit-button"
                    ButtonStyle="BitButtonStyle.Primary"

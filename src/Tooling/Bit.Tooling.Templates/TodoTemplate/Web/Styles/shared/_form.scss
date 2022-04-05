@@ -79,7 +79,7 @@
     }
 }
 
-.form-input-error {
+.form-input-error, .validation-message {
     font-size: rem(12px);
     line-height: rem(16px);
     color: $Red;

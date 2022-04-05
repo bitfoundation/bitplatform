@@ -23,9 +23,7 @@
         <div class="form-input-container">
             <BitLabel>Email</BitLabel>
             <BitTextField @bind-Value="SignUpModel.Email" Placeholder="Email" />
-            <div class="form-input-error">
-                <ValidationMessage For="@(() => SignUpModel.Email)" />
-            </div>
+            <ValidationMessage For="@(() => SignUpModel.Email)" />
         </div>
         <div class="form-input-container">
             <BitLabel>Password</BitLabel>
@@ -33,18 +31,14 @@
                           Type="BitTextFieldType.Password"
                           CanRevealPassword="true"
                           Placeholder="Password" />
-            <div class="form-input-error">
-                <ValidationMessage For="@(() => SignUpModel.Password)" />
-            </div>
+            <ValidationMessage For="@(() => SignUpModel.Password)" />
         </div>
 
         <div>
             <BitCheckbox Class="form-checkbox" @bind-Value="SignUpModel.IsAcceptPrivacy">
                 I agree to the <BitLink Href="/privacy" Target="_blank">Bit Privacy Policy</BitLink>
             </BitCheckbox>
-             <div class="form-input-error">
-                <ValidationMessage For="@(() => SignUpModel.IsAcceptPrivacy)" />
-            </div>
+            <ValidationMessage For="@(() => SignUpModel.IsAcceptPrivacy)" />
         </div>
 
         <BitButton Class="form-submit-button"

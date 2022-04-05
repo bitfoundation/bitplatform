@@ -7,7 +7,7 @@
         public string? Email { get; set; }
 
         [Required(ErrorMessage = "Please enter your password.")]
-        [MinLength(6,ErrorMessage = "The password must have at least 6 characters.")]
+        [MinLength(6, ErrorMessage = "The password must have at least 6 characters.")]
         public string? Password { get; set; }
 
         [Range(typeof(bool), "true", "true", ErrorMessage = "You must accept the privacy.")]
