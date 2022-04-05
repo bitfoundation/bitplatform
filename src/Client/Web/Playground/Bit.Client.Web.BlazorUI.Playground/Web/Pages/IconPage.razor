@@ -5,20 +5,25 @@
     <div class="page-desc">Bit has traditionally used a custom font for its iconography. This font is part of the MDL2 design system and contains glyphs that you can scale, color, and style in any way.</div>
 
     <div class="page-box">
-        <div class="box-header"></div>
+        <div class="box-header">Available Icons</div>
         <div class="box-content">
-            <BitSearchBox></BitSearchBox>
+            <BitSearchBox Class="icongraphy-search-box"
+                          Placeholder="Search Icons"
+                          IconName="BitIconName.Search"
+                          Value="@searchText"
+                          ValueChanged="@HandleChange"
+                          OnClear="@HandleClear"></BitSearchBox>
             <div class="icon-list">
-                @if (FilteredIcons.Count == 0)
+                @if (filteredIcons.Count == 0)
                 {
                     <div class="empty-list"></div>
                 }
                 else
                 {
-                    foreach(var icon in FilteredIcons)
+                    foreach (var icon in filteredIcons)
                     {
                         <div class="icon-box">
-                            <i class="bit-icon--@icon"></i>
+                            <i class="bit-icon bit-icon--icongraphy bit-icon--@icon"></i>
                             <span class="icon-name">@icon</span>
                         </div>
                     }

@@ -83,4 +83,107 @@
 }
 
 .page-box {
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    width: 100%;
+    border: rem(1px) solid $B5Color;
+    box-sizing: border-box;
+    border-radius: rem(10px);
+    overflow: hidden;
+
+    @include lt-xl {
+        border-radius: rem(8px);
+    }
+}
+
+.box-header {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%;
+    height: rem(48px);
+    padding: 0 rem(24px);
+    box-sizing: border-box;
+    background-color: $B5Color;
+    font-weight: 500;
+    font-size: rem(20px);
+    line-height: rem(32px);
+    color: $B2Color;
+
+    @include lt-xl {
+        height: rem(40px);
+        font-size: rem(16px);
+        line-height: rem(24px);
+    }
+
+    @include sm {
+        padding: 0 rem(16px);
+        font-size: rem(12px);
+    }
+}
+
+.box-content {
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    align-items: flex-start;
+    width: 100%;
+    padding: rem(44px) rem(24px);
+    box-sizing: border-box;
+
+    @include lt-xl {
+        padding: rem(24px);
+    }
+
+    @include sm {
+        padding: rem(24px) rem(16px);
+    }
+}
+
+.icon-list {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: flex-start;
+    align-items: flex-start;
+    width: 100%;
+}
+
+.icon-box {
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    align-items: center;
+    width: rem(80px);
+    width: rem(80px);
+    overflow: visible;
+    margin: rem(10px);
+    cursor: text;
+
+    .icon-name {
+        opacity: 0;
+        font-size: rem(11px);
+        margin-top: rem(8px);
+    }
+
+    &:hover {
+        .icon-name {
+            opacity: 1;
+        }
+    }
+}
+
+.empty-list {
+    width: 100%;
+    height: rem(144px);
+    background-image: url('/images/icongraphy-empty-state-img.png');
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: rem(120px) rem(144px);
+
+    @include lt-lg {
+        height: rem(120px);
+        background-size: rem(96px) rem(120px);
+    }
 }
