@@ -2,29 +2,25 @@
 
 to use BitBswup, please follow these steps:
 
-1.Install the `Bit.Tooling.Bswup` nuget package
+1. Install the `Bit.Tooling.Bswup` nuget package
 2. Disable static file caching.You can follow below code in `Startup.cs` file
 ```csharp
 
-public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+app.UseStaticFiles(new StaticFileOptions
 {
-    app.UseStaticFiles(new StaticFileOptions
+    OnPrepareResponse = ctx =>
     {
-        OnPrepareResponse = ctx =>
+        ctx.Context.Response.GetTypedHeaders().CacheControl = new CacheControlHeaderValue()
         {
-            ctx.Context.Response.GetTypedHeaders().CacheControl = new CacheControlHeaderValue()
-            {
-                NoCache = true,
-                NoStore = true
-            };
-        }
-    });
-}
+            NoCache = true,
+            NoStore = true
+        };
+    }
+});
 
 ```
-**In the default document based:**(`index.html` or `_Host.cshtml`)
 
-4.Add an `autostart = "false"` attribute and value to the <script> tag for the Blazor script.
+4. In the default document (`index.html` or `_Host.cshtml`), add an `autostart = "false"` attribute and value to the <script> tag for the Blazor script.
 
 ```html
 
@@ -32,23 +28,24 @@ public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 
 ```
 
-5. Add the `Bit.Tooling.Bswup` reference after the <script> tag for the Blazor script.
+5. In the default document (`index.html` or `_Host.cshtml`), add the `Bit.Tooling.Bswup` reference after the <script> tag for the Blazor script.
 ```html
 
 <script src="_content/Bit.Tooling.Bswup/bit-bswup.js"
-            scope="/"
-            log="verbose"
-            sw="service-worker.js"
-            handler="bitBswupHandler"></script>
+        scope="/"
+        log="verbose"
+        sw="service-worker.js"
+        handler="bitBswupHandler"></script>
 
 ```
 
-- scope: The scope of the service worker determines which files the service worker controls.
+- scope: The scope of the service worker determines which files the service worker controls. You need more about that [read it](https://developer.chrome.com/docs/workbox/service-worker-lifecycle/#scope).
 - log: The log level for log provider. log options: `info`, `verbose`, `debug`, `error`
--sw: The sw is name and path service worker file.
+- sw: The sw is name and path service worker file.
 - handler: The name of handler for the service worker events
+> You can not specify the values of the attributes, and use the default values which are equal to the above values. 
 
-6. Add a handler in the simplest way possible, like the below code. or you can add a handler with a process bar like the bitBswupHandler on the sample in the index.html file of the demo project in this repo.
+6. Add a handler in the simplest way possible, like the below code. or you can add a handler with a progress process bar like the bitBswupHandler on the sample in the index.html file of the demo project in this repo.
 
 ```js
 
@@ -64,7 +61,6 @@ function bitBswupHandler(type, data) {
         case 'installing':
             return console.log('installing new version:', data.version);
         case 'installed':
-            reloadButton.style.display = 'block';
             console.log('new version installed:', data.version)
             data.reload();
             return;
@@ -76,9 +72,9 @@ function bitBswupHandler(type, data) {
 }
 
 ```
-7.Configure additional settings in the service worker file (based on the sample shown in the `service-worker.js` file of the demo project)
+7. Configure additional settings in the service worker file (based on the sample shown in the `service-worker.js` file of the demo project)
 
-**Service Worker * *
+**Service Worker**
 - `self.assetsInclude`: The list of files or regex of files to be cached.
 - `self.assetsExclude`: The list of files or regex of files that should not be cached.
 - `self.defaultUrl`: The default page url.When use `_Host.cshtml` set `/`
