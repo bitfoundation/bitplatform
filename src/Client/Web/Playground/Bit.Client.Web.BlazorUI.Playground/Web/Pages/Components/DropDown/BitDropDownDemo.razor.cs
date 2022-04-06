@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Bit.Client.Web.BlazorUI.Playground.Web.Models;
 using Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 
@@ -6,8 +7,97 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.DropDown
 {
     public partial class BitDropDownDemo
     {
-        private string ControlledSelectedKey = "Apple";
-        private List<string> ControlledSelectedMultipleKeys = new List<string>() { "Apple", "Banana", "Grape" };
+        private string ControlledValue = "Apple";
+        private List<string> ControlledValues = new List<string>() { "Apple", "Banana", "Grape" };
+        private FormValidationDropDownModel formValidationDropDownModel = new();
+        private string SuccessMessage = string.Empty;
+
+        private async void HandleValidSubmit()
+        {
+            SuccessMessage = "Form Submitted Successfully!";
+            await Task.Delay(3000);
+            SuccessMessage = string.Empty;
+            StateHasChanged();
+        }
+
+        private void HandleInvalidSubmit()
+        {
+            SuccessMessage = string.Empty;
+        }
+
+        private List<BitDropDownItem> GetCategoryDropdownItems()
+        {
+            List<BitDropDownItem> items = new();
+
+            items.Add(new BitDropDownItem()
+            {
+                ItemType = BitDropDownItemType.Normal,
+                Text = "Fruits",
+                Value = "f"
+            });
+
+            items.Add(new BitDropDownItem()
+            {
+                ItemType = BitDropDownItemType.Normal,
+                Text = "Vegetables",
+                Value = "v"
+            });
+
+            return items;
+        }
+
+        private List<BitDropDownItem> GetProductDropdownItems()
+        {
+            List<BitDropDownItem> items = new();
+
+            items.Add(new BitDropDownItem()
+            {
+                ItemType = BitDropDownItemType.Header,
+                Text = "Fruits"
+            });
+
+            items.Add(new BitDropDownItem()
+            {
+                ItemType = BitDropDownItemType.Normal,
+                Text = "Apple",
+                Value = "f-app"
+            });
+
+            items.Add(new BitDropDownItem()
+            {
+                ItemType = BitDropDownItemType.Normal,
+                Text = "Orange",
+                Value = "f-ora",
+                IsEnabled = false
+            });
+
+            items.Add(new BitDropDownItem()
+            {
+                ItemType = BitDropDownItemType.Normal,
+                Text = "Banana",
+                Value = "f-ban",
+            });
+
+            items.Add(new BitDropDownItem()
+            {
+                ItemType = BitDropDownItemType.Divider,
+            });
+
+            items.Add(new BitDropDownItem()
+            {
+                ItemType = BitDropDownItemType.Header,
+                Text = "Vegetables"
+            });
+
+            items.Add(new BitDropDownItem()
+            {
+                ItemType = BitDropDownItemType.Normal,
+                Text = "Broccoli",
+                Value = "v-bro",
+            });
+
+            return items;
+        }
 
         private List<BitDropDownItem> GetDropdownItems()
         {
@@ -196,14 +286,14 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.DropDown
             },
             new ComponentParameter()
             {
-                Name = "DefaultSelectedKey",
+                Name = "DefaultValue",
                 Type = "string",
                 DefaultValue = "",
                 Description = "Key that will be initially used to set selected item.",
             },
             new ComponentParameter()
             {
-                Name = "DefaultSelectedMultipleKeys",
+                Name = "DefaultValues",
                 Type = "List<string>",
                 DefaultValue = "",
                 Description = "Keys that will be initially used to set selected items for multiSelect scenarios.",
@@ -301,17 +391,17 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.DropDown
             },
             new ComponentParameter()
             {
-                Name = "SelectedMultipleKeys",
+                Name = "Values",
                 Type = "List<string>",
                 DefaultValue = "",
                 Description = "Keys of the selected items for multiSelect scenarios. If you provide this, you must maintain selection state by observing onChange events and passing a new value in when changed",
             },
             new ComponentParameter()
             {
-                Name = "SelectedMultipleKeysChanged",
+                Name = "ValuesChanged",
                 Type = "EventCallback<List<string>>",
                 DefaultValue = "",
-                Description = "Callback for when the selectedMultipleKeys changed.",
+                Description = "Callback for when the values changed.",
             },
             new ComponentParameter()
             {
@@ -362,16 +452,18 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.DropDown
             }
         };
 
+        #region Example Code 1
+
         private readonly string example1HTMLCode = @"<BitDropDown Label=""Basic Uncontrolled""
              Items=""GetDropdownItems()""
              Placeholder=""Select an option""
              Style=""width: 290px; margin: 20px 0 20px 0"">
 </BitDropDown>
-<BitDropDown Label=""Disabled with defaultSelectedKey""
+<BitDropDown Label=""Disabled with defaultValue""
              Items=""GetDropdownItems()""
              Placeholder=""Select an option""
              IsEnabled=""false""
-             DefaultSelectedKey=""v-bro""
+             DefaultValue=""v-bro""
              Style=""width: 290px; margin-bottom: 20px;"">
 </BitDropDown>
 <BitDropDown Label=""Multi-select uncontrolled""
@@ -435,20 +527,140 @@ private List<BitDropDownItem> GetDropdownItems()
     return items;
 }";
 
+        #endregion
+
+        #region Example Code 2
+
         private readonly string example2HTMLCode = @"<BitDropDown Label=""Single-select Controlled""
              Items=""GetDropdownItems()""
              Placeholder=""Select an option""
-             @bind-SelectedKey=""ControlledSelectedKey""
+             @bind-Value=""ControlledValue""
              Style=""width: 290px; margin: 20px 0 20px 0"">
 </BitDropDown>";
+
+        private readonly string example2CSharpCode = @"private string ControlledValue = ""Apple"";
+private List<BitDropDownItem> GetDropdownItems()
+{
+    List<BitDropDownItem> items = new();
+
+    items.Add(new BitDropDownItem()
+    {
+        ItemType = BitDropDownItemType.Header,
+        Text = ""Fruits""
+    });
+
+    items.Add(new BitDropDownItem()
+    {
+        ItemType = BitDropDownItemType.Normal,
+        Text = ""Apple"",
+        Value = ""f-app""
+    });
+
+    items.Add(new BitDropDownItem()
+    {
+        ItemType = BitDropDownItemType.Normal,
+        Text = ""Orange"",
+        Value = ""f-ora"",
+        IsEnabled = false
+    });
+
+    items.Add(new BitDropDownItem()
+    {
+        ItemType = BitDropDownItemType.Normal,
+        Text = ""Banana"",
+        Value = ""f-ban"",
+    });
+
+    items.Add(new BitDropDownItem()
+    {
+        ItemType = BitDropDownItemType.Divider,
+    });
+
+    items.Add(new BitDropDownItem()
+    {
+        ItemType = BitDropDownItemType.Header,
+        Text = ""Vegetables""
+    });
+
+    items.Add(new BitDropDownItem()
+    {
+        ItemType = BitDropDownItemType.Normal,
+        Text = ""Broccoli"",
+        Value = ""v-bro"",
+    });
+
+    return items;
+}";
+
+        #endregion
+
+        #region Example Code 3
 
         private readonly string example3HTMLCode = @"<BitDropDown Label=""Multi-select controlled""
              Items=""GetDropdownItems()""
              Placeholder=""Select options""
-             @bind-SelectedMultipleKeys=""ControlledSelectedMultipleKeys""
+             @bind-Values=""ControlledValues""
              IsMultiSelect=""true""
              Style=""width:290px; margin:20px 0 20px 0"">
 </BitDropDown>";
+
+        private readonly string example3CSharpCode = @"private List<string> ControlledValues = new List<string>() { ""Apple"", ""Banana"", ""Grape"" };
+private List<BitDropDownItem> GetDropdownItems()
+{
+    List<BitDropDownItem> items = new();
+
+    items.Add(new BitDropDownItem()
+    {
+        ItemType = BitDropDownItemType.Header,
+        Text = ""Fruits""
+    });
+
+    items.Add(new BitDropDownItem()
+    {
+        ItemType = BitDropDownItemType.Normal,
+        Text = ""Apple"",
+        Value = ""f-app""
+    });
+
+    items.Add(new BitDropDownItem()
+    {
+        ItemType = BitDropDownItemType.Normal,
+        Text = ""Orange"",
+        Value = ""f-ora"",
+        IsEnabled = false
+    });
+
+    items.Add(new BitDropDownItem()
+    {
+        ItemType = BitDropDownItemType.Normal,
+        Text = ""Banana"",
+        Value = ""f-ban"",
+    });
+
+    items.Add(new BitDropDownItem()
+    {
+        ItemType = BitDropDownItemType.Divider,
+    });
+
+    items.Add(new BitDropDownItem()
+    {
+        ItemType = BitDropDownItemType.Header,
+        Text = ""Vegetables""
+    });
+
+    items.Add(new BitDropDownItem()
+    {
+        ItemType = BitDropDownItemType.Normal,
+        Text = ""Broccoli"",
+        Value = ""v-bro"",
+    });
+
+    return items;
+}";
+
+        #endregion
+
+        #region Example Code 4
 
         private readonly string example4HTMLCode = @"<BitDropDown Label=""Custom Controlled""
              Items=""GetCustomDropdownItems()""
@@ -457,10 +669,10 @@ private List<BitDropDownItem> GetDropdownItems()
              Style=""width:290px; margin:20px 0 20px 0"">
     <TextTemplate>
         <div>
-            <i class=""bit-icon bit-icon--@((context.Items.Find(i => i.Value == context.SelectedKey).Data as DropDownItemData).IconName)""
+            <i class=""bit-icon bit-icon--@((context.Items.Find(i => i.Value == context.Value).Data as DropDownItemData).IconName)""
                aria-hidden=""true""
-               title=""@((context.Items.Find(i => i.Value == context.SelectedKey).Data as DropDownItemData).IconName)""></i>
-            <span>@context.Items.Find(i => i.Value == context.SelectedKey).Text</span>
+               title=""@((context.Items.Find(i => i.Value == context.Value).Data as DropDownItemData).IconName)""></i>
+            <span>@context.Items.Find(i => i.Value == context.Value).Text</span>
         </div>
     </TextTemplate>
     <PlaceholderTemplate>
@@ -618,5 +830,157 @@ private List<BitDropDownItem> GetCustomDropdownItems()
 
     return items;
 }";
+
+        #endregion
+
+        #region Example Code 5
+
+        private readonly string example5HTMLCode = @"@if (string.IsNullOrEmpty(SuccessMessage))
+{
+    <EditForm Model=""formValidationDropDownModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
+        <DataAnnotationsValidator />
+
+        <div class=""validation-summary"">
+            <ValidationSummary />
+        </div>
+
+        <div>
+            <BitDropDown Label=""Select category""
+                        Items=""GetCategoryDropdownItems()""
+                        IsMultiSelect=""false""
+                        @bind-Value=""formValidationDropDownModel.Category""
+                        Placeholder=""Select an option""
+                        Style=""width: 290px; margin: 20px 0 20px 0"" />
+
+            <ValidationMessage For=""@(() => formValidationDropDownModel.Category)"" />
+        </div>
+
+        <div>
+            <BitDropDown Label=""Select two ptoducts""
+                        Items=""GetProductDropdownItems()""
+                        IsMultiSelect=""true""
+                        @bind-Values=""formValidationDropDownModel.Products""
+                        Placeholder=""Select an option""
+                        Style=""width: 290px; margin: 20px 0 20px 0"" />
+
+            <ValidationMessage For=""@(() => formValidationDropDownModel.Products)"" />
+        </div>
+
+        <br />
+
+        <BitButton ButtonType=""BitButtonType.Submit"">
+            Submit
+        </BitButton>
+    </EditForm>
+}
+else
+{
+    <BitMessageBar MessageBarType=""BitMessageBarType.Success"" IsMultiline=""false"">
+        @SuccessMessage
+    </BitMessageBar>
+}";
+
+        private readonly string example5CSharpCode = @"
+public class FormValidationDropDownModel
+{
+    [MaxLength(2, ErrorMessage = ""The property {0} doesn't have more than {1} elements"")]
+    [MinLength(1, ErrorMessage = ""The property {0} doesn't have less than {1} elements"")]
+    public List<string> Products { get; set; } = new();
+
+    [Required]
+    public string Category { get; set; }
+}
+
+private FormValidationDropDownModel formValidationDropDownModel = new();
+private string SuccessMessage = string.Empty;
+
+private async void HandleValidSubmit()
+{
+    SuccessMessage = ""Form Submitted Successfully!"";
+    await Task.Delay(3000);
+    SuccessMessage = string.Empty;
+    StateHasChanged();
+}
+
+private void HandleInvalidSubmit()
+{
+    SuccessMessage = string.Empty;
+}
+
+private List<BitDropDownItem> GetCategoryDropdownItems()
+{
+    List<BitDropDownItem> items = new();
+
+    items.Add(new BitDropDownItem()
+    {
+        ItemType = BitDropDownItemType.Normal,
+        Text = ""Fruits"",
+        Value = ""f""
+    });
+
+    items.Add(new BitDropDownItem()
+    {
+        ItemType = BitDropDownItemType.Normal,
+        Text = ""Vegetables"",
+        Value = ""v""
+    });
+
+    return items;
+}
+
+private List<BitDropDownItem> GetProductDropdownItems()
+{
+    List<BitDropDownItem> items = new();
+
+    items.Add(new BitDropDownItem()
+    {
+        ItemType = BitDropDownItemType.Header,
+        Text = ""Fruits""
+    });
+
+    items.Add(new BitDropDownItem()
+    {
+        ItemType = BitDropDownItemType.Normal,
+        Text = ""Apple"",
+        Value = ""f-app""
+    });
+
+    items.Add(new BitDropDownItem()
+    {
+        ItemType = BitDropDownItemType.Normal,
+        Text = ""Orange"",
+        Value = ""f-ora"",
+        IsEnabled = false
+    });
+
+    items.Add(new BitDropDownItem()
+    {
+        ItemType = BitDropDownItemType.Normal,
+        Text = ""Banana"",
+        Value = ""f-ban"",
+    });
+
+    items.Add(new BitDropDownItem()
+    {
+        ItemType = BitDropDownItemType.Divider,
+    });
+
+    items.Add(new BitDropDownItem()
+    {
+        ItemType = BitDropDownItemType.Header,
+        Text = ""Vegetables""
+    });
+
+    items.Add(new BitDropDownItem()
+    {
+        ItemType = BitDropDownItemType.Normal,
+        Text = ""Broccoli"",
+        Value = ""v-bro"",
+    });
+
+    return items;
+}";
+
+        #endregion
     }
 }

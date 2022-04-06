@@ -20,9 +20,9 @@ public class TodoTemplateAuthenticationService : ITodoTemplateAuthenticationServ
 
     public async Task SignIn(SignInRequestDto dto)
     {
-        var response = await _httpClient.PostAsJsonAsync("Auth/SignIn", dto, ToDoTemplateJsonContext.Default.SignInRequestDto);
+        var response = await _httpClient.PostAsJsonAsync("Auth/SignIn", dto, TodoTemplateJsonContext.Default.SignInRequestDto);
 
-        var result = await response.Content.ReadFromJsonAsync(ToDoTemplateJsonContext.Default.SignInResponseDto);
+        var result = await response.Content.ReadFromJsonAsync(TodoTemplateJsonContext.Default.SignInResponseDto);
 
         await _jsRuntime.InvokeVoidAsync("todoTemplate.setCookie", "access_token", result!.AccessToken, result.ExpiresIn);
 

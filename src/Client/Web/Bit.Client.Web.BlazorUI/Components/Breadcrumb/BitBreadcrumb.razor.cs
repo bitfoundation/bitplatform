@@ -50,6 +50,8 @@ namespace Bit.Client.Web.BlazorUI
                 return _itemsToShowInBreadcrumb = Items;
             }
 
+            _itemsToShowInBreadcrumb.Clear();
+
             if (OverflowIndex >= MaxDisplayedItems)
                 OverflowIndex = 0;
 

@@ -11,11 +11,11 @@
                              Placeholder="Select an option"
                              Style="width: 290px; margin: 20px 0 20px 0">
                 </BitDropDown>
-                <BitDropDown Label="Disabled with defaultSelectedKey"
+                <BitDropDown Label="Disabled with defaultValue"
                              Items="GetDropdownItems()"
                              Placeholder="Select an option"
                              IsEnabled="false"
-                             DefaultSelectedKey="v-bro"
+                             DefaultValue="v-bro"
                              Style="width: 290px; margin-bottom: 20px;">
                 </BitDropDown>
                 <BitDropDown Label="Multi-select uncontrolled"
@@ -28,23 +28,23 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Controlled Single-Select" HTMLSourceCode="@example2HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example2">
+    <ComponentExampleBox Title="Controlled Single-Select" HTMLSourceCode="@example2HTMLCode" CSharpSourceCode="@example2CSharpCode" ExampleId="example2">
         <ExamplePreview>
             <BitDropDown Label="Single-select Controlled"
                          Items="GetDropdownItems()"
                          Placeholder="Select an option"
-                         @bind-SelectedKey="ControlledSelectedKey"
+                         @bind-Value="ControlledValue"
                          Style="width: 290px; margin: 20px 0 20px 0">
             </BitDropDown>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Controlled Multi-Select" HTMLSourceCode="@example3HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example3">
+    <ComponentExampleBox Title="Controlled Multi-Select" HTMLSourceCode="@example3HTMLCode" CSharpSourceCode="@example3CSharpCode" ExampleId="example3">
         <ExamplePreview>
             <BitDropDown Label="Multi-select controlled"
                          Items="GetDropdownItems()"
                          Placeholder="Select options"
-                         @bind-SelectedMultipleKeys="ControlledSelectedMultipleKeys"
+                         @bind-Values="ControlledValues"
                          IsMultiSelect="true"
                          Style="width:290px; margin:20px 0 20px 0">
             </BitDropDown>
@@ -60,10 +60,10 @@
                          Style="width:290px; margin:20px 0 20px 0">
                 <TextTemplate>
                     <div>
-                        <i class="bit-icon bit-icon--@((context.Items.Find(i => i.Value == context.SelectedKey).Data as DropDownItemData).IconName)"
+                        <i class="bit-icon bit-icon--@((context.Items.Find(i => i.Value == context.Value).Data as DropDownItemData).IconName)"
                            aria-hidden="true"
-                           title="@((context.Items.Find(i => i.Value == context.SelectedKey).Data as DropDownItemData).IconName)"></i>
-                        <span>@context.Items.Find(i => i.Value == context.SelectedKey).Text</span>
+                           title="@((context.Items.Find(i => i.Value == context.Value).Data as DropDownItemData).IconName)"></i>
+                        <span>@context.Items.Find(i => i.Value == context.Value).Text</span>
                     </div>
                 </TextTemplate>
                 <PlaceholderTemplate>
@@ -97,6 +97,55 @@
                     </button>
                 </LabelFragment>
             </BitDropDown>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="DropDown with validation" HTMLSourceCode="@example5HTMLCode" CSharpSourceCode="@example5CSharpCode" ExampleId="example5">
+        <ExamplePreview>
+            @if (string.IsNullOrEmpty(SuccessMessage))
+            {
+                <EditForm Model="formValidationDropDownModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
+                    <DataAnnotationsValidator />
+
+                    <div class="validation-summary">
+                        <ValidationSummary />
+                    </div>
+
+                    <div>
+                        <BitDropDown Label="Select category"
+                                 Items="GetCategoryDropdownItems()"
+                                 IsMultiSelect="false"
+                                 @bind-Value="formValidationDropDownModel.Category"
+                                 Placeholder="Select an option"
+                                 Style="width: 290px; margin: 20px 0 20px 0" />
+
+                        <ValidationMessage For="@(() => formValidationDropDownModel.Category)" />
+                    </div>
+
+                    <div>
+                        <BitDropDown Label="Select two ptoducts"
+                                 Items="GetProductDropdownItems()"
+                                 IsMultiSelect="true"
+                                 @bind-Values="formValidationDropDownModel.Products"
+                                 Placeholder="Select an option"
+                                 Style="width: 290px; margin: 20px 0 20px 0" />
+
+                        <ValidationMessage For="@(() => formValidationDropDownModel.Products)" />
+                    </div>
+
+                    <br />
+
+                    <BitButton ButtonType="BitButtonType.Submit">
+                        Submit
+                    </BitButton>
+                </EditForm>
+            }
+            else
+            {
+                <BitMessageBar MessageBarType="BitMessageBarType.Success" IsMultiline="false">
+                    @SuccessMessage
+                </BitMessageBar>
+            }
         </ExamplePreview>
     </ComponentExampleBox>
 </ComponentDemo>

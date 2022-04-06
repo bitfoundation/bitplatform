@@ -1,94 +1,42 @@
 ﻿using System.Text.RegularExpressions;
-using TodoTemplate.Shared.Dtos.Account;
+using TodoTemplate.App.Models;
 
 namespace TodoTemplate.App.Pages;
 
 public partial class SignUp
 {
-    public string? Email { get; set; }
-    public string? Password { get; set; }
-    public bool IsAcceptPrivacy { get; set; }
+    public SignUpModel SignUpModel { get; set; } = new();
 
-    public string? EmailErrorMessage { get; set; }
-    public string? PasswordErrorMessage { get; set; }
-
-    public bool IsSignUpButtonEnabled { get; set; }
     public bool IsLoading { get; set; }
 
     public BitMessageBarType SignUpMessageType { get; set; }
+
     public string? SignUpMessage { get; set; }
 
     [Inject] public HttpClient HttpClient { get; set; } = default!;
 
     [Inject] public NavigationManager NavigationManager { get; set; } = default!;
 
-    [Inject] public ITodoTemplateAuthenticationService TodoTemplateAuthenticationService { get; set; } = default!;
-
     [Inject] public TodoTemplateAuthenticationStateProvider TodoTemplateAuthenticationStateProvider { get; set; } = default!;
-
-    private void CheckSignUpButtonEnable()
-    {
-        if (string.IsNullOrEmpty(Email) || string.IsNullOrEmpty(Password) || IsAcceptPrivacy is false)
-        {
-            IsSignUpButtonEnabled = false;
-            return;
-        }
-
-        IsSignUpButtonEnabled = true;
-    }
-
-    private bool ValidateSignUp()
-    {
-        EmailErrorMessage = string.IsNullOrEmpty(Email)
-            ? "Please enter your email."
-            : null;
-
-        PasswordErrorMessage = string.IsNullOrEmpty(Password)
-            ? "Please enter your password."
-            : null;
-
-        if (string.IsNullOrEmpty(EmailErrorMessage) is false || string.IsNullOrEmpty(PasswordErrorMessage) is false)
-        {
-            return false;
-        }
-
-        var isCorrectEmailFormat = new Regex(@"^([\w\.\-]+)@([\w\-]+)((\.(\w){2,3})+)$");
-
-        EmailErrorMessage = isCorrectEmailFormat.Match(Email).Success is false
-            ? "The email address format is incorrect."
-            : null;
-
-        PasswordErrorMessage = Password.Length < 6
-            ? "The password must have at least 6 characters."
-            : null;
-
-        if (string.IsNullOrEmpty(EmailErrorMessage) is false || string.IsNullOrEmpty(PasswordErrorMessage) is false)
-        {
-            return false;
-        }
-
-        return true;
-    }
 
     private async Task DoSignUp()
     {
-        if (IsLoading || ValidateSignUp() is false)
+        if (IsLoading)
         {
             return;
         }
 
         IsLoading = true;
-        IsSignUpButtonEnabled = false;
         SignUpMessage = null;
 
         try
         {
             await HttpClient.PostAsJsonAsync("Auth/SignUp", new()
             {
-                UserName = Email,
-                Email = Email,
-                Password = Password
-            }, ToDoTemplateJsonContext.Default.SignUpRequestDto);
+                UserName = SignUpModel.Email,
+                Email = SignUpModel.Email,
+                Password = SignUpModel.Password
+            }, TodoTemplateJsonContext.Default.SignUpRequestDto);
 
             SignUpMessageType = BitMessageBarType.Success;
             SignUpMessage = "Confirmation link has sent to your email. Please follow the link.";
@@ -97,7 +45,8 @@ public partial class SignUp
         {
             SignUpMessageType = BitMessageBarType.Error;
 
-            SignUpMessage = string.Join(Environment.NewLine, e.Details.SelectMany(d => d.Messages).Select(e => ErrorStrings.ResourceManager.Translate(e, Email!)));
+            SignUpMessage = string.Join(Environment.NewLine, e.Details.SelectMany(d => d.Messages)
+                .Select(e => ErrorStrings.ResourceManager.Translate(e, SignUpModel.Email!)));
         }
         catch (KnownException e)
         {
@@ -108,7 +57,6 @@ public partial class SignUp
         finally
         {
             IsLoading = false;
-            IsSignUpButtonEnabled = true;
         }
     }
 

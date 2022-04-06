@@ -141,6 +141,24 @@ namespace Bit.Client.Web.BlazorUI
 
         protected string CssClass => EditContext?.FieldCssClass(FieldIdentifier) ?? string.Empty;
 
+        protected void RegisterFieldIdentifier<TField>(Expression<Func<TField>>? valueExpression, Type valueType)
+        {
+            if (CascadedEditContext is not null && valueExpression is not null)
+            {
+                FieldIdentifier = FieldIdentifier.Create(valueExpression);
+                EditContext = CascadedEditContext;
+                EditContext.OnValidationStateChanged += _validationStateChangedHandler;
+            }
+
+            _nullableUnderlyingType = Nullable.GetUnderlyingType(valueType);
+            _hasInitializedParameters = true;
+        }
+
+        protected virtual void RegisterFieldIdentifier()
+        {
+            RegisterFieldIdentifier(ValueExpression, typeof(TValue));
+        }
+
         public override Task SetParametersAsync(ParameterView parameters)
         {
             var parametersDictionary = parameters.ToDictionary() as Dictionary<string, object>;
@@ -183,15 +201,7 @@ namespace Bit.Client.Web.BlazorUI
 
             if (_hasInitializedParameters is false)
             {
-                if (CascadedEditContext is not null && ValueExpression is not null)
-                {
-                    FieldIdentifier = FieldIdentifier.Create(ValueExpression);
-                    EditContext = CascadedEditContext;
-                    EditContext.OnValidationStateChanged += _validationStateChangedHandler;
-                }
-
-                _nullableUnderlyingType = Nullable.GetUnderlyingType(typeof(TValue));
-                _hasInitializedParameters = true;
+                RegisterFieldIdentifier();
             }
             else if (CascadedEditContext != EditContext)
             {
