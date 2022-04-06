@@ -24,12 +24,12 @@ namespace Bit.Client.Web.BlazorUI.Tests.Persona
                 parameters.Add(p => p.IsEnable, isEnabled);
             });
 
-            var persona = component.Find(".bit-persona");
+            var persona = component.Find(".bit-prs");
 
             var enabledClass = isEnabled ? "enabled" : "disabled";
             var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
 
-            Assert.IsTrue(persona.ClassList.Contains($"bit-persona-{enabledClass}-{visualClass}"));
+            Assert.IsTrue(persona.ClassList.Contains($"bit-prs-{enabledClass}-{visualClass}"));
         }
 
         [DataTestMethod,
@@ -46,10 +46,10 @@ namespace Bit.Client.Web.BlazorUI.Tests.Persona
                        parameters.Add(p => p.OptionalText, optionalText);
                    });
 
-            var textClassName = component.Find(".bit-persona-primary-text");
-            var secendryTextClassName = component.Find(".bit-persona-secondary-text");
-            var tertiaryTextClassName = component.Find(".bit-persona-tertiary-text");
-            var optionalTextClassName = component.Find(".bit-persona-optional-text");
+            var textClassName = component.Find(".bit-prs-primary-text");
+            var secendryTextClassName = component.Find(".bit-prs-secondary-text");
+            var tertiaryTextClassName = component.Find(".bit-prs-tertiary-text");
+            var optionalTextClassName = component.Find(".bit-prs-optional-text");
 
             Assert.AreEqual(text, textClassName.TextContent.HasValue() ? textClassName.TextContent : null);
             Assert.AreEqual(secondaryText, secendryTextClassName.TextContent.HasValue() ? secendryTextClassName.TextContent : null);
@@ -80,9 +80,9 @@ namespace Bit.Client.Web.BlazorUI.Tests.Persona
                   });
 
             var presenceStatusClassName = DetermineIcon(presenceStatus, isOutOfOffice);
-            var personaStatus = component.Find(".bit-persona-presence > i");
+            var personaStatus = component.Find(".bit-prs-presence > i");
 
-            Assert.AreEqual($"bit-persona-icon bit-icon--{presenceStatusClassName}", personaStatus.GetAttribute("class"));
+            Assert.AreEqual($"bit-prs-icon bit-icon--{presenceStatusClassName}", personaStatus.GetAttribute("class"));
         }
 
         [DataTestMethod,
@@ -102,8 +102,8 @@ namespace Bit.Client.Web.BlazorUI.Tests.Persona
                      parameters.Add(p => p.Size, size);
                  });
 
-            var persona = component.Find(".bit-persona");
-            var personaSizeClass = $"bit-persona-{size}";
+            var persona = component.Find(".bit-prs");
+            var personaSizeClass = $"bit-prs-{size}";
 
             Assert.IsTrue(persona.ClassList.Contains(personaSizeClass));
         }
@@ -121,7 +121,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Persona
 
             if (imageurl.HasValue())
             {
-                var personaImageContainerClassName = component.Find(".bit-persona-img-container");
+                var personaImageContainerClassName = component.Find(".bit-prs-img-container");
                 var personaImage = personaImageContainerClassName.FirstElementChild;
                 var imageSrc = personaImage.GetAttribute("src");
 
@@ -145,7 +145,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Persona
                     parameters.Add(p => p.Presence, presenceStatus);
                 });
 
-            var precenseTitleClassName = component.Find(".bit-persona-presence");
+            var precenseTitleClassName = component.Find(".bit-prs-presence");
             var title = precenseTitleClassName.GetAttribute("title");
 
             Assert.AreEqual(presenceTitle, title);

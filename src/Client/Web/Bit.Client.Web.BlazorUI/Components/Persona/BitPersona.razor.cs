@@ -151,13 +151,13 @@ namespace Bit.Client.Web.BlazorUI
             return base.OnParametersSetAsync();
         }
 
-        protected override string RootElementClass => "bit-persona";
+        protected override string RootElementClass => "bit-prs";
 
         protected override void RegisterComponentClasses()
         {
-            ClassBuilder.Register(() => Size.HasValue() ? $"bit-persona-{Size}" : string.Empty);
+            ClassBuilder.Register(() => Size.HasValue() ? $"bit-prs-{Size}" : string.Empty);
 
-            ClassBuilder.Register(() => Presence != BitPersonaPresenceStatus.None ? $"bit-persona-{Presence.ToString().ToLower()}" : string.Empty);
+            ClassBuilder.Register(() => Presence != BitPersonaPresenceStatus.None ? $"bit-prs-{Presence.ToString().ToLower()}" : string.Empty);
         }
 
         private string DetermineIcon(BitPersonaPresenceStatus presence, bool isOutofOffice)
