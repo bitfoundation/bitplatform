@@ -71,7 +71,7 @@
         line-height: rem(16px);
     }
 
-    @media all and (max-width: #{em(630px)}) {
+    @include sm {
         display: none;
     }
 }

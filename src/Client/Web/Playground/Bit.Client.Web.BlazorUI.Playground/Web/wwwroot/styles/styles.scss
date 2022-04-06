@@ -43,27 +43,6 @@ input::-webkit-input-placeholder {
 }
 
 /* Home Page ==================================================================================== */
-
-.header-nav-close-btn {
-    position: absolute;
-    right: rem(12px);
-    top: rem(16px);
-    color: $B2Color;
-}
-
-.header-action-button {
-    .bit-act-btn-fluent {
-        span:last-child {
-            i {
-                color: $B3Color;
-            }
-        }
-    }
-
-    flex-direction: row-reverse;
-    color: $B3Color;
-}
-
 .component-list-item {
     max-width: 100%;
     margin-bottom: rem(4px);
