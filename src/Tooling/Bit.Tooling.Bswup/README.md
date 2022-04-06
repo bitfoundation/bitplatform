@@ -20,7 +20,7 @@ app.UseStaticFiles(new StaticFileOptions
 
 ```
 
-4. In the default document (`index.html` or `_Host.cshtml`), add an `autostart = "false"` attribute and value to the <script> tag for the Blazor script.
+4. In the default document (`_Host.cshtml`, `index.html` or `_Layout.cshtml`), add an `autostart = "false"` attribute and value to the <script> tag for the Blazor script.
 
 ```html
 
@@ -28,7 +28,7 @@ app.UseStaticFiles(new StaticFileOptions
 
 ```
 
-5. In the default document (`index.html` or `_Host.cshtml`), add the `Bit.Tooling.Bswup` reference after the <script> tag for the Blazor script.
+5. In the default document (`_Host.cshtml`, `index.html` or `_Layout.cshtml`), add the `Bit.Tooling.Bswup` reference after the <script> tag for the Blazor script.
 ```html
 
 <script src="_content/Bit.Tooling.Bswup/bit-bswup.js"
