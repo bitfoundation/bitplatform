@@ -43,7 +43,6 @@ input::-webkit-input-placeholder {
 }
 
 /* Home Page ==================================================================================== */
-
 .component-list-item {
     max-width: 100%;
     margin-bottom: rem(4px);
@@ -526,6 +525,44 @@ code {
     background-color: transparent !important;
 }
 
+.icongraphy-search-box {
+    width: rem(336px);
+    height: rem(40px);
+    border-color: $B4Color;
+    margin-bottom: rem(50px) !important;
+
+    .bit-icon {
+        color: $B3Color;
+    }
+
+    &:hover {
+        border-color: $B5Color;
+
+        .bit-icon {
+            color: $B3Color;
+        }
+    }
+
+    @include lg {
+        height: rem(36px);
+    }
+
+    @include md {
+        width: rem(274px);
+        height: rem(36px);
+        margin-bottom: rem(40px) !important;
+    }
+
+    @include sm {
+        width: rem(264px);
+        height: rem(40px);
+        margin-bottom: rem(32px) !important;
+    }
+}
+
+.bit-icon--icongraphy {
+    font-size: 2.25rem !important;
+}
 /* Demo Page =================================================================================== */
 .example-desc {
     margin-bottom: rem(8px);
