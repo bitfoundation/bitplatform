@@ -24,17 +24,19 @@
                         <input @attributes="InputHtmlAttributes"
                            id="@GetOptionInputId(option)"
                            class="bit-chgo-input"
-                           aria-label="@AriaLabel"
+                           aria-label="@GetOptionAriaLabel(option)"
                            type="radio"
                            checked="@GetOptionIsChecked(option)"
                            name="@Name"
-                           value="@option.Key"
+                           value="@option.Value"
                            hidden="hidden"
                            required="@IsRequired"
-                           @onclick="(e) => HandleClick(e,option)"
-                           @onchange="(e) => HandleChange(e,option)"
-                           disabled="@(option.IsEnabled is false)" />
-                        <label for="@GetOptionInputId(option)" class="@GetOptionLabelClassName(option)">
+                           disabled="@(option.IsEnabled is false)"
+                           @onclick="() => HandleOptionOnClcik(option)"
+                           @onchange="(e) => HandleOptionChange(e,option)" />
+                        <label for="@GetOptionInputId(option)"
+                           class="@GetOptionLabelClassName(option)"
+                           id="@GetOptionLabelId(option)">
                             @if (option.ImageSrc.HasValue())
                             {
                                 <div class="bit-chgo-img-inner-field">
@@ -56,14 +58,14 @@
                             @if (option.ImageSrc.HasValue() || option.IconName is not null)
                             {
                                 <div class="bit-chgo-txt-wrapper">
-                                    <span class="bit-chgo-txt" id="@GetOptionLabelId(option)">
+                                    <span class="bit-chgo-txt">
                                         @option.Text
                                     </span>
                                 </div>
                             }
                             else
                             {
-                                <span class="bit-chgo-txt" id="@GetOptionLabelId(option)">
+                                <span class="bit-chgo-txt">
                                     @option.Text
                                 </span>
                             }

@@ -1,15 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Drawing;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 
 namespace Bit.Client.Web.BlazorUI.Components.ChoiceGroup
 {
     public class BitChoiceGroupOption
     {
-        public string? Key { get; set; }
+        public string? Value { get; set; }
 
         public string? Text { get; set; }
 
@@ -24,5 +21,11 @@ namespace Bit.Client.Web.BlazorUI.Components.ChoiceGroup
         public string? ImageSrc { get; set; }
 
         public string? SelectedImageSrc { get; set; }
+
+        public string? AriaLabel { get; set; }
+
+        public string? LabelId { get; set; }
+
+        public string? Id { get; set; }
     }
 }

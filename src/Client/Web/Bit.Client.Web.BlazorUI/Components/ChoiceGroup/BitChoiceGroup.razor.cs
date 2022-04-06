@@ -41,7 +41,7 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// Default selected key for ChoiceGroup.
         /// </summary>
-        [Parameter] public string? DefaultSelectedKey { get; set; }
+        [Parameter] public string? DefaultValue { get; set; }
 
         /// <summary>
         /// ID of an element to use as the aria label for this ChoiceGroup.
@@ -59,14 +59,14 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public RenderFragment? LabelFragment { get; set; }
 
         /// <summary>
-        /// Callback for when the option has been changed
+        /// Callback that is called when the ChoiceGroup selected value has changed.
         /// </summary>
         [Parameter] public EventCallback<ChangeEventArgs> OnChange { get; set; }
 
         /// <summary>
-        /// Callback for when the option clicked
+        /// Callback for when focus moves into the ChoiceGroup option
         /// </summary>
-        [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+        [Parameter] public EventCallback<FocusEventArgs> OnFocus { get; set; }
 
         protected override string RootElementClass => "bit-chg";
 
@@ -81,9 +81,9 @@ namespace Bit.Client.Web.BlazorUI
 
         protected override async Task OnInitializedAsync()
         {
-            if (DefaultSelectedKey.HasValue() && Options.Any(o => o.Key == DefaultSelectedKey))
+            if (DefaultValue.HasValue() && Options.Any(o => o.Value == DefaultValue))
             {
-                CurrentValue = DefaultSelectedKey;
+                CurrentValue = DefaultValue;
             }
 
             await base.OnInitializedAsync();
@@ -93,12 +93,17 @@ namespace Bit.Client.Web.BlazorUI
 
         private string GetGroupAriaLabelledBy() => AriaLabelledBy ?? GetGroupLabelId();
 
-        private string GetOptionInputId(BitChoiceGroupOption option) => $"ChoiceGroupOptionInput{UniqueId}-{option.Key}";
+        private string GetOptionInputId(BitChoiceGroupOption option) =>
+            option.Id ?? $"ChoiceGroupOptionInput{UniqueId}-{option.Value}";
 
-        private string GetOptionLabelId(BitChoiceGroupOption option) => $"ChoiceGroupOptionLabel{UniqueId}-{option.Key}";
+        private string GetOptionLabelId(BitChoiceGroupOption option) =>
+            option.LabelId ?? $"ChoiceGroupOptionLabel{UniqueId}-{option.Value}";
+
+        private string GetOptionAriaLabel(BitChoiceGroupOption option) =>
+          option.AriaLabel ?? AriaLabel ?? string.Empty;
 
         private bool GetOptionIsChecked(BitChoiceGroupOption option) =>
-            CurrentValue.HasValue() && CurrentValue == option.Key;
+            CurrentValue.HasValue() && CurrentValue == option.Value;
 
         private string? GetOptionImageSrc(BitChoiceGroupOption option) =>
             GetOptionIsChecked(option) && option.SelectedImageSrc.HasValue()
@@ -106,7 +111,9 @@ namespace Bit.Client.Web.BlazorUI
             : option.ImageSrc;
 
         private string GetOptionLabelClassName(BitChoiceGroupOption option) =>
-            option.ImageSrc.HasValue() || option.IconName is not null ? "bit-chgo-lbl-with-img" : "bit-chgo-lbl";
+            option.ImageSrc.HasValue() || option.IconName is not null
+            ? "bit-chgo-lbl-with-img"
+            : "bit-chgo-lbl";
 
         private string GetOptionImageSizeStyle(BitChoiceGroupOption option) => option.ImageSize is not null
                 ? $"width:{option.ImageSize.Value.Width}px; height:{option.ImageSize.Value.Height}px;"
@@ -147,20 +154,23 @@ namespace Bit.Client.Web.BlazorUI
             return cssClass.ToString();
         }
 
-        private async Task HandleClick(MouseEventArgs e, BitChoiceGroupOption option)
+        private async Task HandleOptionChange(ChangeEventArgs e, BitChoiceGroupOption option)
         {
             if (option.IsEnabled is false || IsEnabled is false) return;
-
-            await OnClick.InvokeAsync(e);
-        }
-
-        private async Task HandleChange(ChangeEventArgs e, BitChoiceGroupOption option)
-        {
-            if (option.IsEnabled is false || IsEnabled is false) return;
-
-            CurrentValue = option.Key;
 
             await OnChange.InvokeAsync(e);
+        }
+
+        private async Task HandleOptionOnClcik(BitChoiceGroupOption option)
+        {
+            if (option.IsEnabled is false || IsEnabled is false) return;
+
+            CurrentValue = option.Value;
+
+            if (OnFocus.HasDelegate)
+            {
+                await OnFocus.InvokeAsync();
+            }
         }
 
         /// <inheritdoc />
@@ -170,6 +180,5 @@ namespace Bit.Client.Web.BlazorUI
             validationErrorMessage = null;
             return true;
         }
-
     }
 }
