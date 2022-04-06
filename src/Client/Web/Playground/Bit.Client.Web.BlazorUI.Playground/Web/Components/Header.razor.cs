@@ -33,19 +33,14 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Components
         }
         private string GetActiveRouteName()
         {
-            switch (CurrentUrl)
+            return CurrentUrl switch
             {
-                case "/":
-                    return "Home";
-                case "/components/overview":
-                    return "Demo";
-                case "/get-started":
-                    return "Get Started";
-                case "/icons":
-                    return "Iconography";
-                default:
-                    return "";
-            }
+                "/" => "Home",
+                "/components/overview" => "Demo",
+                "/get-started" => "Get Started",
+                "/icons" => "Iconography",
+                _ => "",
+            };
         }
 
         private void ToggleHeaderMenu()
