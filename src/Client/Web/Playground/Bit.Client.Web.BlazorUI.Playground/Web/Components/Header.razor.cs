@@ -7,9 +7,11 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Components
 {
     public partial class Header
     {
+        private string CurrentUrl = string.Empty;
+        private bool IsHeaderMenuOpen;
+
         [Inject] public NavigationManager NavigationManager { get; set; }
         [Inject] public NavManuService NavManuService { get; set; }
-        public string CurrentUrl { get; set; }
 
         protected override void OnInitialized()
         {
@@ -28,6 +30,27 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Components
         private void ToggleMenu()
         {
             NavManuService.ToggleMenu();
+        }
+        private string GetActiveRouteName()
+        {
+            switch (CurrentUrl)
+            {
+                case "/":
+                    return "Home";
+                case "/components/overview":
+                    return "Demo";
+                case "/get-started":
+                    return "Get Started";
+                case "/icons":
+                    return "Iconography";
+                default:
+                    return "";
+            }
+        }
+
+        private void ToggleHeaderMenu()
+        {
+            IsHeaderMenuOpen = !IsHeaderMenuOpen;
         }
     }
 }
