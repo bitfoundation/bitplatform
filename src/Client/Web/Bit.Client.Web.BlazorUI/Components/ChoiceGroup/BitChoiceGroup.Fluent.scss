@@ -1,0 +1,441 @@
+﻿@import "../../Styles/Fluent/colors.fluent.scss", "../../Styles/functions.scss";
+
+.bit-chg-fluent {
+    display: block;
+    font-size: rem(14px);
+    font-weight: 400;
+    font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
+
+.bit-chg-label-fluent {
+    display: block;
+    margin: 0;
+    padding: rem(5px) 0;
+    box-shadow: none;
+    box-sizing: border-box;
+    font-size: rem(14px);
+    font-weight: 600;
+    color: $Grey160;
+    overflow-wrap: break-word;
+    -webkit-font-smoothing: antialiased;
+}
+
+.bit-chg-required-fluent {
+    .bit-chg-label-fluent {
+        &::after {
+            content: " *";
+            padding-right: rem(12px);
+            color: $Red20;
+        }
+    }
+}
+
+/*--- ChoiceGroup Option styles ---*/
+
+.bit-chgo-fluent {
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-height: rem(26px);
+    margin-top: rem(8px);
+    border: none;
+    box-sizing: border-box;
+    font-size: rem(14px);
+    font-weight: 400;
+    color: $Grey160;
+    font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
+
+.bit-chgo-input {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    opacity: 0;
+}
+
+.bit-chgo-txt-wrapper {
+    position: relative;
+    display: block;
+    max-width: rem(64px);
+    height: rem(32px);
+    margin: rem(4px) rem(8px) rem(2px);
+    font-size: rem(14px);
+    line-height: rem(15px);
+    font-weight: 400;
+    white-space: pre-wrap;
+    font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    overflow: hidden;
+
+    .bit-chgo-txt {
+        display: inline-block;
+        padding-left: 0;
+    }
+}
+
+.bit-chgo-lbl {
+    position: relative;
+    display: inline-block;
+    min-height: rem(20px);
+    margin-top: 0;
+    vertical-align: top;
+    user-select: none;
+    cursor: pointer;
+
+    &:before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        display: inline-block;
+        width: rem(20px);
+        height: rem(20px);
+        border-radius: 50%;
+        border: rem(1px) solid $Grey160;
+        background-color: $White;
+        box-sizing: border-box;
+        transition: border-color 0.2s cubic-bezier(0.4, 0, 0.23, 1);
+    }
+
+    &:after {
+        content: "";
+        position: absolute;
+        left: rem(10px);
+        right: 0;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        box-sizing: border-box;
+        transition: border-width 0.2s cubic-bezier(0.4, 0, 0.23, 1);
+    }
+
+    .bit-chgo-txt {
+        display: inline-block;
+        padding-left: rem(26px);
+    }
+
+    &:hover {
+        .bit-chgo-txt {
+            color: $Grey190;
+        }
+
+        &:after {
+            transition-property: background-color;
+            left: rem(5px);
+            top: rem(5px);
+            width: rem(10px);
+            height: rem(10px);
+            background-color: $Grey130;
+        }
+
+        &:before {
+            border-color: $Grey160;
+        }
+    }
+}
+
+.bit-chgo-disabled-fluent {
+    .bit-chgo-lbl {
+        cursor: default;
+        pointer-events: none;
+        color: $Grey90;
+
+        &:before {
+            border-color: $Grey60;
+        }
+
+        &:after {
+            border-color: $Grey60;
+        }
+
+        .bit-chgo-txt {
+            color: $Grey90;
+        }
+
+        &:hover {
+            .bit-chgo-txt {
+                color: $Grey90;
+            }
+
+            &:before {
+                border-color: $Grey60;
+            }
+        }
+    }
+
+    .bit-chgo-lbl-with-img {
+        color: $Grey90;
+        cursor: default;
+        border-color: transparent;
+
+        &:before {
+            border-color: $Grey60;
+        }
+
+        &:hover {
+            border-color: transparent;
+
+            &:before {
+                border-color: $Grey60;
+                opacity: 0;
+            }
+        }
+    }
+
+    &.bit-chgo-checked-fluent {
+        .bit-chgo-lbl-with-img {
+            &:after {
+                border: rem(5px) solid $Grey60;
+                background-color: $Grey60;
+            }
+
+            &:hover {
+                &:before {
+                    opacity: 1;
+                }
+            }
+        }
+    }
+
+    .bit-chgo-icon-wrapper {
+        color: $Grey90;
+
+        i {
+            color: $Grey90;
+        }
+    }
+}
+
+.bit-chgo-with-img-fluent {
+    display: inline-flex;
+    height: 100%;
+    margin: 0 rem(4px) rem(4px) 0;
+    padding-left: 0;
+    font-size: 0px;
+    background-color: $Grey20;
+}
+
+.bit-chgo-checked-fluent {
+    .bit-chgo-lbl {
+        border-color: $Primary;
+
+        &:before {
+            border-color: $Primary;
+        }
+
+        &:after {
+            top: rem(5px);
+            left: rem(5px);
+            width: rem(10px);
+            height: rem(10px);
+            border: rem(5px) solid $Primary;
+            background-color: $Primary;
+        }
+
+        &:hover {
+            &:before {
+                border-color: $Dark;
+            }
+
+            &:after {
+                border: rem(5px) solid $Dark;
+                background-color: $Dark;
+            }
+        }
+    }
+
+    .bit-chgo-lbl-with-img {
+        border-color: $Primary;
+
+        &:before {
+            border-color: $Primary;
+            opacity: 1;
+        }
+
+        &:after {
+            top: rem(8px);
+            left: auto;
+            right: rem(8px);
+            width: rem(10px);
+            height: rem(10px);
+            border: rem(5px) solid $Primary;
+            background-color: $Primary;
+        }
+
+        &:hover {
+            border-color: $Dark;
+
+            &:before {
+                border-color: $Dark;
+                opacity: 1;
+            }
+
+            &:after {
+                background-color: $Dark;
+                border-color: $Dark;
+            }
+        }
+    }
+}
+
+.bit-chgo-lbl-with-img {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    min-height: rem(20px);
+    margin: 0;
+    padding-top: rem(22px);
+    border: rem(1px) solid transparent;
+    box-sizing: content-box;
+    text-align: center;
+    vertical-align: top;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    user-select: none;
+
+    &:before {
+        content: "";
+        position: absolute;
+        top: rem(3px);
+        left: auto;
+        right: rem(3px);
+        display: inline-block;
+        width: rem(20px);
+        height: rem(20px);
+        border-radius: 50%;
+        border: rem(1px) solid $Grey160;
+        box-sizing: border-box;
+        background-color: $White;
+        transition: border-color 0.2s cubic-bezier(0.4, 0, 0.23, 1);
+        opacity: 0;
+    }
+
+    &:after {
+        content: "";
+        position: absolute;
+        left: rem(10px);
+        right: 0;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        box-sizing: border-box;
+        transition: border-width 0.2s cubic-bezier(0.4, 0, 0.23, 1);
+    }
+
+    &:hover {
+        border-color: $Grey160;
+
+        &:before {
+            border-color: $Grey160;
+            opacity: 1;
+        }
+    }
+}
+
+.bit-chgo-img-inner-field {
+    position: relative;
+    display: inline-block;
+    height: rem(32px);
+    width: rem(32px);
+    padding: 0 rem(30px);
+}
+
+.bit-chgo-img-wrapper {
+    padding-bottom: rem(2px);
+    transition: opacity 0.2s ease;
+}
+
+.bit-chgo-img {
+    display: inline-block;
+    border-style: none;
+
+    img {
+        display: block;
+        opacity: 1;
+        height: 100%;
+        width: 100%;
+    }
+}
+
+.bit-chgo-icon-inner-field {
+    position: relative;
+    display: inline-block;
+    padding: 0 rem(30px);
+}
+
+.bit-chgo-icon-wrapper {
+    height: rem(32px);
+    font-size: rem(32px);
+    line-height: rem(32px);
+
+    i {
+        display: inline-block;
+        -webkit-font-smoothing: antialiased;
+        speak: none;
+    }
+}
+
+.bit-chg-invalid-fluent {
+    .bit-chgo-lbl {
+        color: $Red20;
+
+        &:before {
+            border-color: $Red20;
+        }
+
+        &:after {
+            border-color: $Red20;
+            background-color: $Red20;
+        }
+
+        &:hover {
+            .bit-chgo-txt {
+                color: $PinkRed10;
+            }
+
+            &:after {
+                background-color: $PinkRed10;
+                border-color: $PinkRed10;
+            }
+
+            &:before {
+                border-color: $PinkRed10;
+            }
+        }
+    }
+
+    .bit-chgo-lbl-with-img {
+        color: $Red20;
+        border-color: $Red20;
+
+        &:before {
+            border-color: $Red20;
+        }
+
+        &:after {
+            border-color: $Red20;
+            background-color: $Red20;
+        }
+
+        &:hover {
+            border-color: $Red20;
+
+            &:before {
+                border-color: $PinkRed10;
+                opacity: 1;
+            }
+
+            &:after {
+                border-color: $PinkRed10;
+                background-color: $PinkRed10;
+            }
+        }
+    }
+}
