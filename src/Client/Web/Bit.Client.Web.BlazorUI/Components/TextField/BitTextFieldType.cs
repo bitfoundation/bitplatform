@@ -10,6 +10,11 @@
         /// <summary>
         /// The TextField characters are masked
         /// </summary>
-        Password
+        Password,
+
+        /// <summary>
+        /// The TextField characters are number
+        /// </summary>
+        Number
     }
 }
