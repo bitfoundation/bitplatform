@@ -1,4 +1,5 @@
-﻿using System.Drawing;
+﻿using System;
+using System.Drawing;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 
@@ -27,5 +28,7 @@ namespace Bit.Client.Web.BlazorUI.Components.ChoiceGroup
         public string? LabelId { get; set; }
 
         public string? Id { get; set; }
+
+        public Action? OnChange { get; set; }
     }
 }

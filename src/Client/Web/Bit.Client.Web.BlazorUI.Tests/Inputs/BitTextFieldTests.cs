@@ -146,13 +146,31 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
             var revealPasswordBtn = component.Find(".password-reveal-btn");
             var revealPasswordIcon = component.Find(".password-reveal-btn > span > i");
 
-            Assert.AreEqual("Password", textField.GetAttribute("type"));
+            Assert.AreEqual("password", textField.GetAttribute("type"));
             Assert.IsTrue(revealPasswordIcon.ClassList.Contains($"bit-icon--RedEye"));
 
             revealPasswordBtn.Click();
 
-            Assert.AreEqual("Text", textField.GetAttribute("type"));
+            Assert.AreEqual("text", textField.GetAttribute("type"));
             Assert.IsTrue(revealPasswordIcon.ClassList.Contains($"bit-icon--Hide"));
+        }
+
+        [DataTestMethod,
+            DataRow(BitTextFieldType.Text),
+            DataRow(BitTextFieldType.Password),
+            DataRow(BitTextFieldType.Number),
+        ]
+        public void BitTextFieldTypeTest(BitTextFieldType type)
+        {
+            var component = RenderComponent<BitTextFieldTest>(
+                parameters =>
+                {
+                    parameters.Add(p => p.Type, type);
+                });
+
+            var textField = component.Find(".txt-field");
+
+            Assert.AreEqual(type.GetDisplayName(toLowerDisplayName: true), textField.GetAttribute("type"));
         }
 
         [DataTestMethod,

@@ -154,22 +154,15 @@ namespace Bit.Client.Web.BlazorUI
             return cssClass.ToString();
         }
 
-        private async Task HandleOptionChange(ChangeEventArgs e, BitChoiceGroupOption option)
-        {
-            if (option.IsEnabled is false || IsEnabled is false) return;
-
-            await OnChange.InvokeAsync(e);
-        }
-
-        private async Task HandleOptionOnClcik(BitChoiceGroupOption option)
+        private void HandleOptionChange(BitChoiceGroupOption option)
         {
             if (option.IsEnabled is false || IsEnabled is false) return;
 
             CurrentValue = option.Value;
 
-            if (OnFocus.HasDelegate)
+            if (option.OnChange is not null)
             {
-                await OnFocus.InvokeAsync();
+                option.OnChange.Invoke();
             }
         }
 

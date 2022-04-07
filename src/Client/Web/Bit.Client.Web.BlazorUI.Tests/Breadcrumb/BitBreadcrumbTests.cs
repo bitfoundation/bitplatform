@@ -35,7 +35,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Breadcrumb
             var component = RenderComponent<BitBreadcrumb>(parameters =>
             {
                 parameters.Add(p => p.Items, GetBreadcrumbItems());
-                parameters.Add(p => p.DividerAs, icon);
+                parameters.Add(p => p.DividerIcon, icon);
             });
 
             var breadcrumbDividerIcon = component.Find(".bit-brc ul li i");
