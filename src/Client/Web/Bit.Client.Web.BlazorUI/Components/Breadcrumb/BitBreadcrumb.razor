@@ -29,10 +29,10 @@
                            class=@(IsLastItem(item.index) ? "bit-brc-lst-itm" :"bit-brc-itm")>@item.item.Text</a>
                     }
 
-                    @if (IsLastItem(item.index) is false)
-                    {
-                        <i class=@($"bit-icon bit-icon--{DividerAs.GetName()}")></i>
-                    }
+                 @if (IsLastItem(item.index) is false)
+                 {
+                     <i class=@($"bit-icon bit-icon--{DividerIcon.GetName()}")></i>
+                 }
 
                 </li>
             }
