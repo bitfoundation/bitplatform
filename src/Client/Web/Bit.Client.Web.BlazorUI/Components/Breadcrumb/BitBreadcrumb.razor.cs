@@ -35,7 +35,7 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// Render a custom divider in place of the default chevron >
         /// </summary>
-        [Parameter] public BitIconName DividerAs { get; set; } = BitIconName.ChevronRight;
+        [Parameter] public BitIconName DividerIcon { get; set; } = BitIconName.ChevronRight;
 
         [Parameter] public BitIconName OnRenderOverflowIcon { get; set; } = BitIconName.More;
 
