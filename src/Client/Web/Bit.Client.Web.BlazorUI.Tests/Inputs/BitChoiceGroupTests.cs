@@ -56,12 +56,12 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
         }
 
         [DataTestMethod, DataRow("key1")]
-        public void BitChoiceGroupRespectDafaultSelectedKey(string defaultSelectedKey)
+        public void BitChoiceGroupRespectDafaultValue(string defaultValue)
         {
             var component = RenderComponent<BitChoiceGroupTest>(
                parameters =>
                {
-                   parameters.Add(p => p.DefaultValue, defaultSelectedKey);
+                   parameters.Add(p => p.DefaultValue, defaultValue);
                    parameters.Add(p => p.Options, new()
                    {
                         new BitChoiceGroupOption
