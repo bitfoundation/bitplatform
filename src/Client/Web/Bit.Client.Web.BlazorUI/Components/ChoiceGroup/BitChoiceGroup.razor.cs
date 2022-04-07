@@ -58,16 +58,6 @@ namespace Bit.Client.Web.BlazorUI
         /// </summary>
         [Parameter] public RenderFragment? LabelFragment { get; set; }
 
-        /// <summary>
-        /// Callback that is called when the ChoiceGroup selected value has changed.
-        /// </summary>
-        [Parameter] public EventCallback<ChangeEventArgs> OnChange { get; set; }
-
-        /// <summary>
-        /// Callback for when focus moves into the ChoiceGroup option
-        /// </summary>
-        [Parameter] public EventCallback<FocusEventArgs> OnFocus { get; set; }
-
         protected override string RootElementClass => "bit-chg";
 
         protected override void RegisterComponentClasses()
