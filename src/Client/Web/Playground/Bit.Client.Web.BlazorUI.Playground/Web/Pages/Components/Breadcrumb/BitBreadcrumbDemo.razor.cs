@@ -33,7 +33,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Breadcrumb
             },
             new()
             {
-                Name = "DividerAs",
+                Name = "DividerIcon",
                 Type = "string",
                 DefaultValue = "bit-icon--ChevronRight",
                 Description = "Render a custom divider in place of the default chevron >",
@@ -161,7 +161,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Breadcrumb
 < div class=""example-desc"">With custom rendered divider and overflow icon</div>
 <div>
     <Breadcrumb Items = GetBreadcrumbItems()
-                DividerAs=""bit-icon--Separator""
+                DividerIcon=""bit-icon--Separator""
                 OverflowIndex=""1""
                 MaxDisplayedItems=""2""
                 OnRenderOverflowIcon=""bit-icon--ChevronRight""></Breadcrumb>

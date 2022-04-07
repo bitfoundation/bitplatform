@@ -88,6 +88,10 @@
     "inputFile": "Pages/HomePage.razor.scss"
   },
   {
+    "outputFile": "Pages/IconPage.razor.css",
+    "inputFile": "Pages/IconPage.razor.scss"
+  },
+  {
     "outputFile": "Pages/OverviewPage.razor.css",
     "inputFile": "Pages/OverviewPage.razor.scss"
   },

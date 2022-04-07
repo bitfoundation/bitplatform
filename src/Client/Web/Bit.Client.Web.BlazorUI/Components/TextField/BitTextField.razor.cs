@@ -1,4 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -282,7 +284,7 @@ namespace Bit.Client.Web.BlazorUI
         {
             if (DefaultValue.HasValue())
             {
-                CurrentValue = DefaultValue;
+                CurrentValueAsString = DefaultValue;
             }
 
             TextFieldId = $"TextField{UniqueId}";

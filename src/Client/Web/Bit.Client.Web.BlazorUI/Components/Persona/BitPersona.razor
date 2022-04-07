@@ -7,18 +7,18 @@
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
 
-    <div role="presentation" class="bit-persona-coin">
+    <div role="presentation" class="bit-prs-coin">
         @if (Size != BitPersonaSize.Size8)
         {
             string dimension = CoinSize != -1 ? $"{CoinSize.ToString()}px" : Size!;
 
-            <div class="bit-persona-image-area" style="width:@dimension;height:@dimension">
+            <div class="bit-prs-image-area" style="width:@dimension;height:@dimension">
 
                 @if (ImageUrl != null)
                 {
-                    <div class="bit-persona-img-container">
+                    <div class="bit-prs-img-container">
                         <img src="@ImageUrl"
-                     class="bit-persona-img"
+                     class="bit-prs-img"
                      alt="@ImageAlt"
                      width="@dimension"
                      height="@dimension" />
@@ -27,8 +27,8 @@
 
                 @if (Presence != BitPersonaPresenceStatus.None)
                 {
-                    <div title=@PresenceTitle class="bit-Persona-presence">
-                        <i class=@($"bit-persona-icon bit-icon--{DetermineIcon(Presence, IsOutOfOffice)}") role="presentation"></i>
+                    <div title=@PresenceTitle class="bit-prs-presence">
+                        <i class=@($"bit-prs-icon bit-icon--{DetermineIcon(Presence, IsOutOfOffice)}") role="presentation"></i>
                     </div>
                 }
             </div>
@@ -37,10 +37,10 @@
         {
             if (Presence != BitPersonaPresenceStatus.None)
             {
-                <div title=@PresenceTitle class="bit-Persona-presence" style="@PresenceStyle">
+                <div title=@PresenceTitle class="bit-prs-presence" style="@PresenceStyle">
                     @if (RenderIcon)
                     {
-                        <i class=@($"bit-persona-icon bit-icon--{DetermineIcon(Presence, IsOutOfOffice)}") role="presentation" style="@IconStyle"></i>
+                        <i class=@($"bit-prs-icon bit-icon--{DetermineIcon(Presence, IsOutOfOffice)}") role="presentation" style="@IconStyle"></i>
                     }
                 </div>
             }
@@ -55,17 +55,17 @@
 
     @if (HidePersonaDetails is false || Size == BitPersonaSize.Size8)
     {
-        <div class="bit-Persona-details">
-            <div dir="auto" class="bit-Persona-primaryTex">
+        <div class="bit-prs-details">
+            <div dir="auto" class="bit-prs-primary-text">
                 @Text
             </div>
-            <div dir="auto" class="bit-Persona-secondaryText">
+            <div dir="auto" class="bit-prs-secondary-text">
                 @SecondaryText
             </div>
-            <div dir="auto" class="bit-Persona-tertiaryText">
+            <div dir="auto" class="bit-prs-tertiary-text">
                 @TertiaryText
             </div>
-            <div dir="auto" class="bit-Persona-optionalText">
+            <div dir="auto" class="bit-prs-optional-text">
                 @OptionalText
             </div>
         </div>

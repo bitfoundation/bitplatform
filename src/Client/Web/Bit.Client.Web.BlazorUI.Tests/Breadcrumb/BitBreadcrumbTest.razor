@@ -1,5 +1,5 @@
 ﻿<CascadingValue Value="Visual">
-    <BitBreadcrumb DividerAs="DividerAs"
+    <BitBreadcrumb DividerIcon="DividerIcon"
                    Style="@Style"
                    Class="@Class"
                    Visibility="Visibility"
@@ -13,7 +13,7 @@
 
 @code {
     [Parameter] public Visual Visual { get; set; }
-    [Parameter] public BitIconName DividerAs { get; set; } = BitIconName.ChevronRight;
+    [Parameter] public BitIconName DividerIcon { get; set; } = BitIconName.ChevronRight;
     [Parameter] public BitIconName OnRenderOverflowIcon { get; set; } = BitIconName.More;
     [Parameter] public List<BitBreadcrumbItem> Items { get; set; } = new();
     [Parameter] public BitComponentVisibility Visibility { get; set; }
