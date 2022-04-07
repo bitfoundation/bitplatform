@@ -1,11 +1,13 @@
 ﻿@namespace Bit.Client.Web.BlazorUI
 @inherits BitComponentBase
+
 <div @ref="RootElement"
      @attributes="HtmlAttributes"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
     <div class="bit-rbo-wrapper">
-        <input id="@InputId"
+        <input @attributes="RadioButtonGroup.InputHtmlAttributes"
+               id="@InputId"
                class="bit-rbo-input"
                aria-label="@AriaLabel"
                type="radio"

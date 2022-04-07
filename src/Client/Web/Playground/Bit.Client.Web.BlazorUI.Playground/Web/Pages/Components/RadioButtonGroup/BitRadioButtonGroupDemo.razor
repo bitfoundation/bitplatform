@@ -2,16 +2,16 @@
 
 <ComponentDemo ComponentName="RadioButtonGroup" ComponentDescription="Radio buttons (RadioButtonGroup) let people select a single option from two or more choices."
                ComponentParameters="componentParameters" EnumParameters="enumParameters">
-    <ComponentExampleBox Title="BitRadioButtonGroup" HTMLSourceCode="@example1HTMLCode" ExampleId="example1">
+    <ComponentExampleBox Title="BitRadioButtonGroup" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
         <ExamplePreview>
             <div class="example-desc">To create a RadioButtonGroup you can use a BitRadioButtonGroup component</div>
             <div class="ch-group">
-                <BitLabel>Selected Key is : @MySelectedKey</BitLabel>
-                <BitTextField @bind-Value="MySelectedKey" Placeholder="Select one of A, B or C"></BitTextField>
-                <BitRadioButtonGroup Name="Group1" Label="Pick one" IsRequired="true" @bind-SelectedKey="MySelectedKey">
-                    <BitRadioButtonOption Key="A" Text="Option A" Value="1"></BitRadioButtonOption>
-                    <BitRadioButtonOption Key="B" Text="Option B" Value="2"></BitRadioButtonOption>
-                    <BitRadioButtonOption Key="C" Text="Disabled option C" Value="3" IsEnabled="false"></BitRadioButtonOption>
+                <BitLabel>Selected Key is : @MyValue</BitLabel>
+                <BitTextField @bind-Value="MyValue" Placeholder="Select one of A, B or C"></BitTextField>
+                <BitRadioButtonGroup Name="Group1" Label="Pick one" IsRequired="true" @bind-Value="MyValue">
+                    <BitRadioButtonOption Text="Option A" Value="A"></BitRadioButtonOption>
+                    <BitRadioButtonOption Text="Option B" Value="B"></BitRadioButtonOption>
+                    <BitRadioButtonOption Text="Disabled option C" Value="C" IsEnabled="false"></BitRadioButtonOption>
                 </BitRadioButtonGroup>
             </div>
         </ExamplePreview>
@@ -21,10 +21,10 @@
         <ExamplePreview>
             <div class="example-desc">BitRadioButtonGroup in disabled mode.</div>
             <div>
-                <BitRadioButtonGroup Name="Group2" IsEnabled="false" Label="Pick one" DefaultSelectedKey="C">
-                    <BitRadioButtonOption Key="A" Text="Option A" Value="1"></BitRadioButtonOption>
-                    <BitRadioButtonOption Key="B" Text="Option2 B" Value="2"></BitRadioButtonOption>
-                    <BitRadioButtonOption Key="C" Text="Disabled option C" Value="3" IsEnabled="false"></BitRadioButtonOption>
+                <BitRadioButtonGroup Name="Group2" IsEnabled="false" Label="Pick one" DefaultValue="C">
+                    <BitRadioButtonOption Text="Option A" Value="A"></BitRadioButtonOption>
+                    <BitRadioButtonOption Text="Option2 B" Value="B"></BitRadioButtonOption>
+                    <BitRadioButtonOption Text="Disabled option C" Value="C" IsEnabled="false"></BitRadioButtonOption>
                 </BitRadioButtonGroup>
             </div>
         </ExamplePreview>
@@ -33,10 +33,10 @@
     <ComponentExampleBox Title="RadioButtonGroup with images" HTMLSourceCode="@example3HTMLCode" ExampleId="example3">
         <ExamplePreview>
             <div>
-                <BitRadioButtonGroup Name="Group1" Label="Pick one image" DefaultSelectedKey="pie">
-                    <BitRadioButtonOption Key="bar" Text="Clustered bar chart" Value="1" ImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png" ImageAlt="alt for image Option 1" SelectedImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png" ImageSize="new System.Drawing.Size( width: 32, height: 32)"></BitRadioButtonOption>
-                    <BitRadioButtonOption Key="pie" Text="Pie chart" Value="2" ImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png" ImageAlt="alt for image Option 2" SelectedImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png" ImageSize="new System.Drawing.Size( width: 32, height: 32)"></BitRadioButtonOption>
-                    <BitRadioButtonOption Key="disabeled_option" Text="Disabeled" IsEnabled="false" Value="3" ImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png" ImageAlt="alt for image Option 2" SelectedImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png" ImageSize="new System.Drawing.Size( width: 32, height: 32)"></BitRadioButtonOption>
+                <BitRadioButtonGroup Name="Group1" Label="Pick one image" DefaultValue="pie">
+                    <BitRadioButtonOption Text="Clustered bar chart" Value="bar" ImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png" ImageAlt="alt for image Option 1" SelectedImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png" ImageSize="new System.Drawing.Size( width: 32, height: 32)"></BitRadioButtonOption>
+                    <BitRadioButtonOption Text="Pie chart" Value="pie" ImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png" ImageAlt="alt for image Option 2" SelectedImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png" ImageSize="new System.Drawing.Size( width: 32, height: 32)"></BitRadioButtonOption>
+                    <BitRadioButtonOption Text="Disabeled" IsEnabled="false" Value="disabeled_option" ImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png" ImageAlt="alt for image Option 2" SelectedImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png" ImageSize="new System.Drawing.Size( width: 32, height: 32)"></BitRadioButtonOption>
                 </BitRadioButtonGroup>
             </div>
         </ExamplePreview>
@@ -46,11 +46,46 @@
         <ExamplePreview>
             <div>
                 <BitRadioButtonGroup Name="Group1" Label="Pick one icon">
-                    <BitRadioButtonOption Key="day" Text="Day" Value="1" IconName="BitIconName.CalendarDay"></BitRadioButtonOption>
-                    <BitRadioButtonOption Key="week" Text="Week" Value="2" IconName="BitIconName.CalendarWeek"></BitRadioButtonOption>
-                    <BitRadioButtonOption Key="month" Text="Month" Value="3" IconName="BitIconName.Calendar" IsEnabled="false"></BitRadioButtonOption>
+                    <BitRadioButtonOption Text="Day" Value="day" IconName="BitIconName.CalendarDay"></BitRadioButtonOption>
+                    <BitRadioButtonOption Text="Week" Value="week" IconName="BitIconName.CalendarWeek"></BitRadioButtonOption>
+                    <BitRadioButtonOption Text="Month" Value="month" IconName="BitIconName.Calendar" IsEnabled="false"></BitRadioButtonOption>
                 </BitRadioButtonGroup>
             </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="RadioButtonGroup with validation" CSharpSourceCode="@example5CSharpCode" HTMLSourceCode="@example5HTMLCode" ExampleId="example5">
+        <ExamplePreview>
+            @if (string.IsNullOrEmpty(SuccessMessage))
+            {
+                <EditForm Model="FormValidationModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
+                    <DataAnnotationsValidator />
+
+                    <div class="validation-summary">
+                        <ValidationSummary />
+                    </div>
+
+                    <div>
+                        <BitRadioButtonGroup Name="Group1" Label="Pick one" @bind-Value="@FormValidationModel.Option">
+                            <BitRadioButtonOption Text="Option A" Value="A"></BitRadioButtonOption>
+                            <BitRadioButtonOption Text="Option B" Value="B"></BitRadioButtonOption>
+                            <BitRadioButtonOption Text="Disabled option C" Value="C" IsEnabled="false"></BitRadioButtonOption>
+                        </BitRadioButtonGroup>
+
+                        <ValidationMessage For="@(() => FormValidationModel.Option)" />
+                    </div>
+
+                    <BitButton ButtonType="BitButtonType.Submit">
+                        Submit
+                    </BitButton>
+                </EditForm>
+            }
+            else
+            {
+                <BitMessageBar MessageBarType="BitMessageBarType.Success" IsMultiline="false">
+                    @SuccessMessage
+                </BitMessageBar>
+            }
         </ExamplePreview>
     </ComponentExampleBox>
 </ComponentDemo>

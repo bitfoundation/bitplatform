@@ -13,11 +13,6 @@ namespace Bit.Client.Web.BlazorUI
         private bool IsCheckedHasBeenSet;
 
         /// <summary>
-        /// A key to uniquely identify the option.
-        /// </summary>
-        [Parameter] public string? Key { get; set; }
-
-        /// <summary>
         /// RadioButtonOption content, It can be a text
         /// </summary>
         [Parameter] public string? Text { get; set; }
@@ -104,8 +99,8 @@ namespace Bit.Client.Web.BlazorUI
 
                 RadioButtonGroup.RegisterOption(this);
 
-                InputId = $"RadioButtonGroup{RadioButtonGroup.UniqueId}-{Key}";
-                TextId = $"RadioButtonGroupLabel{RadioButtonGroup.UniqueId}-{Key}";
+                InputId = $"RadioButtonGroup{RadioButtonGroup.UniqueId}-{Value}";
+                TextId = $"RadioButtonGroupLabel{RadioButtonGroup.UniqueId}-{Value}";
             }
 
             return base.OnInitializedAsync();
@@ -189,6 +184,5 @@ namespace Bit.Client.Web.BlazorUI
 
             _disposed = true;
         }
-
     }
 }

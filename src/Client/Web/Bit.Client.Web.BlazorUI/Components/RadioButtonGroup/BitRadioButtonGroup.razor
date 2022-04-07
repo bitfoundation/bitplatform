@@ -1,5 +1,6 @@
 ﻿@namespace Bit.Client.Web.BlazorUI
-@inherits BitComponentBase
+@inherits BitInputBase<string?>
+
 <div @ref="RootElement"
      @attributes="HtmlAttributes"
      style="@StyleBuilder.Value"
@@ -19,8 +20,7 @@
         }
 
         <div class="choice-field-group">
-            <CascadingValue Value="this"
-                            IsFixed="true">
+            <CascadingValue Value="this" IsFixed="true">
                 @ChildContent
             </CascadingValue>
         </div>
