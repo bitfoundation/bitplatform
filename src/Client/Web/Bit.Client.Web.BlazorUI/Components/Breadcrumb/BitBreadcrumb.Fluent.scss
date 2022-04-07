@@ -4,7 +4,7 @@
 
     li {
         display: inline-flex;
-        align-items:center;
+        align-items: center;
     }
 
     ul {
@@ -89,6 +89,7 @@
         white-space: nowrap;
         cursor: pointer;
         user-select: none;
+        min-width: rem(180px);
         -webkit-font-smoothing: antialiased;
 
         &:hover {
@@ -98,5 +99,6 @@
 
     ul {
         padding-inline-start: 0;
+        margin: 0;
     }
 }

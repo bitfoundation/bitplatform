@@ -47,7 +47,7 @@ namespace Bit.Client.Web.BlazorUI
 
         [Parameter] public BitIconName OnRenderOverflowIcon { get; set; } = BitIconName.More;
 
-        public string OverflowDropDownItemId { get; set; } = string.Empty;
+        public string BreadcrumbItemsWrapperId { get; set; } = string.Empty;
         public string OverflowDropDownId { get; set; } = string.Empty;
         public string OverflowDropDownMenuCalloutId { get; set; } = string.Empty;
         public string OverflowDropDownMenuOverlayId { get; set; } = string.Empty;
@@ -58,10 +58,10 @@ namespace Bit.Client.Web.BlazorUI
 
         protected async override Task OnParametersSetAsync()
         {
-            OverflowDropDownItemId = $"OverflowDropDownItem{UniqueId}";
-            OverflowDropDownId = $"OverflowDropDown{UniqueId}";
-            OverflowDropDownMenuOverlayId = $"{OverflowDropDownItemId}-overlay";
-            OverflowDropDownMenuCalloutId = $"{OverflowDropDownItemId}-list";
+            BreadcrumbItemsWrapperId = $"breadcrumb-items-wrapper-{UniqueId}";
+            OverflowDropDownId = $"overflow-dropdown-{UniqueId}";
+            OverflowDropDownMenuOverlayId = $"overflow-dropdown-overlay-{UniqueId}";
+            OverflowDropDownMenuCalloutId = $"overflow-dropdown-callout{UniqueId}";
 
             GetBreadcrumbItemsToShow();
 
@@ -73,7 +73,7 @@ namespace Bit.Client.Web.BlazorUI
             if (JSRuntime is null) return;
 
             var obj = DotNetObjectReference.Create(this);
-            await JSRuntime.InvokeVoidAsync("BitOverflowDropDownMenu.toggleDropDownCallout", obj, $"{OverflowDropDownItemId}{OverflowIndex}", OverflowDropDownId, OverflowDropDownMenuCalloutId, OverflowDropDownMenuOverlayId, isOpen);
+            await JSRuntime.InvokeVoidAsync("BitOverflowDropDownMenu.toggleOverflowDropDownMenuCallout", obj, BreadcrumbItemsWrapperId, OverflowDropDownId, OverflowDropDownMenuCalloutId, OverflowDropDownMenuOverlayId, isOpen);
             isOpen = false;
             StateHasChanged();
         }
@@ -83,7 +83,7 @@ namespace Bit.Client.Web.BlazorUI
             if (IsEnabled is false || JSRuntime is null) return;
 
             var obj = DotNetObjectReference.Create(this);
-            await JSRuntime.InvokeVoidAsync("BitOverflowDropDownMenu.toggleDropDownCallout", obj, $"{OverflowDropDownItemId}{OverflowIndex}", OverflowDropDownId, OverflowDropDownMenuCalloutId, OverflowDropDownMenuOverlayId, isOpen);
+            await JSRuntime.InvokeVoidAsync("BitOverflowDropDownMenu.toggleOverflowDropDownMenuCallout", obj, BreadcrumbItemsWrapperId, OverflowDropDownId, OverflowDropDownMenuCalloutId, OverflowDropDownMenuOverlayId, isOpen);
             isOpen = !isOpen;
         }
 
