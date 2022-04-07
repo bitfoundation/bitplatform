@@ -32,11 +32,8 @@
                            hidden="hidden"
                            required="@IsRequired"
                            disabled="@(option.IsEnabled is false)"
-                           @onclick="() => HandleOptionOnClcik(option)"
-                           @onchange="(e) => HandleOptionChange(e,option)" />
-                        <label for="@GetOptionInputId(option)"
-                           class="@GetOptionLabelClassName(option)"
-                           id="@GetOptionLabelId(option)">
+                           @onchange="() => HandleOptionChange(option)" />
+                        <label for="@GetOptionInputId(option)" class="@GetOptionLabelClassName(option)" id="@GetOptionLabelId(option)">
                             @if (option.ImageSrc.HasValue())
                             {
                                 <div class="bit-chgo-img-inner-field">
