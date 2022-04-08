@@ -30,6 +30,7 @@
         </BitRadioButtonOption>
     </BitRadioButtonGroup>
 </CascadingValue>
+
 @code {
     [Parameter] public Visual Visual { get; set; }
     [Parameter] public bool RadioButtonGroupIsEnabled { get; set; } = true;
@@ -51,16 +52,18 @@
 
     public int RadioButtonOptionClickedValue { get; set; }
     public int RadioButtonOptionChangedValue { get; set; }
-    public string RadioButtonGroupChangedValue { get; set; } = "";
+    public string RadioButtonGroupChangedValue { get; set; }
 
     public void HandleClick(MouseEventArgs e)
     {
         RadioButtonOptionClickedValue++;
     }
+
     public void HandleValueChange(string value)
     {
         RadioButtonGroupChangedValue = value;
     }
+
     public void HandleChange(bool isChecked)
     {
         RadioButtonOptionChangedValue++;
