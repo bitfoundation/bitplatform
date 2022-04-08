@@ -57,7 +57,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Breadcrumb
                 parameters.Add(p => p.MaxDisplayedItems, maxDisplayedItems);
             });
 
-            var breadcrumbElements = component.FindAll(".bit-brc ul li");
+            var breadcrumbElements = component.FindAll(".bit-brc .bit-brc-items-wrapper ul li");
 
             if (maxDisplayedItems > 0)
             {
@@ -87,7 +87,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Breadcrumb
 
             Assert.IsTrue(breadcrumbOverflowIcon.ClassList.Contains($"bit-icon--{icon}"));
 
-            var breadcrumbElements = component.FindAll(".bit-brc ul li");
+            var breadcrumbElements = component.FindAll(".bit-brc .bit-brc-items-wrapper ul li");
             var overflowItem = breadcrumbElements[overflowIndex];
 
             Assert.AreEqual(breadcrumbElements.Count, maxDisplayedItems + 1);
