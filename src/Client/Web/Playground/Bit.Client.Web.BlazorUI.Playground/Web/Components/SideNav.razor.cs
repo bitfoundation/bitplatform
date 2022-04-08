@@ -25,6 +25,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Components
                      new BitNavLinkItem { Name= "IconButton", Key = "IconButton", Url = "/components/icon-button"},
                      new BitNavLinkItem { Name= "ToggleButton", Key = "ToggleButton", Url = "/components/toggle-button" },
                      new BitNavLinkItem { Name= "CheckBox", Key = "CheckBox", Url = "/components/check-box" },
+                     new BitNavLinkItem { Name= "ChoiceGroup", Key = "ChoiceGroup", Url = "/components/choice-group" },
                      new BitNavLinkItem { Name= "RadioButtonGroup", Key = "RadioButtonGroup", Url = "/components/radio-button-group" },
                      new BitNavLinkItem { Name= "DropDown", Key = "DropDown", Url = "/components/drop-down" },
                      new BitNavLinkItem { Name= "FileUpload", Key= "FileUpload", Url = "/components/file-upload"},
