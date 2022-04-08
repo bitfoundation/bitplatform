@@ -13,7 +13,6 @@
         <Content Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Remove="Pages\_Layout.cshtml" />
         <Content Remove="compilerconfig.json" />
         <None Include="compilerconfig.json" />
-        <None Include="Pages\Components\ChoiceGroup\BitChoiceGroupDemo.razor" />
     </ItemGroup>
 
     <ItemGroup>
