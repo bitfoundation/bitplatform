@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Drawing;
 using System.Threading.Tasks;
 using Bit.Client.Web.BlazorUI.Components.ChoiceGroup;
-using Bit.Client.Web.BlazorUI.Playground.Web.Models;
 using Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 
 namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ChoiceGroup
@@ -83,7 +82,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ChoiceGroup
                    ImageSrc= "https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png",
                    SelectedImageSrc = "https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png",
                    ImageAlt = "alt for Bar image",
-                   ImageSize = new System.Drawing.Size(32, 32)
+                   ImageSize = new Size(32, 32)
                 },
                 new BitChoiceGroupOption()
                 {
@@ -92,7 +91,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ChoiceGroup
                     ImageSrc= "https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-pie-unselected.png",
                     SelectedImageSrc = "https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-pie-selected.png",
                     ImageAlt = "alt for Pie image",
-                    ImageSize = new System.Drawing.Size(32, 32)
+                    ImageSize = new Size(32, 32)
                 }
             };
 
