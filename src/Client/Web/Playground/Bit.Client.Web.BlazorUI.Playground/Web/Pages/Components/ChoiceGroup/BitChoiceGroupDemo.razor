@@ -7,7 +7,7 @@
     <ComponentExampleBox Title="Basic ChoiceGroup" HTMLSourceCode="@example1HtmlCode" CSharpSourceCode="@example_1_5_CSharpCode" ExampleId="example1">
         <ExamplePreview>
             <div class="example-desc">To create a ChoiceGroup you can use a BitChoiceGroup component</div>
-            <BitChoiceGroup Label="Pick one" Options="Example_1_5_6_Options">
+            <BitChoiceGroup Label="Pick one" Options="example_1_5_6_Options">
             </BitChoiceGroup>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -15,7 +15,7 @@
     <ComponentExampleBox Title="ChoiceGroup with disabled option and default selected key" HTMLSourceCode="@example2HtmlCode" CSharpSourceCode="@example2CSharpCode" ExampleId="example2">
         <ExamplePreview>
             <div class="example-desc">you can disable an option and set default selected key when initially</div>
-            <BitChoiceGroup Label="Pick one" Options="Example2Options" DefaultValue="B">
+            <BitChoiceGroup Label="Pick one" Options="example2Options" DefaultValue="B">
             </BitChoiceGroup>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -26,7 +26,7 @@
                 ChoiceGroup with images also you can set the selected image src for selected mode.
                 in addition, image size style and img tag alt attribute are settable.
             </div>
-            <BitChoiceGroup Label="Pick one image" Options="Example3Options">
+            <BitChoiceGroup Label="Pick one image" Options="example3Options">
             </BitChoiceGroup>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -34,7 +34,7 @@
     <ComponentExampleBox Title="ChoiceGroup with icons" HTMLSourceCode="@example4HtmlCode" CSharpSourceCode="@example4CSharpCode" ExampleId="example4">
         <ExamplePreview>
             <div class="example-desc">by BitIconName Interface you can select an icon name for showing in your option. </div>
-            <BitChoiceGroup Label="Pick one icon" Options="Example4Options">
+            <BitChoiceGroup Label="Pick one icon" Options="example4Options">
             </BitChoiceGroup>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -42,7 +42,7 @@
     <ComponentExampleBox Title="ChoiceGroup with a custom label" HTMLSourceCode="@example5HtmlCode" CSharpSourceCode="@example_1_5_CSharpCode" ExampleId="example5">
         <ExamplePreview>
             <div class="example-desc">Customize the ChoiceGroup label</div>
-            <BitChoiceGroup Options="Example_1_5_6_Options">
+            <BitChoiceGroup Options="example_1_5_6_Options">
                 <LabelFragment>
                     Custom label <BitIconButton IconName="BitIconName.Filter"></BitIconButton>
                 </LabelFragment>
@@ -61,7 +61,7 @@
                         <ValidationSummary />
                     </div>
                     <div>
-                        <BitChoiceGroup Options="Example_1_5_6_Options" @bind-Value="ValidationModel.Value">
+                        <BitChoiceGroup Options="example_1_5_6_Options" @bind-Value="ValidationModel.Value">
                         </BitChoiceGroup>
                         <ValidationMessage For="@(() => ValidationModel.Value)" />
                     </div>
@@ -80,7 +80,7 @@
     <ComponentExampleBox Title="ChoiceGroup with Option OnChange event" HTMLSourceCode="@example7HtmlCode" CSharpSourceCode="@example7CSharpCode" ExampleId="example7">
         <ExamplePreview>
             <div class="example-desc">Option OnChange Event: @OnChangeValue</div>
-            <BitChoiceGroup Label="Pick one" Options="Example7Options">
+            <BitChoiceGroup Label="Pick one" Options="example7Options">
             </BitChoiceGroup>
         </ExamplePreview>
     </ComponentExampleBox>

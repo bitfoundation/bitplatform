@@ -9,22 +9,22 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ChoiceGroup
 {
     public partial class BitChoiceGroupDemo
     {
-        private List<BitChoiceGroupOption> Example_1_5_6_Options;
+        private List<BitChoiceGroupOption> example_1_5_6_Options;
 
-        private List<BitChoiceGroupOption> Example2Options;
+        private List<BitChoiceGroupOption> example2Options;
 
-        private List<BitChoiceGroupOption> Example3Options;
+        private List<BitChoiceGroupOption> example3Options;
 
-        private List<BitChoiceGroupOption> Example4Options;
+        private List<BitChoiceGroupOption> example4Options;
 
-        private List<BitChoiceGroupOption> Example7Options;
+        private List<BitChoiceGroupOption> example7Options;
 
         /// <summary>
         /// BitChoiceGroupDemo class constructure
         /// </summary>
         public BitChoiceGroupDemo()
         {
-            Example_1_5_6_Options = new()
+            example_1_5_6_Options = new()
             {
                 new BitChoiceGroupOption()
                 {
@@ -48,7 +48,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ChoiceGroup
                 }
             };
 
-            Example2Options = new()
+            example2Options = new()
             {
                 new BitChoiceGroupOption()
                 {
@@ -73,7 +73,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ChoiceGroup
                 }
             };
 
-            Example3Options = new()
+            example3Options = new()
             {
                 new BitChoiceGroupOption()
                 {
@@ -95,7 +95,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ChoiceGroup
                 }
             };
 
-            Example4Options = new()
+            example4Options = new()
             {
                 new BitChoiceGroupOption()
                 {
@@ -118,7 +118,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ChoiceGroup
                 }
             };
 
-            Example7Options = new()
+            example7Options = new()
             {
                 new BitChoiceGroupOption()
                 {
@@ -147,11 +147,6 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ChoiceGroup
             };
         }
 
-        public class ChoiceGroupValidationModel
-        {
-            [Required(ErrorMessage = "Pick one")]
-            public string Value { get; set; }
-        }
         public ChoiceGroupValidationModel ValidationModel = new();
         public string SuccessMessage { get; set; } = string.Empty;
 
@@ -218,7 +213,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ChoiceGroup
         };
 
         private readonly string example_1_5_CSharpCode = @"
-        public List<BitChoiceGroupOption> Example_1_5_6_Options { get; set; } = new()
+        public List<BitChoiceGroupOption> example_1_5_6_Options { get; set; } = new()
         {
             new BitChoiceGroupOption()
             {
@@ -244,7 +239,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ChoiceGroup
 ";
 
         private readonly string example2CSharpCode = @"
-        public List<BitChoiceGroupOption> Example2Options { get; set; } = new()
+        public List<BitChoiceGroupOption> example2Options { get; set; } = new()
         {
             new BitChoiceGroupOption()
             {
@@ -271,7 +266,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ChoiceGroup
 ";
 
         private readonly string example3CSharpCode = @"
-        public List<BitChoiceGroupOption> Example3Options { get; set; } = new()
+        public List<BitChoiceGroupOption> example3Options { get; set; } = new()
         {
             new BitChoiceGroupOption()
             {
@@ -295,7 +290,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ChoiceGroup
 ";
 
         private readonly string example4CSharpCode = @"
-        public List<BitChoiceGroupOption> Example4Options { get; set; } = new()
+        public List<BitChoiceGroupOption> example4Options { get; set; } = new()
         {
             new BitChoiceGroupOption()
             {
@@ -320,7 +315,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ChoiceGroup
 ";
 
         private readonly string example6CSharpCode = @"
-        public List<BitChoiceGroupOption> Example_1_5_6_Options { get; set; } = new()
+        public List<BitChoiceGroupOption> example_1_5_6_Options { get; set; } = new()
         {
             new BitChoiceGroupOption()
             {
@@ -369,14 +364,14 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ChoiceGroup
 ";
 
         private readonly string example7CSharpCode = @"
-        private List<BitChoiceGroupOption> Example7Options;
+        private List<BitChoiceGroupOption> example7Options;
 
         /// <summary>
         /// class constructure
         /// </summary>
         public BitChoiceGroupDemo()
         {
-            Example7Options = new()
+            example7Options = new()
             {
                 new BitChoiceGroupOption()
                 {
@@ -413,23 +408,23 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ChoiceGroup
 ";
 
         private readonly string example1HtmlCode = @"
-<BitChoiceGroup Label=""Pick one"" Options=""Example_1_5_6_Options"">
+<BitChoiceGroup Label=""Pick one"" Options=""example_1_5_6_Options"">
 </BitChoiceGroup>";
 
         private readonly string example2HtmlCode = @"
-<BitChoiceGroup Label=""Pick one"" Options=""Example2Options"" DefaultValue=""B"">
+<BitChoiceGroup Label=""Pick one"" Options=""example2Options"" DefaultValue=""B"">
 </BitChoiceGroup>";
 
         private readonly string example3HtmlCode = @"
-<BitChoiceGroup Label=""Pick one image"" Options=""Example3Options"">
+<BitChoiceGroup Label=""Pick one image"" Options=""example3Options"">
 </BitChoiceGroup>";
 
         private readonly string example4HtmlCode = @"
-<BitChoiceGroup Label=""Pick one icon"" Options=""Example4Options"">
+<BitChoiceGroup Label=""Pick one icon"" Options=""example4Options"">
 </BitChoiceGroup>";
 
         private readonly string example5HtmlCode = @"
-<BitChoiceGroup Options=""Example_1_5_6_Options"" >
+<BitChoiceGroup Options=""example_1_5_6_Options"" >
     <LabelFragment>
         Custom label <BitIconButton IconName= ""BitIconName.Filter"" ></ BitIconButton >
     </ LabelFragment >
@@ -444,7 +439,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ChoiceGroup
             <ValidationSummary />
         </div>
         <div>
-            <BitChoiceGroup Options = ""Example_1_5_6_Options"" @bind-Value=""ValidationModel.Value"">
+            <BitChoiceGroup Options = ""example_1_5_6_Options"" @bind-Value=""ValidationModel.Value"">
             </BitChoiceGroup>
             <ValidationMessage For = ""@(() => ValidationModel.Value)"" />
         </ div >
@@ -459,7 +454,7 @@ else
 }";
 
         private readonly string example7HtmlCode = @"
-<BitChoiceGroup Label=""Pick one"" Options=""Example7Options"">
+<BitChoiceGroup Label=""Pick one"" Options=""example7Options"">
 </BitChoiceGroup>";
 
         private async void HandleValidSubmit()
