@@ -37,6 +37,9 @@ namespace Bit.Client.Web.BlazorUI
         /// </summary>
         [Parameter] public BitIconName DividerIcon { get; set; } = BitIconName.ChevronRight;
 
+        /// <summary>
+        /// Render a custom overflow icon in place of the default icon
+        /// </summary>
         [Parameter] public BitIconName OnRenderOverflowIcon { get; set; } = BitIconName.More;
 
 

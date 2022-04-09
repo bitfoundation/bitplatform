@@ -32,7 +32,7 @@ namespace Bit.Client.Web.BlazorUI
         public bool IsCurrentItem { get; set; }
 
         /// <summary>
-        /// Callback for when the dropdown clicked
+        /// Callback for when the breadcrumb item clicked
         /// </summary>
         public EventCallback<MouseEventArgs> OnClick { get; set; }
 
