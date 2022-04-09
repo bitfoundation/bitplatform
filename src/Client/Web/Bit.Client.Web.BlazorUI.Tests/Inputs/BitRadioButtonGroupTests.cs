@@ -276,5 +276,123 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
             //Assert.AreEqual(groupIsEnabled && optionIsEnabled ? count.ToString() : null, component.Instance.Value);
             //Assert.AreEqual(groupIsEnabled && optionIsEnabled ? 1 : 0, component.Instance.RadioButtonOptionChangedValue);
         }
+
+        [DataTestMethod,
+            DataRow(null),
+            DataRow("B")
+        ]
+        public void BitRadioButtonGroupValidationFormTest(string value)
+        {
+            var component = RenderComponent<BitRadioButtonGroupValidationTest>(parameters =>
+            {
+                parameters.Add(p => p.TestModel, new BitRadioButtonGroupTestModel { Value = value });
+            });
+
+            var isValid = value.HasValue();
+
+            var form = component.Find("form");
+            form.Submit();
+
+            Assert.AreEqual(component.Instance.ValidCount, isValid ? 1 : 0);
+            Assert.AreEqual(component.Instance.InvalidCount, isValid ? 0 : 1);
+
+            if (isValid is false)
+            {
+                // select first item
+                var option = component.Find(".bit-rbo-wrapper");
+                var radioInput = option.FirstElementChild;
+                radioInput.Click();
+
+                form.Submit();
+
+                Assert.AreEqual(component.Instance.ValidCount, 1);
+                Assert.AreEqual(component.Instance.InvalidCount, 1);
+                Assert.AreEqual(component.Instance.ValidCount, component.Instance.InvalidCount);
+            }
+        }
+
+        [DataTestMethod,
+            DataRow(null),
+            DataRow("B")
+        ]
+        public void BitRadioButtonGroupValidationInvalidHtmlAttributeTest(string value)
+        {
+            var component = RenderComponent<BitRadioButtonGroupValidationTest>(parameters =>
+            {
+                parameters.Add(p => p.TestModel, new BitRadioButtonGroupTestModel { Value = value });
+            });
+
+            var isInvalid = value.HasNoValue();
+
+            var options = component.FindAll("input", true);
+            foreach (var option in options)
+            {
+                Assert.IsFalse(option.HasAttribute("aria-invalid"));
+            }
+
+            var form = component.Find("form");
+            form.Submit();
+
+            foreach (var option in options)
+            {
+                Assert.AreEqual(option.HasAttribute("aria-invalid"), isInvalid);
+                if (option.HasAttribute("aria-invalid"))
+                {
+                    Assert.AreEqual(option.GetAttribute("aria-invalid"), "true");
+                }
+            }
+
+            if (isInvalid)
+            {
+                // select first item
+                var firstOption = component.Find(".bit-rbo-wrapper");
+                var radioInput = firstOption.FirstElementChild;
+                radioInput.Click();
+
+                foreach (var option in options)
+                {
+                    Assert.IsFalse(option.HasAttribute("aria-invalid"));
+                }
+            }
+        }
+
+        [DataTestMethod,
+            DataRow(Visual.Fluent, null),
+            DataRow(Visual.Fluent, "B"),
+            DataRow(Visual.Cupertino, null),
+            DataRow(Visual.Cupertino, "B"),
+            DataRow(Visual.Material, null),
+            DataRow(Visual.Material, "B")
+        ]
+        public void BitRadioButtonGroupValidationInvalidCssClassTest(Visual visual, string value)
+        {
+            var component = RenderComponent<BitRadioButtonGroupValidationTest>(parameters =>
+            {
+                parameters.Add(p => p.Visual, visual);
+                parameters.Add(p => p.TestModel, new BitRadioButtonGroupTestModel { Value = value });
+            });
+
+            var isInvalid = value.HasNoValue();
+
+            var bitRadioButtonGroup = component.Find(".bit-rbg");
+            var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
+
+            Assert.IsFalse(bitRadioButtonGroup.ClassList.Contains($"bit-rbg-invalid-{visualClass}"));
+
+            var form = component.Find("form");
+            form.Submit();
+
+            Assert.AreEqual(bitRadioButtonGroup.ClassList.Contains($"bit-rbg-invalid-{visualClass}"), isInvalid);
+
+            if (isInvalid)
+            {
+                // select first item
+                var firstOption = component.Find(".bit-rbo-wrapper");
+                var radioInput = firstOption.FirstElementChild;
+                radioInput.Click();
+            }
+
+            Assert.IsFalse(bitRadioButtonGroup.ClassList.Contains($"bit-rbg-invalid-{visualClass}"));
+        }
     }
 }

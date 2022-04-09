@@ -1,5 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Bit.Client.Web.BlazorUI.Playground.Web.Models;
 using Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 
@@ -7,7 +7,22 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.RadioButtonGro
 {
     public partial class BitRadioButtonGroupDemo
     {
-        private string MySelectedKey = "B";
+        private string MyValue = "B";
+        private string SuccessMessage = string.Empty;
+        private FormValidationModel FormValidationModel = new();
+
+        private async void HandleValidSubmit()
+        {
+            SuccessMessage = "Form Submitted Successfully!";
+            await Task.Delay(3000);
+            SuccessMessage = string.Empty;
+            StateHasChanged();
+        }
+
+        private void HandleInvalidSubmit()
+        {
+            SuccessMessage = string.Empty;
+        }
 
         private readonly List<ComponentParameter> componentParameters = new()
         {
@@ -20,10 +35,10 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.RadioButtonGro
             },
             new ComponentParameter()
             {
-                Name = "DefaultSelectedKey",
+                Name = "DefaultValue",
                 Type = "string",
                 DefaultValue = "",
-                Description = "Default selected key for RadioButtonGroup.",
+                Description = "Default value for RadioButtonGroup.",
             },
             new ComponentParameter()
             {
@@ -69,24 +84,17 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.RadioButtonGro
             },
             new ComponentParameter()
             {
-                Name = "SelectedKey",
-                Type = "string",
-                DefaultValue = "",
-                Description = "Contains the key of the selected item.",
-            },
-            new ComponentParameter()
-            {
-                Name = "SelectedKeyChanged",
-                Type = "EventCallback<string>",
-                DefaultValue = "",
-                Description = "Callback for when the selected Key changed.",
-            },
-            new ComponentParameter()
-            {
                 Name = "Value",
                 Type = "string",
                 DefaultValue = "",
                 Description = "Value of RadioButtonGroup, the value of selected RadioButtonOption set on it.",
+            },
+            new ComponentParameter()
+            {
+                Name = "ValueChanged",
+                Type = "EventCallback<string>",
+                DefaultValue = "",
+                Description = "Callback for when the selected value changed.",
             },
             new ComponentParameter()
             {
@@ -130,33 +138,105 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.RadioButtonGro
             }
         };
 
-        private readonly string example1HTMLCode = @"<BitLabel>Selected Key is : @MySelectedKey</BitLabel>
-<BitTextField @bind-Value=""MySelectedKey"" Placeholder=""Select one of A, B or C""></BitTextField>
-<BitRadioButtonGroup Name=""Group1"" Label=""Pick one"" IsRequired=""true"" @bind-SelectedKey=""MySelectedKey"">
-    <BitRadioButtonOption Key=""A"" Text=""Option A"" Value=""1""></BitRadioButtonOption>
-    <BitRadioButtonOption Key=""B"" Text=""Option B"" Value=""2""></BitRadioButtonOption>
-    <BitRadioButtonOption Key=""C"" Text=""Disabled option C"" Value=""3"" IsEnabled=""false""></BitRadioButtonOption>
+        #region Example Code 1
+
+        private readonly string example1HTMLCode = @"<BitLabel>Selected Key is : @MyValue</BitLabel>
+<BitTextField @bind-Value=""MyValue"" Placeholder=""Select one of A, B or C""></BitTextField>
+<BitRadioButtonGroup Name=""Group1"" Label=""Pick one"" IsRequired=""true"" @bind-Value=""MyValue"">
+    <BitRadioButtonOption Text=""Option A"" Value=""A""></BitRadioButtonOption>
+    <BitRadioButtonOption Text=""Option B"" Value=""B""></BitRadioButtonOption>
+    <BitRadioButtonOption Text=""Disabled option C"" Value=""C"" IsEnabled=""false""></BitRadioButtonOption>
 </BitRadioButtonGroup>";
 
         private readonly string example1CSharpCode = @"
-private string MySelectedKey = ""B"";";
+private string MyValue = ""B"";";
 
-        private readonly string example2HTMLCode = @"<BitRadioButtonGroup Name=""Group2"" IsEnabled=""false"" Label=""Pick one"" DefaultSelectedKey=""C"">
-    <BitRadioButtonOption Key=""A"" Text=""Option A"" Value=""1""></BitRadioButtonOption>
-    <BitRadioButtonOption Key=""B"" Text=""Option2 B"" Value=""2""></BitRadioButtonOption>
-    <BitRadioButtonOption Key=""C"" Text=""Disabled option C"" Value=""3"" IsEnabled=""false""></BitRadioButtonOption>
+        #endregion
+
+        #region Example Code 2
+
+        private readonly string example2HTMLCode = @"<BitRadioButtonGroup Name=""Group2"" IsEnabled=""false"" Label=""Pick one"" DefaultValue=""C"">
+    <BitRadioButtonOption Text=""Option A"" Value=""A""></BitRadioButtonOption>
+    <BitRadioButtonOption Text=""Option2 B"" Value=""B""></BitRadioButtonOption>
+    <BitRadioButtonOption Text=""Disabled option C"" Value=""C"" IsEnabled=""false""></BitRadioButtonOption>
 </BitRadioButtonGroup>";
 
-        private readonly string example3HTMLCode = @"<BitRadioButtonGroup Name=""Group1"" Label=""Pick one image"" DefaultSelectedKey=""pie"">
-    <BitRadioButtonOption Key=""bar"" Text=""Clustered bar chart"" Value=""1"" ImageSrc=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png"" ImageAlt=""alt for image Option 1"" SelectedImageSrc=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png"" ImageSize=""new System.Drawing.Size( width: 32, height: 32)""></BitRadioButtonOption>
-    <BitRadioButtonOption Key=""pie"" Text=""Pie chart"" Value=""2"" ImageSrc=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png"" ImageAlt=""alt for image Option 2"" SelectedImageSrc=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png"" ImageSize=""new System.Drawing.Size( width: 32, height: 32)""></BitRadioButtonOption>
-    <BitRadioButtonOption Key=""disabeled_option"" Text=""Disabeled"" IsEnabled=""false"" Value=""3"" ImageSrc=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png"" ImageAlt=""alt for image Option 2"" SelectedImageSrc=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png"" ImageSize=""new System.Drawing.Size( width: 32, height: 32)""></BitRadioButtonOption>
+        #endregion
+
+        #region Example Code 3
+
+        private readonly string example3HTMLCode = @"<BitRadioButtonGroup Name=""Group1"" Label=""Pick one image"" DefaultValue=""pie"">
+    <BitRadioButtonOption Text=""Clustered bar chart"" Value=""bar"" ImageSrc=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png"" ImageAlt=""alt for image Option 1"" SelectedImageSrc=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png"" ImageSize=""new System.Drawing.Size( width: 32, height: 32)""></BitRadioButtonOption>
+    <BitRadioButtonOption Text=""Pie chart"" Value=""pie"" ImageSrc=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png"" ImageAlt=""alt for image Option 2"" SelectedImageSrc=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png"" ImageSize=""new System.Drawing.Size( width: 32, height: 32)""></BitRadioButtonOption>
+    <BitRadioButtonOption Text=""Disabeled"" IsEnabled=""false"" Value=""disabeled_option"" ImageSrc=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png"" ImageAlt=""alt for image Option 2"" SelectedImageSrc=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png"" ImageSize=""new System.Drawing.Size( width: 32, height: 32)""></BitRadioButtonOption>
 </BitRadioButtonGroup>";
+
+        #endregion
+
+        #region Example Code 4
 
         private readonly string example4HTMLCode = @"<BitRadioButtonGroup Name=""Group1"" Label=""Pick one icon"">
-    <BitRadioButtonOption Key=""day"" Text=""Day"" Value=""1"" IconName=""BitIconName.CalendarDay""></BitRadioButtonOption>
-    <BitRadioButtonOption Key=""week"" Text=""Week"" Value=""2"" IconName=""BitIconName.CalendarWeek""></BitRadioButtonOption>
-    <BitRadioButtonOption Key=""month"" Text=""Month"" Value=""3"" IconName=""BitIconName.Calendar"" IsEnabled=""false""></BitRadioButtonOption>
+    <BitRadioButtonOption Text=""Day"" Value=""day"" IconName=""BitIconName.CalendarDay""></BitRadioButtonOption>
+    <BitRadioButtonOption Text=""Week"" Value=""week"" IconName=""BitIconName.CalendarWeek""></BitRadioButtonOption>
+    <BitRadioButtonOption Text=""Month"" Value=""month"" IconName=""BitIconName.Calendar"" IsEnabled=""false""></BitRadioButtonOption>
 </BitRadioButtonGroup>";
+
+        #endregion
+
+        #region Example Code 5
+
+        private readonly string example5HTMLCode = @"@if (string.IsNullOrEmpty(SuccessMessage))
+{
+    <EditForm Model=""FormValidationModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
+        <DataAnnotationsValidator />
+
+        <div class=""validation-summary"">
+            <ValidationSummary />
+        </div>
+
+        <div>
+            <BitRadioButtonGroup Name=""Group1"" Label=""Pick one"" @bind-Value=""@FormValidationModel.Option"">
+                <BitRadioButtonOption Text=""Option A"" Value=""A""></BitRadioButtonOption>
+                <BitRadioButtonOption Text=""Option B"" Value=""B""></BitRadioButtonOption>
+                <BitRadioButtonOption Text=""Disabled option C"" Value=""C"" IsEnabled=""false""></BitRadioButtonOption>
+            </BitRadioButtonGroup>
+
+            <ValidationMessage For=""@(() => FormValidationModel.Option)"" />
+        </div>
+
+        <BitButton ButtonType=""BitButtonType.Submit"">
+            Submit
+        </BitButton>
+    </EditForm>
+}
+else
+{
+    <BitMessageBar MessageBarType=""BitMessageBarType.Success"" IsMultiline=""false"">
+        @SuccessMessage
+    </BitMessageBar>
+}";
+
+        private readonly string example5CSharpCode = @"public class FormValidationModel
+{
+    [Required]
+    public string Option { get; set; }
+}
+private string SuccessMessage = string.Empty;
+private FormValidationModel FormValidationModel = new();
+
+private async void HandleValidSubmit()
+{
+    SuccessMessage = ""Form Submitted Successfully!"";
+    await Task.Delay(3000);
+    SuccessMessage = string.Empty;
+    StateHasChanged();
+}
+
+private void HandleInvalidSubmit()
+{
+    SuccessMessage = string.Empty;
+}";
+
+        #endregion
     }
 }

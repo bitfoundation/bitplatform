@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
@@ -10,15 +11,13 @@ namespace Bit.Client.Web.BlazorUI
     public partial class BitRadioButtonGroup
     {
         private bool isRequired;
-        private string? selectedKey;
-        private bool SelectedKeyHasBeenSet;
         private BitRadioButtonOption? SelectedOption;
         private List<BitRadioButtonOption> AllOptions = new();
 
         /// <summary>
-        /// Default selected key for RadioButtonGroup.
+        /// Default value for RadioButtonGroup.
         /// </summary>
-        [Parameter] public string? DefaultSelectedKey { get; set; }
+        [Parameter] public string? DefaultValue { get; set; }
 
         /// <summary>
         /// If true, an option must be selected in the RadioButtonGroup.
@@ -45,22 +44,6 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public string AriaLabelledBy { get; set; } = string.Empty;
 
         /// <summary>
-        /// Contains the key of the selected item
-        /// </summary>
-        [Parameter]
-        public string? SelectedKey
-        {
-            get => selectedKey;
-            set
-            {
-                if (value == selectedKey) return;
-                SelectOptionByKey(value);
-            }
-        }
-
-        [Parameter] public EventCallback<string?> SelectedKeyChanged { get; set; }
-
-        /// <summary>
         /// Used to customize the label for the RadioButtonGroup.
         /// </summary>
         [Parameter] public RenderFragment? LabelFragment { get; set; }
@@ -69,11 +52,6 @@ namespace Bit.Client.Web.BlazorUI
         /// Name of RadioButtonGroup, this name is used to group each RadioButtonGroup into the same logical RadioButtonGroup
         /// </summary>
         [Parameter] public string Name { get; set; } = Guid.NewGuid().ToString();
-
-        /// <summary>
-        /// Value of RadioButtonGroup, the value of selected RadioButtonGroup set on it
-        /// </summary>
-        [Parameter] public string? Value { get; set; }
 
         /// <summary>
         /// The content of RadioButtonGroup, common values are RadioButtonGroup component 
@@ -93,39 +71,41 @@ namespace Bit.Client.Web.BlazorUI
         {
             ClassBuilder.Register(() => IsEnabled && IsRequired
                                        ? $"{RootElementClass}-required-{VisualClassRegistrar()}" : string.Empty);
+
+            ClassBuilder.Register(() => ValueInvalid is true
+                                       ? $"{RootElementClass}-invalid-{VisualClassRegistrar()}" : string.Empty);
         }
 
-        protected override Task OnInitializedAsync()
+        protected override async Task OnInitializedAsync()
         {
-            selectedKey = selectedKey ?? DefaultSelectedKey;
+            CurrentValue ??= DefaultValue;
             LabelId = $"RadioButtonGroupLabel{UniqueId}";
-            return base.OnInitializedAsync();
+            OnCurrentValueChanged += HandleOnCurrentValueChanged;
+
+            await base.OnInitializedAsync();
         }
 
         internal async Task SelectOption(BitRadioButtonOption option)
         {
-            if (SelectedKeyHasBeenSet && SelectedKeyChanged.HasDelegate is false) return;
+            if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
 
             SelectedOption?.SetState(false);
             option.SetState(true);
 
-            Value = option.Value;
             SelectedOption = option;
-            selectedKey = option.Key;
+            CurrentValue = option.Value;
 
-            await SelectedKeyChanged.InvokeAsync(selectedKey);
-
-            await OnValueChange.InvokeAsync(Value);
+            await OnValueChange.InvokeAsync(CurrentValue);
         }
 
         internal void RegisterOption(BitRadioButtonOption option)
         {
-            if (option.Key.HasNoValue())
+            if (option.Value.HasNoValue())
             {
-                option.Key = AllOptions.Count.ToString(CultureInfo.InvariantCulture);
+                option.Value = AllOptions.Count.ToString(CultureInfo.InvariantCulture);
             }
 
-            if (SelectedKey == option.Key)
+            if (CurrentValue == option.Value)
             {
                 option.SetState(true);
                 SelectedOption = option;
@@ -139,13 +119,13 @@ namespace Bit.Client.Web.BlazorUI
             AllOptions.Remove(option);
         }
 
-        private void SelectOptionByKey(string? key)
+        private void SelectOptionByKey(string? value)
         {
-            var newOption = AllOptions.FirstOrDefault(i => i.Key == key);
+            var newOption = AllOptions.FirstOrDefault(i => i.Value == value);
 
-            if (newOption == null || newOption == SelectedOption || newOption.IsEnabled is false)
+            if (newOption is null || newOption == SelectedOption || newOption.IsEnabled is false)
             {
-                _ = SelectedKeyChanged.InvokeAsync(selectedKey);
+                _ = ValueChanged.InvokeAsync(Value);
                 return;
             }
 
@@ -153,5 +133,24 @@ namespace Bit.Client.Web.BlazorUI
         }
 
         private string GetAriaLabelledBy() => Label.HasValue() || LabelFragment is not null ? LabelId : AriaLabelledBy;
+
+        private void HandleOnCurrentValueChanged(object? sender, EventArgs args)
+        {
+            SelectOptionByKey(CurrentValue);
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                OnCurrentValueChanged -= HandleOnCurrentValueChanged;
+            }
+
+            base.Dispose(disposing);
+        }
+
+        /// <inheritdoc />
+        protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out string result, [NotNullWhen(false)] out string? validationErrorMessage)
+            => throw new NotSupportedException($"This component does not parse string inputs. Bind to the '{nameof(CurrentValue)}' property, not '{nameof(CurrentValueAsString)}'.");
     }
 }
