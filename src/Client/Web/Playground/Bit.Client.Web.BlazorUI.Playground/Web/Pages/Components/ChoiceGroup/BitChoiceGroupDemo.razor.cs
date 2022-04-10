@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Drawing;
 using System.Threading.Tasks;
 using Bit.Client.Web.BlazorUI.Components.ChoiceGroup;
@@ -165,7 +164,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ChoiceGroup
             {
                 Name = "Name",
                 Type = "string",
-                DefaultValue = "Guid.NewGuid().ToString()",
+                DefaultValue = "a Guid",
                 Description = "Name of ChoiceGroup, this name is used to group each option into the same logical ChoiceGroup."
             },
             new ComponentParameter
