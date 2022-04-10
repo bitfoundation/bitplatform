@@ -149,7 +149,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
         }
 
         [DataTestMethod, DataRow(BitIconName.Emoji2)]
-        public void BitChoiceGroupShouldrespectIcon(BitIconName iconName)
+        public void BitChoiceGroupShouldRespectIcon(BitIconName iconName)
         {
             var component = RenderComponent<BitChoiceGroupTest>(
                 parameters =>
@@ -166,6 +166,45 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
 
             var icon = component.Find(".bit-chgo-icon-wrapper i");
             Assert.IsTrue(icon.ClassList.Contains($"bit-icon--{iconName.GetName()}"));
+        }
+
+        [DataTestMethod, DataRow(true, true), DataRow(true, false), DataRow(false, true), DataRow(false, false)]
+        public void BitChoiceGroupOtionOnChangeShouldWorkIfIsEnabled(bool groupIsEnabled, bool optionIsEnabled)
+        {
+            bool optionOnChangeValue = false;
+
+            var component = RenderComponent<BitChoiceGroupTest>(
+               parameters =>
+               {
+                   parameters.Add(p => p.IsEnabled, groupIsEnabled);
+                   parameters.Add(p => p.Options, new()
+                   {
+                        new BitChoiceGroupOption
+                        {
+                            Value = "key1",
+                            IsEnabled = optionIsEnabled,
+                            OnChange = () => optionOnChangeValue = true
+                        }
+                   });
+               });
+
+            var bitChoiceGroupOptions = component.Find(".bit-chgo-input");
+
+            bitChoiceGroupOptions.Change(new BitChoiceGroupOption
+            {
+                Value = "key1",
+                IsEnabled = optionIsEnabled,
+                OnChange = () => optionOnChangeValue = true
+            });
+
+            if (groupIsEnabled is false || optionIsEnabled is false)
+            {
+                Assert.IsFalse(optionOnChangeValue);
+            }
+            else
+            {
+                Assert.IsTrue(optionOnChangeValue);
+            }
         }
     }
 }
