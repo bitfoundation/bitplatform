@@ -211,6 +211,12 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ChoiceGroup
             }
         };
 
+        #region Example Code 1
+
+        private readonly string example1HtmlCode = @"
+<BitChoiceGroup Label=""Pick one"" Options=""example_1_5_6_Options"">
+</BitChoiceGroup>";
+
         private readonly string example_1_5_CSharpCode = @"
         public List<BitChoiceGroupOption> example_1_5_6_Options { get; set; } = new()
         {
@@ -236,6 +242,10 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ChoiceGroup
             }
         }; 
 ";
+
+        #endregion
+
+        #region Example Code 2
 
         private readonly string example2CSharpCode = @"
         public List<BitChoiceGroupOption> example2Options { get; set; } = new()
@@ -264,6 +274,14 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ChoiceGroup
         };
 ";
 
+        private readonly string example2HtmlCode = @"
+<BitChoiceGroup Label=""Pick one"" Options=""example2Options"" DefaultValue=""B"">
+</BitChoiceGroup>";
+
+        #endregion
+
+        #region Example Code 3
+
         private readonly string example3CSharpCode = @"
         public List<BitChoiceGroupOption> example3Options { get; set; } = new()
         {
@@ -274,7 +292,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ChoiceGroup
                ImageSrc= ""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png"",
                SelectedImageSrc = ""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png"",
                ImageAlt = ""alt for Bar image"",
-               ImageSize = new System.Drawing.Size(32, 32)
+               ImageSize = new Size(32, 32)
             },
             new BitChoiceGroupOption()
             {
@@ -283,10 +301,18 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ChoiceGroup
                 ImageSrc = ""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-pie-unselected.png"",
                 SelectedImageSrc = ""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-pie-selected.png"",
                 ImageAlt = ""alt for Pie image"",
-                ImageSize = new System.Drawing.Size(32, 32)
+                ImageSize = new Size(32, 32)
             }
         };
 ";
+
+        private readonly string example3HtmlCode = @"
+<BitChoiceGroup Label=""Pick one image"" Options=""example3Options"">
+</BitChoiceGroup>";
+
+        #endregion
+
+        #region Example Code 4
 
         private readonly string example4CSharpCode = @"
         public List<BitChoiceGroupOption> example4Options { get; set; } = new()
@@ -312,6 +338,25 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ChoiceGroup
             }
         };
 ";
+
+        private readonly string example4HtmlCode = @"
+<BitChoiceGroup Label=""Pick one icon"" Options=""example4Options"">
+</BitChoiceGroup>";
+
+        #endregion
+
+        #region Example Code 5
+
+        private readonly string example5HtmlCode = @"
+<BitChoiceGroup Options=""example_1_5_6_Options"">
+    <LabelFragment>
+        Custom label <BitIconButton IconName= ""BitIconName.Filter""></BitIconButton>
+    </LabelFragment>
+</BitChoiceGroup>";
+
+        #endregion
+
+        #region Example Code 6
 
         private readonly string example6CSharpCode = @"
         public List<BitChoiceGroupOption> example_1_5_6_Options { get; set; } = new()
@@ -362,6 +407,33 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ChoiceGroup
         }
 ";
 
+        private readonly string example6HtmlCode = @"
+@if (string.IsNullOrEmpty(SuccessMessage))
+{
+    <EditForm Model=""@ValidationModel"" OnValidSubmit=""@HandleValidSubmit"" OnInvalidSubmit=""@HandleInvalidSubmit"">
+        <DataAnnotationsValidator />
+        <div class=""validation-summary"">
+            <ValidationSummary />
+        </div>
+        <div>
+            <BitChoiceGroup Options = ""example_1_5_6_Options"" @bind-Value=""ValidationModel.Value"">
+            </BitChoiceGroup>
+            <ValidationMessage For = ""@(() => ValidationModel.Value)"" />
+        </div>
+        <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
+    </EditForm>
+}
+else
+{
+    <BitMessageBar MessageBarType = ""BitMessageBarType.Success"" IsMultiline=""false"">
+        @SuccessMessage
+    </BitMessageBar>
+}";
+
+        #endregion
+
+        #region Example Code 7
+
         private readonly string example7CSharpCode = @"
         private List<BitChoiceGroupOption> example7Options;
 
@@ -406,55 +478,11 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ChoiceGroup
         }
 ";
 
-        private readonly string example1HtmlCode = @"
-<BitChoiceGroup Label=""Pick one"" Options=""example_1_5_6_Options"">
-</BitChoiceGroup>";
-
-        private readonly string example2HtmlCode = @"
-<BitChoiceGroup Label=""Pick one"" Options=""example2Options"" DefaultValue=""B"">
-</BitChoiceGroup>";
-
-        private readonly string example3HtmlCode = @"
-<BitChoiceGroup Label=""Pick one image"" Options=""example3Options"">
-</BitChoiceGroup>";
-
-        private readonly string example4HtmlCode = @"
-<BitChoiceGroup Label=""Pick one icon"" Options=""example4Options"">
-</BitChoiceGroup>";
-
-        private readonly string example5HtmlCode = @"
-<BitChoiceGroup Options=""example_1_5_6_Options"" >
-    <LabelFragment>
-        Custom label <BitIconButton IconName= ""BitIconName.Filter"" ></ BitIconButton >
-    </ LabelFragment >
-</ BitChoiceGroup >";
-
-        private readonly string example6HtmlCode = @"
-@if (string.IsNullOrEmpty(SuccessMessage))
-{
-    <EditForm Model=""@ValidationModel"" OnValidSubmit=""@HandleValidSubmit"" OnInvalidSubmit=""@HandleInvalidSubmit"">
-        <DataAnnotationsValidator />
-        <div class=""validation-summary"">
-            <ValidationSummary />
-        </div>
-        <div>
-            <BitChoiceGroup Options = ""example_1_5_6_Options"" @bind-Value=""ValidationModel.Value"">
-            </BitChoiceGroup>
-            <ValidationMessage For = ""@(() => ValidationModel.Value)"" />
-        </ div >
-        < BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
-    </EditForm>
-}
-else
-{
-    <BitMessageBar MessageBarType = ""BitMessageBarType.Success"" IsMultiline=""false"">
-        @SuccessMessage
-    </BitMessageBar>
-}";
-
         private readonly string example7HtmlCode = @"
 <BitChoiceGroup Label=""Pick one"" Options=""example7Options"">
 </BitChoiceGroup>";
+
+        #endregion
 
         private async void HandleValidSubmit()
         {
