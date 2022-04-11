@@ -8,14 +8,6 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ChoiceGroup
 {
     public partial class BitChoiceGroupDemo
     {
-        private List<BitChoiceGroupOption> example_1_5_6_Options;
-
-        private List<BitChoiceGroupOption> example2Options;
-
-        private List<BitChoiceGroupOption> example3Options;
-
-        private List<BitChoiceGroupOption> example4Options;
-
         private List<BitChoiceGroupOption> example7Options;
 
         /// <summary>
@@ -23,130 +15,179 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ChoiceGroup
         /// </summary>
         public BitChoiceGroupDemo()
         {
-            example_1_5_6_Options = new()
-            {
-                new BitChoiceGroupOption()
-                {
-                   Text = "Option A",
-                   Value = "A"
-                },
-                new BitChoiceGroupOption()
-                {
-                    Text = "Option B",
-                    Value = "B"
-                },
-                new BitChoiceGroupOption()
-                {
-                   Text = "Option C",
-                   Value = "C"
-                },
-                new BitChoiceGroupOption()
-                {
-                   Text = "Option D",
-                   Value = "D"
-                }
-            };
-
-            example2Options = new()
-            {
-                new BitChoiceGroupOption()
-                {
-                   Text = "Option A",
-                   Value = "A"
-                },
-                new BitChoiceGroupOption()
-                {
-                    Text = "Option B",
-                    Value = "B"
-                },
-                new BitChoiceGroupOption()
-                {
-                   Text = "Option C",
-                   Value = "C",
-                   IsEnabled = false
-                },
-                new BitChoiceGroupOption()
-                {
-                   Text = "Option D",
-                   Value = "D"
-                }
-            };
-
-            example3Options = new()
-            {
-                new BitChoiceGroupOption()
-                {
-                   Text = "Bar",
-                   Value = "Bar",
-                   ImageSrc= "https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png",
-                   SelectedImageSrc = "https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png",
-                   ImageAlt = "alt for Bar image",
-                   ImageSize = new Size(32, 32)
-                },
-                new BitChoiceGroupOption()
-                {
-                    Text = "Pie",
-                    Value = "Pie",
-                    ImageSrc= "https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-pie-unselected.png",
-                    SelectedImageSrc = "https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-pie-selected.png",
-                    ImageAlt = "alt for Pie image",
-                    ImageSize = new Size(32, 32)
-                }
-            };
-
-            example4Options = new()
-            {
-                new BitChoiceGroupOption()
-                {
-                   Text = "Day",
-                   Value = "Day",
-                   IconName = BitIconName.CalendarDay
-                },
-                new BitChoiceGroupOption()
-                {
-                    Text = "Week",
-                    Value = "Week",
-                    IconName = BitIconName.CalendarWeek
-                },
-                new BitChoiceGroupOption()
-                {
-                    Text = "Month",
-                    Value = "Month",
-                    IconName = BitIconName.Calendar,
-                    IsEnabled = false
-                }
-            };
-
             example7Options = new()
             {
                 new BitChoiceGroupOption()
                 {
                    Text = "Option A",
                    Value = "A",
-                   OnChange = () => {OptionOnChange("A"); }
+                   OnChange = () => OptionOnChange("A")
                 },
                 new BitChoiceGroupOption()
                 {
                     Text = "Option B",
                     Value = "B",
-                    OnChange = () => {OptionOnChange("B"); }
+                    OnChange = () => OptionOnChange("B")
                 },
                 new BitChoiceGroupOption()
                 {
                    Text = "Option C",
                    Value = "C",
-                   OnChange = () => {OptionOnChange("C"); }
+                   OnChange = () => OptionOnChange("C")
                 },
                 new BitChoiceGroupOption()
                 {
                    Text = "Option D",
                    Value = "D",
-                   OnChange = () => {OptionOnChange("D"); }
+                   OnChange = () => OptionOnChange("D")
                 }
             };
         }
 
+        private List<BitChoiceGroupOption> Example1Options { get; set; } = new()
+        {
+            new BitChoiceGroupOption()
+            {
+                Text = "Option A",
+                Value = "A"
+            },
+            new BitChoiceGroupOption()
+            {
+                Text = "Option B",
+                Value = "B"
+            },
+            new BitChoiceGroupOption()
+            {
+                Text = "Option C",
+                Value = "C"
+            },
+            new BitChoiceGroupOption()
+            {
+                Text = "Option D",
+                Value = "D"
+            }
+        };
+
+        private List<BitChoiceGroupOption> Example2Options { get; set; } = new()
+        {
+            new BitChoiceGroupOption()
+            {
+                Text = "Option A",
+                Value = "A"
+            },
+            new BitChoiceGroupOption()
+            {
+                Text = "Option B",
+                Value = "B"
+            },
+            new BitChoiceGroupOption()
+            {
+                Text = "Option C",
+                Value = "C",
+                IsEnabled = false
+            },
+            new BitChoiceGroupOption()
+            {
+                Text = "Option D",
+                Value = "D"
+            }
+        };
+
+        private List<BitChoiceGroupOption> Example3Options { get; set; } = new()
+        {
+            new BitChoiceGroupOption()
+            {
+                Text = "Bar",
+                Value = "Bar",
+                ImageSrc= "https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png",
+                SelectedImageSrc = "https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png",
+                ImageAlt = "alt for Bar image",
+                ImageSize = new Size(32, 32)
+            },
+            new BitChoiceGroupOption()
+            {
+                Text = "Pie",
+                Value = "Pie",
+                ImageSrc= "https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-pie-unselected.png",
+                SelectedImageSrc = "https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-pie-selected.png",
+                ImageAlt = "alt for Pie image",
+                ImageSize = new Size(32, 32)
+            }
+        };
+
+        private List<BitChoiceGroupOption> Example4Options { get; set; } = new()
+        {
+            new BitChoiceGroupOption()
+            {
+                Text = "Day",
+                Value = "Day",
+                IconName = BitIconName.CalendarDay
+            },
+            new BitChoiceGroupOption()
+            {
+                Text = "Week",
+                Value = "Week",
+                IconName = BitIconName.CalendarWeek
+            },
+            new BitChoiceGroupOption()
+            {
+                Text = "Month",
+                Value = "Month",
+                IconName = BitIconName.Calendar,
+                IsEnabled = false
+            }
+        };
+
+        private List<BitChoiceGroupOption> Example5Options { get; set; } = new()
+        {
+            new BitChoiceGroupOption()
+            {
+                Text = "Option A",
+                Value = "A"
+            },
+            new BitChoiceGroupOption()
+            {
+                Text = "Option B",
+                Value = "B"
+            },
+            new BitChoiceGroupOption()
+            {
+                Text = "Option C",
+                Value = "C"
+            },
+            new BitChoiceGroupOption()
+            {
+                Text = "Option D",
+                Value = "D"
+            }
+        };
+
+        private List<BitChoiceGroupOption> Example6Options { get; set; } = new()
+        {
+            new BitChoiceGroupOption()
+            {
+                Text = "Option A",
+                Value = "A"
+            },
+            new BitChoiceGroupOption()
+            {
+                Text = "Option B",
+                Value = "B"
+            },
+            new BitChoiceGroupOption()
+            {
+                Text = "Option C",
+                Value = "C"
+            },
+            new BitChoiceGroupOption()
+            {
+                Text = "Option D",
+                Value = "D"
+            }
+        };
+
         public ChoiceGroupValidationModel ValidationModel = new();
+
         public string SuccessMessage { get; set; } = string.Empty;
 
         public string OnChangeValue { get; set; } = string.Empty;
@@ -214,33 +255,33 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ChoiceGroup
         #region Example Code 1
 
         private readonly string example1HtmlCode = @"
-<BitChoiceGroup Label=""Pick one"" Options=""example_1_5_6_Options"">
+<BitChoiceGroup Label=""Pick one"" Options=""Example1Options"">
 </BitChoiceGroup>";
 
-        private readonly string example_1_5_CSharpCode = @"
-        public List<BitChoiceGroupOption> example_1_5_6_Options { get; set; } = new()
-        {
-            new BitChoiceGroupOption()
-            {
-               Text = ""Option A"",
-               Value = ""A""
-            },
-            new BitChoiceGroupOption()
-            {
-                Text = ""Option B"",
-                Value = ""B""
-            },
-            new BitChoiceGroupOption()
-            {
-                Text = ""Option C"",
-                Value = ""C""
-            },
-            new BitChoiceGroupOption()
-            {
-                Text = ""Option D"",
-                Value = ""D""
-            }
-        }; 
+        private readonly string example1CSharpCode = @"
+public List<BitChoiceGroupOption> Example1Options { get; set; } = new()
+{
+    new BitChoiceGroupOption()
+    {
+        Text = ""Option A"",
+        Value = ""A""
+    },
+    new BitChoiceGroupOption()
+    {
+        Text = ""Option B"",
+        Value = ""B""
+    },
+    new BitChoiceGroupOption()
+    {
+        Text = ""Option C"",
+        Value = ""C""
+    },
+    new BitChoiceGroupOption()
+    {
+        Text = ""Option D"",
+        Value = ""D""
+    }
+}; 
 ";
 
         #endregion
@@ -248,34 +289,34 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ChoiceGroup
         #region Example Code 2
 
         private readonly string example2CSharpCode = @"
-        public List<BitChoiceGroupOption> example2Options { get; set; } = new()
-        {
-            new BitChoiceGroupOption()
-            {
-               Text = ""Option A"",
-               Value = ""A""
-            },
-            new BitChoiceGroupOption()
-            {
-               Text = ""Option B"",
-               Value = ""B""
-            },
-            new BitChoiceGroupOption()
-            {
-               Text = ""Option C"",
-               Value = ""C"",
-               IsEnabled = false
-            },
-            new BitChoiceGroupOption()
-            {
-               Text = ""Option D"",
-               Value = ""D""
-            }
-        };
+public List<BitChoiceGroupOption> Example2Options { get; set; } = new()
+{
+    new BitChoiceGroupOption()
+    {
+        Text = ""Option A"",
+        Value = ""A""
+    },
+    new BitChoiceGroupOption()
+    {
+        Text = ""Option B"",
+        Value = ""B""
+    },
+    new BitChoiceGroupOption()
+    {
+        Text = ""Option C"",
+        Value = ""C"",
+        IsEnabled = false
+    },
+    new BitChoiceGroupOption()
+    {
+        Text = ""Option D"",
+        Value = ""D""
+    }
+};
 ";
 
         private readonly string example2HtmlCode = @"
-<BitChoiceGroup Label=""Pick one"" Options=""example2Options"" DefaultValue=""B"">
+<BitChoiceGroup Label=""Pick one"" Options=""Example2Options"" DefaultValue=""B"">
 </BitChoiceGroup>";
 
         #endregion
@@ -283,31 +324,31 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ChoiceGroup
         #region Example Code 3
 
         private readonly string example3CSharpCode = @"
-        public List<BitChoiceGroupOption> example3Options { get; set; } = new()
-        {
-            new BitChoiceGroupOption()
-            {
-               Text = ""Bar"",
-               Value = ""Bar"",
-               ImageSrc= ""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png"",
-               SelectedImageSrc = ""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png"",
-               ImageAlt = ""alt for Bar image"",
-               ImageSize = new Size(32, 32)
-            },
-            new BitChoiceGroupOption()
-            {
-                Text = ""Pie"",
-                Value = ""Pie"",
-                ImageSrc = ""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-pie-unselected.png"",
-                SelectedImageSrc = ""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-pie-selected.png"",
-                ImageAlt = ""alt for Pie image"",
-                ImageSize = new Size(32, 32)
-            }
-        };
+public List<BitChoiceGroupOption> Example3Options { get; set; } = new()
+{
+    new BitChoiceGroupOption()
+    {
+        Text = ""Bar"",
+        Value = ""Bar"",
+        ImageSrc= ""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png"",
+        SelectedImageSrc = ""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png"",
+        ImageAlt = ""alt for Bar image"",
+        ImageSize = new Size(32, 32)
+    },
+    new BitChoiceGroupOption()
+    {
+        Text = ""Pie"",
+        Value = ""Pie"",
+        ImageSrc = ""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-pie-unselected.png"",
+        SelectedImageSrc = ""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-pie-selected.png"",
+        ImageAlt = ""alt for Pie image"",
+        ImageSize = new Size(32, 32)
+    }
+};
 ";
 
         private readonly string example3HtmlCode = @"
-<BitChoiceGroup Label=""Pick one image"" Options=""example3Options"">
+<BitChoiceGroup Label=""Pick one image"" Options=""Example3Options"">
 </BitChoiceGroup>";
 
         #endregion
@@ -315,32 +356,32 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ChoiceGroup
         #region Example Code 4
 
         private readonly string example4CSharpCode = @"
-        public List<BitChoiceGroupOption> example4Options { get; set; } = new()
-        {
-            new BitChoiceGroupOption()
-            {
-               Text = ""Day"",
-               Value = ""Day"",
-               IconName = BitIconName.CalendarDay
-            },
-            new BitChoiceGroupOption()
-            {
-                Text = ""Week"",
-                Value = ""Week"",
-                IconName = BitIconName.CalendarWeek
-            },
-            new BitChoiceGroupOption()
-            {
-                Text = ""Month"",
-                Value = ""Month"",
-                IconName = BitIconName.Calendar,
-                IsEnabled = false
-            }
-        };
+public List<BitChoiceGroupOption> Example4Options { get; set; } = new()
+{
+    new BitChoiceGroupOption()
+    {
+        Text = ""Day"",
+        Value = ""Day"",
+        IconName = BitIconName.CalendarDay
+    },
+    new BitChoiceGroupOption()
+    {
+        Text = ""Week"",
+        Value = ""Week"",
+        IconName = BitIconName.CalendarWeek
+    },
+    new BitChoiceGroupOption()
+    {
+        Text = ""Month"",
+        Value = ""Month"",
+        IconName = BitIconName.Calendar,
+        IsEnabled = false
+    }
+};
 ";
 
         private readonly string example4HtmlCode = @"
-<BitChoiceGroup Label=""Pick one icon"" Options=""example4Options"">
+<BitChoiceGroup Label=""Pick one icon"" Options=""Example4Options"">
 </BitChoiceGroup>";
 
         #endregion
@@ -348,63 +389,89 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ChoiceGroup
         #region Example Code 5
 
         private readonly string example5HtmlCode = @"
-<BitChoiceGroup Options=""example_1_5_6_Options"">
+<BitChoiceGroup Options=""Example5Options"">
     <LabelFragment>
         Custom label <BitIconButton IconName= ""BitIconName.Filter""></BitIconButton>
     </LabelFragment>
 </BitChoiceGroup>";
+
+        private readonly string example5CSharpCode = @"
+public List<BitChoiceGroupOption> Example5Options { get; set; } = new()
+{
+    new BitChoiceGroupOption()
+    {
+        Text = ""Option A"",
+        Value = ""A""
+    },
+    new BitChoiceGroupOption()
+    {
+        Text = ""Option B"",
+        Value = ""B""
+    },
+    new BitChoiceGroupOption()
+    {
+        Text = ""Option C"",
+        Value = ""C""
+    },
+    new BitChoiceGroupOption()
+    {
+        Text = ""Option D"",
+        Value = ""D""
+    }
+}; 
+";
 
         #endregion
 
         #region Example Code 6
 
         private readonly string example6CSharpCode = @"
-        public List<BitChoiceGroupOption> example_1_5_6_Options { get; set; } = new()
-        {
-            new BitChoiceGroupOption()
-            {
-               Text = ""Option A"",
-               Value = ""A""
-            },
-            new BitChoiceGroupOption()
-            {
-                Text = ""Option B"",
-                Value = ""B""
-            },
-            new BitChoiceGroupOption()
-            {
-                Text = ""Option C"",
-                Value = ""C""
-            },
-            new BitChoiceGroupOption()
-            {
-                Text = ""Option D"",
-                Value = ""D""
-            }
-        };
+public List<BitChoiceGroupOption> Example6Options { get; set; } = new()
+{
+    new BitChoiceGroupOption()
+    {
+        Text = ""Option A"",
+        Value = ""A""
+    },
+    new BitChoiceGroupOption()
+    {
+        Text = ""Option B"",
+        Value = ""B""
+    },
+    new BitChoiceGroupOption()
+    {
+        Text = ""Option C"",
+        Value = ""C""
+    },
+    new BitChoiceGroupOption()
+    {
+        Text = ""Option D"",
+        Value = ""D""
+    }
+};
 
-        public ChoiceGroupValidationModel ValidationModel = new();
+public ChoiceGroupValidationModel ValidationModel = new();
 
-        public string SuccessMessage { get; set; } = string.Empty;
+public string SuccessMessage { get; set; } = string.Empty;
 
-        public class ChoiceGroupValidationModel
-        {
-            [Required(ErrorMessage = ""Pick one"")]
-            public string Value { get; set; }
-        }
+public class ChoiceGroupValidationModel
+{
+    [Required(ErrorMessage = ""Pick one"")]
+    public string Value { get; set; }
+}
 
-        private async void HandleValidSubmit()
-        {
-            SuccessMessage = ""Form Submitted Successfully!"";
-            await Task.Delay(3000);
-            SuccessMessage = string.Empty;
-            StateHasChanged();
-        }
+private async void HandleValidSubmit()
+{
+    SuccessMessage = ""Form Submitted Successfully!"";
+    await Task.Delay(3000);
+    SuccessMessage = string.Empty;
+    StateHasChanged();
+}
 
-        private void HandleInvalidSubmit()
-        {
-            SuccessMessage = string.Empty;
-        }
+private void HandleInvalidSubmit()
+{
+    SuccessMessage = string.Empty;
+}
 ";
 
         private readonly string example6HtmlCode = @"
@@ -416,7 +483,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ChoiceGroup
             <ValidationSummary />
         </div>
         <div>
-            <BitChoiceGroup Options = ""example_1_5_6_Options"" @bind-Value=""ValidationModel.Value"">
+            <BitChoiceGroup Options = ""Example1Options"" @bind-Value=""ValidationModel.Value"">
             </BitChoiceGroup>
             <ValidationMessage For = ""@(() => ValidationModel.Value)"" />
         </div>
@@ -435,47 +502,47 @@ else
         #region Example Code 7
 
         private readonly string example7CSharpCode = @"
-        private List<BitChoiceGroupOption> example7Options;
+private List<BitChoiceGroupOption> example7Options;
 
-        /// <summary>
-        /// class constructure
-        /// </summary>
-        public BitChoiceGroupDemo()
+/// <summary>
+/// class constructure
+/// </summary>
+public BitChoiceGroupDemo()
+{
+    example7Options = new()
+    {
+        new BitChoiceGroupOption()
         {
-            example7Options = new()
-            {
-                new BitChoiceGroupOption()
-                {
-                   Text = ""Option A"",
-                   Value = ""A"",
-                   OnChange = () => {OptionOnChange(""A""); }
-                },
-                new BitChoiceGroupOption()
-                {
-                    Text = ""Option B"",
-                    Value = ""B"",
-                    OnChange = () => {OptionOnChange(""B""); }
-                },
-                new BitChoiceGroupOption()
-                {
-                   Text = ""Option C"",
-                   Value = ""C"",
-                   OnChange = () => {OptionOnChange(""C""); }
-                },
-                new BitChoiceGroupOption()
-                {
-                   Text = ""Option D"",
-                   Value = ""D"",
-                   OnChange = () => {OptionOnChange(""D""); }
-                }
-            };
+            Text = ""Option A"",
+            Value = ""A"",
+            OnChange = () => OptionOnChange(""A"")
+        },
+        new BitChoiceGroupOption()
+        {
+            Text = ""Option B"",
+            Value = ""B"",
+            OnChange = () => OptionOnChange(""B"")
+        },
+        new BitChoiceGroupOption()
+        {
+            Text = ""Option C"",
+            Value = ""C"",
+            OnChange = () => OptionOnChange(""C"")
+        },
+        new BitChoiceGroupOption()
+        {
+            Text = ""Option D"",
+            Value = ""D"",
+            OnChange = () => OptionOnChange(""D"")
         }
+    };
+}
 
-        private void OptionOnChange(string value)
-        {
-            OnChangeValue = value;
-            StateHasChanged();
-        }
+private void OptionOnChange(string value)
+{
+    OnChangeValue = value;
+    StateHasChanged();
+}
 ";
 
         private readonly string example7HtmlCode = @"
