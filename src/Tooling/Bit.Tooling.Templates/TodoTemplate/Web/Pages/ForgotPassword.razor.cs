@@ -1,10 +1,10 @@
-﻿using TodoTemplate.App.Models;
+﻿using TodoTemplate.Shared.Dtos.Account;
 
 namespace TodoTemplate.App.Pages;
 
 public partial class ForgotPassword
 {
-    public ForgotPasswordModel ForgotPasswordModel { get; set; } = new();
+    public SendResetPasswordEmailRequestDto ForgotPasswordModel { get; set; } = new();
 
     public bool IsLoading { get; set; }
 
@@ -26,10 +26,7 @@ public partial class ForgotPassword
 
         try
         {
-            await HttpClient.PostAsJsonAsync("Auth/SendResetPasswordEmail", new()
-            {
-                Email = ForgotPasswordModel.Email
-            }, TodoTemplateJsonContext.Default.SendResetPasswordEmailRequestDto);
+            await HttpClient.PostAsJsonAsync("Auth/SendResetPasswordEmail", ForgotPasswordModel, TodoTemplateJsonContext.Default.SendResetPasswordEmailRequestDto);
 
             ForgotPasswordMessageType = BitMessageBarType.Success;
 
