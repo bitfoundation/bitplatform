@@ -41,17 +41,17 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                     });
                 });
 
-            var bitChoiceGroupOptions = component.Find(".bit-chgo");
+            var bitChoiceGroupOption = component.Find(".bit-chgo");
 
             var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
 
             if (groupIsEnabled is false || optionIsEnabled is false)
             {
-                Assert.IsTrue(bitChoiceGroupOptions.ClassList.Contains($"bit-chgo-disabled-{visualClass}"));
+                Assert.IsTrue(bitChoiceGroupOption.ClassList.Contains($"bit-chgo-disabled-{visualClass}"));
             }
             else
             {
-                Assert.IsFalse(bitChoiceGroupOptions.ClassList.Contains($"bit-chgo-disabled-{visualClass}"));
+                Assert.IsFalse(bitChoiceGroupOption.ClassList.Contains($"bit-chgo-disabled-{visualClass}"));
             }
         }
 
@@ -75,9 +75,9 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                    });
                });
 
-            var bitChoiceGroupOptions = component.Find(".bit-chgo");
+            var bitChoiceGroupOption = component.Find(".bit-chgo");
 
-            Assert.IsTrue(bitChoiceGroupOptions.ClassList.Contains($"bit-chgo-checked-fluent"));
+            Assert.IsTrue(bitChoiceGroupOption.ClassList.Contains($"bit-chgo-checked-fluent"));
         }
 
         [DataTestMethod, DataRow("ChoiceGroupName")]
@@ -96,10 +96,10 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                      });
                  });
 
-            var bitChoiceGroupOptions = component.Find(".bit-chgo-input");
+            var bitChoiceGroupOption = component.Find(".bit-chgo-input");
 
-            Assert.IsTrue(bitChoiceGroupOptions.HasAttribute("name"));
-            Assert.AreEqual(choiceGroupName, bitChoiceGroupOptions.GetAttribute("name"));
+            Assert.IsTrue(bitChoiceGroupOption.HasAttribute("name"));
+            Assert.AreEqual(choiceGroupName, bitChoiceGroupOption.GetAttribute("name"));
         }
 
         [DataTestMethod, DataRow("this is label")]
@@ -134,8 +134,8 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                      });
                  });
 
-            var bitChoiceGroupOptions = component.Find(".bit-chgo");
-            Assert.IsTrue(bitChoiceGroupOptions.ClassList.Contains($"bit-chgo-with-img-fluent"));
+            var bitChoiceGroupOption = component.Find(".bit-chgo");
+            Assert.IsTrue(bitChoiceGroupOption.ClassList.Contains($"bit-chgo-with-img-fluent"));
 
             var image = component.Find(".bit-chgo-img img");
             Assert.IsTrue(image.HasAttribute("src"));
