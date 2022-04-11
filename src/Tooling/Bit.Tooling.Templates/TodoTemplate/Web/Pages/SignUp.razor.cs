@@ -30,12 +30,9 @@ public partial class SignUp
 
         try
         {
-            //await HttpClient.PostAsJsonAsync("Auth/SignUp", new()
-            //{
-            //    UserName = SignUpModel.UserName,
-            //    Email = SignUpModel.UserName,
-            //    Password = SignUpModel.Password
-            //}, TodoTemplateJsonContext.Default.SignUpRequestDto);
+            SignUpModel.Email = SignUpModel.UserName;
+
+            await HttpClient.PostAsJsonAsync("Auth/SignUp", SignUpModel, TodoTemplateJsonContext.Default.SignUpRequestDto);
 
             SignUpMessageType = BitMessageBarType.Success;
             SignUpMessage = "Confirmation link has sent to your email. Please follow the link.";
