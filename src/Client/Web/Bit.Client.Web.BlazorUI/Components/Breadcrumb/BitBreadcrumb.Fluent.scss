@@ -51,12 +51,12 @@
 .bit-brc-overflow-menu-wrapper {
     display: none;
     position: fixed;
-    max-height: 744px;
+    max-height: rem(744px);
     font-size: rem(14px);
     font-weight: 400;
     box-sizing: border-box;
     border-radius: 0 0 rem(2px) rem(2px);
-    box-shadow: rgba(0,0,0,0.13) 0px 3.2px 7.2px 0px, rgba(0,0,0,0.11) 0px 0.6px 1.8px 0px;
+    box-shadow: rgba(0,0,0,0.13) 0px rem(3.2px) rem(7.2px) 0px, rgba(0,0,0,0.11) 0px rem(0.6px) rem(1.8px) 0px;
     animation-name: opacity, trans-y;
     animation-duration: 0.367s;
     animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
