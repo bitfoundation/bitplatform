@@ -188,12 +188,12 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
                    });
                });
 
-            var bitChoiceGroupOptions = component.Find(".bit-chgo-input");
+            var bitChoiceGroupOption = component.Find(".bit-chgo-input");
 
             //TODO:
             //We need to call the Change event of each option based on clicking on the input.
             //Like the code below...
-            //bitChoiceGroupOptions.Click();
+            //bitChoiceGroupOption.Click();
 
             if (groupIsEnabled is false || optionIsEnabled is false)
             {
