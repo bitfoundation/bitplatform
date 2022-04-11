@@ -1,15 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Emit;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.JSInterop;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq.Expressions;
+using System.Text;
+
 
 namespace Bit.Client.Web.BlazorUI
 {
     public partial class BitBreadcrumb
     {
         protected override string RootElementClass => "bit-brc";
+
+        [Inject] public IJSRuntime? JSRuntime { get; set; }
 
         /// <summary>
         /// Collection of breadcrumbs to render
@@ -42,9 +50,45 @@ namespace Bit.Client.Web.BlazorUI
         /// </summary>
         [Parameter] public BitIconName OnRenderOverflowIcon { get; set; } = BitIconName.More;
 
+        public string BreadcrumbItemsWrapperId { get; set; } = string.Empty;
+        public string OverflowDropDownId { get; set; } = string.Empty;
+        public string OverflowDropDownMenuCalloutId { get; set; } = string.Empty;
+        public string OverflowDropDownMenuOverlayId { get; set; } = string.Empty;
 
         private List<BitBreadcrumbItem> _overflowItems = new();
         private List<BitBreadcrumbItem> _itemsToShowInBreadcrumb = new();
+        private bool isOpen;
+
+        protected async override Task OnParametersSetAsync()
+        {
+            BreadcrumbItemsWrapperId = $"breadcrumb-items-wrapper-{UniqueId}";
+            OverflowDropDownId = $"overflow-dropdown-{UniqueId}";
+            OverflowDropDownMenuOverlayId = $"overflow-dropdown-overlay-{UniqueId}";
+            OverflowDropDownMenuCalloutId = $"overflow-dropdown-callout{UniqueId}";
+
+            GetBreadcrumbItemsToShow();
+
+            await base.OnParametersSetAsync();
+        }
+
+        private async Task CloseCallout()
+        {
+            if (JSRuntime is null) return;
+
+            var obj = DotNetObjectReference.Create(this);
+            await JSRuntime.InvokeVoidAsync("BitOverflowDropDownMenu.toggleOverflowDropDownMenuCallout", obj, BreadcrumbItemsWrapperId, OverflowDropDownId, OverflowDropDownMenuCalloutId, OverflowDropDownMenuOverlayId, isOpen);
+            isOpen = false;
+            StateHasChanged();
+        }
+
+        private async Task HandleClick(MouseEventArgs e)
+        {
+            if (IsEnabled is false || JSRuntime is null) return;
+
+            var obj = DotNetObjectReference.Create(this);
+            await JSRuntime.InvokeVoidAsync("BitOverflowDropDownMenu.toggleOverflowDropDownMenuCallout", obj, BreadcrumbItemsWrapperId, OverflowDropDownId, OverflowDropDownMenuCalloutId, OverflowDropDownMenuOverlayId, isOpen);
+            isOpen = !isOpen;
+        }
 
         private List<BitBreadcrumbItem> GetBreadcrumbItemsToShow()
         {
