@@ -1,12 +1,13 @@
 ﻿@import "../../Styles/Fluent/colors.fluent.scss";
+@import "../../Styles/functions.scss";
 
 .bit-prs {
     -webkit-font-smoothing: antialiased;
-    font-size: 14px;
+    font-size: rem(14px);
     font-weight: 400;
     box-shadow: none;
-    margin: 0px;
-    padding: 0px;
+    margin: 0;
+    padding: 0;
     box-sizing: border-box;
     color: $Grey160;
     position: relative;
@@ -15,7 +16,7 @@
 
     & .bit-prs-coin {
         -webkit-font-smoothing: antialiased;
-        font-size: 14px;
+        font-size: rem(14px);
         font-weight: 400;
 
         & .bit-prs-image-area {
@@ -25,11 +26,11 @@
             animation-timing-function: cubic-bezier(0.1, 0.25, 0.75, 0.9);
             animation-fill-mode: both;
             position: absolute;
-            margin-right: 10px;
-            top: 0px;
-            left: 0px;
-            border: 0px;
-            perspective: 1px;
+            margin-right: rem(10px);
+            top: 0;
+            left: 0;
+            border: 0;
+            perspective: rem(1px);
 
             & .bit-prs-img-container {
                 overflow: hidden;
@@ -38,12 +39,12 @@
                 animation-timing-function: cubic-bezier(0.1, 0.25, 0.75, 0.9);
                 animation-fill-mode: both;
                 position: absolute;
-                margin-right: 10px;
-                top: 0px;
-                left: 0px;
-                border: 0px;
+                margin-right: rem(10px);
+                top: 0;
+                left: 0;
+                border: 0;
                 border-radius: 50%;
-                perspective: 1px;
+                perspective: rem(1px);
 
                 & .bit-prs-img {
                     display: block;
@@ -58,9 +59,9 @@
                 position: absolute;
                 border-radius: 50%;
                 top: auto;
-                right: -2px;
-                bottom: -2px;
-                border: 2px solid rgb(255, 255, 255);
+                right: rem(-2px);
+                bottom: rem(-2px);
+                border: rem(2px) solid $White;
                 text-align: center;
                 box-sizing: content-box;
                 background-clip: border-box;
@@ -72,7 +73,7 @@
                     font-style: normal;
                     font-weight: normal;
                     speak: none;
-                    color: #ffffff;
+                    color: $White;
                     vertical-align: top;
                 }
             }
@@ -126,28 +127,28 @@
             position: relative;
             text-align: center;
             flex: 0 0 auto;
-            height: 24px;
-            width: 24px;
+            height: rem(24px);
+            width: rem(24px);
 
             & .bit-prs-img-container {
-                width: 24px;
-                height: 24px;
+                width: rem(24px);
+                height: rem(24px);
             }
 
             & .bit-prs-presence {
-                height: 8px;
-                width: 8px;
-                border: 2px solid #ffffff;
+                height: rem(8px);
+                width: rem(8px);
+                border: rem(2px) solid $White;
             }
         }
     }
 
     & .bit-prs-details {
-        padding: 0px 8px;
+        padding: 0 rem(8px);
 
         & .bit-prs-primary-text {
             font-weight: 400;
-            font-size: 14px
+            font-size: rem(14px);
         }
 
         & .bit-prs-secondary-text {
@@ -172,28 +173,28 @@
             position: relative;
             text-align: center;
             flex: 0 0 auto;
-            height: 32px;
-            width: 32px;
+            height: rem(32px);
+            width: rem(32px);
 
             & .bit-prs-img-container {
-                width: 32px;
-                height: 32px;
+                width: rem(32px);
+                height: rem(32px);
             }
 
             & .bit-prs-presence {
-                height: 8px;
-                width: 8px;
-                border: 2px solid #ffffff;
+                height: rem(8px);
+                width: rem(8px);
+                border: rem(2px) solid $White;
             }
         }
     }
 
     & .bit-prs-details {
-        padding: 0px 8px;
+        padding: 0 rem(8px);
 
         & .bit-prs-primary-text {
             font-weight: 400;
-            font-size: 14px
+            font-size: rem(14px);
         }
 
         & .bit-prs-secondary-text {
@@ -211,8 +212,8 @@
 }
 
 .bit-prs-40px {
-    height: 40px;
-    min-width: 40px;
+    height: rem(40px);
+    min-width: rem(40px);
 
     & .bit-prs-coin {
 
@@ -220,38 +221,38 @@
             position: relative;
             text-align: center;
             flex: 0 0 auto;
-            height: 40px;
-            width: 40px;
+            height: rem(40px);
+            width: rem(40px);
 
             & .bit-prs-img-container {
-                width: 40px;
-                height: 40px;
+                width: rem(40px);
+                height: rem(40px);
             }
 
             & .bit-prs-presence {
-                height: 12px;
-                width: 12px;
-                border: 2px solid #ffffff;
+                height: rem(12px);
+                width: rem(12px);
+                border: rem(2px) solid $White;
 
                 & .bit-prs-icon {
-                    font-size: 6px;
-                    line-height: 12px;
+                    font-size: rem(6px);
+                    line-height: rem(12px);
                 }
             }
         }
     }
 
     & .bit-prs-details {
-        padding: 0px 12px;
+        padding: 0 rem(12px);
 
         & .bit-prs-primary-text {
             font-weight: 400;
-            font-size: 14px
+            font-size: rem(14px);
         }
 
         & .bit-prs-secondary-text {
             font-weight: 400;
-            font-size: 12px;
+            font-size: rem(12px);
         }
 
         & .bit-prs-tertiary-text {
@@ -265,8 +266,8 @@
 }
 
 .bit-prs-48px {
-    height: 48px;
-    min-width: 48px;
+    height: rem(48px);
+    min-width: rem(48px);
 
     & .bit-prs-coin {
 
@@ -274,38 +275,38 @@
             position: relative;
             text-align: center;
             flex: 0 0 auto;
-            height: 48px;
-            width: 48px;
+            height: rem(48px);
+            width: rem(48px);
 
             & .bit-prs-img-container {
-                width: 48px;
-                height: 48px;
+                width: rem(48px);
+                height: rem(48px);
             }
 
             & .bit-prs-presence {
-                height: 12px;
-                width: 12px;
-                border: 2px solid #ffffff;
+                height: rem(12px);
+                width: rem(12px);
+                border: rem(2px) solid $White;
 
                 & .bit-prs-icon {
-                    font-size: 6px;
-                    line-height: 12px;
+                    font-size: rem(6px);
+                    line-height: rem(12px);
                 }
             }
         }
     }
 
     & .bit-prs-details {
-        padding: 0px 12px;
+        padding: 0 rem(12px);
 
         & .bit-prs-primary-text {
             font-weight: 400;
-            font-size: 14px
+            font-size: rem(14px);
         }
 
         & .bit-prs-secondary-text {
             font-weight: 400;
-            font-size: 12px;
+            font-size: rem(12px);
         }
 
         & .bit-prs-tertiary-text {
@@ -319,8 +320,8 @@
 }
 
 .bit-prs-56px {
-    height: 56px;
-    min-width: 56px;
+    height: rem(56px);
+    min-width: rem(56px);
 
     & .bit-prs-coin {
 
@@ -328,38 +329,38 @@
             position: relative;
             text-align: center;
             flex: 0 0 auto;
-            height: 56px;
-            width: 56px;
+            height: rem(56px);
+            width: rem(56px);
 
             & .bit-prs-img-container {
-                width: 56px;
-                height: 56px;
+                width: rem(56px);
+                height: rem(56px);
             }
 
             & .bit-prs-presence {
-                height: 16px;
-                width: 16px;
-                border: 2px solid #ffffff;
+                height: rem(16px);
+                width: rem(16px);
+                border: rem(2px) solid $White;
 
                 & .bit-prs-icon {
-                    font-size: 8px;
-                    line-height: 16px;
+                    font-size: rem(8px);
+                    line-height: rem(16px);
                 }
             }
         }
     }
 
     & .bit-prs-details {
-        padding: 0px 24px 0px 16px;
+        padding: 0 rem(24px) 0 rem(16px);
 
         & .bit-prs-primary-text {
             font-weight: 400;
-            font-size: 20px;
+            font-size: rem(20px);
         }
 
         & .bit-prs-secondary-text {
             font-weight: 400;
-            font-size: 14px;
+            font-size: rem(14px);
         }
 
         & .bit-prs-tertiary-text {
@@ -373,8 +374,8 @@
 }
 
 .bit-prs-72px {
-    height: 72px;
-    min-width: 72px;
+    height: rem(72px);
+    min-width: rem(72px);
 
     & .bit-prs-coin {
 
@@ -382,43 +383,43 @@
             position: relative;
             text-align: center;
             flex: 0 0 auto;
-            height: 72px;
-            width: 72px;
+            height: rem(72px);
+            width: rem(72px);
 
             & .bit-prs-img-container {
-                width: 72px;
-                height: 72px;
+                width: rem(72px);
+                height: rem(72px);
             }
 
             & .bit-prs-presence {
-                height: 20px;
-                width: 20px;
-                border: 2px solid #ffffff;
+                height: rem(20px);
+                width: rem(20px);
+                border: rem(2px) solid $White;
 
                 & .bit-prs-icon {
-                    font-size: 12px;
-                    line-height: 20px;
+                    font-size: rem(12px);
+                    line-height: rem(20px);
                 }
             }
         }
     }
 
     & .bit-prs-details {
-        padding: 0px 24px 0px 16px;
+        padding: 0 rem(24px) 0 rem(16px);
 
         & .bit-prs-primary-text {
             font-weight: 400;
-            font-size: 20px;
+            font-size: rem(20px);
         }
 
         & .bit-prs-secondary-text {
             font-weight: 400;
-            font-size: 14px;
+            font-size: rem(14px);
         }
 
         & .bit-prs-tertiary-text {
             font-weight: 400;
-            font-size: 14px;
+            font-size: rem(14px);
             display: block;
         }
 
@@ -429,8 +430,8 @@
 }
 
 .bit-prs-100px {
-    height: 100px;
-    min-width: 100px;
+    height: rem(100px);
+    min-width: rem(100px);
 
     & .bit-prs-coin {
 
@@ -438,58 +439,58 @@
             position: relative;
             text-align: center;
             flex: 0 0 auto;
-            height: 100px;
-            width: 100px;
+            height: rem(100px);
+            width: rem(100px);
         }
 
         & .bit-prs-img-container {
-            width: 100px;
-            height: 100px;
+            width: rem(100px);
+            height: rem(100px);
         }
 
         & .bit-prs-presence {
-            height: 28px;
-            width: 28px;
-            border: 2px solid #ffffff;
+            height: rem(28px);
+            width: rem(28px);
+            border: rem(2px) solid $White;
 
             & .bit-prs-icon {
-                font-size: 14px;
-                line-height: 28px;
+                font-size: rem(14px);
+                line-height: rem(28px);
             }
         }
     }
 
 
     & .bit-prs-details {
-        padding: 0px 24px 0px 16px;
+        padding: 0 rem(24px) 0 rem(16px);
 
         & .bit-prs-primary-text {
             font-weight: 400;
-            font-size: 20px;
+            font-size: rem(20px);
         }
 
         & .bit-prs-secondary-text {
             font-weight: 400;
-            font-size: 14px;
+            font-size: rem(14px);
         }
 
         & .bit-prs-tertiary-text {
             font-weight: 400;
-            font-size: 14px;
+            font-size: rem(14px);
             display: block;
         }
 
         & .bit-prs-optional-text {
             font-weight: 400;
-            font-size: 14px;
+            font-size: rem(14px);
             display: block;
         }
     }
 }
 
 .bit-prs-120px {
-    height: 120px;
-    min-width: 120px;
+    height: rem(120px);
+    min-width: rem(120px);
 
     & .bit-prs-coin {
 
@@ -497,52 +498,52 @@
             position: relative;
             text-align: center;
             flex: 0 0 auto;
-            height: 120px;
-            width: 120px;
+            height: rem(120px);
+            width: rem(120px);
         }
 
         & .bit-prs-img-container {
-            width: 120px;
-            height: 120px;
+            width: rem(120px);
+            height: rem(120px);
         }
 
         & .bit-prs-presence {
-            height: 32px;
-            width: 32px;
-            border: 2px solid #ffffff;
+            height: rem(32px);
+            width: rem(32px);
+            border: rem(2px) solid $White;
 
             & .bit-prs-icon {
-                font-size: 14px;
-                line-height: 32px;
+                font-size: rem(14px);
+                line-height: rem(32px);
                 position: relative;
-                left: 1px;
+                left: rem(1px);
             }
         }
     }
 
 
     & .bit-prs-details {
-        padding: 0px 24px 0px 16px;
+        padding: 0 rem(24px) 0 rem(16px);
 
         & .bit-prs-primary-text {
             font-weight: 400;
-            font-size: 20px;
+            font-size: rem(20px);
         }
 
         & .bit-prs-secondary-text {
             font-weight: 400;
-            font-size: 14px;
+            font-size: rem(14px);
         }
 
         & .bit-prs-tertiary-text {
             font-weight: 400;
-            font-size: 14px;
+            font-size: rem(14px);
             display: block;
         }
 
         & .bit-prs-optional-text {
             font-weight: 400;
-            font-size: 14px;
+            font-size: rem(14px);
             display: block;
         }
     }
@@ -552,30 +553,30 @@
 .bit-prs-online {
 
     & .bit-prs-presence {
-        background-color: #6BB700;
+        background-color: $OnlineGreen;
     }
 }
 
 .bit-prs-away {
 
     & .bit-prs-presence {
-        background-color: #FFAA44;
+        background-color: $Orange10;
     }
 }
 
 .bit-prs-blocked {
 
     & .bit-prs-presence {
-        background-color: #C43148;
+        background-color: $BusyRed;
 
         &::before {
             content: "";
             width: 100%;
             height: 100%;
             position: absolute;
-            top: 0px;
-            left: 0px;
-            border: 2px solid #c43148;
+            top: 0;
+            left: 0;
+            border: rem(2px) solid $BusyRed;
             border-radius: 50%;
             box-sizing: border-box;
         }
@@ -585,27 +586,27 @@
 .bit-prs-busy {
 
     & .bit-prs-presence {
-        background-color: #C43148;
+        background-color: $BusyRed;
     }
 }
 
 .bit-prs-dnd {
 
     & .bit-prs-presence {
-        background-color: #C50F1F;
+        background-color: $DoNotDisturbRed;
     }
 }
 
 .bit-prs-offline {
 
     & .bit-prs-presence {
-        background-color: #8A8886;
+        background-color: $Gray110;
     }
 }
 
 .bit-prs-off {
 
     & .bit-prs-presence {
-        background-color: #B4009E;
+        background-color: $Magenta;
     }
 }
