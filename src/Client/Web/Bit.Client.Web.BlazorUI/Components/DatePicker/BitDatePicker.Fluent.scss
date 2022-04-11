@@ -71,7 +71,7 @@
     align-items: center;
     height: rem(32px);
     margin: 0;
-    padding: 0;
+    padding: 0 rem(8px);
     box-shadow: none;
     border-radius: rem(2px);
     border: rem(1px) solid $Grey130;
@@ -86,7 +86,7 @@
         border: none;
         border-radius: 0;
         outline: 0;
-        padding: 0 rem(8px);
+        padding: 0;
         margin: 0;
         box-shadow: none;
         box-sizing: border-box;
