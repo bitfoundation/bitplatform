@@ -39,7 +39,7 @@ public partial class ResetPassword
         try
         {
             ResetPasswordModel.Email = Email;
-            ResetPasswordModel.Token = Email;
+            ResetPasswordModel.Token = Token;
 
             await HttpClient.PostAsJsonAsync("Auth/ResetPassword", ResetPasswordModel, TodoTemplateJsonContext.Default.ResetPasswordRequestDto);
 
