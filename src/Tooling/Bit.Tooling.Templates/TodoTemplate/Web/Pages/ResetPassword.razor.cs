@@ -1,5 +1,4 @@
-﻿using TodoTemplate.App.Models;
-using TodoTemplate.Shared.Dtos.Account;
+﻿using TodoTemplate.Shared.Dtos.Account;
 
 namespace TodoTemplate.App.Pages;
 
@@ -13,7 +12,7 @@ public partial class ResetPassword
     [SupplyParameterFromQuery]
     public string? Token { get; set; }
 
-    public ResetPasswordModel ResetPasswordModel { get; set; } = new();
+    public ResetPasswordRequestDto ResetPasswordModel { get; set; } = new();
 
     public bool IsLoading { get; set; }
 
@@ -39,12 +38,10 @@ public partial class ResetPassword
 
         try
         {
-            await HttpClient.PostAsJsonAsync("Auth/ResetPassword", new()
-            {
-                Email = Email,
-                Token = Token,
-                Password = ResetPasswordModel.NewPassword
-            }, TodoTemplateJsonContext.Default.ResetPasswordRequestDto);
+            ResetPasswordModel.Email = Email;
+            ResetPasswordModel.Token = Token;
+
+            await HttpClient.PostAsJsonAsync("Auth/ResetPassword", ResetPasswordModel, TodoTemplateJsonContext.Default.ResetPasswordRequestDto);
 
             ResetPasswordMessageType = BitMessageBarType.Success;
 
@@ -53,7 +50,7 @@ public partial class ResetPassword
             await TodoTemplateAuthenticationService.SignIn(new SignInRequestDto
             {
                 UserName = Email,
-                Password = ResetPasswordModel.NewPassword
+                Password = ResetPasswordModel.Password
             });
 
             NavigationManager.NavigateTo("/");

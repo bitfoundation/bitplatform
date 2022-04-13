@@ -1,11 +1,10 @@
-﻿using TodoTemplate.App.Models;
-using TodoTemplate.Shared.Dtos.Account;
+﻿using TodoTemplate.Shared.Dtos.Account;
 
 namespace TodoTemplate.App.Pages;
 
 public partial class SignIn
 {
-    public SignInModel SignInModel { get; set; } = new();
+    public SignInRequestDto SignInModel { get; set; } = new();
 
     public bool IsLoading { get; set; }
 
@@ -36,11 +35,7 @@ public partial class SignIn
         
         try
         {
-            await TodoTemplateAuthenticationService.SignIn(new SignInRequestDto
-            {
-                UserName = SignInModel.Email, 
-                Password = SignInModel.Password
-            });
+            await TodoTemplateAuthenticationService.SignIn(SignInModel);
 
             NavigationManager.NavigateTo(RedirectUrl ?? "/");
         }
@@ -48,7 +43,7 @@ public partial class SignIn
         {
             SignInMessageType = BitMessageBarType.Error;
 
-            SignInMessage = ErrorStrings.ResourceManager.Translate(e.Message, SignInModel.Email!);
+            SignInMessage = ErrorStrings.ResourceManager.Translate(e.Message, SignInModel.UserName!);
         }
         finally
         {
