@@ -140,8 +140,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.MauiAppSample", "Client
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.CSharpClientSample.Test", "Client\Xamarin\Sample\Bit.CSharpClientSample.Test\Bit.CSharpClientSample.Test.csproj", "{02C3B392-F0AA-4CE7-BBEC-591779CED8E4}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.CSharpClientSample.Android6", "Client\Xamarin\Sample\Bit.CSharpClientSample.Android6\Bit.CSharpClientSample.Android6.csproj", "{66AA91DA-DD83-4C1E-8F1C-665704F2AD49}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bit.CSharpClientSample.Android", "Client\Xamarin\Sample\Bit.CSharpClientSample.Android\Bit.CSharpClientSample.Android.csproj", "{0708C7EF-6408-4F42-8A86-D1000B85DAD8}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Client.Web.BlazorUI.Playground.App", "Client\Web\Playground\Bit.Client.Web.BlazorUI.Playground\App\Bit.Client.Web.BlazorUI.Playground.App.csproj", "{85685F26-4DA8-4373-98AF-7DB6E894F060}"
@@ -168,10 +166,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Tooling.Bswup.Demo", "Tooling\Bit.Tooling.Bswup\Bit.Tooling.Bswup.Demo\Bit.Tooling.Bswup.Demo.csproj", "{10D57327-46F8-4527-8114-A186116FA918}"
 EndProject
 Global
-	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		Tooling\Bit.Tooling.Core\Bit.Tooling.Core.projitems*{4f71f2a4-01c2-4d5a-941c-57c78d2cc469}*SharedItemsImports = 5
-		Tooling\Bit.Tooling.Core\Bit.Tooling.Core.projitems*{846b3352-f8fc-4b38-acf9-98ae0236f478}*SharedItemsImports = 5
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Debug|iPhone = Debug|iPhone
@@ -1196,36 +1190,6 @@ Global
 		{02C3B392-F0AA-4CE7-BBEC-591779CED8E4}.Release|x64.Build.0 = Release|Any CPU
 		{02C3B392-F0AA-4CE7-BBEC-591779CED8E4}.Release|x86.ActiveCfg = Release|Any CPU
 		{02C3B392-F0AA-4CE7-BBEC-591779CED8E4}.Release|x86.Build.0 = Release|Any CPU
-		{66AA91DA-DD83-4C1E-8F1C-665704F2AD49}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{66AA91DA-DD83-4C1E-8F1C-665704F2AD49}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{66AA91DA-DD83-4C1E-8F1C-665704F2AD49}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
-		{66AA91DA-DD83-4C1E-8F1C-665704F2AD49}.Debug|iPhone.ActiveCfg = Debug|Any CPU
-		{66AA91DA-DD83-4C1E-8F1C-665704F2AD49}.Debug|iPhone.Build.0 = Debug|Any CPU
-		{66AA91DA-DD83-4C1E-8F1C-665704F2AD49}.Debug|iPhone.Deploy.0 = Debug|Any CPU
-		{66AA91DA-DD83-4C1E-8F1C-665704F2AD49}.Debug|iPhoneSimulator.ActiveCfg = Debug|Any CPU
-		{66AA91DA-DD83-4C1E-8F1C-665704F2AD49}.Debug|iPhoneSimulator.Build.0 = Debug|Any CPU
-		{66AA91DA-DD83-4C1E-8F1C-665704F2AD49}.Debug|iPhoneSimulator.Deploy.0 = Debug|Any CPU
-		{66AA91DA-DD83-4C1E-8F1C-665704F2AD49}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{66AA91DA-DD83-4C1E-8F1C-665704F2AD49}.Debug|x64.Build.0 = Debug|Any CPU
-		{66AA91DA-DD83-4C1E-8F1C-665704F2AD49}.Debug|x64.Deploy.0 = Debug|Any CPU
-		{66AA91DA-DD83-4C1E-8F1C-665704F2AD49}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{66AA91DA-DD83-4C1E-8F1C-665704F2AD49}.Debug|x86.Build.0 = Debug|Any CPU
-		{66AA91DA-DD83-4C1E-8F1C-665704F2AD49}.Debug|x86.Deploy.0 = Debug|Any CPU
-		{66AA91DA-DD83-4C1E-8F1C-665704F2AD49}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{66AA91DA-DD83-4C1E-8F1C-665704F2AD49}.Release|Any CPU.Build.0 = Release|Any CPU
-		{66AA91DA-DD83-4C1E-8F1C-665704F2AD49}.Release|Any CPU.Deploy.0 = Release|Any CPU
-		{66AA91DA-DD83-4C1E-8F1C-665704F2AD49}.Release|iPhone.ActiveCfg = Release|Any CPU
-		{66AA91DA-DD83-4C1E-8F1C-665704F2AD49}.Release|iPhone.Build.0 = Release|Any CPU
-		{66AA91DA-DD83-4C1E-8F1C-665704F2AD49}.Release|iPhone.Deploy.0 = Release|Any CPU
-		{66AA91DA-DD83-4C1E-8F1C-665704F2AD49}.Release|iPhoneSimulator.ActiveCfg = Release|Any CPU
-		{66AA91DA-DD83-4C1E-8F1C-665704F2AD49}.Release|iPhoneSimulator.Build.0 = Release|Any CPU
-		{66AA91DA-DD83-4C1E-8F1C-665704F2AD49}.Release|iPhoneSimulator.Deploy.0 = Release|Any CPU
-		{66AA91DA-DD83-4C1E-8F1C-665704F2AD49}.Release|x64.ActiveCfg = Release|Any CPU
-		{66AA91DA-DD83-4C1E-8F1C-665704F2AD49}.Release|x64.Build.0 = Release|Any CPU
-		{66AA91DA-DD83-4C1E-8F1C-665704F2AD49}.Release|x64.Deploy.0 = Release|Any CPU
-		{66AA91DA-DD83-4C1E-8F1C-665704F2AD49}.Release|x86.ActiveCfg = Release|Any CPU
-		{66AA91DA-DD83-4C1E-8F1C-665704F2AD49}.Release|x86.Build.0 = Release|Any CPU
-		{66AA91DA-DD83-4C1E-8F1C-665704F2AD49}.Release|x86.Deploy.0 = Release|Any CPU
 		{0708C7EF-6408-4F42-8A86-D1000B85DAD8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{0708C7EF-6408-4F42-8A86-D1000B85DAD8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0708C7EF-6408-4F42-8A86-D1000B85DAD8}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
@@ -1479,7 +1443,6 @@ Global
 		{64282FB4-6A82-47C1-ADE1-5A7D3CF19C5A} = {13F5E6FD-27E9-4E14-BE4E-E5EAF65749E0}
 		{2C47F2C1-1288-454E-B1BA-413BDA172C6D} = {0CDC34CA-3F07-4CB8-B140-969D472A3121}
 		{02C3B392-F0AA-4CE7-BBEC-591779CED8E4} = {6588A8C5-266B-47EE-ABCF-B6EC6892C6C3}
-		{66AA91DA-DD83-4C1E-8F1C-665704F2AD49} = {6588A8C5-266B-47EE-ABCF-B6EC6892C6C3}
 		{0708C7EF-6408-4F42-8A86-D1000B85DAD8} = {6588A8C5-266B-47EE-ABCF-B6EC6892C6C3}
 		{85685F26-4DA8-4373-98AF-7DB6E894F060} = {23426B1A-CC46-4D11-B233-208A57B2BCA2}
 		{E8335BFA-4CD3-4E00-BB0E-DBA0E3685AB5} = {5656CC04-EEA1-4BC9-98DE-77A238E22F2F}
@@ -1494,5 +1457,9 @@ Global
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {DA107107-478F-477A-872B-787CEA7DD9B8}
+	EndGlobalSection
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		Tooling\Bit.Tooling.Core\Bit.Tooling.Core.projitems*{4f71f2a4-01c2-4d5a-941c-57c78d2cc469}*SharedItemsImports = 5
+		Tooling\Bit.Tooling.Core\Bit.Tooling.Core.projitems*{846b3352-f8fc-4b38-acf9-98ae0236f478}*SharedItemsImports = 5
 	EndGlobalSection
 EndGlobal

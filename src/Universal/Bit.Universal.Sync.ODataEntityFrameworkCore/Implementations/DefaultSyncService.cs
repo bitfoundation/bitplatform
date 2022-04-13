@@ -46,7 +46,7 @@ namespace Bit.Sync.ODataEntityFrameworkCore.Implementations
             if (Xamarin.Essentials.Connectivity.NetworkAccess == Xamarin.Essentials.NetworkAccess.None)
                 return;
 #elif Maui
-            if (Microsoft.Maui.Essentials.Connectivity.NetworkAccess ==Microsoft.Maui.Essentials.NetworkAccess.None)
+            if (Microsoft.Maui.Networking.Connectivity.NetworkAccess ==Microsoft.Maui.Networking.NetworkAccess.None)
                 return;
 #endif
 

@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Hosting;
+﻿using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Hosting;
 using Microsoft.UI.Xaml;
 
 namespace Bit.Client.Web.BlazorUI.Playground.Web.WinUI
@@ -16,7 +17,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.WinUI
         {
             base.OnLaunched(args);
 
-            Microsoft.Maui.Essentials.Platform.OnLaunched(args);
+            Platform.OnLaunched(args);
         }
     }
 }

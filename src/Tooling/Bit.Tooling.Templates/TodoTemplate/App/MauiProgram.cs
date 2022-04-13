@@ -11,18 +11,20 @@ public static class MauiProgram
         var assembly = typeof(MauiProgram).GetTypeInfo().Assembly;
 
         builder
-            .RegisterBlazorMauiWebView()
             .UseMauiApp<App>()
             .Configuration.AddJsonFile(new EmbeddedFileProvider(assembly), "appsettings.json", optional: false, false);
 
-        builder.Services.AddBlazorWebView();
-
         var services = builder.Services;
+
+        services.AddMauiBlazorWebView()
+#if DEBUG
+    .AddBlazorWebViewDeveloperTools()
+#endif
+    ;
 
         services.AddTransient<IAuthTokenProvider, ClientSideAuthTokenProvider>();
         services.AddTodoTemplateSharedServices();
         services.AddTodoTemplateAppServices();
-        services.AddBlazorWebView();
 
         return builder;
     }

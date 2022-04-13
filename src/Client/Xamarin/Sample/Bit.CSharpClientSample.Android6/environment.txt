@@ -1,2 +1,0 @@
-MONO_LOG_LEVEL=error
-MONO_GC_PARAMS=nursery-size=16m

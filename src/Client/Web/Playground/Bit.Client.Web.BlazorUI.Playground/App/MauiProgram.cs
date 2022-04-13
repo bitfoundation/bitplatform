@@ -19,15 +19,17 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web
             var assembly = typeof(MauiProgram).GetTypeInfo().Assembly;
 
             builder
-                .RegisterBlazorMauiWebView()
                 .UseMauiApp<App>()
                 .Configuration.AddJsonFile(new EmbeddedFileProvider(assembly), "appsettings.json", optional: false, false);
 
-            builder.Services.AddBlazorWebView();
-
             var services = builder.Services;
 
-            services.AddBlazorWebView();
+            services.AddMauiBlazorWebView()
+#if DEBUG
+    .AddBlazorWebViewDeveloperTools()
+#endif
+    ;
+
             services.AddPlaygroundServices();
             services.AddSingleton(scope => new HttpClient { BaseAddress = new Uri(scope.GetService<IConfiguration>().GetValue<string>("ApiServerAddress")) });
 

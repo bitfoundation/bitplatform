@@ -23,7 +23,7 @@ namespace Bit.Client.Web.Blazor.Implementation
         public virtual void Clear(string sharedName)
         {
 #if Android || iOS || UWP
-            Microsoft.Maui.Essentials.Preferences.Clear(sharedName);
+            Microsoft.Maui.Storage.Preferences.Clear(sharedName);
 #else
             if (_wasm_js_runtime != null)
                 _wasm_js_runtime.InvokeVoid("localStorage.clear");
@@ -82,7 +82,7 @@ namespace Bit.Client.Web.Blazor.Implementation
             string? result = null;
 
 #if Android || iOS || UWP
-            result = Microsoft.Maui.Essentials.Preferences.Get(key, defaultValue);
+            result = Microsoft.Maui.Storage.Preferences.Get(key, defaultValue);
 #else
             if (_wasm_js_runtime != null)
                 result = _wasm_js_runtime.Invoke<string?>("localStorage.getItem", key);
@@ -147,7 +147,7 @@ namespace Bit.Client.Web.Blazor.Implementation
         public virtual void Remove(string key, string sharedName)
         {
 #if Android || iOS || UWP
-            Microsoft.Maui.Essentials.Preferences.Remove(key, sharedName);
+            Microsoft.Maui.Storage.Preferences.Remove(key, sharedName);
 #else
             if (_wasm_js_runtime != null)
                 _wasm_js_runtime.InvokeVoid("localStorage.removeItem", key);
@@ -194,7 +194,7 @@ namespace Bit.Client.Web.Blazor.Implementation
         public virtual void Set(string key, string value, string sharedName)
         {
 #if Android || iOS || UWP
-            Microsoft.Maui.Essentials.Preferences.Set(key, value, sharedName);
+            Microsoft.Maui.Storage.Preferences.Set(key, value, sharedName);
 #else
             if (_wasm_js_runtime != null)
                 _wasm_js_runtime.InvokeVoid("localStorage.setItem", key, value);
