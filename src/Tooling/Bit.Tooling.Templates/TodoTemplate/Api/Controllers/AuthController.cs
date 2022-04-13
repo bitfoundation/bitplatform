@@ -59,8 +59,15 @@ public class AuthController : ControllerBase
             }
             else
             {
-                await _userManager.DeleteAsync(existingUserIfAny);
-                userToAdd.ConfirmationEmailRequestedOn = existingUserIfAny.ConfirmationEmailRequestedOn;
+                if ((DateTimeOffset.Now - (existingUserIfAny.ConfirmationEmailRequestedOn ?? DateTimeOffset.MinValue)) < _appSettings.IdentitySettings.ConfirmationEmailResendDelay)
+                {
+                    throw new TooManyRequestsExceptions(nameof(ErrorStrings.WaitForConfirmationEmailResendDelay));
+                }
+                else
+                {
+                    await _userManager.DeleteAsync(existingUserIfAny);
+                    userToAdd.ConfirmationEmailRequestedOn = existingUserIfAny.ConfirmationEmailRequestedOn;
+                }
             }
         }
 
