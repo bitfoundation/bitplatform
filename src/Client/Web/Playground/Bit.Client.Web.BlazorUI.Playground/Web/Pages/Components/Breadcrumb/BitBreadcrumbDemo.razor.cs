@@ -8,7 +8,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Breadcrumb
 {
     public partial class BitBreadcrumbDemo
     {
-        public string onClickValue { get; set; } = string.Empty;
+        public string OnClickValue { get; set; } = string.Empty;
 
         private readonly List<ComponentParameter> componentParameters = new()
         {
@@ -133,21 +133,21 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Breadcrumb
                     Text = "Folder 1",
                     Key = "f1",
                     href = "/components/breadcrumb",
-                    OnClick = (() => onClickValue = "Folder 1 clicked")
+                    OnClick = (() => OnClickValue = "Folder 1 clicked")
                 },
                 new()
                 {
                     Text = "Folder 2",
                     Key = "f2",
                     href = "/components/breadcrumb",
-                    OnClick = (() => onClickValue = "Folder 2 clicked")
+                    OnClick = (() => OnClickValue = "Folder 2 clicked")
                 },
                 new()
                 {
                     Text = "Folder 3",
                     Key = "f3",
                     href = "/components/breadcrumb",
-                    OnClick = (() => onClickValue = "Folder 3 clicked")
+                    OnClick = (() => OnClickValue = "Folder 3 clicked")
                 },
                 new()
                 {
@@ -155,7 +155,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Breadcrumb
                     Key = "f4",
                     href = "/components/breadcrumb",
                     IsCurrentItem = true,
-                    OnClick = (() => onClickValue = "Folder 4 clicked")
+                    OnClick = (() => OnClickValue = "Folder 4 clicked")
                 }
             };
         }
@@ -198,21 +198,21 @@ private List<BitBreadcrumbItem> GetBreadcrumbItems()
             Text = ""Folder 1"",
             Key = ""f1"",
             href = ""/components/breadcrumb"",
-            OnClick = (() => onClickValue = ""Folder 1 clicked"")
+            OnClick = (() => OnClickValue = ""Folder 1 clicked"")
         },
         new()
         {
             Text = ""Folder 2"",
             Key = ""f2"",
             href = ""/components/breadcrumb"",
-            OnClick = (() => onClickValue = ""Folder 2 clicked"")
+            OnClick = (() => OnClickValue = ""Folder 2 clicked"")
         },
         new()
         {
             Text = ""Folder 3"",
             Key = ""f3"",
             href = ""/components/breadcrumb"",
-            OnClick = (() => onClickValue = ""Folder 3 clicked"")
+            OnClick = (() => OnClickValue = ""Folder 3 clicked"")
         },
         new()
         {
@@ -220,7 +220,7 @@ private List<BitBreadcrumbItem> GetBreadcrumbItems()
             Key = ""f4"",
             href = ""/components/breadcrumb"",
             IsCurrentItem = true,
-            OnClick = (() => onClickValue = ""Folder 4 clicked"")
+            OnClick = (() => OnClickValue = ""Folder 4 clicked"")
         }
     };
 }";
