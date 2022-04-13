@@ -34,7 +34,7 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// Callback for when the breadcrumb item clicked
         /// </summary>
-        public EventCallback<MouseEventArgs> OnClick { get; set; }
+        public Action OnClick { get; set; }
 
     }
 }
