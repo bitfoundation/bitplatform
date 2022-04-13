@@ -1,4 +1,6 @@
-﻿.title{
-    font-weight:600;
-    margin:20px 0 ;
+﻿@import "../../../Styles/_functions.scss";
+
+.title {
+    font-weight: 600;
+    margin: rem(20px) 0;
 }

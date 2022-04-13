@@ -492,7 +492,7 @@ public bool IsHideDetails { get; set; } = true;";
 <style>
    .title{
     font-weight:600;
-    margin:20px 0 ;
+    margin: rem(20px) 0 ;
 }
 </style>";
 }
