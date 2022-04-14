@@ -124,7 +124,7 @@ namespace Bit.Http.Implementations
         public virtual async Task<Token> Login(object? state = null, string? client_id = null, IDictionary<string, string?>? acr_values = null, CancellationToken cancellationToken = default)
         {
 #if Maui
-            var authResult = await Microsoft.Maui.Essentials.WebAuthenticator.AuthenticateAsync(GetLoginUrl(state, client_id, acr_values), ClientAppProfile.OAuthRedirectUri).ConfigureAwait(false);
+            var authResult = await Microsoft.Maui.Authentication.WebAuthenticator.AuthenticateAsync(GetLoginUrl(state, client_id, acr_values), ClientAppProfile.OAuthRedirectUri).ConfigureAwait(false);
 
             Token token = authResult.Properties;
 
@@ -156,7 +156,7 @@ namespace Bit.Http.Implementations
 #if Xamarin
                 token = Xamarin.Essentials.SecureStorage.GetAsync("Token").GetAwaiter().GetResult();
 #elif Maui
-                token = Microsoft.Maui.Essentials.SecureStorage.GetAsync("Token").GetAwaiter().GetResult();
+                token = Microsoft.Maui.Storage.SecureStorage.GetAsync("Token").GetAwaiter().GetResult();
 #else
                 throw new NotImplementedException();
 #endif
@@ -164,7 +164,7 @@ namespace Bit.Http.Implementations
 #if Xamarin
                 token = Xamarin.Essentials.Preferences.Get("Token", (string?)null);
 #elif Maui
-                token = Microsoft.Maui.Essentials.Preferences.Get("Token", (string?)null);
+                token = Microsoft.Maui.Storage.Preferences.Get("Token", (string?)null);
 #else
                 throw new NotImplementedException();
 #endif
@@ -183,7 +183,7 @@ namespace Bit.Http.Implementations
 #if Xamarin
                 token = await Xamarin.Essentials.SecureStorage.GetAsync("Token");
 #elif Maui
-                token = await Microsoft.Maui.Essentials.SecureStorage.GetAsync("Token");
+                token = await Microsoft.Maui.Storage.SecureStorage.GetAsync("Token");
 #else
                 throw new NotImplementedException();
 #endif
@@ -191,7 +191,7 @@ namespace Bit.Http.Implementations
 #if Xamarin
                 token = Xamarin.Essentials.Preferences.Get("Token", (string?)null);
 #elif Maui
-                token = Microsoft.Maui.Essentials.Preferences.Get("Token", (string?)null);
+                token = Microsoft.Maui.Storage.Preferences.Get("Token", (string?)null);
 #else
                 throw new NotImplementedException();
 #endif
@@ -212,7 +212,7 @@ namespace Bit.Http.Implementations
 #if Xamarin
                     Xamarin.Essentials.SecureStorage.Remove("Token");
 #elif Maui
-                    Microsoft.Maui.Essentials.SecureStorage.Remove("Token");
+                    Microsoft.Maui.Storage.SecureStorage.Remove("Token");
 #else
                     throw new NotImplementedException();
 #endif
@@ -220,7 +220,7 @@ namespace Bit.Http.Implementations
 #if Xamarin
                     Xamarin.Essentials.Preferences.Remove("Token");
 #elif Maui
-                    Microsoft.Maui.Essentials.Preferences.Remove("Token");
+                    Microsoft.Maui.Storage.Preferences.Remove("Token");
 #else
                     throw new NotImplementedException();
 #endif
@@ -230,7 +230,7 @@ namespace Bit.Http.Implementations
                 if (!string.IsNullOrEmpty(token.IdToken))
                 {
 #if Maui
-                    await Microsoft.Maui.Essentials.WebAuthenticator.AuthenticateAsync(GetLogoutUrl(token.IdToken!, state, client_id), ClientAppProfile.OAuthRedirectUri).ConfigureAwait(false);
+                    await Microsoft.Maui.Authentication.WebAuthenticator.AuthenticateAsync(GetLogoutUrl(token.IdToken!, state, client_id), ClientAppProfile.OAuthRedirectUri).ConfigureAwait(false);
 #elif Xamarin
                     await Xamarin.Essentials.WebAuthenticator.AuthenticateAsync(GetLogoutUrl(token.IdToken!, state, client_id), ClientAppProfile.OAuthRedirectUri).ConfigureAwait(false);
 #else
@@ -276,7 +276,7 @@ namespace Bit.Http.Implementations
 #if Xamarin
                 await Xamarin.Essentials.SecureStorage.SetAsync("Token", jsonToken).ConfigureAwait(false);
 #elif Maui
-                await Microsoft.Maui.Essentials.SecureStorage.SetAsync("Token", jsonToken).ConfigureAwait(false);
+                await Microsoft.Maui.Storage.SecureStorage.SetAsync("Token", jsonToken).ConfigureAwait(false);
 #else
                 throw new NotImplementedException();
 #endif
@@ -286,7 +286,7 @@ namespace Bit.Http.Implementations
 #if Xamarin
                 Xamarin.Essentials.Preferences.Set("Token", jsonToken);
 #elif Maui
-                Microsoft.Maui.Essentials.Preferences.Set("Token", jsonToken);
+                Microsoft.Maui.Storage.Preferences.Set("Token", jsonToken);
 #else
                 throw new NotImplementedException();
 #endif

@@ -9,13 +9,13 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Condition=" '$(TargetFramework)' == 'net6.0' " Include="Microsoft.EntityFrameworkCore.Sqlite" Version="6.0.3" />
-        <PackageReference Condition=" '$(TargetFramework)' != 'net6.0' " Include="Microsoft.EntityFrameworkCore.Sqlite" Version="3.1.23" />
-        <PackageReference Condition=" '$(TargetFramework)' == 'net6.0' " Include="Microsoft.EntityFrameworkCore" Version="6.0.3" />
-        <PackageReference Condition=" '$(TargetFramework)' != 'net6.0' " Include="Microsoft.EntityFrameworkCore" Version="3.1.23" />
+        <PackageReference Condition=" '$(TargetFramework)' == 'net6.0' " Include="Microsoft.EntityFrameworkCore.Sqlite" Version="6.0.4" />
+        <PackageReference Condition=" '$(TargetFramework)' != 'net6.0' " Include="Microsoft.EntityFrameworkCore.Sqlite" Version="3.1.24" />
+        <PackageReference Condition=" '$(TargetFramework)' == 'net6.0' " Include="Microsoft.EntityFrameworkCore" Version="6.0.4" />
+        <PackageReference Condition=" '$(TargetFramework)' != 'net6.0' " Include="Microsoft.EntityFrameworkCore" Version="3.1.24" />
         <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="6.0.0" />
         <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.1" />
-        <PackageReference Include="System.Text.Json" Version="6.0.2" />
+        <PackageReference Include="System.Text.Json" Version="6.0.3" />
         <ProjectReference Include="..\Bit.Universal.Data\Bit.Universal.Data.csproj" />
     </ItemGroup>
 
