@@ -16,11 +16,11 @@ public partial class BitPersonaDemo
             DefaultValue = "false",
             Description = "Whether initials are calculated for phone numbers and number sequences.",
         },
-         new ComponentParameter()
+        new ComponentParameter()
         {
             Name = "CoinSize",
             Type = "int",
-            DefaultValue = " -1",
+            DefaultValue = "-1",
             Description = "Optional custom persona coin size in pixel.",
         },
         new ComponentParameter()
@@ -79,7 +79,7 @@ public partial class BitPersonaDemo
             Name = "Presence",
             Type = "BitPersonaPresenceStatus",
             LinkType = LinkType.Link,
-            Href="#precence-status",
+            Href = "#precence-status",
             DefaultValue = "BitPersonaPresenceStatus.None",
             Description = "Presence of the person to display - will not display presence if undefined.",
         },
@@ -117,7 +117,7 @@ public partial class BitPersonaDemo
             Type = "string?",
             DefaultValue = "",
             LinkType=LinkType.Link,
-            Href="#bitpersona-size",
+            Href = "#bitpersona-size",
             Description = "Decides the size of the control.",
         },
         new ComponentParameter()
