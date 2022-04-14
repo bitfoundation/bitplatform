@@ -62,7 +62,7 @@ public partial class BitPersonaDemo
         {
             Name = "InitialsColor",
             Type = "BitPersonaInitialsColor?",
-             LinkType = LinkType.Link,
+            LinkType = LinkType.Link,
             Href = "#bitpersona-initial-color",
             DefaultValue = "0",
             Description = "The background color when the user's initials are displayed.",
@@ -78,7 +78,7 @@ public partial class BitPersonaDemo
         {
             Name = "Presence",
             Type = "BitPersonaPresenceStatus",
-            LinkType=LinkType.Link,
+            LinkType = LinkType.Link,
             Href="#precence-status",
             DefaultValue = "BitPersonaPresenceStatus.None",
             Description = "Presence of the person to display - will not display presence if undefined.",
@@ -127,7 +127,7 @@ public partial class BitPersonaDemo
             DefaultValue = "",
             Description = "Primary text to display, usually the name of the person.",
         },
-         new ComponentParameter()
+        new ComponentParameter()
         {
             Name = "TertiaryText",
             Type = "string?",
@@ -137,282 +137,281 @@ public partial class BitPersonaDemo
     };
 
     private readonly List<EnumParameter> enumParameters = new()
+    {
+        new EnumParameter()
         {
-            new EnumParameter()
+            Id = "precence-status",
+            Title = "BitPersonaPresence enum",
+            Description = "",
+            EnumList = new List<EnumItem>()
             {
-                Id = "precence-status",
-                Title = "BitPersonaPresence enum",
-                Description = "",
-                EnumList = new List<EnumItem>()
+                new()
                 {
-                    new()
-                    {
-                        Name = "Away",
-                        Description = "",
-                        Value = "3",
-                    },
-                    new()
-                    {
-                        Name = "Blocked",
-                        Description = "",
-                        Value = "5",
-                    },
-                    new()
-                    {
-                        Name = "Busy",
-                        Description = "",
-                        Value = "6",
-                    },
-                    new()
-                    {
-                        Name = "DND",
-                        Description = "",
-                        Value = "4",
-                    },
-                    new()
-                    {
-                        Name = "None",
-                        Description = "",
-                        Value = "0",
-                    },
-                    new()
-                    {
-                        Name = "Offline",
-                        Description = "",
-                        Value = "1",
-                    },
-                    new()
-                    {
-                        Name = "Online",
-                        Description = "",
-                        Value = "2",
-                    },
-                }
-            },
-            new EnumParameter()
-            {
-                Id = "bitpersona-initial-color",
-                Title = "BitPersonaInitialsColor enum",
-                Description = "",
-                EnumList = new List<EnumItem>()
-                {
-                    new()
-                    {
-                        Name = "Black",
-                        Description = "",
-                        Value = "Black=11",
-                    },
-                    new()
-                    {
-                        Name = "Blue",
-                        Description = "",
-                        Value = "Blue=1",
-                    },
-                    new()
-                    {
-                        Name = "Burgundy",
-                        Description = "",
-                        Value = "Burgundy=19",
-                    },
-                    new()
-                    {
-                        Name = "CoolGray",
-                        Description = "",
-                        Value = "CoolGray=21",
-                    },
-                    new()
-                    {
-                        Name = "Cyan",
-                        Description = "",
-                        Value = "Cyan=23",
-                    },
-                    new()
-                    {
-                        Name = "DarkBlue",
-                        Description = "",
-                        Value = "DarkBlue=2",
-                    },
-                    new()
-                    {
-                        Name = "DarkGreen",
-                        Description = "",
-                        Value = "DarkGreen=6",
-                    },
-                    new()
-                    {
-                        Name = "DarkRed",
-                        Description = "",
-                        Value = "DarkRed=14",
-                    },
-                    new()
-                    {
-                        Name = "Gold",
-                        Description = "",
-                        Value = "Gold=18",
-                    },
-                    new()
-                    {
-                        Name = "Gray",
-                        Description = "gray is a color that can result in offensive Bitpersona coins with some initials combinations, so it can only be set with overrides.",
-                        Value = "Gray=22",
-                    },
-                    new()
-                    {
-                        Name = "Green",
-                        Description = "",
-                        Value = "Green=5",
-                    },
-                    new()
-                    {
-                        Name = "LightBlue",
-                        Description = "",
-                        Value = "LightBlue=0",
-                    },
-                    new()
-                    {
-                        Name = "LightGreen",
-                        Description = "",
-                        Value = "LightGreen=4",
-                    },
-                    new()
-                    {
-                        Name = "LightPink",
-                        Description = "",
-                        Value = "LightPink=7",
-                    },
-                    new()
-                    {
-                        Name = "LightRed",
-                        Description = "",
-                        Value = "LightRed=17",
-                    },
-                    new()
-                    {
-                        Name = "Magenta",
-                        Description = "",
-                        Value = "Magenta=9",
-                    },
-                    new()
-                    {
-                        Name = "Orange",
-                        Description = "",
-                        Value = "Orange=12",
-                    },
-                    new()
-                    {
-                        Name = "Pink",
-                        Description = "",
-                        Value = "Pink=8",
-                    },
-                    new()
-                    {
-                        Name = "Purple",
-                        Description = "",
-                        Value = "Purple=10",
-                    },
-                    new()
-                    {
-                        Name = "Red",
-                        Description = "",
-                        Value = "Red=13",
-                    },
-                    new()
-                    {
-                        Name = "Rust",
-                        Description = "",
-                        Value = "Rust=24",
-                    },
-                    new()
-                    {
-                        Name = "Teal",
-                        Description = "",
-                        Value = "Teal=3",
-                    },
-                    new()
-                    {
-                        Name = "Transparent",
-                        Description = "Transparent is not intended to be used with typical initials due to accessibility issues. Its primary use is for overflow buttons, so it is considered a reserved color and can only be set with overrides.",
-                        Value = "Transparent=15",
-                    },
-                    new()
-                    {
-                        Name = "Violet",
-                        Description = "",
-                        Value = "Violet=16",
-                    },
-                    new()
-                    {
-                        Name = "WarmGray",
-                        Description = "",
-                        Value = "WarmGray=20",
-                    },
+                    Name = "Away",
+                    Description = "",
+                    Value = "3",
                 },
-
-            },
-            new EnumParameter()
-            {
-                Id = "bitpersona-size",
-                Title = "BitPersonaPresence enum",
-                Description = "",
-                EnumList = new List<EnumItem>()
+                new()
                 {
-                    new()
-                    {
-                        Name = "Size8",
-                        Description = "Renders a 20px BitPersonaCoin.",
-                        Value = "20px",
-                    },
-                    new()
-                    {
-                        Name = "Size24",
-                        Description = "Renders a 24px BitPersonaCoin.",
-                        Value = "24px",
-                    },
-                    new()
-                    {
-                        Name = "Size32",
-                        Description = "Renders a 32px BitPersonaCoin.",
-                        Value = "32px",
-                    },
-                    new()
-                    {
-                        Name = "Size40",
-                        Description = "Renders a 40px BitPersonaCoin.",
-                        Value = "40px",
-                    },
-                    new()
-                    {
-                        Name = "Size48",
-                        Description = "Renders a 48px BitPersonaCoin.",
-                        Value = "48px",
-                    },
-                    new()
-                    {
-                        Name = "Size56",
-                        Description = "Renders a 56px BitPersonaCoin.",
-                        Value = "56px",
-                    },
-                    new()
-                    {
-                        Name = "Size72",
-                        Description = "Renders a 72px BitPersonaCoin.",
-                        Value = "72px",
-                    },
-                    new()
-                    {
-                        Name = "Size100",
-                        Description = "Renders a 100px BitPersonaCoin.",
-                        Value = "100px",
-                    },
-                    new()
-                    {
-                        Name = "Size120",
-                        Description = "Renders a 120px BitPersonaCoin.",
-                        Value = "120px",
-                    }
-                }
+                    Name = "Blocked",
+                    Description = "",
+                    Value = "5",
+                },
+                new()
+                {
+                    Name = "Busy",
+                    Description = "",
+                    Value = "6",
+                },
+                new()
+                {
+                    Name = "DND",
+                    Description = "",
+                    Value = "4",
+                },
+                new()
+                {
+                    Name = "None",
+                    Description = "",
+                    Value = "0",
+                },
+                new()
+                {
+                    Name = "Offline",
+                    Description = "",
+                    Value = "1",
+                },
+                new()
+                {
+                    Name = "Online",
+                    Description = "",
+                    Value = "2",
+                },
+            }
+        },
+        new EnumParameter()
+        {
+            Id = "bitpersona-initial-color",
+            Title = "BitPersonaInitialsColor enum",
+            Description = "",
+            EnumList = new List<EnumItem>()
+            {
+                new()
+                {
+                    Name = "Black",
+                    Description = "",
+                    Value = "Black=11",
+                },
+                new()
+                {
+                    Name = "Blue",
+                    Description = "",
+                    Value = "Blue=1",
+                },
+                new()
+                {
+                    Name = "Burgundy",
+                    Description = "",
+                    Value = "Burgundy=19",
+                },
+                new()
+                {
+                    Name = "CoolGray",
+                    Description = "",
+                    Value = "CoolGray=21",
+                },
+                new()
+                {
+                    Name = "Cyan",
+                    Description = "",
+                    Value = "Cyan=23",
+                },
+                new()
+                {
+                    Name = "DarkBlue",
+                    Description = "",
+                    Value = "DarkBlue=2",
+                },
+                new()
+                {
+                    Name = "DarkGreen",
+                    Description = "",
+                    Value = "DarkGreen=6",
+                },
+                new()
+                {
+                    Name = "DarkRed",
+                    Description = "",
+                    Value = "DarkRed=14",
+                },
+                new()
+                {
+                    Name = "Gold",
+                    Description = "",
+                    Value = "Gold=18",
+                },
+                new()
+                {
+                    Name = "Gray",
+                    Description = "gray is a color that can result in offensive Bitpersona coins with some initials combinations, so it can only be set with overrides.",
+                    Value = "Gray=22",
+                },
+                new()
+                {
+                    Name = "Green",
+                    Description = "",
+                    Value = "Green=5",
+                },
+                new()
+                {
+                    Name = "LightBlue",
+                    Description = "",
+                    Value = "LightBlue=0",
+                },
+                new()
+                {
+                    Name = "LightGreen",
+                    Description = "",
+                    Value = "LightGreen=4",
+                },
+                new()
+                {
+                    Name = "LightPink",
+                    Description = "",
+                    Value = "LightPink=7",
+                },
+                new()
+                {
+                    Name = "LightRed",
+                    Description = "",
+                    Value = "LightRed=17",
+                },
+                new()
+                {
+                    Name = "Magenta",
+                    Description = "",
+                    Value = "Magenta=9",
+                },
+                new()
+                {
+                    Name = "Orange",
+                    Description = "",
+                    Value = "Orange=12",
+                },
+                new()
+                {
+                    Name = "Pink",
+                    Description = "",
+                    Value = "Pink=8",
+                },
+                new()
+                {
+                    Name = "Purple",
+                    Description = "",
+                    Value = "Purple=10",
+                },
+                new()
+                {
+                    Name = "Red",
+                    Description = "",
+                    Value = "Red=13",
+                },
+                new()
+                {
+                    Name = "Rust",
+                    Description = "",
+                    Value = "Rust=24",
+                },
+                new()
+                {
+                    Name = "Teal",
+                    Description = "",
+                    Value = "Teal=3",
+                },
+                new()
+                {
+                    Name = "Transparent",
+                    Description = "Transparent is not intended to be used with typical initials due to accessibility issues. Its primary use is for overflow buttons, so it is considered a reserved color and can only be set with overrides.",
+                    Value = "Transparent=15",
+                },
+                new()
+                {
+                    Name = "Violet",
+                    Description = "",
+                    Value = "Violet=16",
+                },
+                new()
+                {
+                    Name = "WarmGray",
+                    Description = "",
+                    Value = "WarmGray=20",
+                },
             },
-        };
+        },
+        new EnumParameter()
+        {
+            Id = "bitpersona-size",
+            Title = "BitPersonaPresence enum",
+            Description = "",
+            EnumList = new List<EnumItem>()
+            {
+                new()
+                {
+                    Name = "Size8",
+                    Description = "Renders a 20px BitPersonaCoin.",
+                    Value = "20px",
+                },
+                new()
+                {
+                    Name = "Size24",
+                    Description = "Renders a 24px BitPersonaCoin.",
+                    Value = "24px",
+                },
+                new()
+                {
+                    Name = "Size32",
+                    Description = "Renders a 32px BitPersonaCoin.",
+                    Value = "32px",
+                },
+                new()
+                {
+                    Name = "Size40",
+                    Description = "Renders a 40px BitPersonaCoin.",
+                    Value = "40px",
+                },
+                new()
+                {
+                    Name = "Size48",
+                    Description = "Renders a 48px BitPersonaCoin.",
+                    Value = "48px",
+                },
+                new()
+                {
+                    Name = "Size56",
+                    Description = "Renders a 56px BitPersonaCoin.",
+                    Value = "56px",
+                },
+                new()
+                {
+                    Name = "Size72",
+                    Description = "Renders a 72px BitPersonaCoin.",
+                    Value = "72px",
+                },
+                new()
+                {
+                    Name = "Size100",
+                    Description = "Renders a 100px BitPersonaCoin.",
+                    Value = "100px",
+                },
+                new()
+                {
+                    Name = "Size120",
+                    Description = "Renders a 120px BitPersonaCoin.",
+                    Value = "120px",
+                }
+            }
+        },
+    };
 
     private static string example1CSharpCode = @"
 public bool IsHideDetails { get; set; } = true;";
@@ -487,12 +486,5 @@ public bool IsHideDetails { get; set; } = true;";
             Text=""Annie Lindqvist""
             SecondaryText=""Software Engineer""
             TertiaryText=""In a meeting""
-            OptionalText=""Available at 4:00pm""></BitPersona>
-
-<style>
-   .title{
-    font-weight:600;
-    margin: rem(20px) 0 ;
-}
-</style>";
+            OptionalText=""Available at 4:00pm""></BitPersona>";
 }
