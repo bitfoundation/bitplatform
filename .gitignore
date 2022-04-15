@@ -210,6 +210,9 @@ GeneratedArtifacts/
 _Pvt_Extensions/
 ModelManifest.xml
 
+# VS Code
+.vscode
+
 # Bit Foundation
 **/bower_components/*
 *.map

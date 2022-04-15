@@ -1,59 +1,67 @@
-﻿namespace TodoTemplate.App.Shared
+﻿using Microsoft.AspNetCore.Components.Web;
+
+namespace TodoTemplate.App.Shared;
+public partial class MainLayout : IAsyncDisposable
 {
-    public partial class MainLayout : IAsyncDisposable
+    private ErrorBoundary ErrorBoundaryRef = default!;
+
+    public bool IsUserAuthenticated { get; set; }
+    public bool IsMenuOpen { get; set; } = false;
+
+    [Inject] public IStateService StateService { get; set; } = default!;
+
+    [Inject] public IExceptionHandler ExceptionHandler { get; set; } = default!;
+
+    [Inject] public TodoTemplateAuthenticationStateProvider TodoTemplateAuthenticationStateProvider { get; set; } = default!;
+
+    protected override void OnParametersSet()
     {
-        public bool IsUserAuthenticated { get; set; }
-        public bool IsMenuOpen { get; set; } = false;
+        // TODO: we can try to recover from exception after rendering the ErrorBoundary with this line.
+        // but for now it's better to persist the error ui until a force refresh.
+        // ErrorBoundaryRef.Recover();
+        
+        base.OnParametersSet();
+    }
 
-        [Inject]
-        public IStateService StateService { get; set; } = default!;
-
-        [Inject]
-        public IExceptionHandler ExceptionHandler { get; set; } = default!;
-
-        [Inject]
-        public TodoTemplateAuthenticationStateProvider TodoTemplateAuthenticationStateProvider { get; set; } = default!;
-
-        protected override async Task OnInitializedAsync()
+    protected override async Task OnInitializedAsync()
+    {
+        try
         {
-            try
-            {
-                TodoTemplateAuthenticationStateProvider.AuthenticationStateChanged += VerifyUserIsAuthenticatedOrNot;
+            TodoTemplateAuthenticationStateProvider.AuthenticationStateChanged += VerifyUserIsAuthenticatedOrNot;
 
-                IsUserAuthenticated = await StateService.GetValue($"{nameof(MainLayout)}-{nameof(IsUserAuthenticated)}", async () => await TodoTemplateAuthenticationStateProvider.IsUserAuthenticated());
+            IsUserAuthenticated = await StateService.GetValue($"{nameof(MainLayout)}-{nameof(IsUserAuthenticated)}", async () => await TodoTemplateAuthenticationStateProvider.IsUserAuthenticated());
 
-                await base.OnInitializedAsync();
-            }
-            catch (Exception exp)
-            {
-                ExceptionHandler.Handle(exp);
-            }
+            await base.OnInitializedAsync();
         }
-
-        async void VerifyUserIsAuthenticatedOrNot(Task<AuthenticationState> task)
+        catch (Exception exp)
         {
-            try
-            {
-                IsUserAuthenticated = await TodoTemplateAuthenticationStateProvider.IsUserAuthenticated();
-            }
-            catch (Exception ex)
-            {
-                ExceptionHandler.Handle(ex);
-            }
-            finally
-            {
-                StateHasChanged();
-            }
+            ExceptionHandler.Handle(exp);
         }
+    }
 
-        private void ToggleMenuHandler()
+    async void VerifyUserIsAuthenticatedOrNot(Task<AuthenticationState> task)
+    {
+        try
         {
-            IsMenuOpen = !IsMenuOpen;
+            IsUserAuthenticated = await TodoTemplateAuthenticationStateProvider.IsUserAuthenticated();
         }
+        catch (Exception ex)
+        {
+            ExceptionHandler.Handle(ex);
+        }
+        finally
+        {
+            StateHasChanged();
+        }
+    }
 
-        public async ValueTask DisposeAsync()
-        {
-            TodoTemplateAuthenticationStateProvider.AuthenticationStateChanged -= VerifyUserIsAuthenticatedOrNot;
-        }
+    private void ToggleMenuHandler()
+    {
+        IsMenuOpen = !IsMenuOpen;
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        TodoTemplateAuthenticationStateProvider.AuthenticationStateChanged -= VerifyUserIsAuthenticatedOrNot;
     }
 }
