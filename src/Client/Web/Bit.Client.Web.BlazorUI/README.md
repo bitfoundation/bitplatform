@@ -4,13 +4,13 @@
 BitComponent is a set of native and high performance Blazor UI controls. This is implemented in C# and this does not depend on or wrap existing JavaScript frameworks or libraries.
 
 **Why choose Bit Blazor Components?**
-- BitComponent is free
-- BitComponent is open source
-- BitComponent is high performance
-- BitComponent is native blazor components
-- BitComponent is supported in **server-side** and **client-side** (WASM) Blazor
+- Bit components are free
+- Bit components are open source
+- Bit components have a high performance
+- Bit components are Blazor native components
+- Bit components are supported in both **server-side** and **client-side** (WASM) Blazor
 
-to use BitComponent, please follow these steps:
+To use the Bit components, please follow these steps:
 
 1. Install the `Bit.Client.Web.BlazorUI` nuget package
 2. In the default document (`_Host.cshtml`, `index.html` or `_Layout.cshtml`), add the `Bit.Client.Web.BlazorUI` style reference in the head section.
