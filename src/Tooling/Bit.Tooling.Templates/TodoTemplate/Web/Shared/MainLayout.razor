@@ -8,6 +8,15 @@
 }
 
 <div class="main @(IsUserAuthenticated ? "main--authenticated" : null)">
-    <div class="main-content">@Body</div>
+    <div class="main-content">
+        <ErrorBoundary @ref="ErrorBoundaryRef">
+            <ChildContent>
+                @Body
+            </ChildContent>
+            <ErrorContent Context="exception">
+                <ErrorBoundaryContent Exception="exception" />
+            </ErrorContent>
+        </ErrorBoundary>
+    </div>
     <Footer />
 </div>

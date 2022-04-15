@@ -1,0 +1,19 @@
+@inherits ComponentBase;
+
+@if (ChildContent is null)
+{
+    <div style="display:flex; flex-direction: column; width: 100%;">
+        <h1 style="color:red; text-align: center;">oops, something went wrong...</h1>
+        @if (ShowException)
+        {
+            <div style="color:white; white-space: pre; overflow: auto;">@Exception?.ToString()</div>
+        }
+        <div style="text-align: center;">
+            <BitButton OnClick="Refresh">Refresh</BitButton>
+        </div>
+    </div>
+}
+else
+{
+    @ChildContent(Exception)
+}
