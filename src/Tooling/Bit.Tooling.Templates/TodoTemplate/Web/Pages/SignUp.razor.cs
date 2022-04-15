@@ -38,8 +38,7 @@ public partial class SignUp
                 Password = SignUpModel.Password
             }, TodoTemplateJsonContext.Default.SignUpRequestDto);
 
-            SignUpMessageType = BitMessageBarType.Success;
-            SignUpMessage = "Confirmation link has sent to your email. Please follow the link.";
+            NavigationManager.NavigateTo($"/sign-up-confirmation?email={SignUpModel.Email}");
         }
         catch (ResourceValidationException e)
         {

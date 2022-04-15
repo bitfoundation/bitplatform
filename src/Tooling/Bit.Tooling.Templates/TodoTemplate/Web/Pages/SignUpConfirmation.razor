@@ -1,0 +1,36 @@
+﻿@page "/sign-up-confirmation"
+
+@inherits TodoTemplateComponentBase;
+
+<PageTitle>Sign up</PageTitle>
+
+<div class="page-container">
+    <div class="form--white">
+        @if (string.IsNullOrEmpty(SignUpConfirmationMessage) is false)
+        {
+            <BitMessageBar Class="form-message-bar"
+                       MessageBarType="@SignUpConfirmationMessageType"
+                       OnDismiss="() => SignUpConfirmationMessage = null">
+                @SignUpConfirmationMessage
+            </BitMessageBar>
+        }
+        <h1 class="form-title">
+            Sign up
+        </h1>
+        
+        <BitButton Class="form-submit-button"
+            ButtonStyle="BitButtonStyle.Primary"
+            Title="Re-send link"
+            AriaLabel="Re-send link"
+            OnClick="WrapHandled(ResendLink)">
+            @if (IsLoading)
+            {
+                <BitSpinner Size="BitSpinnerSize.Small"></BitSpinner>
+            }
+            else
+            {
+                <span>Re-send Link</span>
+            }
+        </BitButton>
+    </div>
+</div>

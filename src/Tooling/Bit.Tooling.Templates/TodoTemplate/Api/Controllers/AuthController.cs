@@ -47,34 +47,29 @@ public class AuthController : ControllerBase
     [HttpPost("[action]")]
     public async Task SignUp(SignUpRequestDto signUpRequest, CancellationToken cancellationToken)
     {
-        var existingUserIfAny = await _userManager.FindByNameAsync(signUpRequest.UserName);
+        var existingUser = await _userManager.FindByNameAsync(signUpRequest.UserName);
 
         var userToAdd = _mapper.Map<User>(signUpRequest);
 
-        if (existingUserIfAny is not null)
+        if (existingUser is not null)
         {
-            if (await _userManager.IsEmailConfirmedAsync(existingUserIfAny))
+            if (await _userManager.IsEmailConfirmedAsync(existingUser))
             {
                 throw new BadRequestException(nameof(ErrorStrings.DuplicateEmail));
             }
             else
             {
-                if ((DateTimeOffset.Now - (existingUserIfAny.ConfirmationEmailRequestedOn ?? DateTimeOffset.MinValue)) < _appSettings.IdentitySettings.ConfirmationEmailResendDelay)
-                {
-                    throw new TooManyRequestsExceptions(nameof(ErrorStrings.WaitForConfirmationEmailResendDelay));
-                }
-                else
-                {
-                    await _userManager.DeleteAsync(existingUserIfAny);
-                    userToAdd.ConfirmationEmailRequestedOn = existingUserIfAny.ConfirmationEmailRequestedOn;
-                }
+                await _userManager.DeleteAsync(existingUser);
+                userToAdd.ConfirmationEmailRequestedOn = existingUser.ConfirmationEmailRequestedOn;
             }
         }
 
         var result = await _userManager.CreateAsync(userToAdd, signUpRequest.Password);
 
         if (!result.Succeeded)
+        {
             throw new ResourceValidationException(result.Errors.Select(e => e.Code).ToArray());
+        }
 
         await SendConfirmationEmail(new() { Email = userToAdd.Email }, cancellationToken);
     }
@@ -84,8 +79,18 @@ public class AuthController : ControllerBase
     {
         var user = await _userManager.FindByEmailAsync(sendConfirmationEmailRequest.Email);
 
+        if (user is null)
+            throw new BadRequestException(nameof(ErrorStrings.UserNameNotFound));
+
+        if (await _userManager.IsEmailConfirmedAsync(user))
+        {
+            throw new BadRequestException(nameof(ErrorStrings.EmailAlreadyConfirmed));
+        }
+
         if ((DateTimeOffset.Now - user.ConfirmationEmailRequestedOn) < _appSettings.IdentitySettings.ConfirmationEmailResendDelay)
+        {
             throw new TooManyRequestsExceptions(nameof(ErrorStrings.WaitForConfirmationEmailResendDelay));
+        }
 
         var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
 
