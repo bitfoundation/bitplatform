@@ -26,8 +26,7 @@ public partial class ResetPassword
 
     [Inject] public ITodoTemplateAuthenticationService TodoTemplateAuthenticationService { get; set; } = default!;
 
-    [Inject]
-    public TodoTemplateAuthenticationStateProvider TodoTemplateAuthenticationStateProvider { get; set; } = default!;
+    [Inject] public TodoTemplateAuthenticationStateProvider TodoTemplateAuthenticationStateProvider { get; set; } = default!;
 
     private async Task Submit()
     {
@@ -75,7 +74,9 @@ public partial class ResetPassword
         if (firstRender)
         {
             if (await TodoTemplateAuthenticationStateProvider.IsUserAuthenticated())
+            {
                 NavigationManager.NavigateTo("/");
+            }
         }
 
         await base.OnAfterRenderAsync(firstRender);
