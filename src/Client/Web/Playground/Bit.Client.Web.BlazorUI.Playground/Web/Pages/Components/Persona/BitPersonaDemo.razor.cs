@@ -116,7 +116,7 @@ public partial class BitPersonaDemo
             Name = "Size",
             Type = "string?",
             DefaultValue = "",
-            LinkType=LinkType.Link,
+            LinkType = LinkType.Link,
             Href = "#bitpersona-size",
             Description = "Decides the size of the control.",
         },
@@ -142,49 +142,41 @@ public partial class BitPersonaDemo
         {
             Id = "precence-status",
             Title = "BitPersonaPresence enum",
-            Description = "",
             EnumList = new List<EnumItem>()
             {
                 new()
                 {
                     Name = "Away",
-                    Description = "",
                     Value = "3",
                 },
                 new()
                 {
                     Name = "Blocked",
-                    Description = "",
                     Value = "5",
                 },
                 new()
                 {
                     Name = "Busy",
-                    Description = "",
                     Value = "6",
                 },
                 new()
                 {
                     Name = "DND",
-                    Description = "",
                     Value = "4",
                 },
                 new()
                 {
                     Name = "None",
-                    Description = "",
                     Value = "0",
                 },
                 new()
                 {
                     Name = "Offline",
-                    Description = "",
                     Value = "1",
                 },
                 new()
                 {
                     Name = "Online",
-                    Description = "",
                     Value = "2",
                 },
             }
@@ -193,61 +185,51 @@ public partial class BitPersonaDemo
         {
             Id = "bitpersona-initial-color",
             Title = "BitPersonaInitialsColor enum",
-            Description = "",
             EnumList = new List<EnumItem>()
             {
                 new()
                 {
                     Name = "Black",
-                    Description = "",
                     Value = "Black=11",
                 },
                 new()
                 {
                     Name = "Blue",
-                    Description = "",
                     Value = "Blue=1",
                 },
                 new()
                 {
                     Name = "Burgundy",
-                    Description = "",
                     Value = "Burgundy=19",
                 },
                 new()
                 {
                     Name = "CoolGray",
-                    Description = "",
                     Value = "CoolGray=21",
                 },
                 new()
                 {
                     Name = "Cyan",
-                    Description = "",
                     Value = "Cyan=23",
                 },
                 new()
                 {
                     Name = "DarkBlue",
-                    Description = "",
                     Value = "DarkBlue=2",
                 },
                 new()
                 {
                     Name = "DarkGreen",
-                    Description = "",
                     Value = "DarkGreen=6",
                 },
                 new()
                 {
                     Name = "DarkRed",
-                    Description = "",
                     Value = "DarkRed=14",
                 },
                 new()
                 {
                     Name = "Gold",
-                    Description = "",
                     Value = "Gold=18",
                 },
                 new()
@@ -259,73 +241,61 @@ public partial class BitPersonaDemo
                 new()
                 {
                     Name = "Green",
-                    Description = "",
                     Value = "Green=5",
                 },
                 new()
                 {
                     Name = "LightBlue",
-                    Description = "",
                     Value = "LightBlue=0",
                 },
                 new()
                 {
                     Name = "LightGreen",
-                    Description = "",
                     Value = "LightGreen=4",
                 },
                 new()
                 {
                     Name = "LightPink",
-                    Description = "",
                     Value = "LightPink=7",
                 },
                 new()
                 {
                     Name = "LightRed",
-                    Description = "",
                     Value = "LightRed=17",
                 },
                 new()
                 {
                     Name = "Magenta",
-                    Description = "",
                     Value = "Magenta=9",
                 },
                 new()
                 {
                     Name = "Orange",
-                    Description = "",
                     Value = "Orange=12",
                 },
                 new()
                 {
                     Name = "Pink",
-                    Description = "",
                     Value = "Pink=8",
                 },
                 new()
                 {
                     Name = "Purple",
-                    Description = "",
                     Value = "Purple=10",
                 },
                 new()
                 {
                     Name = "Red",
-                    Description = "",
                     Value = "Red=13",
                 },
                 new()
                 {
                     Name = "Rust",
-                    Description = "",
                     Value = "Rust=24",
                 },
                 new()
                 {
                     Name = "Teal",
-                    Description = "",
                     Value = "Teal=3",
                 },
                 new()
@@ -337,13 +307,11 @@ public partial class BitPersonaDemo
                 new()
                 {
                     Name = "Violet",
-                    Description = "",
                     Value = "Violet=16",
                 },
                 new()
                 {
                     Name = "WarmGray",
-                    Description = "",
                     Value = "WarmGray=20",
                 },
             },
@@ -352,7 +320,6 @@ public partial class BitPersonaDemo
         {
             Id = "bitpersona-size",
             Title = "BitPersonaPresence enum",
-            Description = "",
             EnumList = new List<EnumItem>()
             {
                 new()
