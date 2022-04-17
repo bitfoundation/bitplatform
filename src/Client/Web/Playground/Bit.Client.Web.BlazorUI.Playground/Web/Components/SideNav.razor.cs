@@ -57,7 +57,8 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Components
                 Links = new List<BitNavLinkItem>
                 {
                     new BitNavLinkItem { Name = "BasicList", Key = "BasicList", Url="/components/basic-list" },
-                    new BitNavLinkItem { Name = "RadioButtonList", Key = "RadioButtonList", Url="/components/radio-button-list" }
+                    new BitNavLinkItem { Name = "RadioButtonList", Key = "RadioButtonList", Url="/components/radio-button-list" },
+                    new BitNavLinkItem { Name = "Persona", Key = "Persona", Url="/components/persona" }
                 }
             },
             new BitNavLinkItem

@@ -130,5 +130,9 @@
     {
         "outputFile": "Pages/Components/RadioButtonGroup/BitRadioButtonGroupDemo.razor.css",
         "inputFile": "Pages/Components/RadioButtonGroup/BitRadioButtonGroupDemo.razor.scss"
+    },
+    {
+        "outputFile": "Pages/Components/Persona/BitPersonaDemo.razor.css",
+        "inputFile": "Pages/Components/Persona/BitPersonaDemo.razor.scss"
     }
 ]
