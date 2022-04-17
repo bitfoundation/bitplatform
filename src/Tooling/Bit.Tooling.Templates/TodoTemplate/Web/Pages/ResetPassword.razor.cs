@@ -26,6 +26,9 @@ public partial class ResetPassword
 
     [Inject] public ITodoTemplateAuthenticationService TodoTemplateAuthenticationService { get; set; } = default!;
 
+    [Inject]
+    public TodoTemplateAuthenticationStateProvider TodoTemplateAuthenticationStateProvider { get; set; } = default!;
+
     private async Task Submit()
     {
         if (IsLoading)
@@ -65,5 +68,16 @@ public partial class ResetPassword
         {
             IsLoading = false;
         }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            if (await TodoTemplateAuthenticationStateProvider.IsUserAuthenticated())
+                NavigationManager.NavigateTo("/");
+        }
+
+        await base.OnAfterRenderAsync(firstRender);
     }
 }
