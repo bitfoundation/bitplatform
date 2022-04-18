@@ -3,7 +3,7 @@
 	<Import Project="../../Bit.Build.props" />
 
 	<PropertyGroup>
-		<TargetFrameworks>net6.0;monoandroid10.0;Xamarin.iOS10;uap10.0.17763;netstandard2.0;netstandard2.1;net6.0-ios;net6.0-android;net6.0-maccatalyst;net6.0-windows10.0.19041;</TargetFrameworks>
+		<TargetFrameworks>net6.0;monoandroid12.0;Xamarin.iOS10;uap10.0.17763;netstandard2.0;netstandard2.1;net6.0-ios;net6.0-android;net6.0-maccatalyst;net6.0-windows10.0.19041;</TargetFrameworks>
 		<RootNamespace>Bit.Core</RootNamespace>
 	</PropertyGroup>
 
@@ -13,7 +13,7 @@
 		<PackageReference Include="System.ComponentModel.Annotations" Version="6.0.0-preview.4.21253.7" />
 		<PackageReference Include="Autofac" Version="6.3.0" />
 		<PackageReference Include="Autofac.Extensions.DependencyInjection" Version="7.2.0" />
-		<PackageReference Condition=" '$(TargetFramework)' == 'monoandroid10.0' OR '$(TargetFramework)' == 'Xamarin.iOS10' OR '$(TargetFramework)' == 'uap10.0.17763' " Include="Xamarin.Essentials" Version="1.7.2" />
+		<PackageReference Condition=" '$(TargetFramework)' == 'monoandroid12.0' OR '$(TargetFramework)' == 'Xamarin.iOS10' OR '$(TargetFramework)' == 'uap10.0.17763' " Include="Xamarin.Essentials" Version="1.7.2" />
 		<PackageReference Include="Prism.Core" Version="8.1.97" />
 	</ItemGroup>
 
