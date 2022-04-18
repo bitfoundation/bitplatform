@@ -66,7 +66,7 @@ public class AuthController : ControllerBase
 
         var result = await _userManager.CreateAsync(userToAdd, signUpRequest.Password);
 
-        if (!result.Succeeded)
+        if (result.Succeeded is false)
         {
             throw new ResourceValidationException(result.Errors.Select(e => e.Code).ToArray());
         }

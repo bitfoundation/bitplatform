@@ -21,7 +21,24 @@
             Sign up
         </h1>
 
-        @if (IsSignedUp is false)
+        @if (IsSignedUp)
+        {
+            <BitButton Class="form-submit-button"
+                ButtonStyle="BitButtonStyle.Primary"
+                Title="Re-send link"
+                AriaLabel="Re-send link"
+                OnClick="WrapHandled(ResendLink)">
+                @if (IsLoading)
+                {
+                    <BitSpinner Size="BitSpinnerSize.Small"></BitSpinner>
+                }
+                else
+                {
+                    <span>Re-send Link</span>
+                }
+            </BitButton>
+        }
+        else
         {
             <div class="form-input-container">
                 <BitLabel>Email</BitLabel>
@@ -63,23 +80,6 @@
             <div>
                 Already on Bit? <BitLink Href="/sign-in">Sign in</BitLink>
             </div>
-        }
-        else
-        {
-            <BitButton Class="form-submit-button"
-                ButtonStyle="BitButtonStyle.Primary"
-                Title="Re-send link"
-                AriaLabel="Re-send link"
-                OnClick="WrapHandled(ResendLink)">
-                @if (IsLoading)
-                {
-                    <BitSpinner Size="BitSpinnerSize.Small"></BitSpinner>
-                }
-                else
-                {
-                    <span>Re-send Link</span>
-                }
-            </BitButton>
         }
 
     </EditForm>

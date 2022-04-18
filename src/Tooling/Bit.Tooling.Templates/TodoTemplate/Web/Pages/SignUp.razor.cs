@@ -88,7 +88,7 @@ public partial class SignUp
         {
             SignUpMessageType = BitMessageBarType.Error;
 
-            SignUpMessage = ErrorStrings.ResourceManager.Translate(e.Message, SignUpModel.Email!);
+            SignUpMessage = ErrorStrings.ResourceManager.Translate(e.Message, SignUpModel.Email);
         }
         finally
         {
