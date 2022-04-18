@@ -253,6 +253,6 @@
     <value>You have already requested for the reset password email for '{0}'. Try again later.</value>
   </data>
   <data name="EmailAlreadyConfirmed" xml:space="preserve">
-    <value>Your email already confirmed.</value>
+    <value>Your email is already confirmed.</value>
   </data>
 </root>

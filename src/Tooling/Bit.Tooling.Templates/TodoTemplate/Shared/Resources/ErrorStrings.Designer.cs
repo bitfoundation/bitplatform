@@ -115,7 +115,7 @@ namespace TodoTemplate.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Your email already confirmed..
+        ///   Looks up a localized string similar to Your email is already confirmed..
         /// </summary>
         public static string EmailAlreadyConfirmed {
             get {
