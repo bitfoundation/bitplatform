@@ -79,17 +79,17 @@ public class AuthController : ControllerBase
     {
         var user = await _userManager.FindByEmailAsync(sendConfirmationEmailRequest.Email);
 
+        if (user is null)
+            throw new BadRequestException(nameof(ErrorStrings.UserNameNotFound));
+        
+        if (await _userManager.IsEmailConfirmedAsync(user))
+            throw new BadRequestException(nameof(ErrorStrings.EmailAlreadyConfirmed));
+
         await SendConfirmationEmail(sendConfirmationEmailRequest, user, cancellationToken);
     }
 
     private async Task SendConfirmationEmail(SendConfirmationEmailRequestDto sendConfirmationEmailRequest, User user, CancellationToken cancellationToken)
     {
-        if (user is null)
-            throw new BadRequestException(nameof(ErrorStrings.UserNameNotFound));
-
-        if (await _userManager.IsEmailConfirmedAsync(user))
-            throw new BadRequestException(nameof(ErrorStrings.EmailAlreadyConfirmed));
-
         if ((DateTimeOffset.Now - user.ConfirmationEmailRequestedOn) < _appSettings.IdentitySettings.ConfirmationEmailResendDelay)
             throw new TooManyRequestsExceptions(nameof(ErrorStrings.WaitForConfirmationEmailResendDelay));
 
