@@ -39,19 +39,19 @@ namespace Bit.Core.Implementations
                 initialProps.Add("IsFirstLaunchForCurrentVersion", Xamarin.Essentials.VersionTracking.IsFirstLaunchForCurrentVersion.ToString(CultureInfo.InvariantCulture));
 #elif Maui
             if (!initialProps.ContainsKey("NetworkAccess"))
-                initialProps.Add("NetworkAccess", Microsoft.Maui.Essentials.Connectivity.NetworkAccess.ToString());
+                initialProps.Add("NetworkAccess", Microsoft.Maui.Networking.Connectivity.NetworkAccess.ToString());
 
             if (!initialProps.ContainsKey("VersionHistory"))
-                initialProps.Add("VersionHistory", string.Join(",", Microsoft.Maui.Essentials.VersionTracking.VersionHistory.OrderByDescending(vh => vh)));
+                initialProps.Add("VersionHistory", string.Join(",", Microsoft.Maui.ApplicationModel.VersionTracking.VersionHistory.OrderByDescending(vh => vh)));
 
             if (!initialProps.ContainsKey("Version"))
-                initialProps.Add("Version", string.Join(",", Microsoft.Maui.Essentials.VersionTracking.CurrentVersion));
+                initialProps.Add("Version", string.Join(",", Microsoft.Maui.ApplicationModel.VersionTracking.CurrentVersion));
 
             if (!initialProps.ContainsKey("IsFirstLaunchEver"))
-                initialProps.Add("IsFirstLaunchEver", Microsoft.Maui.Essentials.VersionTracking.IsFirstLaunchEver.ToString(CultureInfo.InvariantCulture));
+                initialProps.Add("IsFirstLaunchEver", Microsoft.Maui.ApplicationModel.VersionTracking.IsFirstLaunchEver.ToString(CultureInfo.InvariantCulture));
 
             if (!initialProps.ContainsKey("IsFirstLaunchForCurrentVersion"))
-                initialProps.Add("IsFirstLaunchForCurrentVersion", Microsoft.Maui.Essentials.VersionTracking.IsFirstLaunchForCurrentVersion.ToString(CultureInfo.InvariantCulture));
+                initialProps.Add("IsFirstLaunchForCurrentVersion", Microsoft.Maui.ApplicationModel.VersionTracking.IsFirstLaunchForCurrentVersion.ToString(CultureInfo.InvariantCulture));
 #endif
 
             if (MessageReceiver != null && !initialProps.ContainsKey("MessageReceiverWasConnected"))

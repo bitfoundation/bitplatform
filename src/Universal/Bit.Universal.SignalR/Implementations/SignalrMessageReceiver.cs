@@ -79,7 +79,7 @@ namespace Bit.Signalr.Implementations
 #if Xamarin
                 Xamarin.Essentials.Connectivity.ConnectivityChanged += OnConnectivityChanged;
 #elif Maui
-                Microsoft.Maui.Essentials.Connectivity.ConnectivityChanged += OnConnectivityChanged;
+                Microsoft.Maui.Networking.Connectivity.ConnectivityChanged += OnConnectivityChanged;
 #endif
             }
 
@@ -123,7 +123,7 @@ namespace Bit.Signalr.Implementations
                         });
                 });
 #elif Maui
-                Microsoft.Maui.Essentials.MainThread.BeginInvokeOnMainThread(() =>
+                Microsoft.Maui.ApplicationModel.MainThread.BeginInvokeOnMainThread(() =>
                 {
                     IsConnected = isConnected;
 
@@ -221,9 +221,9 @@ namespace Bit.Signalr.Implementations
                 ReportStatus(isConnected: false);
         }
 #elif Maui
-        void OnConnectivityChanged(object? sender, Microsoft.Maui.Essentials.ConnectivityChangedEventArgs e)
+        void OnConnectivityChanged(object? sender, Microsoft.Maui.Networking.ConnectivityChangedEventArgs e)
         {
-            if (e.NetworkAccess != Microsoft.Maui.Essentials.NetworkAccess.Internet)
+            if (e.NetworkAccess != Microsoft.Maui.Networking.NetworkAccess.Internet)
                 ReportStatus(isConnected: false);
         }
 #endif
@@ -268,7 +268,7 @@ namespace Bit.Signalr.Implementations
 #if Xamarin
                 Xamarin.Essentials.Connectivity.ConnectivityChanged -= OnConnectivityChanged;
 #elif Maui
-                Microsoft.Maui.Essentials.Connectivity.ConnectivityChanged -= OnConnectivityChanged;
+                Microsoft.Maui.Networking.Connectivity.ConnectivityChanged -= OnConnectivityChanged;
 #endif
 
             _listener?.Dispose();

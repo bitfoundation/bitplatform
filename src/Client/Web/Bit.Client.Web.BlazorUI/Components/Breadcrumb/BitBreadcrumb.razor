@@ -41,7 +41,8 @@
 
     <div class="bit-brc-overlay"
          id="@OverflowDropDownMenuOverlayId"
-         @onclick="CloseCallout"></div>
+         @onclick="CloseCallout">
+    </div>
 
     <div class="bit-brc-overflow-menu-wrapper"
          id="@OverflowDropDownMenuCalloutId"
@@ -51,8 +52,7 @@
             @foreach ((BitBreadcrumbItem item, int index) in _overflowItems.Select((item, index) => (item, index)))
             {
                 <li>
-                    <a href="@item.href"
-                   onclick="@item.OnClick">@item.Text</a>
+                    <a href="@item.href" @onclick="@item.OnClick">@item.Text</a>
                 </li>
             }
         </ul>

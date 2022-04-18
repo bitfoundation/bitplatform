@@ -12,7 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Hosting;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Hosting;
 using Simple.OData.Client;
 
@@ -30,14 +30,17 @@ namespace Bit.MauiAppSample
 
             var builder = MauiApp.CreateBuilder();
             builder
-                .RegisterBlazorMauiWebView()
                 .UseMauiApp<App>()
                 .ConfigureFonts(fonts =>
                 {
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                 });
 
-            builder.Services.AddBlazorWebView();
+            builder.Services.AddMauiBlazorWebView()
+#if DEBUG
+    .AddBlazorWebViewDeveloperTools()
+#endif
+    ;
 
             builder.ConfigureContainer(new BitServiceProviderFactory(ConfigureServicesImpl));
 
@@ -66,7 +69,6 @@ namespace Bit.MauiAppSample
                 AppName = "Test"
             }, lifeCycle: DependencyLifeCycle.SingleInstance);
 
-            services.AddBlazorWebView();
             services.AddAuthorizationCore(config =>
             {
                 config.AddPolicy("IsLoggedIn", policy => policy.RequireClaim("UserId"));

@@ -104,8 +104,8 @@ namespace Bit.Http.Implementations
                 request.Headers.Add("Client-App-Version", Xamarin.Essentials.AppInfo.VersionString);
                 request.Headers.Add("Client-Platform", Xamarin.Essentials.DeviceInfo.Platform.ToString());
 #elif Maui
-                request.Headers.Add("Client-App-Version", Microsoft.Maui.Essentials.AppInfo.VersionString);
-                request.Headers.Add("Client-Platform", Microsoft.Maui.Essentials.DeviceInfo.Platform.ToString());
+                request.Headers.Add("Client-App-Version", Microsoft.Maui.ApplicationModel.AppInfo.VersionString);
+                request.Headers.Add("Client-Platform", Microsoft.Maui.Devices.DeviceInfo.Platform.ToString());
 #endif
 
                 request.Headers.Add("Client-Debug-Mode", (_clientAppProfile.Environment == "Development").ToString(CultureInfo.InvariantCulture));

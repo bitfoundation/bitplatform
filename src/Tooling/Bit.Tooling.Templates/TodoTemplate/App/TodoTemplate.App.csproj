@@ -43,7 +43,6 @@
         <Using Include="Microsoft.AspNetCore.Components.WebView.Maui" />
         <Using Include="Microsoft.Maui" />
         <Using Include="Microsoft.Maui.Controls.Hosting" />
-        <Using Include="Microsoft.Maui.Essentials" />
 
         <Using Include="Microsoft.AspNetCore.Components" />
         <Using Include="TodoTemplate.App.Services.Contracts" />
@@ -77,21 +76,15 @@
         <LinkDescription Include="Linker.xml" />
     </ItemGroup>
 
-    <ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
-        <!-- Required - WinUI does not yet have buildTransitive for everything -->
-        <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.0.0" />
-        <PackageReference Include="Microsoft.Graphics.Win2D" Version="1.0.0.30" />
-    </ItemGroup>
-
     <ItemGroup>
         <ProjectReference Include="..\..\..\..\Client\Web\Bit.Client.Web.BlazorUI\Bit.Client.Web.BlazorUI.csproj" />
         <PackageReference Include="BuildWebCompiler2022" Version="1.14.7">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="jose-jwt" Version="3.2.0" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="6.0.3" />
-        <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.6.2">
+        <PackageReference Include="jose-jwt" Version="4.0.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="6.0.4" />
+        <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.6.4">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>

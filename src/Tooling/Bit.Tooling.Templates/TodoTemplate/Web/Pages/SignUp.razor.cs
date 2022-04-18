@@ -1,11 +1,10 @@
-﻿using System.Text.RegularExpressions;
-using TodoTemplate.App.Models;
+﻿using TodoTemplate.Shared.Dtos.Account;
 
 namespace TodoTemplate.App.Pages;
 
 public partial class SignUp
 {
-    public SignUpModel SignUpModel { get; set; } = new();
+    public SignUpRequestDto SignUpModel { get; set; } = new();
 
     public bool IsSignedUp { get; set; }
     public bool IsLoading { get; set; }
@@ -32,12 +31,9 @@ public partial class SignUp
 
         try
         {
-            await HttpClient.PostAsJsonAsync("Auth/SignUp", new()
-            {
-                UserName = SignUpModel.Email,
-                Email = SignUpModel.Email,
-                Password = SignUpModel.Password
-            }, TodoTemplateJsonContext.Default.SignUpRequestDto);
+            SignUpModel.Email = SignUpModel.UserName;
+
+            await HttpClient.PostAsJsonAsync("Auth/SignUp", SignUpModel, TodoTemplateJsonContext.Default.SignUpRequestDto);
 
             IsSignedUp = true;
 
@@ -49,7 +45,7 @@ public partial class SignUp
             SignUpMessageType = BitMessageBarType.Error;
 
             SignUpMessage = string.Join(Environment.NewLine, e.Details.SelectMany(d => d.Messages)
-                .Select(e => ErrorStrings.ResourceManager.Translate(e, SignUpModel.Email!)));
+                .Select(e => ErrorStrings.ResourceManager.Translate(e, SignUpModel.UserName!)));
         }
         catch (KnownException e)
         {

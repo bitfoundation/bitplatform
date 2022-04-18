@@ -12,17 +12,17 @@
     <PackageReference Include="AntiXSS" Version="4.3.0" />
     <PackageReference Include="Bit.IdSrv3" Version="0.0.4" />
     <PackageReference Include="IdentityModel" Version="6.0.0" />
-    <PackageReference Include="Microsoft.Owin.Security.Facebook" Version="4.2.0" />
-    <PackageReference Include="Microsoft.Owin.Security.Google" Version="4.2.0" />
-    <PackageReference Include="Microsoft.Owin.Security.MicrosoftAccount" Version="4.2.0" />
-    <PackageReference Include="Microsoft.Owin.Security.Twitter" Version="4.2.0" />
-    <PackageReference Include="Microsoft.Owin.StaticFiles" Version="4.2.0" />
+    <PackageReference Include="Microsoft.Owin.Security.Facebook" Version="4.2.1" />
+    <PackageReference Include="Microsoft.Owin.Security.Google" Version="4.2.1" />
+    <PackageReference Include="Microsoft.Owin.Security.MicrosoftAccount" Version="4.2.1" />
+    <PackageReference Include="Microsoft.Owin.Security.Twitter" Version="4.2.1" />
+    <PackageReference Include="Microsoft.Owin.StaticFiles" Version="4.2.1" />
     <PackageReference Include="Owin.Security.Providers.LinkedIn" Version="2.26.0" />
     <PackageReference Include="System.DirectoryServices.AccountManagement" Version="6.0.0" />
-    <PackageReference Include="Microsoft.AspNet.WebApi.Tracing" Version="5.2.7" />
-    <PackageReference Include="Microsoft.Owin.Cors" Version="4.2.0" />
-    <PackageReference Include="Microsoft.Owin.Security.Cookies" Version="4.2.0" />
-    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.16.0" />
+    <PackageReference Include="Microsoft.AspNet.WebApi.Tracing" Version="5.2.8" />
+    <PackageReference Include="Microsoft.Owin.Cors" Version="4.2.1" />
+    <PackageReference Include="Microsoft.Owin.Security.Cookies" Version="4.2.1" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.17.0" />
   </ItemGroup>
 
   <ItemGroup>

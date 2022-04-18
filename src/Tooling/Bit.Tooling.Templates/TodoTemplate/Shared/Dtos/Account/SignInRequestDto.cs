@@ -2,9 +2,9 @@
 
 public class SignInRequestDto
 {
-    [Required]
+    [Required(ErrorMessage = "Please enter your email.")]
     public string? UserName { get; set; }
 
-    [Required]
+    [Required(ErrorMessage = "Please enter your password.")]
     public string? Password { get; set; }
 }
