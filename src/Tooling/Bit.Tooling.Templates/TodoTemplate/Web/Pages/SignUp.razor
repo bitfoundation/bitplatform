@@ -20,45 +20,67 @@
         <h1 class="form-title">
             Sign up
         </h1>
-        <div class="form-input-container">
-            <BitLabel>Email</BitLabel>
-            <BitTextField @bind-Value="SignUpModel.Email" Placeholder="Email" />
-            <ValidationMessage For="@(() => SignUpModel.Email)" />
-        </div>
-        <div class="form-input-container">
-            <BitLabel>Password</BitLabel>
-            <BitTextField @bind-Value="SignUpModel.Password"
-                          Type="BitTextFieldType.Password"
-                          CanRevealPassword="true"
-                          Placeholder="Password" />
-            <ValidationMessage For="@(() => SignUpModel.Password)" />
-        </div>
 
-        <div>
-            <BitCheckbox Class="form-checkbox" @bind-Value="SignUpModel.IsAcceptPrivacy">
-                I agree to the <BitLink Href="/privacy" Target="_blank">Bit Privacy Policy</BitLink>
-            </BitCheckbox>
-            <ValidationMessage For="@(() => SignUpModel.IsAcceptPrivacy)" />
-        </div>
+        @if (IsSignedUp is false)
+        {
+            <div class="form-input-container">
+                <BitLabel>Email</BitLabel>
+                <BitTextField @bind-Value="SignUpModel.Email" Placeholder="Email" />
+                <ValidationMessage For="@(() => SignUpModel.Email)" />
+            </div>
+            <div class="form-input-container">
+                <BitLabel>Password</BitLabel>
+                <BitTextField @bind-Value="SignUpModel.Password"
+                              Type="BitTextFieldType.Password"
+                              CanRevealPassword="true"
+                              Placeholder="Password" />
+                <ValidationMessage For="@(() => SignUpModel.Password)" />
+            </div>
 
-        <BitButton Class="form-submit-button"
-                   ButtonStyle="BitButtonStyle.Primary"
-                   Title="Sign up"
-                   AriaLabel="Sign up"
-                   IsEnabled="@context.Validate()"
-                   ButtonType="BitButtonType.Submit">
-            @if (IsLoading)
-            {
-                <BitSpinner Size="BitSpinnerSize.Small"></BitSpinner>
-            }
-            else
-            {
-                <span>Sign up</span>
-            }
-        </BitButton>
+            <div>
+                <BitCheckbox Class="form-checkbox" @bind-Value="SignUpModel.IsAcceptPrivacy">
+                    I agree to the <BitLink Href="/privacy" Target="_blank">Bit Privacy Policy</BitLink>
+                </BitCheckbox>
+                <ValidationMessage For="@(() => SignUpModel.IsAcceptPrivacy)" />
+            </div>
 
-        <div>
-            Already on Bit? <BitLink Href="/sign-in">Sign in</BitLink>
-        </div>
+            <BitButton Class="form-submit-button"
+                       ButtonStyle="BitButtonStyle.Primary"
+                       Title="Sign up"
+                       AriaLabel="Sign up"
+                       IsEnabled="@context.Validate()"
+                       ButtonType="BitButtonType.Submit">
+                @if (IsLoading)
+                {
+                    <BitSpinner Size="BitSpinnerSize.Small"></BitSpinner>
+                }
+                else
+                {
+                    <span>Sign up</span>
+                }
+            </BitButton>
+
+            <div>
+                Already on Bit? <BitLink Href="/sign-in">Sign in</BitLink>
+            </div>
+        }
+        else
+        {
+            <BitButton Class="form-submit-button"
+                ButtonStyle="BitButtonStyle.Primary"
+                Title="Re-send link"
+                AriaLabel="Re-send link"
+                OnClick="WrapHandled(ResendLink)">
+                @if (IsLoading)
+                {
+                    <BitSpinner Size="BitSpinnerSize.Small"></BitSpinner>
+                }
+                else
+                {
+                    <span>Re-send Link</span>
+                }
+            </BitButton>
+        }
+
     </EditForm>
 </div>

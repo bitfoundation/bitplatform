@@ -66,9 +66,5 @@
   {
     "outputFile": "wwwroot/service-worker.published.js",
     "inputFile": "wwwroot/service-worker.js"
-  },
-  {
-    "outputFile": "Pages/SignUpConfirmation.razor.css",
-    "inputFile": "Pages/SignUpConfirmation.razor.scss"
   }
 ]
