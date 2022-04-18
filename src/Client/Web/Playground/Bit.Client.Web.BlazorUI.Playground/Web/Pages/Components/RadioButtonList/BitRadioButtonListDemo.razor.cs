@@ -84,6 +84,27 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.RadioButtonLis
             },
             new ComponentParameter()
             {
+                Name = "Label",
+                Type = "string?",
+                DefaultValue = "",
+                Description = "Descriptive label for the RadioButtonList.",
+            },
+            new ComponentParameter()
+            {
+                Name = "AriaLabelledBy",
+                Type = "string",
+                DefaultValue = "string.Empty",
+                Description = "ID of an element to use as the aria label for this RadioButtonList.",
+            },
+            new ComponentParameter()
+            {
+                Name = "Name",
+                Type = "string",
+                DefaultValue = "a guid",
+                Description = "Name of RadioButtonList, this name is used to group each option into the same logical RadioButtonList.",
+            },
+            new ComponentParameter()
+            {
                 Name = "ImageSrcField",
                 Type = "string",
                 DefaultValue = "ImageSrc",
@@ -201,17 +222,26 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.RadioButtonLis
                 DefaultValue = "",
                 Description = "The field from the model that will be the underlying value.",
             },
+            new ComponentParameter()
+            {
+                Name = "IsRequired",
+                Type = "bool",
+                DefaultValue = "false",
+                Description = "Whether the associated RadioButtonList is required or not, add an asterisk '*' to its label.",
+            }
         };
 
         #region Example Code 1
 
-        private readonly string example1HTMLCode = @"<div>Chosen gender: @(ChosenGenderExample1 == 0 ? ""no selection yet"" : ChosenGenderExample1.ToString())</div>
+        private readonly string example1HTMLCode = @"
+<div>Chosen gender: @(ChosenGenderExample1 == 0 ? ""no selection yet"" : ChosenGenderExample1.ToString())</div>
 <BitRadioButtonList @bind-Value=""@ChosenGenderExample1""
                     TextField=""@nameof(GenderModel.GenderText)""
                     ValueField=""@nameof(GenderModel.GenderId)""
                     Items=""GenderOptionsExample1"" />";
 
-        private readonly string example1CSharpCode = @"private int ChosenGenderExample1;
+        private readonly string example1CSharpCode = @"
+private int ChosenGenderExample1;
 private List<GenderModel> GenderOptionsExample1 = new()
 {
     new GenderModel { GenderId = 1, GenderText = ""Female"" },
@@ -224,13 +254,15 @@ private List<GenderModel> GenderOptionsExample1 = new()
 
         #region Example Code 2
 
-        private readonly string example2HTMLCode = @"<BitRadioButtonList @bind-Value=""@ChosenGenderExample2""
+        private readonly string example2HTMLCode = @"
+<BitRadioButtonList @bind-Value=""@ChosenGenderExample2""
                     TextField=""@nameof(GenderModel.GenderText)""
                     ValueField=""@nameof(GenderModel.GenderId)""
                     Items=""GenderOptionsExample2""
                     IsEnabled=""false"" />";
 
-        private readonly string example2CSharpCode = @"private int ChosenGenderExample2;
+        private readonly string example2CSharpCode = @"
+private int ChosenGenderExample2;
 private List<GenderModel> GenderOptionsExample2 = new()
 {
     new GenderModel { GenderId = 1, GenderText = ""Female"" },
@@ -243,7 +275,8 @@ private List<GenderModel> GenderOptionsExample2 = new()
 
         #region Example Code 3
 
-        private readonly string example3HTMLCode = @"<BitRadioButtonList @bind-Value=""@ChosenGenderExample3""
+        private readonly string example3HTMLCode = @"
+<BitRadioButtonList @bind-Value=""@ChosenGenderExample3""
                     TextField=""@nameof(GenderModel.GenderText)""
                     ValueField=""@nameof(GenderModel.GenderId)""
                     Items=""GenderOptionsExample3""
@@ -252,7 +285,8 @@ private List<GenderModel> GenderOptionsExample2 = new()
                     SelectedImageSrcField=""@nameof(GenderModel.ImageName)""
                     ImageSize=""new System.Drawing.Size( width: 32, height: 32)"" />";
 
-        private readonly string example3CSharpCode = @"private int ChosenGenderExample3;
+        private readonly string example3CSharpCode = @"
+private int ChosenGenderExample3;
 private List<GenderModel> GenderOptionsExample3 = new()
 {
     new GenderModel { GenderId = 1, GenderText = ""Female"", ImageName = ""https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Female_icon.svg/920px-Female_icon.svg.png"" },
@@ -265,13 +299,15 @@ private List<GenderModel> GenderOptionsExample3 = new()
 
         #region Example Code 4
 
-        private readonly string example4HTMLCode = @"<BitRadioButtonList @bind-Value=""@ChosenGenderExample4""
-                    TextField=""@nameof(GenderModel.GenderText)""
-                    ValueField=""@nameof(GenderModel.GenderId)""
+        private readonly string example4HTMLCode = @"
+<BitRadioButtonList @bind-Value=""@ChosenGenderExample4""
                     Items=""GenderOptionsExample4""
-                    IconNameField=""@nameof(GenderModel.IconName)"" />";
+                    TextSelector=""item => item.GenderText""
+                    ValueSelector=""item => item.GenderId""
+                    IconNameSelector=""item => (BitIconName)item.IconName"" />";
 
-        private readonly string example4CSharpCode = @"private int ChosenGenderExample4;
+        private readonly string example4CSharpCode = @"
+private int ChosenGenderExample4;
 private List<GenderModel> GenderOptionsExample4 = new()
 {
     new GenderModel { GenderId = 1, GenderText = ""Female"", IconName = BitIconName.People },
@@ -284,7 +320,8 @@ private List<GenderModel> GenderOptionsExample4 = new()
 
         #region Example Code 5
 
-        private readonly string example5HTMLCode = @"@if (string.IsNullOrEmpty(SuccessMessage))
+        private readonly string example5HTMLCode = @"
+@if (string.IsNullOrEmpty(SuccessMessage))
 {
     <EditForm Model=""FormValidationModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
         <DataAnnotationsValidator />
@@ -314,7 +351,8 @@ else
     </BitMessageBar>
 }";
 
-        private readonly string example5CSharpCode = @"public class FormValidationModel
+        private readonly string example5CSharpCode = @"
+public class FormValidationModel
 {
     [Required]
     public int? GenderId { get; set; }

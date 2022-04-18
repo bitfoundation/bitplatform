@@ -28,6 +28,7 @@
 
     <ComponentExampleBox Title="BitRadioButtonList with images" CSharpSourceCode="@example3CSharpCode" HTMLSourceCode="@example3HTMLCode" ExampleId="example3">
         <ExamplePreview>
+            <div class="example-desc">BitRadioButtonList with icon use the Field parameter approach to binding with model</div>
             <BitRadioButtonList @bind-Value="@ChosenGenderExample3"
                                 TextField="@nameof(GenderModel.GenderText)"
                                 ValueField="@nameof(GenderModel.GenderId)"
@@ -39,47 +40,48 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="BitRadioButtonList with images" CSharpSourceCode="@example4CSharpCode" HTMLSourceCode="@example4HTMLCode" ExampleId="example4">
+    <ComponentExampleBox Title="BitRadioButtonList with icons" CSharpSourceCode="@example4CSharpCode" HTMLSourceCode="@example4HTMLCode" ExampleId="example4">
         <ExamplePreview>
+            <div class="example-desc">BitRadioButtonList with icon use the Selector parameter approach to binding with model</div>
             <BitRadioButtonList @bind-Value="@ChosenGenderExample4"
-                                TextField="@nameof(GenderModel.GenderText)"
-                                ValueField="@nameof(GenderModel.GenderId)"
                                 Items="GenderOptionsExample4"
-                                IconNameField="@nameof(GenderModel.IconName)" />
+                                TextSelector="item => item.GenderText"
+                                ValueSelector="item => item.GenderId"
+                                IconNameSelector="item => (BitIconName)item.IconName" />
         </ExamplePreview>
     </ComponentExampleBox>
 
     <ComponentExampleBox Title="BitRadioButtonList validation" CSharpSourceCode="@example5CSharpCode" HTMLSourceCode="@example5HTMLCode" ExampleId="example5">
         <ExamplePreview>
             @if (string.IsNullOrEmpty(SuccessMessage))
-                {
-                    <EditForm Model="FormValidationModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
-                        <DataAnnotationsValidator />
+            {
+                <EditForm Model="FormValidationModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
+                    <DataAnnotationsValidator />
 
-                        <div class="validation-summary">
-                            <ValidationSummary />
-                        </div>
+                    <div class="validation-summary">
+                        <ValidationSummary />
+                    </div>
 
-                        <div>
-                            <BitRadioButtonList @bind-Value="@FormValidationModel.GenderId"
-                                TextField="@nameof(GenderModel.GenderText)"
-                                ValueField="@nameof(GenderModel.GenderId)"
-                                Items="GenderOptionsExample5" />
+                    <div>
+                        <BitRadioButtonList @bind-Value="@FormValidationModel.GenderId"
+                                        TextField="@nameof(GenderModel.GenderText)"
+                                        ValueField="@nameof(GenderModel.GenderId)"
+                                        Items="GenderOptionsExample5" />
 
-                            <ValidationMessage For="@(() => FormValidationModel.GenderId)" />
-                        </div>
+                        <ValidationMessage For="@(() => FormValidationModel.GenderId)" />
+                    </div>
 
-                        <BitButton ButtonType="BitButtonType.Submit">
-                            Submit
-                        </BitButton>
-                    </EditForm>
-                }
-                else
-                {
-                    <BitMessageBar MessageBarType="BitMessageBarType.Success" IsMultiline="false">
-                        @SuccessMessage
-                    </BitMessageBar>
-                }
+                    <BitButton ButtonType="BitButtonType.Submit">
+                        Submit
+                    </BitButton>
+                </EditForm>
+            }
+            else
+            {
+                <BitMessageBar MessageBarType="BitMessageBarType.Success" IsMultiline="false">
+                    @SuccessMessage
+                </BitMessageBar>
+            }
         </ExamplePreview>
     </ComponentExampleBox>
 
