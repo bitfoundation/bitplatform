@@ -15,7 +15,7 @@ using Xamarin.Forms;
 
 namespace Bit.CSharpClientSample.Droid
 {
-    [Activity(Label = "Bit.CSharpClientSample", Icon = "@drawable/icon", Theme = "@style/MainTheme", MainLauncher = true, ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
+    [Activity(Label = "Bit.CSharpClientSample", Icon = "@drawable/icon", Theme = "@style/MainTheme", MainLauncher = true, ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation, Exported = true)]
     public class MainActivity : BitFormsAppCompatActivity
     {
         protected override void OnCreate(Bundle savedInstanceState)
@@ -51,7 +51,7 @@ namespace Bit.CSharpClientSample.Droid
         }
     }
 
-    [Activity(NoHistory = true, LaunchMode = LaunchMode.SingleTop)]
+    [Activity(NoHistory = true, LaunchMode = LaunchMode.SingleTop, Exported = true)]
     [IntentFilter(new[] { Intent.ActionView }, Categories = new[] { Intent.CategoryDefault, Intent.CategoryBrowsable }, DataScheme = "test-oauth")]
     public class WebAuthenticationCallbackActivity : Xamarin.Essentials.WebAuthenticatorCallbackActivity
     {
@@ -65,7 +65,7 @@ namespace Bit.CSharpClientSample.Droid
         }
     }
 
-    [Service]
+    [Service(Exported = true)]
     [IntentFilter(new[] { "com.google.firebase.MESSAGING_EVENT" })]
     [IntentFilter(new[] { "com.google.firebase.INSTANCE_ID_EVENT" })]
     public class SampleAppFirebaseMessagingService : FirebaseMessagingService

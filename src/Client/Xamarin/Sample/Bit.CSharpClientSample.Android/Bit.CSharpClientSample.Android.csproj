@@ -8,7 +8,7 @@
     <OutputType>Library</OutputType>
     <RootNamespace>Bit.CSharpClientSample.Droid</RootNamespace>
     <AssemblyName>Bit.CSharpClientSample.Android</AssemblyName>
-    <TargetFrameworkVersion>v11.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v12.0</TargetFrameworkVersion>
     <AndroidApplication>True</AndroidApplication>
     <AndroidResgenFile>Resources\Resource.designer.cs</AndroidResgenFile>
     <AndroidResgenClass>Resource</AndroidResgenClass>
@@ -74,25 +74,25 @@
       <Version>7.0.0</Version>
     </PackageReference>
     <PackageReference Include="Xamarin.Firebase.Analytics">
-      <Version>119.0.1.3</Version>
+      <Version>119.0.1.5</Version>
     </PackageReference>
     <PackageReference Include="Xamarin.Firebase.Crashlytics">
-      <Version>118.2.1.3</Version>
+      <Version>118.2.1.5</Version>
     </PackageReference>
     <PackageReference Include="Xamarin.Firebase.Messaging">
-      <Version>122.0.0.3</Version>
+      <Version>122.0.0.5</Version>
     </PackageReference>
     <PackageReference Include="Xamarin.Google.Dagger">
       <Version>2.39.1</Version>
     </PackageReference>
     <PackageReference Include="Xamarin.GooglePlayServices.Base">
-      <Version>117.6.0.3</Version>
+      <Version>117.6.0.5</Version>
     </PackageReference>
     <PackageReference Include="Bit.System.Diagnostics.CodeAnalysis">
       <Version>1.0.0</Version>
     </PackageReference>
     <PackageReference Include="Xamarin.Build.Download">
-      <Version>0.11.0</Version>
+      <Version>0.11.1</Version>
     </PackageReference>
     <PackageReference Include="Xamarin.Forms" Version="5.0.0.2401" />
   </ItemGroup>
@@ -123,60 +123,16 @@
     <AndroidResource Include="Resources\values\Strings.xml" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\Universal\Bit.Universal.Core\Bit.Universal.Core.csproj">
-      <Project>{4ffc2ec0-fc61-4dab-93a1-6e13bcf6f8f4}</Project>
-      <Name>Bit.Universal.Core</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\..\Universal\Bit.Universal.Data.EntityFrameworkCore\Bit.Universal.Data.EntityFrameworkCore.csproj">
-      <Project>{2e3b9832-a18f-4e10-bc3b-0688989ca3d5}</Project>
-      <Name>Bit.Universal.Data.EntityFrameworkCore</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\..\Universal\Bit.Universal.Data\Bit.Universal.Data.csproj">
-      <Project>{d955e77b-4d09-4db2-9105-845c6b0945e9}</Project>
-      <Name>Bit.Universal.Data</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\..\Universal\Bit.Universal.Http\Bit.Universal.Http.csproj">
-      <Project>{9a9ec980-ad32-47ae-bd57-fd4f81aaec3f}</Project>
-      <Name>Bit.Universal.Http</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\..\Universal\Bit.Universal.Model\Bit.Universal.Model.csproj">
-      <Project>{c4f6cbda-14c4-4b31-9ded-7d9451f38592}</Project>
-      <Name>Bit.Universal.Model</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\..\Universal\Bit.Universal.OData\Bit.Universal.OData.csproj">
-      <Project>{a537a381-4f21-479f-af57-0c039b7fcb04}</Project>
-      <Name>Bit.Universal.OData</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\..\Universal\Bit.Universal.SignalR\Bit.Universal.SignalR.csproj">
-      <Project>{c9ed619e-4a85-47b7-b1e6-0df18e6a57a3}</Project>
-      <Name>Bit.Universal.SignalR</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\..\Universal\Bit.Universal.Sync.ODataEntityFrameworkCore\Bit.Universal.Sync.ODataEntityFrameworkCore.csproj">
-      <Project>{42519fb7-a66f-4610-bc49-32fd2872bbd7}</Project>
-      <Name>Bit.Universal.Sync.ODataEntityFrameworkCore</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\Bit.Client.Data.EntityFrameworkCore\Bit.Client.Data.EntityFrameworkCore.csproj">
-      <Project>{5d498602-f6dd-4a0e-8f4f-efd9afafc085}</Project>
-      <Name>Bit.Client.Data.EntityFrameworkCore</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\Bit.Client.Xamarin.Controls\Bit.Client.Xamarin.Controls.csproj">
-      <Project>{0197e422-24d7-4b8f-80af-a6c9eee32c0d}</Project>
-      <Name>Bit.Client.Xamarin.Controls</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\Bit.Client.Xamarin.Prism\Bit.Client.Xamarin.Prism.csproj">
-      <Project>{e05d071f-bbcb-41c6-a858-c0419e7fb4e7}</Project>
-      <Name>Bit.Client.Xamarin.Prism</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Bit.CSharpClientSample\Bit.CSharpClientSample.csproj">
-      <Project>{7acbbfff-cd89-4598-8512-2740a9fb0bfa}</Project>
-      <Name>Bit.CSharpClientSample</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <LinkDescription Include="LinkerConfig.xml" />
   </ItemGroup>
   <ItemGroup>
     <AndroidEnvironment Include="environment.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Bit.CSharpClientSample\Bit.CSharpClientSample.csproj">
+      <Project>{7acbbfff-cd89-4598-8512-2740a9fb0bfa}</Project>
+      <Name>Bit.CSharpClientSample</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <ProjectExtensions>

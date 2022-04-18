@@ -3,7 +3,7 @@
     <Import Project="../../Bit.Build.props" />
 
     <PropertyGroup>
-        <TargetFrameworks>net6.0;monoandroid10.0;Xamarin.iOS10;uap10.0.17763;netstandard2.0;netstandard2.1;net6.0-ios;net6.0-android;net6.0-maccatalyst;net6.0-windows10.0.19041;</TargetFrameworks>
+        <TargetFrameworks>net6.0;monoandroid12.0;Xamarin.iOS10;uap10.0.17763;netstandard2.0;netstandard2.1;net6.0-ios;net6.0-android;net6.0-maccatalyst;net6.0-windows10.0.19041;</TargetFrameworks>
         <PackageTags>$(PackageTags) OData</PackageTags>
         <RootNamespace>Bit.OData</RootNamespace>
     </PropertyGroup>
@@ -14,7 +14,7 @@
         <PackageReference Include="Simple.OData.V4.Client" Version="5.26.0" />
     </ItemGroup>
 
-    <ItemGroup Condition=" '$(TargetFramework)' == 'monoandroid10.0' OR '$(TargetFramework)' == 'Xamarin.iOS10'">
+    <ItemGroup Condition=" '$(TargetFramework)' == 'monoandroid12.0' OR '$(TargetFramework)' == 'Xamarin.iOS10'">
         <Reference Include="System.Xml.Linq" />
     </ItemGroup>
 
