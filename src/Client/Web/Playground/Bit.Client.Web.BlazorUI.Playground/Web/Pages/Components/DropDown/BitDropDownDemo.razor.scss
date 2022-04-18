@@ -15,3 +15,14 @@
     color: $Red20;
     font-size: rem(12px);
 }
+
+.dropdown-customized-style {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: flex-start;
+    align-items: center;
+
+    i {
+        margin-right: rem(8px)
+    }
+}

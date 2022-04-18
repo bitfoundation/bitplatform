@@ -59,7 +59,7 @@
                          AriaLabel="Custom dropdown"
                          Style="width:290px; margin:20px 0 20px 0">
                 <TextTemplate>
-                    <div>
+                    <div class="dropdown-customized-style">
                         <i class="bit-icon bit-icon--@((context.Items.Find(i => i.Value == context.Value).Data as DropDownItemData).IconName)"
                            aria-hidden="true"
                            title="@((context.Items.Find(i => i.Value == context.Value).Data as DropDownItemData).IconName)"></i>
@@ -67,7 +67,7 @@
                     </div>
                 </TextTemplate>
                 <PlaceholderTemplate>
-                    <div>
+                    <div class="dropdown-customized-style">
                         <i class="bit-icon bit-icon--MessageFill" aria-hidden="true"></i>
                         <span>@context.Placeholder</span>
                     </div>
@@ -76,7 +76,7 @@
                     <i class="bit-icon bit-icon--CirclePlus"></i>
                 </CaretDownFragment>
                 <ItemTemplate>
-                    <div style="display: flex; flex-flow: row nowrap; justify-content: flex-start; align-items: center;">
+                    <div class="dropdown-customized-style">
                         <i class="bit-icon bit-icon--@((context.Data as DropDownItemData).IconName)"
                            aria-hidden="true"
                            title="@((context.Data as DropDownItemData).IconName)"></i>
