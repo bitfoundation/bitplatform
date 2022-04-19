@@ -162,8 +162,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Breadcrumb
 
         private readonly string example1HTMLCode = @"<div class=""example-desc"">With items rendered as links</div>
 <div>
-    <BitBreadcrumb Items=""GetBreadcrumbItems()""
-                   OverflowAriaLabel=""More links""></BitBreadcrumb>
+    <BitBreadcrumb Items=""GetBreadcrumbItems()""></BitBreadcrumb>
 </div>
 
 <div class=""example-desc"">With custom rendered divider and overflow icon</div>
@@ -171,36 +170,31 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Breadcrumb
     <BitBreadcrumb Items=""GetBreadcrumbItems()""
                    DividerIcon=""BitIconName.Separator""
                    OverflowIndex=""1""
-                   OverflowAriaLabel=""More links""
                    MaxDisplayedItems=""2""
                    OnRenderOverflowIcon=""BitIconName.ChevronDown""></BitBreadcrumb>
 </div>
 
 <div class=""example-desc"">With item OnClick event: @OnClickValue</div>
 <div>
-    <BitBreadcrumb Items=""GetBreadcrumbItems()""
-                   OverflowAriaLabel=""More links""></BitBreadcrumb>
+    <BitBreadcrumb Items=""GetBreadcrumbItems()""></BitBreadcrumb>
 </div>";
 
         private readonly string example2HTMLCode = @"<div class=""example-desc"">With no maxDisplayedItems</div>
 <div>
     <BitBreadcrumb Items=""GetBreadcrumbItems()""
-                   AriaLabel=""Breadcrumb with no maxDisplayedItems""
-                   OverflowAriaLabel=""More links""></BitBreadcrumb>
+                   AriaLabel=""Breadcrumb with no maxDisplayedItems""></BitBreadcrumb>
 </div>
 <div class=""example-desc"">With maxDisplayedItems set to 3</div>
 <div>
     <BitBreadcrumb Items=""GetBreadcrumbItems()""
                    MaxDisplayedItems=""3""
-                   AriaLabel=""Breadcrumb with 3 maxDisplayedItems""
-                   OverflowAriaLabel=""More links""></BitBreadcrumb>
+                   AriaLabel=""Breadcrumb with 3 maxDisplayedItems""></BitBreadcrumb>
 </div>
 
 <div class=""example-desc"">With maxDisplayedItems set to 2 and overflowIndex set to 1 (second element)""</div>
 <div>
     <BitBreadcrumb Items=""GetBreadcrumbItems()""
                    MaxDisplayedItems=""2""
-                   OverflowAriaLabel=""More links""
                    OverflowIndex=""1""></BitBreadcrumb>
 </div>";
 
@@ -209,8 +203,14 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Breadcrumb
     <BitBreadcrumb Items=""GetBreadcrumbItems()""
                    MaxDisplayedItems=""2""
                    OverflowIndex=""1""
-                   OverflowAriaLabel=""More links""
                    IsEnabled=false></BitBreadcrumb>
+</div>";
+
+        private readonly string example4HTMLCode = @"<div>
+    <BitBreadcrumb Items=""GetBreadcrumbItems()""
+                   MaxDisplayedItems=""3""
+                   OverflowIndex=""2""
+                   OverflowAriaLabel=""More Items""></BitBreadcrumb>
 </div>";
 
         private readonly string example1CSharpCode = @"
@@ -248,6 +248,6 @@ private List<BitBreadcrumbItem> GetBreadcrumbItems()
             OnClick = (() => OnClickValue = ""Folder 4 clicked"")
         }
     };
-}";  
+}";
     }
 }
