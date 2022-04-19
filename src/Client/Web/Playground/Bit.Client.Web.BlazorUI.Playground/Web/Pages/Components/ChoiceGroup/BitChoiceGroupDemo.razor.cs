@@ -551,6 +551,58 @@ private void OptionOnChange(string value)
 
         #endregion
 
+        #region Example Code 8
+
+        private readonly string example8CSharpCode = @"
+public static RenderFragment<BitChoiceGroupOption> LabelTemplateSample { get; set; }
+
+private List<BitChoiceGroupOption> Example8Options { get; set; } = new()
+{
+    new BitChoiceGroupOption()
+    {
+        Value = ""A"",
+        Text = ""Option A"",
+        LabelTemplate = LabelTemplateSample
+    },
+    new BitChoiceGroupOption()
+    {
+        Value = ""B"",
+        Text = ""Option B"",
+        LabelTemplate = LabelTemplateSample
+    },
+    new BitChoiceGroupOption()
+    {
+        Value = ""C"",
+        Text = ""Option C"",
+        LabelTemplate = LabelTemplateSample
+    },
+    new BitChoiceGroupOption()
+    {
+        Value = ""D"",
+        Text = ""Option D"",
+        LabelTemplate = LabelTemplateSample
+    }
+};
+
+protected override void OnInitialized()
+{
+    LabelTemplateSample = (option) => (
+        @<div style=""border: 1px solid;"">
+            <input type=""radio"" name=""input-name"" id=""input-id-@option.Value"">
+            <label for=""input-id-@option.Value"">@option.Text</label>
+        </div>
+    );
+
+    base.OnInitialized();
+}
+";
+
+        private readonly string example8HtmlCode = @"
+<BitChoiceGroup Label=""Pick one"" Options=""example8Options"">
+</BitChoiceGroup>";
+
+        #endregion
+
         private async void HandleValidSubmit()
         {
             SuccessMessage = "Form Submitted Successfully!";

@@ -1,4 +1,5 @@
 ﻿@page "/components/choice-group"
+@using Bit.Client.Web.BlazorUI.Components.ChoiceGroup
 
 <ComponentDemo ComponentName="ChoiceGroup"
                ComponentDescription="ChoiceGroup let people select a single option from two or more choices."
@@ -85,4 +86,62 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
+
+    <ComponentExampleBox Title="ChoiceGroup with custom options" HTMLSourceCode="@example8HtmlCode" CSharpSourceCode="@example8CSharpCode" ExampleId="example7">
+        <ExamplePreview>
+            <div class="example-desc">ChoiceGroup options are customized by LabelTemplate property in the ChoiceGroupOption class</div>
+            <BitChoiceGroup Label="Pick one" Options="Example8Options">
+            </BitChoiceGroup>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
 </ComponentDemo>
+
+
+@code {
+
+    // example 8
+
+    public static RenderFragment<BitChoiceGroupOption> LabelTemplateSample { get; set; }
+
+    private List<BitChoiceGroupOption> Example8Options { get; set; } = new()
+    {
+        new BitChoiceGroupOption()
+        {
+            Value = "A",
+            Text = "Option A",
+            LabelTemplate = LabelTemplateSample
+        },
+        new BitChoiceGroupOption()
+        {
+            Value = "B",
+            Text = "Option B",
+            LabelTemplate = LabelTemplateSample
+        },
+        new BitChoiceGroupOption()
+        {
+            Value = "C",
+            Text = "Option C",
+            LabelTemplate = LabelTemplateSample
+        },
+        new BitChoiceGroupOption()
+        {
+            Value = "D",
+            Text = "Option D",
+            LabelTemplate = LabelTemplateSample
+        }
+    };
+
+    protected override void OnInitialized()
+    {
+        LabelTemplateSample = (option) => (
+            @<div style="border: 1px solid;">
+                <input type="radio" name="input-name" id="input-id-@option.Value">
+                <label for="input-id-@option.Value">@option.Text</label>
+            </div>
+        );
+
+        base.OnInitialized();
+    }
+
+}
