@@ -24,10 +24,10 @@
         @if (IsSignedUp)
         {
             <BitButton Class="form-submit-button"
-                ButtonStyle="BitButtonStyle.Primary"
-                Title="Re-send link"
-                AriaLabel="Re-send link"
-                OnClick="WrapHandled(ResendLink)">
+                   ButtonStyle="BitButtonStyle.Primary"
+                   Title="Re-send link"
+                   AriaLabel="Re-send link"
+                   OnClick="WrapHandled(ResendLink)">
                 @if (IsLoading)
                 {
                     <BitSpinner Size="BitSpinnerSize.Small"></BitSpinner>
@@ -48,9 +48,9 @@
             <div class="form-input-container">
                 <BitLabel>Password</BitLabel>
                 <BitTextField @bind-Value="SignUpModel.Password"
-                              Type="BitTextFieldType.Password"
-                              CanRevealPassword="true"
-                              Placeholder="Password" />
+                          Type="BitTextFieldType.Password"
+                          CanRevealPassword="true"
+                          Placeholder="Password" />
                 <ValidationMessage For="@(() => SignUpModel.Password)" />
             </div>
 
@@ -62,11 +62,11 @@
             </div>
 
             <BitButton Class="form-submit-button"
-                       ButtonStyle="BitButtonStyle.Primary"
-                       Title="Sign up"
-                       AriaLabel="Sign up"
-                       IsEnabled="@context.Validate()"
-                       ButtonType="BitButtonType.Submit">
+                   ButtonStyle="BitButtonStyle.Primary"
+                   Title="Sign up"
+                   AriaLabel="Sign up"
+                   IsEnabled="@context.Validate()"
+                   ButtonType="BitButtonType.Submit">
                 @if (IsLoading)
                 {
                     <BitSpinner Size="BitSpinnerSize.Small"></BitSpinner>
