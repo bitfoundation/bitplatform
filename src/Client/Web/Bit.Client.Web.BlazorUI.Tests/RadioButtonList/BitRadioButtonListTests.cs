@@ -26,6 +26,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.RadioButtonList
                 parameters.Add(p => p.Items, GetRadioButtonListItems());
                 parameters.Add(p => p.TextField, nameof(Gender.GenderText));
                 parameters.Add(p => p.ValueField, nameof(Gender.GenderId));
+                parameters.Add(p => p.IsEnabled, isEnabled);
                 parameters.Add(p => p.Visual, visual);
             });
 
@@ -194,7 +195,6 @@ namespace Bit.Client.Web.BlazorUI.Tests.RadioButtonList
             });
 
             var bitRadioButtonListLabel = component.Find(".bit-rbl label");
-
             Assert.IsTrue(bitRadioButtonListLabel.InnerHtml.Contains(label));
         }
 
@@ -254,7 +254,6 @@ namespace Bit.Client.Web.BlazorUI.Tests.RadioButtonList
             });
 
             var bitRadioButtonList = component.Find(".bit-rbl");
-
             Assert.IsTrue(bitRadioButtonList.GetAttribute("style").Contains(customStyle));
         }
 
@@ -272,7 +271,6 @@ namespace Bit.Client.Web.BlazorUI.Tests.RadioButtonList
             });
 
             var bitRadioButtonList = component.Find(".bit-rbl");
-
             Assert.IsTrue(bitRadioButtonList.ClassList.Contains(customClass));
         }
 
@@ -365,7 +363,6 @@ namespace Bit.Client.Web.BlazorUI.Tests.RadioButtonList
             var bitRadioButtonListInputBeforeSubmit = bitRadioButtonListItemsBeforeSubmit.GetElementsByTagName("input").First();
 
             Assert.IsFalse(bitRadioButtonListInputBeforeSubmit.HasAttribute("aria-invalid"));
-
             var form = component.Find("form");
             form.Submit();
 
