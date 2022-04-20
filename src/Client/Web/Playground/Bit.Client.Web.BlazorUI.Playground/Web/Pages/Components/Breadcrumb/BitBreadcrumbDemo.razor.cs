@@ -203,7 +203,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Breadcrumb
     <BitBreadcrumb Items=""GetBreadcrumbItems()""
                    MaxDisplayedItems=""2""
                    OverflowIndex=""1""
-                   IsEnabled=false></BitBreadcrumb>
+                   IsEnabled=""false""></BitBreadcrumb>
 </div>";
 
         private readonly string example4HTMLCode = @"<div>
