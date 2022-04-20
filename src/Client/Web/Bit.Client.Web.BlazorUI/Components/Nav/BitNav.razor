@@ -24,12 +24,12 @@
                         else
                         {
                             <button class="bit-nav-chevron-btn bit-nav-grp-chevron-btn"
-                tabindex="0"
-                aria-label="@(navLinkItem.IsExpanded ? navLinkItem.CollapseAriaLabel : navLinkItem.ExpandAriaLabel)"
-                aria-expanded="@(navLinkItem.IsExpanded ? "true" : "false")"
-                @onclick="(() => HandleGroupHeaderClick(navLinkItem))">
-                                <i class="bit-icon bit-icon--ChevronDown @(navLinkItem.IsExpanded ? "bit-nav-expand-fluent" : "")"
-               aria-hidden="true"></i>
+                                    tabindex="0"
+                                    type="button"
+                                    aria-label="@(navLinkItem.IsExpanded ? navLinkItem.CollapseAriaLabel : navLinkItem.ExpandAriaLabel)"
+                                    aria-expanded="@(navLinkItem.IsExpanded ? "true" : "false")"
+                                    @onclick="(() => HandleGroupHeaderClick(navLinkItem))">
+                                <i class="bit-icon bit-icon--ChevronDown @(navLinkItem.IsExpanded ? "bit-nav-expand-fluent" : "")" aria-hidden="true"></i>
                                 @navLinkItem.Name
                             </button>
                         }
@@ -88,6 +88,7 @@
             {
                 <button class="bit-nav-chevron-btn"
                         style="margin-left: @((navLinkItem.Depth * 14).ToString() + "px");"
+                        type="button"
                         tabindex="0"
                         aria-label="@GetExpandButtonAriaLabel(navLinkItem)"
                         aria-expanded="@(navLinkItem.IsExpanded ? "true" : "false")"
@@ -137,6 +138,7 @@
                         aria-label="@navLinkItem.AriaLabel"
                         aria-current="@(navLinkItem.Key == SelectedKey ? AriaCurrentMap[navLinkItem.AriaCurrent] : null)"
                         tabindex="-1"
+                        type="button"
                         @onclick="(() => HandleLinkClick(navLinkItem))">
                     <span class="bit-nav-link-container">
                         @if (navLinkItem.IconName.HasValue)

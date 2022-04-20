@@ -15,7 +15,7 @@
                 <li>
                     @if (_overflowItems.Any() && item.index == OverflowIndex)
                     {
-                        <button aria-label="@OverflowAriaLabel" id=@OverflowDropDownId @onclick="HandleClick">
+                        <button type="button" aria-label="@OverflowAriaLabel" id=@OverflowDropDownId @onclick="HandleClick">
                             <span>
                                 <i class=@($"bit-icon bit-icon--{OnRenderOverflowIcon.GetName()}")></i>
                             </span>
