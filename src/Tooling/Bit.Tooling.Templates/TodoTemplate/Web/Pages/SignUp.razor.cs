@@ -10,7 +10,6 @@ public partial class SignUp
     public bool IsLoading { get; set; }
 
     public BitMessageBarType SignUpMessageType { get; set; }
-
     public string? SignUpMessage { get; set; }
 
     [Inject] public HttpClient HttpClient { get; set; } = default!;
@@ -43,14 +42,12 @@ public partial class SignUp
         catch (ResourceValidationException e)
         {
             SignUpMessageType = BitMessageBarType.Error;
-
             SignUpMessage = string.Join(Environment.NewLine, e.Details.SelectMany(d => d.Messages)
                 .Select(e => ErrorStrings.ResourceManager.Translate(e, SignUpModel.UserName!)));
         }
         catch (KnownException e)
         {
             SignUpMessageType = BitMessageBarType.Error;
-
             SignUpMessage = ErrorStrings.ResourceManager.Translate(e.Message);
         }
         finally
@@ -77,13 +74,11 @@ public partial class SignUp
             }, TodoTemplateJsonContext.Default.SendConfirmationEmailRequestDto);
 
             SignUpMessageType = BitMessageBarType.Success;
-
             SignUpMessage = "The confirmation link has been re-sent.";
         }
         catch (KnownException e)
         {
             SignUpMessageType = BitMessageBarType.Error;
-
             SignUpMessage = ErrorStrings.ResourceManager.Translate(e.Message, SignUpModel.Email);
         }
         finally
