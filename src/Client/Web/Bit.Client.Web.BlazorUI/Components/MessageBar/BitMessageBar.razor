@@ -82,6 +82,7 @@
                 {
                     <div class=@($"{RootElementClass}-truncate")>
                         <button @onclick="@ToggleExpandSingleLine"
+                                type="button"
                                 aria-label="@(OverflowButtonAriaLabel.HasValue()? OverflowButtonAriaLabel : null)"
                                 aria-expanded="@(ExpandSingleLine ? "true" : "false")">
                             <i class=@($"bit-icon bit-icon--{(ExpandSingleLine ? BitIconName.DoubleChevronUp : BitIconName.DoubleChevronDown).GetName()}") aria-hidden="true"></i>
@@ -93,7 +94,8 @@
                 @if (HasDismiss)
                 {
                     <div class=@($"{RootElementClass}-dismiss")>
-                        <button onclick=@OnDismiss
+                        <button @onclick="@OnDismiss"
+                                type="button"
                                 title="@(DismissButtonAriaLabel.HasValue() ? DismissButtonAriaLabel : null)"
                                 aria-label="@(DismissButtonAriaLabel.HasValue() ? DismissButtonAriaLabel : null)">
                             <span>
