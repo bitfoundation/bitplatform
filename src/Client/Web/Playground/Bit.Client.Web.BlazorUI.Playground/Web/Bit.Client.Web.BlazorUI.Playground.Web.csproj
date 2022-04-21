@@ -34,4 +34,11 @@
         <ProjectReference Include="..\Shared\Bit.Client.Web.BlazorUI.Playground.Shared.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Content Update="wwwroot\fonts\fabric-icons.woff">
+        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </Content>
+    </ItemGroup>
+
 </Project>
