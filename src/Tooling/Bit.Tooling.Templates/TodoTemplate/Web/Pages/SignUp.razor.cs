@@ -6,10 +6,10 @@ public partial class SignUp
 {
     public SignUpRequestDto SignUpModel { get; set; } = new();
 
+    public bool IsSignedUp { get; set; }
     public bool IsLoading { get; set; }
 
     public BitMessageBarType SignUpMessageType { get; set; }
-
     public string? SignUpMessage { get; set; }
 
     [Inject] public HttpClient HttpClient { get; set; } = default!;
@@ -34,21 +34,52 @@ public partial class SignUp
 
             await HttpClient.PostAsJsonAsync("Auth/SignUp", SignUpModel, TodoTemplateJsonContext.Default.SignUpRequestDto);
 
+            IsSignedUp = true;
+
             SignUpMessageType = BitMessageBarType.Success;
-            SignUpMessage = "Confirmation link has sent to your email. Please follow the link.";
+            SignUpMessage = "A confirmation link has been sent to your email.";
         }
         catch (ResourceValidationException e)
         {
             SignUpMessageType = BitMessageBarType.Error;
-
             SignUpMessage = string.Join(Environment.NewLine, e.Details.SelectMany(d => d.Messages)
                 .Select(e => ErrorStrings.ResourceManager.Translate(e, SignUpModel.UserName!)));
         }
         catch (KnownException e)
         {
             SignUpMessageType = BitMessageBarType.Error;
-
             SignUpMessage = ErrorStrings.ResourceManager.Translate(e.Message);
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private async Task ResendLink()
+    {
+        if (IsLoading)
+        {
+            return;
+        }
+
+        IsLoading = true;
+        SignUpMessage = null;
+
+        try
+        {
+            await HttpClient.PostAsJsonAsync("Auth/SendConfirmationEmail", new()
+            {
+                Email = SignUpModel.Email
+            }, TodoTemplateJsonContext.Default.SendConfirmationEmailRequestDto);
+
+            SignUpMessageType = BitMessageBarType.Success;
+            SignUpMessage = "The confirmation link has been re-sent.";
+        }
+        catch (KnownException e)
+        {
+            SignUpMessageType = BitMessageBarType.Error;
+            SignUpMessage = ErrorStrings.ResourceManager.Translate(e.Message, SignUpModel.Email);
         }
         finally
         {
@@ -63,7 +94,9 @@ public partial class SignUp
         if (firstRender)
         {
             if (await TodoTemplateAuthenticationStateProvider.IsUserAuthenticated())
+            { 
                 NavigationManager.NavigateTo("/");
+            }
         }
     }
 }
