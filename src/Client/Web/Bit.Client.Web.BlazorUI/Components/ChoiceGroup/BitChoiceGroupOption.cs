@@ -30,5 +30,7 @@ namespace Bit.Client.Web.BlazorUI.Components.ChoiceGroup
         public string? Id { get; set; }
 
         public Action? OnChange { get; set; }
+
+        public RenderFragment<BitChoiceGroupOption>? LabelTemplate { get; set; }
     }
 }
