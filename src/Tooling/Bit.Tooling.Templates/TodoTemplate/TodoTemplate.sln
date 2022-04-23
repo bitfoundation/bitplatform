@@ -24,6 +24,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Dependencies", "Dependencie
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Tooling.CodeAnalyzer", "..\..\Bit.Tooling.CodeAnalyzer\Bit.Tooling.CodeAnalyzer.csproj", "{3BFCE62F-BDE6-4D54-B879-31D09942243B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TodoTemplate.Infra.Azure", "TodoTemplate.Infra.Azure\TodoTemplate.Infra.Azure.csproj", "{906E2E1E-65D9-4680-BAF4-0E725AD5935F}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		..\..\Bit.Tooling.Core\Bit.Tooling.Core.projitems*{3bfce62f-bde6-4d54-b879-31d09942243b}*SharedItemsImports = 5
@@ -63,6 +65,10 @@ Global
 		{3BFCE62F-BDE6-4D54-B879-31D09942243B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3BFCE62F-BDE6-4D54-B879-31D09942243B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3BFCE62F-BDE6-4D54-B879-31D09942243B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{906E2E1E-65D9-4680-BAF4-0E725AD5935F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{906E2E1E-65D9-4680-BAF4-0E725AD5935F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{906E2E1E-65D9-4680-BAF4-0E725AD5935F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{906E2E1E-65D9-4680-BAF4-0E725AD5935F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
