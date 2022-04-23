@@ -77,10 +77,10 @@ pulumi config set azure-native:tenantId
 pulumi config set azure-native:subscriptionId
 
 # Provide azure dev ops agent vm's admin userName.
-pulumi config set TodoTemplate.Infra.Azure:dev-ops-vm-td-admin-user-name
+pulumi config set TodoTemplate.Infra:dev-ops-vm-td-admin-user-name
 
 # Create and provide azure dev ops agent vm's admin password: (Store it somewhere safe)
-pulumi config set TodoTemplate.Infra.Azure:dev-ops-vm-td-admin-user-password --secret
+pulumi config set TodoTemplate.Infra:dev-ops-vm-td-admin-user-password --secret
 ```
 
 8- Create azure resources using:
@@ -99,26 +99,26 @@ pulumi config set azure-native:tenantId
 pulumi config set azure-native:subscriptionId 
 
 # Provide sql server's admin user / pass
-pulumi config set TodoTemplate.Infra.Azure:sql-server-td-db-admin-id
-pulumi config set TodoTemplate.Infra.Azure:sql-server-td-db-admin-password --secret
+pulumi config set TodoTemplate.Infra:sql-server-td-db-admin-id
+pulumi config set TodoTemplate.Infra:sql-server-td-db-admin-password --secret
 
 # Provide sql server's non-admin user / pass
 # This user is gets created during CI/CD and will have access to CRUD operations only. App service connects to the sql database using this user.
-pulumi config set TodoTemplate.Infra.Azure:sql-server-td-db-user-id
-pulumi config set TodoTemplate.Infra.Azure:sql-server-td-db-user-password --secret
+pulumi config set TodoTemplate.Infra:sql-server-td-db-user-id
+pulumi config set TodoTemplate.Infra:sql-server-td-db-user-password --secret
 
 # Provide smtp server's host, port, user, pass and default email sender.
-pulumi config set TodoTemplate.Infra.Azure:default-email-from
-pulumi config set TodoTemplate.Infra.Azure:email-server-host
-pulumi config set TodoTemplate.Infra.Azure:email-server-port
-pulumi config set TodoTemplate.Infra.Azure:email-server-userName
-pulumi config set TodoTemplate.Infra.Azure:email-server-password --secret
+pulumi config set TodoTemplate.Infra:default-email-from
+pulumi config set TodoTemplate.Infra:email-server-host
+pulumi config set TodoTemplate.Infra:email-server-port
+pulumi config set TodoTemplate.Infra:email-server-userName
+pulumi config set TodoTemplate.Infra:email-server-password --secret
 
 # Create and provide jwt secret key
-pulumi config set TodoTemplate.Infra.Azure:jwt-secret-key --secret
+pulumi config set TodoTemplate.Infra:jwt-secret-key --secret
 
 # Provide azure dev ops agent vm's IP address which gets created before
-pulumi config set TodoTemplate.Infra.Azure:azure-dev-ops-agent-vm-ip
+pulumi config set TodoTemplate.Infra:azure-dev-ops-agent-vm-ip
 ```
 
 10- Commit / Push changes in stacks folder to the source controller.

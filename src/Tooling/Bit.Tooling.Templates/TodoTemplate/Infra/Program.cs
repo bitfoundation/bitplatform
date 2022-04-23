@@ -1,5 +1,5 @@
 ﻿using Pulumi;
-using TodoTemplate.Infra.Azure;
+using TodoTemplate.Infra;
 
 public class Program
 {

@@ -24,12 +24,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Dependencies", "Dependencie
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Tooling.CodeAnalyzer", "..\..\Bit.Tooling.CodeAnalyzer\Bit.Tooling.CodeAnalyzer.csproj", "{3BFCE62F-BDE6-4D54-B879-31D09942243B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TodoTemplate.Infra.Azure", "TodoTemplate.Infra.Azure\TodoTemplate.Infra.Azure.csproj", "{906E2E1E-65D9-4680-BAF4-0E725AD5935F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTemplate.Infra", "Infra\TodoTemplate.Infra.csproj", "{F2046C94-F82C-42DC-9C97-9C03FB2F2BA3}"
 EndProject
 Global
-	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		..\..\Bit.Tooling.Core\Bit.Tooling.Core.projitems*{3bfce62f-bde6-4d54-b879-31d09942243b}*SharedItemsImports = 5
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
@@ -65,10 +62,10 @@ Global
 		{3BFCE62F-BDE6-4D54-B879-31D09942243B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3BFCE62F-BDE6-4D54-B879-31D09942243B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3BFCE62F-BDE6-4D54-B879-31D09942243B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{906E2E1E-65D9-4680-BAF4-0E725AD5935F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{906E2E1E-65D9-4680-BAF4-0E725AD5935F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{906E2E1E-65D9-4680-BAF4-0E725AD5935F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{906E2E1E-65D9-4680-BAF4-0E725AD5935F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F2046C94-F82C-42DC-9C97-9C03FB2F2BA3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F2046C94-F82C-42DC-9C97-9C03FB2F2BA3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F2046C94-F82C-42DC-9C97-9C03FB2F2BA3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F2046C94-F82C-42DC-9C97-9C03FB2F2BA3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -80,5 +77,8 @@ Global
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {61F7FB11-1E47-470C-91E2-47F8143E1572}
+	EndGlobalSection
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		..\..\Bit.Tooling.Core\Bit.Tooling.Core.projitems*{3bfce62f-bde6-4d54-b879-31d09942243b}*SharedItemsImports = 5
 	EndGlobalSection
 EndGlobal

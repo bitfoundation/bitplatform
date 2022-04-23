@@ -25,7 +25,7 @@ using Azure.Storage.Sas;
 using Azure.Storage;
 using Pulumi.AzureNative.Resources;
 
-namespace TodoTemplate.Infra.Azure;
+namespace TodoTemplate.Infra;
 
 public class TdStack
 {
