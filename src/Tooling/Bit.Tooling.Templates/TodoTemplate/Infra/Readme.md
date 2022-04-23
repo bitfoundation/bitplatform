@@ -10,11 +10,6 @@ This project also creates an azure dev ops agent vm which its ip is whitlisted i
 
 1- Create three resource groups (`td-test`, `td-prod`, `td-cd`) using [azure cli](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli):
 
-Notes:
-* `td` stands for todo, you can replace it with your own.
-* `td-cd` resource group contains azure dev ops vm agent related resources.
-* You can use any location supported by azure cloud (run `az account list-locations -o table` to see full list of locations)
-
 ```
 az group create --name td-test --location eastus
 
@@ -23,11 +18,12 @@ az group create --name td-prod --location eastus
 az group create --name td-cd --location eastus
 ```
 
+Notes:
+* `td` stands for todo, you can replace it with your own.
+* `td-cd` resource group contains azure dev ops vm agent related resources.
+* You can use any location supported by azure cloud (run `az account list-locations -o table` to see full list of locations)
+
 2- Create three [service principals](https://docs.microsoft.com/en-us/azure/active-directory/develop/app-objects-and-service-principals) for `test`, `prod` and `cd` using followings:
-
-Replace `{subscriptionId}` with [your own subscription id](https://docs.microsoft.com/en-us/azure/media-services/latest/setup-azure-subscription-how-to)
-
-Running `az ad sp` will return a json like response which contains `appId`l, `password` and `tenant`. Store them somewhere safe.
 
 ```
 # Create service principal that manage test resource group resources:
@@ -39,6 +35,11 @@ az ad sp create-for-rbac -n "td-prod" --role Contributor --scopes /subscriptions
 # Create service principal that manage cd resource group resources:
 az ad sp create-for-rbac -n "td-cd" --role Contributor --scopes /subscriptions/{subscriptionId}/resourceGroups/td-cd
 ```
+
+Notes:
+
+* Replace `{subscriptionId}` with [your own subscription id](https://docs.microsoft.com/en-us/azure/media-services/latest/setup-azure-subscription-how-to)
+* Running `az ad sp` will return a json like response which contains `appId`l, `password` and `tenant`. Store them somewhere safe.
 
 3- Create stacks folder first, then create `test`, `prod` and `cd` folders in `stacks` folder.
 
@@ -69,10 +70,13 @@ pulumi stack init cd
 ```
 # clientId would be service principal's appId.
 pulumi config set azure-native:clientId 
+
 # secret would be service principal's password.
 pulumi config set azure-native:clientSecret --secret
+
 # tenantId would be service principal's tenant.
 pulumi config set azure-native:tenantId 
+
 # Provide azure subscription id
 pulumi config set azure-native:subscriptionId
 
