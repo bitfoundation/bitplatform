@@ -19,7 +19,7 @@ public class CdStack
         {
             Location = "eastus",
             ResourceGroupName = "td-cd"
-        }, options: new() { ImportId = $"/subscriptions/{GetClientConfig.InvokeAsync().GetAwaiter().GetResult().SubscriptionId}/resourceGroups/td-test" });
+        }, options: new() { ImportId = $"/subscriptions/{GetClientConfig.InvokeAsync().GetAwaiter().GetResult().SubscriptionId}/resourceGroups/td-cd" });
 
         var azureDevOpsVMAdminUserName = pulumiConfig.Require($"dev-ops-vm-td-admin-user-name");
         var azureDevOpsVMAdminUserPassword = pulumiConfig.RequireSecret($"dev-ops-vm-td-admin-user-password");

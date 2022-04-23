@@ -98,9 +98,13 @@ public class TdStack
             ServerName = sqlServer.Name,
             Sku = new SqlDatabaseSkuArgs
             {
-                Tier = "Standard",
-                Name = "S1"
-            }
+                Tier = "GeneralPurpose",
+                Name = "GP_S_Gen5",
+                Family = "Gen5",
+                Capacity = 1
+            },
+            AutoPauseDelay = 60, // minutes
+            MinCapacity = 0.5
         });
 
         AppServicePlan appServicePlan = new($"app-plan-td-{stackName}", new()
@@ -309,7 +313,7 @@ public class TdStack
                 Value = Output.Tuple(sqlServer.Name, sqlDatabase.Name, sqlDatabaseDbUserPassword).Apply(t =>
                 {
                     (string _sqlServer, string _sqlDatabase, string _sqlDatabasePassword) = t;
-                    return $"Data Source=tcp:{_sqlServer}.database.windows.net;Initial Catalog={_sqlDatabase};User ID={sqlDatabaseDbUserId};Password={_sqlDatabasePassword};Max Pool Size=1024;Persist Security Info=true;Application Name=Redemption";
+                    return $"Data Source=tcp:{_sqlServer}.database.windows.net;Initial Catalog={_sqlDatabase};User ID={sqlDatabaseDbUserId};Password={_sqlDatabasePassword};Max Pool Size=1024;Persist Security Info=true;Application Name=Todo";
                 })
             }
         });
