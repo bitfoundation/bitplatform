@@ -398,6 +398,14 @@ a {
     }
 }
 
+.com-example-box-header-btn-show-code {
+    min-width: rem(144px);
+
+    @include sm {
+        min-width: unset;
+    }
+}
+
 .com-example-box-copy-btn {
     position: absolute;
     z-index: 1;
