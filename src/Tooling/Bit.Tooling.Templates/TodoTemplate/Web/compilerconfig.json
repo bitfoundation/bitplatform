@@ -1,70 +1,74 @@
 ﻿[
-    {
-        "outputFile": "wwwroot/styles/app.css",
-        "inputFile": "Styles/app.scss"
-    },
-    {
-        "outputFile": "Pages/Home.razor.css",
-        "inputFile": "Pages/Home.razor.scss"
-    },
-    {
-        "outputFile": "Pages/Privacy.razor.css",
-        "inputFile": "Pages/Privacy.razor.scss"
-    },
-    {
-        "outputFile": "Pages/SignUp.razor.css",
-        "inputFile": "Pages/SignUp.razor.scss"
-    },
-    {
-        "outputFile": "Pages/SignIn.razor.css",
-        "inputFile": "Pages/SignIn.razor.scss"
-    },
-    {
-        "outputFile": "Pages/EmailConfirmation.razor.css",
-        "inputFile": "Pages/EmailConfirmation.razor.scss"
-    },
-    {
-        "outputFile": "Pages/ForgotPassword.razor.css",
-        "inputFile": "Pages/ForgotPassword.razor.scss"
-    },
-    {
-        "outputFile": "Pages/ResetPassword.razor.css",
-        "inputFile": "Pages/ResetPassword.razor.scss"
-    },
-    {
-        "outputFile": "Pages/Todo.razor.css",
-        "inputFile": "Pages/Todo.razor.scss"
-    },
-    {
-        "outputFile": "Pages/EditProfile.razor.css",
-        "inputFile": "Pages/EditProfile.razor.scss"
-    },
-    {
-        "outputFile": "Shared/MainLayout.razor.css",
-        "inputFile": "Shared/MainLayout.razor.scss"
-    },
-    {
-        "outputFile": "Components/Header.razor.css",
-        "inputFile": "Components/Header.razor.scss"
-    },
-    {
-        "outputFile": "Components/Footer.razor.css",
-        "inputFile": "Components/Footer.razor.scss"
-    },
-    {
-        "outputFile": "Components/NavMenu.razor.css",
-        "inputFile": "Components/NavMenu.razor.scss"
-    },
-    {
-        "outputFile": "Components/SignOutConfirmModal.razor.css",
-        "inputFile": "Components/SignOutConfirmModal.razor.scss"
-    },
-    {
-        "outputFile": "wwwroot/scripts/todoTemplate.es5.js",
-        "inputFile": "wwwroot/scripts/todoTemplate.js"
-    },
-    {
-        "outputFile": "wwwroot/service-worker.published.js",
-        "inputFile": "wwwroot/service-worker.js"
-    }
+  {
+    "outputFile": "wwwroot/styles/app.css",
+    "inputFile": "Styles/app.scss"
+  },
+  {
+    "outputFile": "Pages/Home.razor.css",
+    "inputFile": "Pages/Home.razor.scss"
+  },
+  {
+    "outputFile": "Pages/Privacy.razor.css",
+    "inputFile": "Pages/Privacy.razor.scss"
+  },
+  {
+    "outputFile": "Pages/SignUp.razor.css",
+    "inputFile": "Pages/SignUp.razor.scss"
+  },
+  {
+    "outputFile": "Pages/SignIn.razor.css",
+    "inputFile": "Pages/SignIn.razor.scss"
+  },
+  {
+    "outputFile": "Pages/EmailConfirmation.razor.css",
+    "inputFile": "Pages/EmailConfirmation.razor.scss"
+  },
+  {
+    "outputFile": "Pages/ForgotPassword.razor.css",
+    "inputFile": "Pages/ForgotPassword.razor.scss"
+  },
+  {
+    "outputFile": "Pages/ResetPassword.razor.css",
+    "inputFile": "Pages/ResetPassword.razor.scss"
+  },
+  {
+    "outputFile": "Pages/Todo.razor.css",
+    "inputFile": "Pages/Todo.razor.scss"
+  },
+  {
+    "outputFile": "Pages/EditProfile.razor.css",
+    "inputFile": "Pages/EditProfile.razor.scss"
+  },
+  {
+    "outputFile": "Shared/MainLayout.razor.css",
+    "inputFile": "Shared/MainLayout.razor.scss"
+  },
+  {
+    "outputFile": "Components/Header.razor.css",
+    "inputFile": "Components/Header.razor.scss"
+  },
+  {
+    "outputFile": "Components/Footer.razor.css",
+    "inputFile": "Components/Footer.razor.scss"
+  },
+  {
+    "outputFile": "Components/NavMenu.razor.css",
+    "inputFile": "Components/NavMenu.razor.scss"
+  },
+  {
+    "outputFile": "Components/SignOutConfirmModal.razor.css",
+    "inputFile": "Components/SignOutConfirmModal.razor.scss"
+  },
+  {
+    "outputFile": "wwwroot/scripts/todoTemplate.es5.js",
+    "inputFile": "wwwroot/scripts/todoTemplate.js"
+  },
+  {
+    "outputFile": "wwwroot/service-worker.published.js",
+    "inputFile": "wwwroot/service-worker.js"
+  },
+  {
+    "outputFile": "Components/NotFoundPage.razor.css",
+    "inputFile": "Components/NotFoundPage.razor.scss"
+  }
 ]
