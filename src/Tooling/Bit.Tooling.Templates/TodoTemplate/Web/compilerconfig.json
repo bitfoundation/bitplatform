@@ -66,5 +66,9 @@
     {
         "outputFile": "wwwroot/service-worker.published.js",
         "inputFile": "wwwroot/service-worker.js"
+    },
+    {
+        "outputFile": "Shared/TodoTemplateErrorBoundary.razor.css",
+        "inputFile": "Shared/TodoTemplateErrorBoundary.razor.scss"
     }
 ]
