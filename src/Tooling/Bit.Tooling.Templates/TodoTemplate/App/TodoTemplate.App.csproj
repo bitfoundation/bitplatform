@@ -33,10 +33,19 @@
         <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     </PropertyGroup>
 
-    <PropertyGroup Condition="$(TargetFramework.Contains('-android'))">
-        <AndroidLinkMode Condition="'$(Configuration)' == 'Release'">Full</AndroidLinkMode>
-        <RuntimeIdentifiers Condition="'$(Configuration)' == 'Release'">android-arm64</RuntimeIdentifiers>
+    <PropertyGroup Condition="$(TargetFramework.Contains('-android')) and '$(Configuration)' == 'Release'">
+        <EnableLLVM>true</EnableLLVM>
+        <AndroidPackageFormat>apk</AndroidPackageFormat>
+        <RuntimeIdentifiers>android-arm;android-arm64</RuntimeIdentifiers>
+        <MauiUseDefaultAotProfile>false</MauiUseDefaultAotProfile>
     </PropertyGroup>
+
+    <ItemGroup Condition="$(TargetFramework.Contains('-android'))">
+        <AndroidAotProfile Include="custom.aprof" />
+        <PackageReference Include="Mono.AotProfiler.Android" Version="6.0.0-preview2" />
+        <!-- dotnet build -t:BuildAndStartAotProfiling -f net6.0-android /p:UseInterpreter=false -->
+        <!-- dotnet build -t:FinishAotProfiling -f net6.0-android -->
+    </ItemGroup>
 
     <ItemGroup>
 
@@ -59,16 +68,14 @@
     </ItemGroup>
 
     <ItemGroup>
+        <!-- App Icon -->
         <MauiIcon Include="Resources\appicon.svg" ForegroundFile="Resources\appiconfg.svg" Color="#512BD4" />
 
         <!-- Splash Screen -->
-        <MauiSplashScreen Include="Resources\appiconfg.svg" Color="#512BD4" />
+        <MauiSplashScreen Include="Resources\appiconfg.svg" Color="#512BD4" BaseSize="128,128" />
 
         <!-- Images -->
-        <MauiImage Include="Resources\Images\*" />
-
-        <!-- Custom Fonts -->
-        <MauiFont Include="Resources\Fonts\*" />
+        <MauiImage Include="Resources\Images\dotnet_bot.svg" BaseSize="168,208" />
 
         <!-- Raw Assets (also remove the "Resources\Raw" prefix) -->
         <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
