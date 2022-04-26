@@ -11,12 +11,12 @@ public class Program
 {
     public static async Task Main(string[] args)
     {
-#if BlazorWebAssembly || BlazorServer
+#if !BlazorWebAssembly && !BlazorServer
+        throw new InvalidOperationException("Please switch to either blazor web assembly or server as described in readme.md");
+#endif
+
         await CreateHostBuilder(args)
             .RunAsync();
-#else
-            Console.WriteLine("You're in blazor hybrid mode, please run app project isntead of web project.");
-#endif
     }
 
 #if BlazorWebAssembly
