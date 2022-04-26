@@ -90,13 +90,11 @@
     @include md {
         border-radius: 0 0 rem(8px) rem(8px);
         font-size: rem(10px);
-        line-height: rem(14px);
     }
 
     @include sm {
         border-radius: 0 0 rem(8px) rem(8px);
         font-size: rem(12px);
-        line-height: rem(16px);
     }
 }
 
