@@ -60,6 +60,10 @@
         "inputFile": "Components/SignOutConfirmModal.razor.scss"
     },
     {
+        "outputFile": "Components/TodoTemplateNotFound.razor.css",
+        "inputFile": "Components/TodoTemplateNotFound.razor.scss"
+    },
+    {
         "outputFile": "wwwroot/scripts/todoTemplate.es5.js",
         "inputFile": "wwwroot/scripts/todoTemplate.js"
     },
