@@ -354,11 +354,9 @@ a {
 
 /* Component Example Box =================================================================================== */
 .com-example-box-header-btn {
-    min-width: rem(64px);
     min-height: rem(32px);
     height: 100%;
     border: none;
-    padding: 0 rem(16px);
     background-color: transparent;
     color: #2E2E2E !important;
     border-radius: rem(4px) rem(4px) 0 0;
@@ -373,9 +371,12 @@ a {
 
     span {
         i {
-            width: unset;
             font-size: rem(26px);
             color: $B2Color !important;
+        }
+
+        span {
+            min-width: rem(80px);
         }
     }
 
@@ -395,6 +396,18 @@ a {
                 display: none;
             }
         }
+    }
+}
+
+.com-example-box-header-btn {
+    &.bit-ico-btn-fluent {
+        padding: 0 rem(25px);
+    }
+}
+
+.com-example-box-header-btn {
+    &.bit-tgl-btn-fluent {
+        min-width: unset;
     }
 }
 
@@ -418,7 +431,6 @@ a {
 
     span {
         i {
-            width: unset;
             color: $B2Color;
             margin: 0;
             font-size: rem(28px);
