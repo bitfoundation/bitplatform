@@ -41,13 +41,12 @@
         else
         {
             <div class="form-input-container">
-                <BitLabel>Email</BitLabel>
-                <BitTextField @bind-Value="SignUpModel.UserName" Placeholder="Email" />
+                <BitTextField Label="Email" @bind-Value="SignUpModel.UserName" Placeholder="Email" />
                 <ValidationMessage For="@(() => SignUpModel.UserName)" />
             </div>
             <div class="form-input-container">
-                <BitLabel>Password</BitLabel>
-                <BitTextField @bind-Value="SignUpModel.Password"
+                <BitTextField Label="Password"
+                          @bind-Value="SignUpModel.Password"
                           Type="BitTextFieldType.Password"
                           CanRevealPassword="true"
                           Placeholder="Password" />
