@@ -24,15 +24,8 @@ public partial class EmailConfirmation
     {
         await base.OnInitAsync();
 
-        if (EmailConfirmed)
+        if (EmailConfirmed is false)
         {
-            EmailConfirmationMessageType = BitMessageBarType.Success;
-            EmailConfirmationMessage = "Congratulation! Your email is confirmed.";
-        }
-        else
-        {
-            EmailConfirmationMessageType = BitMessageBarType.Warning;
-            EmailConfirmationMessage = "Oops! Unfortunately, your email was not confirmed.";
             IsResendButtonEnabled = true;
         }
     }
@@ -62,7 +55,7 @@ public partial class EmailConfirmation
 
             EmailConfirmationMessageType = BitMessageBarType.Success;
 
-            EmailConfirmationMessage = "The confirmation link has been re-sent.";
+            EmailConfirmationMessage = "The confirmation email has been re-sent.";
         }
         catch (KnownException e)
         {

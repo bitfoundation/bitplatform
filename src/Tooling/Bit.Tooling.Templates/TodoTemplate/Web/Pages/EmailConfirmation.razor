@@ -14,37 +14,40 @@
                 @EmailConfirmationMessage
             </BitMessageBar>
         }
-        <h1 class="form-title">Email Confirmation</h1>
-        <BitMessageBar Class="form-message-bar"
-                    MessageBarType="@EmailConfirmationMessageType"
-                    OnDismiss="() => EmailConfirmationMessage = null">
-            @EmailConfirmationMessage
-        </BitMessageBar>
         @if (EmailConfirmed)
         {
+            <h1 class="form-title">
+                Email Confirmation
+            </h1>
             <BitButton Class="form-submit-button"
-                ButtonStyle="BitButtonStyle.Primary"
-                Title="Sign in"
-                AriaLabel="Sign in"
-                OnClick="WrapHandled(RedirectToSignIn)">
+                   ButtonStyle="BitButtonStyle.Primary"
+                   Title="Sign in"
+                   AriaLabel="Sign in"
+                   OnClick="WrapHandled(RedirectToSignIn)">
                 <span>Sign in</span>
             </BitButton>
         }
         else
         {
+            <h1 class="form-title">
+                Email Confirmation Failed!
+            </h1>
+            <div class="form-description">
+                Looks like the confirmation link either is invalid or has expired.
+            </div>
             <BitButton Class="form-submit-button"
-                ButtonStyle="BitButtonStyle.Primary"
-                Title="Re-send link"
-                AriaLabel="Re-send link"
-                IsEnabled="@IsResendButtonEnabled"
-                OnClick="WrapHandled(ResendLink)">
+                   ButtonStyle="BitButtonStyle.Primary"
+                   Title="Resend email"
+                   AriaLabel="Resend email"
+                   IsEnabled="@IsResendButtonEnabled"
+                   OnClick="WrapHandled(ResendLink)">
                 @if (IsLoading)
                 {
                     <BitSpinner Size="BitSpinnerSize.Small"></BitSpinner>
                 }
                 else
                 {
-                    <span>Re-send Link</span>
+                    <span>Resend email</span>
                 }
             </BitButton>
         }
