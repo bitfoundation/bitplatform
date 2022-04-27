@@ -2,7 +2,9 @@
 
 public class EmailConfirmationModel
 {
-    public string? DisplayName { get; set; }
-
     public string? ConfirmationLink { get; set; }
+
+    public string? ProjectIconInBase64 { get; set; }
+
+    public string? ProjectLink { get; set; }
 }

@@ -5,6 +5,7 @@ using TodoTemplate.Api.Resources;
 using TodoTemplate.Api.Models.Emailing;
 using Microsoft.AspNetCore.Hosting.Server;
 using System.Web;
+using SystemFile = System.IO.File;
 
 namespace TodoTemplate.Api.Controllers;
 
@@ -23,7 +24,7 @@ public class AuthController : ControllerBase
     private readonly AppSettings _appSettings;
 
     private readonly IFluentEmail _fluentEmail;
-    
+
     private readonly IServer _server;
 
     public AuthController(SignInManager<User> signInManager,
@@ -81,7 +82,7 @@ public class AuthController : ControllerBase
 
         if (user is null)
             throw new BadRequestException(nameof(ErrorStrings.UserNameNotFound));
-        
+
         if (await _userManager.IsEmailConfirmedAsync(user))
             throw new BadRequestException(nameof(ErrorStrings.EmailAlreadyConfirmed));
 
@@ -109,8 +110,10 @@ public class AuthController : ControllerBase
             .UsingTemplateFromEmbedded("TodoTemplate.Api.Resources.EmailConfirmation.cshtml",
                                     new EmailConfirmationModel
                                     {
-                                        DisplayName = user.DisplayName,
-                                        ConfirmationLink = confirmationLink
+                                        ConfirmationLink = confirmationLink,
+                                        ProjectIconInBase64 = $"data:image;base64," +
+                                        $"{Convert.ToBase64String(SystemFile.ReadAllBytes(_appSettings.EmailSettings.ProjectIconPath))}",
+                                        ProjectLink = _appSettings.EmailSettings.ProjectLink
                                     },
                                     assembly)
             .SendAsync(cancellationToken);
