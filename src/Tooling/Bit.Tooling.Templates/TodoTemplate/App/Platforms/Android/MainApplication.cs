@@ -1,10 +1,8 @@
 ﻿using Android.App;
 using Android.Runtime;
 
-#if DEBUG
 [assembly: UsesPermission(Android.Manifest.Permission.Internet)]
 [assembly: UsesPermission(Android.Manifest.Permission.AccessNetworkState)]
-#endif
 
 namespace TodoTemplate.App.Platforms.Android;
 

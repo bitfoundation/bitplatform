@@ -6,16 +6,21 @@
 }
 else if (ErrorContent is null)
 {
-    <div style="display:flex; flex-direction: column; width: 100%; max-width:800px">
-        <h1 style="color:red; text-align: center;">oops, something went wrong...</h1>
+    <div class="main">
+        <div class="header">
+            <BitIconButton OnClick="Recover" IconName="BitIconName.ChromeClose" />
+        </div>
+        <div>
+            <img src="/images/icons/error-triangle.svg" />
+        </div>
+        <h1 class="title">Oops, something went wrong...</h1>
         @if (ShowException)
         {
-            <div style="color:white; white-space: pre; overflow: auto;">@CurrentException?.ToString()</div>
+            <div class="exception">@CurrentException?.ToString()</div>
         }
-        <div style="text-align: center;">
-            <BitButton OnClick="Recover">Recover</BitButton>
-            <BitButton OnClick="GoHome">Home</BitButton>
-            <BitButton OnClick="Refresh">Refresh</BitButton>
+        <div class="buttons">
+            <BitButton OnClick="Refresh" ButtonStyle="BitButtonStyle.Primary">Refresh</BitButton>
+            <BitButton OnClick="GoHome" ButtonStyle="BitButtonStyle.Standard">Home</BitButton>
         </div>
     </div>
 }

@@ -15,6 +15,10 @@
 	<assembly fullname="TodoTemplate.App">
 		<type fullname="*" />
 	</assembly>
+        
+    <assembly fullname="TodoTemplate.Shared">
+		<type fullname="*" />
+	</assembly>
 
 	<assembly fullname="Microsoft.Extensions.Logging">
 		<type fullname="*" />
@@ -53,10 +57,6 @@
     </assembly>
 
     <assembly fullname="Microsoft.Maui">
-        <type fullname="*" />
-    </assembly>
-
-    <assembly fullname="Mono.Android">
         <type fullname="*" />
     </assembly>
 

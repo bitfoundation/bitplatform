@@ -37,6 +37,14 @@
     }
 }
 
+.bit-brc-disabled-fluent {
+    a, button, i, a.bit-brc-lst-itm {
+        color: $Grey90;
+        cursor: default;
+        pointer-events: none;
+    }
+}
+
 .bit-brc-overlay {
     display: none;
     width: 100%;

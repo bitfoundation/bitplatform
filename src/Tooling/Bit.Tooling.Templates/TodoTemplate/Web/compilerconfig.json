@@ -60,11 +60,19 @@
         "inputFile": "Components/SignOutConfirmModal.razor.scss"
     },
     {
+        "outputFile": "Components/TodoTemplateNotFound.razor.css",
+        "inputFile": "Components/TodoTemplateNotFound.razor.scss"
+    },
+    {
         "outputFile": "wwwroot/scripts/todoTemplate.es5.js",
         "inputFile": "wwwroot/scripts/todoTemplate.js"
     },
     {
         "outputFile": "wwwroot/service-worker.published.js",
         "inputFile": "wwwroot/service-worker.js"
+    },
+    {
+        "outputFile": "Shared/TodoTemplateErrorBoundary.razor.css",
+        "inputFile": "Shared/TodoTemplateErrorBoundary.razor.scss"
     }
 ]
