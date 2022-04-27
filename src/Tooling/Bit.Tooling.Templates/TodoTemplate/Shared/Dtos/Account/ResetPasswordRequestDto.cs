@@ -2,7 +2,7 @@
 
 public class ResetPasswordRequestDto
 {
-    [Required]
+    [Required(ErrorMessage = "please fill email input")]
     public string? Email { get; set; }
 
     [Required]
