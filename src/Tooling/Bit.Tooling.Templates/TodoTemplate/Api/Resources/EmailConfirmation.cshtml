@@ -9,23 +9,105 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Confirm email</title>
+    <style>
+
+        body {
+            margin: 0;
+            background-color: #FCFCFC;
+            font-family: 'Segoe UI';
+        }
+
+        .page-container {
+            display: flex;
+            flex-flow: column nowrap;
+            justify-content: space-evenly;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .welcome-msg-box {
+            display: flex;
+            flex-flow: column nowrap;
+            justify-content: space-evenly;
+            align-items: center;
+            border: 1px solid #EDEBE9;
+            width: 83.33%;
+            height: 60%;
+        }
+
+        .welcome-msg-txt {
+            font-style: normal;
+            font-weight: 600;
+            font-size: 24px;
+            line-height: 36px;
+            color: #0D2960;
+        }
+
+        .welcome-msg-desc {
+            font-weight: 400;
+            font-size: 18px;
+            line-height: 28px;
+            text-align: center;
+            width: 65%;
+        }
+
+        .confirm-btn {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 38px;
+            width: 143px;
+            border-radius: 2px;
+            font-weight: 600;
+            font-size: 16px;
+            border: none;
+            background-color: #0078D4;
+            color: white;
+            text-decoration: unset;
+        }
+
+        .page-footer {
+            display: flex;
+            flex-flow: column nowrap;
+            justify-content: space-between;
+            align-items: center;
+            height: 50px;
+        }
+
+        .logo-lnk {
+            font-weight: 400;
+            font-size: 12px;
+            line-height: 18px;
+            color: #0065EF;
+            text-decoration: unset;
+        }
+
+        .logo-img {
+            width: 32px;
+            height: 21.33px;
+        }
+    </style>
 </head>
 <body>
-    Hello @Model.DisplayName
-    <br />
-    <br />
-    Thanks for using this app.
-    <br />
-    <br />
-    Please verify your email address.
-    <hr />
-    <a href="@Model.ConfirmationLink">Click to confirm!</a>
-    <br />
-    <br />
-    Or, copy the link below to your browser address bar:
-    <br />
-    <br />
-    @Model.ConfirmationLink
-    <hr />
+    <div class="page-container">
+        <div class="welcome-msg-box">
+            <div class="welcome-msg-txt">
+                Welcome to Bit!
+            </div>
+            <div class="welcome-msg-desc">
+                You're receiving this message because recently you have signed up for a BitProjectTemplate account.
+                Confirm your email address by clicking the button below.
+            </div>
+            <a href="@Model.ConfirmationLink" class="confirm-btn">
+                Confirm email
+            </a>
+        </div>
+        <div class="page-footer">
+            <img src="~/Resources/logo.png" class="logo-img" />
+            <a href="https://app-service-td-pwa-test.azurewebsites.net/" class="logo-lnk">
+                Bit Foundation
+            </a>
+        </div>
+    </div>
 </body>
 </html>
