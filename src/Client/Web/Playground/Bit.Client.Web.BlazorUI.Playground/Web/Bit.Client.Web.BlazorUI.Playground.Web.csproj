@@ -12,6 +12,11 @@
         <Content Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Remove="Pages\_Host.cshtml" />
         <Content Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Remove="Pages\_Layout.cshtml" />
         <Content Remove="compilerconfig.json" />
+        <Content Include="Styles\abstracts\_fonts.scss" />
+        <Content Include="Styles\abstracts\_icons.fluent.scss" />
+        <Content Include="Styles\styles.css" />
+        <Content Include="Styles\styles.min.css" />
+        <Content Include="Styles\styles.scss" />
         <None Include="compilerconfig.json" />
     </ItemGroup>
 
@@ -32,6 +37,10 @@
         <ProjectReference Include="..\..\..\..\..\Tooling\Bit.Tooling.SourceGenerators\Bit.Tooling.SourceGenerators.csproj" />
         <ProjectReference Include="..\..\..\Bit.Client.Web.BlazorUI\Bit.Client.Web.BlazorUI.csproj" />
         <ProjectReference Include="..\Shared\Bit.Client.Web.BlazorUI.Playground.Shared.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="wwwroot\styles\" />
     </ItemGroup>
 
 </Project>

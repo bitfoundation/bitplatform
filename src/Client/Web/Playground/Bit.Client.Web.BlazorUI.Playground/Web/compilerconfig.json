@@ -101,7 +101,7 @@
     },
     {
         "outputFile": "wwwroot/styles/styles.css",
-        "inputFile": "wwwroot/styles/styles.scss"
+        "inputFile": "Styles/styles.scss"
     },
     {
         "outputFile": "Pages/Components/TextField/BitTextFieldDemo.razor.css",
