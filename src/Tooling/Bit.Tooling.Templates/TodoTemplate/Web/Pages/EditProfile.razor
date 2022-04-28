@@ -71,9 +71,9 @@
                 <BitLabel>Gender</BitLabel>
                 <BitRadioButtonGroup @bind-SelectedKey="UserToEdit.GenderAsString"
                             OnValueChange="WrapHandled(CheckSaveButtonEnabled)">
-                    <BitRadioButtonOption Key="@Gender.Male.ToString()" Text="Male" AriaLabel="Male"></BitRadioButtonOption>
-                    <BitRadioButtonOption Key="@Gender.Female.ToString()" Text="Famale" AriaLabel="Famale"></BitRadioButtonOption>
-                    <BitRadioButtonOption Key="@Gender.Custom.ToString()" Text="Custom" AriaLabel="Custom"></BitRadioButtonOption>
+                    <BitRadioButtonOption Value="@Gender.Male.ToString()" Text="Male" AriaLabel="Male"></BitRadioButtonOption>
+                    <BitRadioButtonOption Value="@Gender.Female.ToString()" Text="Famale" AriaLabel="Famale"></BitRadioButtonOption>
+                    <BitRadioButtonOption Value="@Gender.Custom.ToString()" Text="Custom" AriaLabel="Custom"></BitRadioButtonOption>
                 </BitRadioButtonGroup>
             </div>
             <BitButton ButtonStyle="BitButtonStyle.Primary"
