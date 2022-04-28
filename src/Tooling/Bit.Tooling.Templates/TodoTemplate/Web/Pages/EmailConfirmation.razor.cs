@@ -55,7 +55,7 @@ public partial class EmailConfirmation
 
             EmailConfirmationMessageType = BitMessageBarType.Success;
 
-            EmailConfirmationMessage = "The confirmation email has been re-sent.";
+            EmailConfirmationMessage = "The confirmation link has been re-sent to your email address.";
         }
         catch (KnownException e)
         {
