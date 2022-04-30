@@ -69,7 +69,7 @@
             </div>
             <div class="form-choice-container">
                 <BitLabel>Gender</BitLabel>
-                <BitRadioButtonGroup @bind-SelectedKey="UserToEdit.GenderAsString"
+                <BitRadioButtonGroup @bind-Value="UserToEdit.GenderAsString"
                             OnValueChange="WrapHandled(CheckSaveButtonEnabled)">
                     <BitRadioButtonOption Value="@Gender.Male.ToString()" Text="Male" AriaLabel="Male"></BitRadioButtonOption>
                     <BitRadioButtonOption Value="@Gender.Female.ToString()" Text="Famale" AriaLabel="Famale"></BitRadioButtonOption>
