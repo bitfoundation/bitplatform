@@ -55,16 +55,16 @@
                 <div class="form-input-error">@ProfileImageError</div>
             </div>
             <div class="form-input-container">
-                <BitLabel>Full name</BitLabel>
-                <BitTextField @bind-Value="UserToEdit.FullName"
+                <BitTextField Label="Full name"
+                          @bind-Value="UserToEdit.FullName"
                           Placeholder="Full name"
                           OnChange="WrapHandled(CheckSaveButtonEnabled)" />
             </div>
             <div class="form-input-container">
-                <BitLabel>Birthday</BitLabel>
-                <BitDatePicker Class="edit-profile-dtp"
+                <BitDatePicker Label="Birthday"
+                           Class="edit-profile-dtp"
                            @bind-Value="UserToEdit.BirthDate"
-                           Label="Select your birth date"
+                           Placeholder="Select your birth date"
                            OnSelectDate="WrapHandled(CheckSaveButtonEnabled)" />
             </div>
             <div class="form-choice-container">
