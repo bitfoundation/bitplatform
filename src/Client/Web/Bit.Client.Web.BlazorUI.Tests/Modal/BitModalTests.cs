@@ -84,7 +84,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Modal
             });
 
             var element = com.Find(".bit-mdl > div");
-            Assert.AreEqual(element.Attributes["aria-model"].Value, (!isModeless).ToString());
+            Assert.AreEqual(element.Attributes["aria-modal"].Value, (!isModeless).ToString());
 
             var elementOverlay = com.FindAll(".bit-mdl-overlay");
             Assert.AreEqual(elementOverlay.Count, isModeless ? 0 : 1);
