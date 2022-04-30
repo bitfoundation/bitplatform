@@ -42,8 +42,6 @@
         public string Password { get; set; }
         public string DefaulFromEmail { get; set; }
         public string DefaultFromName { get; set; }
-        public string ProjectLink { get; set; }
-        public string ProjectIconPath { get; set; }
         public bool HasCredential => (string.IsNullOrEmpty(UserName) is false) && (string.IsNullOrEmpty(Password) is false);
     }
 }

@@ -1,112 +1,138 @@
-@using TodoTemplate.Api.Models.Emailing
+﻿@using TodoTemplate.Api.Models.Emailing
 
 @model EmailConfirmationModel
 
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Confirm email</title>
-    <style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Content-TypeEntity" content="text/html; charset=UTF-8" />
+    <title>Email Confirmation</title>
+    <style type="text/css" rel="stylesheet" media="all">
+        /* Base ------------------------------ */
+        * {
+            box-sizing: border-box;
+            font-family: sans-serif;
+        }
+
         body {
+            width: 100%;
+            height: 100%;
             margin: 0;
+            padding: 0;
             background-color: #FCFCFC;
-            font-family: 'Segoe UI';
         }
 
-        .page-container {
-            display: flex;
-            flex-flow: column nowrap;
-            justify-content: space-evenly;
-            align-items: center;
-            height: 100vh;
-        }
-
-        .welcome-msg-box {
-            display: flex;
-            flex-flow: column nowrap;
-            justify-content: space-evenly;
-            align-items: center;
+        table.content-table {
             border: 1px solid #EDEBE9;
-            width: 83.33%;
-            height: 60%;
+            border-radius: 2px;
+            padding: 50px;
+            text-align: center;
+            width: 100%;
+            height: 100%;
         }
 
-        .welcome-msg-txt {
-            font-style: normal;
+        table.footer-table {
+            padding: 20px;
+            text-align: center;
+            width: 100%;
+            height: 100%;
+        }
+
+        a,
+        a:link,
+        a:visited,
+        a:hover,
+        a:active {
+            text-decoration: none;
+        }
+
+        /* Layout ------------------------------ */
+
+        .email-wrapper {
+            padding: 6% 4%;
+        }
+
+        .title {
+            color: #0D2960;
             font-weight: 600;
             font-size: 24px;
-            line-height: 36px;
-            color: #0D2960;
+            line-height: 150%;
+            padding-bottom: 20px;
         }
 
-        .welcome-msg-desc {
+        .desciption {
             font-weight: 400;
             font-size: 18px;
-            line-height: 28px;
-            text-align: center;
-            width: 65%;
+            line-height: 155%;
+            padding-bottom: 50px;
         }
 
-        .confirm-btn {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 38px;
-            width: 143px;
+        .operation a.btn {
+            background-color: #0078D4;
+            color: #fff;
+            padding: 10px 20px;
             border-radius: 2px;
             font-weight: 600;
             font-size: 16px;
-            border: none;
-            background-color: #0078D4;
-            color: white;
-            text-decoration: unset;
+            line-height: 150%;
         }
 
-        .page-footer {
-            display: flex;
-            flex-flow: column nowrap;
-            justify-content: space-between;
-            align-items: center;
-            height: 50px;
+        .co-icon {
+            padding-bottom: 10px;
         }
 
-        .logo-lnk {
+        .co-icon img {
+            width: 30px;
+            height: 20px;
+        }
+
+        .co-name {
             font-weight: 400;
             font-size: 12px;
-            line-height: 18px;
+            line-height: 150%;
             color: #0065EF;
-            text-decoration: unset;
-        }
-
-        .logo-img {
-            width: 32px;
-            height: 21.33px;
         }
     </style>
 </head>
+
 <body>
-    <div class="page-container">
-        <div class="welcome-msg-box">
-            <div class="welcome-msg-txt">
-                Welcome to Bit!
-            </div>
-            <div class="welcome-msg-desc">
-                You're receiving this message because recently you have signed up for a BitProjectTemplate account.
-                Confirm your email address by clicking the button below.
-            </div>
-            <a href="@Model.ConfirmationLink" class="confirm-btn">
-                Confirm email
-            </a>
-        </div>
-        <div class="page-footer">
-            <img src="@Model.ProjectIconInBase64" class="logo-img" />
-            <a href="@Model.ProjectLink" class="logo-lnk">
-                Bit Foundation
-            </a>
-        </div>
-    </div>
+    <main class="email-wrapper">
+        <table class="content-table">
+            <tr>
+                <td class="title">
+                    Welcome to Bit!
+                </td>
+            </tr>
+            <tr>
+                <td class="desciption">
+                    You're receiving this message because recently you have signed up for a BitProjectTemplate account.
+                    Confirm your email address by clicking the button below.
+                </td>
+            </tr>
+            <tr>
+                <td class="operation">
+                    <a href="@Model.ConfirmationLink" class="btn">
+                        Confirm email
+                    </a>
+                </td>
+            </tr>
+        </table>
+        <table class="footer-table">
+            <tr>
+                <td class="co-icon">
+                    <img src="@($"{Model.HostUri}Resources/icon.png")" />
+                </td>
+            </tr>
+            <tr>
+                <td class="co-name">
+                    <a href="@Model.HostUri">
+                        Bit Foundation
+                    </a>
+                </td>
+            </tr>
+        </table>
+    </main>
 </body>
+
 </html>

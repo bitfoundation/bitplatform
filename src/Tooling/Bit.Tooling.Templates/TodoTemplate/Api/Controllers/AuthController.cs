@@ -111,9 +111,7 @@ public class AuthController : ControllerBase
                                     new EmailConfirmationModel
                                     {
                                         ConfirmationLink = confirmationLink,
-                                        ProjectIconInBase64 = $"data:image;base64," +
-                                        $"{Convert.ToBase64String(SystemFile.ReadAllBytes(_appSettings.EmailSettings.ProjectIconPath))}",
-                                        ProjectLink = _appSettings.EmailSettings.ProjectLink
+                                        HostUri = _server.GetHostUri().ToString()
                                     },
                                     assembly)
             .SendAsync(cancellationToken);
