@@ -5,7 +5,6 @@ using TodoTemplate.Api.Resources;
 using TodoTemplate.Api.Models.Emailing;
 using Microsoft.AspNetCore.Hosting.Server;
 using System.Web;
-using SystemFile = System.IO.File;
 
 namespace TodoTemplate.Api.Controllers;
 
