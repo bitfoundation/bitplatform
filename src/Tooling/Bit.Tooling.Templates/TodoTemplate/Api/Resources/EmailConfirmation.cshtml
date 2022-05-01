@@ -8,125 +8,54 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="Content-TypeEntity" content="text/html; charset=UTF-8" />
     <title>Email Confirmation</title>
-    <style type="text/css" rel="stylesheet" media="all">
-        /* Base ------------------------------ */
-        * {
-            box-sizing: border-box;
-            font-family: sans-serif;
-        }
-
-        body {
-            width: 100%;
-            height: 100%;
-            margin: 0;
-            padding: 0;
-            background-color: #FCFCFC;
-        }
-
-        table.content-table {
-            border: 1px solid #EDEBE9;
-            border-radius: 2px;
-            padding: 50px;
-            text-align: center;
-            width: 100%;
-            height: 100%;
-        }
-
-        table.footer-table {
-            padding: 20px;
-            text-align: center;
-            width: 100%;
-            height: 100%;
-        }
-
-        a,
-        a:link,
-        a:visited,
-        a:hover,
-        a:active {
-            text-decoration: none;
-        }
-
-        /* Layout ------------------------------ */
-
-        .email-wrapper {
-            padding: 6% 4%;
-        }
-
-        .title {
-            color: #0D2960;
-            font-weight: 600;
-            font-size: 24px;
-            line-height: 150%;
-            padding-bottom: 20px;
-        }
-
-        .desciption {
-            font-weight: 400;
-            font-size: 18px;
-            line-height: 155%;
-            padding-bottom: 50px;
-        }
-
-        .operation a.btn {
-            background-color: #0078D4;
-            color: #fff;
-            padding: 10px 20px;
-            border-radius: 2px;
-            font-weight: 600;
-            font-size: 16px;
-            line-height: 150%;
-        }
-
-        .co-icon {
-            padding-bottom: 10px;
-        }
-
-        .co-icon img {
-            width: 30px;
-            height: 20px;
-        }
-
-        .co-name {
-            font-weight: 400;
-            font-size: 12px;
-            line-height: 150%;
-            color: #0065EF;
-        }
-    </style>
 </head>
-
-<body>
-    <main class="email-wrapper">
-        <table class="content-table">
+<body style="width:100%; height:100%; margin:0; padding:0; background-color:#FCFCFC; font-family:Arial,sans-serif;">
+    <main style="padding: 6% 4%;">
+        <table class="content-table" border="0" cellpadding="0" cellspacing="0" width="100%" height="100%"
+               style="border:1px solid #EDEBE9; border-radius:2px; padding:50px; text-align:center;">
             <tr>
-                <td class="title">
+                <td style="color:#0D2960;font-weight:600; font-size:24px; line-height:150%; padding-bottom:20px;">
                     Welcome to Bit!
                 </td>
             </tr>
             <tr>
-                <td class="desciption">
+                <td style="font-weight:400; font-size:18px; line-height:155%; padding-bottom:50px;">
                     You're receiving this message because recently you have signed up for a BitProjectTemplate account.
                     Confirm your email address by clicking the button below.
                 </td>
             </tr>
             <tr>
-                <td class="operation">
-                    <a href="@Model.ConfirmationLink" class="btn">
-                        Confirm email
-                    </a>
+                <td align="center">
+                    <table border="0" cellpadding="0" cellspacing="0">
+                        <tr>
+                            <td style="background-color:#0078D4;
+                                        border-radius:2px;
+                                        padding:10px 20px;">
+                                <a href="@Model.ConfirmationLink" style="text-decoration:none;
+                                color:#FFFFFF;
+                                font-weight:600;">
+                                    Confirm email
+                                </a>
+                            </td>
+                        </tr>
+                    </table>
                 </td>
             </tr>
         </table>
-        <table class="footer-table">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%" height="100%"
+               style="padding:20px; text-align:center;">
             <tr>
-                <td class="co-icon">
-                    <img src="@($"{Model.HostUri}Resources/icon.png")" />
+                <td style="padding-bottom: 10px;">
+                    <img aalt="Company Logo" src="@($"{Model.HostUri}Resources/icon.png")" width="30" height="20" />
                 </td>
             </tr>
             <tr>
-                <td class="co-name">
-                    <a href="@Model.HostUri">
+                <td>
+                    <a style="text-decoration:none;
+                     color:#0065EF;
+                     font-weight:400;
+                     font-size:12px;
+                     line-height:150%;" href="@Model.HostUri">
                         Bit Foundation
                     </a>
                 </td>
@@ -134,5 +63,4 @@
         </table>
     </main>
 </body>
-
 </html>
