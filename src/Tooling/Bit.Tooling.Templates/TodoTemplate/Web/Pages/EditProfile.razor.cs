@@ -82,13 +82,12 @@ public partial class EditProfile
 
     private async Task Save()
     {
-        if (IsLoadingSaveButton)
+        if (IsLoadingSaveButton || IsSaveButtonEnabled is false)
         {
             return;
         }
 
         IsLoadingSaveButton = true;
-        IsSaveButtonEnabled = false;
         EditProfileMessage = null;
 
         try
@@ -98,8 +97,6 @@ public partial class EditProfile
             User.Gender = UserToEdit.Gender;
 
             await HttpClient.PutAsJsonAsync("User", User, TodoTemplateJsonContext.Default.EditUserDto);
-
-            IsSaveButtonEnabled = false;
 
             EditProfileMessageType = BitMessageBarType.Success;
 
@@ -114,7 +111,7 @@ public partial class EditProfile
         finally
         {
             IsLoadingSaveButton = false;
-            IsSaveButtonEnabled = true;
+            IsSaveButtonEnabled = false;
         }
     }
 }

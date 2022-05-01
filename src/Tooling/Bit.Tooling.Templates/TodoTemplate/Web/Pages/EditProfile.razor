@@ -54,41 +54,43 @@
                            @onfocus="() => ProfileImageError = null" />
                 <div class="form-input-error">@ProfileImageError</div>
             </div>
-            <div class="form-input-container">
-                <BitTextField Label="Full name"
-                          @bind-Value="UserToEdit.FullName"
-                          Placeholder="Full name"
-                          OnChange="WrapHandled(CheckSaveButtonEnabled)" />
-            </div>
-            <div class="form-input-container">
-                <BitDatePicker Label="Birthday"
-                           Class="edit-profile-dtp"
-                           @bind-Value="UserToEdit.BirthDate"
-                           Placeholder="Select your birth date"
-                           OnSelectDate="WrapHandled(CheckSaveButtonEnabled)" />
-            </div>
-            <div class="form-choice-container">
-                <BitRadioButtonGroup Label="Gender" @bind-Value="UserToEdit.GenderAsString"
-                            OnValueChange="WrapHandled(CheckSaveButtonEnabled)">
-                    <BitRadioButtonOption Value="@Gender.Male.ToString()" Text="Male" AriaLabel="Male"></BitRadioButtonOption>
-                    <BitRadioButtonOption Value="@Gender.Female.ToString()" Text="Famale" AriaLabel="Famale"></BitRadioButtonOption>
-                    <BitRadioButtonOption Value="@Gender.Custom.ToString()" Text="Custom" AriaLabel="Custom"></BitRadioButtonOption>
-                </BitRadioButtonGroup>
-            </div>
-            <BitButton ButtonStyle="BitButtonStyle.Primary"
-                   AriaLabel="Save"
-                   Title="Save"
-                   IsEnabled="IsSaveButtonEnabled"
-                   OnClick="WrapHandled(Save)">
-                @if (IsLoadingSaveButton)
-                {
-                    <BitSpinner Size="BitSpinnerSize.Small"></BitSpinner>
-                }
-                else
-                {
-                    <span>Save</span>
-                }
-            </BitButton>
+            <EditForm Model="UserToEdit" OnSubmit="WrapHandled(Save)">
+                <div class="form-input-container">
+                    <BitTextField Label="Full name"
+                              @bind-Value="UserToEdit.FullName"
+                              Placeholder="Full name"
+                              OnChange="WrapHandled(CheckSaveButtonEnabled)" />
+                </div>
+                <div class="form-input-container">
+                    <BitDatePicker Label="Birthday"
+                               Class="edit-profile-dtp"
+                               @bind-Value="UserToEdit.BirthDate"
+                               Placeholder="Select your birth date"
+                               OnSelectDate="WrapHandled(CheckSaveButtonEnabled)" />
+                </div>
+                <div class="form-choice-container">
+                    <BitRadioButtonGroup Label="Gender" @bind-Value="UserToEdit.GenderAsString"
+                                     OnValueChange="WrapHandled(CheckSaveButtonEnabled)">
+                        <BitRadioButtonOption Value="@Gender.Male.ToString()" Text="Male" AriaLabel="Male"></BitRadioButtonOption>
+                        <BitRadioButtonOption Value="@Gender.Female.ToString()" Text="Famale" AriaLabel="Famale"></BitRadioButtonOption>
+                        <BitRadioButtonOption Value="@Gender.Custom.ToString()" Text="Custom" AriaLabel="Custom"></BitRadioButtonOption>
+                    </BitRadioButtonGroup>
+                </div>
+                <BitButton ButtonStyle="BitButtonStyle.Primary"
+                       AriaLabel="Save"
+                       Title="Save"
+                       IsEnabled="IsSaveButtonEnabled"
+                       ButtonType="BitButtonType.Submit">
+                    @if (IsLoadingSaveButton)
+                    {
+                        <BitSpinner Size="BitSpinnerSize.Small"></BitSpinner>
+                    }
+                    else
+                    {
+                        <span>Save</span>
+                    }
+                </BitButton>
+            </EditForm>
         }
     </form>
 </div>
