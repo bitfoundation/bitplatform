@@ -87,6 +87,11 @@ public partial class SignUp
         }
     }
 
+    private bool SubmitButtonIsEnabled()
+    {
+        return SignUpModel.UserName.HasValue() && SignUpModel.Password.HasValue() && SignUpModel.IsAcceptPrivacy;
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await base.OnAfterRenderAsync(firstRender);
@@ -94,7 +99,7 @@ public partial class SignUp
         if (firstRender)
         {
             if (await TodoTemplateAuthenticationStateProvider.IsUserAuthenticated())
-            { 
+            {
                 NavigationManager.NavigateTo("/");
             }
         }
