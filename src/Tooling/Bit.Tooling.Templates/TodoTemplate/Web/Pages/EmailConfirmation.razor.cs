@@ -10,7 +10,6 @@ public partial class EmailConfirmation
     [SupplyParameterFromQuery(Name = "email-confirmed")]
     public bool EmailConfirmed { get; set; }
 
-    public bool IsResendButtonEnabled { get; set; }
     public bool IsLoading { get; set; }
 
     public BitMessageBarType EmailConfirmationMessageType { get; set; }
@@ -19,16 +18,6 @@ public partial class EmailConfirmation
     [Inject] public HttpClient HttpClient { get; set; } = default!;
 
     [Inject] public NavigationManager NavigationManager { get; set; } = default!;
-
-    protected override async Task OnInitAsync()
-    {
-        await base.OnInitAsync();
-
-        if (EmailConfirmed is false)
-        {
-            IsResendButtonEnabled = true;
-        }
-    }
 
     private void RedirectToSignIn()
     {
@@ -43,7 +32,6 @@ public partial class EmailConfirmation
         }
 
         IsLoading = true;
-        IsResendButtonEnabled = false;
         EmailConfirmationMessage = null;
 
         try
@@ -65,7 +53,6 @@ public partial class EmailConfirmation
         }
         finally
         {
-            IsResendButtonEnabled = true;
             IsLoading = false;
         }
     }
