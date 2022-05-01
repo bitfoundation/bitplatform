@@ -40,10 +40,6 @@
         "inputFile": "Pages/EditProfile.razor.scss"
     },
     {
-        "outputFile": "Shared/MainLayout.razor.css",
-        "inputFile": "Shared/MainLayout.razor.scss"
-    },
-    {
         "outputFile": "Components/Header.razor.css",
         "inputFile": "Components/Header.razor.scss"
     },
@@ -64,15 +60,23 @@
         "inputFile": "Components/TodoTemplateNotFound.razor.scss"
     },
     {
+        "outputFile": "Shared/MainLayout.razor.css",
+        "inputFile": "Shared/MainLayout.razor.scss"
+    },
+    {
+        "outputFile": "Shared/TodoTemplateErrorBoundary.razor.css",
+        "inputFile": "Shared/TodoTemplateErrorBoundary.razor.scss"
+    },
+    {
+        "outputFile": "Shared/MessageBox.razor.css",
+        "inputFile": "Shared/MessageBox.razor.scss"
+    },
+    {
         "outputFile": "wwwroot/scripts/todoTemplate.es5.js",
         "inputFile": "wwwroot/scripts/todoTemplate.js"
     },
     {
         "outputFile": "wwwroot/service-worker.published.js",
         "inputFile": "wwwroot/service-worker.js"
-    },
-    {
-        "outputFile": "Shared/TodoTemplateErrorBoundary.razor.css",
-        "inputFile": "Shared/TodoTemplateErrorBoundary.razor.scss"
     }
 ]

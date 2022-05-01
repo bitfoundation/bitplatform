@@ -6,7 +6,6 @@ public static class IServiceCollectionExtensions
 {
     public static IServiceCollection AddTodoTemplateAppServices(this IServiceCollection services)
     {
-        services.AddScoped<IToastService, ToastService>();
         services.AddScoped<IStateService, StateService>();
         services.AddScoped<IExceptionHandler, TodoTemplateExceptionHandler>();
 
