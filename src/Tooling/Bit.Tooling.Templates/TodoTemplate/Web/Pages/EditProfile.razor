@@ -68,12 +68,11 @@
                            OnSelectDate="WrapHandled(CheckSaveButtonEnabled)" />
             </div>
             <div class="form-choice-container">
-                <BitRadioButtonGroup Label="Gender"
-                                 @bind-SelectedKey="UserToEdit.GenderAsString"
-                                 OnValueChange="WrapHandled(CheckSaveButtonEnabled)">
-                    <BitRadioButtonOption Key="@Gender.Male.ToString()" Text="Male" AriaLabel="Male"></BitRadioButtonOption>
-                    <BitRadioButtonOption Key="@Gender.Female.ToString()" Text="Famale" AriaLabel="Famale"></BitRadioButtonOption>
-                    <BitRadioButtonOption Key="@Gender.Custom.ToString()" Text="Custom" AriaLabel="Custom"></BitRadioButtonOption>
+                <BitRadioButtonGroup Label="Gender" @bind-Value="UserToEdit.GenderAsString"
+                            OnValueChange="WrapHandled(CheckSaveButtonEnabled)">
+                    <BitRadioButtonOption Value="@Gender.Male.ToString()" Text="Male" AriaLabel="Male"></BitRadioButtonOption>
+                    <BitRadioButtonOption Value="@Gender.Female.ToString()" Text="Famale" AriaLabel="Famale"></BitRadioButtonOption>
+                    <BitRadioButtonOption Value="@Gender.Custom.ToString()" Text="Custom" AriaLabel="Custom"></BitRadioButtonOption>
                 </BitRadioButtonGroup>
             </div>
             <BitButton ButtonStyle="BitButtonStyle.Primary"
