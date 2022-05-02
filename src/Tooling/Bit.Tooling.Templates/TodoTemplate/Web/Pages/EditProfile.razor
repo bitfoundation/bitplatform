@@ -18,7 +18,7 @@
         <h1 class="form-title">
             Edit profile
         </h1>
-        @if (IsLoadingPage)
+        @if (IsLoadingData)
         {
             <div class="loading-container">
                 <BitSpinner Size="BitSpinnerSize.Large"></BitSpinner>
@@ -81,7 +81,7 @@
                        Title="Save"
                        IsEnabled="IsSaveButtonEnabled"
                        ButtonType="BitButtonType.Submit">
-                    @if (IsLoadingSaveButton)
+                    @if (IsSavingData)
                     {
                         <BitSpinner Size="BitSpinnerSize.Small"></BitSpinner>
                     }
