@@ -7,7 +7,7 @@ public partial class MessageBox : IDisposable
     public static void Show(string message, string title = "", BitIconName closeIconName = BitIconName.ChromeClose,
         string buttonClass = "", BitButtonType buttonType = BitButtonType.Button, BitButtonStyle buttonStyle = BitButtonStyle.Standard)
     {
-        OnShow?.Invoke(message, title, closeIconName , buttonClass , buttonType , buttonStyle);
+        OnShow?.Invoke(message, title, closeIconName, buttonClass, buttonType, buttonStyle);
     }
 
     protected override void OnInitialized()
@@ -26,18 +26,10 @@ public partial class MessageBox : IDisposable
 
             Title = title;
             Body = message;
-
-            if (closeIconName != null)
-                CloseIconName = closeIconName;
-
-            if(buttonClass != null)
-                ButtonClass = buttonClass;
-
-            if(buttonType != null)
-                ButtonType = buttonType;
-
-            if(buttonStyle != null)
-                ButtonStyle = buttonStyle;
+            CloseIconName = closeIconName;
+            ButtonClass = buttonClass;
+            ButtonType = buttonType;
+            ButtonStyle = buttonStyle;
 
             StateHasChanged();
         });
@@ -49,11 +41,10 @@ public partial class MessageBox : IDisposable
     private string Title { get; set; } = string.Empty;
     private string Body { get; set; } = string.Empty;
 
-    private BitIconName? CloseIconName { get; set; } = BitIconName.ChromeClose;
-    private string? ButtonClass { get; set; } = string.Empty;
-    private BitButtonType? ButtonType { get; set; } = BitButtonType.Button;
-    private BitButtonStyle? ButtonStyle { get; set; } = BitButtonStyle.Standard;
-    
+    private BitIconName CloseIconName { get; set; } 
+    private string ButtonClass { get; set; } = string.Empty;
+    private BitButtonType ButtonType { get; set; } 
+    private BitButtonStyle ButtonStyle { get; set; }
 
     private void OnCloseClick()
     {
