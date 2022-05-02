@@ -1,13 +1,16 @@
-﻿namespace TodoTemplate.App.Shared;
+﻿using Bit.Client.Web.BlazorUI.Components;
+
+namespace TodoTemplate.App.Shared;
 
 public partial class MessageBox : IDisposable
 {
-    private static event Action<string,BitIconName, BitButtonType, BitButtonStyle, string, string, string> OnShow = default!;
+    private static event Action<string,BitIconName, BitButtonType, BitButtonStyle, BitIconName, BitIconPosition, string, string, string> OnShow = default!;
 
     public static void Show(string message, BitIconName closeIconName ,
-         BitButtonType buttonType, BitButtonStyle buttonStyle, string buttonText,string title = "", string buttonClass = "")
+         BitButtonType buttonType, BitButtonStyle buttonStyle, BitIconName bodyIcon, BitIconPosition bodyIconPosition,
+         string buttonText,string title = "", string buttonClass = "")
     {
-        OnShow?.Invoke(message, closeIconName, buttonType, buttonStyle, buttonText,title, buttonClass);
+        OnShow?.Invoke(message, closeIconName, buttonType, buttonStyle, bodyIcon, bodyIconPosition, buttonText,title, buttonClass);
     }
 
     protected override void OnInitialized()
@@ -19,6 +22,7 @@ public partial class MessageBox : IDisposable
 
     private void ShowMessageBox(string message, BitIconName closeIconName = BitIconName.ChromeClose
         , BitButtonType buttonType = BitButtonType.Button, BitButtonStyle buttonStyle = BitButtonStyle.Standard,
+        BitIconName bodyIcon = BitIconName.Info, BitIconPosition bodyIconPosition = BitIconPosition.End,
         string buttonText = "OK",string title = "", string buttonClass = "")
     {
         InvokeAsync(() =>
@@ -31,6 +35,9 @@ public partial class MessageBox : IDisposable
             ButtonClass = buttonClass;
             ButtonType = buttonType;
             ButtonStyle = buttonStyle;
+            ButtonText = buttonText;
+            BodyIcon = bodyIcon;
+            BodyIconPosition = bodyIconPosition;
 
             StateHasChanged();
         });
@@ -62,6 +69,14 @@ public partial class MessageBox : IDisposable
     /// text of message box footer button. If unset, default will be the "OK" text
     /// </summary>
     private string ButtonText { get; set; } = string.Empty;
+    /// <summary>
+    /// icon of message box body. If unset, default will be the bit "info" icon
+    /// </summary>
+    private BitIconName BodyIcon { get; set; }
+    /// <summary>
+    /// icon position of message box body. If unset, default will be the "End" of body
+    /// </summary>
+    private BitIconPosition BodyIconPosition { get; set; }
     #endregion
 
     private void OnCloseClick()

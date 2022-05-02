@@ -5,7 +5,16 @@
             <BitIconButton IconName="@CloseIconName" OnClick="OnCloseClick" />
         </div>
         <div class="body">
-            @Body
+            @if (BodyIconPosition == BitIconPosition.Start)
+            {
+                @Body
+                <i class="@BodyIcon"></i>
+            }
+            else
+            {
+                <i class="@BodyIcon"></i>
+                @Body
+            }
         </div>
         <div class="footer">
             <BitButton Class="@ButtonClass" ButtonType="@ButtonType" ButtonStyle="@ButtonStyle" OnClick="OnOkClick">@ButtonText</BitButton>
