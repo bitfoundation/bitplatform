@@ -2,12 +2,12 @@
 
 public partial class MessageBox : IDisposable
 {
-    private static event Action<string, string, BitIconName, string, BitButtonType, BitButtonStyle> OnShow = default!;
+    private static event Action<string,BitIconName, BitButtonType, BitButtonStyle, string, string> OnShow = default!;
 
-    public static void Show(string message, string title = "", BitIconName closeIconName = BitIconName.ChromeClose,
-        string buttonClass = "", BitButtonType buttonType = BitButtonType.Button, BitButtonStyle buttonStyle = BitButtonStyle.Standard)
+    public static void Show(string message, BitIconName closeIconName ,
+         BitButtonType buttonType, BitButtonStyle buttonStyle, string title = "", string buttonClass = "")
     {
-        OnShow?.Invoke(message, title, closeIconName, buttonClass, buttonType, buttonStyle);
+        OnShow?.Invoke(message, closeIconName, buttonType, buttonStyle, title, buttonClass);
     }
 
     protected override void OnInitialized()
@@ -17,8 +17,9 @@ public partial class MessageBox : IDisposable
         base.OnInitialized();
     }
 
-    private void ShowMessageBox(string message, string title, BitIconName closeIconName = BitIconName.ChromeClose,
-        string buttonClass = "", BitButtonType buttonType = BitButtonType.Button, BitButtonStyle buttonStyle = BitButtonStyle.Standard)
+    private void ShowMessageBox(string message, BitIconName closeIconName = BitIconName.ChromeClose
+        , BitButtonType buttonType = BitButtonType.Button, BitButtonStyle buttonStyle = BitButtonStyle.Standard,
+        string title = "", string buttonClass = "")
     {
         InvokeAsync(() =>
         {
