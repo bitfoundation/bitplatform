@@ -2,13 +2,13 @@
     <div class="main">
         <div class="header">
             <span class="title">@Title</span>
-            <BitIconButton IconName="BitIconName.ChromeClose" OnClick="OnCloseClick" />
+            <BitIconButton IconName="@CloseIconName" OnClick="OnCloseClick" />
         </div>
         <div class="body">
             @Body
         </div>
         <div class="footer">
-            <BitButton OnClick="OnOkClick">OK</BitButton>
+            <BitButton Class="@ButtonClass" ButtonType="@ButtonType" ButtonStyle="@ButtonStyle" OnClick="OnOkClick">OK</BitButton>
         </div>
     </div>
 </BitModal>
