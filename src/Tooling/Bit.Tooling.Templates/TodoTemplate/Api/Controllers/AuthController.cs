@@ -110,7 +110,7 @@ public class AuthController : ControllerBase
                                     new EmailConfirmationModel
                                     {
                                         ConfirmationLink = confirmationLink,
-                                        HostUri = _server.GetHostUri().ToString()
+                                        HostUri = _server.GetHostUri()
                                     },
                                     assembly)
             .SendAsync(cancellationToken);
