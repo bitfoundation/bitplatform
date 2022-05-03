@@ -8,11 +8,15 @@
             @if (BodyIconPosition == BitIconPosition.Start)
             {
                 @Body
-                <i class="@BodyIcon"></i>
+                <span>
+                    <i class="bit-icon bit-icon--@BodyIcon.GetName()"></i>
+                </span>
             }
             else
             {
-                <i class="@BodyIcon"></i>
+                <span>
+                    <i class="bit-icon bit-icon--@BodyIcon.GetName()"></i>
+                </span>
                 @Body
             }
         </div>

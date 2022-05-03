@@ -6,9 +6,10 @@ public partial class MessageBox : IDisposable
 {
     private static event Action<string,BitIconName, BitButtonType, BitButtonStyle, BitIconName, BitIconPosition, string, string, string> OnShow = default!;
 
-    public static void Show(string message, BitIconName closeIconName ,
-         BitButtonType buttonType, BitButtonStyle buttonStyle, BitIconName bodyIcon, BitIconPosition bodyIconPosition,
-         string buttonText,string title = "", string buttonClass = "")
+    public static void Show(string message, BitIconName closeIconName = BitIconName.ChromeClose
+        , BitButtonType buttonType = BitButtonType.Button, BitButtonStyle buttonStyle = BitButtonStyle.Standard,
+        BitIconName bodyIcon = BitIconName.Info, BitIconPosition bodyIconPosition = BitIconPosition.End,
+        string buttonText = "OK", string title = "", string buttonClass = "")
     {
         OnShow?.Invoke(message, closeIconName, buttonType, buttonStyle, bodyIcon, bodyIconPosition, buttonText,title, buttonClass);
     }
