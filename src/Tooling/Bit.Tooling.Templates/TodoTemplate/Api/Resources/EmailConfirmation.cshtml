@@ -1,5 +1,5 @@
 ﻿@using TodoTemplate.Api.Models.Emailing
-
+@using System
 @model EmailConfirmationModel
 
 <!DOCTYPE html>
@@ -42,7 +42,7 @@
                style="padding:20px; text-align:center;">
             <tr>
                 <td style="padding-bottom: 10px;">
-                    <img alt="Company Logo" src="@($"{Model.HostUri!}Resources/icon.png")" width="30" height="20" />
+                    <img alt="Company Logo" src="@(new Uri(Model.HostUri!, "Resources/icon.png"))" width="30" height="20" />
                 </td>
             </tr>
             <tr>
