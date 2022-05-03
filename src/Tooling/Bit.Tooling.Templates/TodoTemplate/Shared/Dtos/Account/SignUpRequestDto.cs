@@ -16,6 +16,5 @@ public class SignUpRequestDto
     public string? Password { get; set; }
 
     [NotMapped]
-    [Range(typeof(bool), "true", "true", ErrorMessage = "You must accept the privacy.")]
     public bool IsAcceptPrivacy { get; set; }
 }
