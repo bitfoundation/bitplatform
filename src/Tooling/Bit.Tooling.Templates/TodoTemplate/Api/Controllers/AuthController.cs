@@ -23,7 +23,7 @@ public class AuthController : ControllerBase
     private readonly AppSettings _appSettings;
 
     private readonly IFluentEmail _fluentEmail;
-    
+
     private readonly IServer _server;
 
     public AuthController(SignInManager<User> signInManager,
@@ -81,7 +81,7 @@ public class AuthController : ControllerBase
 
         if (user is null)
             throw new BadRequestException(nameof(ErrorStrings.UserNameNotFound));
-        
+
         if (await _userManager.IsEmailConfirmedAsync(user))
             throw new BadRequestException(nameof(ErrorStrings.EmailAlreadyConfirmed));
 
@@ -109,8 +109,8 @@ public class AuthController : ControllerBase
             .UsingTemplateFromEmbedded("TodoTemplate.Api.Resources.EmailConfirmation.cshtml",
                                     new EmailConfirmationModel
                                     {
-                                        DisplayName = user.DisplayName,
-                                        ConfirmationLink = confirmationLink
+                                        ConfirmationLink = confirmationLink,
+                                        HostUri = _server.GetHostUri()
                                     },
                                     assembly)
             .SendAsync(cancellationToken);

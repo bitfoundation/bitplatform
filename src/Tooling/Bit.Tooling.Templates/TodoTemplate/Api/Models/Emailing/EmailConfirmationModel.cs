@@ -2,7 +2,7 @@
 
 public class EmailConfirmationModel
 {
-    public string? DisplayName { get; set; }
-
     public string? ConfirmationLink { get; set; }
+
+    public Uri? HostUri { get; set; }
 }
