@@ -56,7 +56,7 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// A callback function for when the Modal is dismissed light dismiss, before the animation completes.
         /// </summary>
-        [Parameter] public EventCallback OnDismiss { get; set; }
+        [Parameter] public EventCallback<MouseEventArgs> OnDismiss { get; set; }
 
         /// <summary>
         /// Position of the modal on the screen.
@@ -76,14 +76,14 @@ namespace Bit.Client.Web.BlazorUI
         protected override string RootElementClass => "bit-mdl";
         private bool IsAlertRole { get; set; }
 
-        private void CloseCallout()
+        private void CloseCallout(MouseEventArgs e)
         {
             if (IsOpenHasBeenSet && IsOpenChanged.HasDelegate is false) return;
 
             if (IsBlocking == false)
             {
                 IsOpen = false;
-                _ = OnDismiss.InvokeAsync();
+                _ = OnDismiss.InvokeAsync(e);
             }
         }
 
