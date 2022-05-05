@@ -13,8 +13,6 @@
 .bit-mdl-modal {
     position: fixed;
     display: flex;
-    align-items: center;
-    justify-content: center;
     height: 100%;
     width: 100%;
     -webkit-font-smoothing: antialiased;
@@ -56,4 +54,43 @@
     display: flex;
     flex-flow: column nowrap;
     align-items: stretch;
+}
+
+.bit-mdl-position-center {
+    align-items: center;
+    justify-content: center;
+}
+.bit-mdl-position-topleft {
+    align-items: flex-start;
+    justify-content: flex-start;
+}
+.bit-mdl-position-topcenter {
+    align-items: flex-start;
+    justify-content: center;
+}
+.bit-mdl-position-topright {
+    align-items: flex-start;
+    justify-content: flex-end;
+}
+
+.bit-mdl-position-centerleft {
+    align-items: center;
+    justify-content: flex-start;
+}
+.bit-mdl-position-centerright {
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.bit-mdl-position-bottomleft {
+    align-items: flex-end;
+    justify-content: flex-start;
+}
+.bit-mdl-position-bottomcenter {
+    align-items: flex-end;
+    justify-content: center;
+}
+.bit-mdl-position-bottomright {
+    align-items: flex-end;
+    justify-content: flex-end;
 }
