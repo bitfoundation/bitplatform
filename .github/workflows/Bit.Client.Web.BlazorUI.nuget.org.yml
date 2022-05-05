@@ -1,4 +1,4 @@
-name: BlazorUI CI
+name: BlazorUI nuget.org
 on:
   workflow_dispatch:
   push:
