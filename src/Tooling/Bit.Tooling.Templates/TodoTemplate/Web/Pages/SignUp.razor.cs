@@ -35,9 +35,6 @@ public partial class SignUp
             await HttpClient.PostAsJsonAsync("Auth/SignUp", SignUpModel, TodoTemplateJsonContext.Default.SignUpRequestDto);
 
             IsSignedUp = true;
-
-            SignUpMessageType = BitMessageBarType.Success;
-            SignUpMessage = "A confirmation link has been sent to your email.";
         }
         catch (ResourceValidationException e)
         {

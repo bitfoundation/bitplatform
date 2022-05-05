@@ -17,16 +17,22 @@
                 @SignUpMessage
             </BitMessageBar>
         }
-        <h1 class="form-title">
-            Sign up
-        </h1>
-
         @if (IsSignedUp)
         {
+            <h1 class="form-title">
+                Confirm Your Email Address
+            </h1>
+            <div class="form-description">
+                We have sent a confirmation link to your email address.
+                Please confirm your email by clicking on the link.
+            </div>
+            <div class="form-link">
+               Haven’t you received the confirmation email?
+            </div>
             <BitButton Class="form-submit-button"
                    ButtonStyle="BitButtonStyle.Primary"
-                   Title="Re-send link"
-                   AriaLabel="Re-send link"
+                   Title="Resend email"
+                   AriaLabel="Resend email"
                    OnClick="WrapHandled(ResendLink)">
                 @if (IsLoading)
                 {
@@ -34,12 +40,15 @@
                 }
                 else
                 {
-                    <span>Re-send Link</span>
+                    <span>Resend email</span>
                 }
             </BitButton>
         }
         else
         {
+            <h1 class="form-title">
+                Sign up
+            </h1>
             <div class="form-input-container">
                 <BitTextField Label="Email" @bind-Value="SignUpModel.UserName" Placeholder="Email" />
                 <ValidationMessage For="@(() => SignUpModel.UserName)" />

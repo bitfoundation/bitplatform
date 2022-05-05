@@ -10,7 +10,6 @@ public partial class EmailConfirmation
     [SupplyParameterFromQuery(Name = "email-confirmed")]
     public bool EmailConfirmed { get; set; }
 
-    public bool IsResendButtonEnabled { get; set; }
     public bool IsLoading { get; set; }
 
     public BitMessageBarType EmailConfirmationMessageType { get; set; }
@@ -19,23 +18,6 @@ public partial class EmailConfirmation
     [Inject] public HttpClient HttpClient { get; set; } = default!;
 
     [Inject] public NavigationManager NavigationManager { get; set; } = default!;
-
-    protected override async Task OnInitAsync()
-    {
-        await base.OnInitAsync();
-
-        if (EmailConfirmed)
-        {
-            EmailConfirmationMessageType = BitMessageBarType.Success;
-            EmailConfirmationMessage = "Congratulation! Your email is confirmed.";
-        }
-        else
-        {
-            EmailConfirmationMessageType = BitMessageBarType.Warning;
-            EmailConfirmationMessage = "Oops! Unfortunately, your email was not confirmed.";
-            IsResendButtonEnabled = true;
-        }
-    }
 
     private void RedirectToSignIn()
     {
@@ -50,7 +32,6 @@ public partial class EmailConfirmation
         }
 
         IsLoading = true;
-        IsResendButtonEnabled = false;
         EmailConfirmationMessage = null;
 
         try
@@ -62,7 +43,7 @@ public partial class EmailConfirmation
 
             EmailConfirmationMessageType = BitMessageBarType.Success;
 
-            EmailConfirmationMessage = "The confirmation link has been re-sent.";
+            EmailConfirmationMessage = "The confirmation link has been re-sent to your email address.";
         }
         catch (KnownException e)
         {
@@ -72,7 +53,6 @@ public partial class EmailConfirmation
         }
         finally
         {
-            IsResendButtonEnabled = true;
             IsLoading = false;
         }
     }
