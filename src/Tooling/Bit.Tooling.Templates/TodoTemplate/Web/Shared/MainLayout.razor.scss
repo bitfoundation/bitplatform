@@ -8,6 +8,8 @@
     min-height: calc(100vh - 86px);
     padding-top: rem(48px);
     box-sizing: border-box;
+    background-color: $SecondaryColor;
+    font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
 }
 
 .main--authenticated {
