@@ -1,0 +1,20 @@
+name: BlazorUI CI
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v-*'
+jobs:
+  build:
+    name: pack and publish
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET 6.0.x
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 6.0.x
+    - name: pack
+      run: dotnet pack src/Client/Web/Bit.Client.Web.BlazorUI/Bit.Client.Web.BlazorUI.csproj --output . --configuration Release
+    - name: publish
+      run: dotnet nuget push *.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{secrets.NUGET_ORG_API_KEY}}
