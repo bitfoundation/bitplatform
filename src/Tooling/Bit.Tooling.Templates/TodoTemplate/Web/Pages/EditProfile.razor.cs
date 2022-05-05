@@ -12,8 +12,8 @@ public partial class EditProfile
     public string? ProfileImageError { get; set; }
 
     public bool IsSaveButtonEnabled { get; set; }
-    public bool IsLoadingSaveButton { get; set; }
-    public bool IsLoadingPage { get; set; }
+    public bool IsSavingData { get; set; }
+    public bool IsLoadingData { get; set; }
 
     public BitMessageBarType EditProfileMessageType { get; set; }
     public string? EditProfileMessage { get; set; }
@@ -30,7 +30,7 @@ public partial class EditProfile
 
     protected override async Task OnInitAsync()
     {
-        IsLoadingPage = true;
+        IsLoadingData = true;
 
         try
         {
@@ -51,7 +51,7 @@ public partial class EditProfile
         }
         finally
         {
-            IsLoadingPage = false;
+            IsLoadingData = false;
         }
 
         await base.OnInitAsync();
@@ -82,12 +82,12 @@ public partial class EditProfile
 
     private async Task Save()
     {
-        if (IsLoadingSaveButton)
+        if (IsSavingData)
         {
             return;
         }
 
-        IsLoadingSaveButton = true;
+        IsSavingData = true;
         IsSaveButtonEnabled = false;
         EditProfileMessage = null;
 
@@ -98,8 +98,6 @@ public partial class EditProfile
             User.Gender = UserToEdit.Gender;
 
             await HttpClient.PutAsJsonAsync("User", User, TodoTemplateJsonContext.Default.EditUserDto);
-
-            IsSaveButtonEnabled = false;
 
             EditProfileMessageType = BitMessageBarType.Success;
 
@@ -113,7 +111,7 @@ public partial class EditProfile
         }
         finally
         {
-            IsLoadingSaveButton = false;
+            IsSavingData = false;
             IsSaveButtonEnabled = true;
         }
     }
