@@ -14,7 +14,9 @@
                 aria-labelledby=@TitleAriaId
                 aria-describedby=@SubtitleAriaId
                 style="outline:none;">
-                    <div class="bit-mdl-modal" role="document">
+                    <div 
+                        class="bit-mdl-modal @GetPositionClass()" 
+                        role="document">
                     @if (!IsModeless)
                     {
                         <div

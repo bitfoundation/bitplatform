@@ -24,7 +24,7 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// Whether the dialog can be light dismissed by clicking outside the dialog (on the overlay).
         /// </summary>
-        
+
         [Parameter] public bool IsBlocking { get; set; }
 
         /// <summary>
@@ -59,6 +59,11 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public EventCallback<MouseEventArgs> OnDismiss { get; set; }
 
         /// <summary>
+        /// Position of the modal on the screen.
+        /// </summary>
+        [Parameter] public BitModalPosition Position { get; set; } = BitModalPosition.Center;
+
+        /// <summary>
         /// ARIA id for the subtitle of the Modal, if any.
         /// </summary>
         [Parameter] public string SubtitleAriaId { get; set; } = string.Empty;
@@ -81,5 +86,21 @@ namespace Bit.Client.Web.BlazorUI
                 _ = OnDismiss.InvokeAsync(e);
             }
         }
+
+        private string GetPositionClass() => Position switch
+        {
+            BitModalPosition.Center => $"bit-mdl-position-center",
+
+            BitModalPosition.TopLeft => $"bit-mdl-position-topleft",
+            BitModalPosition.TopCenter => $"bit-mdl-position-topcenter",
+            BitModalPosition.TopRight => $"bit-mdl-position-topright",
+
+            BitModalPosition.CenterLeft => $"bit-mdl-position-centerleft",
+            BitModalPosition.CenterRight => $"bit-mdl-position-centerright",
+
+            BitModalPosition.BottomLeft => $"bit-mdl-position-bottomleft",
+            BitModalPosition.BottomCenter => $"bit-mdl-position-bottomcenter",
+            BitModalPosition.BottomRight => $"bit-mdl-position-bottomright",
+        };
     }
 }
