@@ -27,6 +27,7 @@ namespace Bit.Client.Web.BlazorUI
         private int? selectedDateDayOfWeek;
         private bool showMonthPicker = true;
         private bool isMonthPickerOverlayOnTop;
+        private bool showMonthPickerAsOverlay;
         private int monthLength;
         private string focusClass = string.Empty;
 
@@ -220,13 +221,22 @@ namespace Bit.Client.Web.BlazorUI
         {
             if (IsEnabled is false || JSRuntime is null) return;
 
-            if (ShowMonthPickerAsOverlay)
+            showMonthPickerAsOverlay = ShowMonthPickerAsOverlay;
+
+            var obj = DotNetObjectReference.Create(this);
+
+            await JSRuntime.InvokeVoidAsync("BitDatePicker.toggleDatePickerCallout", obj, UniqueId, CalloutId, OverlayId, isOpen);
+
+            if (showMonthPickerAsOverlay is false)
+            {
+                showMonthPickerAsOverlay = await JSRuntime.InvokeAsync<bool>("BitDatePicker.showMonthPickerAsOverlayInSmallScreen", CalloutId);  
+            }
+
+            if (showMonthPickerAsOverlay)
             {
                 isMonthPickerOverlayOnTop = false;
             }
 
-            var obj = DotNetObjectReference.Create(this);
-            await JSRuntime.InvokeVoidAsync("BitDatePicker.toggleDatePickerCallout", obj, UniqueId, CalloutId, OverlayId, isOpen);
             IsOpen = !isOpen;
             displayYear = currentYear;
             await OnClick.InvokeAsync(eventArgs);
@@ -340,7 +350,7 @@ namespace Bit.Client.Web.BlazorUI
             currentMonth = month;
             currentYear = displayYear;
             CreateMonthCalendar(currentYear, currentMonth);
-            if (ShowMonthPickerAsOverlay is false) return;
+            if (showMonthPickerAsOverlay is false) return;
 
             ToggleMonthPickerAsOverlay();
         }
@@ -612,7 +622,7 @@ namespace Bit.Client.Web.BlazorUI
             var todayMonth = Culture?.Calendar.GetMonth(DateTime.Now) ?? 1;
             var todayYear = Culture?.Calendar.GetYear(DateTime.Now) ?? 1;
 
-            if (ShowMonthPickerAsOverlay)
+            if (showMonthPickerAsOverlay)
             {
                 return (yearRangeFrom == todayYear - 1 && yearRangeTo == todayYear + 10 && todayMonth == currentMonth && todayYear == currentYear);
             }

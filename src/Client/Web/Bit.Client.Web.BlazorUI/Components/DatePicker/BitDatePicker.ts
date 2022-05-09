@@ -58,4 +58,17 @@
             }
         }
     }
+
+    static showMonthPickerAsOverlayInSmallScreen(datePickerCalloutId: string) {
+
+        const datePickerCallout = document.getElementById(datePickerCalloutId);
+        if (datePickerCallout == null)
+            return;
+
+        if (datePickerCallout.offsetWidth > window.innerWidth) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 }
