@@ -7,9 +7,19 @@ on:
       - 'v-*'
 
 jobs:
-  echo:
-    name: echo
+  build-publish:
+    name: build & publish prerelease nuget package
     runs-on: windows-latest
     steps:
-    - name: echo
-      run: echo 'test'
+    - name: checkout code
+      uses: actions/checkout@v2
+    - name: setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 6.0.x
+    - name: dotnet pack BlazorUI
+      run: dotnet pack src/Client/Web/Bit.Client.Web.BlazorUI/Bit.Client.Web.BlazorUI.csproj --output . --configuration Release
+    - name: dotnet pack BlazorUI
+      run: dotnet pack src/Tooling/Bit.Tooling.Bswup/Bit.Tooling.Bswup/Bit.Tooling.Bswup.csproj --output . --configuration Release
+    - name: dotnet nuget push
+      run: dotnet nuget push *.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{secrets.NUGET_ORG_API_KEY}}
