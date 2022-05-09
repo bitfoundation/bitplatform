@@ -59,16 +59,12 @@
         }
     }
 
-    static showMonthPickerAsOverlayInSmallScreen(datePickerCalloutId: string) {
+    static checkMonthPickerWidth(datePickerCalloutId: string) {
 
         const datePickerCallout = document.getElementById(datePickerCalloutId);
         if (datePickerCallout == null)
             return;
 
-        if (datePickerCallout.offsetWidth > window.innerWidth) {
-            return true;
-        } else {
-            return false;
-        }
+        return datePickerCallout.offsetWidth > window.innerWidth;
     }
 }
