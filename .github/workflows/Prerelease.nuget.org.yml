@@ -1,0 +1,15 @@
+name: Publish prerelease nuget packages
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v-*'
+
+jobs:
+  echo:
+    name: echo
+    runs-on: windows-latest
+    steps:
+    - name: echo
+      run: echo 'test'
