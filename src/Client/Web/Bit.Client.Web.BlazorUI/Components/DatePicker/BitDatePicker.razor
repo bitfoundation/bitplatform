@@ -45,7 +45,8 @@
 
     <div class="bit-dtp-overlay"
          id="@OverlayId"
-         @onclick="CloseCallout"></div>
+         @onclick="CloseCallout">
+    </div>
 
     <div class="bit-dtp-callout" id="@CalloutId">
         <div class="bit-dtp-callout-main" role="dialog">
@@ -54,11 +55,11 @@
                  role="group"
                  aria-label="">
                 <div aria-live="polite" aria-atomic="true">Selected date @CurrentValueAsString</div>
-                @if ((ShowMonthPickerAsOverlay && !isMonthPickerOverlayOnTop) || !ShowMonthPickerAsOverlay)
+                @if ((showMonthPickerAsOverlayInternal && !isMonthPickerOverlayOnTop) || !showMonthPickerAsOverlayInternal)
                 {
                     <div class="day-picker-wrapper">
                         <div class="picker-header">
-                            @if (ShowMonthPickerAsOverlay)
+                            @if (showMonthPickerAsOverlayInternal)
                             {
                                 <button class="header-title" aria-label="@($"{monthTitle}, change month")"
                                         aria-live="polite" aria-atomic="true" tabindex="0" type="button" @onclick="@ToggleMonthPickerAsOverlay">
@@ -91,10 +92,10 @@
                             </div>
                         </div>
                         <table role="grid"
-                           aria-readonly="true"
-                           aria-multiselectable="false"
-                           aria-labelledby="@MonthAndYearId"
-                           aria-activedescendant="@ActiveDescendantId">
+                               aria-readonly="true"
+                               aria-multiselectable="false"
+                               aria-labelledby="@MonthAndYearId"
+                               aria-activedescendant="@ActiveDescendantId">
                             <tbody>
                                 <tr>
                                     @if (ShowWeekNumbers)
@@ -152,7 +153,7 @@
                             </tbody>
                         </table>
 
-                        @if (ShowMonthPickerAsOverlay)
+                        @if (showMonthPickerAsOverlayInternal)
                         {
                             <button class="go-today-btn"
                                     type="button"
@@ -164,12 +165,12 @@
                     </div>
                 }
 
-                @if (ShowMonthPickerAsOverlay is false)
+                @if (showMonthPickerAsOverlayInternal is false)
                 {
                     <div class="divider"></div>
                 }
 
-                @if ((ShowMonthPickerAsOverlay && isMonthPickerOverlayOnTop) || !ShowMonthPickerAsOverlay)
+                @if ((showMonthPickerAsOverlayInternal && isMonthPickerOverlayOnTop) || !showMonthPickerAsOverlayInternal)
                 {
                     <div class="month-picker-wrapper">
                         @if (showMonthPicker)
@@ -279,9 +280,9 @@
                             </div>
                         }
                         <button class="go-today-btn"
-                            type="button"
-                            disabled="@IsGoTodayDisabeld()"
-                            @onclick="HandleGoToToday">
+                                type="button"
+                                disabled="@IsGoTodayDisabeld()"
+                                @onclick="HandleGoToToday">
                             @GoToToday
                         </button>
                     </div>
