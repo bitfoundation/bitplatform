@@ -1,4 +1,4 @@
-name: Publish prerelease nuget packages
+name: Prerelease nuget packages
 
 on:
   workflow_dispatch:
@@ -8,7 +8,7 @@ on:
 
 jobs:
   build-publish:
-    name: build & publish prerelease nuget package
+    name: build & publish
     runs-on: windows-latest
     steps:
     - name: checkout code
@@ -17,9 +17,20 @@ jobs:
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 6.0.x
+
+    - name: dotnet restore BlazorUI
+      run: dotnet restore src/Client/Web/Bit.Client.Web.BlazorUI/Bit.Client.Web.BlazorUI.csproj
+    - name: dotnet msbuild BlazorUI
+      run: dotnet msbuild src/Client/Web/Bit.Client.Web.BlazorUI/Bit.Client.Web.BlazorUI.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false
     - name: dotnet pack BlazorUI
       run: dotnet pack src/Client/Web/Bit.Client.Web.BlazorUI/Bit.Client.Web.BlazorUI.csproj --output . --configuration Release
-    - name: dotnet pack BlazorUI
+
+    - name: dotnet restore Bswup
+      run: dotnet restore src/Tooling/Bit.Tooling.Bswup/Bit.Tooling.Bswup/Bit.Tooling.Bswup.csproj
+    - name: dotnet msbuild Bswup
+      run: dotnet msbuild src/Tooling/Bit.Tooling.Bswup/Bit.Tooling.Bswup/Bit.Tooling.Bswup.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false
+    - name: dotnet pack Bswup
+    
       run: dotnet pack src/Tooling/Bit.Tooling.Bswup/Bit.Tooling.Bswup/Bit.Tooling.Bswup.csproj --output . --configuration Release
     - name: dotnet nuget push
       run: dotnet nuget push *.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{secrets.NUGET_ORG_API_KEY}}
