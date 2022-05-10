@@ -24,13 +24,27 @@ jobs:
       run: dotnet msbuild src/Client/Web/Bit.Client.Web.BlazorUI/Bit.Client.Web.BlazorUI.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false
     - name: dotnet pack BlazorUI
       run: dotnet pack src/Client/Web/Bit.Client.Web.BlazorUI/Bit.Client.Web.BlazorUI.csproj --output . --configuration Release
-
+      
     - name: dotnet restore Bswup
       run: dotnet restore src/Tooling/Bit.Tooling.Bswup/Bit.Tooling.Bswup/Bit.Tooling.Bswup.csproj
     - name: dotnet msbuild Bswup
       run: dotnet msbuild src/Tooling/Bit.Tooling.Bswup/Bit.Tooling.Bswup/Bit.Tooling.Bswup.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false
     - name: dotnet pack Bswup
-    
       run: dotnet pack src/Tooling/Bit.Tooling.Bswup/Bit.Tooling.Bswup/Bit.Tooling.Bswup.csproj --output . --configuration Release
+            
+    - name: dotnet restore CodeAnalyzer
+      run: dotnet restore src/Tooling/Bit.Tooling.CodeAnalyzer/Bit.Tooling.CodeAnalyzer.csproj
+    - name: dotnet msbuild CodeAnalyzer
+      run: dotnet msbuild src/Tooling/Bit.Tooling.CodeAnalyzer/Bit.Tooling.CodeAnalyzer.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false
+    - name: dotnet pack CodeAnalyzer
+      run: dotnet pack src/Tooling/Bit.Tooling.CodeAnalyzer/Bit.Tooling.CodeAnalyzer.csproj --output . --configuration Release
+      
+    - name: dotnet restore SourceGenerators
+      run: dotnet restore src/Tooling/Bit.Tooling.SourceGenerators/Bit.Tooling.SourceGenerators.csproj
+    - name: dotnet msbuild SourceGenerators
+      run: dotnet msbuild src/Tooling/Bit.Tooling.SourceGenerators/Bit.Tooling.SourceGenerators.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false
+    - name: dotnet pack SourceGenerators
+      run: dotnet pack src/Tooling/Bit.Tooling.SourceGenerators/Bit.Tooling.SourceGenerators.csproj --output . --configuration Release
+
     - name: dotnet nuget push
       run: dotnet nuget push *.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{secrets.NUGET_ORG_API_KEY}}
