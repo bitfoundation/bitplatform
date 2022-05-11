@@ -188,6 +188,11 @@
     line-height: rem(24px);
     color: $B2Color;
     background-color: $B6Color;
+    overflow: auto;
+
+    &::-webkit-scrollbar:horizontal {
+        height: rem(6px);
+    }
 
     @include lg {
         min-height: rem(40px);
