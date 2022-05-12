@@ -189,6 +189,7 @@
     color: $B2Color;
     background-color: $B6Color;
     overflow: auto;
+    white-space: nowrap;
 
     &::-webkit-scrollbar:horizontal {
         height: rem(6px);
