@@ -13,7 +13,7 @@ namespace TodoTemplate.Api.Startup
 
                 app.UseSwaggerUI(options =>
                 {
-                    options.InjectJavascript("/swagger/custom-swagger-login.js");
+                    options.InjectJavascript("/swagger/swagger-utils.js");
                 });
 
                 app.UseDeveloperExceptionPage();
