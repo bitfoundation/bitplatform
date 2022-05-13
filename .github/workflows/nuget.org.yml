@@ -3,7 +3,7 @@ name: Nuget packages
 on:
   workflow_dispatch:
   push:
-    branch:
+    branches:
       - 'master'
 
 jobs:
