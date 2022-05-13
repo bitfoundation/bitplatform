@@ -120,15 +120,8 @@ const login = async (swagger, userName, password) => {
         method: 'POST',
         body: JSON.stringify({"userName": userName, "password": password})
     })
-    const result = await response.json();
-
-    if (response.status === 400) {
-        if (result.exceptionType) {
-            alert(result.message);
-        }
-    } else if (response.status === 500) {
-        alert("Internal server error")
-    } else if (response.status === 200) {
+    if(response.ok){
+        const result = await response.json();
         const accessToken = result.accessToken;
 
         const obj = {
@@ -144,8 +137,8 @@ const login = async (swagger, userName, password) => {
             },
         };
         swagger.authActions.authorize(obj);
-    } else {
-        alert('error ' + response.status);
+    } else{
+        alert(await response.text())
     }
 }
 
