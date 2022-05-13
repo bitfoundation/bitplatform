@@ -26,9 +26,8 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web
 
             services.AddMauiBlazorWebView();
 #if DEBUG
-            services.AddBlazorWebViewDeveloperTools()
+            services.AddBlazorWebViewDeveloperTools();
 #endif
-            ;
 
             services.AddPlaygroundServices();
             services.AddSingleton(scope => new HttpClient { BaseAddress = new Uri(scope.GetService<IConfiguration>().GetValue<string>("ApiServerAddress")) });
