@@ -1,5 +1,5 @@
 ﻿/*
-base on : https://www.codedesigntips.com/2021/06/28/swagger-ui-with-login-form-and-role-based-api-visibility/
+base on: https://www.codedesigntips.com/2021/06/28/swagger-ui-with-login-form-and-role-based-api-visibility/
 */
 (() => {
     window.addEventListener('load', () => setTimeout(initLoginForm, 0), false);
@@ -29,7 +29,7 @@ const overrideSwaggerLogoutEvent = (swagger) => {
 
 const showLoginUI = (swagger) => {
     new MutationObserver(function (mutations, self) {
-        let descriptionDiv = isLoginFormMustShow(swagger);
+        const descriptionDiv = isLoginFormMustShow(swagger);
         if (descriptionDiv)
             createLoginUI(swagger, descriptionDiv);
     }).observe(document, {childList: true, subtree: true});
@@ -100,8 +100,8 @@ const createLoginUI = function (swagger, rootDiv) {
     loginButton.classList.add("button");
     loginButton.innerText = "Login";
     loginButton.onclick = function () {
-        let userName = userNameInput.value;
-        let password = passwordInput.value;
+        const userName = userNameInput.value;
+        const password = passwordInput.value;
 
         if (userName === "" || password === "") {
             alert("Insert userName and password!");
@@ -120,7 +120,7 @@ const login = async (swagger, userName, password) => {
         method: 'POST',
         body: JSON.stringify({"userName": userName, "password": password})
     })
-    if(response.ok){
+    if (response.ok) {
         const result = await response.json();
         const accessToken = result.accessToken;
 
@@ -137,18 +137,14 @@ const login = async (swagger, userName, password) => {
             },
         };
         swagger.authActions.authorize(obj);
-    } else{
+    } else {
         alert(await response.text())
     }
 }
 
-const attachReloadPageToEvent = (swagger, caller, args) => {
-    const result = caller(args);
-    if (result.then) {
-        result.then(() => reloadPage(swagger))
-    } else {
-        reloadPage(swagger);
-    }
+const attachReloadPageToEvent = async (swagger, caller, args) => {
+    const result = await caller(args);
+    reloadPage(swagger);
     return result;
 }
 
