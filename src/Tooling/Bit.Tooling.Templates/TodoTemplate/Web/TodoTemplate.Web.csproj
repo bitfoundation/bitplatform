@@ -21,11 +21,11 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Bit.Tooling.Bswup" Version="9.0.2" />
+		<PackageReference Include="Bit.Tooling.Bswup" Version="9.0.5" />
 		<PackageReference Include="jose-jwt" Version="4.0.0" />
-		<PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="6.0.4" />
-		<PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.4" />
-		<PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="6.0.4" PrivateAssets="all" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="6.0.5" />
+		<PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.5" />
+		<PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="6.0.5" PrivateAssets="all" />
 	</ItemGroup>
 
 	<ItemGroup>

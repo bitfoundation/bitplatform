@@ -7,7 +7,6 @@
         <UseMaui>true</UseMaui>
         <SingleProject>true</SingleProject>
         <EnableDefaultCssItems>false</EnableDefaultCssItems>
-        <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
 
         <!-- Display name -->
         <ApplicationTitle>TodoTemplate</ApplicationTitle>
@@ -26,11 +25,6 @@
         <SupportedOSPlatformVersion Condition="'$(TargetFramework)' == 'net6.0-android'">21.0</SupportedOSPlatformVersion>
         <SupportedOSPlatformVersion Condition="$(TargetFramework.Contains('-windows'))">10.0.17763.0</SupportedOSPlatformVersion>
         <TargetPlatformMinVersion Condition="$(TargetFramework.Contains('-windows'))">10.0.17763.0</TargetPlatformMinVersion>
-    </PropertyGroup>
-
-    <PropertyGroup Condition="$(TargetFramework.Contains('-windows'))">
-        <OutputType>WinExe</OutputType>
-        <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     </PropertyGroup>
 
     <PropertyGroup Condition="$(TargetFramework.Contains('-android')) and '$(Configuration)' == 'Release'">
@@ -90,7 +84,7 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="jose-jwt" Version="4.0.0" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="6.0.4" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="6.0.5" />
         <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.6.4">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
