@@ -78,7 +78,4 @@ Global
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {61F7FB11-1E47-470C-91E2-47F8143E1572}
 	EndGlobalSection
-	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		..\..\Bit.Tooling.Core\Bit.Tooling.Core.projitems*{3bfce62f-bde6-4d54-b879-31d09942243b}*SharedItemsImports = 5
-	EndGlobalSection
 EndGlobal
