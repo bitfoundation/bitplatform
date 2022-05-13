@@ -1,5 +1,5 @@
 ﻿/*
-base on: https://www.codedesigntips.com/2021/06/28/swagger-ui-with-login-form-and-role-based-api-visibility/
+based on: https://www.codedesigntips.com/2021/06/28/swagger-ui-with-login-form-and-role-based-api-visibility/
 */
 (() => {
     window.addEventListener('load', () => setTimeout(initLoginForm, 0), false);
