@@ -1,9 +1,0 @@
-﻿<Project TreatAsLocalProperty="TaskFolder;TaskAssembly">
-  <PropertyGroup>
-    <TaskAssembly>$(MSBuildThisFileDirectory)..\tasks\Bit.Tooling.CodeGenerator.Task.dll</TaskAssembly>
-  </PropertyGroup>
-  <UsingTask TaskName="BitSourceGenerator" AssemblyFile="$(TaskAssembly)" />
-  <Target Name="BitCodeGeneratorTask" BeforeTargets="Build">
-    <BitSourceGenerator ProjectPath="$(ProjectPath)" />
-  </Target>
-</Project>

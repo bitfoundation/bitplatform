@@ -1,9 +1,0 @@
-{
-  "name": "bit.ng.test",
-  "devDependencies": {
-    "@types/angular-ui-router": "^1.1.41"
-  },
-  "dependencies": {
-    "@uirouter/angularjs": "^1.0.29"
-  }
-}
