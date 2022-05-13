@@ -191,10 +191,6 @@
     overflow: auto;
     white-space: nowrap;
 
-    &::-webkit-scrollbar:horizontal {
-        height: rem(6px);
-    }
-
     @include lg {
         min-height: rem(40px);
         padding: rem(5px) rem(16px);
