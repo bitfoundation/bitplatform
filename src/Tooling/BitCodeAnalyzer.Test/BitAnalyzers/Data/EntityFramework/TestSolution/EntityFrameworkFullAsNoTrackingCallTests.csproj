@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Bit.Tooling.CodeAnalyzer" Version="9.0.0" />
+    <PackageReference Include="Bit.Tooling.CodeAnalyzer" Version="10.0.0" />
     <PackageReference Include="EntityFramework" Version="6.4.4" />
   </ItemGroup>
 
