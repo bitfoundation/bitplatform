@@ -5,6 +5,8 @@ based on: https://www.codedesigntips.com/2021/06/28/swagger-ui-with-login-form-a
     window.addEventListener('load', () => setTimeout(initLoginForm, 0), false);
 })();
 
+const TOKEN_SWAGGER_NAME = 'swagger_auth_token';
+
 const initLoginForm = () => {
     const swagger = window.ui;
     if (!swagger) {
@@ -14,17 +16,40 @@ const initLoginForm = () => {
 
     overrideSwaggerAuthorizeEvent(swagger);
     overrideSwaggerLogoutEvent(swagger);
+    loadLastSession(swagger);
     showLoginUI(swagger);
+}
+
+const loadLastSession = (swagger) => {
+    if (isAuthorized(swagger))
+        return;
+
+    const lastToken = window.localStorage.getItem(TOKEN_SWAGGER_NAME);
+    if (!lastToken)
+        return;
+
+    const obj = generateAuthorizeObjectForSwagger(lastToken);
+    swagger.authActions.authorize(obj);
 }
 
 const overrideSwaggerAuthorizeEvent = (swagger) => {
     const auth = swagger.authActions.authorize;
-    swagger.authActions.authorize = (args) => attachReloadPageToEvent(swagger, auth, args);
+    swagger.authActions.authorize = async (args) => {
+        const result = await auth(args);
+        window.localStorage.setItem(TOKEN_SWAGGER_NAME, result.payload.bearerAuth.value);
+        reloadPage(swagger);
+        return result;
+    };
 }
 
 const overrideSwaggerLogoutEvent = (swagger) => {
     const logout = swagger.authActions.logout;
-    swagger.authActions.logout = (args) => attachReloadPageToEvent(swagger, logout, args);
+    swagger.authActions.logout = async (args) => {
+        const result = await logout(args);
+        window.localStorage.removeItem(TOKEN_SWAGGER_NAME);
+        reloadPage(swagger);
+        return result;
+    };
 }
 
 const showLoginUI = (swagger) => {
@@ -124,28 +149,26 @@ const login = async (swagger, userName, password) => {
         const result = await response.json();
         const accessToken = result.accessToken;
 
-        const obj = {
-            "bearerAuth": {
-                "name": "Bearer",
-                "schema": {
-                    "type": "apiKey",
-                    "description": "JWT Authorization header using the Bearer scheme.",
-                    "name": "Authorization",
-                    "in": "header"
-                },
-                value: accessToken
-            },
-        };
+        const obj = generateAuthorizeObjectForSwagger(accessToken);
         swagger.authActions.authorize(obj);
     } else {
         alert(await response.text())
     }
 }
 
-const attachReloadPageToEvent = async (swagger, caller, args) => {
-    const result = await caller(args);
-    reloadPage(swagger);
-    return result;
+const generateAuthorizeObjectForSwagger = (accessToken) => {
+    return {
+        "bearerAuth": {
+            "name": "Bearer",
+            "schema": {
+                "type": "apiKey",
+                "description": "JWT Authorization header using the Bearer scheme.",
+                "name": "Authorization",
+                "in": "header"
+            },
+            value: accessToken
+        },
+    };
 }
 
 const getCurrentUrl = (swagger) => {
