@@ -24,12 +24,12 @@
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageProjectUrl>https://github.com/bitfoundation/bitframework</PackageProjectUrl>
 		<PackageIconUrl>https://avatars.githubusercontent.com/u/22663390</PackageIconUrl>
-		<PackageReleaseNotes>https://github.com/bitfoundation/bitframework/releases/tag/v10.0.0</PackageReleaseNotes>
-		<PackageVersion>10.0.0</PackageVersion>
+		<PackageReleaseNotes>https://github.com/bitfoundation/bitframework/releases/tag/v10.0.1</PackageReleaseNotes>
+		<PackageVersion>10.0.1</PackageVersion>
 
 		<!-- Version -->
-		<Version>10.0.0</Version>
-		<AssemblyVersion>10.0.0</AssemblyVersion>
+		<Version>10.0.1</Version>
+		<AssemblyVersion>10.0.1</AssemblyVersion>
 
 		<!-- Compile -->
 		<NeutralLanguage>en</NeutralLanguage>
