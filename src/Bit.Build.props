@@ -8,7 +8,7 @@
 		<Product>Bit Framework</Product>
 		<Title>$(MSBuildProjectName)</Title>
 		<Description>$(MSBuildProjectName)</Description>
-		<Copyright>Copyright © Bit Foundation 2021</Copyright>
+		<Copyright>Copyright © Bit Foundation 2022</Copyright>
 
 		<!-- Repo -->
 		<RepositoryUrl>https://github.com/bitfoundation/bitframework</RepositoryUrl>
@@ -24,7 +24,7 @@
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageProjectUrl>https://github.com/bitfoundation/bitframework</PackageProjectUrl>
 		<PackageIconUrl>https://avatars.githubusercontent.com/u/22663390</PackageIconUrl>
-		<PackageReleaseNotes>https://github.com/bitfoundation/bitframework/releases/tag/v7.4.0</PackageReleaseNotes>
+		<PackageReleaseNotes>https://github.com/bitfoundation/bitframework/releases/tag/v9.0.5</PackageReleaseNotes>
 		<PackageVersion>9.0.5</PackageVersion>
 
 		<!-- Version -->

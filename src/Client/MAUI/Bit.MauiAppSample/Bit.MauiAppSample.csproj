@@ -6,7 +6,6 @@
         <RootNamespace>Bit.MauiAppSample</RootNamespace>
         <UseMaui>true</UseMaui>
         <SingleProject>true</SingleProject>
-        <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
         <EnableTypeInfoReflection>false</EnableTypeInfoReflection>
 
         <!-- Display name -->
@@ -44,11 +43,6 @@
         <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
     </ItemGroup>
 
-    <PropertyGroup Condition="$(TargetFramework.Contains('-windows'))">
-        <OutputType>WinExe</OutputType>
-        <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
-    </PropertyGroup>
-
     <PropertyGroup Condition="$(TargetFramework.Contains('-android'))">
         <AndroidLinkMode Condition="'$(Configuration)' == 'Release'">Full</AndroidLinkMode>
         <RuntimeIdentifiers Condition="'$(Configuration)' == 'Release'">android-arm64</RuntimeIdentifiers>
@@ -63,7 +57,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="6.0.4" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="6.0.5" />
     </ItemGroup>
 
     <ItemGroup>

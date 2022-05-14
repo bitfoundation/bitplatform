@@ -13,7 +13,7 @@
 		<PackageReference Include="System.ComponentModel.Annotations" Version="6.0.0-preview.4.21253.7" />
 		<PackageReference Include="Autofac" Version="6.3.0" />
 		<PackageReference Include="Autofac.Extensions.DependencyInjection" Version="7.2.0" />
-		<PackageReference Condition=" '$(TargetFramework)' == 'monoandroid12.0' OR '$(TargetFramework)' == 'Xamarin.iOS10' OR '$(TargetFramework)' == 'uap10.0.17763' " Include="Xamarin.Essentials" Version="1.7.2" />
+		<PackageReference Condition=" '$(TargetFramework)' == 'monoandroid12.0' OR '$(TargetFramework)' == 'Xamarin.iOS10' OR '$(TargetFramework)' == 'uap10.0.17763' " Include="Xamarin.Essentials" Version="1.7.3" />
 		<PackageReference Include="Prism.Core" Version="8.1.97" />
 	</ItemGroup>
 

@@ -11,7 +11,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.20.0" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="6.0.4" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="6.0.5" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -21,7 +21,7 @@
 		<ProjectReference Include="..\Bit.Server.OData\Bit.Server.OData.csproj" />
 		<ProjectReference Include="..\Bit.Server.Owin\Bit.Server.Owin.csproj" />
 		<ProjectReference Include="..\Bit.Server.Signalr\Bit.Server.Signalr.csproj" />
-		<PackageReference Include="Swashbuckle.AspNetCore" Version="6.3.0" />
+		<PackageReference Include="Swashbuckle.AspNetCore" Version="6.3.1" />
 	</ItemGroup>
 
 </Project>
