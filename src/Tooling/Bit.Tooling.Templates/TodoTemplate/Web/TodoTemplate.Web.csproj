@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
 
 	<PropertyGroup>
 		<TargetFramework>net6.0</TargetFramework>
@@ -21,7 +21,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<PackageReference Include="Bit.Client.Web.BlazorUI" Version="11.0.0-pre-02" />
 		<PackageReference Include="Bit.Tooling.Bswup" Version="9.0.5" />
+		<PackageReference Include="Bit.Tooling.CodeAnalyzer" Version="11.0.0-pre-02" />
+		<PackageReference Include="Bit.Tooling.SourceGenerators" Version="11.0.0-pre-02" />
 		<PackageReference Include="jose-jwt" Version="4.0.0" />
 		<PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="6.0.5" />
 		<PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.5" />
@@ -38,9 +41,6 @@
 		  <PrivateAssets>all</PrivateAssets>
 		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
-		<ProjectReference Include="..\..\..\..\Client\Web\Bit.Client.Web.BlazorUI\Bit.Client.Web.BlazorUI.csproj" />
-		<ProjectReference Include="..\..\..\Bit.Tooling.CodeAnalyzer\Bit.Tooling.CodeAnalyzer.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
-		<ProjectReference Include="..\..\..\Bit.Tooling.SourceGenerators\Bit.Tooling.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
 		<ProjectReference Include="..\Shared\TodoTemplate.Shared.csproj" />
 		
 		<Using Include="Microsoft.AspNetCore.Components" />
