@@ -224,7 +224,7 @@ namespace Bit.Client.Web.BlazorUI
 
         private string? GetTextItem(TItem item) => item.GetValueAsStringFromProperty(TextField);
 
-        private object? GetValueItem(TItem item) => item.GetValueFromProperty(ValueField);
+        private object? GetValueItem(TItem item) => item.GetValueAsObjectFromProperty(ValueField);
 
         private string? GetImageSrcItem(TItem item) => item.GetValueAsStringFromProperty(ImageSrcField);
 

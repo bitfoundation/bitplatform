@@ -7,10 +7,10 @@ namespace Bit.Client.Web.BlazorUI
     {
         public static string? GetValueAsStringFromProperty(this object? obj, string propertyName)
         {
-            return obj?.GetType().GetProperty(propertyName)?.GetValue(obj)?.ToString();
+            return obj?.GetValueAsObjectFromProperty(propertyName)?.ToString();
         }
 
-        public static object? GetValueFromProperty(this object? obj, string propertyName)
+        public static object? GetValueAsObjectFromProperty(this object? obj, string propertyName)
         {
             return obj?.GetType().GetProperty(propertyName)?.GetValue(obj);
         }
