@@ -5,8 +5,8 @@ based on: https://www.codedesigntips.com/2021/06/28/swagger-ui-with-login-form-a
     window.addEventListener('load', () => setTimeout(initLoginForm, 0), false);
 })();
 
-const AUTHORIZATION_TOKEN_KEY = 'access_token';
-let accessTokenAge = 0;
+const ACCESS_TOKEN_COOKIE_NAME = 'access_token';
+let accessTokenExpiresIn = 0;
 
 const initLoginForm = () => {
     const swagger = window.ui;
@@ -25,7 +25,7 @@ const tryAuthorizeWithLocalData = (swagger) => {
     if (isAuthorized(swagger))
         return;
 
-    const token = getCookie(AUTHORIZATION_TOKEN_KEY);
+    const token = getCookie(ACCESS_TOKEN_COOKIE_NAME);
     if (!token)
         return;
 
@@ -38,8 +38,8 @@ const overrideSwaggerAuthorizeEvent = (swagger) => {
     swagger.authActions.authorize = async (args) => {
         const result = await auth(args);
 
-        if (!isCookieSet(AUTHORIZATION_TOKEN_KEY)) {
-            setCookie(AUTHORIZATION_TOKEN_KEY, result.payload.bearerAuth.value, accessTokenAge);
+        if (!getCookie(ACCESS_TOKEN_COOKIE_NAME)) {
+            setCookie(ACCESS_TOKEN_COOKIE_NAME, result.payload.bearerAuth.value, accessTokenExpiresIn);
         }
 
         reloadPage(swagger);
@@ -51,7 +51,7 @@ const overrideSwaggerLogoutEvent = (swagger) => {
     const logout = swagger.authActions.logout;
     swagger.authActions.logout = async (args) => {
         const result = await logout(args);
-        removeCookie(AUTHORIZATION_TOKEN_KEY);
+        removeCookie(ACCESS_TOKEN_COOKIE_NAME);
         reloadPage(swagger);
         return result;
     };
@@ -153,7 +153,7 @@ const login = async (swagger, userName, password) => {
     if (response.ok) {
         const result = await response.json();
         const accessToken = result.accessToken;
-        accessTokenAge = result.expiresIn;
+        accessTokenExpiresIn = result.expiresIn;
 
         const authorizationObject = getAuthorizationRequestObject(accessToken);
         swagger.authActions.authorize(authorizationObject);
@@ -229,13 +229,4 @@ function removeCookie(name) {
 
 function trim(value) {
     return value.replace(/^\s+|\s+$/g, '');
-}
-
-function isCookieSet(name) {
-    const cookieValue = getCookie(name);
-
-    if (cookieValue)
-        return true;
-    else
-        return false;
 }
