@@ -5,7 +5,7 @@ based on: https://www.codedesigntips.com/2021/06/28/swagger-ui-with-login-form-a
     window.addEventListener('load', () => setTimeout(initLoginForm, 0), false);
 })();
 
-const TOKEN_SWAGGER_NAME = 'swagger_auth_token';
+const AUTHORIZATION_TOKEN_KEY = 'swagger_auth_token';
 
 const initLoginForm = () => {
     const swagger = window.ui;
@@ -16,27 +16,27 @@ const initLoginForm = () => {
 
     overrideSwaggerAuthorizeEvent(swagger);
     overrideSwaggerLogoutEvent(swagger);
-    loadLastSession(swagger);
+    tryAuthorizeWithLocalData(swagger);
     showLoginUI(swagger);
 }
 
-const loadLastSession = (swagger) => {
+const tryAuthorizeWithLocalData = (swagger) => {
     if (isAuthorized(swagger))
         return;
 
-    const lastToken = window.localStorage.getItem(TOKEN_SWAGGER_NAME);
+    const lastToken = window.localStorage.getItem(AUTHORIZATION_TOKEN_KEY);
     if (!lastToken)
         return;
 
-    const obj = generateAuthorizeObjectForSwagger(lastToken);
-    swagger.authActions.authorize(obj);
+    const authorizationObject = getAuthorizationRequestObject(lastToken);
+    swagger.authActions.authorize(authorizationObject);
 }
 
 const overrideSwaggerAuthorizeEvent = (swagger) => {
     const auth = swagger.authActions.authorize;
     swagger.authActions.authorize = async (args) => {
         const result = await auth(args);
-        window.localStorage.setItem(TOKEN_SWAGGER_NAME, result.payload.bearerAuth.value);
+        window.localStorage.setItem(AUTHORIZATION_TOKEN_KEY, result.payload.bearerAuth.value);
         reloadPage(swagger);
         return result;
     };
@@ -46,7 +46,7 @@ const overrideSwaggerLogoutEvent = (swagger) => {
     const logout = swagger.authActions.logout;
     swagger.authActions.logout = async (args) => {
         const result = await logout(args);
-        window.localStorage.removeItem(TOKEN_SWAGGER_NAME);
+        window.localStorage.removeItem(AUTHORIZATION_TOKEN_KEY);
         reloadPage(swagger);
         return result;
     };
@@ -149,14 +149,14 @@ const login = async (swagger, userName, password) => {
         const result = await response.json();
         const accessToken = result.accessToken;
 
-        const obj = generateAuthorizeObjectForSwagger(accessToken);
-        swagger.authActions.authorize(obj);
+        const authorizationObject = getAuthorizationRequestObject(accessToken);
+        swagger.authActions.authorize(authorizationObject);
     } else {
         alert(await response.text())
     }
 }
 
-const generateAuthorizeObjectForSwagger = (accessToken) => {
+const getAuthorizationRequestObject = (accessToken) => {
     return {
         "bearerAuth": {
             "name": "Bearer",
