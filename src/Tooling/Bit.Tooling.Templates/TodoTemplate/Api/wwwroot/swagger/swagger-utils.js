@@ -5,7 +5,8 @@ based on: https://www.codedesigntips.com/2021/06/28/swagger-ui-with-login-form-a
     window.addEventListener('load', () => setTimeout(initLoginForm, 0), false);
 })();
 
-const AUTHORIZATION_TOKEN_KEY = 'swagger_auth_token';
+const AUTHORIZATION_TOKEN_KEY = 'access_token';
+let accessTokenAge = 0;
 
 const initLoginForm = () => {
     const swagger = window.ui;
@@ -24,11 +25,11 @@ const tryAuthorizeWithLocalData = (swagger) => {
     if (isAuthorized(swagger))
         return;
 
-    const lastToken = window.localStorage.getItem(AUTHORIZATION_TOKEN_KEY);
-    if (!lastToken)
+    const token = getCookie(AUTHORIZATION_TOKEN_KEY);
+    if (!token)
         return;
 
-    const authorizationObject = getAuthorizationRequestObject(lastToken);
+    const authorizationObject = getAuthorizationRequestObject(token);
     swagger.authActions.authorize(authorizationObject);
 }
 
@@ -36,7 +37,11 @@ const overrideSwaggerAuthorizeEvent = (swagger) => {
     const auth = swagger.authActions.authorize;
     swagger.authActions.authorize = async (args) => {
         const result = await auth(args);
-        window.localStorage.setItem(AUTHORIZATION_TOKEN_KEY, result.payload.bearerAuth.value);
+
+        if (!isCookieSet(AUTHORIZATION_TOKEN_KEY)) {
+            setCookie(AUTHORIZATION_TOKEN_KEY, result.payload.bearerAuth.value, accessTokenAge);
+        }
+
         reloadPage(swagger);
         return result;
     };
@@ -46,7 +51,7 @@ const overrideSwaggerLogoutEvent = (swagger) => {
     const logout = swagger.authActions.logout;
     swagger.authActions.logout = async (args) => {
         const result = await logout(args);
-        window.localStorage.removeItem(AUTHORIZATION_TOKEN_KEY);
+        removeCookie(AUTHORIZATION_TOKEN_KEY);
         reloadPage(swagger);
         return result;
     };
@@ -148,6 +153,7 @@ const login = async (swagger, userName, password) => {
     if (response.ok) {
         const result = await response.json();
         const accessToken = result.accessToken;
+        accessTokenAge = result.expiresIn;
 
         const authorizationObject = getAuthorizationRequestObject(accessToken);
         swagger.authActions.authorize(authorizationObject);
@@ -197,4 +203,39 @@ function getAuthorization(swagger) {
 function isAuthorized(swagger) {
     const auth = getAuthorization(swagger);
     return auth && auth[1].size !== 0;
+}
+
+function setCookie(name, value, seconds) {
+    const date = new Date();
+    date.setSeconds(date.getSeconds() + seconds);
+    document.cookie = `${name}=${value};expires=${date.toUTCString()};path=/`;
+}
+
+function getCookie(name) {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].split('=');
+        if (trim(cookie[0]) === escape(name)) {
+            return unescape(trim(cookie[1]));
+        }
+    }
+    return null;
+}
+
+function removeCookie(name) {
+    const date = new Date();
+    document.cookie = `${name}=;expires=${date.toUTCString()};path=/`;
+}
+
+function trim(value) {
+    return value.replace(/^\s+|\s+$/g, '');
+}
+
+function isCookieSet(name) {
+    const cookieValue = getCookie(name);
+
+    if (cookieValue)
+        return true;
+    else
+        return false;
 }
