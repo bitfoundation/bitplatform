@@ -35,6 +35,10 @@ a {
     display: none;
 }
 
+::-webkit-scrollbar:horizontal {
+    height: rem(6px);
+}
+
 /* Home Page ==================================================================================== */
 
 .header-nav-close-btn {
