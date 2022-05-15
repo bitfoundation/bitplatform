@@ -4,6 +4,7 @@
 
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
+        <IncludeContentInPack>false</IncludeContentInPack>
     </PropertyGroup>
 
     <ItemGroup>
