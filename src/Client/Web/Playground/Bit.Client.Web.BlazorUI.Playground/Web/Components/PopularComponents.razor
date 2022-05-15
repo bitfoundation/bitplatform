@@ -47,7 +47,8 @@
                     <BitFileUpload IsMultiSelect="true"
                            Label="Select files"
                            UploadUrl="@UploadUrl"
-                           RemoveUrl="@RemoveUrl">
+                           RemoveUrl="@RemoveUrl"
+                           Style="flex-grow:1; max-width:none;">
                     </BitFileUpload>
                 }
                 else if (SelectedComponent.Name == "DropDown")
@@ -99,7 +100,8 @@ private bool IsToggleChecked = false;</code>
                     <code class="html">&ltBitFileUpload Label="Select or drag and drop files"
         IsMultiSelect="true"    
         UploadUrl="&#64;UploadUrl"
-        RemoveUrl="&#64;RemoveUrl">
+        RemoveUrl="&#64;RemoveUrl"
+        Style="flex-grow:1; max-width:none;">
 &lt/BitFileUpload></code>
 
                     <code class="csharp">
