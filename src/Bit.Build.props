@@ -24,12 +24,14 @@
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageProjectUrl>https://github.com/bitfoundation/bitframework</PackageProjectUrl>
 		<PackageIconUrl>https://avatars.githubusercontent.com/u/22663390</PackageIconUrl>
-		<PackageReleaseNotes>https://github.com/bitfoundation/bitframework/releases/tag/v11.0.0</PackageReleaseNotes>
-		<PackageVersion>11.0.0</PackageVersion>
+
+		<ReleaseVersion>11.0.0</ReleaseVersion>
+
+		<PackageReleaseNotes>https://github.com/bitfoundation/bitframework/releases/tag/v-$(ReleaseVersion)-pre-01</PackageReleaseNotes>
+		<PackageVersion>$(ReleaseVersion)-pre-01</PackageVersion>
 
 		<!-- Version -->
-		<Version>11.0.0</Version>
-		<AssemblyVersion>11.0.0</AssemblyVersion>
+		<Version>$(ReleaseVersion).$([System.DateTime]::Now.ToString(HHmm))</Version>
 
 		<!-- Compile -->
 		<NeutralLanguage>en</NeutralLanguage>
