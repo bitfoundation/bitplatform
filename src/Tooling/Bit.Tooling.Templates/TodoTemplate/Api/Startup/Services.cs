@@ -13,7 +13,7 @@ namespace TodoTemplate.Api.Startup;
 
 public static class Services
 {
-    public static void Add(IServiceCollection services, IConfiguration configuration, IWebHostEnvironment environment)
+    public static void Add(IServiceCollection services, IConfiguration configuration)
     {
         var appSettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>();
 
