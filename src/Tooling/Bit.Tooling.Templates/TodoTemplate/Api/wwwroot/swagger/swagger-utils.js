@@ -34,9 +34,9 @@ const tryAuthorizeWithLocalData = (swagger) => {
 }
 
 const overrideSwaggerAuthorizeEvent = (swagger) => {
-    const auth = swagger.authActions.authorize;
+    const originalAuthorize = swagger.authActions.authorize;
     swagger.authActions.authorize = async (args) => {
-        const result = await auth(args);
+        const result = await originalAuthorize(args);
 
         if (!getCookie(ACCESS_TOKEN_COOKIE_NAME)) {
             setCookie(ACCESS_TOKEN_COOKIE_NAME, result.payload.bearerAuth.value, accessTokenExpiresIn);
@@ -48,9 +48,9 @@ const overrideSwaggerAuthorizeEvent = (swagger) => {
 }
 
 const overrideSwaggerLogoutEvent = (swagger) => {
-    const logout = swagger.authActions.logout;
+    const originalLogout = swagger.authActions.logout;
     swagger.authActions.logout = async (args) => {
-        const result = await logout(args);
+        const result = await originalLogout(args);
         removeCookie(ACCESS_TOKEN_COOKIE_NAME);
         reloadPage(swagger);
         return result;
