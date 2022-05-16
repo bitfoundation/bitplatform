@@ -222,15 +222,15 @@ namespace Bit.Client.Web.BlazorUI
 
         private string GetAriaLabelledBy() => Label.HasValue() || LabelFragment is not null ? LabelId : AriaLabelledBy;
 
-        private string? GetTextItem(TItem item) => item.GetValueAsStringFromProperty(TextField);
+        private string? GetTextItem(TItem item) => item.GetValueAsObjectFromProperty(TextField)?.ToString();
 
         private object? GetValueItem(TItem item) => item.GetValueAsObjectFromProperty(ValueField);
 
-        private string? GetImageSrcItem(TItem item) => item.GetValueAsStringFromProperty(ImageSrcField);
+        private string? GetImageSrcItem(TItem item) => item.GetValueAsObjectFromProperty(ImageSrcField)?.ToString();
 
-        private string? GetSelectedImageSrcItem(TItem item) => item.GetValueAsStringFromProperty(SelectedImageSrcField);
+        private string? GetSelectedImageSrcItem(TItem item) => item.GetValueAsObjectFromProperty(SelectedImageSrcField)?.ToString();
 
-        private string? GetImageAltItem(TItem item) => item.GetValueAsStringFromProperty(ImageAltField);
+        private string? GetImageAltItem(TItem item) => item.GetValueAsObjectFromProperty(ImageAltField)?.ToString();
 
         private BitIconName? GetIconNameItem(TItem item) => item.GetBitIconNameFromProperty(IconNameField);
 

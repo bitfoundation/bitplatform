@@ -5,11 +5,6 @@ namespace Bit.Client.Web.BlazorUI
 {
     public static class ObjectExtensions
     {
-        public static string? GetValueAsStringFromProperty(this object? obj, string propertyName)
-        {
-            return obj?.GetValueAsObjectFromProperty(propertyName)?.ToString();
-        }
-
         public static object? GetValueAsObjectFromProperty(this object? obj, string propertyName)
         {
             return obj?.GetType().GetProperty(propertyName)?.GetValue(obj);
