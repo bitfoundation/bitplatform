@@ -5,6 +5,9 @@ based on: https://www.codedesigntips.com/2021/06/28/swagger-ui-with-login-form-a
     window.addEventListener('load', () => setTimeout(initLoginForm, 0), false);
 })();
 
+const ACCESS_TOKEN_COOKIE_NAME = 'access_token';
+let accessTokenExpiresIn = 0;
+
 const initLoginForm = () => {
     const swagger = window.ui;
     if (!swagger) {
@@ -14,17 +17,44 @@ const initLoginForm = () => {
 
     overrideSwaggerAuthorizeEvent(swagger);
     overrideSwaggerLogoutEvent(swagger);
+    tryAuthorizeWithLocalData(swagger);
     showLoginUI(swagger);
 }
 
+const tryAuthorizeWithLocalData = (swagger) => {
+    if (isAuthorized(swagger))
+        return;
+
+    const token = getCookie(ACCESS_TOKEN_COOKIE_NAME);
+    if (!token)
+        return;
+
+    const authorizationObject = getAuthorizationRequestObject(token);
+    swagger.authActions.authorize(authorizationObject);
+}
+
 const overrideSwaggerAuthorizeEvent = (swagger) => {
-    const auth = swagger.authActions.authorize;
-    swagger.authActions.authorize = (args) => attachReloadPageToEvent(swagger, auth, args);
+    const originalAuthorize = swagger.authActions.authorize;
+    swagger.authActions.authorize = async (args) => {
+        const result = await originalAuthorize(args);
+
+        if (!getCookie(ACCESS_TOKEN_COOKIE_NAME)) {
+            setCookie(ACCESS_TOKEN_COOKIE_NAME, result.payload.bearerAuth.value, accessTokenExpiresIn);
+        }
+
+        reloadPage(swagger);
+        return result;
+    };
 }
 
 const overrideSwaggerLogoutEvent = (swagger) => {
-    const logout = swagger.authActions.logout;
-    swagger.authActions.logout = (args) => attachReloadPageToEvent(swagger, logout, args);
+    const originalLogout = swagger.authActions.logout;
+    swagger.authActions.logout = async (args) => {
+        const result = await originalLogout(args);
+        removeCookie(ACCESS_TOKEN_COOKIE_NAME);
+        reloadPage(swagger);
+        return result;
+    };
 }
 
 const showLoginUI = (swagger) => {
@@ -123,29 +153,28 @@ const login = async (swagger, userName, password) => {
     if (response.ok) {
         const result = await response.json();
         const accessToken = result.accessToken;
+        accessTokenExpiresIn = result.expiresIn;
 
-        const obj = {
-            "bearerAuth": {
-                "name": "Bearer",
-                "schema": {
-                    "type": "apiKey",
-                    "description": "JWT Authorization header using the Bearer scheme.",
-                    "name": "Authorization",
-                    "in": "header"
-                },
-                value: accessToken
-            },
-        };
-        swagger.authActions.authorize(obj);
+        const authorizationObject = getAuthorizationRequestObject(accessToken);
+        swagger.authActions.authorize(authorizationObject);
     } else {
         alert(await response.text())
     }
 }
 
-const attachReloadPageToEvent = async (swagger, caller, args) => {
-    const result = await caller(args);
-    reloadPage(swagger);
-    return result;
+const getAuthorizationRequestObject = (accessToken) => {
+    return {
+        "bearerAuth": {
+            "name": "Bearer",
+            "schema": {
+                "type": "apiKey",
+                "description": "JWT Authorization header using the Bearer scheme.",
+                "name": "Authorization",
+                "in": "header"
+            },
+            value: accessToken
+        },
+    };
 }
 
 const getCurrentUrl = (swagger) => {
@@ -174,4 +203,30 @@ function getAuthorization(swagger) {
 function isAuthorized(swagger) {
     const auth = getAuthorization(swagger);
     return auth && auth[1].size !== 0;
+}
+
+function setCookie(name, value, seconds) {
+    const date = new Date();
+    date.setSeconds(date.getSeconds() + seconds);
+    document.cookie = `${name}=${value};expires=${date.toUTCString()};path=/`;
+}
+
+function getCookie(name) {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].split('=');
+        if (trim(cookie[0]) === escape(name)) {
+            return unescape(trim(cookie[1]));
+        }
+    }
+    return null;
+}
+
+function removeCookie(name) {
+    const date = new Date();
+    document.cookie = `${name}=;expires=${date.toUTCString()};path=/`;
+}
+
+function trim(value) {
+    return value.replace(/^\s+|\s+$/g, '');
 }

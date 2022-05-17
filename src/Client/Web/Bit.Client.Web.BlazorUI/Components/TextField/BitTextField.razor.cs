@@ -235,6 +235,11 @@ namespace Bit.Client.Web.BlazorUI
         /// </summary>
         [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
+        /// <summary>
+        /// Specifies whether to remove any leading or trailing whitespace from the value.
+        /// </summary>
+        [Parameter] public bool Trim { get; set; }
+
         public BitTextFieldType ElementType { get; set; }
 
         public string FocusClass
@@ -370,7 +375,7 @@ namespace Bit.Client.Web.BlazorUI
         /// <inheritdoc />
         protected override bool TryParseValueFromString(string? value, out string? result, [NotNullWhen(false)] out string? validationErrorMessage)
         {
-            result = value;
+            result = Trim ? value?.Trim() : value;
             validationErrorMessage = null;
             return true;
         }

@@ -6,9 +6,9 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="Bit.Tooling.CodeAnalyzer" Version="11.0.0-pre-05" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0" />
         <PackageReference Include="System.Text.Json" Version="7.0.0-preview.4.22229.4" />
-        <ProjectReference Include="..\..\..\Bit.Tooling.CodeAnalyzer\Bit.Tooling.CodeAnalyzer.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     </ItemGroup>
 
     <ItemGroup>
