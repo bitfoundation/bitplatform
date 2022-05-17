@@ -114,23 +114,23 @@
     }
 
     .color-picker-icon {
-        background-image: url('/images/home/color-picker-icon.svg');
+        background-image: url('/images/home/color-picker-light-icon.svg');
     }
 
     .date-picker-icon {
-        background-image: url('/images/home/date-picker-icon.svg');
+        background-image: url('/images/home/date-picker-light-icon.svg');
     }
 
     .drop-down-icon {
-        background-image: url('/images/home/drop-down-icon.svg');
+        background-image: url('/images/home/drop-down-light-icon.svg');
     }
 
     .nav-icon {
-        background-image: url('/images/home/nav-icon.svg');
+        background-image: url('/images/home/nav-light-icon.svg');
     }
 
     .file-upload-icon {
-        background-image: url('/images/home/file-upload-icon.svg');
+        background-image: url('/images/home/file-upload-light-icon.svg');
     }
 
     .selected-component-name {
@@ -193,31 +193,29 @@
             background-color: $B5Color;
 
             @include lg {
-                top: rem(24px);
-                left: rem(24px);
                 width: rem(40px);
                 height: rem(40px);
             }
         }
 
         .color-picker-icon {
-            background-image: url('/images/home/color-picker-icon.svg');
+            background-image: url('/images/home/color-picker-blue-icon.svg');
         }
 
         .date-picker-icon {
-            background-image: url('/images/home/date-picker-icon.svg');
+            background-image: url('/images/home/date-picker-blue-icon.svg');
         }
 
         .drop-down-icon {
-            background-image: url('/images/home/drop-down-icon.svg');
+            background-image: url('/images/home/drop-down-blue-icon.svg');
         }
 
         .nav-icon {
-            background-image: url('/images/home/nav-icon.svg');
+            background-image: url('/images/home/nav-blue-icon.svg');
         }
 
         .file-upload-icon {
-            background-image: url('/images/home/file-upload-icon.svg');
+            background-image: url('/images/home/file-upload-blue-icon.svg');
         }
 
         .component-row-name {
@@ -240,6 +238,26 @@
         &:hover {
             .component-row-icon {
                 background-color: $B2Color;
+            }
+
+            .color-picker-icon {
+                background-image: url('/images/home/color-picker-light-icon.svg');
+            }
+
+            .date-picker-icon {
+                background-image: url('/images/home/date-picker-light-icon.svg');
+            }
+
+            .drop-down-icon {
+                background-image: url('/images/home/drop-down-light-icon.svg');
+            }
+
+            .nav-icon {
+                background-image: url('/images/home/nav-light-icon.svg');
+            }
+
+            .file-upload-icon {
+                background-image: url('/images/home/file-upload-light-icon.svg');
             }
 
             .component-row-name {
@@ -349,48 +367,58 @@
 
 .card {
     display: flex;
-    justify-content: center;
-    align-items: flex-start;
+    flex-flow: column nowrap;
+    justify-content: space-evenly;
+    align-items: center;
     width: rem(175px);
     height: rem(136px);
     border-radius: rem(10px);
     border: rem(1px) solid $B5Color;
     margin: 0 rem(12px) rem(24px);
-    padding-top: rem(88px);
     box-sizing: border-box;
-    font-weight: 500;
-    font-size: rem(14px);
-    line-height: rem(24px);
-    color: #2E2E2E;
     background-color: $B6Color;
-    background-repeat: no-repeat;
-    background-position: top rem(24px) center;
-    background-size: rem(48px);
     cursor: pointer;
 
     &:last-child {
         margin-bottom: 0;
     }
-}
 
-.color-picker-card {
-    background-image: url('/images/home/color-picker-blue-icon.png');
-}
+    .card-icon {
+        width: rem(32px);
+        height: rem(32px);
+        border-radius: 50%;
+        background-color: $B2Color;
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: rem(20px);
+    }
 
-.date-picker-card {
-    background-image: url('/images/home/date-picker-blue-icon.png');
-}
+    .color-picker-icon {
+        background-image: url('/images/home/color-picker-light-icon.svg');
+    }
 
-.drop-down-card {
-    background-image: url('/images/home/drop-down-blue-icon.png');
-}
+    .date-picker-icon {
+        background-image: url('/images/home/date-picker-light-icon.svg');
+    }
 
-.nav-card {
-    background-image: url('/images/home/nav-blue-icon.png');
-}
+    .drop-down-icon {
+        background-image: url('/images/home/drop-down-light-icon.svg');
+    }
 
-.file-upload-card {
-    background-image: url('/images/home/file-upload-blue-icon.png');
+    .nav-icon {
+        background-image: url('/images/home/nav-light-icon.svg');
+    }
+
+    .file-upload-icon {
+        background-image: url('/images/home/file-upload-light-icon.svg');
+    }
+
+    .card-name {
+        font-weight: 500;
+        font-size: rem(14px);
+        line-height: rem(24px);
+        color: #2E2E2E;
+    }
 }
 
 @media all and (max-width: em(1100px)) {

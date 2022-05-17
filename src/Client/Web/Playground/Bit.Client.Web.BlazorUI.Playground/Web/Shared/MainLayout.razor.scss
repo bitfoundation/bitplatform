@@ -146,20 +146,7 @@
 
     .twitter-link {
         background-image: url('/images/twitter-icon.svg');
-        background-size: rem(27px);
-
-        @include lt-xl {
-            background-size: rem(16px);
-        }
-
-        &:hover {
-            background-color: $B2Color;
-        }
-    }
-
-    .github-link {
-        background-image: url('/images/github-icon.svg');
-        background-size: rem(23px);
+        background-size: rem(28px);
 
         @include lt-xl {
             background-size: rem(14px);
@@ -170,12 +157,25 @@
         }
     }
 
-    .facebook-link {
-        background-image: url('/images/facebook-icon.svg');
-        background-size: rem(15px);
+    .github-link {
+        background-image: url('/images/github-icon.svg');
+        background-size: rem(24px);
 
         @include lt-xl {
-            background-size: rem(10px);
+            background-size: rem(12px);
+        }
+
+        &:hover {
+            background-color: $B2Color;
+        }
+    }
+
+    .facebook-link {
+        background-image: url('/images/facebook-icon.svg');
+        background-size: rem(16px);
+
+        @include lt-xl {
+            background-size: rem(8px);
         }
 
         &:hover {
@@ -188,7 +188,7 @@
         background-size: rem(20px);
 
         @include lt-xl {
-            background-size: rem(14px);
+            background-size: rem(10px);
         }
 
         &:hover {
