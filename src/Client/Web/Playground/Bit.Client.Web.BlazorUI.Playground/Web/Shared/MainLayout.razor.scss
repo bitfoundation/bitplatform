@@ -100,9 +100,10 @@
     .footer-link {
         width: rem(40px);
         height: rem(40px);
+        border-radius: 50%;
         background-position: center;
         background-repeat: no-repeat;
-        background-size: contain;
+        background-color: $B4Color;
         cursor: pointer;
         margin: 0 rem(8px);
 
@@ -112,16 +113,10 @@
             margin: 0 rem(4px);
         }
 
-        @include md {
+        @include lt-xl {
             width: rem(24px);
             height: rem(24px);
             margin: 0 rem(8px);
-        }
-
-        @include sm {
-            width: rem(24px);
-            height: rem(24px);
-            margin: 0 rem(4px);
         }
     }
 
@@ -150,34 +145,54 @@
     }
 
     .twitter-link {
-        background-image: url('/images/footer/footer-twitter-icon.svg');
+        background-image: url('/images/twitter-icon.svg');
+        background-size: rem(27px);
+
+        @include lt-xl {
+            background-size: rem(16px);
+        }
 
         &:hover {
-            background-image: url('/images/footer/footer-twitter-active-icon.svg');
+            background-color: $B2Color;
         }
     }
 
     .github-link {
-        background-image: url('/images/footer/footer-github-icon.svg');
+        background-image: url('/images/github-icon.svg');
+        background-size: rem(23px);
+
+        @include lt-xl {
+            background-size: rem(14px);
+        }
 
         &:hover {
-            background-image: url('/images/footer/footer-github-active-icon.svg');
+            background-color: $B2Color;
         }
     }
 
     .facebook-link {
-        background-image: url('/images/footer/footer-facebook-icon.svg');
+        background-image: url('/images/facebook-icon.svg');
+        background-size: rem(15px);
+
+        @include lt-xl {
+            background-size: rem(10px);
+        }
 
         &:hover {
-            background-image: url('/images/footer/footer-facebook-active-icon.svg');
+            background-color: $B2Color;
         }
     }
 
     .linkedin-link {
-        background-image: url('/images/footer/footer-linkedin-icon.svg');
+        background-image: url('/images/linkedin-icon.svg');
+        background-size: rem(20px);
+
+        @include lt-xl {
+            background-size: rem(14px);
+        }
 
         &:hover {
-            background-image: url('/images/footer/footer-linkedin-active-icon.svg');
+            background-color: $B2Color;
         }
     }
 }

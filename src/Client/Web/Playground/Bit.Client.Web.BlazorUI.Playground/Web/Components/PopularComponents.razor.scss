@@ -100,8 +100,10 @@
         width: rem(48px);
         height: rem(48px);
         background-position: center;
-        background-size: contain;
+        background-size: rem(20px);
         background-repeat: no-repeat;
+        background-color: $B2Color;
+        border-radius: 50%;
 
         @include lg {
             top: rem(24px);
@@ -112,23 +114,23 @@
     }
 
     .color-picker-icon {
-        background-image: url('/images/home/color-picker-blue-icon.png');
+        background-image: url('/images/home/color-picker-icon.svg');
     }
 
     .date-picker-icon {
-        background-image: url('/images/home/date-picker-blue-icon.png');
+        background-image: url('/images/home/date-picker-icon.svg');
     }
 
     .drop-down-icon {
-        background-image: url('/images/home/drop-down-blue-icon.png');
+        background-image: url('/images/home/drop-down-icon.svg');
     }
 
     .nav-icon {
-        background-image: url('/images/home/nav-blue-icon.png');
+        background-image: url('/images/home/nav-icon.svg');
     }
 
     .file-upload-icon {
-        background-image: url('/images/home/file-upload-blue-icon.png');
+        background-image: url('/images/home/file-upload-icon.svg');
     }
 
     .selected-component-name {
@@ -176,73 +178,77 @@
         align-items: center;
         width: 100%;
         height: rem(80px);
-        padding-left: rem(104px);
         border-bottom: rem(1px) solid $B5Color;
         box-sizing: border-box;
-        font-weight: 500;
-        font-size: rem(20px);
-        line-height: rem(32px);
-        color: $Gray1;
         cursor: pointer;
-        background-position: center left rem(32px);
-        background-repeat: no-repeat;
-        background-size: rem(48px);
+
+        .component-row-icon {
+            width: rem(48px);
+            height: rem(48px);
+            border-radius: 50%;
+            background-position: center;
+            background-size: rem(20px);
+            background-repeat: no-repeat;
+            margin-left: rem(32px);
+            background-color: $B5Color;
+
+            @include lg {
+                top: rem(24px);
+                left: rem(24px);
+                width: rem(40px);
+                height: rem(40px);
+            }
+        }
+
+        .color-picker-icon {
+            background-image: url('/images/home/color-picker-icon.svg');
+        }
+
+        .date-picker-icon {
+            background-image: url('/images/home/date-picker-icon.svg');
+        }
+
+        .drop-down-icon {
+            background-image: url('/images/home/drop-down-icon.svg');
+        }
+
+        .nav-icon {
+            background-image: url('/images/home/nav-icon.svg');
+        }
+
+        .file-upload-icon {
+            background-image: url('/images/home/file-upload-icon.svg');
+        }
+
+        .component-row-name {
+            font-weight: 500;
+            font-size: rem(20px);
+            line-height: rem(32px);
+            color: $Gray1;
+            margin-left: rem(24px);
+
+            @include lg {
+                font-size: rem(18px);
+                line-height: rem(31px);
+            }
+        }
 
         &:last-child {
             border: none;
         }
 
         &:hover {
-            color: $B2Color;
+            .component-row-icon {
+                background-color: $B2Color;
+            }
+
+            .component-row-name {
+                color: $B2Color;
+            }
         }
 
         @include lg {
             height: rem(60px);
-            padding-left: rem(80px);
-            font-size: rem(18px);
-            line-height: rem(31px);
-            background-size: rem(40px);
-            background-position: center left rem(24px);
-        }
-    }
-
-    .color-picker-row {
-        background-image: url('/images/home/color-picker-light-icon.png');
-
-        &:hover {
-            background-image: url('/images/home/color-picker-blue-icon.png');
-        }
-    }
-
-    .date-picker-row {
-        background-image: url('/images/home/date-picker-light-icon.png');
-
-        &:hover {
-            background-image: url('/images/home/date-picker-blue-icon.png');
-        }
-    }
-
-    .drop-down-row {
-        background-image: url('/images/home/drop-down-light-icon.png');
-
-        &:hover {
-            background-image: url('/images/home/drop-down-blue-icon.png');
-        }
-    }
-
-    .nav-row {
-        background-image: url('/images/home/nav-light-icon.png');
-
-        &:hover {
-            background-image: url('/images/home/nav-blue-icon.png');
-        }
-    }
-
-    .file-upload-row {
-        background-image: url('/images/home/file-upload-light-icon.png');
-
-        &:hover {
-            background-image: url('/images/home/file-upload-blue-icon.png');
         }
     }
 }

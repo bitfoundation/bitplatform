@@ -12,10 +12,12 @@
                         <div class="selected-component-desc">@SelectedComponent.Description</div>
                         <a class="demo-btn" href="@SelectedComponent.Url">More about @SelectedComponent.Name</a>
                     </div>
-                } else
+                }
+                else
                 {
-                    <div class="component-row @($"{com.CssClassName}-row")" @onclick="@(() => SelectComponent(com))">
-                        @com.Name
+                    <div class="component-row" @onclick="@(() => SelectComponent(com))">
+                         <div class="component-row-icon @($"{com.CssClassName}-icon")"></div>
+                         <div class="component-row-name">@com.Name</div>
                     </div>
                 }
             }
