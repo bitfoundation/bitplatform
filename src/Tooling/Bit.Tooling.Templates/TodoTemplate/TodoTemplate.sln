@@ -24,7 +24,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Dependencies", "Dependencie
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Tooling.CodeAnalyzer", "..\..\Bit.Tooling.CodeAnalyzer\Bit.Tooling.CodeAnalyzer.csproj", "{3BFCE62F-BDE6-4D54-B879-31D09942243B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTemplate.Infra", "Infra\TodoTemplate.Infra.csproj", "{F2046C94-F82C-42DC-9C97-9C03FB2F2BA3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTemplate.Iac", "Iac\TodoTemplate.Iac.csproj", "{F2046C94-F82C-42DC-9C97-9C03FB2F2BA3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

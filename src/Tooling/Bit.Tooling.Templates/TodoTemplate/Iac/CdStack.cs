@@ -7,7 +7,7 @@ using Pulumi.AzureNative.Network.Inputs;
 using Pulumi.AzureNative.Resources;
 using NetworkSubnetArgs = Pulumi.AzureNative.Network.Inputs.SubnetArgs;
 
-namespace TodoTemplate.Infra;
+namespace TodoTemplate.Iac;
 
 public class CdStack
 {

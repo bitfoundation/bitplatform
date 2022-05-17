@@ -1,4 +1,4 @@
-﻿namespace TodoTemplate.Shared.Infra;
+﻿namespace TodoTemplate.Shared.Iac;
 
 public class BlazorModeDetector
 {
