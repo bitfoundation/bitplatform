@@ -53,7 +53,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTemplate.Api", "Tooling
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTemplate.App", "Tooling\Bit.Tooling.Templates\TodoTemplate\App\TodoTemplate.App.csproj", "{E40BF513-37C7-41ED-B2EC-7B63586DF7EE}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTemplate.Infra", "Tooling\Bit.Tooling.Templates\TodoTemplate\Infra\TodoTemplate.Infra.csproj", "{FFA0F2EB-B7E0-400D-98FD-3421F76B96C0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTemplate.Iac", "Tooling\Bit.Tooling.Templates\TodoTemplate\Iac\TodoTemplate.Iac.csproj", "{FFA0F2EB-B7E0-400D-98FD-3421F76B96C0}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTemplate.Shared", "Tooling\Bit.Tooling.Templates\TodoTemplate\Shared\TodoTemplate.Shared.csproj", "{8F380280-03E3-48E3-9FB0-3158F389F47D}"
 EndProject

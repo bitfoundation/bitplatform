@@ -16,7 +16,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTemplate.App", "App\Tod
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTemplate.Web", "Web\TodoTemplate.Web.csproj", "{7C27083E-F333-4034-AC4C-C86DE1D4874E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTemplate.Infra", "Infra\TodoTemplate.Infra.csproj", "{F2046C94-F82C-42DC-9C97-9C03FB2F2BA3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTemplate.Iac", "Iac\TodoTemplate.Iac.csproj", "{F2046C94-F82C-42DC-9C97-9C03FB2F2BA3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
