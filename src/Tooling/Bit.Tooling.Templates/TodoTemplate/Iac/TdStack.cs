@@ -53,7 +53,6 @@ public class TdStack
 
         ResourceGroup resourceGroup = new($"td-{stackName}", new ResourceGroupArgs
         {
-            Location = "eastus",
             ResourceGroupName = $"td-{stackName}"
         }, options: new() { ImportId = $"/subscriptions/{GetClientConfig.InvokeAsync().GetAwaiter().GetResult().SubscriptionId}/resourceGroups/td-test" });
 
