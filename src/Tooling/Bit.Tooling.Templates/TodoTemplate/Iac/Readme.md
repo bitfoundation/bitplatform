@@ -8,7 +8,7 @@ This project also creates an azure dev ops agent vm which its ip is whitlisted i
 
 **Getting started:**
 
-1- In user account at first time.using [azure cli](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli):
+1-  Run the following commands using [azure cli](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli):
 
 ```
 az provider register --namespace 'Microsoft.Network'
@@ -25,7 +25,7 @@ az provider register --namespace 'Microsoft.Insights'
 
 ```
 
-2- Create three resource groups (`td-test`, `td-prod`, `td-cd`) using [azure cli](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli):
+2- Create three resource groups (`td-test`, `td-prod`, `td-cd`)
 
 ```
 az group create --name td-test --location eastus
