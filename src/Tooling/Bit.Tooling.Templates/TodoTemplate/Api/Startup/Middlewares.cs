@@ -9,13 +9,6 @@ namespace TodoTemplate.Api.Startup
         {
             if (env.IsDevelopment())
             {
-                app.UseSwagger();
-
-                app.UseSwaggerUI(options =>
-                {
-                    options.InjectJavascript("/swagger/swagger-utils.js");
-                });
-
                 app.UseDeveloperExceptionPage();
 
 #if BlazorWebAssembly
@@ -30,6 +23,13 @@ namespace TodoTemplate.Api.Startup
             app.UseBlazorFrameworkFiles();
 #endif
 
+            app.UseSwagger();
+
+            app.UseSwaggerUI(options =>
+            {
+                options.InjectJavascript("/swagger/swagger-utils.js");
+            });
+            
             app.UseResponseCompression();
 
             app.UseStaticFiles(new StaticFileOptions
