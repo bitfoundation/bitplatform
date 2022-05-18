@@ -136,7 +136,7 @@ publish/
 ## TODO: Comment the next line if you want to checkin your
 ## web deploy settings but do note that will include unencrypted
 ## passwords
-#*.pubxml
+*.pubxml
 
 *.publishproj
 
@@ -212,6 +212,12 @@ ModelManifest.xml
 
 # VS Code
 .vscode
+
+# Rider
+.idea
+
+dotnet-tools.json
+profile.arm.json
 
 # Bit Foundation
 *.map
