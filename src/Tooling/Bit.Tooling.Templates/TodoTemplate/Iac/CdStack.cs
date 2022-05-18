@@ -17,7 +17,6 @@ public class CdStack
 
         ResourceGroup resourceGroup = new("td-cd", new ResourceGroupArgs
         {
-            Location = "eastus",
             ResourceGroupName = "td-cd"
         }, options: new() { ImportId = $"/subscriptions/{GetClientConfig.InvokeAsync().GetAwaiter().GetResult().SubscriptionId}/resourceGroups/td-cd" });
 
