@@ -5,9 +5,8 @@
         <div class="component-list">
             @foreach (var com in Components)
             {
-                @if  (com.Name == SelectedComponent.Name)
-          
-                     {
+                @if(com.Name == SelectedComponent.Name)
+                {
                     <div class="selected-component">
                         <div class="selected-component-icon @($"{SelectedComponent.CssClassName}-icon")"></div>
                         <div class="selected-component-name">@SelectedComponent.Name</div>
