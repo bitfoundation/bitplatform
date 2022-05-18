@@ -1,4 +1,4 @@
-﻿namespace TodoTemplate.Shared.Iac;
+﻿namespace TodoTemplate.Shared.Infra;
 
 public class WebAppDeploymentTypeDetector
 {
