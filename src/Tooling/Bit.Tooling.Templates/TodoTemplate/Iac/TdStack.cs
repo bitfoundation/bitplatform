@@ -185,7 +185,7 @@ public class TdStack
                     }
                 }
             }
-        }, new CustomResourceOptions { Aliases = new List<Input<Alias>> { new Alias { Name = $"web-app-td-{stackName}" } } });
+        });
 
         StorageAccount blobStorageAccount = new($"storageacctd{stackName}", new()
         {
