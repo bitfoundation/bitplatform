@@ -384,13 +384,19 @@
     }
 
     .card-icon {
-        width: rem(32px);
-        height: rem(32px);
+        width: rem(48px);
+        height: rem(48px);
         border-radius: 50%;
         background-color: $B2Color;
         background-repeat: no-repeat;
         background-position: center;
         background-size: rem(20px);
+
+        @include sm {
+            width: rem(32px);
+            height: rem(32px);
+            background-size: rem(18px);
+        }
     }
 
     .color-picker-icon {
@@ -440,9 +446,5 @@
         width: rem(156px);
         height: rem(112px);
         margin: 0 rem(8px) rem(16px);
-        padding-top: rem(64px);
-        font-size: rem(12px);
-        line-height: rem(18px);
-        background-size: rem(32px);
     }
 }

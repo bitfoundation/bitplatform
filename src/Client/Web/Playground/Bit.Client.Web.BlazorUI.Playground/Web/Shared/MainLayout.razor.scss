@@ -89,8 +89,9 @@
         right: 0;
         left: 0;
         display: flex;
-        justify-content: center;
+        justify-content: space-around;
         flex-flow: row nowrap;
+        width: rem(125px);
 
         @include lt-xl {
             top: rem(-38px);
