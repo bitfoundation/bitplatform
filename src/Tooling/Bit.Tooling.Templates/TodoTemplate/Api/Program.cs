@@ -4,7 +4,7 @@
 builder.WebHost.UseUrls("https://*:5001", "http://*:5000");
 #endif
 
-TodoTemplate.Api.Startup.Services.Add(builder.Services, builder.Configuration);
+TodoTemplate.Api.Startup.Services.Add(builder.Services, builder.Configuration, builder.Environment);
 
 var app = builder.Build();
 

@@ -47,16 +47,12 @@ public static class IServiceCollectionExtensions
             {
                 ClockSkew = TimeSpan.Zero,
                 RequireSignedTokens = true,
-
                 ValidateIssuerSigningKey = true,
                 IssuerSigningKey = new SymmetricSecurityKey(secretKey),
-
                 RequireExpirationTime = true,
                 ValidateLifetime = true,
-
                 ValidateAudience = true,
                 ValidAudience = settings.Audience,
-
                 ValidateIssuer = true,
                 ValidIssuer = settings.Issuer,
             };
@@ -89,30 +85,72 @@ public static class IServiceCollectionExtensions
     {
         services.AddSwaggerGen(options =>
         {
-            options.AddSecurityDefinition("bearerAuth", new OpenApiSecurityScheme
-            {
-                Name = "Authorization",
-                Type = SecuritySchemeType.Http,
-                Scheme = "bearer",
-                BearerFormat = "JWT",
-                In = ParameterLocation.Header,
-                Description = "JWT Authorization header using the Bearer scheme."
-            });
+            options.AddSecurityDefinition("bearerAuth",
+                new OpenApiSecurityScheme
+                {
+                    Name = "Authorization",
+                    Type = SecuritySchemeType.Http,
+                    Scheme = "bearer",
+                    BearerFormat = "JWT",
+                    In = ParameterLocation.Header,
+                    Description = "JWT Authorization header using the Bearer scheme."
+                });
 
             options.AddSecurityRequirement(new OpenApiSecurityRequirement
             {
                 {
                     new OpenApiSecurityScheme
                     {
-                        Reference = new OpenApiReference
-                        {
-                            Type = ReferenceType.SecurityScheme,
-                            Id = "bearerAuth"
-                        }
+                        Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "bearerAuth" }
                     },
-                    new string[] {}
+                    new string[] { }
                 }
             });
         });
+    }
+
+    public static void AddHealthChecks(
+        this IServiceCollection services,
+        IConfiguration configuration,
+        IWebHostEnvironment environment)
+    {
+        var appsettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>();
+
+        var healthCheckSetting = appsettings.HealCheckSettings;
+        
+        if (!healthCheckSetting.EnableHealthChecks)
+            return;
+
+        var emailSettings = appsettings.EmailSettings;
+
+        services
+            .AddHealthChecksUI(setupSettings: setup =>
+            {
+                setup.AddHealthCheckEndpoint("BitHealthCheck",
+                    environment.IsDevelopment() ? "http://localhost:5000/healthz" : "/healthz");
+            }).AddInMemoryStorage();
+
+
+        services.AddHealthChecks()
+            .AddProcessAllocatedMemoryHealthCheck(healthCheckSetting.MaximumMegabytesAllocated)
+            .AddDiskStorageHealthCheck(opt =>
+                opt.AddDrive(Path.GetPathRoot(Directory.GetCurrentDirectory()), minimumFreeMegabytes: 5 * 1024))
+            .AddSqlServer(
+                configuration.GetConnectionString("SqlServerConnection"));
+
+        if (emailSettings.Host is not "LocalFolder")
+        {
+            services.AddHealthChecks()
+                .AddSmtpHealthCheck(options =>
+                {
+                    options.Host = emailSettings.Host;
+                    options.Port = emailSettings.Port;
+        
+                    if (emailSettings.HasCredential)
+                    {
+                        options.LoginWith(emailSettings.UserName, emailSettings.Password);
+                    }
+                });
+        }
     }
 }
