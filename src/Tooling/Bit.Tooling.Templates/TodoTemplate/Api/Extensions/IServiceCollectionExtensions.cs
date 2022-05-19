@@ -126,11 +126,10 @@ public static class IServiceCollectionExtensions
             return;
         
         services.AddHealthChecksUI(setupSettings: setup =>
-            {
-                setup.AddHealthCheckEndpoint("BitHealthCheck", "/healthz");
-            }).AddInMemoryStorage();
-
-
+        { 
+            setup.AddHealthCheckEndpoint("BitHealthCheck", "/healthz");
+        }).AddInMemoryStorage();
+        
         services.AddHealthChecks()
             .AddProcessAllocatedMemoryHealthCheck(maximumMegabytesAllocated: 6 * 1024)
             .AddDiskStorageHealthCheck(opt =>
