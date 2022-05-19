@@ -63,7 +63,6 @@ namespace TodoTemplate.Api.Startup
                 endpoints.MapControllers().RequireAuthorization();
                 endpoints.MapHealthChecks("/healthz", new HealthCheckOptions
                 {
-                    Predicate = _ => true,
                     ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
                 });
 
