@@ -7,7 +7,7 @@ using Pulumi.AzureNative.Network.Inputs;
 using Pulumi.AzureNative.Resources;
 using NetworkSubnetArgs = Pulumi.AzureNative.Network.Inputs.SubnetArgs;
 
-namespace TodoTemplate.Infra;
+namespace TodoTemplate.Iac;
 
 public class CdStack
 {
@@ -17,7 +17,6 @@ public class CdStack
 
         ResourceGroup resourceGroup = new("td-cd", new ResourceGroupArgs
         {
-            Location = "eastus",
             ResourceGroupName = "td-cd"
         }, options: new() { ImportId = $"/subscriptions/{GetClientConfig.InvokeAsync().GetAwaiter().GetResult().SubscriptionId}/resourceGroups/td-cd" });
 

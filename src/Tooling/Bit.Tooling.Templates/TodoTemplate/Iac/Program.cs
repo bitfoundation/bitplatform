@@ -1,5 +1,5 @@
 ﻿using Pulumi;
-using TodoTemplate.Infra;
+using TodoTemplate.Iac;
 
 public class Program
 {

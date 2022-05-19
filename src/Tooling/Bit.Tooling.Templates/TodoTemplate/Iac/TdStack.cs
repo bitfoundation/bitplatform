@@ -25,7 +25,7 @@ using Azure.Storage.Sas;
 using Azure.Storage;
 using Pulumi.AzureNative.Resources;
 
-namespace TodoTemplate.Infra;
+namespace TodoTemplate.Iac;
 
 public class TdStack
 {
@@ -53,7 +53,6 @@ public class TdStack
 
         ResourceGroup resourceGroup = new($"td-{stackName}", new ResourceGroupArgs
         {
-            Location = "eastus",
             ResourceGroupName = $"td-{stackName}"
         }, options: new() { ImportId = $"/subscriptions/{GetClientConfig.InvokeAsync().GetAwaiter().GetResult().SubscriptionId}/resourceGroups/td-test" });
 
@@ -185,7 +184,7 @@ public class TdStack
                     }
                 }
             }
-        }, new CustomResourceOptions { Aliases = new List<Input<Alias>> { new Alias { Name = $"web-app-td-{stackName}" } } });
+        });
 
         StorageAccount blobStorageAccount = new($"storageacctd{stackName}", new()
         {
