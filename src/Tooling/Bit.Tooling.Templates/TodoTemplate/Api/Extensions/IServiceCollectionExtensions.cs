@@ -47,16 +47,16 @@ public static class IServiceCollectionExtensions
             {
                 ClockSkew = TimeSpan.Zero,
                 RequireSignedTokens = true,
-                
+
                 ValidateIssuerSigningKey = true,
                 IssuerSigningKey = new SymmetricSecurityKey(secretKey),
-                
+
                 RequireExpirationTime = true,
                 ValidateLifetime = true,
-                
+
                 ValidateAudience = true,
                 ValidAudience = settings.Audience,
-                
+
                 ValidateIssuer = true,
                 ValidIssuer = settings.Issuer,
             };
@@ -125,15 +125,14 @@ public static class IServiceCollectionExtensions
         if (healthCheckSettings.EnableHealthChecks is false)
             return;
         
-        services
-            .AddHealthChecksUI(setupSettings: setup =>
+        services.AddHealthChecksUI(setupSettings: setup =>
             {
                 setup.AddHealthCheckEndpoint("BitHealthCheck", "/healthz");
             }).AddInMemoryStorage();
 
 
         services.AddHealthChecks()
-            .AddProcessAllocatedMemoryHealthCheck(healthCheckSettings.MaximumApplicationMemoryMegabytesAllocated)
+            .AddProcessAllocatedMemoryHealthCheck(maximumMegabytesAllocated: 6 * 1024)
             .AddDiskStorageHealthCheck(opt =>
                 opt.AddDrive(Path.GetPathRoot(Directory.GetCurrentDirectory()), minimumFreeMegabytes: 5 * 1024))
             .AddSqlServer(

@@ -18,7 +18,6 @@
     public class HealCheckSettings
     {
         public bool EnableHealthChecks { get; set; }
-        public int MaximumApplicationMemoryMegabytesAllocated { get; set; }
     }
 
     public class IdentitySettings
