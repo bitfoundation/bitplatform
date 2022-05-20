@@ -1,142 +1,142 @@
 ﻿[
-  {
-    "outputFile": "Components/ComponentDemo.razor.css",
-    "inputFile": "Components/ComponentDemo.razor.scss"
-  },
-  {
-    "outputFile": "Components/ComponentExampleBox.razor.css",
-    "inputFile": "Components/ComponentExampleBox.razor.scss"
-  },
-  {
-    "outputFile": "Components/Header.razor.css",
-    "inputFile": "Components/Header.razor.scss"
-  },
-  {
-    "outputFile": "Components/PopularComponents.razor.css",
-    "inputFile": "Components/PopularComponents.razor.scss"
-  },
-  {
-    "outputFile": "Components/SideNav.razor.css",
-    "inputFile": "Components/SideNav.razor.scss"
-  },
-  {
-    "outputFile": "Components/SideRail.razor.css",
-    "inputFile": "Components/SideRail.razor.scss"
-  },
-  {
-    "outputFile": "Pages/Components/Buttons/BitActionButtonDemo.razor.css",
-    "inputFile": "Pages/Components/Buttons/BitActionButtonDemo.razor.scss"
-  },
-  {
-    "outputFile": "Pages/Components/Buttons/BitButtonDemo.razor.css",
-    "inputFile": "Pages/Components/Buttons/BitButtonDemo.razor.scss"
-  },
-  {
-    "outputFile": "Pages/Components/Buttons/BitCompoundButtonDemo.razor.css",
-    "inputFile": "Pages/Components/Buttons/BitCompoundButtonDemo.razor.scss"
-  },
-  {
-    "outputFile": "Pages/Components/Buttons/BitIconButtonDemo.razor.css",
-    "inputFile": "Pages/Components/Buttons/BitIconButtonDemo.razor.scss"
-  },
-  {
-    "outputFile": "Pages/Components/Buttons/BitToggleButtonDemo.razor.css",
-    "inputFile": "Pages/Components/Buttons/BitToggleButtonDemo.razor.scss"
-  },
-  {
-    "outputFile": "Pages/Components/Carousel/BitCarouselDemo.razor.css",
-    "inputFile": "Pages/Components/Carousel/BitCarouselDemo.razor.scss"
-  },
-  {
-    "outputFile": "Pages/Components/ColorPicker/BitColorPickerDemo.razor.css",
-    "inputFile": "Pages/Components/ColorPicker/BitColorPickerDemo.razor.scss"
-  },
-  {
-    "outputFile": "Pages/Components/List/BitBasicListDemo.razor.css",
-    "inputFile": "Pages/Components/List/BitBasicListDemo.razor.scss"
-  },
-  {
-    "outputFile": "Pages/Components/Modal/BitModalDemo.razor.css",
-    "inputFile": "Pages/Components/Modal/BitModalDemo.razor.scss"
-  },
-  {
-    "outputFile": "Pages/Components/Notification/BitMessageBarDemo.razor.css",
-    "inputFile": "Pages/Components/Notification/BitMessageBarDemo.razor.scss"
-  },
-  {
-    "outputFile": "Pages/Components/Pivot/BitPivotDemo.razor.css",
-    "inputFile": "Pages/Components/Pivot/BitPivotDemo.razor.scss"
-  },
-  {
-    "outputFile": "Pages/Components/Slider/BitSliderDemo.razor.css",
-    "inputFile": "Pages/Components/Slider/BitSliderDemo.razor.scss"
-  },
-  {
-    "outputFile": "Pages/Components/Spinner/BitSpinnerDemo.razor.css",
-    "inputFile": "Pages/Components/Spinner/BitSpinnerDemo.razor.scss"
-  },
-  {
-    "outputFile": "Pages/Components/Toggle/BitToggleDemo.razor.css",
-    "inputFile": "Pages/Components/Toggle/BitToggleDemo.razor.scss"
-  },
-  {
-    "outputFile": "Pages/GetStartedPage.razor.css",
-    "inputFile": "Pages/GetStartedPage.razor.scss"
-  },
-  {
-    "outputFile": "Pages/HomePage.razor.css",
-    "inputFile": "Pages/HomePage.razor.scss"
-  },
-  {
-    "outputFile": "Pages/IconPage.razor.css",
-    "inputFile": "Pages/IconPage.razor.scss"
-  },
-  {
-    "outputFile": "Pages/OverviewPage.razor.css",
-    "inputFile": "Pages/OverviewPage.razor.scss"
-  },
-  {
-    "outputFile": "Shared/MainLayout.razor.css",
-    "inputFile": "Shared/MainLayout.razor.scss"
-  },
-  {
-    "outputFile": "wwwroot/styles/styles.css",
-    "inputFile": "Styles/styles.scss"
-  },
-  {
-    "outputFile": "Pages/Components/TextField/BitTextFieldDemo.razor.css",
-    "inputFile": "Pages/Components/TextField/BitTextFieldDemo.razor.scss"
-  },
-  {
-    "outputFile": "Pages/Components/SpinButton/BitSpinButtonDemo.razor.css",
-    "inputFile": "Pages/Components/SpinButton/BitSpinButtonDemo.razor.scss"
-  },
-  {
-    "outputFile": "Pages/Components/DatePicker/BitDatePickerDemo.razor.css",
-    "inputFile": "Pages/Components/DatePicker/BitDatePickerDemo.razor.scss"
-  },
-  {
-    "outputFile": "Pages/Components/Checkbox/BitCheckboxDemo.razor.css",
-    "inputFile": "Pages/Components/Checkbox/BitCheckboxDemo.razor.scss"
-  },
-  {
-    "outputFile": "Pages/Components/RadioButtonList/BitRadioButtonListDemo.razor.css",
-    "inputFile": "Pages/Components/RadioButtonList/BitRadioButtonListDemo.razor.scss"
-  },
-  {
-    "outputFile": "Pages/Components/DropDown/BitDropDownDemo.razor.css",
-    "inputFile": "Pages/Components/DropDown/BitDropDownDemo.razor.scss"
-  },
-  {
-    "outputFile": "Pages/Components/RadioButtonGroup/BitRadioButtonGroupDemo.razor.css",
-    "inputFile": "Pages/Components/RadioButtonGroup/BitRadioButtonGroupDemo.razor.scss"
-  },
-  {
-    "outputFile": "Pages/Components/Persona/BitPersonaDemo.razor.css",
-    "inputFile": "Pages/Components/Persona/BitPersonaDemo.razor.scss"
-  },
-  {
-    "outputFile": "Components/PlaygroundNotFound.razor.css",
-    "inputFile": "Components/PlaygroundNotFound.razor.scss"
-  }
+    {
+        "outputFile": "Components/ComponentDemo.razor.css",
+        "inputFile": "Components/ComponentDemo.razor.scss"
+    },
+    {
+        "outputFile": "Components/ComponentExampleBox.razor.css",
+        "inputFile": "Components/ComponentExampleBox.razor.scss"
+    },
+    {
+        "outputFile": "Components/Header.razor.css",
+        "inputFile": "Components/Header.razor.scss"
+    },
+    {
+        "outputFile": "Components/PopularComponents.razor.css",
+        "inputFile": "Components/PopularComponents.razor.scss"
+    },
+    {
+        "outputFile": "Components/SideNav.razor.css",
+        "inputFile": "Components/SideNav.razor.scss"
+    },
+    {
+        "outputFile": "Components/SideRail.razor.css",
+        "inputFile": "Components/SideRail.razor.scss"
+    },
+    {
+        "outputFile": "Components/NotFoundComponent.razor.css",
+        "inputFile": "Components/NotFoundComponent.razor.scss"
+    },
+    {
+        "outputFile": "Pages/Components/Buttons/BitActionButtonDemo.razor.css",
+        "inputFile": "Pages/Components/Buttons/BitActionButtonDemo.razor.scss"
+    },
+    {
+        "outputFile": "Pages/Components/Buttons/BitButtonDemo.razor.css",
+        "inputFile": "Pages/Components/Buttons/BitButtonDemo.razor.scss"
+    },
+    {
+        "outputFile": "Pages/Components/Buttons/BitCompoundButtonDemo.razor.css",
+        "inputFile": "Pages/Components/Buttons/BitCompoundButtonDemo.razor.scss"
+    },
+    {
+        "outputFile": "Pages/Components/Buttons/BitIconButtonDemo.razor.css",
+        "inputFile": "Pages/Components/Buttons/BitIconButtonDemo.razor.scss"
+    },
+    {
+        "outputFile": "Pages/Components/Buttons/BitToggleButtonDemo.razor.css",
+        "inputFile": "Pages/Components/Buttons/BitToggleButtonDemo.razor.scss"
+    },
+    {
+        "outputFile": "Pages/Components/Carousel/BitCarouselDemo.razor.css",
+        "inputFile": "Pages/Components/Carousel/BitCarouselDemo.razor.scss"
+    },
+    {
+        "outputFile": "Pages/Components/ColorPicker/BitColorPickerDemo.razor.css",
+        "inputFile": "Pages/Components/ColorPicker/BitColorPickerDemo.razor.scss"
+    },
+    {
+        "outputFile": "Pages/Components/List/BitBasicListDemo.razor.css",
+        "inputFile": "Pages/Components/List/BitBasicListDemo.razor.scss"
+    },
+    {
+        "outputFile": "Pages/Components/Modal/BitModalDemo.razor.css",
+        "inputFile": "Pages/Components/Modal/BitModalDemo.razor.scss"
+    },
+    {
+        "outputFile": "Pages/Components/Notification/BitMessageBarDemo.razor.css",
+        "inputFile": "Pages/Components/Notification/BitMessageBarDemo.razor.scss"
+    },
+    {
+        "outputFile": "Pages/Components/Pivot/BitPivotDemo.razor.css",
+        "inputFile": "Pages/Components/Pivot/BitPivotDemo.razor.scss"
+    },
+    {
+        "outputFile": "Pages/Components/Slider/BitSliderDemo.razor.css",
+        "inputFile": "Pages/Components/Slider/BitSliderDemo.razor.scss"
+    },
+    {
+        "outputFile": "Pages/Components/Spinner/BitSpinnerDemo.razor.css",
+        "inputFile": "Pages/Components/Spinner/BitSpinnerDemo.razor.scss"
+    },
+    {
+        "outputFile": "Pages/Components/Toggle/BitToggleDemo.razor.css",
+        "inputFile": "Pages/Components/Toggle/BitToggleDemo.razor.scss"
+    },
+    {
+        "outputFile": "Pages/GetStartedPage.razor.css",
+        "inputFile": "Pages/GetStartedPage.razor.scss"
+    },
+    {
+        "outputFile": "Pages/HomePage.razor.css",
+        "inputFile": "Pages/HomePage.razor.scss"
+    },
+    {
+        "outputFile": "Pages/IconPage.razor.css",
+        "inputFile": "Pages/IconPage.razor.scss"
+    },
+    {
+        "outputFile": "Pages/OverviewPage.razor.css",
+        "inputFile": "Pages/OverviewPage.razor.scss"
+    },
+    {
+        "outputFile": "Shared/MainLayout.razor.css",
+        "inputFile": "Shared/MainLayout.razor.scss"
+    },
+    {
+        "outputFile": "wwwroot/styles/styles.css",
+        "inputFile": "Styles/styles.scss"
+    },
+    {
+        "outputFile": "Pages/Components/TextField/BitTextFieldDemo.razor.css",
+        "inputFile": "Pages/Components/TextField/BitTextFieldDemo.razor.scss"
+    },
+    {
+        "outputFile": "Pages/Components/SpinButton/BitSpinButtonDemo.razor.css",
+        "inputFile": "Pages/Components/SpinButton/BitSpinButtonDemo.razor.scss"
+    },
+    {
+        "outputFile": "Pages/Components/DatePicker/BitDatePickerDemo.razor.css",
+        "inputFile": "Pages/Components/DatePicker/BitDatePickerDemo.razor.scss"
+    },
+    {
+        "outputFile": "Pages/Components/Checkbox/BitCheckboxDemo.razor.css",
+        "inputFile": "Pages/Components/Checkbox/BitCheckboxDemo.razor.scss"
+    },
+    {
+        "outputFile": "Pages/Components/RadioButtonList/BitRadioButtonListDemo.razor.css",
+        "inputFile": "Pages/Components/RadioButtonList/BitRadioButtonListDemo.razor.scss"
+    },
+    {
+        "outputFile": "Pages/Components/DropDown/BitDropDownDemo.razor.css",
+        "inputFile": "Pages/Components/DropDown/BitDropDownDemo.razor.scss"
+    },
+    {
+        "outputFile": "Pages/Components/RadioButtonGroup/BitRadioButtonGroupDemo.razor.css",
+        "inputFile": "Pages/Components/RadioButtonGroup/BitRadioButtonGroupDemo.razor.scss"
+    },
+    {
+        "outputFile": "Pages/Components/Persona/BitPersonaDemo.razor.css",
+        "inputFile": "Pages/Components/Persona/BitPersonaDemo.razor.scss"
+    }
 ]
