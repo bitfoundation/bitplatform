@@ -14,8 +14,8 @@
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    width: 88px;
-    height: 29px;
+    width: rem(88px);
+    height: rem(29px);
     z-index: -1;
     position: absolute;
     top: 14%;
@@ -31,8 +31,8 @@
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    width: 171px;
-    height: 56px;
+    width: rem(171px);
+    height: rem(56px);
     z-index: -1;
     position: absolute;
     top: 23%;
@@ -43,15 +43,15 @@
     }
 
     @include md {
-        width: 161px;
-        height: 52px;
+        width: rem(161px);
+        height: rem(52px);
         top: 21%;
         right: 6%;
     }
 
     @include sm {
-        width: 79px;
-        height: 25px;
+        width: rem(79px);
+        height: rem(25px);
         top: 16%;
         right: 14%;
     }
@@ -62,8 +62,8 @@
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    width: 103px;
-    height: 34px;
+    width: rem(103px);
+    height: rem(34px);
     transform: matrix(-1, 0, 0, 1, 0, 0);
     z-index: -1;
     position: absolute;
@@ -75,14 +75,14 @@
     }
 
     @include md {
-        width: 97px;
-        height: 31px;
+        width: rem(97px);
+        height: rem(31px);
         left: 13%;
     }
 
     @include sm {
-        width: 48px;
-        height: 15px;
+        width: rem(48px);
+        height: rem(15px);
         top: 23%;
         left: 9%;
     }
@@ -93,35 +93,35 @@
     background-size: contain;
     background-position: center;
     background-repeat: no-repeat;
-    width: 288px;
-    height: 240px;
+    width: rem(288px);
+    height: rem(240px);
 
     @include md {
-        width: 216px;
-        height: 168px;
+        width: rem(216px);
+        height: rem(168px);
     }
 
     @include sm {
-        width: 144px;
-        height: 112px;
+        width: rem(144px);
+        height: rem(112px);
     }
 }
 
 .description {
     font-weight: 400;
-    font-size: 32px;
-    line-height: 48px;
+    font-size: rem(32px);
+    line-height: rem(48px);
     color: $Gray2;
     text-align: center;
 
     @include lt-xl {
-        font-size: 24px;
-        line-height: 32px;
+        font-size: rem(24px);
+        line-height: rem(32px);
     }
 
     @include sm {
-        font-size: 18px;
-        line-height: 24px;
+        font-size: rem(18px);
+        line-height: rem(24px);
     }
 }
 
@@ -131,14 +131,14 @@
     background-position: center;
     background-repeat: no-repeat;
     width: 100%;
-    height: 84px;
+    height: rem(84px);
 
     @include md {
-        height: 64px;
+        height: rem(64px);
     }
 
     @include sm {
-        height: 28px;
+        height: rem(28px);
     }
 }
 
@@ -148,24 +148,24 @@
     align-items: center;
     background-color: $B2Color;
     color: $White;
-    border-radius: 4px;
-    width: 213px;
-    height: 56px;
+    border-radius: rem(4px);
+    width: rem(213px);
+    height: rem(56px);
     font-weight: 600;
-    font-size: 18px;
-    line-height: 32px;
+    font-size: rem(18px);
+    line-height: rem(32px);
 
     @include md {
-        width: 161px;
+        width: rem(161px);
     }
 
     @include sm {
-        width: 118px;
+        width: rem(118px);
     }
 
     @include lt-lg {
-        height: 40px;
-        font-size: 12px;
-        line-height: 16px;
+        height: rem(40px);
+        font-size: rem(12px);
+        line-height: rem(16px);
     }
 }
