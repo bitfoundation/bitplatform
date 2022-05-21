@@ -134,9 +134,8 @@ public static class IServiceCollectionExtensions
             .AddProcessAllocatedMemoryHealthCheck(maximumMegabytesAllocated: 6 * 1024)
             .AddDiskStorageHealthCheck(opt =>
                 opt.AddDrive(Path.GetPathRoot(Directory.GetCurrentDirectory()), minimumFreeMegabytes: 5 * 1024))
-            .AddSqlServer(
-                configuration.GetConnectionString("SqlServerConnection"));
-
+            .AddDbContextCheck<TodoTemplateDbContext>();
+        
         var emailSettings = appsettings.EmailSettings;
 
         if (emailSettings.Host is not "LocalFolder")
