@@ -8,9 +8,16 @@
 
         public EmailSettings EmailSettings { get; set; }
 
+        public HealCheckSettings HealCheckSettings { get; set; }
+        
         public string UserProfileImagePath { get; set; }
 
         public string WebServerAddress { get; set; }
+    }
+
+    public class HealCheckSettings
+    {
+        public bool EnableHealthChecks { get; set; }
     }
 
     public class IdentitySettings

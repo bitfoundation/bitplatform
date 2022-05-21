@@ -115,4 +115,42 @@ public static class IServiceCollectionExtensions
             });
         });
     }
+
+    public static void AddHealthChecks(this IServiceCollection services, IConfiguration configuration)
+    {
+        var appsettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>();
+
+        var healthCheckSettings = appsettings.HealCheckSettings;
+        
+        if (healthCheckSettings.EnableHealthChecks is false)
+            return;
+        
+        services.AddHealthChecksUI(setupSettings: setup =>
+        { 
+            setup.AddHealthCheckEndpoint("BitHealthCheck", "/healthz");
+        }).AddInMemoryStorage();
+        
+        services.AddHealthChecks()
+            .AddProcessAllocatedMemoryHealthCheck(maximumMegabytesAllocated: 6 * 1024)
+            .AddDiskStorageHealthCheck(opt =>
+                opt.AddDrive(Path.GetPathRoot(Directory.GetCurrentDirectory()), minimumFreeMegabytes: 5 * 1024))
+            .AddDbContextCheck<TodoTemplateDbContext>();
+        
+        var emailSettings = appsettings.EmailSettings;
+
+        if (emailSettings.Host is not "LocalFolder")
+        {
+            services.AddHealthChecks()
+                .AddSmtpHealthCheck(options =>
+                {
+                    options.Host = emailSettings.Host;
+                    options.Port = emailSettings.Port;
+        
+                    if (emailSettings.HasCredential)
+                    {
+                        options.LoginWith(emailSettings.UserName, emailSettings.Password);
+                    }
+                });
+        }
+    }
 }

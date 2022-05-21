@@ -84,6 +84,8 @@ public static class Services
 
         services.AddTodoTemplateJwt(configuration);
 
+        services.AddHealthChecks(configuration);
+
         var fluentEmailServiceBuilder = services.AddFluentEmail(appSettings.EmailSettings.DefaulFromEmail, appSettings.EmailSettings.DefaultFromName)
             .AddRazorRenderer();
 
