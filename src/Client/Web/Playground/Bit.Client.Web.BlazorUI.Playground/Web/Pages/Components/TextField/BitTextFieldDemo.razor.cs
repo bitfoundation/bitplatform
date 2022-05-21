@@ -9,6 +9,8 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.TextField
     {
         private BitTextFieldType InputType = BitTextFieldType.Password;
         private string TextValue;
+        private string TextValue1;
+        private string TrimTextvalue;
         private ValidationTextFieldModel validationTextFieldModel = new();
         public bool formIsValidSubmit;
 
@@ -218,6 +220,13 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.TextField
                 Href = "#text-field-type-enum",
                 DefaultValue = "BitTextFieldType.text",
                 Description = "Input type.",
+            },
+            new ComponentParameter()
+            {
+                Name = "Trim",
+                Type = "bool",
+                DefaultValue = "false",
+                Description = "Specifies whether to remove any leading or trailing whitespace from the value.",
             },
             new ComponentParameter()
             {
@@ -481,6 +490,17 @@ public class ValidationTextFieldModel
     [StringLength(5, MinimumLength = 3, ErrorMessage = ""The text length much be between 3 and 5 characters in length."")]
     public string RangeText { get; set; }
 }";
+
+        private readonly string example14HTMLCode = @"<div class=""example-desc"">The trim property removes whitespace from both sides of a string.</div>
+    <BitTextField Trim=""true""
+                  Label=""With Trim""
+                  @bind-Value=""TrimTextvalue""></BitTextField>
+    <BitTextField @bind-Value=""TextValue1""></BitTextField>
+    <pre>type with trim :@TrimTextvalue</pre>
+    <pre>type without trim :@TextValue1</pre>";
+
+        private readonly string example14CSharpCode = @"private string TextValue1;
+private string TrimTextvalue;";
 
         private async void HandleValidSubmit()
         {
