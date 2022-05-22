@@ -9,8 +9,8 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.TextField
     {
         private BitTextFieldType InputType = BitTextFieldType.Password;
         private string TextValue;
-        private string TextValue1;
-        private string TrimTextvalue;
+        private string NonTrimmedTextValue;
+        private string TrimmedTextValue;
         private ValidationTextFieldModel validationTextFieldModel = new();
         public bool formIsValidSubmit;
 
@@ -492,15 +492,15 @@ public class ValidationTextFieldModel
 }";
 
         private readonly string example14HTMLCode = @"<div class=""example-desc"">The trim property removes whitespace from both sides of a string.</div>
-    <BitTextField Trim=""true""
-                  Label=""With Trim""
-                  @bind-Value=""TrimTextvalue""></BitTextField>
-    <BitTextField @bind-Value=""TextValue1""></BitTextField>
-    <pre>type with trim :@TrimTextvalue</pre>
-    <pre>type without trim :@TextValue1</pre>";
+<BitTextField Trim=""true""
+              Label=""With Trim""
+              @bind-Value=""TrimmedTextValue""></BitTextField>
+    <BitTextField @bind-Value=""NonTrimmedTextValue""></BitTextField>
+    <pre>type with trim: [@TrimmedTextValue]</pre>
+    <pre>type without trim: [@NonTrimmedTextValue]</pre>";
 
-        private readonly string example14CSharpCode = @"private string TextValue1;
-private string TrimTextvalue;";
+        private readonly string example14CSharpCode = @"private string NonTrimmedTextValue;
+private string TrimmedTextValue;";
 
         private async void HandleValidSubmit()
         {
