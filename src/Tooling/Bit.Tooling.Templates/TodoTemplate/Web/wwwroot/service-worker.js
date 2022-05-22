@@ -27,6 +27,7 @@ self.serverHandledUrls = [
     /\/jobs\//,
     /\/core\//,
     /\/healthchecks-ui\//,
+    /\/healthz\//,
     /\/signalr\//,
     /\/swagger\//
 ];
