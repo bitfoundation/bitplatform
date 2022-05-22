@@ -491,7 +491,7 @@ public class ValidationTextFieldModel
     public string RangeText { get; set; }
 }";
 
-        private readonly string example14HTMLCode = @"<div class=""example-desc"">The trim property removes whitespace from both sides of a string.</div>
+        private readonly string example14HTMLCode = @"<div class=""example-desc"">The trim property removes whitespaces from both sides of a string.</div>
 <BitTextField Trim=""true""
               Label=""With Trim""
               @bind-Value=""TrimmedTextValue""></BitTextField>
