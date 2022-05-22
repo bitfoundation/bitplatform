@@ -26,10 +26,10 @@ self.serverHandledUrls = [
     /\/odata\//,
     /\/jobs\//,
     /\/core\//,
-    /\/healthchecks-ui\//,
-    /\/healthz\//,
     /\/signalr\//,
-    /\/swagger\//
+    /\/healthchecks-ui/,
+    /\/healthz/,
+    /\/swagger/
 ];
 
 self.defaultUrl = "/";
