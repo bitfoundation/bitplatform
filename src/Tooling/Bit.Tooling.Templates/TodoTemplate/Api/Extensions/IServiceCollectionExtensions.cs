@@ -116,7 +116,7 @@ public static class IServiceCollectionExtensions
         });
     }
 
-    public static void AddHealthChecks(this IServiceCollection services, IConfiguration configuration)
+    public static void AddHealthChecks(this IServiceCollection services, IWebHostEnvironment env, IConfiguration configuration)
     {
         var appsettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>();
 
@@ -127,10 +127,10 @@ public static class IServiceCollectionExtensions
         
         services.AddHealthChecksUI(setupSettings: setup =>
         { 
-            setup.AddHealthCheckEndpoint("BitHealthCheck", "/healthz");
+            setup.AddHealthCheckEndpoint("TodoHealthChecks", env.IsDevelopment() ? "https://localhost:5001/healthz" : "/healthz");
         }).AddInMemoryStorage();
-        
-        services.AddHealthChecks()
+
+        var healthChecksBuilder = services.AddHealthChecks()
             .AddProcessAllocatedMemoryHealthCheck(maximumMegabytesAllocated: 6 * 1024)
             .AddDiskStorageHealthCheck(opt =>
                 opt.AddDrive(Path.GetPathRoot(Directory.GetCurrentDirectory()), minimumFreeMegabytes: 5 * 1024))
@@ -140,7 +140,7 @@ public static class IServiceCollectionExtensions
 
         if (emailSettings.Host is not "LocalFolder")
         {
-            services.AddHealthChecks()
+            healthChecksBuilder
                 .AddSmtpHealthCheck(options =>
                 {
                     options.Host = emailSettings.Host;

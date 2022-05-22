@@ -13,7 +13,7 @@ namespace TodoTemplate.Api.Startup;
 
 public static class Services
 {
-    public static void Add(IServiceCollection services, IConfiguration configuration)
+    public static void Add(IServiceCollection services, IWebHostEnvironment env, IConfiguration configuration)
     {
         var appSettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>();
 
@@ -84,7 +84,7 @@ public static class Services
 
         services.AddTodoTemplateJwt(configuration);
 
-        services.AddHealthChecks(configuration);
+        services.AddHealthChecks(env, configuration);
 
         var fluentEmailServiceBuilder = services.AddFluentEmail(appSettings.EmailSettings.DefaulFromEmail, appSettings.EmailSettings.DefaultFromName)
             .AddRazorRenderer();

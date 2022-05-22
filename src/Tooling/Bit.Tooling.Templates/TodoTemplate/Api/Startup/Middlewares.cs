@@ -7,7 +7,7 @@ namespace TodoTemplate.Api.Startup
 {
     public class Middlewares
     {
-        public static void Use(IApplicationBuilder app, IHostEnvironment env)
+        public static void Use(IApplicationBuilder app, IHostEnvironment env, IConfiguration configuration)
         {
             if (env.IsDevelopment())
             {
@@ -31,7 +31,7 @@ namespace TodoTemplate.Api.Startup
             {
                 options.InjectJavascript("/swagger/swagger-utils.js");
             });
-            
+
             app.UseResponseCompression();
 
             app.UseStaticFiles(new StaticFileOptions
@@ -61,10 +61,20 @@ namespace TodoTemplate.Api.Startup
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers().RequireAuthorization();
-                endpoints.MapHealthChecks("/healthz", new HealthCheckOptions
+
+                var appsettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>();
+
+                var healthCheckSettings = appsettings.HealCheckSettings;
+
+                if (healthCheckSettings.EnableHealthChecks is true)
                 {
-                    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
-                });
+                    endpoints.MapHealthChecks("/healthz", new HealthCheckOptions
+                    {
+                        ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+                    });
+
+                    endpoints.MapHealthChecksUI();
+                }
 
 #if BlazorWebAssembly
                 endpoints.MapFallbackToPage("/_Host");
