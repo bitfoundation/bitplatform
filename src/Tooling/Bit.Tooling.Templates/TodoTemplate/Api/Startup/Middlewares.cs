@@ -66,7 +66,7 @@ namespace TodoTemplate.Api.Startup
 
                 var healthCheckSettings = appsettings.HealCheckSettings;
 
-                if (healthCheckSettings.EnableHealthChecks is true)
+                if (healthCheckSettings.EnableHealthChecks)
                 {
                     endpoints.MapHealthChecks("/healthz", new HealthCheckOptions
                     {
