@@ -231,9 +231,9 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Checkbox
 private bool IsCheckBoxChecked = false;";
 
         private readonly string example2TMLCode = @"<BitCheckbox BoxSide=""@BitCheckBoxSide.End"">Reversed - Basic Checkbox</BitCheckbox>
-<BitCheckbox BoxSide=""@BitCheckBoxSide.End"">Value=""true"">Reversed - Checked Checkbox</BitCheckbox>
-<BitCheckbox BoxSide=""@BitCheckBoxSide.End"">IsEnabled=""false"">Reversed - Disable Checkbox</BitCheckbox>
-<BitCheckbox BoxSide=""@BitCheckBoxSide.End"">IsEnabled=""false"" Value=""true"">Reversed - Disable Checked Checkbox</BitCheckbox>";
+<BitCheckbox BoxSide=""@BitCheckBoxSide.End"" Value=""true"">Reversed - Checked Checkbox</BitCheckbox>
+<BitCheckbox BoxSide=""@BitCheckBoxSide.End"" IsEnabled=""false"">Reversed - Disable Checkbox</BitCheckbox>
+<BitCheckbox BoxSide=""@BitCheckBoxSide.End"" IsEnabled=""false"" Value=""true"">Reversed - Disable Checked Checkbox</BitCheckbox>";
 
         private readonly string example3HTMLCode = @"<BitCheckbox @bind-IsIndeterminate=""IsCheckBoxIndeterminate"" @bind-Value=""IsCheckBoxChecked"">Indeterminated checkbox</BitCheckbox>
 <BitCheckbox IsIndeterminate=""true"">Indeterminate checkbox</BitCheckbox>
