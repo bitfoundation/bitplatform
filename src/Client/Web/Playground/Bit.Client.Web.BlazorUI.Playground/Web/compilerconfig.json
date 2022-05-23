@@ -24,6 +24,10 @@
         "inputFile": "Components/SideRail.razor.scss"
     },
     {
+        "outputFile": "Components/NotFoundComponent.razor.css",
+        "inputFile": "Components/NotFoundComponent.razor.scss"
+    },
+    {
         "outputFile": "Pages/Components/Buttons/BitActionButtonDemo.razor.css",
         "inputFile": "Pages/Components/Buttons/BitActionButtonDemo.razor.scss"
     },
