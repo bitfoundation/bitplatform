@@ -212,4 +212,18 @@
             }
         </ExamplePreview>
     </ComponentExampleBox>
+    <ComponentExampleBox Title="Trim TextField"
+                         HTMLSourceCode="@example14HTMLCode"
+                         CSharpSourceCode="@example14CSharpCode"
+                         ExampleId="example14">
+        <ExamplePreview>
+            <div class="example-desc">The trim property removes whitespaces from both sides of a string.</div>
+            <BitTextField Trim="true"
+                          Label="With Trim"
+                          @bind-Value="TrimmedTextValue"></BitTextField>
+            <BitTextField @bind-Value="NonTrimmedTextValue"></BitTextField>
+            <pre>type with trim: [@TrimmedTextValue]</pre>
+            <pre>type without trim: [@NonTrimmedTextValue]</pre>
+        </ExamplePreview>
+    </ComponentExampleBox>
 </ComponentDemo>
