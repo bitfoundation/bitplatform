@@ -36,7 +36,7 @@
 
     <ItemGroup Condition="$(TargetFramework.Contains('-android'))">
         <AndroidAotProfile Include="custom.aprof" />
-        <PackageReference Include="Mono.AotProfiler.Android" Version="6.0.0-preview2" />
+        <PackageReference Include="Mono.AotProfiler.Android" Version="6.0.0" />
         <!-- dotnet build -t:BuildAndStartAotProfiling -f net6.0-android /p:UseInterpreter=false -->
         <!-- dotnet build -t:FinishAotProfiling -f net6.0-android -->
     </ItemGroup>
@@ -78,10 +78,10 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Bit.Client.Web.BlazorUI" Version="11.0.0-pre-05" />
-        <PackageReference Include="Bit.Tooling.CodeAnalyzer" Version="11.0.0-pre-05" />
-        <PackageReference Include="Bit.Tooling.SourceGenerators" Version="11.0.0-pre-05" />
-        <PackageReference Include="BuildWebCompiler2022" Version="1.14.7">
+        <PackageReference Include="Bit.Client.Web.BlazorUI" Version="11.0.0-pre-06" />
+        <PackageReference Include="Bit.Tooling.CodeAnalyzer" Version="11.0.0-pre-06" />
+        <PackageReference Include="Bit.Tooling.SourceGenerators" Version="11.0.0-pre-06" />
+        <PackageReference Include="BuildWebCompiler2022" Version="1.14.8">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
