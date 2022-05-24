@@ -89,9 +89,9 @@
         right: 0;
         left: 0;
         display: flex;
-        justify-content: space-around;
+        justify-content: space-between;
         flex-flow: row nowrap;
-        width: rem(125px);
+        width: rem(180px);
 
         @include lt-xl {
             top: rem(-38px);
@@ -154,7 +154,7 @@
         }
 
         &:hover {
-            background-color: $B2Color;
+            background-color: #1DA1F2;
         }
     }
 
@@ -167,7 +167,7 @@
         }
 
         &:hover {
-            background-color: $B2Color;
+            background-color: #171515;
         }
     }
 
@@ -180,7 +180,7 @@
         }
 
         &:hover {
-            background-color: $B2Color;
+            background-color: #4267B2;
         }
     }
 
@@ -193,7 +193,7 @@
         }
 
         &:hover {
-            background-color: $B2Color;
+            background-color: #0A66C2;
         }
     }
 }
