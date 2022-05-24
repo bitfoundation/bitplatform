@@ -1,6 +1,7 @@
 ﻿<CascadingValue Value="Visual">
     <BitTextField MaxLength="MaxLength"
                   IsMultiline="IsMultiline"
+                  Trim="Trim"
                   Type="Type"
                   Placeholder="@Placeholder"
                   IsReadonly="IsReadOnly"
@@ -43,6 +44,7 @@
     [Parameter] public string Value { get; set; }
     [Parameter] public bool CanRevealPassword { get; set; }
     [Parameter] public string RevealPasswordAriaLabel { get; set; }
+    [Parameter] public bool Trim { get; set; }
     [Parameter] public BitTextFieldType Type { get; set; }
     [Parameter] public string AriaLabel { get; set; }
     [Parameter] public string Label { get; set; }
@@ -97,5 +99,5 @@
     public void HandleClick(MouseEventArgs e)
     {
         CurrentCount++;
-    }
+    } 
 }
