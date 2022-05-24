@@ -5,13 +5,13 @@
 		<!-- Info -->
 		<Authors>Bit Foundation</Authors>
 		<Company>Bit Foundation</Company>
-		<Product>Bit Framework</Product>
+		<Product>Bit Platform</Product>
 		<Title>$(MSBuildProjectName)</Title>
 		<Description>$(MSBuildProjectName)</Description>
 		<Copyright>Copyright © Bit Foundation 2022</Copyright>
 
 		<!-- Repo -->
-		<RepositoryUrl>https://github.com/bitfoundation/bitframework</RepositoryUrl>
+		<RepositoryUrl>https://github.com/bitfoundation/bitplatform</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
 
 		<!-- nupkg -->
@@ -22,12 +22,12 @@
 		<AllowedOutputExtensionsInPackageBuildOutputFolder Condition=" '$(Configuration)' == 'Release' ">$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
 		<PackageDescription>$(MSBuildProjectName)</PackageDescription>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
-		<PackageProjectUrl>https://github.com/bitfoundation/bitframework</PackageProjectUrl>
+		<PackageProjectUrl>https://github.com/bitfoundation/bitplatform</PackageProjectUrl>
 		<PackageIconUrl>https://avatars.githubusercontent.com/u/22663390</PackageIconUrl>
 
 		<ReleaseVersion>11.0.0</ReleaseVersion>
 
-		<PackageReleaseNotes>https://github.com/bitfoundation/bitframework/releases/tag/v-$(ReleaseVersion)-pre-06</PackageReleaseNotes>
+		<PackageReleaseNotes>https://github.com/bitfoundation/bitplatform/releases/tag/v-$(ReleaseVersion)-pre-06</PackageReleaseNotes>
 		<PackageVersion>$(ReleaseVersion)-pre-06</PackageVersion>
 
 		<!-- Version -->
