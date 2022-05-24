@@ -13,6 +13,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Bit.Build.props = Bit.Build.props
 		..\.github\workflows\Bit.Client.Web.BlazorUI.ci.yml = ..\.github\workflows\Bit.Client.Web.BlazorUI.ci.yml
 		..\.github\workflows\Bit.Client.Web.BlazorUI.nupkg.yml = ..\.github\workflows\Bit.Client.Web.BlazorUI.nupkg.yml
+		global.json = global.json
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Client.Web.BlazorUI", "Client\Web\Bit.Client.Web.BlazorUI\Bit.Client.Web.BlazorUI.csproj", "{1DEF8AD9-9FA7-4FB7-9161-639C82FA0732}"
@@ -40,6 +41,9 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Tooling.CodeAnalyzer", "Tooling\Bit.Tooling.CodeAnalyzer\Bit.Tooling.CodeAnalyzer.csproj", "{8AA75810-1F94-4391-9BA8-6E65FE159C9A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Bswup", "Bswup", "{C8B25630-02FA-4EB1-979C-7C3BF6515B27}"
+	ProjectSection(SolutionItems) = preProject
+		Tooling\Bit.Tooling.Bswup\README.md = Tooling\Bit.Tooling.Bswup\README.md
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Templates", "Templates", "{19A1D227-BD40-49BB-A577-413470135612}"
 EndProject
@@ -48,6 +52,10 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Tooling.Bswup.Demo", "Tooling\Bit.Tooling.Bswup\Bit.Tooling.Bswup.Demo\Bit.Tooling.Bswup.Demo.csproj", "{A7E7B5AE-37AA-41A1-A97B-45DFD427664A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TodoTemplate", "TodoTemplate", "{8DB90941-9E4D-40C1-B653-51A63572EBC7}"
+	ProjectSection(SolutionItems) = preProject
+		Tooling\Bit.Tooling.Templates\TodoTemplate\Directory.build.props = Tooling\Bit.Tooling.Templates\TodoTemplate\Directory.build.props
+		Tooling\Bit.Tooling.Templates\TodoTemplate\README.md = Tooling\Bit.Tooling.Templates\TodoTemplate\README.md
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTemplate.Api", "Tooling\Bit.Tooling.Templates\TodoTemplate\Api\TodoTemplate.Api.csproj", "{ACCCA36E-3D15-44DC-B795-7D1DD31B49CA}"
 EndProject
