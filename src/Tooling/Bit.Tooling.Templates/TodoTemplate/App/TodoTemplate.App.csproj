@@ -13,6 +13,7 @@
 
         <!-- App Identifier -->
         <ApplicationId>com.companyname.TodoTemplate</ApplicationId>
+        <ApplicationIdGuid>AC87AA5B-4B37-4E52-8468-2D5DF24AF257</ApplicationIdGuid>
 
         <!-- Versions -->
         <ApplicationVersion>1</ApplicationVersion>
@@ -20,11 +21,12 @@
         <!-- Required for C# Hot Reload -->
         <UseInterpreter Condition="'$(Configuration)' == 'Debug'">True</UseInterpreter>
 
-        <SupportedOSPlatformVersion Condition="'$(TargetFramework)' == 'net6.0-ios'">12.0</SupportedOSPlatformVersion>
+        <SupportedOSPlatformVersion Condition="'$(TargetFramework)' == 'net6.0-ios'">14.2</SupportedOSPlatformVersion>
         <SupportedOSPlatformVersion Condition="'$(TargetFramework)' == 'net6.0-maccatalyst'">14.0</SupportedOSPlatformVersion>
-        <SupportedOSPlatformVersion Condition="'$(TargetFramework)' == 'net6.0-android'">21.0</SupportedOSPlatformVersion>
+        <SupportedOSPlatformVersion Condition="'$(TargetFramework)' == 'net6.0-android'">23.0</SupportedOSPlatformVersion>
         <SupportedOSPlatformVersion Condition="$(TargetFramework.Contains('-windows'))">10.0.17763.0</SupportedOSPlatformVersion>
         <TargetPlatformMinVersion Condition="$(TargetFramework.Contains('-windows'))">10.0.17763.0</TargetPlatformMinVersion>
+        <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
     </PropertyGroup>
 
     <PropertyGroup Condition="$(TargetFramework.Contains('-android')) and '$(Configuration)' == 'Release'">
@@ -36,7 +38,7 @@
 
     <ItemGroup Condition="$(TargetFramework.Contains('-android'))">
         <AndroidAotProfile Include="custom.aprof" />
-        <PackageReference Include="Mono.AotProfiler.Android" Version="6.0.0" />
+        <!--<PackageReference Include="Mono.AotProfiler.Android" Version="6.0.0" />-->
         <!-- dotnet build -t:BuildAndStartAotProfiling -f net6.0-android /p:UseInterpreter=false -->
         <!-- dotnet build -t:FinishAotProfiling -f net6.0-android -->
     </ItemGroup>
