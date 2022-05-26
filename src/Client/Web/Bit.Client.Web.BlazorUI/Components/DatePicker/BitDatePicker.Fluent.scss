@@ -485,20 +485,22 @@
     margin: em(0px);
     padding: em(12px);
     box-sizing: content-box;
-    width: 208px;
+    width: rem(260px);
     overflow: hidden;
 
     .grid-container {
-        margin-top: rem(4px);
-        margin-bottom: rem(12px);
+        display: flex;
+        flex-flow: column nowrap;
+        margin: rem(4px) 0 rem(12px) 0;
     }
 
     .btn-row {
+        display: flex;
+        justify-content: space-between;
         margin-bottom: rem(16px);
 
         button {
             position: relative;
-            width: rem(40px);
             height: rem(40px);
             min-width: rem(40px);
             min-height: rem(40px);
