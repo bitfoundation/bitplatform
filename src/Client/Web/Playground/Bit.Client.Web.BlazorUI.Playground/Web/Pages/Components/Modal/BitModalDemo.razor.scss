@@ -1,5 +1,9 @@
 ﻿@import "../../../Styles/_shared.scss";
 
+.modal-container {
+    margin: rem(10px) 0;
+}
+
 .modal-header {
     display: flex;
     align-items: center;
