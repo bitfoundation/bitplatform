@@ -34,7 +34,7 @@
 
     public class JwtSettings
     {
-        public string SecretKey { get; set; }
+        public string PfxPassword { get; set; }
         public string Issuer { get; set; }
         public string Audience { get; set; }
         public int NotBeforeMinutes { get; set; }
