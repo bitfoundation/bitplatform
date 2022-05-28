@@ -46,6 +46,8 @@ namespace Bit.Tooling.Core.Model
                 return $"{parameter.Type.GetCSharpTypeName()}'{{{parameter.Name}}}'";
             if (parameter.Type.Name == nameof(String))
                 return $"'{{{parameter.Name}}}'";
+            if (parameter.Type.Name == nameof(Boolean))
+                return $"{{{parameter.Name}.ToString().ToLowerInvariant()}}";
             return $"{{{parameter.Name}}}";
         }
 
