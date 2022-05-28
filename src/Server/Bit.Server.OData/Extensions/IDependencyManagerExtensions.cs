@@ -25,7 +25,6 @@ namespace Bit.Core.Contracts
             dependencyManager.Register<IWebApiOwinPipelineInjector, DefaultWebApiODataOwinPipelineInjector>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
             dependencyManager.RegisterWebApiConfigurationCustomizer<ReadRequestContentStreamAsyncActionFilterAttribute>();
             dependencyManager.RegisterWebApiConfigurationCustomizer<GlobalDefaultRequestQSStringCorrectorsApplierActionFilterProvider>();
-            dependencyManager.RegisterWebApiConfigurationCustomizer<GlobalDefaultRequestQSTimeZoneApplierActionFilterProvider>();
             dependencyManager.RegisterWebApiConfigurationCustomizer<GlobalODataNullReturnValueActionFilterProvider>();
             dependencyManager.RegisterWebApiConfigurationCustomizer<SetODataSwaggerActionSelector>();
             dependencyManager.RegisterWebApiConfigurationCustomizer<DefaultGlobalEnableQueryActionFilterProvider>();

@@ -82,8 +82,7 @@ namespace Bit.OData.Serialization
                 settings.Converters = new JsonConverter[]
                 {
                         _odataJsonDeserializerEnumConverter,
-                        _stringCorrectorsConverters,
-                        new ODataJsonDeSerializerDateTimeOffsetTimeZone(timeZoneManager)
+                        _stringCorrectorsConverters
                 };
 
                 settings.MissingMemberHandling = MissingMemberHandling.Error;
@@ -137,42 +136,6 @@ namespace Bit.OData.Serialization
                     deserilizer.Error -= Error;
                 }
             }
-        }
-    }
-
-    internal class ODataJsonDeSerializerDateTimeOffsetTimeZone : JsonConverter
-    {
-        private readonly ITimeZoneManager _timeZoneManager;
-
-        public ODataJsonDeSerializerDateTimeOffsetTimeZone(ITimeZoneManager timeZoneManager)
-        {
-            _timeZoneManager = timeZoneManager;
-        }
-
-        public override bool CanConvert(Type objectType)
-        {
-            return objectType == typeof(DateTimeOffset) || Nullable.GetUnderlyingType(objectType) == typeof(DateTimeOffset);
-        }
-
-        public override bool CanRead => true;
-
-        public override bool CanWrite => false;
-
-        public override object? ReadJson(JsonReader reader, Type objectType, object? existingValue, JsonSerializer serializer)
-        {
-            if (reader.TokenType == JsonToken.Null || reader.Value == null)
-                return null;
-
-            DateTimeOffset objAsDateTimeOffset = (DateTime)reader.Value;
-
-            objAsDateTimeOffset = _timeZoneManager.MapFromClientToServer(objAsDateTimeOffset);
-
-            return objAsDateTimeOffset;
-        }
-
-        public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer)
-        {
-            throw new NotImplementedException();
         }
     }
 

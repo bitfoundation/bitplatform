@@ -20,17 +20,6 @@ namespace Bit.OData.Implementations
         }
     }
 
-    public class GlobalDefaultRequestQSTimeZoneApplierActionFilterProvider : IWebApiConfigurationCustomizer
-    {
-        public virtual void CustomizeWebApiConfiguration(HttpConfiguration webApiConfiguration)
-        {
-            if (webApiConfiguration == null)
-                throw new ArgumentNullException(nameof(webApiConfiguration));
-
-            webApiConfiguration.Filters.Add(new RequestQSTimeZoneApplierActionFilterAttribute());
-        }
-    }
-
     public class SetODataSwaggerActionSelector : IWebApiConfigurationCustomizer
     {
         public void CustomizeWebApiConfiguration(HttpConfiguration webApiConfiguration)

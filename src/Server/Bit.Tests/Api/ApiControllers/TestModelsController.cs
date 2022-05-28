@@ -203,31 +203,6 @@ namespace Bit.Tests.Api.ApiControllers
             valueChecker.CheckValue(entitiesArray);
         }
 
-        public class TimeZoneTestsParameters
-        {
-            public DateTimeOffset simpleDate { get; set; }
-
-            public IEnumerable<DateTimeOffset> datesArray { get; set; }
-
-            public TestModel simpleDto { get; set; }
-
-            public IEnumerable<TestModel> entitiesArray { get; set; }
-        }
-
-        [Action]
-        public virtual void TimeZoneTests(TimeZoneTestsParameters actionParameters)
-        {
-            DateTimeOffset simpleDate = actionParameters.simpleDate;
-            List<DateTimeOffset> datesArray = actionParameters.datesArray.ToList();
-            TestModel simpleDto = actionParameters.simpleDto;
-            List<TestModel> entitiesArray = actionParameters.entitiesArray.ToList();
-            IValueChecker valueChecker = Request.GetOwinContext().GetDependencyResolver().Resolve<IValueChecker>();
-            valueChecker.CheckValue(simpleDate);
-            valueChecker.CheckValue(datesArray);
-            valueChecker.CheckValue(simpleDto);
-            valueChecker.CheckValue(entitiesArray);
-        }
-
         [Function]
         public virtual async Task<SingleResult<TestModel>> CustomActionMethodWithSingleDtoReturnValueTest(CancellationToken cancellationToken)
         {
@@ -444,6 +419,12 @@ namespace Bit.Tests.Api.ApiControllers
         public virtual void JustToTestCodeGenerator(IEnumerable<TestModel> testModels)
         {
 
+        }
+
+        [Function]
+        public virtual DateTimeOffset GetDateTimeOffset()
+        {
+            return new DateTimeOffset(2022, 05, 28, 06, 00, 00, TimeSpan.Zero);
         }
     }
 }

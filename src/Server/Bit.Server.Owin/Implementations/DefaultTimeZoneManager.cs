@@ -44,29 +44,6 @@ namespace Bit.Owin.Implementations
             return GetTimeZoneInfoByName(_desiredTimeZoneName);
         }
 
-        public virtual DateTimeOffset MapFromClientToServer(DateTimeOffset dateTimeOffset)
-        {
-            if (_currentTimeZoneName == null || _desiredTimeZoneName == null)
-                return dateTimeOffset;
-
-            if (dateTimeOffset == DateTimeOffset.MinValue || dateTimeOffset == DateTimeOffset.MaxValue)
-                return dateTimeOffset;
-
-            if (_currentTimeZoneName == _desiredTimeZoneName)
-                return dateTimeOffset;
-
-            TimeZoneInfo currentTimeZoneInfo = GetClientCurrentTimeZone(dateTimeOffset)!;
-
-            TimeZoneInfo desiredTimeZoneInfo = GetClientDesiredTimeZone(dateTimeOffset)!;
-
-            if (currentTimeZoneInfo.HasSameRules(desiredTimeZoneInfo))
-                return dateTimeOffset;
-            else
-            {
-                return dateTimeOffset + (currentTimeZoneInfo.BaseUtcOffset - desiredTimeZoneInfo.BaseUtcOffset);
-            }
-        }
-
         public virtual DateTimeOffset MapFromServerToClient(DateTimeOffset dateTimeOffset)
         {
             if (_currentTimeZoneName == null || _desiredTimeZoneName == null)
@@ -86,7 +63,7 @@ namespace Bit.Owin.Implementations
                 return dateTimeOffset;
             else
             {
-                return dateTimeOffset - (currentTimeZoneInfo.BaseUtcOffset - desiredTimeZoneInfo.BaseUtcOffset);
+                return dateTimeOffset += (desiredTimeZoneInfo.GetUtcOffset(dateTimeOffset) - currentTimeZoneInfo.GetUtcOffset(dateTimeOffset));
             }
         }
     }
