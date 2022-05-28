@@ -14,9 +14,9 @@
         <PackageReference Include="Microsoft.AspNet.SignalR.Client" Version="2.4.3" />
         <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="6.0.5" />
         <PackageReference Include="Refit" Version="6.3.2" />
-        <PackageReference Include="Selenium.Support" Version="4.1.1" />
-        <PackageReference Include="Selenium.WebDriver" Version="4.1.1" />
-        <PackageReference Include="Selenium.WebDriver.MSEdgeDriver" Version="100.0.1185.50" />
+        <PackageReference Include="Selenium.Support" Version="4.2.0" />
+        <PackageReference Include="Selenium.WebDriver" Version="4.2.0" />
+        <PackageReference Include="Selenium.WebDriver.MSEdgeDriver" Version="101.0.1210.47" />
     </ItemGroup>
 
     <ItemGroup>
