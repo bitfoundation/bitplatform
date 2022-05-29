@@ -1,4 +1,6 @@
-﻿using System.Text;
+﻿using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -41,7 +43,12 @@ public static class IServiceCollectionExtensions
             options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
         }).AddJwtBearer(options =>
         {
-            var secretKey = Encoding.UTF8.GetBytes(settings.SecretKey);
+            var certificatePath = Path.Combine(Directory.GetCurrentDirectory(), "IdentityCertificate.pfx");
+            RSA? rsaPrivateKey;
+            using (X509Certificate2 signingCert = new X509Certificate2(certificatePath, appsettings.JwtSettings.IdentityCertificatePassword))
+            {
+                rsaPrivateKey = signingCert.GetRSAPrivateKey();
+            }
 
             var validationParameters = new TokenValidationParameters
             {
@@ -49,7 +56,7 @@ public static class IServiceCollectionExtensions
                 RequireSignedTokens = true,
 
                 ValidateIssuerSigningKey = true,
-                IssuerSigningKey = new SymmetricSecurityKey(secretKey),
+                IssuerSigningKey = new RsaSecurityKey(rsaPrivateKey),
 
                 RequireExpirationTime = true,
                 ValidateLifetime = true,

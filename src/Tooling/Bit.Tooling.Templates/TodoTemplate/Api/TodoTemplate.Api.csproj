@@ -77,4 +77,10 @@
         </EmbeddedResource>
     </ItemGroup>
 
+    <ItemGroup>
+      <None Update="IdentityCertificate.pfx">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
 </Project>
