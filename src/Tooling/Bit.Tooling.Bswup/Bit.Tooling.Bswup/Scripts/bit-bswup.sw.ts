@@ -1,4 +1,26 @@
-﻿const ASSETS_URL = typeof self.assetsUrl === 'string' ? self.assetsUrl : '/service-worker-assets.js';
+﻿interface Window {
+    clients: any
+    skipWaiting: any
+    importScripts: any
+
+    assetsUrl: any
+    assetsManifest: any
+    defaultUrl: any
+    prohibitedUrls: any
+    serverHandledUrls: any
+    serverRenderedUrls: any
+    caseInsensitiveUrl: any
+    assetsInclude: any
+    assetsExclude: any
+    externalAssets: any
+}
+
+interface Event {
+    waitUntil: any
+    respondWith: any
+}
+
+const ASSETS_URL = typeof self.assetsUrl === 'string' ? self.assetsUrl : '/service-worker-assets.js';
 self.importScripts(ASSETS_URL);
 
 const VERSION = self.assetsManifest.version;
@@ -12,12 +34,12 @@ self.addEventListener('message', handleMessage);
 
 async function handleInstall(e) {
     log(`installing version (${VERSION})...`);
-    postMessage({ type: 'installing', data: { version: VERSION } });
+    sendMessage({ type: 'installing', data: { version: VERSION } });
 
     await createNewCache();
 
     log(`installed version (${VERSION})`);
-    postMessage({ type: 'installed', data: { version: VERSION } });
+    sendMessage({ type: 'installed', data: { version: VERSION } });
 }
 
 async function handleActivate(e) {
@@ -25,7 +47,7 @@ async function handleActivate(e) {
 
     await deleteOldCaches();
 
-    postMessage({ type: 'activate', data: { version: VERSION } });
+    sendMessage({ type: 'activate', data: { version: VERSION } });
 }
 
 const DEFAULT_URL = (typeof self.defaultUrl === 'string') ? self.defaultUrl : 'index.html';
@@ -115,8 +137,8 @@ async function createNewCache() {
                     if (!response.ok) throw new TypeError('Bad response status');
                     await cache.put(cacheUrl, response);
                     const percent = (++current) / total * 100;
-                    postMessage({ type: 'progress', data: { asset, percent, index: current } });
-                    resolve();
+                    sendMessage({ type: 'progress', data: { asset, percent, index: current } });
+                    resolve(null);
                 } catch (err) {
                     reject(err);
                 }
@@ -142,7 +164,7 @@ async function deleteOldCaches() {
     return Promise.all(promises);
 }
 
-function postMessage(message) {
+function sendMessage(message) {
     self.clients
         .matchAll({ includeUncontrolled: true, type: 'window', })
         .then(function (clients) {

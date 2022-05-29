@@ -15,9 +15,9 @@
     navigator.serviceWorker.addEventListener('message', handleMessage);
     navigator.serviceWorker.addEventListener('controllerchange', handleController);
 
-    var reload;
+    let reload: () => void;
     function prepareRegistration(reg) {
-        reload = function () {
+        reload = () => {
             if (navigator.serviceWorker.controller) {
                 reg.waiting && reg.waiting.postMessage('SKIP_WAITING');
             } else {
@@ -111,12 +111,12 @@
         }
     }
 
-    function extract() {
+    function extract(): BswupOptions {
         const bitBswupScript = document.currentScript;
 
-        const optionsAttribute = bitBswupScript.attributes['options'];
+        const optionsAttribute = (bitBswupScript.attributes)['options'];
         const optionsName = (optionsAttribute || {}).value || 'bitBswup';
-        const options = window[optionsName] || {};
+        const options = (window[optionsName] || {}) as BswupOptions;
 
         const logAttribute = bitBswupScript.attributes['log'];
         options.log = (logAttribute && logAttribute.value) || options.log || 'info';
@@ -129,7 +129,7 @@
 
         const handlerAttribute = bitBswupScript.attributes['handler'];
         const handlerName = (handlerAttribute && handlerAttribute.value) || 'bitBswupHandler';
-        options.handler = window[handlerName] || options.handler;
+        options.handler = (window[handlerName] || options.handler) as (...args: any[]) => void;
 
         if (!options.handler || typeof options.handler !== 'function') {
             warn('progress handler not found or is not a function!');
@@ -139,16 +139,25 @@
         return options;
     }
 
-    function handle() {
-        options.handler && options.handler(...arguments);
+    function handle(...args: any[]) {
+        options.handler && options.handler(...args);
     }
 
     // TODO: apply log options: info, verbode, debug, error, ...
-    function info(text) {
-        console.log(`%cBitBSWUP: ${text}`, 'color:lightblue');
+    function info(...texts: string[]) {
+        console.log(`%cBitBSWUP: ${texts.join('\n')}`, 'color:lightblue');
     }
-    function warn(text) {
+    function warn(text: string) {
         console.warn(`BitBSWUP:${text}`);
     }
 
 }());
+
+declare const Blazor: any;
+
+interface BswupOptions {
+    log: 'info' | 'verbose' | 'debug' | 'error'
+    sw: string
+    scope: string
+    handler(...args: any[]): void
+}
