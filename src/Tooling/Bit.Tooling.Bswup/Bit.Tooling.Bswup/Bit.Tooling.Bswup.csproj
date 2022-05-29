@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Razor">
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
     <Import Project="../../../Bit.Build.props" />
 
@@ -10,6 +10,17 @@
 
     <ItemGroup>
         <SupportedPlatform Include="browser" />
+    </ItemGroup>
+    
+    <ItemGroup>
+        <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.7.2">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="wwwroot\" />
     </ItemGroup>
 
 </Project>

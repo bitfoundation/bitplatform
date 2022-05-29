@@ -15,9 +15,9 @@
     navigator.serviceWorker.addEventListener('message', handleMessage);
     navigator.serviceWorker.addEventListener('controllerchange', handleController);
 
-    var reload;
+    let reload: () => void;
     function prepareRegistration(reg) {
-        reload = function () {
+        reload = () => {
             if (navigator.serviceWorker.controller) {
                 reg.waiting && reg.waiting.postMessage('SKIP_WAITING');
             } else {
@@ -129,7 +129,7 @@
 
         const handlerAttribute = bitBswupScript.attributes['handler'];
         const handlerName = (handlerAttribute && handlerAttribute.value) || 'bitBswupHandler';
-        options.handler = (window[handlerName] || options.handler) as () => void;
+        options.handler = (window[handlerName] || options.handler) as (...args: any[]) => void;
 
         if (!options.handler || typeof options.handler !== 'function') {
             warn('progress handler not found or is not a function!');
@@ -139,13 +139,13 @@
         return options;
     }
 
-    function handle() {
-        options.handler && options.handler(...arguments);
+    function handle(...args: any[]) {
+        options.handler && options.handler(...args);
     }
 
     // TODO: apply log options: info, verbode, debug, error, ...
-    function info(text: string) {
-        console.log(`%cBitBSWUP: ${text}`, 'color:lightblue');
+    function info(...texts: string[]) {
+        console.log(`%cBitBSWUP: ${texts.join('\n')}`, 'color:lightblue');
     }
     function warn(text: string) {
         console.warn(`BitBSWUP:${text}`);
@@ -153,9 +153,11 @@
 
 }());
 
+declare const Blazor: any;
+
 interface BswupOptions {
     log: 'info' | 'verbose' | 'debug' | 'error'
     sw: string
     scope: string
-    handler(): void
+    handler(...args: any[]): void
 }
