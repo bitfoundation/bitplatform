@@ -11,7 +11,6 @@ public partial class EditProfile
     public string? ProfileImageUrl { get; set; }
     public string? ProfileImageError { get; set; }
 
-    public bool IsSaveButtonEnabled { get; set; }
     public bool IsSavingData { get; set; }
     public bool IsLoadingData { get; set; }
 
@@ -67,17 +66,12 @@ public partial class EditProfile
         UserToEdit.Gender = User?.Gender;
     }
 
-    private void CheckSaveButtonEnabled()
+    private bool SaveButtonIsEnabled()
     {
-        if (User?.FullName == UserToEdit.FullName &&
-            User?.BirthDate == UserToEdit.BirthDate &&
-            User?.Gender == UserToEdit.Gender)
-        {
-            IsSaveButtonEnabled = false;
-            return;
-        }
-
-        IsSaveButtonEnabled = true;
+        return ((User?.FullName ?? String.Empty) != (UserToEdit.FullName ?? String.Empty)
+            || User?.BirthDate != UserToEdit.BirthDate
+            || User?.Gender != UserToEdit.Gender)
+            && IsSavingData == false;
     }
 
     private async Task Save()
@@ -88,7 +82,6 @@ public partial class EditProfile
         }
 
         IsSavingData = true;
-        IsSaveButtonEnabled = false;
         EditProfileMessage = null;
 
         try
@@ -112,7 +105,6 @@ public partial class EditProfile
         finally
         {
             IsSavingData = false;
-            IsSaveButtonEnabled = true;
         }
     }
 }
