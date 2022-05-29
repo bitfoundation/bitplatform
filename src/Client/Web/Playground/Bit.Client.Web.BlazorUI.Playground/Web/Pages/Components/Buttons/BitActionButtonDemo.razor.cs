@@ -170,13 +170,13 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Buttons
     Action Button with Aria Hidden
 </BitActionButton>";
 
-        private readonly string example5HTMLCode = @"<BitActionButton IconName=""BitIconName.Website"" Target=""_blank"" Href=""https://github.com/bitfoundation/bitframework"">
+        private readonly string example5HTMLCode = @"<BitActionButton IconName=""BitIconName.Website"" Target=""_blank"" Href=""https://github.com/bitfoundation/bitplatform"">
     Open Bit Foundation In New Tab
 </BitActionButton>
-<BitActionButton IconName=""BitIconName.Website"" Href=""https://github.com/bitfoundation/bitframework"" ButtonStyle=""BitButtonStyle.Standard"">
+<BitActionButton IconName=""BitIconName.Website"" Href=""https://github.com/bitfoundation/bitplatform"" ButtonStyle=""BitButtonStyle.Standard"">
     Go To Bit Foundation
 </BitActionButton>
-<BitActionButton IconName=""BitIconName.Website"" Target=""_self"" Href=""https://github.com/bitfoundation/bitframework"" IsEnabled=""false"">
+<BitActionButton IconName=""BitIconName.Website"" Target=""_self"" Href=""https://github.com/bitfoundation/bitplatform"" IsEnabled=""false"">
     <span>Bit Foundation From Span</span>
 </BitActionButton>";
     }
