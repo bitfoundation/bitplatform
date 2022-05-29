@@ -219,7 +219,7 @@ ModelManifest.xml
 dotnet-tools.json
 profile.arm.json
 
-# Bit Foundation
+# Bit Platform
 *.map
 _book
 *yarn.lock
@@ -227,11 +227,12 @@ _book
 /BitTools/BitCLIV1Task/buildtask/ps_modules/VstsTaskSdk/
 *Resource.designer.cs
 *.tsbuildinfo
-/src/Client/Web/Bit.Client.Web.BlazorUI/wwwroot/**/*.js
 /src/Client/Web/Bit.Client.Web.BlazorUI/**/*.css
-/src/Client/Web/Playground/Bit.Client.Web.BlazorUI.Playground/Web/wwwroot/**/*.js
-/src/Client/Web/Playground/Bit.Client.Web.BlazorUI.Playground/Web/**/**/*.css
+/src/Client/Web/Bit.Client.Web.BlazorUI/wwwroot/**/*.js
 /src/Client/Web/Bit.Client.Web.BlazorUI/wwwroot/**/*.css.gz
+/src/Client/Web/Playground/Bit.Client.Web.BlazorUI.Playground/Web/**/**/*.css
+/src/Client/Web/Playground/Bit.Client.Web.BlazorUI.Playground/Web/wwwroot/**/*.js
+/src/Tooling/Bit.Tooling.Bswup/Bit.Tooling.Bswup/wwwroot/**/*.js
 
 /src/Client/Web/Playground/Bit.Client.Web.BlazorUI.Playground/App/Styles
 /src/Client/Web/Playground/Bit.Client.Web.BlazorUI.Playground/App/Shared
