@@ -48,6 +48,7 @@
                aria-describedby="@AriaDescription"
                aria-disabled="@(IsEnabled is false)"
                disabled="@(IsEnabled is false || (ValueHasBeenSet && ValueChanged.HasDelegate is false))"
+               class="bit-ntf-input"
                @onfocus="e => HandleFocus(e)"
                @onblur="e => HandleBlur(e)"
                @oninput="e => HandleChange(e)"
@@ -56,9 +57,10 @@
                @attributes="@InputHtmlAttributes" />
         @if (Arrows)
         {
-            <span>
+            <span class="bit-ntf-arrows">
                 <button @ref="buttonIncrement"
                     type="button"
+                    class="bit-ntf-arrow-up"
                     disabled="@(IsEnabled is false)"
                     aria-disabled="@(IsEnabled is false)"
                     date-is-focusable="false"
@@ -67,13 +69,14 @@
                     @onmousedown="e => HandleMouseDown(BitNumericTextFieldAction.Increment, e)"
                     @onmouseout="HandleMouseUpOrOut"
                     @onmouseup="HandleMouseUpOrOut">
-                    <span>
+                    <span class="bit-ntf-arrow-icon">
                         <i class="bit-icon bit-icon--@IncrementButtonIconName.GetName() bit-icon--s"></i>
                     </span>
                 </button>
 
                 <button @ref="buttonDecrement"
                     type="button"
+                    class="bit-ntf-arrow-down"
                     disabled="@(IsEnabled is false)"
                     aria-disabled="@(IsEnabled is false)"
                     date-is-focusable="false"
@@ -82,7 +85,7 @@
                     @onmousedown="e => HandleMouseDown(BitNumericTextFieldAction.Decrement, e)"
                     @onmouseout="HandleMouseUpOrOut"
                     @onmouseup="HandleMouseUpOrOut">
-                    <span>
+                    <span class="bit-ntf-arrow-icon">
                         <i class="bit-icon bit-icon--@DecrementButtonIconName.GetName() bit-icon--s"></i>
                     </span>
                 </button>
