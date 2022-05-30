@@ -46,6 +46,6 @@ public partial class ForgotPassword
 
     private bool SubmitButtonIsEnabled()
     {
-        return ForgotPasswordModel.Email.HasValue() && IsLoading == false;
+        return ForgotPasswordModel.Email.HasValue() && IsLoading is false;
     }
 }

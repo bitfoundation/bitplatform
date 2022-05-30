@@ -59,6 +59,6 @@ public partial class EmailConfirmation
 
     private bool SubmitButtonIsEnabled()
     {
-        return IsLoading == false;
+        return IsLoading is false;
     }
 }

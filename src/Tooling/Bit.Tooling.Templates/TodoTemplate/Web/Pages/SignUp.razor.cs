@@ -86,7 +86,7 @@ public partial class SignUp
 
     private bool SubmitButtonIsEnabled()
     {
-        return SignUpModel.UserName.HasValue() && SignUpModel.Password.HasValue() && SignUpModel.IsAcceptPrivacy && IsLoading == false;
+        return SignUpModel.UserName.HasValue() && SignUpModel.Password.HasValue() && SignUpModel.IsAcceptPrivacy && IsLoading is false;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)

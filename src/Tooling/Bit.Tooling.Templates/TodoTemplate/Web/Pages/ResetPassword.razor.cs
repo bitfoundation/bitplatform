@@ -71,7 +71,7 @@ public partial class ResetPassword
 
     private bool SubmitButtonIsEnabled()
     {
-        return ResetPasswordModel.Password.HasValue() && ResetPasswordModel.ConfirmPassword.HasValue() && IsLoading == false;
+        return ResetPasswordModel.Password.HasValue() && ResetPasswordModel.ConfirmPassword.HasValue() && IsLoading is false;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)

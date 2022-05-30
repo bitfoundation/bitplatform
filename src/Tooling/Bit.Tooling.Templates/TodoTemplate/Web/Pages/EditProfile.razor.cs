@@ -71,7 +71,7 @@ public partial class EditProfile
         return ((User?.FullName ?? String.Empty) != (UserToEdit.FullName ?? String.Empty)
             || User?.BirthDate != UserToEdit.BirthDate
             || User?.Gender != UserToEdit.Gender)
-            && IsSavingData == false;
+            && IsSavingData is false;
     }
 
     private async Task Save()
