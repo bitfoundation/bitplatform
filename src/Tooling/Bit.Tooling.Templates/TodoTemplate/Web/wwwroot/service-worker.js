@@ -21,16 +21,7 @@ self.externalAssets = [
     },
 ];
 
-self.serverHandledUrls = [
-    /\/api\//,
-    /\/odata\//,
-    /\/jobs\//,
-    /\/core\//,
-    /\/signalr\//,
-    /\/healthchecks-ui/,
-    /\/healthz/,
-    /\/swagger/
-];
+self.serverHandledUrls = [/\/api\//];
 
 self.defaultUrl = "/";
 

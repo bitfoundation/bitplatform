@@ -89,9 +89,8 @@
         right: 0;
         left: 0;
         display: flex;
-        justify-content: space-between;
+        justify-content: center;
         flex-flow: row nowrap;
-        width: rem(180px);
 
         @include lt-xl {
             top: rem(-38px);
@@ -101,10 +100,9 @@
     .footer-link {
         width: rem(40px);
         height: rem(40px);
-        border-radius: 50%;
         background-position: center;
         background-repeat: no-repeat;
-        background-color: $B4Color;
+        background-size: contain;
         cursor: pointer;
         margin: 0 rem(8px);
 
@@ -114,10 +112,16 @@
             margin: 0 rem(4px);
         }
 
-        @include lt-xl {
+        @include md {
             width: rem(24px);
             height: rem(24px);
             margin: 0 rem(8px);
+        }
+
+        @include sm {
+            width: rem(24px);
+            height: rem(24px);
+            margin: 0 rem(4px);
         }
     }
 
@@ -146,54 +150,34 @@
     }
 
     .twitter-link {
-        background-image: url('/images/twitter-icon.svg');
-        background-size: rem(28px);
-
-        @include lt-xl {
-            background-size: rem(14px);
-        }
+        background-image: url('/images/footer/footer-twitter-icon.svg');
 
         &:hover {
-            background-color: #1DA1F2;
+            background-image: url('/images/footer/footer-twitter-active-icon.svg');
         }
     }
 
     .github-link {
-        background-image: url('/images/github-icon.svg');
-        background-size: rem(24px);
-
-        @include lt-xl {
-            background-size: rem(12px);
-        }
+        background-image: url('/images/footer/footer-github-icon.svg');
 
         &:hover {
-            background-color: #171515;
+            background-image: url('/images/footer/footer-github-active-icon.svg');
         }
     }
 
     .facebook-link {
-        background-image: url('/images/facebook-icon.svg');
-        background-size: rem(16px);
-
-        @include lt-xl {
-            background-size: rem(8px);
-        }
+        background-image: url('/images/footer/footer-facebook-icon.svg');
 
         &:hover {
-            background-color: #4267B2;
+            background-image: url('/images/footer/footer-facebook-active-icon.svg');
         }
     }
 
     .linkedin-link {
-        background-image: url('/images/linkedin-icon.svg');
-        background-size: rem(20px);
-
-        @include lt-xl {
-            background-size: rem(10px);
-        }
+        background-image: url('/images/footer/footer-linkedin-icon.svg');
 
         &:hover {
-            background-color: #0A66C2;
+            background-image: url('/images/footer/footer-linkedin-active-icon.svg');
         }
     }
 }

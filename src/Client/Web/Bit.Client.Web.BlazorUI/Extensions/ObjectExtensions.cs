@@ -5,9 +5,9 @@ namespace Bit.Client.Web.BlazorUI
 {
     public static class ObjectExtensions
     {
-        public static object? GetValueAsObjectFromProperty(this object? obj, string propertyName)
+        public static string? GetValueFromProperty(this object? obj, string propertyName)
         {
-            return obj?.GetType().GetProperty(propertyName)?.GetValue(obj);
+            return obj?.GetType().GetProperty(propertyName)?.GetValue(obj)?.ToString();
         }
 
         public static BitIconName? GetBitIconNameFromProperty(this object? obj, string propertyName)

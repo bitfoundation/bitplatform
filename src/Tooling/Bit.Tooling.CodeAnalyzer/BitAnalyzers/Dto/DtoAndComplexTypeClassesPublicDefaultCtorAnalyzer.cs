@@ -16,7 +16,7 @@ namespace Bit.Tooling.CodeAnalyzer.BitAnalyzers.Dto
 
         public const string Title = "Complex Type | Dtos must have a default public constructor.";
         public const string Message = Title;
-        public const string Description = "Complex Type | Dtos must have a default public constructor. See https://github.com/bitfoundation/bitplatform/issues/17";
+        public const string Description = "Complex Type | Dtos must have a default public constructor. See https://github.com/bitfoundation/bitframework/issues/17";
         private const string Category = "Bit";
 
         private static readonly DiagnosticDescriptor Rule = new DiagnosticDescriptor(DiagnosticId, Title, Message, Category, DiagnosticSeverity.Error, isEnabledByDefault: true, description: Description);

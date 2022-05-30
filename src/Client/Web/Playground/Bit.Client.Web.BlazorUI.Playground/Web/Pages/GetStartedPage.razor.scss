@@ -188,8 +188,6 @@
     line-height: rem(24px);
     color: $B2Color;
     background-color: $B6Color;
-    overflow: auto;
-    white-space: nowrap;
 
     @include lg {
         min-height: rem(40px);

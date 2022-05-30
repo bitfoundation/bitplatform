@@ -1,16 +1,21 @@
-﻿using HealthChecks.UI.Client;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Net.Http.Headers;
 
 namespace TodoTemplate.Api.Startup
 {
     public class Middlewares
     {
-        public static void Use(IApplicationBuilder app, IHostEnvironment env, IConfiguration configuration)
+        public static void Use(IApplicationBuilder app, IHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
+                app.UseSwagger();
+
+                app.UseSwaggerUI(options =>
+                {
+                    options.InjectJavascript("/swagger/swagger-utils.js");
+                });
+
                 app.UseDeveloperExceptionPage();
 
 #if BlazorWebAssembly
@@ -24,13 +29,6 @@ namespace TodoTemplate.Api.Startup
 #if BlazorWebAssembly
             app.UseBlazorFrameworkFiles();
 #endif
-
-            app.UseSwagger();
-
-            app.UseSwaggerUI(options =>
-            {
-                options.InjectJavascript("/swagger/swagger-utils.js");
-            });
 
             app.UseResponseCompression();
 
@@ -61,20 +59,6 @@ namespace TodoTemplate.Api.Startup
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers().RequireAuthorization();
-
-                var appsettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>();
-
-                var healthCheckSettings = appsettings.HealCheckSettings;
-
-                if (healthCheckSettings.EnableHealthChecks)
-                {
-                    endpoints.MapHealthChecks("/healthz", new HealthCheckOptions
-                    {
-                        ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
-                    });
-
-                    endpoints.MapHealthChecksUI();
-                }
 
 #if BlazorWebAssembly
                 endpoints.MapFallbackToPage("/_Host");
