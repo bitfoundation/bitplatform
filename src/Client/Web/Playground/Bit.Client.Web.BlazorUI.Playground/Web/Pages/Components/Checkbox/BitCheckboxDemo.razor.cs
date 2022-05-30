@@ -248,7 +248,7 @@ private bool IsCheckBoxIndeterminateInCode = true;";
         private readonly string example4HTMLCode = @"<BitCheckbox>
     Custom-rendered label with a link go to
     <a href=""https://github.com/bitfoundation/bitplatform"">
-        Bit Foundation repository page
+        Bit Platform repository page
     </a>
 </BitCheckbox>";
 

@@ -161,13 +161,13 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Buttons
 </BitIconButton>";
 
         private readonly string example5HTMLCode = @"<BitIconButton IconName=""BitIconName.Website"" Target=""_blank"" Href=""https://github.com/bitfoundation/bitplatform"">
-    Open Bit Foundation In New Tab
+    Open Bit Platform In New Tab
 </BitIconButton>
 <BitIconButton IconName=""BitIconName.Website"" Href=""https://github.com/bitfoundation/bitplatform"" ButtonStyle=""BitButtonStyle.Standard"">
-    Go To Bit Foundation
+    Go To Bit Platform
 </BitIconButton>
 <BitIconButton IconName=""BitIconName.Website"" Target=""_self"" Href=""https://github.com/bitfoundation/bitplatform"" IsEnabled=""false"">
-    <span>Bit Foundation From Span</span>
+    <span>Bit Platform From Span</span>
 </BitIconButton>";
     }
 }
