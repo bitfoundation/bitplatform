@@ -20,7 +20,9 @@ jobs:
 
     - name: dotnet restore BlazorUI
       run: dotnet restore src/Client/Web/Bit.Client.Web.BlazorUI/Bit.Client.Web.BlazorUI.csproj
-    - name: dotnet msbuild BlazorUI
+    - name: dotnet msbuild BlazorUI (1)
+      run: dotnet msbuild src/Client/Web/Bit.Client.Web.BlazorUI/Bit.Client.Web.BlazorUI.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false
+    - name: dotnet msbuild BlazorUI (2)
       run: dotnet msbuild src/Client/Web/Bit.Client.Web.BlazorUI/Bit.Client.Web.BlazorUI.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false
     - name: dotnet pack BlazorUI
       run: dotnet pack src/Client/Web/Bit.Client.Web.BlazorUI/Bit.Client.Web.BlazorUI.csproj --output . --configuration Release

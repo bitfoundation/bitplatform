@@ -21,7 +21,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Bit.Tooling.Bswup" Version="9.0.5" />
+		<PackageReference Include="Bit.Client.Web.BlazorUI" Version="11.0.0-pre-06" />
+		<PackageReference Include="Bit.Tooling.Bswup" Version="11.0.0-pre-06" />
+		<PackageReference Include="Bit.Tooling.CodeAnalyzer" Version="11.0.0-pre-06" />
+		<PackageReference Include="Bit.Tooling.SourceGenerators" Version="11.0.0-pre-06" />
 		<PackageReference Include="jose-jwt" Version="4.0.0" />
 		<PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="6.0.5" />
 		<PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.5" />
@@ -30,7 +33,7 @@
 
 	<ItemGroup>
         <ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" Condition="'$(WebAppDeploymentType)' == 'PWA'" />
-        <PackageReference Include="BuildWebCompiler2022" Version="1.14.7">
+        <PackageReference Include="BuildWebCompiler2022" Version="1.14.8">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
@@ -38,9 +41,6 @@
 		  <PrivateAssets>all</PrivateAssets>
 		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
-		<ProjectReference Include="..\..\..\..\Client\Web\Bit.Client.Web.BlazorUI\Bit.Client.Web.BlazorUI.csproj" />
-		<ProjectReference Include="..\..\..\Bit.Tooling.CodeAnalyzer\Bit.Tooling.CodeAnalyzer.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
-		<ProjectReference Include="..\..\..\Bit.Tooling.SourceGenerators\Bit.Tooling.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
 		<ProjectReference Include="..\Shared\TodoTemplate.Shared.csproj" />
 		
 		<Using Include="Microsoft.AspNetCore.Components" />

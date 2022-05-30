@@ -1,4 +1,6 @@
-﻿using System.Text;
+﻿using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -41,7 +43,12 @@ public static class IServiceCollectionExtensions
             options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
         }).AddJwtBearer(options =>
         {
-            var secretKey = Encoding.UTF8.GetBytes(settings.SecretKey);
+            var certificatePath = Path.Combine(Directory.GetCurrentDirectory(), "IdentityCertificate.pfx");
+            RSA? rsaPrivateKey;
+            using (X509Certificate2 signingCert = new X509Certificate2(certificatePath, appsettings.JwtSettings.IdentityCertificatePassword))
+            {
+                rsaPrivateKey = signingCert.GetRSAPrivateKey();
+            }
 
             var validationParameters = new TokenValidationParameters
             {
@@ -49,7 +56,7 @@ public static class IServiceCollectionExtensions
                 RequireSignedTokens = true,
 
                 ValidateIssuerSigningKey = true,
-                IssuerSigningKey = new SymmetricSecurityKey(secretKey),
+                IssuerSigningKey = new RsaSecurityKey(rsaPrivateKey),
 
                 RequireExpirationTime = true,
                 ValidateLifetime = true,
@@ -114,5 +121,43 @@ public static class IServiceCollectionExtensions
                 }
             });
         });
+    }
+
+    public static void AddHealthChecks(this IServiceCollection services, IWebHostEnvironment env, IConfiguration configuration)
+    {
+        var appsettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>();
+
+        var healthCheckSettings = appsettings.HealCheckSettings;
+        
+        if (healthCheckSettings.EnableHealthChecks is false)
+            return;
+        
+        services.AddHealthChecksUI(setupSettings: setup =>
+        { 
+            setup.AddHealthCheckEndpoint("TodoHealthChecks", env.IsDevelopment() ? "https://localhost:5001/healthz" : "/healthz");
+        }).AddInMemoryStorage();
+
+        var healthChecksBuilder = services.AddHealthChecks()
+            .AddProcessAllocatedMemoryHealthCheck(maximumMegabytesAllocated: 6 * 1024)
+            .AddDiskStorageHealthCheck(opt =>
+                opt.AddDrive(Path.GetPathRoot(Directory.GetCurrentDirectory()), minimumFreeMegabytes: 5 * 1024))
+            .AddDbContextCheck<TodoTemplateDbContext>();
+        
+        var emailSettings = appsettings.EmailSettings;
+
+        if (emailSettings.Host is not "LocalFolder")
+        {
+            healthChecksBuilder
+                .AddSmtpHealthCheck(options =>
+                {
+                    options.Host = emailSettings.Host;
+                    options.Port = emailSettings.Port;
+        
+                    if (emailSettings.HasCredential)
+                    {
+                        options.LoginWith(emailSettings.UserName, emailSettings.Password);
+                    }
+                });
+        }
     }
 }

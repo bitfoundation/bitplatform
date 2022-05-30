@@ -254,6 +254,67 @@ namespace Bit.Client.Web.BlazorUI.Tests.Modal
             Assert.AreEqual(1, com.Instance.CurrentCount);
         }
 
+        [DataTestMethod,
+            DataRow(Visual.Fluent, BitModalPosition.Center),
+            DataRow(Visual.Fluent, BitModalPosition.TopLeft),
+            DataRow(Visual.Fluent, BitModalPosition.TopCenter),
+            DataRow(Visual.Fluent, BitModalPosition.TopRight),
+            DataRow(Visual.Fluent, BitModalPosition.CenterLeft),
+            DataRow(Visual.Fluent, BitModalPosition.CenterRight),
+            DataRow(Visual.Fluent, BitModalPosition.BottomLeft),
+            DataRow(Visual.Fluent, BitModalPosition.BottomCenter),
+            DataRow(Visual.Fluent, BitModalPosition.BottomRight),
+
+            DataRow(Visual.Cupertino, BitModalPosition.Center),
+            DataRow(Visual.Cupertino, BitModalPosition.TopLeft),
+            DataRow(Visual.Cupertino, BitModalPosition.TopCenter),
+            DataRow(Visual.Cupertino, BitModalPosition.TopRight),
+            DataRow(Visual.Cupertino, BitModalPosition.CenterLeft),
+            DataRow(Visual.Cupertino, BitModalPosition.CenterRight),
+            DataRow(Visual.Cupertino, BitModalPosition.BottomLeft),
+            DataRow(Visual.Cupertino, BitModalPosition.BottomCenter),
+            DataRow(Visual.Cupertino, BitModalPosition.BottomRight),
+
+            DataRow(Visual.Material, BitModalPosition.Center),
+            DataRow(Visual.Material, BitModalPosition.TopLeft),
+            DataRow(Visual.Material, BitModalPosition.TopCenter),
+            DataRow(Visual.Material, BitModalPosition.TopRight),
+            DataRow(Visual.Material, BitModalPosition.CenterLeft),
+            DataRow(Visual.Material, BitModalPosition.CenterRight),
+            DataRow(Visual.Material, BitModalPosition.BottomLeft),
+            DataRow(Visual.Material, BitModalPosition.BottomCenter),
+            DataRow(Visual.Material, BitModalPosition.BottomRight)
+        ]
+        public void BitModalPositionTest(Visual visual, BitModalPosition position)
+        {
+            var com = RenderComponent<BitModalTest>(parameters =>
+            {
+                parameters.Add(p => p.Visual, visual);
+                parameters.Add(p => p.IsOpen, true);
+                parameters.Add(p => p.Position, position);
+            });
+
+            var modalElement = com.Find(".bit-mdl-modal");
+
+            var positionClass = position switch
+            {
+                BitModalPosition.Center => $"bit-mdl-position-center",
+
+                BitModalPosition.TopLeft => $"bit-mdl-position-topleft",
+                BitModalPosition.TopCenter => $"bit-mdl-position-topcenter",
+                BitModalPosition.TopRight => $"bit-mdl-position-topright",
+
+                BitModalPosition.CenterLeft => $"bit-mdl-position-centerleft",
+                BitModalPosition.CenterRight => $"bit-mdl-position-centerright",
+
+                BitModalPosition.BottomLeft => $"bit-mdl-position-bottomleft",
+                BitModalPosition.BottomCenter => $"bit-mdl-position-bottomcenter",
+                BitModalPosition.BottomRight => $"bit-mdl-position-bottomright",
+            };
+
+            Assert.IsTrue(modalElement.ClassList.Contains(positionClass));
+        }
+
         private void HandleIsOpenChanged(bool isOpen)
         {
             isModalOpen = isOpen;

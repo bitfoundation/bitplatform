@@ -24,6 +24,7 @@
         <div class="choice-field-group">
             @foreach (var item in Items)
             {
+                var localValue = GetValueItem(item);
                 <div class="@GetDivClassNameItem(item)">
                     <div class="bit-rbli-wrapper">
                         <input @attributes="InputHtmlAttributes"
@@ -33,11 +34,11 @@
                            type="radio"
                            checked=@GetIsCheckedItem(item)
                            name="@Name"
-                           value="@GetValueStringItem(item)"
+                           value="@localValue?.ToString()"
                            hidden
                            required="@IsRequired"
                            @onclick="@HandleClick"
-                           @onchange="@HandleChange"
+                           @onchange="@(() => HandleChange(new ChangeEventArgs { Value = localValue }))"
                            disabled="@(GetIsEnabledItem(item) is false)" />
 
                         <label for="@GetInputIdItem(item)" class="@GetLabelClassNameItem(item)">

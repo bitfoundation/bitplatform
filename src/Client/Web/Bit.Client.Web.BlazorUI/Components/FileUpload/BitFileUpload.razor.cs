@@ -15,6 +15,9 @@ namespace Bit.Client.Web.BlazorUI
     /// </summary>
     public partial class BitFileUpload : IDisposable
     {
+        // !!! to prevent the type being removed by the linker !!!
+        private static readonly BitFileInfo __dummy_fileInfo__ = new BitFileInfo();
+
         private const int MIN_CHUNK_SIZE = 512 * 1024; // 512 kb
         private const int MAX_CHUNK_SIZE = 10 * 1024 * 1024; // 10 mb
         private DotNetObjectReference<BitFileUpload>? dotnetObjectReference;
