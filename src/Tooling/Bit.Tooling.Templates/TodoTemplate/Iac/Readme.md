@@ -23,6 +23,8 @@ az provider register --namespace 'Microsoft.Sql'
 
 az provider register --namespace 'Microsoft.Insights'
 
+az provider register --namespace 'Microsoft.KeyVault'
+
 ```
 
 2- Create three resource groups (`td-test`, `td-prod`, `td-cd`)
