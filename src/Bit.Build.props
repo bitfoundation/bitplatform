@@ -3,15 +3,15 @@
 	<PropertyGroup>
 
 		<!-- Info -->
-		<Authors>Bit Foundation</Authors>
-		<Company>Bit Foundation</Company>
-		<Product>Bit Framework</Product>
+		<Authors>Bit Platform</Authors>
+		<Company>Bit Platform</Company>
+		<Product>Bit Platform</Product>
 		<Title>$(MSBuildProjectName)</Title>
 		<Description>$(MSBuildProjectName)</Description>
-		<Copyright>Copyright © Bit Foundation 2022</Copyright>
+		<Copyright>Copyright © Bit Platform 2022</Copyright>
 
 		<!-- Repo -->
-		<RepositoryUrl>https://github.com/bitfoundation/bitframework</RepositoryUrl>
+		<RepositoryUrl>https://github.com/bitfoundation/bitplatform</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
 
 		<!-- nupkg -->
@@ -22,14 +22,16 @@
 		<AllowedOutputExtensionsInPackageBuildOutputFolder Condition=" '$(Configuration)' == 'Release' ">$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
 		<PackageDescription>$(MSBuildProjectName)</PackageDescription>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
-		<PackageProjectUrl>https://github.com/bitfoundation/bitframework</PackageProjectUrl>
+		<PackageProjectUrl>https://github.com/bitfoundation/bitplatform</PackageProjectUrl>
 		<PackageIconUrl>https://avatars.githubusercontent.com/u/22663390</PackageIconUrl>
-		<PackageReleaseNotes>https://github.com/bitfoundation/bitframework/releases/tag/v10.0.1</PackageReleaseNotes>
-		<PackageVersion>10.0.1</PackageVersion>
+
+		<ReleaseVersion>11.0.0</ReleaseVersion>
+
+		<PackageReleaseNotes>https://github.com/bitfoundation/bitplatform/releases/tag/v-$(ReleaseVersion)</PackageReleaseNotes>
+		<PackageVersion>$(ReleaseVersion)</PackageVersion>
 
 		<!-- Version -->
-		<Version>10.0.1</Version>
-		<AssemblyVersion>10.0.1</AssemblyVersion>
+		<Version>$(ReleaseVersion).$([System.DateTime]::Now.ToString(HHmm))</Version>
 
 		<!-- Compile -->
 		<NeutralLanguage>en</NeutralLanguage>

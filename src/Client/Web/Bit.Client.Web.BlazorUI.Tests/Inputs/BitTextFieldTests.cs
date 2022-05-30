@@ -657,5 +657,44 @@ namespace Bit.Client.Web.BlazorUI.Tests.Inputs
 
             Assert.AreEqual(bitTextField.ClassList.Contains($"bit-txt-invalid-{visualClass}"), !isInvalid);
         }
+
+        [DataTestMethod,
+            DataRow("  bit"),
+            DataRow("bit  "),
+            DataRow(" bit component "),
+            DataRow("  bit  "),
+       ]
+        public void BitTextFieldTrimmedDefaultValueTest(string value)
+        {
+            var component = RenderComponent<BitTextFieldTest>(parameters =>
+            {
+                parameters.Add(p => p.Trim, true);
+                parameters.Add(p => p.DefaultValue, value);
+            });
+
+            var bitTextField = component.Find(".txt-field");
+            var trimmedValue = bitTextField.GetAttribute("value");
+
+            Assert.AreEqual(value.Trim(), trimmedValue);
+        }
+
+        [DataTestMethod,
+            DataRow("  bit"),
+            DataRow("bit  "),
+            DataRow(" bit component "),
+            DataRow("  bit  "),
+        ]
+        public void BitTextFieldtTrimmedValueTest(string value)
+        {
+            var component = RenderComponent<BitTextField>(parameters =>
+            {
+                parameters.Add(p => p.Trim, true);
+            });
+
+            var input = component.Find("input");
+            input.Change(value);
+
+            Assert.AreEqual(value.Trim(), component.Instance.Value);
+        }
     }
 }

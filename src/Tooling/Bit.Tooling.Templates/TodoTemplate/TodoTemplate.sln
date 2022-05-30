@@ -16,15 +16,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTemplate.App", "App\Tod
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTemplate.Web", "Web\TodoTemplate.Web.csproj", "{7C27083E-F333-4034-AC4C-C86DE1D4874E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Client.Web.BlazorUI", "..\..\..\Client\Web\Bit.Client.Web.BlazorUI\Bit.Client.Web.BlazorUI.csproj", "{28E58B0B-8C27-49D2-B676-43369296E9F6}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Tooling.SourceGenerators", "..\..\Bit.Tooling.SourceGenerators\Bit.Tooling.SourceGenerators.csproj", "{9664B5F7-B097-4601-B6E4-CB1FFCF6BA7C}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Dependencies", "Dependencies", "{E522F509-2C27-4B58-9B6A-88741D48CF7A}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Tooling.CodeAnalyzer", "..\..\Bit.Tooling.CodeAnalyzer\Bit.Tooling.CodeAnalyzer.csproj", "{3BFCE62F-BDE6-4D54-B879-31D09942243B}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTemplate.Infra", "Infra\TodoTemplate.Infra.csproj", "{F2046C94-F82C-42DC-9C97-9C03FB2F2BA3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTemplate.Iac", "Iac\TodoTemplate.Iac.csproj", "{F2046C94-F82C-42DC-9C97-9C03FB2F2BA3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -50,18 +42,6 @@ Global
 		{7C27083E-F333-4034-AC4C-C86DE1D4874E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7C27083E-F333-4034-AC4C-C86DE1D4874E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7C27083E-F333-4034-AC4C-C86DE1D4874E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{28E58B0B-8C27-49D2-B676-43369296E9F6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{28E58B0B-8C27-49D2-B676-43369296E9F6}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{28E58B0B-8C27-49D2-B676-43369296E9F6}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{28E58B0B-8C27-49D2-B676-43369296E9F6}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9664B5F7-B097-4601-B6E4-CB1FFCF6BA7C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9664B5F7-B097-4601-B6E4-CB1FFCF6BA7C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9664B5F7-B097-4601-B6E4-CB1FFCF6BA7C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9664B5F7-B097-4601-B6E4-CB1FFCF6BA7C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3BFCE62F-BDE6-4D54-B879-31D09942243B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3BFCE62F-BDE6-4D54-B879-31D09942243B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3BFCE62F-BDE6-4D54-B879-31D09942243B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3BFCE62F-BDE6-4D54-B879-31D09942243B}.Release|Any CPU.Build.0 = Release|Any CPU
 		{F2046C94-F82C-42DC-9C97-9C03FB2F2BA3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{F2046C94-F82C-42DC-9C97-9C03FB2F2BA3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F2046C94-F82C-42DC-9C97-9C03FB2F2BA3}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -69,11 +49,6 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(NestedProjects) = preSolution
-		{28E58B0B-8C27-49D2-B676-43369296E9F6} = {E522F509-2C27-4B58-9B6A-88741D48CF7A}
-		{9664B5F7-B097-4601-B6E4-CB1FFCF6BA7C} = {E522F509-2C27-4B58-9B6A-88741D48CF7A}
-		{3BFCE62F-BDE6-4D54-B879-31D09942243B} = {E522F509-2C27-4B58-9B6A-88741D48CF7A}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {61F7FB11-1E47-470C-91E2-47F8143E1572}

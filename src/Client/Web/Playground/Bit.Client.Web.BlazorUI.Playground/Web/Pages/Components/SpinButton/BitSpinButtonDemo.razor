@@ -4,7 +4,6 @@
                ComponentParameters="componentParameters" EnumParameters="enumParameters">
     <ComponentExampleBox Title="BitSpinButton" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
         <ExamplePreview>
-            <div class="example-desc">Files can be uploaded automatically after selecting them.</div>
             <BitSpinButton @bind-Value="BasicSpinButtonValue"
                            Min="0"
                            Max="100"
@@ -28,14 +27,13 @@
 
     <ComponentExampleBox Title="SpinButton With Icon" HTMLSourceCode="@example2HTMLCode" ExampleId="example2">
         <ExamplePreview>
-            <div class="example-desc">Multiple files can be selected to upload automatically.</div>
-            <BitSpinButton IconName="BitIconName.IncreaseIndentLegacy"
+            <BitSpinButton IconName="BitIconName.IncreaseIndentText"
                            Min="0"
                            Max="100"
                            Step="1"
                            Label="With Icon">
             </BitSpinButton>
-            <BitSpinButton IconName="BitIconName.IncreaseIndentLegacy"
+            <BitSpinButton IconName="BitIconName.IncreaseIndentText"
                            Min="0"
                            Max="100"
                            Step="1"
@@ -47,7 +45,7 @@
 
     <ComponentExampleBox Title="SpinButton With Suffix" HTMLSourceCode="@example3HTMLCode" ExampleId="example3">
         <ExamplePreview>
-            <div class="example-desc">Multiple files can be selected to upload automatically with limited size.</div>
+            <div class="example-desc">This SpinButton includes a suffix in the value and defines custom onIncrement, onDecrement.</div>
             <BitSpinButton Suffix="Inch"
                            Min="0"
                            Max="100"
@@ -59,7 +57,6 @@
 
     <ComponentExampleBox Title="SpinButton With Label Above" HTMLSourceCode="@example4HTMLCode" CSharpSourceCode="@example4CSharpCode" ExampleId="example4">
         <ExamplePreview>
-            <div class="example-desc">Single or multiple file uploading limited only by file extensions, which in this case the allowed file extensions include gif, jpg and mp4.</div>
             <BitSpinButton @bind-Value="SpinButtonWithLabelAboveValue"
                            Suffix="cm"
                            Min="0"
