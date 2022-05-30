@@ -5,6 +5,9 @@ on:
   push:
     branches:
       - 'main'
+    paths:
+      - 'src/Client/Web/**'
+      - 'src/Tooling/**'
 
 jobs:
   build-publish:
@@ -29,7 +32,9 @@ jobs:
       
     - name: dotnet restore Bswup
       run: dotnet restore src/Tooling/Bit.Tooling.Bswup/Bit.Tooling.Bswup/Bit.Tooling.Bswup.csproj
-    - name: dotnet msbuild Bswup
+    - name: dotnet msbuild Bswup (1)
+      run: dotnet msbuild src/Tooling/Bit.Tooling.Bswup/Bit.Tooling.Bswup/Bit.Tooling.Bswup.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false
+    - name: dotnet msbuild Bswup (2)
       run: dotnet msbuild src/Tooling/Bit.Tooling.Bswup/Bit.Tooling.Bswup/Bit.Tooling.Bswup.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false
     - name: dotnet pack Bswup
       run: dotnet pack src/Tooling/Bit.Tooling.Bswup/Bit.Tooling.Bswup/Bit.Tooling.Bswup.csproj --output . --configuration Release
