@@ -222,15 +222,15 @@ namespace Bit.Client.Web.BlazorUI
 
         private string GetAriaLabelledBy() => Label.HasValue() || LabelFragment is not null ? LabelId : AriaLabelledBy;
 
-        private string? GetTextItem(TItem item) => item.GetValueAsObjectFromProperty(TextField)?.ToString();
+        private string? GetTextItem(TItem item) => item.GetValueFromProperty(TextField);
 
-        private object? GetValueItem(TItem item) => item.GetValueAsObjectFromProperty(ValueField);
+        private string? GetValueStringItem(TItem item) => item.GetValueFromProperty(ValueField);
 
-        private string? GetImageSrcItem(TItem item) => item.GetValueAsObjectFromProperty(ImageSrcField)?.ToString();
+        private string? GetImageSrcItem(TItem item) => item.GetValueFromProperty(ImageSrcField);
 
-        private string? GetSelectedImageSrcItem(TItem item) => item.GetValueAsObjectFromProperty(SelectedImageSrcField)?.ToString();
+        private string? GetSelectedImageSrcItem(TItem item) => item.GetValueFromProperty(SelectedImageSrcField);
 
-        private string? GetImageAltItem(TItem item) => item.GetValueAsObjectFromProperty(ImageAltField)?.ToString();
+        private string? GetImageAltItem(TItem item) => item.GetValueFromProperty(ImageAltField);
 
         private BitIconName? GetIconNameItem(TItem item) => item.GetBitIconNameFromProperty(IconNameField);
 
@@ -238,14 +238,14 @@ namespace Bit.Client.Web.BlazorUI
 
         private string? GetTextIdItem(TItem item)
         {
-            var itemValue = GetValueItem(item);
+            var itemValue = GetValueStringItem(item);
 
             return $"RadioButtonListLabel{UniqueId}-{itemValue}";
         }
 
         private string? GetInputIdItem(TItem item)
         {
-            var itemValue = GetValueItem(item);
+            var itemValue = GetValueStringItem(item);
 
             return $"RadioButtonList{UniqueId}-{itemValue}";
         }

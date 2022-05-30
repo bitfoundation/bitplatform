@@ -335,13 +335,13 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.SpinButton
 private double BasicSpinButtonValue = 5;
 private double BasicSpinButtonDisableValue = 20;";
 
-        private readonly string example2HTMLCode = @"<BitSpinButton IconName=""BitIconName.IncreaseIndentText""
+        private readonly string example2HTMLCode = @"<BitSpinButton IconName=""BitIconName.IncreaseIndentLegacy""
                Min=""0""
                Max=""100""
                Step=""1""
                Label=""With Icon"">
 </BitSpinButton>
-<BitSpinButton IconName=""BitIconName.IncreaseIndentText""
+<BitSpinButton IconName=""BitIconName.IncreaseIndentLegacy""
                Min=""0""
                Max=""100""
                Step=""1""

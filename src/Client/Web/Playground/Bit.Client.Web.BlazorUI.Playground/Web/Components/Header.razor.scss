@@ -97,39 +97,29 @@
 }
 
 .github-btn {
-    width: rem(49px);
-    height: rem(49px);
-    border-radius: 50%;
-    background-image: url('/images/github-icon.svg');
-    background-position: center bottom;
+    width: rem(56px);
+    height: rem(56px);
+    background-image: url('/images/github-blue-icon.svg');
+    background-position: center;
     background-repeat: no-repeat;
-    background-size: rem(30px);
-    background-color: $B2Color;
+    background-size: contain;
     cursor: pointer;
     margin-left: rem(16px);
 
     &:hover {
-        background-color: $B3Color;
+        background-image: url('/images/github-light-icon.svg');
     }
 
     @include lg {
         width: rem(38px);
         height: rem(38px);
         margin-left: rem(26px);
-        background-size: rem(27px);
     }
 
     @include md {
         width: rem(24px);
         height: rem(24px);
         margin-left: rem(18px);
-        background-size: rem(15px);
-    }
-
-    @include sm {
-        width: rem(20px);
-        height: rem(20px);
-        background-size: rem(14px);
     }
 }
 

@@ -1,7 +1,6 @@
 ﻿<CascadingValue Value="Visual">
     <BitModal 
-        @bind-IsOpen=IsOpen
-        Position=Position
+        @bind-IsOpen=IsOpen 
         IsModeless=IsModeless 
         IsBlocking=IsBlocking 
         IsAlert=IsAlert 
@@ -22,7 +21,6 @@
     [Parameter] public bool IsOpen { get; set; }
     [Parameter] public string SubtitleAriaId { get; set; }
     [Parameter] public string TitleAriaId { get; set; }
-    [Parameter] public BitModalPosition Position { get; set; }
 
     public int CurrentCount = 0;
     public void IncrementCount()

@@ -35,10 +35,6 @@ a {
     display: none;
 }
 
-::-webkit-scrollbar:horizontal {
-    height: rem(6px);
-}
-
 /* Home Page ==================================================================================== */
 
 .header-nav-close-btn {
@@ -352,30 +348,6 @@ a {
         &:after {
             border-left: rem(4px) solid $B2Color;
         }
-    }
-}
-
-/* Not Found Component ==================================================================================== */
-
-.not-found-back-btn {
-    width: rem(213px);
-    height: rem(56px);
-    font-weight: 600;
-    font-size: rem(18px);
-    line-height: rem(32px);
-
-    @include md {
-        width: rem(161px);
-    }
-
-    @include sm {
-        width: rem(118px);
-    }
-
-    @include lt-lg {
-        height: rem(40px);
-        font-size: rem(12px);
-        line-height: rem(16px);
     }
 }
 

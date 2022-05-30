@@ -207,8 +207,8 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Buttons
         private readonly string example4HTMLCode = @"<BitCompoundButton ButtonStyle=""BitButtonStyle.Standard"" Text=""AriaDescription"" SecondaryText=""This is a compound button with aria description"" AriaDescription=""Button with Aria Description""></BitCompoundButton>
 <BitCompoundButton Text=""AriaHidden"" Style=""height: 85px;"" SecondaryText=""This is a compound button with aria hidden"" AriaHidden=""true""></BitCompoundButton>";
 
-        private readonly string example5HTMLCode = @"<BitCompoundButton Target=""_blank"" Href=""https://github.com/bitfoundation/bitplatform"" Text=""Open the site"" SecondaryText=""Open Bit Platform In New Tab""></BitCompoundButton>
-<BitCompoundButton Href=""https://github.com/bitfoundation/bitplatform"" ButtonStyle=""BitButtonStyle.Standard"" Text=""Open the site"" SecondaryText=""Go To Bit Platform""></BitCompoundButton>
-<BitCompoundButton Target=""_self"" Href=""https://github.com/bitfoundation/bitplatform"" IsEnabled=""false"" Text=""Open the site"" SecondaryText=""Go To Bit Platform""></BitCompoundButton>";
+        private readonly string example5HTMLCode = @"<BitCompoundButton Target=""_blank"" Href=""https://github.com/bitfoundation/bitframework"" Text=""Open the site"" SecondaryText=""Open Bit Foundation In New Tab""></BitCompoundButton>
+<BitCompoundButton Href=""https://github.com/bitfoundation/bitframework"" ButtonStyle=""BitButtonStyle.Standard"" Text=""Open the site"" SecondaryText=""Go To Bit Foundation""></BitCompoundButton>
+<BitCompoundButton Target=""_self"" Href=""https://github.com/bitfoundation/bitframework"" IsEnabled=""false"" Text=""Open the site"" SecondaryText=""Go To Bit Foundation""></BitCompoundButton>";
     }
 }

@@ -1,6 +1,4 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
-using System.Security.Cryptography;
-using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using TodoTemplate.Api.Models.Account;
@@ -22,14 +20,8 @@ public class JwtService : IJwtService
 
     public async Task<SignInResponseDto> GenerateToken(User user)
     {
-        var certificatePath = Path.Combine(Directory.GetCurrentDirectory(), "IdentityCertificate.pfx");
-        RSA? rsaPrivateKey;
-        using (X509Certificate2 signingCert = new X509Certificate2(certificatePath, _appSettings.JwtSettings.IdentityCertificatePassword))
-        {
-            rsaPrivateKey = signingCert.GetRSAPrivateKey();
-        }
-
-        var signingCredentials = new SigningCredentials(new RsaSecurityKey(rsaPrivateKey), SecurityAlgorithms.RsaSha512);
+        var secretKey = Encoding.UTF8.GetBytes(_appSettings.JwtSettings.SecretKey);
+        var signingCredentials = new SigningCredentials(new SymmetricSecurityKey(secretKey), SecurityAlgorithms.HmacSha256Signature);
 
         var claims = (await _signInManager.ClaimsFactory.CreateAsync(user)).Claims;
 
