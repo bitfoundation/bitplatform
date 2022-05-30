@@ -3,7 +3,7 @@
     x:Class="Bit.CSharpClient.Controls.Samples.MainPage"
     xmlns="http://xamarin.com/schemas/2014/forms"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:bit="https://bitframework.com">
+    xmlns:bit="https://bitplatform.dev">
     <bit:BitFrame
         Margin="10"
         BorderColor="LightGray"

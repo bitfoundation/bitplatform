@@ -81,7 +81,7 @@ protected override void OnLaunched(LaunchActivatedEventArgs e)
 In xaml page add following namepsace to your page:
 
 ```markup
-xmlns:bit="https://bitframework.com"
+xmlns:bit="https://bitplatform.dev"
 ```
 
 And put following in App.xaml.cs after InitializeComponent\(\);
@@ -90,7 +90,7 @@ And put following in App.xaml.cs after InitializeComponent\(\);
 BitCSharpClientControls.XamlInit();
 ```
 
-To have better understanding see [samples](https://github.com/bitfoundation/bitframework/tree/1ef0c80c09bf594682a58a171686d19f79b0a2c2/Samples/CSharpClientSamples/Controls.Samples).
+To have better understanding see [samples](https://github.com/bitfoundation/bitplatform/tree/1ef0c80c09bf594682a58a171686d19f79b0a2c2/Samples/CSharpClientSamples/Controls.Samples).
 
-Feedbacks/issues/questions are also welcomed in [stackoverflow](http://stackoverflow.com/questions/tagged/bit-framework) or [github](https://github.com/bitfoundation/bitframework/issues/new?labels=&template=bug_report.md).
+Feedbacks/issues/questions are also welcomed in [stackoverflow](http://stackoverflow.com/questions/tagged/bit-platform) or [github](https://github.com/bitfoundation/bitplatform/issues/new?labels=&template=bug_report.md).
 

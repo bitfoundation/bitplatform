@@ -4,8 +4,8 @@ using System;
 using Xamarin.Forms;
 
 #if !UWP
-[assembly: XmlnsDefinition("https://bitframework.com", "Bit.View", AssemblyName = "Bit.Client.Xamarin.Controls")]
-[assembly: XmlnsDefinition("https://bitframework.com", "Bit.View.Controls", AssemblyName = "Bit.Client.Xamarin.Controls")]
+[assembly: XmlnsDefinition("https://bitplatform.dev", "Bit.View", AssemblyName = "Bit.Client.Xamarin.Controls")]
+[assembly: XmlnsDefinition("https://bitplatform.dev", "Bit.View.Controls", AssemblyName = "Bit.Client.Xamarin.Controls")]
 #endif
 
 [assembly: Xamarin.Forms.Internals.Preserve]

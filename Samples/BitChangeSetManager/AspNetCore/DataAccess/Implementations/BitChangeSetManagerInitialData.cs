@@ -92,8 +92,8 @@ namespace BitChangeSetManager.DataAccess.Implementations
 
                 await changeSetSeveritiesRepository.AddRangeAsync(new[] { changeSetSeverity1, changeSetSeverity2, changeSetSeverity3 }, default);
 
-                ChangeSet changeSet1 = new ChangeSet { AssociatedCommitUrl = "https://github.com/bitfoundation/bitframework", Description = "Desc1", Title = "ChangeSet1", DeliveryRequirementId = changeSetDeliveryRequirement1.Id, SeverityId = changeSetSeverity3.Id };
-                ChangeSet changeSet2 = new ChangeSet { AssociatedCommitUrl = "https://github.com/bitfoundation/bitframework", Description = "Desc2", Title = "ChangeSet2", DeliveryRequirementId = changeSetDeliveryRequirement1.Id, SeverityId = changeSetSeverity3.Id };
+                ChangeSet changeSet1 = new ChangeSet { AssociatedCommitUrl = "https://github.com/bitfoundation/bitplatform", Description = "Desc1", Title = "ChangeSet1", DeliveryRequirementId = changeSetDeliveryRequirement1.Id, SeverityId = changeSetSeverity3.Id };
+                ChangeSet changeSet2 = new ChangeSet { AssociatedCommitUrl = "https://github.com/bitfoundation/bitplatform", Description = "Desc2", Title = "ChangeSet2", DeliveryRequirementId = changeSetDeliveryRequirement1.Id, SeverityId = changeSetSeverity3.Id };
 
                 await changeSetsRepository.AddRangeAsync(new[] { changeSet1, changeSet2 }, default);
 

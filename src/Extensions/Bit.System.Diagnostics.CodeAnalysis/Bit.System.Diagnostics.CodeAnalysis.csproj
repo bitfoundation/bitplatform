@@ -7,9 +7,9 @@
     <Version>1.0.0</Version>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
     <PackageVersion>1.0.0</PackageVersion>
-    <RepositoryUrl>https://github.com/bitfoundation/bitframework</RepositoryUrl>
-    <PackageProjectUrl>https://github.com/bitfoundation/bitframework</PackageProjectUrl>
-    <PackageReleaseNotes>https://github.com/bitfoundation/bitframework/releases/tag/v1.0.0</PackageReleaseNotes>
+    <RepositoryUrl>https://github.com/bitfoundation/bitplatform</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/bitfoundation/bitplatform</PackageProjectUrl>
+    <PackageReleaseNotes>https://github.com/bitfoundation/bitplatform/releases/tag/v1.0.0</PackageReleaseNotes>
   </PropertyGroup>
 
 </Project>

@@ -1,11 +1,11 @@
 {
   "name": "bit-ng1-test",
   "version": "0.0.1",
-  "description": "Bit Framework - TypeScript/JavaScript Client - Angular JS Test",
-  "author": "Bit Foundation",
+  "description": "Bit Platform - TypeScript/JavaScript Client - Angular JS Test",
+  "author": "Bit Platform",
   "repository": {
     "type": "git",
-    "url": "https://github.com/bitfoundation/bitframework/"
+    "url": "https://github.com/bitfoundation/bitplatform/"
   },
   "keywords": [
     "bit",

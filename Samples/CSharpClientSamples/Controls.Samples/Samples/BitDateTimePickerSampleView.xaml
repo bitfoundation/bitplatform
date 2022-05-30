@@ -3,7 +3,7 @@
     x:Class="Bit.CSharpClient.Controls.Samples.BitDateTimePickerSampleView"
     xmlns="http://xamarin.com/schemas/2014/forms"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:bit="https://bitframework.com"
+    xmlns:bit="https://bitplatform.dev"
     xmlns:noda="clr-namespace:NodaTime;assembly=NodaTime"
     xmlns:view="clr-namespace:Bit.CSharpClient.Controls.Samples"
     xmlns:viewModel="clr-namespace:Bit.CSharpClient.Controls.Samples">

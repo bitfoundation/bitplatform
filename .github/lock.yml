@@ -11,6 +11,6 @@ lockComment: >
   This issue has been automatically locked due to inactivity.
   Please file a new issue if you are encountering a similar or related problem.
 
-  Read more about our [automatic conversation locking policy](https://github.com/bitfoundation/bitframework/blob/master/.github/GITHUB_PROCESS.md).
+  Read more about our [automatic conversation locking policy](https://github.com/bitfoundation/bitplatform/blob/master/.github/GITHUB_PROCESS.md).
 
 setLockReason: true

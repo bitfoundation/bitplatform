@@ -6,7 +6,7 @@ Using bit you'll get more benefits from web api. This includes following:
 
 1. We've configured web api on top of [owin](http://owin.org). Owin stands for "Open web interface for .NET" and allows your code to work almost anywhere.
 2. We've configured web api on top of [asp.net core/owin request branching](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/middleware). By default, all middlewares such as WebApi handle all incoming requests, but each request has one destination, for example signalr, web api, static file etc. By branching web api will handle api requests only which results into better performance.
-3. We've developed extensive logging infrastructure in bit framework. It logs everything for you in your app, including web api traces. We've tons of log stores including but not limited to Windows Event Logs, Application Insights, Sql Server etc.
+3. We've developed extensive logging infrastructure in bit platform. It logs everything for you in your app, including web api traces. We've tons of log stores including but not limited to Windows Event Logs, Application Insights, Sql Server etc.
 4. We've configured headers like [X-Content-Type-Options](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Content-Type-Options), [X-Correlation-ID](http://theburningmonk.com/2015/05/a-consistent-approach-to-track-correlation-ids-through-microservices/) etc to improve logging, security etc.
 5. You can protect your web api with bit identity server, a modern single sign on server based on open id/oauth 2.0
 
@@ -15,7 +15,7 @@ Using bit you'll get more benefits from web api. This includes following:
 Run following command after you installed [git for windows](https://git-scm.com/download/win) \(You can use any git client\)
 
 ```text
-git clone https://github.com/bitfoundation/bitframework.git
+git clone https://github.com/bitfoundation/bitplatform.git
 ```
 
 Then open Samples/WebApiSamples/WebApiSamples.sln and go to the WebApiSample project.
@@ -44,9 +44,9 @@ dependencyManager.RegisterWebApiMiddleware(webApiDependencyManager =>
 
 That code configures web api into your app using the default configuration. Default configuration is all about security, performance, logging etc.
 
-Bit is an extensible framework developed based on best practices. We've extensively used dependency injection in our code base and you can customize default behaviors and conventions based on your requirements.
+Bit is an extensible platform developed based on best practices. We've extensively used dependency injection in our code base and you can customize default behaviors and conventions based on your requirements.
 
-In following samples, you can find out how to customize web api in bit, but feel free to [drops us an issue in github](https://github.com/bitfoundation/bitframework/issues), ask a question on [stackoverflow.com](http://stackoverflow.com/questions/tagged/bit-framework) or use disqus comments below if you can't find what you want in these samples.
+In following samples, you can find out how to customize web api in bit, but feel free to [drops us an issue in github](https://github.com/bitfoundation/bitplatform/issues), ask a question on [stackoverflow.com](http://stackoverflow.com/questions/tagged/bit-platform) or use disqus comments below if you can't find what you want in these samples.
 
 ### Web API - Swagger \(Open-API\) configuration sample
 
@@ -125,7 +125,7 @@ You've also other Register methods like RegisterGeneric, RegisterInstance, Regis
 
 You also have access to autofac's containerBuilder and services and your ConfigureDependencies method.
 
-If you've got a complex scenario, simply drops us an [issue on github](https://github.com/bitfoundation/bitframework/issues) or ask a question on [stackoverflow](https://stackoverflow.com/questions/tagged/bit-framework).
+If you've got a complex scenario, simply drops us an [issue on github](https://github.com/bitfoundation/bitplatform/issues) or ask a question on [stackoverflow](https://stackoverflow.com/questions/tagged/bit-platform).
 
 ### Exception handling:
 

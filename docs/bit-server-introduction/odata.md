@@ -4,7 +4,7 @@ So, what's OData? following text which is copied from [http://odata.org](http://
 
 OData \(Open Data Protocol\) is an ISO/IEC approved, OASIS standard that defines a set of best practices for building and consuming "RESTful APIs". OData helps you "focus on your business logic" while building RESTful APIs. OData RESTful APIs are easy to consume. The OData metadata, a machine-readable description of the data model of the APIs, enables the creation of powerful generic client proxies and tools.
 
-Using bit framework, you can build OData services very easily, and we generate C\# proxies for you automatically that you can use in Xamarin Forms & Blazor apps. We also have out of the box support for Open-API \(Swagger\). Using [azure auto rest](https://github.com/Azure/autorest) tools, you can generate client side for almost any language you want. You can also send raw http requests to odata services and you can expect raw responses.
+Using bit platform, you can build OData services very easily, and we generate C\# proxies for you automatically that you can use in Xamarin Forms & Blazor apps. We also have out of the box support for Open-API \(Swagger\). Using [azure auto rest](https://github.com/Azure/autorest) tools, you can generate client side for almost any language you want. You can also send raw http requests to odata services and you can expect raw responses.
 
 **An OData controller has full built-in support for paging/filtering/sorting/projection/grouping and aggregation.**
 
@@ -95,7 +95,7 @@ To follow best practices, keep these rules in your mind:
 
 3- Develop a DTO for every Task you've. For example, if you want to show customers names and their orders count, create a DTO for this task. And when you want to create a Customer registration form which accepts customer data, develop a new DTO for that task.
 
-To send DTO to client side, you develop DtoController. [Examples can be found here](https://github.com/bitfoundation/bitframework/tree/master/Samples/ODataSamples/).
+To send DTO to client side, you develop DtoController. [Examples can be found here](https://github.com/bitfoundation/bitplatform/tree/master/Samples/ODataSamples/).
 
 ## 1- CustomerDtoControllerSample
 

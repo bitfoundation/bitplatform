@@ -2,10 +2,10 @@
   "name": "bit-change-set-manager",
   "version": "0.0.1",
   "description": "Bit change set manager sample app",
-  "author": "Bit Foundation",
+  "author": "Bit Platform",
   "repository": {
     "type": "git",
-    "url": "https://github.com/bitfoundation/bitframework/"
+    "url": "https://github.com/bitfoundation/bitplatform/"
   },
   "keywords": [
     "bit"

@@ -213,7 +213,7 @@ ModelManifest.xml
 # VS Code
 .vscode
 
-# Bit Foundation
+# Bit Platform
 **/bower_components/*
 *.map
 /src/Tooling/Bit.Tooling.CodeGenerator/Implementations/CSharpODataMetadataGenerator/Templates/*.cs

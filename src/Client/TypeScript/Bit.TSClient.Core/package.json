@@ -1,11 +1,11 @@
 {
   "name": "bit-core",
   "version": "0.0.1",
-  "description": "Bit Framework - TypeScript/JavaScript Client - Core",
-  "author": "Bit Foundation",
+  "description": "Bit Platform - TypeScript/JavaScript Client - Core",
+  "author": "Bit Platform",
   "repository": {
     "type": "git",
-    "url": "https://github.com/bitfoundation/bitframework/"
+    "url": "https://github.com/bitfoundation/bitplatform/"
   },
   "keywords": [
     "bit",

@@ -14,14 +14,14 @@
     ],
     "pluginsConfig": {
         "disqus": {
-            "shortName": "bitframework"
+            "shortName": "bitplatform"
         },
         "edit-link": {
-            "base": "https://github.com/bitfoundation/bitframework/tree/master",
+            "base": "https://github.com/bitfoundation/bitplatform/tree/master",
             "label": "Edit This Page"
         },
         "github": {
-            "url": "https://github.com/bitfoundation/bitframework/"
+            "url": "https://github.com/bitfoundation/bitplatform/"
         },
         "theme-default": {
             "styles": {
@@ -36,7 +36,7 @@
             "content": "FT-uebPTuNBnwygf2UqGPg6F9PJ4fetE-f-gfpkig20"
         },
         "sitemap": {
-            "hostname": "https://docs.bitfoundation.tech/"
+            "hostname": "https://docs.bitplatform.dev/"
         }
     }
 }

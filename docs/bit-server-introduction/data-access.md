@@ -4,13 +4,13 @@ You can use Bit Data Access components, or you can use your own preferred way to
 
 1- True async support. Application with async code gets scaled better, but what does this mean to you? Each server side app has limited workers, and your app works because they work. Workers count is limited, so you've to use them carefully. When a request comes to your web api action, and you get data from database using entity framework \(For example\), your worker \(your valuable worker\) waits until database returns data. But that wait is useless \(database has its own workers\). If you use async-await, your worker handles other requests instead of waiting for a database.
 
-2- True cancellation token support. There is a CancellationToken in every web api action you develop. If user/operator closes its browser, or if you cancel request at client side programmatically, that cancellation token gets notified. Almost all bit framework's methods accept cancellation token, and they stop their work as cancellation token gets notified.
+2- True cancellation token support. There is a CancellationToken in every web api action you develop. If user/operator closes its browser, or if you cancel request at client side programmatically, that cancellation token gets notified. Almost all bit platform's methods accept cancellation token, and they stop their work as cancellation token gets notified.
 
 3- Bit Data Access components are optimized for N-Tier app development. To have a better understanding about what does this mean read this [amazing article](/docs/blog/optimized-entity-framework-for-n-tier-apps.md)
 
-## Entity Framework
+## Entity Platform
 
-Getting started: \(Sample can be found [here](https://github.com/bitfoundation/bitframework/tree/master/Samples/DataAccessSamples/)\)
+Getting started: \(Sample can be found [here](https://github.com/bitfoundation/bitplatform/tree/master/Samples/DataAccessSamples/)\)
 
 At first, you've to develop your entities. Use IEntity interface to mark your classes as entity. It's just a marker and has no member to implement.
 
@@ -20,7 +20,7 @@ public class Customer : IEntity
 }
 ```
 
-Then develop a DbContext class which inherits from EfDbContextBase. The reason is described [in an article we've previously mentioned](/docs/blog/optimized-entity-framework-for-n-tier-apps.md)
+Then develop a DbContext class which inherits from EfDbContextBase. The reason is described [in an article we've previously mentioned](/docs/blog/optimized-entity-platform-for-n-tier-apps.md)
 
 ```csharp
 public class MyAppDbContext : EfDbContextBase
@@ -34,7 +34,7 @@ public class MyAppDbContext : EfDbContextBase
     public MyAppDbContext(IAppEnvironmentProvider appEnvironmentProvider, IDbConnectionProvider dbConnectionProvider)
         : base(appEnvironmentProvider.GetActiveAppEnvironment().GetConfig<string>("AppConnectionString"), dbConnectionProvider)
     {
-        // This constructor has better performance, provides implicit unit of work, etc. And it is automatically used by bit framework while processing requests etc.
+        // This constructor has better performance, provides implicit unit of work, etc. And it is automatically used by bit platform while processing requests etc.
     }
 
     public virtual DbSet<Customer> Customers { get; set; }
@@ -137,11 +137,11 @@ public MyAppDbContext()
 public MyAppDbContext(IAppEnvironmentProvider appEnvironmentProvider, IDbContextObjectsProvider dbContextCreationOptionsProvider)
         : base(appEnvironmentProvider.GetActiveAppEnvironment().GetConfig<string>("AppConnectionString"), dbContextCreationOptionsProvider)
 {
-     // This constructor has better performance, provides implicit unit of work, etc. And it is automatically used by bit framework while processing requests etc.
+     // This constructor has better performance, provides implicit unit of work, etc. And it is automatically used by bit platform while processing requests etc.
 }
 ```
 
-If you've got a complex scenario, simply drops us an [issue on github](https://github.com/bitfoundation/bitframework/issues) or ask a question on [stackoverflow](https://stackoverflow.com/questions/tagged/bit-framework).
+If you've got a complex scenario, simply drops us an [issue on github](https://github.com/bitfoundation/bitplatform/issues) or ask a question on [stackoverflow](https://stackoverflow.com/questions/tagged/bit-framework).
 
 ## Bit repository specific methods
 
