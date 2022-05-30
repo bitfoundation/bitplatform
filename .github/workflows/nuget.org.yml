@@ -5,6 +5,9 @@ on:
   push:
     branches:
       - 'main'
+    paths:
+      - 'src/Client/Web/**'
+      - 'src/Tooling/**'
 
 jobs:
   build-publish:
