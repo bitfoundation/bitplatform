@@ -6,9 +6,9 @@
     <UserSecretsId>075bb9c1-05ff-404a-ac1f-5670bb5bd331</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Bit.Server.WebApi" Version="10.0.0" />
-    <PackageReference Include="Bit.Tooling.CodeAnalyzer" Version="10.0.0" />
-    <PackageReference Include="Bit.Universal.AutoMapper" Version="10.0.0" />
+    <PackageReference Include="Bit.Server.WebApi" Version="11.0.0" />
+    <PackageReference Include="Bit.Tooling.CodeAnalyzer" Version="11.0.0" />
+    <PackageReference Include="Bit.Universal.AutoMapper" Version="11.0.0" />
   </ItemGroup>
   <ItemGroup>
     <Content Update="environments.json">

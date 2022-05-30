@@ -25,11 +25,11 @@
 		<PackageProjectUrl>https://github.com/bitfoundation/bitplatform</PackageProjectUrl>
 		<PackageIconUrl>https://avatars.githubusercontent.com/u/22663390</PackageIconUrl>
 		<PackageReleaseNotes>https://github.com/bitfoundation/bitplatform/releases/tag/v10.0.0</PackageReleaseNotes>
-		<PackageVersion>10.0.0</PackageVersion>
+		<PackageVersion>11.0.0</PackageVersion>
 
 		<!-- Version -->
-		<Version>10.0.0</Version>
-		<AssemblyVersion>10.0.0</AssemblyVersion>
+		<Version>11.0.0</Version>
+		<AssemblyVersion>11.0.0</AssemblyVersion>
 
 		<!-- Compile -->
 		<NeutralLanguage>en</NeutralLanguage>
