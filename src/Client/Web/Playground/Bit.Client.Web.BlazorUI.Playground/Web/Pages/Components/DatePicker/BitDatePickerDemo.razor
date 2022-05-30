@@ -21,25 +21,15 @@
 
     <ComponentExampleBox Title="Jalali BitDatePicker" HTMLSourceCode="@example3HTMLCode" ExampleId="example3">
         <ExamplePreview>
-            <div class="example-desc">In this sample, you can see the usage of CultureInfoHelper class to specify a particular format for the DatePicker. You can also provide your own class for any custom culture of your interest.</div>
-            <div>
-                <BitDatePicker Culture="@(new System.Globalization.CultureInfo("fa-IR"))"
-                               GoToToday="برو به امروز"
-                               Style="width: 300px">
-                </BitDatePicker>
-            </div>
+            <div class="example-desc">In this sample, you can see the usage of CultureInfoHelper class to specify a particular format for the DatePicker. You can also provide your own class for any custom culture of your interest.</div>            
+            <div class="example-desc">Please note that in order to use this sample we needed to set InvariantGlobalization to false in project setting, which in turn caused 400 kb of data overloading the site. Hence, we decided for now to set this setting to true to prevent this but you still can use the sample code here in your own project.</div>
         </ExamplePreview>
     </ComponentExampleBox>
 
     <ComponentExampleBox Title="Jalali BitDatePicker with Finglish names" HTMLSourceCode="@example4HTMLCode" CSharpSourceCode="@example4CSharpCode" ExampleId="example4">
         <ExamplePreview>
-            <div class="example-desc">In this sample, you can see the usage of CultureInfoHelper class to specify a particular format for the DatePicker. You can also provide your own class for any custom culture of your interest.</div>
-            <div>
-                <BitDatePicker Culture="Bit.Client.Web.BlazorUI.CultureInfoHelper.GetPersianCultureByFinglishNames()"
-                               GoToToday="Boro be emrouz"
-                               Style="width: 300px">
-                </BitDatePicker>
-            </div>
+            <div class="example-desc">In this sample, you can see the usage of CultureInfoHelper class to specify a particular format for the DatePicker. You can also provide your own class for any custom culture of your interest.</div>           
+            <div class="example-desc">Please note that in order to use this sample we needed to set InvariantGlobalization to false in project setting, which in turn caused 400 kb of data overloading the site. Hence, we decided for now to set this setting to true to prevent this but you still can use the sample code here in your own project.</div>
         </ExamplePreview>
     </ComponentExampleBox>
 
