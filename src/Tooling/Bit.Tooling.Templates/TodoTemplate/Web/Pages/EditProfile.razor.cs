@@ -4,7 +4,7 @@ namespace TodoTemplate.App.Pages;
 
 public partial class EditProfile
 {
-    public UserDto? User { get; set; } = new();
+    public UserDto User { get; set; } = new();
     public UserDto UserToEdit { get; set; } = new();
 
     public string? ProfileImageUploadUrl { get; set; }
@@ -58,21 +58,19 @@ public partial class EditProfile
 
     private async Task LoadEditProfileData()
     {
-        User = await StateService.GetValue($"{nameof(EditProfile)}-{nameof(User)}", async () =>
-            await HttpClient.GetFromJsonAsync("User/GetCurrentUser", TodoTemplateJsonContext.Default.UserDto));
+        User = (await StateService.GetValue($"{nameof(EditProfile)}-{nameof(User)}", async () =>
+            await HttpClient.GetFromJsonAsync("User/GetCurrentUser", TodoTemplateJsonContext.Default.UserDto))) ?? new();
 
-        UserToEdit.FullName = User?.FullName;
-        UserToEdit.BirthDate = User?.BirthDate;
-        UserToEdit.Gender = User?.Gender;
+        UserToEdit.FullName = User.FullName;
+        UserToEdit.BirthDate = User.BirthDate;
+        UserToEdit.Gender = User.Gender;
     }
 
-    private bool SaveButtonIsEnabled()
-    {
-        return ((User?.FullName ?? String.Empty) != (UserToEdit.FullName ?? String.Empty)
-            || User?.BirthDate != UserToEdit.BirthDate
-            || User?.Gender != UserToEdit.Gender)
+    private bool IsSubmitButtonEnabled =>
+            ((User.FullName ?? String.Empty) != (UserToEdit.FullName ?? String.Empty)
+            || User.BirthDate != UserToEdit.BirthDate
+            || User.Gender != UserToEdit.Gender)
             && IsSavingData is false;
-    }
 
     private async Task Save()
     {

@@ -18,6 +18,12 @@ public partial class SignUp
 
     [Inject] public TodoTemplateAuthenticationStateProvider TodoTemplateAuthenticationStateProvider { get; set; } = default!;
 
+    private bool IsSubmitButtonEnabled =>
+        SignUpModel.UserName.HasValue()
+        && SignUpModel.Password.HasValue()
+        && SignUpModel.IsAcceptPrivacy
+        && IsLoading is false;
+
     private async Task DoSignUp()
     {
         if (IsLoading)
@@ -84,11 +90,6 @@ public partial class SignUp
         }
     }
 
-    private bool SubmitButtonIsEnabled()
-    {
-        return SignUpModel.UserName.HasValue() && SignUpModel.Password.HasValue() && SignUpModel.IsAcceptPrivacy && IsLoading is false;
-    }
-
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await base.OnAfterRenderAsync(firstRender);
@@ -102,4 +103,3 @@ public partial class SignUp
         }
     }
 }
-

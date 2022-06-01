@@ -28,21 +28,21 @@
         {
             <div class="form-profile-container">
                 <div class="form-profile-img">
-                    @if (User?.ProfileImageName != null)
+                    @if (User.ProfileImageName != null)
                     {
                         <img src="@ProfileImageUrl" class="profile-img" />
                     }
-                    else if (string.IsNullOrEmpty(User?.FullName) is false && User?.FullName.Length >= 2)
+                    else if (string.IsNullOrEmpty(User.FullName) is false && User.FullName.Length >= 2)
                     {
-                        @User?.FullName?.ToUpper()[..2]
+                        @User.FullName?.ToUpper()[..2]
                     }
                     else
                     {
-                        @User?.UserName?.ToUpper()[..2]
+                        @User.UserName?.ToUpper()[..2]
                     }
                 </div>
                 <div class="form-profile-email">
-                    @User?.UserName
+                    @User.UserName
                 </div>
             </div>
             <div class="form-input-container">
@@ -76,7 +76,7 @@
                 <BitButton ButtonStyle="BitButtonStyle.Primary"
                        AriaLabel="Save"
                        Title="Save"
-                       IsEnabled="SaveButtonIsEnabled()"
+                       IsEnabled="IsSubmitButtonEnabled"
                        ButtonType="BitButtonType.Submit">
                     @if (IsSavingData)
                     {

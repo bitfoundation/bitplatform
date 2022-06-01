@@ -14,6 +14,10 @@ public partial class ForgotPassword
 
     [Inject] public HttpClient HttpClient { get; set; } = default!;
 
+    private bool IsSubmitButtonEnabled =>
+        ForgotPasswordModel.Email.HasValue() 
+        && IsLoading is false;
+
     private async Task Submit()
     {
         if (IsLoading)
@@ -42,10 +46,5 @@ public partial class ForgotPassword
         {
             IsLoading = false;
         }
-    }
-
-    private bool SubmitButtonIsEnabled()
-    {
-        return ForgotPasswordModel.Email.HasValue() && IsLoading is false;
     }
 }

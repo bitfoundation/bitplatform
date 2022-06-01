@@ -37,7 +37,7 @@
             </div>
             <BitButton Class="form-submit-button"
                    ButtonStyle="BitButtonStyle.Primary"
-                   IsEnabled="SubmitButtonIsEnabled()"
+                   IsEnabled="@(IsLoading is false)"
                    Title="Resend email"
                    AriaLabel="Resend email"
                    OnClick="WrapHandled(ResendLink)">

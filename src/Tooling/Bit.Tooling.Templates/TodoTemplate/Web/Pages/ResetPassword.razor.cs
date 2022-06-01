@@ -28,6 +28,11 @@ public partial class ResetPassword
 
     [Inject] public TodoTemplateAuthenticationStateProvider TodoTemplateAuthenticationStateProvider { get; set; } = default!;
 
+    private bool IsSubmitButtonEnabled =>
+        ResetPasswordModel.Password.HasValue() 
+        && ResetPasswordModel.ConfirmPassword.HasValue() 
+        && IsLoading is false;
+
     private async Task Submit()
     {
         if (IsLoading)
@@ -67,11 +72,6 @@ public partial class ResetPassword
         {
             IsLoading = false;
         }
-    }
-
-    private bool SubmitButtonIsEnabled()
-    {
-        return ResetPasswordModel.Password.HasValue() && ResetPasswordModel.ConfirmPassword.HasValue() && IsLoading is false;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
