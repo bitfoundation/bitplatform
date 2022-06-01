@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using TodoTemplate.App.Shared;
 
 namespace TodoTemplate.App.Services.Implementations;
 
@@ -11,5 +12,7 @@ public class TodoTemplateExceptionHandler : IExceptionHandler
 
         Console.WriteLine(exception.ToString());
 #endif
+
+        MessageBox.Show(exception.Message, "Error");
     }
 }
