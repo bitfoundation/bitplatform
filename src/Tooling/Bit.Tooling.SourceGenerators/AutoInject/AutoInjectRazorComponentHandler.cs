@@ -33,7 +33,7 @@ using System.ComponentModel;
 
 namespace {classNamespace}
 {{
-    [global::System.CodeDom.Compiler.GeneratedCode(""Bit.Tooling.SourceGenerators"",""{AutoInjectConstantInformation.PackageVersion}"")]
+    [global::System.CodeDom.Compiler.GeneratedCode(""Bit.Tooling.SourceGenerators"",""{AutoInjectConstantInformation.GetPackageVersion()}"")]
     [global::System.Diagnostics.DebuggerNonUserCode]
     [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     public partial class {classSymbol.Name}
@@ -64,8 +64,6 @@ namespace {classNamespace}
                 stringBuilder.Append(GenerateProperty(propertySymbol.Type, propertySymbol.Name));
         }
 
-        stringBuilder.Length--;
-
         return stringBuilder.ToString();
     }
 
@@ -74,6 +72,6 @@ namespace {classNamespace}
         return $@"
 {"\t\t"}[Inject]
 {"\t\t"}[EditorBrowsable(EditorBrowsableState.Never)]
-{"\t\t"}private {@type} ____{FormatMemberName(name)} {{ get => {name}; set => {name} = value; }};";
+{"\t\t"}private {@type} ____{FormatMemberName(name)} {{ get => {name}; set => {name} = value; }}";
     }
 }

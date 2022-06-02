@@ -1,11 +1,10 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <Import Project="../../Bit.Build.props" />
 
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
         <!-- Generates a package at build -->
-        <IncludeBuildOutput>false</IncludeBuildOutput>
         <!-- Do not include the generator as a lib dependency -->
         <LangVersion>preview</LangVersion>
 

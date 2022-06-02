@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
@@ -53,7 +55,7 @@ public class AutoInjectSourceGenerator : ISourceGenerator
     {
         if (@class is null)
             throw new ArgumentNullException(nameof(@class));
-        
+
         if (IsClassIsRazorComponent(@class))
             return AutoInjectClassType.RazorComponent;
         else
@@ -62,7 +64,27 @@ public class AutoInjectSourceGenerator : ISourceGenerator
 
     private static bool IsClassIsRazorComponent(INamedTypeSymbol @class)
     {
-        return @class.AllInterfaces.Any(o =>
+        bool isInheritIComponent = @class.AllInterfaces.Any(o =>
             o.ToDisplayString() == "Microsoft.AspNetCore.Components.IComponent");
+
+        if (isInheritIComponent)
+            return true;
+
+        List<string> classFilePaths = @class.Locations
+            .Where(o => o.SourceTree != null)
+            .Select(o => o.SourceTree.FilePath)
+            .ToList();
+
+        string razorFileName = $"{@class.Name}.razor";
+        
+        foreach (string path in classFilePaths)
+        {
+            string directoryPath = Path.GetDirectoryName(path) ?? "";
+            string filePath = Path.Combine(directoryPath, razorFileName);
+            if (File.Exists(filePath))
+                return true;
+        }
+
+        return false;
     }
 }
