@@ -45,8 +45,7 @@ public class AutoInjectSourceGenerator : ISourceGenerator
         {
             AutoInjectClassType.NormalClass => AutoInjectNormalClassHandler.Generate(attributeSymbol, classSymbol,
                 eligibleMembers),
-            AutoInjectClassType.RazorComponent => AutoInjectRazorComponentHandler.Generate(attributeSymbol,
-                classSymbol, eligibleMembers),
+            AutoInjectClassType.RazorComponent => AutoInjectRazorComponentHandler.Generate(classSymbol, eligibleMembers),
             _ => ""
         };
     }

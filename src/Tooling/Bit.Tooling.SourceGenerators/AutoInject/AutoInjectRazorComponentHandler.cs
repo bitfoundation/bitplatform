@@ -8,7 +8,6 @@ namespace Bit.Tooling.SourceGenerators;
 public class AutoInjectRazorComponentHandler : AutoInjectBaseHandler
 {
     public static string? Generate(
-        INamedTypeSymbol? attributeSymbol,
         INamedTypeSymbol? classSymbol,
         IReadOnlyCollection<ISymbol> eligibleMembers)
     {
@@ -24,7 +23,6 @@ public class AutoInjectRazorComponentHandler : AutoInjectBaseHandler
 
         string classNamespace = classSymbol.ContainingNamespace.ToDisplayString();
 
-        IReadOnlyCollection<ISymbol> baseEligibleMembers = GetBaseClassEligibleMembers(classSymbol, attributeSymbol);
         IReadOnlyCollection<ISymbol> sortedMembers = eligibleMembers.OrderBy(o => o.Name).ToList();
 
         string source = $@"
@@ -38,24 +36,17 @@ namespace {classNamespace}
     [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     public partial class {classSymbol.Name}
     {{
-        {GenerateInjectableProperties(sortedMembers, baseEligibleMembers)}
+        {GenerateInjectableProperties(sortedMembers)}
     }}
 }}";
         return source;
     }
 
-    private static string GenerateInjectableProperties(
-        IReadOnlyCollection<ISymbol> eligibleMembers,
-        IReadOnlyCollection<ISymbol> baseEligibleMembers)
+    private static string GenerateInjectableProperties(IReadOnlyCollection<ISymbol> eligibleMembers)
     {
         StringBuilder stringBuilder = new StringBuilder();
-        List<ISymbol> members = new List<ISymbol>(eligibleMembers.Count + baseEligibleMembers.Count);
 
-        members.AddRange(eligibleMembers);
-        members.AddRange(baseEligibleMembers);
-        members = members.OrderBy(o => o.Name).ToList();
-
-        foreach (ISymbol member in members)
+        foreach (ISymbol member in eligibleMembers)
         {
             if (member is IFieldSymbol fieldSymbol)
                 stringBuilder.Append(GenerateProperty(fieldSymbol.Type, fieldSymbol.Name));
