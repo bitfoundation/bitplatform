@@ -42,10 +42,11 @@ public class ComponentDetailsController : ControllerBase
                                                             .Where(a => a.Value.Contains(prefix + p.Name))
                                                             .FirstOrDefault();
 
+                                  var typeName = GetTypeName(p.PropertyType);
                                   return new
                                   {
                                       p.Name,
-                                      Type = p.PropertyType.Name,
+                                      Type = typeName,
                                       DefaultValue = p.GetValue(componentInstance)?.ToString(),
                                       Description = xmlProperty?.Parent.Element("summary")?.Value.Trim(),
                                   };
@@ -61,5 +62,18 @@ public class ComponentDetailsController : ControllerBase
         var stream = System.IO.File.OpenRead(path);
         return await XDocument.LoadAsync(stream, LoadOptions.None, default);
     }
+
+    private static string GetTypeName(Type type)
+    {
+        if (type.IsGenericType)
+        {
+            var arguments = string.Join(", ", type.GetGenericArguments().Select(x => x.Name));
+            var mainType = type.Name[..type.Name.IndexOf("`")];
+            return $"{mainType}<{arguments}>";
+        }
+
+        return type.Name;
+    }
+
 }
 
