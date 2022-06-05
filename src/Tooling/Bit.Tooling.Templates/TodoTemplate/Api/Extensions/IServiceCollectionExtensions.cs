@@ -1,4 +1,5 @@
-﻿using System.Security.Cryptography;
+﻿using System.IdentityModel.Tokens.Jwt;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -31,6 +32,10 @@ public static class IServiceCollectionExtensions
 
     public static void AddTodoTemplateJwt(this IServiceCollection services, IConfiguration configuration)
     {
+        JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
+        JwtSecurityTokenHandler.DefaultMapInboundClaims = false;
+        JwtSecurityTokenHandler.DefaultOutboundClaimTypeMap.Clear();
+
         var appsettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>();
         var settings = appsettings.JwtSettings;
 
@@ -128,12 +133,12 @@ public static class IServiceCollectionExtensions
         var appsettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>();
 
         var healthCheckSettings = appsettings.HealCheckSettings;
-        
+
         if (healthCheckSettings.EnableHealthChecks is false)
             return;
-        
+
         services.AddHealthChecksUI(setupSettings: setup =>
-        { 
+        {
             setup.AddHealthCheckEndpoint("TodoHealthChecks", env.IsDevelopment() ? "https://localhost:5001/healthz" : "/healthz");
         }).AddInMemoryStorage();
 
@@ -142,7 +147,7 @@ public static class IServiceCollectionExtensions
             .AddDiskStorageHealthCheck(opt =>
                 opt.AddDrive(Path.GetPathRoot(Directory.GetCurrentDirectory()), minimumFreeMegabytes: 5 * 1024))
             .AddDbContextCheck<TodoTemplateDbContext>();
-        
+
         var emailSettings = appsettings.EmailSettings;
 
         if (emailSettings.Host is not "LocalFolder")
@@ -152,7 +157,7 @@ public static class IServiceCollectionExtensions
                 {
                     options.Host = emailSettings.Host;
                     options.Port = emailSettings.Port;
-        
+
                     if (emailSettings.HasCredential)
                     {
                         options.LoginWith(emailSettings.UserName, emailSettings.Password);
