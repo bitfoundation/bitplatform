@@ -42,11 +42,10 @@ public class ComponentDetailsController : ControllerBase
                                                             .Where(a => a.Value.Contains(prefix + p.Name))
                                                             .FirstOrDefault();
 
-                                  var typeName = GetTypeName(p.PropertyType);
                                   return new
                                   {
                                       p.Name,
-                                      Type = typeName,
+                                      Type = GetTypeName(p.PropertyType),
                                       DefaultValue = p.GetValue(componentInstance)?.ToString(),
                                       Description = xmlProperty?.Parent.Element("summary")?.Value.Trim(),
                                   };
