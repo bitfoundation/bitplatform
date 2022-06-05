@@ -27,7 +27,7 @@ public class ComponentDetailsController : ControllerBase
 
         if (SummariesXmlDocument == null)
         {
-            SummariesXmlDocument = await LoadXmlFileAsync();
+            SummariesXmlDocument = await LoadSummariesXmlDocumentAsync();
         }
 
         var componentInstance = Activator.CreateInstance(componentType);
@@ -52,7 +52,7 @@ public class ComponentDetailsController : ControllerBase
                               }));
     }
 
-    private static async Task<XDocument> LoadXmlFileAsync()
+    private static async Task<XDocument> LoadSummariesXmlDocumentAsync()
     {
         string path = Path.Combine(AppContext.BaseDirectory, $"{ComponentsAssembly.GetName().Name}.xml");
 
