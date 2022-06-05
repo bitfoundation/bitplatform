@@ -67,7 +67,7 @@ public partial class EditProfile
     }
 
     private bool IsSubmitButtonEnabled =>
-            ((User.FullName ?? String.Empty) != (UserToEdit.FullName ?? String.Empty)
+            ((User.FullName ?? string.Empty) != (UserToEdit.FullName ?? string.Empty)
             || User.BirthDate != UserToEdit.BirthDate
             || User.Gender != UserToEdit.Gender)
             && IsSavingData is false;
