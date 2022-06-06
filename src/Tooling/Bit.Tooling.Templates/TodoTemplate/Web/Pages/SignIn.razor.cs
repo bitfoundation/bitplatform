@@ -51,10 +51,10 @@ public partial class SignIn
         }
     }
 
-    private bool SubmitButtonIsEnabled()
-    {
-        return SignInModel.UserName.HasValue() && SignInModel.Password.HasValue();
-    }
+    private bool IsSubmitButtonEnabled =>
+        SignInModel.UserName.HasValue() 
+        && SignInModel.Password.HasValue() 
+        && IsLoading is false;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

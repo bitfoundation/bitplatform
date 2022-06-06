@@ -28,21 +28,21 @@
         {
             <div class="form-profile-container">
                 <div class="form-profile-img">
-                    @if (User?.ProfileImageName != null)
+                    @if (User.ProfileImageName != null)
                     {
                         <img src="@ProfileImageUrl" class="profile-img" />
                     }
-                    else if (string.IsNullOrEmpty(User?.FullName) is false && User?.FullName.Length >= 2)
+                    else if (string.IsNullOrEmpty(User.FullName) is false && User.FullName.Length >= 2)
                     {
-                        @User?.FullName?.ToUpper()[..2]
+                        @User.FullName?.ToUpper()[..2]
                     }
                     else
                     {
-                        @User?.UserName?.ToUpper()[..2]
+                        @User.UserName?.ToUpper()[..2]
                     }
                 </div>
                 <div class="form-profile-email">
-                    @User?.UserName
+                    @User.UserName
                 </div>
             </div>
             <div class="form-input-container">
@@ -58,19 +58,16 @@
                 <div class="form-input-container">
                     <BitTextField Label="Full name"
                               @bind-Value="UserToEdit.FullName"
-                              Placeholder="Full name"
-                              OnChange="WrapHandled(CheckSaveButtonEnabled)" />
+                              Placeholder="Full name" />
                 </div>
                 <div class="form-input-container">
                     <BitDatePicker Label="Birthday"
                                Class="edit-profile-dtp"
                                @bind-Value="UserToEdit.BirthDate"
-                               Placeholder="Select your birth date"
-                               OnSelectDate="WrapHandled(CheckSaveButtonEnabled)" />
+                               Placeholder="Select your birth date" />
                 </div>
                 <div class="form-choice-container">
-                    <BitRadioButtonGroup Label="Gender" @bind-Value="UserToEdit.GenderAsString"
-                                     OnValueChange="WrapHandled(CheckSaveButtonEnabled)">
+                    <BitRadioButtonGroup Label="Gender" @bind-Value="UserToEdit.GenderAsString">
                         <BitRadioButtonOption Value="@Gender.Male.ToString()" Text="Male" AriaLabel="Male"></BitRadioButtonOption>
                         <BitRadioButtonOption Value="@Gender.Female.ToString()" Text="Famale" AriaLabel="Famale"></BitRadioButtonOption>
                         <BitRadioButtonOption Value="@Gender.Custom.ToString()" Text="Custom" AriaLabel="Custom"></BitRadioButtonOption>
@@ -79,7 +76,7 @@
                 <BitButton ButtonStyle="BitButtonStyle.Primary"
                        AriaLabel="Save"
                        Title="Save"
-                       IsEnabled="IsSaveButtonEnabled"
+                       IsEnabled="IsSubmitButtonEnabled"
                        ButtonType="BitButtonType.Submit">
                     @if (IsSavingData)
                     {

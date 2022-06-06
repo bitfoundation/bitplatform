@@ -4,14 +4,13 @@ namespace TodoTemplate.App.Pages;
 
 public partial class EditProfile
 {
-    public UserDto? User { get; set; } = new();
+    public UserDto User { get; set; } = new();
     public UserDto UserToEdit { get; set; } = new();
 
     public string? ProfileImageUploadUrl { get; set; }
     public string? ProfileImageUrl { get; set; }
     public string? ProfileImageError { get; set; }
 
-    public bool IsSaveButtonEnabled { get; set; }
     public bool IsSavingData { get; set; }
     public bool IsLoadingData { get; set; }
 
@@ -59,26 +58,19 @@ public partial class EditProfile
 
     private async Task LoadEditProfileData()
     {
-        User = await StateService.GetValue($"{nameof(EditProfile)}-{nameof(User)}", async () =>
-            await HttpClient.GetFromJsonAsync("User/GetCurrentUser", TodoTemplateJsonContext.Default.UserDto));
+        User = (await StateService.GetValue($"{nameof(EditProfile)}-{nameof(User)}", async () =>
+            await HttpClient.GetFromJsonAsync("User/GetCurrentUser", TodoTemplateJsonContext.Default.UserDto))) ?? new();
 
-        UserToEdit.FullName = User?.FullName;
-        UserToEdit.BirthDate = User?.BirthDate;
-        UserToEdit.Gender = User?.Gender;
+        UserToEdit.FullName = User.FullName;
+        UserToEdit.BirthDate = User.BirthDate;
+        UserToEdit.Gender = User.Gender;
     }
 
-    private void CheckSaveButtonEnabled()
-    {
-        if (User?.FullName == UserToEdit.FullName &&
-            User?.BirthDate == UserToEdit.BirthDate &&
-            User?.Gender == UserToEdit.Gender)
-        {
-            IsSaveButtonEnabled = false;
-            return;
-        }
-
-        IsSaveButtonEnabled = true;
-    }
+    private bool IsSubmitButtonEnabled =>
+            ((User.FullName ?? string.Empty) != (UserToEdit.FullName ?? string.Empty)
+            || User.BirthDate != UserToEdit.BirthDate
+            || User.Gender != UserToEdit.Gender)
+            && IsSavingData is false;
 
     private async Task Save()
     {
@@ -88,7 +80,6 @@ public partial class EditProfile
         }
 
         IsSavingData = true;
-        IsSaveButtonEnabled = false;
         EditProfileMessage = null;
 
         try
@@ -112,7 +103,6 @@ public partial class EditProfile
         finally
         {
             IsSavingData = false;
-            IsSaveButtonEnabled = true;
         }
     }
 }
