@@ -97,13 +97,10 @@ public class TdStack
             ServerName = sqlServer.Name,
             Sku = new SqlDatabaseSkuArgs
             {
-                Tier = "GeneralPurpose",
-                Name = "GP_S_Gen5",
-                Family = "Gen5",
-                Capacity = 1
-            },
-            AutoPauseDelay = 60, // minutes
-            MinCapacity = 0.5
+                Tier = "Basic",
+                Name = "Basic",
+                Capacity = 5
+            }
         });
 
         AppServicePlan appServicePlan = new($"app-plan-td-{stackName}", new()
