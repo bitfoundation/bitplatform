@@ -3,10 +3,8 @@ using System.Reflection;
 
 namespace Bit.Tooling.SourceGenerators;
 
-internal static class AutoInjectConstantInformation
+internal static class PackageHelper
 {
-    public static readonly string AttributeName = typeof(AutoInjectAttribute).FullName;
-
     public static string GetPackageVersion()
     {
         Version version = Assembly.GetExecutingAssembly().GetName().Version;

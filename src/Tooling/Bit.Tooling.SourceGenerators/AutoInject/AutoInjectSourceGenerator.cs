@@ -12,6 +12,8 @@ namespace Bit.Tooling.SourceGenerators;
 [Generator]
 public class AutoInjectSourceGenerator : ISourceGenerator
 {
+    private static readonly string AutoInjectAttributeName = typeof(AutoInjectAttribute).FullName;
+    
     public void Initialize(GeneratorInitializationContext context)
     {
         context.RegisterForSyntaxNotifications(() => new AutoInjectSyntaxReceiver());
@@ -22,7 +24,7 @@ public class AutoInjectSourceGenerator : ISourceGenerator
         if ((context.SyntaxContextReceiver is AutoInjectSyntaxReceiver receiver) is false)
             return;
 
-        INamedTypeSymbol? attributeSymbol = context.Compilation.GetTypeByMetadataName(AutoInjectConstantInformation.AttributeName);
+        INamedTypeSymbol? attributeSymbol = context.Compilation.GetTypeByMetadataName(AutoInjectAttributeName);
 
         foreach (IGrouping<INamedTypeSymbol, ISymbol> group in receiver.EligibleMembers
                      .GroupBy<ISymbol, INamedTypeSymbol>(f => f.ContainingType, SymbolEqualityComparer.Default))

@@ -8,6 +8,8 @@ namespace Bit.Tooling.SourceGenerators;
 
 public class AutoInjectSyntaxReceiver : ISyntaxContextReceiver
 {
+    private static readonly string AutoInjectAttributeName = typeof(AutoInjectAttribute).FullName;
+
     public Collection<ISymbol> EligibleMembers { get; } = new ();
 
     public void OnVisitSyntaxNode(GeneratorSyntaxContext context)
@@ -35,7 +37,7 @@ public class AutoInjectSyntaxReceiver : ISyntaxContextReceiver
             if (fieldSymbol != null &&
                 fieldSymbol.GetAttributes()
                     .Any(ad => ad.AttributeClass != null &&
-                               ad.AttributeClass.ToDisplayString() == AutoInjectConstantInformation.AttributeName))
+                               ad.AttributeClass.ToDisplayString() == AutoInjectAttributeName))
             {
                 EligibleMembers.Add(fieldSymbol);
             }
@@ -61,7 +63,7 @@ public class AutoInjectSyntaxReceiver : ISyntaxContextReceiver
             return;
 
         if (propertySymbol.GetAttributes().Any(ad =>
-                ad.AttributeClass != null && ad.AttributeClass.ToDisplayString() == AutoInjectConstantInformation.AttributeName))
+                ad.AttributeClass != null && ad.AttributeClass.ToDisplayString() == AutoInjectAttributeName))
         {
             EligibleMembers.Add(propertySymbol);
         }

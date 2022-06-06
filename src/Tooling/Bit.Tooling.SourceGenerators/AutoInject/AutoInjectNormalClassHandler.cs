@@ -30,7 +30,7 @@ public class AutoInjectNormalClassHandler : AutoInjectBaseHandler
         string source = $@"
 namespace {classNamespace}
 {{
-    [global::System.CodeDom.Compiler.GeneratedCode(""Bit.Tooling.SourceGenerators"",""{AutoInjectConstantInformation.GetPackageVersion()}"")]
+    [global::System.CodeDom.Compiler.GeneratedCode(""Bit.Tooling.SourceGenerators"",""{PackageHelper.GetPackageVersion()}"")]
     [global::System.Diagnostics.DebuggerNonUserCode]
     [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     public partial class {classSymbol.Name}
