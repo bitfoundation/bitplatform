@@ -1,0 +1,10 @@
+# FAQ
+
+WE ARE HERE TO HELP
+
+## GENERAL
+
+
+
+## LICENSE
+
