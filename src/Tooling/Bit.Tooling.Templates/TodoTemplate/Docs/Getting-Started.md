@@ -16,6 +16,10 @@ This document aimed to create and run a Bit-Platform project in a short period. 
 - Asp.net and web development VS workload
 - .Net Multi-Platform App UI development (for mobile app development target) VS workload
 
+## Setup envirnoment
+vs extention...
+
+
 ## Create project
 
 Clone the [TodoTemplate](https://github.com/bitfoundation/bitplatform/tree/develop/src/Tooling/Bit.Tooling.Templates/TodoTemplate) from the Bit-Platform Github repository
@@ -56,3 +60,19 @@ All things you need is to set this project as a startup in solution and run it.
 
 ## BlazorMode
 Bit-Platform support tree modes for Blazor include BlazorServer, BlazorWebAssembly, and BlazorHybrid which can easily switch between it.
+
+### BlazorServer
+
+### BlazorWebAssembly
+
+### BlazorHybrid
+
+## Run
+How run...
+
+**Note**: wilcard & admin vs ...
+
+## Debugging
+How debug
+**Note** : tip for email sending test in file
+
