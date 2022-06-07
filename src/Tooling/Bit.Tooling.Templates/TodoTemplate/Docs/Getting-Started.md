@@ -20,9 +20,9 @@ This document aimed to create and run a Bit-Platform project in a short period. 
 
 Clone the [TodoTemplate](https://github.com/bitfoundation/bitplatform/tree/develop/src/Tooling/Bit.Tooling.Templates/TodoTemplate) from the Bit-Platform Github repository
 
-## Configure The Project
+# Configure The Project
 
-Restore NuGet packages
+## Restore NuGet packages
 
 If automatically not started click on the &quot;Restore NuGet packages&quot; item from right-click menu of solution name in solution explorer windows.
 
@@ -34,7 +34,7 @@ Open  **appsettings.json**  in  **TodoTemplate.Api**  project and change the  **
 
 &quot;ConnectionStrings&quot;: {
 
-    &quot;SqlServerConnection&quot;: &quot;Data Source=.; Initial Catalog=TodoTemplateDb;Integrated Security=true&quot;
+    "SqlServerConnection": "Data Source=.; Initial Catalog=TodoTemplateDb;Integrated Security=true"
 
 }
 
@@ -46,10 +46,10 @@ We have two options to create and migrate the database to the latest version.
 
 You can use Entity Framework&#39;s built-in tools for migrations. Open  **Package Manager Console**  in Visual Studio set  **TodoTemplate.Api**  as the  **Default Project**  and run the  **Update-Database**  command as shown below:
 
-Update-Database -Context TodoTemplateDbContext
+    Update-Database -Context TodoTemplateDbContext
 
 **2. Migrator Application**
 
-ASP.NET Zero solution includes a  **TodoTemplate.Migrator**  project in the solution. You can run this tool for database migrations on development and production platforms.
+Bit-Platform includes a **TodoTemplate.Migrator**  project in the solution. You can run this tool for database migrations on development and production platforms.
 
 All things you need is to set this project as a startup in solution and run it.
