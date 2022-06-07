@@ -42,14 +42,17 @@ Open  **appsettings.json**  in  **TodoTemplate.Api**  project and change the  **
 
 We have two options to create and migrate the database to the latest version.
 
-1. Entity Framework Migration Command
+1. **Entity Framework Migration Command**
 
 You can use Entity Framework&#39;s built-in tools for migrations. Open  **Package Manager Console**  in Visual Studio set  **TodoTemplate.Api**  as the  **Default Project**  and run the  **Update-Database**  command as shown below:
 
     Update-Database -Context TodoTemplateDbContext
 
-**2. Migrator Application**
+2. **Migrator Application**
 
 Bit-Platform includes a **TodoTemplate.Migrator**  project in the solution. You can run this tool for database migrations on development and production platforms.
 
 All things you need is to set this project as a startup in solution and run it.
+
+## BlazorMode
+Bit-Platform support tree modes for Blazor include BlazorServer, BlazorWebAssembly, and BlazorHybrid which can easily switch between it.
