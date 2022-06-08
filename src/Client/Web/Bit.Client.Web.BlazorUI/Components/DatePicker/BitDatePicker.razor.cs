@@ -30,6 +30,7 @@ namespace Bit.Client.Web.BlazorUI
         private bool showMonthPickerAsOverlayInternal;
         private int monthLength;
         private string focusClass = string.Empty;
+        private string? tempValue = null;
 
         [Inject] public IJSRuntime? JSRuntime { get; set; }
 
@@ -275,7 +276,16 @@ namespace Bit.Client.Web.BlazorUI
             if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
             if (AllowTextInput is false) return;
 
-            CurrentValueAsString = e.Value?.ToString();
+            tempValue = e.Value?.ToString();
+        }
+
+        public async Task HandleBlur(FocusEventArgs eventArgs)
+        {
+            if (IsEnabled is false) return;
+            if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+            if (AllowTextInput is false) return;
+
+            CurrentValueAsString = tempValue;
             await OnSelectDate.InvokeAsync(CurrentValue);
         }
 
@@ -750,7 +760,7 @@ namespace Bit.Client.Web.BlazorUI
                 return true;
             }
 
-            if (DateTime.TryParse(value, Culture, DateTimeStyles.None, out DateTime parsedValue))
+            if (DateTime.TryParseExact(value, FormatDate, Culture, DateTimeStyles.None, out DateTime parsedValue))
             {
                 result = new DateTimeOffset(parsedValue, DateTimeOffset.Now.Offset);
                 validationErrorMessage = null;
