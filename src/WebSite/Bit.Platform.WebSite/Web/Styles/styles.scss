@@ -1,0 +1,110 @@
+﻿@import '_shared.scss';
+
+* {
+    font-family: "Axiforma";
+}
+
+body {
+    width: 100%;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+}
+
+a {
+    text-decoration: none;
+}
+
+::-webkit-scrollbar {
+    width: rem(6px);
+}
+
+::-webkit-scrollbar-thumb {
+    background: $B5Color;
+    border-radius: rem(8px);
+    border: rem(5px) solid $B5Color;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: $B3Color;
+    border-radius: rem(8px);
+    border: rem(4px) solid $B3Color;
+}
+
+::-webkit-scrollbar-button {
+    display: none;
+}
+
+::-webkit-scrollbar:horizontal {
+    height: rem(6px);
+}
+
+/* Home Page ==================================================================================== */
+
+.header-nav-close-btn {
+    position: absolute;
+    right: rem(12px);
+    top: rem(16px);
+    color: $B2Color;
+}
+
+.header-action-button {
+    .bit-act-btn-fluent {
+        span:last-child {
+            i {
+                color: $B3Color;
+            }
+        }
+    }
+
+    flex-direction: row-reverse;
+    color: $B3Color;
+}
+
+.component-list-item {
+    max-width: 100%;
+    margin-bottom: rem(4px);
+    color: $Gray1;
+    font-size: rem(16px);
+    line-height: rem(24px);
+    font-family: Axiforma;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    cursor: pointer;
+
+    a {
+        color: inherit;
+        font-family: inherit;
+
+        &:hover, &:active {
+            color: $B2Color;
+            text-decoration: none;
+        }
+    }
+
+    &:last-child {
+        margin-bottom: 0;
+    }
+
+    &:hover {
+        color: $B2Color;
+    }
+
+    @include lg {
+        line-height: rem(24px);
+    }
+
+    @include md {
+        font-size: rem(14px);
+        line-height: rem(16px);
+        margin-bottom: rem(12px);
+    }
+
+    @include sm {
+        font-size: rem(14px);
+        line-height: rem(24px);
+        margin-bottom: rem(8px);
+    }
+}
+

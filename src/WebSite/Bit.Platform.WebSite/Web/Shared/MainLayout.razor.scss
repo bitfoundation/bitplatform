@@ -1,0 +1,20 @@
+﻿@import '../Styles/_shared.scss';
+
+.main-container {
+    position: relative;
+    width: 100%;
+    min-height: 100vh;
+    box-sizing: border-box;
+}
+
+.page-content {
+
+}
+
+.footer {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    width: 100%;
+}
