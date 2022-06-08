@@ -66,7 +66,7 @@ public static class Services
         services.AddDbContext<TodoTemplateDbContext>(options =>
         {
             options
-            .UseSqlServer(configuration.GetConnectionString("SqlServerConnection"), sqlOpt =>
+            .UseSqlServer(configuration.GetConnectionString("SqlServerConnectionString"), sqlOpt =>
             {
                 sqlOpt.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
             });
