@@ -55,13 +55,16 @@ Bit-Platform use Blazor for building UI, Blazor is a web framework for building 
 ### BlazorServer
 With the Blazor Server hosting model, the app is executed on the server from within an ASP.NET Core app. UI updates, event handling, and JavaScript calls are handled over a SignalR connection using the WebSockets protocol. 
 
-**Note**: Bit recommends using the BlazorServer during development because the debugging process is easier than other modes.
-
+**Note**: To run on BlazorServer mode you need multi startup for both api & web projects.
 ### BlazorWebAssembly
-Blazor WebAssembly (WASM) apps run client-side in the browser on a WebAssembly-based .NET runtime. The Blazor app, its dependencies, and the .NET runtime are downloaded to the browser. The app is executed directly on the browser UI thread. UI updates and event handling occur within the same process. The app's assets are deployed as static files to a web server or service capable of serving static content to clients
+Blazor WebAssembly (WASM) apps run client-side in the browser on a WebAssembly-based .NET runtime. The Blazor app, its dependencies, and the .NET runtime are downloaded to the browser. The app is executed directly on the browser UI thread. UI updates and event handling occur within the same process. The app's assets are deployed as static files to a web server or service capable of serving static content to clients.
+
+**Note**: To run on blazorWebAssembly mode only set as startup Api project and run it.
 
 ### BlazorHybrid
 Blazor can also be used to build native client apps using a hybrid approach. Hybrid apps are native apps that leverage web technologies for their functionality. In a Blazor Hybrid app, Razor components run directly in the native app (not on WebAssembly) along with any other .NET code and render web UI based on HTML and CSS to an embedded Web View control through a local interop channel.
+
+**Note**: To run on BlazorHybrid mode you need multi startup for both api & app projects.
 
 ## How change BlazorMode easily?
 To switch to each mode, easily change value of   `<BlazorMode>` on **Directory.build.props** file in **Solution Items** root folder.
@@ -91,10 +94,11 @@ To switch to each mode, easily change value of   `<WebAppDeploymentType>` on **D
       <WebAppDeploymentType>DefaultDeploymentType</WebAppDeploymentType>
         <!-- You can choose either Static, DefaultDeploymentType, PWA or SSR -->
 
-
-**Note**: if you debugging 
-
 ## Debugging
-How debug
-**Note** : tip for email sending test in file
+Several tips for better debugging
+
+- Bit recommends using the BlazorServer during development because the debugging process is easier than other modes.
+
+- In development process, Bit save sended email as eml file in the bellow path
+    > ./TodoTemplate/Api/bin/Debug/net6.0/sent-emails./TodoTemplate/Api/bin/Debug/net6.0/sent-emails
 
