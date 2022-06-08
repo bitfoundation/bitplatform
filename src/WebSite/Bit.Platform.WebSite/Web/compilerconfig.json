@@ -4,6 +4,10 @@
         "inputFile": "Components/Header.razor.scss"
     },
     {
+        "outputFile": "Components/Footer.razor.css",
+        "inputFile": "Components/Footer.razor.scss"
+    },
+    {
         "outputFile": "Components/NotFoundComponent.razor.css",
         "inputFile": "Components/NotFoundComponent.razor.scss"
     },

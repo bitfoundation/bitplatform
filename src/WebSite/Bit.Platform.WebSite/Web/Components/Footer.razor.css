@@ -33,9 +33,10 @@
   src: url("../fonts/Axiforma/woff2/AxiformaThin.woff2") format("woff2");
   font-weight: 100;
 }
-.main-container {
-  position: relative;
+.footer {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  left: 0;
   width: 100%;
-  min-height: 100vh;
-  box-sizing: border-box;
 }

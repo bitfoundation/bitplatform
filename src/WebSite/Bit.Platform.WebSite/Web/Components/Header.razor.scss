@@ -61,42 +61,6 @@
     }
 }
 
-.header-link {
-    height: 100%;
-    padding: rem(28px) 0 rem(20px);
-    margin-right: rem(44px);
-    box-sizing: border-box;
-    font-size: rem(20px);
-    line-height: rem(32px);
-    color: $Gray2;
-    text-decoration: none;
-    cursor: pointer;
-
-    @include lg {
-        padding: rem(20px) 0 rem(10px);
-        margin-right: rem(40px);
-        font-size: rem(14px);
-        line-height: rem(24px);
-    }
-
-    @include md {
-        padding: rem(16px) 0 rem(8px);
-        margin-right: rem(24px);
-        font-size: rem(12px);
-        line-height: rem(16px);
-    }
-}
-
-.header-link--active {
-    font-weight: 500;
-    color: $B2Color;
-    border-bottom: rem(2px) solid $B2Color;
-}
-
-.btn--primary {
-    @include HeaderPrimaryBtn;
-}
-
 .github-btn {
     width: rem(49px);
     height: rem(49px);
@@ -134,57 +98,10 @@
     }
 }
 
-.header-second-row {
-    display: none;
-    flex-flow: row nowrap;
-    justify-content: flex-start;
-    align-items: center;
-    width: 100%;
-    height: rem(44px);
-    padding: 0 rem(16px);
-    box-sizing: border-box;
-}
-
-.header-nav {
-    position: fixed;
-    z-index: 9999;
-    top: rem(92px);
-    left: 0;
-    display: flex;
-    flex-flow: column nowrap;
-    justify-content: flex-start;
-    align-items: flex-start;
-    width: 100%;
-    height: calc(100vh - #{rem(92px)});
-    padding: rem(72px) rem(16px) 0;
-    box-sizing: border-box;
-    background-color: $White;
-}
-
-.header-nav-link {
-    padding: rem(8px) 0;
-    margin-bottom: rem(16px);
-    font-weight: 700;
-    font-size: rem(16px);
-    line-height: rem(24px);
-    color: $Gray2;
-}
-
-.header-nav-link--active {
-    color: $B2Color;
-}
-
 @media all and (max-width: #{em(630px)}) {
     .header-main-container {
         height: rem(48px);
         padding: 0 rem(16px);
-        border-bottom: rem(1px) solid $B5Color;
-    }
-
-    .header-content-container {
-        .header-link {
-            display: none;
-        }
     }
 
     .header-logo {
@@ -193,20 +110,9 @@
         margin-right: rem(8px);
     }
 
-    .header-link {
-        padding: rem(10px) 0 rem(8px);
-        font-size: rem(14px);
-        line-height: rem(24px);
-        margin: 0;
-    }
-
     .github-btn {
         width: rem(20px);
         height: rem(20px);
         margin-left: 0;
-    }
-
-    .header-second-row {
-        display: flex;
     }
 }

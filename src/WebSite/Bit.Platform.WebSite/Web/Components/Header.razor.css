@@ -98,79 +98,6 @@
   }
 }
 
-.header-link {
-  height: 100%;
-  padding: 1.75rem 0 1.25rem;
-  margin-right: 2.75rem;
-  box-sizing: border-box;
-  font-size: 1.25rem;
-  line-height: 2rem;
-  color: #8A8886;
-  text-decoration: none;
-  cursor: pointer;
-}
-@media screen and (min-width: 56.3125em) and (max-width: 90em) {
-  .header-link {
-    padding: 1.25rem 0 0.625rem;
-    margin-right: 2.5rem;
-    font-size: 0.875rem;
-    line-height: 1.5rem;
-  }
-}
-@media screen and (min-width: 34.4375em) and (max-width: 56.25em) {
-  .header-link {
-    padding: 1rem 0 0.5rem;
-    margin-right: 1.5rem;
-    font-size: 0.75rem;
-    line-height: 1rem;
-  }
-}
-
-.header-link--active {
-  font-weight: 500;
-  color: #0065EF;
-  border-bottom: 0.125rem solid #0065EF;
-}
-
-.btn--primary {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 11.3125rem;
-  height: 3rem;
-  border-radius: 0.25rem;
-  background-color: #0065EF;
-  font-weight: 600;
-  font-size: 1.125rem;
-  line-height: 2rem;
-  color: #FFFFFF;
-  cursor: pointer;
-}
-.btn--primary:hover {
-  background-color: #5CA1FF;
-}
-@media screen and (min-width: 56.3125em) and (max-width: 90em) {
-  .btn--primary {
-    width: 9.5625rem;
-    height: 2.5rem;
-    font-size: 0.875rem;
-    line-height: 1.5rem;
-  }
-}
-@media screen and (min-width: 34.4375em) and (max-width: 56.25em) {
-  .btn--primary {
-    width: 8.625rem;
-    height: 2.25rem;
-    font-size: 0.75rem;
-    line-height: 1rem;
-  }
-}
-@media all and (max-width: 39.375em) {
-  .btn--primary {
-    display: none;
-  }
-}
-
 .github-btn {
   width: 3.0625rem;
   height: 3.0625rem;
@@ -179,12 +106,12 @@
   background-position: center bottom;
   background-repeat: no-repeat;
   background-size: 1.875rem;
-  background-color: #0065EF;
+  background-color: #001533;
   cursor: pointer;
   margin-left: 1rem;
 }
 .github-btn:hover {
-  background-color: #5CA1FF;
+  background-color: #002A66;
 }
 @media screen and (min-width: 56.3125em) and (max-width: 90em) {
   .github-btn {
@@ -210,55 +137,10 @@
   }
 }
 
-.header-second-row {
-  display: none;
-  flex-flow: row nowrap;
-  justify-content: flex-start;
-  align-items: center;
-  width: 100%;
-  height: 2.75rem;
-  padding: 0 1rem;
-  box-sizing: border-box;
-}
-
-.header-nav {
-  position: fixed;
-  z-index: 9999;
-  top: 5.75rem;
-  left: 0;
-  display: flex;
-  flex-flow: column nowrap;
-  justify-content: flex-start;
-  align-items: flex-start;
-  width: 100%;
-  height: calc(100vh - 5.75rem);
-  padding: 4.5rem 1rem 0;
-  box-sizing: border-box;
-  background-color: #FFFFFF;
-}
-
-.header-nav-link {
-  padding: 0.5rem 0;
-  margin-bottom: 1rem;
-  font-weight: 700;
-  font-size: 1rem;
-  line-height: 1.5rem;
-  color: #8A8886;
-}
-
-.header-nav-link--active {
-  color: #0065EF;
-}
-
 @media all and (max-width: 39.375em) {
   .header-main-container {
     height: 3rem;
     padding: 0 1rem;
-    border-bottom: 0.0625rem solid #DFECFF;
-  }
-
-  .header-content-container .header-link {
-    display: none;
   }
 
   .header-logo {
@@ -267,20 +149,9 @@
     margin-right: 0.5rem;
   }
 
-  .header-link {
-    padding: 0.625rem 0 0.5rem;
-    font-size: 0.875rem;
-    line-height: 1.5rem;
-    margin: 0;
-  }
-
   .github-btn {
     width: 1.25rem;
     height: 1.25rem;
     margin-left: 0;
-  }
-
-  .header-second-row {
-    display: flex;
   }
 }

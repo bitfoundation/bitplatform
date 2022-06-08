@@ -53,15 +53,15 @@ a {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #DFECFF;
+  background: #0055CC;
   border-radius: 0.5rem;
-  border: 0.3125rem solid #DFECFF;
+  border: 0.3125rem solid #0055CC;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #5CA1FF;
+  background: #002A66;
   border-radius: 0.5rem;
-  border: 0.25rem solid #5CA1FF;
+  border: 0.25rem solid #002A66;
 }
 
 ::-webkit-scrollbar-button {
@@ -70,66 +70,4 @@ a {
 
 ::-webkit-scrollbar:horizontal {
   height: 0.375rem;
-}
-
-/* Home Page ==================================================================================== */
-.header-nav-close-btn {
-  position: absolute;
-  right: 0.75rem;
-  top: 1rem;
-  color: #0065EF;
-}
-
-.header-action-button {
-  flex-direction: row-reverse;
-  color: #5CA1FF;
-}
-.header-action-button .bit-act-btn-fluent span:last-child i {
-  color: #5CA1FF;
-}
-
-.component-list-item {
-  max-width: 100%;
-  margin-bottom: 0.25rem;
-  color: #515151;
-  font-size: 1rem;
-  line-height: 1.5rem;
-  font-family: Axiforma;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  overflow: hidden;
-  cursor: pointer;
-}
-.component-list-item a {
-  color: inherit;
-  font-family: inherit;
-}
-.component-list-item a:hover, .component-list-item a:active {
-  color: #0065EF;
-  text-decoration: none;
-}
-.component-list-item:last-child {
-  margin-bottom: 0;
-}
-.component-list-item:hover {
-  color: #0065EF;
-}
-@media screen and (min-width: 56.3125em) and (max-width: 90em) {
-  .component-list-item {
-    line-height: 1.5rem;
-  }
-}
-@media screen and (min-width: 34.4375em) and (max-width: 56.25em) {
-  .component-list-item {
-    font-size: 0.875rem;
-    line-height: 1rem;
-    margin-bottom: 0.75rem;
-  }
-}
-@media screen and (max-width: 34.375em) {
-  .component-list-item {
-    font-size: 0.875rem;
-    line-height: 1.5rem;
-    margin-bottom: 0.5rem;
-  }
 }
