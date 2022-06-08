@@ -169,7 +169,7 @@ public class TdStack
                 {
                     new ConnStringInfoArgs
                     {
-                        Name = "AppDbConnectionString",
+                        Name = "SqlServerConnectionString",
                         Type = ConnectionStringType.SQLAzure,
                         ConnectionString = $"@Microsoft.KeyVault(VaultName={vaultName};SecretName={sqlDatabaseConnectionStringSecretName})"
                     },
