@@ -70,15 +70,26 @@ To switch to each mode, easily change value of   `<BlazorMode>` on **Directory.b
        <!-- You can use either BlazorServer or BlazorWebAssembly or BlazorHybrid -->
 
 ## WebApp Deployment Type
-Bit Supports several modes for Web App distribution. It follows
+Bit Supports several modes for WebApp deployment. This concept is related to performance. The fastest way to serve a page is to render page statically then send, and, the slowest way to serve a page is to serve an "interactive Blazor" server page (with a live virtual DOM synchronized via SignalR websockets). 
 
 ### Default Deployment Type
-
+  About default deployment type...
 ### Static
-
+Static Statically render the component with the specified parameters. Like MVC, it's recommended when the target is building a static page like a landing page And like these.
 ### PWA  
 A Blazor WebAssembly app built as a [Progressive Web App](https://en.wikipedia.org/wiki/Progressive_web_application "PWA") (PWA) uses modern browser APIs to enable many of the capabilities of a native client app, such as working offline, running in its own app window, launching from the host's operating system, receiving push notifications, and automatically updating in the background.
+
+**Note**: Asp.net blazor supports PWA by default, but Bit fixes some of its disadvantages and provides a better PWA experience. 
 ### SSR
+[Server-side rendering (SSR)](https://www.educative.io/edpresso/what-is-server-side-rendering), is the ability of an application to contribute by displaying the web-page on the server instead of rendering it in the browser. Server-side sends a fully rendered page to the client; Blazor pre-renders page and sends it as a static page, then later the page becomes an interactive Blazor server app. This behavior is intended to serve pages quickly to search engines with time-based positioning. 
+Statically prerender the component along with a marker to indicate the component should later be rendered interactively by the Blazor Server app. It's optimize SEO of site
+
+
+## How change WebApp Deployment Type easily?
+To switch to each mode, easily change value of   `<WebAppDeploymentType>` on **Directory.build.props** file in **Solution Items** root folder.
+
+      <WebAppDeploymentType>DefaultDeploymentType</WebAppDeploymentType>
+        <!-- You can choose either Static, DefaultDeploymentType, PWA or SSR -->
 
 
 **Note**: if you debugging 
