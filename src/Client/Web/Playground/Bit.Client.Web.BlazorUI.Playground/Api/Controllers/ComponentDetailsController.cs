@@ -78,7 +78,7 @@ public class ComponentDetailsController : ControllerBase
     {
         var value = property.GetValue(instance)?.ToString();
 
-        if (string.IsNullOrEmpty(value) || property.PropertyType.IsGenericType is false) return value;
+        if (string.IsNullOrWhiteSpace(value) || property.PropertyType.IsGenericType is false) return value;
 
         return $"new {typeName}()";
     }
