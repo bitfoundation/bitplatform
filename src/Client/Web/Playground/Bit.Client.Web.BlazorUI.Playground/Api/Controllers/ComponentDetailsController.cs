@@ -35,18 +35,18 @@ public class ComponentDetailsController : ControllerBase
         var prefix = $"{componentType.FullName}.";
         return Ok(componentType.GetProperties()
                               .Where(p => Attribute.IsDefined(p, typeof(Microsoft.AspNetCore.Components.ParameterAttribute)))
-                              .Select(p =>
+                              .Select(prop =>
                               {
                                   var xmlProperty = SummariesXmlDocument?.Descendants()
                                                             .Attributes()
-                                                            .Where(a => a.Value.Contains(prefix + p.Name))
+                                                            .Where(a => a.Value.Contains(prefix + prop.Name))
                                                             .FirstOrDefault();
-
+                                  var typeName = GetTypeName(prop.PropertyType);
                                   return new
                                   {
-                                      p.Name,
-                                      Type = GetTypeName(p.PropertyType),
-                                      DefaultValue = p.GetValue(componentInstance)?.ToString(),
+                                      prop.Name,
+                                      Type = typeName,
+                                      DefaultValue = GetDefaulValue(prop, componentInstance, typeName),
                                       Description = xmlProperty?.Parent.Element("summary")?.Value.Trim(),
                                   };
                               }));
@@ -72,6 +72,15 @@ public class ComponentDetailsController : ControllerBase
         }
 
         return type.Name;
+    }
+
+    private static string GetDefaulValue(PropertyInfo property, object instance, string typeName)
+    {
+        var value = property.GetValue(instance)?.ToString();
+
+        if (string.IsNullOrWhiteSpace(value) || property.PropertyType.IsGenericType is false) return value;
+
+        return $"new {typeName}()";
     }
 
 }
