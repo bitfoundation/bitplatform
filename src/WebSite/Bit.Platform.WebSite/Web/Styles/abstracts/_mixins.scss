@@ -42,3 +42,46 @@
         width: rem(118px);
     }
 }
+
+@mixin subtitle1 {
+    font-weight: 600;
+    font-size: rem(22px);
+    line-height: rem(32px);
+}
+
+@mixin subtitle2 {
+    font-weight: 600;
+    font-size: rem(20px);
+    line-height: rem(32px);
+}
+
+@mixin subtitle3 {
+    font-weight: 400;
+    font-size: rem(20px);
+    line-height: rem(32px);
+}
+
+@mixin subtitle4 {
+    font-weight: bold;
+    font-size: rem(16px);
+    line-height: rem(32px);
+}
+
+
+@mixin body1 {
+    font-weight: 400;
+    font-size: rem(18px);
+    line-height: rem(32px);
+}
+
+@mixin body2 {
+    font-weight: 400;
+    font-size: rem(16px);
+    line-height: rem(32px);
+}
+
+@mixin body3 {
+    font-weight: 400;
+    font-size: rem(14px);
+    line-height: rem(32px);
+}
