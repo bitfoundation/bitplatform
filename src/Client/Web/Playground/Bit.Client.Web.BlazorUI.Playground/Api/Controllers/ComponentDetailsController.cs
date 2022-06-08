@@ -15,22 +15,33 @@ public class ComponentDetailsController : ControllerBase
     [HttpGet("properties")]
     public async Task<ActionResult<List<ComponentPropertyDetailsDto>>> GetProperties(string name)
     {
-        if (string.IsNullOrWhiteSpace(name))
-            return BadRequest("Component Name is empty.");
-
-        var componentType = ComponentsAssembly.ExportedTypes
-                                              .Where(c => c.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase))
-                                              .FirstOrDefault();
-
-        if (componentType == null)
-            return NotFound("No component type found.");
-
         if (SummariesXmlDocument == null)
         {
             SummariesXmlDocument = await LoadSummariesXmlDocumentAsync();
         }
 
-        var componentInstance = Activator.CreateInstance(componentType);
+        if (string.IsNullOrWhiteSpace(name))
+            return BadRequest("Component Name is empty.");
+
+        var componentType = ComponentsAssembly.ExportedTypes
+                                              .Where(type =>
+                                              {
+                                                  if (type.IsGenericType)
+                                                  {
+                                                      var typeName = type.Name[..type.Name.IndexOf("`")];
+                                                      return typeName.Equals(name, StringComparison.InvariantCultureIgnoreCase);
+                                                  }
+
+                                                  return type.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase);
+                                              })
+                                              .FirstOrDefault();
+
+        if (componentType == null)
+            return NotFound("No component type found.");
+
+        var concreteComponentType = componentType.IsGenericType ? componentType.MakeGenericType(typeof(string)) : componentType;
+
+        var componentInstance = Activator.CreateInstance(concreteComponentType);
 
         var prefix = $"{componentType.FullName}.";
         return Ok(componentType.GetProperties()
@@ -46,7 +57,7 @@ public class ComponentDetailsController : ControllerBase
                                   {
                                       prop.Name,
                                       Type = typeName,
-                                      DefaultValue = GetDefaulValue(prop, componentInstance, typeName),
+                                      DefaultValue = GetDefaulValue(prop, componentInstance, typeName, concreteComponentType),
                                       Description = xmlProperty?.Parent.Element("summary")?.Value.Trim(),
                                   };
                               }));
@@ -74,8 +85,13 @@ public class ComponentDetailsController : ControllerBase
         return type.Name;
     }
 
-    private static string GetDefaulValue(PropertyInfo property, object instance, string typeName)
+    private static string GetDefaulValue(PropertyInfo property, object instance, string typeName, Type concreteComponentType)
     {
+        if (concreteComponentType.IsGenericType)
+        {
+            property = concreteComponentType.GetProperty(property.Name);
+        }
+
         var value = property.GetValue(instance)?.ToString();
 
         if (string.IsNullOrWhiteSpace(value) || property.PropertyType.IsGenericType is false) return value;
