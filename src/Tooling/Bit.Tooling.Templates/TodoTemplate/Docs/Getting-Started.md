@@ -156,6 +156,13 @@ for example in SignUp, you can either change the SMTP provide settings as you ne
 
     ./TodoTemplate/Api/bin/Debug/net6.0/sent-emails./TodoTemplate/Api/bin/Debug/net6.0/sent-emails
 
+**Note**: You can find email templates used for email confirmation and reset password in the `Resources` directory of the Api project
+
+## User Profile image setting
+Bit save user profile image in `Attachments\Profiles` directory of the Api project as default, you can change this path as you need from the `appsettings.json` file in the Api project.
+
+    "UserProfileImagePath": "./Attachments/Profiles/"
+
 ### HealCheck Settings
 Bit support Health Checks for reporting the health of app infrastructure components.
 Health checks are exposed by an app as HTTP endpoints. If you need to enable or disable this functionality you can find these settings in the `appsettings.json` file in the Api project.
