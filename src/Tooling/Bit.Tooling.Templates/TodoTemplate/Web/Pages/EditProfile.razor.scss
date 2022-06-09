@@ -21,7 +21,7 @@
     }
 }
 
-.page-form {
+.content-container--white {
     position: relative;
     display: flex;
     flex-flow: column nowrap;
@@ -69,7 +69,7 @@
     border-radius: rem(4px) rem(4px) 0 0;
 }
 
-.form-title {
+.page-title {
     margin-bottom: rem(16px);
     font-weight: 600;
     font-size: rem(28px);
