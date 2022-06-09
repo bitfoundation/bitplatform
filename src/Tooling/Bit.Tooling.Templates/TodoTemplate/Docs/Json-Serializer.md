@@ -1,0 +1,1 @@
+# TodoTemplateJsonContext and System.Text.Json source generator

@@ -182,7 +182,9 @@ Health checks are exposed by an app as HTTP endpoints. If you need to enable or 
 3. [Infrastructure as Code (IaC)](Infrastructure-As-Code.md)
 4. [How publish](Publish.md)
 5. [Error handling](Error-Handling.md) 
-
+6. [How bit Syncing code between app and web? ](Code-Syncing.md)
+7. [What is the state service in Bit and what does it do?](State-Service.md)
+8. [TodoTemplateJsonContext and System.Text.Json source generator](Json-Serializer.md)
 
 
 
