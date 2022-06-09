@@ -26,7 +26,7 @@ public partial class SignUp
 
     private async Task DoSignUp()
     {
-        if (IsLoading || SignUpModel.IsAcceptPrivacy is false)
+        if (IsLoading)
         {
             return;
         }

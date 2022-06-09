@@ -16,5 +16,6 @@ public class SignUpRequestDto
     public string? Password { get; set; }
 
     [NotMapped]
+    [Range(typeof(bool), "true", "true", ErrorMessage = "You must agree to the Bit privacy policy.")]
     public bool IsAcceptPrivacy { get; set; }
 }
