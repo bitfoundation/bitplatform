@@ -750,7 +750,7 @@ namespace Bit.Client.Web.BlazorUI
                 return true;
             }
 
-            if (DateTime.TryParse(value, Culture, DateTimeStyles.None, out DateTime parsedValue))
+            if (DateTime.TryParseExact(value, FormatDate, Culture, DateTimeStyles.None, out DateTime parsedValue))
             {
                 result = new DateTimeOffset(parsedValue, DateTimeOffset.Now.Offset);
                 validationErrorMessage = null;
