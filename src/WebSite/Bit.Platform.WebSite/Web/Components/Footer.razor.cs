@@ -2,9 +2,5 @@
 {
     public partial class Footer
     {
-        protected override void OnInitialized()
-        {
-            base.OnInitialized();
-        }
     }
 }

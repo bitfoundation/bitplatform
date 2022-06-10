@@ -7,9 +7,5 @@ namespace Bit.Platform.WebSite.Web.Components
 {
     public partial class Header
     {
-        protected override void OnInitialized()
-        {
-            base.OnInitialized();
-        }
     }
 }
