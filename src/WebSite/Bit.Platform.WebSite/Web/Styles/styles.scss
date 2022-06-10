@@ -1,7 +1,7 @@
 ﻿@import '_shared.scss';
 
 * {
-    font-family: "Axiforma";
+    font-family: "OpenSans";
 }
 
 body {
@@ -40,13 +40,13 @@ a {
 }
 
 h1{
-    font-weight:bold;
+    font-weight:700;
     font-size:rem(50px);
     line-height:rem(78px);
 }
 
 h2 {
-    font-weight: bold;
+    font-weight: 700;
     font-size: rem(40px);
     line-height: rem(56px);
 }
@@ -58,7 +58,7 @@ h3 {
 }
 
 h4 {
-    font-weight: bold;
+    font-weight: 700;
     font-size: rem(30px);
     line-height: rem(40px);
 }
