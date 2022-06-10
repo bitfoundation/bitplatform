@@ -318,7 +318,7 @@ public class TdStack
                 Value = Output.Tuple(sqlServer.Name, sqlDatabase.Name, sqlDatabaseDbUserPassword).Apply(t =>
                 {
                     (string _sqlServer, string _sqlDatabase, string _sqlDatabasePassword) = t;
-                    return $"Data Source=tcp:{_sqlServer}.database.windows.net;Initial Catalog={_sqlDatabase};User ID={sqlDatabaseDbUserId};Password={_sqlDatabasePassword};Max Pool Size=1024;Persist Security Info=true;Application Name=Todo";
+                    return $"Data Source=tcp:{_sqlServer}.database.windows.net;Initial Catalog={_sqlDatabase};User ID={sqlDatabaseDbUserId};Password={_sqlDatabasePassword};Application Name=Todo;Encrypt=True;";
                 })
             }
         });
