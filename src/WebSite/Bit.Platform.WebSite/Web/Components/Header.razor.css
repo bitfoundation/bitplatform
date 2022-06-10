@@ -55,13 +55,19 @@
 }
 @media screen and (min-width: 56.3125em) and (max-width: 90em) {
   .header-main-container {
-    height: 3.5rem;
+    height: 4.5rem;
     padding: 0 6.25rem;
   }
 }
 @media screen and (min-width: 34.4375em) and (max-width: 56.25em) {
   .header-main-container {
-    height: 3rem;
+    height: 3.5rem;
+    padding: 0 2rem;
+  }
+}
+@media screen and (max-width: 34.375em) {
+  .header-main-container {
+    height: 2.5rem;
     padding: 0 2rem;
   }
 }
@@ -115,7 +121,7 @@
 }
 @media screen and (min-width: 56.3125em) and (max-width: 90em) {
   .github-btn {
-    width: 2.375rem;
+    width: 3rem;
     height: 2.375rem;
     margin-left: 1.625rem;
     background-size: 1.6875rem;
@@ -123,7 +129,7 @@
 }
 @media screen and (min-width: 34.4375em) and (max-width: 56.25em) {
   .github-btn {
-    width: 1.5rem;
+    width: 2rem;
     height: 1.5rem;
     margin-left: 1.125rem;
     background-size: 0.9375rem;

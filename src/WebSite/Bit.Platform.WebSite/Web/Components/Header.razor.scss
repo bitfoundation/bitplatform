@@ -21,12 +21,17 @@
     box-sizing: border-box;
 
     @include lg {
-        height: rem(56px);
+        height: rem(72px);
         padding: 0 rem(100px);
     }
 
     @include md {
-        height: rem(48px);
+        height: rem(56px);
+        padding: 0 rem(32px);
+    }
+
+    @include sm {
+        height: rem(40px);
         padding: 0 rem(32px);
     }
 }
@@ -78,14 +83,14 @@
     }
 
     @include lg {
-        width: rem(38px);
+        width: rem(48px);
         height: rem(38px);
         margin-left: rem(26px);
         background-size: rem(27px);
     }
 
     @include md {
-        width: rem(24px);
+        width: rem(32px);
         height: rem(24px);
         margin-left: rem(18px);
         background-size: rem(15px);
