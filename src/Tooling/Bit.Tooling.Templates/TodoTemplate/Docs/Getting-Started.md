@@ -9,6 +9,8 @@ This document aimed to create and run a Bit-Platform (Bit) project in a short pe
 - [CSS ](https://www.google.com/url?sa=t&amp;rct=j&amp;q=&amp;esrc=s&amp;source=web&amp;cd=&amp;cad=rja&amp;uact=8&amp;ved=2ahUKEwji-KOu0pj4AhWwm_0HHeZQDzoQFnoECAgQAQ&amp;url=https%3A%2F%2Fwww.w3schools.com%2Fcss%2F&amp;usg=AOvVaw0Xtbw_GBAChsgvZNkPLVGb)&amp; [Sass ](https://www.google.com/url?sa=t&amp;rct=j&amp;q=&amp;esrc=s&amp;source=web&amp;cd=&amp;cad=rja&amp;uact=8&amp;ved=2ahUKEwjvgoO60pj4AhUCi_0HHVmXBMkQFnoECAgQAQ&amp;url=https%3A%2F%2Fsass-lang.com%2F&amp;usg=AOvVaw0p_IRgLEbIPRGWtlW7Wph8)as stylesheet
 - [Entity Framework Core](https://docs.microsoft.com/en-us/ef/core/) as ORM to communicate with the database
 - [Asp.Net Identity](https://docs.microsoft.com/en-us/aspnet/identity/overview/getting-started/introduction-to-aspnet-identity) with [JWT ](https://www.c-sharpcorner.com/article/jwt-authentication-and-authorization-in-net-6-0-with-identity-framework/)supporting for handling Authentication
+- Swagger as OpenId for APi Documentation
+
 ## Environment setup
 
 - Microsoft Visual Studio 2022 - Preview Version 17.3.0 Preview 1.0 or higher with the following workloads and extention
@@ -74,17 +76,18 @@ To switch to each mode, easily change value of   `<BlazorMode>` on **Directory.b
 Bit Supports several modes for WebApp deployment. This concept is related to performance. The fastest way to serve a page is to render page statically then send, and, the slowest way to serve a page is to serve an "interactive Blazor" server page (with a live virtual DOM synchronized via SignalR websockets). 
 
 ### Default Deployment Type
-  It's referring to a Typical single page application(SPA)
+  It's referring to a Typical single page application(SPA) without pre-rendring.
 
 ### Static
-Static Statically render the component with the specified parameters. Like MVC, it's recommended when the target is building a static page like a landing page And like these.
+Static Statically render the component with the specified parameters. It's recommended when the target is building a static page like a landing page, content page, And like these.
 ### PWA  
 A Blazor WebAssembly app built as a [Progressive Web App](https://en.wikipedia.org/wiki/Progressive_web_application "PWA") (PWA) uses modern browser APIs to enable many of the capabilities of a native client app, such as working offline, running in its own app window, launching from the host's operating system, receiving push notifications, and automatically updating in the background.
 
 **Note**: Asp.net blazor supports PWA by default, but Bit fixes some of its disadvantages and provides a better PWA experience. 
 ### SSR
 [Server-side rendering (SSR)](https://www.educative.io/edpresso/what-is-server-side-rendering), is the ability of an application to contribute by displaying the web-page on the server instead of rendering it in the browser. Server-side sends a fully rendered page to the client; Blazor pre-renders page and sends it as a static page, then later the page becomes an interactive Blazor server app. This behavior is intended to serve pages quickly to search engines with time-based positioning. 
-Statically prerender the component along with a marker to indicate the component should later be rendered interactively by the Blazor Server app. It's optimize SEO of site
+Statically prerender the component along with a marker to indicate the component should later be rendered interactively by the Blazor Server app. It's optimize SEO of site.
+It's referring to a Typical single page application(SPA) with pre-rendring.
 
 
 ## How change WebApp Deployment Type easily?
@@ -163,7 +166,7 @@ Bit save user profile image in `Attachments\Profiles` directory of the Api proje
 
     "UserProfileImagePath": "./Attachments/Profiles/"
 
-### HealCheck Settings
+### Health Check Settings
 Bit support Health Checks for reporting the health of app infrastructure components.
 Health checks are exposed by an app as HTTP endpoints. If you need to enable or disable this functionality you can find these settings in the `appsettings.json` file in the Api project.
 
@@ -171,11 +174,68 @@ Health checks are exposed by an app as HTTP endpoints. If you need to enable or 
                 "EnableHealthChecks": true
             },
 
-**Note**: You can find Health Checks dashboard from route `https://localhost:5001/healthz` as default.
+**Note**: You can find Health Checks dashboard from route `https://localhost:5001/healthchecks-ui` as default.
 ## Additional tips
 - use the `Clean.bat` file in the root of the solution directory to deep clean the projects and run without unexpected exceptions. 
 - handle the error with ..
 
+
+## Code Syncing between app and web
+Bit provides a solution for writing code for both the Web and the App at once. And also has a mechanism for sharing code between server-side and client sides.
+
+### Linking codes
+Bit considers the Web project as the primary source base and links the changes to each of the following files and directories to the App project before it is built.
+
+- **Components** directory: Location of your blazor components (razor)
+- **Extensions** directory: This directory conatain some Bit provided extentions, and place for put your extentions
+- **Pages** directory: Contain All pages of Web project (and App project) 
+- **Services** directory: Location of services Communication with API
+- **Shared** directory: Components and pages that shared for use in others pages and components
+- **Styles** directory: Includes Sass styles used in the project UI, which are compiled using Web Compiler 2022+ extensions in CSS format. 
+- **App.razor** file: The root component of the app sets up client-side routing using the Router component. its name will be changed to `Main.razor` in the App project.
+- **appsettings.json** file: Includes essential program settings such as the Url of the Api hosts.
+- **_Imports.razor** file: Global imports.
+- **compilerconfig.json** file: Contains Settings for Sass styles compiling.
+- **compilerconfig.json.defaults** file: Some default Saas style compiler settings.
+- **wwwroot\images** directory: Contains media uses in project ui.
+- **wwwroot\scripts** directory: Contains scripts uses in the project. 
+- **wwwroot\styles** directory: Contains styles uses in the project.
+
+
+**Note**: Code syncing will be done with help of `mklink.bat` file in the root of the App project in the pre-building event of the project.It uses directory junction features of the OS.
+
+**Note**: To avoid git duplicating the files All of them are tagged as ignored.
+
+### Shared project
+Project `*.Shared` is shared on both the server (Api project) and client(Web, App projects) sides, and can share code. The bit puts the code it wants to reuse; Like resources, Dtos, shared contracts, services, etc.
+
+**Note**: Be careful about what you put in the shared projects because they will available on both sides.
+
+## Debugging
+All official Bit NuGet packages are Sourcelink enabled. That means you can easily debug Bit.* NuGet packages within your project.
+
+- Blazor WebAssembly still has some limitations in Debugging, while Blazor Server mode fully supports debugging without any problems. Therefore, it is recommended to use BlazorServer mode for development. 
+
+
+## Error handling
+bit try to perform a  
+### What are known and unknown exceptions?
+
+### Client side exception handling WrapHandled
+When an error is raised in App(android, IOS) maybe cause crash app. for avoiding app crash; Bit provides some mechanism for error handling.
+- inheriting `TodoTemplateComponentBase` in razor pages.
+- Instead of initializing your components in the `OnInitializedAsync` method, override the `OnInitAsync` method of the `TodoTemplateComponentBase` class.
+- Use `WrapHandle` method instead of direct calling events such as `OnClick` in the Razor components.
+- Use `try-catch` block in `asyn-avoid` method and call `StatehasChanged` method to handle unexpected errors.
+- To eliminate unwanted dependency unsubscribe events On the `DisposeAsync()` method.
+
+
+## Performance and optimiztion
+Bit perform some feature To improve performance and optimization.
+- Bit Uses `implicit operator` for performing type conversion instead of mapping library. You can see on some Dto in the Shared project.
+- Bit optimizes the data serialization process through the default Asp.net core JsonSerializer. for this reason, the Bit code generator does a process to register Dtos to speed up. You can see how to register a Dto for this process on `TodoTemplateJsonContext.cs` in the `Shared\Dtos` 
+- use the `StateService` service GetValue method when you need SSR or SEO optimization to get a value in async mode.
+  
 ## Useful links
 1. [FAQ](FAQ.md)
 2. [How debugging](Debugging.md)
