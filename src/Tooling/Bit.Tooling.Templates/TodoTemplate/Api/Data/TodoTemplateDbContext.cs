@@ -21,18 +21,6 @@ public class TodoTemplateDbContext : IdentityDbContext<User, Role, int>
 
     #region Override Save Changes
 
-    public override int SaveChanges()
-    {
-        try
-        {
-            return base.SaveChanges();
-        }
-        catch (DbUpdateConcurrencyException exception)
-        {
-            throw new ConflictException("Database concurrency exception happens", exception);
-        }
-    }
-    
     public override int SaveChanges(bool acceptAllChangesOnSuccess)
     {
         try
@@ -41,20 +29,7 @@ public class TodoTemplateDbContext : IdentityDbContext<User, Role, int>
         }
         catch (DbUpdateConcurrencyException exception)
         {
-            throw new ConflictException("Database concurrency exception happens", exception);
-        }
-    }
-
-    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = new CancellationToken())
-    {
-        try
-        {
-            var result = await base.SaveChangesAsync(cancellationToken);
-            return result;
-        }
-        catch (DbUpdateConcurrencyException exception)
-        {
-            throw new ConflictException("Database concurrency exception happens", exception);
+            throw new ConflictException(nameof(ErrorStrings.UpdateConcurrencyException), exception);
         }
     }
     
@@ -66,7 +41,7 @@ public class TodoTemplateDbContext : IdentityDbContext<User, Role, int>
         }
         catch (DbUpdateConcurrencyException exception)
         {
-            throw new ConflictException("Database concurrency exception happens", exception);
+            throw new ConflictException(nameof(ErrorStrings.UpdateConcurrencyException), exception);
         }
     }
 

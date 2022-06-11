@@ -10,9 +10,6 @@ public class TodoItem
     public string? Title { get; set; }
     public DateTimeOffset Date { get; set; }
     public bool IsDone { get; set; }
-    
-    [ConcurrencyCheck]
-    public string? ConcurrencyStamp { get; set; }
 
     [ForeignKey(nameof(UserId))]
     public User? User { get; set; }
