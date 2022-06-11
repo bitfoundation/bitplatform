@@ -5,24 +5,45 @@
     top: 0;
     z-index: 10000;
     width: 100%;
-    background-color: $White;
-    box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.08);
-    opacity:0.5;
 }
 
-.header-main-container {
+.main-header-cover {
+    background-color: $White;
+    width: 100%;
+    opacity: 0.3;
+    box-sizing: border-box;
+    top: 0;
+    position: fixed;
+    height: 80px;
+    z-index: 9999;
+
+    @include lg {
+        height: rem(72px);
+    }
+
+    @include md {
+        height: rem(56px);
+    }
+
+    @include sm {
+        height: rem(40px);
+    }
+}
+
+.main-header-container {
+    background-color: unset;
     display: flex;
     flex-flow: row nowrap;
     justify-content: space-between;
     align-items: center;
     width: 100%;
     height: rem(80px);
-    padding: 0 rem(164px);
+    padding: 0 rem(344px);
     box-sizing: border-box;
 
     @include lg {
         height: rem(72px);
-        padding: 0 rem(100px);
+        padding: 0 rem(200px);
     }
 
     @include md {
@@ -32,7 +53,22 @@
 
     @include sm {
         height: rem(40px);
-        padding: 0 rem(32px);
+        padding: 0 rem(16px);
+    }
+
+    .header-link {
+        @include body3;
+        color: $B6Color;
+        margin-right: rem(72px);
+
+        @include sm {
+            display: none;
+        }
+    }
+
+    .header-link--active {
+        @include subtitle4;
+        color: $B5Color;
     }
 }
 
@@ -51,73 +87,40 @@
     background-repeat: no-repeat;
     background-size: contain;
     cursor: pointer;
-    margin-right: rem(140px);
-
-    @include lg {
-        width: rem(36px);
-        height: rem(24px);
-        margin-right: rem(48px);
-    }
 
     @include md {
-        width: rem(30px);
-        height: rem(20px);
-        margin-right: rem(32px);
+        width: rem(27px);
+        height: rem(18px);
+    }
+
+    @include sm {
+        width: rem(24px);
+        height: rem(16px);
     }
 }
 
 .github-btn {
-    width: rem(49px);
-    height: rem(49px);
+    width: rem(48px);
+    height: rem(48px);
     border-radius: 50%;
     background-image: url('/images/github-icon.svg');
     background-position: center bottom;
     background-repeat: no-repeat;
-    background-size: rem(30px);
+    background-size: rem(48px);
     background-color: $B2Color;
     cursor: pointer;
-    margin-left: rem(16px);
 
     &:hover {
         background-color: $B3Color;
     }
 
-    @include lg {
-        width: rem(48px);
-        height: rem(38px);
-        margin-left: rem(26px);
-        background-size: rem(27px);
-    }
-
     @include md {
         width: rem(32px);
-        height: rem(24px);
-        margin-left: rem(18px);
-        background-size: rem(15px);
+        height: rem(32px);
+        background-size: rem(32px);
     }
 
     @include sm {
-        width: rem(20px);
-        height: rem(20px);
-        background-size: rem(14px);
-    }
-}
-
-@media all and (max-width: #{em(630px)}) {
-    .header-main-container {
-        height: rem(48px);
-        padding: 0 rem(16px);
-    }
-
-    .header-logo {
-        width: rem(30px);
-        height: rem(20px);
-        margin-right: rem(8px);
-    }
-
-    .github-btn {
-        width: rem(20px);
-        height: rem(20px);
-        margin-left: 0;
+        display: none;
     }
 }

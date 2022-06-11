@@ -31,3 +31,27 @@
 }
 
 
+.hero-section {
+    flex-flow: row nowrap;
+    justify-content: space-between;
+    align-items: center;
+
+    @include sm {
+        flex-flow: column-reverse nowrap;
+        justify-content: flex-start;
+    }
+}
+
+.hero-banner {
+    width: 100%;
+    height: rem(880px);
+    background-image: url('/images/home/hero-banner.png');
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+
+    @include sm {
+        background-image: none;
+        background-color: $B5Color;
+    }
+}
