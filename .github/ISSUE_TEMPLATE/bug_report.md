@@ -37,6 +37,7 @@ If applicable, add screenshots / logs / exception details to help explain your p
 - Blazor mode? `Web Assembly (Client)`, `Server`, `Hybrid (MAUI)`
 - Customer / Consumers Browser / OS? For example `Chrome 101` For blazor web assembly and server or `Android 12` for hybrid
 
+---
 
 **Additional context**
 Add any other context about the problem here.
