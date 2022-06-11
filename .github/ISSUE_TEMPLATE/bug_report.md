@@ -31,7 +31,7 @@ If applicable, add screenshots / logs / exception details to help explain your p
 - .NET Sdk version? For example `6.0.300`
 - IDE / Version? For example `Visual Studio 17.3 Preview 1`
 
-***Bit Components - Templates related information***
+***Bit Components - Templates related information (If applicable)***
 - Bit.Client.Web.BlazorUI nuget package's version? (If applicable) For example `12.0.0`
 - Bit.Tooling.Templates.Todo nuget package's version? (If applicable) For example `1.0.0`
 - Blazor mode? `Web Assembly (Client)`, `Server`, `Hybrid (MAUI)`
