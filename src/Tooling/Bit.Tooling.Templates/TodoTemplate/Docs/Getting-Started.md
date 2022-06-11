@@ -175,11 +175,6 @@ Health checks are exposed by an app as HTTP endpoints. If you need to enable or 
             },
 
 **Note**: You can find Health Checks dashboard from route `https://localhost:5001/healthchecks-ui` as default.
-## Additional tips
-- use the `Clean.bat` file in the root of the solution directory to deep clean the projects and run without unexpected exceptions. 
-- handle the error with ..
-
-
 ## Code Syncing between app and web
 Bit provides a solution for writing code for both the Web and the App at once. And also has a mechanism for sharing code between server-side and client sides.
 
@@ -224,7 +219,7 @@ In development When an error occurred if this error is known or unknown, details
 - known exception inhrites `KnownException` class
 - Unknown exception inhrites `UnknownException` class
 ### RestException
-It's a class that has a Http Response `StatusCode`
+It's a class that has an HTTP Response `StatusCode` that you to perform a response with status code.
 
 ### Client side exception handling WrapHandled
 When an error is raised in App(android, IOS) maybe cause crash app. for avoiding app crash; Bit provides some mechanism for error handling.
@@ -237,6 +232,9 @@ When an error is raised in App(android, IOS) maybe cause crash app. for avoiding
 
 ## Performance and optimiztion
 Bit perform some feature To improve performance and optimization.
+
+- use the `Clean.bat` file in the root of the solution directory to deep clean the projects and run without unexpected exceptions. 
+- handle the error with ..
 - Bit Uses `implicit operator` for performing type conversion instead of mapping library. You can see on some Dto in the Shared project.
 - Bit optimizes the data serialization process through the default Asp.net core JsonSerializer. for this reason, the Bit code generator does a process to register Dtos to speed up. You can see how to register a Dto for this process on `TodoTemplateJsonContext.cs` in the `Shared\Dtos` 
 - use the `StateService` service GetValue method when you need SSR or SEO optimization to get a value in async mode.
@@ -252,9 +250,11 @@ Modern cloud-native applications embrace the widely accepted practice of Infrast
 
 
 ## Step By Step Publish To Azure
+About how to step-by-step publish in azure cloud..
 
 
 ## FAQ
+A frequently asked questions about Bit...
 
 
 
