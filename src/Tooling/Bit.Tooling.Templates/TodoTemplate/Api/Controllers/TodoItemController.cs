@@ -41,6 +41,7 @@ public class TodoItemController : ControllerBase
     {
         var todoItemToAdd = _mapper.Map<TodoItem>(dto);
 
+        todoItemToAdd.ConcurrencyStamp = Guid.NewGuid().ToString();
         todoItemToAdd.UserId = User.GetUserId();
 
         await _dbContext.TodoItems.AddAsync(todoItemToAdd, cancellationToken);
@@ -58,6 +59,7 @@ public class TodoItemController : ControllerBase
 
         var updatedTodoItem = _mapper.Map(dto, todoItemToUpdate);
 
+        _dbContext.Entry(updatedTodoItem).Property(o => o.ConcurrencyStamp).OriginalValue = dto.ConcurrencyStamp!;
         _dbContext.TodoItems.Update(updatedTodoItem);
 
         await _dbContext.SaveChangesAsync(cancellationToken);

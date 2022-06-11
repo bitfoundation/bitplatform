@@ -19,6 +19,59 @@ public class TodoTemplateDbContext : IdentityDbContext<User, Role, int>
         ConfigIdentityTables(builder);
     }
 
+    #region Override Save Changes
+
+    public override int SaveChanges()
+    {
+        try
+        {
+            return base.SaveChanges();
+        }
+        catch (DbUpdateConcurrencyException exception)
+        {
+            throw new ConflictException("Database concurrency exception happens", exception);
+        }
+    }
+    
+    public override int SaveChanges(bool acceptAllChangesOnSuccess)
+    {
+        try
+        {
+            return base.SaveChanges(acceptAllChangesOnSuccess);
+        }
+        catch (DbUpdateConcurrencyException exception)
+        {
+            throw new ConflictException("Database concurrency exception happens", exception);
+        }
+    }
+
+    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = new CancellationToken())
+    {
+        try
+        {
+            var result = await base.SaveChangesAsync(cancellationToken);
+            return result;
+        }
+        catch (DbUpdateConcurrencyException exception)
+        {
+            throw new ConflictException("Database concurrency exception happens", exception);
+        }
+    }
+    
+    public override async Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = new CancellationToken())
+    {
+        try
+        {
+            return await base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+        }
+        catch (DbUpdateConcurrencyException exception)
+        {
+            throw new ConflictException("Database concurrency exception happens", exception);
+        }
+    }
+
+    #endregion
+
     public DbSet<TodoItem> TodoItems { get; set; }
 
     private void ConfigIdentityTables(ModelBuilder builder)
