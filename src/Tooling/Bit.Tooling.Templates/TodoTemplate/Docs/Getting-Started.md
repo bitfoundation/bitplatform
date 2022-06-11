@@ -218,8 +218,13 @@ All official Bit NuGet packages are Sourcelink enabled. That means you can easil
 
 
 ## Error handling
-bit try to perform a  
-### What are known and unknown exceptions?
+Bit performs some features to manage error accourd in runtime.  
+### known and unknown exception
+In development When an error occurred if this error is known or unknown, details of the error returned, but in test and production for unknown error details of the error not returned from server.
+- known exception inhrites `KnownException` class
+- Unknown exception inhrites `UnknownException` class
+### RestException
+It's a class that has a Http Response `StatusCode`
 
 ### Client side exception handling WrapHandled
 When an error is raised in App(android, IOS) maybe cause crash app. for avoiding app crash; Bit provides some mechanism for error handling.
@@ -235,17 +240,21 @@ Bit perform some feature To improve performance and optimization.
 - Bit Uses `implicit operator` for performing type conversion instead of mapping library. You can see on some Dto in the Shared project.
 - Bit optimizes the data serialization process through the default Asp.net core JsonSerializer. for this reason, the Bit code generator does a process to register Dtos to speed up. You can see how to register a Dto for this process on `TodoTemplateJsonContext.cs` in the `Shared\Dtos` 
 - use the `StateService` service GetValue method when you need SSR or SEO optimization to get a value in async mode.
-  
-## Useful links
-1. [FAQ](FAQ.md)
-2. [How debugging](Debugging.md)
-3. [Infrastructure as Code (IaC)](Infrastructure-As-Code.md)
-4. [How publish](Publish.md)
-5. [Error handling](Error-Handling.md) 
-6. [How bit Syncing code between app and web? ](Code-Syncing.md)
-7. [What is the state service in Bit and what does it do?](State-Service.md)
-8. [TodoTemplateJsonContext and System.Text.Json source generator](Json-Serializer.md)
+- Bit performs some feature to detect Blazor mode or deployment type in Development and Runtime
+    - Use `#if [BlazorMode]` block to detect blazor mode in The Cs code.
+    - Use `#if [WebAppDeploymentType]` block to detect Web App Deployment Type in the Cs code.
+    - Use `BlazorModeDetector` from the **Shared** project to detect BlazorMode in the Razor pages.
+    - Use `WebAppDeploymentTypeDetector` from the **Shared** project to detect WebAppDeploymentType in the Razor pages.
+-Bit code analyzer will give you tips for better code-writing during development.    
 
+## Infrastructure as Code
+Modern cloud-native applications embrace the widely accepted practice of Infrastructure as Code, or IaC. With IaC, you automate platform provisioning. You essentially apply software engineering practices such as testing and versioning to your DevOps practices. Your infrastructure and deployments are automated, consistent, and repeatable. Just as continuous delivery automated the traditional model of manual deployments, Infrastructure as Code (IaC) is evolving how application environments are managed.
+
+
+## Step By Step Publish To Azure
+
+
+## FAQ
 
 
 
