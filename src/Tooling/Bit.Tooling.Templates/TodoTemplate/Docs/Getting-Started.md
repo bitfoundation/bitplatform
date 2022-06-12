@@ -199,7 +199,7 @@ Bit considers the Web project as the primary source base and links the changes t
 
 **Note**: Code syncing will be done with help of `mklink.bat` file in the root of the App project in the pre-building event of the project.It uses directory junction features of the OS.
 
-**Note**: To avoid git duplicating the files All of them are tagged as ignored.
+**Note**: To avoid git duplicating the files All of them are tagged as ignored in the App project. 
 
 ### Shared project
 Project `*.Shared` is shared on both the server (Api project) and client(Web, App projects) sides, and can share code. The bit puts the code it wants to reuse; Like resources, Dtos, shared contracts, services, etc.
@@ -234,10 +234,9 @@ When an error is raised in App(android, IOS) maybe cause crash app. for avoiding
 Bit perform some feature To improve performance and optimization.
 
 - use the `Clean.bat` file in the root of the solution directory to deep clean the projects and run without unexpected exceptions. 
-- handle the error with ..
 - Bit Uses `implicit operator` for performing type conversion instead of mapping library. You can see on some Dto in the Shared project.
 - Bit optimizes the data serialization process through the default Asp.net core JsonSerializer. for this reason, the Bit code generator does a process to register Dtos to speed up. You can see how to register a Dto for this process on `TodoTemplateJsonContext.cs` in the `Shared\Dtos` 
-- use the `StateService` service GetValue method when you need SSR or SEO optimization to get a value in async mode.
+- Use the `StateService` service GetValue method when you need SSR or SEO optimization to get a value in async mode.
 - Bit performs some feature to detect Blazor mode or deployment type in Development and Runtime
     - Use `#if [BlazorMode]` block to detect blazor mode in The Cs code.
     - Use `#if [WebAppDeploymentType]` block to detect Web App Deployment Type in the Cs code.
