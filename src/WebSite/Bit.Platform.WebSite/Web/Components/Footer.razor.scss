@@ -85,8 +85,64 @@
 }
 
 .social-media-coulmn {
+    display: flex;
+    flex-flow: row nowrap;
 }
 
 .copy-right-coulmn {
     @include body3;
+}
+
+@mixin social-media-link {
+    width: rem(32px);
+    height: rem(32px);
+    border-radius: 50%;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-color: $B7Color;
+    cursor: pointer;
+    margin: 0 rem(8px);
+    padding: 2px;
+
+    @include lt-lg {
+        width: rem(24px);
+        height: rem(24px);
+        margin: 0 rem(8px);
+    }
+}
+
+.twitter-link {
+    @include social-media-link;
+    background-image: url('/images/footer/twitter-icon.svg');
+
+    &:hover {
+        background-color: #1DA1F2;
+    }
+}
+
+.github-link {
+    @include social-media-link;
+    background-image: url('/images/footer/github-icon.svg');
+
+    &:hover {
+        background-color: #171515;
+    }
+}
+
+.facebook-link {
+    @include social-media-link;
+    background-image: url('/images/footer/facebook-icon.svg');
+
+    &:hover {
+        background-color: #4267B2;
+    }
+}
+
+.linkedin-link {
+    @include social-media-link;
+    background-image: url('/images/footer/linkedin-icon.svg');
+
+    &:hover {
+        background-color: #0A66C2;
+    }
 }
