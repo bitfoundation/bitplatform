@@ -61,6 +61,8 @@
 
         h1 {
             color: $White;
+            margin-top: 40px;
+            margin-bottom: 16px;
         }
 
         div {
@@ -149,6 +151,11 @@
 
         h4 {
             color: $Black1;
+            margin-bottom: 32px;
+
+            @include lt-lg {
+                margin-bottom: 8px;
+            }
         }
 
         div {
@@ -187,6 +194,7 @@
     margin-top: 40px;
     width: calc(50% - 55px);
     margin-right: 55Px;
+    position: relative;
 
     @include md {
         padding: rem(30px) rem(24px);
@@ -207,6 +215,11 @@
 
         h4 {
             color: $Black1;
+            margin-bottom: 20px;
+
+            @include lt-lg {
+                margin-bottom: 30px;
+            }
         }
 
         div {
@@ -227,4 +240,30 @@
 
     .baner {
     }
+}
+
+.download-box {
+    position: absolute;
+    top: 51px;
+    right: -36px;
+    box-sizing: border-box;
+    background: linear-gradient(225.14deg, #004EBA -11.79%, #0164EC 95.46%);
+    box-shadow: 0px 4px 20px rgba(0, 101, 239, 0.3);
+    border-radius: 20px;
+    width: 192px;
+    height: 192px;
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: center;
+    color: $Gray4;
+    justify-content: center;
+    @include subtitle4;
+}
+
+.download-icon {
+    width: 53px;
+    height: 53px;
+    background-image: url('/images/home/download-icon.svg');
+    background-position: center;
+    background-repeat: no-repeat;
 }
