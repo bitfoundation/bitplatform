@@ -69,92 +69,16 @@
     box-sizing: border-box;
     padding-left: rem(16px);
     padding-right: rem(16px);
-}
 
-
-/*---------------small sizes----------------*/
-@media screen and (max-width: #{$screen-sm-max}) {
-    @mixin subtitle1 {
-        font-size: rem(18px);
-        line-height: rem(32px);
+    @include lg {
+        max-width: rem(1040px);
     }
 
-    @mixin subtitle2 {
-        font-weight: 700;
-        font-size: rem(14px);
-        line-height: rem(28px);
-    }
-
-    @mixin subtitle3 {
-        font-weight: 600;
-        font-size: rem(12px);
-        line-height: rem(24px);
-    }
-
-    @mixin body1 {
-        font-size: rem(14px);
-        line-height: rem(28px);
-    }
-
-    @mixin body2 {
-        font-size: rem(12px);
-        line-height: rem(24px);
-    }
-
-    @mixin page-section {
-        max-width: 100%;
-    }
-}
-
-
-/*---------------medume sizes----------------*/
-@media screen and (min-width: #{$screen-md-min}) and (max-width: #{$screen-md-max}) {
-    @mixin subtitle1 {
-        font-size: rem(16px);
-    }
-
-    @mixin subtitle2 {
-        font-weight: 700;
-        font-size: rem(14px);
-        line-height: rem(28px);
-    }
-
-    @mixin subtitle3 {
-        font-weight: 700;
-        font-size: rem(12px);
-        line-height: rem(24px);
-    }
-
-    @mixin subtitle4 {
-        font-weight: 700;
-        font-size: rem(16px);
-        line-height: rem(32px);
-    }
-
-    @mixin body1 {
-        font-size: rem(16px);
-    }
-
-    @mixin body2 {
-        font-size: rem(14px);
-        line-height: rem(28px);
-    }
-
-    @mixin body3 {
-        font-weight: 400;
-        font-size: rem(12px);
-        line-height: rem(24px);
-    }
-
-    @mixin page-section {
+    @include md {
         max-width: rem(704px);
     }
-}
 
-
-/*---------------large sizes----------------*/
-@media screen and (min-width: #{$screen-lg-min}) and (max-width: #{$screen-lg-max}) {
-    @mixin page-section {
-        max-width: rem(1040px);
+    @include sm {
+        max-width: 100%;
     }
 }
