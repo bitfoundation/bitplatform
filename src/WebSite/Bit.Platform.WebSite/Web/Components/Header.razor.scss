@@ -5,56 +5,42 @@
     top: 0;
     z-index: 10000;
     width: 100%;
+    height: rem(80px);
+
+    @include lg {
+        height: rem(72px);
+    }
+
+    @include md {
+        height: rem(56px);
+    }
+
+    @include sm {
+        height: rem(40px);
+    }
 }
 
-.main-header-cover {
+.header-cover {
+    position: absolute;
     background-color: $White;
     width: 100%;
     opacity: 0.3;
-    box-sizing: border-box;
-    top: 0;
-    position: fixed;
-    height: 80px;
-    z-index: 9999;
-
-    @include lg {
-        height: rem(72px);
-    }
-
-    @include md {
-        height: rem(56px);
-    }
-
-    @include sm {
-        height: rem(40px);
-    }
+    height: 100%;
 }
 
-.main-header-container {
+.header-container {
+    @include page-container;
+    height: 100%;
+    position: absolute;
+}
+
+.header-section {
+    @include page-section;
     background-color: unset;
-    display: flex;
     flex-flow: row nowrap;
     justify-content: space-between;
     align-items: center;
-    width: 100%;
-    height: rem(80px);
-    padding: 0 rem(344px);
-    box-sizing: border-box;
-
-    @include lg {
-        height: rem(72px);
-        padding: 0 rem(200px);
-    }
-
-    @include md {
-        height: rem(56px);
-        padding: 0 rem(32px);
-    }
-
-    @include sm {
-        height: rem(40px);
-        padding: 0 rem(16px);
-    }
+    height: inherit;
 
     .header-link {
         @include body3;
@@ -72,11 +58,10 @@
     }
 }
 
-.header-content-container {
+.row {
     display: flex;
     flex-flow: row nowrap;
     align-items: center;
-    height: 100%;
 }
 
 .header-logo {

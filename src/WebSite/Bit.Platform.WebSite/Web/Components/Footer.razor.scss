@@ -36,6 +36,7 @@
     display: flex;
     flex-flow: column nowrap;
     box-sizing: border-box;
+    padding-right: 5px;
 
     .header {
         @include subtitle3;
@@ -52,7 +53,6 @@
 .bit-coulmn {
     @include coulmn;
     flex: 33.3%;
-    padding-right: 5px;
 
     .bit-icon {
         background-image: url('/images/bit-icon.svg');
@@ -70,21 +70,20 @@
 .products-coulmn {
     @include coulmn;
     flex: 25%;
-    padding-right: 5px;
 }
 
 .quick-links-coulmn {
     @include coulmn;
     flex: 25%;
-    padding-right: 5px;
 }
 
 .media-coulmn {
     @include coulmn;
     flex: 16.6%;
+    padding-right: 0;
 }
 
-.social-media-coulmn {
+.row {
     display: flex;
     flex-flow: row nowrap;
 }

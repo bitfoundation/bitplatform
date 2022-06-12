@@ -1,11 +1,9 @@
-﻿<header>
-    <div class="main-header-cover"></div>
-    <div class="main-header">
-        <div class="main-header-container">
-            <div class="header-content-container">
-                <a class="header-logo" href="/"></a>
-            </div>
-            <div class="header-content-container">
+﻿<header class="main-header">
+    <div class="header-cover"></div>
+    <div class="header-container">
+        <div class="header-section">
+            <a class="header-logo" href="/"></a>
+            <div class="row">
                 <a class="header-link @(CurrentUrl == "/" ? "header-link--active" : "")" href="/">Home</a>
                 <a class="header-link @(CurrentUrl != "/" ? "header-link--active" : "")" href="/products/overview">Products</a>
                 <a class="github-btn" target="_blank" href="https://github.com/bitfoundation/bitplatform"></a>
