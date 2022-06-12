@@ -208,7 +208,7 @@ public partial class BitRadioButtonList<TItem, TValue>
     {
         if (IsEnabled is false) return;
 
-        await OnClick.InvokeAsync(e).ConfigureAwait(false);
+        await OnClick.InvokeAsync(e).ConfigureAwait(true);
     }
 
     private async Task HandleChange(ChangeEventArgs e)
@@ -217,7 +217,7 @@ public partial class BitRadioButtonList<TItem, TValue>
 
         CurrentValue = e.Value.ConvertTo<TValue>();
 
-        await OnChange.InvokeAsync(e).ConfigureAwait(false);
+        await OnChange.InvokeAsync(e).ConfigureAwait(true);
     }
 
     private string GetAriaLabelledBy() => Label.HasValue() || LabelFragment is not null ? LabelId : AriaLabelledBy;

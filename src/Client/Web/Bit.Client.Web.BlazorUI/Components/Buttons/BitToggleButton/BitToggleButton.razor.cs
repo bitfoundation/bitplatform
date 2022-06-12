@@ -97,10 +97,10 @@ public partial class BitToggleButton
     {
         if (IsEnabled)
         {
-            await OnClick.InvokeAsync(e).ConfigureAwait(false);
+            await OnClick.InvokeAsync(e).ConfigureAwait(true);
             if (IsCheckedHasBeenSet && IsCheckedChanged.HasDelegate is false) return;
             IsChecked = !IsChecked;
-            await OnChange.InvokeAsync(IsChecked).ConfigureAwait(false);
+            await OnChange.InvokeAsync(IsChecked).ConfigureAwait(true);
         }
     }
 
@@ -130,6 +130,6 @@ public partial class BitToggleButton
             tabIndex = AllowDisabledFocus ? null : -1;
         }
 
-        await base.OnInitializedAsync().ConfigureAwait(false);
+        await base.OnInitializedAsync().ConfigureAwait(true);
     }
 }

@@ -82,7 +82,7 @@ public partial class BitRadioButtonGroup
         LabelId = $"RadioButtonGroupLabel{UniqueId}";
         OnCurrentValueChanged += HandleOnCurrentValueChanged;
 
-        await base.OnInitializedAsync().ConfigureAwait(false);
+        await base.OnInitializedAsync().ConfigureAwait(true);
     }
 
     internal async Task SelectOption(BitRadioButtonOption option)
@@ -95,7 +95,7 @@ public partial class BitRadioButtonGroup
         SelectedOption = option;
         CurrentValue = option.Value;
 
-        await OnValueChange.InvokeAsync(CurrentValue).ConfigureAwait(false);
+        await OnValueChange.InvokeAsync(CurrentValue).ConfigureAwait(true);
     }
 
     internal void RegisterOption(BitRadioButtonOption option)

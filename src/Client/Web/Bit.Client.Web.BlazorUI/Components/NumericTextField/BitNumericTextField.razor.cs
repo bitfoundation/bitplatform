@@ -272,11 +272,11 @@ public partial class BitNumericTextField<TValue>
                 if (isValid is false) return;
 
                 SetValue(result);
-                await OnChange.InvokeAsync(CurrentValue).ConfigureAwait(false);
+                await OnChange.InvokeAsync(CurrentValue).ConfigureAwait(true);
             });
         }
 
-        await base.OnParametersSetAsync().ConfigureAwait(false);
+        await base.OnParametersSetAsync().ConfigureAwait(true);
     }
 
     private async void HandleMouseDown(BitNumericTextFieldAction action, MouseEventArgs e)
@@ -284,20 +284,20 @@ public partial class BitNumericTextField<TValue>
         //Change focus from input to numeric text field
         if (action == BitNumericTextFieldAction.Increment)
         {
-            await buttonIncrement.FocusAsync().ConfigureAwait(false);
+            await buttonIncrement.FocusAsync().ConfigureAwait(true);
         }
         else
         {
-            await buttonDecrement.FocusAsync().ConfigureAwait(false);
+            await buttonDecrement.FocusAsync().ConfigureAwait(true);
         }
 
 
-        await HandleMouseDownAction(action, e).ConfigureAwait(false);
+        await HandleMouseDownAction(action, e).ConfigureAwait(true);
         timer = new Timer((_) =>
         {
             InvokeAsync(async () =>
             {
-                await HandleMouseDownAction(action, e).ConfigureAwait(false);
+                await HandleMouseDownAction(action, e).ConfigureAwait(true);
                 StateHasChanged();
             });
         }, null, INITIAL_STEP_DELAY, STEP_DELAY);
@@ -322,7 +322,7 @@ public partial class BitNumericTextField<TValue>
         if (IsEnabled is false) return;
         if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
 
-        await ChangeHandler.InvokeAsync(action).ConfigureAwait(false);
+        await ChangeHandler.InvokeAsync(action).ConfigureAwait(true);
         if (action is BitNumericTextFieldAction.Increment && OnIncrement.HasDelegate is true)
         {
             var args = new BitNumericTextFieldChangeValue<TValue>
@@ -330,7 +330,7 @@ public partial class BitNumericTextField<TValue>
                 Value = CurrentValue,
                 MouseEventArgs = e
             };
-            await OnIncrement.InvokeAsync(args).ConfigureAwait(false);
+            await OnIncrement.InvokeAsync(args).ConfigureAwait(true);
         }
 
         if (action is BitNumericTextFieldAction.Decrement && OnDecrement.HasDelegate is true)
@@ -340,7 +340,7 @@ public partial class BitNumericTextField<TValue>
                 Value = CurrentValue,
                 MouseEventArgs = e
             };
-            await OnDecrement.InvokeAsync(args).ConfigureAwait(false);
+            await OnDecrement.InvokeAsync(args).ConfigureAwait(true);
         }
     }
 
@@ -352,13 +352,13 @@ public partial class BitNumericTextField<TValue>
         switch (e.Key)
         {
             case "ArrowUp":
-                await CheckIntermediateValueAndSetValue().ConfigureAwait(false);
-                await ChangeHandler.InvokeAsync(BitNumericTextFieldAction.Increment).ConfigureAwait(false);
+                await CheckIntermediateValueAndSetValue().ConfigureAwait(true);
+                await ChangeHandler.InvokeAsync(BitNumericTextFieldAction.Increment).ConfigureAwait(true);
                 break;
 
             case "ArrowDown":
-                await CheckIntermediateValueAndSetValue().ConfigureAwait(false);
-                await ChangeHandler.InvokeAsync(BitNumericTextFieldAction.Decrement).ConfigureAwait(false);
+                await CheckIntermediateValueAndSetValue().ConfigureAwait(true);
+                await ChangeHandler.InvokeAsync(BitNumericTextFieldAction.Decrement).ConfigureAwait(true);
                 break;
 
             case "Enter":
@@ -368,7 +368,7 @@ public partial class BitNumericTextField<TValue>
                 if (isNumber)
                 {
                     SetValue(numericValue);
-                    await OnChange.InvokeAsync(CurrentValue).ConfigureAwait(false);
+                    await OnChange.InvokeAsync(CurrentValue).ConfigureAwait(true);
                 }
                 else
                 {
@@ -387,7 +387,7 @@ public partial class BitNumericTextField<TValue>
                 Value = CurrentValue,
                 KeyboardEventArgs = e
             };
-            await OnIncrement.InvokeAsync(args).ConfigureAwait(false);
+            await OnIncrement.InvokeAsync(args).ConfigureAwait(true);
         }
 
         if (e.Key is "ArrowDown" && OnDecrement.HasDelegate is true)
@@ -397,24 +397,24 @@ public partial class BitNumericTextField<TValue>
                 Value = CurrentValue,
                 KeyboardEventArgs = e
             };
-            await OnDecrement.InvokeAsync(args).ConfigureAwait(false);
+            await OnDecrement.InvokeAsync(args).ConfigureAwait(true);
         }
     }
 
     private async Task HandleBlur(FocusEventArgs e)
     {
         if (IsEnabled is false) return;
-        await OnBlur.InvokeAsync(e).ConfigureAwait(false);
+        await OnBlur.InvokeAsync(e).ConfigureAwait(true);
 
-        await CheckIntermediateValueAndSetValue().ConfigureAwait(false);
+        await CheckIntermediateValueAndSetValue().ConfigureAwait(true);
     }
 
     private async Task HandleFocus(FocusEventArgs e)
     {
         if (IsEnabled)
         {
-            await OnFocus.InvokeAsync(e).ConfigureAwait(false);
-            await JSRuntime.SelectText(inputRef).ConfigureAwait(false);
+            await OnFocus.InvokeAsync(e).ConfigureAwait(true);
+            await JSRuntime.SelectText(inputRef).ConfigureAwait(true);
         }
     }
 
@@ -491,7 +491,7 @@ public partial class BitNumericTextField<TValue>
         if (isNumber)
         {
             SetValue(numericValue);
-            await OnChange.InvokeAsync(CurrentValue).ConfigureAwait(false);
+            await OnChange.InvokeAsync(CurrentValue).ConfigureAwait(true);
         }
         else
         {

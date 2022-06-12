@@ -311,7 +311,7 @@ public partial class BitTextField
         if (IsEnabled)
         {
             FocusClass = "focused";
-            await OnFocusIn.InvokeAsync(e).ConfigureAwait(false);
+            await OnFocusIn.InvokeAsync(e).ConfigureAwait(true);
         }
     }
 
@@ -320,7 +320,7 @@ public partial class BitTextField
         if (IsEnabled)
         {
             FocusClass = "";
-            await OnFocusOut.InvokeAsync(e).ConfigureAwait(false);
+            await OnFocusOut.InvokeAsync(e).ConfigureAwait(true);
         }
     }
 
@@ -329,7 +329,7 @@ public partial class BitTextField
         if (IsEnabled)
         {
             FocusClass = "focused";
-            await OnFocus.InvokeAsync(e).ConfigureAwait(false);
+            await OnFocus.InvokeAsync(e).ConfigureAwait(true);
         }
     }
 
@@ -339,14 +339,14 @@ public partial class BitTextField
         if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
 
         CurrentValueAsString = e.Value?.ToString();
-        await OnChange.InvokeAsync(Value).ConfigureAwait(false);
+        await OnChange.InvokeAsync(Value).ConfigureAwait(true);
     }
 
     private async Task HandleKeyDown(KeyboardEventArgs e)
     {
         if (IsEnabled)
         {
-            await OnKeyDown.InvokeAsync(e).ConfigureAwait(false);
+            await OnKeyDown.InvokeAsync(e).ConfigureAwait(true);
         }
     }
 
@@ -354,7 +354,7 @@ public partial class BitTextField
     {
         if (IsEnabled)
         {
-            await OnKeyUp.InvokeAsync(e).ConfigureAwait(false);
+            await OnKeyUp.InvokeAsync(e).ConfigureAwait(true);
         }
     }
 
@@ -362,7 +362,7 @@ public partial class BitTextField
     {
         if (IsEnabled)
         {
-            await OnClick.InvokeAsync(e).ConfigureAwait(false);
+            await OnClick.InvokeAsync(e).ConfigureAwait(true);
         }
     }
 

@@ -69,7 +69,7 @@ public partial class BitProgressIndicator
         LabelId = Label.HasValue() ? $"progress-indicator{UniqueId}-label" : null;
         DescriptionId = Description.HasValue() ? $"progress-indicator{UniqueId}-description" : null;
 
-        await base.OnParametersSetAsync().ConfigureAwait(false);
+        await base.OnParametersSetAsync().ConfigureAwait(true);
     }
 
     protected override string RootElementClass => "bit-pi";

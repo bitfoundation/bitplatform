@@ -67,14 +67,14 @@ public partial class BitActionButton
             tabIndex = AllowDisabledFocus ? null : -1;
         }
 
-        await base.OnInitializedAsync().ConfigureAwait(false);
+        await base.OnInitializedAsync().ConfigureAwait(true);
     }
 
     protected virtual async Task HandleOnClick(MouseEventArgs e)
     {
         if (IsEnabled)
         {
-            await OnClick.InvokeAsync(e).ConfigureAwait(false);
+            await OnClick.InvokeAsync(e).ConfigureAwait(true);
         }
     }
 }

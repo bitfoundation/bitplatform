@@ -111,7 +111,7 @@ public partial class BitPivot
 
         StateHasChanged();
 
-        await OnLinkClick.InvokeAsync(item).ConfigureAwait(false);
+        await OnLinkClick.InvokeAsync(item).ConfigureAwait(true);
     }
 
     internal void RegisterItem(BitPivotItem item)

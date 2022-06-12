@@ -225,11 +225,11 @@ public partial class BitDatePicker
 
         var obj = DotNetObjectReference.Create(this);
 
-        await JSRuntime.InvokeVoidAsync("BitDatePicker.toggleDatePickerCallout", obj, UniqueId, CalloutId, OverlayId, isOpen).ConfigureAwait(false);
+        await JSRuntime.InvokeVoidAsync("BitDatePicker.toggleDatePickerCallout", obj, UniqueId, CalloutId, OverlayId, isOpen).ConfigureAwait(true);
 
         if (showMonthPickerAsOverlayInternal is false)
         {
-            showMonthPickerAsOverlayInternal = await JSRuntime.InvokeAsync<bool>("BitDatePicker.checkMonthPickerWidth", CalloutId).ConfigureAwait(false);
+            showMonthPickerAsOverlayInternal = await JSRuntime.InvokeAsync<bool>("BitDatePicker.checkMonthPickerWidth", CalloutId).ConfigureAwait(true);
         }
 
         if (showMonthPickerAsOverlayInternal)
@@ -239,7 +239,7 @@ public partial class BitDatePicker
 
         IsOpen = !isOpen;
         displayYear = currentYear;
-        await OnClick.InvokeAsync(eventArgs).ConfigureAwait(false);
+        await OnClick.InvokeAsync(eventArgs).ConfigureAwait(true);
     }
 
     public async Task HandleFocusIn(FocusEventArgs eventArgs)
@@ -247,7 +247,7 @@ public partial class BitDatePicker
         if (IsEnabled)
         {
             FocusClass = "focused";
-            await OnFocusIn.InvokeAsync(eventArgs).ConfigureAwait(false);
+            await OnFocusIn.InvokeAsync(eventArgs).ConfigureAwait(true);
         }
     }
 
@@ -256,7 +256,7 @@ public partial class BitDatePicker
         if (IsEnabled)
         {
             FocusClass = string.Empty;
-            await OnFocusOut.InvokeAsync(eventArgs).ConfigureAwait(false);
+            await OnFocusOut.InvokeAsync(eventArgs).ConfigureAwait(true);
         }
     }
 
@@ -265,7 +265,7 @@ public partial class BitDatePicker
         if (IsEnabled)
         {
             FocusClass = "focused";
-            await OnFocus.InvokeAsync(e).ConfigureAwait(false);
+            await OnFocus.InvokeAsync(e).ConfigureAwait(true);
         }
     }
 
@@ -276,7 +276,7 @@ public partial class BitDatePicker
         if (AllowTextInput is false) return;
 
         CurrentValueAsString = e.Value?.ToString();
-        await OnSelectDate.InvokeAsync(CurrentValue).ConfigureAwait(false);
+        await OnSelectDate.InvokeAsync(CurrentValue).ConfigureAwait(true);
     }
 
     public async Task SelectDate(int dayIndex, int weekIndex)
@@ -298,13 +298,13 @@ public partial class BitDatePicker
         }
 
         var obj = DotNetObjectReference.Create(this);
-        await JSRuntime.InvokeVoidAsync("BitDatePicker.toggleDatePickerCallout", obj, UniqueId, CalloutId, OverlayId, isOpen).ConfigureAwait(false);
+        await JSRuntime.InvokeVoidAsync("BitDatePicker.toggleDatePickerCallout", obj, UniqueId, CalloutId, OverlayId, isOpen).ConfigureAwait(true);
         IsOpen = false;
         displayYear = currentYear;
         currentMonth = selectedMonth;
         CurrentValue = new DateTimeOffset(Culture.Calendar.ToDateTime(currentYear, currentMonth, currentDay, 0, 0, 0, 0), DateTimeOffset.Now.Offset);
         CreateMonthCalendar(currentYear, currentMonth);
-        await OnSelectDate.InvokeAsync(CurrentValue).ConfigureAwait(false);
+        await OnSelectDate.InvokeAsync(CurrentValue).ConfigureAwait(true);
     }
 
     public void HandleMonthChange(ChangeDirection direction)
@@ -529,7 +529,7 @@ public partial class BitDatePicker
     private async Task CloseCallout()
     {
         var obj = DotNetObjectReference.Create(this);
-        await JSRuntime.InvokeVoidAsync("BitDatePicker.toggleDatePickerCallout", obj, UniqueId, CalloutId, OverlayId, isOpen).ConfigureAwait(false);
+        await JSRuntime.InvokeVoidAsync("BitDatePicker.toggleDatePickerCallout", obj, UniqueId, CalloutId, OverlayId, isOpen).ConfigureAwait(true);
         IsOpen = false;
         StateHasChanged();
     }

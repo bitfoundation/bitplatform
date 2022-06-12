@@ -40,12 +40,12 @@ public partial class BitLink
     {
         if (IsEnabled)
         {
-            await OnClick.InvokeAsync(e).ConfigureAwait(false);
+            await OnClick.InvokeAsync(e).ConfigureAwait(true);
         }
     }
 
     private async Task ScrollToFragment()
     {
-        await JSRuntime!.BitLinkScrollToFragmentOnClickEvent(Href![1..]).ConfigureAwait(false);
+        await JSRuntime!.BitLinkScrollToFragmentOnClickEvent(Href![1..]).ConfigureAwait(true);
     }
 }

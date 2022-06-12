@@ -97,19 +97,19 @@ public partial class BitColorPicker : IAsyncDisposable
     {
         if (firstRender)
         {
-            onWindowMouseUpAbortControllerId = await JSRuntime.RegisterOnWindowMouseUpEvent(this, "OnWindowMouseUp").ConfigureAwait(false);
-            onWindowMouseMoveAbortControllerId = await JSRuntime.RegisterOnWindowMouseMoveEvent(this, "OnWindowMouseMove").ConfigureAwait(false);
+            onWindowMouseUpAbortControllerId = await JSRuntime.RegisterOnWindowMouseUpEvent(this, "OnWindowMouseUp").ConfigureAwait(true);
+            onWindowMouseMoveAbortControllerId = await JSRuntime.RegisterOnWindowMouseMoveEvent(this, "OnWindowMouseMove").ConfigureAwait(true);
 
-            await SetPositionAsync().ConfigureAwait(false);
+            await SetPositionAsync().ConfigureAwait(true);
         }
 
-        await base.OnAfterRenderAsync(firstRender).ConfigureAwait(false);
+        await base.OnAfterRenderAsync(firstRender).ConfigureAwait(true);
     }
 
     private async Task SetPositionAsync()
     {
         var hsv = color.Hsv;
-        var saturationPickerRect = await JSRuntime.GetBoundingClientRect(SaturationPickerRef).ConfigureAwait(false);
+        var saturationPickerRect = await JSRuntime.GetBoundingClientRect(SaturationPickerRef).ConfigureAwait(true);
 
         var width = saturationPickerRect?.Width ?? 0;
         var height = saturationPickerRect?.Height ?? 0;
@@ -134,7 +134,7 @@ public partial class BitColorPicker : IAsyncDisposable
     {
         if (ColorHasBeenSet && ColorChanged.HasDelegate is false) return;
 
-        var parent = await JSRuntime.GetBoundingClientRect(SaturationPickerRef).ConfigureAwait(false);
+        var parent = await JSRuntime.GetBoundingClientRect(SaturationPickerRef).ConfigureAwait(true);
         saturationPickerThumbPosition = new BitColorPosition
         {
             Left = e.ClientX < parent.Left ? 0 : e.ClientX > parent.Left + parent.Width ? Convert.ToInt32(parent.Width) : Convert.ToInt32(e.ClientX - parent.Left),
@@ -147,9 +147,9 @@ public partial class BitColorPicker : IAsyncDisposable
         SetSaturationPickerBackground();
         string? colorValue = colorType == BitColorType.Hex ? color.Hex : color.Rgb;
 
-        await ColorChanged.InvokeAsync(colorValue).ConfigureAwait(false);
-        await AlphaChanged.InvokeAsync(color.Alpha).ConfigureAwait(false);
-        await OnChange.InvokeAsync(new() { Color = colorValue, Alpha = color.Alpha }).ConfigureAwait(false);
+        await ColorChanged.InvokeAsync(colorValue).ConfigureAwait(true);
+        await AlphaChanged.InvokeAsync(color.Alpha).ConfigureAwait(true);
+        await OnChange.InvokeAsync(new() { Color = colorValue, Alpha = color.Alpha }).ConfigureAwait(true);
 
         StateHasChanged();
     }
@@ -162,9 +162,9 @@ public partial class BitColorPicker : IAsyncDisposable
         color = new BitColor(hue, selectedSaturation, selectedValue, color.Alpha);
         SetSaturationPickerBackground();
         string? colorValue = colorType == BitColorType.Hex ? color.Hex : color.Rgb;
-        await ColorChanged.InvokeAsync(colorValue).ConfigureAwait(false);
-        await AlphaChanged.InvokeAsync(color.Alpha).ConfigureAwait(false);
-        await OnChange.InvokeAsync(new() { Color = colorValue, Alpha = color.Alpha }).ConfigureAwait(false);
+        await ColorChanged.InvokeAsync(colorValue).ConfigureAwait(true);
+        await AlphaChanged.InvokeAsync(color.Alpha).ConfigureAwait(true);
+        await OnChange.InvokeAsync(new() { Color = colorValue, Alpha = color.Alpha }).ConfigureAwait(true);
     }
 
     private async Task PickAlphaColor(ChangeEventArgs args)
@@ -174,9 +174,9 @@ public partial class BitColorPicker : IAsyncDisposable
         var alpha = Convert.ToDouble(args.Value, CultureInfo.InvariantCulture) / 100;
         color = new BitColor(color.Hex ?? "", alpha);
         string? colorValue = colorType == BitColorType.Hex ? color.Hex : color.Rgb;
-        await ColorChanged.InvokeAsync(colorValue).ConfigureAwait(false);
-        await AlphaChanged.InvokeAsync(color.Alpha).ConfigureAwait(false);
-        await OnChange.InvokeAsync(new() { Color = colorValue, Alpha = color.Alpha }).ConfigureAwait(false);
+        await ColorChanged.InvokeAsync(colorValue).ConfigureAwait(true);
+        await AlphaChanged.InvokeAsync(color.Alpha).ConfigureAwait(true);
+        await OnChange.InvokeAsync(new() { Color = colorValue, Alpha = color.Alpha }).ConfigureAwait(true);
     }
 
     private static double ToValidSpanValue(double min, double max, double newMin, double newMax, double value)
@@ -187,14 +187,14 @@ public partial class BitColorPicker : IAsyncDisposable
     private async Task OnSaturationPickerMouseDown(MouseEventArgs e)
     {
         saturationPickerMouseDown = true;
-        await PickColorTune(e).ConfigureAwait(false);
+        await PickColorTune(e).ConfigureAwait(true);
     }
 
     private async Task OnSaturationPickerMouseMove(MouseEventArgs e)
     {
         if (saturationPickerMouseDown is false) return;
 
-        await PickColorTune(e).ConfigureAwait(false);
+        await PickColorTune(e).ConfigureAwait(true);
     }
 
     private string GetRootElAriaLabel()
@@ -221,19 +221,19 @@ public partial class BitColorPicker : IAsyncDisposable
     [JSInvokable]
     public async Task OnWindowMouseMove(MouseEventArgs e)
     {
-        await OnSaturationPickerMouseMove(e).ConfigureAwait(false);
+        await OnSaturationPickerMouseMove(e).ConfigureAwait(true);
     }
 
     public async ValueTask DisposeAsync()
     {
         if (onWindowMouseUpAbortControllerId.HasValue())
         {
-            await JSRuntime.AbortProcedure(onWindowMouseUpAbortControllerId!).ConfigureAwait(false);
+            await JSRuntime.AbortProcedure(onWindowMouseUpAbortControllerId!).ConfigureAwait(true);
         }
 
         if (onWindowMouseMoveAbortControllerId.HasValue())
         {
-            await JSRuntime.AbortProcedure(onWindowMouseMoveAbortControllerId!).ConfigureAwait(false);
+            await JSRuntime.AbortProcedure(onWindowMouseMoveAbortControllerId!).ConfigureAwait(true);
         }
 
         GC.SuppressFinalize(this);

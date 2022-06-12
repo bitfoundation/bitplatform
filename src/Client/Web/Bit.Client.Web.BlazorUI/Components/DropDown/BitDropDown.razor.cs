@@ -223,7 +223,7 @@ public partial class BitDropDown
         NormalDropDownItems = Items.FindAll(i => i.ItemType == BitDropDownItemType.Normal).ToList();
         InitText();
 
-        await base.OnParametersSetAsync().ConfigureAwait(false);
+        await base.OnParametersSetAsync().ConfigureAwait(true);
     }
 
     private void ChangeAllItemsIsSelected(bool value)
@@ -237,7 +237,7 @@ public partial class BitDropDown
     private async Task CloseCallout()
     {
         var obj = DotNetObjectReference.Create(this);
-        await JSRuntime.InvokeVoidAsync("BitDropDown.toggleDropDownCallout", obj, UniqueId, DropDownId, DropDownCalloutId, DropDownOverlayId, isOpen).ConfigureAwait(false);
+        await JSRuntime.InvokeVoidAsync("BitDropDown.toggleDropDownCallout", obj, UniqueId, DropDownId, DropDownCalloutId, DropDownOverlayId, isOpen).ConfigureAwait(true);
         IsOpen = false;
         StateHasChanged();
     }
@@ -247,9 +247,9 @@ public partial class BitDropDown
         if (IsEnabled is false) return;
 
         var obj = DotNetObjectReference.Create(this);
-        await JSRuntime.InvokeVoidAsync("BitDropDown.toggleDropDownCallout", obj, UniqueId, DropDownId, DropDownCalloutId, DropDownOverlayId, isOpen).ConfigureAwait(false);
+        await JSRuntime.InvokeVoidAsync("BitDropDown.toggleDropDownCallout", obj, UniqueId, DropDownId, DropDownCalloutId, DropDownOverlayId, isOpen).ConfigureAwait(true);
         isOpen = !isOpen;
-        await OnClick.InvokeAsync(e).ConfigureAwait(false);
+        await OnClick.InvokeAsync(e).ConfigureAwait(true);
     }
 
     private async Task HandleItemClick(BitDropDownItem selectedItem)
@@ -296,7 +296,7 @@ public partial class BitDropDown
             }
 
             Values = Items.FindAll(i => i.IsSelected && i.ItemType == BitDropDownItemType.Normal).Select(i => i.Value).ToList();
-            await OnSelectItem.InvokeAsync(selectedItem).ConfigureAwait(false);
+            await OnSelectItem.InvokeAsync(selectedItem).ConfigureAwait(true);
         }
         else
         {
@@ -308,12 +308,12 @@ public partial class BitDropDown
             Text = selectedItem.Text;
             CurrentValueAsString = selectedItem.Value;
             var obj = DotNetObjectReference.Create(this);
-            await JSRuntime.InvokeVoidAsync("BitDropDown.toggleDropDownCallout", obj, UniqueId, DropDownId, DropDownCalloutId, DropDownOverlayId, isOpen).ConfigureAwait(false);
+            await JSRuntime.InvokeVoidAsync("BitDropDown.toggleDropDownCallout", obj, UniqueId, DropDownId, DropDownCalloutId, DropDownOverlayId, isOpen).ConfigureAwait(true);
             isOpen = false;
 
             if (isSameItemSelected && !NotifyOnReselect) return;
 
-            await OnSelectItem.InvokeAsync(selectedItem).ConfigureAwait(false);
+            await OnSelectItem.InvokeAsync(selectedItem).ConfigureAwait(true);
         }
     }
 

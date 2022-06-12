@@ -79,7 +79,7 @@ public partial class BitToggle
     {
         if (IsEnabled is false || ValueChanged.HasDelegate is false) return;
         CurrentValue = !CurrentValue;
-        await OnChange.InvokeAsync(CurrentValue).ConfigureAwait(false);
+        await OnChange.InvokeAsync(CurrentValue).ConfigureAwait(true);
     }
 
     protected override async Task OnInitializedAsync()
@@ -88,7 +88,7 @@ public partial class BitToggle
 
         OnCurrentValueChanged += HandleOnCurrentValueChanged;
 
-        await base.OnInitializedAsync().ConfigureAwait(false);
+        await base.OnInitializedAsync().ConfigureAwait(true);
     }
 
     private void SetTexts()
