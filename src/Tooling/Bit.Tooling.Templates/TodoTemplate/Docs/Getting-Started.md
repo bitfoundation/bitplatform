@@ -14,9 +14,9 @@ This document aimed to create and run a Bit-Platform (Bit) project in a short pe
 ## Environment setup
 
 - Microsoft Visual Studio 2022 - Preview Version 17.3.0 Preview 1.0 or higher with the following workloads and extention
-- 1. Asp.net and web development
-- 2. Net Multi-Platform App UI development
-- 3. [Web Compiler 2022+ VisualStudtio extention](https://marketplace.visualstudio.com/items?itemName=Failwyn.WebCompiler64 "Web Compiler 2022+")
+- Asp.net and web development
+- Net Multi-Platform App UI development
+- [Web Compiler 2022+ VisualStudtio extention](https://marketplace.visualstudio.com/items?itemName=Failwyn.WebCompiler64 "Web Compiler 2022+")
 
 ## Create project
 Use `dotnet new` approach based on assumption that we've Bit.Tooling.Templates.TodoTemplate nuget package. bellow command installs the package and then creates a new project from it.
