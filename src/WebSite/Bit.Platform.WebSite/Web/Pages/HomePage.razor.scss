@@ -6,7 +6,6 @@
     justify-content: flex-start;
     align-items: center;
     width: 100%;
-    padding: 0 rem(16px);
     box-sizing: border-box;
     overflow: hidden;
 }
@@ -16,42 +15,229 @@
     width: 100%;
     max-width: rem(1232px);
     box-sizing: border-box;
+    padding-top: rem(80px);
+    padding-left: rem(16px);
+    padding-right: rem(16px);
 
     @include lg {
-        max-width: rem(1160px);
+        max-width: rem(1040px);
+        padding-top: rem(80px);
     }
 
     @include md {
-        max-width: rem(960px);
+        max-width: rem(704px);
+        padding-top: rem(32px);
     }
 
     @include sm {
         max-width: 100%;
+        padding-top: rem(32px);
+    }
+
+    h2 {
+        color: $B3Color;
+    }
+
+    .subtitle {
+        @include body3;
+        color: $Gray1;
     }
 }
-
 
 .hero-section {
-    flex-flow: row nowrap;
-    justify-content: space-between;
+    display: flex;
+    flex-flow: column nowrap;
     align-items: center;
-
-    @include sm {
-        flex-flow: column-reverse nowrap;
-        justify-content: flex-start;
-    }
-}
-
-.hero-banner {
     width: 100%;
     height: rem(880px);
     background-image: url('/images/home/hero-banner.png');
     background-position: center;
     background-repeat: no-repeat;
-    background-size: cover;
+    color: $Gray4;
+
+    @include lg {
+        height: rem(660px);
+    }
+
+    @include md {
+        height: rem(768px);
+    }
 
     @include sm {
         background-image: none;
         background-color: $B5Color;
+        height: rem(432px);
+    }
+
+    .hero-section-container {
+        max-width: rem(504px);
+
+        h1 {
+            color: $White;
+        }
+
+        div {
+            @include subtitle3
+        }
+    }
+
+    .page-section {
+        height: inherit;
+        align-items: center;
+    }
+
+    .github-btn {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: rem(4px);
+        background-color: $White;
+        box-sizing: border-box;
+        width: rem(213px);
+        height: rem(56px);
+        font-size: rem(22px);
+        font-weight: 600;
+        line-height: rem(40px);
+        color: $B6Color;
+        cursor: pointer;
+        margin-top: rem(112px);
+
+        &:hover {
+            color: $B3Color;
+        }
+
+        @include lg {
+            width: rem(213px);
+            height: rem(56px);
+            font-size: rem(20px);
+            font-weight: 600;
+            line-height: rem(32px);
+            margin-top: rem(64px);
+        }
+
+        @include md {
+            width: rem(143px);
+            height: rem(48px);
+            font-size: rem(16px);
+            font-weight: 600;
+            line-height: rem(32px);
+            margin-top: rem(32px);
+        }
+
+        @include sm {
+            width: rem(143px);
+            height: rem(48px);
+            font-size: rem(16px);
+            font-weight: 600;
+            line-height: rem(32px);
+            margin-top: rem(32px);
+        }
+    }
+}
+
+.project-template-section {
+    display: flex;
+    flex-flow: column nowrap;
+}
+
+.projetc-template-cart {
+    @include card;
+    padding: rem(68px) rem(104px);
+    margin-top: 40px;
+
+    @include lg {
+        padding: rem(62px) rem(88px);
+    }
+
+    @include md {
+        padding: rem(40px) rem(32px);
+    }
+
+    @include sm {
+        padding: rem(24px) rem(16px);
+    }
+
+    .content {
+        width: 50%;
+
+        h4 {
+            color: $Black1;
+        }
+
+        div {
+            color: $Gray1;
+            @include body3;
+            margin-bottom: rem(24px);
+        }
+
+        a {
+            color: $B6Color;
+            @include subtitle4;
+        }
+
+        @include sm {
+            width: 100%;
+        }
+    }
+
+    .baner {
+    }
+}
+
+.services-section {
+    display: flex;
+    flex-flow: column nowrap;
+
+    .services-cart-container {
+        display: flex;
+        flex-flow: row wrap;
+    }
+}
+
+.services-cart {
+    @include card;
+    padding: rem(46px) rem(40px);
+    margin-top: 40px;
+    width: calc(50% - 55px);
+    margin-right: 55Px;
+
+    @include md {
+        padding: rem(30px) rem(24px);
+        margin-top: 12px;
+        width: calc(100% - 55px);
+        margin-right: 55Px;
+    }
+
+    @include sm {
+        padding: rem(24px);
+        margin-top: 56px;
+        width: calc(100% - 55px);
+        margin-right: 55Px;
+    }
+
+    .content {
+        width: 72%;
+
+        h4 {
+            color: $Black1;
+        }
+
+        div {
+            color: $Gray1;
+            @include body3;
+            margin-bottom: rem(24px);
+        }
+
+        a {
+            color: $B6Color;
+            @include subtitle4;
+        }
+
+        @include sm {
+            width: 100%;
+        }
+    }
+
+    .baner {
     }
 }
