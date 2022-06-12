@@ -43,14 +43,18 @@ public class ComponentDetailsController : ControllerBase
 
         var componentInstance = Activator.CreateInstance(concreteComponentType);
 
-        var prefix = $"{componentType.FullName}.";
+        var componentNamePrefix = $"{componentType.FullName}.";
+
+        var baseComponentType = typeof(BitComponentBase);
+        var baseComponentNamePrefix = $"{baseComponentType.FullName}.";
+
         return Ok(componentType.GetProperties()
                               .Where(p => Attribute.IsDefined(p, typeof(Microsoft.AspNetCore.Components.ParameterAttribute)))
                               .Select(prop =>
                               {
                                   var xmlProperty = SummariesXmlDocument?.Descendants()
                                                             .Attributes()
-                                                            .Where(a => a.Value.Contains(prefix + prop.Name))
+                                                            .Where(a => a.Value.Contains(componentNamePrefix + prop.Name) || a.Value.Contains(baseComponentNamePrefix + prop.Name))
                                                             .FirstOrDefault();
                                   var typeName = GetTypeName(prop.PropertyType);
                                   return new

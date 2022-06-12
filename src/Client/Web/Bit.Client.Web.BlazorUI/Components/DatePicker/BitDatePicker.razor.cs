@@ -747,12 +747,12 @@ public partial class BitDatePicker
             return true;
         }
 
-        if (DateTime.TryParse(value, Culture, DateTimeStyles.None, out DateTime parsedValue))
-        {
-            result = new DateTimeOffset(parsedValue, DateTimeOffset.Now.Offset);
-            validationErrorMessage = null;
-            return true;
-        }
+            if (DateTime.TryParseExact(value, FormatDate, Culture, DateTimeStyles.None, out DateTime parsedValue))
+            {
+                result = new DateTimeOffset(parsedValue, DateTimeOffset.Now.Offset);
+                validationErrorMessage = null;
+                return true;
+            }
 
         result = default;
         validationErrorMessage = $"The {DisplayName ?? FieldIdentifier.FieldName} field is not valid.";
