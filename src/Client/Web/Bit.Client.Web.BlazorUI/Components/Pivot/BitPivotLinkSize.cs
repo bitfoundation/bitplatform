@@ -4,18 +4,17 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Bit.Client.Web.BlazorUI
-{
-    public enum BitPivotLinkSize
-    {
-        /// <summary>
-        /// Display Link using normal font size
-        /// </summary>
-        Normal,
+namespace Bit.Client.Web.BlazorUI;
 
-        /// <summary>
-        /// Display links using large font size
-        /// </summary>
-        Large
-    }
+public enum BitPivotLinkSize
+{
+    /// <summary>
+    /// Display Link using normal font size
+    /// </summary>
+    Normal,
+
+    /// <summary>
+    /// Display links using large font size
+    /// </summary>
+    Large
 }

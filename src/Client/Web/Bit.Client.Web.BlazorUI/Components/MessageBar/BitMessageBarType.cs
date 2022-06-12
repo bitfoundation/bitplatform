@@ -1,35 +1,34 @@
-﻿namespace Bit.Client.Web.BlazorUI
+﻿namespace Bit.Client.Web.BlazorUI;
+
+public enum BitMessageBarType
 {
-    public enum BitMessageBarType
-    {
-        /// <summary>
-        /// Info styled MessageBar
-        /// </summary>
-        Info,
+    /// <summary>
+    /// Info styled MessageBar
+    /// </summary>
+    Info,
 
-        /// <summary>
-        /// Warning styled MessageBar
-        /// </summary>
-        Warning,
+    /// <summary>
+    /// Warning styled MessageBar
+    /// </summary>
+    Warning,
 
-        /// <summary>
-        /// Error styled MessageBar
-        /// </summary>
-        Error,
+    /// <summary>
+    /// Error styled MessageBar
+    /// </summary>
+    Error,
 
-        /// <summary>
-        /// Blocked styled MessageBar
-        /// </summary>
-        Blocked,
+    /// <summary>
+    /// Blocked styled MessageBar
+    /// </summary>
+    Blocked,
 
-        /// <summary>
-        /// SevereWarning styled MessageBar
-        /// </summary>
-        SevereWarning,
+    /// <summary>
+    /// SevereWarning styled MessageBar
+    /// </summary>
+    SevereWarning,
 
-        /// <summary>
-        /// Success styled MessageBar
-        /// </summary>
-        Success
-    }
+    /// <summary>
+    /// Success styled MessageBar
+    /// </summary>
+    Success
 }

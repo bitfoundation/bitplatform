@@ -1,86 +1,85 @@
 ﻿using Microsoft.AspNetCore.Components;
 
-namespace Bit.Client.Web.BlazorUI
+namespace Bit.Client.Web.BlazorUI;
+
+public partial class BitSpinner
 {
-    public partial class BitSpinner
+    /// <summary>
+    /// Politeness setting for label update announcement.
+    /// </summary>
+    [Parameter] public BitSpinnerAriaLive AriaLive { get; set; } = BitSpinnerAriaLive.Polite;
+
+    /// <summary>
+    /// The position of the label in regards to the spinner animation
+    /// </summary>
+    [Parameter] public BitSpinnerLabelPosition LabelPosition { get; set; }
+
+    /// <summary>
+    /// The size of spinner to render
+    /// </summary>
+    [Parameter] public BitSpinnerSize Size { get; set; }
+
+    /// <summary>
+    /// The label to show next to the spinner. Label updates will be announced to the screen readers
+    /// </summary>
+    [Parameter] public string? Label { get; set; }
+
+    protected override string RootElementClass => "bit-spn";
+
+    protected override void RegisterComponentClasses()
     {
-        /// <summary>
-        /// Politeness setting for label update announcement.
-        /// </summary>
-        [Parameter] public BitSpinnerAriaLive AriaLive { get; set; } = BitSpinnerAriaLive.Polite;
+        ClassBuilder.Register(GetClassSize);
+        ClassBuilder.Register(GetClassLabelPosition);
+    }
 
-        /// <summary>
-        /// The position of the label in regards to the spinner animation
-        /// </summary>
-        [Parameter] public BitSpinnerLabelPosition LabelPosition { get; set; }
+    private string GetClassSize()
+    {
+        string classSize = string.Empty;
 
-        /// <summary>
-        /// The size of spinner to render
-        /// </summary>
-        [Parameter] public BitSpinnerSize Size { get; set; }
-
-        /// <summary>
-        /// The label to show next to the spinner. Label updates will be announced to the screen readers
-        /// </summary>
-        [Parameter] public string? Label { get; set; }
-
-        protected override string RootElementClass => "bit-spn";
-
-        protected override void RegisterComponentClasses()
+        switch (Size)
         {
-            ClassBuilder.Register(GetClassSize);
-            ClassBuilder.Register(GetClassLabelPosition);
+            case BitSpinnerSize.XSmall:
+                classSize = "xSmall";
+                break;
+
+            case BitSpinnerSize.Small:
+                classSize = "small";
+                break;
+
+            case BitSpinnerSize.Medium:
+                classSize = "medium";
+                break;
+
+            case BitSpinnerSize.Large:
+                classSize = "large";
+                break;
         }
 
-        private string GetClassSize()
+        return $"{RootElementClass}-{classSize}-{VisualClassRegistrar()}";
+    }
+
+    private string GetClassLabelPosition()
+    {
+        string classLabelPosition = string.Empty;
+        switch (LabelPosition)
         {
-            string classSize = string.Empty;
+            case BitSpinnerLabelPosition.Top:
+                classLabelPosition = "top";
+                break;
 
-            switch (Size)
-            {
-                case BitSpinnerSize.XSmall:
-                    classSize = "xSmall";
-                    break;
+            case BitSpinnerLabelPosition.Left:
+                classLabelPosition = "left";
+                break;
 
-                case BitSpinnerSize.Small:
-                    classSize = "small";
-                    break;
+            case BitSpinnerLabelPosition.Right:
+                classLabelPosition = "right";
+                break;
 
-                case BitSpinnerSize.Medium:
-                    classSize = "medium";
-                    break;
-
-                case BitSpinnerSize.Large:
-                    classSize = "large";
-                    break;
-            }
-
-            return $"{RootElementClass}-{classSize}-{VisualClassRegistrar()}";
+            case BitSpinnerLabelPosition.Bottom:
+                classLabelPosition = "bottom";
+                break;
         }
 
-        private string GetClassLabelPosition()
-        {
-            string classLabelPosition = string.Empty;
-            switch (LabelPosition)
-            {
-                case BitSpinnerLabelPosition.Top:
-                    classLabelPosition = "top";
-                    break;
-
-                case BitSpinnerLabelPosition.Left:
-                    classLabelPosition = "left";
-                    break;
-
-                case BitSpinnerLabelPosition.Right:
-                    classLabelPosition = "right";
-                    break;
-
-                case BitSpinnerLabelPosition.Bottom:
-                    classLabelPosition = "bottom";
-                    break;
-            }
-
-            return $"{RootElementClass}-{classLabelPosition}-{VisualClassRegistrar()}";
-        }
+        return $"{RootElementClass}-{classLabelPosition}-{VisualClassRegistrar()}";
     }
 }

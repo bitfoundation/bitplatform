@@ -1,5 +1,4 @@
 ﻿using System;
-using Bit.Client.Web.BlazorUI.Utils;
 using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 

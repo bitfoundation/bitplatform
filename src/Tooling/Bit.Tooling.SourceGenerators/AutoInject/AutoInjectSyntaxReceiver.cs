@@ -10,7 +10,7 @@ public class AutoInjectSyntaxReceiver : ISyntaxContextReceiver
 {
     private static readonly string AutoInjectAttributeName = typeof(AutoInjectAttribute).FullName;
 
-    public Collection<ISymbol> EligibleMembers { get; } = new ();
+    public Collection<ISymbol> EligibleMembers { get; } = new();
 
     public void OnVisitSyntaxNode(GeneratorSyntaxContext context)
     {
@@ -20,24 +20,21 @@ public class AutoInjectSyntaxReceiver : ISyntaxContextReceiver
 
     private void MarkEligibleFields(GeneratorSyntaxContext context)
     {
-        if ((context.Node is FieldDeclarationSyntax fieldDeclarationSyntax) is false ||
-            fieldDeclarationSyntax.AttributeLists.Any() is false) return;
+        if (context.Node is FieldDeclarationSyntax fieldDeclarationSyntax is false || fieldDeclarationSyntax.AttributeLists.Any() is false) return;
 
-        ClassDeclarationSyntax classDeclarationSyntax = (ClassDeclarationSyntax)fieldDeclarationSyntax.Parent;
+        var classDeclarationSyntax = (ClassDeclarationSyntax?)fieldDeclarationSyntax.Parent;
 
-        if (classDeclarationSyntax is null)
-            return;
+        if (classDeclarationSyntax is null) return;
 
-        if (!classDeclarationSyntax.Modifiers.Any(k => k.IsKind(SyntaxKind.PartialKeyword)))
-            return;
+        if (classDeclarationSyntax.Modifiers.Any(k => k.IsKind(SyntaxKind.PartialKeyword)) is false) return;
 
-        foreach (VariableDeclaratorSyntax variable in fieldDeclarationSyntax.Declaration.Variables)
+        foreach (var variable in fieldDeclarationSyntax.Declaration.Variables)
         {
-            IFieldSymbol fieldSymbol = ModelExtensions.GetDeclaredSymbol(context.SemanticModel, variable) as IFieldSymbol;
-            if (fieldSymbol != null &&
-                fieldSymbol.GetAttributes()
-                    .Any(ad => ad.AttributeClass != null &&
-                               ad.AttributeClass.ToDisplayString() == AutoInjectAttributeName))
+            var fieldSymbol = (IFieldSymbol?)ModelExtensions.GetDeclaredSymbol(context.SemanticModel, variable);
+            
+            if (fieldSymbol is null) continue;
+
+            if (fieldSymbol.GetAttributes().Any(attribute => attribute.AttributeClass != null && attribute.AttributeClass.ToDisplayString() == AutoInjectAttributeName))
             {
                 EligibleMembers.Add(fieldSymbol);
             }
@@ -46,24 +43,19 @@ public class AutoInjectSyntaxReceiver : ISyntaxContextReceiver
 
     private void MarkEligibleProperties(GeneratorSyntaxContext context)
     {
-        if (!(context.Node is PropertyDeclarationSyntax propertyDeclarationSyntax) ||
-            propertyDeclarationSyntax.AttributeLists.Count <= 0) return;
+        if (context.Node is not PropertyDeclarationSyntax propertyDeclarationSyntax || propertyDeclarationSyntax.AttributeLists.Count <= 0) return;
 
-        ClassDeclarationSyntax classDeclarationSyntax = (ClassDeclarationSyntax)propertyDeclarationSyntax.Parent;
+        var classDeclarationSyntax = (ClassDeclarationSyntax?)propertyDeclarationSyntax.Parent;
 
-        if (classDeclarationSyntax is null)
-            return;
+        if (classDeclarationSyntax is null) return;
 
-        if (!classDeclarationSyntax.Modifiers.Any(k => k.IsKind(SyntaxKind.PartialKeyword)))
-            return;
+        if (classDeclarationSyntax.Modifiers.Any(k => k.IsKind(SyntaxKind.PartialKeyword)) is false) return;
 
-        IPropertySymbol propertySymbol = context.SemanticModel.GetDeclaredSymbol(propertyDeclarationSyntax);
+        var propertySymbol = context.SemanticModel.GetDeclaredSymbol(propertyDeclarationSyntax);
 
-        if (propertySymbol is null)
-            return;
+        if (propertySymbol is null) return;
 
-        if (propertySymbol.GetAttributes().Any(ad =>
-                ad.AttributeClass != null && ad.AttributeClass.ToDisplayString() == AutoInjectAttributeName))
+        if (propertySymbol.GetAttributes().Any(attribute => attribute.AttributeClass != null && attribute.AttributeClass.ToDisplayString() == AutoInjectAttributeName))
         {
             EligibleMembers.Add(propertySymbol);
         }

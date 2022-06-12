@@ -1,14 +1,13 @@
 ﻿using System;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
 
 namespace Bit.Client.Web.BlazorUI.Playground.Web.Shared
 {
-    public partial class MainLayout : IAsyncDisposable
+    public partial class MainLayout : IDisposable
     {
-        [Inject]
-        public NavigationManager NavigationManager { get; set; }
+        [Inject] public NavigationManager NavigationManager { get; set; }
+
         public string CurrentUrl { get; set; }
 
         protected override void OnInitialized()
@@ -25,7 +24,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Shared
             StateHasChanged();
         }
 
-        public async ValueTask DisposeAsync()
+        public void Dispose()
         {
             NavigationManager.LocationChanged -= OnLocationChanged;
         }

@@ -1,8 +1,7 @@
-﻿namespace Bit.Client.Web.BlazorUI
+﻿namespace Bit.Client.Web.BlazorUI;
+
+internal class BitColorPosition
 {
-    internal class BitColorPosition
-    {
-        public int Top { get; set; }
-        public int Left { get; set; }
-    }
+    public int Top { get; set; }
+    public int Left { get; set; }
 }

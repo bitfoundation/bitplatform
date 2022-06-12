@@ -8,726 +8,738 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 
-namespace Bit.Client.Web.BlazorUI
+namespace Bit.Client.Web.BlazorUI;
+
+public partial class BitNumericTextField<TValue>
 {
-    public partial class BitNumericTextField<TValue>
+    const int INITIAL_STEP_DELAY = 400;
+    const int STEP_DELAY = 75;
+
+    private BitNumericTextFieldLabelPosition labelPosition = BitNumericTextFieldLabelPosition.Left;
+    private int precision;
+    private double step = 1;
+    private double? min;
+    private double? max;
+    private string? intermediateValue;
+    private string InputId = $"input{Guid.NewGuid()}";
+    private Timer? timer;
+    private ElementReference inputRef;
+    private ElementReference buttonIncrement;
+    private ElementReference buttonDecrement;
+    private readonly Type typeOfValue;
+    private readonly bool isDecimals;
+    private readonly double minGenericValue;
+    private readonly double maxGenericValue;
+
+    [Inject] public IJSRuntime JSRuntime { get; set; } = default!;
+
+    /// <summary>
+    /// Detailed description of the input for the benefit of screen readers
+    /// </summary>
+    [Parameter] public string? AriaDescription { get; set; }
+
+    /// <summary>
+    /// The position in the parent set (if in a set)
+    /// </summary>
+    [Parameter] public int? AriaPositionInSet { get; set; }
+
+    /// <summary>
+    /// The total size of the parent set (if in a set)
+    /// </summary>
+    [Parameter] public int? AriaSetSize { get; set; }
+
+    /// <summary>
+    /// Sets the control's aria-valuenow. Providing this only makes sense when using as a controlled component.
+    /// </summary>
+    [Parameter] public double? AriaValueNow { get; set; }
+
+    /// <summary>
+    /// Sets the control's aria-valuetext.
+    /// </summary>
+    [Parameter] public string? AriaValueText { get; set; }
+
+    /// <summary>
+    /// Min value of the numeric text field. If not provided, the numeric text field has minimum value of double type
+    /// </summary>
+    [Parameter]
+    public TValue? Min
     {
-        const int INITIAL_STEP_DELAY = 400;
-        const int STEP_DELAY = 75;
-        private BitNumericTextFieldLabelPosition labelPosition = BitNumericTextFieldLabelPosition.Left;
-        private int precision;
-        private double step = 1;
-        private double? min;
-        private double? max;
-        private string? intermediateValue;
-        private string InputId = $"input{Guid.NewGuid()}";
-        private Timer? timer;
-        private ElementReference inputRef;
-        private ElementReference buttonIncrement;
-        private ElementReference buttonDecrement;
-        private readonly Type typeOfValue;
-        private readonly bool isDecimals;
-        private readonly double minGenericValue;
-        private readonly double maxGenericValue;
+        get => GetGenericValue(min);
+        set => min = BitNumericTextField<TValue>.GetDoubleValueOrDefault(value);
+    }
 
-        public BitNumericTextField()
+    /// <summary>
+    /// Max value of the numeric text field. If not provided, the numeric text field has max value of double type
+    /// </summary>
+    [Parameter]
+    public TValue? Max
+    {
+        get => GetGenericValue(max);
+        set => max = BitNumericTextField<TValue>.GetDoubleValueOrDefault(value);
+    }
+
+    /// <summary>
+    /// Callback for when the numeric text field value change
+    /// </summary>
+    [Parameter] public EventCallback<TValue> OnChange { get; set; }
+
+    /// <summary>
+    /// Callback for when focus moves into the input
+    /// </summary>
+    [Parameter] public EventCallback<FocusEventArgs> OnFocus { get; set; }
+
+    /// <summary>
+    /// Callback for when the control loses focus
+    /// </summary>
+    [Parameter] public EventCallback<FocusEventArgs> OnBlur { get; set; }
+
+    /// <summary>
+    /// Callback for when the decrement button or down arrow key is pressed
+    /// </summary>
+    [Parameter] public EventCallback<BitNumericTextFieldChangeValue<TValue>> OnDecrement { get; set; }
+
+    /// <summary>
+    /// Callback for when the increment button or up arrow key is pressed
+    /// </summary>
+    [Parameter] public EventCallback<BitNumericTextFieldChangeValue<TValue>> OnIncrement { get; set; }
+
+    /// <summary>
+    /// Initial value of the numeric text field
+    /// </summary>
+    [Parameter] public double? DefaultValue { get; set; }
+
+    /// <summary>
+    /// Difference between two adjacent values of the numeric text field
+    /// </summary>
+    [Parameter]
+    public TValue? Step
+    {
+        get => GetGenericValue(step);
+        set => step = BitNumericTextField<TValue>.GetDoubleValueOrDefault(value, 1);
+    }
+
+    /// <summary>
+    /// A text is shown after the numeric text field value
+    /// </summary>
+    [Parameter] public string Suffix { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Descriptive label for the numeric text field, Label displayed above the numeric text field and read by screen readers
+    /// </summary>
+    [Parameter] public string Label { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Shows the custom Label for numeric text field. If you don't call default label, ensure that you give your custom label an id and that you set the input's aria-labelledby prop to that id.
+    /// </summary>
+    [Parameter] public RenderFragment? LabelFragment { get; set; }
+
+    /// <summary>
+    /// Icon name for an icon to display alongside the numeric text field's label
+    /// </summary>
+    [Parameter] public BitIconName? IconName { get; set; }
+
+    /// <summary>
+    /// The aria label of the icon for the benefit of screen readers
+    /// </summary>
+    [Parameter] public string IconAriaLabel { get; set; } = string.Empty;
+
+    /// <summary>
+    /// The position of the label in regards to the numeric text field
+    /// </summary>
+    [Parameter]
+    public BitNumericTextFieldLabelPosition LabelPosition
+    {
+        get => labelPosition;
+        set
         {
-            typeOfValue = typeof(TValue);
-            typeOfValue = Nullable.GetUnderlyingType(typeOfValue) ?? typeOfValue;
+            labelPosition = value;
+            ClassBuilder.Reset();
+        }
+    }
 
-            isDecimals = typeOfValue == typeof(float) || typeOfValue == typeof(double) || typeOfValue == typeof(decimal);
-            minGenericValue = GetMinValue();
-            maxGenericValue = GetMaxValue();
+    /// <summary>
+    /// Accessible label text for the decrement button (for screen reader users)
+    /// </summary>
+    [Parameter] public string? DecrementButtonAriaLabel { get; set; }
+
+    /// <summary>
+    /// Accessible label text for the increment button (for screen reader users)
+    /// </summary>
+    [Parameter] public string? IncrementButtonAriaLabel { get; set; }
+
+    /// <summary>
+    /// Custom icon name for the decrement button
+    /// </summary>
+    [Parameter] public BitIconName DecrementButtonIconName { get; set; } = BitIconName.ChevronDownSmall;
+
+    /// <summary>
+    /// Custom icon name for the increment button
+    /// </summary>
+    [Parameter] public BitIconName IncrementButtonIconName { get; set; } = BitIconName.ChevronUpSmall;
+
+    /// <summary>
+    /// A more descriptive title for the control, visible on its tooltip
+    /// </summary>
+    [Parameter] public string? Title { get; set; }
+
+    /// <summary>
+    /// How many decimal places the value should be rounded to
+    /// </summary>
+    [Parameter] public int? Precision { get; set; }
+
+    [Parameter] public EventCallback<BitNumericTextFieldAction> ChangeHandler { get; set; }
+
+    /// <summary>
+    /// Whether to show the up/down spinner arrows (buttons)
+    /// </summary>
+    [Parameter] public bool Arrows { get; set; }
+
+    public BitNumericTextField()
+    {
+        typeOfValue = typeof(TValue);
+        typeOfValue = Nullable.GetUnderlyingType(typeOfValue) ?? typeOfValue;
+
+        isDecimals = typeOfValue == typeof(float) || typeOfValue == typeof(double) || typeOfValue == typeof(decimal);
+        minGenericValue = GetMinValue();
+        maxGenericValue = GetMaxValue();
+    }
+
+    protected override string RootElementClass => "bit-ntf";
+
+    protected override void RegisterComponentClasses()
+    {
+        ClassBuilder.Register(() => LabelPosition == BitNumericTextFieldLabelPosition.Left
+                                            ? $"{RootElementClass}-label-left-{VisualClassRegistrar()}"
+                                            : $"{RootElementClass}-label-top-{VisualClassRegistrar()}");
+
+        ClassBuilder.Register(() => ValueInvalid is true
+                                            ? $"{RootElementClass}-invalid-{VisualClassRegistrar()}"
+                                            : string.Empty);
+    }
+
+    protected async override Task OnParametersSetAsync()
+    {
+        if (min.HasValue is false)
+        {
+            min = minGenericValue;
         }
 
-        [Inject] public IJSRuntime JSRuntime { get; set; } = default!;
-
-        /// <summary>
-        /// Detailed description of the input for the benefit of screen readers
-        /// </summary>
-        [Parameter] public string? AriaDescription { get; set; }
-
-        /// <summary>
-        /// The position in the parent set (if in a set)
-        /// </summary>
-        [Parameter] public int? AriaPositionInSet { get; set; }
-
-        /// <summary>
-        /// The total size of the parent set (if in a set)
-        /// </summary>
-        [Parameter] public int? AriaSetSize { get; set; }
-
-        /// <summary>
-        /// Sets the control's aria-valuenow. Providing this only makes sense when using as a controlled component.
-        /// </summary>
-        [Parameter] public double? AriaValueNow { get; set; }
-
-        /// <summary>
-        /// Sets the control's aria-valuetext.
-        /// </summary>
-        [Parameter] public string? AriaValueText { get; set; }
-
-        /// <summary>
-        /// Min value of the numeric text field. If not provided, the numeric text field has minimum value of double type
-        /// </summary>
-        [Parameter] public TValue? Min
+        if (max.HasValue is false)
         {
-            get => GetGenericValue(min);
-            set => min = GetDoubleValueOrDefault(value);
+            max = maxGenericValue;
         }
 
-        /// <summary>
-        /// Max value of the numeric text field. If not provided, the numeric text field has max value of double type
-        /// </summary>
-        [Parameter] public TValue? Max
+        if (min > max)
         {
-            get => GetGenericValue(max);
-            set => max = GetDoubleValueOrDefault(value);
+            min += max;
+            max = min - max;
+            min -= max;
         }
 
-        /// <summary>
-        /// Callback for when the numeric text field value change
-        /// </summary>
-        [Parameter] public EventCallback<TValue> OnChange { get; set; }
-
-        /// <summary>
-        /// Callback for when focus moves into the input
-        /// </summary>
-        [Parameter] public EventCallback<FocusEventArgs> OnFocus { get; set; }
-
-        /// <summary>
-        /// Callback for when the control loses focus
-        /// </summary>
-        [Parameter] public EventCallback<FocusEventArgs> OnBlur { get; set; }
-
-        /// <summary>
-        /// Callback for when the decrement button or down arrow key is pressed
-        /// </summary>
-        [Parameter] public EventCallback<BitNumericTextFieldChangeValue<TValue>> OnDecrement { get; set; }
-
-        /// <summary>
-        /// Callback for when the increment button or up arrow key is pressed
-        /// </summary>
-        [Parameter] public EventCallback<BitNumericTextFieldChangeValue<TValue>> OnIncrement { get; set; }
-
-        /// <summary>
-        /// Initial value of the numeric text field
-        /// </summary>
-        [Parameter] public double? DefaultValue { get; set; }
-
-        /// <summary>
-        /// Difference between two adjacent values of the numeric text field
-        /// </summary>
-        [Parameter]
-        public TValue? Step
+        precision = Precision is not null ? Precision.Value : CalculatePrecision(step);
+        if (ValueHasBeenSet is false)
         {
-            get => GetGenericValue(step);
-            set => step = GetDoubleValueOrDefault(value, 1);
+            SetValue(DefaultValue ?? Math.Min(0, min.Value));
         }
-
-        /// <summary>
-        /// A text is shown after the numeric text field value
-        /// </summary>
-        [Parameter] public string Suffix { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Descriptive label for the numeric text field, Label displayed above the numeric text field and read by screen readers
-        /// </summary>
-        [Parameter] public string Label { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Shows the custom Label for numeric text field. If you don't call default label, ensure that you give your custom label an id and that you set the input's aria-labelledby prop to that id.
-        /// </summary>
-        [Parameter] public RenderFragment? LabelFragment { get; set; }
-
-        /// <summary>
-        /// Icon name for an icon to display alongside the numeric text field's label
-        /// </summary>
-        [Parameter] public BitIconName? IconName { get; set; }
-
-        /// <summary>
-        /// The aria label of the icon for the benefit of screen readers
-        /// </summary>
-        [Parameter] public string IconAriaLabel { get; set; } = string.Empty;
-
-        /// <summary>
-        /// The position of the label in regards to the numeric text field
-        /// </summary>
-        [Parameter]
-        public BitNumericTextFieldLabelPosition LabelPosition
+        else
         {
-            get => labelPosition;
-            set
-            {
-                labelPosition = value;
-                ClassBuilder.Reset();
-            }
-        }
-
-        /// <summary>
-        /// Accessible label text for the decrement button (for screen reader users)
-        /// </summary>
-        [Parameter] public string? DecrementButtonAriaLabel { get; set; }
-
-        /// <summary>
-        /// Accessible label text for the increment button (for screen reader users)
-        /// </summary>
-        [Parameter] public string? IncrementButtonAriaLabel { get; set; }
-
-        /// <summary>
-        /// Custom icon name for the decrement button
-        /// </summary>
-        [Parameter] public BitIconName DecrementButtonIconName { get; set; } = BitIconName.ChevronDownSmall;
-
-        /// <summary>
-        /// Custom icon name for the increment button
-        /// </summary>
-        [Parameter] public BitIconName IncrementButtonIconName { get; set; } = BitIconName.ChevronUpSmall;
-
-        /// <summary>
-        /// A more descriptive title for the control, visible on its tooltip
-        /// </summary>
-        [Parameter] public string? Title { get; set; }
-
-        /// <summary>
-        /// How many decimal places the value should be rounded to
-        /// </summary>
-        [Parameter] public int? Precision { get; set; }
-
-        [Parameter] public EventCallback<BitNumericTextFieldAction> ChangeHandler { get; set; }
-
-        /// <summary>
-        /// Whether to show the up/down spinner arrows (buttons)
-        /// </summary>
-        [Parameter] public bool Arrows { get; set; }
-
-        protected override string RootElementClass => "bit-ntf";
-
-        protected override void RegisterComponentClasses()
-        {
-            ClassBuilder.Register(() => LabelPosition == BitNumericTextFieldLabelPosition.Left
-                                                ? $"{RootElementClass}-label-left-{VisualClassRegistrar()}"
-                                                : $"{RootElementClass}-label-top-{VisualClassRegistrar()}");
-
-            ClassBuilder.Register(() => ValueInvalid is true
-                                                ? $"{RootElementClass}-invalid-{VisualClassRegistrar()}"
-                                                : string.Empty);
-        }
-
-        protected async override Task OnParametersSetAsync()
-        {
-            if (min.HasValue is false)
-            {
-                min = minGenericValue;
-            }
-
-            if (max.HasValue is false)
-            {
-                max = maxGenericValue;
-            }
-
-            if (min > max)
-            {
-                min += max;
-                max = min - max;
-                min -= max;
-            }
-
-            precision = Precision is not null ? Precision.Value : CalculatePrecision(step);
-            if (ValueHasBeenSet is false)
-            {
-                SetValue(DefaultValue ?? Math.Min(0, min.Value));
-            }
-            else
-            {
-                SetDisplayValue();
-            }
-
-            if (ChangeHandler.HasDelegate is false)
-            {
-                ChangeHandler = EventCallback.Factory.Create(this, async (BitNumericTextFieldAction action) =>
-                {
-                    double result = 0;
-                    bool isValid = false;
-
-                    switch (action)
-                    {
-                        case BitNumericTextFieldAction.Increment:
-                            result = GetDoubleValueOrDefault(CurrentValue) + step;
-                            isValid = result <= max && result >= min;
-                            break;
-
-                        case BitNumericTextFieldAction.Decrement:
-                            result = GetDoubleValueOrDefault(CurrentValue) - step;
-                            isValid = result <= max && result >= min;
-                            break;
-
-                        default:
-                            break;
-                    }
-
-                    if (isValid is false) return;
-
-                    SetValue(result);
-                    await OnChange.InvokeAsync(CurrentValue);
-                });
-            }
-
-            await base.OnParametersSetAsync();
-        }
-
-        private async void HandleMouseDown(BitNumericTextFieldAction action, MouseEventArgs e)
-        {
-            //Change focus from input to numeric text field
-            if (action == BitNumericTextFieldAction.Increment)
-            {
-                await buttonIncrement.FocusAsync();
-            }
-            else
-            {
-                await buttonDecrement.FocusAsync();
-            }
-
-
-            await HandleMouseDownAction(action, e);
-            timer = new Timer((_) =>
-            {
-                InvokeAsync(async () =>
-                {
-                    await HandleMouseDownAction(action, e);
-                    StateHasChanged();
-                });
-            }, null, INITIAL_STEP_DELAY, STEP_DELAY);
-        }
-
-        private void HandleMouseUpOrOut()
-        {
-            if (timer is null) return;
-            timer.Dispose();
-        }
-
-        private void HandleChange(ChangeEventArgs e)
-        {
-            if (IsEnabled is false) return;
-            if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
-
-            intermediateValue = GetCleanValue(e.Value?.ToString());
-        }
-
-        private async Task HandleMouseDownAction(BitNumericTextFieldAction action, MouseEventArgs e)
-        {
-            if (IsEnabled is false) return;
-            if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
-
-            await ChangeHandler.InvokeAsync(action);
-            if (action is BitNumericTextFieldAction.Increment && OnIncrement.HasDelegate is true)
-            {
-                var args = new BitNumericTextFieldChangeValue<TValue>
-                {
-                    Value = CurrentValue,
-                    MouseEventArgs = e
-                };
-                await OnIncrement.InvokeAsync(args);
-            }
-
-            if (action is BitNumericTextFieldAction.Decrement && OnDecrement.HasDelegate is true)
-            {
-                var args = new BitNumericTextFieldChangeValue<TValue>
-                {
-                    Value = CurrentValue,
-                    MouseEventArgs = e
-                };
-                await OnDecrement.InvokeAsync(args);
-            }
-        }
-
-        private async Task HandleKeyDown(KeyboardEventArgs e)
-        {
-            if (IsEnabled is false) return;
-            if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
-
-            switch (e.Key)
-            {
-                case "ArrowUp":
-                    await CheckIntermediateValueAndSetValue();
-                    await ChangeHandler.InvokeAsync(BitNumericTextFieldAction.Increment);
-                    break;
-
-                case "ArrowDown":
-                    await CheckIntermediateValueAndSetValue();
-                    await ChangeHandler.InvokeAsync(BitNumericTextFieldAction.Decrement);
-                    break;
-
-                case "Enter":
-                    if (intermediateValue == CurrentValueAsString) break;
-
-                    var isNumber = double.TryParse(intermediateValue, out var numericValue);
-                    if (isNumber)
-                    {
-                        SetValue(numericValue);
-                        await OnChange.InvokeAsync(CurrentValue);
-                    }
-                    else
-                    {
-                        SetDisplayValue();
-                    }
-                    break;
-
-                default:
-                    break;
-            }
-
-            if (e.Key is "ArrowUp" && OnIncrement.HasDelegate is true)
-            {
-                var args = new BitNumericTextFieldChangeValue<TValue>
-                {
-                    Value = CurrentValue,
-                    KeyboardEventArgs = e
-                };
-                await OnIncrement.InvokeAsync(args);
-            }
-
-            if (e.Key is "ArrowDown" && OnDecrement.HasDelegate is true)
-            {
-                var args = new BitNumericTextFieldChangeValue<TValue>
-                {
-                    Value = CurrentValue,
-                    KeyboardEventArgs = e
-                };
-                await OnDecrement.InvokeAsync(args);
-            }
-        }
-
-        private async Task HandleBlur(FocusEventArgs e)
-        {
-            if (IsEnabled is false) return;
-            await OnBlur.InvokeAsync(e);
-
-            await CheckIntermediateValueAndSetValue();
-        }
-
-        private async Task HandleFocus(FocusEventArgs e)
-        {
-            if (IsEnabled)
-            {
-                await OnFocus.InvokeAsync(e);
-                await JSRuntime.SelectText(inputRef);
-            }
-        }
-
-        private int CalculatePrecision(double value)
-        {
-            var pattern = isDecimals ? @"[1-9]([0]+$)|\.([0-9]*)" : @"(^-\d+$)|\d+";
-            var regex = new Regex(pattern);
-            if (regex.IsMatch(value.ToString(CultureInfo.InvariantCulture)) is false) return 0;
-
-            var matches = regex.Matches(value.ToString(CultureInfo.InvariantCulture));
-            if (matches.Count == 0) return 0;
-
-            var groups = matches[0].Groups;
-            if (groups[1] != null && groups[1].Length != 0)
-            {
-                return -groups[1].Length;
-            }
-
-            if (groups[2] != null && groups[2].Length != 0)
-            {
-                return groups[2].Length;
-            }
-
-            return 0;
-        }
-
-        private void SetValue(double value)
-        {
-            value = Normalize(value);
-
-            if (value > max)
-            {
-                CurrentValue = GetGenericValue(max.Value);
-            }
-            else if (value < min)
-            {
-                CurrentValue = GetGenericValue(min.Value);
-            }
-            else
-            {
-                CurrentValue = GetGenericValue(value);
-            }
             SetDisplayValue();
         }
 
-        private void SetDisplayValue()
+        if (ChangeHandler.HasDelegate is false)
         {
-            intermediateValue = CurrentValueAsString + Suffix;
+            ChangeHandler = EventCallback.Factory.Create(this, async (BitNumericTextFieldAction action) =>
+            {
+                double result = 0;
+                bool isValid = false;
+
+                switch (action)
+                {
+                    case BitNumericTextFieldAction.Increment:
+                        result = BitNumericTextField<TValue>.GetDoubleValueOrDefault(CurrentValue) + step;
+                        isValid = result <= max && result >= min;
+                        break;
+
+                    case BitNumericTextFieldAction.Decrement:
+                        result = BitNumericTextField<TValue>.GetDoubleValueOrDefault(CurrentValue) - step;
+                        isValid = result <= max && result >= min;
+                        break;
+
+                    default:
+                        break;
+                }
+
+                if (isValid is false) return;
+
+                SetValue(result);
+                await OnChange.InvokeAsync(CurrentValue).ConfigureAwait(false);
+            });
         }
 
-        private static string? GetCleanValue(string? value)
+        await base.OnParametersSetAsync().ConfigureAwait(false);
+    }
+
+    private async void HandleMouseDown(BitNumericTextFieldAction action, MouseEventArgs e)
+    {
+        //Change focus from input to numeric text field
+        if (action == BitNumericTextFieldAction.Increment)
         {
-            if (value.HasNoValue()) return value;
-
-            if (char.IsDigit(value![0]))
-            {
-                Regex pattern = new Regex(@"-?\d+(?:\.\d+)?");
-                var match = pattern.Match(value);
-                if (match.Success)
-                {
-                    return match.Value;
-                }
-            }
-
-            return value;
+            await buttonIncrement.FocusAsync().ConfigureAwait(false);
+        }
+        else
+        {
+            await buttonDecrement.FocusAsync().ConfigureAwait(false);
         }
 
-        private async Task CheckIntermediateValueAndSetValue()
-        {
-            if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
-            if (intermediateValue == CurrentValueAsString) return;
 
-            var isNumber = double.TryParse(intermediateValue, out var numericValue);
-            if (isNumber)
+        await HandleMouseDownAction(action, e).ConfigureAwait(false);
+        timer = new Timer((_) =>
+        {
+            InvokeAsync(async () =>
             {
-                SetValue(numericValue);
-                await OnChange.InvokeAsync(CurrentValue);
-            }
-            else
+                await HandleMouseDownAction(action, e).ConfigureAwait(false);
+                StateHasChanged();
+            });
+        }, null, INITIAL_STEP_DELAY, STEP_DELAY);
+    }
+
+    private void HandleMouseUpOrOut()
+    {
+        if (timer is null) return;
+        timer.Dispose();
+    }
+
+    private void HandleChange(ChangeEventArgs e)
+    {
+        if (IsEnabled is false) return;
+        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+
+        intermediateValue = GetCleanValue(e.Value?.ToString());
+    }
+
+    private async Task HandleMouseDownAction(BitNumericTextFieldAction action, MouseEventArgs e)
+    {
+        if (IsEnabled is false) return;
+        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+
+        await ChangeHandler.InvokeAsync(action).ConfigureAwait(false);
+        if (action is BitNumericTextFieldAction.Increment && OnIncrement.HasDelegate is true)
+        {
+            var args = new BitNumericTextFieldChangeValue<TValue>
             {
-                SetDisplayValue();
+                Value = CurrentValue,
+                MouseEventArgs = e
+            };
+            await OnIncrement.InvokeAsync(args).ConfigureAwait(false);
+        }
+
+        if (action is BitNumericTextFieldAction.Decrement && OnDecrement.HasDelegate is true)
+        {
+            var args = new BitNumericTextFieldChangeValue<TValue>
+            {
+                Value = CurrentValue,
+                MouseEventArgs = e
+            };
+            await OnDecrement.InvokeAsync(args).ConfigureAwait(false);
+        }
+    }
+
+    private async Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (IsEnabled is false) return;
+        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+
+        switch (e.Key)
+        {
+            case "ArrowUp":
+                await CheckIntermediateValueAndSetValue().ConfigureAwait(false);
+                await ChangeHandler.InvokeAsync(BitNumericTextFieldAction.Increment).ConfigureAwait(false);
+                break;
+
+            case "ArrowDown":
+                await CheckIntermediateValueAndSetValue().ConfigureAwait(false);
+                await ChangeHandler.InvokeAsync(BitNumericTextFieldAction.Decrement).ConfigureAwait(false);
+                break;
+
+            case "Enter":
+                if (intermediateValue == CurrentValueAsString) break;
+
+                var isNumber = double.TryParse(intermediateValue, out var numericValue);
+                if (isNumber)
+                {
+                    SetValue(numericValue);
+                    await OnChange.InvokeAsync(CurrentValue).ConfigureAwait(false);
+                }
+                else
+                {
+                    SetDisplayValue();
+                }
+                break;
+
+            default:
+                break;
+        }
+
+        if (e.Key is "ArrowUp" && OnIncrement.HasDelegate is true)
+        {
+            var args = new BitNumericTextFieldChangeValue<TValue>
+            {
+                Value = CurrentValue,
+                KeyboardEventArgs = e
+            };
+            await OnIncrement.InvokeAsync(args).ConfigureAwait(false);
+        }
+
+        if (e.Key is "ArrowDown" && OnDecrement.HasDelegate is true)
+        {
+            var args = new BitNumericTextFieldChangeValue<TValue>
+            {
+                Value = CurrentValue,
+                KeyboardEventArgs = e
+            };
+            await OnDecrement.InvokeAsync(args).ConfigureAwait(false);
+        }
+    }
+
+    private async Task HandleBlur(FocusEventArgs e)
+    {
+        if (IsEnabled is false) return;
+        await OnBlur.InvokeAsync(e).ConfigureAwait(false);
+
+        await CheckIntermediateValueAndSetValue().ConfigureAwait(false);
+    }
+
+    private async Task HandleFocus(FocusEventArgs e)
+    {
+        if (IsEnabled)
+        {
+            await OnFocus.InvokeAsync(e).ConfigureAwait(false);
+            await JSRuntime.SelectText(inputRef).ConfigureAwait(false);
+        }
+    }
+
+    private int CalculatePrecision(double value)
+    {
+        var pattern = isDecimals ? @"[1-9]([0]+$)|\.([0-9]*)" : @"(^-\d+$)|\d+";
+        var regex = new Regex(pattern);
+        if (regex.IsMatch(value.ToString(CultureInfo.InvariantCulture)) is false) return 0;
+
+        var matches = regex.Matches(value.ToString(CultureInfo.InvariantCulture));
+        if (matches.Count == 0) return 0;
+
+        var groups = matches[0].Groups;
+        if (groups[1] != null && groups[1].Length != 0)
+        {
+            return -groups[1].Length;
+        }
+
+        if (groups[2] != null && groups[2].Length != 0)
+        {
+            return groups[2].Length;
+        }
+
+        return 0;
+    }
+
+    private void SetValue(double value)
+    {
+        value = Normalize(value);
+
+        if (value > max)
+        {
+            CurrentValue = GetGenericValue(max.Value);
+        }
+        else if (value < min)
+        {
+            CurrentValue = GetGenericValue(min.Value);
+        }
+        else
+        {
+            CurrentValue = GetGenericValue(value);
+        }
+        SetDisplayValue();
+    }
+
+    private void SetDisplayValue()
+    {
+        intermediateValue = CurrentValueAsString + Suffix;
+    }
+
+    private static string? GetCleanValue(string? value)
+    {
+        if (value.HasNoValue()) return value;
+
+        if (char.IsDigit(value![0]))
+        {
+            Regex pattern = new Regex(@"-?\d+(?:\.\d+)?");
+            var match = pattern.Match(value);
+            if (match.Success)
+            {
+                return match.Value;
             }
         }
 
-        private double Normalize(double value) => Math.Round(value, precision);
-        private double NormalizeDecimal(decimal value) => Convert.ToDouble(Math.Round(value, precision));
+        return value;
+    }
 
-        private double? GetAriaValueNow => AriaValueNow is not null ? AriaValueNow : Suffix.HasNoValue() ? GetDoubleValueOrDefault(CurrentValue) : null;
-        private string? GetAriaValueText => AriaValueText.HasValue() ? AriaValueText : Suffix.HasValue() ? CurrentValueAsString + Suffix : null;
-        private string? GetIconRole => IconAriaLabel.HasValue() ? "img" : null;
-        private string GetLabelId => Label.HasValue() ? $"label{Guid.NewGuid()}" : string.Empty;
+    private async Task CheckIntermediateValueAndSetValue()
+    {
+        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+        if (intermediateValue == CurrentValueAsString) return;
 
-        private TValue? GetGenericValue(double? value) => value.HasValue ? (TValue)Convert.ChangeType(value, typeOfValue, CultureInfo.InvariantCulture) : default;
-       
-        private double GetDoubleValueOrDefault(TValue? value, double defaultValue = 0d) => value is null ? defaultValue : (double)Convert.ChangeType(value, typeof(double), CultureInfo.InvariantCulture);
-
-        private double GetMaxValue()
+        var isNumber = double.TryParse(intermediateValue, out var numericValue);
+        if (isNumber)
         {
-            if (typeOfValue == typeof(byte))
+            SetValue(numericValue);
+            await OnChange.InvokeAsync(CurrentValue).ConfigureAwait(false);
+        }
+        else
+        {
+            SetDisplayValue();
+        }
+    }
+
+    private double Normalize(double value) => Math.Round(value, precision);
+    private double NormalizeDecimal(decimal value) => Convert.ToDouble(Math.Round(value, precision));
+
+    private double? GetAriaValueNow => AriaValueNow is not null ? AriaValueNow : Suffix.HasNoValue() ? BitNumericTextField<TValue>.GetDoubleValueOrDefault(CurrentValue) : null;
+    private string? GetAriaValueText => AriaValueText.HasValue() ? AriaValueText : Suffix.HasValue() ? CurrentValueAsString + Suffix : null;
+    private string? GetIconRole => IconAriaLabel.HasValue() ? "img" : null;
+    private string GetLabelId => Label.HasValue() ? $"label{Guid.NewGuid()}" : string.Empty;
+
+    private TValue? GetGenericValue(double? value)
+    {
+        return value.HasValue 
+                ? (TValue)Convert.ChangeType(value, typeOfValue, CultureInfo.InvariantCulture) 
+                : default;
+    }
+
+    private static double GetDoubleValueOrDefault(TValue? value, double defaultValue = 0d)
+    {
+        return value is null
+                ? defaultValue
+                : (double)Convert.ChangeType(value, typeof(double), CultureInfo.InvariantCulture);
+    }
+
+    private double GetMaxValue()
+    {
+        if (typeOfValue == typeof(byte))
+        {
+            return byte.MaxValue;
+        }
+        else if (typeOfValue == typeof(sbyte))
+        {
+            return sbyte.MaxValue;
+        }
+        else if (typeOfValue == typeof(short))
+        {
+            return short.MaxValue;
+        }
+        else if (typeOfValue == typeof(ushort))
+        {
+            return ushort.MaxValue;
+        }
+        else if (typeOfValue == typeof(int))
+        {
+            return int.MaxValue;
+        }
+        else if (typeOfValue == typeof(uint))
+        {
+            return uint.MaxValue;
+        }
+        else if (typeOfValue == typeof(long))
+        {
+            return long.MaxValue;
+        }
+        else if (typeOfValue == typeof(ulong))
+        {
+            return ulong.MaxValue;
+        }
+        else if (typeOfValue == typeof(double))
+        {
+            return double.MaxValue;
+        }
+        else if (typeOfValue == typeof(float))
+        {
+            return float.MaxValue;
+        }
+        else if (typeOfValue == typeof(decimal))
+        {
+            return (double)decimal.MaxValue;
+        }
+        else
+        {
+            return double.MaxValue;
+        }
+    }
+
+    private double GetMinValue()
+    {
+        if (typeOfValue == typeof(byte))
+        {
+            return byte.MinValue;
+        }
+        else if (typeOfValue == typeof(sbyte))
+        {
+            return sbyte.MinValue;
+        }
+        else if (typeOfValue == typeof(short))
+        {
+            return short.MinValue;
+        }
+        else if (typeOfValue == typeof(ushort))
+        {
+            return ushort.MinValue;
+        }
+        else if (typeOfValue == typeof(int))
+        {
+            return int.MinValue;
+        }
+        else if (typeOfValue == typeof(uint))
+        {
+            return uint.MinValue;
+        }
+        else if (typeOfValue == typeof(long))
+        {
+            return long.MinValue;
+        }
+        else if (typeOfValue == typeof(ulong))
+        {
+            return ulong.MinValue;
+        }
+        else if (typeOfValue == typeof(double))
+        {
+            return double.MinValue;
+        }
+        else if (typeOfValue == typeof(float))
+        {
+            return float.MinValue;
+        }
+        else if (typeOfValue == typeof(decimal))
+        {
+            return (double)decimal.MinValue;
+        }
+        else
+        {
+            return double.MinValue;
+        }
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            timer?.Dispose();
+        }
+
+        base.Dispose(disposing);
+    }
+
+    /// <inheritdoc />
+    protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TValue? result, [NotNullWhen(false)] out string? validationErrorMessage)
+    {
+        if (typeOfValue == typeof(byte))
+        {
+            if (byte.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedValue))
             {
-                return byte.MaxValue;
+                result = GetGenericValue(Normalize(parsedValue));
+                validationErrorMessage = null;
+                return true;
             }
-            else if (typeOfValue == typeof(sbyte))
+        }
+        else if (typeOfValue == typeof(sbyte))
+        {
+            if (sbyte.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedValue))
             {
-                return sbyte.MaxValue;
+                result = GetGenericValue(Normalize(parsedValue));
+                validationErrorMessage = null;
+                return true;
             }
-            else if (typeOfValue == typeof(short))
+        }
+        else if (typeOfValue == typeof(short))
+        {
+            if (short.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedValue))
             {
-                return short.MaxValue;
+                result = GetGenericValue(Normalize(parsedValue));
+                validationErrorMessage = null;
+                return true;
             }
-            else if (typeOfValue == typeof(ushort))
+        }
+        else if (typeOfValue == typeof(ushort))
+        {
+            if (ushort.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedValue))
             {
-                return ushort.MaxValue;
+                result = GetGenericValue(Normalize(parsedValue));
+                validationErrorMessage = null;
+                return true;
             }
-            else if (typeOfValue == typeof(int))
+        }
+        else if (typeOfValue == typeof(int))
+        {
+            if (int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedValue))
             {
-                return int.MaxValue;
+                result = GetGenericValue(Normalize(parsedValue));
+                validationErrorMessage = null;
+                return true;
             }
-            else if (typeOfValue == typeof(uint))
+        }
+        else if (typeOfValue == typeof(uint))
+        {
+            if (uint.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedValue))
             {
-                return uint.MaxValue;
+                result = GetGenericValue(Normalize(parsedValue));
+                validationErrorMessage = null;
+                return true;
             }
-            else if (typeOfValue == typeof(long))
+        }
+        else if (typeOfValue == typeof(long))
+        {
+            if (long.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedValue))
             {
-                return long.MaxValue;
+                result = GetGenericValue(Normalize(parsedValue));
+                validationErrorMessage = null;
+                return true;
             }
-            else if (typeOfValue == typeof(ulong))
+        }
+        else if (typeOfValue == typeof(ulong))
+        {
+            if (ulong.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedValue))
             {
-                return ulong.MaxValue;
+                result = GetGenericValue(Normalize(parsedValue));
+                validationErrorMessage = null;
+                return true;
             }
-            else if (typeOfValue == typeof(double))
+        }
+        else if (typeOfValue == typeof(double))
+        {
+            if (double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var parsedValue))
             {
-                return double.MaxValue;
+                result = GetGenericValue(Normalize(parsedValue));
+                validationErrorMessage = null;
+                return true;
             }
-            else if (typeOfValue == typeof(float))
+        }
+        else if (typeOfValue == typeof(float))
+        {
+            if (float.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var parsedValue))
             {
-                return float.MaxValue;
+                result = GetGenericValue(Normalize(parsedValue));
+                validationErrorMessage = null;
+                return true;
             }
-            else if (typeOfValue == typeof(decimal))
+        }
+        else if (typeOfValue == typeof(decimal))
+        {
+            if (decimal.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var parsedValue))
             {
-                return (double)decimal.MaxValue;
-            }
-            else
-            {
-                return double.MaxValue;
+                result = GetGenericValue(NormalizeDecimal(parsedValue));
+                validationErrorMessage = null;
+                return true;
             }
         }
 
-        private double GetMinValue()
-        {
-            if (typeOfValue == typeof(byte))
-            {
-                return byte.MinValue;
-            }
-            else if (typeOfValue == typeof(sbyte))
-            {
-                return sbyte.MinValue;
-            }
-            else if (typeOfValue == typeof(short))
-            {
-                return short.MinValue;
-            }
-            else if (typeOfValue == typeof(ushort))
-            {
-                return ushort.MinValue;
-            }
-            else if (typeOfValue == typeof(int))
-            {
-                return int.MinValue;
-            }
-            else if (typeOfValue == typeof(uint))
-            {
-                return uint.MinValue;
-            }
-            else if (typeOfValue == typeof(long))
-            {
-                return long.MinValue;
-            }
-            else if (typeOfValue == typeof(ulong))
-            {
-                return ulong.MinValue;
-            }
-            else if (typeOfValue == typeof(double))
-            {
-                return double.MinValue;
-            }
-            else if (typeOfValue == typeof(float))
-            {
-                return float.MinValue;
-            }
-            else if (typeOfValue == typeof(decimal))
-            {
-                return (double)decimal.MinValue;
-            }
-            else
-            {
-                return double.MinValue;
-            }
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                timer?.Dispose();
-            }
-
-            base.Dispose(disposing);
-        }
-
-        /// <inheritdoc />
-        protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TValue result, [NotNullWhen(false)] out string? validationErrorMessage)
-        {
-            if (typeOfValue == typeof(byte))
-            {
-                if (byte.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedValue))
-                {
-                    result = GetGenericValue(Normalize(parsedValue));
-                    validationErrorMessage = null;
-                    return true;
-                }
-            }
-            else if (typeOfValue == typeof(sbyte))
-            {
-                if (sbyte.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedValue))
-                {
-                    result = GetGenericValue(Normalize(parsedValue));
-                    validationErrorMessage = null;
-                    return true;
-                }
-            }
-            else if (typeOfValue == typeof(short))
-            {
-                if (short.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedValue))
-                {
-                    result = GetGenericValue(Normalize(parsedValue));
-                    validationErrorMessage = null;
-                    return true;
-                }
-            }
-            else if (typeOfValue == typeof(ushort))
-            {
-                if (ushort.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedValue))
-                {
-                    result = GetGenericValue(Normalize(parsedValue));
-                    validationErrorMessage = null;
-                    return true;
-                }
-            }
-            else if (typeOfValue == typeof(int))
-            {
-                if (int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedValue))
-                {
-                    result = GetGenericValue(Normalize(parsedValue));
-                    validationErrorMessage = null;
-                    return true;
-                }
-            }
-            else if (typeOfValue == typeof(uint))
-            {
-                if (uint.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedValue))
-                {
-                    result = GetGenericValue(Normalize(parsedValue));
-                    validationErrorMessage = null;
-                    return true;
-                }
-            }
-            else if (typeOfValue == typeof(long))
-            {
-                if (long.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedValue))
-                {
-                    result = GetGenericValue(Normalize(parsedValue));
-                    validationErrorMessage = null;
-                    return true;
-                }
-            }
-            else if (typeOfValue == typeof(ulong))
-            {
-                if (ulong.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedValue))
-                {
-                    result = GetGenericValue(Normalize(parsedValue));
-                    validationErrorMessage = null;
-                    return true;
-                }
-            }
-            else if (typeOfValue == typeof(double))
-            {
-                if (double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var parsedValue))
-                {
-                    result = GetGenericValue(Normalize(parsedValue));
-                    validationErrorMessage = null;
-                    return true;
-                }
-            }
-            else if (typeOfValue == typeof(float))
-            {
-                if (float.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var parsedValue))
-                {
-                    result = GetGenericValue(Normalize(parsedValue));
-                    validationErrorMessage = null;
-                    return true;
-                }
-            }
-            else if (typeOfValue == typeof(decimal))
-            {
-                if (decimal.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var parsedValue))
-                {
-                    result = GetGenericValue(NormalizeDecimal(parsedValue));
-                    validationErrorMessage = null;
-                    return true;
-                }
-            }
-
-            result = default;
-            validationErrorMessage = $"The {DisplayName ?? FieldIdentifier.FieldName} field is not valid.";
-            return false;
-        }
+        result = default;
+        validationErrorMessage = $"The {DisplayName ?? FieldIdentifier.FieldName} field is not valid.";
+        return false;
     }
 }

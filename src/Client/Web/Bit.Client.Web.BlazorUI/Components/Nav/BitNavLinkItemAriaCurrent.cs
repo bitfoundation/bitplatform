@@ -1,12 +1,11 @@
-﻿namespace Bit.Client.Web.BlazorUI
+﻿namespace Bit.Client.Web.BlazorUI;
+
+public enum BitNavLinkItemAriaCurrent
 {
-    public enum BitNavLinkItemAriaCurrent
-    {
-        Page,
-        Step,
-        Location,
-        Date,
-        Time,
-        True
-    }
+    Page,
+    Step,
+    Location,
+    Date,
+    Time,
+    True
 }

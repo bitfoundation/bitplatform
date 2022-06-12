@@ -37,7 +37,7 @@
 		<NeutralLanguage>en</NeutralLanguage>
 		<LangVersion>preview</LangVersion>
 		<Nullable>enable</Nullable>
-		<NoWarn>$(NoWarn);NU1605;CS1591;NU1701;NU1605;CA1303</NoWarn>
+		<NoWarn>$(NoWarn);NU1605;CS1591;NU1701;NU1605;CA1303;CA1014</NoWarn>
 		<!-- https://stackoverflow.com/a/46815541/2720104 -->
 		<DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
 		<EmbedAllSources>True</EmbedAllSources>
