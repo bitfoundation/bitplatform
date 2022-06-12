@@ -40,7 +40,7 @@ public class TodoItemController : ControllerBase
     public async Task Post(TodoItemDto dto, CancellationToken cancellationToken)
     {
         var todoItemToAdd = _mapper.Map<TodoItem>(dto);
-        
+
         todoItemToAdd.UserId = User.GetUserId();
 
         await _dbContext.TodoItems.AddAsync(todoItemToAdd, cancellationToken);
@@ -57,7 +57,7 @@ public class TodoItemController : ControllerBase
             throw new ResourceNotFoundException(nameof(ErrorStrings.ToDoItemCouldNotBeFound));
 
         var updatedTodoItem = _mapper.Map(dto, todoItemToUpdate);
-        
+
         _dbContext.TodoItems.Update(updatedTodoItem);
 
         await _dbContext.SaveChangesAsync(cancellationToken);

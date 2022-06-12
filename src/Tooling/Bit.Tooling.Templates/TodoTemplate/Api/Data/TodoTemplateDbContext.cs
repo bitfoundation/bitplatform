@@ -19,8 +19,6 @@ public class TodoTemplateDbContext : IdentityDbContext<User, Role, int>
         ConfigIdentityTables(builder);
     }
 
-    #region Override Save Changes
-
     public override int SaveChanges(bool acceptAllChangesOnSuccess)
     {
         try
@@ -44,9 +42,7 @@ public class TodoTemplateDbContext : IdentityDbContext<User, Role, int>
             throw new ConflictException(nameof(ErrorStrings.UpdateConcurrencyException), exception);
         }
     }
-
-    #endregion
-
+    
     public DbSet<TodoItem> TodoItems { get; set; }
 
     private void ConfigIdentityTables(ModelBuilder builder)
