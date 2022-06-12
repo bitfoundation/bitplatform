@@ -51,3 +51,34 @@
     background-color: $White;
     box-sizing: border-box;
 }
+
+@mixin page-container {
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+@mixin page-section {
+    display: flex;
+    width: 100%;
+    max-width: rem(1232px);
+    box-sizing: border-box;
+    padding-left: rem(16px);
+    padding-right: rem(16px);
+
+    @include lg {
+        max-width: rem(1040px);
+    }
+
+    @include md {
+        max-width: rem(704px);
+    }
+
+    @include sm {
+        max-width: 100%;
+    }
+}

@@ -1,9 +1,92 @@
 ﻿@import '../Styles/_shared.scss';
 
-.footer {
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    left: 0;
-    width: 100%;
+.footer-container {
+    @include page-container;
+    padding-top: 80px;
+    padding-bottom: 44px;
+
+    @include lt-lg {
+        padding-top: 24px;
+    }
+}
+
+.footer-section {
+    @include page-section;
+    flex-flow: row wrap;
+    justify-content: space-between;
+
+    @include sm {
+        justify-content: center;
+    }
+}
+
+.divider {
+    padding-bottom: 60px;
+    border-right: unset;
+    border-bottom: 1px solid $Gray3;
+    margin-bottom: 30px;
+
+    @include sm {
+        margin-bottom: 4px;
+        padding-bottom: 16px;
+    }
+}
+
+@mixin coulmn {
+    display: flex;
+    flex-flow: column nowrap;
+    box-sizing: border-box;
+
+    .header {
+        @include subtitle3;
+        color: $B6Color;
+        margin-bottom: 12px;
+    }
+
+    .line {
+        @include body2;
+        color: $Gray1;
+    }
+}
+
+.bit-coulmn {
+    @include coulmn;
+    flex: 33.3%;
+    padding-right: 5px;
+
+    .bit-icon {
+        background-image: url('/images/bit-icon.svg');
+        width: 45px;
+        height: 30px;
+        margin-bottom: 32px;
+    }
+
+    @include sm {
+        flex: 100%;
+        margin-bottom: 16px;
+    }
+}
+
+.products-coulmn {
+    @include coulmn;
+    flex: 25%;
+    padding-right: 5px;
+}
+
+.quick-links-coulmn {
+    @include coulmn;
+    flex: 25%;
+    padding-right: 5px;
+}
+
+.media-coulmn {
+    @include coulmn;
+    flex: 16.6%;
+}
+
+.social-media-coulmn {
+}
+
+.copy-right-coulmn {
+    @include body3;
 }
