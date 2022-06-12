@@ -258,6 +258,13 @@
     color: $Gray4;
     justify-content: center;
     @include subtitle4;
+
+    @include sm {
+        top: -32px;
+        right: 16px;
+        width: 116px;
+        height: 116px;
+    }
 }
 
 .download-icon {
@@ -266,4 +273,9 @@
     background-image: url('/images/home/download-icon.svg');
     background-position: center;
     background-repeat: no-repeat;
+
+    @include sm {
+        width: 33px;
+        height: 33px;
+    }
 }
