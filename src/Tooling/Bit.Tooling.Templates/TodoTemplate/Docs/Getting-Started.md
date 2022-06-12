@@ -87,6 +87,7 @@ A Blazor WebAssembly app built as a [Progressive Web App](https://en.wikipedia.o
 ### SSR
 [Server-side rendering (SSR)](https://www.educative.io/edpresso/what-is-server-side-rendering), is the ability of an application to contribute by displaying the web-page on the server instead of rendering it in the browser. Server-side sends a fully rendered page to the client; Blazor pre-renders page and sends it as a static page, then later the page becomes an interactive Blazor server app. This behavior is intended to serve pages quickly to search engines with time-based positioning. 
 Statically prerender the component along with a marker to indicate the component should later be rendered interactively by the Blazor Server app. It's optimize SEO of site.
+
 It's referring to a Typical single page application(SPA) with pre-rendring.
 
 
