@@ -255,4 +255,7 @@
   <data name="EmailAlreadyConfirmed" xml:space="preserve">
     <value>Your email is already confirmed.</value>
   </data>
+  <data name="UpdateConcurrencyException" xml:space="preserve">
+      <value>The record was modified by another user after you got the original data. the operation was canceled.</value>
+  </data>
 </root>

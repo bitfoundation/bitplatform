@@ -331,6 +331,15 @@ namespace TodoTemplate.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The record was modified by another user after you got the original data. the operation was canceled..
+        /// </summary>
+        public static string UpdateConcurrencyException {
+            get {
+                return ResourceManager.GetString("UpdateConcurrencyException", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to User already has a password set..
         /// </summary>
         public static string UserAlreadyHasPassword {

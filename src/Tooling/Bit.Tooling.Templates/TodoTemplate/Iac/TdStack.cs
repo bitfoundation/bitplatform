@@ -150,6 +150,15 @@ public class TdStack
                     new NameValuePairArgs { Name = "ApplicationInsights__InstrumentationKey", Value = appInsights.InstrumentationKey },
                     new NameValuePairArgs { Name = "APPINSIGHTS_INSTRUMENTATIONKEY", Value = appInsights.InstrumentationKey },
                     new NameValuePairArgs { Name = "ASPNETCORE_ENVIRONMENT", Value = stackName == "test" ? "Test" : "Production" },
+                    new NameValuePairArgs { Name = "APPLICATIONINSIGHTS_CONNECTION_STRING", Value = appInsights.ConnectionString },
+                    new NameValuePairArgs { Name = "APPINSIGHTS_PROFILERFEATURE_VERSION", Value = "disabled" },
+                    new NameValuePairArgs { Name = "APPINSIGHTS_SNAPSHOTFEATURE_VERSION", Value = "disabled" },
+                    new NameValuePairArgs { Name = "ApplicationInsightsAgent_EXTENSION_VERSION", Value = "~3" },
+                    new NameValuePairArgs { Name = "XDT_MicrosoftApplicationInsights_BaseExtensions", Value = "~1" },
+                    new NameValuePairArgs { Name = "InstrumentationEngine_EXTENSION_VERSION", Value = "~1" },
+                    new NameValuePairArgs { Name = "SnapshotDebugger_EXTENSION_VERSION", Value = "disabled"},
+                    new NameValuePairArgs { Name = "XDT_MicrosoftApplicationInsights_Mode", Value = "recommended" },
+                    new NameValuePairArgs { Name = "XDT_MicrosoftApplicationInsights_PreemptSdk", Value = "disabled" },
                     new NameValuePairArgs { Name = "AppSettings__EmailSettings__DefaulFromEmail", Value = defaultEmailFrom },
                     new NameValuePairArgs { Name = "AppSettings__EmailSettings__Host", Value = emailServerHost },
                     new NameValuePairArgs { Name = "AppSettings__EmailSettings__Port", Value = emailServerPort },
@@ -169,7 +178,7 @@ public class TdStack
                 {
                     new ConnStringInfoArgs
                     {
-                        Name = "AppDbConnectionString",
+                        Name = "SqlServerConnectionString",
                         Type = ConnectionStringType.SQLAzure,
                         ConnectionString = $"@Microsoft.KeyVault(VaultName={vaultName};SecretName={sqlDatabaseConnectionStringSecretName})"
                     },
@@ -309,7 +318,7 @@ public class TdStack
                 Value = Output.Tuple(sqlServer.Name, sqlDatabase.Name, sqlDatabaseDbUserPassword).Apply(t =>
                 {
                     (string _sqlServer, string _sqlDatabase, string _sqlDatabasePassword) = t;
-                    return $"Data Source=tcp:{_sqlServer}.database.windows.net;Initial Catalog={_sqlDatabase};User ID={sqlDatabaseDbUserId};Password={_sqlDatabasePassword};Max Pool Size=1024;Persist Security Info=true;Application Name=Todo";
+                    return $"Data Source=tcp:{_sqlServer}.database.windows.net;Initial Catalog={_sqlDatabase};User ID={sqlDatabaseDbUserId};Password={_sqlDatabasePassword};Application Name=Todo;Encrypt=True;";
                 })
             }
         });
