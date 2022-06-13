@@ -13,11 +13,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Hangfire.AspNetCore" Version="1.7.29" />
-    <PackageReference Include="Hangfire.Core" Version="1.7.29" />
+    <PackageReference Include="Hangfire.AspNetCore" Version="1.7.30" />
+    <PackageReference Include="Hangfire.Core" Version="1.7.30" />
     <PackageReference Include="Hangfire.MemoryStorage" Version="1.7.0" />
     <PackageReference Include="HangFire.Redis.StackExchange" Version="1.8.5" />
-    <PackageReference Include="Hangfire.SqlServer" Version="1.7.29" />
+    <PackageReference Include="Hangfire.SqlServer" Version="1.7.30" />
   </ItemGroup>
 
   <ItemGroup>

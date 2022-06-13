@@ -19,10 +19,10 @@
     <PackageReference Include="Microsoft.Owin.StaticFiles" Version="4.2.2" />
     <PackageReference Include="Owin.Security.Providers.LinkedIn" Version="2.26.0" />
     <PackageReference Include="System.DirectoryServices.AccountManagement" Version="6.0.0" />
-    <PackageReference Include="Microsoft.AspNet.WebApi.Tracing" Version="5.2.8" />
+    <PackageReference Include="Microsoft.AspNet.WebApi.Tracing" Version="5.2.9" />
     <PackageReference Include="Microsoft.Owin.Cors" Version="4.2.2" />
     <PackageReference Include="Microsoft.Owin.Security.Cookies" Version="4.2.2" />
-    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.18.0" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.19.0" />
   </ItemGroup>
 
   <ItemGroup>
