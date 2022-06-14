@@ -21,10 +21,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Bit.Client.Web.BlazorUI" Version="12.0.0-pre-02" />
-		<PackageReference Include="Bit.Tooling.Bswup" Version="12.0.0-pre-02" />
-		<PackageReference Include="Bit.Tooling.CodeAnalyzer" Version="12.0.0-pre-02" />
-		<PackageReference Include="Bit.Tooling.SourceGenerators" Version="12.0.0-pre-02" />
+		<PackageReference Include="Bit.Client.Web.BlazorUI" Version="12.0.0-pre-03" />
+		<PackageReference Include="Bit.Tooling.Bswup" Version="12.0.0-pre-03" />
+		<PackageReference Include="Bit.Tooling.CodeAnalyzer" Version="12.0.0-pre-03" />
+		<PackageReference Include="Bit.Tooling.SourceGenerators" Version="12.0.0-pre-03" />
 		<PackageReference Include="jose-jwt" Version="4.0.0" />
 		<PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="6.0.5" />
 		<PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.5" />
