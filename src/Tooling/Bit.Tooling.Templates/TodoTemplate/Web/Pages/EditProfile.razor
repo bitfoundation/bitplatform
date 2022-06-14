@@ -5,7 +5,7 @@
 <PageTitle>Edit profile</PageTitle>
 
 <div class="page-container">
-    <form class="page-form">
+    <div class="content-container--white">
         @if (string.IsNullOrEmpty(EditProfileMessage) is false)
         {
             <BitMessageBar Class="form-message-bar"
@@ -15,7 +15,7 @@
             </BitMessageBar>
         }
 
-        <h1 class="form-title">
+        <h1 class="page-title">
             Edit profile
         </h1>
         @if (IsLoadingData)
@@ -54,7 +54,7 @@
                            @onfocus="() => ProfileImageError = null" />
                 <div class="form-input-error">@ProfileImageError</div>
             </div>
-            <EditForm Model="UserToEdit" OnSubmit="WrapHandled(Save)">
+            <EditForm Model="UserToEdit" OnSubmit="WrapHandled(Save)" class="edit-profile-form">
                 <div class="form-input-container">
                     <BitTextField Label="Full name"
                               @bind-Value="UserToEdit.FullName"
@@ -89,5 +89,5 @@
                 </BitButton>
             </EditForm>
         }
-    </form>
+    </div>
 </div>
