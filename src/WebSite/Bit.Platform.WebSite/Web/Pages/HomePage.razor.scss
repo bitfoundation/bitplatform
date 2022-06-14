@@ -211,6 +211,10 @@
 
     .baner {
         width: 50%;
+
+        @include sm {
+            display: none;
+        }
     }
 }
 

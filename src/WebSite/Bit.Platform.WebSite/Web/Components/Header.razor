@@ -4,8 +4,8 @@
         <div class="header-section">
             <a class="header-logo" href="@Urls.HomePage"></a>
             <div class="row">
-                <a class="header-link @(CurrentUrl == Urls.HomePage ? "header-link--active" : "")" href="/">Home</a>
-                <a class="header-link @(CurrentUrl != Urls.HomePage ? "header-link--active" : "")" href="/products/overview">Products</a>
+                <a class="header-link @(CurrentUrl == Urls.HomePage ? "header-link--active" : "")" href="@Urls.HomePage">Home</a>
+                <a class="header-link @(CurrentUrl != Urls.HomePage ? "header-link--active" : "")" href="@Urls.Projects">Projects</a>
                 <a class="github-btn" target="_blank" href="@Urls.Github"></a>
                 <BitIconButton Class="header-menu-btn" IconName=BitIconName.CollapseMenu />
             </div>

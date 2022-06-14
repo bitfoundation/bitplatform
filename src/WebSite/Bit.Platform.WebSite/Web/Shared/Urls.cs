@@ -4,7 +4,7 @@
     {
         public const string HomePage = "/";
 
-        public const string Products = "/Products";
+        public const string Projects = "/Projects";
 
         public const string Github = "https://github.com/bitfoundation/bitplatform";
 
