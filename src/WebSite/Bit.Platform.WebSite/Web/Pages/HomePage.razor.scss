@@ -176,10 +176,10 @@
 
         h4 {
             color: $Black1;
-            margin-bottom: 32px;
+            margin-bottom: rem(32px);
 
             @include lt-lg {
-                margin-bottom: 8px;
+                margin-bottom: rem(8px);
             }
         }
 
@@ -196,9 +196,9 @@
             align-items: center;
 
             span {
-                margin-left: 8px;
-                width: 20px;
-                height: 20px;
+                margin-left: rem(8px);
+                width: rem(20px);
+                height: rem(20px);
                 box-sizing: border-box;
                 background-image: url('/images/arrow-right.svg');
             }
@@ -231,21 +231,21 @@
 .services-cart {
     @include card;
     padding: rem(46px) rem(40px);
-    margin-top: 40px;
+    margin-top: rem(40px);
     width: calc(50% - 55px);
-    margin-right: 55Px;
+    margin-right: rem(55Px);
     position: relative;
 
     @include md {
         padding: rem(30px) rem(24px);
-        margin-top: 12px;
+        margin-top: rem(12px);
         width: calc(100% - 55px);
-        margin-right: 55Px;
+        margin-right: rem(55Px);
     }
 
     @include sm {
         padding: rem(24px);
-        margin-top: 56px;
+        margin-top: rem(56px);
         width: 100%;
         margin-right: 0;
     }
@@ -255,10 +255,10 @@
 
         h4 {
             color: $Black1;
-            margin-bottom: 20px;
+            margin-bottom: rem(20px);
 
             @include lt-lg {
-                margin-bottom: 30px;
+                margin-bottom: rem(30px);
             }
         }
 
@@ -284,14 +284,14 @@
 
 .download-box {
     position: absolute;
-    top: 51px;
-    right: -36px;
+    top: rem(51px);
+    right: rem(-36px);
     box-sizing: border-box;
     background: linear-gradient(225.14deg, #004EBA -11.79%, #0164EC 95.46%);
-    box-shadow: 0px 4px 20px rgba(0, 101, 239, 0.3);
-    border-radius: 20px;
-    width: 192px;
-    height: 192px;
+    box-shadow: 0 rem(4px) rem(20px) rgba(0, 101, 239, 0.3);
+    border-radius: rem(20px);
+    width: rem(192px);
+    height: rem(192px);
     display: flex;
     flex-flow: column nowrap;
     align-items: center;
@@ -300,23 +300,23 @@
     @include subtitle4;
 
     @include sm {
-        top: -32px;
-        right: 16px;
-        width: 116px;
-        height: 116px;
+        top: rem(-32px);
+        right: rem(16px);
+        width: rem(116px);
+        height: rem(116px);
     }
 }
 
 .download-icon {
-    width: 53px;
-    height: 53px;
+    width: rem(53px);
+    height: rem(53px);
     background-image: url('/images/home/download-icon.svg');
     background-position: center;
     background-repeat: no-repeat;
 
     @include sm {
-        width: 33px;
-        height: 33px;
+        width: rem(33px);
+        height: rem(33px);
     }
 }
 
@@ -324,53 +324,53 @@
 
     .circle1 {
         position: absolute;
-        width: 300px;
-        height: 300px;
+        width: rem(300px);
+        height: rem(300px);
         border-radius: 50%;
-        border: 3px solid rgba(255, 255, 255, 0.2);
-        top: 140px;
-        right: -150px;
+        border: rem(3px) solid rgba(255, 255, 255, 0.2);
+        top: rem(140px);
+        right: rem(-150px);
 
         @include sm {
             border: none;
             background: rgba(255, 255, 255, 0.2);
-            top: 320px;
-            right: -56px;
+            top: rem(320px);
+            right: rem(-56px);
         }
     }
 
     .circle2 {
         position: absolute;
-        width: 250px;
-        height: 250px;
+        width: rem(250px);
+        height: rem(250px);
         border-radius: 0 0 100% 0;
         background: rgba(255, 255, 255, 0.13);
         top: 0;
         left: 0;
 
         @include sm {
-            width: 150px;
-            height: 150px;
+            width: rem(150px);
+            height: rem(150px);
             border-radius: 50%;
-            top: -50px;
-            left: -40px;
+            top: rem(-50px);
+            left: rem(-40px);
         }
     }
 
     .circle3 {
         position: absolute;
-        width: 350px;
-        height: 350px;
+        width: rem(350px);
+        height: rem(350px);
         border-radius: 50%;
-        border: 2px solid rgba(255, 255, 255, 0.15);
-        top: 37px;
-        left: -175px;
+        border: rem(2px) solid rgba(255, 255, 255, 0.15);
+        top: rem(37px);
+        left: rem(-175px);
 
         @include sm {
-            width: 100px;
-            height: 100px;
-            top: 60px;
-            left: -50px;
+            width: rem(100px);
+            height: rem(100px);
+            top: rem(60px);
+            left: rem(-50px);
         }
     }
     //1913
@@ -378,10 +378,10 @@
         position: absolute;
         border-radius: 50%;
         z-index: -1;
-        width: 502px;
-        height: 502px;
-        right: -250px;
-        top: 903px;
+        width: rem(502px);
+        height: rem(502px);
+        right: rem(-250px);
+        top: rem(903px);
         background: rgba(255, 255, 255, 0.2);
     }
     //1911
@@ -389,10 +389,10 @@
         position: absolute;
         border-radius: 50%;
         z-index: -1;
-        width: 568px;
-        height: 568px;
-        left: -200px;
-        top: 1513px;
+        width: rem(568px);
+        height: rem(568px);
+        left: rem(-200px);
+        top: rem(1513px);
         background: rgba(255, 255, 255, 0.2);
     }
 
@@ -400,22 +400,22 @@
         position: absolute;
         border-radius: 50%;
         z-index: -1;
-        width: 802px;
-        height: 802px;
+        width: rem(802px);
+        height: rem(802px);
         background: #DEE9FF;
         filter: blur(274px);
-        left: -37px;
-        top: 1239px;
+        left: rem(-37px);
+        top: rem(1239px);
     }
 
     .circle7 {
         position: absolute;
         border-radius: 50%;
         z-index: -1;
-        width: 1154px;
-        height: 1154px;
-        right: -40px;
-        top: 814px;
+        width: rem(1154px);
+        height: rem(1154px);
+        right: rem(-40px);
+        top: rem(814px);
         background: #DEEAFF;
         filter: blur(274px);
     }
