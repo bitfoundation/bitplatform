@@ -28,6 +28,11 @@
     height: 100%;
 }
 
+.blue-header {
+    background-color: $B8Color;
+    opacity: 1;
+}
+
 .header-container {
     @include page-container;
     height: 100%;
