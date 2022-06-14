@@ -1,4 +1,5 @@
-﻿using MimeTypes;
+﻿using Bit.Tooling.SourceGenerators;
+using MimeTypes;
 using TodoTemplate.Api.Models.Account;
 using SystemFile = System.IO.File;
 
@@ -6,21 +7,14 @@ namespace TodoTemplate.Api.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class AttachmentController : ControllerBase
+public partial class AttachmentController : ControllerBase
 {
-    private readonly AppSettings _appSettings;
-    private readonly UserManager<User> _userManager;
-    private readonly IWebHostEnvironment _webHostEnvironment;
+    [AutoInject] private readonly AppSettings _appSettings;
 
-    public AttachmentController(IOptionsSnapshot<AppSettings> setting,
-        UserManager<User> userManager,
-        IWebHostEnvironment webHostEnvironment)
-    {
-        _appSettings = setting.Value;
-        _userManager = userManager;
-        _webHostEnvironment = webHostEnvironment;
-    }
-
+    [AutoInject] private readonly UserManager<User> _userManager;
+    
+    [AutoInject] private readonly IWebHostEnvironment _webHostEnvironment;
+    
     [RequestFormLimits(ValueLengthLimit = int.MaxValue, MultipartBodyLengthLimit = int.MaxValue)]
     [DisableRequestSizeLimit]
     [HttpPost("[action]")]
