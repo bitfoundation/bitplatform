@@ -1,0 +1,31 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Bit Platform",
+  "classifications": [ "ASP.NET Core", "Core", "Blazor", "Template" ],
+  "tags": {
+    "language": "C#"
+  },
+  "identity": "Bit.Tooling.Templates.TodoTemplate",
+  "name": "Bit Todo Template",
+  "shortName": "Bit.TodoTemplate",
+  "sourceName": "TodoTemplate",
+  "symbols": {
+    "skipRestore": {
+      "type": "parameter",
+      "datatype": "bool",
+      "description": "If specified, skips the automatic restore of the project on create.",
+      "defaultValue": "false"
+    },
+    "EnableContactPage":{ "type": "parameter", "dataType":"bool", "defaultValue": "false" }
+  },
+    "sources": [
+    {
+      "modifiers": [
+        {
+          "copyOnly": [ "**/*.md" ],
+          "exclude": [ ".template_config/**"]
+        }
+      ]
+    }
+  ]
+}

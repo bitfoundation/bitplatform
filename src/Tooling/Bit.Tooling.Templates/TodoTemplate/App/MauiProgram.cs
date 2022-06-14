@@ -7,6 +7,7 @@ public static class MauiProgram
 {
     public static MauiAppBuilder CreateMauiAppBuilder()
     {
+//-:cnd:noEmit
 #if !BlazorHybrid
         throw new InvalidOperationException("Please switch to blazor hybrid as described in readme.md");
 #endif
@@ -21,10 +22,11 @@ public static class MauiProgram
         var services = builder.Services;
 
         services.AddMauiBlazorWebView();
+
 #if DEBUG
         services.AddBlazorWebViewDeveloperTools();
 #endif
-
+//+:cnd:noEmit
         services.AddTransient<IAuthTokenProvider, ClientSideAuthTokenProvider>();
         services.AddTodoTemplateSharedServices();
         services.AddTodoTemplateAppServices();

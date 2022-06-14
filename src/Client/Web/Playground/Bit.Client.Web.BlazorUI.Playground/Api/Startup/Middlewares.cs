@@ -9,6 +9,7 @@ public static class Middlewares
         if (env.IsDevelopment())
         {
             app.UseDeveloperExceptionPage();
+//-:cnd:noEmit
 #if BlazorWebAssembly
             app.UseWebAssemblyDebugging();
 #endif
@@ -45,9 +46,11 @@ public static class Middlewares
         {
             endpoints.MapDefaultControllerRoute();
 
+
 #if BlazorWebAssembly
             endpoints.MapFallbackToPage("/_Host");
 #endif
+//+:cnd:noEmit
         });
     }
 }

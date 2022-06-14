@@ -2,7 +2,9 @@
 
 namespace TodoTemplate.App.Services.Implementations;
 
+//-:cnd:noEmit
 #if (BlazorWebAssembly || BlazorServer) && SSR
+//+:cnd:noEmit
 public class StateService : IStateService, IAsyncDisposable
 {
     private PersistingComponentStateSubscription? _subscription;
@@ -47,7 +49,9 @@ public class StateService : IStateService, IAsyncDisposable
         _subscription?.Dispose();
     }
 }
+//-:cnd:noEmit
 #else
+//+:cnd:noEmit
 public class StateService : IStateService
 {
     public Task<T?> GetValue<T>(string key, Func<Task<T?>> factory)
@@ -55,4 +59,6 @@ public class StateService : IStateService
         return factory();
     }
 }
+//-:cnd:noEmit
 #endif
+//+:cnd:noEmit

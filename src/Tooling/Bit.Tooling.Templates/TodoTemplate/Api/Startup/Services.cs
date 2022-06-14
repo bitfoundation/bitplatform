@@ -4,10 +4,12 @@ using Microsoft.AspNetCore.OData;
 using TodoTemplate.Api.Filters;
 using System.Net.Mail;
 
+//-:cnd:noEmit
 #if BlazorWebAssembly
 using TodoTemplate.App.Services.Implementations;
 using Microsoft.AspNetCore.Components;
 #endif
+//+:cnd:noEmit
 
 namespace TodoTemplate.Api.Startup;
 
@@ -18,7 +20,7 @@ public static class Services
         var appSettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>();
 
         services.AddTodoTemplateSharedServices();
-
+//-:cnd:noEmit
 #if BlazorWebAssembly
         services.AddTransient<IAuthTokenProvider, ServerSideAuthTokenProvider>();
         services.AddTodoTemplateAppServices();
@@ -41,7 +43,7 @@ public static class Services
         services.AddRazorPages();
         services.AddMvcCore();
 #endif
-
+//+:cnd:noEmit
         services.AddCors();
 
         services

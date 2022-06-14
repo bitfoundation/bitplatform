@@ -1,4 +1,5 @@
-﻿#if BlazorServer
+﻿//-:cnd:noEmit
+#if BlazorServer
 
 using System.IO.Compression;
 using Microsoft.AspNetCore.ResponseCompression;
@@ -28,3 +29,4 @@ public static class Services
     }
 }
 #endif
+//+:cnd:noEmit

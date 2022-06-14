@@ -70,10 +70,11 @@ public partial class NavMenu
 
     [Inject] public IAuthTokenProvider AuthTokenProvider { get; set; } = default!;
 
+//-:cnd:noEmit
 #if BlazorServer || BlazorHybrid
     [Inject] public IConfiguration Configuration { get; set; } = default!;
 #endif
-
+//+:cnd:noEmit
     private void CloseMenu()
     {
         if (IsMenuOpenHasBeenSet && IsMenuOpenChanged.HasDelegate is false) return;
@@ -91,10 +92,12 @@ public partial class NavMenu
 
         ProfileImageUrl = $"api/Attachment/GetProfileImage?access_token={access_token}";
 
+//-:cnd:noEmit
 #if BlazorServer || BlazorHybrid
         var serverUrl = Configuration.GetValue<string>("ApiServerAddress");
         ProfileImageUrl = $"{serverUrl}{ProfileImageUrl}";
 #endif
+//+:cnd:noEmit
 
         await base.OnInitAsync();
     }

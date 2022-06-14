@@ -23,6 +23,7 @@ public class BlazorModeDetector
     {
         get
         {
+//-:cnd:noEmit
 #if BlazorWebAssembly
             return BlazorMode.BlazorWebAssembly;
 #elif BlazorHybrid
@@ -30,6 +31,7 @@ public class BlazorModeDetector
 #else
             return BlazorMode.BlazorServer;
 #endif
+//+:cnd:noEmit
         }
     }
 }

@@ -139,12 +139,13 @@ public class AuthController : ControllerBase
 
         var resetPasswordLink = $"reset-password?email={user.Email}&token={HttpUtility.UrlEncode(token)}";
 
+//-:cnd:noEmit
 #if BlazorServer
         resetPasswordLink = $"{_appSettings.WebServerAddress}{resetPasswordLink}";
 #else
         resetPasswordLink = $"{_server.GetHostUri()}{resetPasswordLink}";
 #endif
-
+//+:cnd:noEmit
         var assembly = typeof(Program).Assembly;
 
         var result = await _fluentEmail
@@ -178,13 +179,13 @@ public class AuthController : ControllerBase
         var emailConfirmed = user.EmailConfirmed || (await _userManager.ConfirmEmailAsync(user, token)).Succeeded;
 
         string url = $"email-confirmation?email={email}&email-confirmed={emailConfirmed}";
-
+//-:cnd:noEmit
 #if BlazorServer
         url = $"{_appSettings.WebServerAddress}{url}";
 #else
         url = $"/{url}";
 #endif
-
+//+:cnd:noEmit
         return Redirect(url);
     }
 

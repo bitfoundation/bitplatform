@@ -8,8 +8,9 @@ public static class IServiceCollectionExtensions
     {
         services.AddScoped<IStateService, StateService>();
         services.AddScoped<IExceptionHandler, TodoTemplateExceptionHandler>();
-
+//-:cnd:noEmit
 #if BlazorServer || BlazorHybrid
+
         services.AddScoped(sp =>
         {
             HttpClient httpClient = new(sp.GetRequiredService<TodoTemplateHttpClientHandler>())
@@ -19,8 +20,9 @@ public static class IServiceCollectionExtensions
 
             return httpClient;
         });
-#endif
 
+#endif
+//+:cnd:noEmit
         services.AddTransient<TodoTemplateHttpClientHandler>();
 
         services.AddAuthorizationCore();

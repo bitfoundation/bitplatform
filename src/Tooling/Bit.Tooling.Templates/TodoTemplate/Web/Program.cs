@@ -1,9 +1,11 @@
-﻿#if BlazorServer
+﻿//-:cnd:noEmit
+#if BlazorServer
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 #elif BlazorWebAssembly
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 #endif
+
 
 namespace TodoTemplate.App;
 
@@ -11,6 +13,7 @@ public class Program
 {
     public static async Task Main(string[] args)
     {
+
 #if !BlazorWebAssembly && !BlazorServer
         throw new InvalidOperationException("Please switch to either blazor web assembly or server as described in readme.md");
 #endif
@@ -50,4 +53,5 @@ public class Program
         return app;
     }
 #endif
+//+:cnd:noEmit
 }
