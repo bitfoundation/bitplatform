@@ -8,21 +8,21 @@ namespace TodoTemplate.Api.Controllers;
 [ApiController]
 public partial class UserController : ControllerBase
 {
-    [AutoInject] private readonly UserManager<User> _userManager;
+    [AutoInject] public UserManager<User> UserManager { get; set; }
 
-    [AutoInject] private readonly IMapper _mapper;
-    
+    [AutoInject] public IMapper Mapper { get; set; }
+
     [HttpGet("[action]")]
     public async Task<UserDto> GetCurrentUser(CancellationToken cancellationToken)
     {
         var userId = User.GetUserId();
 
-        var user = await _userManager.Users.FirstOrDefaultAsync(user => user.Id == userId, cancellationToken);
+        var user = await UserManager.Users.FirstOrDefaultAsync(user => user.Id == userId, cancellationToken);
 
         if (user is null)
             throw new ResourceNotFoundException();
 
-        return _mapper.Map<User, UserDto>(user);
+        return Mapper.Map<User, UserDto>(user);
     }
 
     [HttpPut]
@@ -30,13 +30,13 @@ public partial class UserController : ControllerBase
     {
         var userId = User.GetUserId();
 
-        var user = await _userManager.Users.FirstOrDefaultAsync(user => user.Id == userId, cancellationToken);
+        var user = await UserManager.Users.FirstOrDefaultAsync(user => user.Id == userId, cancellationToken);
 
         if (user is null)
             throw new ResourceNotFoundException();
 
-        var updatedUser = _mapper.Map(userDto, user);
+        var updatedUser = Mapper.Map(userDto, user);
 
-        await _userManager.UpdateAsync(updatedUser);
+        await UserManager.UpdateAsync(updatedUser);
     }
 }

@@ -13,41 +13,41 @@ namespace TodoTemplate.Api.Controllers;
 [ApiController, AllowAnonymous]
 public partial class AuthController : ControllerBase
 {
-    [AutoInject] private readonly UserManager<User> _userManager;
+    [AutoInject] public UserManager<User> UserManager { get; set; }
 
-    [AutoInject] private readonly IJwtService _jwtService;
+    [AutoInject] public IJwtService JwtService { get; set; }
 
-    [AutoInject] private readonly IMapper _mapper;
+    [AutoInject] public IMapper Mapper { get; set; }
 
-    [AutoInject] private readonly SignInManager<User> _signInManager;
+    [AutoInject] public SignInManager<User> SignInManager { get; set; }
 
-    [AutoInject] private readonly IOptionsSnapshot<AppSettings> _appSettings;
+    [AutoInject] public IOptionsSnapshot<AppSettings> AppSettings { get; set; }
 
-    [AutoInject] private readonly IFluentEmail _fluentEmail;
+    [AutoInject] public IFluentEmail FluentEmail { get; set; }
 
-    [AutoInject] private readonly IServer _server;
+    [AutoInject] public IServer Server { get; set; }
 
     [HttpPost("[action]")]
     public async Task SignUp(SignUpRequestDto signUpRequest, CancellationToken cancellationToken)
     {
-        var existingUser = await _userManager.FindByNameAsync(signUpRequest.UserName);
+        var existingUser = await UserManager.FindByNameAsync(signUpRequest.UserName);
 
-        var userToAdd = _mapper.Map<User>(signUpRequest);
+        var userToAdd = Mapper.Map<User>(signUpRequest);
 
         if (existingUser is not null)
         {
-            if (await _userManager.IsEmailConfirmedAsync(existingUser))
+            if (await UserManager.IsEmailConfirmedAsync(existingUser))
             {
                 throw new BadRequestException(nameof(ErrorStrings.DuplicateEmail));
             }
             else
             {
-                await _userManager.DeleteAsync(existingUser);
+                await UserManager.DeleteAsync(existingUser);
                 userToAdd.ConfirmationEmailRequestedOn = existingUser.ConfirmationEmailRequestedOn;
             }
         }
 
-        var result = await _userManager.CreateAsync(userToAdd, signUpRequest.Password);
+        var result = await UserManager.CreateAsync(userToAdd, signUpRequest.Password);
 
         if (result.Succeeded is false)
         {
@@ -60,12 +60,12 @@ public partial class AuthController : ControllerBase
     [HttpPost("[action]")]
     public async Task SendConfirmationEmail(SendConfirmationEmailRequestDto sendConfirmationEmailRequest, CancellationToken cancellationToken)
     {
-        var user = await _userManager.FindByEmailAsync(sendConfirmationEmailRequest.Email);
+        var user = await UserManager.FindByEmailAsync(sendConfirmationEmailRequest.Email);
 
         if (user is null)
             throw new BadRequestException(nameof(ErrorStrings.UserNameNotFound));
 
-        if (await _userManager.IsEmailConfirmedAsync(user))
+        if (await UserManager.IsEmailConfirmedAsync(user))
             throw new BadRequestException(nameof(ErrorStrings.EmailAlreadyConfirmed));
 
         await SendConfirmationEmail(sendConfirmationEmailRequest, user, cancellationToken);
@@ -73,10 +73,10 @@ public partial class AuthController : ControllerBase
 
     private async Task SendConfirmationEmail(SendConfirmationEmailRequestDto sendConfirmationEmailRequest, User user, CancellationToken cancellationToken)
     {
-        if ((DateTimeOffset.Now - user.ConfirmationEmailRequestedOn) < _appSettings.Value.IdentitySettings.ConfirmationEmailResendDelay)
+        if ((DateTimeOffset.Now - user.ConfirmationEmailRequestedOn) < AppSettings.Value.IdentitySettings.ConfirmationEmailResendDelay)
             throw new TooManyRequestsExceptions(nameof(ErrorStrings.WaitForConfirmationEmailResendDelay));
 
-        var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+        var token = await UserManager.GenerateEmailConfirmationTokenAsync(user);
 
         var controller = RouteData.Values["controller"]!.ToString();
 
@@ -86,21 +86,21 @@ public partial class AuthController : ControllerBase
 
         var assembly = typeof(Program).Assembly;
 
-        var result = await _fluentEmail
+        var result = await FluentEmail
             .To(user.Email, user.DisplayName)
             .Subject(EmailStrings.ConfirmationEmailSubject)
             .UsingTemplateFromEmbedded("TodoTemplate.Api.Resources.EmailConfirmation.cshtml",
                                     new EmailConfirmationModel
                                     {
                                         ConfirmationLink = confirmationLink,
-                                        HostUri = _server.GetHostUri()
+                                        HostUri = Server.GetHostUri()
                                     },
                                     assembly)
             .SendAsync(cancellationToken);
 
         user.ConfirmationEmailRequestedOn = DateTimeOffset.Now;
 
-        await _userManager.UpdateAsync(user);
+        await UserManager.UpdateAsync(user);
 
         if (!result.Successful)
             throw new ResourceValidationException(result.ErrorMessages.ToArray());
@@ -110,27 +110,27 @@ public partial class AuthController : ControllerBase
     public async Task SendResetPasswordEmail(SendResetPasswordEmailRequestDto sendResetPasswordEmailRequest
         , CancellationToken cancellationToken)
     {
-        var user = await _userManager.FindByEmailAsync(sendResetPasswordEmailRequest.Email);
+        var user = await UserManager.FindByEmailAsync(sendResetPasswordEmailRequest.Email);
 
-        if ((DateTimeOffset.Now - user.ResetPasswordEmailRequestedOn) < _appSettings.Value.IdentitySettings.ResetPasswordEmailResendDelay)
+        if ((DateTimeOffset.Now - user.ResetPasswordEmailRequestedOn) < AppSettings.Value.IdentitySettings.ResetPasswordEmailResendDelay)
             throw new TooManyRequestsExceptions(nameof(ErrorStrings.WaitForResetPasswordEmailResendDelay));
 
         if (user is null)
             throw new BadRequestException(nameof(ErrorStrings.UserNameNotFound));
 
-        var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+        var token = await UserManager.GeneratePasswordResetTokenAsync(user);
 
         var resetPasswordLink = $"reset-password?email={user.Email}&token={HttpUtility.UrlEncode(token)}";
 
 #if BlazorServer
-        resetPasswordLink = $"{_appSettings.Value.WebServerAddress}{resetPasswordLink}";
+        resetPasswordLink = $"{AppSettings.Value.WebServerAddress}{resetPasswordLink}";
 #else
-        resetPasswordLink = $"{_server.GetHostUri()}{resetPasswordLink}";
+        resetPasswordLink = $"{Server.GetHostUri()}{resetPasswordLink}";
 #endif
 
         var assembly = typeof(Program).Assembly;
 
-        var result = await _fluentEmail
+        var result = await FluentEmail
             .To(user.Email, user.DisplayName)
             .Subject(EmailStrings.ResetPasswordEmailSubject)
             .UsingTemplateFromEmbedded("TodoTemplate.Api.Resources.ResetPassword.cshtml",
@@ -144,7 +144,7 @@ public partial class AuthController : ControllerBase
 
         user.ResetPasswordEmailRequestedOn = DateTimeOffset.Now;
 
-        await _userManager.UpdateAsync(user);
+        await UserManager.UpdateAsync(user);
 
         if (!result.Successful)
             throw new ResourceValidationException(result.ErrorMessages.ToArray());
@@ -153,17 +153,17 @@ public partial class AuthController : ControllerBase
     [HttpGet("[action]")]
     public async Task<ActionResult> ConfirmEmail(string email, string token)
     {
-        var user = await _userManager.FindByEmailAsync(email);
+        var user = await UserManager.FindByEmailAsync(email);
 
         if (user is null)
             throw new BadRequestException(nameof(ErrorStrings.UserNameNotFound));
 
-        var emailConfirmed = user.EmailConfirmed || (await _userManager.ConfirmEmailAsync(user, token)).Succeeded;
+        var emailConfirmed = user.EmailConfirmed || (await UserManager.ConfirmEmailAsync(user, token)).Succeeded;
 
         string url = $"email-confirmation?email={email}&email-confirmed={emailConfirmed}";
 
 #if BlazorServer
-        url = $"{_appSettings.Value.WebServerAddress}{url}";
+        url = $"{AppSettings.Value.WebServerAddress}{url}";
 #else
         url = $"/{url}";
 #endif
@@ -174,12 +174,12 @@ public partial class AuthController : ControllerBase
     [HttpPost("[action]")]
     public async Task ResetPassword(ResetPasswordRequestDto resetPasswordRequest)
     {
-        var user = await _userManager.FindByEmailAsync(resetPasswordRequest.Email);
+        var user = await UserManager.FindByEmailAsync(resetPasswordRequest.Email);
 
         if (user is null)
             throw new BadRequestException(nameof(ErrorStrings.UserNameNotFound));
 
-        var result = await _userManager.ResetPasswordAsync(user, resetPasswordRequest.Token, resetPasswordRequest.Password);
+        var result = await UserManager.ResetPasswordAsync(user, resetPasswordRequest.Token, resetPasswordRequest.Password);
 
         if (!result.Succeeded)
             throw new ResourceValidationException(result.Errors.Select(e => e.Code).ToArray());
@@ -188,12 +188,12 @@ public partial class AuthController : ControllerBase
     [HttpPost("[action]")]
     public async Task<SignInResponseDto> SignIn(SignInRequestDto signInRequest)
     {
-        var user = await _userManager.FindByNameAsync(signInRequest.UserName);
+        var user = await UserManager.FindByNameAsync(signInRequest.UserName);
 
         if (user is null)
             throw new BadRequestException(nameof(ErrorStrings.UserNameNotFound));
 
-        var checkPasswordResult = await _signInManager.CheckPasswordSignInAsync(user, signInRequest.Password, lockoutOnFailure: true);
+        var checkPasswordResult = await SignInManager.CheckPasswordSignInAsync(user, signInRequest.Password, lockoutOnFailure: true);
 
         if (checkPasswordResult.IsLockedOut)
             throw new BadRequestException(nameof(ErrorStrings.UserLockedOut));
@@ -201,6 +201,6 @@ public partial class AuthController : ControllerBase
         if (!checkPasswordResult.Succeeded)
             throw new BadRequestException(nameof(ErrorStrings.UserNameNotFound));
 
-        return await _jwtService.GenerateToken(user);
+        return await JwtService.GenerateToken(user);
     }
 }

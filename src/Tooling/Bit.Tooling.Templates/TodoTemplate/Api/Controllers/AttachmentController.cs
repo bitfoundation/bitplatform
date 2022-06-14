@@ -9,11 +9,11 @@ namespace TodoTemplate.Api.Controllers;
 [ApiController]
 public partial class AttachmentController : ControllerBase
 {
-    [AutoInject] private readonly AppSettings _appSettings;
+    [AutoInject] public IOptionsSnapshot<AppSettings> AppSettings;
 
-    [AutoInject] private readonly UserManager<User> _userManager;
+    [AutoInject] public UserManager<User> UserManager;
     
-    [AutoInject] private readonly IWebHostEnvironment _webHostEnvironment;
+    [AutoInject] public IWebHostEnvironment WebHostEnvironment;
     
     [RequestFormLimits(ValueLengthLimit = int.MaxValue, MultipartBodyLengthLimit = int.MaxValue)]
     [DisableRequestSizeLimit]
@@ -25,7 +25,7 @@ public partial class AttachmentController : ControllerBase
 
         var userId = User.GetUserId();
 
-        var user = await _userManager.FindByIdAsync(userId.ToString());
+        var user = await UserManager.FindByIdAsync(userId.ToString());
 
         if (user is null)
             throw new ResourceNotFoundException();
@@ -34,9 +34,9 @@ public partial class AttachmentController : ControllerBase
 
         await using var fileStream = file.OpenReadStream();
 
-        Directory.CreateDirectory(_appSettings.UserProfileImagePath);
+        Directory.CreateDirectory(AppSettings.Value.UserProfileImagePath);
 
-        var path = Path.Combine($"{_appSettings.UserProfileImagePath}\\{profileImageName}{Path.GetExtension(file.FileName)}");
+        var path = Path.Combine($"{AppSettings.Value.UserProfileImagePath}\\{profileImageName}{Path.GetExtension(file.FileName)}");
 
         await using var targetStream = SystemFile.Create(path);
 
@@ -46,7 +46,7 @@ public partial class AttachmentController : ControllerBase
         {
             try
             {
-                var filePath = Directory.GetFiles(_appSettings.UserProfileImagePath,
+                var filePath = Directory.GetFiles(AppSettings.Value.UserProfileImagePath,
                     $"{user.ProfileImageName}.*").FirstOrDefault();
 
                 if (filePath != null)
@@ -64,7 +64,7 @@ public partial class AttachmentController : ControllerBase
         {
             user.ProfileImageName = profileImageName;
 
-            await _userManager.UpdateAsync(user);
+            await UserManager.UpdateAsync(user);
         }
         catch
         {
@@ -79,12 +79,12 @@ public partial class AttachmentController : ControllerBase
     {
         var userId = User.GetUserId();
 
-        var user = await _userManager.FindByIdAsync(userId.ToString());
+        var user = await UserManager.FindByIdAsync(userId.ToString());
 
         if (user is null)
             throw new ResourceNotFoundException();
 
-        var filePath = Directory.GetFiles(_appSettings.UserProfileImagePath, $"{user.ProfileImageName}.*")
+        var filePath = Directory.GetFiles(AppSettings.Value.UserProfileImagePath, $"{user.ProfileImageName}.*")
             .SingleOrDefault();
 
         if (filePath is null)
@@ -92,7 +92,7 @@ public partial class AttachmentController : ControllerBase
 
         user.ProfileImageName = null;
 
-        await _userManager.UpdateAsync(user);
+        await UserManager.UpdateAsync(user);
 
         SystemFile.Delete(filePath);
     }
@@ -103,18 +103,18 @@ public partial class AttachmentController : ControllerBase
     {
         var userId = User.GetUserId();
 
-        var user = await _userManager.FindByIdAsync(userId.ToString());
+        var user = await UserManager.FindByIdAsync(userId.ToString());
 
         if (user is null)
             throw new ResourceNotFoundException();
 
-        var filePath = Directory.GetFiles(_appSettings.UserProfileImagePath, $"{user.ProfileImageName}.*")
+        var filePath = Directory.GetFiles(AppSettings.Value.UserProfileImagePath, $"{user.ProfileImageName}.*")
             .SingleOrDefault();
 
         if (filePath is null)
             return new EmptyResult();
 
-        return PhysicalFile(Path.Combine(_webHostEnvironment.ContentRootPath, filePath),
+        return PhysicalFile(Path.Combine(WebHostEnvironment.ContentRootPath, filePath),
             MimeTypeMap.GetMimeType(Path.GetExtension(filePath)));
     }
 }
