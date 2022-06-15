@@ -713,74 +713,97 @@
     .section-btn {
         display: flex;
         flex-flow: row nowrap;
-        justify-content: center;
+        justify-content: space-between;
         align-items: center;
         width: rem(209px);
         height: rem(56px);
         border: rem(2px) solid $B2Color;
         border-radius: rem(4px);
         box-sizing: border-box;
-        font-weight: 600;
-        font-size: rem(18px);
-        line-height: rem(32px);
-        color: $B2Color;
         background-color: $White;
         cursor: pointer;
+        padding: 0 rem(48px);
 
         @include lg {
             width: rem(178px);
             height: rem(48px);
-            font-size: rem(16px);
-            line-height: rem(24px);
+            padding: 0 rem(40px);
         }
 
         @include md {
             width: rem(135px);
             height: rem(40px);
-            font-size: rem(12px);
-            line-height: rem(16px);
+            padding: 0 rem(32px);
         }
 
         @include sm {
             width: rem(115px);
             height: rem(40px);
-            font-size: rem(12px);
-            line-height: rem(16px);
+            padding: 0 rem(24px);
         }
 
         .github-icon {
-            display: inline-block;
             width: rem(40px);
             height: rem(40px);
-            margin-right: rem(8px);
-            background-image: url('/images/github-blue-icon.svg');
-            background-position: center;
-            background-size: contain;
+            border-radius: 50%;
+            background-image: url('/images/github-icon.svg');
+            background-position: center bottom;
             background-repeat: no-repeat;
+            background-size: rem(26px);
+            background-color: $B2Color;
+            cursor: pointer;
 
             @include lg {
                 width: rem(32px);
                 height: rem(32px);
+                background-size: rem(22px);
             }
 
             @include md {
                 width: rem(20px);
                 height: rem(20px);
+                background-size: rem(15px);
             }
 
             @include sm {
                 width: rem(16px);
                 height: rem(16px);
+                background-size: rem(11px);
+            }
+        }
+
+        .github-txt {
+            font-weight: 600;
+            font-size: rem(18px);
+            line-height: rem(32px);
+            color: $B2Color;
+
+            @include lg {
+                font-size: rem(16px);
+                line-height: rem(24px);
+            }
+
+            @include md {
+                font-size: rem(12px);
+                line-height: rem(16px);
+            }
+
+            @include sm {
+                font-size: rem(12px);
+                line-height: rem(16px);
             }
         }
 
         &:hover {
             border-color: $B3Color;
-            color: $B3Color;
             background-color: $Gray5;
 
             .github-icon {
-                background-image: url('/images/github-light-icon.svg');
+                background-color: $B3Color;
+            }
+
+            .github-txt {
+                color: $B3Color;
             }
         }
     }
