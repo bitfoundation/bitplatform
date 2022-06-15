@@ -45,7 +45,6 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Components
                 Key = "Pickers",
                 Links = new List<BitNavLinkItem>
                 {
-                    new BitNavLinkItem { Name= "Carousel", Key = "Carousel", Url = "/components/carousel" },
                     new BitNavLinkItem { Name= "ColorPicker", Key = "ColorPicker", Url = "/components/color-picker" },
                     new BitNavLinkItem { Name = "DatePicker", Key = "DatePicker", Url="/components/date-picker" }
                 }
@@ -57,6 +56,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Components
                 Links = new List<BitNavLinkItem>
                 {
                     new BitNavLinkItem { Name = "BasicList", Key = "BasicList", Url="/components/basic-list" },
+                    new BitNavLinkItem { Name= "Carousel", Key = "Carousel", Url = "/components/carousel" },
                     new BitNavLinkItem { Name = "RadioButtonList", Key = "RadioButtonList", Url="/components/radio-button-list" },
                     new BitNavLinkItem { Name = "Persona", Key = "Persona", Url="/components/persona" }
                 }
