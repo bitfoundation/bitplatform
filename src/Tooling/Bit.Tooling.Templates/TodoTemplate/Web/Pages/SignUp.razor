@@ -62,7 +62,7 @@
                 <ValidationMessage For="@(() => SignUpModel.Password)" />
             </div>
 
-            <div>
+            <div class="form-input-container form-input-container--no-margin">
                 <BitCheckbox Class="form-checkbox" @bind-Value="SignUpModel.IsAcceptPrivacy">
                     I agree to the <BitLink Href="/privacy" Target="_blank">Bit Privacy Policy</BitLink>
                 </BitCheckbox>
