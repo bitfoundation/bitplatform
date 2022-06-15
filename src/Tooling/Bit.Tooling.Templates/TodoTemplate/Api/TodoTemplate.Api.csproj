@@ -10,9 +10,13 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <!--/-:msbuild-conditional:noEmit -->
         <Content Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="..\Web\Pages\_Host.cshtml" Link="Pages\_Host.cshtml" />
         <Content Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="..\Web\Pages\_Layout.cshtml" Link="Pages\_Layout.cshtml" />
         <Compile Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="..\Web\Services\Implementations\ServerSideAuthTokenProvider.cs" Link="Services\Implementations\ServerSideAuthTokenProvider.cs" />
+        <!--/+:msbuild-conditional:noEmit -->
+
+
         <EmbeddedResource Include="Resources\*.cshtml" />
         <PackageReference Include="AutoMapper" Version="11.0.1" />
         <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="11.0.0" />
@@ -62,6 +66,11 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Shared\TodoTemplate.Shared.csproj" />
+    </ItemGroup>
+
+    <!--/-:msbuild-conditional:noEmit -->
+    <ItemGroup Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' ">
+    <!--/+:msbuild-conditional:noEmit -->
         <ProjectReference Include="..\Web\TodoTemplate.Web.csproj" Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " />
     </ItemGroup>
 
@@ -78,9 +87,9 @@
     </ItemGroup>
 
     <ItemGroup>
-      <None Update="IdentityCertificate.pfx">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </None>
+        <None Update="IdentityCertificate.pfx">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
     </ItemGroup>
 
 </Project>

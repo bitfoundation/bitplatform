@@ -1,31 +1,81 @@
 {
-  "$schema": "http://json.schemastore.org/template",
-  "author": "Bit Platform",
-  "classifications": [ "ASP.NET Core", "Core", "Blazor", "Template" ],
-  "tags": {
-    "language": "C#"
-  },
-  "identity": "Bit.Tooling.Templates.TodoTemplate",
-  "name": "Bit Todo Template",
-  "shortName": "Bit.TodoTemplate",
-  "sourceName": "TodoTemplate",
-  "symbols": {
-    "skipRestore": {
-      "type": "parameter",
-      "datatype": "bool",
-      "description": "If specified, skips the automatic restore of the project on create.",
-      "defaultValue": "false"
+    "$schema": "http://json.schemastore.org/template",
+    "author": "Bit Platform",
+    "classifications": [ "ASP.NET Core", "Core", "Blazor", "Template" ],
+    "tags": {
+        "language": "C#",
+        "type": "solution"
     },
-    "EnableContactPage":{ "type": "parameter", "dataType":"bool", "defaultValue": "false" }
-  },
-    "sources": [
-    {
-      "modifiers": [
-        {
-          "copyOnly": [ "**/*.md" ],
-          "exclude": [ ".template_config/**"]
+    "identity": "Bit.Tooling.Templates.TodoTemplate",
+    "name": "Bit Todo Template",
+    "shortName": "Bit.TodoTemplate",
+    "sourceName": "TodoTemplate",
+    "preferNameDirectory": true, //TODO What?
+    "symbols": {
+        "skipRestore": {
+            "type": "parameter",
+            "datatype": "bool",
+            "description": "If specified, skips the automatic restore of the project on create.",
+            "defaultValue": "false"
+        },
+        "BlazorMode": {
+            "type": "parameter",
+            "datatype": "choice",
+            "defaultValue": "BlazorServer",
+            "choices": [
+                {
+                    "choice": "BlazorServer",
+                    "description": "The Blazor Server Mode"
+                },
+                {
+                    "choice": "BlazorWebAssembly",
+                    "description": "The Blazor WebAssembly mode"
+                },
+                {
+                    "choice": "BlazorHybrid",
+                    "description": "The Blazor Hybrid mode"
+                }
+            ],
+            "fileRename": "Directory.Build.props",
+            "replaces": "BlazorServer"
+
+        },
+        "WebAppDeploymentType": {
+            "type": "parameter",
+            "datatype": "choice",
+            "defaultValue": "DefaultDeploymentType",
+            "choices": [
+                {
+                    "choice": "DefaultDeploymentType",
+                    "description": "The Default deployment type"
+                },
+                {
+                    "choice": "Static",
+                    "description": "The Static deployment type"
+                },
+                {
+                    "choice": "PWA",
+                    "description": "The PWA deployment type"
+                },
+                {
+
+                    "choice": "SSR",
+                    "description": "The PWA deployment type"
+                }
+            ],
+            "fileRename": "Directory.Build.props",
+            "replaces": "DefaultDeploymentType"
+
         }
-      ]
-    }
-  ]
+    },
+    "sources": [
+        {
+            "modifiers": [
+                {
+                    "copyOnly": ["**/*.csproj" , "**/*.md", "**/*.scss", "**/*.json", "**/*.svg", "**/*.png" ],
+                    "exclude": [ ".template_config/**" ]
+                }
+            ]
+        }
+    ]
 }

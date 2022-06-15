@@ -63,3 +63,13 @@ Xamarin.Calabash.Start();
 #endif
 //+:cnd:noEmit
 
+
+
+
+
+
+template
+> Dotnet new  -i Bit.TodoTemplate -BlazorMode  -WebAppDeploymentType -n Zelaton
+
+
+-n the name replaced by template..
