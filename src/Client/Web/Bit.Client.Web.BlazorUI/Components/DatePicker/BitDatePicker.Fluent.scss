@@ -14,13 +14,6 @@
         }
     }
 
-    .bit-dtp-label {
-        height: rem(32px);
-        padding: rem(5px) 0 rem(5px) rem(12px);
-        margin: 0 rem(8px) 0 0;
-        line-height: rem(22px);
-    }
-
     .bit-dtp-field-grp {
         border: none;
         flex: 1 1 0px;
@@ -42,6 +35,20 @@
     box-sizing: border-box;
     font-size: rem(18px);
     font-weight: 400;
+    font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
+
+.bit-dtp-label {
+    display: block;
+    padding: rem(5px) 0;
+    margin: 0;
+    box-shadow: none;
+    box-sizing: border-box;
+    font-size: rem(14px);
+    font-weight: 600;
+    color: $Grey160;
+    overflow-wrap: break-word;
     font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
     -webkit-font-smoothing: antialiased;
 }
