@@ -52,7 +52,6 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Components
         };
         private PopularComponent SelectedComponent;
         private string ActiveTab = "demo";
-        private BitColorPicker ColorPicker;
         private string ColorRgb = "rgb(255,255,255)";
         private double Alpha = 1;
         string UploadUrl => $"{GetBaseUrl()}FileUpload/UploadStreamedFile";

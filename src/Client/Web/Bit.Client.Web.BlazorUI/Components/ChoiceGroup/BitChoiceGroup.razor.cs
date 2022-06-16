@@ -31,7 +31,9 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// List of options, each of which is a selection in the ChoiceGroup.
         /// </summary>
-        [Parameter] public List<BitChoiceGroupOption> Options { get; set; } = new();
+#pragma warning disable CA2227 // Collection properties should be read only
+        [Parameter] public IList<BitChoiceGroupOption> Options { get; set; } = new List<BitChoiceGroupOption>();
+#pragma warning restore CA2227 // Collection properties should be read only
 
         /// <summary>
         /// Name of ChoiceGroup, this name is used to group each option into the same logical ChoiceGroup.
@@ -100,12 +102,12 @@ namespace Bit.Client.Web.BlazorUI
             ? option.SelectedImageSrc
             : option.ImageSrc;
 
-        private string GetOptionLabelClassName(BitChoiceGroupOption option) =>
+        private static string GetOptionLabelClassName(BitChoiceGroupOption option) =>
             option.ImageSrc.HasValue() || option.IconName is not null
             ? "bit-chgo-lbl-with-img"
             : "bit-chgo-lbl";
 
-        private string GetOptionImageSizeStyle(BitChoiceGroupOption option) => option.ImageSize is not null
+        private static string GetOptionImageSizeStyle(BitChoiceGroupOption option) => option.ImageSize is not null
                 ? $"width:{option.ImageSize.Value.Width}px; height:{option.ImageSize.Value.Height}px;"
                 : string.Empty;
 

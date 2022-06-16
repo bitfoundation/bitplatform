@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using System.Threading;
 
 namespace Bit.Client.Web.BlazorUI
 {
@@ -14,7 +15,7 @@ namespace Bit.Client.Web.BlazorUI
 
         public static int SizeToPixels(string size)
         {
-            return int.Parse(size.Substring(0, size.Count() - 2));
+            return int.Parse(size[..^2], Thread.CurrentThread.CurrentCulture);
         }
     }
 }
