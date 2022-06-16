@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Net.Http.Headers;
+using TodoTemplate.Api.Middlewares;
 
 namespace TodoTemplate.Api.Startup
 {
@@ -50,6 +51,7 @@ namespace TodoTemplate.Api.Startup
                 }
             });
 
+            app.UseHttpResponseExceptionHandler();
             app.UseRouting();
 
             app.UseCors(options => options.WithOrigins("https://localhost:4001", "https://0.0.0.0").AllowAnyHeader().AllowAnyMethod().AllowCredentials());
