@@ -73,7 +73,7 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public TValue? Min
         {
             get => GetGenericValue(min);
-            set => min = BitNumericTextField<TValue>.GetDoubleValueOrDefault(value);
+            set => min = GetDoubleValueOrDefault(value);
         }
 
         /// <summary>
@@ -82,7 +82,7 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public TValue? Max
         {
             get => GetGenericValue(max);
-            set => max = BitNumericTextField<TValue>.GetDoubleValueOrDefault(value);
+            set => max = GetDoubleValueOrDefault(value);
         }
 
         /// <summary>
@@ -122,7 +122,7 @@ namespace Bit.Client.Web.BlazorUI
         public TValue? Step
         {
             get => GetGenericValue(step);
-            set => step = BitNumericTextField<TValue>.GetDoubleValueOrDefault(value, 1);
+            set => step = GetDoubleValueOrDefault(value, 1);
         }
 
         /// <summary>
@@ -253,12 +253,12 @@ namespace Bit.Client.Web.BlazorUI
                     switch (action)
                     {
                         case BitNumericTextFieldAction.Increment:
-                            result = BitNumericTextField<TValue>.GetDoubleValueOrDefault(CurrentValue) + step;
+                            result = GetDoubleValueOrDefault(CurrentValue) + step;
                             isValid = result <= max && result >= min;
                             break;
 
                         case BitNumericTextFieldAction.Decrement:
-                            result = BitNumericTextField<TValue>.GetDoubleValueOrDefault(CurrentValue) - step;
+                            result = GetDoubleValueOrDefault(CurrentValue) - step;
                             isValid = result <= max && result >= min;
                             break;
 
@@ -499,7 +499,7 @@ namespace Bit.Client.Web.BlazorUI
         private double Normalize(double value) => Math.Round(value, precision);
         private double NormalizeDecimal(decimal value) => Convert.ToDouble(Math.Round(value, precision));
 
-        private double? GetAriaValueNow => AriaValueNow is not null ? AriaValueNow : Suffix.HasNoValue() ? global::Bit.Client.Web.BlazorUI.BitNumericTextField<TValue>.GetDoubleValueOrDefault(CurrentValue) : null;
+        private double? GetAriaValueNow => AriaValueNow is not null ? AriaValueNow : Suffix.HasNoValue() ? GetDoubleValueOrDefault(CurrentValue) : null;
         private string? GetAriaValueText => AriaValueText.HasValue() ? AriaValueText : Suffix.HasValue() ? CurrentValueAsString + Suffix : null;
         private string? GetIconRole => IconAriaLabel.HasValue() ? "img" : null;
         private string GetLabelId => Label.HasValue() ? $"label{Guid.NewGuid()}" : string.Empty;
