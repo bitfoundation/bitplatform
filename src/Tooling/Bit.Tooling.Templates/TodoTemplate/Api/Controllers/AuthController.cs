@@ -24,15 +24,12 @@ public class AuthController : ControllerBase
 
     private readonly IFluentEmail _fluentEmail;
 
-    private readonly IServer _server;
-
     public AuthController(SignInManager<User> signInManager,
         UserManager<User> userManager,
         IJwtService jwtService,
         IMapper mapper,
         IOptionsSnapshot<AppSettings> setting,
-        IFluentEmail fluentEmail,
-        IServer server
+        IFluentEmail fluentEmail
         )
     {
         _userManager = userManager;
@@ -41,7 +38,6 @@ public class AuthController : ControllerBase
         _signInManager = signInManager;
         _appSettings = setting.Value;
         _fluentEmail = fluentEmail;
-        _server = server;
     }
 
     [HttpPost("[action]")]
@@ -107,12 +103,11 @@ public class AuthController : ControllerBase
             .To(user.Email, user.DisplayName)
             .Subject(EmailStrings.ConfirmationEmailSubject)
             .UsingTemplateFromEmbedded("TodoTemplate.Api.Resources.EmailConfirmation.cshtml",
-                                    new EmailConfirmationModel
-                                    {
-                                        ConfirmationLink = confirmationLink,
-                                        HostUri = _server.GetHostUri()
-                                    },
-                                    assembly)
+                new EmailConfirmationModel
+                {
+                    ConfirmationLink = confirmationLink,
+                    HostUri = new Uri($"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}{HttpContext.Request.PathBase}")
+                },assembly)
             .SendAsync(cancellationToken);
 
         user.ConfirmationEmailRequestedOn = DateTimeOffset.Now;
