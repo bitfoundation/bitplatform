@@ -1,83 +1,84 @@
 ﻿using System.Globalization;
 
-namespace Bit.Client.Web.BlazorUI;
-
-public static class CultureInfoHelper
+namespace Bit.Client.Web.BlazorUI
 {
-    public static CultureInfo GetPersianCultureByFinglishNames()
+    public static class CultureInfoHelper
     {
-        var cultureInfo = CultureInfo.CreateSpecificCulture("fa-IR");
-
-        cultureInfo.DateTimeFormat.MonthNames = new[]
+        public static CultureInfo GetPersianCultureByFinglishNames()
         {
-            "Farvardin",
-            "Ordibehesht",
-            "Khordad",
-            "Tir",
-            "Mordad",
-            "Shahrivar",
-            "Mehr",
-            "Aban",
-            "Azar",
-            "Dey",
-            "Bahman",
-            "Esfand",
-            ""
-        };
+            var cultureInfo = CultureInfo.CreateSpecificCulture("fa-IR");
 
-        cultureInfo.DateTimeFormat.AbbreviatedMonthNames = new[]
-        {
-            "Far",
-            "Ord",
-            "Khr",
-            "Tir",
-            "Mrd",
-            "Shr",
-            "Mhr",
-            "Abn",
-            "Azr",
-            "Dey",
-            "Bah",
-            "Esf",
-            ""
-        };
+            cultureInfo.DateTimeFormat.MonthNames = new[]
+            {
+                "Farvardin",
+                "Ordibehesht",
+                "Khordad",
+                "Tir",
+                "Mordad",
+                "Shahrivar",
+                "Mehr",
+                "Aban",
+                "Azar",
+                "Dey",
+                "Bahman",
+                "Esfand",
+                ""
+            };
 
-        cultureInfo.DateTimeFormat.MonthGenitiveNames = cultureInfo.DateTimeFormat.MonthNames;
-        cultureInfo.DateTimeFormat.AbbreviatedMonthGenitiveNames = cultureInfo.DateTimeFormat.AbbreviatedMonthNames;
+            cultureInfo.DateTimeFormat.AbbreviatedMonthNames = new[]
+            {
+                "Far",
+                "Ord",
+                "Khr",
+                "Tir",
+                "Mrd",
+                "Shr",
+                "Mhr",
+                "Abn",
+                "Azr",
+                "Dey",
+                "Bah",
+                "Esf",
+                ""
+            };
 
-        cultureInfo.DateTimeFormat.DayNames = new[]
-        {
-            "YekShanbe",
-            "DoShanbe",
-            "SeShanbe",
-            "ChaharShanbe",
-            "PanjShanbe",
-            "Jome",
-            "Shanbe"
-        };
+            cultureInfo.DateTimeFormat.MonthGenitiveNames = cultureInfo.DateTimeFormat.MonthNames;
+            cultureInfo.DateTimeFormat.AbbreviatedMonthGenitiveNames = cultureInfo.DateTimeFormat.AbbreviatedMonthNames;
 
-        cultureInfo.DateTimeFormat.AbbreviatedDayNames = new[]
-        {
-            "Yek",
-            "Do",
-            "Se",
-            "Ch",
-            "Pj",
-            "Jom",
-            "Shn"
-        };
+            cultureInfo.DateTimeFormat.DayNames = new[]
+            {
+                "YekShanbe",
+                "DoShanbe",
+                "SeShanbe",
+                "ChaharShanbe",
+                "PanjShanbe",
+                "Jome",
+                "Shanbe"
+            };
 
-        cultureInfo.DateTimeFormat.ShortestDayNames = new[]
-        {
-            "Y",
-            "D",
-            "S",
-            "C",
-            "P",
-            "J",
-            "S"
-        };
+            cultureInfo.DateTimeFormat.AbbreviatedDayNames = new[]
+            {
+                "Yek",
+                "Do",
+                "Se",
+                "Ch",
+                "Pj",
+                "Jom",
+                "Shn"
+            };
 
-        return cultureInfo;
+            cultureInfo.DateTimeFormat.ShortestDayNames = new[]
+            {
+                "Y",
+                "D",
+                "S",
+                "C",
+                "P",
+                "J",
+                "S"
+            };
+
+            return cultureInfo;
+        }
     }
 }

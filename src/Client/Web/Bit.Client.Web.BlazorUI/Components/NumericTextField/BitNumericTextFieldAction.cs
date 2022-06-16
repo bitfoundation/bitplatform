@@ -1,14 +1,15 @@
-﻿namespace Bit.Client.Web.BlazorUI;
-
-public enum BitNumericTextFieldAction
+﻿namespace Bit.Client.Web.BlazorUI
 {
-    /// <summary>
-    /// Increase the value of numeric text field, based on step value parameter
-    /// </summary>
-    Increment,
+    public enum BitNumericTextFieldAction
+    {
+        /// <summary>
+        /// Increase the value of numeric text field, based on step value parameter
+        /// </summary>
+        Increment,
 
-    /// <summary>
-    /// Decrease the value of numeric text field, based on step value parameter
-    /// </summary>
-    Decrement
+        /// <summary>
+        /// Decrease the value of numeric text field, based on step value parameter
+        /// </summary>
+        Decrement
+    }
 }

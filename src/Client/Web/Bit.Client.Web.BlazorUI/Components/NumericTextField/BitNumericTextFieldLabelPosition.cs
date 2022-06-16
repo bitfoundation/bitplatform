@@ -1,14 +1,15 @@
-﻿namespace Bit.Client.Web.BlazorUI;
-
-public enum BitNumericTextFieldLabelPosition
+﻿namespace Bit.Client.Web.BlazorUI
 {
-    /// <summary>
-    /// The label shows on the top of the numeric text field
-    /// </summary>
-    Top,
+    public enum BitNumericTextFieldLabelPosition
+    {
+        /// <summary>
+        /// The label shows on the top of the numeric text field
+        /// </summary>
+        Top,
 
-    /// <summary>
-    /// The label shows on the left side of the numeric text field
-    /// </summary>
-    Left,
+        /// <summary>
+        /// The label shows on the left side of the numeric text field
+        /// </summary>
+        Left,
+    }
 }

@@ -1,8 +1,9 @@
-﻿namespace Bit.Client.Web.BlazorUI;
-
-public enum BitSpinnerAriaLive
+﻿namespace Bit.Client.Web.BlazorUI
 {
-    Assertive,
-    Polite, 
-    Off
+    public enum BitSpinnerAriaLive
+    {
+        Assertive,
+        Polite, 
+        Off
+    }
 }

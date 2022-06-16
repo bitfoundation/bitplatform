@@ -1,8 +1,9 @@
 ﻿
-namespace Bit.Client.Web.BlazorUI;
-
-public enum ChangeDirection
+namespace Bit.Client.Web.BlazorUI
 {
-    Next,
-    Previous
+    public enum ChangeDirection
+    {
+        Next,
+        Previous
+    }
 }

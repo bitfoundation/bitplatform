@@ -1,4 +1,5 @@
 ﻿using System.Drawing;
+using Bit.Client.Web.BlazorUI.Components.ChoiceGroup;
 using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 

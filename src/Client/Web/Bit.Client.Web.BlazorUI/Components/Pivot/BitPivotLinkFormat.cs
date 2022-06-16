@@ -4,17 +4,18 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Bit.Client.Web.BlazorUI;
-
-public enum BitPivotLinkFormat
+namespace Bit.Client.Web.BlazorUI
 {
-    /// <summary>
-    /// Display Pivot Links as Tabs
-    /// </summary>
-    Tabs,
+    public enum BitPivotLinkFormat
+    {
+        /// <summary>
+        /// Display Pivot Links as Tabs
+        /// </summary>
+        Tabs,
 
-    /// <summary>
-    /// Display Pivot Links as links
-    /// </summary>
-    Links
+        /// <summary>
+        /// Display Pivot Links as links
+        /// </summary>
+        Links
+    }
 }

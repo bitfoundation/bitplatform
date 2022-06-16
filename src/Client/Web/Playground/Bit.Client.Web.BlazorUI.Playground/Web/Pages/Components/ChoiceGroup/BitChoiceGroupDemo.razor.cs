@@ -1,6 +1,7 @@
-﻿using System.Drawing;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Drawing;
 using System.Threading.Tasks;
+using Bit.Client.Web.BlazorUI.Components.ChoiceGroup;
 using Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 
 namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ChoiceGroup

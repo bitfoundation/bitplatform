@@ -73,7 +73,7 @@ public class AutoInjectSourceGenerator : ISourceGenerator
 
         List<string> classFilePaths = @class.Locations
             .Where(o => o.SourceTree != null)
-            .Select(o => o.SourceTree!.FilePath)
+            .Select(o => o.SourceTree.FilePath)
             .ToList();
 
         string razorFileName = $"{@class.Name}.razor";

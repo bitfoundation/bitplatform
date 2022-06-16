@@ -1,7 +1,8 @@
-﻿namespace Bit.Client.Web.BlazorUI;
-
-public class BitColorValue
+﻿namespace Bit.Client.Web.BlazorUI
 {
-    public string? Color { get; set; }
-    public double Alpha { get; set; }
+    public class BitColorValue
+    {
+        public string? Color { get; set; }
+        public double Alpha { get; set; }
+    }
 }

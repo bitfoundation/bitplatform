@@ -310,8 +310,6 @@ namespace Bit.Client.Web.BlazorUI.Tests.Modal
                 BitModalPosition.BottomLeft => $"bit-mdl-position-bottomleft",
                 BitModalPosition.BottomCenter => $"bit-mdl-position-bottomcenter",
                 BitModalPosition.BottomRight => $"bit-mdl-position-bottomright",
-
-                _ => $"bit-mdl-position-center",
             };
 
             Assert.IsTrue(modalElement.ClassList.Contains(positionClass));

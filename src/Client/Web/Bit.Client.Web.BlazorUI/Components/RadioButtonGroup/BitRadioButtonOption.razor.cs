@@ -4,184 +4,185 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 
-namespace Bit.Client.Web.BlazorUI;
-
-public partial class BitRadioButtonOption : IDisposable
+namespace Bit.Client.Web.BlazorUI
 {
-    private bool isChecked;
-    private string? imageSizeStyle;
-    private bool IsCheckedHasBeenSet;
-
-    /// <summary>
-    /// RadioButtonOption content, It can be a text
-    /// </summary>
-    [Parameter] public string? Text { get; set; }
-
-    /// <summary>
-    /// Icon to display with this option.
-    /// </summary>
-    [Parameter] public BitIconName? IconName { get; set; }
-
-    /// <summary>
-    /// Image src to display with this option.
-    /// </summary>
-    [Parameter] public string? ImageSrc { get; set; }
-
-    /// <summary>
-    /// The src of image for choice field which is selected.
-    /// </summary>
-    [Parameter] public string? SelectedImageSrc { get; set; }
-
-    /// <summary>
-    /// Alt text if the option is an image. default is an empty string
-    /// </summary>
-    [Parameter] public string? ImageAlt { get; set; }
-
-    /// <summary>
-    /// The width and height of the image in px for choice field.
-    /// </summary>
-    [Parameter] public Size? ImageSize { get; set; }
-
-    /// <summary>
-    /// This value is used to group each RadioButtonGroupOption into the same logical RadioButtonGroup
-    /// </summary>
-    [Parameter] public string? Name { get; set; }
-
-    /// <summary>
-    /// Value of selected RadioButtonOption
-    /// </summary>
-    [Parameter] public string? Value { get; set; }
-
-    /// <summary>
-    /// Whether or not the option is checked
-    /// </summary>
-    [Parameter]
-    public bool IsChecked
+    public partial class BitRadioButtonOption : IDisposable
     {
-        get => isChecked;
-        set
+        private bool isChecked;
+        private string? imageSizeStyle;
+        private bool IsCheckedHasBeenSet;
+
+        /// <summary>
+        /// RadioButtonOption content, It can be a text
+        /// </summary>
+        [Parameter] public string? Text { get; set; }
+
+        /// <summary>
+        /// Icon to display with this option.
+        /// </summary>
+        [Parameter] public BitIconName? IconName { get; set; }
+
+        /// <summary>
+        /// Image src to display with this option.
+        /// </summary>
+        [Parameter] public string? ImageSrc { get; set; }
+
+        /// <summary>
+        /// The src of image for choice field which is selected.
+        /// </summary>
+        [Parameter] public string? SelectedImageSrc { get; set; }
+
+        /// <summary>
+        /// Alt text if the option is an image. default is an empty string
+        /// </summary>
+        [Parameter] public string? ImageAlt { get; set; }
+
+        /// <summary>
+        /// The width and height of the image in px for choice field.
+        /// </summary>
+        [Parameter] public Size? ImageSize { get; set; }
+
+        /// <summary>
+        /// This value is used to group each RadioButtonGroupOption into the same logical RadioButtonGroup
+        /// </summary>
+        [Parameter] public string? Name { get; set; }
+
+        /// <summary>
+        /// Value of selected RadioButtonOption
+        /// </summary>
+        [Parameter] public string? Value { get; set; }
+
+        /// <summary>
+        /// Whether or not the option is checked
+        /// </summary>
+        [Parameter]
+        public bool IsChecked
         {
-            if (value == isChecked) return;
-            isChecked = value;
-            ClassBuilder.Reset();
-            _ = IsCheckedChanged.InvokeAsync(value);
-        }
-    }
-
-    /// <summary>
-    /// Callback for when the option IsChecked changes
-    /// </summary>
-    [Parameter] public EventCallback<bool> IsCheckedChanged { get; set; }
-
-    /// <summary>
-    /// Callback for when the RadioButtonOption clicked
-    /// </summary>
-    [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
-
-    /// <summary>
-    /// Callback for when the option has been changed
-    /// </summary>
-    [Parameter] public EventCallback<bool> OnChange { get; set; }
-
-    [CascadingParameter] protected BitRadioButtonGroup? RadioButtonGroup { get; set; }
-
-    public string InputId { get; set; } = string.Empty;
-    public string TextId { get; set; } = string.Empty;
-
-    protected override Task OnInitializedAsync()
-    {
-        if (RadioButtonGroup is not null)
-        {
-            if (Name.HasNoValue())
+            get => isChecked;
+            set
             {
-                Name = RadioButtonGroup.Name;
+                if (value == isChecked) return;
+                isChecked = value;
+                ClassBuilder.Reset();
+                _ = IsCheckedChanged.InvokeAsync(value);
+            }
+        }
+
+        /// <summary>
+        /// Callback for when the option IsChecked changes
+        /// </summary>
+        [Parameter] public EventCallback<bool> IsCheckedChanged { get; set; }
+
+        /// <summary>
+        /// Callback for when the RadioButtonOption clicked
+        /// </summary>
+        [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+
+        /// <summary>
+        /// Callback for when the option has been changed
+        /// </summary>
+        [Parameter] public EventCallback<bool> OnChange { get; set; }
+
+        [CascadingParameter] protected BitRadioButtonGroup? RadioButtonGroup { get; set; }
+
+        public string InputId { get; set; } = string.Empty;
+        public string TextId { get; set; } = string.Empty;
+
+        protected override Task OnInitializedAsync()
+        {
+            if (RadioButtonGroup is not null)
+            {
+                if (Name.HasNoValue())
+                {
+                    Name = RadioButtonGroup.Name;
+                }
+
+                RadioButtonGroup.RegisterOption(this);
+
+                InputId = $"RadioButtonGroup{RadioButtonGroup.UniqueId}-{Value}";
+                TextId = $"RadioButtonGroupLabel{RadioButtonGroup.UniqueId}-{Value}";
             }
 
-            RadioButtonGroup.RegisterOption(this);
-
-            InputId = $"RadioButtonGroup{RadioButtonGroup.UniqueId}-{Value}";
-            TextId = $"RadioButtonGroupLabel{RadioButtonGroup.UniqueId}-{Value}";
+            return base.OnInitializedAsync();
         }
 
-        return base.OnInitializedAsync();
-    }
-
-    protected override Task OnParametersSetAsync()
-    {
-        if (ImageSize is not null)
+        protected override Task OnParametersSetAsync()
         {
-            imageSizeStyle = $" width:{ImageSize.Value.Width}px; height:{ImageSize.Value.Height}px;";
+            if (ImageSize is not null)
+            {
+                imageSizeStyle = $" width:{ImageSize.Value.Width}px; height:{ImageSize.Value.Height}px;";
+            }
+
+            return base.OnParametersSetAsync();
         }
 
-        return base.OnParametersSetAsync();
-    }
+        protected override string RootElementClass => "bit-rbo";
 
-    protected override string RootElementClass => "bit-rbo";
-
-    protected override void RegisterComponentClasses()
-    {
-        ClassBuilder.Register(() => ImageSrc.HasValue() || IconName.HasValue
-                                 ? $"{RootElementClass}-with-img-{VisualClassRegistrar()}" : string.Empty);
-
-        ClassBuilder.Register(() => IsChecked
-                                 ? $"{RootElementClass}-checked-{VisualClassRegistrar()}" : string.Empty);
-
-        ClassBuilder.Register(() =>
+        protected override void RegisterComponentClasses()
         {
-            var isDisabled = IsEnabled is false || (RadioButtonGroup is not null && RadioButtonGroup.IsEnabled is false);
-            return $"{RootElementClass}-{(isDisabled ? "disabled" : "enabled")}-{VisualClassRegistrar()}";
-        });
-    }
+            ClassBuilder.Register(() => ImageSrc.HasValue() || IconName.HasValue
+                                     ? $"{RootElementClass}-with-img-{VisualClassRegistrar()}" : string.Empty);
 
-    internal void SetState(bool status)
-    {
-        IsChecked = status;
-        StateHasChanged();
-    }
+            ClassBuilder.Register(() => IsChecked
+                                     ? $"{RootElementClass}-checked-{VisualClassRegistrar()}" : string.Empty);
 
-    private string GetLabelClassNameStr()
-    {
-        var className = ImageSrc.HasValue() || IconName.HasValue ? "bit-rbo-lbl-with-img" : "bit-rbo-lbl";
-        return className;
-    }
-
-    private async Task HandleClick(MouseEventArgs e)
-    {
-        if (IsEnabled is false || (RadioButtonGroup is not null && RadioButtonGroup.IsEnabled is false)) return;
-
-        if (RadioButtonGroup is not null)
-        {
-            await RadioButtonGroup.SelectOption(this).ConfigureAwait(false);
+            ClassBuilder.Register(() =>
+            {
+                var isDisabled = IsEnabled is false || (RadioButtonGroup is not null && RadioButtonGroup.IsEnabled is false);
+                return $"{RootElementClass}-{(isDisabled ? "disabled" : "enabled")}-{VisualClassRegistrar()}";
+            });
         }
 
-        await OnClick.InvokeAsync(e).ConfigureAwait(false);
-    }
-
-    private async Task HandleChange(ChangeEventArgs e)
-    {
-        if (IsEnabled is false || (RadioButtonGroup is not null && RadioButtonGroup.IsEnabled is false)) return;
-
-        if (IsCheckedHasBeenSet && IsCheckedChanged.HasDelegate is false) return;
-
-        await OnChange.InvokeAsync(IsChecked).ConfigureAwait(false);
-    }
-
-    private bool _disposed;
-
-    public void Dispose()
-    {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    protected virtual void Dispose(bool disposing)
-    {
-        if (_disposed) return;
-        if (RadioButtonGroup is not null)
+        internal void SetState(bool status)
         {
-            RadioButtonGroup.UnregisterOption(this);
+            IsChecked = status;
+            StateHasChanged();
         }
 
-        _disposed = true;
+        private string GetLabelClassNameStr()
+        {
+            var className = ImageSrc.HasValue() || IconName.HasValue ? "bit-rbo-lbl-with-img" : "bit-rbo-lbl";
+            return className;
+        }
+
+        private async Task HandleClick(MouseEventArgs e)
+        {
+            if (IsEnabled is false || (RadioButtonGroup is not null && RadioButtonGroup.IsEnabled is false)) return;
+
+            if (RadioButtonGroup is not null)
+            {
+                await RadioButtonGroup.SelectOption(this);
+            }
+
+            await OnClick.InvokeAsync(e);
+        }
+
+        private async Task HandleChange(ChangeEventArgs e)
+        {
+            if (IsEnabled is false || (RadioButtonGroup is not null && RadioButtonGroup.IsEnabled is false)) return;
+
+            if (IsCheckedHasBeenSet && IsCheckedChanged.HasDelegate is false) return;
+
+            await OnChange.InvokeAsync(IsChecked);
+        }
+
+        private bool _disposed;
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed) return;
+            if (RadioButtonGroup is not null)
+            {
+                RadioButtonGroup.UnregisterOption(this);
+            }
+
+            _disposed = true;
+        }
     }
 }
