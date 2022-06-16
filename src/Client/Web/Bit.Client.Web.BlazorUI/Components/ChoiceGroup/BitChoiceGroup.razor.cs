@@ -80,7 +80,7 @@ public partial class BitChoiceGroup
             CurrentValue = DefaultValue;
         }
 
-        await base.OnInitializedAsync().ConfigureAwait(true);
+        await base.OnInitializedAsync().ConfigureAwait(false);
     }
 
     private string GetGroupLabelId() => $"ChoiceGroupLabel{UniqueId}";

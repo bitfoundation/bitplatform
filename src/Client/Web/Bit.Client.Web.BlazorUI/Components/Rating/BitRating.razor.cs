@@ -82,7 +82,7 @@ public partial class BitRating
 
         CurrentValue = Math.Min(Math.Max(CurrentValue, (AllowZeroStars ? 0 : 1)), Max);
         
-        await base.OnInitializedAsync().ConfigureAwait(true);
+        await base.OnInitializedAsync().ConfigureAwait(false);
     }
 
     protected override string RootElementClass => "bit-rating";
@@ -131,7 +131,7 @@ public partial class BitRating
             ValueChanged.HasDelegate is false) return;
 
         CurrentValue = index;
-        await OnChange.InvokeAsync(CurrentValue).ConfigureAwait(true);
+        await OnChange.InvokeAsync(CurrentValue).ConfigureAwait(false);
     }
 
     private void HandleOnCurrentValueChanged(object? sender, EventArgs args) => ClassBuilder.Reset();

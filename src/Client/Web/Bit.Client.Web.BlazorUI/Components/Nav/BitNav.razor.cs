@@ -115,7 +115,7 @@ public partial class BitNav : IDisposable
         if (selectedItem is not null)
             ExpandSelectedNavLinkItemParents(selectedItem);
 
-        await base.OnInitializedAsync().ConfigureAwait(true);
+        await base.OnInitializedAsync().ConfigureAwait(false);
     }
 
     private static IEnumerable<BitNavLinkItem> Flatten(IEnumerable<BitNavLinkItem> e) => e.SelectMany(c => Flatten(c.Links)).Concat(e);
@@ -170,7 +170,7 @@ public partial class BitNav : IDisposable
 
         navLinkItem.IsExpanded = !navLinkItem.IsExpanded;
 
-        await OnLinkExpandClick.InvokeAsync(navLinkItem).ConfigureAwait(true);
+        await OnLinkExpandClick.InvokeAsync(navLinkItem).ConfigureAwait(false);
     }
 
     private async Task HandleLinkClick(BitNavLinkItem navLinkItem)
@@ -180,13 +180,13 @@ public partial class BitNav : IDisposable
         if (Mode == BitNavMode.Manual && navLinkItem.Links.Any() is false)
         {
             selectedKey = navLinkItem.Key;
-            await SelectedKeyChanged.InvokeAsync(selectedKey).ConfigureAwait(true);
+            await SelectedKeyChanged.InvokeAsync(selectedKey).ConfigureAwait(false);
         }
 
-        await OnLinkClick.InvokeAsync(navLinkItem).ConfigureAwait(true);
+        await OnLinkClick.InvokeAsync(navLinkItem).ConfigureAwait(false);
         if (navLinkItem.Url.HasNoValue() && navLinkItem.Links.Any())
         {
-            await HandleLinkExpand(navLinkItem).ConfigureAwait(true);
+            await HandleLinkExpand(navLinkItem).ConfigureAwait(false);
         }
     }
 
@@ -203,7 +203,7 @@ public partial class BitNav : IDisposable
 
         if (navLinkItem.Links.Any())
         {
-            await HandleLinkExpand(navLinkItem).ConfigureAwait(true);
+            await HandleLinkExpand(navLinkItem).ConfigureAwait(false);
         }
     }
 

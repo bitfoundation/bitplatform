@@ -72,14 +72,14 @@ public partial class BitBreadcrumb
 
         GetBreadcrumbItemsToShow();
 
-        await base.OnParametersSetAsync().ConfigureAwait(true);
+        await base.OnParametersSetAsync().ConfigureAwait(false);
     }
 
     private async Task CloseCallout()
     {
         var obj = DotNetObjectReference.Create(this);
         
-        await JSRuntime.InvokeVoidAsync("BitOverflowDropDownMenu.toggleOverflowDropDownMenuCallout", obj, BreadcrumbItemsWrapperId, OverflowDropDownId, OverflowDropDownMenuCalloutId, OverflowDropDownMenuOverlayId, isOpen).ConfigureAwait(true);
+        await JSRuntime.InvokeVoidAsync("BitOverflowDropDownMenu.toggleOverflowDropDownMenuCallout", obj, BreadcrumbItemsWrapperId, OverflowDropDownId, OverflowDropDownMenuCalloutId, OverflowDropDownMenuOverlayId, isOpen).ConfigureAwait(false);
         
         isOpen = false;
         
@@ -92,7 +92,7 @@ public partial class BitBreadcrumb
 
         var obj = DotNetObjectReference.Create(this);
 
-        await JSRuntime.InvokeVoidAsync("BitOverflowDropDownMenu.toggleOverflowDropDownMenuCallout", obj, BreadcrumbItemsWrapperId, OverflowDropDownId, OverflowDropDownMenuCalloutId, OverflowDropDownMenuOverlayId, isOpen).ConfigureAwait(true);
+        await JSRuntime.InvokeVoidAsync("BitOverflowDropDownMenu.toggleOverflowDropDownMenuCallout", obj, BreadcrumbItemsWrapperId, OverflowDropDownId, OverflowDropDownMenuCalloutId, OverflowDropDownMenuOverlayId, isOpen).ConfigureAwait(false);
         
         isOpen = !isOpen;
     }

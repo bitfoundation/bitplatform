@@ -151,10 +151,10 @@ public partial class BitRadioButtonOption : IDisposable
 
         if (RadioButtonGroup is not null)
         {
-            await RadioButtonGroup.SelectOption(this).ConfigureAwait(true);
+            await RadioButtonGroup.SelectOption(this).ConfigureAwait(false);
         }
 
-        await OnClick.InvokeAsync(e).ConfigureAwait(true);
+        await OnClick.InvokeAsync(e).ConfigureAwait(false);
     }
 
     private async Task HandleChange(ChangeEventArgs e)
@@ -163,7 +163,7 @@ public partial class BitRadioButtonOption : IDisposable
 
         if (IsCheckedHasBeenSet && IsCheckedChanged.HasDelegate is false) return;
 
-        await OnChange.InvokeAsync(IsChecked).ConfigureAwait(true);
+        await OnChange.InvokeAsync(IsChecked).ConfigureAwait(false);
     }
 
     private bool _disposed;

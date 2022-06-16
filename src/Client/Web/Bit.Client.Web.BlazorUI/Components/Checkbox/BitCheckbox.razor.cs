@@ -150,7 +150,7 @@ public partial class BitCheckbox
     {
         OnCurrentValueChanged += HandleOnCurrentValueChanged;
 
-        await base.OnInitializedAsync().ConfigureAwait(true);
+        await base.OnInitializedAsync().ConfigureAwait(false);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -160,7 +160,7 @@ public partial class BitCheckbox
             _ = JSRuntime.SetProperty(CheckboxElement, "indeterminate", IsIndeterminate);
         }
 
-        await base.OnAfterRenderAsync(firstRender).ConfigureAwait(true);
+        await base.OnAfterRenderAsync(firstRender).ConfigureAwait(false);
     }
 
     protected override async Task OnParametersSetAsync()
@@ -176,13 +176,13 @@ public partial class BitCheckbox
         }
 
         InputId = $"checkbox-{UniqueId}";
-        await base.OnParametersSetAsync().ConfigureAwait(true);
+        await base.OnParametersSetAsync().ConfigureAwait(false);
     }
 
     private async Task HandleCheckboxClick(MouseEventArgs args)
     {
         if (IsEnabled is false) return;
-        await OnClick.InvokeAsync(args).ConfigureAwait(true);
+        await OnClick.InvokeAsync(args).ConfigureAwait(false);
 
         if (IsIndeterminate)
         {
@@ -194,7 +194,7 @@ public partial class BitCheckbox
             if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
 
             CurrentValue = !CurrentValue;
-            await OnChange.InvokeAsync(CurrentValue).ConfigureAwait(true);
+            await OnChange.InvokeAsync(CurrentValue).ConfigureAwait(false);
         }
     }
 

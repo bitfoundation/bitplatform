@@ -208,16 +208,16 @@ public partial class BitFileUpload : IDisposable
 
         var url = AddQueryString(UploadUrl, UploadRequestQueryStrings);
 
-        Files = await JSRuntime.InitUploader(inputFileElement, dotnetObjectReference, url, UploadRequestHttpHeaders).ConfigureAwait(true);
+        Files = await JSRuntime.InitUploader(inputFileElement, dotnetObjectReference, url, UploadRequestHttpHeaders).ConfigureAwait(false);
 
         if (Files is not null)
         {
-            await OnChange.InvokeAsync(Files.ToArray()).ConfigureAwait(true);
+            await OnChange.InvokeAsync(Files.ToArray()).ConfigureAwait(false);
         }
 
         if (AutoUploadEnabled)
         {
-            await Upload().ConfigureAwait(true);
+            await Upload().ConfigureAwait(false);
         }
     }
 
@@ -233,16 +233,16 @@ public partial class BitFileUpload : IDisposable
             UploadStatus = BitFileUploadStatus.InProgress;
         }
 
-        await UpdateStatus(BitFileUploadStatus.InProgress, index).ConfigureAwait(true);
+        await UpdateStatus(BitFileUploadStatus.InProgress, index).ConfigureAwait(false);
         if (index >= 0)
         {
-            await UploadOneFile(index).ConfigureAwait(true);
+            await UploadOneFile(index).ConfigureAwait(false);
         }
         else
         {
             for (int i = 0; i < Files.Count; i++)
             {
-                await UploadOneFile(i).ConfigureAwait(true);
+                await UploadOneFile(i).ConfigureAwait(false);
             }
         }
     }
@@ -257,25 +257,25 @@ public partial class BitFileUpload : IDisposable
 
         if (MaxSize > 0 && Files[index].Size > MaxSize)
         {
-            await UpdateStatus(BitFileUploadStatus.NotAllowed, index).ConfigureAwait(true);
+            await UpdateStatus(BitFileUploadStatus.NotAllowed, index).ConfigureAwait(false);
             return;
         }
 
         if (IsFileTypeNotAllowed(Files[index]))
         {
-            await UpdateStatus(BitFileUploadStatus.NotAllowed, index).ConfigureAwait(true);
+            await UpdateStatus(BitFileUploadStatus.NotAllowed, index).ConfigureAwait(false);
             return;
         }
 
         if (Files[index].RequestToPause)
         {
-            await PauseUpload(index).ConfigureAwait(true);
+            await PauseUpload(index).ConfigureAwait(false);
             return;
         }
 
         if (Files[index].RequestToCancel)
         {
-            await CancelUpload(index).ConfigureAwait(true);
+            await CancelUpload(index).ConfigureAwait(false);
             return;
         }
 
@@ -293,7 +293,7 @@ public partial class BitFileUpload : IDisposable
         Files[index].StartTimeUpload = DateTime.UtcNow;
         Files[index].SizeOfLastChunkUploaded = 0;
 
-        await JSRuntime.UploadFile(from, to, index).ConfigureAwait(true);
+        await JSRuntime.UploadFile(from, to, index).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -321,8 +321,8 @@ public partial class BitFileUpload : IDisposable
     {
         if (Files is null) return;
 
-        await JSRuntime.PauseFile(index).ConfigureAwait(true);
-        await UpdateStatus(BitFileUploadStatus.Paused, index).ConfigureAwait(true);
+        await JSRuntime.PauseFile(index).ConfigureAwait(false);
+        await UpdateStatus(BitFileUploadStatus.Paused, index).ConfigureAwait(false);
         Files[index].RequestToPause = false;
     }
 
@@ -356,7 +356,7 @@ public partial class BitFileUpload : IDisposable
         if (Files is null || Files[index].Status != BitFileUploadStatus.InProgress) return;
 
         Files[index].SizeOfLastChunkUploaded = loaded;
-        await UpdateStatus(BitFileUploadStatus.InProgress, index).ConfigureAwait(true);
+        await UpdateStatus(BitFileUploadStatus.InProgress, index).ConfigureAwait(false);
         StateHasChanged();
     }
 
@@ -376,18 +376,18 @@ public partial class BitFileUpload : IDisposable
         UpdateChunkSize(fileIndex);
         if (Files[fileIndex].TotalSizeOfUploaded < Files[fileIndex].Size)
         {
-            await Upload(index: fileIndex).ConfigureAwait(true);
+            await Upload(index: fileIndex).ConfigureAwait(false);
         }
         else
         {
             Files[fileIndex].Message = responseText;
-            await UpdateStatus(GetUploadStatus(responseStatus), fileIndex).ConfigureAwait(true);
+            await UpdateStatus(GetUploadStatus(responseStatus), fileIndex).ConfigureAwait(false);
             var allFilesUploaded = Files.All(c => c.Status is BitFileUploadStatus.Completed or BitFileUploadStatus.Failed);
 
             if (allFilesUploaded)
             {
                 UploadStatus = BitFileUploadStatus.Completed;
-                await OnAllUploadsComplete.InvokeAsync(Files.ToArray()).ConfigureAwait(true);
+                await OnAllUploadsComplete.InvokeAsync(Files.ToArray()).ConfigureAwait(false);
             }
         }
 
@@ -430,39 +430,39 @@ public partial class BitFileUpload : IDisposable
                 file.Status = uploadStatus;
             }
 
-            await OnChange.InvokeAsync(files).ConfigureAwait(true);
+            await OnChange.InvokeAsync(files).ConfigureAwait(false);
         }
         else
         {
             if (Files[index].Status != uploadStatus)
             {
                 Files[index].Status = uploadStatus;
-                await OnChange.InvokeAsync(new[] { Files[index] }).ConfigureAwait(true);
+                await OnChange.InvokeAsync(new[] { Files[index] }).ConfigureAwait(false);
             }
 
             if (uploadStatus == BitFileUploadStatus.InProgress)
             {
-                await OnProgress.InvokeAsync(Files[index]).ConfigureAwait(true);
+                await OnProgress.InvokeAsync(Files[index]).ConfigureAwait(false);
             }
 
             if (uploadStatus == BitFileUploadStatus.Completed)
             {
-                await OnUploadComplete.InvokeAsync(Files[index]).ConfigureAwait(true);
+                await OnUploadComplete.InvokeAsync(Files[index]).ConfigureAwait(false);
             }
 
             if (uploadStatus == BitFileUploadStatus.Removed)
             {
-                await OnRemoveComplete.InvokeAsync(Files[index]).ConfigureAwait(true);
+                await OnRemoveComplete.InvokeAsync(Files[index]).ConfigureAwait(false);
             }
 
             if (uploadStatus == BitFileUploadStatus.Failed)
             {
-                await OnUploadFailed.InvokeAsync(Files[index]).ConfigureAwait(true);
+                await OnUploadFailed.InvokeAsync(Files[index]).ConfigureAwait(false);
             }
 
             if (uploadStatus == BitFileUploadStatus.RemoveFailed)
             {
-                await OnRemoveFailed.InvokeAsync(Files[index]).ConfigureAwait(true);
+                await OnRemoveFailed.InvokeAsync(Files[index]).ConfigureAwait(false);
             }
         }
     }
@@ -512,8 +512,8 @@ public partial class BitFileUpload : IDisposable
     {
         if (Files is null) return;
 
-        await JSRuntime.PauseFile(index).ConfigureAwait(true);
-        await UpdateStatus(BitFileUploadStatus.Canceled, index).ConfigureAwait(true);
+        await JSRuntime.PauseFile(index).ConfigureAwait(false);
+        await UpdateStatus(BitFileUploadStatus.Canceled, index).ConfigureAwait(false);
         Files[index].RequestToCancel = false;
     }
 
@@ -528,20 +528,20 @@ public partial class BitFileUpload : IDisposable
             {
                 for (int i = 0; i < Files.Count; i++)
                 {
-                    await RemoveOneFile(i).ConfigureAwait(true);
+                    await RemoveOneFile(i).ConfigureAwait(false);
                 }
             }
             else
             {
-                await RemoveOneFile(index).ConfigureAwait(true);
+                await RemoveOneFile(index).ConfigureAwait(false);
             }
 
-            await UpdateStatus(BitFileUploadStatus.Removed, index).ConfigureAwait(true);
+            await UpdateStatus(BitFileUploadStatus.Removed, index).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
             Files[index].Message = ex.ToString();
-            await UpdateStatus(BitFileUploadStatus.RemoveFailed, index).ConfigureAwait(true);
+            await UpdateStatus(BitFileUploadStatus.RemoveFailed, index).ConfigureAwait(false);
         }
 #pragma warning restore CA1031 // Do not catch general exception types
     }
@@ -560,7 +560,7 @@ public partial class BitFileUpload : IDisposable
             request.Headers.Add(header.Key, header.Value);
         }
 
-        await HttpClient.SendAsync(request).ConfigureAwait(true);
+        await HttpClient.SendAsync(request).ConfigureAwait(false);
     }
 
     private static string GetFileElClass(BitFileUploadStatus status)

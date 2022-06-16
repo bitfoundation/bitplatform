@@ -69,7 +69,7 @@ public partial class BitCarousel
         selectedKey = item.Key;
         CurrentIndex = item.Index;
 
-        await SelectedKeyChanged.InvokeAsync(selectedKey).ConfigureAwait(true);
+        await SelectedKeyChanged.InvokeAsync(selectedKey).ConfigureAwait(false);
     }
 
     private void SelectItemByKey(string? key)

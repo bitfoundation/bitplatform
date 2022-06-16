@@ -267,27 +267,27 @@ public partial class BitSlider
         {
             if (IsRanged)
             {
-                inputHeight = await JSRuntime.GetClientHeight(RootElement).ConfigureAwait(true);
+                inputHeight = await JSRuntime.GetClientHeight(RootElement).ConfigureAwait(false);
 
                 if (Label.HasValue())
                 {
-                    var titleHeight = await JSRuntime.GetClientHeight(TitleRef).ConfigureAwait(true);
+                    var titleHeight = await JSRuntime.GetClientHeight(TitleRef).ConfigureAwait(false);
                     inputHeight -= titleHeight;
                 }
 
                 if (ShowValue)
                 {
-                    var valueLabelHeight = await JSRuntime.GetClientHeight(ValueLabelRef).ConfigureAwait(true);
+                    var valueLabelHeight = await JSRuntime.GetClientHeight(ValueLabelRef).ConfigureAwait(false);
                     inputHeight -= (valueLabelHeight * 2);
                 }
             }
             else
             {
-                inputHeight = await JSRuntime.GetClientHeight(ContainerRef).ConfigureAwait(true);
+                inputHeight = await JSRuntime.GetClientHeight(ContainerRef).ConfigureAwait(false);
             }
             FillSlider();
         }
-        await base.OnAfterRenderAsync(firstRender).ConfigureAwait(true);
+        await base.OnAfterRenderAsync(firstRender).ConfigureAwait(false);
     }
 
     private async Task HandleInput(ChangeEventArgs e)
@@ -305,7 +305,7 @@ public partial class BitSlider
                 LowerValue = null;
             }
 
-            await OnChange.InvokeAsync(e).ConfigureAwait(true);
+            await OnChange.InvokeAsync(e).ConfigureAwait(false);
         }
     }
 
@@ -342,7 +342,7 @@ public partial class BitSlider
                 Value = null;
             }
 
-            await OnChange.InvokeAsync(e).ConfigureAwait(true);
+            await OnChange.InvokeAsync(e).ConfigureAwait(false);
         }
     }
 

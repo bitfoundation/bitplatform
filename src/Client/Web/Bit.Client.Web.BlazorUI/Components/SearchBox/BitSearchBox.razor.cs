@@ -171,8 +171,8 @@ public partial class BitSearchBox
         if (IsEnabled is false) return;
 
         CurrentValueAsString = string.Empty;
-        await InputRef.FocusAsync().ConfigureAwait(true);
-        await OnClear.InvokeAsync().ConfigureAwait(true);
+        await InputRef.FocusAsync().ConfigureAwait(false);
+        await OnClear.InvokeAsync().ConfigureAwait(false);
     }
 
     private async Task HandleChange(ChangeEventArgs e)
@@ -181,7 +181,7 @@ public partial class BitSearchBox
         if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
 
         CurrentValueAsString = e.Value?.ToString();
-        await OnChange.InvokeAsync(CurrentValue).ConfigureAwait(true);
+        await OnChange.InvokeAsync(CurrentValue).ConfigureAwait(false);
     }
 
     private async Task HandleOnKeyDown(KeyboardEventArgs eventArgs)
@@ -191,14 +191,14 @@ public partial class BitSearchBox
         if (eventArgs.Code == "Escape")
         {
             CurrentValueAsString = string.Empty;
-            await InputRef.FocusAsync().ConfigureAwait(true);
-            await OnEscape.InvokeAsync().ConfigureAwait(true);
-            await OnClear.InvokeAsync().ConfigureAwait(true);
+            await InputRef.FocusAsync().ConfigureAwait(false);
+            await OnEscape.InvokeAsync().ConfigureAwait(false);
+            await OnClear.InvokeAsync().ConfigureAwait(false);
         }
         else if (eventArgs.Code == "Enter")
         {
-            CurrentValueAsString = await JSRuntime.GetProperty(InputRef, "value").ConfigureAwait(true);
-            await OnSearch.InvokeAsync(CurrentValue).ConfigureAwait(true);
+            CurrentValueAsString = await JSRuntime.GetProperty(InputRef, "value").ConfigureAwait(false);
+            await OnSearch.InvokeAsync(CurrentValue).ConfigureAwait(false);
         }
     }
 
