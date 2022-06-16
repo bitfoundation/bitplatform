@@ -1,4 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
+
+    <Import Project="../../Bit.Build.props" />
+    
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
         <IncludeContentInPack>true</IncludeContentInPack>
@@ -6,23 +9,18 @@
         <ContentTargetFolders>content</ContentTargetFolders>
         <EnableDefaultItems>false</EnableDefaultItems>
         <NoDefaultExcludes>true</NoDefaultExcludes>
-        <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-        <PackageType>Template</PackageType>
-        <Version>$(ReleaseVersion)</Version>
+        
+        
+        <!-- Nuget Package-->
         <PackageId>Bit.Tooling.Templates.TodoTemplate</PackageId>
+        <PackageType>Template</PackageType>
         <Title>Bit Platform TodoTemplate</Title>
-        <Company>Bit Platform</Company>
-        <Authors>Bit Platform</Authors>
-        <Copyright>Bit © 2020</Copyright>
-        <Description>A template for creating a Todo app base on the Bit-Platform</Description>
-        <PackageTags>c#;asp.net;core;template;web;blazor</PackageTags>
+        <PackageDescription>A template for creating a Todo app base on the Bit-Platform</PackageDescription>
+        <PackageTags>Bit;c#;asp.net;core;template;web;blazor</PackageTags>
         <PackageCopyright>Copyright © Bit Platform 2022</PackageCopyright>
-        <PackageProjectUrl>https://github.com/bitfoundation/bitplatform</PackageProjectUrl>
-        <PackageLicenseExpression>MIT</PackageLicenseExpression>
-        <RepositoryType>git</RepositoryType>
-        <RepositoryUrl>https://github.com/bitfoundation/bitplatform</RepositoryUrl>
         <PackageReadmeFile>Readme.md</PackageReadmeFile>
         <PackageIcon>bit-icon-512.png</PackageIcon>
+        
     </PropertyGroup>
 
     <ItemGroup>
