@@ -36,8 +36,13 @@
                     "description": "The Blazor Hybrid mode"
                 }
             ],
-            "fileRename": "Directory.Build.props",
-            "replaces": "BlazorServer"
+            "replaces": "BlazorServer",
+            "onlyIf": [
+                {
+                    "after": "<BlazorMode>"
+                }
+            ]
+
 
         },
         "WebAppDeploymentType": {
@@ -63,8 +68,12 @@
                     "description": "The PWA deployment type"
                 }
             ],
-            "fileRename": "Directory.Build.props",
-            "replaces": "DefaultDeploymentType"
+            "replaces": "DefaultDeploymentType",
+            "onlyIf": [
+                {
+                    "after": "<WebAppDeploymentType>"
+                }
+            ]
 
         }
        
@@ -73,8 +82,17 @@
         {
             "modifiers": [
                 {
-                    "copyOnly": ["Shared/Infra/**", "**/*.md", "**/*.scss",  "**/*.svg", "**/*.png" ],
-                    "exclude": [ ".template_config/**" ]
+                    "copyOnly": [ "**/*.md", "**/*.scss", "**/*.svg", "**/*.png" ],
+                    "exclude": [
+                        "**/[Bb]in/**",
+                        "**/[Oo]bj/**",
+                        "**/.template.config",
+                        "**/*.filelist",
+                        "**/*.user",
+                        "**/*.lock.json",
+                        "**/.git/**",
+                        "**/*.nuspec"
+                    ]
                 }
             ]
         }

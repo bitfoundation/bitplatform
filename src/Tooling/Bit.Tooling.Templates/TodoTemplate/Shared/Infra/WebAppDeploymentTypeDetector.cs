@@ -28,7 +28,7 @@ public class WebAppDeploymentTypeDetector
     {
         get
         {
-
+            //-:cnd:noEmit
 #if SSR
             return WebAppDeploymentType.Ssr;
 #elif PWA
@@ -38,6 +38,7 @@ public class WebAppDeploymentTypeDetector
 #else
             return WebAppDeploymentType.Default;
 #endif
+            //+:cnd:noEmit
 
         }
     }
