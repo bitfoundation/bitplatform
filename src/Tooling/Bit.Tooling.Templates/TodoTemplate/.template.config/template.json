@@ -67,12 +67,13 @@
             "replaces": "DefaultDeploymentType"
 
         }
+       
     },
     "sources": [
         {
             "modifiers": [
                 {
-                    "copyOnly": ["**/*.csproj" , "**/*.md", "**/*.scss", "**/*.json", "**/*.svg", "**/*.png" ],
+                    "copyOnly": ["Shared/Infra/**", "**/*.md", "**/*.scss",  "**/*.svg", "**/*.png" ],
                     "exclude": [ ".template_config/**" ]
                 }
             ]

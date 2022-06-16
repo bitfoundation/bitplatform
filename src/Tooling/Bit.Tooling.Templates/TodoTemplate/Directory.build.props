@@ -1,7 +1,7 @@
 <Project>
 
     <PropertyGroup>
-        <BlazorMode>BlazorWebAssembly</BlazorMode>
+        <BlazorMode>BlazorServer</BlazorMode>
         
         <!--/-:msbuild-conditional:noEmit -->
         <!-- You can use either BlazorServer or BlazorWebAssembly or BlazorHybrid -->
