@@ -71,7 +71,7 @@
     <!--/-:msbuild-conditional:noEmit -->
     <ItemGroup Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' ">
     <!--/+:msbuild-conditional:noEmit -->
-        <ProjectReference Include="..\Web\TodoTemplate.Web.csproj" Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " />
+        <ProjectReference Include="..\Web\TodoTemplate.Web.csproj"  />
     </ItemGroup>
 
     <ItemGroup>

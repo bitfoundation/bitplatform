@@ -1,4 +1,4 @@
-
+﻿
 ## Create a nuget package
 
     dotnet pack .\TodoTemplate.nuget.csproj
@@ -15,7 +15,7 @@
 ## unistall package 
     dotnet new --uninstall Bit.Tooling.Templates.TodoTemplate
 
-     dotnet new --uninstall Bit.TodoTemplate
+     
 
 
 ## junction file problem

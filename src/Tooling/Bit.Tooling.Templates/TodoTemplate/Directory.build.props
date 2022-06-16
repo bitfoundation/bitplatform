@@ -2,14 +2,8 @@
 
     <PropertyGroup>
         <BlazorMode>BlazorServer</BlazorMode>
-        
-        <!--/-:msbuild-conditional:noEmit -->
         <!-- You can use either BlazorServer or BlazorWebAssembly or BlazorHybrid -->
-        <!--/+:msbuild-conditional:noEmit -->
-        
         <WebAppDeploymentType>DefaultDeploymentType</WebAppDeploymentType>
-
-        <!--/-:msbuild-conditional:noEmit -->
         <!-- You can choose either Static, DefaultDeploymentType, PWA or SSR -->
         <DefineConstants Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' ">$(DefineConstants);BlazorWebAssembly</DefineConstants>
         <DefineConstants Condition=" '$(BlazorMode)' == 'BlazorServer' ">$(DefineConstants);BlazorServer</DefineConstants>

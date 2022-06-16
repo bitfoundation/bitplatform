@@ -84,6 +84,7 @@
                 {
                     "copyOnly": [ "**/*.md", "**/*.scss", "**/*.svg", "**/*.png" ],
                     "exclude": [
+                        ".vs/**",
                         "**/[Bb]in/**",
                         "**/[Oo]bj/**",
                         "**/.template.config",
@@ -92,6 +93,7 @@
                         "**/*.lock.json",
                         "**/.git/**",
                         "**/*.nuspec"
+
                     ]
                 }
             ]

@@ -7,20 +7,29 @@
     <EnableDefaultItems>false</EnableDefaultItems>
     <NoDefaultExcludes>true</NoDefaultExcludes>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-    <PackageOutputPath>.</PackageOutputPath>  
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="TodoTemplate\**\*" Exclude="**\bin\**\*;**\obj\**\*;" />
+    <Content Include="TodoTemplate\**" Exclude="TodoTemplate\**\bin\**\*;TodoTemplate\**\obj\**\*;" />
     <Compile Remove="**\*" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="readme.md">
+    <EmbeddedResource Include="Readme.md" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Readme.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="TodoTemplate\Web\wwwroot\images\icons\bit-icon-512.png">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
   </ItemGroup>
+
+ 
 
 
   <PropertyGroup>
@@ -38,6 +47,7 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/bitfoundation/bitplatform</RepositoryUrl>
-    <PackageReadmeFile>readme.md</PackageReadmeFile>
+    <PackageReadmeFile>Readme.md</PackageReadmeFile>
+    <PackageIcon>bit-icon-512.png</PackageIcon>
   </PropertyGroup>
 </Project>
