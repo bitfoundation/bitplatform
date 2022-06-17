@@ -90,12 +90,11 @@ public partial class AuthController : ControllerBase
             .To(user.Email, user.DisplayName)
             .Subject(EmailStrings.ConfirmationEmailSubject)
             .UsingTemplateFromEmbedded("TodoTemplate.Api.Resources.EmailConfirmation.cshtml",
-                                    new EmailConfirmationModel
-                                    {
-                                        ConfirmationLink = confirmationLink,
-                                        HostUri = _server.GetHostUri()
-                                    },
-                                    assembly)
+                new EmailConfirmationModel
+                {
+                    ConfirmationLink = confirmationLink,
+                    HostUri = new Uri($"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}{HttpContext.Request.PathBase}")
+                },assembly)
             .SendAsync(cancellationToken);
 
         user.ConfirmationEmailRequestedOn = DateTimeOffset.Now;

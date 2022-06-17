@@ -1,0 +1,26 @@
+﻿[
+    {
+        "outputFile": "Components/Header.razor.css",
+        "inputFile": "Components/Header.razor.scss"
+    },
+    {
+        "outputFile": "Components/Footer.razor.css",
+        "inputFile": "Components/Footer.razor.scss"
+    },
+    {
+        "outputFile": "Components/NotFoundComponent.razor.css",
+        "inputFile": "Components/NotFoundComponent.razor.scss"
+    },
+    {
+        "outputFile": "Pages/HomePage.razor.css",
+        "inputFile": "Pages/HomePage.razor.scss"
+    },
+    {
+        "outputFile": "Shared/MainLayout.razor.css",
+        "inputFile": "Shared/MainLayout.razor.scss"
+    },
+    {
+        "outputFile": "wwwroot/styles/styles.css",
+        "inputFile": "Styles/styles.scss"
+    }
+]
