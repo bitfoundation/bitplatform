@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Net.Http.Headers;
-using TodoTemplate.Api.Middlewares;
 
 namespace TodoTemplate.Api.Startup
 {

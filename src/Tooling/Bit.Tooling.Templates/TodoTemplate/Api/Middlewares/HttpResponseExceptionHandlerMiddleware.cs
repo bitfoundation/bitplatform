@@ -26,35 +26,33 @@ public class HttpResponseExceptionHandlerMiddleware
             var isKnownException = exception is KnownException;
             var statusCode = (int)(exception is RestException restExp ? restExp.StatusCode : HttpStatusCode.InternalServerError);
             
-            RestExceptionPayload restExceptionPayload = new RestExceptionPayload
-            {
-                Message = isKnownException || webHostEnvironment.IsDevelopment() ? exception.Message : nameof(UnknownException),
-                ExceptionType = isKnownException ? exception.GetType().FullName : typeof(UnknownException).FullName
-            };
-
-            if (exception is ResourceValidationException validationException)
-            {
-                restExceptionPayload.Details = validationException.Details;
-            }
+            var restExceptionPayload = RestExceptionPayloadBuilder(webHostEnvironment, isKnownException, exception);
 
             context.Response.StatusCode = statusCode;
             await context.Response.WriteAsJsonAsync(restExceptionPayload);
         }
-
-        Exception UnWrapException(Exception exp)
-        {
-            if (exp is TargetInvocationException)
-                return exp.InnerException ?? exp;
-
-            return exp;
-        }
     }
-}
 
-public static class HttpResponseExceptionHandlerMiddlewareExtensions
-{
-    public static IApplicationBuilder UseHttpResponseExceptionHandler(this IApplicationBuilder builder)
+    private RestExceptionPayload RestExceptionPayloadBuilder(IHostEnvironment webHostEnvironment, bool isKnownException, Exception exception)
     {
-        return builder.UseMiddleware<HttpResponseExceptionHandlerMiddleware>();
+        RestExceptionPayload restExceptionPayload = new RestExceptionPayload
+        {
+            Message = isKnownException || webHostEnvironment.IsDevelopment() ? exception.Message : nameof(UnknownException),
+            ExceptionType = isKnownException ? exception.GetType().FullName : typeof(UnknownException).FullName
+        };
+
+        if (exception is ResourceValidationException validationException)
+        {
+            restExceptionPayload.Details = validationException.Details;
+        }
+
+        return restExceptionPayload;
+    }
+
+    private Exception UnWrapException(Exception exp)
+    {
+        return (exp is TargetInvocationException && exp.InnerException is not null)
+            ? exp.InnerException
+            : exp;
     }
 }
