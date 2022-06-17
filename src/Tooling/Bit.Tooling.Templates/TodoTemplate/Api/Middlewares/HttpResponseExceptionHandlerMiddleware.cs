@@ -26,14 +26,14 @@ public class HttpResponseExceptionHandlerMiddleware
             var isKnownException = exception is KnownException;
             var statusCode = (int)(exception is RestException restExp ? restExp.StatusCode : HttpStatusCode.InternalServerError);
             
-            var restExceptionPayload = RestExceptionPayloadBuilder(webHostEnvironment, isKnownException, exception);
+            var restExceptionPayload = CreateRestExceptionPayload(webHostEnvironment, isKnownException, exception);
 
             context.Response.StatusCode = statusCode;
             await context.Response.WriteAsJsonAsync(restExceptionPayload);
         }
     }
 
-    private RestExceptionPayload RestExceptionPayloadBuilder(IHostEnvironment webHostEnvironment, bool isKnownException, Exception exception)
+    private RestExceptionPayload CreateRestExceptionPayload(IHostEnvironment webHostEnvironment, bool isKnownException, Exception exception)
     {
         RestExceptionPayload restExceptionPayload = new RestExceptionPayload
         {
