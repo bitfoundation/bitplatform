@@ -1,4 +1,5 @@
-﻿namespace TodoTemplate.App.Shared;
+﻿//-:cnd:noEmit
+namespace TodoTemplate.App.Shared;
 
 public partial class TodoTemplateErrorBoundary
 {
@@ -8,14 +9,12 @@ public partial class TodoTemplateErrorBoundary
 
     [Inject] private NavigationManager NavigationManager { get; set; } = default!;
 
-//-:cnd:noEmit
 #if DEBUG
     protected override void OnInitialized()
     {
         ShowException = true;
     }
 #endif
-//+:cnd:noEmit
 
     protected override Task OnErrorAsync(Exception exception)
     {

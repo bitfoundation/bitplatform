@@ -1,4 +1,5 @@
-﻿namespace TodoTemplate.Shared.Infra;
+﻿//-:cnd:noEmit
+namespace TodoTemplate.Shared.Infra;
 
 public class WebAppDeploymentTypeDetector
 {
@@ -28,7 +29,6 @@ public class WebAppDeploymentTypeDetector
     {
         get
         {
-            //-:cnd:noEmit
 #if SSR
             return WebAppDeploymentType.Ssr;
 #elif PWA
@@ -38,7 +38,6 @@ public class WebAppDeploymentTypeDetector
 #else
             return WebAppDeploymentType.Default;
 #endif
-            //+:cnd:noEmit
 
         }
     }

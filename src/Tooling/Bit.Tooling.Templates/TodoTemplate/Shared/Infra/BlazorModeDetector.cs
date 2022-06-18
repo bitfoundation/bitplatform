@@ -1,4 +1,5 @@
-﻿namespace TodoTemplate.Shared.Infra;
+﻿//-:cnd:noEmit
+namespace TodoTemplate.Shared.Infra;
 
 public class BlazorModeDetector
 {
@@ -23,7 +24,7 @@ public class BlazorModeDetector
     {
         get
         {
-            //-:cnd:noEmit
+            
 #if BlazorWebAssembly
             return BlazorMode.BlazorWebAssembly;
 #elif BlazorHybrid
@@ -31,7 +32,6 @@ public class BlazorModeDetector
 #else
             return BlazorMode.BlazorServer;
 #endif
-            //+:cnd:noEmit
 
         }
     }

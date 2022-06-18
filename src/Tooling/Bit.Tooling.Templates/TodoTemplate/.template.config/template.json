@@ -10,7 +10,7 @@
     "name": "Bit Todo Template",
     "shortName": "Bit.TodoTemplate",
     "sourceName": "TodoTemplate",
-    "preferNameDirectory": true, //TODO What?
+    "preferNameDirectory": true,
     "symbols": {
         "skipRestore": {
             "type": "parameter",
@@ -18,6 +18,23 @@
             "description": "If specified, skips the automatic restore of the project on create.",
             "defaultValue": "false"
         },
+
+        //Guid generator for App Id
+        "ApplicationIdGuid": {
+            "type": "generated",
+            "generator": "guid",
+            "replaces": "AC87AA5B-4B37-4E52-8468-2D5DF24AF257",
+            "parameters": {
+                "defaultFormat": "D" //Guid format 
+            },
+            "onlyIf": [
+                {
+                    "after": "<ApplicationIdGuid>"
+                }
+            ]
+
+        },
+
         "BlazorMode": {
             "type": "parameter",
             "datatype": "choice",
@@ -76,8 +93,19 @@
             ]
 
         }
-       
+
     },
+    "postActions": [
+        {
+            "condition": "(!skipRestore)",
+            "description": "Restore NuGet packages required by this project.",
+            "manualInstructions": [
+                { "text": "Run 'dotnet restore'" }
+            ],
+            "actionId": "210D431B-A78B-4D2F-B762-4ED3E3EA9025",
+            "continueOnError": true
+        }
+    ],
     "sources": [
         {
             "modifiers": [

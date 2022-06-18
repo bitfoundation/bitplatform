@@ -1,10 +1,9 @@
-﻿var builder = WebApplication.CreateBuilder(args);
+﻿//-:cnd:noEmit
+var builder = WebApplication.CreateBuilder(args);
 
-//-:cnd:noEmit
 #if DEBUG
 builder.WebHost.UseUrls("https://*:5001", "http://*:5000");
 #endif
-//+:cnd:noEmit
 
 TodoTemplate.Api.Startup.Services.Add(builder.Services, builder.Environment, builder.Configuration);
 

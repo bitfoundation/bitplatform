@@ -18,15 +18,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTemplate.Web", "Web\Tod
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTemplate.Iac", "Iac\TodoTemplate.Iac.csproj", "{F2046C94-F82C-42DC-9C97-9C03FB2F2BA3}"
 EndProject
-
-#if (FALSE)
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".template.config", ".template.config", "{763471E7-8FFA-4227-B27F-DDEF6F0B8F7A}"
 	ProjectSection(SolutionItems) = preProject
 		.template.config\template.json = .template.config\template.json
 	EndProjectSection
 EndProject
-#endif
-
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

@@ -53,5 +53,5 @@ public class Program
         return app;
     }
 #endif
-//+:cnd:noEmit
+
 }

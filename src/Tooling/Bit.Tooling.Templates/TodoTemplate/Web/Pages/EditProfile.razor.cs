@@ -1,4 +1,5 @@
-﻿using TodoTemplate.Shared.Dtos.Account;
+﻿//-:cnd:noEmit
+using TodoTemplate.Shared.Dtos.Account;
 
 namespace TodoTemplate.App.Pages;
 
@@ -23,11 +24,9 @@ public partial class EditProfile
 
     [Inject] public IStateService StateService { get; set; } = default!;
 
-//-:cnd:noEmit
 #if BlazorServer || BlazorHybrid
     [Inject] public IConfiguration Configuration { get; set; } = default!;
 #endif
-//+:cnd:noEmit
     protected override async Task OnInitAsync()
     {
         IsLoadingData = true;
@@ -42,13 +41,11 @@ public partial class EditProfile
             ProfileImageUploadUrl = $"api/Attachment/UploadProfileImage?access_token={access_token}";
             ProfileImageUrl = $"api/Attachment/GetProfileImage?access_token={access_token}";
 
-//-:cnd:noEmit
 #if BlazorServer || BlazorHybrid
             var serverUrl = Configuration.GetValue<string>("ApiServerAddress");
             ProfileImageUploadUrl = $"{serverUrl}{ProfileImageUploadUrl}";
             ProfileImageUrl = $"{serverUrl}{ProfileImageUrl}";
 #endif
-//+:cnd:noEmit
         }
         finally
         {

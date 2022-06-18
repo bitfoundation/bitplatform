@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿//-:cnd:noEmit
+using System.Diagnostics;
 using TodoTemplate.App.Shared;
 
 namespace TodoTemplate.App.Services.Implementations;
@@ -7,7 +8,6 @@ public class TodoTemplateExceptionHandler : IExceptionHandler
 {
     public void Handle(Exception exception, IDictionary<string, object?>? parameters = null)
     {
-//-:cnd:noEmit
 #if DEBUG
         MessageBox.Show(exception.ToString(), "Error");
         Console.WriteLine(exception.ToString());
@@ -22,6 +22,5 @@ public class TodoTemplateExceptionHandler : IExceptionHandler
             MessageBox.Show("Unknown error.", "Error");
         }
 #endif
-//+:cnd:noEmit
     }
 }

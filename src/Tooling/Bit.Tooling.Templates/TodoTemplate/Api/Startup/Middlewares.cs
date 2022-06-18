@@ -1,4 +1,5 @@
-﻿using HealthChecks.UI.Client;
+﻿//-:cnd:noEmit
+using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Net.Http.Headers;
@@ -12,7 +13,6 @@ namespace TodoTemplate.Api.Startup
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-//-:cnd:noEmit
 #if BlazorWebAssembly
 
                 if (env.IsDevelopment())
@@ -84,7 +84,6 @@ namespace TodoTemplate.Api.Startup
 #if BlazorWebAssembly
                 endpoints.MapFallbackToPage("/_Host");
 #endif
-//+:cnd:noEmit
             });
         }
     }

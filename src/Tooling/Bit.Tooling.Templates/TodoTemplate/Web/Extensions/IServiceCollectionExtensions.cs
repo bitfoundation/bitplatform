@@ -1,4 +1,5 @@
-﻿using TodoTemplate.App.Services.Implementations;
+﻿//-:cnd:noEmit
+using TodoTemplate.App.Services.Implementations;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -8,7 +9,6 @@ public static class IServiceCollectionExtensions
     {
         services.AddScoped<IStateService, StateService>();
         services.AddScoped<IExceptionHandler, TodoTemplateExceptionHandler>();
-//-:cnd:noEmit
 #if BlazorServer || BlazorHybrid
 
         services.AddScoped(sp =>
@@ -22,7 +22,6 @@ public static class IServiceCollectionExtensions
         });
 
 #endif
-//+:cnd:noEmit
         services.AddTransient<TodoTemplateHttpClientHandler>();
 
         services.AddAuthorizationCore();
