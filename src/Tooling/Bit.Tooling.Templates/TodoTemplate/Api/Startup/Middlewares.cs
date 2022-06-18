@@ -50,6 +50,7 @@ namespace TodoTemplate.Api.Startup
                 }
             });
 
+            app.UseHttpResponseExceptionHandler();
             app.UseRouting();
 
             app.UseCors(options => options.WithOrigins("https://localhost:4001", "https://0.0.0.0").AllowAnyHeader().AllowAnyMethod().AllowCredentials());
