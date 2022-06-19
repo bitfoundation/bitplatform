@@ -16,16 +16,18 @@ namespace Bit.Client.Web.BlazorUI
     public partial class BitFileUpload : IDisposable
     {
         // !!! to prevent the type being removed by the linker !!!
+#pragma warning disable CA1823 // Avoid unused private fields
         private static readonly BitFileInfo __dummy_fileInfo__ = new BitFileInfo();
+#pragma warning restore CA1823 // Avoid unused private fields
 
         private const int MIN_CHUNK_SIZE = 512 * 1024; // 512 kb
         private const int MAX_CHUNK_SIZE = 10 * 1024 * 1024; // 10 mb
         private DotNetObjectReference<BitFileUpload>? dotnetObjectReference;
         private ElementReference inputFileElement;
 
-        [Inject] public IJSRuntime? JSRuntime { get; set; }
+        [Inject] public IJSRuntime JSRuntime { get; set; } = default!;
 
-        [Inject] public HttpClient? HttpClient { get; set; }
+        [Inject] public HttpClient HttpClient { get; set; } = default!;
 
 
         /// <summary>
@@ -49,7 +51,7 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public long ChunkSize { get; set; } = FileSizeHumanizer.OneMegaByte * 10;
 
         /// <summary>
-        /// Enables multi-file select & upload.
+        /// Enables multi-file select and upload.
         /// </summary>
         [Parameter] public bool IsMultiSelect { get; set; }
 
@@ -195,7 +197,7 @@ namespace Bit.Client.Web.BlazorUI
         /// <returns></returns>
         private async Task HandleOnChange()
         {
-            if (JSRuntime is null || UploadUrl is null) return;
+            if (UploadUrl is null) return;
 
             if (dotnetObjectReference != null)
             {
@@ -224,7 +226,7 @@ namespace Bit.Client.Web.BlazorUI
         /// </summary>
         private async Task Upload(int index = -1)
         {
-            if (JSRuntime is null || Files is null) return;
+            if (Files is null) return;
 
             if (UploadStatus != BitFileUploadStatus.InProgress)
             {
@@ -247,7 +249,8 @@ namespace Bit.Client.Web.BlazorUI
 
         private async Task UploadOneFile(int index)
         {
-            if (JSRuntime is null || Files is null) return;
+            if (Files is null) return;
+
             if (Files[index].Status == BitFileUploadStatus.NotAllowed) return;
 
             var uploadedSize = Files[index].TotalSizeOfUploaded;
@@ -303,7 +306,7 @@ namespace Bit.Client.Web.BlazorUI
         /// <returns></returns>
         public void RequestToPause(int index = -1)
         {
-            if (JSRuntime is null || Files is null) return;
+            if (Files is null) return;
 
             if (index < 0)
             {
@@ -317,7 +320,7 @@ namespace Bit.Client.Web.BlazorUI
 
         private async Task PauseUpload(int index)
         {
-            if (JSRuntime is null || Files is null) return;
+            if (Files is null) return;
 
             await JSRuntime.PauseFile(index);
             await UpdateStatus(BitFileUploadStatus.Paused, index);
@@ -333,7 +336,7 @@ namespace Bit.Client.Web.BlazorUI
         /// <returns></returns>
         public void RequestToCancel(int index = -1)
         {
-            if (JSRuntime is null || Files is null) return;
+            if (Files is null) return;
 
             if (index < 0)
             {
@@ -508,7 +511,7 @@ namespace Bit.Client.Web.BlazorUI
 
         private async Task CancelUpload(int index)
         {
-            if (JSRuntime is null || Files is null) return;
+            if (Files is null) return;
 
             await JSRuntime.PauseFile(index);
             await UpdateStatus(BitFileUploadStatus.Canceled, index);
@@ -517,8 +520,9 @@ namespace Bit.Client.Web.BlazorUI
 
         private async Task RemoveFile(int index)
         {
-            if (JSRuntime is null || Files is null) return;
+            if (Files is null) return;
 
+#pragma warning disable CA1031 // Do not catch general exception types
             try
             {
                 if (index < 0)
@@ -540,11 +544,12 @@ namespace Bit.Client.Web.BlazorUI
                 Files[index].Message = ex.ToString();
                 await UpdateStatus(BitFileUploadStatus.RemoveFailed, index);
             }
+#pragma warning restore CA1031 // Do not catch general exception types
         }
 
         private async Task RemoveOneFile(int index)
         {
-            if (Files is null || RemoveUrl.HasNoValue() || HttpClient is null) return;
+            if (Files is null || RemoveUrl.HasNoValue()) return;
 
             var url = AddQueryString(RemoveUrl!, "fileName", Files[index].Name);
             url = AddQueryString(url, RemoveRequestQueryStrings);

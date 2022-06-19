@@ -7,7 +7,7 @@ namespace Bit.Client.Web.BlazorUI
 {
     public partial class BitLink
     {
-        [Inject] public IJSRuntime? JSRuntime { get; set; }
+        [Inject] public IJSRuntime JSRuntime { get; set; } = default!;
 
         /// <summary>
         /// URL the link points to
@@ -46,7 +46,7 @@ namespace Bit.Client.Web.BlazorUI
 
         private async Task ScrollToFragment()
         {
-            await JSRuntime!.BitLinkScrollToFragmentOnClickEvent(Href![1..]);
+            await JSRuntime.BitLinkScrollToFragmentOnClickEvent(Href![1..]);
         }
     }
 }

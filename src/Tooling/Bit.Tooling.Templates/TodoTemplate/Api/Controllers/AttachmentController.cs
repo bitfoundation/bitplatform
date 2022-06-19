@@ -1,4 +1,5 @@
-﻿using MimeTypes;
+﻿using Bit.Tooling.SourceGenerators;
+using MimeTypes;
 using TodoTemplate.Api.Models.Account;
 using SystemFile = System.IO.File;
 
@@ -6,21 +7,14 @@ namespace TodoTemplate.Api.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class AttachmentController : ControllerBase
+public partial class AttachmentController : ControllerBase
 {
-    private readonly AppSettings _appSettings;
-    private readonly UserManager<User> _userManager;
-    private readonly IWebHostEnvironment _webHostEnvironment;
+    [AutoInject] private readonly IOptionsSnapshot<AppSettings> _appSettings;
 
-    public AttachmentController(IOptionsSnapshot<AppSettings> setting,
-        UserManager<User> userManager,
-        IWebHostEnvironment webHostEnvironment)
-    {
-        _appSettings = setting.Value;
-        _userManager = userManager;
-        _webHostEnvironment = webHostEnvironment;
-    }
-
+    [AutoInject] private readonly UserManager<User> _userManager;
+    
+    [AutoInject] private readonly IWebHostEnvironment _webHostEnvironment;
+    
     [RequestFormLimits(ValueLengthLimit = int.MaxValue, MultipartBodyLengthLimit = int.MaxValue)]
     [DisableRequestSizeLimit]
     [HttpPost("[action]")]
@@ -40,9 +34,9 @@ public class AttachmentController : ControllerBase
 
         await using var fileStream = file.OpenReadStream();
 
-        Directory.CreateDirectory(_appSettings.UserProfileImagePath);
+        Directory.CreateDirectory(_appSettings.Value.UserProfileImagePath);
 
-        var path = Path.Combine($"{_appSettings.UserProfileImagePath}\\{profileImageName}{Path.GetExtension(file.FileName)}");
+        var path = Path.Combine($"{_appSettings.Value.UserProfileImagePath}\\{profileImageName}{Path.GetExtension(file.FileName)}");
 
         await using var targetStream = SystemFile.Create(path);
 
@@ -52,7 +46,7 @@ public class AttachmentController : ControllerBase
         {
             try
             {
-                var filePath = Directory.GetFiles(_appSettings.UserProfileImagePath,
+                var filePath = Directory.GetFiles(_appSettings.Value.UserProfileImagePath,
                     $"{user.ProfileImageName}.*").FirstOrDefault();
 
                 if (filePath != null)
@@ -90,7 +84,7 @@ public class AttachmentController : ControllerBase
         if (user is null)
             throw new ResourceNotFoundException();
 
-        var filePath = Directory.GetFiles(_appSettings.UserProfileImagePath, $"{user.ProfileImageName}.*")
+        var filePath = Directory.GetFiles(_appSettings.Value.UserProfileImagePath, $"{user.ProfileImageName}.*")
             .SingleOrDefault();
 
         if (filePath is null)
@@ -114,7 +108,7 @@ public class AttachmentController : ControllerBase
         if (user is null)
             throw new ResourceNotFoundException();
 
-        var filePath = Directory.GetFiles(_appSettings.UserProfileImagePath, $"{user.ProfileImageName}.*")
+        var filePath = Directory.GetFiles(_appSettings.Value.UserProfileImagePath, $"{user.ProfileImageName}.*")
             .SingleOrDefault();
 
         if (filePath is null)

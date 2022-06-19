@@ -20,7 +20,8 @@
         <EmbeddedResource Include="Resources\*.cshtml" />
         <PackageReference Include="AutoMapper" Version="11.0.1" />
         <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="11.0.0" />
-        <PackageReference Include="Bit.Tooling.CodeAnalyzer" Version="12.0.0-pre-02" />
+        <PackageReference Include="Bit.Tooling.CodeAnalyzer" Version="12.0.0-pre-03" />
+        <PackageReference Include="Bit.Tooling.SourceGenerators" Version="12.0.0-pre-03" />
         <PackageReference Include="FluentEmail.Razor" Version="3.0.2" />
         <PackageReference Include="FluentEmail.Smtp" Version="3.0.2" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.5" />

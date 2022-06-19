@@ -31,7 +31,7 @@ namespace Bit.Client.Web.BlazorUI
         private int monthLength;
         private string focusClass = string.Empty;
 
-        [Inject] public IJSRuntime? JSRuntime { get; set; }
+        [Inject] public IJSRuntime JSRuntime { get; set; } = default!;
 
         /// <summary>
         /// Whether or not this DatePicker is open
@@ -219,7 +219,7 @@ namespace Bit.Client.Web.BlazorUI
 
         public async Task HandleClick(MouseEventArgs eventArgs)
         {
-            if (IsEnabled is false || JSRuntime is null) return;
+            if (IsEnabled is false) return;
 
             showMonthPickerAsOverlayInternal = ShowMonthPickerAsOverlay;
 
@@ -282,8 +282,9 @@ namespace Bit.Client.Web.BlazorUI
         public async Task SelectDate(int dayIndex, int weekIndex)
         {
             if (IsEnabled is false) return;
+
             if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
-            if (JSRuntime is null) return;
+
             if (CheckDayForMaxAndMinDate(dayIndex, weekIndex)) return;
 
             var currentDay = currentMonthCalendar[weekIndex, dayIndex];
@@ -529,8 +530,6 @@ namespace Bit.Client.Web.BlazorUI
 
         private async Task CloseCallout()
         {
-            if (JSRuntime is null) return;
-
             var obj = DotNetObjectReference.Create(this);
             await JSRuntime.InvokeVoidAsync("BitDatePicker.toggleDatePickerCallout", obj, UniqueId, CalloutId, OverlayId, isOpen);
             IsOpen = false;
