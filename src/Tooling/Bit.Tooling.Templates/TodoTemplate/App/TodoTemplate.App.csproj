@@ -65,11 +65,11 @@
 
     <ItemGroup>
         <!-- App Icon -->
-        <MauiIcon Include="Resources\appicon.svg" BaseSize="64,64" />
+        <MauiIcon Include="Resources\appicon.svg" ForegroundFile="Resources\appiconfg.svg" Color="#0D2960" />
 
         <!-- Splash Screen -->
-        <MauiSplashScreen Include="Resources\appiconfg.svg" Color="#0D2960" BaseSize="128,128" />
-        
+        <MauiSplashScreen Include="Resources\splashscreen.svg" Color="#0D2960" BaseSize="128,128" />
+
         <!-- Images -->
         <MauiImage Include="Resources\Images\logo.svg" BaseSize="168,208" />
 
