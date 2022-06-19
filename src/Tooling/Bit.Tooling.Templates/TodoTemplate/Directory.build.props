@@ -5,6 +5,8 @@
         <!-- You can use either BlazorServer or BlazorWebAssembly or BlazorHybrid -->
         <WebAppDeploymentType>DefaultDeploymentType</WebAppDeploymentType>
         <!-- You can choose either Static, DefaultDeploymentType, PWA or SSR -->
+
+        <!--/-:msbuild-conditional:noEmit -->
         <DefineConstants Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' ">$(DefineConstants);BlazorWebAssembly</DefineConstants>
         <DefineConstants Condition=" '$(BlazorMode)' == 'BlazorServer' ">$(DefineConstants);BlazorServer</DefineConstants>
         <DefineConstants Condition=" '$(BlazorMode)' == 'BlazorHybrid' ">$(DefineConstants);BlazorHybrid</DefineConstants>
@@ -16,7 +18,6 @@
         <DefineConstants Condition=" '$(TargetFramework)' == 'net6.0-ios' ">$(DefineConstants);iOS</DefineConstants>
         <DefineConstants Condition=" '$(TargetFramework)' == 'net6.0-windows10.0.19041' ">$(DefineConstants);Windows</DefineConstants>
         <DefineConstants Condition=" '$(TargetFramework)' == 'net6.0-maccatalyst' ">$(DefineConstants);Mac</DefineConstants>
-        
         <!--/+:msbuild-conditional:noEmit -->
 
         <LangVersion>preview</LangVersion>

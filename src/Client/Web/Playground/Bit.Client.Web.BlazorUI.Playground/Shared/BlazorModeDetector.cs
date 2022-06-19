@@ -23,7 +23,6 @@
         {
             get
             {
-//-:cnd:noEmit
 #if BlazorWebAssembly
                 return BlazorMode.BlazorWebAssembly;
 #elif BlazorHybrid
@@ -31,7 +30,6 @@
 #else
                 return BlazorMode.BlazorServer;
 #endif
-//+:cnd:noEmit
             }
         }
     }

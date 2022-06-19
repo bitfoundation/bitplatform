@@ -1,5 +1,4 @@
-﻿//-:cnd:noEmit
-#if BlazorServer
+﻿#if BlazorServer
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Hosting;
 
@@ -34,4 +33,3 @@ public class Middlewares
 }
 
 #endif
-//+:cnd:noEmit

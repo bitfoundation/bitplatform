@@ -24,7 +24,11 @@
         <PackageReference Include="FluentEmail.Razor" Version="3.0.2" />
         <PackageReference Include="FluentEmail.Smtp" Version="3.0.2" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.5" />
+        
+        <!--/-:msbuild-conditional:noEmit -->
         <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="6.0.5" />
+        <!--/+:msbuild-conditional:noEmit -->
+        
         <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="6.0.5" />
         <PackageReference Include="Microsoft.AspNetCore.OData" Version="8.0.10" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.5">
