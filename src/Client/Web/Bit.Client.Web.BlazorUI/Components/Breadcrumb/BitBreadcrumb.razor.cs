@@ -17,12 +17,14 @@ namespace Bit.Client.Web.BlazorUI
     {
         protected override string RootElementClass => "bit-brc";
 
-        [Inject] public IJSRuntime? JSRuntime { get; set; }
+        [Inject] public IJSRuntime JSRuntime { get; set; } = default!;
 
         /// <summary>
         /// Collection of breadcrumbs to render
         /// </summary>
-        [Parameter] public List<BitBreadcrumbItem> Items { get; set; } = new();
+#pragma warning disable CA2227 // Collection properties should be read only
+        [Parameter] public IList<BitBreadcrumbItem> Items { get; set; } = new List<BitBreadcrumbItem>();
+#pragma warning restore CA2227 // Collection properties should be read only
 
         /// <summary>
         /// The maximum number of breadcrumbs to display before coalescing.
@@ -55,8 +57,8 @@ namespace Bit.Client.Web.BlazorUI
         public string OverflowDropDownMenuCalloutId { get; set; } = string.Empty;
         public string OverflowDropDownMenuOverlayId { get; set; } = string.Empty;
 
-        private List<BitBreadcrumbItem> _overflowItems = new();
-        private List<BitBreadcrumbItem> _itemsToShowInBreadcrumb = new();
+        private IList<BitBreadcrumbItem> _overflowItems = new List<BitBreadcrumbItem>();
+        private IList<BitBreadcrumbItem> _itemsToShowInBreadcrumb = new List<BitBreadcrumbItem>();
         private bool isOpen;
 
         protected async override Task OnParametersSetAsync()
@@ -73,8 +75,6 @@ namespace Bit.Client.Web.BlazorUI
 
         private async Task CloseCallout()
         {
-            if (JSRuntime is null) return;
-
             var obj = DotNetObjectReference.Create(this);
             await JSRuntime.InvokeVoidAsync("BitOverflowDropDownMenu.toggleOverflowDropDownMenuCallout", obj, BreadcrumbItemsWrapperId, OverflowDropDownId, OverflowDropDownMenuCalloutId, OverflowDropDownMenuOverlayId, isOpen);
             isOpen = false;
@@ -90,7 +90,7 @@ namespace Bit.Client.Web.BlazorUI
             isOpen = !isOpen;
         }
 
-        private List<BitBreadcrumbItem> GetBreadcrumbItemsToShow()
+        private IList<BitBreadcrumbItem> GetBreadcrumbItemsToShow()
         {
             if (MaxDisplayedItems == 0 || MaxDisplayedItems >= Items.Count)
             {

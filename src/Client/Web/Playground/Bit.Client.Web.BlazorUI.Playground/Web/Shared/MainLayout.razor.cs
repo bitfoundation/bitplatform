@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Components.Routing;
 
 namespace Bit.Client.Web.BlazorUI.Playground.Web.Shared
 {
-    public partial class MainLayout : IAsyncDisposable
+    public partial class MainLayout : IDisposable
     {
         [Inject]
         public NavigationManager NavigationManager { get; set; }
@@ -25,7 +25,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Shared
             StateHasChanged();
         }
 
-        public async ValueTask DisposeAsync()
+        public void Dispose()
         {
             NavigationManager.LocationChanged -= OnLocationChanged;
         }

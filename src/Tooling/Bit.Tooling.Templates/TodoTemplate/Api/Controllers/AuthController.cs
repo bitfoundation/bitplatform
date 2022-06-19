@@ -5,44 +5,27 @@ using TodoTemplate.Api.Resources;
 using TodoTemplate.Api.Models.Emailing;
 using Microsoft.AspNetCore.Hosting.Server;
 using System.Web;
+using Bit.Tooling.SourceGenerators;
 
 namespace TodoTemplate.Api.Controllers;
 
 [Route("api/[controller]")]
 [ApiController, AllowAnonymous]
-public class AuthController : ControllerBase
+public partial class AuthController : ControllerBase
 {
-    private readonly UserManager<User> _userManager;
+    [AutoInject] private readonly UserManager<User> _userManager;
 
-    private readonly IJwtService _jwtService;
+    [AutoInject] private readonly IJwtService _jwtService;
 
-    private readonly IMapper _mapper;
+    [AutoInject] private readonly IMapper _mapper;
 
-    private readonly SignInManager<User> _signInManager;
+    [AutoInject] private readonly SignInManager<User> _signInManager;
 
-    private readonly AppSettings _appSettings;
+    [AutoInject] private readonly IOptionsSnapshot<AppSettings> _appSettings;
 
-    private readonly IFluentEmail _fluentEmail;
+    [AutoInject] private readonly IFluentEmail _fluentEmail;
 
-    private readonly IServer _server;
-
-    public AuthController(SignInManager<User> signInManager,
-        UserManager<User> userManager,
-        IJwtService jwtService,
-        IMapper mapper,
-        IOptionsSnapshot<AppSettings> setting,
-        IFluentEmail fluentEmail,
-        IServer server
-        )
-    {
-        _userManager = userManager;
-        _jwtService = jwtService;
-        _mapper = mapper;
-        _signInManager = signInManager;
-        _appSettings = setting.Value;
-        _fluentEmail = fluentEmail;
-        _server = server;
-    }
+    [AutoInject] private readonly IServer _server;
 
     [HttpPost("[action]")]
     public async Task SignUp(SignUpRequestDto signUpRequest, CancellationToken cancellationToken)
@@ -90,7 +73,7 @@ public class AuthController : ControllerBase
 
     private async Task SendConfirmationEmail(SendConfirmationEmailRequestDto sendConfirmationEmailRequest, User user, CancellationToken cancellationToken)
     {
-        if ((DateTimeOffset.Now - user.ConfirmationEmailRequestedOn) < _appSettings.IdentitySettings.ConfirmationEmailResendDelay)
+        if ((DateTimeOffset.Now - user.ConfirmationEmailRequestedOn) < _appSettings.Value.IdentitySettings.ConfirmationEmailResendDelay)
             throw new TooManyRequestsExceptions(nameof(ErrorStrings.WaitForConfirmationEmailResendDelay));
 
         var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
@@ -107,12 +90,11 @@ public class AuthController : ControllerBase
             .To(user.Email, user.DisplayName)
             .Subject(EmailStrings.ConfirmationEmailSubject)
             .UsingTemplateFromEmbedded("TodoTemplate.Api.Resources.EmailConfirmation.cshtml",
-                                    new EmailConfirmationModel
-                                    {
-                                        ConfirmationLink = confirmationLink,
-                                        HostUri = _server.GetHostUri()
-                                    },
-                                    assembly)
+                new EmailConfirmationModel
+                {
+                    ConfirmationLink = confirmationLink,
+                    HostUri = new Uri($"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}{HttpContext.Request.PathBase}")
+                },assembly)
             .SendAsync(cancellationToken);
 
         user.ConfirmationEmailRequestedOn = DateTimeOffset.Now;
@@ -129,7 +111,7 @@ public class AuthController : ControllerBase
     {
         var user = await _userManager.FindByEmailAsync(sendResetPasswordEmailRequest.Email);
 
-        if ((DateTimeOffset.Now - user.ResetPasswordEmailRequestedOn) < _appSettings.IdentitySettings.ResetPasswordEmailResendDelay)
+        if ((DateTimeOffset.Now - user.ResetPasswordEmailRequestedOn) < _appSettings.Value.IdentitySettings.ResetPasswordEmailResendDelay)
             throw new TooManyRequestsExceptions(nameof(ErrorStrings.WaitForResetPasswordEmailResendDelay));
 
         if (user is null)
@@ -140,7 +122,7 @@ public class AuthController : ControllerBase
         var resetPasswordLink = $"reset-password?email={user.Email}&token={HttpUtility.UrlEncode(token)}";
 
 #if BlazorServer
-        resetPasswordLink = $"{_appSettings.WebServerAddress}{resetPasswordLink}";
+        resetPasswordLink = $"{_appSettings.Value.WebServerAddress}{resetPasswordLink}";
 #else
         resetPasswordLink = $"{_server.GetHostUri()}{resetPasswordLink}";
 #endif
@@ -180,7 +162,7 @@ public class AuthController : ControllerBase
         string url = $"email-confirmation?email={email}&email-confirmed={emailConfirmed}";
 
 #if BlazorServer
-        url = $"{_appSettings.WebServerAddress}{url}";
+        url = $"{_appSettings.Value.WebServerAddress}{url}";
 #else
         url = $"/{url}";
 #endif
