@@ -9,6 +9,11 @@ namespace Bit.Client.Web.BlazorUI
 {
     public partial class BitSlider
     {
+        private bool ValueHasBeenSet;
+        private bool UpperValueHasBeenSet;
+        private bool LowerValueHasBeenSet;
+        private bool RangeValueHasBeenSet;
+
         private double? firstInputValue;
         private double? secondInputValue;
         private double? upperValue;
@@ -21,16 +26,11 @@ namespace Bit.Client.Web.BlazorUI
         private int inputHeight;
         private readonly string sliderBoxId = $"Slider{Guid.NewGuid()}";
 
-        private bool ValueHasBeenSet;
-        private bool UpperValueHasBeenSet;
-        private bool LowerValueHasBeenSet;
-        private bool RangeValueHasBeenSet;
-
         private ElementReference ContainerRef { get; set; }
         private ElementReference TitleRef { get; set; }
         private ElementReference ValueLabelRef { get; set; }
 
-        [Inject] public IJSRuntime? JSRuntime { get; set; }
+        [Inject] public IJSRuntime JSRuntime { get; set; } = default!;
 
         /// <summary>
         /// The initial upper value of the Slider is ranged is true
@@ -267,23 +267,23 @@ namespace Bit.Client.Web.BlazorUI
             {
                 if (IsRanged)
                 {
-                    inputHeight = await JSRuntime!.GetClientHeight(RootElement);
+                    inputHeight = await JSRuntime.GetClientHeight(RootElement);
 
                     if (Label.HasValue())
                     {
-                        var titleHeight = await JSRuntime!.GetClientHeight(TitleRef);
+                        var titleHeight = await JSRuntime.GetClientHeight(TitleRef);
                         inputHeight -= titleHeight;
                     }
 
                     if (ShowValue)
                     {
-                        var valueLabelHeight = await JSRuntime!.GetClientHeight(ValueLabelRef);
+                        var valueLabelHeight = await JSRuntime.GetClientHeight(ValueLabelRef);
                         inputHeight -= (valueLabelHeight * 2);
                     }
                 }
                 else
                 {
-                    inputHeight = await JSRuntime!.GetClientHeight(ContainerRef);
+                    inputHeight = await JSRuntime.GetClientHeight(ContainerRef);
                 }
                 FillSlider();
             }

@@ -18,7 +18,7 @@ namespace Bit.Client.Web.BlazorUI
         private ValidationMessageStore? _parsingValidationMessagesStore;
         private readonly EventHandler<ValidationStateChangedEventArgs> _validationStateChangedHandler;
 
-        protected event EventHandler OnCurrentValueChanged;
+        protected event EventHandler OnCurrentValueChanged = default!;
 
         [CascadingParameter] private EditContext? CascadedEditContext { get; set; }
 

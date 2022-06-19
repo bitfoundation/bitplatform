@@ -5,8 +5,9 @@ namespace Bit.Client.Web.BlazorUI
 {
     public partial class BitCarouselItem
     {
-        private bool isCurrent;
         private bool IsCurrentHasBeenSet;
+
+        private bool isCurrent;
         internal int Index;
 
         [Parameter]

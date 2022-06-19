@@ -506,7 +506,7 @@ namespace Bit.Client.Web.BlazorUI
 
         private TValue? GetGenericValue(double? value) => value.HasValue ? (TValue)Convert.ChangeType(value, typeOfValue, CultureInfo.InvariantCulture) : default;
        
-        private double GetDoubleValueOrDefault(TValue? value, double defaultValue = 0d) => value is null ? defaultValue : (double)Convert.ChangeType(value, typeof(double), CultureInfo.InvariantCulture);
+        private static double GetDoubleValueOrDefault(TValue? value, double defaultValue = 0d) => value is null ? defaultValue : (double)Convert.ChangeType(value, typeof(double), CultureInfo.InvariantCulture);
 
         private double GetMaxValue()
         {
@@ -623,7 +623,7 @@ namespace Bit.Client.Web.BlazorUI
         }
 
         /// <inheritdoc />
-        protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TValue result, [NotNullWhen(false)] out string? validationErrorMessage)
+        protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TValue? result, [NotNullWhen(false)] out string? validationErrorMessage)
         {
             if (typeOfValue == typeof(byte))
             {

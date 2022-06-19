@@ -11,12 +11,11 @@ namespace Bit.Client.Web.BlazorUI
 {
     public partial class BitNav : IDisposable
     {
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-        [Inject] private NavigationManager NavigationManager { get; set; }
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-        
         private bool SelectedKeyHasBeenSet;
+
         private string? selectedKey;
+
+        [Inject] private NavigationManager NavigationManager { get; set; } = default!;
 
         /// <summary>
         /// Determines how the navigation will be handled
