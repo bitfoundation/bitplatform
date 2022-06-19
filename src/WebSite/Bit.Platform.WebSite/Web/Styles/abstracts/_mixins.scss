@@ -2,47 +2,7 @@
 @import '_media-queries.scss';
 @import '_colors.scss';
 
-@mixin SecondaryBtn {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: rem(213px);
-    height: rem(56px);
-    border-radius: rem(4px);
-    background-color: $White;
-    border: rem(2px) solid $B2Color;
-    box-sizing: border-box;
-    font-weight: 600;
-    font-size: rem(18px);
-    line-height: rem(32px);
-    color: $B2Color;
-    cursor: pointer;
-
-    &:hover {
-        background-color: $Gray5;
-        border-color: $B3Color;
-        color: $B3Color;
-    }
-
-    @include lg {
-        width: rem(185px);
-        height: rem(48px);
-        font-size: rem(16px);
-        line-height: rem(24px);
-    }
-
-    @include lt-lg {
-        width: rem(146px);
-        height: rem(40px);
-        font-size: rem(12px);
-        line-height: rem(16px);
-    }
-
-    @include sm {
-        width: rem(118px);
-    }
-}
-
+/*---------------defualt sizes----------------*/
 @mixin subtitle1 {
     font-weight: 600;
     font-size: rem(22px);
@@ -67,7 +27,6 @@
     line-height: rem(32px);
 }
 
-
 @mixin body1 {
     font-weight: 400;
     font-size: rem(18px);
@@ -84,4 +43,42 @@
     font-weight: 400;
     font-size: rem(14px);
     line-height: rem(32px);
+}
+
+@mixin card {
+    border-radius: rem(20px);
+    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.15);
+    background-color: $White;
+    box-sizing: border-box;
+}
+
+@mixin page-container {
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+@mixin page-section {
+    display: flex;
+    width: 100%;
+    max-width: rem(1232px);
+    box-sizing: border-box;
+    padding-left: rem(16px);
+    padding-right: rem(16px);
+
+    @include lg {
+        max-width: rem(1040px);
+    }
+
+    @include md {
+        max-width: rem(704px);
+    }
+
+    @include sm {
+        max-width: 100%;
+    }
 }
