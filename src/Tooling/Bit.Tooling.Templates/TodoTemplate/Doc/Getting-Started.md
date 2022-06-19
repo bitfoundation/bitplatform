@@ -67,11 +67,15 @@ To switch to each mode, easily change value of   `<BlazorMode>` on **Directory.b
       <BlazorMode>BlazorServer</BlazorMode>
        <!-- You can use either BlazorServer or BlazorWebAssembly or BlazorHybrid -->
 
-**Note**: for **BlazorServer** mode you need multi startup for both api & web projects.
-
-**Note**: for **blazorWebAssembly** mode only set as startup Api project and run it.
-
-**Note**: for **BlazorHybrid** mode you need multi startup for both api & app projects.
+### BlazorServer
+- Needs multi startup for both api & web projects.
+- Use `<Project Sdk="Microsoft.NET.Sdk.Web">` in ?.Web.csproj  file. 
+### blazorWebAssembly
+- Needs set as startup Api project and run it.
+- Change `<Project Sdk="Microsoft.NET.Sdk.Web">` line code in ?.Web.csproj  file to `<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">`
+### BlazorHybrid
+- Needs multi startup for both api & app projects.
+- Use ?.App project instead of ?.Web.
 ## WebApp Deployment Type
 Bit Supports several modes for WebApp deployment. This concept is related to performance. The fastest way to serve a page is to render page statically then send, and, the slowest way to serve a page is to serve an "interactive Blazor" server page (with a live virtual DOM synchronized via SignalR websockets). 
 
