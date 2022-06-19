@@ -45,3 +45,14 @@ function highlightSnippet() {
         hljs.highlightBlock(el);
     });
 }
+
+function ChangeHeaderByScrolling(element: any) {
+    window.onscroll = function (event) {
+        if (document.documentElement.scrollTop >= 100) {
+            element.classList.add("blue-header");
+        }
+        else {
+            element.classList.remove("blue-header");
+        }
+    };
+}

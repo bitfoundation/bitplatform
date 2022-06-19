@@ -1,8 +1,9 @@
 ﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components;
 
 namespace Microsoft.JSInterop
 {
-    public static class PlaygroundJsRuntimeExtension
+    public static class WebSiteJsRuntimeExtension
     {
         public static async Task SetToggleBodyOverflow(this IJSRuntime jsRuntime, bool isNavOpen)
         {
@@ -17,6 +18,11 @@ namespace Microsoft.JSInterop
         public static async Task CopyToClipboard(this IJSRuntime jsRuntime, string codeSampleContentForCopy)
         {
             await jsRuntime.InvokeVoidAsync("copyToClipboard", codeSampleContentForCopy);
+        }
+
+        public static async Task ChangeHeaderByScrolling(this IJSRuntime jsRuntime, ElementReference element)
+        {
+            await jsRuntime.InvokeVoidAsync("ChangeHeaderByScrolling", element);
         }
     }
 }
