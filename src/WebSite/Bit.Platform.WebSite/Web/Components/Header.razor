@@ -1,10 +1,14 @@
 ﻿<header class="main-header">
-    <div class="header-main-container">
-        <div class="header-content-container">
-            <a class="header-logo" href="/"></a>
-        </div>
-        <div class="header-content-container">
-            <a class="github-btn" target="_blank" href="https://github.com/bitfoundation/bitplatform"></a>
+    <div class="header-cover" @ref=HeaderElement></div>
+    <div class="header-container">
+        <div class="header-section">
+            <a class="header-logo" href="@Urls.HomePage"></a>
+            <div class="row">
+                <a class="header-link @(CurrentUrl == Urls.HomePage ? "header-link--active" : "")" href="@Urls.HomePage">Home</a>
+                <a class="header-link @(CurrentUrl != Urls.HomePage ? "header-link--active" : "")" href="@Urls.Projects">Projects</a>
+                <a class="github-btn" target="_blank" href="@Urls.Github"></a>
+                <BitIconButton Class="header-menu-btn" IconName=BitIconName.CollapseMenu />
+            </div>
         </div>
     </div>
 </header>
