@@ -64,7 +64,7 @@
                    disabled=@(!IsEnabled)
                    readonly=@IsReadonly
                    required=@IsRequired
-                   type="@ElementType.GetDisplayName(toLowerDisplayName: true)"
+                   type="@InputType"
                    value="@CurrentValue"
                    placeholder="@Placeholder"
                    maxlength="@MaxLength"
@@ -90,8 +90,7 @@
                     @onclick="ToggleRevealPassword"
                     aria-pressed="@(ElementType == BitTextFieldType.Text ? "true" : "false")">
                     <span>
-                        <i class="bit-icon bit-icon--@(ElementType == BitTextFieldType.Text ? "Hide" : "RedEye")"
-                       aria-hidden="true"></i>
+                        <i class="bit-icon bit-icon--@(ElementType == BitTextFieldType.Text ? "Hide" : "RedEye")" aria-hidden="true" />
                     </span>
                 </button>
             }
