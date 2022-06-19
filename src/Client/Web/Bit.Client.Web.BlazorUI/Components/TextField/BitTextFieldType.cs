@@ -15,6 +15,21 @@
         /// <summary>
         /// The TextField characters are number
         /// </summary>
-        Number
+        Number,
+
+        /// <summary>
+        /// The TextField act as an email input
+        /// </summary>
+        Email,
+
+        /// <summary>
+        /// The TextField act as a tel input
+        /// </summary>
+        Tel,
+
+        /// <summary>
+        /// The TextField act as a url input
+        /// </summary>
+        Url
     }
 }
