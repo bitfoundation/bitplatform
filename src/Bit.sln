@@ -73,6 +73,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{8C9F
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WebSite", "WebSite", "{293480D2-1505-4C9F-B2B9-D78CA5573866}"
+	ProjectSection(SolutionItems) = preProject
+		WebSite\Directory.build.props = WebSite\Directory.build.props
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Platform.WebSite.Api", "WebSite\Bit.Platform.WebSite\Api\Bit.Platform.WebSite.Api.csproj", "{3F303F1E-CB6D-4EA4-B748-A3CDA8E1235A}"
 EndProject
