@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 
@@ -15,25 +16,18 @@ namespace Bit.Client.Web.BlazorUI
 
         private readonly Regex MULTIPLE_WHITESPACES_REGEX = new(@"\s+");
 
-        private string size;
+        private const int PRESENCE_MAX_SIZE = 40;
+        private const int COIN_SIZE_PRESENCE_SCALE_FACTOR = 3;
 
+        private string? size;
+        private string? presenceFontSize;
         private string? presenceHeightWidth;
 
-        private string? presenceFontSize;
-
-        private const int coinSizeFontScaleFactor = 6;
-
-        private const int coinSizePresenceScaleFactor = 3;
-
-        private const int presenceMaxSize = 40;
-
-        private const int presenceFontMaxSize = 32;
-
-        public bool RenderIcon { get; set; }
-        public string? PresenceStyle { get; set; }
-        public string? IconStyle { get; set; }
-        public string? PresenceAfterStyle { get; set; }
-        public string? PresenceBeforeStyle { get; set; }
+        private bool RenderIcon { get; set; }
+        private string? IconStyle { get; set; }
+        private string? PresenceStyle { get; set; }
+        private string? PresenceAfterStyle { get; set; }
+        private string? PresenceBeforeStyle { get; set; }
 
         /// <summary>
         /// Whether to not render persona details, and just render the persona image/initials.
@@ -58,7 +52,9 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// Url to the image to use, should be a square aspect ratio and big enough to fit in the image area.
         /// </summary>
+#pragma warning disable CA1056 // URI-like properties should not be strings
         [Parameter] public string? ImageUrl { get; set; }
+#pragma warning restore CA1056 // URI-like properties should not be strings
 
         /// <summary>
         /// Presence title to be shown as a tooltip on hover over the presence icon.
@@ -136,13 +132,13 @@ namespace Bit.Client.Web.BlazorUI
         {
             if (CoinSize != -1)
             {
-                presenceHeightWidth = CoinSize / coinSizePresenceScaleFactor < presenceMaxSize
-                    ? CoinSize / coinSizePresenceScaleFactor + "px"
-                    : presenceMaxSize + "px";
+                presenceHeightWidth = CoinSize / COIN_SIZE_PRESENCE_SCALE_FACTOR < PRESENCE_MAX_SIZE
+                    ? CoinSize / COIN_SIZE_PRESENCE_SCALE_FACTOR + "px"
+                    : PRESENCE_MAX_SIZE + "px";
 
-                presenceFontSize = CoinSize / coinSizePresenceScaleFactor < presenceMaxSize
-                    ? CoinSize / coinSizePresenceScaleFactor + "px"
-                    : presenceMaxSize + "px";
+                presenceFontSize = CoinSize / COIN_SIZE_PRESENCE_SCALE_FACTOR < PRESENCE_MAX_SIZE
+                    ? CoinSize / COIN_SIZE_PRESENCE_SCALE_FACTOR + "px"
+                    : PRESENCE_MAX_SIZE + "px";
             }
 
             RenderIcon = !(Size == BitPersonaSize.Size8 || Size == BitPersonaSize.Size24 || Size == BitPersonaSize.Size32) && (CoinSize == -1 || CoinSize > 32);
@@ -157,10 +153,10 @@ namespace Bit.Client.Web.BlazorUI
         {
             ClassBuilder.Register(() => Size.HasValue() ? $"bit-prs-{Size}" : string.Empty);
 
-            ClassBuilder.Register(() => Presence != BitPersonaPresenceStatus.None ? $"bit-prs-{Presence.ToString().ToLower()}" : string.Empty);
+            ClassBuilder.Register(() => Presence != BitPersonaPresenceStatus.None ? $"bit-prs-{Presence.ToString().ToLower(Thread.CurrentThread.CurrentCulture)}" : string.Empty);
         }
 
-        private string DetermineIcon(BitPersonaPresenceStatus presence, bool isOutofOffice)
+        private static string DetermineIcon(BitPersonaPresenceStatus presence, bool isOutofOffice)
         {
             if (presence == BitPersonaPresenceStatus.None)
                 return string.Empty;
@@ -213,24 +209,24 @@ namespace Bit.Client.Web.BlazorUI
 
             if (splits.Length == 2)
             {
-                initials.Append(splits[0].ToUpper()[0]);
-                initials.Append(splits[1].ToUpper()[0]);
+                initials.Append(splits[0].ToUpper(Thread.CurrentThread.CurrentCulture)[0]);
+                initials.Append(splits[1].ToUpper(Thread.CurrentThread.CurrentCulture)[0]);
             }
             else if (splits.Length == 3)
             {
-                initials.Append(splits[0].ToUpper()[0]);
-                initials.Append(splits[2].ToUpper()[0]);
+                initials.Append(splits[0].ToUpper(Thread.CurrentThread.CurrentCulture)[0]);
+                initials.Append(splits[2].ToUpper(Thread.CurrentThread.CurrentCulture)[0]);
             }
             else if (splits.Length != 0)
             {
-                initials.Append(splits[0].ToUpper()[0]);
+                initials.Append(splits[0].ToUpper(Thread.CurrentThread.CurrentCulture)[0]);
             }
 
             if (isRtl && initials.Length > 1)
             {
                 StringBuilder returnValue = new();
-                returnValue.Append(initials[1].ToString());
-                returnValue.Append(initials[0].ToString());
+                returnValue.Append(initials[1].ToString(Thread.CurrentThread.CurrentCulture));
+                returnValue.Append(initials[0].ToString(Thread.CurrentThread.CurrentCulture));
             }
 
             return initials.ToString();

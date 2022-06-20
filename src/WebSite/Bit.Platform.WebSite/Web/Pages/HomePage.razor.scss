@@ -1,0 +1,33 @@
+﻿@import '../Styles/_shared.scss';
+
+.page-container {
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%;
+    padding: 0 rem(16px);
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.page-section {
+    display: flex;
+    width: 100%;
+    max-width: rem(1232px);
+    box-sizing: border-box;
+
+    @include lg {
+        max-width: rem(1160px);
+    }
+
+    @include md {
+        max-width: rem(960px);
+    }
+
+    @include sm {
+        max-width: 100%;
+    }
+}
+
+

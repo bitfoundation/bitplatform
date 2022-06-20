@@ -80,6 +80,10 @@
     }
 }
 
+.form-input-container--no-margin {
+    margin-bottom: 0;
+}
+
 .form-input-error, .validation-message {
     font-size: rem(12px);
     line-height: rem(16px);

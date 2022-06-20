@@ -21,7 +21,7 @@ namespace Bit.Client.Web.BlazorUI
         private bool isValuesChanged;
         private List<BitDropDownItem> NormalDropDownItems = new();
 
-        [Inject] public IJSRuntime? JSRuntime { get; set; }
+        [Inject] public IJSRuntime JSRuntime { get; set; } = default!;
 
         /// <summary>
         /// Whether multiple items are allowed to be selected
@@ -236,8 +236,6 @@ namespace Bit.Client.Web.BlazorUI
 
         private async Task CloseCallout()
         {
-            if (JSRuntime is null) return;
-
             var obj = DotNetObjectReference.Create(this);
             await JSRuntime.InvokeVoidAsync("BitDropDown.toggleDropDownCallout", obj, UniqueId, DropDownId, DropDownCalloutId, DropDownOverlayId, isOpen);
             IsOpen = false;
@@ -246,7 +244,7 @@ namespace Bit.Client.Web.BlazorUI
 
         private async Task HandleClick(MouseEventArgs e)
         {
-            if (IsEnabled is false || JSRuntime is null) return;
+            if (IsEnabled is false) return;
 
             var obj = DotNetObjectReference.Create(this);
             await JSRuntime.InvokeVoidAsync("BitDropDown.toggleDropDownCallout", obj, UniqueId, DropDownId, DropDownCalloutId, DropDownOverlayId, isOpen);
@@ -302,8 +300,6 @@ namespace Bit.Client.Web.BlazorUI
             }
             else
             {
-                if (JSRuntime is null) return;
-
                 var oldSelectedItem = Items.SingleOrDefault(i => i.IsSelected)!;
                 var isSameItemSelected = oldSelectedItem == selectedItem;
                 if (oldSelectedItem is not null) oldSelectedItem.IsSelected = false;

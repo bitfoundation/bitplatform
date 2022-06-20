@@ -71,14 +71,14 @@ public class AutoInjectSourceGenerator : ISourceGenerator
         if (isInheritIComponent)
             return true;
 
-        List<string> classFilePaths = @class.Locations
+        var classFilePaths = @class.Locations
             .Where(o => o.SourceTree != null)
-            .Select(o => o.SourceTree.FilePath)
+            .Select(o => o.SourceTree?.FilePath)
             .ToList();
 
         string razorFileName = $"{@class.Name}.razor";
         
-        foreach (string path in classFilePaths)
+        foreach (var path in classFilePaths)
         {
             string directoryPath = Path.GetDirectoryName(path) ?? "";
             string filePath = Path.Combine(directoryPath, razorFileName);

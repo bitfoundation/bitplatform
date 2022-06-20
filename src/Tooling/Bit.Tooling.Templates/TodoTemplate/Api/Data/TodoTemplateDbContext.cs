@@ -19,6 +19,30 @@ public class TodoTemplateDbContext : IdentityDbContext<User, Role, int>
         ConfigIdentityTables(builder);
     }
 
+    public override int SaveChanges(bool acceptAllChangesOnSuccess)
+    {
+        try
+        {
+            return base.SaveChanges(acceptAllChangesOnSuccess);
+        }
+        catch (DbUpdateConcurrencyException exception)
+        {
+            throw new ConflictException(nameof(ErrorStrings.UpdateConcurrencyException), exception);
+        }
+    }
+    
+    public override async Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = new CancellationToken())
+    {
+        try
+        {
+            return await base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+        }
+        catch (DbUpdateConcurrencyException exception)
+        {
+            throw new ConflictException(nameof(ErrorStrings.UpdateConcurrencyException), exception);
+        }
+    }
+    
     public DbSet<TodoItem> TodoItems { get; set; }
 
     private void ConfigIdentityTables(ModelBuilder builder)
