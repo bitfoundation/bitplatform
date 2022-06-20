@@ -50,7 +50,10 @@
                 Sign up
             </h1>
             <div class="form-input-container">
-                <BitTextField Label="Email" @bind-Value="SignUpModel.UserName" Placeholder="Email" />
+                <BitTextField Label="Email" 
+                              Placeholder="Email" 
+                              Type="BitTextFieldType.Email"
+                              @bind-Value="SignUpModel.UserName" />
                 <ValidationMessage For="@(() => SignUpModel.UserName)" />
             </div>
             <div class="form-input-container">
