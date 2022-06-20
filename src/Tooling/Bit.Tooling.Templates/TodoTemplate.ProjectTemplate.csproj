@@ -24,7 +24,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Content Include="TodoTemplate\**" Exclude="TodoTemplate\**\bin\**\*;TodoTemplate\**\obj\**\*;" />
+        <Content Include="TodoTemplate\**" Exclude="TodoTemplate\TodoTemplate.sln;TodoTemplate\.vs\**;TodoTemplate\**\bin\**\*;TodoTemplate\**\obj\**\*; " />
         <Compile Remove="**\*" />
     </ItemGroup>
 
