@@ -1,21 +1,16 @@
-﻿using TodoTemplate.Api.Models.Account;
+﻿using Bit.Tooling.SourceGenerators;
+using TodoTemplate.Api.Models.Account;
 using TodoTemplate.Shared.Dtos.Account;
 
 namespace TodoTemplate.Api.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class UserController : ControllerBase
+public partial class UserController : ControllerBase
 {
-    private readonly UserManager<User> _userManager;
+    [AutoInject] private readonly UserManager<User> _userManager;
 
-    private readonly IMapper _mapper;
-
-    public UserController(UserManager<User> userManager, IMapper mapper)
-    {
-        _userManager = userManager;
-        _mapper = mapper;
-    }
+    [AutoInject] private readonly IMapper _mapper;
 
     [HttpGet("[action]")]
     public async Task<UserDto> GetCurrentUser(CancellationToken cancellationToken)

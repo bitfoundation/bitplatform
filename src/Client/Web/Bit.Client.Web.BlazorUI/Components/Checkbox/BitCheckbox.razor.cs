@@ -14,7 +14,7 @@ namespace Bit.Client.Web.BlazorUI
         private bool IsIndeterminateHasBeenSet;
         private BitCheckBoxSide boxSide;
 
-        [Inject] public IJSRuntime? JSRuntime { get; set; }
+        [Inject] public IJSRuntime JSRuntime { get; set; } = default!;
 
         public ElementReference CheckboxElement { get; set; }
 
@@ -96,7 +96,7 @@ namespace Bit.Client.Web.BlazorUI
             {
                 if (value == isIndeterminate) return;
                 isIndeterminate = value;
-                _ = JSRuntime?.SetProperty(CheckboxElement, "indeterminate", value);
+                _ = JSRuntime.SetProperty(CheckboxElement, "indeterminate", value);
                 ClassBuilder.Reset();
                 _ = IsIndeterminateChanged.InvokeAsync(value);
             }
@@ -157,7 +157,7 @@ namespace Bit.Client.Web.BlazorUI
         {
             if (firstRender)
             {
-                _ = JSRuntime?.SetProperty(CheckboxElement, "indeterminate", IsIndeterminate);
+                _ = JSRuntime.SetProperty(CheckboxElement, "indeterminate", IsIndeterminate);
             }
 
             await base.OnAfterRenderAsync(firstRender);

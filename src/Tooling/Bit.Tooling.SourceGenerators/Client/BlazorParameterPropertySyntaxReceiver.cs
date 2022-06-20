@@ -8,7 +8,7 @@ namespace Bit.Tooling.SourceGenerators
 {
     public class BlazorParameterPropertySyntaxReceiver : ISyntaxContextReceiver
     {
-        public List<IPropertySymbol> Properties { get; } = new List<IPropertySymbol>();
+        public IList<IPropertySymbol> Properties { get; } = new List<IPropertySymbol>();
 
         public void OnVisitSyntaxNode(GeneratorSyntaxContext context)
         {
@@ -16,19 +16,24 @@ namespace Bit.Tooling.SourceGenerators
                     && propertyDeclarationSyntax.AttributeLists.Any())
             {
 
-                ClassDeclarationSyntax classDeclarationSyntax = (ClassDeclarationSyntax)propertyDeclarationSyntax.Parent;
+                var classDeclarationSyntax = (ClassDeclarationSyntax?)propertyDeclarationSyntax.Parent;
 
-                if (!classDeclarationSyntax.Modifiers.Any(k => k.IsKind(SyntaxKind.PartialKeyword)))
+                if (classDeclarationSyntax?.Modifiers.Any(k => k.IsKind(SyntaxKind.PartialKeyword)) is false)
                     return;
 
-                IPropertySymbol propertySymbol = context.SemanticModel.GetDeclaredSymbol(propertyDeclarationSyntax);
+                var propertySymbol = context.SemanticModel.GetDeclaredSymbol(propertyDeclarationSyntax);
 
-                INamedTypeSymbol @class = propertySymbol.ContainingType;
+                if (propertySymbol is null) return;
 
-                if (@class.GetMembers().Any(m => m.Name == "SetParametersAsync"))
-                    return;
+                var type = propertySymbol.ContainingType;
 
-                if (propertySymbol.GetAttributes().Any(ad => ad.AttributeClass.ToDisplayString() == "Microsoft.AspNetCore.Components.ParameterAttribute" || ad.AttributeClass.ToDisplayString() == "Microsoft.AspNetCore.Components.CascadingParameterAttribute"))
+                if (type == null) return;
+
+                if (type.GetMembers().Any(m => m.Name == "SetParametersAsync")) return;
+
+
+                if (propertySymbol.GetAttributes().Any(ad => ad.AttributeClass?.ToDisplayString() == "Microsoft.AspNetCore.Components.ParameterAttribute" 
+                                                          || ad.AttributeClass?.ToDisplayString() == "Microsoft.AspNetCore.Components.CascadingParameterAttribute"))
                 {
                     Properties.Add(propertySymbol);
                 }

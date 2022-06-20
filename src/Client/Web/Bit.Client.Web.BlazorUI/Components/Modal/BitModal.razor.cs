@@ -101,6 +101,8 @@ namespace Bit.Client.Web.BlazorUI
             BitModalPosition.BottomLeft => $"bit-mdl-position-bottomleft",
             BitModalPosition.BottomCenter => $"bit-mdl-position-bottomcenter",
             BitModalPosition.BottomRight => $"bit-mdl-position-bottomright",
+
+            _ => $"bit-mdl-position-center",
         };
     }
 }

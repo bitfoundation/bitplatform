@@ -1,21 +1,16 @@
-﻿using TodoTemplate.Api.Models.TodoItem;
+﻿using Bit.Tooling.SourceGenerators;
+using TodoTemplate.Api.Models.TodoItem;
 using TodoTemplate.Shared.Dtos.TodoItem;
 
 namespace TodoTemplate.Api.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class TodoItemController : ControllerBase
+public partial class TodoItemController : ControllerBase
 {
-    private readonly TodoTemplateDbContext _dbContext;
+    [AutoInject] private readonly TodoTemplateDbContext _dbContext;
 
-    private readonly IMapper _mapper;
-
-    public TodoItemController(TodoTemplateDbContext dbContext, IMapper mapper)
-    {
-        _dbContext = dbContext;
-        _mapper = mapper;
-    }
+    [AutoInject] private readonly IMapper _mapper;
 
     [HttpGet, EnableQuery]
     public IQueryable<TodoItemDto> Get(CancellationToken cancellationToken)
