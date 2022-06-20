@@ -1,13 +1,13 @@
 ﻿@import '../Styles/_shared.scss';
 
 .page-container {
-    @include page-container;
+    @include Page-container;
     background-color: transparent;
     position: relative;
 }
 
 .page-section {
-    @include page-section;
+    @include Page-section;
 
     h2 {
         color: $B3Color;
@@ -27,7 +27,7 @@
     }
 
     .subtitle {
-        @include body3;
+        @include Body3;
         color: $Gray1;
     }
 }
@@ -67,7 +67,7 @@
         }
 
         div {
-            @include subtitle3
+            @include Subtitle3
         }
     }
 
@@ -148,8 +148,8 @@
     flex-flow: column nowrap;
 }
 
-.projetc-template-cart {
-    @include card;
+.projetc-template-card {
+    @include Card;
     padding: rem(24px) rem(40px) rem(24px) rem(100px);
     margin-top: 40px;
     display: flex;
@@ -185,13 +185,13 @@
 
         div {
             color: $Gray1;
-            @include body3;
+            @include Body3;
             margin-bottom: rem(24px);
         }
 
         a {
             color: $B6Color;
-            @include subtitle4;
+            @include Subtitle4;
             display: flex;
             align-items: center;
 
@@ -209,7 +209,7 @@
         }
     }
 
-    .baner {
+    .banner {
         width: 50%;
 
         @include sm {
@@ -222,14 +222,14 @@
     display: flex;
     flex-flow: column nowrap;
 
-    .services-cart-container {
+    .services-card-container {
         display: flex;
         flex-flow: row wrap;
     }
 }
 
-.services-cart {
-    @include card;
+.services-card {
+    @include Card;
     padding: rem(46px) rem(40px);
     margin-top: rem(40px);
     width: calc(50% - 55px);
@@ -264,13 +264,13 @@
 
         div {
             color: $Gray1;
-            @include body3;
+            @include Body3;
             margin-bottom: rem(24px);
         }
 
         a {
             color: $B6Color;
-            @include subtitle4;
+            @include Subtitle4;
         }
 
         @include sm {
@@ -278,7 +278,7 @@
         }
     }
 
-    .baner {
+    .banner {
     }
 }
 
@@ -297,7 +297,7 @@
     align-items: center;
     color: $Gray4;
     justify-content: center;
-    @include subtitle4;
+    @include Subtitle4;
 
     @include sm {
         top: rem(-32px);

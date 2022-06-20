@@ -34,13 +34,13 @@
 }
 
 .header-container {
-    @include page-container;
+    @include Page-container;
     height: 100%;
     position: absolute;
 }
 
 .header-section {
-    @include page-section;
+    @include Page-section;
     background-color: unset;
     flex-flow: row nowrap;
     justify-content: space-between;
@@ -48,7 +48,7 @@
     height: inherit;
 
     .header-link {
-        @include body3;
+        @include Body3;
         color: $B6Color;
         margin-right: rem(72px);
 
@@ -58,7 +58,7 @@
     }
 
     .header-link--active {
-        @include subtitle4;
+        @include Subtitle4;
         color: $B5Color;
     }
 }

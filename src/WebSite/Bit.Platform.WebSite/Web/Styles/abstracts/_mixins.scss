@@ -3,56 +3,56 @@
 @import '_colors.scss';
 
 /*---------------defualt sizes----------------*/
-@mixin subtitle1 {
+@mixin Subtitle1 {
     font-weight: 600;
     font-size: rem(22px);
     line-height: rem(32px);
 }
 
-@mixin subtitle2 {
+@mixin Subtitle2 {
     font-weight: 600;
     font-size: rem(20px);
     line-height: rem(32px);
 }
 
-@mixin subtitle3 {
+@mixin Subtitle3 {
     font-weight: 400;
     font-size: rem(20px);
     line-height: rem(32px);
 }
 
-@mixin subtitle4 {
+@mixin Subtitle4 {
     font-weight: 700;
     font-size: rem(16px);
     line-height: rem(32px);
 }
 
-@mixin body1 {
+@mixin Body1 {
     font-weight: 400;
     font-size: rem(18px);
     line-height: rem(32px);
 }
 
-@mixin body2 {
+@mixin Body2 {
     font-weight: 400;
     font-size: rem(16px);
     line-height: rem(32px);
 }
 
-@mixin body3 {
+@mixin Body3 {
     font-weight: 400;
     font-size: rem(14px);
     line-height: rem(32px);
 }
 
-@mixin card {
+@mixin Card {
     border-radius: rem(20px);
     box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.15);
     background-color: $White;
     box-sizing: border-box;
 }
 
-@mixin page-container {
+@mixin Page-container {
     display: flex;
     flex-flow: column nowrap;
     justify-content: flex-start;
@@ -62,7 +62,7 @@
     overflow: hidden;
 }
 
-@mixin page-section {
+@mixin Page-section {
     display: flex;
     width: 100%;
     max-width: rem(1232px);

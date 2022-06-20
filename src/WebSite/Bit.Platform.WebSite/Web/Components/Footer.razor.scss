@@ -1,7 +1,7 @@
 ﻿@import '../Styles/_shared.scss';
 
 .footer-container {
-    @include page-container;
+    @include Page-container;
     padding-top: rem(80px);
     padding-bottom: rem(44px);
 
@@ -11,7 +11,7 @@
 }
 
 .footer-section {
-    @include page-section;
+    @include Page-section;
     flex-flow: row wrap;
     justify-content: space-between;
 
@@ -32,26 +32,26 @@
     }
 }
 
-@mixin coulmn {
+@mixin Column {
     display: flex;
     flex-flow: column nowrap;
     box-sizing: border-box;
     padding-right: rem(5px);
 
     .header {
-        @include subtitle3;
+        @include Subtitle3;
         color: $B6Color;
         margin-bottom: rem(12px);
     }
 
     .line {
-        @include body2;
+        @include Body2;
         color: $Gray1;
     }
 }
 
-.bit-coulmn {
-    @include coulmn;
+.bit-column {
+    @include Column;
     flex: 33.3%;
 
     .bit-icon {
@@ -67,18 +67,18 @@
     }
 }
 
-.products-coulmn {
-    @include coulmn;
+.products-column {
+    @include Column;
     flex: 25%;
 }
 
-.quick-links-coulmn {
-    @include coulmn;
+.quick-links-column {
+    @include Column;
     flex: 25%;
 }
 
-.media-coulmn {
-    @include coulmn;
+.media-column {
+    @include Column;
     flex: 16.6%;
     padding-right: 0;
 }
@@ -88,11 +88,11 @@
     flex-flow: row nowrap;
 }
 
-.copy-right-coulmn {
-    @include body3;
+.copy-right-column {
+    @include Body3;
 }
 
-@mixin social-media-link {
+@mixin Social-media-link {
     width: rem(32px);
     height: rem(32px);
     border-radius: 50%;
@@ -111,7 +111,7 @@
 }
 
 .twitter-link {
-    @include social-media-link;
+    @include Social-media-link;
     background-image: url('/images/footer/twitter-icon.svg');
 
     &:hover {
@@ -120,7 +120,7 @@
 }
 
 .github-link {
-    @include social-media-link;
+    @include Social-media-link;
     background-image: url('/images/footer/github-icon.svg');
 
     &:hover {
@@ -129,7 +129,7 @@
 }
 
 .facebook-link {
-    @include social-media-link;
+    @include Social-media-link;
     background-image: url('/images/footer/facebook-icon.svg');
 
     &:hover {
@@ -138,7 +138,7 @@
 }
 
 .linkedin-link {
-    @include social-media-link;
+    @include Social-media-link;
     background-image: url('/images/footer/linkedin-icon.svg');
 
     &:hover {

@@ -10,13 +10,15 @@
 
         public const string GithubRepo = "https://github.com/bitfoundation/bitplatform";
 
-        public const string GithubIssues = "https://github.com/bitfoundation/bitplatform";
+        public const string GithubIssues = "https://github.com/bitfoundation/bitplatform/issues";
 
-        public const string GithubOrg = "https://github.com/bitfoundation/bitplatform";
+        public const string GithubOrg = "https://github.com/bitfoundation";
 
         public const string Linkedin = "https://www.linkedin.com/company/bit-foundation/about/";
 
-        public const string Tweter = "#";
+        public const string Tweter = "https://twitter.com/bitplatformhq";
+
+        public const string YouTube = "https://www.youtube.com/channel/UCtk33NQ91f3GOJG0HAdkdog";
 
         public const string Facebook = "#";
 
@@ -28,6 +30,6 @@
 
         public const string Components = "#";
 
-        public const string Bswup = "#";
+        public const string Bswup = "https://github.com/bitfoundation/bitplatform/tree/develop/src/Tooling/Bit.Tooling.Bswup";
     }
 }
