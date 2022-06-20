@@ -236,12 +236,12 @@ namespace Bit.Client.Web.BlazorUI
         {
             if (DefaultUpperValue.HasValue)
             {
-                upperValue = DefaultUpperValue.Value;
+                UpperValue = DefaultUpperValue.Value;
             }
 
             if (DefaultLowerValue.HasValue)
             {
-                lowerValue = DefaultLowerValue.Value;
+                LowerValue = DefaultLowerValue.Value;
             }
 
             if (IsRanged)
@@ -326,13 +326,13 @@ namespace Bit.Client.Web.BlazorUI
 
                     if (firstInputValue < secondInputValue)
                     {
-                        lowerValue = firstInputValue;
-                        upperValue = secondInputValue;
+                        LowerValue = firstInputValue;
+                        UpperValue = secondInputValue;
                     }
                     else
                     {
-                        lowerValue = secondInputValue;
-                        upperValue = firstInputValue;
+                        LowerValue = secondInputValue;
+                        UpperValue = firstInputValue;
                     }
 
                     FillSlider();
