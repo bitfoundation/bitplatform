@@ -75,48 +75,42 @@ Bit use Blazor for building UI, Blazor is a web framework for building web UI co
 ### BlazorServer
 With the Blazor Server hosting model, the app is executed on the server from within an ASP.NET Core app. UI updates, event handling, and JavaScript calls are handled over a SignalR connection using the WebSockets protocol. 
 
-To switch to Blazor server mode, change value of   `<BlazorMode>` on **Directory.build.props** file in **Solution Items** root folder.
+- To switch to Blazor server mode, change value of   `<BlazorMode>` on **Directory.build.props** file in **Solution Items** root folder.
 
       <BlazorMode>BlazorServer</BlazorMode>
 
+- Set solution on  Multi-startup project, by right click on solution name and selecting properties from right-click menu (change the action of Api, Web projects to start)
+[![MultiStartup](img/multi-startup.png "login")](img/multi-startup.png)
+
+- Make sure the first line in the `TodoTemplate.Web.csproj` file contains the following value.
+
+       <Project Sdk="Microsoft.NET.Sdk.Web">
 ### BlazorWebAssembly
 Blazor WebAssembly (WASM) apps run client-side in the browser on a WebAssembly-based .NET runtime. The Blazor app, its dependencies, and the .NET runtime are downloaded to the browser. The app is executed directly on the browser UI thread. UI updates and event handling occur within the same process. The app's assets are deployed as static files to a web server or service capable of serving static content to clients.
 
-To switch to Blazor WebAssembly mode, change value of   `<BlazorMode>` on **Directory.build.props** file in **Solution Items** root folder.
-
+- To switch to Blazor WebAssembly mode, change value of   `<BlazorMode>` on **Directory.build.props** file in **Solution Items** root folder.
+ 
       <BlazorMode>BlazorWebAssembly</BlazorMode>
 
+- Set **Api** project as startup project
+- Make sure the first line in the `TodoTemplate.Web.csproj` file contains the following value.
+
+       <Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
 
 ### BlazorHybrid
 Blazor can also be used to build native client apps using a hybrid approach. Hybrid apps are native apps that leverage web technologies for their functionality. In a Blazor Hybrid app, Razor components run directly in the native app (not on WebAssembly) along with any other .NET code and render web UI based on HTML and CSS to an embedded Web View control through a local interop channel.
 
-To switch to Blazor WebAssembly mode
+To switch to Blazor Hybrid mode
 
 - change value of   `<BlazorMode>` on **Directory.build.props** file in **Solution Items** root folder.
 
       <BlazorMode>BlazorHybrid</BlazorMode>
 
-- Set solution on  Multi-startup project, by right click on solution name and selecting properties from right-click menu
-[![MultiStartup](img/multi-startup.png "login")](img/multi-startup.png)
+- Set solution on  Multi-startup project, by right click on solution name and selecting properties from right-click menu (change the action of App, Web projects to start)
+[![HybridStartup](img/hybrid-startub.png "login")](img/hybrid-startub.png)
 
-## Switch between Blazor Modes
-To switch to each blazor mode, easily change value of   `<BlazorMode>` on **Directory.build.props** file in **Solution Items** root folder.
-
-      <BlazorMode>BlazorServer</BlazorMode>
-       <!-- You can use either BlazorServer or BlazorWebAssembly or BlazorHybrid -->
-
-### BlazorServer
-- Needs multi startup for both api & web projects.
-- Use `<Project Sdk="Microsoft.NET.Sdk.Web">` in ?.Web.csproj  file. 
-### blazorWebAssembly
-- Needs set as startup Api project and run it.
-- Change `<Project Sdk="Microsoft.NET.Sdk.Web">` line code in ?.Web.csproj  file to `<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">`
-### BlazorHybrid
-- Needs multi startup for both api & app projects.
-- Use ?.App project instead of ?.Web.
 ## WebApp Deployment Type
-Bit Supports several modes for WebApp deployment. This concept is related to performance. The fastest way to serve a page is to render page statically then send, and, the slowest way to serve a page is to serve an "interactive Blazor" server page (with a live virtual DOM synchronized via SignalR websockets). 
-
+Supported deployment type are:
 ### Default Deployment Type
   It's referring to a Typical single page application(SPA) without pre-rendring.
 
