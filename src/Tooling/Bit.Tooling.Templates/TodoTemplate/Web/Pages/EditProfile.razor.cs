@@ -27,6 +27,7 @@ public partial class EditProfile
 #if BlazorServer || BlazorHybrid
     [Inject] public IConfiguration Configuration { get; set; } = default!;
 #endif
+
     protected override async Task OnInitAsync()
     {
         IsLoadingData = true;
@@ -46,6 +47,7 @@ public partial class EditProfile
             ProfileImageUploadUrl = $"{serverUrl}{ProfileImageUploadUrl}";
             ProfileImageUrl = $"{serverUrl}{ProfileImageUrl}";
 #endif
+
         }
         finally
         {

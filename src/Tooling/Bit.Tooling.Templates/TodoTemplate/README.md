@@ -41,7 +41,6 @@ if (TodoTemplate.Shared.BlazorModeDetector.Current.IsBlazorServer())
 {
 }
 
-
 #if BlazorWebAssembly
 
 #endif

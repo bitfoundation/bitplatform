@@ -74,6 +74,7 @@ public partial class NavMenu
 #if BlazorServer || BlazorHybrid
     [Inject] public IConfiguration Configuration { get; set; } = default!;
 #endif
+
     private void CloseMenu()
     {
         if (IsMenuOpenHasBeenSet && IsMenuOpenChanged.HasDelegate is false) return;

@@ -18,6 +18,7 @@ public static class Services
         var appSettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>();
 
         services.AddTodoTemplateSharedServices();
+
 #if BlazorWebAssembly
         services.AddTransient<IAuthTokenProvider, ServerSideAuthTokenProvider>();
         services.AddTodoTemplateAppServices();
@@ -40,6 +41,7 @@ public static class Services
         services.AddRazorPages();
         services.AddMvcCore();
 #endif
+
         services.AddCors();
 
         services

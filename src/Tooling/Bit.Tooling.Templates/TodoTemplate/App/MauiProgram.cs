@@ -22,10 +22,10 @@ public static class MauiProgram
         var services = builder.Services;
 
         services.AddMauiBlazorWebView();
-
 #if DEBUG
         services.AddBlazorWebViewDeveloperTools();
 #endif
+
         services.AddTransient<IAuthTokenProvider, ClientSideAuthTokenProvider>();
         services.AddTodoTemplateSharedServices();
         services.AddTodoTemplateAppServices();

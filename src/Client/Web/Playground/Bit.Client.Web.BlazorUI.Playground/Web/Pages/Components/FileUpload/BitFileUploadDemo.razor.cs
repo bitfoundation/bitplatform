@@ -17,13 +17,11 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.FileUpload
 
         string GetBaseUrl()
         {
-
 #if BlazorWebAssembly
             return "/";
 #else
             return Configuration.GetValue<string>("ApiServerAddress");
 #endif
-
         }
 
         private readonly List<ComponentParameter> componentParameters = new()

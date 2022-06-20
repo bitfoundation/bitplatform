@@ -127,6 +127,7 @@ public partial class AuthController : ControllerBase
 #else
         resetPasswordLink = $"{_server.GetHostUri()}{resetPasswordLink}";
 #endif
+
         var assembly = typeof(Program).Assembly;
 
         var result = await _fluentEmail
@@ -160,11 +161,13 @@ public partial class AuthController : ControllerBase
         var emailConfirmed = user.EmailConfirmed || (await _userManager.ConfirmEmailAsync(user, token)).Succeeded;
 
         string url = $"email-confirmation?email={email}&email-confirmed={emailConfirmed}";
+
 #if BlazorServer
         url = $"{_appSettings.Value.WebServerAddress}{url}";
 #else
         url = $"/{url}";
 #endif
+
         return Redirect(url);
     }
 

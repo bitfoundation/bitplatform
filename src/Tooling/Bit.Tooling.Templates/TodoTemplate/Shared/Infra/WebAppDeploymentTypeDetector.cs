@@ -38,7 +38,6 @@ public class WebAppDeploymentTypeDetector
 #else
             return WebAppDeploymentType.Default;
 #endif
-
         }
     }
 }

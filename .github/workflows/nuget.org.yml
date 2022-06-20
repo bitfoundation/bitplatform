@@ -54,7 +54,7 @@ jobs:
       run: dotnet pack src/Tooling/Bit.Tooling.SourceGenerators/Bit.Tooling.SourceGenerators.csproj --output . --configuration Release
 
     - name: dotnet pack TodoTemplate
-      run: dotnet pack src/Tooling/Bit.Tooling.Templates/TodoTemplate.nuget.csproj --output . --configuration Release
+      run: dotnet pack src/Tooling/Bit.Tooling.Templates/TodoTemplate.ProjectTemplate.csproj --output . --configuration Release
     
     - name: dotnet nuget push
       run: dotnet nuget push *.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{secrets.NUGET_ORG_API_KEY}}

@@ -6,18 +6,15 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 #endif
 
-
 namespace TodoTemplate.App;
 
 public class Program
 {
     public static async Task Main(string[] args)
     {
-
 #if !BlazorWebAssembly && !BlazorServer
         throw new InvalidOperationException("Please switch to either blazor web assembly or server as described in readme.md");
 #endif
-
         await CreateHostBuilder(args)
             .RunAsync();
     }

@@ -9,6 +9,7 @@ public partial class TodoTemplateErrorBoundary
 
     [Inject] private NavigationManager NavigationManager { get; set; } = default!;
 
+
 #if DEBUG
     protected override void OnInitialized()
     {

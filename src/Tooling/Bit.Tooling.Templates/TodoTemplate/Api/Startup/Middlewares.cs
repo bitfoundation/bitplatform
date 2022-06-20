@@ -13,20 +13,18 @@ namespace TodoTemplate.Api.Startup
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-#if BlazorWebAssembly
 
+#if BlazorWebAssembly
                 if (env.IsDevelopment())
                 {
                     app.UseWebAssemblyDebugging();
                 }
 #endif
-
             }
 
 #if BlazorWebAssembly
             app.UseBlazorFrameworkFiles();
 #endif
-
 
             app.UseSwagger();
 
@@ -43,14 +41,12 @@ namespace TodoTemplate.Api.Startup
                 {
                     ctx.Context.Response.GetTypedHeaders().CacheControl = new CacheControlHeaderValue()
                     {
-
 #if PWA
                         NoCache = true
 #else
                         MaxAge = TimeSpan.FromDays(365),
                         Public = true
 #endif
-
                     };
                 }
             });

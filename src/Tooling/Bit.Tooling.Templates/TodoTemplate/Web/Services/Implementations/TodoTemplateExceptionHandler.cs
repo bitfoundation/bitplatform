@@ -22,5 +22,6 @@ public class TodoTemplateExceptionHandler : IExceptionHandler
             MessageBox.Show("Unknown error.", "Error");
         }
 #endif
+
     }
 }
