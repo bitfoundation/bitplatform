@@ -120,12 +120,12 @@ namespace Bit.Client.Web.BlazorUI.Tests.Sliders
         ]
         public void BitSliderDefaultLowerValueTest(Visual visual, int? defaultLowerValue)
         {
-            var com = RenderComponent<BitSliderTest>(parameters =>
+            var com = RenderComponent<BitSlider>(parameters =>
             {
                 parameters.Add(p => p.Visual, visual);
                 parameters.Add(p => p.DefaultLowerValue, defaultLowerValue);
                 parameters.Add(p => p.ShowValue, true);
-                parameters.Add(p => p.Ranged, true);
+                parameters.Add(p => p.IsRanged, true);
             });
 
             // Find fisrt label with valueLabel css class
@@ -146,12 +146,12 @@ namespace Bit.Client.Web.BlazorUI.Tests.Sliders
         ]
         public void BitSliderDefaultUpperValueTest(Visual visual, int? defaultUpperValue)
         {
-            var com = RenderComponent<BitSliderTest>(parameters =>
+            var com = RenderComponent<BitSlider>(parameters =>
             {
                 parameters.Add(p => p.Visual, visual);
                 parameters.Add(p => p.DefaultUpperValue, defaultUpperValue);
                 parameters.Add(p => p.ShowValue, true);
-                parameters.Add(p => p.Ranged, true);
+                parameters.Add(p => p.IsRanged, true);
             });
 
             // Find labels with valueLabel css class
