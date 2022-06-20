@@ -10,4 +10,18 @@ namespace Bit.Client.Web.BlazorUI
         Submit,
         Reset
     }
+
+    public static class BitButtonTypeExtensions
+    {
+        public static string GetValue(this BitButtonType bitButtonType)
+        {
+            return bitButtonType switch
+            {
+                BitButtonType.Button => "button",
+                BitButtonType.Submit => "submit",
+                BitButtonType.Reset => "reset",
+                _ => string.Empty,
+            };
+        }
+    }
 }

@@ -17,4 +17,4 @@ There are many ways to contribute
 
 ## **Contributions**
 
-![Alt](https://repobeats.axiom.co/api/embed/115c6953ca07a17b42b892b19671d1166e9af701.svg "Bit Open Source Contributions Report")
+![Alt](https://repobeats.axiom.co/api/embed/66dc1fc04ed967094b98ac118e8f18fa38b19f6a.svg "Bit Open Source Contributions Report")
