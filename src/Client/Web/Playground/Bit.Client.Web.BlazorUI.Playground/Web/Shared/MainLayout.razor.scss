@@ -171,16 +171,16 @@
         }
     }
 
-    .facebook-link {
-        background-image: url('/images/facebook-icon.svg');
-        background-size: rem(16px);
+    .youtube-link {
+        background-image: url('/images/youtube-icon.svg');
+        background-size: rem(31px);
 
         @include lt-xl {
-            background-size: rem(8px);
+            background-size: rem(17px);
         }
 
         &:hover {
-            background-color: #4267B2;
+            background-color: #FF0000;
         }
     }
 
