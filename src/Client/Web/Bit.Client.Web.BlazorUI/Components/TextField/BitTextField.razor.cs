@@ -240,7 +240,8 @@ namespace Bit.Client.Web.BlazorUI
         /// </summary>
         [Parameter] public bool Trim { get; set; }
 
-        public BitTextFieldType ElementType { get; set; }
+        public BitTextFieldType ElementType { get; private set; }
+        public string InputType { get; private set; } = string.Empty;
 
         public string FocusClass
         {
@@ -301,9 +302,20 @@ namespace Bit.Client.Web.BlazorUI
 
         private void SetElementType()
         {
-            ElementType = CanRevealPassword && type == BitTextFieldType.Password && _isPasswordRevealed
-                ? BitTextFieldType.Text
-                : type;
+            ElementType = type == BitTextFieldType.Password && CanRevealPassword && _isPasswordRevealed
+                          ? BitTextFieldType.Text
+                          : type;
+
+            InputType = ElementType switch
+            {
+                BitTextFieldType.Text => "text",
+                BitTextFieldType.Password => "password",
+                BitTextFieldType.Number => "number",
+                BitTextFieldType.Email => "email",
+                BitTextFieldType.Tel => "tel",
+                BitTextFieldType.Url => "url",
+                _ => string.Empty,
+            };
         }
 
         private async Task HandleFocusIn(FocusEventArgs e)
