@@ -5,7 +5,7 @@ This document aimed to create and run a Bit-Platform (Bit) project in a short pe
 ## Development prerequisites
 
 - C# as the main development language.
-- [Asp.net core blazor](https://docs.microsoft.com/en-us/aspnet/core/blazor/?view=aspnetcore-6.0) as main development Back-End and Fron-End framework
+- [Asp.net core blazor](https://docs.microsoft.com/en-us/aspnet/core/blazor/?view=aspnetcore-6.0) as main development Back-End and Front-End framework
 - [CSS ](https://www.google.com/url?sa=t&amp;rct=j&amp;q=&amp;esrc=s&amp;source=web&amp;cd=&amp;cad=rja&amp;uact=8&amp;ved=2ahUKEwji-KOu0pj4AhWwm_0HHeZQDzoQFnoECAgQAQ&amp;url=https%3A%2F%2Fwww.w3schools.com%2Fcss%2F&amp;usg=AOvVaw0Xtbw_GBAChsgvZNkPLVGb)&amp; [Sass ](https://www.google.com/url?sa=t&amp;rct=j&amp;q=&amp;esrc=s&amp;source=web&amp;cd=&amp;cad=rja&amp;uact=8&amp;ved=2ahUKEwjvgoO60pj4AhUCi_0HHVmXBMkQFnoECAgQAQ&amp;url=https%3A%2F%2Fsass-lang.com%2F&amp;usg=AOvVaw0p_IRgLEbIPRGWtlW7Wph8)as stylesheet
 - [Entity Framework Core](https://docs.microsoft.com/en-us/ef/core/) as ORM to communicate with the database
 - [Asp.Net Identity](https://docs.microsoft.com/en-us/aspnet/identity/overview/getting-started/introduction-to-aspnet-identity) with [JWT ](https://www.c-sharpcorner.com/article/jwt-authentication-and-authorization-in-net-6-0-with-identity-framework/)supporting for handling Authentication
@@ -13,28 +13,30 @@ This document aimed to create and run a Bit-Platform (Bit) project in a short pe
 
 ## Environment setup
 
-- Microsoft Visual Studio 2022 - Preview Version 17.3.0 Preview 1.0 or higher with the following workloads and extention
-- Asp.net and web development
-- Net Multi-Platform App UI development
+- Microsoft Visual Studio 2022 - Preview Version 17.3.0 Preview or higher with the following workloads and extention
+  - Asp.net and web development
+  - Net Multi-Platform App UI development
 - [Web Compiler 2022+ VisualStudtio extention](https://marketplace.visualstudio.com/items?itemName=Failwyn.WebCompiler64 "Web Compiler 2022+")
+- Microsoft SQL Server Developer edition
 
+**Note**: In development, For the app to access the local Api project IP the VisualStudio needs to **Run as Administrator**.
 ## Create project
-Use `dotnet new` approach based on assumption that we've Bit.Tooling.Templates.TodoTemplate nuget package. bellow command installs the package and then creates a new project from it.
+Use `dotnet new` approach. bellow command installs the package and then creates a new project from it.
 
-    > dotnet new -i Bit.Tooling.Templates.TodoTemplate
+    > dotnet new -i Bit.TodoTemplate
    
 
-# Configure The Project
+# Prepare The Project
 
 ## Database
 
 **Connection String**
 
-Open  **appsettings.json** file in  **TodoTemplate.Api**  project and change the  **SqlServerConnection ** connection string if you want:
+Open  **appsettings.json** file in  **TodoTemplate.Api**  project and change the  **ConnectionStrings ** connection string if you want:
 
-    "SqlServerConnection": {
-            "SqlServerConnection": "Data Source=.; Initial Catalog=TodoTemplateDb;Integrated Security=true"
-        }
+     "ConnectionStrings": {
+        "SqlServerConnectionString": "Data Source=.; Initial Catalog=TodoTemplateDb;Integrated Security=true;Application Name=Todo;"
+    },
 
 ## Migration
 
@@ -44,6 +46,26 @@ To create and migrate the database to the latest version. You can use Entity Fra
 
 
 # Run
+After you've done the configuration, you can run the application.
+Set Api project as startup and run, you can see the swagger dashboard in the first view
+
+[![swagger](img/api-swagger.png "swagger")](img/api-swagger.png)
+
+## SignUp
+With the help of **Swagger**, you can call the **SignUp** API and Start the registration process, navigate to `Auth/SignUp` API and press the `Try it Out` button, in the `Request body` Enter SignUp data, and press Execute button.
+[![SignUp](img/swagger-signUp.png "SignUp")](img/swagger-signUp.png)
+
+In **SignUp** Process after call API, a confirmation email send to your email, In the development, Bit saves sent emails as a .eml file in the below path, and developers can easily handle them.
+
+    ./TodoTemplate/Api/bin/Debug/net6.0/sent-emails
+
+[![ConfirmEmail](img/confirm-email.png "SignUp")](img/confirm-email.png)
+
+By pressing the `Confirm email` button, the ConfirmEmail Api calls and registration process complete.
+After it, you can login with the swagger login form on the top of the page, and call other APIs that need Authentication.
+
+[![Swaggerlogin](img/swagger-login.png "login")](img/swagger-login.png)
+
 ## Blazor Mode (hosting models)
 Bit use Blazor for building UI, Blazor is a web framework for building web UI components ([Razor components](https://docs.microsoft.com/en-us/aspnet/core/blazor/components/?view=aspnetcore-6.0 "aaa")) that can be hosted in different ways. Razor components can run server-side in ASP.NET Core (Blazor Server) versus client-side in the browser on a [WebAssembly](https://webassembly.org/)-based .NET runtime (Blazor WebAssembly, Blazor WASM). You can also host Razor components in native mobile and desktop apps that render to an embedded Web View control (Blazor Hybrid). Regardless of the hosting model, the way you build Razor components is the same. The same Razor components can be used with any of the hosting models unchanged.
 
@@ -53,16 +75,32 @@ Bit use Blazor for building UI, Blazor is a web framework for building web UI co
 ### BlazorServer
 With the Blazor Server hosting model, the app is executed on the server from within an ASP.NET Core app. UI updates, event handling, and JavaScript calls are handled over a SignalR connection using the WebSockets protocol. 
 
+To switch to Blazor server mode, change value of   `<BlazorMode>` on **Directory.build.props** file in **Solution Items** root folder.
+
+      <BlazorMode>BlazorServer</BlazorMode>
+
 ### BlazorWebAssembly
 Blazor WebAssembly (WASM) apps run client-side in the browser on a WebAssembly-based .NET runtime. The Blazor app, its dependencies, and the .NET runtime are downloaded to the browser. The app is executed directly on the browser UI thread. UI updates and event handling occur within the same process. The app's assets are deployed as static files to a web server or service capable of serving static content to clients.
+
+To switch to Blazor WebAssembly mode, change value of   `<BlazorMode>` on **Directory.build.props** file in **Solution Items** root folder.
+
+      <BlazorMode>BlazorWebAssembly</BlazorMode>
+
 
 ### BlazorHybrid
 Blazor can also be used to build native client apps using a hybrid approach. Hybrid apps are native apps that leverage web technologies for their functionality. In a Blazor Hybrid app, Razor components run directly in the native app (not on WebAssembly) along with any other .NET code and render web UI based on HTML and CSS to an embedded Web View control through a local interop channel.
 
-**Note**: In development, For the app to access the local Api project IP the VisualStudio needs to **run as Admin** and use `*`  instead of localhost in the IP server.
+To switch to Blazor WebAssembly mode
 
-## How change BlazorMode easily?
-To switch to each mode, easily change value of   `<BlazorMode>` on **Directory.build.props** file in **Solution Items** root folder.
+- change value of   `<BlazorMode>` on **Directory.build.props** file in **Solution Items** root folder.
+
+      <BlazorMode>BlazorHybrid</BlazorMode>
+
+- Set solution on  Multi-startup project, by right click on solution name and selecting properties from right-click menu
+[![MultiStartup](img/multi-startup.png "login")](img/multi-startup.png)
+
+## Switch between Blazor Modes
+To switch to each blazor mode, easily change value of   `<BlazorMode>` on **Directory.build.props** file in **Solution Items** root folder.
 
       <BlazorMode>BlazorServer</BlazorMode>
        <!-- You can use either BlazorServer or BlazorWebAssembly or BlazorHybrid -->
