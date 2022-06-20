@@ -19,7 +19,10 @@
         }
         <h1 class="form-title">Sign in</h1>
         <div class="form-input-container">
-            <BitTextField Label="Email" Placeholder="Email" @bind-Value="SignInModel.UserName" />
+            <BitTextField Label="Email"
+                          Placeholder="Email"
+                          Type="BitTextFieldType.Email"
+                          @bind-Value="SignInModel.UserName" />
             <ValidationMessage For="@(() => SignInModel.UserName)" />
         </div>
         <div class="form-input-container">
