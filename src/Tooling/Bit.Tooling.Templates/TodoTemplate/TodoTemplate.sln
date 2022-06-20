@@ -18,11 +18,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTemplate.Web", "Web\Tod
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTemplate.Iac", "Iac\TodoTemplate.Iac.csproj", "{F2046C94-F82C-42DC-9C97-9C03FB2F2BA3}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".template.config", ".template.config", "{763471E7-8FFA-4227-B27F-DDEF6F0B8F7A}"
-	ProjectSection(SolutionItems) = preProject
-		.template.config\template.json = .template.config\template.json
-	EndProjectSection
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -54,9 +49,6 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(NestedProjects) = preSolution
-		{763471E7-8FFA-4227-B27F-DDEF6F0B8F7A} = {5CF43F76-BB71-4B5B-B4DF-1C753E042A8F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {61F7FB11-1E47-470C-91E2-47F8143E1572}

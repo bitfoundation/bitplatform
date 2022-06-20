@@ -33,65 +33,6 @@
                 }
             ]
 
-        },
-
-        "BlazorMode": {
-            "type": "parameter",
-            "datatype": "choice",
-            "defaultValue": "BlazorServer",
-            "choices": [
-                {
-                    "choice": "BlazorServer",
-                    "description": "The Blazor Server Mode"
-                },
-                {
-                    "choice": "BlazorWebAssembly",
-                    "description": "The Blazor WebAssembly mode"
-                },
-                {
-                    "choice": "BlazorHybrid",
-                    "description": "The Blazor Hybrid mode"
-                }
-            ],
-            "replaces": "BlazorServer",
-            "onlyIf": [
-                {
-                    "after": "<BlazorMode>"
-                }
-            ]
-
-
-        },
-        "WebAppDeploymentType": {
-            "type": "parameter",
-            "datatype": "choice",
-            "defaultValue": "DefaultDeploymentType",
-            "choices": [
-                {
-                    "choice": "DefaultDeploymentType",
-                    "description": "The Default deployment type"
-                },
-                {
-                    "choice": "Static",
-                    "description": "The Static deployment type"
-                },
-                {
-                    "choice": "PWA",
-                    "description": "The PWA deployment type"
-                },
-                {
-
-                    "choice": "SSR",
-                    "description": "The SSR deployment type"
-                }
-            ],
-            "replaces": "DefaultDeploymentType",
-            "onlyIf": [
-                {
-                    "after": "<WebAppDeploymentType>"
-                }
-            ]
-
         }
 
     },
@@ -110,12 +51,12 @@
         {
             "modifiers": [
                 {
-                    "copyOnly": [ ".gitignore", "**/*.md", "**/*.scss", "**/*.svg", "**/*.png" ],
+                    "copyOnly": [ "Directory.build.props",".gitignore", "**/*.md", "**/*.scss", "**/*.svg", "**/*.png" ],
                     "exclude": [
                         ".vs/**",
                         "**/[Bb]in/**",
                         "**/[Oo]bj/**",
-                        "**/.template.config",
+                        ".template.config/**",
                         "**/*.filelist",
                         "**/*.user",
                         "**/*.lock.json",
