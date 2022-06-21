@@ -48,7 +48,15 @@ public class AutoInjectSyntaxReceiver : ISyntaxContextReceiver
                                 .Any(a => a.AttributeClass != null &&
                                           a.AttributeClass.ToDisplayString() == AutoInjectAttributeName));
 
-        if(isBaseTypeUseAutoInject)
+        var isCurrentClassUseAutoInject = classSymbol
+                        .GetMembers()
+                        .Any(m =>
+                            (m.Kind == SymbolKind.Field || m.Kind == SymbolKind.Property) &&
+                            m.GetAttributes()
+                                .Any(a => a.AttributeClass != null &&
+                                          a.AttributeClass.ToDisplayString() == AutoInjectAttributeName));
+
+        if (isBaseTypeUseAutoInject && (isCurrentClassUseAutoInject is false))
             EligibleClassHasBaseUsedAutoInject.Add(classSymbol);
     }
 
