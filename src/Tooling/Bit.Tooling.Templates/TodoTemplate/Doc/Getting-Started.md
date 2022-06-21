@@ -17,7 +17,7 @@ This document aimed to create and run a Bit-Platform (Bit) project in a short pe
   - Asp.net and web development
   - Net Multi-Platform App UI development
 - [Web Compiler 2022+ VisualStudtio extention](https://marketplace.visualstudio.com/items?itemName=Failwyn.WebCompiler64 "Web Compiler 2022+")
-- Microsoft SQL Server Developer edition
+- [Microsoft SQL Server Developer edition](https://www.microsoft.com/en-us/sql-server/sql-server-downloads "Sql server")
 
 **Note**: In development, For the app to access the local Api project IP the VisualStudio needs to **Run as Administrator**.
 ## Create project
@@ -53,6 +53,7 @@ Set Api project as startup and run, you can see the swagger dashboard in the fir
 
 ## SignUp
 With the help of **Swagger**, you can call the **SignUp** API and Start the registration process, navigate to `Auth/SignUp` API and press the `Try it Out` button, in the `Request body` Enter SignUp data, and press Execute button.
+
 [![SignUp](img/swagger-signUp.png "SignUp")](img/swagger-signUp.png)
 
 In **SignUp** Process after call API, a confirmation email send to your email, In the development, Bit saves sent emails as a .eml file in the below path, and developers can easily handle them.
@@ -80,7 +81,8 @@ With the Blazor Server hosting model, the app is executed on the server from wit
       <BlazorMode>BlazorServer</BlazorMode>
 
 - Set solution on  Multi-startup project, by right click on solution name and selecting properties from right-click menu (change the action of Api, Web projects to start)
-[![MultiStartup](img/multi-startup.png "login")](img/multi-startup.png)
+
+    [![MultiStartup](img/multi-startup.png "login")](img/multi-startup.png)
 
 - Make sure the first line in the `TodoTemplate.Web.csproj` file contains the following value.
 
@@ -102,53 +104,41 @@ Blazor can also be used to build native client apps using a hybrid approach. Hyb
 
 To switch to Blazor Hybrid mode
 
-- change value of   `<BlazorMode>` on **Directory.build.props** file in **Solution Items** root folder.
+1. change value of   `<BlazorMode>` on **Directory.build.props** file in **Solution Items** root folder.
 
-      <BlazorMode>BlazorHybrid</BlazorMode>
+        <BlazorMode>BlazorHybrid</BlazorMode>
 
-- Set solution on  Multi-startup project, by right click on solution name and selecting properties from right-click menu (change the action of App, Web projects to start)
-[![HybridStartup](img/hybrid-startub.png "login")](img/hybrid-startub.png)
+2. Set App project as the startup project, choose Android, IOS, or Windows, then select your Physical device or Emulator as Debug-Target.
+
+    [![Debug-Target](img/debug-target.png "login")](img/debug-target.png)
+
+3. Set solution on  Multi-startup project, by right click on solution name and selecting properties from right-click menu (change the action of Api, App projects to start)
+
+    [![HybridStartup](img/hybrid-startub.png "login")](img/hybrid-startub.png)
 
 ## WebApp Deployment Type
 Supported deployment type are:
 ### Default Deployment Type
   It's referring to a Typical single page application(SPA) without pre-rendring.
 
-### Static
-Static Statically render the component with the specified parameters. It's recommended when the target is building a static page like a landing page, content page, And like these.
 ### PWA  
 A Blazor WebAssembly app built as a [Progressive Web App](https://en.wikipedia.org/wiki/Progressive_web_application "PWA") (PWA) uses modern browser APIs to enable many of the capabilities of a native client app, such as working offline, running in its own app window, launching from the host's operating system, receiving push notifications, and automatically updating in the background.
 
-**Note**: Asp.net blazor supports PWA by default, but Bit fixes some of its disadvantages and provides a better PWA experience. 
+**Note**: Asp.net blazor supports **PWA** by default, but its update mechanism is unreliable due to its PWA nature, **Bit** allows you to handle it When a new version wants to be updated.
+
 ### SSR
-[Server-side rendering (SSR)](https://www.educative.io/edpresso/what-is-server-side-rendering), is the ability of an application to contribute by displaying the web-page on the server instead of rendering it in the browser. Server-side sends a fully rendered page to the client; Blazor pre-renders page and sends it as a static page, then later the page becomes an interactive Blazor server app. This behavior is intended to serve pages quickly to search engines with time-based positioning. 
-Statically prerender the component along with a marker to indicate the component should later be rendered interactively by the Blazor Server app. It's optimize SEO of site.
+[Server-side rendering (SSR)](https://www.educative.io/edpresso/what-is-server-side-rendering), is the ability of an application to contribute by displaying the web-page on the server instead of rendering it in the browser. Server-side sends a fully rendered page to the client; Blazor pre-renders page and sends it as a static page, then later the page becomes an interactive Blazor app. This behavior is intended to serve pages quickly to search engines with time-based positioning. 
+Statically prerender the component along with a marker to indicate the component should later be rendered interactively by the Blazor app. It's improved SEO.
 
 It's referring to a Typical single page application(SPA) with pre-rendring.
 
-
+### Static
+Static Statically render the component with the specified parameters. It's recommended when the target is building a static page like a landing page, content page, And like these.
 ## How change WebApp Deployment Type easily?
 To switch to each mode, easily change value of   `<WebAppDeploymentType>` on **Directory.build.props** file in **Solution Items** root folder.
 
       <WebAppDeploymentType>DefaultDeploymentType</WebAppDeploymentType>
         <!-- You can choose either Static, DefaultDeploymentType, PWA or SSR -->
-
-## Run API Host
-Once you've done the configuration, you can run the application. If you set Api project as startup and run you can see the swagger dashboard in the first view
-
-[![swagger](img/api-swagger.png "swagger")](img/api-swagger.png)
-
-## Run Web app (in BlazorServer mode)
-To run the Web app you need to run both the Api project and The Web project, Run these two projects as multiple startup.
-
-[![web](img/web-output.png "web")](img/web-output.png)
-
-## Run App (in BlazorHybrid mode)
-To run the Web app you need to run both the Api project and The App project, Run these two projects as multiple startup.
-
-[![app](img/app-output.png "app")](img/app-output.png)
-
-
 ## Settings
 ### Authentication policies
 Bit provides authentication with  and implements the SignUp and SignIn user interfaces.
@@ -177,7 +167,10 @@ Bit used JWT to provide token based authentication and you can either change Jwt
                 "ExpirationMinutes": "1440"
             },
 
-**Note**: IdentityCertificatePassword referring to the password of the `IdentityCertificate.pfx` file in the Api project that used as certificate file for store the public key and etc for validating incoming JWT tokens.
+**Note**: IdentityCertificatePassword referring to the password of the `IdentityCertificate.pfx` file in the Api project that used as certificate file for store the public key and etc for validating incoming JWT tokens. to create PFX file run following commands in PowerShell with desired password and file path for your pfx file
+
+ 	$cert = New-SelfSignedCertificate -CertStoreLocation Cert:\LocalMachine\My -Subject "IdentityServerCN" -Provider "Microsoft Strong Cryptographic Provider" -HashAlgorithm "SHA512" -NotAfter (Get-Date).AddYears(5)
+    Export-PfxCertificate -cert ('Cert:\LocalMachine\My\' + $cert.thumbprint) -FilePath PATH_TO_YOUR_IdentityServerCertificate.pfx -Password (ConvertTo-SecureString -String "YOUR_PASSWORD" -Force -AsPlainText)
 
 ### Email Settings
 Bit used [FluentEmail](https://github.com/lukencode/FluentEmail) to send emails whenever needs.
@@ -194,7 +187,7 @@ for example in SignUp, you can either change the SMTP provide settings as you ne
 
 **Note**: In the development process, Bit saves sent emails as a .eml file in the below path, and developers can easily handle them.
 
-    ./TodoTemplate/Api/bin/Debug/net6.0/sent-emails./TodoTemplate/Api/bin/Debug/net6.0/sent-emails
+    ./TodoTemplate/Api/bin/Debug/net6.0/sent-emails
 
 **Note**: You can find email templates used for email confirmation and reset password in the `Resources` directory of the Api project
 
@@ -212,85 +205,35 @@ Health checks are exposed by an app as HTTP endpoints. If you need to enable or 
             },
 
 **Note**: You can find Health Checks dashboard from route `https://localhost:5001/healthchecks-ui` as default.
-## Code Syncing between app and web
-Bit provides a solution for writing code for both the Web and the App at once. And also has a mechanism for sharing code between server-side and client sides.
 
-### Linking codes
-Bit considers the Web project as the primary source base and links the changes to each of the following files and directories to the App project before it is built.
+## TodoTemplate Project structure
+The **TodoTemplate** solution prepared with Bit has 5 Projects.
 
-- **Components** directory: Location of your blazor components (razor)
-- **Extensions** directory: This directory conatain some Bit provided extentions, and place for put your extentions
-- **Pages** directory: Contain All pages of Web project (and App project) 
-- **Services** directory: Location of services Communication with API
-- **Shared** directory: Components and pages that shared for use in others pages and components
-- **Styles** directory: Includes Sass styles used in the project UI, which are compiled using Web Compiler 2022+ extensions in CSS format. 
-- **App.razor** file: The root component of the app sets up client-side routing using the Router component. its name will be changed to `Main.razor` in the App project.
-- **appsettings.json** file: Includes essential program settings such as the Url of the Api hosts.
-- **_Imports.razor** file: Global imports.
-- **compilerconfig.json** file: Contains Settings for Sass styles compiling.
-- **compilerconfig.json.defaults** file: Some default Saas style compiler settings.
-- **wwwroot\images** directory: Contains media uses in project ui.
-- **wwwroot\scripts** directory: Contains scripts uses in the project. 
-- **wwwroot\styles** directory: Contains styles uses in the project.
+[![solution](img/todoTemplate-solution.png "login")](img/todoTemplate-solution.png "login")
 
+- **TodoTemplate.Api**:
+This project contains server-side codes including Controllers, Data access layer (EntityFramework ORM), Identity, etc.
 
-**Note**: Code syncing will be done with help of `mklink.bat` file in the root of the App project in the pre-building event of the project.It uses directory junction features of the OS.
+- **TodoTemplate.App**: 
+This project contains code related to building an app, although much of the code is common to the web project and refers to it.
+- **TodoTemplate.Iac**: 
+Infrastructure as Code (IaC) is the managing and provisioning of infrastructure through code instead of through manual processes. This project contains the necessary code to provide this feature.
+- **TodoTemplate.Shared**: This project is shared on both the server (Api project) and client(Web, App projects) sides, and can share code. The bit puts the code it wants to reuse; Like resources, Dtos, shared contracts, services, etc.
 
-**Note**: To avoid git duplicating the files All of them are tagged as ignored in the App project. 
+    **Note**: Be careful about what you put in the shared projects because they will available on both sides.
+- **TodoTemplate.Web**: This project contains the necessary code to build the project UI, whether it is a web output or an application. And includes components and pages made with the help of Razor and Style sheet
 
-### Shared project
-Project `*.Shared` is shared on both the server (Api project) and client(Web, App projects) sides, and can share code. The bit puts the code it wants to reuse; Like resources, Dtos, shared contracts, services, etc.
+## Exception handling
+Bit performs some features to manage error accord in runtime.  
+### Server-Side exception handling
+- **known and unknown exception**: In development When an error occurred if this error is known or unknown, details of the error returned, but in test and production for unknown error details of the error not returned from server.
+  - known exception inhrites `KnownException` class
+  - Unknown exception inhrites `UnknownException` class
+- **RestException**: It's a class that has an HTTP Response `StatusCode` that you to perform a response with status code.
 
-**Note**: Be careful about what you put in the shared projects because they will available on both sides.
-
-## Debugging
-All official Bit NuGet packages are Sourcelink enabled. That means you can easily debug Bit.* NuGet packages within your project.
-
-- Blazor WebAssembly still has some limitations in Debugging, while Blazor Server mode fully supports debugging without any problems. Therefore, it is recommended to use BlazorServer mode for development. 
-
-
-## Error handling
-Bit performs some features to manage error accourd in runtime.  
-### known and unknown exception
-In development When an error occurred if this error is known or unknown, details of the error returned, but in test and production for unknown error details of the error not returned from server.
-- known exception inhrites `KnownException` class
-- Unknown exception inhrites `UnknownException` class
-### RestException
-It's a class that has an HTTP Response `StatusCode` that you to perform a response with status code.
-
-### Client side exception handling WrapHandled
+### Client side exception handling
 When an error is raised in App(android, IOS) maybe cause crash app. for avoiding app crash; Bit provides some mechanism for error handling.
 - inheriting `TodoTemplateComponentBase` in razor pages.
 - Instead of initializing your components in the `OnInitializedAsync` method, override the `OnInitAsync` method of the `TodoTemplateComponentBase` class.
 - Use `WrapHandle` method instead of direct calling events such as `OnClick` in the Razor components.
 - Use `try-catch` block in `asyn-avoid` method and call `StatehasChanged` method to handle unexpected errors.
-- To eliminate unwanted dependency unsubscribe events On the `DisposeAsync()` method.
-
-
-## Performance and optimiztion
-Bit perform some feature To improve performance and optimization.
-
-- use the `Clean.bat` file in the root of the solution directory to deep clean the projects and run without unexpected exceptions. 
-- Bit Uses `implicit operator` for performing type conversion instead of mapping library. You can see on some Dto in the Shared project.
-- Bit optimizes the data serialization process through the default Asp.net core JsonSerializer. for this reason, the Bit code generator does a process to register Dtos to speed up. You can see how to register a Dto for this process on `TodoTemplateJsonContext.cs` in the `Shared\Dtos` 
-- Use the `StateService` service GetValue method when you need SSR or SEO optimization to get a value in async mode.
-- Bit performs some feature to detect Blazor mode or deployment type in Development and Runtime
-    - Use `#if [BlazorMode]` block to detect blazor mode in The Cs code.
-    - Use `#if [WebAppDeploymentType]` block to detect Web App Deployment Type in the Cs code.
-    - Use `BlazorModeDetector` from the **Shared** project to detect BlazorMode in the Razor pages.
-    - Use `WebAppDeploymentTypeDetector` from the **Shared** project to detect WebAppDeploymentType in the Razor pages.
--Bit code analyzer will give you tips for better code-writing during development.    
-
-## Infrastructure as Code
-Modern cloud-native applications embrace the widely accepted practice of Infrastructure as Code, or IaC. With IaC, you automate platform provisioning. You essentially apply software engineering practices such as testing and versioning to your DevOps practices. Your infrastructure and deployments are automated, consistent, and repeatable. Just as continuous delivery automated the traditional model of manual deployments, Infrastructure as Code (IaC) is evolving how application environments are managed.
-
-
-## Step By Step Publish To Azure
-About how to step-by-step publish in azure cloud..
-
-
-## FAQ
-A frequently asked questions about Bit...
-
-
-
