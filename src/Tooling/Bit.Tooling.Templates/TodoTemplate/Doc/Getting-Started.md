@@ -17,7 +17,7 @@ This document aimed to create and run a Bit-Platform (Bit) project in a short pe
   - Asp.net and web development
   - Net Multi-Platform App UI development
 - [Web Compiler 2022+ VisualStudtio extention](https://marketplace.visualstudio.com/items?itemName=Failwyn.WebCompiler64 "Web Compiler 2022+")
-- [Microsoft SQL Server Developer edition](https://www.microsoft.com/en-us/sql-server/sql-server-downloads "Sql server")
+- [Microsoft SQL Server Developer edition](https://www.microsoft.com/en-us/sql-server/sql-server-downloads "Sql server") Or change the EntityFramework DBContext database provide to make it work with your preferred database (find it in the Database section)
 
 **Note**: In development, For the app to access the local Api project IP the VisualStudio needs to **Run as Administrator**.
 ## Create project
@@ -38,6 +38,15 @@ Open  **appsettings.json** file in  **TodoTemplate.Api**  project and change the
         "SqlServerConnectionString": "Data Source=.; Initial Catalog=TodoTemplateDb;Integrated Security=true;Application Name=Todo;"
     },
 
+For Other Entityframework supported databases, you need to configure the context that provides your preferred database. with change `UseSqlServer` method on `Api\Startup\Services.cs` file
+
+        services.AddDbContext<TodoTemplateDbContext>(options =>
+        {
+            options.UseSqlServer(configuration.GetConnectionString("SqlServerConnectionString"), sqlOpt =>
+            {
+                sqlOpt.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+            });
+        });
 ## Migration
 
 To create and migrate the database to the latest version. You can use Entity Framework's built-in tools for migrations. Open **Package Manager Console** in Visual Studio set **TodoTemplate.Api** as the Default Project and run the Update-Database command as shown below:
@@ -108,14 +117,11 @@ To switch to Blazor Hybrid mode
 
         <BlazorMode>BlazorHybrid</BlazorMode>
 
-2. Set App project as the startup project, choose Android, IOS, or Windows, then select your Physical device or Emulator as Debug-Target.
+2. Set `App` project as the startup project, choose either Android, IOS, or Windows, then select your Physical device or Emulator as Debug-Target.
 
     [![Debug-Target](img/debug-target.png "login")](img/debug-target.png)
 
 3. Set solution on  Multi-startup project, by right click on solution name and selecting properties from right-click menu (change the action of Api, App projects to start)
-
-    [![HybridStartup](img/hybrid-startub.png "login")](img/hybrid-startub.png)
-
 ## WebApp Deployment Type
 Supported deployment type are:
 ### Default Deployment Type
@@ -124,11 +130,11 @@ Supported deployment type are:
 ### PWA  
 A Blazor WebAssembly app built as a [Progressive Web App](https://en.wikipedia.org/wiki/Progressive_web_application "PWA") (PWA) uses modern browser APIs to enable many of the capabilities of a native client app, such as working offline, running in its own app window, launching from the host's operating system, receiving push notifications, and automatically updating in the background.
 
-**Note**: Asp.net blazor supports **PWA** by default, but its update mechanism is unreliable due to its PWA nature, **Bit** allows you to handle it When a new version wants to be updated.
+**Note**: Asp.net blazor supports **PWA** by default, but its update mechanism is unreliable due PWA nature, **Bit** allows you to handle it When a new version wants to be updated.
 
 ### SSR
 [Server-side rendering (SSR)](https://www.educative.io/edpresso/what-is-server-side-rendering), is the ability of an application to contribute by displaying the web-page on the server instead of rendering it in the browser. Server-side sends a fully rendered page to the client; Blazor pre-renders page and sends it as a static page, then later the page becomes an interactive Blazor app. This behavior is intended to serve pages quickly to search engines with time-based positioning. 
-Statically prerender the component along with a marker to indicate the component should later be rendered interactively by the Blazor app. It's improved SEO.
+Statically prerender the component along with a marker to indicate the component should later be rendered interactively by the Blazor app. It improve SEO.
 
 It's referring to a Typical single page application(SPA) with pre-rendring.
 
@@ -169,8 +175,8 @@ Bit used JWT to provide token based authentication and you can either change Jwt
 
 **Note**: IdentityCertificatePassword referring to the password of the `IdentityCertificate.pfx` file in the Api project that used as certificate file for store the public key and etc for validating incoming JWT tokens. to create PFX file run following commands in PowerShell with desired password and file path for your pfx file
 
- 	$cert = New-SelfSignedCertificate -CertStoreLocation Cert:\LocalMachine\My -Subject "IdentityServerCN" -Provider "Microsoft Strong Cryptographic Provider" -HashAlgorithm "SHA512" -NotAfter (Get-Date).AddYears(5)
-    Export-PfxCertificate -cert ('Cert:\LocalMachine\My\' + $cert.thumbprint) -FilePath PATH_TO_YOUR_IdentityServerCertificate.pfx -Password (ConvertTo-SecureString -String "YOUR_PASSWORD" -Force -AsPlainText)
+ 	> $cert = New-SelfSignedCertificate -CertStoreLocation Cert:\LocalMachine\My -Subject "IdentityServerCN" -Provider "Microsoft Strong Cryptographic Provider" -HashAlgorithm "SHA512" -NotAfter (Get-Date).AddYears(5)
+    > Export-PfxCertificate -cert ('Cert:\LocalMachine\My\' + $cert.thumbprint) -FilePath PATH_TO_YOUR_IdentityServerCertificate.pfx -Password (ConvertTo-SecureString -String "YOUR_PASSWORD" -Force -AsPlainText)
 
 ### Email Settings
 Bit used [FluentEmail](https://github.com/lukencode/FluentEmail) to send emails whenever needs.
@@ -184,10 +190,6 @@ for example in SignUp, you can either change the SMTP provide settings as you ne
                 "UserName": null,
                 "Password": null
             },
-
-**Note**: In the development process, Bit saves sent emails as a .eml file in the below path, and developers can easily handle them.
-
-    ./TodoTemplate/Api/bin/Debug/net6.0/sent-emails
 
 **Note**: You can find email templates used for email confirmation and reset password in the `Resources` directory of the Api project
 
@@ -224,7 +226,7 @@ Infrastructure as Code (IaC) is the managing and provisioning of infrastructure 
 - **TodoTemplate.Web**: This project contains the necessary code to build the project UI, whether it is a web output or an application. And includes components and pages made with the help of Razor and Style sheet
 
 ## Exception handling
-Bit performs some features to manage error accord in runtime.  
+Bit performs some features to manage exceptions that occurred in runtime. 
 ### Server-Side exception handling
 - **known and unknown exception**: In development When an error occurred if this error is known or unknown, details of the error returned, but in test and production for unknown error details of the error not returned from server.
   - known exception inhrites `KnownException` class
@@ -237,3 +239,12 @@ When an error is raised in App(android, IOS) maybe cause crash app. for avoiding
 - Instead of initializing your components in the `OnInitializedAsync` method, override the `OnInitAsync` method of the `TodoTemplateComponentBase` class.
 - Use `WrapHandle` method instead of direct calling events such as `OnClick` in the Razor components.
 - Use `try-catch` block in `asyn-avoid` method and call `StatehasChanged` method to handle unexpected errors.
+
+
+## Community
+This is an open source project and open to contributions from the community.
+- Use the GitHub repository to access the latest source code, create issues and send pull requests.
+- Use bitplatform tag on stackoverflow to ask questions about the usage.
+- Give us a try and use our nuget packages in your apps!
+- Code review
+
