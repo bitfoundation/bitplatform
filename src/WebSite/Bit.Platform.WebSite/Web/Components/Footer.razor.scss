@@ -115,7 +115,7 @@
     background-image: url('/images/footer/twitter-icon.svg');
 
     &:hover {
-        background-color: #1DA1F2;
+        background-color: $TwitterColor;
     }
 }
 
@@ -124,7 +124,7 @@
     background-image: url('/images/footer/github-icon.svg');
 
     &:hover {
-        background-color: #171515;
+        background-color: $GithubColor;
     }
 }
 
@@ -133,7 +133,7 @@
     background-image: url('/images/footer/facebook-icon.svg');
 
     &:hover {
-        background-color: #4267B2;
+        background-color: $FacebookColor;
     }
 }
 
@@ -142,6 +142,6 @@
     background-image: url('/images/footer/linkedin-icon.svg');
 
     &:hover {
-        background-color: #0A66C2;
+        background-color: $Linkedin;
     }
 }

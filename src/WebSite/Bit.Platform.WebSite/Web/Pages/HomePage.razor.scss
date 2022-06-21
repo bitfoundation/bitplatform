@@ -62,8 +62,8 @@
 
         h1 {
             color: $White;
-            margin-top: 40px;
-            margin-bottom: 16px;
+            margin-top: rem(40px);
+            margin-bottom: rem(16px);
         }
 
         div {
@@ -133,7 +133,7 @@
             background-size: rem(40px);
             background-color: $B2Color;
             cursor: pointer;
-            margin-right: 10px;
+            margin-right: rem(10px);
 
             @include lt-lg {
                 width: rem(24px);
@@ -151,7 +151,7 @@
 .projetc-template-card {
     @include Card;
     padding: rem(24px) rem(40px) rem(24px) rem(100px);
-    margin-top: 40px;
+    margin-top: rem(40px);
     display: flex;
     flex-flow: row nowrap;
     justify-content: space-between;
@@ -277,9 +277,6 @@
             width: 100%;
         }
     }
-
-    .banner {
-    }
 }
 
 .download-box {
@@ -402,8 +399,8 @@
         z-index: -1;
         width: rem(802px);
         height: rem(802px);
-        background: #DEE9FF;
-        filter: blur(274px);
+        background: $Background2Color;
+        filter: blur(rem(274px));
         left: rem(-37px);
         top: rem(1239px);
     }
@@ -416,13 +413,13 @@
         height: rem(1154px);
         right: rem(-40px);
         top: rem(814px);
-        background: #DEEAFF;
-        filter: blur(274px);
+        background: $Background1Color;
+        filter: blur(rem(274px));
     }
 
     .background-color {
         position: absolute;
-        background-color: #E5E5E5;
+        background-color: $BackgroundColor;
         width: 100%;
         height: 100%;
         z-index: -2;
