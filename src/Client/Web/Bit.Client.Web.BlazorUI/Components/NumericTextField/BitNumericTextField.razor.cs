@@ -16,9 +16,12 @@ namespace Bit.Client.Web.BlazorUI
         const int STEP_DELAY = 75;
         private BitNumericTextFieldLabelPosition labelPosition = BitNumericTextFieldLabelPosition.Left;
         private int precision;
-        private double step = 1;
-        private double? min;
-        private double? max;
+        private TValue? step;
+        private TValue? min;
+        private TValue? max;
+        private double internalStep;
+        private double? internalMin;
+        private double? internalMax;
         private string? intermediateValue;
         private string InputId = $"input{Guid.NewGuid()}";
         private Timer? timer;
@@ -60,7 +63,7 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// Sets the control's aria-valuenow. Providing this only makes sense when using as a controlled component.
         /// </summary>
-        [Parameter] public double? AriaValueNow { get; set; }
+        [Parameter] public TValue? AriaValueNow { get; set; }
 
         /// <summary>
         /// Sets the control's aria-valuetext.
@@ -68,21 +71,31 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public string? AriaValueText { get; set; }
 
         /// <summary>
-        /// Min value of the numeric text field. If not provided, the numeric text field has minimum value of double type
+        /// Min value of the numeric text field. If not provided, the numeric text field has minimum value
         /// </summary>
-        [Parameter] public TValue? Min
+        [Parameter]
+        public TValue? Min
         {
-            get => GetGenericValue(min);
-            set => min = GetDoubleValueOrDefault(value);
+            get => min;
+            set
+            {
+                internalMin = GetDoubleValueOrDefault(value);
+                min = value;
+            }
         }
 
         /// <summary>
-        /// Max value of the numeric text field. If not provided, the numeric text field has max value of double type
+        /// Max value of the numeric text field. If not provided, the numeric text field has max value
         /// </summary>
-        [Parameter] public TValue? Max
+        [Parameter]
+        public TValue? Max
         {
-            get => GetGenericValue(max);
-            set => max = GetDoubleValueOrDefault(value);
+            get => max;
+            set
+            {
+                internalMax = GetDoubleValueOrDefault(value);
+                max = value;
+            }
         }
 
         /// <summary>
@@ -113,7 +126,7 @@ namespace Bit.Client.Web.BlazorUI
         /// <summary>
         /// Initial value of the numeric text field
         /// </summary>
-        [Parameter] public double? DefaultValue { get; set; }
+        [Parameter] public TValue? DefaultValue { get; set; }
 
         /// <summary>
         /// Difference between two adjacent values of the numeric text field
@@ -121,8 +134,12 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter]
         public TValue? Step
         {
-            get => GetGenericValue(step);
-            set => step = GetDoubleValueOrDefault(value, 1);
+            get => step;
+            set
+            {
+                internalStep = GetDoubleValueOrDefault(value, 1)!.Value;
+                step = value;
+            }
         }
 
         /// <summary>
@@ -216,27 +233,27 @@ namespace Bit.Client.Web.BlazorUI
 
         protected async override Task OnParametersSetAsync()
         {
-            if (min.HasValue is false)
+            if (internalMin.HasValue is false)
             {
-                min = minGenericValue;
+                internalMin = minGenericValue;
             }
 
-            if (max.HasValue is false)
+            if (internalMax.HasValue is false)
             {
-                max = maxGenericValue;
+                internalMax = maxGenericValue;
             }
 
-            if (min > max)
+            if (internalMin > internalMax)
             {
-                min += max;
-                max = min - max;
-                min -= max;
+                internalMin += internalMax;
+                internalMax = internalMin - internalMax;
+                internalMin -= internalMax;
             }
 
-            precision = Precision is not null ? Precision.Value : CalculatePrecision(step);
+            precision = Precision is not null ? Precision.Value : CalculatePrecision(internalStep);
             if (ValueHasBeenSet is false)
             {
-                SetValue(DefaultValue ?? Math.Min(0, min.Value));
+                SetValue(GetDoubleValueOrDefault(DefaultValue) ?? Math.Min(0, internalMin.Value));
             }
             else
             {
@@ -253,13 +270,13 @@ namespace Bit.Client.Web.BlazorUI
                     switch (action)
                     {
                         case BitNumericTextFieldAction.Increment:
-                            result = GetDoubleValueOrDefault(CurrentValue) + step;
-                            isValid = result <= max && result >= min;
+                            result = GetDoubleValueOrDefault(CurrentValue, 0d)!.Value + internalStep;
+                            isValid = result <= internalMax && result >= internalMin;
                             break;
 
                         case BitNumericTextFieldAction.Decrement:
-                            result = GetDoubleValueOrDefault(CurrentValue) - step;
-                            isValid = result <= max && result >= min;
+                            result = GetDoubleValueOrDefault(CurrentValue, 0d)!.Value - internalStep;
+                            isValid = result <= internalMax && result >= internalMin;
                             break;
 
                         default:
@@ -442,13 +459,13 @@ namespace Bit.Client.Web.BlazorUI
         {
             value = Normalize(value);
 
-            if (value > max)
+            if (value > internalMax)
             {
-                CurrentValue = GetGenericValue(max.Value);
+                CurrentValue = GetGenericValue(internalMax.Value);
             }
-            else if (value < min)
+            else if (value < internalMin)
             {
-                CurrentValue = GetGenericValue(min.Value);
+                CurrentValue = GetGenericValue(internalMin.Value);
             }
             else
             {
@@ -499,14 +516,13 @@ namespace Bit.Client.Web.BlazorUI
         private double Normalize(double value) => Math.Round(value, precision);
         private double NormalizeDecimal(decimal value) => Convert.ToDouble(Math.Round(value, precision));
 
-        private double? GetAriaValueNow => AriaValueNow is not null ? AriaValueNow : Suffix.HasNoValue() ? GetDoubleValueOrDefault(CurrentValue) : null;
+        private TValue? GetAriaValueNow => AriaValueNow is not null ? AriaValueNow : Suffix.HasNoValue() ? CurrentValue : default;
         private string? GetAriaValueText => AriaValueText.HasValue() ? AriaValueText : Suffix.HasValue() ? CurrentValueAsString + Suffix : null;
         private string? GetIconRole => IconAriaLabel.HasValue() ? "img" : null;
         private string GetLabelId => Label.HasValue() ? $"label{Guid.NewGuid()}" : string.Empty;
 
         private TValue? GetGenericValue(double? value) => value.HasValue ? (TValue)Convert.ChangeType(value, typeOfValue, CultureInfo.InvariantCulture) : default;
-       
-        private static double GetDoubleValueOrDefault(TValue? value, double defaultValue = 0d) => value is null ? defaultValue : (double)Convert.ChangeType(value, typeof(double), CultureInfo.InvariantCulture);
+        private double? GetDoubleValueOrDefault(TValue? value, double? defaultValue = null) => value is null ? defaultValue : (double?)Convert.ChangeType(value, typeof(double), CultureInfo.InvariantCulture);
 
         private double GetMaxValue()
         {
@@ -623,7 +639,7 @@ namespace Bit.Client.Web.BlazorUI
         }
 
         /// <inheritdoc />
-        protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TValue? result, [NotNullWhen(false)] out string? validationErrorMessage)
+        protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TValue result, [NotNullWhen(false)] out string? validationErrorMessage)
         {
             if (typeOfValue == typeof(byte))
             {
