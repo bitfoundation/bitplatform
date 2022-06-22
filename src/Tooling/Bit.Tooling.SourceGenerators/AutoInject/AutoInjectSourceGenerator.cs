@@ -35,6 +35,15 @@ public class AutoInjectSourceGenerator : ISourceGenerator
                 context.AddSource($"{group.Key.Name}_autoInject.g.cs",
                     SourceText.From(partialClassSource!, Encoding.UTF8));
         }
+
+        foreach (var @class in receiver.EligibleClassesWithBaseClassUsedAutoInject)
+        {
+            string? partialClassSource = GenerateSource(attributeSymbol, @class, new List<ISymbol>());
+
+            if (string.IsNullOrEmpty(partialClassSource) is false)
+                context.AddSource($"{@class.Name}_autoInject.g.cs",
+                  SourceText.From(partialClassSource!, Encoding.UTF8));
+        }
     }
 
     private static string? GenerateSource(
