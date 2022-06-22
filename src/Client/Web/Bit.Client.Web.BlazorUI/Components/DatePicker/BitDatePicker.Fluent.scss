@@ -1,4 +1,5 @@
-﻿@import "../../Styles/Fluent/colors.fluent.scss", "../../Styles/functions.scss";
+﻿@import "../../Styles/Fluent/colors.fluent.scss";
+@import "../../Styles/functions.scss"; 
 
 @mixin getUnderlineStyle($isEnabled: true) {
     .bit-dtp-wrapper {
@@ -12,13 +13,6 @@
         @else {
             border-bottom-color: $Grey20;
         }
-    }
-
-    .bit-dtp-label {
-        height: rem(32px);
-        padding: rem(5px) 0 rem(5px) rem(12px);
-        margin: 0 rem(8px) 0 0;
-        line-height: rem(22px);
     }
 
     .bit-dtp-field-grp {
@@ -44,6 +38,19 @@
     font-weight: 400;
     font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
     -webkit-font-smoothing: antialiased;
+
+    .bit-dtp-label {
+        display: block;
+        padding: rem(5px) 0;
+        margin: 0;
+        box-shadow: none;
+        box-sizing: border-box;
+        font-size: rem(14px);
+        font-weight: 600;
+        color: $Grey160;
+        overflow-wrap: break-word;
+        -webkit-font-smoothing: antialiased;
+    }
 }
 
 .bit-dtp-wrapper {
