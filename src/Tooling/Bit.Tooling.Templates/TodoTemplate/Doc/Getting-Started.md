@@ -244,5 +244,3 @@ This is an open source project and open to contributions from the community.
 - Use the GitHub repository to access the latest source code, create issues and send pull requests.
 - Use bitplatform tag on stackoverflow to ask questions about the usage.
 - Give us a try and use our nuget packages in your apps!
-- Code review
-
