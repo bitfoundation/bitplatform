@@ -485,7 +485,7 @@
     margin: em(0px);
     padding: em(12px);
     box-sizing: content-box;
-    width: 208px;
+    width: rem(208px);
     overflow: hidden;
 
     .grid-container {
@@ -494,16 +494,19 @@
     }
 
     .btn-row {
+        display: flex;
+        justify-content: space-evenly;
         margin-bottom: rem(16px);
 
         button {
             position: relative;
-            width: rem(40px);
-            height: rem(40px);
-            min-width: rem(40px);
-            min-height: rem(40px);
-            margin: 0 rem(12px) 0 0;
-            padding: 0;
+            width: rem(56px);
+            max-width: rem(56px);
+            padding: 0 rem(10px);
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            direction: ltr;
             outline: transparent;
             border: none;
             border-radius: rem(2px);
@@ -511,17 +514,11 @@
             line-height: rem(40px);
             color: $Grey160;
             background-color: transparent;
-            overflow: visible;
             cursor: pointer;
 
             &:hover {
                 background-color: $Grey30;
             }
-
-            &:last-child {
-                margin: 0;
-            }
-
 
             &:disabled {
                 pointer-events: none;
