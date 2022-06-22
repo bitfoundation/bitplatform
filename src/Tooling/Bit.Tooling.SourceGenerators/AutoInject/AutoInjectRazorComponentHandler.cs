@@ -5,7 +5,7 @@ using Microsoft.CodeAnalysis;
 
 namespace Bit.Tooling.SourceGenerators;
 
-public class AutoInjectRazorComponentHandler : AutoInjectBaseHandler
+public class AutoInjectRazorComponentHandler
 {
     public static string? Generate(
         INamedTypeSymbol? classSymbol,
@@ -16,7 +16,7 @@ public class AutoInjectRazorComponentHandler : AutoInjectBaseHandler
             return null;
         }
         
-        if (IsContainingSymbolEqualToContainingNamespace(classSymbol) is false)
+        if (AutoInjectHelper.IsContainingSymbolEqualToContainingNamespace(classSymbol) is false)
         {
             return null;
         }
@@ -63,6 +63,6 @@ namespace {classNamespace}
         return $@"
 {"\t\t"}[Inject]
 {"\t\t"}[EditorBrowsable(EditorBrowsableState.Never)]
-{"\t\t"}private {@type} ____{FormatMemberName(name)} {{ get => {name}; set => {name} = value; }}";
+{"\t\t"}private {@type} ____{AutoInjectHelper.FormatMemberName(name)} {{ get => {name}; set => {name} = value; }}";
     }
 }

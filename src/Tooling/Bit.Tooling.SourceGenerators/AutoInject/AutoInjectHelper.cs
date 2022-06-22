@@ -6,9 +6,9 @@ using Microsoft.CodeAnalysis;
 
 namespace Bit.Tooling.SourceGenerators;
 
-public abstract class AutoInjectBaseHandler
+public class AutoInjectHelper
 {
-    protected static IReadOnlyCollection<ISymbol> GetBaseClassEligibleMembers(
+    public static IReadOnlyCollection<ISymbol> GetBaseClassEligibleMembers(
         INamedTypeSymbol? classSymbol,
         INamedTypeSymbol? attributeSymbol)
     {
@@ -68,7 +68,7 @@ public abstract class AutoInjectBaseHandler
         return result.OrderBy(o => o.Name).ToList();
     }
 
-    protected static string FormatMemberName(string? memberName)
+    public static string FormatMemberName(string? memberName)
     {
         if (memberName is null)
             throw new ArgumentNullException(nameof(memberName));
@@ -83,7 +83,7 @@ public abstract class AutoInjectBaseHandler
         return memberName.Substring(0, 1).ToUpper(CultureInfo.InvariantCulture) + memberName.Substring(1);
     }
 
-    protected static bool IsContainingSymbolEqualToContainingNamespace(INamedTypeSymbol? @class)
+    public static bool IsContainingSymbolEqualToContainingNamespace(INamedTypeSymbol? @class)
     {
         if(@class is null)
             throw new ArgumentNullException(nameof(@class));

@@ -36,7 +36,7 @@ public class AutoInjectSourceGenerator : ISourceGenerator
                     SourceText.From(partialClassSource!, Encoding.UTF8));
         }
 
-        foreach (var @class in receiver.EligibleClassHasBaseUsedAutoInject)
+        foreach (var @class in receiver.EligibleClassesWithBaseClassUsedAutoInject)
         {
             string? partialClassSource = GenerateSource(attributeSymbol, @class, new List<ISymbol>());
 

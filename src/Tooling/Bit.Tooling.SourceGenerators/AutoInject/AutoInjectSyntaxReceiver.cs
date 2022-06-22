@@ -12,7 +12,7 @@ public class AutoInjectSyntaxReceiver : ISyntaxContextReceiver
     private static readonly string AutoInjectAttributeName = typeof(AutoInjectAttribute).FullName;
 
     public Collection<ISymbol> EligibleMembers { get; } = new();
-    public Collection<INamedTypeSymbol> EligibleClassHasBaseUsedAutoInject { get; } = new();
+    public Collection<INamedTypeSymbol> EligibleClassesWithBaseClassUsedAutoInject { get; } = new();
 
     public void OnVisitSyntaxNode(GeneratorSyntaxContext context)
     {
@@ -57,7 +57,7 @@ public class AutoInjectSyntaxReceiver : ISyntaxContextReceiver
                                           a.AttributeClass.ToDisplayString() == AutoInjectAttributeName));
 
         if (isBaseTypeUseAutoInject && (isCurrentClassUseAutoInject is false))
-            EligibleClassHasBaseUsedAutoInject.Add(classSymbol);
+            EligibleClassesWithBaseClassUsedAutoInject.Add(classSymbol);
     }
 
     private void MarkEligibleFields(GeneratorSyntaxContext context)
