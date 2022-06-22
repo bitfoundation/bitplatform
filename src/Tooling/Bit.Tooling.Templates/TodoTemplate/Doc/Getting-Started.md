@@ -220,9 +220,9 @@ This project contains server-side codes including Controllers, Data access layer
 This project contains code related to building an app, although much of the code is common to the web project and refers to it.
 - **TodoTemplate.Iac**: 
 Infrastructure as Code (IaC) is the managing and provisioning of infrastructure through code instead of through manual processes. This project contains the necessary code to provide this feature.
-- **TodoTemplate.Shared**: This project is shared on both the server (Api project) and client(Web, App projects) sides, and can share code. The bit puts the code it wants to reuse; Like resources, Dtos, shared contracts, services, etc.
+You don't have to use either Pulumi or even Azure, Host it wherever you want.
 
-    **Note**: Be careful about what you put in the shared projects because they will available on both sides.
+- **TodoTemplate.Shared**: This project is shared on both the server (Api project) and client(Web, App projects) sides, and can share code. The bit puts the code it wants to reuse; Like resources, Dtos, shared contracts, services, etc.
 - **TodoTemplate.Web**: This project contains the necessary code to build the project UI, whether it is a web output or an application. And includes components and pages made with the help of Razor and Style sheet
 
 ## Exception handling
@@ -233,14 +233,12 @@ Bit performs some features to manage exceptions that occurred in runtime.
   - Unknown exception inhrites `UnknownException` class
 - **RestException**: It's a class that has an HTTP Response `StatusCode` that you to perform a response with status code.
 
-### Client side exception handling
+### Client-Side exception handling
 When an error is raised in App(android, IOS) maybe cause crash app. for avoiding app crash; Bit provides some mechanism for error handling.
 - inheriting `TodoTemplateComponentBase` in razor pages.
 - Instead of initializing your components in the `OnInitializedAsync` method, override the `OnInitAsync` method of the `TodoTemplateComponentBase` class.
 - Use `WrapHandle` method instead of direct calling events such as `OnClick` in the Razor components.
 - Use `try-catch` block in `asyn-avoid` method and call `StatehasChanged` method to handle unexpected errors.
-
-
 ## Community
 This is an open source project and open to contributions from the community.
 - Use the GitHub repository to access the latest source code, create issues and send pull requests.
