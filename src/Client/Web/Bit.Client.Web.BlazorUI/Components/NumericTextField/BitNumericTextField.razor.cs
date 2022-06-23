@@ -137,7 +137,7 @@ namespace Bit.Client.Web.BlazorUI
             get => step;
             set
             {
-                internalStep = GetDoubleValueOrDefault(value, 1)!.Value;
+                internalStep = GetDoubleValueOrDefault(value) ?? 1;
                 step = value;
             }
         }
@@ -639,7 +639,7 @@ namespace Bit.Client.Web.BlazorUI
         }
 
         /// <inheritdoc />
-        protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TValue result, [NotNullWhen(false)] out string? validationErrorMessage)
+        protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TValue? result, [NotNullWhen(false)] out string? validationErrorMessage)
         {
             if (typeOfValue == typeof(byte))
             {
