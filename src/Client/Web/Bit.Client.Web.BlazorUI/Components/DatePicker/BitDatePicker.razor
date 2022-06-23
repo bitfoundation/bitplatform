@@ -218,6 +218,7 @@
                                                     disabled="@CheckMonthForMaxAndMinDate(monthIndex)"
                                                     type="button"
                                                     aria-label="@Culture?.DateTimeFormat.GetMonthName(monthIndex)"
+                                                    title="@Culture?.DateTimeFormat.GetMonthName(monthIndex)"
                                                     @onclick="() => SelectMonth(monthIndex)">
                                                 <span aria-hidden="true">@Culture?.DateTimeFormat.GetAbbreviatedMonthName(monthIndex)</span>
                                             </button>
