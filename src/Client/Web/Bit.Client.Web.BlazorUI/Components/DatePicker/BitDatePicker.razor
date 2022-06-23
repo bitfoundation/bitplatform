@@ -210,7 +210,7 @@
                                         @for (var cellIndex = 1; cellIndex <= 4; cellIndex++)
                                         {
                                             var monthIndex = (rowIndex * 4) + cellIndex;
-                                            var monthName = @Culture?.DateTimeFormat.GetMonthName(monthIndex);
+                                            var monthName = Culture?.DateTimeFormat.GetMonthName(monthIndex);
                                             <button role="gridcell"
                                                     aria-selected="@(IsMonthSelected(monthIndex) ? "true" : "false")"
                                                     aria-readonly="true"
