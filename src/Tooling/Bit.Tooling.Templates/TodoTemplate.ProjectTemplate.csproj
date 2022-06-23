@@ -1,0 +1,44 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <Import Project="../../Bit.Build.props" />
+    
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <IncludeContentInPack>true</IncludeContentInPack>
+        <IncludeBuildOutput>false</IncludeBuildOutput>
+        <ContentTargetFolders>content</ContentTargetFolders>
+        <EnableDefaultItems>false</EnableDefaultItems>
+        <NoDefaultExcludes>true</NoDefaultExcludes>
+        
+        
+        <!-- Nuget Package-->
+        <PackageId>Bit.Tooling.Templates.TodoTemplate</PackageId>
+        <PackageType>Template</PackageType>
+        <Title>Bit Platform TodoTemplate</Title>
+        <PackageDescription>A template for creating a Todo app base on the Bit-Platform</PackageDescription>
+        <PackageTags>Bit;c#;asp.net;core;template;web;blazor</PackageTags>
+        <PackageCopyright>Copyright © Bit Platform 2022</PackageCopyright>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageIcon>bit-icon-512.png</PackageIcon>
+        
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Content Include="TodoTemplate\**" Exclude="TodoTemplate\TodoTemplate.sln;TodoTemplate\.vs\**;TodoTemplate\**\bin\**\*;TodoTemplate\**\obj\**\*; " />
+        <Compile Remove="**\*" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="TodoTemplate\README.md">
+            <Pack>True</Pack>
+            <PackagePath>\</PackagePath>
+        </None>
+        <None Include="TodoTemplate\Web\wwwroot\images\icons\bit-icon-512.png">
+            <Pack>True</Pack>
+            <PackagePath>\</PackagePath>
+        </None>
+    </ItemGroup>
+
+
+
+</Project>

@@ -7,15 +7,19 @@
 		<InvariantGlobalization>true</InvariantGlobalization>
 		<RootNamespace>TodoTemplate.App</RootNamespace>
 		<AssemblyName>TodoTemplate.App</AssemblyName>
+        <!--/-:msbuild-conditional:noEmit -->
         <ServiceWorkerAssetsManifest Condition="'$(WebAppDeploymentType)' == 'PWA'">service-worker-assets.js</ServiceWorkerAssetsManifest>
         <BlazorCacheBootResources Condition="'$(WebAppDeploymentType)' == 'PWA'">false</BlazorCacheBootResources>
+        <!--/+:msbuild-conditional:noEmit -->
 	</PropertyGroup>
 
 	<ItemGroup>
+        <!--/-:msbuild-conditional:noEmit -->
 		<Content Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Remove="appsettings.json" />
 		<Content Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Remove="Pages\_Host.cshtml" />
         <Content Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Remove="Pages\_Layout.cshtml" />
         <Compile Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Remove="Services\Implementations\ServerSideAuthTokenProvider.cs" />
+        <!--/+:msbuild-conditional:noEmit -->
 		<Content Remove="compilerconfig.json" />
 		<None Include="compilerconfig.json" />
 	</ItemGroup>
@@ -27,8 +31,10 @@
 		<PackageReference Include="Bit.Tooling.SourceGenerators" Version="12.0.0-pre-04" />
 		<PackageReference Include="jose-jwt" Version="4.0.0" />
 		<PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="6.0.6" />
+        <!--/-:msbuild-conditional:noEmit -->
 		<PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.6" />
 		<PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="6.0.6" PrivateAssets="all" />
+        <!--/+:msbuild-conditional:noEmit -->
 	</ItemGroup>
 
 	<ItemGroup>

@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿//-:cnd:noEmit
+using System.Reflection;
 using Microsoft.Extensions.FileProviders;
 
 namespace TodoTemplate.App;

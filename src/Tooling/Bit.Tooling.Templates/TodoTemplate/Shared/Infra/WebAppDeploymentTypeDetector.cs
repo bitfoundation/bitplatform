@@ -1,4 +1,5 @@
-﻿namespace TodoTemplate.Shared.Infra;
+﻿//-:cnd:noEmit
+namespace TodoTemplate.Shared.Infra;
 
 public class WebAppDeploymentTypeDetector
 {

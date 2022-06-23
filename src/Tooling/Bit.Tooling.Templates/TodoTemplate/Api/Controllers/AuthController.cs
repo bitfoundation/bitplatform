@@ -1,4 +1,5 @@
-﻿using TodoTemplate.Api.Models.Account;
+﻿//-:cnd:noEmit
+using TodoTemplate.Api.Models.Account;
 using TodoTemplate.Shared.Dtos.Account;
 using FluentEmail.Core;
 using TodoTemplate.Api.Resources;

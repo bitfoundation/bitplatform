@@ -1,4 +1,5 @@
-﻿#if BlazorServer
+﻿//-:cnd:noEmit
+#if BlazorServer
 namespace TodoTemplate.App.Startup
 {
     public class Middlewares

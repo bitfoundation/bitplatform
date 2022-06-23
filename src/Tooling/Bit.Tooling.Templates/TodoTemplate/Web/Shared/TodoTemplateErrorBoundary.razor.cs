@@ -1,4 +1,5 @@
-﻿namespace TodoTemplate.App.Shared;
+﻿//-:cnd:noEmit
+namespace TodoTemplate.App.Shared;
 
 public partial class TodoTemplateErrorBoundary
 {
