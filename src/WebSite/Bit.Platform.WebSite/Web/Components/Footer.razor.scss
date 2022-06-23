@@ -1,7 +1,7 @@
 ﻿@import '../Styles/_shared.scss';
 
 .footer-container {
-    @include Page-container;
+    @include PageContainer;
     padding-top: rem(80px);
     padding-bottom: rem(44px);
 
@@ -11,7 +11,7 @@
 }
 
 .footer-section {
-    @include Page-section;
+    @include PageSection;
     flex-flow: row wrap;
     justify-content: space-between;
 
@@ -92,7 +92,7 @@
     @include Body3;
 }
 
-@mixin Social-media-link {
+@mixin SocialMediaLink {
     width: rem(32px);
     height: rem(32px);
     border-radius: 50%;
@@ -111,7 +111,7 @@
 }
 
 .twitter-link {
-    @include Social-media-link;
+    @include SocialMediaLink;
     background-image: url('/images/footer/twitter-icon.svg');
 
     &:hover {
@@ -120,7 +120,7 @@
 }
 
 .github-link {
-    @include Social-media-link;
+    @include SocialMediaLink;
     background-image: url('/images/footer/github-icon.svg');
 
     &:hover {
@@ -129,7 +129,7 @@
 }
 
 .facebook-link {
-    @include Social-media-link;
+    @include SocialMediaLink;
     background-image: url('/images/footer/facebook-icon.svg');
 
     &:hover {
@@ -138,10 +138,10 @@
 }
 
 .linkedin-link {
-    @include Social-media-link;
+    @include SocialMediaLink;
     background-image: url('/images/footer/linkedin-icon.svg');
 
     &:hover {
-        background-color: $Linkedin;
+        background-color: $LinkedinColor;
     }
 }

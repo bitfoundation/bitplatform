@@ -52,7 +52,7 @@
     box-sizing: border-box;
 }
 
-@mixin Page-container {
+@mixin PageContainer {
     display: flex;
     flex-flow: column nowrap;
     justify-content: flex-start;
@@ -62,7 +62,7 @@
     overflow: hidden;
 }
 
-@mixin Page-section {
+@mixin PageSection {
     display: flex;
     width: 100%;
     max-width: rem(1232px);

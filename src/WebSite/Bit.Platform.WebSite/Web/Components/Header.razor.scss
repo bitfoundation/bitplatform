@@ -34,13 +34,13 @@
 }
 
 .header-container {
-    @include Page-container;
+    @include PageContainer;
     height: 100%;
     position: absolute;
 }
 
 .header-section {
-    @include Page-section;
+    @include PageSection;
     background-color: unset;
     flex-flow: row nowrap;
     justify-content: space-between;

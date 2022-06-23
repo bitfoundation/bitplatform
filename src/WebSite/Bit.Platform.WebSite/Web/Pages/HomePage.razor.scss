@@ -1,13 +1,13 @@
 ﻿@import '../Styles/_shared.scss';
 
 .page-container {
-    @include Page-container;
+    @include PageContainer;
     background-color: transparent;
     position: relative;
 }
 
 .page-section {
-    @include Page-section;
+    @include PageSection;
 
     h2 {
         color: $B3Color;
