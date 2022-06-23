@@ -29,7 +29,7 @@ namespace TodoTemplate.Shared.Infra
             {
 #if DEBUG
                 return BuildConfigurationMode.Debug;
-                #else
+#else
                 return BuildConfigurationMode.Release;
 #endif
 

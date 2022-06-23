@@ -15,6 +15,7 @@ public class Program
 #if !BlazorWebAssembly && !BlazorServer
         throw new InvalidOperationException("Please switch to either blazor web assembly or server as described in readme.md");
 #endif
+
         await CreateHostBuilder(args)
             .RunAsync();
     }
@@ -50,5 +51,4 @@ public class Program
         return app;
     }
 #endif
-
 }

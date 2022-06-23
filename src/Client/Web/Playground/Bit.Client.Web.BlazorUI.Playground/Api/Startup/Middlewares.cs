@@ -45,7 +45,6 @@ public static class Middlewares
         {
             endpoints.MapDefaultControllerRoute();
 
-
 #if BlazorWebAssembly
             endpoints.MapFallbackToPage("/_Host");
 #endif

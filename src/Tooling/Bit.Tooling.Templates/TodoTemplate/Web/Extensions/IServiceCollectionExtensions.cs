@@ -21,6 +21,7 @@ public static class IServiceCollectionExtensions
             return httpClient;
         });
 #endif
+
         services.AddTransient<TodoTemplateHttpClientHandler>();
 
         services.AddAuthorizationCore();
