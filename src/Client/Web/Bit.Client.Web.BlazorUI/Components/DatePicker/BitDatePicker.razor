@@ -7,9 +7,9 @@
      class="@ClassBuilder.Value"
      id="@UniqueId">
 
-    @if (LabelFragment != null)
+    @if (LabelFragment is not null)
     {
-        <label class="bit-txt-label" id="@LabelId" for="@TextFieldId">
+        <label class="bit-dtp-label" id="@LabelId" for="@TextFieldId">
             @LabelFragment
         </label>
     }
