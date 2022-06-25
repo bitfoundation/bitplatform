@@ -117,6 +117,11 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter] public string? Label { get; set; }
 
         /// <summary>
+        /// Shows the custom label for text field
+        /// </summary>
+        [Parameter] public RenderFragment? LabelFragment { get; set; }
+
+        /// <summary>
         /// Determines if the DatePicker has a border.
         /// </summary>
         [Parameter] public bool HasBorder { get; set; } = true;
