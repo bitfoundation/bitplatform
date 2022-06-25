@@ -39,27 +39,133 @@ a {
     height: rem(6px);
 }
 
-h1{
-    font-weight:700;
-    font-size:rem(50px);
-    line-height:rem(78px);
+h1 {
+    font-weight: 700;
+    font-size: rem(50px);
+    line-height: rem(78px);
+    margin-block-end: 0;
+    margin-block-start: 0;
+
+    @include lg {
+        font-weight: 700;
+        font-size: rem(40px);
+        line-height: rem(64px);
+    }
+
+    @include md {
+        font-weight: 600;
+        font-size: rem(26px);
+        line-height: rem(40px);
+    }
+
+
+    @include sm {
+        font-weight: 600;
+        font-size: rem(26px);
+        line-height: rem(40px);
+    }
 }
 
 h2 {
     font-weight: 700;
     font-size: rem(40px);
     line-height: rem(56px);
+    margin-block-end: 0;
+    margin-block-start: 0;
+
+    @include lg {
+        font-weight: 700;
+        font-size: rem(36px);
+        line-height: rem(56px);
+    }
+
+    @include md {
+        font-weight: 700;
+        font-size: rem(24px);
+        line-height: rem(40px);
+    }
+
+
+    @include sm {
+        font-weight: 700;
+        font-size: rem(20px);
+        line-height: rem(32px);
+    }
 }
 
 h3 {
     font-weight: 600;
     font-size: rem(34px);
     line-height: rem(48px);
+    margin-block-end: 0;
+    margin-block-start: 0;
+
+    @include lg {
+        font-weight: 600;
+        font-size: rem(32px);
+        line-height: rem(48px);
+    }
+
+    @include md {
+        font-weight: 600;
+        font-size: rem(20px);
+        line-height: rem(32px);
+    }
+
+
+    @include sm {
+        font-weight: 600;
+        font-size: rem(20px);
+        line-height: rem(32px);
+    }
 }
 
 h4 {
     font-weight: 700;
     font-size: rem(30px);
     line-height: rem(40px);
+    margin-block-end: 0;
+    margin-block-start: 0;
+
+    @include lg {
+        font-weight: 700;
+        font-size: rem(26px);
+        line-height: rem(40px);
+    }
+
+    @include md {
+        font-weight: 600;
+        font-size: rem(16px);
+        line-height: rem(32px);
+    }
+
+    @include sm {
+        font-weight: 600;
+        font-size: rem(16px);
+        line-height: rem(32px);
+    }
 }
 
+
+/* --------------- header ------------- */
+
+.header-menu-btn {
+    min-width: rem(24px);
+    min-height: rem(24px);
+    max-width: rem(24px);
+    max-height: rem(24px);
+    display: none;
+
+    .bit-icon {
+        font-size: rem(12px);
+        color: $White;
+    }
+
+    &:hover {
+        background-color: none;
+    }
+
+    @include sm {
+        display: inline-block;
+    }
+}
