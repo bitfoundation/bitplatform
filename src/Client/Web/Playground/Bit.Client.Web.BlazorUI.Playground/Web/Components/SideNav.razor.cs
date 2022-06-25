@@ -36,6 +36,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Components
                      new BitNavLinkItem { Name= "Slider", Key = "Slider", Url = "/components/slider" },
                      new BitNavLinkItem { Name= "SpinButton (NumericTextField)", Key = "SpinButton", Url = "/components/spin-button"},
                      new BitNavLinkItem { Name= "TextField", Key = "TextField", Url = "/components/text-field" },
+                     new BitNavLinkItem { Name= "NumericTextField", Key = "NumericTextField", Url = "/components/numeric-textfield" },
                      new BitNavLinkItem { Name= "Toggle (Switch)", Key = "Toggle", Url = "/components/toggle" }
                 }
             },
