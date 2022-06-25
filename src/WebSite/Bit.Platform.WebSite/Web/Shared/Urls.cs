@@ -24,7 +24,7 @@
 
         public const string Blog = "#";
 
-        public const string Website = "#";
+        public const string Video = "#";
 
         public const string TodoTemplate = "#";
 

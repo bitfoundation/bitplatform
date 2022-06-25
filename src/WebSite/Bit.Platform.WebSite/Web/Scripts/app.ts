@@ -46,7 +46,7 @@ function highlightSnippet() {
     });
 }
 
-function ChangeHeaderByScrolling(element: any) {
+function RegisterOnScrollToChangeHeaderStyle(element: any) {
     window.onscroll = function (event) {
         if (document.documentElement.scrollTop >= 100) {
             element.classList.add("blue-header");

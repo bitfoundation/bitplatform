@@ -20,9 +20,9 @@ namespace Microsoft.JSInterop
             await jsRuntime.InvokeVoidAsync("copyToClipboard", codeSampleContentForCopy);
         }
 
-        public static async Task ChangeHeaderByScrolling(this IJSRuntime jsRuntime, ElementReference element)
+        public static async Task RegisterOnScrollToChangeHeaderStyle(this IJSRuntime jsRuntime, ElementReference element)
         {
-            await jsRuntime.InvokeVoidAsync("ChangeHeaderByScrolling", element);
+            await jsRuntime.InvokeVoidAsync("RegisterOnScrollToChangeHeaderStyle", element);
         }
     }
 }

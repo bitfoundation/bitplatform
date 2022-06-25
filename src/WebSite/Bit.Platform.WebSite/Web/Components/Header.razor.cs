@@ -34,7 +34,7 @@ namespace Bit.Platform.WebSite.Web.Components
         {
             if (firstRender)
             {
-                await JSRuntime.ChangeHeaderByScrolling(HeaderElement);
+                await JSRuntime.RegisterOnScrollToChangeHeaderStyle(HeaderElement);
             }
 
             await base.OnAfterRenderAsync(firstRender);
