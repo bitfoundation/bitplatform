@@ -250,7 +250,7 @@ namespace Bit.Client.Web.BlazorUI
                 internalMin -= internalMax;
             }
 
-            precision = Precision is not null ? Precision.Value : CalculatePrecision(internalStep);
+            precision = Precision is not null ? Precision.Value : CalculatePrecision(Step);
             if (ValueHasBeenSet is false)
             {
                 SetValue(GetDoubleValueOrDefault(DefaultValue) ?? Math.Min(0, internalMin.Value));
@@ -432,13 +432,15 @@ namespace Bit.Client.Web.BlazorUI
             }
         }
 
-        private int CalculatePrecision(double value)
+        private int CalculatePrecision(TValue? value)
         {
+            if (value is null) return 0;
+
             var pattern = isDecimals ? @"[1-9]([0]+$)|\.([0-9]*)" : @"(^-\d+$)|\d+";
             var regex = new Regex(pattern);
-            if (regex.IsMatch(value.ToString(CultureInfo.InvariantCulture)) is false) return 0;
+            if (regex.IsMatch($"{value}") is false) return 0;
 
-            var matches = regex.Matches(value.ToString(CultureInfo.InvariantCulture));
+            var matches = regex.Matches($"{value}");
             if (matches.Count == 0) return 0;
 
             var groups = matches[0].Groups;
