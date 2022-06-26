@@ -5,6 +5,8 @@
     min-width: rem(86px);
     font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
     display: flex;
+    justify-content: flex-start;
+    flex-wrap: wrap;
     align-items: center;
     font-size: rem(41px);
     font-weight: 400;
@@ -48,7 +50,7 @@
 }
 
 .bit-spb-wrapper {
-    width: rem(75px);
+    width: 100%;
     min-width: rem(86px);
     height: rem(32px);
     border-radius: rem(2px);
