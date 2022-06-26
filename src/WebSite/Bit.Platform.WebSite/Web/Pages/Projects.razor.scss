@@ -1,0 +1,192 @@
+﻿@import '../Styles/_shared.scss';
+
+.page-container {
+    @include PageContainer;
+    background-color: #E5E5E5;
+    position: relative;
+}
+
+.page-section {
+    @include PageSection;
+    height: inherit;
+
+    .subtitle {
+        @include Body3;
+        color: $Gray1;
+    }
+}
+
+.description-section {
+    @include Body3;
+    color: $Gray1;
+}
+
+//-----------------------hero-----------------//
+
+.hero-section {
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: center;
+    width: 100%;
+    height: rem(440px);
+    background-color: $B5Color;
+    color: $White;
+
+    @include lg {
+        height: rem(440px);
+    }
+
+    @include md {
+        height: rem(320px);
+    }
+
+    @include sm {
+        background-image: none;
+        background-color: $B5Color;
+        height: rem(432px);
+    }
+}
+
+.hero-section-container {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: space-between;
+    align-items: center;
+    color: $White;
+
+    .content-container {
+        flex: 50%;
+
+        div {
+            @include Body1;
+            margin-top: 24px;
+        }
+
+        @include sm {
+            flex: 100%;
+        }
+    }
+}
+
+//-----------------------store links-----------------//
+
+.store-links-section {
+    position: relative;
+    top: -40px;
+
+    div {
+        @include Card;
+        width: 80px;
+        height: 80px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 6px;
+        box-shadow: none;
+
+        span {
+            width: 40px;
+            height: 40px;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+    }
+}
+
+.google-play {
+    background-image: url('/images/projects/google-store.svg');
+}
+
+.microsoft-store {
+    background-image: url('/images/projects/spa.svg');
+}
+
+.apple-store {
+    background-image: url('/images/projects/microsoft-store.svg');
+}
+
+.figma {
+    background-image: url('/images/projects/apple-store.svg');
+}
+
+.spa {
+    background-image: url('/images/projects/pwa.svg');
+}
+
+.pwa {
+    background-image: url('/images/projects/figma.svg');
+}
+
+//-----------------------background-----------------//
+
+.background-section {
+
+    .circle1 {
+        position: absolute;
+        width: rem(600px);
+        height: rem(600px);
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.13);
+        top: rem(-300px);
+        left: rem(-300px);
+
+        @include sm {
+            border: none;
+            background: rgba(255, 255, 255, 0.2);
+            top: rem(320px);
+            right: rem(-56px);
+        }
+    }
+
+    .circle2 {
+        position: absolute;
+        width: rem(500px);
+        height: rem(500px);
+        border-radius: 50%;
+        background: $B5Color;
+        top: -250px;
+        left: -250px;
+
+        @include sm {
+            width: rem(150px);
+            height: rem(150px);
+            border-radius: 50%;
+            top: rem(-50px);
+            left: rem(-40px);
+        }
+    }
+
+    .circle3 {
+        position: absolute;
+        width: rem(461px);
+        height: rem(461px);
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.13);
+        top: rem(122px);
+        right: rem(-175px);
+
+        @include sm {
+            width: rem(228px);
+            height: rem(228px);
+            top: rem(190px);
+            right: rem(-110px);
+        }
+    }
+
+    .circle4 {
+        position: absolute;
+        width: rem(392px);
+        height: rem(392px);
+        border-radius: 50%;
+        border: 2px solid rgba(255, 255, 255, 0.15);
+        top: rem(200px);
+        right: rem(-20px);
+
+        @include sm {
+            width: rem(194px);
+            height: rem(194px);
+            top: rem(300px);
+            right: 0;
+        }
+    }
+}

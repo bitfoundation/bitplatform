@@ -1,0 +1,136 @@
+﻿@import '../Styles/_shared.scss';
+
+.page-section {
+    @include PageSection;
+    height: inherit;
+
+    .subtitle {
+        @include Body3;
+        color: $Gray1;
+    }
+}
+
+.description-section {
+    @include Body3;
+    color: $Gray1;
+    white-space: pre-wrap;
+    margin-top: 32px;
+}
+
+/*-------------------getting started steps section---------------------*/
+
+.getting-started-step-section {
+    display: flex;
+    flex-flow: column nowrap;
+    margin: 64px 0;
+}
+
+.step-number {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background-color: unset;
+    color: $B4Color;
+    border: 1px solid $B4Color;
+    text-align: center;
+    box-sizing: border-box;
+    padding-top: 5px;
+    margin-bottom: 5px;
+
+    @include md {
+        width: 40px;
+        height: 40px;
+        padding-top:3px;
+    }
+
+    @include sm {
+        display: none;
+    }
+}
+
+.step-body-container {
+    border-left: 1px solid $Gray3;
+    padding-left: 75px;
+    display: flex;
+    flex-flow: column nowrap;
+    margin-left: 28px;
+
+    @include md{
+        padding-left:55px;
+        margin-left:20px;
+    }
+
+    @include sm {
+        border-left: unset;
+        margin-left: unset;
+        padding-left: unset;
+        margin-bottom: 20px;
+    }
+
+    .step-body-card {
+        @include Card;
+        padding: 32px 24px;
+    }
+
+    h4 {
+        color: $B3Color;
+        margin-bottom: 16px;
+    }
+
+    .description {
+        color: $Gray1;
+        @include Body2;
+        white-space: pre-wrap;
+    }
+
+    .code-header {
+        color: $Gray1;
+        @include Subtitle3;
+        padding: 20px 0;
+        white-space: pre-wrap;
+    }
+
+    .code {
+        padding: 20px 16px;
+        border-left: 4px solid $B6Color;
+        background-color: $Gray5;
+        @include Subtitle4;
+    }
+}
+
+.selected-step-number {
+    background-color: $B4Color;
+    color: $White;
+}
+
+.selected-step-body-container {
+    border-left: 1px solid $B4Color;
+}
+
+/*--------------------------getting started item list section----------------------------*/
+.getting-started-list-section {
+    margin: 0 56px;
+    position: absolute;
+    top: 800px;
+    left: 0;
+
+    @include lt-lg {
+        display: none;
+    }
+
+    .item {
+        @include Body3;
+        padding: 10px 20px;
+        border-left: 1px solid $B6Color;
+    }
+
+    .selected-item {
+        border-left: 4px solid $B6Color;
+        color: $B6Color;
+    }
+}
+
+.getting-started-container {
+    display: flex;
+    flex-flow: column nowrap;
+}
