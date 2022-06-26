@@ -65,6 +65,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTemplate.Shared", "Tool
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTemplate.Web", "Tooling\Bit.Tooling.Templates\TodoTemplate\Web\TodoTemplate.Web.csproj", "{F52DB6F1-3018-4E35-AB65-6301D5AED0F8}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".template.config", ".template.config", "{4CA8866E-D96F-4D76-82C5-279D15D611EA}"
+	ProjectSection(SolutionItems) = preProject
+		Tooling\Bit.Tooling.Templates\TodoTemplate\.template.config\template.json = Tooling\Bit.Tooling.Templates\TodoTemplate\.template.config\template.json
+	EndProjectSection
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{8C9FF7C8-6A83-427C-A704-E4061822718D}"
 	ProjectSection(SolutionItems) = preProject
 		..\.github\workflows\Bit.Client.Web.BlazorUI.ci.yml = ..\.github\workflows\Bit.Client.Web.BlazorUI.ci.yml
@@ -73,12 +78,17 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{8C9F
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WebSite", "WebSite", "{293480D2-1505-4C9F-B2B9-D78CA5573866}"
+	ProjectSection(SolutionItems) = preProject
+		WebSite\Directory.build.props = WebSite\Directory.build.props
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Platform.WebSite.Api", "WebSite\Bit.Platform.WebSite\Api\Bit.Platform.WebSite.Api.csproj", "{3F303F1E-CB6D-4EA4-B748-A3CDA8E1235A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Platform.WebSite.Shared", "WebSite\Bit.Platform.WebSite\Shared\Bit.Platform.WebSite.Shared.csproj", "{FF876CBA-A797-48F5-A242-CBD0D099A804}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Platform.WebSite.Web", "WebSite\Bit.Platform.WebSite\Web\Bit.Platform.WebSite.Web.csproj", "{85F4E9DD-46F4-48B2-8E34-15229700B488}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTemplate.ProjectTemplate", "Tooling\Bit.Tooling.Templates\TodoTemplate.ProjectTemplate.csproj", "{60D0BE0A-0C28-46C2-80F5-F55E89C483EB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -466,6 +476,26 @@ Global
 		{85F4E9DD-46F4-48B2-8E34-15229700B488}.Release|x64.Build.0 = Release|Any CPU
 		{85F4E9DD-46F4-48B2-8E34-15229700B488}.Release|x86.ActiveCfg = Release|Any CPU
 		{85F4E9DD-46F4-48B2-8E34-15229700B488}.Release|x86.Build.0 = Release|Any CPU
+		{60D0BE0A-0C28-46C2-80F5-F55E89C483EB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{60D0BE0A-0C28-46C2-80F5-F55E89C483EB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{60D0BE0A-0C28-46C2-80F5-F55E89C483EB}.Debug|iPhone.ActiveCfg = Debug|Any CPU
+		{60D0BE0A-0C28-46C2-80F5-F55E89C483EB}.Debug|iPhone.Build.0 = Debug|Any CPU
+		{60D0BE0A-0C28-46C2-80F5-F55E89C483EB}.Debug|iPhoneSimulator.ActiveCfg = Debug|Any CPU
+		{60D0BE0A-0C28-46C2-80F5-F55E89C483EB}.Debug|iPhoneSimulator.Build.0 = Debug|Any CPU
+		{60D0BE0A-0C28-46C2-80F5-F55E89C483EB}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{60D0BE0A-0C28-46C2-80F5-F55E89C483EB}.Debug|x64.Build.0 = Debug|Any CPU
+		{60D0BE0A-0C28-46C2-80F5-F55E89C483EB}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{60D0BE0A-0C28-46C2-80F5-F55E89C483EB}.Debug|x86.Build.0 = Debug|Any CPU
+		{60D0BE0A-0C28-46C2-80F5-F55E89C483EB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{60D0BE0A-0C28-46C2-80F5-F55E89C483EB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{60D0BE0A-0C28-46C2-80F5-F55E89C483EB}.Release|iPhone.ActiveCfg = Release|Any CPU
+		{60D0BE0A-0C28-46C2-80F5-F55E89C483EB}.Release|iPhone.Build.0 = Release|Any CPU
+		{60D0BE0A-0C28-46C2-80F5-F55E89C483EB}.Release|iPhoneSimulator.ActiveCfg = Release|Any CPU
+		{60D0BE0A-0C28-46C2-80F5-F55E89C483EB}.Release|iPhoneSimulator.Build.0 = Release|Any CPU
+		{60D0BE0A-0C28-46C2-80F5-F55E89C483EB}.Release|x64.ActiveCfg = Release|Any CPU
+		{60D0BE0A-0C28-46C2-80F5-F55E89C483EB}.Release|x64.Build.0 = Release|Any CPU
+		{60D0BE0A-0C28-46C2-80F5-F55E89C483EB}.Release|x86.ActiveCfg = Release|Any CPU
+		{60D0BE0A-0C28-46C2-80F5-F55E89C483EB}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -491,10 +521,12 @@ Global
 		{FFA0F2EB-B7E0-400D-98FD-3421F76B96C0} = {8DB90941-9E4D-40C1-B653-51A63572EBC7}
 		{8F380280-03E3-48E3-9FB0-3158F389F47D} = {8DB90941-9E4D-40C1-B653-51A63572EBC7}
 		{F52DB6F1-3018-4E35-AB65-6301D5AED0F8} = {8DB90941-9E4D-40C1-B653-51A63572EBC7}
+		{4CA8866E-D96F-4D76-82C5-279D15D611EA} = {8DB90941-9E4D-40C1-B653-51A63572EBC7}
 		{8C9FF7C8-6A83-427C-A704-E4061822718D} = {7B24BEC3-93BA-4789-B009-71A778ADA56F}
 		{3F303F1E-CB6D-4EA4-B748-A3CDA8E1235A} = {293480D2-1505-4C9F-B2B9-D78CA5573866}
 		{FF876CBA-A797-48F5-A242-CBD0D099A804} = {293480D2-1505-4C9F-B2B9-D78CA5573866}
 		{85F4E9DD-46F4-48B2-8E34-15229700B488} = {293480D2-1505-4C9F-B2B9-D78CA5573866}
+		{60D0BE0A-0C28-46C2-80F5-F55E89C483EB} = {19A1D227-BD40-49BB-A577-413470135612}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {DA107107-478F-477A-872B-787CEA7DD9B8}

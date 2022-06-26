@@ -1,4 +1,5 @@
-﻿#if BlazorServer
+﻿//-:cnd:noEmit
+#if BlazorServer
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 #elif BlazorWebAssembly

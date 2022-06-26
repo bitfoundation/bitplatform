@@ -1,4 +1,5 @@
-﻿var builder = WebApplication.CreateBuilder(args);
+﻿//-:cnd:noEmit
+var builder = WebApplication.CreateBuilder(args);
 
 #if DEBUG
 builder.WebHost.UseUrls("https://*:5001", "http://*:5000");

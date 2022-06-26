@@ -1,4 +1,5 @@
-﻿using TodoTemplate.Api.Models.Account;
+﻿//-:cnd:noEmit
+using TodoTemplate.Api.Models.Account;
 using TodoTemplate.Shared.Dtos.Account;
 using FluentEmail.Core;
 using TodoTemplate.Api.Resources;
@@ -124,7 +125,7 @@ public partial class AuthController : ControllerBase
 #if BlazorServer
         resetPasswordLink = $"{_appSettings.Value.WebServerAddress}{resetPasswordLink}";
 #else
-        resetPasswordLink = $"{_server.GetHostUri()}{resetPasswordLink}";
+        resetPasswordLink = $"{new Uri($"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}{HttpContext.Request.PathBase}")}{resetPasswordLink}";
 #endif
 
         var assembly = typeof(Program).Assembly;

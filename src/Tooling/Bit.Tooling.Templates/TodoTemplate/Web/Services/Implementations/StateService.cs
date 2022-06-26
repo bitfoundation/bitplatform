@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿//-:cnd:noEmit
+using System.Runtime.InteropServices;
 
 namespace TodoTemplate.App.Services.Implementations;
 

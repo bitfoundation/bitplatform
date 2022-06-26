@@ -255,30 +255,6 @@ _book
 /src/Client/Web/Playground/Bit.Client.Web.BlazorUI.Playground/Api/BitFileUploaderFiles
 /src/Client/Web/Playground/Bit.Client.Web.BlazorUI.Playground/Api/Properties/PublishProfiles/bitcomponents - Web Deploy.pubxml
 /src/Client/Web/Playground/Bit.Client.Web.BlazorUI.Playground/Api/Properties/ServiceDependencies/bitcomponents - Web Deploy/profile.arm.json
-
-/src/Tooling/Bit.Tooling.Templates/TodoTemplate/App/Components
-/src/Tooling/Bit.Tooling.Templates/TodoTemplate/App/Extensions
-/src/Tooling/Bit.Tooling.Templates/TodoTemplate/App/Pages
-/src/Tooling/Bit.Tooling.Templates/TodoTemplate/App/Services
-/src/Tooling/Bit.Tooling.Templates/TodoTemplate/App/Shared
-/src/Tooling/Bit.Tooling.Templates/TodoTemplate/App/wwwroot/fonts
-/src/Tooling/Bit.Tooling.Templates/TodoTemplate/App/wwwroot/images
-/src/Tooling/Bit.Tooling.Templates/TodoTemplate/App/wwwroot/scripts
-/src/Tooling/Bit.Tooling.Templates/TodoTemplate/App/wwwroot/styles
-/src/Tooling/Bit.Tooling.Templates/TodoTemplate/App/compilerconfig.*
-/src/Tooling/Bit.Tooling.Templates/TodoTemplate/App/_Imports.razor
-/src/Tooling/Bit.Tooling.Templates/TodoTemplate/App/Main.razor
-/src/Tooling/Bit.Tooling.Templates/TodoTemplate/App/appsettings.json
-/src/Tooling/Bit.Tooling.Templates/TodoTemplate/App/Components
-/src/Tooling/Bit.Tooling.Templates/TodoTemplate/App/Shared
-/src/Tooling/Bit.Tooling.Templates/TodoTemplate/App/wwwroot/service-worker*.js
-/src/Tooling/Bit.Tooling.Templates/TodoTemplate/App/Styles
-/src/Tooling/Bit.Tooling.Templates/TodoTemplate/**/*.css
-/src/Tooling/Bit.Tooling.Templates/TodoTemplate/Api/Attachments/**/*.*
-/src/Tooling/Bit.Tooling.Templates/TodoTemplate/Web/wwwroot/scripts/todoTemplate*.js
-/src/Tooling/Bit.Tooling.Templates/TodoTemplate/Web/wwwroot/service-worker.published*.js
-
-/src/Tooling/Bit.Tooling.Templates/TodoTemplate/App/Styles
 /src/Client/Web/Playground/Bit.Client.Web.BlazorUI.Playground/App/tsconfig.json
 /src/WebSite/Bit.Platform.WebSite/Web/**/**/*.css
 /src/WebSite/Bit.Platform.WebSite/Web/wwwroot/**/*.js

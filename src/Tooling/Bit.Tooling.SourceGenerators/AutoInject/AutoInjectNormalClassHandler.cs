@@ -5,7 +5,7 @@ using Microsoft.CodeAnalysis;
 
 namespace Bit.Tooling.SourceGenerators;
 
-public class AutoInjectNormalClassHandler : AutoInjectBaseHandler
+public class AutoInjectNormalClassHandler
 {
     public static string? Generate(
         INamedTypeSymbol? attributeSymbol,
@@ -17,14 +17,14 @@ public class AutoInjectNormalClassHandler : AutoInjectBaseHandler
             return null;
         }
         
-        if (IsContainingSymbolEqualToContainingNamespace(classSymbol) is false)
+        if (AutoInjectHelper.IsContainingSymbolEqualToContainingNamespace(classSymbol) is false)
         {
             return null;
         }
 
         string classNamespace = classSymbol.ContainingNamespace.ToDisplayString();
 
-        IReadOnlyCollection<ISymbol> baseEligibleMembers = GetBaseClassEligibleMembers(classSymbol, attributeSymbol);
+        IReadOnlyCollection<ISymbol> baseEligibleMembers = AutoInjectHelper.GetBaseClassEligibleMembers(classSymbol, attributeSymbol);
         IReadOnlyCollection<ISymbol> sortedMembers = eligibleMembers.OrderBy(o => o.Name).ToList();
 
         string source = $@"
@@ -66,7 +66,7 @@ namespace {classNamespace}
 
         foreach (ISymbol symbol in baseEligibleMembers)
         {
-            baseConstructor.Append($@"{'\n'}{"\t\t\t\t\t\t"}autoInjected{FormatMemberName(symbol.Name)},");
+            baseConstructor.Append($@"{'\n'}{"\t\t\t\t\t\t"}autoInjected{AutoInjectHelper.FormatMemberName(symbol.Name)},");
         }
 
         baseConstructor.Length--;
@@ -81,7 +81,7 @@ namespace {classNamespace}
         StringBuilder stringBuilder = new StringBuilder();
         foreach (ISymbol symbol in eligibleMembers)
         {
-            stringBuilder.Append($@"{symbol.Name} = autoInjected{FormatMemberName(symbol.Name)};");
+            stringBuilder.Append($@"{symbol.Name} = autoInjected{AutoInjectHelper.FormatMemberName(symbol.Name)};");
         }
 
         return stringBuilder.ToString();
@@ -102,11 +102,11 @@ namespace {classNamespace}
         {
             if (member is IFieldSymbol fieldSymbol)
                 stringBuilder.Append(
-                    $@"{'\n'}{"\t\t\t"}{fieldSymbol.Type} autoInjected{FormatMemberName(fieldSymbol.Name)},");
+                    $@"{'\n'}{"\t\t\t"}{fieldSymbol.Type} autoInjected{AutoInjectHelper.FormatMemberName(fieldSymbol.Name)},");
 
             if (member is IPropertySymbol propertySymbol)
                 stringBuilder.Append(
-                    $@"{'\n'}{"\t\t\t"}{propertySymbol.Type} autoInjected{FormatMemberName(propertySymbol.Name)},");
+                    $@"{'\n'}{"\t\t\t"}{propertySymbol.Type} autoInjected{AutoInjectHelper.FormatMemberName(propertySymbol.Name)},");
         }
 
         stringBuilder.Length--;

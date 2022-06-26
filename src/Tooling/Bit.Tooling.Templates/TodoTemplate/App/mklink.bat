@@ -1,9 +1,9 @@
-rd Components
-rd Extensions
-rd Pages
-rd Services
-rd Shared
-rd Styles
+rd Components /S /Q
+rd Extensions /S /Q
+rd Pages /S /Q
+rd Services /S /Q
+rd Shared /S /Q
+rd Styles /S /Q
 
 mklink /j "Components" "../Web/Components"
 mklink /j "Extensions" "../Web/Extensions"
@@ -26,9 +26,9 @@ mklink /h "appsettings.json" "../Web/appsettings.json"
 
 cd wwwroot
 
-rd images
-rd scripts
-rd styles
+rd images /S /Q
+rd scripts /S /Q
+rd styles /S /Q
 
 mklink /j "images" "../../Web/wwwroot/images"
 mklink /j "scripts" "../../Web/wwwroot/scripts"

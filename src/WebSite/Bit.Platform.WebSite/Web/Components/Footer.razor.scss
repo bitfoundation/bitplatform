@@ -1,9 +1,147 @@
 ﻿@import '../Styles/_shared.scss';
 
-.footer {
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    left: 0;
-    width: 100%;
+.footer-container {
+    @include PageContainer;
+    padding-top: rem(80px);
+    padding-bottom: rem(44px);
+
+    @include lt-lg {
+        padding-top: rem(24px);
+    }
+}
+
+.footer-section {
+    @include PageSection;
+    flex-flow: row wrap;
+    justify-content: space-between;
+
+    @include sm {
+        justify-content: center;
+    }
+}
+
+.divider {
+    padding-bottom: rem(60px);
+    border-right: unset;
+    border-bottom: rem(1px) solid $Gray3;
+    margin-bottom: rem(30px);
+
+    @include sm {
+        margin-bottom: rem(4px);
+        padding-bottom: rem(16px);
+    }
+}
+
+@mixin Column {
+    display: flex;
+    flex-flow: column nowrap;
+    box-sizing: border-box;
+    padding-right: rem(5px);
+
+    .header {
+        @include Subtitle3;
+        color: $B6Color;
+        margin-bottom: rem(12px);
+    }
+
+    .line {
+        @include Body2;
+        color: $Gray1;
+    }
+}
+
+.bit-column {
+    @include Column;
+    flex: 33.3%;
+
+    .bit-icon {
+        background-image: url('/images/bit-icon.svg');
+        width: rem(45px);
+        height: rem(30px);
+        margin-bottom: rem(32px);
+    }
+
+    @include sm {
+        flex: 100%;
+        margin-bottom: rem(16px);
+    }
+}
+
+.products-column {
+    @include Column;
+    flex: 25%;
+}
+
+.quick-links-column {
+    @include Column;
+    flex: 25%;
+}
+
+.media-column {
+    @include Column;
+    flex: 16.6%;
+    padding-right: 0;
+}
+
+.row {
+    display: flex;
+    flex-flow: row nowrap;
+}
+
+.copy-right-column {
+    @include Body3;
+}
+
+@mixin SocialMediaLink {
+    width: rem(32px);
+    height: rem(32px);
+    border-radius: 50%;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-color: $B7Color;
+    cursor: pointer;
+    margin: 0 rem(8px);
+    padding: rem(2px);
+
+    @include lt-lg {
+        width: rem(24px);
+        height: rem(24px);
+        margin: 0 rem(8px);
+    }
+}
+
+.twitter-link {
+    @include SocialMediaLink;
+    background-image: url('/images/footer/twitter-icon.svg');
+
+    &:hover {
+        background-color: $TwitterColor;
+    }
+}
+
+.github-link {
+    @include SocialMediaLink;
+    background-image: url('/images/footer/github-icon.svg');
+
+    &:hover {
+        background-color: $GithubColor;
+    }
+}
+
+.facebook-link {
+    @include SocialMediaLink;
+    background-image: url('/images/footer/facebook-icon.svg');
+
+    &:hover {
+        background-color: $FacebookColor;
+    }
+}
+
+.linkedin-link {
+    @include SocialMediaLink;
+    background-image: url('/images/footer/linkedin-icon.svg');
+
+    &:hover {
+        background-color: $LinkedinColor;
+    }
 }
