@@ -1,0 +1,151 @@
+﻿@page "/components/numeric-text-field"
+
+<ComponentDemo ComponentName="NumericTextField" ComponentDescription="A NumericTextField allows you to enter any number type and format you want. It could be a decimal number or integer number with a suffix and so on. Also, give you the capability to show or hide increment and decrement keys."
+               ComponentParameters="componentParameters" EnumParameters="enumParameters">
+    <ComponentExampleBox Title="BitNumericTextField" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
+        <ExamplePreview>
+            <BitNumericTextField @bind-Value="BasicNumericTextFieldValue"
+                           Min="0"
+                           Max="100"
+                           Step="1"
+                           Label="Basic NumericTextField with integer value">
+            </BitNumericTextField>
+            <BitNumericTextField Min="-10m"
+                           Max="10m"
+                           Step="0.1m"
+                           Label="Basic NumericTextField with decimal value">
+            </BitNumericTextField>
+            <BitNumericTextField Min="-10d"
+                           Max="10d"
+                           Step="0.1d"
+                           Label="Basic NumericTextField with double value">
+            </BitNumericTextField>
+            <BitNumericTextField @bind-Value="BasicNumericTextFieldDisableValue"
+                           Min="0"
+                           Max="100"
+                           Step="1"
+                           Label="Disabled NumericTextField"
+                           IsEnabled="false">
+            </BitNumericTextField>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Enable NumericTextField Arrow keys" HTMLSourceCode="@example2HTMLCode" ExampleId="example2">
+        <ExamplePreview>
+            <BitNumericTextField
+                           Min="0"
+                           Max="100"
+                           Step="1"
+                           Arrows="true"
+                           Label="Basic NumericTextField with arrow keys">
+            </BitNumericTextField>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="NumericTextField With Icon" HTMLSourceCode="@example3HTMLCode" ExampleId="example3">
+        <ExamplePreview>
+            <BitNumericTextField IconName="BitIconName.IncreaseIndentText"
+                           Min="0"
+                           Max="100"
+                           Step="1"
+                           Label="With Icon">
+            </BitNumericTextField>
+            <BitNumericTextField IconName="BitIconName.IncreaseIndentText"
+                           Min="0"
+                           Max="100"
+                           Step="1"
+                           Label="Disabled With Icon"
+                           IsEnabled="false">
+            </BitNumericTextField>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="NumericTextField With Suffix" HTMLSourceCode="@example4HTMLCode" ExampleId="example4">
+        <ExamplePreview>
+            <div class="example-desc">This NumericTextField includes a suffix in the value and defines custom onIncrement, onDecrement.</div>
+            <BitNumericTextField Suffix="Inch"
+                           Min="0"
+                           Max="100"
+                           Step="1"
+                           Label="With suffix">
+            </BitNumericTextField>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="NumericTextField With Label Above" HTMLSourceCode="@example5HTMLCode" CSharpSourceCode="@example5CSharpCode" ExampleId="example5">
+        <ExamplePreview>
+            <BitNumericTextField @bind-Value="NumericTextFieldWithLabelAboveValue"
+                           Suffix="cm"
+                           Min="0"
+                           Max="100"
+                           Step="1"
+                           Label="With Labal Above"
+                           LabelPosition="@BitNumericTextFieldLabelPosition.Top">
+            </BitNumericTextField>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Custom Styled NumericTextField" HTMLSourceCode="@example6HTMLCode" ExampleId="example6">
+        <ExamplePreview>
+            <BitNumericTextField Class="custom-spb"
+                           Min="0"
+                           Max="100"
+                           Step="1"
+                           Label="Custom Styled">
+            </BitNumericTextField>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Controlled NumericTextField" HTMLSourceCode="@example7HTMLCode" CSharpSourceCode="@example7CSharpCode" ExampleId="example7">
+        <ExamplePreview>
+            <div class="example-desc">
+                A controlled BitNumericTextField provides two-way binding using either bind-value or Value parameters. With bind-value all the changes to the value can be seen by its parent
+                but using Value, a custom handler should be implemented to reflect the changes outside the component.
+            </div>
+            <BitNumericTextField Label="Controlled NumericTextField with bind-value"
+                           @bind-Value="BitNumericTextFieldBindValue"
+                           Min="0d"
+                           Max="100d"
+                           Step="1d">
+            </BitNumericTextField>
+            <BitNumericTextField Label="Controlled NumericTextField with Value"
+                                 Value="BitNumericTextFieldValueChanged"
+                                 ValueChanged="(decimal value) => HandleControlledNumericTextFieldValueChange(value)"
+                                 Min="0m"
+                                 Max="100m"
+                                 Step="1m">
+            </BitNumericTextField>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="NumericTextField validation" HTMLSourceCode="@example8HTMLCode" CSharpSourceCode="@example8CSharpCode" ExampleId="example8">
+        <ExamplePreview>
+            @if (string.IsNullOrEmpty(SuccessMessage))
+            {
+                <EditForm Model="@ValidationModel" OnValidSubmit="@HandleValidSubmit" OnInvalidSubmit="@HandleInvalidSubmit">
+                    <DataAnnotationsValidator />
+
+                    <div class="validation-summary">
+                        <ValidationSummary />
+                    </div>
+
+                    <div>
+                        <BitNumericTextField Label="Age" @bind-Value="@ValidationModel.AgeInYears"></BitNumericTextField>
+
+                        <ValidationMessage For="@(() => ValidationModel.AgeInYears)" />
+                    </div>
+
+                    <BitButton ButtonType="BitButtonType.Submit">
+                        Submit
+                    </BitButton>
+                </EditForm>
+            }
+            else
+            {
+                <BitMessageBar MessageBarType="BitMessageBarType.Success" IsMultiline="false">
+                    @SuccessMessage
+                </BitMessageBar>
+            }
+        </ExamplePreview>
+    </ComponentExampleBox>
+</ComponentDemo>
