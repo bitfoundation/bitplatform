@@ -7,7 +7,13 @@
      class="@ClassBuilder.Value"
      id="@UniqueId">
 
-    @if (Label.HasValue())
+    @if (LabelFragment is not null)
+    {
+        <label class="bit-dtp-label" id="@LabelId" for="@TextFieldId">
+            @LabelFragment
+        </label>
+    }
+    else if (Label.HasValue())
     {
         <label class="bit-dtp-label" id="@LabelId" for="@TextFieldId">
             @Label
