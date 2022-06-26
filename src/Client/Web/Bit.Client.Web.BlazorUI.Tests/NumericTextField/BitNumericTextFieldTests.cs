@@ -69,7 +69,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.NumericTextField
             {
                 parameters.Add(p => p.IconName, iconName);
                 parameters.Add(p => p.IconAriaLabel, iconAriaLabel);
-                parameters.Add(p => p.IsArrowEnable, true);
+                parameters.Add(p => p.Arrows, true);
             });
 
             if (iconName.HasValue)
@@ -77,7 +77,10 @@ namespace Bit.Client.Web.BlazorUI.Tests.NumericTextField
                 var icon = component.FindAll(".bit-icon")[0];
                 Assert.IsTrue(icon.ClassList.Contains($"bit-icon--{iconName.GetName()}"));
 
-                if (iconAriaLabel is not null) Assert.AreEqual(iconAriaLabel, icon.GetAttribute("aria-label"));
+                if (iconAriaLabel is not null)
+                {
+                    Assert.AreEqual(iconAriaLabel, icon.GetAttribute("aria-label"));
+                }
             }
             else
             {
@@ -103,7 +106,10 @@ namespace Bit.Client.Web.BlazorUI.Tests.NumericTextField
                 var icon = component.FindAll(".bit-icon")[0];
                 Assert.IsTrue(icon.ClassList.Contains($"bit-icon--{iconName.GetName()}"));
 
-                if (iconAriaLabel is not null) Assert.AreEqual(iconAriaLabel, icon.GetAttribute("aria-label"));
+                if (iconAriaLabel is not null)
+                {
+                    Assert.AreEqual(iconAriaLabel, icon.GetAttribute("aria-label"));
+                }
             }
             else
             {
@@ -125,7 +131,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.NumericTextField
                 parameters.Add(p => p.IncrementButtonIconName, iconName);
                 parameters.Add(p => p.IncrementButtonAriaLabel, iconAriaLabel);
                 parameters.Add(p => p.IsEnabled, isEnabled);
-                parameters.Add(p => p.IsArrowEnable, true);
+                parameters.Add(p => p.Arrows, true);
             });
 
             var button = component.Find("button");
@@ -155,7 +161,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.NumericTextField
                 parameters.Add(p => p.DecrementButtonIconName, iconName);
                 parameters.Add(p => p.DecrementButtonAriaLabel, iconAriaLabel);
                 parameters.Add(p => p.IsEnabled, isEnabled);
-                parameters.Add(p => p.IsArrowEnable, true);
+                parameters.Add(p => p.Arrows, true);
             });
 
             var button = component.Find("button:last-child");
@@ -230,9 +236,9 @@ namespace Bit.Client.Web.BlazorUI.Tests.NumericTextField
         }
 
         [DataTestMethod,
-            DataRow("SpbWrapper", null, null, null),
-            DataRow(null, "SpbAriaLabel", null, null),
-            DataRow("SpbWrapper", "SpbAriaLabel", 5, 3),
+            DataRow("NtfWrapper", null, null, null),
+            DataRow(null, "NftAriaLabel", null, null),
+            DataRow("NtfWrapper", "NftAriaLabel", 5, 3),
             DataRow(null, null, 5, 3)
         ]
         public void BitNumericTextFieldWrapperShouldHaveCorrectAttributes(string title, string ariaLabel, int? ariaSetSize, int? ariaPositionInSet)
@@ -245,22 +251,22 @@ namespace Bit.Client.Web.BlazorUI.Tests.NumericTextField
                 parameters.Add(p => p.AriaPositionInSet, ariaPositionInSet);
             });
 
-            var spbWrapper = component.Find(".bit-ntf-wrapper");
+            var ntfWrapper = component.Find(".bit-ntf-wrapper");
 
             if (title is not null)
             {
-                Assert.AreEqual(title, spbWrapper.GetAttribute("title"));
+                Assert.AreEqual(title, ntfWrapper.GetAttribute("title"));
             }
 
             if (ariaLabel is not null)
             {
-                Assert.AreEqual(ariaLabel, spbWrapper.GetAttribute("aria-label"));
+                Assert.AreEqual(ariaLabel, ntfWrapper.GetAttribute("aria-label"));
             }
 
             if (ariaSetSize is not null)
             {
-                Assert.AreEqual(ariaSetSize.ToString(), spbWrapper.GetAttribute("aria-setsize"));
-                Assert.AreEqual(ariaPositionInSet.ToString(), spbWrapper.GetAttribute("aria-posinset"));
+                Assert.AreEqual(ariaSetSize.ToString(), ntfWrapper.GetAttribute("aria-setsize"));
+                Assert.AreEqual(ariaPositionInSet.ToString(), ntfWrapper.GetAttribute("aria-posinset"));
             }
         }
 
@@ -325,7 +331,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.NumericTextField
         {
             var component = RenderComponent<BitNumericTextFieldTest>(parameters =>
             {
-                parameters.Add(p => p.IsArrowEnable, true);
+                parameters.Add(p => p.Arrows, true);
             });
 
             var increaseButton = component.FindAll("button")[0];
@@ -345,7 +351,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.NumericTextField
         {
             var component = RenderComponent<BitNumericTextFieldTest>(parameters =>
             {
-                parameters.Add(p => p.IsArrowEnable, true);
+                parameters.Add(p => p.Arrows, true);
             });
 
             var decreaseButton = component.FindAll("button")[1];
@@ -716,8 +722,8 @@ namespace Bit.Client.Web.BlazorUI.Tests.NumericTextField
                 parameters.Add(p => p.LabelFragment, labelFragment);
             });
 
-            var spbLabelChild = component.Find("label").ChildNodes;
-            spbLabelChild.MarkupMatches(labelFragment);
+            var ntfLabelChild = component.Find("label").ChildNodes;
+            ntfLabelChild.MarkupMatches(labelFragment);
         }
 
         [DataTestMethod,
