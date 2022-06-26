@@ -434,6 +434,8 @@ namespace Bit.Client.Web.BlazorUI
 
         private int CalculatePrecision(TValue? value)
         {
+            if (value is null) return 0;
+
             var pattern = isDecimals ? @"[1-9]([0]+$)|\.([0-9]*)" : @"(^-\d+$)|\d+";
             var regex = new Regex(pattern);
             if (regex.IsMatch($"{value}") is false) return 0;
