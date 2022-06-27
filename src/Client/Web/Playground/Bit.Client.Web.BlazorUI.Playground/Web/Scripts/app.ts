@@ -5,7 +5,7 @@ const headerBtn = document.getElementById("headerBtn");
 if (headerBtn != null) {
     window.addEventListener('scroll', () => {
 
-        if (document.body.scrollTop > 10 || document.documentElement.scrollTop > 10) {
+        if ((document.body.scrollTop > 10 || document.documentElement.scrollTop > 10) && window.innerWidth > 630) {
             headerBtn.style.display = "flex";
         } else {
             headerBtn.style.display = "none";
