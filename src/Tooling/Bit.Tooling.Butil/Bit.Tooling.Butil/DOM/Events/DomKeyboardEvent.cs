@@ -30,11 +30,14 @@ public static class DomKeyboardEvent
         return id;
     }
 
-    internal static Guid RemoveListener(Action<DomKeyboardEventArgs> action, string element, object options)
+    internal static Guid[] RemoveListener(Action<DomKeyboardEventArgs> action, string element, object options)
     {
-        var l = DomKeyboardEvent.Listeners.Single(l => l.Value.Action == action && l.Value.Element == element && l.Value.Options == options);
-        Listeners.Remove(l.Key);
-        return l.Key;
+        return Listeners.Where(l => l.Value.Action == action && l.Value.Element == element && l.Value.Options == options)
+                        .Select(l =>
+                        {
+                            Listeners.Remove(l.Key);
+                            return l.Key;
+                        }).ToArray();
     }
 
 

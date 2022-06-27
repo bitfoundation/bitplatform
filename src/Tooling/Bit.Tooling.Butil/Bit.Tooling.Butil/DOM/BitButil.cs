@@ -21,8 +21,8 @@ public static class BitButil
         var _ = _js.InvokeVoidAsync("butil.addEventListener", elementName, eventName, dotnetMethodName, dotnetListenerId, selectedMembers, options);
     }
 
-    internal static void RemoveEventListener(string elementName, string eventName, Guid dotnetListenerId, object? options = null)
+    internal static void RemoveEventListener(string elementName, string eventName, Guid[] dotnetListenerIds, object? options = null)
     {
-        var _ = _js.InvokeVoidAsync("butil.removeEventListener", elementName, eventName, dotnetListenerId, options);
+        var _ = _js.InvokeVoidAsync("butil.removeEventListener", elementName, eventName, dotnetListenerIds, options);
     }
 }

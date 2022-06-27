@@ -16,9 +16,10 @@ var butil = (function () {
         window[elementName].addEventListener(eventName, handler, options);
     }
 
-    function removeEventListener(elementName, eventName, dotnetListenerId, options) {
-        const handler = _handlers[dotnetListenerId];
-
-        window[elementName].removeEventListener(eventName, handler, options);
+    function removeEventListener(elementName, eventName, dotnetListenerIds, options) {
+        dotnetListenerIds.forEach(id => {
+            const handler = _handlers[id];
+            window[elementName].removeEventListener(eventName, handler, options);
+        });
     }
 }());

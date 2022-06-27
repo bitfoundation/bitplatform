@@ -19,7 +19,8 @@ public static class Document
 
         if (domEventType == typeof(DomKeyboardEventArgs))
         {
-            var id = DomKeyboardEvent.SetListener(listener as Action<DomKeyboardEventArgs>, ElementName, useCapture ? TrueUseCapture : FalseUseCapture);
+            var action = (listener as Action<DomKeyboardEventArgs>)!;
+            var id = DomKeyboardEvent.SetListener(action, ElementName, useCapture ? TrueUseCapture : FalseUseCapture);
             BitButil.AddEventListener(ElementName, domEvent, DomKeyboardEvent.InvokeMethodName, id, DomKeyboardEventArgs.SelectedMembers, useCapture);
         }
     }
@@ -34,8 +35,9 @@ public static class Document
 
         if (domEventType == typeof(DomKeyboardEventArgs))
         {
-            var id = DomKeyboardEvent.RemoveListener(listener as Action<DomKeyboardEventArgs>, ElementName, useCapture ? TrueUseCapture : FalseUseCapture);
-            BitButil.RemoveEventListener(ElementName, domEvent, id, useCapture);
+            var action = (listener as Action<DomKeyboardEventArgs>)!;
+            var ids = DomKeyboardEvent.RemoveListener(action, ElementName, useCapture ? TrueUseCapture : FalseUseCapture);
+            BitButil.RemoveEventListener(ElementName, domEvent, ids, useCapture);
         }
     }
 }

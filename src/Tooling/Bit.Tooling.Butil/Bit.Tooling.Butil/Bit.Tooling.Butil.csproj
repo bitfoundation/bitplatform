@@ -4,14 +4,8 @@
 
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
-        <IncludeBuildOutput>false</IncludeBuildOutput>
         <IncludeContentInPack>false</IncludeContentInPack>
     </PropertyGroup>
-
-    <ItemGroup>
-      <TypeScriptCompile Remove="Scripts\bit-butil.ts" />
-      <TypeScriptCompile Remove="Scripts\DotNet.d.ts" />
-    </ItemGroup>
 
     <ItemGroup>
         <SupportedPlatform Include="browser" />
