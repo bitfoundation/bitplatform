@@ -1,4 +1,5 @@
-﻿using TodoTemplate.Shared.Dtos.Account;
+﻿using Bit.Tooling.SourceGenerators;
+using TodoTemplate.Shared.Dtos.Account;
 
 namespace TodoTemplate.App.Pages;
 
@@ -12,7 +13,7 @@ public partial class ForgotPassword
 
     public string? ForgotPasswordMessage { get; set; }
 
-    [Inject] public HttpClient HttpClient { get; set; } = default!;
+    [AutoInject] public HttpClient HttpClient { get; set; } = default!;
 
     private bool IsSubmitButtonEnabled =>
         ForgotPasswordModel.Email.HasValue() 

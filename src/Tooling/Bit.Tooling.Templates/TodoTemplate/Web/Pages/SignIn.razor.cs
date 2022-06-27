@@ -1,4 +1,5 @@
-﻿using TodoTemplate.Shared.Dtos.Account;
+﻿using Bit.Tooling.SourceGenerators;
+using TodoTemplate.Shared.Dtos.Account;
 
 namespace TodoTemplate.App.Pages;
 
@@ -12,11 +13,11 @@ public partial class SignIn
 
     public string? SignInMessage { get; set; }
 
-    [Inject] public NavigationManager NavigationManager { get; set; } = default!;
+    [AutoInject] public NavigationManager NavigationManager { get; set; } = default!;
 
-    [Inject] public ITodoTemplateAuthenticationService TodoTemplateAuthenticationService { get; set; } = default!;
+    [AutoInject] public ITodoTemplateAuthenticationService TodoTemplateAuthenticationService { get; set; } = default!;
 
-    [Inject]
+    [AutoInject]
     public TodoTemplateAuthenticationStateProvider TodoTemplateAuthenticationStateProvider { get; set; } = default!;
 
     [Parameter]

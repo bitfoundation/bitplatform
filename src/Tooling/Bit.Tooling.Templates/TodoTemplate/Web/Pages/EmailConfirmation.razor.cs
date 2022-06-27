@@ -1,4 +1,6 @@
-﻿namespace TodoTemplate.App.Pages;
+﻿using Bit.Tooling.SourceGenerators;
+
+namespace TodoTemplate.App.Pages;
 
 public partial class EmailConfirmation
 {
@@ -15,9 +17,9 @@ public partial class EmailConfirmation
     public BitMessageBarType EmailConfirmationMessageType { get; set; }
     public string? EmailConfirmationMessage { get; set; }
 
-    [Inject] public HttpClient HttpClient { get; set; } = default!;
+    [AutoInject] public HttpClient HttpClient { get; set; } = default!;
 
-    [Inject] public NavigationManager NavigationManager { get; set; } = default!;
+    [AutoInject] public NavigationManager NavigationManager { get; set; } = default!;
 
     private void RedirectToSignIn()
     {

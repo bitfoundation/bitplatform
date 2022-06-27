@@ -1,4 +1,5 @@
 ﻿//-:cnd:noEmit
+using Bit.Tooling.SourceGenerators;
 using TodoTemplate.Shared.Dtos.Account;
 
 namespace TodoTemplate.App.Components;
@@ -65,14 +66,14 @@ public partial class NavMenu
 
     [Parameter] public EventCallback<bool> IsMenuOpenChanged { get; set; }
 
-    [Inject] public HttpClient HttpClient { get; set; } = default!;
+    [AutoInject] public HttpClient HttpClient { get; set; } = default!;
 
-    [Inject] public IStateService StateService { get; set; } = default!;
+    [AutoInject] public IStateService StateService { get; set; } = default!;
 
-    [Inject] public IAuthTokenProvider AuthTokenProvider { get; set; } = default!;
+    [AutoInject] public IAuthTokenProvider AuthTokenProvider { get; set; } = default!;
 
 #if BlazorServer || BlazorHybrid
-    [Inject] public IConfiguration Configuration { get; set; } = default!;
+    [AutoInject] public IConfiguration Configuration { get; set; } = default!;
 #endif
 
     private void CloseMenu()

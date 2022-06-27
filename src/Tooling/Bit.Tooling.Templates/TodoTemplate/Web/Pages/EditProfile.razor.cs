@@ -1,4 +1,5 @@
 ﻿//-:cnd:noEmit
+using Bit.Tooling.SourceGenerators;
 using TodoTemplate.Shared.Dtos.Account;
 
 namespace TodoTemplate.App.Pages;
@@ -18,14 +19,14 @@ public partial class EditProfile
     public BitMessageBarType EditProfileMessageType { get; set; }
     public string? EditProfileMessage { get; set; }
 
-    [Inject] public IAuthTokenProvider AuthTokenProvider { get; set; } = default!;
+    [AutoInject] public IAuthTokenProvider AuthTokenProvider { get; set; } = default!;
 
-    [Inject] public HttpClient HttpClient { get; set; } = default!;
+    [AutoInject] public HttpClient HttpClient { get; set; } = default!;
 
-    [Inject] public IStateService StateService { get; set; } = default!;
+    [AutoInject] public IStateService StateService { get; set; } = default!;
 
 #if BlazorServer || BlazorHybrid
-    [Inject] public IConfiguration Configuration { get; set; } = default!;
+    [AutoInject] public IConfiguration Configuration { get; set; } = default!;
 #endif
 
     protected override async Task OnInitAsync()

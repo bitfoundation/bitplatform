@@ -1,4 +1,5 @@
-﻿using TodoTemplate.Shared.Dtos.Account;
+﻿using Bit.Tooling.SourceGenerators;
+using TodoTemplate.Shared.Dtos.Account;
 
 namespace TodoTemplate.App.Pages;
 
@@ -20,13 +21,13 @@ public partial class ResetPassword
 
     public string? ResetPasswordMessage { get; set; }
 
-    [Inject] public HttpClient HttpClient { get; set; } = default!;
+    [AutoInject] public HttpClient HttpClient { get; set; } = default!;
 
-    [Inject] public NavigationManager NavigationManager { get; set; } = default!;
+    [AutoInject] public NavigationManager NavigationManager { get; set; } = default!;
 
-    [Inject] public ITodoTemplateAuthenticationService TodoTemplateAuthenticationService { get; set; } = default!;
+    [AutoInject] public ITodoTemplateAuthenticationService TodoTemplateAuthenticationService { get; set; } = default!;
 
-    [Inject] public TodoTemplateAuthenticationStateProvider TodoTemplateAuthenticationStateProvider { get; set; } = default!;
+    [AutoInject] public TodoTemplateAuthenticationStateProvider TodoTemplateAuthenticationStateProvider { get; set; } = default!;
 
     private bool IsSubmitButtonEnabled =>
         ResetPasswordModel.Password.HasValue() 

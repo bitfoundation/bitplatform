@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Components.Web;
+﻿using Bit.Tooling.SourceGenerators;
+using Microsoft.AspNetCore.Components.Web;
 
 namespace TodoTemplate.App.Shared;
 public partial class MainLayout : IAsyncDisposable
@@ -8,11 +9,11 @@ public partial class MainLayout : IAsyncDisposable
     public bool IsUserAuthenticated { get; set; }
     public bool IsMenuOpen { get; set; } = false;
 
-    [Inject] public IStateService StateService { get; set; } = default!;
+    [AutoInject] public IStateService StateService { get; set; } = default!;
 
-    [Inject] public IExceptionHandler ExceptionHandler { get; set; } = default!;
+    [AutoInject] public IExceptionHandler ExceptionHandler { get; set; } = default!;
 
-    [Inject] public TodoTemplateAuthenticationStateProvider TodoTemplateAuthenticationStateProvider { get; set; } = default!;
+    [AutoInject] public TodoTemplateAuthenticationStateProvider TodoTemplateAuthenticationStateProvider { get; set; } = default!;
 
     protected override void OnParametersSet()
     {

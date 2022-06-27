@@ -1,16 +1,18 @@
-﻿namespace TodoTemplate.App.Components;
+﻿using Bit.Tooling.SourceGenerators;
+
+namespace TodoTemplate.App.Components;
 
 public partial class Header : IAsyncDisposable
 {
     [Parameter] public EventCallback OnToggleMenu { get; set; }
 
-    [Inject]
+    [AutoInject]
     public IStateService StateService { get; set; } = default!;
 
-    [Inject]
+    [AutoInject]
     public TodoTemplateAuthenticationStateProvider TodoTemplateAuthenticationStateProvider { get; set; } = default!;
 
-    [Inject]
+    [AutoInject]
     public IExceptionHandler ExceptionHandler { get; set; } = default!;
 
     public bool IsUserAuthenticated { get; set; }

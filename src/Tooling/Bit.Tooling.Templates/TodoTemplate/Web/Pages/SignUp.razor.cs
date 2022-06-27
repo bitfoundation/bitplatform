@@ -1,4 +1,5 @@
-﻿using TodoTemplate.Shared.Dtos.Account;
+﻿using Bit.Tooling.SourceGenerators;
+using TodoTemplate.Shared.Dtos.Account;
 
 namespace TodoTemplate.App.Pages;
 
@@ -12,11 +13,11 @@ public partial class SignUp
     public BitMessageBarType SignUpMessageType { get; set; }
     public string? SignUpMessage { get; set; }
 
-    [Inject] public HttpClient HttpClient { get; set; } = default!;
+    [AutoInject] public HttpClient HttpClient { get; set; } = default!;
 
-    [Inject] public NavigationManager NavigationManager { get; set; } = default!;
+    [AutoInject] public NavigationManager NavigationManager { get; set; } = default!;
 
-    [Inject] public TodoTemplateAuthenticationStateProvider TodoTemplateAuthenticationStateProvider { get; set; } = default!;
+    [AutoInject] public TodoTemplateAuthenticationStateProvider TodoTemplateAuthenticationStateProvider { get; set; } = default!;
 
     private bool IsSubmitButtonEnabled =>
         SignUpModel.UserName.HasValue()

@@ -1,14 +1,13 @@
-﻿using TodoTemplate.Shared.Dtos.TodoItem;
+﻿using Bit.Tooling.SourceGenerators;
+using TodoTemplate.Shared.Dtos.TodoItem;
 
 namespace TodoTemplate.App.Pages;
 
 public partial class Todo
 {
-    [Inject]
-    public HttpClient HttpClient { get; set; } = default!;
+    [AutoInject] public HttpClient HttpClient { get; set; } = default!;
 
-    [Inject]
-    public IStateService StateService { get; set; } = default!;
+    [AutoInject] public IStateService StateService { get; set; } = default!;
 
     public bool IsLoading { get; set; }
     public string SelectedPivotName { get; set; } = "All";
