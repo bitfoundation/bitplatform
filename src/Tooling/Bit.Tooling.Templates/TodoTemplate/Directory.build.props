@@ -23,6 +23,7 @@
 
     <ItemGroup>
         <Using Include="Microsoft.Extensions.DependencyInjection" />
+        <Using Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
         <Using Include="System.Net.Http" />
         <Using Include="System.Resources" />
         <Using Include="System.ComponentModel.DataAnnotations" />

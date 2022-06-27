@@ -1,5 +1,4 @@
-﻿using Bit.Tooling.SourceGenerators;
-using TodoTemplate.Api.Models.TodoItem;
+﻿using TodoTemplate.Api.Models.TodoItem;
 using TodoTemplate.Shared.Dtos.TodoItem;
 
 namespace TodoTemplate.Api.Controllers;
