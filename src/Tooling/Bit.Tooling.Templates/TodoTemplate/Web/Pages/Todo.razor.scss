@@ -189,11 +189,12 @@
 
 .todo-item {
     display: flex;
-    flex-flow: row nowrap;
+    flex-flow: row wrap;
     justify-content: space-between;
     align-items: center;
     width: 100%;
-    height: rem(80px);
+    min-width: fit-content;
+    min-height: rem(80px);
     padding: rem(16px);
     border-bottom: rem(1px) solid $Gray4;
     box-sizing: border-box;
@@ -207,7 +208,7 @@
     }
 
     @media all and (max-width: #{em(390px)}) {
-        height: rem(66px);
+        min-height: rem(66px);
         padding: rem(14px) rem(18px);
     }
 }
@@ -229,6 +230,12 @@
 
     @include lt-xl {
         font-size: rem(10px);
+    }
+}
+
+.todo-item-btn-group--edit-mode {
+    @media all and (max-width: #{em(451)}) {
+        margin-top: rem(5px);
     }
 }
 
