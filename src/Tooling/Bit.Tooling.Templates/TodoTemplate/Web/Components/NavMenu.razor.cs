@@ -1,5 +1,4 @@
 ﻿//-:cnd:noEmit
-using Bit.Tooling.SourceGenerators;
 using TodoTemplate.Shared.Dtos.Account;
 
 namespace TodoTemplate.App.Components;

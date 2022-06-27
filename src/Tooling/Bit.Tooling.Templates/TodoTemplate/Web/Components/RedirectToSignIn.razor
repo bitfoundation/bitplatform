@@ -1,16 +1,15 @@
 ﻿@inherits TodoTemplateComponentBase;
+@inject NavigationManager navigationManager
 
 @code {
-
-    [Inject] public NavigationManager NavigationManager { get; set; } = default!;
 
     protected override void OnAfterRender(bool firstRender)
     {
         if (firstRender)
         {
-            var redirectUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+            var redirectUrl = navigationManager.ToBaseRelativePath(navigationManager.Uri);
 
-            NavigationManager.NavigateTo($"/sign-in?redirectUrl={redirectUrl}");
+            navigationManager.NavigateTo($"/sign-in?redirectUrl={redirectUrl}");
         }
 
         base.OnAfterRender(firstRender);

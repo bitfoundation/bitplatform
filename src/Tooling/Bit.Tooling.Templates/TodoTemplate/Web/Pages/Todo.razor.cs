@@ -1,5 +1,4 @@
-﻿using Bit.Tooling.SourceGenerators;
-using TodoTemplate.Shared.Dtos.TodoItem;
+﻿using TodoTemplate.Shared.Dtos.TodoItem;
 
 namespace TodoTemplate.App.Pages;
 

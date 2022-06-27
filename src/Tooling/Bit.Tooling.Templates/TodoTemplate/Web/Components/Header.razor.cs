@@ -1,5 +1,4 @@
-﻿using Bit.Tooling.SourceGenerators;
-
+﻿
 namespace TodoTemplate.App.Components;
 
 public partial class Header : IAsyncDisposable

@@ -1,5 +1,4 @@
-﻿using Bit.Tooling.SourceGenerators;
-using Microsoft.AspNetCore.Components.Web;
+﻿using Microsoft.AspNetCore.Components.Web;
 
 namespace TodoTemplate.App.Shared;
 public partial class MainLayout : IAsyncDisposable

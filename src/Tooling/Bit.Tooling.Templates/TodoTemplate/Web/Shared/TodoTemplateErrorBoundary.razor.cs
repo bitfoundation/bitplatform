@@ -1,6 +1,4 @@
 ﻿//-:cnd:noEmit
-using Bit.Tooling.SourceGenerators;
-
 namespace TodoTemplate.App.Shared;
 
 public partial class TodoTemplateErrorBoundary
