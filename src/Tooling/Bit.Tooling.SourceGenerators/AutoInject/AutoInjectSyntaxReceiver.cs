@@ -4,7 +4,7 @@ using System.Collections.ObjectModel;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.Extensions.DependencyInjection.Abstractions;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Bit.Tooling.SourceGenerators;
 
