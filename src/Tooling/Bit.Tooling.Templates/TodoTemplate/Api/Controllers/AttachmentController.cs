@@ -1,5 +1,4 @@
-﻿using Bit.Tooling.SourceGenerators;
-using MimeTypes;
+﻿using MimeTypes;
 using TodoTemplate.Api.Models.Account;
 using SystemFile = System.IO.File;
 
