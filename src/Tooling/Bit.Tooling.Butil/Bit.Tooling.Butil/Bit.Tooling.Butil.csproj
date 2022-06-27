@@ -1,0 +1,43 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+    <Import Project="../../../Bit.Build.props" />
+
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <IncludeBuildOutput>false</IncludeBuildOutput>
+        <IncludeContentInPack>false</IncludeContentInPack>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <TypeScriptCompile Remove="Scripts\bit-butil.ts" />
+      <TypeScriptCompile Remove="Scripts\DotNet.d.ts" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Include="Scripts\DotNet.d.ts">
+        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </Content>
+      <Content Include="Scripts\bit-butil.ts">
+        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </Content>
+    </ItemGroup>
+
+    <ItemGroup>
+        <SupportedPlatform Include="browser" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.JSInterop" Version="6.0.6" />
+        <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.7.4">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="wwwroot\" />
+    </ItemGroup>
+
+</Project>

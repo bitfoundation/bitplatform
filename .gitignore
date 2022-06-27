@@ -231,6 +231,7 @@ _book
 /src/Client/Web/Bit.Client.Web.BlazorUI/wwwroot/**/*.js
 /src/Client/Web/Bit.Client.Web.BlazorUI/wwwroot/**/*.css.gz
 /src/Tooling/Bit.Tooling.Bswup/Bit.Tooling.Bswup/wwwroot/**/*.js
+/src/Tooling/Bit.Tooling.Butil/Bit.Tooling.Butil/wwwroot/**/*.js
 
 /src/Client/Web/Playground/Bit.Client.Web.BlazorUI.Playground/Web/**/**/*.css
 /src/Client/Web/Playground/Bit.Client.Web.BlazorUI.Playground/Web/wwwroot/**/*.js
