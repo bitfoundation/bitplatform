@@ -1,5 +1,4 @@
-﻿
-namespace TodoTemplate.App.Components;
+﻿namespace TodoTemplate.App.Components;
 
 public class TodoTemplateComponentBase : ComponentBase
 {

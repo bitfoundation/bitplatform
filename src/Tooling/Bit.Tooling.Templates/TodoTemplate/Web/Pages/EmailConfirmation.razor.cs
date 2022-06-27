@@ -1,5 +1,4 @@
-﻿
-namespace TodoTemplate.App.Pages;
+﻿namespace TodoTemplate.App.Pages;
 
 public partial class EmailConfirmation
 {
