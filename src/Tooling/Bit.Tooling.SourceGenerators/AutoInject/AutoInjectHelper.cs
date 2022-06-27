@@ -1,12 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
+using System.Globalization;
+using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 
 namespace Bit.Tooling.SourceGenerators;
 
-public class AutoInjectHelper
+public static class AutoInjectHelper
 {
     public static IReadOnlyCollection<ISymbol> GetBaseClassEligibleMembers(
         INamedTypeSymbol? classSymbol,
