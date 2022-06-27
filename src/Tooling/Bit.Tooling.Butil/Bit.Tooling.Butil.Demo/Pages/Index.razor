@@ -16,10 +16,7 @@
 
     protected override void OnInitialized()
     {
-        handler = (DomKeyboardEventArgs arg) =>
-        {
-            jsRuntime.InvokeVoidAsync("console.log", "KeyDown from C#:", arg.Code);
-        };
+        handler = (DomKeyboardEventArgs arg) => jsRuntime.InvokeVoidAsync("console.log", "KeyDown from C#:", arg.Code);
 
         base.OnInitialized();
     }
