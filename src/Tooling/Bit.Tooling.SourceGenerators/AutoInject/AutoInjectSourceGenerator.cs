@@ -6,7 +6,7 @@ using System.Diagnostics;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
-using Microsoft.Extensions.DependencyInjection.Abstractions;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Bit.Tooling.SourceGenerators;
 
