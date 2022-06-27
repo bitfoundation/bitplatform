@@ -15,9 +15,9 @@ public partial class EmailConfirmation
     public BitMessageBarType EmailConfirmationMessageType { get; set; }
     public string? EmailConfirmationMessage { get; set; }
 
-    [AutoInject] public HttpClient HttpClient { get; set; } = default!;
+    [AutoInject] private HttpClient HttpClient { get; set; } = default!;
 
-    [AutoInject] public NavigationManager NavigationManager { get; set; } = default!;
+    [AutoInject] private NavigationManager NavigationManager { get; set; } = default!;
 
     private void RedirectToSignIn()
     {

@@ -4,14 +4,11 @@ public partial class Header : IAsyncDisposable
 {
     [Parameter] public EventCallback OnToggleMenu { get; set; }
 
-    [AutoInject]
-    public IStateService StateService { get; set; } = default!;
+    [AutoInject] private IStateService StateService { get; set; } = default!;
 
-    [AutoInject]
-    public TodoTemplateAuthenticationStateProvider TodoTemplateAuthenticationStateProvider { get; set; } = default!;
+    [AutoInject] private TodoTemplateAuthenticationStateProvider TodoTemplateAuthenticationStateProvider { get; set; } = default!;
 
-    [AutoInject]
-    public IExceptionHandler ExceptionHandler { get; set; } = default!;
+    [AutoInject] private IExceptionHandler ExceptionHandler { get; set; } = default!;
 
     public bool IsUserAuthenticated { get; set; }
 

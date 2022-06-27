@@ -59,7 +59,6 @@
         <Using Include="Microsoft.AspNetCore.Components.Authorization" />
         <Using Include="TodoTemplate.App.Components" />
         <Using Include="Bit.Client.Web.BlazorUI" />
-        <Using Include="Bit.Tooling.SourceGenerators" />
 	</ItemGroup>
 
 </Project>
