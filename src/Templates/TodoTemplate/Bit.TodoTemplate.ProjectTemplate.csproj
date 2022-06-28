@@ -12,7 +12,7 @@
         
         
         <!-- Nuget Package-->
-        <PackageId>Bit.Tooling.Templates.TodoTemplate</PackageId>
+        <PackageId>Bit.TodoTemplate</PackageId>
         <PackageType>Template</PackageType>
         <Title>Bit Platform TodoTemplate</Title>
         <PackageDescription>A template for creating a Todo app base on the Bit-Platform</PackageDescription>
@@ -24,16 +24,16 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Content Include="TodoTemplate\**" Exclude="TodoTemplate\.vs\**;TodoTemplate\**\bin\**\*;TodoTemplate\**\obj\**\*; " />
+        <Content Include="Bit.TodoTemplate\**" Exclude="Bit.TodoTemplate\.vs\**;Bit.TodoTemplate\**\bin\**\*;Bit.TodoTemplate\**\obj\**\*; " />
         <Compile Remove="**\*" />
     </ItemGroup>
 
     <ItemGroup>
-        <None Include="TodoTemplate\README.md">
+        <None Include="Bit.TodoTemplate\README.md">
             <Pack>True</Pack>
             <PackagePath>\</PackagePath>
         </None>
-        <None Include="TodoTemplate\Web\wwwroot\images\icons\bit-icon-512.png">
+        <None Include="Bit.TodoTemplate\Web\wwwroot\images\icons\bit-icon-512.png">
             <Pack>True</Pack>
             <PackagePath>\</PackagePath>
         </None>
