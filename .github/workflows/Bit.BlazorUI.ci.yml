@@ -15,8 +15,8 @@ jobs:
       with:
         dotnet-version: 6.0.x
     - name: Restore dependencies
-      run: dotnet restore src/Bit.BlazorUI-CI.sln
+      run: dotnet restore src/BlazorUI/Bit.BlazorUI-CI.sln
     - name: Build
-      run: dotnet build --no-restore src/Bit.BlazorUI-CI.sln
+      run: dotnet build --no-restore src/BlazorUI/Bit.BlazorUI-CI.sln
     - name: Test
       run: dotnet test --no-build --verbosity normal src/BlazorUI/Bit.BlazorUI.Tests/Bit.BlazorUI.Tests.csproj

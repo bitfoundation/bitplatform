@@ -9,14 +9,18 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		..\..\.gitignore = ..\..\.gitignore
 		..\Bit.Build.props = ..\Bit.Build.props
 		..\global.json = ..\global.json
-		..\..\.github\workflows\nuget.org.yml = ..\..\.github\workflows\nuget.org.yml
-		..\..\.github\workflows\Prerelease.nuget.org.yml = ..\..\.github\workflows\Prerelease.nuget.org.yml
 		README.md = README.md
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Butil", "Bit.Butil\Bit.Butil.csproj", "{9EE18696-8DF0-4206-A675-B887D7D98029}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Butil.Demo", "Bit.Butil.Demo\Bit.Butil.Demo.csproj", "{5DBDF562-6847-4417-960E-EB3B308B2D4F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{28AA18EC-0416-4CA4-B857-636A7A980B8D}"
+	ProjectSection(SolutionItems) = preProject
+		..\..\.github\workflows\nuget.org.yml = ..\..\.github\workflows\nuget.org.yml
+		..\..\.github\workflows\Prerelease.nuget.org.yml = ..\..\.github\workflows\Prerelease.nuget.org.yml
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -35,6 +39,9 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{28AA18EC-0416-4CA4-B857-636A7A980B8D} = {FC6DE1B2-E533-4824-B521-60755DBCA6A2}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {DFA7FAF2-0F3C-46C3-8EEB-1A7E29293B4F}

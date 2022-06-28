@@ -1,15 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
+        <LangVersion>preview</LangVersion>
         <Nullable>enable</Nullable>
         <IsRoslynComponent>true</IsRoslynComponent>
-        <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
-        <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)Generated</CompilerGeneratedFilesOutputPath>
-        <DevelopmentDependency>true</DevelopmentDependency>
-        
-        <LangVersion>preview</LangVersion>
-
-        <PackageTags>$(PackageTags) Source-Generators</PackageTags>
     </PropertyGroup>
 
     <ItemGroup>

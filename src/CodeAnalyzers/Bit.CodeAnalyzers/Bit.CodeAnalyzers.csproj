@@ -1,21 +1,22 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="../../Bit.Build.props" />
+    <Import Project="../../Bit.Build.props" />
 
-  <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <PackageTags>$(PackageTags) Code-Analyzer</PackageTags>
-    <IncludeBuildOutput>false</IncludeBuildOutput>
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <IncludeBuildOutput>false</IncludeBuildOutput>
+        <IsRoslynComponent>true</IsRoslynComponent>
+        <PackageTags>$(PackageTags) Code-Analyzer</PackageTags>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <None Update="tools\*.ps1" CopyToOutputDirectory="Always" Pack="true" PackagePath="" />
-    <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-  </ItemGroup>
+    <ItemGroup>
+        <None Update="tools\*.ps1" CopyToOutputDirectory="Always" Pack="true" PackagePath="" />
+        <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.2.0" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="4.2.0" PrivateAssets="All" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.2.0" PrivateAssets="All" />
+        <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="4.2.0" PrivateAssets="All" />
+    </ItemGroup>
 
 </Project>
