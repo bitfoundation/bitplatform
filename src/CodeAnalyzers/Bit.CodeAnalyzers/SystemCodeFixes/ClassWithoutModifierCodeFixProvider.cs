@@ -1,56 +1,55 @@
-﻿using Bit.Tooling.CodeAnalyzer.SystemAnalyzers;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CodeActions;
-using Microsoft.CodeAnalysis.CodeFixes;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System.Collections.Immutable;
-using System.Composition;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading;
+using System.Composition;
 using System.Threading.Tasks;
+using System.Collections.Immutable;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CodeFixes;
+using Microsoft.CodeAnalysis.CodeActions;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Bit.CodeAnalyzers.SystemAnalyzers;
 
-namespace Bit.Tooling.CodeAnalyzer.SystemCodeFixes
+namespace Bit.CodeAnalyzers.SystemCodeFixes;
+
+[ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(ClassWithoutModifierAnalyzer)), Shared]
+public class ClassWithoutModifierCodeFixProvider : CodeFixProvider
 {
-    [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(ClassWithoutModifierAnalyzer)), Shared]
-    public class ClassWithoutModifierCodeFixProvider : CodeFixProvider
+    private const string Title = "Add public modifier";
+
+    public sealed override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(ClassWithoutModifierAnalyzer.DiagnosticId);
+
+    public sealed override FixAllProvider GetFixAllProvider()
     {
-        private const string Title = "Add public modifier";
+        return WellKnownFixAllProviders.BatchFixer;
+    }
 
-        public sealed override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(ClassWithoutModifierAnalyzer.DiagnosticId);
+    public sealed override async Task RegisterCodeFixesAsync(CodeFixContext context)
+    {
+        SyntaxNode root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
 
-        public sealed override FixAllProvider GetFixAllProvider()
-        {
-            return WellKnownFixAllProviders.BatchFixer;
-        }
+        Diagnostic diagnostic = context.Diagnostics.First();
 
-        public sealed override async Task RegisterCodeFixesAsync(CodeFixContext context)
-        {
-            SyntaxNode root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
+        SyntaxNode node = root.FindNode(context.Span);
 
-            Diagnostic diagnostic = context.Diagnostics.First();
+        if (node is ClassDeclarationSyntax == false)
+            return;
 
-            SyntaxNode node = root.FindNode(context.Span);
+        context.RegisterCodeFix(CodeAction.Create(title: Title, createChangedDocument: c => AddPublicModifierToClass(context.Document, node, c), equivalenceKey: Title), diagnostic);
+    }
 
-            if (node is ClassDeclarationSyntax == false)
-                return;
+    private async Task<Document> AddPublicModifierToClass(Document document, SyntaxNode node, CancellationToken cancellationToken)
+    {
+        SyntaxNode root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
 
-            context.RegisterCodeFix(CodeAction.Create(title: Title, createChangedDocument: c => AddPublicModifierToClass(context.Document, node, c), equivalenceKey: Title), diagnostic);
-        }
+        ClassDeclarationSyntax convertedNode = (ClassDeclarationSyntax)node;
 
-        private async Task<Document> AddPublicModifierToClass(Document document, SyntaxNode node, CancellationToken cancellationToken)
-        {
-            SyntaxNode root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
+        ClassDeclarationSyntax? newNode = convertedNode?.AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword));
 
-            ClassDeclarationSyntax convertedNode = (ClassDeclarationSyntax)node;
+        SyntaxNode newRoot = root.ReplaceNode(node, newNode);
 
-            ClassDeclarationSyntax? newNode = convertedNode?.AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword));
+        Document newDocument = document.WithSyntaxRoot(newRoot);
 
-            SyntaxNode newRoot = root.ReplaceNode(node, newNode);
-
-            Document newDocument = document.WithSyntaxRoot(newRoot);
-
-            return newDocument;
-        }
+        return newDocument;
     }
 }

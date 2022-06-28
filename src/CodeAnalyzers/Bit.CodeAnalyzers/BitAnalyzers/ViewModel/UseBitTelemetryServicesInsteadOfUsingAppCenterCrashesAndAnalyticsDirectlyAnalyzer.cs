@@ -1,60 +1,59 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using System;
+using System.Collections.Immutable;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
-using System;
-using System.Collections.Immutable;
 
-namespace Bit.Tooling.CodeAnalyzer.BitAnalyzers.ViewModel
+namespace Bit.CodeAnalyzers.BitAnalyzers.ViewModel;
+
+[DiagnosticAnalyzer(LanguageNames.CSharp)]
+public class UseBitTelemetryServicesInsteadOfUsingAppCenterCrashesAndAnalyticsDirectlyAnalyzer : DiagnosticAnalyzer
 {
-    [DiagnosticAnalyzer(LanguageNames.CSharp)]
-    public class UseBitTelemetryServicesInsteadOfUsingAppCenterCrashesAndAnalyticsDirectlyAnalyzer : DiagnosticAnalyzer
+    public const string DiagnosticId = nameof(UseBitTelemetryServicesInsteadOfUsingAppCenterCrashesAndAnalyticsDirectlyAnalyzer);
+
+    public const string Title = "Use bit telemetry services instead of using app center crashes & analytics directly";
+    public const string Message = Title;
+    public const string Description = Title;
+    private const string Category = "Bit";
+
+    private static readonly DiagnosticDescriptor Rule = new DiagnosticDescriptor(DiagnosticId, Title, Message, Category, DiagnosticSeverity.Error, isEnabledByDefault: true, description: Description);
+
+    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
+
+    public override void Initialize(AnalysisContext context)
     {
-        public const string DiagnosticId = nameof(UseBitTelemetryServicesInsteadOfUsingAppCenterCrashesAndAnalyticsDirectlyAnalyzer);
+        if (context == null)
+            throw new ArgumentNullException(nameof(context));
 
-        public const string Title = "Use bit telemetry services instead of using app center crashes & analytics directly";
-        public const string Message = Title;
-        public const string Description = Title;
-        private const string Category = "Bit";
+        context.EnableConcurrentExecution();
+        context.RegisterSyntaxNodeAction(AnalyzeSyntax, SyntaxKind.InvocationExpression);
+    }
 
-        private static readonly DiagnosticDescriptor Rule = new DiagnosticDescriptor(DiagnosticId, Title, Message, Category, DiagnosticSeverity.Error, isEnabledByDefault: true, description: Description);
+    private void AnalyzeSyntax(SyntaxNodeAnalysisContext context)
+    {
+        SyntaxNode root = context.Node;
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
+        if (!(root is InvocationExpressionSyntax))
+            return;
 
-        public override void Initialize(AnalysisContext context)
+        InvocationExpressionSyntax invocation = (InvocationExpressionSyntax)root;
+
+        IMethodSymbol symbol = (IMethodSymbol)context.SemanticModel.GetSymbolInfo(invocation).Symbol;
+
+        if (symbol == null)
+            return;
+
+        if (symbol.Name != "Configure" && symbol.Name != "TrackError" && symbol.Name != "TrackEvent")
+            return;
+
+        string symbolName = symbol.ContainingType.ToDisplayString();
+
+        if (symbolName.StartsWith("Microsoft.AppCenter.AppCenter", StringComparison.InvariantCultureIgnoreCase) || symbolName.StartsWith("Microsoft.AppCenter.Analytics.Analytics", StringComparison.InvariantCultureIgnoreCase) || symbolName.StartsWith("Microsoft.AppCenter.Crashes.Crashes", StringComparison.InvariantCultureIgnoreCase))
         {
-            if (context == null)
-                throw new ArgumentNullException(nameof(context));
+            Diagnostic diagn = Diagnostic.Create(Rule, root.GetLocation(), Message);
 
-            context.EnableConcurrentExecution();
-            context.RegisterSyntaxNodeAction(AnalyzeSyntax, SyntaxKind.InvocationExpression);
-        }
-
-        private void AnalyzeSyntax(SyntaxNodeAnalysisContext context)
-        {
-            SyntaxNode root = context.Node;
-
-            if (!(root is InvocationExpressionSyntax))
-                return;
-
-            InvocationExpressionSyntax invocation = (InvocationExpressionSyntax)root;
-
-            IMethodSymbol symbol = (IMethodSymbol)context.SemanticModel.GetSymbolInfo(invocation).Symbol;
-
-            if (symbol == null)
-                return;
-
-            if (symbol.Name != "Configure" && symbol.Name != "TrackError" && symbol.Name != "TrackEvent")
-                return;
-
-            string symbolName = symbol.ContainingType.ToDisplayString();
-
-            if (symbolName.StartsWith("Microsoft.AppCenter.AppCenter", StringComparison.InvariantCultureIgnoreCase) || symbolName.StartsWith("Microsoft.AppCenter.Analytics.Analytics", StringComparison.InvariantCultureIgnoreCase) || symbolName.StartsWith("Microsoft.AppCenter.Crashes.Crashes", StringComparison.InvariantCultureIgnoreCase))
-            {
-                Diagnostic diagn = Diagnostic.Create(Rule, root.GetLocation(), Message);
-
-                context.ReportDiagnostic(diagn);
-            }
+            context.ReportDiagnostic(diagn);
         }
     }
 }

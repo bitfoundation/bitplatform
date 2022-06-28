@@ -1,55 +1,54 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using System;
+using System.Collections.Immutable;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
-using System;
-using System.Collections.Immutable;
 
-namespace Bit.Tooling.CodeAnalyzer.BitAnalyzers.ViewModel
+namespace Bit.CodeAnalyzers.BitAnalyzers.ViewModel;
+
+[DiagnosticAnalyzer(LanguageNames.CSharp)]
+public class UseINavServiceInsteadOfINavigationServiceAnalyzer : DiagnosticAnalyzer
 {
-    [DiagnosticAnalyzer(LanguageNames.CSharp)]
-    public class UseINavServiceInsteadOfINavigationServiceAnalyzer : DiagnosticAnalyzer
+    public const string DiagnosticId = nameof(UseINavServiceInsteadOfINavigationServiceAnalyzer);
+
+    public const string Title = "Use INavService instead of INavigationService";
+    public const string Message = Title;
+    public const string Description = Title;
+    private const string Category = "Bit";
+
+    private static readonly DiagnosticDescriptor Rule = new DiagnosticDescriptor(DiagnosticId, Title, Message, Category, DiagnosticSeverity.Error, isEnabledByDefault: true, description: Description);
+
+    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
+
+    public override void Initialize(AnalysisContext context)
     {
-        public const string DiagnosticId = nameof(UseINavServiceInsteadOfINavigationServiceAnalyzer);
+        if (context == null)
+            throw new ArgumentNullException(nameof(context));
 
-        public const string Title = "Use INavService instead of INavigationService";
-        public const string Message = Title;
-        public const string Description = Title;
-        private const string Category = "Bit";
+        context.EnableConcurrentExecution();
+        context.RegisterSyntaxNodeAction(AnalyzeSyntax, SyntaxKind.IdentifierName);
+    }
 
-        private static readonly DiagnosticDescriptor Rule = new DiagnosticDescriptor(DiagnosticId, Title, Message, Category, DiagnosticSeverity.Error, isEnabledByDefault: true, description: Description);
+    private void AnalyzeSyntax(SyntaxNodeAnalysisContext context)
+    {
+        SyntaxNode root = context.Node;
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
+        if (!(root is IdentifierNameSyntax))
+            return;
 
-        public override void Initialize(AnalysisContext context)
-        {
-            if (context == null)
-                throw new ArgumentNullException(nameof(context));
+        root = (IdentifierNameSyntax)context.Node;
 
-            context.EnableConcurrentExecution();
-            context.RegisterSyntaxNodeAction(AnalyzeSyntax, SyntaxKind.IdentifierName);
-        }
+        ISymbol navSymbol = context.SemanticModel.GetSymbolInfo(root).Symbol;
 
-        private void AnalyzeSyntax(SyntaxNodeAnalysisContext context)
-        {
-            SyntaxNode root = context.Node;
+        if (navSymbol == null)
+            return;
 
-            if (!(root is IdentifierNameSyntax))
-                return;
+        if (navSymbol.ToString() != "Prism.Navigation.INavigationService")
+            return;
 
-            root = (IdentifierNameSyntax)context.Node;
+        Diagnostic diagn = Diagnostic.Create(Rule, root.GetLocation(), Message);
 
-            ISymbol navSymbol = context.SemanticModel.GetSymbolInfo(root).Symbol;
-
-            if (navSymbol == null)
-                return;
-
-            if (navSymbol.ToString() != "Prism.Navigation.INavigationService")
-                return;
-
-            Diagnostic diagn = Diagnostic.Create(Rule, root.GetLocation(), Message);
-
-            context.ReportDiagnostic(diagn);
-        }
+        context.ReportDiagnostic(diagn);
     }
 }

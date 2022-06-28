@@ -1,56 +1,55 @@
-﻿using Bit.Tooling.CodeAnalyzer.SystemAnalyzers;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CodeActions;
-using Microsoft.CodeAnalysis.CodeFixes;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System.Collections.Immutable;
-using System.Composition;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading;
+using System.Composition;
 using System.Threading.Tasks;
+using System.Collections.Immutable;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CodeFixes;
+using Microsoft.CodeAnalysis.CodeActions;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Bit.CodeAnalyzers.SystemAnalyzers;
 
-namespace Bit.Tooling.CodeAnalyzer.SystemCodeFixes
+namespace Bit.CodeAnalyzers.SystemCodeFixes;
+
+[ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(DateTimeOffsetInsteadOfDateTimeCodeFixProvider)), Shared]
+public class DateTimeOffsetInsteadOfDateTimeCodeFixProvider : CodeFixProvider
 {
-    [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(DateTimeOffsetInsteadOfDateTimeCodeFixProvider)), Shared]
-    public class DateTimeOffsetInsteadOfDateTimeCodeFixProvider : CodeFixProvider
+    private const string Title = "Use DateTimeOffset";
+
+    public sealed override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(DateTimeOffsetInsteadOfDateTimeAnalyzer.DiagnosticId);
+
+    public sealed override FixAllProvider GetFixAllProvider()
     {
-        private const string Title = "Use DateTimeOffset";
+        return WellKnownFixAllProviders.BatchFixer;
+    }
 
-        public sealed override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(DateTimeOffsetInsteadOfDateTimeAnalyzer.DiagnosticId);
+    public sealed override async Task RegisterCodeFixesAsync(CodeFixContext context)
+    {
+        SyntaxNode root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
 
-        public sealed override FixAllProvider GetFixAllProvider()
-        {
-            return WellKnownFixAllProviders.BatchFixer;
-        }
+        Diagnostic diagnostic = context.Diagnostics.First();
 
-        public sealed override async Task RegisterCodeFixesAsync(CodeFixContext context)
-        {
-            SyntaxNode root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
+        SyntaxNode node = root.FindNode(context.Span);
 
-            Diagnostic diagnostic = context.Diagnostics.First();
+        if (node is IdentifierNameSyntax == false)
+            return;
 
-            SyntaxNode node = root.FindNode(context.Span);
+        context.RegisterCodeFix(CodeAction.Create(title: Title, createChangedDocument: c => ReplaceDateTimeWithDateTimeOffsetAsync(context.Document, node, c), equivalenceKey: Title), diagnostic);
+    }
 
-            if (node is IdentifierNameSyntax == false)
-                return;
+    private async Task<Document> ReplaceDateTimeWithDateTimeOffsetAsync(Document document, SyntaxNode node, CancellationToken cancellationToken)
+    {
+        SyntaxNode root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
 
-            context.RegisterCodeFix(CodeAction.Create(title: Title, createChangedDocument: c => ReplaceDateTimeWithDateTimeOffsetAsync(context.Document, node, c), equivalenceKey: Title), diagnostic);
-        }
+        IdentifierNameSyntax convertedNode = (IdentifierNameSyntax)node;
 
-        private async Task<Document> ReplaceDateTimeWithDateTimeOffsetAsync(Document document, SyntaxNode node, CancellationToken cancellationToken)
-        {
-            SyntaxNode root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
+        IdentifierNameSyntax? newNode = convertedNode?.WithIdentifier(SyntaxFactory.ParseToken("DateTimeOffset")).WithLeadingTrivia(node.GetLeadingTrivia()).WithTrailingTrivia(node.GetTrailingTrivia());
 
-            IdentifierNameSyntax convertedNode = (IdentifierNameSyntax)node;
+        SyntaxNode newRoot = root.ReplaceNode(node, newNode);
 
-            IdentifierNameSyntax? newNode = convertedNode?.WithIdentifier(SyntaxFactory.ParseToken("DateTimeOffset")).WithLeadingTrivia(node.GetLeadingTrivia()).WithTrailingTrivia(node.GetTrailingTrivia());
+        Document newDocument = document.WithSyntaxRoot(newRoot);
 
-            SyntaxNode newRoot = root.ReplaceNode(node, newNode);
-
-            Document newDocument = document.WithSyntaxRoot(newRoot);
-
-            return newDocument;
-        }
+        return newDocument;
     }
 }

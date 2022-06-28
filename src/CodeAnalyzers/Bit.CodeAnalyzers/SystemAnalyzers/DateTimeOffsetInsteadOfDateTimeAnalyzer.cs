@@ -1,55 +1,54 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using System;
+using System.Collections.Immutable;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
-using System;
-using System.Collections.Immutable;
 
-namespace Bit.Tooling.CodeAnalyzer.SystemAnalyzers
+namespace Bit.CodeAnalyzers.SystemAnalyzers;
+
+[DiagnosticAnalyzer(LanguageNames.CSharp)]
+public class DateTimeOffsetInsteadOfDateTimeAnalyzer : DiagnosticAnalyzer
 {
-    [DiagnosticAnalyzer(LanguageNames.CSharp)]
-    public class DateTimeOffsetInsteadOfDateTimeAnalyzer : DiagnosticAnalyzer
+    public const string DiagnosticId = nameof(DateTimeOffsetInsteadOfDateTimeAnalyzer);
+
+    public const string Title = "Replace DateTime usage with DateTimeOffset";
+    public const string Message = Title;
+    public const string Description = Title;
+    private const string Category = "System";
+
+    private static readonly DiagnosticDescriptor Rule = new DiagnosticDescriptor(DiagnosticId, Title, Message, Category, DiagnosticSeverity.Warning, isEnabledByDefault: true, description: Description);
+
+    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
+
+    public override void Initialize(AnalysisContext context)
     {
-        public const string DiagnosticId = nameof(DateTimeOffsetInsteadOfDateTimeAnalyzer);
+        if (context == null)
+            throw new ArgumentNullException(nameof(context));
 
-        public const string Title = "Replace DateTime usage with DateTimeOffset";
-        public const string Message = Title;
-        public const string Description = Title;
-        private const string Category = "System";
+        context.EnableConcurrentExecution();
+        context.RegisterSyntaxNodeAction(AnalyzeSyntax, SyntaxKind.IdentifierName);
+    }
 
-        private static readonly DiagnosticDescriptor Rule = new DiagnosticDescriptor(DiagnosticId, Title, Message, Category, DiagnosticSeverity.Warning, isEnabledByDefault: true, description: Description);
+    private void AnalyzeSyntax(SyntaxNodeAnalysisContext context)
+    {
+        SyntaxNode root = context.Node;
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
+        if (!(root is IdentifierNameSyntax))
+            return;
 
-        public override void Initialize(AnalysisContext context)
-        {
-            if (context == null)
-                throw new ArgumentNullException(nameof(context));
+        root = (IdentifierNameSyntax)context.Node;
 
-            context.EnableConcurrentExecution();
-            context.RegisterSyntaxNodeAction(AnalyzeSyntax, SyntaxKind.IdentifierName);
-        }
+        ISymbol dateSymbol = context.SemanticModel.GetSymbolInfo(root).Symbol;
 
-        private void AnalyzeSyntax(SyntaxNodeAnalysisContext context)
-        {
-            SyntaxNode root = context.Node;
+        if (dateSymbol == null)
+            return;
 
-            if (!(root is IdentifierNameSyntax))
-                return;
+        if (dateSymbol.ToString() != "System.DateTime")
+            return;
 
-            root = (IdentifierNameSyntax)context.Node;
+        Diagnostic diagn = Diagnostic.Create(Rule, root.GetLocation(), Message);
 
-            ISymbol dateSymbol = context.SemanticModel.GetSymbolInfo(root).Symbol;
-
-            if (dateSymbol == null)
-                return;
-
-            if (dateSymbol.ToString() != "System.DateTime")
-                return;
-
-            Diagnostic diagn = Diagnostic.Create(Rule, root.GetLocation(), Message);
-
-            context.ReportDiagnostic(diagn);
-        }
+        context.ReportDiagnostic(diagn);
     }
 }
