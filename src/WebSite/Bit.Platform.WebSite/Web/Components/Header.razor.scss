@@ -28,9 +28,8 @@
     height: 100%;
 }
 
-.blue-header {
-    background-color: $B8Color;
-    opacity: 1;
+.light-blue-header-cover {
+    background-color: $B7Color;
 }
 
 .header-container {
@@ -57,9 +56,34 @@
         }
     }
 
-    .header-link--active {
+    .header-link-active {
         @include Subtitle4;
         color: $B5Color;
+    }
+}
+
+.light-blue-header-section {
+    .header-link {
+        color: $White;
+    }
+
+    .header-link-active {
+        color: $White;
+    }
+}
+
+.blue-header {
+    background-color: $B8Color;
+    opacity: 1;
+}
+
+.blue-header .header-section {
+    .header-link {
+        color: $White;
+    }
+
+    .header-link-active {
+        color: $White;
     }
 }
 

@@ -1,0 +1,76 @@
+﻿
+<section class="page-section description-section">
+    <div>This document aimed to create and run a Bit-Platform (Bit) project in a short period. It is assumed that you, as the developer, are familiar with the development prerequisites that follow.</div>
+</section>
+
+<section class="page-section getting-started-step-section">
+    <div class="step-body-card">
+        <h4> Install</h4>
+        <div class="card-container" id="step-number-1">
+            <div class="description">Bit’s Blazor UI Components are distributed as the <a href="#">Bit.Client.Web.BlazorUI nuget package</a>. You can add them to your project in one of the following ways.</div>
+            <div class="description">Install the package from command line by running this command:</div>
+            <pre class="code">
+                <code>
+                    dotnet add package
+                </code>
+            </pre>
+        </div>
+    </div>
+
+    <div class="step-body-card">
+        <h4> Development prerequisites</h4>
+        <div class="card-container" id="step-number-2">
+            <ul class="first-step-ul">
+                <li>C# as the main development language.</li>
+                <li>Asp.net core blazor as main development Back-End and Front-End framework</li>
+                <li><a href="#">CSS</a> & <a href="#">Sass</a> as stylesheet</li>
+                <li>
+                    item3
+                    <ul>
+                        <li>item1-1</li>
+                        <li>item1-2</li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="step-body-card">
+        <h4> Prepare The Project</h4>
+        <div class="card-container" id="step-number-3">
+            <h3>Database</h3>
+            <h5>Connection String</h5>
+            <div class="description">Open <span class="bold">appsettings.json</span> file in TodoTemplate.Api project and change the **ConnectionStrings ** connection string if you want:</div>
+            <pre class="code">
+                <code>
+                    "ConnectionStrings": {
+                    "SqlServerConnectionString": "Data Source=.; Initial Catalog=TodoTemplateDb;Integrated Security=true;Application Name=Todo;"
+                    },e
+                </code>
+            </pre>
+            <div class="description">
+                For Other Entityframework supported databases, you need to configure the context that provides your preferred database. with change <span class="high-light">UseSqlServer</span> method on <span class="high-light">Api\Startup\Services.cs</span> file
+            </div>
+            <pre class="code"><code>
+                services.AddDbContext TodoTemplateDbContext
+                (options =>
+                {
+                options.UseSqlServer(configuration.GetConnectionString("SqlServerConnectionString"), sqlOpt =>
+                {
+                sqlOpt.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+                });
+                });
+            </code></pre>
+            <h3>Migration</h3>
+            <div class="description">To create and migrate the database to the latest version. You can use Entity Framework's built-in tools for migrations. Open Package Manager Console in Visual Studio set TodoTemplate.Api as the Default Project and run the Update-Database command as shown below:</div>
+            <pre class="code">
+                <code>
+                    Update-Database -Context TodoTemplateDbContext
+                </code>
+            </pre>
+            <h3>Run</h3>
+            <div class="description">After you've done the configuration, you can run the application. Set Api project as startup and run, you can see the swagger dashboard in the first view</div>
+            <img class="image" src="/images/projects/swagger.png" />
+        </div>
+    </div>
+</section>

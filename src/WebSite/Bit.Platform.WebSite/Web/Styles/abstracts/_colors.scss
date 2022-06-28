@@ -1,4 +1,4 @@
-﻿$B1Color: #141414;
+﻿$B1Color: #000B1A;
 $B2Color: #001533;
 $B3Color: #002A66;
 $B4Color: #004099;
@@ -16,9 +16,9 @@ $Gray3: #DDDDDD;
 $Gray4: #E9E9E9;
 $Gray5: #F8F8F8;
 
-$Black1: #141414;
+$Black1: #363636;
 $White: #FFFFFF;
-$BackgroundColor: #E5E5E5;
+$BackgroundColor: linear-gradient(169.63deg, rgba(231, 240, 255, 0.71) 0.83%, rgba(246, 249, 255, 0.67) 21.07%, rgba(234, 242, 255, 0.72) 94.64%), $White;;
 $Background1Color: #DEEAFF;
 $Background2Color: #DEE9FF;
 
