@@ -1,0 +1,20 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitComponentBase
+
+<div @ref="RootElement"
+     @attributes="HtmlAttributes"
+     class="@ClassBuilder.Value"
+     style="@StyleBuilder.Value">
+    <div></div>
+    @if (Label.HasValue())
+    {
+        <div>@Label</div>
+    }
+
+    @if (AriaLabel.HasValue())
+    {
+        <div role="status" aria-live="@AriaLive">
+            <div>@AriaLabel</div>
+        </div>
+    }
+</div>

@@ -1,0 +1,16 @@
+﻿<CascadingValue Value="@Visual">
+    <BitChoiceGroup Options="@Options"
+                    IsEnabled="@IsEnabled"
+                    Name="@Name"
+                    Label="@Label"
+                    DefaultValue="@DefaultValue" />
+</CascadingValue>
+
+@code {
+    [Parameter] public Visual Visual { get; set; }
+    [Parameter] public bool IsEnabled { get; set; } = true;
+    [Parameter] public List<BitChoiceGroupOption> Options { get; set; } = new();
+    [Parameter] public string Name { get; set; }
+    [Parameter] public string Label { get; set; }
+    [Parameter] public string DefaultValue { get; set; }
+}
