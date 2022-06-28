@@ -106,23 +106,23 @@
 }
 
 .google-play {
-    background-image: url('/images/projects/google-store.svg');
+    background-image: url('/images/projects/google-play.svg');
 }
 
 .microsoft-store {
-    background-image: url('/images/projects/spa.svg');
-}
-
-.apple-store {
     background-image: url('/images/projects/microsoft-store.svg');
 }
 
-.figma {
+.apple-store {
     background-image: url('/images/projects/apple-store.svg');
 }
 
+.figma {
+    background-image: url('/images/projects/figma.svg');
+}
+
 .spa {
-    background-image: url('/images/projects/pwa.svg');
+    background-image: url('/images/projects/figma.svg');
 }
 
 .pwa {
@@ -132,7 +132,6 @@
 //-----------------------background-----------------//
 
 .background-section {
-
     .circle1 {
         position: absolute;
         width: rem(550px);
