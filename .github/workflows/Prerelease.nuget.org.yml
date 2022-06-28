@@ -36,12 +36,12 @@ jobs:
     - name: dotnet pack Bswup
       run: dotnet pack src/Bswup/Bit.Bswup/Bit.Bswup.csproj --output . --configuration Release
             
-    - name: dotnet restore CodeAnalyzer
-      run: dotnet restore src/Tooling/Bit.Tooling.CodeAnalyzer/Bit.Tooling.CodeAnalyzer.csproj
-    - name: dotnet msbuild CodeAnalyzer
-      run: dotnet msbuild src/Tooling/Bit.Tooling.CodeAnalyzer/Bit.Tooling.CodeAnalyzer.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false
+    - name: dotnet restore CodeAnalyzers
+      run: dotnet restore src/CodeAnalyzers/Bit.CodeAnalyzers/Bit.CodeAnalyzers.csproj
+    - name: dotnet msbuild CodeAnalyzers
+      run: dotnet msbuild src/CodeAnalyzers/Bit.CodeAnalyzers/Bit.CodeAnalyzers.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false
     - name: dotnet pack CodeAnalyzer
-      run: dotnet pack src/Tooling/Bit.Tooling.CodeAnalyzer/Bit.Tooling.CodeAnalyzer.csproj --output . --configuration Release
+      run: dotnet pack src/CodeAnalyzers/Bit.CodeAnalyzers/Bit.CodeAnalyzers.csproj --output . --configuration Release
       
     - name: dotnet restore SourceGenerators
       run: dotnet restore src/Tooling/Bit.Tooling.SourceGenerators/Bit.Tooling.SourceGenerators.csproj
