@@ -1,7 +1,7 @@
 ﻿<header class="main-header">
-    <div class="header-cover" @ref=HeaderElement></div>
-    <div class="header-container">
-        <div class="header-section">
+    <div class="header-cover @(CurrentUrl == Urls.Projects ? "light-blue-header-cover" : "")"></div>
+    <div class="header-container" @ref=HeaderElement>
+        <div class="header-section @(CurrentUrl == Urls.Projects ? "light-blue-header-section" : "")">
             <a class="header-logo" href="@Urls.HomePage"></a>
             <div class="row">
                 <a class="header-link @(CurrentUrl == Urls.HomePage ? "header-link--active" : "")" href="@Urls.HomePage">Home</a>

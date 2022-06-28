@@ -146,6 +146,26 @@ h4 {
     }
 }
 
+h5 {
+    font-weight: 500;
+    font-size: rem(25px);
+    line-height: rem(32px);
+    margin-block-end: 0;
+    margin-block-start: 0;
+
+    @include lg {
+        font-size: rem(24px);
+    }
+
+    @include md {
+        font-size: rem(16px);
+    }
+
+    @include sm {
+        font-size: rem(16px);
+    }
+}
+
 
 /* --------------- header ------------- */
 

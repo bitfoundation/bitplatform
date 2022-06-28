@@ -4,13 +4,16 @@
 </section>
 
 <section class="page-section getting-started-step-section">
-
     <div class="step-body-card">
         <h4> Install</h4>
         <div class="card-container" id="step-number-1">
             <div class="description">Bit’s Blazor UI Components are distributed as the <a href="#">Bit.Client.Web.BlazorUI nuget package</a>. You can add them to your project in one of the following ways.</div>
             <div class="description">Install the package from command line by running this command:</div>
-            <div class="code">dotnet add package</div>
+            <pre class="code">
+                <code>
+                    dotnet add package
+                </code>
+            </pre>
         </div>
     </div>
 
@@ -38,15 +41,17 @@
             <h3>Database</h3>
             <h5>Connection String</h5>
             <div class="description">Open <span class="bold">appsettings.json</span> file in TodoTemplate.Api project and change the **ConnectionStrings ** connection string if you want:</div>
-            <div class="code">
-                "ConnectionStrings": {
-                "SqlServerConnectionString": "Data Source=.; Initial Catalog=TodoTemplateDb;Integrated Security=true;Application Name=Todo;"
-                },e
-            </div>
+            <pre class="code">
+                <code>
+                    "ConnectionStrings": {
+                    "SqlServerConnectionString": "Data Source=.; Initial Catalog=TodoTemplateDb;Integrated Security=true;Application Name=Todo;"
+                    },e
+                </code>
+            </pre>
             <div class="description">
                 For Other Entityframework supported databases, you need to configure the context that provides your preferred database. with change <span class="high-light">UseSqlServer</span> method on <span class="high-light">Api\Startup\Services.cs</span> file
             </div>
-            <div class="code">
+            <pre class="code"><code>
                 services.AddDbContext TodoTemplateDbContext
                 (options =>
                 {
@@ -55,14 +60,17 @@
                 sqlOpt.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
                 });
                 });
-            </div>
+            </code></pre>
             <h3>Migration</h3>
             <div class="description">To create and migrate the database to the latest version. You can use Entity Framework's built-in tools for migrations. Open Package Manager Console in Visual Studio set TodoTemplate.Api as the Default Project and run the Update-Database command as shown below:</div>
-            <div class="code">Update-Database -Context TodoTemplateDbContext</div>
+            <pre class="code">
+                <code>
+                    Update-Database -Context TodoTemplateDbContext
+                </code>
+            </pre>
             <h3>Run</h3>
             <div class="description">After you've done the configuration, you can run the application. Set Api project as startup and run, you can see the swagger dashboard in the first view</div>
             <img class="image" src="/images/projects/swagger.png" />
         </div>
     </div>
-
 </section>

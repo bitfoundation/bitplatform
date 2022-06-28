@@ -2,7 +2,7 @@
 
 .page-container {
     @include PageContainer;
-    background-color: #E5E5E5;
+    background: $BackgroundColor;
     position: relative;
 }
 
@@ -56,10 +56,11 @@
 
     .content-container {
         flex: 50%;
+        z-index: 1;
 
         div {
             @include Body1;
-            margin-top: 24px;
+            margin-top: rem(24px);
         }
 
         @include sm {
@@ -72,23 +73,34 @@
 
 .store-links-section {
     position: relative;
-    top: -40px;
+    top: rem(-40px);
 
     div {
         @include Card;
-        width: 80px;
-        height: 80px;
+        width: rem(80px);
+        height: rem(80px);
         display: flex;
         align-items: center;
         justify-content: center;
-        margin: 0 6px;
+        margin: 0 rem(6px);
         box-shadow: none;
 
         span {
-            width: 40px;
-            height: 40px;
+            width: rem(40px);
+            height: rem(40px);
             background-position: center;
             background-repeat: no-repeat;
+        }
+
+        @include lt-lg {
+            width: rem(70px);
+            height: rem(70px);
+            margin: 0 rem(3px);
+
+            span {
+                width: rem(35px);
+                height: rem(35px);
+            }
         }
     }
 }
@@ -123,8 +135,8 @@
 
     .circle1 {
         position: absolute;
-        width: rem(600px);
-        height: rem(600px);
+        width: rem(550px);
+        height: rem(550px);
         border-radius: 50%;
         background: rgba(255, 255, 255, 0.13);
         top: rem(-300px);
@@ -140,12 +152,12 @@
 
     .circle2 {
         position: absolute;
-        width: rem(500px);
-        height: rem(500px);
+        width: rem(430px);
+        height: rem(430px);
         border-radius: 50%;
         background: $B5Color;
-        top: -250px;
-        left: -250px;
+        top: rem(-250px);
+        left: rem(-250px);
 
         @include sm {
             width: rem(150px);
@@ -178,7 +190,7 @@
         width: rem(392px);
         height: rem(392px);
         border-radius: 50%;
-        border: 2px solid rgba(255, 255, 255, 0.15);
+        border: rem(2px) solid rgba(255, 255, 255, 0.15);
         top: rem(200px);
         right: rem(-20px);
 
