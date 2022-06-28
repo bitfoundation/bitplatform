@@ -27,8 +27,8 @@
 
 		<ReleaseVersion>12.0.0</ReleaseVersion>
 
-		<PackageReleaseNotes>https://github.com/bitfoundation/bitplatform/releases/tag/v-$(ReleaseVersion)-pre-08</PackageReleaseNotes>
-		<PackageVersion>$(ReleaseVersion)-pre-08</PackageVersion>
+		<PackageReleaseNotes>https://github.com/bitfoundation/bitplatform/releases/tag/v-$(ReleaseVersion)-pre-09</PackageReleaseNotes>
+		<PackageVersion>$(ReleaseVersion)-pre-09</PackageVersion>
 
 		<!-- Version -->
 		<Version>$(ReleaseVersion).$([System.DateTime]::Now.ToString(HHmm))</Version>
