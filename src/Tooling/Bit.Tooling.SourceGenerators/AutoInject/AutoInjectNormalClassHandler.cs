@@ -5,7 +5,7 @@ using Microsoft.CodeAnalysis;
 
 namespace Bit.Tooling.SourceGenerators;
 
-public class AutoInjectNormalClassHandler
+public static class AutoInjectNormalClassHandler
 {
     public static string? Generate(
         INamedTypeSymbol? attributeSymbol,

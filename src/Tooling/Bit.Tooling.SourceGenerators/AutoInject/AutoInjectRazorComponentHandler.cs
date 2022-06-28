@@ -5,7 +5,7 @@ using Microsoft.CodeAnalysis;
 
 namespace Bit.Tooling.SourceGenerators;
 
-public class AutoInjectRazorComponentHandler
+public static class AutoInjectRazorComponentHandler
 {
     public static string? Generate(
         INamedTypeSymbol? classSymbol,

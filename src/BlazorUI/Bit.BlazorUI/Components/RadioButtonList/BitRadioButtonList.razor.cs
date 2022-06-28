@@ -52,7 +52,7 @@ namespace Bit.BlazorUI
         /// <summary>
         /// Sets the data source that populates the items of the list.
         /// </summary>
-        [Parameter] public IEnumerable<TItem>? Items { get; set; }
+        [Parameter] public IEnumerable<TItem> Items { get; set; } = new List<TItem>();
 
         /// <summary>
         /// The name of the field from the model that will be shown to the user.

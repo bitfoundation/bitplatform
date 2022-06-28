@@ -27,7 +27,7 @@ for blazor server use:
 <Project Sdk="Microsoft.NET.Sdk.Web">
 ```
 
-For blazor hybrid, use Bit.Client.Web.BlazorUI.App project instead.
+For blazor hybrid, use Bit.BlazorUI.App project instead.
 
 To run blazor web assembly only start Api project and use 'TodoTemplate.Api-BlazorWebAssembly' debug profile, but for blazor hybrid you need multi startup for both api & app projects. In blazor server you need multi startup for both api & web projects.
 In Blazor hybrid and server, use 'TodoTemplate.Api' debug profile for api project.

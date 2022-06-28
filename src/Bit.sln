@@ -14,7 +14,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		global.json = global.json
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Client.Web.BlazorUI", "Client\Web\Bit.Client.Web.BlazorUI\Bit.Client.Web.BlazorUI.csproj", "{1DEF8AD9-9FA7-4FB7-9161-639C82FA0732}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.BlazorUI", "Client\Web\Bit.BlazorUI\Bit.BlazorUI.csproj", "{1DEF8AD9-9FA7-4FB7-9161-639C82FA0732}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Playground", "Playground", "{23426B1A-CC46-4D11-B233-208A57B2BCA2}"
 	ProjectSection(SolutionItems) = preProject
@@ -22,19 +22,19 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Playground", "Playground", 
 		Client\Web\Playground\README.md = Client\Web\Playground\README.md
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Client.Web.BlazorUI.Playground.Api", "Client\Web\Playground\Bit.Client.Web.BlazorUI.Playground\Api\Bit.Client.Web.BlazorUI.Playground.Api.csproj", "{37563036-94C7-449B-BF26-DACB031230C1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.BlazorUI.Playground.Api", "Client\Web\Playground\Bit.BlazorUI.Playground\Api\Bit.BlazorUI.Playground.Api.csproj", "{37563036-94C7-449B-BF26-DACB031230C1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Client.Web.BlazorUI.Playground.Shared", "Client\Web\Playground\Bit.Client.Web.BlazorUI.Playground\Shared\Bit.Client.Web.BlazorUI.Playground.Shared.csproj", "{DCD6EAC1-2F25-47AA-A787-979055401BBA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.BlazorUI.Playground.Shared", "Client\Web\Playground\Bit.BlazorUI.Playground\Shared\Bit.BlazorUI.Playground.Shared.csproj", "{DCD6EAC1-2F25-47AA-A787-979055401BBA}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Client.Web.BlazorUI.Playground.Web", "Client\Web\Playground\Bit.Client.Web.BlazorUI.Playground\Web\Bit.Client.Web.BlazorUI.Playground.Web.csproj", "{0DEBFE06-16DD-4DE3-AFA5-2FE254F63BFC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.BlazorUI.Playground.Web", "Client\Web\Playground\Bit.BlazorUI.Playground\Web\Bit.BlazorUI.Playground.Web.csproj", "{0DEBFE06-16DD-4DE3-AFA5-2FE254F63BFC}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Client.Web.BlazorUI.Tests", "Client\Web\Bit.Client.Web.BlazorUI.Tests\Bit.Client.Web.BlazorUI.Tests.csproj", "{32793226-C45A-4E30-A077-394FC3C58E3E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.BlazorUI.Tests", "Client\Web\Bit.BlazorUI.Tests\Bit.BlazorUI.Tests.csproj", "{32793226-C45A-4E30-A077-394FC3C58E3E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tooling", "Tooling", "{778B3D69-5A32-453B-9A76-167912F438DE}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Tooling.SourceGenerators", "Tooling\Bit.Tooling.SourceGenerators\Bit.Tooling.SourceGenerators.csproj", "{A09BBB64-CD8C-4993-BA06-427A4C091A32}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Client.Web.BlazorUI.Playground.App", "Client\Web\Playground\Bit.Client.Web.BlazorUI.Playground\App\Bit.Client.Web.BlazorUI.Playground.App.csproj", "{BDF6B51E-2201-4ACA-B920-4651316E97AD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.BlazorUI.Playground.App", "Client\Web\Playground\Bit.BlazorUI.Playground\App\Bit.BlazorUI.Playground.App.csproj", "{BDF6B51E-2201-4ACA-B920-4651316E97AD}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Tooling.CodeAnalyzer", "Tooling\Bit.Tooling.CodeAnalyzer\Bit.Tooling.CodeAnalyzer.csproj", "{8AA75810-1F94-4391-9BA8-6E65FE159C9A}"
 EndProject
@@ -72,7 +72,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".template.config", ".templa
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{8C9FF7C8-6A83-427C-A704-E4061822718D}"
 	ProjectSection(SolutionItems) = preProject
-		..\.github\workflows\Bit.Client.Web.BlazorUI.ci.yml = ..\.github\workflows\Bit.Client.Web.BlazorUI.ci.yml
+		..\.github\workflows\Bit.BlazorUI.ci.yml = ..\.github\workflows\Bit.BlazorUI.ci.yml
 		..\.github\workflows\nuget.org.yml = ..\.github\workflows\nuget.org.yml
 		..\.github\workflows\Prerelease.nuget.org.yml = ..\.github\workflows\Prerelease.nuget.org.yml
 	EndProjectSection

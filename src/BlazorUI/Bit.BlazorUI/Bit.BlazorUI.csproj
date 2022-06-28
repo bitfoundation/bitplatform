@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
-    <Import Project="../../../Bit.Build.props" />
+    <Import Project="../../Bit.Build.props" />
 
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
@@ -25,12 +25,12 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\..\Tooling\Bit.Tooling.SourceGenerators\Bit.Tooling.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+        <Content Remove="compilerconfig.json" />
+        <None Include="compilerconfig.json" />
     </ItemGroup>
 
     <ItemGroup>
-        <Content Remove="compilerconfig.json" />
-        <None Include="compilerconfig.json" />
+      <ProjectReference Include="..\..\Tooling\Bit.Tooling.SourceGenerators\Bit.Tooling.SourceGenerators.csproj" />
     </ItemGroup>
 
     <ItemGroup>

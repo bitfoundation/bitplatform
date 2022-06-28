@@ -19,13 +19,13 @@ jobs:
         dotnet-version: 6.0.x
 
     - name: dotnet restore BlazorUI
-      run: dotnet restore src/Client/Web/Bit.Client.Web.BlazorUI/Bit.Client.Web.BlazorUI.csproj
+      run: dotnet restore src/BlazorUI/Bit.BlazorUI/Bit.BlazorUI.csproj
     - name: dotnet msbuild BlazorUI (1)
-      run: dotnet msbuild src/Client/Web/Bit.Client.Web.BlazorUI/Bit.Client.Web.BlazorUI.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false
+      run: dotnet msbuild src/BlazorUI/Bit.BlazorUI/Bit.BlazorUI.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false
     - name: dotnet msbuild BlazorUI (2)
-      run: dotnet msbuild src/Client/Web/Bit.Client.Web.BlazorUI/Bit.Client.Web.BlazorUI.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false
+      run: dotnet msbuild src/BlazorUI/Bit.BlazorUI/Bit.BlazorUI.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false
     - name: dotnet pack BlazorUI
-      run: dotnet pack src/Client/Web/Bit.Client.Web.BlazorUI/Bit.Client.Web.BlazorUI.csproj --output . --configuration Release
+      run: dotnet pack src/BlazorUI/Bit.BlazorUI/Bit.BlazorUI.csproj --output . --configuration Release
       
     - name: dotnet restore Bswup
       run: dotnet restore src/Tooling/Bit.Tooling.Bswup/Bit.Tooling.Bswup/Bit.Tooling.Bswup.csproj

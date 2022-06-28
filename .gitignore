@@ -227,35 +227,35 @@ _book
 /BitTools/BitCLIV1Task/buildtask/ps_modules/VstsTaskSdk/
 *Resource.designer.cs
 *.tsbuildinfo
-/src/Client/Web/Bit.Client.Web.BlazorUI/**/*.css
-/src/Client/Web/Bit.Client.Web.BlazorUI/wwwroot/**/*.js
-/src/Client/Web/Bit.Client.Web.BlazorUI/wwwroot/**/*.css.gz
+/src/BlazorUI/Bit.BlazorUI/**/*.css
+/src/BlazorUI/Bit.BlazorUI/wwwroot/**/*.js
+/src/BlazorUI/Bit.BlazorUI/wwwroot/**/*.css.gz
 /src/Tooling/Bit.Tooling.Bswup/Bit.Tooling.Bswup/wwwroot/**/*.js
 /src/Tooling/Bit.Tooling.Butil/Bit.Tooling.Butil/wwwroot/**/*.js
 
-/src/Client/Web/Playground/Bit.Client.Web.BlazorUI.Playground/Web/**/**/*.css
-/src/Client/Web/Playground/Bit.Client.Web.BlazorUI.Playground/Web/wwwroot/**/*.js
-/src/Client/Web/Playground/Bit.Client.Web.BlazorUI.Playground/App/Styles
-/src/Client/Web/Playground/Bit.Client.Web.BlazorUI.Playground/App/Shared
-/src/Client/Web/Playground/Bit.Client.Web.BlazorUI.Playground/App/Services
-/src/Client/Web/Playground/Bit.Client.Web.BlazorUI.Playground/App/Scripts
-/src/Client/Web/Playground/Bit.Client.Web.BlazorUI.Playground/App/Pages
-/src/Client/Web/Playground/Bit.Client.Web.BlazorUI.Playground/App/Models
-/src/Client/Web/Playground/Bit.Client.Web.BlazorUI.Playground/App/Extensions
-/src/Client/Web/Playground/Bit.Client.Web.BlazorUI.Playground/App/Components
-/src/Client/Web/Playground/Bit.Client.Web.BlazorUI.Playground/App/wwwroot/styles
-/src/Client/Web/Playground/Bit.Client.Web.BlazorUI.Playground/App/wwwroot/scripts
-/src/Client/Web/Playground/Bit.Client.Web.BlazorUI.Playground/App/wwwroot/images
-/src/Client/Web/Playground/Bit.Client.Web.BlazorUI.Playground/App/wwwroot/fonts
-/src/Client/Web/Playground/Bit.Client.Web.BlazorUI.Playground/App/tsconfig.json
-/src/Client/Web/Playground/Bit.Client.Web.BlazorUI.Playground/App/_Imports.razor
-/src/Client/Web/Playground/Bit.Client.Web.BlazorUI.Playground/App/Main.razor
-/src/Client/Web/Playground/Bit.Client.Web.BlazorUI.Playground/App/compilerconfig.json.defaults
-/src/Client/Web/Playground/Bit.Client.Web.BlazorUI.Playground/App/compilerconfig.json
-/src/Client/Web/Playground/Bit.Client.Web.BlazorUI.Playground/App/appsettings.json
-/src/Client/Web/Playground/Bit.Client.Web.BlazorUI.Playground/Api/BitFileUploaderFiles
-/src/Client/Web/Playground/Bit.Client.Web.BlazorUI.Playground/Api/Properties/PublishProfiles/bitcomponents - Web Deploy.pubxml
-/src/Client/Web/Playground/Bit.Client.Web.BlazorUI.Playground/Api/Properties/ServiceDependencies/bitcomponents - Web Deploy/profile.arm.json
-/src/Client/Web/Playground/Bit.Client.Web.BlazorUI.Playground/App/tsconfig.json
+/src/BlazorUI/Playground/Bit.BlazorUI.Playground/Web/**/**/*.css
+/src/BlazorUI/Playground/Bit.BlazorUI.Playground/Web/wwwroot/**/*.js
+/src/BlazorUI/Playground/Bit.BlazorUI.Playground/App/Styles
+/src/BlazorUI/Playground/Bit.BlazorUI.Playground/App/Shared
+/src/BlazorUI/Playground/Bit.BlazorUI.Playground/App/Services
+/src/BlazorUI/Playground/Bit.BlazorUI.Playground/App/Scripts
+/src/BlazorUI/Playground/Bit.BlazorUI.Playground/App/Pages
+/src/BlazorUI/Playground/Bit.BlazorUI.Playground/App/Models
+/src/BlazorUI/Playground/Bit.BlazorUI.Playground/App/Extensions
+/src/BlazorUI/Playground/Bit.BlazorUI.Playground/App/Components
+/src/BlazorUI/Playground/Bit.BlazorUI.Playground/App/wwwroot/styles
+/src/BlazorUI/Playground/Bit.BlazorUI.Playground/App/wwwroot/scripts
+/src/BlazorUI/Playground/Bit.BlazorUI.Playground/App/wwwroot/images
+/src/BlazorUI/Playground/Bit.BlazorUI.Playground/App/wwwroot/fonts
+/src/BlazorUI/Playground/Bit.BlazorUI.Playground/App/tsconfig.json
+/src/BlazorUI/Playground/Bit.BlazorUI.Playground/App/_Imports.razor
+/src/BlazorUI/Playground/Bit.BlazorUI.Playground/App/Main.razor
+/src/BlazorUI/Playground/Bit.BlazorUI.Playground/App/compilerconfig.json.defaults
+/src/BlazorUI/Playground/Bit.BlazorUI.Playground/App/compilerconfig.json
+/src/BlazorUI/Playground/Bit.BlazorUI.Playground/App/appsettings.json
+/src/BlazorUI/Playground/Bit.BlazorUI.Playground/Api/BitFileUploaderFiles
+/src/BlazorUI/Playground/Bit.BlazorUI.Playground/Api/Properties/PublishProfiles/bitcomponents - Web Deploy.pubxml
+/src/BlazorUI/Playground/Bit.BlazorUI.Playground/Api/Properties/ServiceDependencies/bitcomponents - Web Deploy/profile.arm.json
+/src/BlazorUI/Playground/Bit.BlazorUI.Playground/App/tsconfig.json
 /src/WebSite/Bit.Platform.WebSite/Web/**/**/*.css
 /src/WebSite/Bit.Platform.WebSite/Web/wwwroot/**/*.js
