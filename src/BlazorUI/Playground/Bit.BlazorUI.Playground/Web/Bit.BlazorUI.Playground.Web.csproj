@@ -29,7 +29,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\..\..\Tooling\Bit.Tooling.SourceGenerators\Bit.Tooling.SourceGenerators.csproj" />
         <ProjectReference Include="..\..\..\Bit.BlazorUI\Bit.BlazorUI.csproj" />
         <ProjectReference Include="..\Shared\Bit.BlazorUI.Playground.Shared.csproj" />
     </ItemGroup>
