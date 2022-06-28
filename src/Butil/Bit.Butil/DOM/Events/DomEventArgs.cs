@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Bit.Tooling.Butil;
+namespace Bit.Butil;
 
 internal class DomEventArgs
 {

@@ -1,4 +1,4 @@
-﻿namespace Bit.Tooling.Butil;
+﻿namespace Bit.Butil;
 
 public class DomEvents
 {

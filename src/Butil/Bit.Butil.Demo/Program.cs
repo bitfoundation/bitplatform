@@ -1,4 +1,4 @@
-﻿using Bit.Tooling.Butil.Demo;
+﻿using Bit.Butil.Demo;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.JSInterop;
 
-namespace Bit.Tooling.Butil;
+namespace Bit.Butil;
 
 public class DomKeyboardEventArgs
 {

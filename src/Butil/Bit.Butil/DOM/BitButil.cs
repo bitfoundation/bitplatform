@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.JSInterop;
 
-namespace Bit.Tooling.Butil;
+namespace Bit.Butil;
 
 public static class BitButil
 {
