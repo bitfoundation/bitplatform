@@ -231,7 +231,7 @@ _book
 /src/BlazorUI/Bit.BlazorUI/wwwroot/**/*.js
 /src/BlazorUI/Bit.BlazorUI/wwwroot/**/*.css.gz
 /src/Bswup/Bit.Bswup/wwwroot/**/*.js
-/src/Tooling/Bit.Tooling.Butil/Bit.Tooling.Butil/wwwroot/**/*.js
+/src/Butil/Bit.Butil/wwwroot/**/*.js
 
 /src/BlazorUI/Playground/Bit.BlazorUI.Playground/Web/**/**/*.css
 /src/BlazorUI/Playground/Bit.BlazorUI.Playground/Web/wwwroot/**/*.js
