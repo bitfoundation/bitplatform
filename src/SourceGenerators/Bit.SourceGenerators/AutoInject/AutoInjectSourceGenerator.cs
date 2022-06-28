@@ -6,15 +6,12 @@ using System.Diagnostics;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
-using Microsoft.Extensions.DependencyInjection;
 
-namespace Bit.Tooling.SourceGenerators;
+namespace Bit.SourceGenerators;
 
 [Generator]
 public class AutoInjectSourceGenerator : ISourceGenerator
-{
-    private static readonly string AutoInjectAttributeName = typeof(AutoInjectAttribute).FullName;
-    
+{    
     public void Initialize(GeneratorInitializationContext context)
     {
         context.RegisterForSyntaxNotifications(() => new AutoInjectSyntaxReceiver());
@@ -25,7 +22,7 @@ public class AutoInjectSourceGenerator : ISourceGenerator
         if ((context.SyntaxContextReceiver is AutoInjectSyntaxReceiver receiver) is false)
             return;
 
-        INamedTypeSymbol? attributeSymbol = context.Compilation.GetTypeByMetadataName(AutoInjectAttributeName);
+        INamedTypeSymbol? attributeSymbol = context.Compilation.GetTypeByMetadataName(AutoInjectHelper.AutoInjectAttributeFullName);
 
         foreach (IGrouping<INamedTypeSymbol, ISymbol> group in receiver.EligibleMembers
                      .GroupBy<ISymbol, INamedTypeSymbol>(f => f.ContainingType, SymbolEqualityComparer.Default))

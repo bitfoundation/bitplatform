@@ -1,4 +1,4 @@
-﻿namespace Bit.Tooling.SourceGenerators;
+﻿namespace Bit.SourceGenerators;
 
 public enum AutoInjectClassType
 {

@@ -4,14 +4,11 @@ using System.Collections.ObjectModel;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.Extensions.DependencyInjection;
 
-namespace Bit.Tooling.SourceGenerators;
+namespace Bit.SourceGenerators;
 
 public class AutoInjectSyntaxReceiver : ISyntaxContextReceiver
 {
-    private static readonly string AutoInjectAttributeName = typeof(AutoInjectAttribute).FullName;
-
     public Collection<ISymbol> EligibleMembers { get; } = new();
     public Collection<INamedTypeSymbol> EligibleClassesWithBaseClassUsedAutoInject { get; } = new();
 
@@ -45,17 +42,17 @@ public class AutoInjectSyntaxReceiver : ISyntaxContextReceiver
                         .GetMembers()
                         .Any(m =>
                             (m.Kind == SymbolKind.Field || m.Kind == SymbolKind.Property) &&
-                            m.GetAttributes()
+                             m.GetAttributes()
                                 .Any(a => a.AttributeClass != null &&
-                                          a.AttributeClass.ToDisplayString() == AutoInjectAttributeName));
+                                          a.AttributeClass.ToDisplayString() == AutoInjectHelper.AutoInjectAttributeFullName));
 
         var isCurrentClassUseAutoInject = classSymbol
                         .GetMembers()
                         .Any(m =>
                             (m.Kind == SymbolKind.Field || m.Kind == SymbolKind.Property) &&
-                            m.GetAttributes()
+                             m.GetAttributes()
                                 .Any(a => a.AttributeClass != null &&
-                                          a.AttributeClass.ToDisplayString() == AutoInjectAttributeName));
+                                          a.AttributeClass.ToDisplayString() == AutoInjectHelper.AutoInjectAttributeFullName));
 
         if (isBaseTypeUseAutoInject && (isCurrentClassUseAutoInject is false))
             EligibleClassesWithBaseClassUsedAutoInject.Add(classSymbol);
@@ -80,7 +77,7 @@ public class AutoInjectSyntaxReceiver : ISyntaxContextReceiver
             if (fieldSymbol != null &&
                 fieldSymbol.GetAttributes()
                     .Any(ad => ad.AttributeClass != null &&
-                               ad.AttributeClass.ToDisplayString() == AutoInjectAttributeName))
+                               ad.AttributeClass.ToDisplayString() == AutoInjectHelper.AutoInjectAttributeFullName))
             {
                 EligibleMembers.Add(fieldSymbol);
             }
@@ -102,7 +99,7 @@ public class AutoInjectSyntaxReceiver : ISyntaxContextReceiver
 
         if (propertySymbol is null) return;
 
-        if (propertySymbol.GetAttributes().Any(ad => ad.AttributeClass != null && ad.AttributeClass.ToDisplayString() == AutoInjectAttributeName))
+        if (propertySymbol.GetAttributes().Any(ad => ad.AttributeClass != null && ad.AttributeClass.ToDisplayString() == AutoInjectHelper.AutoInjectAttributeFullName))
         {
             EligibleMembers.Add(propertySymbol);
         }

@@ -50,11 +50,11 @@ jobs:
       run: dotnet pack src/CodeAnalyzers/Bit.CodeAnalyzers/Bit.CodeAnalyzers.csproj --output . --configuration Release
       
     - name: dotnet restore SourceGenerators
-      run: dotnet restore src/Tooling/Bit.Tooling.SourceGenerators/Bit.Tooling.SourceGenerators.csproj
+      run: dotnet restore src/SourceGenerators/Bit.SourceGenerators/Bit.SourceGenerators.csproj
     - name: dotnet msbuild SourceGenerators
-      run: dotnet msbuild src/Tooling/Bit.Tooling.SourceGenerators/Bit.Tooling.SourceGenerators.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false
+      run: dotnet msbuild src/SourceGenerators/Bit.SourceGenerators/Bit.SourceGenerators.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false
     - name: dotnet pack SourceGenerators
-      run: dotnet pack src/Tooling/Bit.Tooling.SourceGenerators/Bit.Tooling.SourceGenerators.csproj --output . --configuration Release
+      run: dotnet pack src/SourceGenerators/Bit.SourceGenerators/Bit.SourceGenerators.csproj --output . --configuration Release
 
     - name: dotnet pack TodoTemplate
       run: dotnet pack src/Templates/TodoTemplate/Bit.TodoTemplate.ProjectTemplate.csproj --output . --configuration Release

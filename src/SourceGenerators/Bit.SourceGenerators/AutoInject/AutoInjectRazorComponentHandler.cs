@@ -1,9 +1,9 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Text;
+using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 
-namespace Bit.Tooling.SourceGenerators;
+namespace Bit.SourceGenerators;
 
 public static class AutoInjectRazorComponentHandler
 {
@@ -31,7 +31,7 @@ using System.ComponentModel;
 
 namespace {classNamespace}
 {{
-    [global::System.CodeDom.Compiler.GeneratedCode(""Bit.Tooling.SourceGenerators"",""{PackageHelper.GetPackageVersion()}"")]
+    [global::System.CodeDom.Compiler.GeneratedCode(""Bit.Tooling.SourceGenerators"",""{AutoInjectHelper.GetPackageVersion()}"")]
     [global::System.Diagnostics.DebuggerNonUserCode]
     [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     public partial class {classSymbol.Name}

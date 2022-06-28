@@ -3,22 +3,23 @@ using System.Linq;
 using System.Globalization;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
+using System.Reflection;
 
-namespace Bit.Tooling.SourceGenerators;
+namespace Bit.SourceGenerators;
 
 public static class AutoInjectHelper
 {
-    public static IReadOnlyCollection<ISymbol> GetBaseClassEligibleMembers(
-        INamedTypeSymbol? classSymbol,
-        INamedTypeSymbol? attributeSymbol)
+    public static readonly string AutoInjectAttributeFullName = "Microsoft.Extensions.DependencyInjection.AutoInjectAttribute"; //typeof(AutoInjectAttribute).FullName;
+
+    public static IReadOnlyCollection<ISymbol> GetBaseClassEligibleMembers(INamedTypeSymbol? classSymbol, INamedTypeSymbol? attributeSymbol)
     {
         if (classSymbol is null)
             throw new ArgumentNullException(nameof(classSymbol));
-        
-        if(attributeSymbol is null)
+
+        if (attributeSymbol is null)
             throw new ArgumentNullException(nameof(attributeSymbol));
-            
-        
+
+
         bool hasBase = false;
         List<ISymbol> result = new List<ISymbol>();
         INamedTypeSymbol? currentClass = classSymbol;
@@ -72,7 +73,7 @@ public static class AutoInjectHelper
     {
         if (memberName is null)
             throw new ArgumentNullException(nameof(memberName));
-        
+
         memberName = memberName.TrimStart('_');
         if (memberName.Length == 0)
             return string.Empty;
@@ -85,9 +86,15 @@ public static class AutoInjectHelper
 
     public static bool IsContainingSymbolEqualToContainingNamespace(INamedTypeSymbol? @class)
     {
-        if(@class is null)
+        if (@class is null)
             throw new ArgumentNullException(nameof(@class));
-            
+
         return @class.ContainingSymbol.Equals(@class.ContainingNamespace, SymbolEqualityComparer.Default);
+    }
+
+    public static string GetPackageVersion()
+    {
+        Version version = Assembly.GetExecutingAssembly().GetName().Version;
+        return version.ToString();
     }
 }
