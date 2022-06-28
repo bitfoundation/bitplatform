@@ -8,7 +8,7 @@
         }
     },
     "profiles": {
-        "Bit.Tooling.Bswup.Demo": {
+        "Bit.Bswup.Demo": {
             "commandName": "Project",
             "dotnetRunMessages": true,
             "launchBrowser": true,

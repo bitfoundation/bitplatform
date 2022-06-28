@@ -88,7 +88,7 @@ function handleMessage(e) {
 // ============================================================================
 
 const DEFAULT_ASSETS_INCLUDE = [/\.dll$/, /\.pdb$/, /\.wasm/, /\.html/, /\.js$/, /\.json$/, /\.css$/, /\.woff$/, /\.png$/, /\.jpe?g$/, /\.gif$/, /\.ico$/, /\.blat$/, /\.dat$/, /\.svg$/, /\.woff2$/, /\.ttf$/];
-const DEFAULT_ASSETS_EXCLUDE = [/^_content\/Bit.Tooling.Bswup\/bit-bswup.sw.js$/, /^service-worker\.js$/];
+const DEFAULT_ASSETS_EXCLUDE = [/^_content\/Bit.Bswup\/bit-bswup.sw.js$/, /^service-worker\.js$/];
 
 async function createNewCache() {
     const userAssetsInclude = prepareRegExpArray(self.assetsInclude);

@@ -1,4 +1,4 @@
-﻿using Bit.Tooling.Bswup.Demo;
+﻿using Bit.Bswup.Demo;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 

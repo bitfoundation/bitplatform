@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
-    <Import Project="../../../Bit.Build.props" />
+    <Import Project="../../Bit.Build.props" />
 
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>

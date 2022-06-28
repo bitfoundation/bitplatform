@@ -2,7 +2,7 @@
 
 to use BitBswup, please follow these steps:
 
-1. Install the `Bit.Tooling.Bswup` nuget package
+1. Install the `Bit.Bswup` nuget package
 2. Disable static file caching.You can follow below code in `Startup.cs` file
 ```csharp
 
@@ -28,10 +28,10 @@ app.UseStaticFiles(new StaticFileOptions
 
 ```
 
-5. In the default document (`_Host.cshtml`, `index.html` or `_Layout.cshtml`), add the `Bit.Tooling.Bswup` reference after the <script> tag for the Blazor script.
+5. In the default document (`_Host.cshtml`, `index.html` or `_Layout.cshtml`), add the `Bit.Bswup` reference after the <script> tag for the Blazor script.
 ```html
 
-<script src="_content/Bit.Tooling.Bswup/bit-bswup.js"
+<script src="_content/Bit.Bswup/bit-bswup.js"
         scope="/"
         log="verbose"
         sw="service-worker.js"
