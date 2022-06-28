@@ -1,0 +1,26 @@
+﻿.m-l-30 {
+  margin-left: 30px;
+}
+
+.m-l-45 {
+  margin-left: 45px;
+}
+
+.m-l-60 {
+  margin-left: 60px;
+}
+
+.m-l-75 {
+  margin-left: 75px;
+}
+
+.lst3-list-item {
+  padding: 16px 20px;
+  background-color: #f2f2f2;
+  margin: 10px 10px;
+  width: 20%;
+  height: 143px;
+  display: inline-grid;
+  justify-content: center;
+  align-items: center;
+}
