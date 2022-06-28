@@ -5,9 +5,9 @@ public partial class TodoTemplateErrorBoundary
 {
     private bool ShowException { get; set; }
 
-    [Inject] private IExceptionHandler ExceptionHandler { get; set; } = default!;
+    [AutoInject] private IExceptionHandler ExceptionHandler { get; set; } = default!;
 
-    [Inject] private NavigationManager NavigationManager { get; set; } = default!;
+    [AutoInject] private NavigationManager NavigationManager { get; set; } = default!;
 
 
 #if DEBUG

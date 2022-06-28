@@ -1,10 +1,8 @@
-﻿using Microsoft.AspNetCore.Components.Web;
-
-namespace TodoTemplate.App.Components;
+﻿namespace TodoTemplate.App.Components;
 
 public class TodoTemplateComponentBase : ComponentBase
 {
-    [Inject] IExceptionHandler ExceptionHandler { get; set; } = default!;
+    [AutoInject] IExceptionHandler ExceptionHandler { get; set; } = default!;
 
     protected async sealed override Task OnInitializedAsync()
     {
