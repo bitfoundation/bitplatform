@@ -77,7 +77,7 @@
                                         @if (context.IsInEditMode)
                                 {
                                     <BitTextField Class="todo-input" @bind-Value="context.Title" />
-                                    <div>
+                                    <div class="todo-item-btn-group--edit-mode">
                                         <BitButton Title="Edit"
                                                AriaLabel="Edit"
                                                OnClick="WrapHandled(() => EditTodoItem(context))">Edit</BitButton>

@@ -12,11 +12,11 @@ public partial class SignUp
     public BitMessageBarType SignUpMessageType { get; set; }
     public string? SignUpMessage { get; set; }
 
-    [Inject] public HttpClient HttpClient { get; set; } = default!;
+    [AutoInject] private HttpClient HttpClient { get; set; } = default!;
 
-    [Inject] public NavigationManager NavigationManager { get; set; } = default!;
+    [AutoInject] private NavigationManager NavigationManager { get; set; } = default!;
 
-    [Inject] public TodoTemplateAuthenticationStateProvider TodoTemplateAuthenticationStateProvider { get; set; } = default!;
+    [AutoInject] private TodoTemplateAuthenticationStateProvider TodoTemplateAuthenticationStateProvider { get; set; } = default!;
 
     private bool IsSubmitButtonEnabled =>
         SignUpModel.UserName.HasValue()
