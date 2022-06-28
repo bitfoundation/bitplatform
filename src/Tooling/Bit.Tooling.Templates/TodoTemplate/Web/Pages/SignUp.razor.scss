@@ -64,3 +64,18 @@
         width: rem(280px);
     }
 }
+
+.form-note {
+    font-weight: 400;
+    font-size: rem(11.2px);
+    line-height: rem(24px);
+    color: $Black3;
+    width: rem(319px);
+    height: rem(24px);
+
+    @include lt-xl {
+        font-size: rem(9.8px);
+        line-height: rem(22px);
+        width: rem(280px);
+    }
+}

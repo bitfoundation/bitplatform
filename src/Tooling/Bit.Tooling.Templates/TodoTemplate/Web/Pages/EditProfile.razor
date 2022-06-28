@@ -48,6 +48,7 @@
             <div class="form-input-container">
                 <BitLabel>Profile image</BitLabel>
                 <BitFileUpload Label="Upload a new profile image"
+                           AutoUploadEnabled="true"
                            UploadUrl="@ProfileImageUploadUrl"
                            OnUploadComplete="WrapHandled(LoadEditProfileData)"
                            OnUploadFailed="() => ProfileImageError = ErrorStrings.FileUploadFailed"

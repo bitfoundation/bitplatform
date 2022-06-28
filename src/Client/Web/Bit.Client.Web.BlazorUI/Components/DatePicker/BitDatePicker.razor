@@ -7,7 +7,13 @@
      class="@ClassBuilder.Value"
      id="@UniqueId">
 
-    @if (Label.HasValue())
+    @if (LabelFragment is not null)
+    {
+        <label class="bit-dtp-label" id="@LabelId" for="@TextFieldId">
+            @LabelFragment
+        </label>
+    }
+    else if (Label.HasValue())
     {
         <label class="bit-dtp-label" id="@LabelId" for="@TextFieldId">
             @Label
@@ -210,6 +216,7 @@
                                         @for (var cellIndex = 1; cellIndex <= 4; cellIndex++)
                                         {
                                             var monthIndex = (rowIndex * 4) + cellIndex;
+                                            var monthName = Culture?.DateTimeFormat.GetMonthName(monthIndex);
                                             <button role="gridcell"
                                                     aria-selected="@(IsMonthSelected(monthIndex) ? "true" : "false")"
                                                     aria-readonly="true"
@@ -217,7 +224,8 @@
                                                     aria-disabled="@CheckMonthForMaxAndMinDate(monthIndex)"
                                                     disabled="@CheckMonthForMaxAndMinDate(monthIndex)"
                                                     type="button"
-                                                    aria-label="@Culture?.DateTimeFormat.GetMonthName(monthIndex)"
+                                                    aria-label="@monthName"
+                                                    title="@monthName"
                                                     @onclick="() => SelectMonth(monthIndex)">
                                                 <span aria-hidden="true">@Culture?.DateTimeFormat.GetAbbreviatedMonthName(monthIndex)</span>
                                             </button>

@@ -207,25 +207,30 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.DatePicker
             }
         };
 
-        private readonly string example1HTMLCode = @"<BitDatePicker Style=""width: 300px""
+        private readonly string example1HTMLCode = @"
+<BitDatePicker Style=""width: 300px""
                ShowMonthPickerAsOverlay=""true"">
 </BitDatePicker>";
 
-        private readonly string example2HTMLCode = @"<BitDatePicker Style=""width: 300px""
+        private readonly string example2HTMLCode = @"
+<BitDatePicker Style=""width: 300px""
                ShowWeekNumbers=""true"">
 </BitDatePicker>";
 
-        private readonly string example3HTMLCode = @"<BitDatePicker Culture=""@(new System.Globalization.CultureInfo(""fa-IR""))""
+        private readonly string example3HTMLCode = @"
+<BitDatePicker Culture=""@(new System.Globalization.CultureInfo(""fa-IR""))""
                GoToToday=""برو به امروز""
                Style=""width: 300px"">
 </BitDatePicker>";
 
-        private readonly string example4HTMLCode = @"<BitDatePicker Culture=""Bit.Client.Web.BlazorUI.CultureInfoHelper.GetPersianCultureByFinglishNames()""
+        private readonly string example4HTMLCode = @"
+<BitDatePicker Culture=""Bit.Client.Web.BlazorUI.CultureInfoHelper.GetPersianCultureByFinglishNames()""
                GoToToday=""Boro be emrouz""
                Style=""width: 300px"">
 </BitDatePicker>";
 
-        private readonly string example5HTMLCode = @"<BitDatePicker @bind-Value=""@selectedDate"" Style=""width: 300px""></BitDatePicker>
+        private readonly string example5HTMLCode = @"
+<BitDatePicker @bind-Value=""@selectedDate"" Style=""width: 300px""></BitDatePicker>
 <BitLabel>this is selected date: @selectedDate.ToString()</BitLabel>";
 
         private readonly string example5CSharpCode = @"
@@ -233,9 +238,14 @@ private DateTimeOffset? selectedDate = new DateTimeOffset(new DateTime(2020, 1, 
 
         private readonly string example6HTMLCode = @"<BitDatePicker FormatDate=""d"" Style=""width: 300px""></BitDatePicker>";
 
-        private readonly string example7HTMLCode = @"<BitDatePicker Style=""width: 300px"" MaxDate=""DateTimeOffset.Now.AddYears(1)"" MinDate=""DateTimeOffset.Now.AddYears(-5)""></BitDatePicker>";
+        private readonly string example7HTMLCode = @"
+<BitDatePicker Style=""width: 300px""
+               MaxDate=""DateTimeOffset.Now.AddYears(1)"" 
+               MinDate=""DateTimeOffset.Now.AddYears(-5)"">
+</BitDatePicker>";
 
-        private readonly string example8HTMLCode = @"@if (string.IsNullOrEmpty(SuccessMessage))
+        private readonly string example8HTMLCode = @"
+@if (string.IsNullOrEmpty(SuccessMessage))
 {
     <EditForm Model=""formValidationDatePickerModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
         <DataAnnotationsValidator />
@@ -245,8 +255,7 @@ private DateTimeOffset? selectedDate = new DateTimeOffset(new DateTime(2020, 1, 
         </div>
 
         <div>
-            <BitDatePicker Style=""width: 300px"" @bind-Value=""formValidationDatePickerModel.Date"" />
-
+            <BitDatePicker Style=""width: 300px"" @bind-Value=""formValidationDatePickerModel.Date"" 
             <ValidationMessage For=""@(() => formValidationDatePickerModel.Date)"" />
         </div>
 
@@ -264,86 +273,88 @@ else
     </BitMessageBar>
 }";
 
-        private readonly string example4CSharpCode = @"public static class CultureInfoHelper
+        private readonly string example4CSharpCode = @"
+public static class CultureInfoHelper
 {
-public static CultureInfo GetPersianCultureByFinglishNames()
-{
-    var cultureInfo = CultureInfo.CreateSpecificCulture(""fa-IR"");
-
-    cultureInfo.DateTimeFormat.MonthNames = new[]
+    public static CultureInfo GetPersianCultureByFinglishNames()
     {
-        ""Farvardin"",
-        ""Ordibehesht"",
-        ""Khordad"",
-        ""Tir"",
-        ""Mordad"",
-        ""Shahrivar"",
-        ""Mehr"",
-        ""Aban"",
-        ""Azar"",
-        ""Dey"",
-        ""Bahman"",
-        ""Esfand"",
-        """"
-    };
+        var cultureInfo = CultureInfo.CreateSpecificCulture(""fa-IR"");
 
-    cultureInfo.DateTimeFormat.AbbreviatedMonthNames = new[]
-    {
-        ""Far"",
-        ""Ord"",
-        ""Khr"",
-        ""Tir"",
-        ""Mrd"",
-        ""Shr"",
-        ""Mhr"",
-        ""Abn"",
-        ""Azr"",
-        ""Dey"",
-        ""Bah"",
-        ""Esf"",
-        """"
-    };
+        cultureInfo.DateTimeFormat.MonthNames = new[]
+        {
+            ""Farvardin"",
+            ""Ordibehesht"",
+            ""Khordad"",
+            ""Tir"",
+            ""Mordad"",
+            ""Shahrivar"",
+            ""Mehr"",
+            ""Aban"",
+            ""Azar"",
+            ""Dey"",
+            ""Bahman"",
+            ""Esfand"",
+            """"
+        };
 
-    cultureInfo.DateTimeFormat.MonthGenitiveNames = cultureInfo.DateTimeFormat.MonthNames;
-    cultureInfo.DateTimeFormat.AbbreviatedMonthGenitiveNames = cultureInfo.DateTimeFormat.AbbreviatedMonthNames;
-    cultureInfo.DateTimeFormat.DayNames = new[]
-    {
-        ""YekShanbe"",
-        ""DoShanbe"",
-        ""SeShanbe"",
-        ""ChaharShanbe"",
-        ""PanjShanbe"",
-        ""Jome"",
-        ""Shanbe""
-    };
+        cultureInfo.DateTimeFormat.AbbreviatedMonthNames = new[]
+        {
+            ""Far"",
+            ""Ord"",
+            ""Khr"",
+            ""Tir"",
+            ""Mrd"",
+            ""Shr"",
+            ""Mhr"",
+            ""Abn"",
+            ""Azr"",
+            ""Dey"",
+            ""Bah"",
+            ""Esf"",
+            """"
+        };
 
-    cultureInfo.DateTimeFormat.AbbreviatedDayNames = new[]
-    {
-        ""Yek"",
-        ""Do"",
-        ""Se"",
-        ""Ch"",
-        ""Pj"",
-        ""Jom"",
-        ""Shn""
-    };
+        cultureInfo.DateTimeFormat.MonthGenitiveNames = cultureInfo.DateTimeFormat.MonthNames;
+        cultureInfo.DateTimeFormat.AbbreviatedMonthGenitiveNames = cultureInfo.DateTimeFormat.AbbreviatedMonthNames;
+        cultureInfo.DateTimeFormat.DayNames = new[]
+        {
+            ""YekShanbe"",
+            ""DoShanbe"",
+            ""SeShanbe"",
+            ""ChaharShanbe"",
+            ""PanjShanbe"",
+            ""Jome"",
+            ""Shanbe""
+        };
 
-    cultureInfo.DateTimeFormat.ShortestDayNames = new[]
-    {
-        ""Y"",
-        ""D"",
-        ""S"",
-        ""C"",
-        ""P"",
-        ""J"",
-        ""S""
-    };
+        cultureInfo.DateTimeFormat.AbbreviatedDayNames = new[]
+        {
+            ""Yek"",
+            ""Do"",
+            ""Se"",
+            ""Ch"",
+            ""Pj"",
+            ""Jom"",
+            ""Shn""
+        };
 
-    return cultureInfo;
+        cultureInfo.DateTimeFormat.ShortestDayNames = new[]
+        {
+            ""Y"",
+            ""D"",
+            ""S"",
+            ""C"",
+            ""P"",
+            ""J"",
+            ""S""
+        };
+
+        return cultureInfo;
     }
 }";
 
-        private readonly string example8CSharpCode = @"public class FormValidationDatePickerModel
+        private readonly string example8CSharpCode = @"
+public class FormValidationDatePickerModel
 {
     [Required]
     public DateTimeOffset? Date { get; set; }

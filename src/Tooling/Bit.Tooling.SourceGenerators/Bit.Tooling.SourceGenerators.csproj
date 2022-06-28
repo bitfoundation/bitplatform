@@ -4,8 +4,12 @@
 
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
-        <!-- Generates a package at build -->
-        <!-- Do not include the generator as a lib dependency -->
+        
+        <IsRoslynComponent>true</IsRoslynComponent>
+        <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+        <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)Generated</CompilerGeneratedFilesOutputPath>
+        <DevelopmentDependency>true</DevelopmentDependency>
+        
         <LangVersion>preview</LangVersion>
 
         <PackageTags>$(PackageTags) Source-Generators</PackageTags>
