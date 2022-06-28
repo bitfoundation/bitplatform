@@ -7,12 +7,12 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Bit.Client.Web.BlazorUI.Tests.NumericTextField
+namespace Bit.Client.Web.BlazorUI.Tests.NumericTextField.Float
 {
     [TestClass]
-    public class BitNumericTextFieldTests : BunitTestContext
+    public class BitNumericTextFieldFloatTests : BunitTestContext
     {
-        private double BitNumericTextFieldTwoWayBoundValue;
+        private float BitNumericTextFieldTwoWayBoundValue;
 
         [TestInitialize]
         public void SetupJsInteropMode()
@@ -26,7 +26,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.NumericTextField
         ]
         public void BitNumericTextFieldShouldHaveCorrectLabel(string label)
         {
-            var component = RenderComponent<BitNumericTextField<double>>(parameters =>
+            var component = RenderComponent<BitNumericTextField<float>>(parameters =>
             {
                 parameters.Add(p => p.Label, label);
             });
@@ -45,7 +45,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.NumericTextField
         [DataTestMethod]
         public void BitNumericTextFieldShouldRenderArrowsWithEnableArrows()
         {
-            var component = RenderComponent<BitNumericTextField<double>>(parameters =>
+            var component = RenderComponent<BitNumericTextField<float>>(parameters =>
             {
                 parameters.Add(p => p.Arrows, true);
             });
@@ -65,7 +65,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.NumericTextField
         ]
         public void BitNumericTextFieldShouldRenderCorrectIconWithEnableArrows(BitIconName? iconName, string iconAriaLabel)
         {
-            var component = RenderComponent<BitNumericTextFieldTest>(parameters =>
+            var component = RenderComponent<BitNumericTextFieldFloatTest>(parameters =>
             {
                 parameters.Add(p => p.IconName, iconName);
                 parameters.Add(p => p.IconAriaLabel, iconAriaLabel);
@@ -95,7 +95,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.NumericTextField
         ]
         public void BitNumericTextFieldShouldRenderCorrectIcon(BitIconName? iconName, string iconAriaLabel)
         {
-            var component = RenderComponent<BitNumericTextFieldTest>(parameters =>
+            var component = RenderComponent<BitNumericTextFieldFloatTest>(parameters =>
             {
                 parameters.Add(p => p.IconName, iconName);
                 parameters.Add(p => p.IconAriaLabel, iconAriaLabel);
@@ -120,13 +120,12 @@ namespace Bit.Client.Web.BlazorUI.Tests.NumericTextField
         [DataTestMethod,
            DataRow(BitIconName.IncreaseIndentLegacy, null, true),
            DataRow(BitIconName.IncreaseIndentLegacy, null, false),
-
            DataRow(BitIconName.IncreaseIndentLegacy, "BitNumericTextFieldButtonIcon", true),
            DataRow(BitIconName.IncreaseIndentLegacy, "BitNumericTextFieldButtonIcon", false)
         ]
         public void BitNumericTextFieldShouldRenderCorrectIncrementButton(BitIconName iconName, string iconAriaLabel, bool isEnabled)
         {
-            var component = RenderComponent<BitNumericTextFieldTest>(parameters =>
+            var component = RenderComponent<BitNumericTextFieldFloatTest>(parameters =>
             {
                 parameters.Add(p => p.IncrementButtonIconName, iconName);
                 parameters.Add(p => p.IncrementButtonAriaLabel, iconAriaLabel);
@@ -150,13 +149,12 @@ namespace Bit.Client.Web.BlazorUI.Tests.NumericTextField
         [DataTestMethod,
             DataRow(BitIconName.IncreaseIndentLegacy, null, true),
             DataRow(BitIconName.IncreaseIndentLegacy, null, false),
-
             DataRow(BitIconName.IncreaseIndentLegacy, "BitNumericTextFieldButtonIcon", true),
             DataRow(BitIconName.IncreaseIndentLegacy, "BitNumericTextFieldButtonIcon", false)
         ]
         public void BitNumericTextFieldShouldRenderCorrectDecrementButton(BitIconName iconName, string iconAriaLabel, bool isEnabled)
         {
-            var component = RenderComponent<BitNumericTextFieldTest>(parameters =>
+            var component = RenderComponent<BitNumericTextFieldFloatTest>(parameters =>
             {
                 parameters.Add(p => p.DecrementButtonIconName, iconName);
                 parameters.Add(p => p.DecrementButtonAriaLabel, iconAriaLabel);
@@ -184,7 +182,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.NumericTextField
         ]
         public void BitNumericTextFieldShouldHaveSuffixWhenItsPropertySet(string suffix)
         {
-            var component = RenderComponent<BitNumericTextFieldTest>(parameters => parameters.Add(p => p.Suffix, suffix));
+            var component = RenderComponent<BitNumericTextFieldFloatTest>(parameters => parameters.Add(p => p.Suffix, suffix));
 
             var input = component.Find("input");
             var inputValue = input.GetAttribute("value");
@@ -195,16 +193,14 @@ namespace Bit.Client.Web.BlazorUI.Tests.NumericTextField
         [DataTestMethod,
             DataRow(Visual.Fluent, BitNumericTextFieldLabelPosition.Left),
             DataRow(Visual.Fluent, BitNumericTextFieldLabelPosition.Top),
-
             DataRow(Visual.Cupertino, BitNumericTextFieldLabelPosition.Left),
             DataRow(Visual.Cupertino, BitNumericTextFieldLabelPosition.Top),
-
             DataRow(Visual.Material, BitNumericTextFieldLabelPosition.Left),
             DataRow(Visual.Material, BitNumericTextFieldLabelPosition.Top),
         ]
         public void BitNumericTextFieldShouldHaveLabelPositionClassName(Visual visual, BitNumericTextFieldLabelPosition labelPosition)
         {
-            var component = RenderComponent<BitNumericTextFieldTest>(parameters =>
+            var component = RenderComponent<BitNumericTextFieldFloatTest>(parameters =>
             {
                 parameters.Add(p => p.Visual, visual);
                 parameters.Add(p => p.LabelPosition, labelPosition);
@@ -226,7 +222,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.NumericTextField
             var inputHtmlAttributes = new Dictionary<string, object> {
                 {attrKey, attrValue }
             };
-            var component = RenderComponent<BitNumericTextFieldTest>(parameters =>
+            var component = RenderComponent<BitNumericTextFieldFloatTest>(parameters =>
             {
                 parameters.Add(p => p.InputHtmlAttributes, inputHtmlAttributes);
             });
@@ -243,7 +239,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.NumericTextField
         ]
         public void BitNumericTextFieldWrapperShouldHaveCorrectAttributes(string title, string ariaLabel, int? ariaSetSize, int? ariaPositionInSet)
         {
-            var component = RenderComponent<BitNumericTextFieldTest>(parameters =>
+            var component = RenderComponent<BitNumericTextFieldFloatTest>(parameters =>
             {
                 parameters.Add(p => p.Title, title);
                 parameters.Add(p => p.AriaLabel, ariaLabel);
@@ -272,14 +268,14 @@ namespace Bit.Client.Web.BlazorUI.Tests.NumericTextField
 
         [DataTestMethod,
             DataRow(null, null),
-            DataRow(5.0, null),
-            DataRow(null, 100.0),
-            DataRow(0.0, 100.0),
-            DataRow(50.0, 1.0)
+            DataRow(5.0f, null),
+            DataRow(null, 100.0f),
+            DataRow(0.0f, 100.0f),
+            DataRow(50.0f, 1.0f)
         ]
-        public void BitNumericTextFieldShouldHaveCorrectMaxMin(double? min, double? max)
+        public void BitNumericTextFieldShouldHaveCorrectMaxMin(float? min, float? max)
         {
-            var component = RenderComponent<BitNumericTextFieldTest>(parameters =>
+            var component = RenderComponent<BitNumericTextFieldFloatTest>(parameters =>
             {
                 parameters.Add(p => p.Min, min);
                 parameters.Add(p => p.Max, max);
@@ -290,20 +286,20 @@ namespace Bit.Client.Web.BlazorUI.Tests.NumericTextField
             double expectedMaxValue = 0;
             if (min is null && max is null)
             {
-                expectedMinValue = double.MinValue;
-                expectedMaxValue = double.MaxValue;
+                expectedMinValue = float.MinValue;
+                expectedMaxValue = float.MaxValue;
             }
 
             if (min is null && max is not null)
             {
-                expectedMinValue = double.MinValue;
+                expectedMinValue = float.MinValue;
                 expectedMaxValue = max.Value;
             }
 
             if (min is not null && max is null)
             {
                 expectedMinValue = min.Value;
-                expectedMaxValue = double.MaxValue;
+                expectedMaxValue = float.MaxValue;
             }
 
             if (min is not null && max is not null)
@@ -329,7 +325,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.NumericTextField
         ]
         public void BitNumericTextFieldOnIncrementTest(int countOfClicks)
         {
-            var component = RenderComponent<BitNumericTextFieldTest>(parameters =>
+            var component = RenderComponent<BitNumericTextFieldFloatTest>(parameters =>
             {
                 parameters.Add(p => p.Arrows, true);
             });
@@ -349,7 +345,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.NumericTextField
         ]
         public void BitNumericTextFieldOnDecrementTest(int countOfClicks)
         {
-            var component = RenderComponent<BitNumericTextFieldTest>(parameters =>
+            var component = RenderComponent<BitNumericTextFieldFloatTest>(parameters =>
             {
                 parameters.Add(p => p.Arrows, true);
             });
@@ -370,7 +366,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.NumericTextField
         ]
         public void BitNumericTextFieldInputOnBlurEventCallbackTest(int countOfBlur)
         {
-            var component = RenderComponent<BitNumericTextFieldTest>();
+            var component = RenderComponent<BitNumericTextFieldFloatTest>();
 
             var input = component.Find("input");
             for (int i = 0; i < countOfBlur; i++)
@@ -387,7 +383,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.NumericTextField
         ]
         public void BitNumericTextFieldInputOnFocusTest(int countOfFocus)
         {
-            var component = RenderComponent<BitNumericTextFieldTest>();
+            var component = RenderComponent<BitNumericTextFieldFloatTest>();
 
             var input = component.Find("input");
             for (int i = 0; i < countOfFocus; i++)
@@ -402,9 +398,9 @@ namespace Bit.Client.Web.BlazorUI.Tests.NumericTextField
            DataRow(4),
            DataRow(12)
         ]
-        public void BitNumericTextFieldOnChangeTest(double inputValue)
+        public void BitNumericTextFieldOnChangeTest(float inputValue)
         {
-            var component = RenderComponent<BitNumericTextFieldTest>();
+            var component = RenderComponent<BitNumericTextFieldFloatTest>();
 
             var input = component.Find("input");
             var changeArgs = new ChangeEventArgs();
@@ -421,7 +417,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.NumericTextField
         ]
         public void BitNumericTextFieldShouldHaveCorrectAriaDecription(string ariaDescription)
         {
-            var component = RenderComponent<BitNumericTextFieldTest>(parameters =>
+            var component = RenderComponent<BitNumericTextFieldFloatTest>(parameters =>
             {
                 parameters.Add(p => p.AriaDescription, ariaDescription);
             });
@@ -432,13 +428,13 @@ namespace Bit.Client.Web.BlazorUI.Tests.NumericTextField
         }
 
         [DataTestMethod,
-           DataRow(3.0, null),
-           DataRow(3.0, " cm"),
+           DataRow(3.0f, null),
+           DataRow(3.0f, " cm"),
            DataRow(null, null)
         ]
-        public void BitNumericTextFieldInputShouldHaveCorrectAriaValueNow(double? ariaValueNow, string suffix)
+        public void BitNumericTextFieldInputShouldHaveCorrectAriaValueNow(float? ariaValueNow, string suffix)
         {
-            var component = RenderComponent<BitNumericTextFieldTest>(parameters =>
+            var component = RenderComponent<BitNumericTextFieldFloatTest>(parameters =>
             {
                 parameters.Add(p => p.AriaValueNow, ariaValueNow);
                 parameters.Add(p => p.Suffix, suffix);
@@ -465,7 +461,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.NumericTextField
         ]
         public void BitNumericTextFieldInputShouldHaveCorrectAriaValueText(string ariaValueText, string suffix, int precision)
         {
-            var component = RenderComponent<BitNumericTextFieldTest>(parameters =>
+            var component = RenderComponent<BitNumericTextFieldFloatTest>(parameters =>
             {
                 parameters.Add(p => p.AriaValueText, ariaValueText);
                 parameters.Add(p => p.Suffix, suffix);
@@ -484,9 +480,9 @@ namespace Bit.Client.Web.BlazorUI.Tests.NumericTextField
             DataRow(8, 2, 9),
             DataRow(8, 5, 9)
         ]
-        public void BitNumericTextFieldIncrementButtonClickTest(double defaultValue, double step, double max)
+        public void BitNumericTextFieldIncrementButtonClickTest(float defaultValue, float step, float max)
         {
-            var component = RenderComponent<BitNumericTextField<double>>(parameters =>
+            var component = RenderComponent<BitNumericTextField<float>>(parameters =>
             {
                 parameters.Add(p => p.Step, step);
                 parameters.Add(p => p.Max, max);
@@ -510,9 +506,9 @@ namespace Bit.Client.Web.BlazorUI.Tests.NumericTextField
             DataRow(8, 2, 9),
             DataRow(8, 5, 9)
         ]
-        public void BitNumericTextFieldArrowUpKeyDownTest(double defaultValue, double step, double max)
+        public void BitNumericTextFieldArrowUpKeyDownTest(float defaultValue, float step, float max)
         {
-            var component = RenderComponent<BitNumericTextField<double>>(parameters =>
+            var component = RenderComponent<BitNumericTextField<float>>(parameters =>
             {
                 parameters.Add(p => p.Step, step);
                 parameters.Add(p => p.Max, max);
@@ -535,9 +531,9 @@ namespace Bit.Client.Web.BlazorUI.Tests.NumericTextField
             DataRow(3, 4, 0),
             DataRow(0, 1, 0)
         ]
-        public void BitNumericTextFieldDecrementButtonClickTest(double defaultValue, double step, double min)
+        public void BitNumericTextFieldDecrementButtonClickTest(float defaultValue, float step, float min)
         {
-            var component = RenderComponent<BitNumericTextField<double>>(parameters =>
+            var component = RenderComponent<BitNumericTextField<float>>(parameters =>
             {
                 parameters.Add(p => p.Step, step);
                 parameters.Add(p => p.Min, min);
@@ -560,9 +556,9 @@ namespace Bit.Client.Web.BlazorUI.Tests.NumericTextField
             DataRow(3, 4, 0),
             DataRow(0, 1, 0)
         ]
-        public void BitNumericTextFieldArrowDownKeyDownTest(double defaultValue, double step, double min)
+        public void BitNumericTextFieldArrowDownKeyDownTest(float defaultValue, float step, float min)
         {
-            var component = RenderComponent<BitNumericTextField<double>>(parameters =>
+            var component = RenderComponent<BitNumericTextField<float>>(parameters =>
             {
                 parameters.Add(p => p.Step, step);
                 parameters.Add(p => p.Min, min);
@@ -585,9 +581,9 @@ namespace Bit.Client.Web.BlazorUI.Tests.NumericTextField
             DataRow(5, 0, 100, "-5"),
             DataRow(5, 0, 100, "text123")
         ]
-        public void BitNumericTextFieldEnterKeyDownTest(double defaultValue, double min, double max, string userInput)
+        public void BitNumericTextFieldEnterKeyDownTest(float defaultValue, float min, float max, string userInput)
         {
-            var component = RenderComponent<BitNumericTextField<double>>(parameters =>
+            var component = RenderComponent<BitNumericTextField<float>>(parameters =>
             {
                 parameters.Add(p => p.DefaultValue, defaultValue);
                 parameters.Add(p => p.Max, max);
@@ -602,8 +598,8 @@ namespace Bit.Client.Web.BlazorUI.Tests.NumericTextField
             keyboardArgs.Key = "Enter";
             input.KeyDown(keyboardArgs);
             var inputValue = component.Instance.Value;
-            double? expectedResult = 0;
-            var isNumber = double.TryParse(userInput, out var numericValue);
+            float? expectedResult = 0;
+            var isNumber = float.TryParse(userInput, out var numericValue);
             if (isNumber)
             {
                 expectedResult = Normalize(numericValue, 1);
@@ -624,9 +620,9 @@ namespace Bit.Client.Web.BlazorUI.Tests.NumericTextField
             DataRow(5, 0, 100, "-5"),
             DataRow(5, 0, 100, "text123")
         ]
-        public void BitNumericTextFieldOnBlurTest(double defaultValue, double min, double max, string userInput)
+        public void BitNumericTextFieldOnBlurTest(float defaultValue, float min, float max, string userInput)
         {
-            var component = RenderComponent<BitNumericTextField<double>>(parameters =>
+            var component = RenderComponent<BitNumericTextField<float>>(parameters =>
             {
                 parameters.Add(p => p.DefaultValue, defaultValue);
                 parameters.Add(p => p.Max, max);
@@ -639,8 +635,8 @@ namespace Bit.Client.Web.BlazorUI.Tests.NumericTextField
             input.Change(changeArgs);
             input.Blur();
             var inputValue = component.Instance.Value;
-            double? expectedResult = 0;
-            var isNumber = double.TryParse(userInput, out var numericValue);
+            float? expectedResult = 0;
+            var isNumber = float.TryParse(userInput, out var numericValue);
             if (isNumber)
             {
                 expectedResult = Normalize(numericValue, 1);
@@ -656,15 +652,15 @@ namespace Bit.Client.Web.BlazorUI.Tests.NumericTextField
         }
 
         [DataTestMethod,
-            DataRow(0, 100, 1, "25"),
-            DataRow(0, 100, 0.1, "25.68"),
-            DataRow(0, 100, 0.25, "12.6"),
-            DataRow(0, 10, 0.25, "12.6"),
-            DataRow(13, 100, 0.25, "12.6")
+            DataRow(0f, 100f, 1f, "25"),
+            DataRow(0f, 100f, 0.1f, "25.68"),
+            DataRow(0f, 100f, 0.25f, "12.6"),
+            DataRow(0f, 10f, 0.25f, "12.6"),
+            DataRow(13f, 100f, 0.25f, "12.6")
         ]
-        public void BitNumericTextFieldPrecisionTest(double min, double max, double step, string userInput)
+        public void BitNumericTextFieldPrecisionTest(float min, float max, float step, string userInput)
         {
-            var component = RenderComponent<BitNumericTextField<double>>(parameters =>
+            var component = RenderComponent<BitNumericTextField<float>>(parameters =>
             {
                 parameters.Add(p => p.Step, step);
                 parameters.Add(p => p.Max, max);
@@ -678,7 +674,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.NumericTextField
             input.Blur();
             var inputValue = component.Instance.Value;
             var precision = CalculatePrecision(step);
-            var expectedResult = Normalize(double.Parse(userInput), precision);
+            var expectedResult = Normalize(float.Parse(userInput), precision);
             if (expectedResult > max) expectedResult = max;
             if (expectedResult < min) expectedResult = min;
 
@@ -689,11 +685,11 @@ namespace Bit.Client.Web.BlazorUI.Tests.NumericTextField
             DataRow(5, 2, 4),
             DataRow(1, 15, 1)
         ]
-        public void BitNumericTextFieldTwoWayBoundWithCustomHandlerShouldWorkCurrect(double value, int countOfIncrements, double step)
+        public void BitNumericTextFieldTwoWayBoundWithCustomHandlerShouldWorkCurrect(float value, int countOfIncrements, float step)
         {
             BitNumericTextFieldTwoWayBoundValue = value;
 
-            var component = RenderComponent<BitNumericTextField<double>>(parameters =>
+            var component = RenderComponent<BitNumericTextField<float>>(parameters =>
             {
                 parameters.Add(p => p.Step, step);
                 parameters.Add(p => p.Value, BitNumericTextFieldTwoWayBoundValue);
@@ -717,7 +713,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.NumericTextField
         ]
         public void BitNumericTextFieldLabelFragmentTest(string labelFragment)
         {
-            var component = RenderComponent<BitNumericTextField<double>>(parameters =>
+            var component = RenderComponent<BitNumericTextField<float>>(parameters =>
             {
                 parameters.Add(p => p.LabelFragment, labelFragment);
             });
@@ -730,9 +726,9 @@ namespace Bit.Client.Web.BlazorUI.Tests.NumericTextField
             DataRow(3, 1, 100, 475),
             DataRow(3, 1, 100, 550)
         ]
-        public void BitNumericTextFieldContinuousIncrementOnMouseDownTest(double defaultValue, double step, double max, int timeout)
+        public void BitNumericTextFieldContinuousIncrementOnMouseDownTest(float defaultValue, float step, float max, int timeout)
         {
-            var component = RenderComponent<BitNumericTextField<double>>(parameters =>
+            var component = RenderComponent<BitNumericTextField<float>>(parameters =>
             {
                 parameters.Add(p => p.Step, step);
                 parameters.Add(p => p.Max, max);
@@ -754,9 +750,9 @@ namespace Bit.Client.Web.BlazorUI.Tests.NumericTextField
             DataRow(50, 1, 0, 475),
             DataRow(50, 1, 0, 550)
         ]
-        public void BitNumericTextFieldContinuousDecrementOnMouseDownTest(double defaultValue, double step, double min, int timeout)
+        public void BitNumericTextFieldContinuousDecrementOnMouseDownTest(float defaultValue, float step, float min, int timeout)
         {
-            var component = RenderComponent<BitNumericTextField<double>>(parameters =>
+            var component = RenderComponent<BitNumericTextField<float>>(parameters =>
             {
                 parameters.Add(p => p.Step, step);
                 parameters.Add(p => p.Min, min);
@@ -782,11 +778,11 @@ namespace Bit.Client.Web.BlazorUI.Tests.NumericTextField
             DataRow(6),
             DataRow(18),
         ]
-        public void BitNumericTextFieldValidationFormTest(double value)
+        public void BitNumericTextFieldValidationFormTest(float value)
         {
-            var component = RenderComponent<BitNumericTextFieldValidationTest>(parameters =>
+            var component = RenderComponent<BitNumericTextFieldFloatValidationTest>(parameters =>
             {
-                parameters.Add(p => p.TestModel, new BitNumericTextFieldTestModel { Value = value });
+                parameters.Add(p => p.TestModel, new BitNumericTextFieldFloatTestModel { Value = value });
                 parameters.Add(p => p.IsEnabled, true);
             });
 
@@ -824,11 +820,11 @@ namespace Bit.Client.Web.BlazorUI.Tests.NumericTextField
             DataRow(6),
             DataRow(18),
         ]
-        public void BitNumericTextFieldValidationInvalidHtmlAttributeTest(double value)
+        public void BitNumericTextFieldValidationInvalidHtmlAttributeTest(float value)
         {
-            var component = RenderComponent<BitNumericTextFieldValidationTest>(parameters =>
+            var component = RenderComponent<BitNumericTextFieldFloatValidationTest>(parameters =>
             {
-                parameters.Add(p => p.TestModel, new BitNumericTextFieldTestModel { Value = value });
+                parameters.Add(p => p.TestModel, new BitNumericTextFieldFloatTestModel { Value = value });
                 parameters.Add(p => p.IsEnabled, true);
             });
 
@@ -868,11 +864,11 @@ namespace Bit.Client.Web.BlazorUI.Tests.NumericTextField
             DataRow(Visual.Material, 2),
             DataRow(Visual.Material, 8),
         ]
-        public void BitNumericTextFieldValidationInvalidCssClassTest(Visual visual, double value)
+        public void BitNumericTextFieldValidationInvalidCssClassTest(Visual visual, float value)
         {
-            var component = RenderComponent<BitNumericTextFieldValidationTest>(parameters =>
+            var component = RenderComponent<BitNumericTextFieldFloatValidationTest>(parameters =>
             {
-                parameters.Add(p => p.TestModel, new BitNumericTextFieldTestModel { Value = value });
+                parameters.Add(p => p.TestModel, new BitNumericTextFieldFloatTestModel { Value = value });
                 parameters.Add(p => p.IsEnabled, true);
                 parameters.Add(p => p.Visual, visual);
             });
@@ -903,9 +899,9 @@ namespace Bit.Client.Web.BlazorUI.Tests.NumericTextField
             Assert.AreEqual(NumericTextField.ClassList.Contains($"bit-ntf-invalid-{visualClass}"), !isInvalid);
         }
 
-        private double? Normalize(double? value, int precision) => value is null ? null : Math.Round(value.Value, precision);
+        private float? Normalize(float? value, int precision) => value is null ? null : (float?)Math.Round(value.Value, precision);
 
-        private int CalculatePrecision(double value)
+        private int CalculatePrecision(float value)
         {
             var regex = new Regex(@"[1-9]([0]+$)|\.([0-9]*)");
             if (regex.IsMatch(value.ToString()) is false) return 0;
@@ -927,7 +923,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.NumericTextField
             return 0;
         }
 
-        private void HandleValueChanged(double value)
+        private void HandleValueChanged(float value)
         {
             BitNumericTextFieldTwoWayBoundValue = value;
         }
