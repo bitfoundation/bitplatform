@@ -1,6 +1,6 @@
 {
     "profiles": {
-        "Bit.Client.Web.BlazorUI.Playground.Api": {
+        "Bit.BlazorUI.Playground.Api": {
             "commandName": "Project",
             "dotnetRunMessages": true,
             "launchBrowser": true,

@@ -1,7 +1,7 @@
 ﻿using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Bit.Client.Web.BlazorUI.Tests.Pivot
+namespace Bit.BlazorUI.Tests.Pivot
 {
     [TestClass]
     public class BitPivotTests : BunitTestContext

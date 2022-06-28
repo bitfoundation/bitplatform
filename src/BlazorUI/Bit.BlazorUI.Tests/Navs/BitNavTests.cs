@@ -2,7 +2,7 @@
 using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Bit.Client.Web.BlazorUI.Tests.Navs
+namespace Bit.BlazorUI.Tests.Navs
 {
     [TestClass]
     public class BitNavTests : BunitTestContext

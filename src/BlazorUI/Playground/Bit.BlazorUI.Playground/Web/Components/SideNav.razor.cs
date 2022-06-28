@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Bit.Client.Web.BlazorUI.Playground.Web.Services;
+using Bit.BlazorUI.Playground.Web.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.JSInterop;
 
-namespace Bit.Client.Web.BlazorUI.Playground.Web.Components
+namespace Bit.BlazorUI.Playground.Web.Components
 {
     public partial class SideNav
     {

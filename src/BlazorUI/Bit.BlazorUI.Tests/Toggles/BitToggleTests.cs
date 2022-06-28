@@ -1,7 +1,7 @@
 ﻿using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Bit.Client.Web.BlazorUI.Tests.Toggles
+namespace Bit.BlazorUI.Tests.Toggles
 {
     [TestClass]
     public class BitToggleTests : BunitTestContext

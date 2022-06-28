@@ -1,4 +1,4 @@
-# Bit.Client.Web.BlazorUI.Playground
+# Bit.BlazorUI.Playground
 Blazor multi mode with best practices in mind!
 
 In Directory.build.props, you can switch between blazor server / web assembly and hybrid by using either
@@ -15,7 +15,7 @@ In Directory.build.props, you can switch between blazor server / web assembly an
 <BlazorMode>BlazorHybrid</BlazorMode>
 ```
 
-For blazor web assembly use followings in Bit.Client.Web.BlazorUI.Playground.Web:
+For blazor web assembly use followings in Bit.BlazorUI.Playground.Web:
 
 ```xml
 <Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
@@ -27,7 +27,7 @@ for blazor server use:
 <Project Sdk="Microsoft.NET.Sdk.Web">
 ```
 
-For blazor hybrid, use Bit.Client.Web.BlazorUI.App project instead.
+For blazor hybrid, use Bit.BlazorUI.App project instead.
 
 To run blazor web assembly only start Api project, but for blazor hybrid you need multi startup for both api & app projects. In blazor server you need multi startup for both api & web projects.
 
@@ -35,7 +35,7 @@ In shared project, you can also detect code is running in blazor server / web as
 
 ```cs
 
-if (Bit.Client.Web.BlazorUI.Playground.Shared.BlazorModeDetector.Current.IsBlazorServer())
+if (Bit.BlazorUI.Playground.Shared.BlazorModeDetector.Current.IsBlazorServer())
 {
 }
 

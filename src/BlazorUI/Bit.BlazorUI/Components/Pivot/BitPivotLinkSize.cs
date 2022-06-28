@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Bit.Client.Web.BlazorUI
+namespace Bit.BlazorUI
 {
     public enum BitPivotLinkSize
     {

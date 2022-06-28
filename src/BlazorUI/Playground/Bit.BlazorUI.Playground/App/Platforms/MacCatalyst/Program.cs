@@ -1,6 +1,6 @@
 ﻿using UIKit;
 
-namespace Bit.Client.Web.BlazorUI.Playground.Web
+namespace Bit.BlazorUI.Playground.Web
 {
     public class Program
     {

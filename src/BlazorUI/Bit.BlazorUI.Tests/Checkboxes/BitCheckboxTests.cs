@@ -1,7 +1,7 @@
 ﻿using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Bit.Client.Web.BlazorUI.Tests.Checkboxes
+namespace Bit.BlazorUI.Tests.Checkboxes
 {
     [TestClass]
     public class BitCheckboxTests : BunitTestContext

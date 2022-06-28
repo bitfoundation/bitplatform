@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.NumericTextField
+namespace Bit.BlazorUI.Playground.Web.Pages.Components.NumericTextField
 {
     public class BitNumericTextFieldValidationModel
     {

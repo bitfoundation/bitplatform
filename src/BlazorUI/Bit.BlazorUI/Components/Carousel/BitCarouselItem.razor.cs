@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 
-namespace Bit.Client.Web.BlazorUI
+namespace Bit.BlazorUI
 {
     public partial class BitCarouselItem
     {

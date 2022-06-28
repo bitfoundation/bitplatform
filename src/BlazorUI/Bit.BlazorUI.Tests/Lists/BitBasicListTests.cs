@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using static Bit.Client.Web.BlazorUI.Tests.Lists.BitBasicListTest;
+using static Bit.BlazorUI.Tests.Lists.BitBasicListTest;
 
-namespace Bit.Client.Web.BlazorUI.Tests.Lists
+namespace Bit.BlazorUI.Tests.Lists
 {
     [TestClass]
     public class BitBasicListTests : BunitTestContext

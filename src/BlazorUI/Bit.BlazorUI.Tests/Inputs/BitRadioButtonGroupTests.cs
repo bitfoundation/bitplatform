@@ -2,7 +2,7 @@
 using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Bit.Client.Web.BlazorUI.Tests.Inputs
+namespace Bit.BlazorUI.Tests.Inputs
 {
     [TestClass]
     public class BitRadioButtonGroupTests : BunitTestContext

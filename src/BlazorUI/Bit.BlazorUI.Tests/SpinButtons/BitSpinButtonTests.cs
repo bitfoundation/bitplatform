@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Bit.Client.Web.BlazorUI.Tests.SpinButtons
+namespace Bit.BlazorUI.Tests.SpinButtons
 {
     [TestClass]
     public class BitSpinButtonTests : BunitTestContext

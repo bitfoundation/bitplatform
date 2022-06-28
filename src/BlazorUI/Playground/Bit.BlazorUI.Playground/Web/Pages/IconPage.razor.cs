@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
+namespace Bit.BlazorUI.Playground.Web.Pages
 {
     public partial class IconPage
     {

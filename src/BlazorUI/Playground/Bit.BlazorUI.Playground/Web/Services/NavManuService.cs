@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Bit.Client.Web.BlazorUI.Playground.Web.Services
+namespace Bit.BlazorUI.Playground.Web.Services
 {
     public class NavManuService
     {

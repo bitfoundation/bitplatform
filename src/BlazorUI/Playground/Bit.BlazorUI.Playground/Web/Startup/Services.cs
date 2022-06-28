@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Bit.Client.Web.BlazorUI.Playground.Web.Startup;
+namespace Bit.BlazorUI.Playground.Web.Startup;
 
 public class Services
 {

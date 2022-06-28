@@ -2,7 +2,7 @@
 using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Bit.Client.Web.BlazorUI.Tests.Sliders
+namespace Bit.BlazorUI.Tests.Sliders
 {
     [TestClass]
     public class BitSliderTests : BunitTestContext

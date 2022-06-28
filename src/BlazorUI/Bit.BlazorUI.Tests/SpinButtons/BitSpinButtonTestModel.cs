@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Bit.Client.Web.BlazorUI.Tests.SpinButtons
+namespace Bit.BlazorUI.Tests.SpinButtons
 {
     public class BitSpinButtonTestModel
     {

@@ -1,4 +1,4 @@
-﻿namespace Bit.Client.Web.BlazorUI.Playground.Shared.Dtos;
+﻿namespace Bit.BlazorUI.Playground.Shared.Dtos;
 
 public class ComponentMethodDetailsDto
 {

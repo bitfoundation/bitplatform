@@ -14,9 +14,9 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\..\Bit.Client.Web.BlazorUI\Bit.Client.Web.BlazorUI.csproj" />
-        <ProjectReference Include="..\Web\Bit.Client.Web.BlazorUI.Playground.Web.csproj" Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " />
-        <ProjectReference Include="..\Shared\Bit.Client.Web.BlazorUI.Playground.Shared.csproj" />
+        <ProjectReference Include="..\..\..\Bit.BlazorUI\Bit.BlazorUI.csproj" />
+        <ProjectReference Include="..\Web\Bit.BlazorUI.Playground.Web.csproj" Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " />
+        <ProjectReference Include="..\Shared\Bit.BlazorUI.Playground.Shared.csproj" />
     </ItemGroup>
 
 </Project>

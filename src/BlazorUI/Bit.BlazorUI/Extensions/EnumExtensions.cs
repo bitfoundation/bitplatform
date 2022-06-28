@@ -5,7 +5,7 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 
-namespace Bit.Client.Web.BlazorUI
+namespace Bit.BlazorUI
 {
     public static class EnumExtensions
     {

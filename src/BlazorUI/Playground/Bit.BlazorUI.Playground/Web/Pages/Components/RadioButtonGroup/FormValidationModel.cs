@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.RadioButtonGroup
+namespace Bit.BlazorUI.Playground.Web.Pages.Components.RadioButtonGroup
 {
     public class FormValidationModel
     {

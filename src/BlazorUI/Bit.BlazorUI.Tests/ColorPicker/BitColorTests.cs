@@ -1,6 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Bit.Client.Web.BlazorUI.Tests.ColorPicker
+namespace Bit.BlazorUI.Tests.ColorPicker
 {
     [TestClass]
     public class BitColorTests

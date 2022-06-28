@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase
+namespace Bit.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase
 {
     public class ComponentParameter
     {

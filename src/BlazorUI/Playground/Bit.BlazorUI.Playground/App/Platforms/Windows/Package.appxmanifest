@@ -12,7 +12,7 @@
     Version="1.0.0.0" />
 
   <Properties>
-    <DisplayName>Bit.Client.Web.BlazorUI.Playground.App</DisplayName>
+    <DisplayName>Bit.BlazorUI.Playground.App</DisplayName>
     <PublisherDisplayName>Microsoft</PublisherDisplayName>
     <Logo>appiconStoreLogo.png</Logo>
   </Properties>
@@ -31,8 +31,8 @@
       Executable="$targetnametoken$.exe"
       EntryPoint="$targetentrypoint$">
       <uap:VisualElements
-        DisplayName="Bit.Client.Web.BlazorUI.Playground.App"
-        Description="Bit.Client.Web.BlazorUI.Playground.App"
+        DisplayName="Bit.BlazorUI.Playground.App"
+        Description="Bit.BlazorUI.Playground.App"
         BackgroundColor="transparent"
         Square150x150Logo="appiconMediumTile.png"
         Square44x44Logo="appiconLogo.png">
@@ -40,7 +40,7 @@
           Wide310x150Logo="appiconWideTile.png"
           Square71x71Logo="appiconSmallTile.png"
           Square310x310Logo="appiconLargeTile.png"
-          ShortName="Bit.Client.Web.BlazorUI.Playground.App">
+          ShortName="Bit.BlazorUI.Playground.App">
           <uap:ShowNameOnTiles>
             <uap:ShowOn Tile="square150x150Logo"/>
             <uap:ShowOn Tile="wide310x150Logo"/>

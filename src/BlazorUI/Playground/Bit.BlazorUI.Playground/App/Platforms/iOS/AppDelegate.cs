@@ -2,7 +2,7 @@
 using Microsoft.Maui;
 using Microsoft.Maui.Hosting;
 
-namespace Bit.Client.Web.BlazorUI.Playground.Web
+namespace Bit.BlazorUI.Playground.Web
 {
     [Register(nameof(AppDelegate))]
     public class AppDelegate : MauiUIApplicationDelegate

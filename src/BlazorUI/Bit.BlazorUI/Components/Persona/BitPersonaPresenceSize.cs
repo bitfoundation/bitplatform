@@ -1,7 +1,7 @@
 ﻿using System.Linq;
 using System.Threading;
 
-namespace Bit.Client.Web.BlazorUI
+namespace Bit.BlazorUI
 {
     public static class BitPersonaPresenceSize
     {

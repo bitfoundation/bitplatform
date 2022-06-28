@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Bit.Client.Web.BlazorUI
+namespace Bit.BlazorUI
 {
     public class BitNavLinkItem
     {

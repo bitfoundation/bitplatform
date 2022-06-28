@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Bit.Client.Web.BlazorUI.Utils;
 using Microsoft.AspNetCore.Components;
 
-namespace Bit.Client.Web.BlazorUI
+namespace Bit.BlazorUI
 {
     public abstract partial class BitComponentBase : ComponentBase
     {

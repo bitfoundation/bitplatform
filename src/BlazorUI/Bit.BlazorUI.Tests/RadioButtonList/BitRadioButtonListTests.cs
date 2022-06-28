@@ -5,7 +5,7 @@ using AngleSharp.Dom;
 using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Bit.Client.Web.BlazorUI.Tests.RadioButtonList
+namespace Bit.BlazorUI.Tests.RadioButtonList
 {
     [TestClass]
     public class BitRadioButtonListTests : BunitTestContext

@@ -2,7 +2,7 @@
 using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Bit.Client.Web.BlazorUI.Tests.Breadcrumb
+namespace Bit.BlazorUI.Tests.Breadcrumb
 {
     [TestClass]
     public class BitBreadcrumbTests : BunitTestContext

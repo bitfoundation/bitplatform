@@ -4,7 +4,7 @@ using Microsoft.Maui;
 using Microsoft.Maui.Hosting;
 using System;
 
-namespace Bit.Client.Web.BlazorUI.Playground.Web
+namespace Bit.BlazorUI.Playground.Web
 {
     [Application]
     public class MainApplication : MauiApplication

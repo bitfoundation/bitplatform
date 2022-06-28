@@ -2,7 +2,7 @@
 using Microsoft.Maui.Hosting;
 using Microsoft.UI.Xaml;
 
-namespace Bit.Client.Web.BlazorUI.Playground.Web.WinUI
+namespace Bit.BlazorUI.Playground.Web.WinUI
 {
     public partial class App
     {

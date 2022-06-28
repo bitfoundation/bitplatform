@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
 
-namespace Bit.Client.Web.BlazorUI.Playground.Web.Shared
+namespace Bit.BlazorUI.Playground.Web.Shared
 {
     public partial class MainLayout : IDisposable
     {

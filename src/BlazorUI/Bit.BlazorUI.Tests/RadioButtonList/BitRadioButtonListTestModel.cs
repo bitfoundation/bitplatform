@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Bit.Client.Web.BlazorUI.Tests.RadioButtonList
+namespace Bit.BlazorUI.Tests.RadioButtonList
 {
     public class BitRadioButtonListTestModel
     {

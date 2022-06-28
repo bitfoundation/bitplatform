@@ -1,4 +1,4 @@
-﻿namespace Bit.Client.Web.BlazorUI.Playground.Web.Models
+﻿namespace Bit.BlazorUI.Playground.Web.Models
 {
     public class PopularComponent
     {

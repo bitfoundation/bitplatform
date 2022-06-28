@@ -4,8 +4,8 @@ using System.Drawing;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 
-[assembly: InternalsVisibleTo("Bit.Client.Web.BlazorUI.Tests")]
-namespace Bit.Client.Web.BlazorUI
+[assembly: InternalsVisibleTo("Bit.BlazorUI.Tests")]
+namespace Bit.BlazorUI
 {
     internal class BitColor
     {

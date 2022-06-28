@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.TextField
+namespace Bit.BlazorUI.Playground.Web.Pages.Components.TextField
 {
     public class ValidationTextFieldModel
     {

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
-namespace Bit.Client.Web.BlazorUI
+namespace Bit.BlazorUI
 {
     /// <summary>
     /// A component that wraps the HTML file input element and uploads them.

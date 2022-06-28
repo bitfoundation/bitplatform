@@ -1,7 +1,7 @@
 ﻿using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Bit.Client.Web.BlazorUI.Tests.Labels
+namespace Bit.BlazorUI.Tests.Labels
 {
     [TestClass]
     public class BitLabelTests : BunitTestContext

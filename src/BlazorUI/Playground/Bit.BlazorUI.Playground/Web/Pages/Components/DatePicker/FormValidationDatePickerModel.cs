@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.DatePicker
+namespace Bit.BlazorUI.Playground.Web.Pages.Components.DatePicker
 {
     public class FormValidationDatePickerModel
     {

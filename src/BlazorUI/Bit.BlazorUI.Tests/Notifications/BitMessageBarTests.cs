@@ -2,7 +2,7 @@
 using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Bit.Client.Web.BlazorUI.Tests.Notifications
+namespace Bit.BlazorUI.Tests.Notifications
 {
     [TestClass]
     public class BitMessageBarTests : BunitTestContext

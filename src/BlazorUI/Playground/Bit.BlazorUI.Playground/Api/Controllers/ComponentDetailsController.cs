@@ -1,9 +1,9 @@
 ﻿using System.Xml.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
-using Bit.Client.Web.BlazorUI.Playground.Shared.Dtos;
+using Bit.BlazorUI.Playground.Shared.Dtos;
 
-namespace Bit.Client.Web.BlazorUI.Playground.Api.Controllers;
+namespace Bit.BlazorUI.Playground.Api.Controllers;
 
 [ApiController]
 [Route("component-details")]

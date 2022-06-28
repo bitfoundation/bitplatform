@@ -1,6 +1,6 @@
 ﻿using Microsoft.Net.Http.Headers;
 
-namespace Bit.Client.Web.BlazorUI.Playground.Api.Startup;
+namespace Bit.BlazorUI.Playground.Api.Startup;
 
 public static class Middlewares
 {

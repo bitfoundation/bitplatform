@@ -8,7 +8,7 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Hosting;
 
-namespace Bit.Client.Web.BlazorUI.Playground.Web
+namespace Bit.BlazorUI.Playground.Web
 {
     public static class MauiProgram
     {

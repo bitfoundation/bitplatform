@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
-using Bit.Client.Web.BlazorUI.Playground.Web.Models;
-using Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
+using Bit.BlazorUI.Playground.Web.Models;
+using Bit.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 
-namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ColorPicker
+namespace Bit.BlazorUI.Playground.Web.Pages.Components.ColorPicker
 {
     public partial class BitColorPickerDemo
     {

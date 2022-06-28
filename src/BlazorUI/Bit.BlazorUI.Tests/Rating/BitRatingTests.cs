@@ -2,7 +2,7 @@
 using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Bit.Client.Web.BlazorUI.Tests.Rating
+namespace Bit.BlazorUI.Tests.Rating
 {
     [TestClass]
     public class BitRatingTests : BunitTestContext

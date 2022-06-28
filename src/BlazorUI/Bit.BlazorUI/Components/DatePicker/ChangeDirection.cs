@@ -1,5 +1,5 @@
 ﻿
-namespace Bit.Client.Web.BlazorUI
+namespace Bit.BlazorUI
 {
     public enum ChangeDirection
     {

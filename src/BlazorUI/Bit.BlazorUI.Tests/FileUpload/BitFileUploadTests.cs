@@ -2,7 +2,7 @@
 using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Bit.Client.Web.BlazorUI.Tests.FileUpload
+namespace Bit.BlazorUI.Tests.FileUpload
 {
     [TestClass]
     public class BitFileUploadTests : BunitTestContext

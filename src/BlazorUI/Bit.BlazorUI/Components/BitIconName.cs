@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace Bit.Client.Web.BlazorUI
+namespace Bit.BlazorUI
 {
     [DefaultValue(NotSet)]
     public enum BitIconName

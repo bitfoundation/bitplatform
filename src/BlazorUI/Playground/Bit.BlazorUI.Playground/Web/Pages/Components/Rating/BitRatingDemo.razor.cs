@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using Bit.Client.Web.BlazorUI.Playground.Web.Models;
-using Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
+using Bit.BlazorUI.Playground.Web.Models;
+using Bit.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 
-namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Rating
+namespace Bit.BlazorUI.Playground.Web.Pages.Components.Rating
 {
     public partial class BitRatingDemo
     {

@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 
-namespace Bit.Client.Web.BlazorUI.Playground.Api.Controllers
+namespace Bit.BlazorUI.Playground.Api.Controllers
 {
     [ApiController]
     [Route("[controller]/[action]")]

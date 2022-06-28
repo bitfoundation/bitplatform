@@ -1,4 +1,4 @@
-﻿namespace Bit.Client.Web.BlazorUI.Tests.RadioButtonList
+﻿namespace Bit.BlazorUI.Tests.RadioButtonList
 {
     public class Gender
     {

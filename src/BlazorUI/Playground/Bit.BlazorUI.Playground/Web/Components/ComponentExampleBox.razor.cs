@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
-namespace Bit.Client.Web.BlazorUI.Playground.Web.Components
+namespace Bit.BlazorUI.Playground.Web.Components
 {
     public partial class ComponentExampleBox
     {

@@ -1,4 +1,4 @@
-﻿namespace Bit.Client.Web.BlazorUI.Playground.Web
+﻿namespace Bit.BlazorUI.Playground.Web
 {
     public partial class MainPage
     {

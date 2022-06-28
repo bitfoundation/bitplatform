@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace Bit.Client.Web.BlazorUI.Tests.Checkboxes
+namespace Bit.BlazorUI.Tests.Checkboxes
 {
     public class BitCheckboxTestModel
     {

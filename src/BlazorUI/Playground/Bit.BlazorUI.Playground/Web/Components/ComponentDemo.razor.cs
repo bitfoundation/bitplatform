@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
-using Bit.Client.Web.BlazorUI.Playground.Web.Models;
-using Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
+using Bit.BlazorUI.Playground.Web.Models;
+using Bit.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 using Microsoft.AspNetCore.Components;
 
-namespace Bit.Client.Web.BlazorUI.Playground.Web.Components
+namespace Bit.BlazorUI.Playground.Web.Components
 {
     public partial class ComponentDemo
     {

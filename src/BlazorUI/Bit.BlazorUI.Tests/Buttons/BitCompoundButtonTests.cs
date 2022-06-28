@@ -2,7 +2,7 @@
 using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Bit.Client.Web.BlazorUI.Tests.Buttons
+namespace Bit.BlazorUI.Tests.Buttons
 {
     [TestClass]
     public class BitCompoundButtonTests : BunitTestContext

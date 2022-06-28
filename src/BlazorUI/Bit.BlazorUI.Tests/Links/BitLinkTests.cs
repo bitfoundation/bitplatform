@@ -1,7 +1,7 @@
 ﻿using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Bit.Client.Web.BlazorUI.Tests.Links
+namespace Bit.BlazorUI.Tests.Links
 {
     [TestClass]
     public class BitLinkTests : BunitTestContext

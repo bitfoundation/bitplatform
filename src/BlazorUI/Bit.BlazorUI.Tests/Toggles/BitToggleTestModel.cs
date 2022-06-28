@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Bit.Client.Web.BlazorUI.Tests.Toggles
+namespace Bit.BlazorUI.Tests.Toggles
 {
     public class BitToggleTestModel
     {

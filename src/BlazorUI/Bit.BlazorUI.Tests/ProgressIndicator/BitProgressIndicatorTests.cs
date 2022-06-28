@@ -1,7 +1,7 @@
 ﻿using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Bit.Client.Web.BlazorUI.Tests.ProgressIndicator
+namespace Bit.BlazorUI.Tests.ProgressIndicator
 {
     [TestClass]
     public class BitProgressIndicatorTests : BunitTestContext

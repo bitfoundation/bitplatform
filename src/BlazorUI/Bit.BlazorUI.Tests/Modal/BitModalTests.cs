@@ -1,7 +1,7 @@
 ﻿using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Bit.Client.Web.BlazorUI.Tests.Modal
+namespace Bit.BlazorUI.Tests.Modal
 {
     [TestClass]
     public class BitModalTests : BunitTestContext

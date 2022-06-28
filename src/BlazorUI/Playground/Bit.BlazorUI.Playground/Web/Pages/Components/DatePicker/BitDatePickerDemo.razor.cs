@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Bit.Client.Web.BlazorUI.Playground.Web.Models;
-using Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
+using Bit.BlazorUI.Playground.Web.Models;
+using Bit.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 
-namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.DatePicker
+namespace Bit.BlazorUI.Playground.Web.Pages.Components.DatePicker
 {
     public partial class BitDatePickerDemo
     {
@@ -224,7 +224,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.DatePicker
 </BitDatePicker>";
 
         private readonly string example4HTMLCode = @"
-<BitDatePicker Culture=""Bit.Client.Web.BlazorUI.CultureInfoHelper.GetPersianCultureByFinglishNames()""
+<BitDatePicker Culture=""Bit.BlazorUI.CultureInfoHelper.GetPersianCultureByFinglishNames()""
                GoToToday=""Boro be emrouz""
                Style=""width: 300px"">
 </BitDatePicker>";

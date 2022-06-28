@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Bit.Client.Web.BlazorUI;
+using Bit.BlazorUI;
 using Microsoft.AspNetCore.Components;
 
 namespace Microsoft.JSInterop

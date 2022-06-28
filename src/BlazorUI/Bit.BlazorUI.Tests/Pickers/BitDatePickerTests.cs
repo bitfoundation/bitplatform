@@ -1,9 +1,8 @@
 ﻿using System;
-using Bit.Client.Web.BlazorUI.Utils;
 using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Bit.Client.Web.BlazorUI.Tests.Pickers
+namespace Bit.BlazorUI.Tests.Pickers
 {
     [TestClass]
     public class BitDatePickerTests : BunitTestContext

@@ -1,7 +1,7 @@
 ﻿using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Bit.Client.Web.BlazorUI.Tests.Persona
+namespace Bit.BlazorUI.Tests.Persona
 {
     [TestClass]
     public class BitPersonaTests : BunitTestContext

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Bit.Client.Web.BlazorUI.Utils
+namespace Bit.BlazorUI
 {
     public class ElementStyleBuilder : ElementAttributeBuilder
     {

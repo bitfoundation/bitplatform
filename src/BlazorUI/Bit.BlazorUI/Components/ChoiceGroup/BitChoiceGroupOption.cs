@@ -3,7 +3,7 @@ using System.Drawing;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 
-namespace Bit.Client.Web.BlazorUI.Components.ChoiceGroup
+namespace Bit.BlazorUI.Components.ChoiceGroup
 {
     public class BitChoiceGroupOption
     {

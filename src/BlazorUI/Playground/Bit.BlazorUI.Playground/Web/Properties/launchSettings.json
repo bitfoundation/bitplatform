@@ -1,6 +1,6 @@
 {
     "profiles": {
-        "Bit.Client.Web.BlazorUI.Playground.Web": {
+        "Bit.BlazorUI.Playground.Web": {
             "commandName": "Project",
             "launchBrowser": true,
             "environmentVariables": {

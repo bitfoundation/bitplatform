@@ -11,7 +11,7 @@ using System.Linq.Expressions;
 using System.Text;
 
 
-namespace Bit.Client.Web.BlazorUI
+namespace Bit.BlazorUI
 {
     public partial class BitBreadcrumb
     {

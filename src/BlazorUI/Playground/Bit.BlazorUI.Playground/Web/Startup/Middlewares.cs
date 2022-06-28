@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Hosting;
 
-namespace Bit.Client.Web.BlazorUI.Playground.Web.Startup;
+namespace Bit.BlazorUI.Playground.Web.Startup;
 
 public class Middlewares
 {

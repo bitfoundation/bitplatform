@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using Bit.Client.Web.BlazorUI.Playground.Web.Models;
-using Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
+using Bit.BlazorUI.Playground.Web.Models;
+using Bit.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 using Microsoft.AspNetCore.Components.RenderTree;
 
-namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Breadcrumb
+namespace Bit.BlazorUI.Playground.Web.Pages.Components.Breadcrumb
 {
     public partial class BitBreadcrumbDemo
     {

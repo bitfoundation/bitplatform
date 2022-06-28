@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.Checkbox
+namespace Bit.BlazorUI.Playground.Web.Pages.Components.Checkbox
 {
     public class BitCheckboxValidationModel
     {

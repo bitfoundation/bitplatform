@@ -18,7 +18,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\Bit.Client.Web.BlazorUI\Bit.Client.Web.BlazorUI.csproj" />
+		<ProjectReference Include="..\Bit.BlazorUI\Bit.BlazorUI.csproj" />
 	</ItemGroup>
 
 </Project>

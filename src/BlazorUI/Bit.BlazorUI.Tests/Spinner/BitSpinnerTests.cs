@@ -1,7 +1,7 @@
 ﻿using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Bit.Client.Web.BlazorUI.Tests.Spinner
+namespace Bit.BlazorUI.Tests.Spinner
 {
     [TestClass]
     public class BitSpinnerTests : BunitTestContext

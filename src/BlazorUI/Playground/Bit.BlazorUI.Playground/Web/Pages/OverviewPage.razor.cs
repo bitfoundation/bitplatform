@@ -1,7 +1,7 @@
-﻿using Bit.Client.Web.BlazorUI.Playground.Web.Services;
+﻿using Bit.BlazorUI.Playground.Web.Services;
 using Microsoft.AspNetCore.Components;
 
-namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
+namespace Bit.BlazorUI.Playground.Web.Pages
 {
     public partial class OverviewPage
     {

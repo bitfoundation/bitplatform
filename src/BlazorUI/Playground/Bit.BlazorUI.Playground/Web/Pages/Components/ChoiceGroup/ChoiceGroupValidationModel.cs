@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ChoiceGroup
+namespace Bit.BlazorUI.Playground.Web.Pages.Components.ChoiceGroup
 {
     public class ChoiceGroupValidationModel
     {

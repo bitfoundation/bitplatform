@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
-namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.DropDown
+namespace Bit.BlazorUI.Playground.Web.Pages.Components.DropDown
 {
     public class FormValidationDropDownModel
     {

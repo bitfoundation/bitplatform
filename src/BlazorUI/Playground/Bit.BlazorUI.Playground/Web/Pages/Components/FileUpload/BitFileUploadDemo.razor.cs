@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
-using Bit.Client.Web.BlazorUI.Playground.Web.Models;
-using Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
+using Bit.BlazorUI.Playground.Web.Models;
+using Bit.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Configuration;
 
-namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages.Components.FileUpload
+namespace Bit.BlazorUI.Playground.Web.Pages.Components.FileUpload
 {
     public partial class BitFileUploadDemo
     {

@@ -4,7 +4,7 @@ using Bunit.Rendering;
 using Microsoft.AspNetCore.Components;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Bit.Client.Web.BlazorUI.Tests
+namespace Bit.BlazorUI.Tests
 {
     public abstract class BunitTestContext : IDisposable
     {

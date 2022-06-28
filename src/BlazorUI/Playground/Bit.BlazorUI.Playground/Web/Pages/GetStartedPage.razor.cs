@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
-using Bit.Client.Web.BlazorUI.Playground.Web.Models;
+using Bit.BlazorUI.Playground.Web.Models;
 
-namespace Bit.Client.Web.BlazorUI.Playground.Web.Pages
+namespace Bit.BlazorUI.Playground.Web.Pages
 {
     public partial class GetStartedPage
     {

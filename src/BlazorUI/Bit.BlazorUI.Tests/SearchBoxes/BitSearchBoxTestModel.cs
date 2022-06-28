@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Bit.Client.Web.BlazorUI.Tests.SearchBoxes
+namespace Bit.BlazorUI.Tests.SearchBoxes
 {
     public class BitSearchBoxTestModel
     {

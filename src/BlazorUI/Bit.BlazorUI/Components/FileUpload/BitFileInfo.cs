@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text.Json.Serialization;
 
-namespace Bit.Client.Web.BlazorUI;
+namespace Bit.BlazorUI;
 
 public class BitFileInfo
 {
