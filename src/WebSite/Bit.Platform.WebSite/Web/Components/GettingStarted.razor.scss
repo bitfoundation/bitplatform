@@ -72,8 +72,8 @@
         font-size: 25px;
         line-height: 32px;
         padding: 25px 0 15px;
-        margin-block-end:0;
-        margin-block-start:0;
+        margin-block-end: 0;
+        margin-block-start: 0;
     }
 
     .first-step-ul {
@@ -98,28 +98,5 @@
     .image {
         width: 100%;
         margin: 25px 0;
-    }
-}
-
-/*--------------------------getting started item list section----------------------------*/
-.getting-started-list-section {
-    margin: 0 56px;
-    position: absolute;
-    top: 800px;
-    left: 0;
-
-    @include lt-lg {
-        display: none;
-    }
-
-    .item {
-        @include Body3;
-        padding: 10px 20px;
-        border-left: 1px solid $B6Color;
-    }
-
-    .selected-item {
-        border-left: 4px solid $B6Color;
-        color: $B6Color;
     }
 }
