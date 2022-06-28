@@ -56,7 +56,7 @@
         }
     }
 
-    .header-link--active {
+    .header-link-active {
         @include Subtitle4;
         color: $B5Color;
     }
@@ -67,7 +67,7 @@
         color: $White;
     }
 
-    .header-link--active {
+    .header-link-active {
         color: $White;
     }
 }
@@ -82,7 +82,7 @@
         color: $White;
     }
 
-    .header-link--active {
+    .header-link-active {
         color: $White;
     }
 }
