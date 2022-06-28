@@ -58,7 +58,7 @@ body:
       - .NET Sdk version? For example `6.0.300`
       - IDE / Version? For example `Visual Studio 17.3 Preview 1`
       - Bit.BlazorUI nuget package's version? (If applicable) For example `12.0.0`
-      - Bit.Tooling.Templates.Todo nuget package's version? (If applicable) For example `1.0.0`
+      - Bit.TodoTemplate nuget package's version? (If applicable) For example `1.0.0`
       - Blazor mode? (If applicable) `Web Assembly (Client)`, `Server`, `Hybrid (MAUI)`
       - Customer / Consumers Browser / OS? (If applicable) For example `Chrome 101` For blazor web assembly and server or `Android 12` for hybrid
 

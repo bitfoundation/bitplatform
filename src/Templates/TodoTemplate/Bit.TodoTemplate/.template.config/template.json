@@ -6,7 +6,7 @@
         "language": "C#",
         "type": "solution"
     },
-    "identity": "Bit.Tooling.Templates.TodoTemplate",
+    "identity": "Bit.TodoTemplate",
     "name": "Bit Todo Template",
     "shortName": "Bit.TodoTemplate",
     "sourceName": "TodoTemplate",
