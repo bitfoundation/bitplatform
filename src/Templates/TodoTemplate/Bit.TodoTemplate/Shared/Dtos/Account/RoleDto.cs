@@ -1,10 +1,8 @@
-﻿
-namespace TodoTemplate.Shared.Dtos.Account
-{
-    public class RoleDto
-    {
-        public int Id { get; set; }
+﻿namespace TodoTemplate.Shared.Dtos.Account;
 
-        public string? Name { get; set; }
-    }
+public class RoleDto
+{
+    public int Id { get; set; }
+
+    public string? Name { get; set; }
 }

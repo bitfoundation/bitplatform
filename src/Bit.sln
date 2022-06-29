@@ -69,6 +69,10 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Templates", "Templates", "{62A4748E-3F6F-4F20-9FBC-9261F40C4BF1}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TodoTemplate", "TodoTemplate", "{C236F999-4F4A-4D87-A49D-8F5977185F7B}"
+	ProjectSection(SolutionItems) = preProject
+		Templates\TodoTemplate\Bit.TodoTemplate\Directory.build.props = Templates\TodoTemplate\Bit.TodoTemplate\Directory.build.props
+		Templates\TodoTemplate\Bit.TodoTemplate\README.md = Templates\TodoTemplate\Bit.TodoTemplate\README.md
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.TodoTemplate.ProjectTemplate", "Templates\TodoTemplate\Bit.TodoTemplate.ProjectTemplate.csproj", "{08340313-0DA3-432D-8629-2F864218F678}"
 EndProject

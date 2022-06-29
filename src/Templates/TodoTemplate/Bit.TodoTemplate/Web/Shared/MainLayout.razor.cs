@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Components.Web;
 
 namespace TodoTemplate.App.Shared;
+
 public partial class MainLayout : IAsyncDisposable
 {
     private ErrorBoundary ErrorBoundaryRef = default!;

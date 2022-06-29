@@ -1,6 +1,6 @@
-﻿using MimeTypes;
+﻿using SystemFile = System.IO.File;
+using MimeTypes;
 using TodoTemplate.Api.Models.Account;
-using SystemFile = System.IO.File;
 
 namespace TodoTemplate.Api.Controllers;
 

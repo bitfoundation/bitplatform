@@ -1,11 +1,11 @@
 ﻿using System.IO.Compression;
 using Microsoft.AspNetCore.ResponseCompression;
-
 #if BlazorWebAssembly
 using Microsoft.AspNetCore.Components;
 #endif
 
 namespace Bit.Platform.WebSite.Api.Startup;
+
 public static class Services
 {
     public static void Add(IServiceCollection services)

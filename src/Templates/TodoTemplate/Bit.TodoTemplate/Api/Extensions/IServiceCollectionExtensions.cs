@@ -1,10 +1,9 @@
-﻿using System.IdentityModel.Tokens.Jwt;
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Cryptography.X509Certificates;
-using System.Text;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using TodoTemplate.Api;
 using TodoTemplate.Api.Models.Account;
 using TodoTemplate.Api.Services.Implementations;

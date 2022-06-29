@@ -1,32 +1,31 @@
 ﻿//-:cnd:noEmit
 #if BlazorServer
-namespace TodoTemplate.App.Startup
+namespace TodoTemplate.App.Startup;
+
+public class Middlewares
 {
-    public class Middlewares
+    public static void Use(IApplicationBuilder app, IHostEnvironment env)
     {
-        public static void Use(IApplicationBuilder app, IHostEnvironment env)
+        if (env.IsDevelopment())
         {
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-            }
-            else
-            {
-                app.UseExceptionHandler("/Error");
-            }
-
-            app.UseHttpsRedirection();
-            app.UseResponseCompression();
-            app.UseStaticFiles();
-
-            app.UseRouting();
-
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapBlazorHub();
-                endpoints.MapFallbackToPage("/_Host");
-            });
+            app.UseDeveloperExceptionPage();
         }
+        else
+        {
+            app.UseExceptionHandler("/Error");
+        }
+
+        app.UseHttpsRedirection();
+        app.UseResponseCompression();
+        app.UseStaticFiles();
+
+        app.UseRouting();
+
+        app.UseEndpoints(endpoints =>
+        {
+            endpoints.MapBlazorHub();
+            endpoints.MapFallbackToPage("/_Host");
+        });
     }
 }
 #endif
