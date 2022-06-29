@@ -93,4 +93,10 @@
         width: 100%;
         margin: rem(25px) 0;
     }
+
+    .image-responsive {
+        margin: rem(25px) auto;
+        display: block;
+        max-width: 100%;
+    }
 }

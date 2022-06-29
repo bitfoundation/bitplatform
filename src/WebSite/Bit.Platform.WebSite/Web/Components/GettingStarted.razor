@@ -4,73 +4,369 @@
 </section>
 
 <section class="page-section getting-started-step-section">
-    <div class="step-body-card">
-        <h4> Install</h4>
-        <div class="card-container" id="step-number-1">
-            <div class="description">Bit’s Blazor UI Components are distributed as the <a href="#">Bit.Client.Web.BlazorUI nuget package</a>. You can add them to your project in one of the following ways.</div>
-            <div class="description">Install the package from command line by running this command:</div>
-            <pre class="code">
-                <code>
-                    dotnet add package
-                </code>
-            </pre>
-        </div>
-    </div>
 
     <div class="step-body-card">
         <h4> Development prerequisites</h4>
-        <div class="card-container" id="step-number-2">
+        <div class="card-container">
             <ul class="first-step-ul">
                 <li>C# as the main development language.</li>
-                <li>Asp.net core blazor as main development Back-End and Front-End framework</li>
-                <li><a href="#">CSS</a> & <a href="#">Sass</a> as stylesheet</li>
-                <li>
-                    item3
-                    <ul>
-                        <li>item1-1</li>
-                        <li>item1-2</li>
-                    </ul>
-                </li>
+                <li><a href="https://docs.microsoft.com/en-us/aspnet/core/blazor/?view=aspnetcore-6.0" rel="nofollow">Asp.net core blazor</a> as main development Back-End and Front-End framework</li>
+                <li><a href="https://www.google.com/url?sa=t&amp;rct=j&amp;q=&amp;esrc=s&amp;source=web&amp;cd=&amp;cad=rja&amp;uact=8&amp;ved=2ahUKEwji-KOu0pj4AhWwm_0HHeZQDzoQFnoECAgQAQ&amp;url=https%3A%2F%2Fwww.w3schools.com%2Fcss%2F&amp;usg=AOvVaw0Xtbw_GBAChsgvZNkPLVGb" rel="nofollow">CSS </a>&amp; <a href="https://www.google.com/url?sa=t&amp;rct=j&amp;q=&amp;esrc=s&amp;source=web&amp;cd=&amp;cad=rja&amp;uact=8&amp;ved=2ahUKEwjvgoO60pj4AhUCi_0HHVmXBMkQFnoECAgQAQ&amp;url=https%3A%2F%2Fsass-lang.com%2F&amp;usg=AOvVaw0p_IRgLEbIPRGWtlW7Wph8" rel="nofollow">Sass </a>as stylesheet</li>
+                <li><a href="https://docs.microsoft.com/en-us/ef/core/" rel="nofollow">Entity Framework Core</a> as ORM to communicate with the database</li>
+                <li><a href="https://docs.microsoft.com/en-us/aspnet/identity/overview/getting-started/introduction-to-aspnet-identity" rel="nofollow">Asp.Net Identity</a> with <a href="https://www.c-sharpcorner.com/article/jwt-authentication-and-authorization-in-net-6-0-with-identity-framework/" rel="nofollow">JWT </a>supporting for handling Authentication</li>
+                <li>Swagger as OpenId for APi Documentation</li>
             </ul>
         </div>
     </div>
 
     <div class="step-body-card">
+        <h4> Environment setup</h4>
+        <div class="card-container">
+            <ul class="first-step-ul">
+                <li>
+                    Microsoft Visual Studio 2022 - Preview Version 17.3.0 Preview or higher with the following workloads and extention
+                    <ul dir="auto">
+                        <li>Asp.net and web development</li>
+                        <li>Net Multi-Platform App UI development</li>
+                    </ul>
+                </li>
+                <li><a href="https://marketplace.visualstudio.com/items?itemName=Failwyn.WebCompiler64" title="Web Compiler 2022+" rel="nofollow">Web Compiler 2022+ VisualStudtio extention</a></li>
+                <li><a href="https://www.microsoft.com/en-us/sql-server/sql-server-downloads" title="Sql server" rel="nofollow">Microsoft SQL Server Developer edition</a> Or change the EntityFramework DBContext database provide to make it work with your preferred database (find it in the Database section)</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="step-body-card">
+        <h4> Create project</h4>
+        <div class="card-container">
+            <div class="code-header">
+                1. Install the TodoTemplate Template from the NuGet package manager
+            </div>
+            <pre class="code"><code>dotnet new --install Bit.TodoTemplate</code></pre>
+            <div class="code-header">
+                2. Create a new project using the Template installed
+            </div>
+            <pre class="code"><code>dotnet new Bit.TodoTemplate</code></pre>
+            <div class="description"><strong>Note</strong>: By default, the current folder name will be considered as the solution name. If you want to choose another name, use the switch -n as below.</div>
+            <pre class="code"><code>dotnet new Bit.TodoTemplate -n [YourSolutionName]</code></pre>
+        </div>
+    </div>
+
+    <div class="step-body-card">
         <h4> Prepare The Project</h4>
-        <div class="card-container" id="step-number-3">
+        <div class="card-container">
             <h3>Database</h3>
             <h5>Connection String</h5>
-            <div class="description">Open <span class="bold">appsettings.json</span> file in TodoTemplate.Api project and change the **ConnectionStrings ** connection string if you want:</div>
+            <div class="description">Open <span class="bold">appsettings.json</span> file in TodoTemplate.Api project and change the <strong>ConnectionStrings</strong> connection string if you want</div>
             <pre class="code">
-                <code>
-                    "ConnectionStrings": {
-                    "SqlServerConnectionString": "Data Source=.; Initial Catalog=TodoTemplateDb;Integrated Security=true;Application Name=Todo;"
-                    },e
-                </code>
+<code>"ConnectionStrings": {
+    "SqlServerConnectionString": "Data Source=.; Initial Catalog=TodoTemplateDb;Integrated Security=true;Application Name=Todo;"
+}</code>
             </pre>
             <div class="description">
                 For Other Entityframework supported databases, you need to configure the context that provides your preferred database. with change <span class="high-light">UseSqlServer</span> method on <span class="high-light">Api\Startup\Services.cs</span> file
             </div>
-            <pre class="code"><code>
-                services.AddDbContext TodoTemplateDbContext
-                (options =>
-                {
-                options.UseSqlServer(configuration.GetConnectionString("SqlServerConnectionString"), sqlOpt =>
-                {
-                sqlOpt.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
-                });
-                });
-            </code></pre>
-            <h3>Migration</h3>
-            <div class="description">To create and migrate the database to the latest version. You can use Entity Framework's built-in tools for migrations. Open Package Manager Console in Visual Studio set TodoTemplate.Api as the Default Project and run the Update-Database command as shown below:</div>
             <pre class="code">
-                <code>
-                    Update-Database -Context TodoTemplateDbContext
-                </code>
-            </pre>
-            <h3>Run</h3>
+<code>services.AddDbContext@("<TodoTemplateDbContext>")(options =>
+{
+    options.UseSqlServer(configuration.GetConnectionString("SqlServerConnectionString"), sqlOpt =>
+    {
+        sqlOpt.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+    });
+});
+</code>
+        </pre>
+            <h3>Migration</h3>
+            <div class="description">To create and migrate the database to the latest version. You can use Entity Framework's built-in tools for migrations. Open <strong>Package Manager Console</strong> in Visual Studio set <strong>TodoTemplate.Api</strong> as the Default Project and run the Update-Database command as shown below:</div>
+            <pre class="code"><code>Update-Database -Context TodoTemplateDbContext</code></pre>
+        </div>
+    </div>
+
+    <div class="step-body-card">
+        <h4> Run</h4>
+        <div class="card-container">
             <div class="description">After you've done the configuration, you can run the application. Set Api project as startup and run, you can see the swagger dashboard in the first view</div>
             <img class="image" src="/images/projects/swagger.png" />
+            <h3>SignUp</h3>
+            <div class="description">
+                With the help of <strong>Swagger</strong>, you can call the <strong>SignUp</strong> API and Start the registration process, navigate to <span class="high-light">Auth/SignUp</span> API and press the <span class="high-light">Try it Out</span> button, in the <span class="high-light">Request body</span> Enter SignUp data, and press Execute button.
+            </div>
+            <img class="image" src="/images/projects/swagger-signUp.png" />
+            <div class="description">
+                In <strong>SignUp</strong> Process after call API, a confirmation email send to your email, In the development, Bit saves sent emails as a .eml file in the <span class="high-light">./TodoTemplate/Api/bin/Debug/net6.0/sent-emails</span> path, and developers can easily handle them.
+            </div>
+            <img class="image" src="/images/projects/confirm-email.png" />
+            <div class="description">By pressing the <span class="high-light">Confirm email</span> button, the ConfirmEmail Api calls and registration process complete. After it, you can login with the swagger login form on the top of the page, and call other APIs that need Authentication.</div>
+            <img class="image-responsive" src="/images/projects/swagger-login.png" />
         </div>
+    </div>
+
+    <div class="step-body-card">
+        <h4> Blazor Mode (hosting models)</h4>
+        <div class="card-container">
+            <div class="description">
+                Bit use Blazor for building UI, Blazor is a web framework for building web UI components (<a href="https://docs.microsoft.com/en-us/aspnet/core/blazor/components/?view=aspnetcore-6.0" title="aaa" rel="nofollow">Razor components</a>) that can be hosted in different ways. Razor components can run server-side in ASP.NET Core (Blazor Server) versus client-side in the browser on a <a href="https://webassembly.org/" rel="nofollow">WebAssembly</a>-based .NET runtime (Blazor WebAssembly, Blazor WASM). You can also host Razor components in native mobile and desktop apps that render to an embedded Web View control (Blazor Hybrid). Regardless of the hosting model, the way you build Razor components is the same. The same Razor components can be used with any of the hosting models unchanged (<a href="https://docs.microsoft.com/en-us/aspnet/core/blazor/hosting-models?view=aspnetcore-6.0" rel="nofollow">Read more About ASP.NET Core Blazor hosting models</a>).
+            </div>
+            <div class="description">
+                <strong>Note</strong>: Bit supports all three modes. It follows
+            </div>
+            <h3>BlazorServer</h3>
+            <div class="description">
+                With the Blazor Server hosting model, the app is executed on the server from within an ASP.NET Core app. UI updates, event handling, and JavaScript calls are handled over a SignalR connection using the WebSockets protocol.
+            </div>
+            <div class="description">
+                To switch to Blazor server mode
+            </div>
+            <ol class="first-step-ul">
+                <li>
+                    Change value of <strong> @("<BlazorMode>")</strong> on <span class="high-light">Directory.build.props </span>  file in <strong>Solution Items</strong> root folder.
+                    <pre class="code"><code>@("<BlazorMode>BlazorServer</BlazorMode>")</code></pre>
+                </li>
+                <li>
+                    Set solution on Multi-startup project, by right click on solution name and selecting properties from right-click menu (change the action of the Api, Web projects to start)
+                    <img class="image" src="/images/projects/multi-startup.png" />
+                </li>
+                <li>
+                    Make sure the first line in the <span class="high-light">TodoTemplate.Web.csproj</span> file contains the following value.
+                    <pre class="code"><code>@("<Project Sdk=\"Microsoft.NET.Sdk.Web\">")</code></pre>
+                </li>
+            </ol>
+            <h3>
+                BlazorWebAssembly
+            </h3>
+            <div class="description">
+                Blazor WebAssembly (WASM) apps run client-side in the browser on a WebAssembly-based .NET runtime. The Blazor app, its dependencies, and the .NET runtime are downloaded to the browser. The app is executed directly on the browser UI thread. UI updates and event handling occur within the same process. The app's assets are deployed as static files to a web server or service capable of serving static content to clients.
+            </div>
+            <div class="description">
+                To switch to Blazor WebAssembly mode
+            </div>
+            <ol class="first-step-ul">
+                <li>
+                    Change value of <strong>@("<BlazorMode>")</strong> on <span class="high-light">Directory.build.props </span> file in <strong>Solution Items</strong> root folder.
+                    <pre class="code"><code>@("<BlazorMode>BlazorWebAssembly</BlazorMode>")</code></pre>
+                </li>
+                <li>
+                    Set <strong>Api</strong> project as startup project
+                </li>
+                <li>
+                    Make sure the first line in the <span class="high-light">TodoTemplate.Web.csproj</span> file contains the following value.
+                    <pre class="code"><code>@("<Project Sdk=\"Microsoft.NET.Sdk.BlazorWebAssembly\">")</code></pre>
+                </li>
+            </ol>
+
+            <h3>
+                BlazorHybrid
+            </h3>
+            <div class="description">
+                Blazor can also be used to build native client apps using a hybrid approach. Hybrid apps are native apps that leverage web technologies for their functionality. In a Blazor Hybrid app, Razor components run directly in the native app (not on WebAssembly) along with any other .NET code and render web UI based on HTML and CSS to an embedded Web View control through a local interop channel.
+            </div>
+            <div class="description">
+                To switch to Blazor Hybrid mode
+            </div>
+            <ol class="first-step-ul">
+                <li>
+                    Change value of <strong>@("<BlazorMode>")</strong> on <span class="high-light">Directory.build.props </span> file in <strong>Solution Items</strong> root folder.
+                    <pre class="code"><code>@("<BlazorMode>BlazorHybrid</BlazorMode>")</code></pre>
+                </li>
+                <li>
+                    Set <strong>App</strong> as the startup project, choose either Android, IOS, or Windows, then select your Physical device or Emulator as Debug-Target.
+                    <img class="image" src="/images/projects/debug-target.png" />
+                </li>
+                <li>
+                    Set solution on Multi-startup project, by right click on solution name and selecting properties from right-click menu (change the action of the Api, App projects to start)
+                </li>
+            </ol>
+        </div>
+    </div>
+
+    <div class="step-body-card">
+        <h4> WebApp Deployment Type</h4>
+        <div class="card-container">
+            <div class="description">
+                Supported deployment type are:
+            </div>
+            <h3>Default Deployment Type</h3>
+            <div class="description">
+                It's referring to a Typical single page application(SPA) without pre-rendring.
+            </div>
+            <h3>PWA</h3>
+            <div class="description">
+                A Blazor WebAssembly app built as a <a href="https://en.wikipedia.org/wiki/Progressive_web_application" title="PWA" rel="nofollow">Progressive Web App</a> (PWA) uses modern browser APIs to enable many of the capabilities of a native client app, such as working offline, running in its own app window, launching from the host's operating system, receiving push notifications, and automatically updating in the background.
+            </div>
+            <div class="description">
+                <strong>Note</strong>: Asp.net blazor supports  <strong>PWA</strong> by default, but its update mechanism is unreliable due PWA nature,  <strong>Bit</strong> allows you to handle it When a new version wants to be updated.
+            </div>
+            <h3>SSR</h3>
+            <div class="description">
+                <a href="https://www.educative.io/edpresso/what-is-server-side-rendering" rel="nofollow">Server-side rendering (SSR)</a>, is the ability of an application to contribute by displaying the web-page on the server instead of rendering it in the browser. Server-side sends a fully rendered page to the client; Blazor pre-renders page and sends it as a static page, then later the page becomes an interactive Blazor app. This behavior is intended to serve pages quickly to search engines with time-based positioning.
+                Statically prerender the component along with a marker to indicate the component should later be rendered interactively by the Blazor app. It improve SEO.
+            </div>
+            <br />
+            <div class="description">
+                It's referring to a Typical single page application(SPA) with pre-rendring.
+            </div>
+            <h3>Static</h3>
+            <div class="description">
+                Static Statically render the component with the specified parameters. It's recommended when the target is building a static page like a landing page, content page, And like these.
+            </div>
+            <h3>How change WebApp Deployment Type easily?</h3>
+            <div class="code-header">
+                To switch to each mode, easily change value of <span class="high-light">@("<WebAppDeploymentType>")</span> on <strong>Directory.build.props</strong> file in <strong>Solution Items</strong> root folder.
+            </div>
+            <pre class="code"><code>@("<WebAppDeploymentType>DefaultDeploymentType</WebAppDeploymentType>")</code></pre>
+
+        </div>
+    </div>
+
+    <div class="step-body-card">
+        <h4> Settings</h4>
+        <h3>Authentication policies</h3>
+        <div class="description">
+            Bit provides authentication with and implements the SignUp and SignIn user interfaces. You can change the default settings of the Identity Settings according to your needs; These settings are in the <span class="high-light">appsettings.json</span> file in the Api project.
+        </div>
+        <pre class="code">
+<code>"IdentitySettings": {
+            "PasswordRequireDigit": "false",
+            "PasswordRequiredLength": "6",
+            "PasswordRequireNonAlphanumeric": "false",
+            "PasswordRequireUppercase": "false",
+            "PasswordRequireLowercase": "false",
+            "RequireUniqueEmail": "true",
+            "ConfirmationEmailResendDelay": "0.00:02:00", //Format: D.HH:mm:nn
+            "ResetPasswordEmailResendDelay": "0.00:02:00" //Format: D.HH:mm:nn
+        }</code>
+        </pre>
+        <h3>JWT settings</h3>
+        <div class="description">
+            Bit used JWT to provide token based authentication and you can either change Jwt settings, you can find these settings in the <span class="high-light">appsettings.json</span> file in the Api project.
+        </div>
+        <pre class="code">
+<code>"JwtSettings": {
+            "IdentityCertificatePassword": "P@ssw0rdP@ssw0rd",
+            "Issuer": "TodoTemplate",
+            "Audience": "TodoTemplate",
+            "NotBeforeMinutes": "0",
+            "ExpirationMinutes": "1440"
+        }</code>
+        </pre>
+        <div class="description">
+            <strong>Note</strong>: IdentityCertificatePassword referring to the password of the <span class="high-light">IdentityCertificate.pfx</span> file in the Api project that used as certificate file for store the public key and etc for validating incoming JWT tokens. to create PFX file run following commands in PowerShell with desired password and file path for your pfx file
+        </div>
+        <pre class="code">
+<code>> $cert = New-SelfSignedCertificate -CertStoreLocation Cert:\LocalMachine\My -Subject "IdentityServerCN" -Provider "Microsoft Strong Cryptographic Provider" -HashAlgorithm "SHA512" -NotAfter (Get-Date).AddYears(5)
+> Export-PfxCertificate -cert ('Cert:\LocalMachine\My\' + $cert.thumbprint) -FilePath PATH_TO_YOUR_IdentityServerCertificate.pfx -Password (ConvertTo-SecureString -String "YOUR_PASSWORD" -Force -AsPlainText)</code>
+        </pre>
+        <h3>Email Settings</h3>
+        <div class="description">
+            Bit used <a href="https://github.com/lukencode/FluentEmail">FluentEmail</a> to send emails whenever needs.
+            for example in SignUp, you can either change the SMTP provide settings as you need, you can find these settings in the <span class="high-light">appsettings.json</span> file in the Api project.
+        </div>
+        <pre class="code">
+<code>"EmailSettings": {
+            "Host": "LocalFolder", // Local folder means storing emails in bin\sent-emails folder. (Recommended for testing purposes only)
+            "Port": "25",
+            "DefaulFromEmail": "info@todo.com",
+            "DefaultFromName": "Todo",
+            "UserName": null,
+            "Password": null
+        }</code>
+        </pre>
+        <div class="description">
+            <strong>Note</strong>: You can find email templates used for email confirmation and reset password in the <span class="high-light">Resources</span> directory of the Api project
+        </div>
+
+        <h3>User Profile image setting</h3>
+        <div class="description">
+            Bit save user profile image in <span class="high-light">Attachments\Profiles</span> directory of the Api project as default, you can change this path as you need from the <span class="high-light">appsettings.json</span> file in the Api project.
+        </div>
+        <pre class="code"><code>"UserProfileImagePath": "./Attachments/Profiles/"</code></pre>
+        <h3>Health Check Settings</h3>
+        <div class="description">
+            Bit support Health Checks for reporting the health of app infrastructure components. Health checks are exposed by an app as HTTP endpoints. If you need to enable or disable this functionality you can find these settings in the <span class="high-light">appsettings.json</span> file in the Api project.
+        </div>
+        <pre class="code">
+<code>"HealCheckSettings": {
+            "EnableHealthChecks": true
+        }</code>
+        </pre>
+        <div class="description">
+            <strong>Note</strong>: You can find Health Checks dashboard from route <span class="high-light">https://localhost:5001/healthchecks-ui</span> as default.
+        </div>
+    </div>
+
+    <div class="step-body-card">
+        <h4> TodoTemplate Project structure</h4>
+        <div class="description">
+            The <strong>TodoTemplate</strong> solution prepared with Bit has 5 Projects.
+        </div>
+        <img class="image-responsive" src="/images/projects/todoTemplate-solution.png" />
+        <ul class="first-step-ul">
+            <li>
+                <p dir="auto">
+                    <strong>TodoTemplate.Api</strong>:
+                    This project contains server-side codes including Controllers, Data access layer (EntityFramework ORM), Identity, etc.
+                </p>
+            </li>
+            <li>
+                <p dir="auto">
+                    <strong>TodoTemplate.App</strong>:
+                    This project contains code related to building an app, although much of the code is common to the web project and refers to it.
+                </p>
+            </li>
+            <li>
+                <p dir="auto">
+                    <strong>TodoTemplate.Iac</strong>:
+                    Infrastructure as Code (IaC) is the managing and provisioning of infrastructure through code instead of through manual processes. This project contains the necessary code to provide this feature.
+                    You don't have to use either Pulumi or even Azure, Host it wherever you want.
+                </p>
+            </li>
+            <li>
+                <p dir="auto"><strong>TodoTemplate.Shared</strong>: This project is shared on both the server (Api project) and client(Web, App projects) sides, and can share code. The bit puts the code it wants to reuse; Like resources, Dtos, shared contracts, services, etc.</p>
+            </li>
+            <li>
+                <p dir="auto"><strong>TodoTemplate.Web</strong>: This project contains the necessary code to build the project UI, whether it is a web output or an application. And includes components and pages made with the help of Razor and Style sheet</p>
+            </li>
+        </ul>
+
+    </div>
+
+    <div class="step-body-card">
+        <h4> Exception handling</h4>
+        <div class="description">
+            Bit performs some features to manage exceptions that occurred in runtime.
+        </div>
+        <h3>Server-Side exception handling</h3>
+        <ul class="first-step-ul">
+            <li>
+                <strong>known and unknown exception</strong>: In development When an error occurred if this error is known or unknown, details of the error returned, but in test and production for unknown error details of the error not returned from server.
+                <ul dir="auto">
+                    <li>known exception inhrites <span class="high-light">KnownException</span> class</li>
+                    <li>Unknown exception inhrites <span class="high-light">UnknownException</span> class</li>
+                </ul>
+            </li>
+            <li><strong>RestException</strong>: It's a class that has an HTTP Response <span class="high-light">StatusCode</span> that you to perform a response with status code.</li>
+        </ul>
+
+        <h3>Client-Side exception handling</h3>
+        <div class="description">When an error is raised in App(android, IOS) maybe cause crash app. for avoiding app crash; Bit provides some mechanism for error handling.</div>
+        <ul class="first-step-ul">
+            <li>inheriting <span class="high-light">TodoTemplateComponentBase</span> in razor pages.</li>
+            <li>Instead of initializing your components in the <span class="high-light">OnInitializedAsync</span> method, override the <span class="high-light">OnInitAsync</span> method of the <span class="high-light">TodoTemplateComponentBase</span> class.</li>
+            <li>Use <span class="high-light">WrapHandle</span> method instead of direct calling events such as <span class="high-light">OnClick</span> in the Razor components.</li>
+            <li>Use <span class="high-light">try-catch</span> block in <span class="high-light">asyn-avoid</span> method and call <span class="high-light">StatehasChanged</span> method to handle unexpected errors.</li>
+        </ul>
+    </div>
+
+    <div class="step-body-card">
+        <h4> Community</h4>
+        <div class="description">
+            This is an open source project and open to contributions from the community.
+        </div>
+
+        <ul class="first-step-ul">
+            <li>Use the <a target="_blank" href="https://github.com/bitfoundation/bitplatform">GitHub</a> repository to access the latest source code, create issues and send pull requests.</li>
+            <li>Use bitplatform tag on <a target="_blank" href="https://stackoverflow.com/questions/tagged/bitplatform">Stackoverflow</a> to ask questions about the usage.</li>
+            <li>Give us a try and use our <a target="_blank" href="https://www.nuget.org/profiles/bit-foundation">Nuget packages</a> in your apps!</li>
+        </ul>
     </div>
 </section>
