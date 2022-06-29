@@ -1,6 +1,5 @@
-﻿namespace Bit.Platform.WebSite.Web.Pages
+﻿namespace Bit.Platform.WebSite.Web.Pages;
+
+public partial class Projects
 {
-    public partial class Projects
-    {
-    }
 }

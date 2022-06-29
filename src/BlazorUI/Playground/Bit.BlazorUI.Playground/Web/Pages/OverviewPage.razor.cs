@@ -1,15 +1,14 @@
 ﻿using Bit.BlazorUI.Playground.Web.Services;
 using Microsoft.AspNetCore.Components;
 
-namespace Bit.BlazorUI.Playground.Web.Pages
-{
-    public partial class OverviewPage
-    {
-        [Inject] public NavManuService NavManuService { get; set; }
+namespace Bit.BlazorUI.Playground.Web.Pages;
 
-        private void ToggleMenu()
-        {
-            NavManuService.ToggleMenu();
-        }
+public partial class OverviewPage
+{
+    [Inject] public NavManuService NavManuService { get; set; }
+
+    private void ToggleMenu()
+    {
+        NavManuService.ToggleMenu();
     }
 }

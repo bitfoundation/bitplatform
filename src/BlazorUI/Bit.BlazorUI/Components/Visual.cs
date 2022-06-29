@@ -1,9 +1,8 @@
-﻿namespace Bit.BlazorUI
+﻿namespace Bit.BlazorUI;
+
+public enum Visual
 {
-    public enum Visual
-    {
-        Fluent,
-        Material,
-        Cupertino
-    }
+    Fluent,
+    Material,
+    Cupertino
 }

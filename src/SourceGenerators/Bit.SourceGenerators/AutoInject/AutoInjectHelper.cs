@@ -1,9 +1,9 @@
 ﻿using System;
-using System.Linq;
-using System.Globalization;
 using System.Collections.Generic;
-using Microsoft.CodeAnalysis;
+using System.Globalization;
+using System.Linq;
 using System.Reflection;
+using Microsoft.CodeAnalysis;
 
 namespace Bit.SourceGenerators;
 
