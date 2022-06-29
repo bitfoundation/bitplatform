@@ -1,11 +1,10 @@
 ﻿using Microsoft.AspNetCore.Components.Web;
 
-namespace Bit.BlazorUI
+namespace Bit.BlazorUI;
+
+public class BitSpinButtonChangeValue
 {
-    public class BitSpinButtonChangeValue
-    {
-        public double Value { get; set; }
-        public MouseEventArgs? MouseEventArgs { get; set; }
-        public KeyboardEventArgs? KeyboardEventArgs { get; set; }
-    }
+    public double Value { get; set; }
+    public MouseEventArgs? MouseEventArgs { get; set; }
+    public KeyboardEventArgs? KeyboardEventArgs { get; set; }
 }
