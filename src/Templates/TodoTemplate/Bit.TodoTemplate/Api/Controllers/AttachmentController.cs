@@ -1,6 +1,6 @@
-﻿using SystemFile = System.IO.File;
-using MimeTypes;
+﻿using MimeTypes;
 using TodoTemplate.Api.Models.Account;
+using SystemFile = System.IO.File;
 
 namespace TodoTemplate.Api.Controllers;
 
@@ -11,9 +11,9 @@ public partial class AttachmentController : ControllerBase
     [AutoInject] private readonly IOptionsSnapshot<AppSettings> _appSettings;
 
     [AutoInject] private readonly UserManager<User> _userManager;
-    
+
     [AutoInject] private readonly IWebHostEnvironment _webHostEnvironment;
-    
+
     [RequestFormLimits(ValueLengthLimit = int.MaxValue, MultipartBodyLengthLimit = int.MaxValue)]
     [DisableRequestSizeLimit]
     [HttpPost("[action]")]

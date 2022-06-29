@@ -1,11 +1,10 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Bit.BlazorUI.Tests.SearchBoxes
+namespace Bit.BlazorUI.Tests.SearchBoxes;
+
+public class BitSearchBoxTestModel
 {
-    public class BitSearchBoxTestModel
-    {
-        [Required]
-        [EmailAddress]
-        public string Value { get; set; }
-    }
+    [Required]
+    [EmailAddress]
+    public string Value { get; set; }
 }

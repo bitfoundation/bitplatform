@@ -1,13 +1,12 @@
-﻿namespace Bit.BlazorUI
+﻿namespace Bit.BlazorUI;
+
+public enum BitPersonaPresenceStatus
 {
-    public enum BitPersonaPresenceStatus
-    {
-        None,
-        Offline,
-        Online,
-        Away,
-        DND,
-        Blocked,
-        Busy
-    }
+    None,
+    Offline,
+    Online,
+    Away,
+    DND,
+    Blocked,
+    Busy
 }

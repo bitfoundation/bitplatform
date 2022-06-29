@@ -1,10 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Bit.BlazorUI.Tests.Toggles
+namespace Bit.BlazorUI.Tests.Toggles;
+
+public class BitToggleTestModel
 {
-    public class BitToggleTestModel
-    {
-        [Range(typeof(bool), "false", "false")]
-        public bool Value { get; set; }
-    }
+    [Range(typeof(bool), "false", "false")]
+    public bool Value { get; set; }
 }

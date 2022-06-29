@@ -4,156 +4,156 @@ using System.Threading.Tasks;
 using Bit.BlazorUI.Playground.Web.Models;
 using Bit.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 
-namespace Bit.BlazorUI.Playground.Web.Pages.Components.Toggle
+namespace Bit.BlazorUI.Playground.Web.Pages.Components.Toggle;
+
+public partial class BitToggleDemo
 {
-    public partial class BitToggleDemo
+    private bool IsToggleChecked = true;
+    private bool IsToggleUnChecked;
+    private bool BindedIsToggleUnChecked;
+
+    private string SuccessMessage = string.Empty;
+    public FormModel ValidationForm { get; set; }
+
+    public class FormModel
     {
-        private bool IsToggleChecked = true;
-        private bool IsToggleUnChecked;
-        private bool BindedIsToggleUnChecked;
+        [Range(typeof(bool), "true", "true", ErrorMessage = "You must agree to the terms and conditions.")]
+        public bool TermsAgreement { get; set; }
+    }
 
-        private string SuccessMessage = string.Empty;
-        public FormModel ValidationForm { get; set; }
+    protected override void OnInitialized()
+    {
+        ValidationForm = new FormModel();
+    }
 
-        public class FormModel
+    private async void HandleValidSubmit()
+    {
+        SuccessMessage = "Form Submitted Successfully!";
+        await Task.Delay(3000);
+        SuccessMessage = string.Empty;
+        StateHasChanged();
+    }
+
+    private void HandleInvalidSubmit()
+    {
+        SuccessMessage = string.Empty;
+    }
+
+    private readonly List<ComponentParameter> componentParameters = new()
+    {
+        new ComponentParameter()
         {
-            [Range(typeof(bool), "true", "true", ErrorMessage = "You must agree to the terms and conditions.")]
-            public bool TermsAgreement { get; set; }
-        }
-
-        protected override void OnInitialized()
+            Name = "DefaultText",
+            Type = "string",
+            DefaultValue = "",
+            Description = "Default text of the toggle when it is neither ON or OFF.",
+        },
+        new ComponentParameter()
         {
-            ValidationForm = new FormModel();
-        }
-
-        private async void HandleValidSubmit()
+            Name = "Value",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Checked state of the toggle.",
+        },
+        new ComponentParameter()
         {
-            SuccessMessage = "Form Submitted Successfully!";
-            await Task.Delay(3000);
-            SuccessMessage = string.Empty;
-            StateHasChanged();
-        }
-
-        private void HandleInvalidSubmit()
+            Name = "ValueChanged",
+            Type = "EventCallback<bool>",
+            DefaultValue = "",
+            Description = "Callback that is called when the Value parameter changed.",
+        },
+        new ComponentParameter()
         {
-            SuccessMessage = string.Empty;
-        }
-
-        private readonly List<ComponentParameter> componentParameters = new()
+            Name = "IsInlineLabel",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether the label (not the onText/offText) should be positioned inline with the toggle control. Left (right in RTL) side when on/off text provided VS right (left in RTL) side when there is no on/off text.",
+        },
+        new ComponentParameter()
         {
-            new ComponentParameter()
-            {
-                Name = "DefaultText",
-                Type = "string",
-                DefaultValue = "",
-                Description = "Default text of the toggle when it is neither ON or OFF.",
-            },
-            new ComponentParameter()
-            {
-                Name = "Value",
-                Type = "bool",
-                DefaultValue = "false",
-                Description = "Checked state of the toggle.",
-            },
-            new ComponentParameter()
-            {
-                Name = "ValueChanged",
-                Type = "EventCallback<bool>",
-                DefaultValue = "",
-                Description = "Callback that is called when the Value parameter changed.",
-            },
-            new ComponentParameter()
-            {
-                Name = "IsInlineLabel",
-                Type = "bool",
-                DefaultValue = "false",
-                Description = "Whether the label (not the onText/offText) should be positioned inline with the toggle control. Left (right in RTL) side when on/off text provided VS right (left in RTL) side when there is no on/off text.",
-            },
-            new ComponentParameter()
-            {
-                Name = "Label",
-                Type = "string",
-                DefaultValue = "",
-                Description = "Label of the toggle.",
-            },
-            new ComponentParameter()
-            {
-                Name = "LabelFragment",
-                Type = "RenderFragment",
-                DefaultValue = "",
-                Description = "Custom label of the toggle.",
-            },
-            new ComponentParameter()
-            {
-                Name = "OnChange",
-                Type = "EventCallback<bool>",
-                DefaultValue = "",
-                Description = "Callback that is called when the checked value has changed.",
-            },
-            new ComponentParameter()
-            {
-                Name = "OffText",
-                Type = "string",
-                DefaultValue = "",
-                Description = "Text to display when toggle is OFF.",
-            },
-            new ComponentParameter()
-            {
-                Name = "OnText",
-                Type = "string",
-                DefaultValue = "",
-                Description = "Text to display when toggle is ON.",
-            },
-            new ComponentParameter()
-            {
-                Name = "Role",
-                Type = "string",
-                DefaultValue = "",
-                Description = "Denotes role of the toggle, default is switch.",
-            },
-            new ComponentParameter()
-            {
-                Name = "Visibility",
-                Type = "BitComponentVisibility",
-                LinkType = LinkType.Link,
-                Href = "#component-visibility-enum",
-                DefaultValue = "BitComponentVisibility.Visible",
-                Description = "Whether the component is Visible,Hidden,Collapsed.",
-            },
-        };
-
-        private readonly List<EnumParameter> enumParameters = new()
+            Name = "Label",
+            Type = "string",
+            DefaultValue = "",
+            Description = "Label of the toggle.",
+        },
+        new ComponentParameter()
         {
-            new EnumParameter()
+            Name = "LabelFragment",
+            Type = "RenderFragment",
+            DefaultValue = "",
+            Description = "Custom label of the toggle.",
+        },
+        new ComponentParameter()
+        {
+            Name = "OnChange",
+            Type = "EventCallback<bool>",
+            DefaultValue = "",
+            Description = "Callback that is called when the checked value has changed.",
+        },
+        new ComponentParameter()
+        {
+            Name = "OffText",
+            Type = "string",
+            DefaultValue = "",
+            Description = "Text to display when toggle is OFF.",
+        },
+        new ComponentParameter()
+        {
+            Name = "OnText",
+            Type = "string",
+            DefaultValue = "",
+            Description = "Text to display when toggle is ON.",
+        },
+        new ComponentParameter()
+        {
+            Name = "Role",
+            Type = "string",
+            DefaultValue = "",
+            Description = "Denotes role of the toggle, default is switch.",
+        },
+        new ComponentParameter()
+        {
+            Name = "Visibility",
+            Type = "BitComponentVisibility",
+            LinkType = LinkType.Link,
+            Href = "#component-visibility-enum",
+            DefaultValue = "BitComponentVisibility.Visible",
+            Description = "Whether the component is Visible,Hidden,Collapsed.",
+        },
+    };
+
+    private readonly List<EnumParameter> enumParameters = new()
+    {
+        new EnumParameter()
+        {
+            Id = "component-visibility-enum",
+            Title = "BitComponentVisibility Enum",
+            Description = "",
+            EnumList = new List<EnumItem>()
             {
-                Id = "component-visibility-enum",
-                Title = "BitComponentVisibility Enum",
-                Description = "",
-                EnumList = new List<EnumItem>()
+                new EnumItem()
                 {
-                    new EnumItem()
-                    {
-                        Name= "Visible",
-                        Description="Show content of the component.",
-                        Value="0",
-                    },
-                    new EnumItem()
-                    {
-                        Name= "Hidden",
-                        Description="Hide content of the component,though the space it takes on the page remains.",
-                        Value="1",
-                    },
-                    new EnumItem()
-                    {
-                        Name= "Collapsed",
-                        Description="Hide content of the component,though the space it takes on the page gone.",
-                        Value="2",
-                    }
+                    Name= "Visible",
+                    Description="Show content of the component.",
+                    Value="0",
+                },
+                new EnumItem()
+                {
+                    Name= "Hidden",
+                    Description="Hide content of the component,though the space it takes on the page remains.",
+                    Value="1",
+                },
+                new EnumItem()
+                {
+                    Name= "Collapsed",
+                    Description="Hide content of the component,though the space it takes on the page gone.",
+                    Value="2",
                 }
             }
-        };
+        }
+    };
 
-        private readonly string example1HTMLCode = @"<div>
+    private readonly string example1HTMLCode = @"<div>
     <BitToggle Label=""Enabled And Checked"" @bind-Value=""IsToggleChecked"" IsEnabled=""true"" OnText=""On"" OffText=""Off"" />
 </div>
 <div>
@@ -181,11 +181,11 @@ namespace Bit.BlazorUI.Playground.Web.Pages.Components.Toggle
     <BitToggle Label=""Enabled And Checked (ARIA 1.0 compatible)"" @bind-Value=""IsToggleChecked"" IsEnabled=""true"" OnText=""On"" OffText=""Off"" Role=""Checkbox"" />
 </div>";
 
-        private readonly string example1CSharpCode = @"
+    private readonly string example1CSharpCode = @"
 private bool BindedIsToggleUnChecked = false;
 private bool IsToggleUnChecked = false;";
 
-        private readonly string example2HTMLCode = @"<div>
+    private readonly string example2HTMLCode = @"<div>
     <BitToggle @bind-Value=""IsToggleUnChecked"" IsEnabled=""true"" OnText=""On"" OffText=""Off"">
         <LabelFragment>
             Custom Inline Label
@@ -203,7 +203,7 @@ private bool IsToggleUnChecked = false;";
     </div>
 </div>";
 
-        private readonly string example3CSharpCode = @"
+    private readonly string example3CSharpCode = @"
 private string SuccessMessage = string.Empty;
 public FormModel ValidationForm { get; set; }
 
@@ -231,7 +231,7 @@ private void HandleInvalidSubmit()
     SuccessMessage = string.Empty;
 }";
 
-        private readonly string example3HTMLCode = @"@if (string.IsNullOrEmpty(SuccessMessage))
+    private readonly string example3HTMLCode = @"@if (string.IsNullOrEmpty(SuccessMessage))
 {
     <EditForm Model=""ValidationForm"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
         <DataAnnotationsValidator />
@@ -258,5 +258,4 @@ else
     </BitMessageBar>
 }";
 
-    }
 }

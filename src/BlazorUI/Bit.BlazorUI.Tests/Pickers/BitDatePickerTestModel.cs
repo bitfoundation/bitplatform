@@ -1,11 +1,10 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace Bit.BlazorUI.Tests.Pickers
+namespace Bit.BlazorUI.Tests.Pickers;
+
+public class BitDatePickerTestModel
 {
-    public class BitDatePickerTestModel
-    {
-        [Required]
-        public DateTimeOffset? Value { get; set; }
-    }
+    [Required]
+    public DateTimeOffset? Value { get; set; }
 }

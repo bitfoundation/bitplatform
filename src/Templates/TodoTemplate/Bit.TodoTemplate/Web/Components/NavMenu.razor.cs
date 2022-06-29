@@ -51,7 +51,7 @@ public partial class NavMenu
     [CascadingParameter]
     public Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
 
-    [Parameter] 
+    [Parameter]
     public bool IsMenuOpen
     {
         get => isMenuOpen;

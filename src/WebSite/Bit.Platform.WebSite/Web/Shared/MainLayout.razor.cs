@@ -1,5 +1,5 @@
 ﻿namespace Bit.Platform.WebSite.Web.Shared;
 
-public partial class MainLayout 
+public partial class MainLayout
 {
 }
