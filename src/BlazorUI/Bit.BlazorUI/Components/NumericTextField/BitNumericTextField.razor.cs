@@ -19,6 +19,8 @@ namespace Bit.BlazorUI
         private TValue? step;
         private TValue? min;
         private TValue? max;
+        private TValue? ariaValueMin;
+        private TValue? ariaValueMax;
         private double internalStep;
         private double? internalMin;
         private double? internalMax;
@@ -248,6 +250,17 @@ namespace Bit.BlazorUI
                 internalMin += internalMax;
                 internalMax = internalMin - internalMax;
                 internalMin -= internalMax;
+            }
+
+            if (Min is not null && Max is not null && GetDoubleValueOrDefault(Min) > GetDoubleValueOrDefault(Max))
+            {
+                ariaValueMin = Max;
+                ariaValueMax = Min;
+            }
+            else
+            {
+                ariaValueMin = Min;
+                ariaValueMax = Max;
             }
 
             precision = Precision is not null ? Precision.Value : CalculatePrecision(Step);
