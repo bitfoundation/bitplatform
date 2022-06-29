@@ -1,25 +1,27 @@
 ﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
-namespace Bit.BlazorUI;
-
-[DefaultValue(Button)]
-public enum BitButtonType
+namespace Bit.BlazorUI
 {
-    Button,
-    Submit,
-    Reset
-}
-
-public static class BitButtonTypeExtensions
-{
-    public static string GetValue(this BitButtonType bitButtonType)
+    [DefaultValue(Button)]
+    public enum BitButtonType
     {
-        return bitButtonType switch
+        Button,
+        Submit,
+        Reset
+    }
+
+    public static class BitButtonTypeExtensions
+    {
+        public static string GetValue(this BitButtonType bitButtonType)
         {
-            BitButtonType.Button => "button",
-            BitButtonType.Submit => "submit",
-            BitButtonType.Reset => "reset",
-            _ => string.Empty,
-        };
+            return bitButtonType switch
+            {
+                BitButtonType.Button => "button",
+                BitButtonType.Submit => "submit",
+                BitButtonType.Reset => "reset",
+                _ => string.Empty,
+            };
+        }
     }
 }

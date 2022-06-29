@@ -1,14 +1,15 @@
-﻿namespace Bit.BlazorUI;
-
-public enum BitSpinButtonLabelPosition
+﻿namespace Bit.BlazorUI
 {
-    /// <summary>
-    /// The label shows on the top of the spin button
-    /// </summary>
-    Top,
+    public enum BitSpinButtonLabelPosition
+    {
+        /// <summary>
+        /// The label shows on the top of the spin button
+        /// </summary>
+        Top,
 
-    /// <summary>
-    /// The label shows on the left side of the spin button
-    /// </summary>
-    Left,
+        /// <summary>
+        /// The label shows on the left side of the spin button
+        /// </summary>
+        Left,
+    }
 }

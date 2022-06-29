@@ -1,43 +1,44 @@
-﻿namespace Bit.BlazorUI.Playground.Shared;
-
-public class BlazorModeDetector
+﻿namespace Bit.BlazorUI.Playground.Shared
 {
-    public static BlazorModeDetector Current { get; set; } = new BlazorModeDetector();
-
-    public virtual bool IsBlazorServer()
+    public class BlazorModeDetector
     {
-        return Mode == BlazorMode.BlazorServer;
-    }
+        public static BlazorModeDetector Current { get; set; } = new BlazorModeDetector();
 
-    public virtual bool IsBlazorWebAssembly()
-    {
-        return Mode == BlazorMode.BlazorWebAssembly;
-    }
-
-    public virtual bool IsBlazorHybrid()
-    {
-        return Mode == BlazorMode.BlazorHybrid;
-    }
-
-    public virtual BlazorMode Mode
-    {
-        get
+        public virtual bool IsBlazorServer()
         {
+            return Mode == BlazorMode.BlazorServer;
+        }
+
+        public virtual bool IsBlazorWebAssembly()
+        {
+            return Mode == BlazorMode.BlazorWebAssembly;
+        }
+        
+        public virtual bool IsBlazorHybrid()
+        {
+            return Mode == BlazorMode.BlazorHybrid;
+        }
+
+        public virtual BlazorMode Mode
+        {
+            get
+            {
 #if BlazorWebAssembly
-            return BlazorMode.BlazorWebAssembly;
+                return BlazorMode.BlazorWebAssembly;
 #elif BlazorHybrid
-            return BlazorMode.BlazorHybrid;
+                return BlazorMode.BlazorHybrid;
 #else
-            return BlazorMode.BlazorServer;
+                return BlazorMode.BlazorServer;
 #endif
+            }
         }
     }
-}
 
-public enum BlazorMode
-{
-    BlazorServer,
-    BlazorWebAssembly,
-    BlazorHybrid
-}
+    public enum BlazorMode
+    {
+        BlazorServer,
+        BlazorWebAssembly,
+        BlazorHybrid
+    }
 
+}

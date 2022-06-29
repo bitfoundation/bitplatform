@@ -1,9 +1,10 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Bit.BlazorUI.Tests.Inputs;
-
-public class BitDropDownTestModel
+namespace Bit.BlazorUI.Tests.Inputs
 {
-    [Required]
-    public string Value { get; set; }
+    public class BitDropDownTestModel
+    {
+        [Required]
+        public string Value { get; set; }
+    }
 }

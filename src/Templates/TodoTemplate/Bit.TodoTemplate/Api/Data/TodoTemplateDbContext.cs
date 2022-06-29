@@ -30,7 +30,7 @@ public class TodoTemplateDbContext : IdentityDbContext<User, Role, int>
             throw new ConflictException(nameof(ErrorStrings.UpdateConcurrencyException), exception);
         }
     }
-
+    
     public override async Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = new CancellationToken())
     {
         try
@@ -42,7 +42,7 @@ public class TodoTemplateDbContext : IdentityDbContext<User, Role, int>
             throw new ConflictException(nameof(ErrorStrings.UpdateConcurrencyException), exception);
         }
     }
-
+    
     public DbSet<TodoItem> TodoItems { get; set; }
 
     private void ConfigIdentityTables(ModelBuilder builder)

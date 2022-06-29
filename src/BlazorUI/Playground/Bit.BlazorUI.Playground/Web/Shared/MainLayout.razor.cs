@@ -1,31 +1,33 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
 
-namespace Bit.BlazorUI.Playground.Web.Shared;
-
-public partial class MainLayout : IDisposable
+namespace Bit.BlazorUI.Playground.Web.Shared
 {
-    [Inject]
-    public NavigationManager NavigationManager { get; set; }
-    public string CurrentUrl { get; set; }
-
-    protected override void OnInitialized()
+    public partial class MainLayout : IDisposable
     {
-        CurrentUrl = NavigationManager.Uri.Replace(NavigationManager.BaseUri, "/", StringComparison.Ordinal);
-        NavigationManager.LocationChanged += OnLocationChanged;
+        [Inject]
+        public NavigationManager NavigationManager { get; set; }
+        public string CurrentUrl { get; set; }
 
-        base.OnInitialized();
-    }
+        protected override void OnInitialized()
+        {
+            CurrentUrl = NavigationManager.Uri.Replace(NavigationManager.BaseUri, "/", StringComparison.Ordinal);
+            NavigationManager.LocationChanged += OnLocationChanged;
 
-    private void OnLocationChanged(object sender, LocationChangedEventArgs args)
-    {
-        CurrentUrl = NavigationManager.Uri.Replace(NavigationManager.BaseUri, "/", StringComparison.Ordinal);
-        StateHasChanged();
-    }
+            base.OnInitialized();
+        }
 
-    public void Dispose()
-    {
-        NavigationManager.LocationChanged -= OnLocationChanged;
+        private void OnLocationChanged(object sender, LocationChangedEventArgs args)
+        {
+            CurrentUrl = NavigationManager.Uri.Replace(NavigationManager.BaseUri, "/", StringComparison.Ordinal);
+            StateHasChanged();
+        }
+
+        public void Dispose()
+        {
+            NavigationManager.LocationChanged -= OnLocationChanged;
+        }
     }
 }

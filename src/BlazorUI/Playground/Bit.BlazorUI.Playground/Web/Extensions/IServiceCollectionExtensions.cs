@@ -1,12 +1,13 @@
 ﻿using Bit.BlazorUI.Playground.Web.Services;
 
-namespace Microsoft.Extensions.DependencyInjection;
-
-public static class IServiceCollectionExtensions
+namespace Microsoft.Extensions.DependencyInjection
 {
-    public static IServiceCollection AddPlaygroundServices(this IServiceCollection services)
+    public static class IServiceCollectionExtensions
     {
-        services.AddScoped<NavManuService>();
-        return services;
+        public static IServiceCollection AddPlaygroundServices(this IServiceCollection services)
+        {
+            services.AddScoped<NavManuService>();
+            return services;
+        }
     }
 }

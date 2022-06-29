@@ -5,26 +5,27 @@ using Bit.BlazorUI.Playground.Web.Models;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
-namespace Bit.BlazorUI.Playground.Web.Components;
-
-public partial class SideRail
+namespace Bit.BlazorUI.Playground.Web.Components
 {
-    private string activeItem;
-
-    [Inject] public IJSRuntime JSRuntime { get; set; }
-    [Parameter] public List<SideRailItem> Items { get; set; } = new List<SideRailItem>();
-
-    protected override void OnInitialized()
+    public partial class SideRail
     {
-        activeItem = Items.FirstOrDefault().Id;
+        private string activeItem;
 
-        base.OnInitialized();
-    }
+        [Inject] public IJSRuntime JSRuntime { get; set; }
+        [Parameter] public List<SideRailItem> Items { get; set; } = new List<SideRailItem>();
 
-    private async Task ScrollToItem(SideRailItem targetItem)
-    {
-        activeItem = targetItem.Id;
+        protected override void OnInitialized()
+        {
+            activeItem = Items.FirstOrDefault().Id;
 
-        await JSRuntime.ScrollToElement(targetItem.Id);
+            base.OnInitialized();
+        }
+
+        private async Task ScrollToItem(SideRailItem targetItem)
+        {
+            activeItem = targetItem.Id;
+
+            await JSRuntime.ScrollToElement(targetItem.Id);
+        }
     }
 }

@@ -25,7 +25,7 @@ public class HttpResponseExceptionHandlerMiddleware
             var exception = UnWrapException(e);
             var isKnownException = exception is KnownException;
             var statusCode = (int)(exception is RestException restExp ? restExp.StatusCode : HttpStatusCode.InternalServerError);
-
+            
             var restExceptionPayload = CreateRestExceptionPayload(webHostEnvironment, isKnownException, exception);
 
             context.Response.StatusCode = statusCode;

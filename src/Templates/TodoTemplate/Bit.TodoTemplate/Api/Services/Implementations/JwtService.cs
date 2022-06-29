@@ -1,6 +1,7 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using TodoTemplate.Api.Models.Account;
 using TodoTemplate.Shared.Dtos.Account;

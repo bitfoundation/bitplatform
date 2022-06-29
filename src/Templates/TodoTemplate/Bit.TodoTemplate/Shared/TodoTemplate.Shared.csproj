@@ -6,7 +6,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Bit.CodeAnalyzers" Version="12.0.0-pre-09" />
+        <PackageReference Include="Bit.Tooling.CodeAnalyzer" Version="12.0.0-pre-08" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0" />
         <PackageReference Include="System.Text.Json" Version="7.0.0-preview.4.22229.4" />
     </ItemGroup>

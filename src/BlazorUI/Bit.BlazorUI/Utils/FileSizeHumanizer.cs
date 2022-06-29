@@ -1,40 +1,41 @@
-﻿namespace Bit.BlazorUI;
-
-public static class FileSizeHumanizer
+﻿namespace Bit.BlazorUI
 {
-    public const long OneKiloByte = 1024;
-    public const long OneMegaByte = OneKiloByte * 1024;
-    public const long OneGigaByte = OneMegaByte * 1024;
-
-    public static string Humanize(this long size)
+    public static class FileSizeHumanizer
     {
-        string suffix;
-        if (size > OneGigaByte)
-        {
-            float formatedSize = size / (float)OneGigaByte;
-            suffix = "GB";
-            return $"{formatedSize:0.00}{suffix}";
-        }
+        public const long OneKiloByte = 1024;
+        public const long OneMegaByte = OneKiloByte * 1024;
+        public const long OneGigaByte = OneMegaByte * 1024;
 
-        if (size > OneMegaByte)
+        public static string Humanize(this long size)
         {
-            size /= OneMegaByte;
-            suffix = "MB";
-        }
-        else if (size > OneKiloByte)
-        {
-            size /= OneKiloByte;
-            suffix = "KB";
-        }
-        else if (size == 1)
-        {
-            suffix = " byte";
-        }
-        else
-        {
-            suffix = " bytes";
-        }
+            string suffix;
+            if (size > OneGigaByte)
+            {
+                float formatedSize = size / (float)OneGigaByte;
+                suffix = "GB";
+                return $"{formatedSize:0.00}{suffix}";
+            }
 
-        return $"{size}{suffix}";
+            if (size > OneMegaByte)
+            {
+                size /= OneMegaByte;
+                suffix = "MB";
+            }
+            else if (size > OneKiloByte)
+            {
+                size /= OneKiloByte;
+                suffix = "KB";
+            }
+            else if (size == 1)
+            {
+                suffix = " byte";
+            }
+            else
+            {
+                suffix = " bytes";
+            }
+
+            return $"{size}{suffix}";
+        }
     }
 }

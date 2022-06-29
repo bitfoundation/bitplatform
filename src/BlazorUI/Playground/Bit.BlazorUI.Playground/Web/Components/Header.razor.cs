@@ -3,48 +3,49 @@ using Bit.BlazorUI.Playground.Web.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
 
-namespace Bit.BlazorUI.Playground.Web.Components;
-
-public partial class Header
+namespace Bit.BlazorUI.Playground.Web.Components
 {
-    private string CurrentUrl = string.Empty;
-    private bool IsHeaderMenuOpen;
-
-    [Inject] public NavigationManager NavigationManager { get; set; }
-    [Inject] public NavManuService NavManuService { get; set; }
-
-    protected override void OnInitialized()
+    public partial class Header
     {
-        CurrentUrl = NavigationManager.Uri.Replace(NavigationManager.BaseUri, "/", StringComparison.Ordinal);
-        NavigationManager.LocationChanged += OnLocationChanged;
+        private string CurrentUrl = string.Empty;
+        private bool IsHeaderMenuOpen;
 
-        base.OnInitialized();
-    }
+        [Inject] public NavigationManager NavigationManager { get; set; }
+        [Inject] public NavManuService NavManuService { get; set; }
 
-    private void OnLocationChanged(object sender, LocationChangedEventArgs args)
-    {
-        CurrentUrl = NavigationManager.Uri.Replace(NavigationManager.BaseUri, "/", StringComparison.Ordinal);
-        StateHasChanged();
-    }
-
-    private void ToggleMenu()
-    {
-        NavManuService.ToggleMenu();
-    }
-    private string GetActiveRouteName()
-    {
-        return CurrentUrl switch
+        protected override void OnInitialized()
         {
-            "/" => "Home",
-            "/components/overview" => "Demo",
-            "/get-started" => "Get Started",
-            "/icons" => "Iconography",
-            _ => "",
-        };
-    }
+            CurrentUrl = NavigationManager.Uri.Replace(NavigationManager.BaseUri, "/", StringComparison.Ordinal);
+            NavigationManager.LocationChanged += OnLocationChanged;
 
-    private void ToggleHeaderMenu()
-    {
-        IsHeaderMenuOpen = !IsHeaderMenuOpen;
+            base.OnInitialized();
+        }
+
+        private void OnLocationChanged(object sender, LocationChangedEventArgs args)
+        {
+            CurrentUrl = NavigationManager.Uri.Replace(NavigationManager.BaseUri, "/", StringComparison.Ordinal);
+            StateHasChanged();
+        }
+
+        private void ToggleMenu()
+        {
+            NavManuService.ToggleMenu();
+        }
+        private string GetActiveRouteName()
+        {
+            return CurrentUrl switch
+            {
+                "/" => "Home",
+                "/components/overview" => "Demo",
+                "/get-started" => "Get Started",
+                "/icons" => "Iconography",
+                _ => "",
+            };
+        }
+
+        private void ToggleHeaderMenu()
+        {
+            IsHeaderMenuOpen = !IsHeaderMenuOpen;
+        }
     }
 }

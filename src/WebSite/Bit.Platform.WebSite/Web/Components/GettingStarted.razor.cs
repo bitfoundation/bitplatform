@@ -1,5 +1,10 @@
-﻿namespace Bit.Platform.WebSite.Web.Components;
+﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 
-public partial class GettingStarted
+namespace Bit.Platform.WebSite.Web.Components
 {
+    public partial class GettingStarted
+    {
+    }
 }

@@ -1,10 +1,11 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace Bit.BlazorUI.Tests.Checkboxes;
-
-public class BitCheckboxTestModel
+namespace Bit.BlazorUI.Tests.Checkboxes
 {
-    [Range(typeof(bool), "false", "false")]
-    public bool Value { get; set; }
+    public class BitCheckboxTestModel
+    {
+        [Range(typeof(bool), "false", "false")]
+        public bool Value { get; set; }
+    }
 }

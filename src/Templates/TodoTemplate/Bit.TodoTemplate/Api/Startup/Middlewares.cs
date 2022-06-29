@@ -1,85 +1,87 @@
 ﻿//-:cnd:noEmit
 using HealthChecks.UI.Client;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Net.Http.Headers;
 
-namespace TodoTemplate.Api.Startup;
-
-public class Middlewares
+namespace TodoTemplate.Api.Startup
 {
-    public static void Use(IApplicationBuilder app, IHostEnvironment env, IConfiguration configuration)
+    public class Middlewares
     {
-        if (env.IsDevelopment())
+        public static void Use(IApplicationBuilder app, IHostEnvironment env, IConfiguration configuration)
         {
-            app.UseDeveloperExceptionPage();
-
-#if BlazorWebAssembly
             if (env.IsDevelopment())
             {
-                app.UseWebAssemblyDebugging();
-            }
-#endif
-        }
+                app.UseDeveloperExceptionPage();
 
 #if BlazorWebAssembly
-        app.UseBlazorFrameworkFiles();
+                if (env.IsDevelopment())
+                {
+                    app.UseWebAssemblyDebugging();
+                }
+#endif
+            }
+
+#if BlazorWebAssembly
+            app.UseBlazorFrameworkFiles();
 #endif
 
-        app.UseSwagger();
+            app.UseSwagger();
 
-        app.UseSwaggerUI(options =>
-        {
-            options.InjectJavascript("/swagger/swagger-utils.js");
-        });
-
-        app.UseResponseCompression();
-
-        app.UseStaticFiles(new StaticFileOptions
-        {
-            OnPrepareResponse = ctx =>
+            app.UseSwaggerUI(options =>
             {
-                ctx.Context.Response.GetTypedHeaders().CacheControl = new CacheControlHeaderValue()
+                options.InjectJavascript("/swagger/swagger-utils.js");
+            });
+
+            app.UseResponseCompression();
+
+            app.UseStaticFiles(new StaticFileOptions
+            {
+                OnPrepareResponse = ctx =>
                 {
+                    ctx.Context.Response.GetTypedHeaders().CacheControl = new CacheControlHeaderValue()
+                    {
 #if PWA
-                    NoCache = true
+                        NoCache = true
 #else
-                    MaxAge = TimeSpan.FromDays(365),
-                    Public = true
+                        MaxAge = TimeSpan.FromDays(365),
+                        Public = true
 #endif
-                };
-            }
-        });
+                    };
+                }
+            });
 
-        app.UseHttpResponseExceptionHandler();
-        app.UseRouting();
+            app.UseHttpResponseExceptionHandler();
+            app.UseRouting();
 
-        app.UseCors(options => options.WithOrigins("https://localhost:4001", "https://0.0.0.0").AllowAnyHeader().AllowAnyMethod().AllowCredentials());
+            app.UseCors(options => options.WithOrigins("https://localhost:4001", "https://0.0.0.0").AllowAnyHeader().AllowAnyMethod().AllowCredentials());
 
-        app.UseResponseCaching();
-        app.UseAuthentication();
-        app.UseAuthorization();
+            app.UseResponseCaching();
+            app.UseAuthentication();
+            app.UseAuthorization();
 
-        app.UseEndpoints(endpoints =>
-        {
-            endpoints.MapControllers().RequireAuthorization();
-
-            var appsettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>();
-
-            var healthCheckSettings = appsettings.HealCheckSettings;
-
-            if (healthCheckSettings.EnableHealthChecks)
+            app.UseEndpoints(endpoints =>
             {
-                endpoints.MapHealthChecks("/healthz", new HealthCheckOptions
-                {
-                    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
-                });
+                endpoints.MapControllers().RequireAuthorization();
 
-                endpoints.MapHealthChecksUI();
-            }
+                var appsettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>();
+
+                var healthCheckSettings = appsettings.HealCheckSettings;
+
+                if (healthCheckSettings.EnableHealthChecks)
+                {
+                    endpoints.MapHealthChecks("/healthz", new HealthCheckOptions
+                    {
+                        ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+                    });
+
+                    endpoints.MapHealthChecksUI();
+                }
 
 #if BlazorWebAssembly
-            endpoints.MapFallbackToPage("/_Host");
+                endpoints.MapFallbackToPage("/_Host");
 #endif
-        });
+            });
+        }
     }
 }

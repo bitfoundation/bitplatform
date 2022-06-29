@@ -1,8 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Diagnostics;
+using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 
@@ -10,7 +11,7 @@ namespace Bit.SourceGenerators;
 
 [Generator]
 public class AutoInjectSourceGenerator : ISourceGenerator
-{
+{    
     public void Initialize(GeneratorInitializationContext context)
     {
         context.RegisterForSyntaxNotifications(() => new AutoInjectSyntaxReceiver());
@@ -83,7 +84,7 @@ public class AutoInjectSourceGenerator : ISourceGenerator
             .ToList();
 
         string razorFileName = $"{@class.Name}.razor";
-
+        
         foreach (var path in classFilePaths)
         {
             string directoryPath = Path.GetDirectoryName(path) ?? "";

@@ -1,47 +1,48 @@
-﻿namespace TodoTemplate.App.Services.Implementations;
-
-public class TodoTemplateAuthenticationStateProvider : AuthenticationStateProvider
+﻿namespace TodoTemplate.App.Services.Implementations
 {
-    private readonly IAuthTokenProvider _tokenProvider;
-
-    public TodoTemplateAuthenticationStateProvider(IAuthTokenProvider tokenProvider)
+    public class TodoTemplateAuthenticationStateProvider : AuthenticationStateProvider
     {
-        _tokenProvider = tokenProvider;
-    }
+        private readonly IAuthTokenProvider _tokenProvider;
 
-    public async Task RaiseAuthenticationStateHasChanged()
-    {
-        NotifyAuthenticationStateChanged(Task.FromResult(await GetAuthenticationStateAsync()));
-    }
-
-    public override async Task<AuthenticationState> GetAuthenticationStateAsync()
-    {
-        var access_token = await _tokenProvider.GetAcccessToken();
-
-        if (string.IsNullOrWhiteSpace(access_token))
+        public TodoTemplateAuthenticationStateProvider(IAuthTokenProvider tokenProvider)
         {
-            return NotSignedIn();
+            _tokenProvider = tokenProvider;
         }
 
-        var identity = new ClaimsIdentity(claims: ParseTokenClaims(access_token), authenticationType: "Bearer", nameType: "name", roleType: "role");
+        public async Task RaiseAuthenticationStateHasChanged()
+        {
+            NotifyAuthenticationStateChanged(Task.FromResult(await GetAuthenticationStateAsync()));
+        }
 
-        return new AuthenticationState(new ClaimsPrincipal(identity));
-    }
+        public override async Task<AuthenticationState> GetAuthenticationStateAsync()
+        {
+            var access_token = await _tokenProvider.GetAcccessToken();
 
-    public async Task<bool> IsUserAuthenticated()
-    {
-        return (await GetAuthenticationStateAsync()).User.Identity?.IsAuthenticated == true;
-    }
+            if (string.IsNullOrWhiteSpace(access_token))
+            {
+                return NotSignedIn();
+            }
 
-    AuthenticationState NotSignedIn()
-    {
-        return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
-    }
+            var identity = new ClaimsIdentity(claims: ParseTokenClaims(access_token), authenticationType: "Bearer", nameType: "name", roleType: "role");
 
-    private IEnumerable<Claim> ParseTokenClaims(string access_token)
-    {
-        return Jose.JWT.Payload<Dictionary<string, object>>(access_token)
-            .Select(keyValue => new Claim(keyValue.Key, keyValue.Value.ToString() ?? string.Empty))
-            .ToArray();
+            return new AuthenticationState(new ClaimsPrincipal(identity));
+        }
+
+        public async Task<bool> IsUserAuthenticated()
+        {
+            return (await GetAuthenticationStateAsync()).User.Identity?.IsAuthenticated == true;
+        }
+
+        AuthenticationState NotSignedIn()
+        {
+            return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
+        }
+
+        private IEnumerable<Claim> ParseTokenClaims(string access_token)
+        {
+            return Jose.JWT.Payload<Dictionary<string, object>>(access_token)
+                .Select(keyValue => new Claim(keyValue.Key, keyValue.Value.ToString() ?? string.Empty))
+                .ToArray();
+        }
     }
 }

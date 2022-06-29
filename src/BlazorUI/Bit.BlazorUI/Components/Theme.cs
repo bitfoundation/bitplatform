@@ -1,7 +1,8 @@
-﻿namespace Bit.BlazorUI;
-
-public enum Theme
+﻿namespace Bit.BlazorUI
 {
-    Light,
-    Dark
+    public enum Theme
+    {
+        Light,
+        Dark
+    }
 }

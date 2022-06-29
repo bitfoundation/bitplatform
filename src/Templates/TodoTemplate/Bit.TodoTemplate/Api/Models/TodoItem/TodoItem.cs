@@ -1,4 +1,6 @@
-﻿using TodoTemplate.Api.Models.Account;
+﻿
+using System.ComponentModel.DataAnnotations.Schema;
+using TodoTemplate.Api.Models.Account;
 
 namespace TodoTemplate.Api.Models.TodoItem;
 

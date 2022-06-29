@@ -2,185 +2,185 @@
 using Bit.BlazorUI.Playground.Web.Models;
 using Bit.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 
-namespace Bit.BlazorUI.Playground.Web.Pages.Components.Notification;
-
-public partial class BitMessageBarDemo
+namespace Bit.BlazorUI.Playground.Web.Pages.Components.Notification
 {
-    private bool IsMessageBarHidden1 = false;
-    private bool IsMessageBarHidden2 = false;
-
-    private void HideMessageBar1()
+    public partial class BitMessageBarDemo
     {
-        IsMessageBarHidden1 = true;
-    }
+        private bool IsMessageBarHidden1 = false;
+        private bool IsMessageBarHidden2 = false;
 
-    private void HideMessageBar2()
-    {
-        IsMessageBarHidden2 = true;
-    }
+        private void HideMessageBar1()
+        {
+            IsMessageBarHidden1 = true;
+        }
 
-    private readonly List<ComponentParameter> componentParameters = new()
-    {
-        new ComponentParameter()
+        private void HideMessageBar2()
         {
-            Name = "Actions",
-            Type = "RenderFragment",
-            DefaultValue = "",
-            Description = "The content of the action to show on the message bar.",
-        },
-        new ComponentParameter()
-        {
-            Name = "ChildContent",
-            Type = "RenderFragment",
-            DefaultValue = "",
-            Description = "The content of message bar.",
-        },
-        new ComponentParameter()
-        {
-            Name = "DismissButtonAriaLabel",
-            Type = "string",
-            DefaultValue = "",
-            Description = "Aria label on dismiss button if onDismiss is defined.",
-        },
-        new ComponentParameter()
-        {
-            Name = "DismissIconName",
-            Type = "BitIconName",
-            DefaultValue = "BitIconName.Clear",
-            Description = "Custom Fabric icon name to replace the dismiss icon. If unset, default will be the Fabric Clear icon.",
-        },
-        new ComponentParameter()
-        {
-            Name = "IsMultiline",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Determines if the message bar is multi lined. If false, and the text overflows over buttons or to another line, it is clipped.",
-        },
-        new ComponentParameter()
-        {
-            Name = "MessageBarType",
-            Type = "BitMessageBarType",
-            LinkType = LinkType.Link,
-            Href = "#messageBarType-enum",
-            DefaultValue = "BitMessageBarType.Info",
-            Description = "The type of message bar to render.",
-        },
-        new ComponentParameter()
-        {
-            Name = "OnDismiss",
-            Type = "EventCallback",
-            DefaultValue = "",
-            Description = "Whether the message bar has a dismiss button and its callback. If null, dismiss button won't show.",
-        },
-        new ComponentParameter()
-        {
-            Name = "OverflowButtonAriaLabel",
-            Type = "string",
-            DefaultValue = "",
-            Description = "Aria label on overflow button if truncated is true.",
-        },
-        new ComponentParameter()
-        {
-            Name = "Role",
-            Type = "string",
-            DefaultValue = "Browse",
-            Description = "Custom role to apply to the message bar.",
-        },
-        new ComponentParameter()
-        {
-            Name = "Truncated",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Determines if the message bar text is truncated. If true, a button will render to toggle between a single line view and multiline view. This parameter is for single line message bars with no buttons only in a limited space scenario.",
-        },
-        new ComponentParameter()
-        {
-            Name = "Visibility",
-            Type = "BitComponentVisibility",
-            LinkType = LinkType.Link,
-            Href = "#component-visibility-enum",
-            DefaultValue = "BitComponentVisibility.Visible",
-            Description = "Whether the component is Visible,Hidden,Collapsed.",
-        },
-    };
+            IsMessageBarHidden2 = true;
+        }
 
-    private readonly List<EnumParameter> enumParameters = new()
-    {
-        new EnumParameter()
+        private readonly List<ComponentParameter> componentParameters = new()
         {
-            Id = "messageBarType-enum",
-            Title = "BitMessageBarType Enum",
-            Description = "",
-            EnumList = new List<EnumItem>()
+            new ComponentParameter()
             {
-                new EnumItem()
-                {
-                    Name= "Info",
-                    Description="Info styled MessageBar.",
-                    Value="0",
-                },
-                new EnumItem()
-                {
-                    Name= "Warning",
-                    Description="Warning styled MessageBar.",
-                    Value="1",
-                },
-                new EnumItem()
-                {
-                    Name= "Error",
-                    Description="Error styled MessageBar.",
-                    Value="2",
-                },
-                new EnumItem()
-                {
-                    Name= "Blocked",
-                    Description="Blocked styled MessageBar.",
-                    Value="3",
-                },
-                new EnumItem()
-                {
-                    Name= "SevereWarning",
-                    Description="SevereWarning styled MessageBar.",
-                    Value="4",
-                },
-                new EnumItem()
-                {
-                    Name= "Success",
-                    Description="Success styled MessageBar.",
-                    Value="5",
-                },
-            }
-        },
-        new EnumParameter()
-        {
-            Id = "component-visibility-enum",
-            Title = "BitComponentVisibility Enum",
-            Description = "",
-            EnumList = new List<EnumItem>()
+                Name = "Actions",
+                Type = "RenderFragment",
+                DefaultValue = "",
+                Description = "The content of the action to show on the message bar.",
+            },
+            new ComponentParameter()
             {
-                new EnumItem()
+                Name = "ChildContent",
+                Type = "RenderFragment",
+                DefaultValue = "",
+                Description = "The content of message bar.",
+            },
+            new ComponentParameter()
+            {
+                Name = "DismissButtonAriaLabel",
+                Type = "string",
+                DefaultValue = "",
+                Description = "Aria label on dismiss button if onDismiss is defined.",
+            },
+            new ComponentParameter()
+            {
+                Name = "DismissIconName",
+                Type = "BitIconName",
+                DefaultValue = "BitIconName.Clear",
+                Description = "Custom Fabric icon name to replace the dismiss icon. If unset, default will be the Fabric Clear icon.",
+            },
+            new ComponentParameter()
+            {
+                Name = "IsMultiline",
+                Type = "bool",
+                DefaultValue = "false",
+                Description = "Determines if the message bar is multi lined. If false, and the text overflows over buttons or to another line, it is clipped.",
+            },
+            new ComponentParameter()
+            {
+                Name = "MessageBarType",
+                Type = "BitMessageBarType",
+                LinkType = LinkType.Link,
+                Href = "#messageBarType-enum",
+                DefaultValue = "BitMessageBarType.Info",
+                Description = "The type of message bar to render.",
+            },
+            new ComponentParameter()
+            {
+                Name = "OnDismiss",
+                Type = "EventCallback",
+                DefaultValue = "",
+                Description = "Whether the message bar has a dismiss button and its callback. If null, dismiss button won't show.",
+            },
+            new ComponentParameter()
+            {
+                Name = "OverflowButtonAriaLabel",
+                Type = "string",
+                DefaultValue = "",
+                Description = "Aria label on overflow button if truncated is true.",
+            },
+            new ComponentParameter()
+            {
+                Name = "Role",
+                Type = "string",
+                DefaultValue = "Browse",
+                Description = "Custom role to apply to the message bar.",
+            },
+            new ComponentParameter()
+            {
+                Name = "Truncated",
+                Type = "bool",
+                DefaultValue = "false",
+                Description = "Determines if the message bar text is truncated. If true, a button will render to toggle between a single line view and multiline view. This parameter is for single line message bars with no buttons only in a limited space scenario.",
+            },
+            new ComponentParameter()
+            {
+                Name = "Visibility",
+                Type = "BitComponentVisibility",
+                LinkType = LinkType.Link,
+                Href = "#component-visibility-enum",
+                DefaultValue = "BitComponentVisibility.Visible",
+                Description = "Whether the component is Visible,Hidden,Collapsed.",
+            },
+        };
+
+        private readonly List<EnumParameter> enumParameters = new()
+        {
+            new EnumParameter()
+            {
+                Id = "messageBarType-enum",
+                Title = "BitMessageBarType Enum",
+                Description = "",
+                EnumList = new List<EnumItem>()
                 {
-                    Name= "Visible",
-                    Description="Show content of the component.",
-                    Value="0",
-                },
-                new EnumItem()
+                    new EnumItem()
+                    {
+                        Name= "Info",
+                        Description="Info styled MessageBar.",
+                        Value="0",
+                    },
+                    new EnumItem()
+                    {
+                        Name= "Warning",
+                        Description="Warning styled MessageBar.",
+                        Value="1",
+                    },
+                    new EnumItem()
+                    {
+                        Name= "Error",
+                        Description="Error styled MessageBar.",
+                        Value="2",
+                    },
+                    new EnumItem()
+                    {
+                        Name= "Blocked",
+                        Description="Blocked styled MessageBar.",
+                        Value="3",
+                    },
+                    new EnumItem()
+                    {
+                        Name= "SevereWarning",
+                        Description="SevereWarning styled MessageBar.",
+                        Value="4",
+                    },
+                    new EnumItem()
+                    {
+                        Name= "Success",
+                        Description="Success styled MessageBar.",
+                        Value="5",
+                    },
+                }
+            },
+            new EnumParameter()
+            {
+                Id = "component-visibility-enum",
+                Title = "BitComponentVisibility Enum",
+                Description = "",
+                EnumList = new List<EnumItem>()
                 {
-                    Name= "Hidden",
-                    Description="Hide content of the component,though the space it takes on the page remains.",
-                    Value="1",
-                },
-                new EnumItem()
-                {
-                    Name= "Collapsed",
-                    Description="Hide content of the component,though the space it takes on the page gone.",
-                    Value="2",
+                    new EnumItem()
+                    {
+                        Name= "Visible",
+                        Description="Show content of the component.",
+                        Value="0",
+                    },
+                    new EnumItem()
+                    {
+                        Name= "Hidden",
+                        Description="Hide content of the component,though the space it takes on the page remains.",
+                        Value="1",
+                    },
+                    new EnumItem()
+                    {
+                        Name= "Collapsed",
+                        Description="Hide content of the component,though the space it takes on the page gone.",
+                        Value="2",
+                    }
                 }
             }
-        }
-    };
+        };
 
-    private readonly string example1HTMLCode = @"<div>
+        private readonly string example1HTMLCode = @"<div>
     <BitMessageBar MessageBarType=""@BitMessageBarType.Success"" IsMultiline=""false"" Truncated=""true"" IsEnabled=""false"">
         <Actions>
             <BitButton>Ok</BitButton>
@@ -218,7 +218,7 @@ public partial class BitMessageBarDemo
     </div>
 }";
 
-    private readonly string example1CSharpCode = @"
+        private readonly string example1CSharpCode = @"
 private bool IsMessageBarHidden1 = false;
 private bool IsMessageBarHidden2 = false;
 private void HideMessageBar1()
@@ -231,7 +231,7 @@ private void HideMessageBar2()
     IsMessageBarHidden2 = true;
 }";
 
-    private readonly string example2HTMLCode = @"<BitMessageBar MessageBarType=""@BitMessageBarType.Error"" Truncated=""false"">
+        private readonly string example2HTMLCode = @"<BitMessageBar MessageBarType=""@BitMessageBarType.Error"" Truncated=""false"">
     <ChildContent>
         This is an error message bar with the ability to truncate your text Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
     </ChildContent>
@@ -240,11 +240,11 @@ private void HideMessageBar2()
     </Actions>
 </BitMessageBar>";
 
-    private readonly string example3HTMLCode = @"<BitMessageBar MessageBarType=""@BitMessageBarType.Blocked"">
+        private readonly string example3HTMLCode = @"<BitMessageBar MessageBarType=""@BitMessageBarType.Blocked"">
     Blocked MessageBar - single line Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
 </BitMessageBar>";
 
-    private readonly string example4HTMLCode = @"<div>
+        private readonly string example4HTMLCode = @"<div>
     <BitMessageBar MessageBarType=""@BitMessageBarType.Warning"" IsMultiline=""false"">
         Caution! Action may takes long and also this message bar shown multiline messages time Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
     </BitMessageBar>
@@ -253,7 +253,8 @@ private void HideMessageBar2()
     Cannot connect to server
 </BitMessageBar>";
 
-    private readonly string example5HTMLCode = @"<BitMessageBar MessageBarType=""@BitMessageBarType.Info"">
+        private readonly string example5HTMLCode = @"<BitMessageBar MessageBarType=""@BitMessageBarType.Info"">
     Visit repository <BitLink HasUnderline=""true"">the link is rendered as a button</BitLink>
 </BitMessageBar>";
+    }
 }

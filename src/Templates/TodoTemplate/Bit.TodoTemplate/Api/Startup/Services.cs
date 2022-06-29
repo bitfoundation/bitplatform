@@ -1,11 +1,12 @@
 ﻿//-:cnd:noEmit
 using System.IO.Compression;
-using System.Net.Mail;
-using Microsoft.AspNetCore.OData;
 using Microsoft.AspNetCore.ResponseCompression;
+using Microsoft.AspNetCore.OData;
+using System.Net.Mail;
+
 #if BlazorWebAssembly
-using Microsoft.AspNetCore.Components;
 using TodoTemplate.App.Services.Implementations;
+using Microsoft.AspNetCore.Components;
 #endif
 
 namespace TodoTemplate.Api.Startup;

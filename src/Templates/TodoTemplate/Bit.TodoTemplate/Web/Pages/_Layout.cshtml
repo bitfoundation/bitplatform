@@ -30,7 +30,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <base href="~/" />
     <link rel="icon" href="~/favicon.ico" type="image/x-icon" asp-append-version="@shoudAddAspAppendVersion">
-    <link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.min.css" asp-append-version="@shoudAddAspAppendVersion" />
+    <link rel="stylesheet" href="_content/Bit.Client.Web.BlazorUI/styles/bit.blazorui.min.css" asp-append-version="@shoudAddAspAppendVersion" />
     <link href="styles/app.min.css" rel="stylesheet" asp-append-version="@shoudAddAspAppendVersion" />
     <link href="TodoTemplate.App.styles.css" rel="stylesheet" asp-append-version="@shoudAddAspAppendVersion" />
     <component type="typeof(HeadOutlet)" render-mode="@renderMode" />
@@ -261,7 +261,7 @@
             @if (isPwa)
             {
                 <script src="_framework/blazor.webassembly.js" autostart=false></script>
-                <script src="_content/Bit.Bswup/bit-bswup.js" scope="/" sw="service-worker.js" handler="bitBswupHandler"></script>
+                <script src="_content/Bit.Tooling.Bswup/bit-bswup.js" scope="/" sw="service-worker.js" handler="bitBswupHandler"></script>
             }
             else
             {
@@ -269,7 +269,7 @@
             }
         }
 
-        <script src="_content/Bit.BlazorUI/scripts/bit.blazorui.min.js" asp-append-version="@shoudAddAspAppendVersion"></script>
+        <script src="_content/Bit.Client.Web.BlazorUI/scripts/bit.blazorui.min.js" asp-append-version="@shoudAddAspAppendVersion"></script>
     }
 
     <script src="scripts/todoTemplate.es5.min.js" asp-append-version="@shoudAddAspAppendVersion"></script>

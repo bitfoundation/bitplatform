@@ -1,11 +1,12 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Bit.BlazorUI.Tests.Inputs;
-
-public class BitTextFieldTestModel
+namespace Bit.BlazorUI.Tests.Inputs
 {
-    [Required]
-    [EmailAddress]
-    [StringLength(16)]
-    public string Value { get; set; }
+    public class BitTextFieldTestModel
+    {
+        [Required]
+        [EmailAddress]
+        [StringLength(16)]
+        public string Value { get; set; }
+    }
 }

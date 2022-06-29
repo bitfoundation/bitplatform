@@ -1,14 +1,15 @@
-﻿namespace Bit.BlazorUI;
-
-public enum BitCheckBoxSide
+﻿namespace Bit.BlazorUI
 {
-    /// <summary>
-    /// The checkbox shows before the label
-    /// </summary>
-    Start,
+    public enum BitCheckBoxSide
+    {
+        /// <summary>
+        /// The checkbox shows before the label
+        /// </summary>
+        Start,
 
-    /// <summary>
-    /// The checkbox shows after the label
-    /// </summary>
-    End
+        /// <summary>
+        /// The checkbox shows after the label
+        /// </summary>
+        End
+    }
 }

@@ -1,13 +1,14 @@
 ﻿using Microsoft.AspNetCore.Components;
 
-namespace Bit.BlazorUI.Playground.Web.Components;
-
-public partial class NotFoundComponent
+namespace Bit.BlazorUI.Playground.Web.Components
 {
-    [Inject] public NavigationManager NavigationManager { get; set; }
-
-    private void BackToHome()
+    public partial class NotFoundComponent
     {
-        NavigationManager.NavigateTo("/");
+        [Inject] public NavigationManager NavigationManager { get; set; }
+
+        private void BackToHome()
+        {
+            NavigationManager.NavigateTo("/");
+        }
     }
 }

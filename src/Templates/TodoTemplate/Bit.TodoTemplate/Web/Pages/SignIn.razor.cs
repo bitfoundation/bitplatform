@@ -12,9 +12,9 @@ public partial class SignIn
 
     public string? SignInMessage { get; set; }
 
-    [AutoInject] private NavigationManager NavigationManager { get; set; } = default!;
+    [AutoInject]  private NavigationManager NavigationManager { get; set; } = default!;
 
-    [AutoInject] private ITodoTemplateAuthenticationService TodoTemplateAuthenticationService { get; set; } = default!;
+    [AutoInject]  private ITodoTemplateAuthenticationService TodoTemplateAuthenticationService { get; set; } = default!;
 
     [AutoInject] private TodoTemplateAuthenticationStateProvider TodoTemplateAuthenticationStateProvider { get; set; } = default!;
 
@@ -31,7 +31,7 @@ public partial class SignIn
 
         IsLoading = true;
         SignInMessage = null;
-
+        
         try
         {
             await TodoTemplateAuthenticationService.SignIn(SignInModel);
@@ -51,8 +51,8 @@ public partial class SignIn
     }
 
     private bool IsSubmitButtonEnabled =>
-        SignInModel.UserName.HasValue()
-        && SignInModel.Password.HasValue()
+        SignInModel.UserName.HasValue() 
+        && SignInModel.Password.HasValue() 
         && IsLoading is false;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)

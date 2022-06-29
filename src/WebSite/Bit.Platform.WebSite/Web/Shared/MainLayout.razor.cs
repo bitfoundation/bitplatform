@@ -1,5 +1,12 @@
-﻿namespace Bit.Platform.WebSite.Web.Shared;
+﻿using System;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Routing;
 
-public partial class MainLayout
+namespace Bit.Platform.WebSite.Web.Shared
 {
+    public partial class MainLayout 
+    {
+
+    }
 }

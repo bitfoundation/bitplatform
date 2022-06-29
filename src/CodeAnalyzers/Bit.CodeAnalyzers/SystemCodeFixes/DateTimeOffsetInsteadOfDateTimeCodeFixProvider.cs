@@ -1,14 +1,14 @@
-﻿using System.Collections.Immutable;
-using System.Composition;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading;
+using System.Composition;
 using System.Threading.Tasks;
-using Bit.CodeAnalyzers.SystemAnalyzers;
+using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CodeActions;
-using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CodeFixes;
+using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Bit.CodeAnalyzers.SystemAnalyzers;
 
 namespace Bit.CodeAnalyzers.SystemCodeFixes;
 

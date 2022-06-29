@@ -2,35 +2,36 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Bit.BlazorUI.Playground.Web.Pages;
-
-public partial class IconPage
+namespace Bit.BlazorUI.Playground.Web.Pages
 {
-    private List<string> allIcons;
-    private List<string> filteredIcons;
-    private string searchText = string.Empty;
-
-    protected override void OnInitialized()
+    public partial class IconPage
     {
-        allIcons = Enum.GetValues(typeof(BitIconName))
-            .Cast<BitIconName>()
-            .Select(v => v.GetName())
-            .ToList();
-        HandleClear();
-        base.OnInitialized();
-    }
+        private List<string> allIcons;
+        private List<string> filteredIcons;
+        private string searchText = string.Empty;
 
-    private void HandleClear()
-    {
-        filteredIcons = allIcons;
-    }
+        protected override void OnInitialized()
+        {
+            allIcons = Enum.GetValues(typeof(BitIconName))
+                .Cast<BitIconName>()
+                .Select(v => v.GetName())
+                .ToList();
+            HandleClear();
+            base.OnInitialized();
+        }
 
-    private void HandleChange(string text)
-    {
-        HandleClear();
-        searchText = text;
-        if (string.IsNullOrEmpty(text)) return;
+        private void HandleClear()
+        {
+            filteredIcons = allIcons;
+        }
 
-        filteredIcons = allIcons.FindAll(icon => string.IsNullOrEmpty(icon) is false && icon.Contains(text, StringComparison.InvariantCultureIgnoreCase));
+        private void HandleChange(string text)
+        {
+            HandleClear();
+            searchText = text;
+            if (string.IsNullOrEmpty(text)) return;
+
+            filteredIcons = allIcons.FindAll(icon => string.IsNullOrEmpty(icon) is false && icon.Contains(text, StringComparison.InvariantCultureIgnoreCase));
+        }
     }
 }

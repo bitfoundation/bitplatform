@@ -1,7 +1,8 @@
-﻿namespace Bit.BlazorUI.Playground.Web.Models;
-
-public class SideRailItem
+﻿namespace Bit.BlazorUI.Playground.Web.Models
 {
-    public string Id { get; set; }
-    public string Title { get; set; }
+    public class SideRailItem
+    {
+        public string Id { get; set; }
+        public string Title { get; set; }
+    }
 }

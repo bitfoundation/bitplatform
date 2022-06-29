@@ -1,14 +1,15 @@
-﻿namespace Bit.BlazorUI;
-
-public enum BitColorType
+﻿namespace Bit.BlazorUI
 {
-    /// <summary>
-    /// The hexadecimal color type
-    /// </summary>
-    Hex,
+    public enum BitColorType
+    {
+        /// <summary>
+        /// The hexadecimal color type
+        /// </summary>
+        Hex,
 
-    /// <summary>
-    /// The rgb color type
-    /// </summary>
-    Rgb
+        /// <summary>
+        /// The rgb color type
+        /// </summary>
+        Rgb
+    }
 }

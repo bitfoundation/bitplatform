@@ -1,14 +1,21 @@
-﻿namespace Bit.BlazorUI;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-public enum BitPivotLinkSize
+namespace Bit.BlazorUI
 {
-    /// <summary>
-    /// Display Link using normal font size
-    /// </summary>
-    Normal,
+    public enum BitPivotLinkSize
+    {
+        /// <summary>
+        /// Display Link using normal font size
+        /// </summary>
+        Normal,
 
-    /// <summary>
-    /// Display links using large font size
-    /// </summary>
-    Large
+        /// <summary>
+        /// Display links using large font size
+        /// </summary>
+        Large
+    }
 }

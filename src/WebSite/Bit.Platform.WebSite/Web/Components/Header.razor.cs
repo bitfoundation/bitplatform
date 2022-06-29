@@ -1,46 +1,48 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Bit.Platform.WebSite.Web.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.JSInterop;
 
-namespace Bit.Platform.WebSite.Web.Components;
-
-public partial class Header : IDisposable
+namespace Bit.Platform.WebSite.Web.Components
 {
-    private string CurrentUrl = string.Empty;
-
-    public ElementReference HeaderElement { get; internal set; }
-
-    [Inject] public NavigationManager NavigationManager { get; set; }
-    [Inject] public IJSRuntime JSRuntime { get; set; }
-
-    protected override void OnInitialized()
+    public partial class Header : IDisposable
     {
-        CurrentUrl = NavigationManager.Uri.Replace(NavigationManager.BaseUri, "/", StringComparison.Ordinal);
-        NavigationManager.LocationChanged += OnLocationChanged;
+        private string CurrentUrl = string.Empty;
 
-        base.OnInitialized();
-    }
+        public ElementReference HeaderElement { get; internal set; }
 
-    private void OnLocationChanged(object sender, LocationChangedEventArgs args)
-    {
-        CurrentUrl = NavigationManager.Uri.Replace(NavigationManager.BaseUri, "/", StringComparison.Ordinal);
-        StateHasChanged();
-    }
+        [Inject] public NavigationManager NavigationManager { get; set; }
+        [Inject] public IJSRuntime JSRuntime { get; set; }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
+        protected override void OnInitialized()
         {
-            await JSRuntime.RegisterOnScrollToChangeHeaderStyle(HeaderElement);
+            CurrentUrl = NavigationManager.Uri.Replace(NavigationManager.BaseUri, "/", StringComparison.Ordinal);
+            NavigationManager.LocationChanged += OnLocationChanged;
+
+            base.OnInitialized();
         }
 
-        await base.OnAfterRenderAsync(firstRender);
-    }
+        private void OnLocationChanged(object sender, LocationChangedEventArgs args)
+        {
+            CurrentUrl = NavigationManager.Uri.Replace(NavigationManager.BaseUri, "/", StringComparison.Ordinal);
+            StateHasChanged();
+        }
 
-    public void Dispose()
-    {
-        NavigationManager.LocationChanged -= OnLocationChanged;
+        protected override async Task OnAfterRenderAsync(bool firstRender)
+        {
+            if (firstRender)
+            {
+                await JSRuntime.RegisterOnScrollToChangeHeaderStyle(HeaderElement);
+            }
+
+            await base.OnAfterRenderAsync(firstRender);
+        }
+
+        public void Dispose()
+        {
+            NavigationManager.LocationChanged -= OnLocationChanged;
+        }
     }
 }

@@ -1,13 +1,14 @@
 ﻿using System;
 
-namespace Bit.Platform.WebSite.Web.Services;
-
-public class NavManuService
+namespace Bit.Platform.WebSite.Web.Services
 {
-    public event Action OnToggleMenu;
-
-    public void ToggleMenu()
+    public class NavManuService
     {
-        OnToggleMenu.Invoke();
+        public event Action OnToggleMenu;
+
+        public void ToggleMenu()
+        {
+            OnToggleMenu.Invoke();
+        }
     }
 }

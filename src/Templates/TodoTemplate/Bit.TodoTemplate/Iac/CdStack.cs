@@ -1,4 +1,5 @@
-﻿using Pulumi;
+﻿using System.Diagnostics;
+using Pulumi;
 using Pulumi.AzureNative.Authorization;
 using Pulumi.AzureNative.Compute;
 using Pulumi.AzureNative.Network;

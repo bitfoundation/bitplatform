@@ -1,9 +1,10 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Bit.BlazorUI.Playground.Web.Pages.Components.RadioButtonGroup;
-
-public class FormValidationModel
+namespace Bit.BlazorUI.Playground.Web.Pages.Components.RadioButtonGroup
 {
-    [Required]
-    public string Option { get; set; }
+    public class FormValidationModel
+    {
+        [Required]
+        public string Option { get; set; }
+    }
 }

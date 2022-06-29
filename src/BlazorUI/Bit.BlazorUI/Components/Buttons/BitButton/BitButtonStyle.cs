@@ -1,14 +1,15 @@
-﻿namespace Bit.BlazorUI;
-
-public enum BitButtonStyle
+﻿namespace Bit.BlazorUI
 {
-    /// <summary>
-    /// The button with white text on a blue background
-    /// </summary>
-    Primary,
+    public enum BitButtonStyle
+    {
+        /// <summary>
+        /// The button with white text on a blue background
+        /// </summary>
+        Primary,
 
-    /// <summary>
-    /// The button with black text on a white background
-    /// </summary>
-    Standard
+        /// <summary>
+        /// The button with black text on a white background
+        /// </summary>
+        Standard
+    }
 }

@@ -1,14 +1,15 @@
-﻿namespace Bit.BlazorUI;
-
-public enum BitRatingSize
+﻿namespace Bit.BlazorUI
 {
-    /// <summary>
-    /// Display rating icon using small size
-    /// </summary>
-    Small,
+    public enum BitRatingSize
+    {
+        /// <summary>
+        /// Display rating icon using small size
+        /// </summary>
+        Small,
 
-    /// <summary>
-    /// Display rating icon using large size
-    /// </summary>
-    Large
+        /// <summary>
+        /// Display rating icon using large size
+        /// </summary>
+        Large
+    }
 }

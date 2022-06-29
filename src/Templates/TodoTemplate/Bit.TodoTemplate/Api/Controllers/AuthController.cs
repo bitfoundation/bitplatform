@@ -1,11 +1,11 @@
 ﻿//-:cnd:noEmit
-using System.Web;
-using Microsoft.AspNetCore.Hosting.Server;
-using FluentEmail.Core;
-using TodoTemplate.Api.Resources;
 using TodoTemplate.Api.Models.Account;
 using TodoTemplate.Shared.Dtos.Account;
+using FluentEmail.Core;
+using TodoTemplate.Api.Resources;
 using TodoTemplate.Api.Models.Emailing;
+using Microsoft.AspNetCore.Hosting.Server;
+using System.Web;
 
 namespace TodoTemplate.Api.Controllers;
 

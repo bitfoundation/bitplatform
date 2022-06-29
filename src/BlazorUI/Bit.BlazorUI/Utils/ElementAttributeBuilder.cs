@@ -2,52 +2,53 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Bit.BlazorUI;
-
-public class ElementStyleBuilder : ElementAttributeBuilder
+namespace Bit.BlazorUI
 {
-    protected override char Separator { get => ';'; }
-}
-
-public class ElementClassBuilder : ElementAttributeBuilder
-{
-    protected override char Separator { get => ' '; }
-}
-
-public abstract class ElementAttributeBuilder
-{
-    private bool _dirty = true;
-    private string _value = string.Empty;
-    private List<Func<string?>> _registrars = new();
-
-    protected abstract char Separator { get; }
-
-    public string Value
+    public class ElementStyleBuilder : ElementAttributeBuilder
     {
-        get
+        protected override char Separator { get => ';'; }
+    }
+
+    public class ElementClassBuilder : ElementAttributeBuilder
+    {
+        protected override char Separator { get => ' '; }
+    }
+
+    public abstract class ElementAttributeBuilder
+    {
+        private bool _dirty = true;
+        private string _value = string.Empty;
+        private List<Func<string?>> _registrars = new();
+
+        protected abstract char Separator { get; }
+
+        public string Value
         {
-            if (_dirty)
+            get
             {
-                Build();
+                if (_dirty)
+                {
+                    Build();
+                }
+                return _value;
             }
-            return _value;
         }
-    }
 
-    public ElementAttributeBuilder Register(Func<string?> registrar)
-    {
-        _registrars.Add(registrar);
-        return this;
-    }
+        public ElementAttributeBuilder Register(Func<string?> registrar)
+        {
+            _registrars.Add(registrar);
+            return this;
+        }
 
-    public void Reset()
-    {
-        _dirty = true;
-    }
+        public void Reset()
+        {
+            _dirty = true;
+        }
 
-    private void Build()
-    {
-        _value = string.Join(Separator, _registrars.Select(g => g()).Where(s => s.HasValue()));
-        _dirty = false;
+        private void Build()
+        {
+            _value = string.Join(Separator, _registrars.Select(g => g()).Where(s => s.HasValue()));
+            _dirty = false;
+        }
     }
 }

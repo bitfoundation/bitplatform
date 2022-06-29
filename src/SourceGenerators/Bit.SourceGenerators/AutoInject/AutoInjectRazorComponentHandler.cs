@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Text;
+using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 
 namespace Bit.SourceGenerators;
@@ -15,7 +15,7 @@ public static class AutoInjectRazorComponentHandler
         {
             return null;
         }
-
+        
         if (AutoInjectHelper.IsContainingSymbolEqualToContainingNamespace(classSymbol) is false)
         {
             return null;
