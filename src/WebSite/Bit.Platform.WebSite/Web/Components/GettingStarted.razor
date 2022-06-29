@@ -210,7 +210,7 @@
                 Static Statically render the component with the specified parameters. It's recommended when the target is building a static page like a landing page, content page, And like these.
             </div>
             <h3>How change WebApp Deployment Type easily?</h3>
-            <div class="code-header">
+            <div class="description">
                 To switch to each mode, easily change value of <span class="high-light">@("<WebAppDeploymentType>")</span> on <strong>Directory.build.props</strong> file in <strong>Solution Items</strong> root folder.
             </div>
             <pre class="code"><code>@("<WebAppDeploymentType>DefaultDeploymentType</WebAppDeploymentType>")</code></pre>
@@ -302,29 +302,23 @@
         <img class="image-responsive" src="/images/projects/todoTemplate-solution.png" />
         <ul class="first-step-ul">
             <li>
-                <p dir="auto">
-                    <strong>TodoTemplate.Api</strong>:
-                    This project contains server-side codes including Controllers, Data access layer (EntityFramework ORM), Identity, etc.
-                </p>
+                <strong>TodoTemplate.Api</strong>:
+                This project contains server-side codes including Controllers, Data access layer (EntityFramework ORM), Identity, etc.
             </li>
             <li>
-                <p dir="auto">
-                    <strong>TodoTemplate.App</strong>:
-                    This project contains code related to building an app, although much of the code is common to the web project and refers to it.
-                </p>
+                <strong>TodoTemplate.App</strong>:
+                This project contains code related to building an app, although much of the code is common to the web project and refers to it.
             </li>
             <li>
-                <p dir="auto">
-                    <strong>TodoTemplate.Iac</strong>:
-                    Infrastructure as Code (IaC) is the managing and provisioning of infrastructure through code instead of through manual processes. This project contains the necessary code to provide this feature.
-                    You don't have to use either Pulumi or even Azure, Host it wherever you want.
-                </p>
+                <strong>TodoTemplate.Iac</strong>:
+                Infrastructure as Code (IaC) is the managing and provisioning of infrastructure through code instead of through manual processes. This project contains the necessary code to provide this feature.
+                You don't have to use either Pulumi or even Azure, Host it wherever you want.
             </li>
             <li>
-                <p dir="auto"><strong>TodoTemplate.Shared</strong>: This project is shared on both the server (Api project) and client(Web, App projects) sides, and can share code. The bit puts the code it wants to reuse; Like resources, Dtos, shared contracts, services, etc.</p>
+                <strong>TodoTemplate.Shared</strong>: This project is shared on both the server (Api project) and client(Web, App projects) sides, and can share code. The bit puts the code it wants to reuse; Like resources, Dtos, shared contracts, services, etc.
             </li>
             <li>
-                <p dir="auto"><strong>TodoTemplate.Web</strong>: This project contains the necessary code to build the project UI, whether it is a web output or an application. And includes components and pages made with the help of Razor and Style sheet</p>
+                <strong>TodoTemplate.Web</strong>: This project contains the necessary code to build the project UI, whether it is a web output or an application. And includes components and pages made with the help of Razor and Style sheet
             </li>
         </ul>
 
