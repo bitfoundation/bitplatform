@@ -36,4 +36,4 @@ self.defaultUrl = "/";
 
 self.caseInsensitiveUrl = true;
 
-self.importScripts('_content/Bit.Tooling.Bswup/bit-bswup.sw.js');
+self.importScripts('_content/Bit.Bswup/bit-bswup.sw.js');

@@ -1,6 +1,5 @@
-﻿namespace Bit.BlazorUI.Playground.Web
+﻿namespace Bit.BlazorUI.Playground.Web;
+
+public partial class App
 {
-    public partial class App
-    {
-    }
 }

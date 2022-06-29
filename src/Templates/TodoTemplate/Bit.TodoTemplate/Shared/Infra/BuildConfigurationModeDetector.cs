@@ -1,39 +1,32 @@
 ﻿//-:cnd:noEmit
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+namespace TodoTemplate.Shared.Infra;
 
-namespace TodoTemplate.Shared.Infra
+public class BuildConfigurationModeDetector
 {
-    public class BuildConfigurationModeDetector
+    public static BuildConfigurationModeDetector Current { get; set; } = new BuildConfigurationModeDetector();
+
+    public virtual bool IsDebug()
     {
-        public static BuildConfigurationModeDetector Current { get; set; } = new BuildConfigurationModeDetector();
+        return Mode == BuildConfigurationMode.Debug;
+    }
 
-        public virtual bool IsDebug()
+
+    public virtual bool Release()
+    {
+        return Mode == BuildConfigurationMode.Release;
+    }
+
+
+    public virtual BuildConfigurationMode Mode
+    {
+        get
         {
-            return Mode == BuildConfigurationMode.Debug;
-        }
-
-
-        public virtual bool Release()
-        {
-            return Mode == BuildConfigurationMode.Release;
-        }
-
-
-        public virtual BuildConfigurationMode Mode
-        {
-            get
-            {
 #if DEBUG
-                return BuildConfigurationMode.Debug;
+            return BuildConfigurationMode.Debug;
 #else
-                return BuildConfigurationMode.Release;
+            return BuildConfigurationMode.Release;
 #endif
 
-            }
         }
     }
 }

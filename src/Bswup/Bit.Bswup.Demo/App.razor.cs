@@ -2,6 +2,6 @@
 
 namespace Bit.Bswup.Demo;
 
-public partial class App: ComponentBase
+public partial class App : ComponentBase
 {
 }

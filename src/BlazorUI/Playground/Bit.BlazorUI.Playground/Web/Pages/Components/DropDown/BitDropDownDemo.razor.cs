@@ -3,458 +3,458 @@ using System.Threading.Tasks;
 using Bit.BlazorUI.Playground.Web.Models;
 using Bit.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 
-namespace Bit.BlazorUI.Playground.Web.Pages.Components.DropDown
+namespace Bit.BlazorUI.Playground.Web.Pages.Components.DropDown;
+
+public partial class BitDropDownDemo
 {
-    public partial class BitDropDownDemo
+    private string ControlledValue = "Apple";
+    private List<string> ControlledValues = new List<string>() { "Apple", "Banana", "Grape" };
+    private FormValidationDropDownModel formValidationDropDownModel = new();
+    private string SuccessMessage = string.Empty;
+
+    private async void HandleValidSubmit()
     {
-        private string ControlledValue = "Apple";
-        private List<string> ControlledValues = new List<string>() { "Apple", "Banana", "Grape" };
-        private FormValidationDropDownModel formValidationDropDownModel = new();
-        private string SuccessMessage = string.Empty;
+        SuccessMessage = "Form Submitted Successfully!";
+        await Task.Delay(3000);
+        SuccessMessage = string.Empty;
+        StateHasChanged();
+    }
 
-        private async void HandleValidSubmit()
+    private void HandleInvalidSubmit()
+    {
+        SuccessMessage = string.Empty;
+    }
+
+    private List<BitDropDownItem> GetCategoryDropdownItems()
+    {
+        List<BitDropDownItem> items = new();
+
+        items.Add(new BitDropDownItem()
         {
-            SuccessMessage = "Form Submitted Successfully!";
-            await Task.Delay(3000);
-            SuccessMessage = string.Empty;
-            StateHasChanged();
-        }
+            ItemType = BitDropDownItemType.Normal,
+            Text = "Fruits",
+            Value = "f"
+        });
 
-        private void HandleInvalidSubmit()
+        items.Add(new BitDropDownItem()
         {
-            SuccessMessage = string.Empty;
-        }
+            ItemType = BitDropDownItemType.Normal,
+            Text = "Vegetables",
+            Value = "v"
+        });
 
-        private List<BitDropDownItem> GetCategoryDropdownItems()
+        return items;
+    }
+
+    private List<BitDropDownItem> GetProductDropdownItems()
+    {
+        List<BitDropDownItem> items = new();
+
+        items.Add(new BitDropDownItem()
         {
-            List<BitDropDownItem> items = new();
+            ItemType = BitDropDownItemType.Header,
+            Text = "Fruits"
+        });
 
-            items.Add(new BitDropDownItem()
-            {
-                ItemType = BitDropDownItemType.Normal,
-                Text = "Fruits",
-                Value = "f"
-            });
-
-            items.Add(new BitDropDownItem()
-            {
-                ItemType = BitDropDownItemType.Normal,
-                Text = "Vegetables",
-                Value = "v"
-            });
-
-            return items;
-        }
-
-        private List<BitDropDownItem> GetProductDropdownItems()
+        items.Add(new BitDropDownItem()
         {
-            List<BitDropDownItem> items = new();
+            ItemType = BitDropDownItemType.Normal,
+            Text = "Apple",
+            Value = "f-app"
+        });
 
-            items.Add(new BitDropDownItem()
-            {
-                ItemType = BitDropDownItemType.Header,
-                Text = "Fruits"
-            });
-
-            items.Add(new BitDropDownItem()
-            {
-                ItemType = BitDropDownItemType.Normal,
-                Text = "Apple",
-                Value = "f-app"
-            });
-
-            items.Add(new BitDropDownItem()
-            {
-                ItemType = BitDropDownItemType.Normal,
-                Text = "Orange",
-                Value = "f-ora",
-                IsEnabled = false
-            });
-
-            items.Add(new BitDropDownItem()
-            {
-                ItemType = BitDropDownItemType.Normal,
-                Text = "Banana",
-                Value = "f-ban",
-            });
-
-            items.Add(new BitDropDownItem()
-            {
-                ItemType = BitDropDownItemType.Divider,
-            });
-
-            items.Add(new BitDropDownItem()
-            {
-                ItemType = BitDropDownItemType.Header,
-                Text = "Vegetables"
-            });
-
-            items.Add(new BitDropDownItem()
-            {
-                ItemType = BitDropDownItemType.Normal,
-                Text = "Broccoli",
-                Value = "v-bro",
-            });
-
-            return items;
-        }
-
-        private List<BitDropDownItem> GetDropdownItems()
+        items.Add(new BitDropDownItem()
         {
-            List<BitDropDownItem> items = new();
+            ItemType = BitDropDownItemType.Normal,
+            Text = "Orange",
+            Value = "f-ora",
+            IsEnabled = false
+        });
 
-            items.Add(new BitDropDownItem()
-            {
-                ItemType = BitDropDownItemType.Header,
-                Text = "Fruits"
-            });
-
-            items.Add(new BitDropDownItem()
-            {
-                ItemType = BitDropDownItemType.Normal,
-                Text = "Apple",
-                Value = "f-app"
-            });
-
-            items.Add(new BitDropDownItem()
-            {
-                ItemType = BitDropDownItemType.Normal,
-                Text = "Orange",
-                Value = "f-ora",
-                IsEnabled = false
-            });
-
-            items.Add(new BitDropDownItem()
-            {
-                ItemType = BitDropDownItemType.Normal,
-                Text = "Banana",
-                Value = "f-ban",
-            });
-
-            items.Add(new BitDropDownItem()
-            {
-                ItemType = BitDropDownItemType.Divider,
-            });
-
-            items.Add(new BitDropDownItem()
-            {
-                ItemType = BitDropDownItemType.Header,
-                Text = "Vegetables"
-            });
-
-            items.Add(new BitDropDownItem()
-            {
-                ItemType = BitDropDownItemType.Normal,
-                Text = "Broccoli",
-                Value = "v-bro",
-            });
-
-            return items;
-        }
-
-        private List<BitDropDownItem> GetCustomDropdownItems()
+        items.Add(new BitDropDownItem()
         {
-            List<BitDropDownItem> items = new();
-            items.Add(new BitDropDownItem()
-            {
-                ItemType = BitDropDownItemType.Header,
-                Text = "Options",
-                Value = "Header"
-            });
-            items.Add(new BitDropDownItem()
-            {
-                ItemType = BitDropDownItemType.Normal,
-                Text = "Option a",
-                Value = "A",
-                Data = new DropDownItemData()
-                {
-                    IconName = "Memo"
-                }
-            });
-            items.Add(new BitDropDownItem()
-            {
-                ItemType = BitDropDownItemType.Normal,
-                Text = "Option b",
-                Value = "B",
-                Data = new DropDownItemData()
-                {
-                    IconName = "Print"
-                }
-            });
-            items.Add(new BitDropDownItem()
-            {
-                ItemType = BitDropDownItemType.Normal,
-                Text = "Option c",
-                Value = "C",
-                Data = new DropDownItemData()
-                {
-                    IconName = "ShoppingCart"
-                }
-            });
-            items.Add(new BitDropDownItem()
-            {
-                ItemType = BitDropDownItemType.Normal,
-                Text = "Option d",
-                Value = "D",
-                Data = new DropDownItemData()
-                {
-                    IconName = "Train"
-                }
-            });
-            items.Add(new BitDropDownItem()
-            {
-                ItemType = BitDropDownItemType.Normal,
-                Text = "Option e",
-                Value = "E",
-                Data = new DropDownItemData()
-                {
-                    IconName = "Repair"
-                }
-            });
-            items.Add(new BitDropDownItem()
-            {
-                ItemType = BitDropDownItemType.Divider
-            });
-            items.Add(new BitDropDownItem()
-            {
-                ItemType = BitDropDownItemType.Header,
-                Text = "More options",
-                Value = "Header2"
-            });
-            items.Add(new BitDropDownItem()
-            {
-                ItemType = BitDropDownItemType.Normal,
-                Text = "Option f",
-                Value = "F",
-                Data = new DropDownItemData()
-                {
-                    IconName = "Running"
-                }
-            });
-            items.Add(new BitDropDownItem()
-            {
-                ItemType = BitDropDownItemType.Normal,
-                Text = "Option g",
-                Value = "G",
-                Data = new DropDownItemData()
-                {
-                    IconName = "EmojiNeutral"
-                }
-            });
-            items.Add(new BitDropDownItem()
-            {
-                ItemType = BitDropDownItemType.Normal,
-                Text = "Option h",
-                Value = "H",
-                Data = new DropDownItemData()
-                {
-                    IconName = "ChatInviteFriend"
-                }
-            });
-            items.Add(new BitDropDownItem()
-            {
-                ItemType = BitDropDownItemType.Normal,
-                Text = "Option i",
-                Value = "I",
-                Data = new DropDownItemData()
-                {
-                    IconName = "SecurityGroup"
-                }
-            });
-            items.Add(new BitDropDownItem()
-            {
-                ItemType = BitDropDownItemType.Normal,
-                Text = "Option j",
-                Value = "J",
-                Data = new DropDownItemData()
-                {
-                    IconName = "AddGroup"
-                }
-            });
+            ItemType = BitDropDownItemType.Normal,
+            Text = "Banana",
+            Value = "f-ban",
+        });
 
-            return items;
-        }
-
-        private readonly List<ComponentParameter> componentParameters = new()
+        items.Add(new BitDropDownItem()
         {
-            new ComponentParameter()
-            {
-                Name = "CaretDownFragment",
-                Type = "RenderFragment",
-                DefaultValue = "",
-                Description = "Optional custom template for chevron icon.",
-            },
-            new ComponentParameter()
-            {
-                Name = "DefaultValue",
-                Type = "string",
-                DefaultValue = "",
-                Description = "Key that will be initially used to set selected item.",
-            },
-            new ComponentParameter()
-            {
-                Name = "DefaultValues",
-                Type = "List<string>",
-                DefaultValue = "",
-                Description = "Keys that will be initially used to set selected items for multiSelect scenarios.",
-            },
-            new ComponentParameter()
-            {
-                Name = "IsMultiSelect",
-                Type = "bool",
-                DefaultValue = "false",
-                Description = "Whether multiple items are allowed to be selected.",
-            },
-            new ComponentParameter()
-            {
-                Name = "IsOpen",
-                Type = "bool",
-                DefaultValue = "false",
-                Description = "Whether or not this dropdown is open.",
-            },
-            new ComponentParameter()
-            {
-                Name = "IsRequired",
-                Type = "bool",
-                DefaultValue = "false",
-                Description = "Requires the end user to select an item in the dropdown.",
-            },
-            new ComponentParameter()
-            {
-                Name = "Items",
-                Type = "List<BitDropDownItem>",
-                DefaultValue = "",
-                Description = "A list of items to display in the dropdown.",
-            },
-            new ComponentParameter()
-            {
-                Name = "ItemTemplate",
-                Type = "RenderFragment<BitDropDownItem>",
-                DefaultValue = "",
-                Description = "Optional custom template for drop-down item.",
-            },
-            new ComponentParameter()
-            {
-                Name = "Label",
-                Type = "string",
-                DefaultValue = "",
-                Description = "The title to show when the mouse is placed on the drop down.",
-            },
-            new ComponentParameter()
-            {
-                Name = "LabelFragment",
-                Type = "RenderFragment",
-                DefaultValue = "",
-                Description = "Optional custom template for label.",
-            },
-            new ComponentParameter()
-            {
-                Name = "MultiSelectDelimiter",
-                Type = "string",
-                DefaultValue = "",
-                Description = "When multiple items are selected, this still will be used to separate values in the dropdown title.",
-            },
-            new ComponentParameter()
-            {
-                Name = "NotifyOnReselect",
-                Type = "bool",
-                DefaultValue = "false",
-                Description = "Optional preference to have OnSelectItem still be called when an already selected item is clicked in single select mode.",
-            },
-            new ComponentParameter()
-            {
-                Name = "OnClick",
-                Type = "EventCallback<MouseEventArgs>",
-                DefaultValue = "",
-                Description = "Callback for when the action button clicked.",
-            },
-            new ComponentParameter()
-            {
-                Name = "OnSelectItem",
-                Type = "EventCallback<BitDropDownItem> ",
-                DefaultValue = "",
-                Description = "Callback for when an item is selected.",
-            },
-            new ComponentParameter()
-            {
-                Name = "Placeholder",
-                Type = "string",
-                DefaultValue = "",
-                Description = "Input placeholder Text, Displayed until an option is selected.",
-            },
-            new ComponentParameter()
-            {
-                Name = "PlaceholderTemplate",
-                Type = "RenderFragment<BitDropDown>",
-                DefaultValue = "",
-                Description = "Optional custom template for placeholder Text.",
-            },
-            new ComponentParameter()
-            {
-                Name = "Values",
-                Type = "List<string>",
-                DefaultValue = "",
-                Description = "Keys of the selected items for multiSelect scenarios. If you provide this, you must maintain selection state by observing onChange events and passing a new value in when changed",
-            },
-            new ComponentParameter()
-            {
-                Name = "ValuesChanged",
-                Type = "EventCallback<List<string>>",
-                DefaultValue = "",
-                Description = "Callback for when the values changed.",
-            },
-            new ComponentParameter()
-            {
-                Name = "TextTemplate",
-                Type = "RenderFragment<BitDropDown>",
-                DefaultValue = "",
-                Description = "Optional custom template for selected option displayed in after selection.",
-            },
-            new ComponentParameter()
-            {
-                Name = "Visibility",
-                Type = "BitComponentVisibility",
-                LinkType = LinkType.Link,
-                Href = "#component-visibility-enum",
-                DefaultValue = "BitComponentVisibility.Visible",
-                Description = "Whether the component is Visible,Hidden,Collapsed.",
-            },
-        };
+            ItemType = BitDropDownItemType.Divider,
+        });
 
-        private readonly List<EnumParameter> enumParameters = new()
+        items.Add(new BitDropDownItem()
         {
-            new EnumParameter()
+            ItemType = BitDropDownItemType.Header,
+            Text = "Vegetables"
+        });
+
+        items.Add(new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Normal,
+            Text = "Broccoli",
+            Value = "v-bro",
+        });
+
+        return items;
+    }
+
+    private List<BitDropDownItem> GetDropdownItems()
+    {
+        List<BitDropDownItem> items = new();
+
+        items.Add(new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Header,
+            Text = "Fruits"
+        });
+
+        items.Add(new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Normal,
+            Text = "Apple",
+            Value = "f-app"
+        });
+
+        items.Add(new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Normal,
+            Text = "Orange",
+            Value = "f-ora",
+            IsEnabled = false
+        });
+
+        items.Add(new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Normal,
+            Text = "Banana",
+            Value = "f-ban",
+        });
+
+        items.Add(new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Divider,
+        });
+
+        items.Add(new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Header,
+            Text = "Vegetables"
+        });
+
+        items.Add(new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Normal,
+            Text = "Broccoli",
+            Value = "v-bro",
+        });
+
+        return items;
+    }
+
+    private List<BitDropDownItem> GetCustomDropdownItems()
+    {
+        List<BitDropDownItem> items = new();
+        items.Add(new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Header,
+            Text = "Options",
+            Value = "Header"
+        });
+        items.Add(new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Normal,
+            Text = "Option a",
+            Value = "A",
+            Data = new DropDownItemData()
             {
-                Id = "component-visibility-enum",
-                Title = "BitComponentVisibility Enum",
-                Description = "",
-                EnumList = new List<EnumItem>()
+                IconName = "Memo"
+            }
+        });
+        items.Add(new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Normal,
+            Text = "Option b",
+            Value = "B",
+            Data = new DropDownItemData()
+            {
+                IconName = "Print"
+            }
+        });
+        items.Add(new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Normal,
+            Text = "Option c",
+            Value = "C",
+            Data = new DropDownItemData()
+            {
+                IconName = "ShoppingCart"
+            }
+        });
+        items.Add(new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Normal,
+            Text = "Option d",
+            Value = "D",
+            Data = new DropDownItemData()
+            {
+                IconName = "Train"
+            }
+        });
+        items.Add(new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Normal,
+            Text = "Option e",
+            Value = "E",
+            Data = new DropDownItemData()
+            {
+                IconName = "Repair"
+            }
+        });
+        items.Add(new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Divider
+        });
+        items.Add(new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Header,
+            Text = "More options",
+            Value = "Header2"
+        });
+        items.Add(new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Normal,
+            Text = "Option f",
+            Value = "F",
+            Data = new DropDownItemData()
+            {
+                IconName = "Running"
+            }
+        });
+        items.Add(new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Normal,
+            Text = "Option g",
+            Value = "G",
+            Data = new DropDownItemData()
+            {
+                IconName = "EmojiNeutral"
+            }
+        });
+        items.Add(new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Normal,
+            Text = "Option h",
+            Value = "H",
+            Data = new DropDownItemData()
+            {
+                IconName = "ChatInviteFriend"
+            }
+        });
+        items.Add(new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Normal,
+            Text = "Option i",
+            Value = "I",
+            Data = new DropDownItemData()
+            {
+                IconName = "SecurityGroup"
+            }
+        });
+        items.Add(new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Normal,
+            Text = "Option j",
+            Value = "J",
+            Data = new DropDownItemData()
+            {
+                IconName = "AddGroup"
+            }
+        });
+
+        return items;
+    }
+
+    private readonly List<ComponentParameter> componentParameters = new()
+    {
+        new ComponentParameter()
+        {
+            Name = "CaretDownFragment",
+            Type = "RenderFragment",
+            DefaultValue = "",
+            Description = "Optional custom template for chevron icon.",
+        },
+        new ComponentParameter()
+        {
+            Name = "DefaultValue",
+            Type = "string",
+            DefaultValue = "",
+            Description = "Key that will be initially used to set selected item.",
+        },
+        new ComponentParameter()
+        {
+            Name = "DefaultValues",
+            Type = "List<string>",
+            DefaultValue = "",
+            Description = "Keys that will be initially used to set selected items for multiSelect scenarios.",
+        },
+        new ComponentParameter()
+        {
+            Name = "IsMultiSelect",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether multiple items are allowed to be selected.",
+        },
+        new ComponentParameter()
+        {
+            Name = "IsOpen",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether or not this dropdown is open.",
+        },
+        new ComponentParameter()
+        {
+            Name = "IsRequired",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Requires the end user to select an item in the dropdown.",
+        },
+        new ComponentParameter()
+        {
+            Name = "Items",
+            Type = "List<BitDropDownItem>",
+            DefaultValue = "",
+            Description = "A list of items to display in the dropdown.",
+        },
+        new ComponentParameter()
+        {
+            Name = "ItemTemplate",
+            Type = "RenderFragment<BitDropDownItem>",
+            DefaultValue = "",
+            Description = "Optional custom template for drop-down item.",
+        },
+        new ComponentParameter()
+        {
+            Name = "Label",
+            Type = "string",
+            DefaultValue = "",
+            Description = "The title to show when the mouse is placed on the drop down.",
+        },
+        new ComponentParameter()
+        {
+            Name = "LabelFragment",
+            Type = "RenderFragment",
+            DefaultValue = "",
+            Description = "Optional custom template for label.",
+        },
+        new ComponentParameter()
+        {
+            Name = "MultiSelectDelimiter",
+            Type = "string",
+            DefaultValue = "",
+            Description = "When multiple items are selected, this still will be used to separate values in the dropdown title.",
+        },
+        new ComponentParameter()
+        {
+            Name = "NotifyOnReselect",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Optional preference to have OnSelectItem still be called when an already selected item is clicked in single select mode.",
+        },
+        new ComponentParameter()
+        {
+            Name = "OnClick",
+            Type = "EventCallback<MouseEventArgs>",
+            DefaultValue = "",
+            Description = "Callback for when the action button clicked.",
+        },
+        new ComponentParameter()
+        {
+            Name = "OnSelectItem",
+            Type = "EventCallback<BitDropDownItem> ",
+            DefaultValue = "",
+            Description = "Callback for when an item is selected.",
+        },
+        new ComponentParameter()
+        {
+            Name = "Placeholder",
+            Type = "string",
+            DefaultValue = "",
+            Description = "Input placeholder Text, Displayed until an option is selected.",
+        },
+        new ComponentParameter()
+        {
+            Name = "PlaceholderTemplate",
+            Type = "RenderFragment<BitDropDown>",
+            DefaultValue = "",
+            Description = "Optional custom template for placeholder Text.",
+        },
+        new ComponentParameter()
+        {
+            Name = "Values",
+            Type = "List<string>",
+            DefaultValue = "",
+            Description = "Keys of the selected items for multiSelect scenarios. If you provide this, you must maintain selection state by observing onChange events and passing a new value in when changed",
+        },
+        new ComponentParameter()
+        {
+            Name = "ValuesChanged",
+            Type = "EventCallback<List<string>>",
+            DefaultValue = "",
+            Description = "Callback for when the values changed.",
+        },
+        new ComponentParameter()
+        {
+            Name = "TextTemplate",
+            Type = "RenderFragment<BitDropDown>",
+            DefaultValue = "",
+            Description = "Optional custom template for selected option displayed in after selection.",
+        },
+        new ComponentParameter()
+        {
+            Name = "Visibility",
+            Type = "BitComponentVisibility",
+            LinkType = LinkType.Link,
+            Href = "#component-visibility-enum",
+            DefaultValue = "BitComponentVisibility.Visible",
+            Description = "Whether the component is Visible,Hidden,Collapsed.",
+        },
+    };
+
+    private readonly List<EnumParameter> enumParameters = new()
+    {
+        new EnumParameter()
+        {
+            Id = "component-visibility-enum",
+            Title = "BitComponentVisibility Enum",
+            Description = "",
+            EnumList = new List<EnumItem>()
+            {
+                new EnumItem()
                 {
-                    new EnumItem()
-                    {
-                        Name= "Visible",
-                        Description="Show content of the component.",
-                        Value="0",
-                    },
-                    new EnumItem()
-                    {
-                        Name= "Hidden",
-                        Description="Hide content of the component,though the space it takes on the page remains.",
-                        Value="1",
-                    },
-                    new EnumItem()
-                    {
-                        Name= "Collapsed",
-                        Description="Hide content of the component,though the space it takes on the page gone.",
-                        Value="2",
-                    }
+                    Name= "Visible",
+                    Description="Show content of the component.",
+                    Value="0",
+                },
+                new EnumItem()
+                {
+                    Name= "Hidden",
+                    Description="Hide content of the component,though the space it takes on the page remains.",
+                    Value="1",
+                },
+                new EnumItem()
+                {
+                    Name= "Collapsed",
+                    Description="Hide content of the component,though the space it takes on the page gone.",
+                    Value="2",
                 }
             }
-        };
+        }
+    };
 
-        #region Example Code 1
+    #region Example Code 1
 
-        private readonly string example1HTMLCode = @"<BitDropDown Label=""Basic Uncontrolled""
+    private readonly string example1HTMLCode = @"<BitDropDown Label=""Basic Uncontrolled""
              Items=""GetDropdownItems()""
              Placeholder=""Select an option""
              Style=""width: 290px; margin: 20px 0 20px 0"">
@@ -473,7 +473,7 @@ namespace Bit.BlazorUI.Playground.Web.Pages.Components.DropDown
              Style=""width: 290px; margin-bottom: 20px;"">
 </BitDropDown>";
 
-        private readonly string example1CSharpCode = @"
+    private readonly string example1CSharpCode = @"
 private List<BitDropDownItem> GetDropdownItems()
 {
     List<BitDropDownItem> items = new();
@@ -527,18 +527,18 @@ private List<BitDropDownItem> GetDropdownItems()
     return items;
 }";
 
-        #endregion
+    #endregion
 
-        #region Example Code 2
+    #region Example Code 2
 
-        private readonly string example2HTMLCode = @"<BitDropDown Label=""Single-select Controlled""
+    private readonly string example2HTMLCode = @"<BitDropDown Label=""Single-select Controlled""
              Items=""GetDropdownItems()""
              Placeholder=""Select an option""
              @bind-Value=""ControlledValue""
              Style=""width: 290px; margin: 20px 0 20px 0"">
 </BitDropDown>";
 
-        private readonly string example2CSharpCode = @"private string ControlledValue = ""Apple"";
+    private readonly string example2CSharpCode = @"private string ControlledValue = ""Apple"";
 private List<BitDropDownItem> GetDropdownItems()
 {
     List<BitDropDownItem> items = new();
@@ -592,11 +592,11 @@ private List<BitDropDownItem> GetDropdownItems()
     return items;
 }";
 
-        #endregion
+    #endregion
 
-        #region Example Code 3
+    #region Example Code 3
 
-        private readonly string example3HTMLCode = @"<BitDropDown Label=""Multi-select controlled""
+    private readonly string example3HTMLCode = @"<BitDropDown Label=""Multi-select controlled""
              Items=""GetDropdownItems()""
              Placeholder=""Select options""
              @bind-Values=""ControlledValues""
@@ -604,7 +604,7 @@ private List<BitDropDownItem> GetDropdownItems()
              Style=""width:290px; margin:20px 0 20px 0"">
 </BitDropDown>";
 
-        private readonly string example3CSharpCode = @"private List<string> ControlledValues = new List<string>() { ""Apple"", ""Banana"", ""Grape"" };
+    private readonly string example3CSharpCode = @"private List<string> ControlledValues = new List<string>() { ""Apple"", ""Banana"", ""Grape"" };
 private List<BitDropDownItem> GetDropdownItems()
 {
     List<BitDropDownItem> items = new();
@@ -658,11 +658,11 @@ private List<BitDropDownItem> GetDropdownItems()
     return items;
 }";
 
-        #endregion
+    #endregion
 
-        #region Example Code 4
+    #region Example Code 4
 
-        private readonly string example4HTMLCode = @"<BitDropDown Label=""Custom Controlled""
+    private readonly string example4HTMLCode = @"<BitDropDown Label=""Custom Controlled""
              Items=""GetCustomDropdownItems()""
              Placeholder=""Select an option""
              AriaLabel=""Custom dropdown""
@@ -707,7 +707,7 @@ private List<BitDropDownItem> GetDropdownItems()
     </LabelFragment>
 </BitDropDown>";
 
-        private readonly string example4CSharpCode = @"
+    private readonly string example4CSharpCode = @"
 private List<BitDropDownItem> GetCustomDropdownItems()
 {
     List<BitDropDownItem> items = new();
@@ -831,11 +831,11 @@ private List<BitDropDownItem> GetCustomDropdownItems()
     return items;
 }";
 
-        #endregion
+    #endregion
 
-        #region Example Code 5
+    #region Example Code 5
 
-        private readonly string example5HTMLCode = @"@if (string.IsNullOrEmpty(SuccessMessage))
+    private readonly string example5HTMLCode = @"@if (string.IsNullOrEmpty(SuccessMessage))
 {
     <EditForm Model=""formValidationDropDownModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
         <DataAnnotationsValidator />
@@ -880,7 +880,7 @@ else
     </BitMessageBar>
 }";
 
-        private readonly string example5CSharpCode = @"
+    private readonly string example5CSharpCode = @"
 public class FormValidationDropDownModel
 {
     [MaxLength(2, ErrorMessage = ""The property {0} doesn't have more than {1} elements"")]
@@ -981,6 +981,5 @@ private List<BitDropDownItem> GetProductDropdownItems()
     return items;
 }";
 
-        #endregion
-    }
+    #endregion
 }
