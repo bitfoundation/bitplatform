@@ -1,10 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Bit.BlazorUI.Playground.Web.Pages.Components.ChoiceGroup
+namespace Bit.BlazorUI.Playground.Web.Pages.Components.ChoiceGroup;
+
+public class ChoiceGroupValidationModel
 {
-    public class ChoiceGroupValidationModel
-    {
-        [Required(ErrorMessage = "Pick one")]
-        public string Value { get; set; }
-    }
+    [Required(ErrorMessage = "Pick one")]
+    public string Value { get; set; }
 }

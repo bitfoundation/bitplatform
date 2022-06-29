@@ -1,43 +1,42 @@
 ﻿using System.Collections.Generic;
 
-namespace System.Linq
+namespace System.Linq;
+
+public static class IEnumerableExtensions
 {
-    public static class IEnumerableExtensions
+    public static TElement ExtendedSingleOrDefault<TElement>(this IEnumerable<TElement> source, string message, Func<TElement, bool>? predicate = null)
     {
-        public static TElement ExtendedSingleOrDefault<TElement>(this IEnumerable<TElement> source, string message, Func<TElement, bool>? predicate = null)
+        if (source == null)
+            throw new ArgumentNullException(nameof(source));
+
+        if (string.IsNullOrEmpty(message))
+            throw new ArgumentException(nameof(message));
+
+        try
         {
-            if (source == null)
-                throw new ArgumentNullException(nameof(source));
-
-            if (string.IsNullOrEmpty(message))
-                throw new ArgumentException(nameof(message));
-
-            try
-            {
-                return predicate == null ? source.SingleOrDefault() : source.SingleOrDefault(predicate);
-            }
-            catch (InvalidOperationException ex)
-            {
-                throw new InvalidOperationException(message, ex);
-            }
+            return predicate == null ? source.SingleOrDefault() : source.SingleOrDefault(predicate);
         }
-
-        public static TElement ExtendedSingle<TElement>(this IEnumerable<TElement> source, string message, Func<TElement, bool>? predicate = null)
+        catch (InvalidOperationException ex)
         {
-            if (source == null)
-                throw new ArgumentNullException(nameof(source));
+            throw new InvalidOperationException(message, ex);
+        }
+    }
 
-            if (string.IsNullOrEmpty(message))
-                throw new ArgumentException(nameof(message));
+    public static TElement ExtendedSingle<TElement>(this IEnumerable<TElement> source, string message, Func<TElement, bool>? predicate = null)
+    {
+        if (source == null)
+            throw new ArgumentNullException(nameof(source));
 
-            try
-            {
-                return predicate == null ? source.Single() : source.Single(predicate);
-            }
-            catch (InvalidOperationException ex)
-            {
-                throw new InvalidOperationException(message, ex);
-            }
+        if (string.IsNullOrEmpty(message))
+            throw new ArgumentException(nameof(message));
+
+        try
+        {
+            return predicate == null ? source.Single() : source.Single(predicate);
+        }
+        catch (InvalidOperationException ex)
+        {
+            throw new InvalidOperationException(message, ex);
         }
     }
 }

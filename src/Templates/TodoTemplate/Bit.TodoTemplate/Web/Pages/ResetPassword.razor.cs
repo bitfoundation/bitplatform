@@ -29,8 +29,8 @@ public partial class ResetPassword
     [AutoInject] private TodoTemplateAuthenticationStateProvider TodoTemplateAuthenticationStateProvider { get; set; } = default!;
 
     private bool IsSubmitButtonEnabled =>
-        ResetPasswordModel.Password.HasValue() 
-        && ResetPasswordModel.ConfirmPassword.HasValue() 
+        ResetPasswordModel.Password.HasValue()
+        && ResetPasswordModel.ConfirmPassword.HasValue()
         && IsLoading is false;
 
     private async Task Submit()
