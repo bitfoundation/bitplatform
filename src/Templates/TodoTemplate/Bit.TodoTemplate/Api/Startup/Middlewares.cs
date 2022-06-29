@@ -1,8 +1,7 @@
 ﻿//-:cnd:noEmit
-using HealthChecks.UI.Client;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Net.Http.Headers;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using HealthChecks.UI.Client;
 
 namespace TodoTemplate.Api.Startup
 {

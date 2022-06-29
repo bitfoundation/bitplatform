@@ -1,6 +1,5 @@
 ﻿//-:cnd:noEmit
 #if BlazorServer
-
 using System.IO.Compression;
 using Microsoft.AspNetCore.ResponseCompression;
 
