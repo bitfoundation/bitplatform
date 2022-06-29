@@ -1,0 +1,36 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitComponentBase
+
+@if (IsOpen)
+{
+    <div 
+        @ref="RootElement"
+        @attributes="HtmlAttributes"
+        style="@StyleBuilder.Value"
+        class="@ClassBuilder.Value">
+            <div
+                role=@(IsAlertRole ? "alertdialog": "dialog")
+                aria-modal="@((!IsModeless).ToString())"
+                aria-labelledby=@TitleAriaId
+                aria-describedby=@SubtitleAriaId
+                style="outline:none;">
+                    <div 
+                        class="bit-mdl-modal @GetPositionClass()" 
+                        role="document">
+                    @if (!IsModeless)
+                    {
+                        <div
+                            class="bit-mdl-overlay"
+                            aria-hidden="true"
+                            @onclick="CloseCallout">
+                        </div>
+                    }
+                    <div class="bit-mdl-container">
+                        <div class="bit-mdl-scrl-cnt">
+                            @ChildContent
+                        </div>
+                    </div>
+            </div>
+        </div>
+    </div>
+}

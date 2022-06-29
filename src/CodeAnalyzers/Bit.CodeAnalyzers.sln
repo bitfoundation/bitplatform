@@ -1,0 +1,41 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.2.32602.215
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{C74966AA-3EAB-4F19-8012-7C8B3274E5A1}"
+	ProjectSection(SolutionItems) = preProject
+		..\.editorconfig = ..\.editorconfig
+		..\Bit.Build.props = ..\Bit.Build.props
+		..\global.json = ..\global.json
+	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.CodeAnalyzers", "Bit.CodeAnalyzers\Bit.CodeAnalyzers.csproj", "{1732F1AE-57EE-43A3-8CF3-C066ED3B8F8F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{20AB82FF-0259-491A-8191-3E8B34A8965E}"
+	ProjectSection(SolutionItems) = preProject
+		..\..\.github\workflows\nuget.org.yml = ..\..\.github\workflows\nuget.org.yml
+		..\..\.github\workflows\Prerelease.nuget.org.yml = ..\..\.github\workflows\Prerelease.nuget.org.yml
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1732F1AE-57EE-43A3-8CF3-C066ED3B8F8F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1732F1AE-57EE-43A3-8CF3-C066ED3B8F8F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1732F1AE-57EE-43A3-8CF3-C066ED3B8F8F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1732F1AE-57EE-43A3-8CF3-C066ED3B8F8F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{20AB82FF-0259-491A-8191-3E8B34A8965E} = {C74966AA-3EAB-4F19-8012-7C8B3274E5A1}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {EA689B15-BEF0-41F6-A464-AC06DB5605C4}
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,41 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitInputBase<string?>
+
+<div @ref="RootElement"
+     @attributes="HtmlAttributes"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value">
+    <div class="bit-srch-box-icon-container" aria-hidden="true">
+        <i class="bit-icon bit-icon--@IconName.GetName()" aria-hidden="true"></i>
+    </div>
+    <input @attributes="InputHtmlAttributes"
+           class="srch-box-input"
+           id="@InputId"
+           type="text"
+           aria-label="@AriaLabel"
+           disabled="@(IsEnabled is false)"
+           placeholder="@Placeholder"
+           role="searchbox"
+           value="@CurrentValue"
+           autocomplete="@Autocomplete"
+           @ref="InputRef"
+           @onkeydown="@((k) => HandleOnKeyDown(k))"
+           @onfocusin="HandleInputFocusIn"
+           @onfocusout="HandleInputFocusOut"
+           @oninput="@HandleChange" />
+    @if (CurrentValue.HasValue())
+    {
+        <div class="srch-box-clear-btn-container">
+            <button class="srch-box-clear-btn"
+                type="button"
+                aria-label="Clear text"
+                aria-hidden="true"
+                disabled="@(CurrentValue.HasNoValue())"
+                @onclick="HandleOnClear">
+                <span>
+                    <i class="bit-icon bit-icon--Clear" aria-hidden="true"></i>
+                </span>
+            </button>
+        </div>
+    }
+</div>

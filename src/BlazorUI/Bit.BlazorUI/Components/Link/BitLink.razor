@@ -1,0 +1,59 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitComponentBase
+
+<span @ref="RootElement"
+      @attributes="HtmlAttributes"
+      style="@StyleBuilder.Value"
+      class="@ClassBuilder.Value">
+
+    @if (Href.HasValue())
+    {
+        @if (IsEnabled)
+        {
+            if (Href!.StartsWith("#"))
+            {
+               <a class="@(HasUnderline ? "underlined" : "")"
+                  @onclick="ScrollToFragment"
+                  @onclick:preventDefault="true">
+                   @ChildContent
+               </a>
+            }
+            else
+            {
+               <a class="@(HasUnderline ? "underlined" : "")"
+                  href="@Href"
+                  target="@Target">
+                   @ChildContent
+               </a>
+            }
+        }
+        else
+        {
+           <a class="@(HasUnderline ? "underlined" : "")"
+              aria-disabled="true">
+               @ChildContent
+           </a>
+        }
+    }
+    else
+    {
+        @if (IsEnabled)
+        {
+           <button class="@(HasUnderline ? "underlined" : "")"
+                   type="button"
+                   @onclick="HandleClick"
+                   @onclick:preventDefault="true">
+               @ChildContent
+           </button>
+        }
+        else
+        {
+           <button class="@(HasUnderline ? "underlined" : "")"
+                   type="button"
+                   aria-disabled="true"
+                   disabled>
+               @ChildContent
+           </button>
+        }
+    }
+</span>

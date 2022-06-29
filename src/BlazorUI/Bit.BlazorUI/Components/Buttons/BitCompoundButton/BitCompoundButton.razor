@@ -1,0 +1,61 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitComponentBase
+
+@if (Href.HasValue() && IsEnabled)
+{
+    <a @ref="RootElement"
+       @attributes="HtmlAttributes"
+       style="@StyleBuilder.Value"
+       class="@ClassBuilder.Value"
+       aria-label="@AriaLabel"
+       aria-describedby="@AriaDescription"
+       aria-hidden="@AriaHidden"
+       href="@Href"
+       target="@Target"
+       title="@Title"
+       tabindex="@tabIndex">
+        <span class="no-text-select">
+            @if (Text.HasValue())
+            {
+                <span class="bit-cmp-btn-text">
+                    @Text
+                </span>
+            }
+            @if (SecondaryText.HasValue())
+            {
+                <span class="bit-cmp-btn-secondary-text">
+                    @SecondaryText
+                </span>
+            }
+        </span>
+    </a>
+}
+else
+{
+    <button @ref="RootElement"
+            @attributes="HtmlAttributes"
+            style="@StyleBuilder.Value"
+            class="@ClassBuilder.Value"
+            aria-label="@AriaLabel"
+            aria-describedby="@AriaDescription"
+            aria-hidden="@AriaHidden"
+            tabindex="@tabIndex"
+            type="@ButtonType.GetValue()"
+            title="@Title"
+            @onclick="HandleOnClick">
+        <span class="no-text-select">
+            @if (Text.HasValue())
+            {
+                <span class="bit-cmp-btn-text">
+                    @Text
+                </span>
+            }
+            @if (SecondaryText.HasValue())
+            {
+                <span class="bit-cmp-btn-secondary-text">
+                    @SecondaryText
+                </span>
+            }
+        </span>
+    </button>
+}

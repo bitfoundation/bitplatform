@@ -1,0 +1,45 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitComponentBase
+
+@if (Href.HasValue() && IsEnabled)
+{
+    <a @ref="RootElement"
+       @attributes="HtmlAttributes"
+       style="@StyleBuilder.Value"
+       class="@ClassBuilder.Value"
+       aria-label="@AriaLabel"
+       aria-describedby="@AriaDescription"
+       aria-hidden="@AriaHidden"
+       title="@Title"
+       target="@Target"
+       href="@Href"
+       tabindex="@tabIndex">
+        <span>
+            <i class="bit-icon bit-icon--@IconName.GetName()"></i>
+        </span>
+        <span>
+            @ChildContent
+        </span>
+    </a>
+}
+else
+{
+    <button @ref="RootElement"
+            @attributes="HtmlAttributes"
+            style="@StyleBuilder.Value"
+            class="@ClassBuilder.Value"
+            type="@ButtonType.GetValue()"
+            aria-label="@AriaLabel"
+            aria-describedby="@AriaDescription"
+            aria-hidden="@AriaHidden"
+            tabindex="@tabIndex"
+            title="@Title"
+            @onclick="HandleOnClick">
+        <span>
+            <i class="bit-icon bit-icon--@IconName.GetName()"></i>
+        </span>
+        <span>
+            @ChildContent
+        </span>
+    </button>
+}

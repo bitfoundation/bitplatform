@@ -1,0 +1,94 @@
+﻿@using Bit.BlazorUI.Playground.Web.Pages.Components
+@using Pages.Components.ComponentDemoBase
+
+<section class="component-demo-container">
+    <section id="overview-section" class="demo-section">
+        <h1 class="component-name">@ComponentName</h1>
+        <div class="component-desc">@ComponentDescription</div>
+    </section>
+    <section id="usage-section" class="demo-section">
+        <h2 class="section-title">Usage</h2>
+        @ChildContent
+    </section>
+    <section id="implementation-section" class="demo-section">
+        <h2 class="section-title">Implementation</h2>
+        <div class="table-title">@ComponentName parameters</div>
+        <table class="table-view params-table">
+            <tr class="th-row">
+                <th class="th-cell">Name</th>
+                <th class="th-cell">Type</th>
+                <th class="th-cell">Default value</th>
+                <th class="th-cell">Description</th>
+            </tr>
+            @foreach (var param in ComponentParameters)
+            {
+                <tr class="tdata-row">
+                    <td class="td-cell">@param.Name</td>
+                    <td class="td-cell">
+                        @if (param.LinkType == LinkType.Link)
+                        {
+                            <BitLink Class="param-table-link" Href="@param.Href">@param.Type</BitLink>
+                        }
+                        else
+                        {
+                            @param.Type
+                        }
+                    </td>
+                    <td class="td-cell">@param.DefaultValue</td>
+                    <td class="td-cell">@param.Description</td>
+                </tr>
+            }
+        </table>
+
+        @foreach (var param in ComponentSubParameters)
+        {
+            <div id="@param.Id" class="table-title">@param.Title</div>
+            <table class="table-view params-table">
+                <tr class="th-row">
+                    <th class="th-cell">Name</th>
+                    <th class="th-cell">Type</th>
+                    <th class="th-cell">Default value</th>
+                    <th class="th-cell">Description</th>
+                </tr>
+                @foreach (var item in param.Parameters)
+                {
+                    <tr class="tdata-row">
+                        <td class="td-cell">@item.Name</td>
+                        <td class="td-cell">
+                            @if (item.LinkType == LinkType.Link)
+                            {
+                                <BitLink Class="param-table-link" Href="@item.Href">@item.Type</BitLink>
+                            }
+                            else
+                            {
+                                @item.Type
+                            }
+                        </td>
+                        <td class="td-cell">@item.DefaultValue</td>
+                        <td class="td-cell">@item.Description</td>
+                    </tr>
+                }
+            </table>
+        }
+
+         @foreach (var param in EnumParameters)
+        {
+            <div id="@param.Id" class="table-title">@param.Title</div>
+            <table class="table-view types-table">
+                <tr class="th-row">
+                <th class="th-cell">Name</th>
+                <th class="th-cell">Value</th>
+                <th class="th-cell">Description</th>
+                </tr>
+                @foreach (var item in param.EnumList)
+                {
+                    <tr class="tdata-row">
+                        <td class="td-cell">@item.Name</td>
+                        <td class="td-cell">@item.Value</td>
+                        <td class="td-cell">@item.Description</td>
+                    </tr>
+                }
+            </table>
+        }
+    </section>
+</section>

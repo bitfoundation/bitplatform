@@ -1,0 +1,96 @@
+﻿@import '../Styles/_shared.scss';
+
+.page-section {
+    @include PageSection;
+    height: inherit;
+
+    .subtitle {
+        @include Body3;
+        color: $Gray1;
+    }
+}
+
+.description-section {
+    @include Body3;
+    color: $Gray1;
+    margin-top: rem(32px);
+}
+
+/*-------------------getting started steps section---------------------*/
+
+.getting-started-step-section {
+    display: flex;
+    flex-flow: column nowrap;
+    margin: rem(64px) 0;
+}
+
+.step-body-card {
+    @include Card;
+    padding: rem(32px) rem(24px);
+    margin: rem(32px) 0;
+
+    .card-container {
+        padding: 0 rem(20px);
+    }
+
+    .description {
+        color: $Gray1;
+        @include Body2;
+    }
+
+    .code-header {
+        color: $Gray1;
+        @include Subtitle3;
+        padding: rem(20px) 0;
+    }
+
+    .code {
+        padding: rem(12px);
+        border-left: rem(4px) solid $B6Color;
+        background-color: $Gray5;
+        @include Subtitle4;
+        color: $B3Color;
+        margin: rem(25px) 0;
+        overflow: auto;
+    }
+
+    h4 {
+        color: $Black1;
+        margin-bottom: rem(16px);
+    }
+
+    h3 {
+        color: $B3Color;
+        padding-top: rem(20px);
+        border-bottom: rem(1px) solid $Gray4;
+    }
+
+    h5 {
+        color: $Black1;
+        padding: rem(25px) 0 rem(15px);
+    }
+
+    .first-step-ul {
+        padding-inline-start: rem(20px);
+    }
+
+    li {
+        @include Subtitle3;
+        color: $Gray1;
+    }
+
+    .bold {
+        font-weight: bold;
+    }
+
+    .high-light {
+        background-color: $B11Color;
+        border-radius: rem(4px);
+        padding: 0 rem(5px) rem(2px) rem(5px);
+    }
+
+    .image {
+        width: 100%;
+        margin: rem(25px) 0;
+    }
+}

@@ -12,6 +12,10 @@
         "inputFile": "Components/NotFoundComponent.razor.scss"
     },
     {
+        "outputFile": "Components/GettingStarted.razor.css",
+        "inputFile": "Components/GettingStarted.razor.scss"
+    },
+    {
         "outputFile": "Pages/HomePage.razor.css",
         "inputFile": "Pages/HomePage.razor.scss"
     },
@@ -22,5 +26,9 @@
     {
         "outputFile": "wwwroot/styles/styles.css",
         "inputFile": "Styles/styles.scss"
+    },
+    {
+        "outputFile": "Pages/Projects.razor.css",
+        "inputFile": "Pages/Projects.razor.scss"
     }
 ]
