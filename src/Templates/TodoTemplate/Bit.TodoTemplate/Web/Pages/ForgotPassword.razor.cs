@@ -15,7 +15,7 @@ public partial class ForgotPassword
     [AutoInject] private HttpClient HttpClient { get; set; } = default!;
 
     private bool IsSubmitButtonEnabled =>
-        ForgotPasswordModel.Email.HasValue() 
+        ForgotPasswordModel.Email.HasValue()
         && IsLoading is false;
 
     private async Task Submit()

@@ -1,11 +1,10 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Bit.BlazorUI.Tests.RadioButtonList
+namespace Bit.BlazorUI.Tests.RadioButtonList;
+
+public class BitRadioButtonListTestModel
 {
-    public class BitRadioButtonListTestModel
-    {
-        [Required]
-        [Range(1, int.MaxValue)]
-        public int Value { get; set; }
-    }
+    [Required]
+    [Range(1, int.MaxValue)]
+    public int Value { get; set; }
 }

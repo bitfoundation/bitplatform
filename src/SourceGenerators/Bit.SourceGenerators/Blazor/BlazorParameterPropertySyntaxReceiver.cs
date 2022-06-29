@@ -1,5 +1,5 @@
-﻿using System.Linq;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -32,7 +32,7 @@ public class BlazorParameterPropertySyntaxReceiver : ISyntaxContextReceiver
             if (type.GetMembers().Any(m => m.Name == "SetParametersAsync")) return;
 
 
-            if (propertySymbol.GetAttributes().Any(ad => ad.AttributeClass?.ToDisplayString() == "Microsoft.AspNetCore.Components.ParameterAttribute" 
+            if (propertySymbol.GetAttributes().Any(ad => ad.AttributeClass?.ToDisplayString() == "Microsoft.AspNetCore.Components.ParameterAttribute"
                                                       || ad.AttributeClass?.ToDisplayString() == "Microsoft.AspNetCore.Components.CascadingParameterAttribute"))
             {
                 Properties.Add(propertySymbol);

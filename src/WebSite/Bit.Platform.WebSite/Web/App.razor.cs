@@ -1,6 +1,5 @@
-﻿namespace Bit.Platform.WebSite.Web
+﻿namespace Bit.Platform.WebSite.Web;
+
+public partial class App
 {
-    public partial class App
-    {
-    }
 }

@@ -1,7 +1,7 @@
-﻿using System.Xml.Linq;
-using System.Reflection;
-using Microsoft.AspNetCore.Mvc;
+﻿using System.Reflection;
+using System.Xml.Linq;
 using Bit.BlazorUI.Playground.Shared.Dtos;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Bit.BlazorUI.Playground.Api.Controllers;
 

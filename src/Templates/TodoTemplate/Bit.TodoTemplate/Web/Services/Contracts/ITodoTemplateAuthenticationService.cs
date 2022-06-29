@@ -1,11 +1,10 @@
 ﻿using TodoTemplate.Shared.Dtos.Account;
 
-namespace TodoTemplate.App.Services.Contracts
-{
-    public interface ITodoTemplateAuthenticationService
-    {
-        Task SignIn(SignInRequestDto dto);
+namespace TodoTemplate.App.Services.Contracts;
 
-        Task SignOut();
-    }
+public interface ITodoTemplateAuthenticationService
+{
+    Task SignIn(SignInRequestDto dto);
+
+    Task SignOut();
 }
