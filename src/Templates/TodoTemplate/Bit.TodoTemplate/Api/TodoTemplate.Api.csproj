@@ -11,7 +11,7 @@
 
     <ItemGroup>
         <!--/-:msbuild-conditional:noEmit -->
-        <!-- ysm: Dar blazor web assembly, projeye api khodash project web for host mikone. -->
+        <!-- In the Blazor Web Assembly mode, the API project will host the web client app itself -->
         <Content Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="..\Web\Pages\_Host.cshtml" Link="Pages\_Host.cshtml" />
         <Content Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="..\Web\Pages\_Layout.cshtml" Link="Pages\_Layout.cshtml" />
         <Compile Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="..\Web\Services\Implementations\ServerSideAuthTokenProvider.cs" Link="Services\Implementations\ServerSideAuthTokenProvider.cs" />
