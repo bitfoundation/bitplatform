@@ -134,10 +134,13 @@
             background-color: $B2Color;
             cursor: pointer;
             margin-right: rem(10px);
+            background-size: rem(40px);
+
 
             @include lt-lg {
                 width: rem(24px);
                 height: rem(24px);
+                background-size: rem(24px);
             }
         }
     }
@@ -309,10 +312,12 @@
     background-image: url('/images/home/download-icon.svg');
     background-position: center;
     background-repeat: no-repeat;
+    background-size: rem(53px);
 
     @include sm {
         width: rem(33px);
         height: rem(33px);
+        background-size: rem(32px);
     }
 }
 
