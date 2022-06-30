@@ -1,3 +1,5 @@
+// https://github.com/bitfoundation/bitplatform/tree/develop/src/Bswup#service-worker
+
 self.assetsInclude = [
     /\.svg$/,
     /FabExMDL*/
