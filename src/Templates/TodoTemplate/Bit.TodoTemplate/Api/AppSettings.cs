@@ -45,7 +45,7 @@ public class EmailSettings
 {
     public string Host { get; set; } = default!;
     /// <summary>
-    /// If true, app stores emails in bin\sent-emails folder (Recommended for testing purposes only) instead of sending them using smtp server.
+    /// If true, the web app tries to store emails in the bin\sent-emails folder instead of sending them using smtp server (recommended for testing purposes only).
     /// </summary>
     public bool UseLocalFolderInsteadOfMailServer => Host is "LocalFolder";
     public int Port { get; set; }
