@@ -22,8 +22,7 @@ public static class Services
         services.AddTransient<IAuthTokenProvider, ServerSideAuthTokenProvider>();
         services.AddTodoTemplateAppServices();
 
-        // ysm: Dar halat e pre-rendering, http client i ke sakhte mishavad, az access_token e ersali dar cookie tavasote client estefade mikonad ta mohtavaye pre render shode, motanaseb ba karbar e jari bashand.
-
+        // In the Pre-Rendering mode, the configured HttpClient will use the access_token provided by the cookie in the request, so the pre-rendered content would be fitting for the current user.
         services.AddHttpClient("WebAssemblyPreRenderingHttpClient")
             .ConfigurePrimaryHttpMessageHandler<TodoTemplateHttpClientHandler>()
             .ConfigureHttpClient((sp, httpClient) =>
