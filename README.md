@@ -1,6 +1,6 @@
 # Introduction
 
-Bit platform is a home for .NET developers. 
+Bit platform is the home for .NET developers. 
 Bit provides dotnet source templates such as TodoTemplate and AdminPanel template. In these project templates, common features such as Sign-up & Sign-in, are available using C#, HTML, and CSS, with which most of the .NET developers are familiar.
 
 The following apps are available out of the box with simple configurations:
@@ -32,8 +32,6 @@ The following websites are developed by Bit Platform and published in Blazor Web
 * Todo app Microsoft Store link (Comming soon...)
 
 Keep in mind that if a web app is only fast in the Blazor Server mode but slow in Blazor Web Assembly mode, it will also be slow in Blazor Hybrid mode (Android, iOS, and Windows apps).
-
-Pas hamishe mogheye didan har demo yi az abzari mobtani bar blazor, in ro az khodetoon beporsid, in demo by blazor web assembly hast ya server?
 
 ## **Contribute**
 
