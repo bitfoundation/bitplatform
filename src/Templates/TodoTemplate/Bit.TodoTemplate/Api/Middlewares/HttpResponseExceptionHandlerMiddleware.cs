@@ -14,7 +14,8 @@ public class HttpResponseExceptionHandlerMiddleware
 
     public async Task Invoke(HttpContext context, IHostEnvironment webHostEnvironment)
     {
-        context.Response.Headers.Add("Request-ID", context.TraceIdentifier); // agar dar samt e client, khatayi bebinim ke be server rabt darad, mitavanim ba Request-Id an ra dar logha peyda konim
+        // Using the Request-Id header, one can find the log for server-related exceptions
+        context.Response.Headers.Add("Request-ID", context.TraceIdentifier);
 
         try
         {
