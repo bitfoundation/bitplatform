@@ -89,7 +89,7 @@ public static class Services
         var fluentEmailServiceBuilder = services.AddFluentEmail(appSettings.EmailSettings.DefaulFromEmail, appSettings.EmailSettings.DefaultFromName)
             .AddRazorRenderer();
 
-        if (appSettings.EmailSettings.UseLocalFolderInsteadOfMailServer)
+        if (appSettings.EmailSettings.UseLocalFolderForEmails)
         {
             var sentEmailsFolderPath = Path.Combine(AppContext.BaseDirectory, "sent-emails");
 

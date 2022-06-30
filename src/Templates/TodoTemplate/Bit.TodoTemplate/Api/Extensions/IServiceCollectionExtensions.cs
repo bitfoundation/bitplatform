@@ -152,7 +152,7 @@ public static class IServiceCollectionExtensions
 
         var emailSettings = appsettings.EmailSettings;
 
-        if (!emailSettings.UseLocalFolderInsteadOfMailServer)
+        if (emailSettings.UseLocalFolderForEmails is false)
         {
             healthChecksBuilder
                 .AddSmtpHealthCheck(options =>
