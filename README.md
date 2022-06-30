@@ -21,7 +21,7 @@ In practice, everyone can have the above outputs with just one codebase.
 These templates are powered by Bit Blazor components. Bit components are fast(performant) and lightweight (less than 200KB). These components are the best tool to develop most apps, even public websites like e-commerce.
 
 
-Site haye zir, tamaman ba bit platform toseye peyda kardan va tamaman dar mode e blazor web assembly publish shodan. Dar nazar dashte bashid agar site e shoma faghat dar halat e blazor server sari bashad (ke be tosiyeye ma faghat monaseb debugging hast, na publish baraye moshtari) va dar mode e web assembly kond bashad, Android, iOS, Windows app e haman barname dar halat e blazor hybrid ham kond khahand bood.
+The following websites are developed by Bit Platform and published in Blazor Web Assembly. Keep in mind that if a web app is only fast in the Blazor Server mode but slow in Blazor Web Assembly mode, it will also be slow in Blazor Hybrid mode (Android, iOS, and Windows apps).
 
 
 Pas hamishe mogheye didan har demo yi az abzari mobtani bar blazor, in ro az khodetoon beporsid, in demo by blazor web assembly hast ya server?
