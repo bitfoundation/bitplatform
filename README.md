@@ -7,12 +7,12 @@ The following apps are available out of the box with simple configurations:
 * Android app with full access to platform features
 * iOS app with full access to platform features
 * Windows app with full access to platform features
-* PWA (You can develop offline-capable web apps)
+* PWA (for offline-capable web apps)
 * SPA with/without Pre-Rendering (SEO friendly)
 
 Using these templates, one can easily switch between Blazor Server, Blazor Web Assembly, and Blazor Hybrid:
 * Blazor Server: best for fast development and debugging
-* Blazor Web Assembly: best for SPA & PWA for customers
+* Blazor Web Assembly: best for SPA & PWA (for production)
 * Blazor Hybrid: provides apps for Android, iOS, and Windows
 
 In practice, everyone can have the above outputs with just one codebase.
@@ -27,9 +27,10 @@ The following websites are developed by Bit Platform and published in Blazor Web
 * [Bit Platform home page](https://bitplatform.dev/)
 * [Todo app with pre rendering](https://todo.bitplatform.dev/)
 * [Todo app PWA](https://todo-app.bitplatform.dev/)
-* Todo app Google Play link (Comming soon...)
-* Todo app Apple Store link (Comming soon...)
-* Todo app Microsoft Store link (Comming soon...)
+* [Todo app in App Center](https://install.appcenter.ms/orgs/bitfoundation/apps/todo/distribution_groups/testers)
+* Todo app in Google Play (Coming soon...)
+* Todo app in Apple Store (Coming soon...)
+* Todo app in Microsoft Store (Coming soon...)
 
 Keep in mind that if a web app is only fast in the Blazor Server mode but slow in Blazor Web Assembly mode, it will also be slow in Blazor Hybrid mode (Android, iOS, and Windows apps).
 
