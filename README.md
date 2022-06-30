@@ -18,7 +18,7 @@ Using these templates, one can easily switch between Blazor Server, Blazor Web A
 In practice, everyone can have the above outputs with just one codebase.
 
 
-In template ha, powered hastan by bit components. Bit components ham sari va ham kam hajm (less than 200KB!) hastan. in component ha tanha va behtarin abzari hastan ke ba oonha mitoonid hata web site haye public mesl e ecommerece tosee bedid.
+These templates are powered by Bit Blazor components. Bit components are fast(performant) and lightweight (less than 200KB). These components are the best tool to develop most apps, even public websites like e-commerce.
 
 
 Site haye zir, tamaman ba bit platform toseye peyda kardan va tamaman dar mode e blazor web assembly publish shodan. Dar nazar dashte bashid agar site e shoma faghat dar halat e blazor server sari bashad (ke be tosiyeye ma faghat monaseb debugging hast, na publish baraye moshtari) va dar mode e web assembly kond bashad, Android, iOS, Windows app e haman barname dar halat e blazor hybrid ham kond khahand bood.
