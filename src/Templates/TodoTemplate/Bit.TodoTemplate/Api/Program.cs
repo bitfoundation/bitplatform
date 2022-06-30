@@ -2,7 +2,7 @@
 var builder = WebApplication.CreateBuilder(args);
 
 #if DEBUG
-// ysm: Hataman IDE (Visual Studio) ro dar halat e Run as Admin ejra konid va ba komak e khat e zir, emaulator ha va device ha ye Android, iOS be server az tarigh e IP dastresi khahand dasht.
+// The following line (using the * in the URL), allows the emulators and mobile devices to access the app using the host IP address.
 builder.WebHost.UseUrls("https://*:5001", "http://*:5000");
 #endif
 
